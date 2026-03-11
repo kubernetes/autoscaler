@@ -20,6 +20,7 @@ import (
 	"slices"
 
 	resourceapi "k8s.io/api/resource/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/klog/v2"
 )
@@ -55,9 +56,8 @@ type NodeResourcesComparator struct {
 }
 
 // NewNodeResourcesComparator returns a new stateful NodeResourcesComparator.
-func NewNodeResourcesComparator(metric metricsEmitter) *NodeResourcesComparator {
+func NewNodeResourcesComparator() *NodeResourcesComparator {
 	return &NodeResourcesComparator{
-		metrics:                metric,
 		comparator:             newResourcePoolComparator(),
 		sampler:                newLoggingSampler(),
 		deltas:                 make([]resourceDelta, 0, countOfDiscrepanciesEstimate),
@@ -68,7 +68,6 @@ func NewNodeResourcesComparator(metric metricsEmitter) *NodeResourcesComparator 
 // newNodeResourcesComparatorWithLogger returns a new NodeResourcesComparator with a custom logger.
 func newNodeResourcesComparatorWithLogger(metric metricsEmitter, logger logger) *NodeResourcesComparator {
 	return &NodeResourcesComparator{
-		metrics:                metric,
 		comparator:             newResourcePoolComparator(),
 		sampler:                newLoggingSamplerWithLogger(logger),
 		deltas:                 make([]resourceDelta, 0, countOfDiscrepanciesEstimate),
@@ -85,12 +84,12 @@ type driverDiscrepancy struct {
 }
 
 // emitMetrics emits the aggregated discrepancies to the metrics emitter.
-func (c *NodeResourcesComparator) emitMetrics() {
+func (c *NodeResourcesComparator) emitMetrics(autoscalingCtx *context.AutoscalingContext) {
 	for driver, disc := range c.discrepanciesPerDriver {
-		c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeMissing, disc.missing)
-		c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeExtra, disc.extra)
-		c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeMismatch, disc.mismatch)
-		c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeUnknown, disc.unknown)
+		autoscalingCtx.MetricsRegistry.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeMissing, disc.missing)
+		autoscalingCtx.MetricsRegistry.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeExtra, disc.extra)
+		autoscalingCtx.MetricsRegistry.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeMismatch, disc.mismatch)
+		autoscalingCtx.MetricsRegistry.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeUnknown, disc.unknown)
 	}
 }
 
@@ -108,6 +107,7 @@ func (c *NodeResourcesComparator) reset() {
 // Function assumes that nodeNames, templateSlices, and nodeSlices have the same length,
 // and aborts execution if they don't.
 func (c *NodeResourcesComparator) ReportResourceDiscrepancies(
+	autoscalingCtx *context.AutoscalingContext,
 	nodeNames []string,
 	templateSlices [][]*resourceapi.ResourceSlice,
 	nodeSlices [][]*resourceapi.ResourceSlice,
@@ -138,7 +138,7 @@ func (c *NodeResourcesComparator) ReportResourceDiscrepancies(
 		c.deltas = c.deltas[:0]
 	}
 
-	c.emitMetrics()
+	c.emitMetrics(autoscalingCtx)
 	c.sampler.LogSampled()
 }
 

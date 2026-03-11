@@ -205,6 +205,10 @@ type CAMetricsRegistry interface {
 	// UpdateNodeGroupTargetSize records the node group target size
 	UpdateNodeGroupTargetSize(targetSizes map[string]int)
 
+	// SetNodeTemplateResourcesMismatch records the number of resource mismatches between
+	// predicted and real nodes in DRA-enabled node groups.
+	SetNodeTemplateResourcesMismatch(driver string, mismatchType ResourceMismatchType, value uint32)
+
 	// UpdateNodeGroupHealthStatus records if node group is healthy to autoscaling
 	UpdateNodeGroupHealthStatus(nodeGroup string, healthy bool)
 

@@ -51,7 +51,7 @@ func TestEnabledPerNodeGroupMetrics(t *testing.T) {
 
 func TestUpdateNodesCount(t *testing.T) {
 	reg := metrics.NewKubeRegistry()
-	m := newCaMetricsWithRegistry(reg)
+	m := NewCaMetricsWithRegistry(reg).(*caMetrics)
 	m.RegisterAll(false)
 
 	m.UpdateNodesCount(1, 2, 3, 4, 5, 6)

@@ -325,7 +325,7 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	// A ProvisioningRequestPodsInjector is used as provisioningRequestProcessingTimesGetter here to obtain the last time a
 	// ProvisioningRequest was processed. This is because the ProvisioningRequestPodsInjector in addition to injecting pods
 	// also marks the ProvisioningRequest as accepted or failed.
-	trigger := loop.NewLoopTrigger(autoscaler, provisioningRequestInjector, b.podObserver, autoscalingOptions.ScanInterval)
+	trigger := loop.NewLoopTrigger(autoscaler, provisioningRequestInjector, b.podObserver, autoscalingOptions.ScanInterval, opts.MetricsRegistry)
 
 	return autoscaler, trigger, nil
 }

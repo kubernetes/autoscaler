@@ -2039,7 +2039,7 @@ func TestAuthErrorHandling(t *testing.T) {
 		},
 		Options: &defaultOptions,
 	}
-	results, registry := runSimpleScaleUpTest(t, config)
+	results, _ := runSimpleScaleUpTest(t, config)
 	assert.Equal(t, errors.AutoscalerErrorType("authError"), results.ScaleUpError.Type())
 	assert.Equal(t, "failed to increase node group size: auth error", results.ScaleUpError.Error())
 	assertLegacyRegistryEntry(t, "cluster_autoscaler_failed_scale_ups_total{dra_drivers=\"\",gpu_name=\"\",gpu_resource_name=\"\",reason=\"authError\"} 1")
@@ -2192,7 +2192,7 @@ func TestScaleUpSimulationForSkippedNodeGroups(t *testing.T) {
 			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 
 			registryConfig := clusterstate.ClusterStateRegistryConfig{}
-			clusterState := clusterstate.NewClusterStateRegistry(provider, registryConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+			clusterState := clusterstate.NewClusterStateRegistry(provider, registryConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), autoscalingCtx.MetricsRegistry)
 			clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
 			quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)

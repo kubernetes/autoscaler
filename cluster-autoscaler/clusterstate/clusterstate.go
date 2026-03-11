@@ -124,6 +124,8 @@ type ScaleUpFailure struct {
 type metricObserver interface {
 	RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType, draDrivers string)
 	RegisterFailedNodeCreations(reason metrics.FailedScaleUpReason, nodesCount int)
+	UpdateNodeGroupTargetSize(targetSizes map[string]int)
+	UpdateNodeGroupsCount(autoscaled, autoprovisioned int)
 }
 
 // ClusterStateRegistry is a structure to keep track the current state of the cluster.
@@ -374,7 +376,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	if err != nil {
 		return err
 	}
-	metrics.UpdateNodeGroupTargetSize(targetSizes)
+	csr.metrics.UpdateNodeGroupTargetSize(targetSizes)
 
 	cloudProviderNodeInstances, err := csr.getCloudProviderNodeInstances()
 	if err != nil {
@@ -490,7 +492,7 @@ func (csr *ClusterStateRegistry) updateNodeGroupMetrics() {
 			autoscaled++
 		}
 	}
-	metrics.UpdateNodeGroupsCount(autoscaled, autoprovisioned)
+	csr.metrics.UpdateNodeGroupsCount(autoscaled, autoprovisioned)
 }
 
 // BackoffStatusForNodeGroup queries the backoff status of the node group

@@ -2582,7 +2582,8 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 				MaxNodeProvisionTime: 45 * time.Minute,
 			},
 		},
-		CloudProvider: provider,
+		CloudProvider:   provider,
+		MetricsRegistry: ca_metrics.NewCaMetricsWithRegistry(metrics.NewKubeRegistry()),
 	}
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
@@ -2692,7 +2693,8 @@ func setupTestRemoveOldUnregisteredNodesAtomic(t *testing.T, now time.Time, allo
 				MaxNodeProvisionTime: time.Hour,
 			},
 		},
-		CloudProvider: provider,
+		CloudProvider:   provider,
+		MetricsRegistry: ca_metrics.NewCaMetricsWithRegistry(metrics.NewKubeRegistry()),
 	}
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
@@ -3641,7 +3643,7 @@ func TestStaticAutoscalerRunOnceClearsRegistry(t *testing.T) {
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock, nil, nil, nil, nil)
 	autoscalingCtx.ListerRegistry = listerRegistry
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker, autoscalingCtx.MetricsRegistry)
 	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&autoscalingCtx, processors, clusterState, nil)
 	autoscalingCtx.ScaleDownActuator = sdActuator
 	quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)

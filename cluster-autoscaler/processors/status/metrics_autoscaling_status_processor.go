@@ -21,7 +21,6 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 )
 
@@ -44,9 +43,9 @@ func (p *MetricsAutoscalingStatusProcessor) Process(autoscalingCtx *ca_context.A
 		if !nodeGroup.Exist() {
 			continue
 		}
-		metrics.UpdateNodeGroupHealthStatus(nodeGroup.Id(), csr.IsNodeGroupHealthy(nodeGroup.Id()))
+		autoscalingCtx.MetricsRegistry.UpdateNodeGroupHealthStatus(nodeGroup.Id(), csr.IsNodeGroupHealthy(nodeGroup.Id()))
 		backoffStatus := csr.BackoffStatusForNodeGroup(nodeGroup, now)
-		p.updateNodeGroupBackoffStatusMetrics(nodeGroup.Id(), backoffStatus)
+		p.updateNodeGroupBackoffStatusMetrics(autoscalingCtx, nodeGroup.Id(), backoffStatus)
 	}
 	return nil
 }
@@ -56,7 +55,7 @@ func (p *MetricsAutoscalingStatusProcessor) CleanUp() {
 }
 
 // updateNodeGroupBackoffStatusMetrics updates metrics about backoff situation and reason of the node group
-func (p *MetricsAutoscalingStatusProcessor) updateNodeGroupBackoffStatusMetrics(nodeGroup string, backoffStatus backoff.Status) {
+func (p *MetricsAutoscalingStatusProcessor) updateNodeGroupBackoffStatusMetrics(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup string, backoffStatus backoff.Status) {
 	if _, ok := p.backoffReasonStatus[nodeGroup]; ok {
 		for reason := range p.backoffReasonStatus[nodeGroup] {
 			p.backoffReasonStatus[nodeGroup][reason] = false
@@ -73,5 +72,5 @@ func (p *MetricsAutoscalingStatusProcessor) updateNodeGroupBackoffStatusMetrics(
 		}
 		p.backoffReasonStatus[nodeGroup][errorCode] = true
 	}
-	metrics.UpdateNodeGroupBackOffStatus(nodeGroup, p.backoffReasonStatus[nodeGroup])
+	autoscalingCtx.MetricsRegistry.UpdateNodeGroupBackOffStatus(nodeGroup, p.backoffReasonStatus[nodeGroup])
 }

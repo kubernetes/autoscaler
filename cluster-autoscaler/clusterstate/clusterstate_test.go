@@ -557,6 +557,8 @@ func TestExpiredScaleUp(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupTargetSize", mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupsCount", mock.Anything, mock.Anything).Return()
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
@@ -928,6 +930,8 @@ func TestScaleUpBackoff(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupTargetSize", mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupsCount", mock.Anything, mock.Anything).Return()
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 	clusterstate := newClusterStateRegistry(
 		provider, ClusterStateRegistryConfig{
@@ -1701,6 +1705,8 @@ func TestHandleInstanceCreationErrors(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupTargetSize", mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupsCount", mock.Anything, mock.Anything).Return()
 	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
 	clusterstate.RegisterScaleUp(mockedNodeGroup, 1, now)
 
@@ -1755,14 +1761,16 @@ func TestFailedScaleUpWithDra(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupTargetSize", mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupsCount", mock.Anything, mock.Anything).Return()
 	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
 	clusterstate.RegisterScaleUp(mockedNodeGroup, 1, now)
 
 	// UpdateNodes will trigger handleInstanceCreationErrors
 	err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
 	assert.NoError(t, err)
-	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "", "", "custom.driver,dra.net")
-	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), 1)
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", ca_metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "", "", "custom.driver,dra.net")
+	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", ca_metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), 1)
 }
 
 func TestFailedScaleUpWithDraAndGpu(t *testing.T) {
@@ -1816,14 +1824,16 @@ func TestFailedScaleUpWithDraAndGpu(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupTargetSize", mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupsCount", mock.Anything, mock.Anything).Return()
 	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
 	clusterstate.RegisterScaleUp(mockedNodeGroup, 1, now)
 
 	// UpdateNodes will trigger handleInstanceCreationErrors
 	err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
 	assert.NoError(t, err)
-	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "dra_gpu-driver", "not-listed", "custom.driver,dra.net")
-	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), 1)
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", ca_metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "dra_gpu-driver", "not-listed", "custom.driver,dra.net")
+	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", ca_metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), 1)
 }
 
 type mockMetrics struct {
@@ -1836,6 +1846,14 @@ func (m *mockMetrics) RegisterFailedScaleUp(reason ca_metrics.FailedScaleUpReaso
 
 func (m *mockMetrics) RegisterFailedNodeCreations(reason ca_metrics.FailedScaleUpReason, nodesCount int) {
 	m.Called(reason, nodesCount)
+}
+
+func (m *mockMetrics) UpdateNodeGroupsCount(autoscaled, autoprovisioned int) {
+	m.Called(autoscaled, autoprovisioned)
+}
+
+func (m *mockMetrics) UpdateNodeGroupTargetSize(targetSizes map[string]int) {
+	m.Called(targetSizes)
 }
 
 func TestSuspendedNodes(t *testing.T) {
@@ -1861,7 +1879,7 @@ func TestSuspendedNodes(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), ca_metrics.NewCaMetricsWithRegistry(metrics.NewKubeRegistry()))
 
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, now)
 	assert.NoError(t, err)

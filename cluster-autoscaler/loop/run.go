@@ -29,18 +29,18 @@ type autoscaler interface {
 }
 
 // RunAutoscalerOnce triggers a single autoscaling iteration.
-func RunAutoscalerOnce(autoscaler autoscaler, healthCheck *metrics.HealthCheck, loopStart time.Time) {
-	metrics.UpdateLastTime(metrics.Main, loopStart)
+func RunAutoscalerOnce(autoscaler autoscaler, healthCheck *metrics.HealthCheck, metricsRegistry metrics.CAMetricsRegistry, loopStart time.Time) {
+	metricsRegistry.UpdateLastTime(metrics.Main, loopStart)
 	healthCheck.UpdateLastActivity(loopStart)
 
 	err := autoscaler.RunOnce(loopStart)
 	if err != nil && err.Type() != errors.TransientError {
-		metrics.RegisterError(err)
+		metricsRegistry.RegisterError(err)
 	} else {
 		var successTime = time.Now()
 		healthCheck.UpdateLastSuccessfulRun(successTime)
-		metrics.UpdateLastTime(metrics.MainSuccessful, successTime)
+		metricsRegistry.UpdateLastTime(metrics.MainSuccessful, successTime)
 	}
 
-	metrics.UpdateDurationFromStart(metrics.Main, loopStart)
+	metricsRegistry.UpdateDurationFromStart(metrics.Main, loopStart)
 }
