@@ -52,17 +52,17 @@ func NewResourceHandler(preProcessor PreProcessor) resource.Handler {
 }
 
 // AdmissionResource returns resource type this handler accepts.
-func (h *resourceHandler) AdmissionResource() admission.AdmissionResource {
+func (*resourceHandler) AdmissionResource() admission.AdmissionResource {
 	return admission.Vpa
 }
 
 // GroupResource returns Group and Resource type this handler accepts.
-func (h *resourceHandler) GroupResource() metav1.GroupResource {
+func (*resourceHandler) GroupResource() metav1.GroupResource {
 	return metav1.GroupResource{Group: "autoscaling.k8s.io", Resource: "verticalpodautoscalers"}
 }
 
 // DisallowIncorrectObjects decides whether incorrect objects (eg. unparsable, not passing validations) should be disallowed by Admission Server.
-func (h *resourceHandler) DisallowIncorrectObjects() bool {
+func (*resourceHandler) DisallowIncorrectObjects() bool {
 	return true
 }
 

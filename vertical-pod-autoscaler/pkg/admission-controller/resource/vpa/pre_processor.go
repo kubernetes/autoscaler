@@ -29,7 +29,7 @@ type PreProcessor interface {
 type noopPreProcessor struct{}
 
 // Process leaves the pod unchanged
-func (p *noopPreProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) (*vpa_types.VerticalPodAutoscaler, error) {
+func (*noopPreProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) (*vpa_types.VerticalPodAutoscaler, error) {
 	return vpa, nil
 }
 

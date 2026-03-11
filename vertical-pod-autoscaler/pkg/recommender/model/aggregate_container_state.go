@@ -303,7 +303,7 @@ func (a *AggregateContainerState) isEmpty() bool {
 	return a.TotalSamplesCount == 0
 }
 
-func (a *AggregateContainerState) convertQuantityToFloat64(quantity *resource.Quantity) float64 {
+func (*AggregateContainerState) convertQuantityToFloat64(quantity *resource.Quantity) float64 {
 	if quantity == nil {
 		return 0.0
 	}

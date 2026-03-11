@@ -785,7 +785,7 @@ func (c *fakeResizePatchCalculator) CalculatePatches(_ *corev1.Pod, _ *vpa_types
 	return c.patches, c.err
 }
 
-func (c *fakeResizePatchCalculator) PatchResourceTarget() patch.PatchResourceTarget {
+func (*fakeResizePatchCalculator) PatchResourceTarget() patch.PatchResourceTarget {
 	return patch.Resize
 }
 
