@@ -233,28 +233,17 @@ func (m *AzureManager) evaluateZombieStatus(
 	powerState := ""
 	var vmssAge *time.Duration
 
-	// TODO: Use vm.Properties.TimeCreated for more accurate VM age detection
-	// TimeCreated is populated within ~2 seconds of VM creation, whereas status.Time can take 1-1.5 minutes.
-	// Until migrated, we use status.Time with a conservative MinAge threshold (default 5 minutes) to avoid
-	// accidentally deleting newly created VMs during the window where status.Time hasn't populated yet.
-	//
-	// The TimeCreated field is available in Track 2 SDK armcompute v5.4.0+ (Dec 2023):
-	// - CHANGELOG: https://github.com/Azure/azure-sdk-for-go/blob/d36285c8ffb8f7978c1bff5fa08974019ebab65c/sdk/resourcemanager/compute/armcompute/CHANGELOG.md#L386
-	// - VirtualMachineScaleSetVMProperties: https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6#VirtualMachineScaleSetVMProperties
-	//
-	// Current approach uses InstanceView.Statuses[].Time:
-	// - Azure REST API: https://learn.microsoft.com/en-us/rest/api/compute/virtual-machine-scale-set-vms/get?view=rest-compute-2023-09-01
+	if vm.Properties != nil && vm.Properties.TimeCreated != nil {
+		age := currentTime.Sub(*vm.Properties.TimeCreated)
+		vmssAge = &age
+	}
+
 	if vm.Properties != nil && vm.Properties.InstanceView != nil && vm.Properties.InstanceView.Statuses != nil {
 		for _, status := range vm.Properties.InstanceView.Statuses {
 			code := ptr.Deref(status.Code, "")
 
 			if strings.HasPrefix(code, "PowerState/") {
 				powerState = strings.TrimPrefix(code, "PowerState/")
-			}
-
-			if vmssAge == nil && status.Time != nil {
-				age := currentTime.Sub(*status.Time)
-				vmssAge = &age
 			}
 		}
 	}
