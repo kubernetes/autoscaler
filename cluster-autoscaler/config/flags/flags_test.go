@@ -97,6 +97,74 @@ func TestParseSingleGpuLimit(t *testing.T) {
 	}
 }
 
+func TestParseSingleDraLimit(t *testing.T) {
+	type testcase struct {
+		input                string
+		expectError          bool
+		expectedLimits       config.DraLimits
+		expectedErrorMessage string
+	}
+
+	testcases := []testcase{
+		{
+			input:       "gpu.nvidia.com:H100:1:10",
+			expectError: false,
+			expectedLimits: config.DraLimits{
+				Driver:          "gpu.nvidia.com",
+				DeviceAttribute: "H100",
+				Min:             1,
+				Max:             10,
+			},
+		},
+		{
+			input:                "gpu.nvidia.com:H100:1",
+			expectError:          true,
+			expectedErrorMessage: "incorrect DRA limit specification: gpu.nvidia.com:H100:1",
+		},
+		{
+			input:                "gpu.nvidia.com:H100:1:10:x",
+			expectError:          true,
+			expectedErrorMessage: "incorrect DRA limit specification: gpu.nvidia.com:H100:1:10:x",
+		},
+		{
+			input:                "gpu.nvidia.com:H100:x:10",
+			expectError:          true,
+			expectedErrorMessage: "incorrect DRA limit - min is not integer: gpu.nvidia.com:H100:x:10",
+		},
+		{
+			input:                "gpu.nvidia.com:H100:1:y",
+			expectError:          true,
+			expectedErrorMessage: "incorrect DRA limit - max is not integer: gpu.nvidia.com:H100:1:y",
+		},
+		{
+			input:                "gpu.nvidia.com:H100:-1:10",
+			expectError:          true,
+			expectedErrorMessage: "incorrect DRA limit - min is less than 0; gpu.nvidia.com:H100:-1:10",
+		},
+		{
+			input:                "gpu.nvidia.com:H100:1:-10",
+			expectError:          true,
+			expectedErrorMessage: "incorrect DRA limit - max is less than 0; gpu.nvidia.com:H100:1:-10",
+		},
+		{
+			input:                "gpu.nvidia.com:H100:10:1",
+			expectError:          true,
+			expectedErrorMessage: "incorrect DRA limit - min is greater than max; gpu.nvidia.com:H100:10:1",
+		},
+	}
+	for _, testcase := range testcases {
+		limits, err := parseSingleDraLimit(testcase.input)
+		if testcase.expectError {
+			assert.NotNil(t, err)
+			if err != nil {
+				assert.Equal(t, testcase.expectedErrorMessage, err.Error())
+			}
+		} else {
+			assert.Equal(t, testcase.expectedLimits, limits)
+		}
+	}
+}
+
 func TestParseShutdownGracePeriodsAndPriorities(t *testing.T) {
 	testCases := []struct {
 		name  string
