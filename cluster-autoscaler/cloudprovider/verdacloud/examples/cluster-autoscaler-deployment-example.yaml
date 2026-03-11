@@ -1,0 +1,368 @@
+---
+# Namespace for VerdaCloud Cluster Autoscaler
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cluster-autoscaler
+  labels:
+    name: cluster-autoscaler
+
+---
+# ServiceAccount for Cluster Autoscaler
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: cluster-autoscaler
+  name: cluster-autoscaler
+  namespace: cluster-autoscaler
+
+---
+# ClusterRole with required permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-autoscaler
+  labels:
+    app.kubernetes.io/name: cluster-autoscaler
+rules:
+  - apiGroups: [""]
+    resources: ["events", "endpoints"]
+    verbs: ["create", "patch"]
+  - apiGroups: [""]
+    resources: ["pods/eviction"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["pods/status"]
+    verbs: ["update"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    resourceNames: ["cluster-autoscaler"]
+    verbs: ["get", "update"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["watch", "list", "get", "update"]
+  - apiGroups: [""]
+    resources:
+      - "namespaces"
+      - "pods"
+      - "services"
+      - "replicationcontrollers"
+      - "persistentvolumeclaims"
+      - "persistentvolumes"
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["extensions"]
+    resources: ["replicasets", "daemonsets"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
+    verbs: ["watch", "list"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets", "replicasets", "daemonsets"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["batch", "extensions"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["create"]
+  - apiGroups: ["coordination.k8s.io"]
+    resourceNames: ["cluster-autoscaler"]
+    resources: ["leases"]
+    verbs: ["get", "update"]
+  # Dynamic Resource Allocation (DRA) resources - required for Kubernetes 1.26+
+  - apiGroups: ["resource.k8s.io"]
+    resources: ["resourceclaims", "resourceslices", "deviceclasses"]
+    verbs: ["get", "list", "watch"]
+  # VolumeAttachments for storage operations
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch"]
+
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-autoscaler
+  labels:
+    app.kubernetes.io/name: cluster-autoscaler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-autoscaler
+subjects:
+- kind: ServiceAccount
+  name: cluster-autoscaler
+  namespace: cluster-autoscaler
+
+---
+# Role for status ConfigMap in kube-system namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cluster-autoscaler-status
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: cluster-autoscaler
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "get", "update", "patch", "delete"]
+
+---
+# RoleBinding for status ConfigMap in kube-system namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cluster-autoscaler-status
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: cluster-autoscaler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cluster-autoscaler-status
+subjects:
+- kind: ServiceAccount
+  name: cluster-autoscaler
+  namespace: cluster-autoscaler
+
+---
+# Secret containing VerdaCloud credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: verdacloud-credentials
+  namespace: cluster-autoscaler
+type: Opaque
+data:
+  # Replace these with your actual base64-encoded credentials
+  # echo -n 'your-client-id' | base64
+  client-id: <your-client-id>
+  # echo -n 'your-client-secret' | base64  
+  client-secret: <your-client-secret>
+
+---
+# ConfigMap containing cluster configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: verdacloud-cluster-config
+  namespace: cluster-autoscaler
+  labels:
+    app: cluster-autoscaler
+data:
+  cluster-config.json: |
+    {
+      "image": {
+        "gpu": "24.04.kubernetes1.31.1.cuda12.9.qcow2",
+        "cpu": "24.04.kubernetes1.31.1.cuda12.9.qcow2"
+      },
+      "sshKeyIDs": ["your-ssh-key-id"],
+      "billingConfig": {
+        "price": "FIXED_PRICE",
+        "contract": "PAY_AS_YOU_GO"
+      },
+      "debug": false,
+      "availableLocations": ["FIN-02", "FIN-03"],
+      "osVolumeSize": 100,
+      "labels": ["env=production"],
+      "startupScript": "IyEvdXNyL2Jpbi9lbnYgYmFzaApzZXQgLWV1byBwaXBlZmFpbAoKIyMjID09PT09PSBDT05GSUdVUkUgVEhFU0UgPT09PT09ICMjIwpNQVNURVJfSVA9IiIKTUFTVEVSX1BPUlQ9IiIKCiMgRnJvbSBga3ViZWFkbSB0b2tlbiBjcmVhdGUgLS1wcmludC1qb2luLWNvbW1hbmRgIG9uIHRoZSBtYXN0ZXI6CkpPSU5fVE9LRU49IiIKSk9JTl9IQVNIX0ZVTEw9IiIKCiMgUHJvdmlkZXIgSUQgdG8gcmVnaXN0ZXIgd2l0aCBrdWJlbGV0IChleGFtcGxlIGJlbG93OyByZXBsYWNlIGlmIG5lZWRlZCkKUFJPVklERVJfSUQ9IiIKCiMgTXVsdGlwbGUgbGFiZWxzIGV4YW1wbGUgKGNvbW1hLXNlcGFyYXRlZCwgbm8gc3BhY2VzKQojIElNUE9SVEFOVDogZG8gbm90IGluY2x1ZGUgc3BhY2VzOyBzZXBhcmF0ZSBsYWJlbHMgd2l0aCBjb21tYXMgb25seS4KIyBLZXlzIG1heSBpbmNsdWRlICcvJycKTEFCRUxTPSIiCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0gIyMjCgpleHBvcnQgREVCSUFOX0ZST05URU5EPW5vbmludGVyYWN0aXZlCgplY2hvICJbMS8zXSBGYXN0IGV4aXQgaWYgYWxyZWFkeSBqb2luZWQiCmlmIFsgLWYgL2V0Yy9rdWJlcm5ldGVzL2t1YmVsZXQuY29uZiBdOyB0aGVuCiAgZWNobyAiTm9kZSBhbHJlYWR5IGpvaW5lZCAoL2V0Yy9rdWJlcm5ldGVzL2t1YmVsZXQuY29uZiBleGlzdHMpLiBOb3RoaW5nIHRvIGRvLiIKICBleGl0IDAKZmkKCgplY2hvICJbMi8zXSBQcmUtc2V0IGt1YmVsZXQgcHJvdmlkZXItaWQgYW5kIG5vZGUtbGFiZWxzICh2aWEgL2V0Yy9kZWZhdWx0L2t1YmVsZXQpIgoKIyAtLS0gUHJlY29uZGl0aW9uczogZmFpbCBmYXN0IGlmIGVtcHR5IC0tLQppZiBbIC16ICIke1BST1ZJREVSX0lEOi19IiBdOyB0aGVuCiAgZWNobyAiW2Vycm9yXSBQUk9WSURFUl9JRCBpcyBub3Qgc2V0IG9yIGlzIGVtcHR5IgogIGV4aXQgMQpmaQppZiBbIC16ICIke0xBQkVMUzotfSIgXTsgdGhlbgogIGVjaG8gIltlcnJvcl0gTEFCRUxTIGlzIG5vdCBzZXQgb3IgaXMgZW1wdHkiCiAgZXhpdCAxCmZpCgojIE9wdGlvbmFsOiBzdHJpcCBzcGFjZXMgdGhhdCBtaWdodCBzbmVhayBpbiAoZGVmZW5zaXZlKQpMQUJFTFM9IiQocHJpbnRmICclcycgIiRMQUJFTFMiIHwgdHIgLWQgJyAnKSIKCiMgQ3JlYXRlIGZpbGUgaWYgbWlzc2luZwpbIC1mIC9ldGMvZGVmYXVsdC9rdWJlbGV0IF0gfHwgOiA+IC9ldGMvZGVmYXVsdC9rdWJlbGV0CgojIFJlYWQgY3VycmVudCBhcmdzICh1bnF1b3RlZCkKQ1VSUkVOVD0iJChncmVwIC1vRSAnXktVQkVMRVRfRVhUUkFfQVJHUz0uKicgL2V0Yy9kZWZhdWx0L2t1YmVsZXQgfCBzZWQgJ3MvXHIkLy8nIHx8IHRydWUpIgpDVVJSRU5UPSIke0NVUlJFTlQjS1VCRUxFVF9FWFRSQV9BUkdTPX0iICAgICAgICAgICAgICAgICAgICAgICAgICAjIGRyb3AgcHJlZml4CkNVUlJFTlQ9IiR7Q1VSUkVOVCVcIn0iOyBDVVJSRU5UPSIke0NVUlJFTlQjXCJ9IiAgICAgICAgICAgICAgICAgICMgZHJvcCBzdXJyb3VuZGluZyBxdW90ZXMgaWYgYW55CgojIFJlbW92ZSBhbnkgcHJldmlvdXMgZmxhZ3MgdG8gYXZvaWQgZHVwbGljYXRpb24KQ0xFQU5FRD0iJChwcmludGYgJyVzXG4nICIkQ1VSUkVOVCIgXAogIHwgc2VkICdzLy0tcHJvdmlkZXItaWQ9W14gXSovL2cnIFwKICB8IHNlZCAncy8tLW5vZGUtbGFiZWxzPVteIF0qLy9nJyBcCiAgfCB4YXJncykiCgojIENvbnN0cnVjdCBuZXcgZmxhZ3MgKG11bHRpcGxlIGxhYmVscyBzdXBwb3J0ZWQgdmlhIGNvbW1hIGxpc3QpCk5FV19BUkdTPSIkKHByaW50ZiAnJXMgJXMgJXNcbicgIiRDTEVBTkVEIiAiLS1wcm92aWRlci1pZD0ke1BST1ZJREVSX0lEfSIgIi0tbm9kZS1sYWJlbHM9JHtMQUJFTFN9IiB8IHhhcmdzKSIKCiMgV3JpdGUgYmFjayAocXVvdGUgdG8gYmUgc2FmZSkKaWYgZ3JlcCAtcSAnXktVQkVMRVRfRVhUUkFfQVJHUz0nIC9ldGMvZGVmYXVsdC9rdWJlbGV0OyB0aGVuCiAgc2VkIC1pICdzI15LVUJFTEVUX0VYVFJBX0FSR1M9LiojS1VCRUxFVF9FWFRSQV9BUkdTPSInIiRORVdfQVJHUyInIiMnIC9ldGMvZGVmYXVsdC9rdWJlbGV0CmVsc2UKICBlY2hvICdLVUJFTEVUX0VYVFJBX0FSR1M9IiciJE5FV19BUkdTIiciJyA+PiAvZXRjL2RlZmF1bHQva3ViZWxldApmaQoKIyBTaG93IGV4YWN0bHkgd2hhdCB3ZSdsbCBydW4KZWNobyAiW3ByZWZsaWdodF0gL2V0Yy9kZWZhdWx0L2t1YmVsZXQgbm93IGlzOiIKc2VkIC1uICcxLDEyMHAnIC9ldGMvZGVmYXVsdC9rdWJlbGV0CgojIE1ha2Ugc3lzdGVtZCBwaWNrIGl0IHVwCnN5c3RlbWN0bCBkYWVtb24tcmVleGVjCnN5c3RlbWN0bCByZXN0YXJ0IGt1YmVsZXQgfHwgdHJ1ZQoKIyBIYXJkIHZlcmlmaWNhdGlvbiBCRUZPUkUgam9pbgppZiBncmVwIC1xIC0tICItLXByb3ZpZGVyLWlkPSR7UFJPVklERVJfSUR9IiAvZXRjL2RlZmF1bHQva3ViZWxldDsgdGhlbgogIGVjaG8gIltwcmVmbGlnaHRdIHByb3ZpZGVyLWlkIGNvbmZpZ3VyZWQiCmVsc2UKICBlY2hvICJbcHJlZmxpZ2h0XSBwcm92aWRlci1pZCBzdGlsbCBtaXNzaW5nIgogIGV4aXQgMQpmaQoKaWYgZ3JlcCAtcSAtLSAiLS1ub2RlLWxhYmVscz0ke0xBQkVMU30iIC9ldGMvZGVmYXVsdC9rdWJlbGV0OyB0aGVuCiAgZWNobyAiW3ByZWZsaWdodF0gbm9kZS1sYWJlbHMgY29uZmlndXJlZCIKZWxzZQogIGVjaG8gIltwcmVmbGlnaHRdIG5vZGUtbGFiZWxzIHN0aWxsIG1pc3NpbmciCiAgZXhpdCAxCmZpCgplY2hvICJbMi8zXSBKb2luIHRoZSBjbHVzdGVyIgprdWJlYWRtIGpvaW4gIiR7TUFTVEVSX0lQfToke01BU1RFUl9QT1JUfSIgXAogIC0tdG9rZW4gIiR7Sk9JTl9UT0tFTn0iIFwKICAtLWRpc2NvdmVyeS10b2tlbi1jYS1jZXJ0LWhhc2ggIiR7Sk9JTl9IQVNIX0ZVTEx9IiBcCiAgLS1ub2RlLW5hbWUgIiQoaG9zdG5hbWUpIgoKZWNobyAiRG9uZS4gS3ViZWxldCB3aWxsIHJlZ2lzdGVyIHdpdGggcHJvdmlkZXJJRD0nJHtQUk9WSURFUl9JRH0nIGFuZCBsYWJlbHM9JyR7TEFCRUxTfScuIgplY2hvICJWZXJpZnkgZnJvbSBtYXN0ZXI6IgplY2hvICIgIGt1YmVjdGwgZ2V0IG5vZGUgJChob3N0bmFtZSkgLW8ganNvbnBhdGg9J3suc3BlYy5wcm92aWRlcklEfSc7IGVjaG8iCmVjaG8gIiAga3ViZWN0bCBnZXQgbm9kZSAkKGhvc3RuYW1lKSAtLXNob3ctbGFiZWxzIHwgc2VkIC1FICdzLywvLFxuL2cnIHwgc2VkIC1uICcxLDVwJyIK",
+      "startupScriptEnv": {
+        "MASTER_IP": "",
+        "MASTER_PORT": "",
+        "JOIN_TOKEN": "",
+        "JOIN_HASH_FULL": ""
+      },
+      "taints": [],
+      "groups": {
+        "asg-name-here": {
+          "labels": ["hardware=gpu", "team=ai"],
+          "taints": [
+            { "key": "nvidia.com/gpu", "value": "present", "effect": "NoSchedule" }
+          ],
+          "billingConfig": {
+            "price": "FIXED_PRICE",
+            "contract": "SPOT"
+          },
+          "osVolumeSize": 200,
+          "availableLocations": ["FIN-02"]
+        }
+      }
+    }
+
+---
+# Deployment for VerdaCloud Cluster Autoscaler
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-autoscaler
+  namespace: cluster-autoscaler
+  labels:
+    app: cluster-autoscaler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cluster-autoscaler
+  template:
+    metadata:
+      labels:
+        app: cluster-autoscaler
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8085'
+    spec:
+      priorityClassName: system-cluster-critical
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: cluster-autoscaler
+      containers:
+      - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.30.0
+        name: cluster-autoscaler
+        resources:
+          limits:
+            cpu: 100m
+            memory: 600Mi
+          requests:
+            cpu: 100m
+            memory: 600Mi
+        command:
+        - ./cluster-autoscaler
+        - --v=4
+        - --stderrthreshold=info
+        - --cloud-provider=verdacloud
+        - --skip-nodes-with-local-storage=false
+        - --expander=least-waste
+        - --cloud-config=/etc/verdacloud/cluster-config.json
+        - --nodes=0:5:1A6000.10V:FIN-01:gpu-workers:hostname-prefix-here
+        - --scale-down-delay-after-add=10m
+        - --scale-down-unneeded-time=10m
+        - --max-node-provision-time=15m
+        - --scan-interval=10s
+        - --scale-down-delay-after-delete=10s
+        - --scale-down-delay-after-failure=3m
+        - --balance-similar-node-groups
+        - --skip-nodes-with-system-pods=false
+        env:
+        - name: VERDA_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: verdacloud-credentials
+              key: client-id
+        - name: VERDA_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: verdacloud-credentials
+              key: client-secret
+        - name: VERDA_BASE_URL
+          value: "https://api.verda.com/v1"
+        - name: VERDA_CLUSTER_CONFIG_FILE
+          value: "/etc/verdacloud/cluster-config.json"
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health-check
+            port: 8085
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health-check
+            port: 8085
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        ports:
+        - containerPort: 8085
+          name: http
+          protocol: TCP
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /etc/ssl/certs/ca-certificates.crt
+          name: ssl-certs
+          readOnly: true
+        - mountPath: /etc/verdacloud
+          name: verdacloud-config
+          readOnly: true
+      volumes:
+      - hostPath:
+          path: /etc/ssl/certs/ca-certificates.crt
+          type: File
+        name: ssl-certs
+      - configMap:
+          name: verdacloud-cluster-config
+        name: verdacloud-config
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      nodeSelector:
+        kubernetes.io/os: linux
+
+---
+# Sample workload for testing autoscaling
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-cluster-autoscaler-sample
+  namespace: default
+  labels:
+    app: test-cluster-autoscaler-sample
+    datacrunch.io/hidden: "true"
+    verda.com/hidden: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-cluster-autoscaler-sample
+  template:
+    metadata:
+      labels:
+        app: test-cluster-autoscaler-sample
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: verda.com/node-group   # must match *exactly*
+                operator: In
+                values:
+                - "asg-pro6000-8x"
+      containers:
+      - name: gpu-test
+        # CHANGED: Use official NVIDIA base image (~150MB) instead of nginx
+        image: nvidia/cuda:12.4.1-base-ubuntu22.04
+        # CHANGED: Added command to keep pod alive and log GPU status
+        command:
+        - "/bin/sh"
+        - "-c"
+        - "while true; do echo 'Checking GPU status...'; nvidia-smi; sleep 300; done"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+            nvidia.com/gpu: "1"
+          limits:
+            cpu: 500m
+            memory: 256Mi
+            nvidia.com/gpu: "1"
