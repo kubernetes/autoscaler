@@ -67,15 +67,6 @@ import (
 	"k8s.io/klog/v2"
 )
 
-const (
-	// How old the oldest unschedulable pod should be before starting scale up.
-	unschedulablePodTimeBuffer = 2 * time.Second
-	// How old the oldest unschedulable pod with GPU should be before starting scale up.
-	// The idea is that nodes with GPU are very expensive and we're ready to sacrifice
-	// a bit more latency to wait for more pods and make a more informed scale-up decision.
-	unschedulablePodWithGpuTimeBuffer = 30 * time.Second
-)
-
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
 type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
@@ -561,7 +552,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 			noScaleUpInfoForPods = append(noScaleUpInfoForPods, noScaleUpInfo)
 		}
 		scaleUpStatus.PodsRemainUnschedulable = noScaleUpInfoForPods
-	} else if len(a.BypassedSchedulers) == 0 && allPodsAreNew(unschedulablePodsToHelp, currentTime) {
+	} else if len(a.BypassedSchedulers) == 0 && allPodsAreNew(unschedulablePodsToHelp, currentTime, a.UnschedulablePodTimeBuffer, a.UnschedulableGpuPodTimeBuffer) {
 		// The assumption here is that these pods have been created very recently and probably there
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
@@ -1083,12 +1074,12 @@ func (a *StaticAutoscaler) reportTaintsCount(nodes []*apiv1.Node) {
 	}
 }
 
-func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
-	if core_utils.GetOldestCreateTime(pods).Add(unschedulablePodTimeBuffer).After(currentTime) {
+func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time, podTimeBuffer, gpuPodTimeBuffer time.Duration) bool {
+	if core_utils.GetOldestCreateTime(pods).Add(podTimeBuffer).After(currentTime) {
 		return true
 	}
 	found, oldest := core_utils.GetOldestCreateTimeWithGpu(pods)
-	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
+	return found && oldest.Add(gpuPodTimeBuffer).After(currentTime)
 }
 
 func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*framework.NodeInfo) (map[string][]*framework.NodeInfo, error) {
