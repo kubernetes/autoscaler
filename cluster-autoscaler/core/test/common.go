@@ -33,7 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	ca_metrics "k8s.io/autoscaler/cluster-autoscaler/metrics"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -46,6 +46,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/component-base/metrics"
+	"k8s.io/component-base/metrics/testutil"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -187,6 +189,8 @@ func NewScaleTestAutoscalingContext(
 	if err != nil {
 		return ca_context.AutoscalingContext{}, err
 	}
+	metricsRegistry := ca_metrics.NewCaMetricsWithRegistry(metrics.NewKubeRegistry())
+	metricsRegistry.RegisterAll(true)
 	return ca_context.AutoscalingContext{
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
@@ -203,6 +207,7 @@ func NewScaleTestAutoscalingContext(
 		DebuggingSnapshotter:     debuggingSnapshotter,
 		RemainingPdbTracker:      remainingPdbTracker,
 		TemplateNodeInfoRegistry: templateNodeInfoRegistry,
+		MetricsRegistry:          metricsRegistry,
 	}, nil
 }
 
@@ -225,7 +230,7 @@ func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroupAsync(autoscalingC
 func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
 	newNodeGroup, err := nodeGroup.Create()
 	assert.NoError(p.T, err)
-	metrics.RegisterNodeGroupCreation()
+	autoscalingCtx.MetricsRegistry.RegisterNodeGroupCreation()
 	extraGroups := []cloudprovider.NodeGroup{}
 	testGroup, ok := nodeGroup.(*testcloudprovider.TestNodeGroup)
 	if !ok {
@@ -240,7 +245,7 @@ func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(autoscalingCtx *c
 		assert.NoError(p.T, err)
 		extraGroup, err := extraNodeGroup.Create()
 		assert.NoError(p.T, err)
-		metrics.RegisterNodeGroupCreation()
+		autoscalingCtx.MetricsRegistry.RegisterNodeGroupCreation()
 		extraGroups = append(extraGroups, extraGroup)
 	}
 	result := nodegroups.CreateNodeGroupResult{
@@ -409,4 +414,35 @@ func expanderOptionToGroupSizeChange(option expander.Option) GroupSizeChange {
 	groupSizeIncrement := option.NodeCount
 	scaleUpOption := GroupSizeChange{GroupName: groupName, SizeChange: groupSizeIncrement}
 	return scaleUpOption
+}
+
+// AssertVectorCount asserts that the total count for a metric with the given name and label filter equals wantCount.
+func AssertVectorCount(t testing.TB, gatherer ca_metrics.CAMetricsRegistry, name string, labelFilter map[string]string, wantCount int) {
+	metrics, err := gatherer.Gather()
+	if err != nil {
+		t.Fatalf("Failed to gather metrics: %s", err)
+	}
+
+	counterSum := 0
+	for _, mf := range metrics {
+		if mf.GetName() != name {
+			continue // Ignore other metrics.
+		}
+		for _, metric := range mf.GetMetric() {
+			if !testutil.LabelsMatch(metric, labelFilter) {
+				continue
+			}
+			counterSum += int(metric.GetCounter().GetValue())
+		}
+	}
+	if wantCount != counterSum {
+		t.Errorf("Wanted count %d, got %d for metric %s with labels %#+v", wantCount, counterSum, name, labelFilter)
+		for _, mf := range metrics {
+			if mf.GetName() == name {
+				for _, metric := range mf.GetMetric() {
+					t.Logf("\tnear match: %s", metric.String())
+				}
+			}
+		}
+	}
 }

@@ -54,7 +54,6 @@ import (
 	"k8s.io/component-base/logs"
 	logsapi "k8s.io/component-base/logs/api/v1"
 	_ "k8s.io/component-base/logs/json/register"
-	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
 	"k8s.io/kubernetes/pkg/features"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -88,10 +87,10 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	}()
 }
 
-func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {
+func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, metricsRegistry metrics.CAMetricsRegistry) {
 	autoscalingOpts := flags.AutoscalingOptions()
 
-	metrics.RegisterAll(autoscalingOpts.EmitPerNodeGroupMetrics)
+	metricsRegistry.RegisterAll(autoscalingOpts.EmitPerNodeGroupMetrics)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -111,7 +110,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 		klog.Fatalf("Failed to create manager: %v", err)
 	}
 
-	autoscaler, trigger := mustBuildAutoscaler(ctx, autoscalingOpts, debuggingSnapshotter, mgr)
+	autoscaler, trigger := mustBuildAutoscaler(ctx, autoscalingOpts, debuggingSnapshotter, mgr, metricsRegistry)
 
 	// Register signal handlers for graceful shutdown.
 	// TODO: replace with ctrl.SetupSignalHandlers() and handle graceful shutdown with context
@@ -164,7 +163,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 	}
 }
 
-func mustBuildAutoscaler(ctx context.Context, opts config.AutoscalingOptions, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, mgr manager.Manager) (core.Autoscaler, *loop.LoopTrigger) {
+func mustBuildAutoscaler(ctx context.Context, opts config.AutoscalingOptions, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, mgr manager.Manager, metricsRegistry metrics.CAMetricsRegistry) (core.Autoscaler, *loop.LoopTrigger) {
 	kubeClient := kube_util.CreateKubeClient(opts.KubeClientOpts)
 
 	// Informer transform to trim ManagedFields for memory efficiency.
@@ -181,6 +180,7 @@ func mustBuildAutoscaler(ctx context.Context, opts config.AutoscalingOptions, de
 		WithManager(mgr).
 		WithKubeClient(kubeClient).
 		WithInformerFactory(informerFactory).
+		WithMetricsRegistry(metricsRegistry).
 		Build(ctx)
 
 	if err != nil {
@@ -243,9 +243,11 @@ func main() {
 
 	debuggingSnapshotter := debuggingsnapshot.NewDebuggingSnapshotter(autoscalingOpts.DebuggingSnapshotEnabled)
 
+	metricsRegistry := metrics.NewCaMetrics()
+
 	go func() {
 		pathRecorderMux := mux.NewPathRecorderMux("cluster-autoscaler")
-		defaultMetricsHandler := legacyregistry.Handler().ServeHTTP
+		defaultMetricsHandler := metricsRegistry.Handler().ServeHTTP //legacyregistry.Handler().ServeHTTP
 		pathRecorderMux.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
 			defaultMetricsHandler(w, req)
 		})
@@ -261,7 +263,7 @@ func main() {
 	}()
 
 	if !leaderElection.LeaderElect {
-		run(healthCheck, debuggingSnapshotter)
+		run(healthCheck, debuggingSnapshotter, metricsRegistry)
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
@@ -301,7 +303,7 @@ func main() {
 				OnStartedLeading: func(_ context.Context) {
 					// Since we are committing a suicide after losing
 					// mastership, we can safely ignore the argument.
-					run(healthCheck, debuggingSnapshotter)
+					run(healthCheck, debuggingSnapshotter, metricsRegistry)
 				},
 				OnStoppedLeading: func() {
 					klog.Fatalf("lost master")

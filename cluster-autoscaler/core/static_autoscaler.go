@@ -151,7 +151,8 @@ func NewStaticAutoscaler(
 	draProvider *draprovider.Provider,
 	quotasTrackerOptions resourcequotas.TrackerOptions,
 	csiProvider *csinodeprovider.Provider,
-	capacityBufferPodsRegistry *fakepods.Registry) *StaticAutoscaler {
+	capacityBufferPodsRegistry *fakepods.Registry,
+	metricsRegistry metrics.CAMetricsRegistry) *StaticAutoscaler {
 
 	klog.V(4).Infof("Creating new static autoscaler with opts: %v", opts)
 
@@ -159,7 +160,7 @@ func NewStaticAutoscaler(
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
 	}
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker, metricsRegistry)
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(processors.TemplateNodeInfoProvider)
@@ -177,7 +178,8 @@ func NewStaticAutoscaler(
 		clusterStateRegistry,
 		draProvider,
 		templateNodeInfoRegistry,
-		csiProvider)
+		csiProvider,
+		metricsRegistry)
 
 	taintConfig := taints.NewTaintConfig(opts)
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
