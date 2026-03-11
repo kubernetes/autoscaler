@@ -668,15 +668,14 @@ func newHealthyVM(instanceID int) *armcompute.VirtualMachineScaleSetVM {
 		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),
 		Properties: &armcompute.VirtualMachineScaleSetVMProperties{
 			ProvisioningState: ptr.To("Succeeded"),
+			TimeCreated:       ptr.To(time.Now().Add(-2 * time.Minute)),
 			InstanceView: &armcompute.VirtualMachineScaleSetVMInstanceView{
 				Statuses: []*armcompute.InstanceViewStatus{
 					{
 						Code: ptr.To("ProvisioningState/succeeded"),
-						Time: ptr.To(time.Now().Add(-2 * time.Minute)),
 					},
 					{
 						Code: ptr.To("PowerState/running"),
-						Time: ptr.To(time.Now().Add(-2 * time.Minute)),
 					},
 				},
 			},
@@ -691,15 +690,14 @@ func newZombieVMWithFailedProvisioning(instanceID int, age time.Duration) *armco
 		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),
 		Properties: &armcompute.VirtualMachineScaleSetVMProperties{
 			ProvisioningState: ptr.To("Failed"),
+			TimeCreated:       ptr.To(time.Now().Add(-age)),
 			InstanceView: &armcompute.VirtualMachineScaleSetVMInstanceView{
 				Statuses: []*armcompute.InstanceViewStatus{
 					{
 						Code: ptr.To("ProvisioningState/failed"),
-						Time: ptr.To(time.Now().Add(-age)),
 					},
 					{
 						Code: ptr.To("PowerState/running"),
-						Time: ptr.To(time.Now().Add(-age)),
 					},
 				},
 			},
@@ -714,15 +712,14 @@ func newZombieVMWithFailedExtensions(instanceID int, age time.Duration) *armcomp
 		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),
 		Properties: &armcompute.VirtualMachineScaleSetVMProperties{
 			ProvisioningState: ptr.To("Succeeded"),
+			TimeCreated:       ptr.To(time.Now().Add(-age)),
 			InstanceView: &armcompute.VirtualMachineScaleSetVMInstanceView{
 				Statuses: []*armcompute.InstanceViewStatus{
 					{
 						Code: ptr.To("ProvisioningState/succeeded"),
-						Time: ptr.To(time.Now().Add(-age)),
 					},
 					{
 						Code: ptr.To("PowerState/running"),
-						Time: ptr.To(time.Now().Add(-age)),
 					},
 				},
 				Extensions: []*armcompute.VirtualMachineExtensionInstanceView{
@@ -748,15 +745,14 @@ func newZombieVMNeverRegistered(instanceID int, age time.Duration) *armcompute.V
 		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),
 		Properties: &armcompute.VirtualMachineScaleSetVMProperties{
 			ProvisioningState: ptr.To("Succeeded"),
+			TimeCreated:       ptr.To(time.Now().Add(-age)),
 			InstanceView: &armcompute.VirtualMachineScaleSetVMInstanceView{
 				Statuses: []*armcompute.InstanceViewStatus{
 					{
 						Code: ptr.To("ProvisioningState/succeeded"),
-						Time: ptr.To(time.Now().Add(-age)),
 					},
 					{
 						Code: ptr.To("PowerState/running"),
-						Time: ptr.To(time.Now().Add(-age)),
 					},
 				},
 			},
@@ -771,15 +767,14 @@ func newUnreachableZombieVM(instanceID int, age time.Duration) *armcompute.Virtu
 		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),
 		Properties: &armcompute.VirtualMachineScaleSetVMProperties{
 			ProvisioningState: ptr.To("Succeeded"),
+			TimeCreated:       ptr.To(time.Now().Add(-age)),
 			InstanceView: &armcompute.VirtualMachineScaleSetVMInstanceView{
 				Statuses: []*armcompute.InstanceViewStatus{
 					{
 						Code: ptr.To("ProvisioningState/succeeded"),
-						Time: ptr.To(time.Now().Add(-age)),
 					},
 					{
 						Code: ptr.To("PowerState/running"),
-						Time: ptr.To(time.Now().Add(-age)),
 					},
 				},
 			},
@@ -794,15 +789,14 @@ func newRecentVM(instanceID int) *armcompute.VirtualMachineScaleSetVM {
 		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),
 		Properties: &armcompute.VirtualMachineScaleSetVMProperties{
 			ProvisioningState: ptr.To("Succeeded"),
+			TimeCreated:       ptr.To(time.Now().Add(-2 * time.Minute)), // Less than 5 minutes
 			InstanceView: &armcompute.VirtualMachineScaleSetVMInstanceView{
 				Statuses: []*armcompute.InstanceViewStatus{
 					{
 						Code: ptr.To("ProvisioningState/succeeded"),
-						Time: ptr.To(time.Now().Add(-2 * time.Minute)), // Less than 5 minutes
 					},
 					{
 						Code: ptr.To("PowerState/running"),
-						Time: ptr.To(time.Now().Add(-2 * time.Minute)),
 					},
 				},
 			},
