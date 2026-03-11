@@ -26,17 +26,7 @@ import (
 )
 
 // DefaultMetrics is a default implementation using global legacyregistry
-var DefaultMetrics = newCaMetrics()
-
-// InitMetrics initializes all metrics
-func InitMetrics() {
-	DefaultMetrics.InitMetrics()
-}
-
-// RegisterAll registers all metrics
-func RegisterAll(emitPerNodeGroupMetrics bool) {
-	DefaultMetrics.RegisterAll(emitPerNodeGroupMetrics)
-}
+var DefaultMetrics = NewCaMetrics()
 
 // UpdateDurationFromStart records the duration of the step identified by the
 // label using start time
@@ -89,19 +79,9 @@ func UpdateClusterCPUCurrentCores(coresCount int64) {
 	DefaultMetrics.UpdateClusterCPUCurrentCores(coresCount)
 }
 
-// UpdateCPULimitsCores records the minimum and maximum number of cores in the cluster
-func UpdateCPULimitsCores(minCoresCount int64, maxCoresCount int64) {
-	DefaultMetrics.UpdateCPULimitsCores(minCoresCount, maxCoresCount)
-}
-
 // UpdateClusterMemoryCurrentBytes records the number of bytes of memory in the cluster, minus deleting nodes
 func UpdateClusterMemoryCurrentBytes(memoryCount int64) {
 	DefaultMetrics.UpdateClusterMemoryCurrentBytes(memoryCount)
-}
-
-// UpdateMemoryLimitsBytes records the minimum and maximum bytes of memory in the cluster
-func UpdateMemoryLimitsBytes(minMemoryCount int64, maxMemoryCount int64) {
-	DefaultMetrics.UpdateMemoryLimitsBytes(minMemoryCount, maxMemoryCount)
 }
 
 // UpdateNodeGroupMin records the node group minimum allowed number of nodes
@@ -133,11 +113,6 @@ func UpdateNodeGroupBackOffStatus(nodeGroup string, backoffReasonStatus map[stri
 // No more than one error should be recorded per loop.
 func RegisterError(err errors.AutoscalerError) {
 	DefaultMetrics.RegisterError(err)
-}
-
-// RegisterScaleUp records number of nodes added by scale up
-func RegisterScaleUp(nodesCount int, gpuResourceName, gpuType string) {
-	DefaultMetrics.RegisterScaleUp(nodesCount, gpuResourceName, gpuType)
 }
 
 // RegisterFailedScaleUp records a failed scale-up operation
@@ -211,16 +186,6 @@ func RegisterSkippedScaleDownCPU() {
 // RegisterSkippedScaleDownMemory increases the count of skipped scale outs because of Memory resource limits
 func RegisterSkippedScaleDownMemory() {
 	DefaultMetrics.RegisterSkippedScaleDownMemory()
-}
-
-// RegisterSkippedScaleUpCPU increases the count of skipped scale outs because of CPU resource limits
-func RegisterSkippedScaleUpCPU() {
-	DefaultMetrics.RegisterSkippedScaleUpCPU()
-}
-
-// RegisterSkippedScaleUpMemory increases the count of skipped scale outs because of Memory resource limits
-func RegisterSkippedScaleUpMemory() {
-	DefaultMetrics.RegisterSkippedScaleUpMemory()
 }
 
 // ObservePendingNodeDeletions records the current value of nodes_pending_deletion metric

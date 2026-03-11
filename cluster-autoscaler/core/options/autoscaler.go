@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
@@ -65,4 +66,5 @@ type AutoscalerOptions struct {
 	CSIProvider            *csinodeprovider.Provider
 	KubeClientNew          client.Client
 	KubeCache              cache.Cache
+	MetricsRegistry        metrics.CAMetricsRegistry
 }

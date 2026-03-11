@@ -23,11 +23,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	fakecloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	ca_test "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/test/integration"
 	synctestutils "k8s.io/autoscaler/cluster-autoscaler/test/integration/synctest"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"k8s.io/component-base/metrics/testutil"
 )
 
 func TestMetrics_ScaledUpNodes(t *testing.T) {
@@ -41,7 +40,7 @@ func TestMetrics_ScaledUpNodes(t *testing.T) {
 
 	synctest.Test(t, func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
-		metrics.RegisterAll(true)
+		infra.MetricsRegistry.RegisterAll(true)
 		// This ensures all background goroutines wake up and exit when the test finishes.
 		defer synctestutils.TearDown(cancel)
 
@@ -57,6 +56,6 @@ func TestMetrics_ScaledUpNodes(t *testing.T) {
 		err = synctestutils.RunOnceAfter(t, autoscaler, unneededTime)
 		assert.NoError(t, err)
 
-		testutil.AssertVectorCount(t, "cluster_autoscaler_scaled_up_nodes_total", map[string]string{}, 2)
+		ca_test.AssertVectorCount(t, infra.MetricsRegistry, "cluster_autoscaler_scaled_up_nodes_total", map[string]string{}, 2)
 	})
 }

@@ -18,6 +18,10 @@ package builder
 
 import (
 	"context"
+	"testing"
+	"testing/synctest"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -25,14 +29,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/loop"
+	ca_metrics "k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
+	"k8s.io/component-base/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
-	"testing"
-	"testing/synctest"
-	"time"
 )
 
 func TestAutoscalerBuilderNoError(t *testing.T) {
@@ -55,6 +58,8 @@ func TestAutoscalerBuilderNoError(t *testing.T) {
 			HealthProbeBindAddress: "0",
 		})
 
+		metricsRegistry := ca_metrics.NewCaMetricsWithRegistry(metrics.NewKubeRegistry())
+
 		autoscaler, trigger, err := New(options).
 			WithDebuggingSnapshotter(debuggingSnapshotter).
 			WithManager(mgr).
@@ -62,6 +67,7 @@ func TestAutoscalerBuilderNoError(t *testing.T) {
 			WithInformerFactory(informers.NewSharedInformerFactory(kubeClient, 0)).
 			WithCloudProvider(test.NewCloudProvider(nil)).
 			WithPodObserver(&loop.UnschedulablePodObserver{}).
+			WithMetricsRegistry(metricsRegistry).
 			Build(ctx)
 
 		assert.NoError(t, err)

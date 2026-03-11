@@ -103,7 +103,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	buildPodEquivalenceGroupsStart := time.Now()
 	podEquivalenceGroups := equivalence.BuildPodGroups(unschedulablePods)
-	metrics.UpdateDurationFromStart(metrics.BuildPodEquivalenceGroups, buildPodEquivalenceGroupsStart)
+	o.autoscalingCtx.MetricsRegistry.UpdateDurationFromStart(metrics.BuildPodEquivalenceGroups, buildPodEquivalenceGroupsStart)
 
 	upcomingNodes, aErr := o.UpcomingNodes(nodeInfos)
 	if aErr != nil {
@@ -494,7 +494,7 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 		estimator.NewEstimationContext(o.autoscalingCtx.MaxNodesTotal, option.SimilarNodeGroups, currentNodeCount),
 	)
 	option.NodeCount, option.Pods = expansionEstimator.Estimate(podGroups, nodeInfo, nodeGroup)
-	metrics.UpdateDurationFromStart(metrics.Estimate, estimateStart)
+	o.autoscalingCtx.MetricsRegistry.UpdateDurationFromStart(metrics.Estimate, estimateStart)
 
 	autoscalingOptions, err := nodeGroup.GetOptions(o.autoscalingCtx.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
@@ -691,9 +691,9 @@ func (o *ScaleUpOrchestrator) IsNodeGroupResourceExceeded(tracker *resourcequota
 				resources.Insert(resource)
 				switch resource {
 				case cloudprovider.ResourceNameCores:
-					metrics.RegisterSkippedScaleUpCPU()
+					o.autoscalingCtx.MetricsRegistry.RegisterSkippedScaleUpCPU()
 				case cloudprovider.ResourceNameMemory:
-					metrics.RegisterSkippedScaleUpMemory()
+					o.autoscalingCtx.MetricsRegistry.RegisterSkippedScaleUpMemory()
 				default:
 					continue
 				}
