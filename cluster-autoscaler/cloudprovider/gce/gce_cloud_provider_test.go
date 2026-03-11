@@ -55,7 +55,11 @@ func (m *gceManagerMock) DeleteInstances(instances []GceRef) error {
 
 func (m *gceManagerMock) GetMigForInstance(instance GceRef) (Mig, error) {
 	args := m.Called(instance)
-	return args.Get(0).(*gceMig), args.Error(1)
+	v := args.Get(0)
+	if v == nil {
+		return nil, args.Error(1)
+	}
+	return v.(*gceMig), args.Error(1)
 }
 
 func (m *gceManagerMock) GetMigNodes(mig Mig) ([]GceInstance, error) {
@@ -458,6 +462,86 @@ func TestGceRefFromProviderId(t *testing.T) {
 	ref, err := GceRefFromProviderId("gce://project1/us-central1-b/name1")
 	assert.NoError(t, err)
 	assert.Equal(t, GceRef{"project1", "us-central1-b", "name1"}, ref)
+}
+
+func TestHasInstance(t *testing.T) {
+	migRef := GceRef{Project: "project1", Zone: "us-central1-b", Name: "mig-0"}
+	mig := &gceMig{gceRef: migRef}
+
+	nodeRef := GceRef{Project: "project1", Zone: "us-central1-b", Name: "mig-0-0001"}
+	nodeProviderID := "gce://project1/us-central1-b/mig-0-0001"
+
+	for _, tc := range []struct {
+		name         string
+		node         func() *apiv1.Node
+		setupMocks   func(*gceManagerMock)
+		expectExists bool
+		expectErr    bool
+	}{
+		{
+			name: "invalid provider ID returns error",
+			node: func() *apiv1.Node {
+				n := BuildTestNode("node1", 1000, 1000)
+				n.Spec.ProviderID = "not-a-valid-gce-provider-id"
+				return n
+			},
+			setupMocks: func(m *gceManagerMock) {},
+			expectErr:  true,
+		},
+		{
+			name: "failure to get mig for instance returns error",
+			node: func() *apiv1.Node {
+				n := BuildTestNode("mig-0-0001", 1000, 1000)
+				n.Spec.ProviderID = nodeProviderID
+				return n
+			},
+			setupMocks: func(m *gceManagerMock) {
+				m.On("GetMigForInstance", nodeRef).Return(nil, fmt.Errorf("lookup error")).Once()
+			},
+			expectErr: true,
+		},
+		{
+			// Instance belongs to either an unregistered MIG, or one that is not in scope of the provider
+			// (e.g., a node from a non-auto-discovered MIG).
+			name: "instance in unregistered MIG returns error",
+			node: func() *apiv1.Node {
+				n := BuildTestNode("mig-x-0001", 1000, 1000)
+				n.Spec.ProviderID = nodeProviderID
+				return n
+			},
+			setupMocks: func(m *gceManagerMock) {
+				m.On("GetMigForInstance", nodeRef).Return(nil, nil).Once()
+			},
+			expectErr: true,
+		},
+		{
+			name: "instance in registered MIG returns true",
+			node: func() *apiv1.Node {
+				n := BuildTestNode("mig-0-0001", 1000, 1000)
+				n.Spec.ProviderID = nodeProviderID
+				return n
+			},
+			setupMocks: func(m *gceManagerMock) {
+				m.On("GetMigForInstance", nodeRef).Return(mig, nil).Once()
+			},
+			expectExists: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			gceManagerMock := &gceManagerMock{}
+			tc.setupMocks(gceManagerMock)
+			defer mock.AssertExpectationsForObjects(t, gceManagerMock)
+			gce := &GceCloudProvider{gceManager: gceManagerMock}
+
+			exists, err := gce.HasInstance(tc.node())
+			if tc.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectExists, exists)
+			}
+		})
+	}
 }
 
 func createString(s string) *string {
