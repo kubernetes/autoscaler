@@ -64,6 +64,13 @@ const (
 	// optimization strategies to be applied to different workloads within the
 	// same cluster.
 	PerVPAConfig featuregate.Feature = "PerVPAConfig"
+
+	// alpha: v1.7.0
+	// components: admission-controller, updater
+
+	// InPlace enables the InPlace update mode to be used.
+	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
+	InPlace featuregate.Feature = "InPlace"
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.

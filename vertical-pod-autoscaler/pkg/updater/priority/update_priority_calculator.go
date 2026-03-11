@@ -24,6 +24,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 
@@ -71,11 +72,28 @@ func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
-func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time) {
+// The caller must hold the lock protecting the calculator.
+func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources) {
 	processedRecommendation, _, err := calc.recommendationProcessor.Apply(calc.vpa, pod)
 	if err != nil {
 		klog.V(2).ErrorS(err, "Cannot process recommendation for pod", "pod", klog.KObj(pod))
 		return
+	}
+
+	// Check if this recommendation was already tried and failed as infeasible
+	// only for InPlace update mode
+	if vpa_api_util.GetUpdateMode(calc.vpa) == vpa_types.UpdateModeInPlace {
+		if lastAttempt, exists := infeasibleAttempts[pod.UID]; exists {
+			// Only retry if the new recommendation has at least one resource lower than the last attempt
+			if !hasLowerResourceRecommendation(lastAttempt, processedRecommendation) {
+				klog.V(4).InfoS("Skipping pod, recommendation not lower than last infeasible attempt",
+					"pod", klog.KObj(pod))
+				return
+			}
+			// Recommendation has lower resource, will retry
+			klog.V(4).InfoS("Recommendation changed since last infeasible attempt, will retry",
+				"pod", klog.KObj(pod))
+		}
 	}
 
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
@@ -221,6 +239,42 @@ func parseVpaObservedContainers(pod *corev1.Pod) (bool, sets.Set[string]) {
 		}
 	}
 	return hasObservedContainers, vpaContainerSet
+}
+
+// hasLowerResourceRecommendation checks if the new recommendation has any resource
+// (CPU or Memory) that is lower than the last recommendation. This is used to determine
+// if a previously infeasible update attempt should be retried.
+func hasLowerResourceRecommendation(lastAttempt, newRecommendation *vpa_types.RecommendedPodResources) bool {
+	if lastAttempt == nil || newRecommendation == nil {
+		return false
+	}
+
+	// Create a map of container names to their recommendations for easier lookup
+	lastAttemptMap := make(map[string]*vpa_types.RecommendedContainerResources)
+	for i := range lastAttempt.ContainerRecommendations {
+		cr := &lastAttempt.ContainerRecommendations[i]
+		lastAttemptMap[cr.ContainerName] = cr
+	}
+
+	// Check if any resource in the new recommendation is lower than the last attempt
+	for i := range newRecommendation.ContainerRecommendations {
+		newCR := &newRecommendation.ContainerRecommendations[i]
+		lastCR, exists := lastAttemptMap[newCR.ContainerName]
+		if !exists {
+			continue
+		}
+
+		// Compare target resources
+		for resourceName, newTarget := range newCR.Target {
+			if lastTarget, exists := lastCR.Target[resourceName]; exists {
+				if newTarget.Cmp(lastTarget) < 0 {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 type prioritizedPod struct {

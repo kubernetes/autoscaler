@@ -124,6 +124,9 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 		if (*mode == vpa_types.UpdateModeInPlaceOrRecreate) && !features.Enabled(features.InPlaceOrRecreate) && isCreate {
 			return fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate)
 		}
+		if (*mode == vpa_types.UpdateModeInPlace) && !features.Enabled(features.InPlace) && isCreate {
+			return fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlace, features.InPlace)
+		}
 		if minReplicas := vpa.Spec.UpdatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
 			return fmt.Errorf("minReplicas has to be positive, got %v", *minReplicas)
 		}

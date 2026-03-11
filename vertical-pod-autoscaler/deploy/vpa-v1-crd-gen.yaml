@@ -596,6 +596,7 @@ spec:
                     - Initial
                     - Recreate
                     - InPlaceOrRecreate
+                    - InPlace
                     - Auto
                     type: string
                 type: object

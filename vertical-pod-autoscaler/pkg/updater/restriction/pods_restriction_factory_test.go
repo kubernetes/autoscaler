@@ -65,6 +65,14 @@ func getIPORVpa() *vpa_types.VerticalPodAutoscaler {
 	return vpa
 }
 
+func getIPVpa() *vpa_types.VerticalPodAutoscaler {
+	vpa := getBasicVpa()
+	vpa.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{
+		UpdateMode: ptr.To(vpa_types.UpdateModeInPlace),
+	}
+	return vpa
+}
+
 func TestDisruptReplicatedByController(t *testing.T) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 
@@ -526,7 +534,7 @@ func TestDisruptReplicatedByController(t *testing.T) {
 			updateMode := vpa_api_util.GetUpdateMode(testCase.vpa)
 			for i, p := range testCase.pods {
 				if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
-					assert.Equalf(t, p.canInPlaceUpdate, inplace.CanInPlaceUpdate(p.pod), "unexpected CanInPlaceUpdate result for pod-%v %#v", testCase.name, i, p.pod)
+					assert.Equalf(t, p.canInPlaceUpdate, inplace.CanInPlaceUpdate(p.pod, updateMode), "unexpected CanInPlaceUpdate result for pod-%v %#v", testCase.name, i, p.pod)
 				} else {
 					assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "unexpected CanEvict result for pod-%v %#v", i, p.pod)
 				}
@@ -804,5 +812,173 @@ func NewFakeCalculatorWithInPlacePatches() patch.Calculator {
 func GetFakeCalculatorsWithFakeResourceCalc() []patch.Calculator {
 	return []patch.Calculator{
 		NewFakeCalculatorWithInPlacePatches(),
+	}
+}
+
+func TestGetResizeStatus(t *testing.T) {
+	testCases := []struct {
+		name           string
+		pod            *corev1.Pod
+		expectedStatus utils.ResizeStatus
+	}{
+		{
+			name:           "pod not in-place updating - no resize status",
+			pod:            test.Pod().WithName("test-pod").Get(),
+			expectedStatus: utils.ResizeStatusNone,
+		},
+		{
+			name: "PodResizePending with Deferred reason",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:   corev1.PodResizePending,
+						Status: corev1.ConditionTrue,
+						Reason: corev1.PodReasonDeferred,
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusDeferred,
+		},
+		{
+			name: "PodResizePending with Infeasible reason",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:    corev1.PodResizePending,
+						Status:  corev1.ConditionTrue,
+						Reason:  corev1.PodReasonInfeasible,
+						Message: "Insufficient cpu",
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusInfeasible,
+		},
+		{
+			name: "PodResizePending with unknown reason",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:   corev1.PodResizePending,
+						Status: corev1.ConditionTrue,
+						Reason: "SomeOtherReason",
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusUnknown,
+		},
+		{
+			name: "PodResizePending with empty reason",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:   corev1.PodResizePending,
+						Status: corev1.ConditionTrue,
+						Reason: "",
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusUnknown,
+		},
+		{
+			name: "PodResizeInProgress with empty reason and message",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:    corev1.PodResizeInProgress,
+						Status:  corev1.ConditionTrue,
+						Reason:  "",
+						Message: "",
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusInProgress,
+		},
+		{
+			name: "PodResizeInProgress with Error reason",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:    corev1.PodResizeInProgress,
+						Status:  corev1.ConditionTrue,
+						Reason:  corev1.PodReasonError,
+						Message: "Failed to resize container",
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusError,
+		},
+		{
+			name: "PodResizeInProgress with unknown reason",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:    corev1.PodResizeInProgress,
+						Status:  corev1.ConditionTrue,
+						Reason:  "SomeOtherReason",
+						Message: "some message",
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusUnknown,
+		},
+		{
+			name: "PodResizeInProgress with message but no reason",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:    corev1.PodResizeInProgress,
+						Status:  corev1.ConditionTrue,
+						Reason:  "",
+						Message: "some message",
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusUnknown,
+		},
+		{
+			name: "pod with unrelated condition only",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:   corev1.PodReady,
+						Status: corev1.ConditionTrue,
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusNone,
+		},
+		{
+			name: "both PodResizePending and PodResizeInProgress - PodResizePending takes precedence",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:   corev1.PodResizePending,
+						Status: corev1.ConditionTrue,
+						Reason: corev1.PodReasonDeferred,
+					},
+					{
+						Type:   corev1.PodResizeInProgress,
+						Status: corev1.ConditionTrue,
+						Reason: "",
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusDeferred,
+		},
+		{
+			name: "PodResizePending Infeasible takes precedence over PodResizeInProgress Error",
+			pod: test.Pod().WithName("test-pod").
+				WithPodConditions([]corev1.PodCondition{
+					{
+						Type:   corev1.PodResizePending,
+						Status: corev1.ConditionTrue,
+						Reason: corev1.PodReasonInfeasible,
+					},
+					{
+						Type:    corev1.PodResizeInProgress,
+						Status:  corev1.ConditionTrue,
+						Reason:  corev1.PodReasonError,
+						Message: "Error message",
+					},
+				}).Get(),
+			expectedStatus: utils.ResizeStatusInfeasible,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := getResizeStatus(tc.pod)
+			assert.Equal(t, tc.expectedStatus, result)
+		})
 	}
 }
