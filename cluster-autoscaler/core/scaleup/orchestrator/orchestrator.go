@@ -260,7 +260,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	}
 
 	// Execute scale up.
-	klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
+	klog.V(1).Infof("Final scale-up plan: %v %v", totalCapacity, scaleUpInfos)
 	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, now, allOrNothing)
 	if aErr != nil {
 		return status.UpdateScaleUpError(
