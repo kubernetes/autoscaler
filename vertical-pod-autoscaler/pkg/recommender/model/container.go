@@ -141,6 +141,11 @@ func (container *ContainerState) GetOOMMinBumpUp() float64 {
 	return container.aggregator.GetOOMMinBumpUp()
 }
 
+// GetMemoryAggregationInterval returns
+func (container *ContainerState) GetMemoryAggregationInterval() time.Duration {
+	return container.aggregator.GetMemoryAggregationInterval()
+}
+
 func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, isOOM bool) bool {
 	ts := sample.MeasureStart
 	// We always process OOM samples.
@@ -172,7 +177,7 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 		}
 	} else {
 		// Shift the memory aggregation window to the next interval.
-		memoryAggregationInterval := GetAggregationsConfig().MemoryAggregationInterval
+		memoryAggregationInterval := container.GetMemoryAggregationInterval()
 		shift := ts.Sub(container.WindowEnd).Truncate(memoryAggregationInterval) + memoryAggregationInterval
 		container.WindowEnd = container.WindowEnd.Add(shift)
 		container.memoryPeak = 0
@@ -199,9 +204,7 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 // RecordOOM adds info regarding OOM event in the model as an artificial memory sample.
 func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory ResourceAmount) error {
 	// Discard old OOM
-	config := GetAggregationsConfig()
-	// TODO(omerap12): remove MemoryAggregationInterval to per-container configuration as well
-	if timestamp.Before(container.WindowEnd.Add(-1 * config.MemoryAggregationInterval)) {
+	if timestamp.Before(container.WindowEnd.Add(-1 * container.GetMemoryAggregationInterval())) {
 		return fmt.Errorf("OOM event will be discarded - it is too old (%v)", timestamp)
 	}
 	// Get max of the request and the recent usage-based memory peak.
