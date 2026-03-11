@@ -25,6 +25,19 @@ import (
 	"k8s.io/klog/v2"
 )
 
+// NormalizeArch converts Azure CpuArchitectureType values (e.g. "x64", "Arm64")
+// to Kubernetes-standard architecture labels (e.g. "amd64", "arm64").
+func NormalizeArch(azureArch string) string {
+	switch strings.ToLower(azureArch) {
+	case "x64":
+		return "amd64"
+	case "arm64":
+		return "arm64"
+	default:
+		return azureArch
+	}
+}
+
 // GetInstanceTypeStatically uses static list of vmss generated at azure_instance_types.go to fetch vmss instance information.
 // It is declared as a variable for testing purpose.
 var GetInstanceTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
@@ -95,6 +108,15 @@ var GetInstanceTypeDynamically = func(template NodeTemplate, azCache *azureCache
 		return instanceType, err
 	}
 	instanceType.MemoryMb = int64(memoryGb) * 1024
+
+	arch, err := sku.GetCPUArchitectureType()
+	if err != nil {
+		klog.V(1).Infof("Failed to parse architecture from sku %q %v", template.SkuName, err)
+		// Architecture is not critical — default to amd64 if unavailable
+		instanceType.Arch = "amd64"
+	} else {
+		instanceType.Arch = NormalizeArch(arch)
+	}
 
 	return instanceType, nil
 }

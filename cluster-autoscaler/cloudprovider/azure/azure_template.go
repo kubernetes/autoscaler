@@ -106,6 +106,7 @@ type VMSSNodeTemplate struct {
 type NodeTemplate struct {
 	SkuName            string
 	InstanceOS         string
+	InstanceArch       string
 	Location           string
 	Zones              []string
 	VMPoolNodeTemplate *VMPoolNodeTemplate
@@ -232,6 +233,7 @@ func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager 
 	}
 
 	var vcpu, gpuCount, memoryMb int64
+	var arch string
 
 	// Fetching SKU information from SKU API if enableDynamicInstanceList is true.
 	var dynamicErr error
@@ -243,6 +245,7 @@ func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager 
 			vcpu = instanceTypeDynamic.VCPU
 			gpuCount = instanceTypeDynamic.GPU
 			memoryMb = instanceTypeDynamic.MemoryMb
+			arch = instanceTypeDynamic.Arch
 		} else {
 			klog.Errorf("Dynamically fetching of instance information from SKU api failed with error: %v", dynamicErr)
 		}
@@ -255,12 +258,15 @@ func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager 
 			vcpu = instanceTypeStatic.VCPU
 			gpuCount = instanceTypeStatic.GPU
 			memoryMb = instanceTypeStatic.MemoryMb
+			arch = instanceTypeStatic.Arch
 		} else {
 			// return error if neither of the workflows results with vmss data.
 			klog.V(1).Infof("Instance type %q not supported, err: %v", template.SkuName, staticErr)
 			return nil, staticErr
 		}
 	}
+
+	template.InstanceArch = arch
 
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vcpu, resource.DecimalSI)
@@ -400,8 +406,12 @@ func processVMSSTemplate(template NodeTemplate, nodeName string, node apiv1.Node
 func buildGenericLabels(template NodeTemplate, nodeName string) map[string]string {
 	result := make(map[string]string)
 
-	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
-	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+	arch := template.InstanceArch
+	if arch == "" {
+		arch = cloudprovider.DefaultArch
+	}
+	result[kubeletapis.LabelArch] = arch
+	result[apiv1.LabelArchStable] = arch
 
 	result[kubeletapis.LabelOS] = template.InstanceOS
 	result[apiv1.LabelOSStable] = template.InstanceOS

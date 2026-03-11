@@ -52,13 +52,14 @@ limitations under the License.
 
 package azure
 
-// InstanceType is the sepc of Azure instance
+// InstanceType is the spec of Azure instance
 type InstanceType struct {
 	InstanceType string
 	SkuFamily    string
 	VCPU         int64
 	MemoryMb     int64
 	GPU          int64
+	Arch         string
 }
 
 // InstanceTypes is a map of azure resources
@@ -70,6 +71,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:         {{ .VCPU }},
 		MemoryMb:     {{ .MemoryMb }},
 		GPU:          {{ .GPU }},
+		Arch:         "{{ .Arch }}",
 	},
 {{- end }}
 }
@@ -87,8 +89,12 @@ type RawInstanceType struct {
 	Capabilities []InstanceCapabilities
 }
 
-func getAllAzureVirtualMachineTypes() (result map[string]*azure.InstanceType, err error) {
-	cmd := exec.Command("az", "vm", "list-skus", "-o", "json")
+func getAllAzureVirtualMachineTypes(location string) (result map[string]*azure.InstanceType, err error) {
+	args := []string{"vm", "list-skus", "-o", "json"}
+	if location != "" {
+		args = append(args, "-l", location)
+	}
+	cmd := exec.Command("az", args...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -135,6 +141,8 @@ func getAllAzureVirtualMachineTypes() (result map[string]*azure.InstanceType, er
 					if err != nil {
 						return nil, err
 					}
+				case "CpuArchitectureType":
+					virtualMachine.Arch = normalizeArch(capability.Value)
 				}
 			}
 			virtualMachines[virtualMachine.InstanceType] = &virtualMachine
@@ -144,8 +152,25 @@ func getAllAzureVirtualMachineTypes() (result map[string]*azure.InstanceType, er
 	return virtualMachines, err
 }
 
+// normalizeArch converts Azure CpuArchitectureType values (e.g. "x64", "Arm64")
+// to Kubernetes-standard architecture labels (e.g. "amd64", "arm64").
+func normalizeArch(azureArch string) string {
+	switch strings.ToLower(azureArch) {
+	case "x64":
+		return "amd64"
+	case "arm64":
+		return "arm64"
+	default:
+		return azureArch
+	}
+}
+
 func main() {
-	instanceTypes, err := getAllAzureVirtualMachineTypes()
+	location := ""
+	if len(os.Args) > 1 {
+		location = os.Args[1]
+	}
+	instanceTypes, err := getAllAzureVirtualMachineTypes(location)
 	if err != nil {
 		klog.Fatal(err)
 	}
