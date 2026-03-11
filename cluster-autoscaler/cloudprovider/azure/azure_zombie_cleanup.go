@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
@@ -87,11 +87,10 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 		}
 
 		// Get all VMs in this VMSS with instance view
-		vms, err := m.azClient.virtualMachineScaleSetVMsClient.List(
+		vms, err := m.azClient.virtualMachineScaleSetVMsClient.ListVMInstanceView(
 			ctx,
 			m.config.ResourceGroup,
 			vmssName,
-			string(compute.InstanceViewTypesInstanceView),
 		)
 		if err != nil {
 			klog.Warningf("Failed to list VMs for VMSS %s: %v", vmssName, err)
@@ -182,25 +181,27 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 
 	// Batch delete zombies per VMSS for efficiency
 	for vmssName, zombies := range unregisteredZombies {
-		instanceIDs := make([]string, len(zombies))
+		instanceIDs := make([]*string, len(zombies))
 		for i, zombie := range zombies {
-			instanceIDs[i] = zombie.instanceID
+			instanceIDs[i] = ptr.To(zombie.instanceID)
 		}
 
-		vmInstanceIDs := compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
-			InstanceIds: &instanceIDs,
+		vmInstanceIDs := armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{
+			InstanceIDs: instanceIDs,
 		}
 
 		klog.V(2).Infof("Deleting %d unregistered zombie instance(s) from VMSS %s: %v",
 			len(instanceIDs), vmssName, instanceIDs)
 
 		// Delete VMSS instances
-		_, err := m.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(
+		_, err := m.azClient.vmssClientForDelete.BeginDeleteInstances(
 			ctx,
 			m.config.ResourceGroup,
 			vmssName,
 			vmInstanceIDs,
-			false, // forceDelete
+			&armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
+				ForceDeletion: ptr.To(false),
+			},
 		)
 
 		if err != nil {
@@ -220,16 +221,31 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 // evaluateZombieStatus evaluates a VMSS VM to determine if it's a zombie
 // Returns (isZombie bool, hasK8sNode bool, reason string)
 func (m *AzureManager) evaluateZombieStatus(
-	vm compute.VirtualMachineScaleSetVM,
+	vm *armcompute.VirtualMachineScaleSetVM,
 	k8sNodeMap map[string]*apiv1.Node,
 	currentTime time.Time,
 	minAgeDuration time.Duration,
 ) (bool, bool, string) {
-	provisioningState := ptr.Deref(vm.ProvisioningState, "")
+	provisioningState := ""
+	if vm.Properties != nil {
+		provisioningState = ptr.Deref(vm.Properties.ProvisioningState, "")
+	}
 	powerState := ""
 	var vmssAge *time.Duration
-	if vm.InstanceView != nil && vm.InstanceView.Statuses != nil {
-		for _, status := range *vm.InstanceView.Statuses {
+
+	// TODO: Use vm.Properties.TimeCreated for more accurate VM age detection
+	// TimeCreated is populated within ~2 seconds of VM creation, whereas status.Time can take 1-1.5 minutes.
+	// Until migrated, we use status.Time with a conservative MinAge threshold (default 5 minutes) to avoid
+	// accidentally deleting newly created VMs during the window where status.Time hasn't populated yet.
+	//
+	// The TimeCreated field is available in Track 2 SDK armcompute v5.4.0+ (Dec 2023):
+	// - CHANGELOG: https://github.com/Azure/azure-sdk-for-go/blob/d36285c8ffb8f7978c1bff5fa08974019ebab65c/sdk/resourcemanager/compute/armcompute/CHANGELOG.md#L386
+	// - VirtualMachineScaleSetVMProperties: https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6#VirtualMachineScaleSetVMProperties
+	//
+	// Current approach uses InstanceView.Statuses[].Time:
+	// - Azure REST API: https://learn.microsoft.com/en-us/rest/api/compute/virtual-machine-scale-set-vms/get?view=rest-compute-2023-09-01
+	if vm.Properties != nil && vm.Properties.InstanceView != nil && vm.Properties.InstanceView.Statuses != nil {
+		for _, status := range vm.Properties.InstanceView.Statuses {
 			code := ptr.Deref(status.Code, "")
 
 			if strings.HasPrefix(code, "PowerState/") {
@@ -237,7 +253,7 @@ func (m *AzureManager) evaluateZombieStatus(
 			}
 
 			if vmssAge == nil && status.Time != nil {
-				age := currentTime.Sub(status.Time.Time)
+				age := currentTime.Sub(*status.Time)
 				vmssAge = &age
 			}
 		}
@@ -246,13 +262,13 @@ func (m *AzureManager) evaluateZombieStatus(
 	// Check VM extension status
 	extensionsInstalled := false
 	extensionsFailed := false
-	if vm.InstanceView != nil && vm.InstanceView.Extensions != nil && len(*vm.InstanceView.Extensions) > 0 {
+	if vm.Properties != nil && vm.Properties.InstanceView != nil && vm.Properties.InstanceView.Extensions != nil && len(vm.Properties.InstanceView.Extensions) > 0 {
 		extensionsInstalled = true
-		for _, ext := range *vm.InstanceView.Extensions {
+		for _, ext := range vm.Properties.InstanceView.Extensions {
 			if ext.Statuses != nil {
-				for _, status := range *ext.Statuses {
+				for _, status := range ext.Statuses {
 					code := ptr.Deref(status.Code, "")
-					if status.Level == compute.Error || code == "ProvisioningState/failed" {
+					if status.Level != nil && *status.Level == armcompute.StatusLevelTypesError || code == "ProvisioningState/failed" {
 						extensionsFailed = true
 						break
 					}
