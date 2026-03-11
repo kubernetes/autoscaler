@@ -30,7 +30,7 @@ import (
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 var (
@@ -506,24 +506,24 @@ func TestSnapshotWrapSchedulerNodeInfo(t *testing.T) {
 	missingClaimPod := test.BuildTestPod("missingClaimPod", 1, 1, test.WithResourceClaim("ref1", "missing-claim-abc", "missing-claim"))
 	noSlicesNode := test.BuildTestNode("noSlicesNode", 1000, 1000)
 
-	noDraNodeInfo := schedulerframework.NewNodeInfo(noClaimsPod1, noClaimsPod2)
+	noDraNodeInfo := schedulerimpl.NewNodeInfo(noClaimsPod1, noClaimsPod2)
 	noDraNodeInfo.SetNode(noSlicesNode)
 
-	resourceSlicesNodeInfo := schedulerframework.NewNodeInfo(noClaimsPod1, noClaimsPod2)
+	resourceSlicesNodeInfo := schedulerimpl.NewNodeInfo(noClaimsPod1, noClaimsPod2)
 	resourceSlicesNodeInfo.SetNode(node1)
 
-	resourceClaimsNodeInfo := schedulerframework.NewNodeInfo(pod1, pod2, noClaimsPod1, noClaimsPod2)
+	resourceClaimsNodeInfo := schedulerimpl.NewNodeInfo(pod1, pod2, noClaimsPod1, noClaimsPod2)
 	resourceClaimsNodeInfo.SetNode(noSlicesNode)
 
-	fullDraNodeInfo := schedulerframework.NewNodeInfo(pod1, pod2, noClaimsPod1, noClaimsPod2)
+	fullDraNodeInfo := schedulerimpl.NewNodeInfo(pod1, pod2, noClaimsPod1, noClaimsPod2)
 	fullDraNodeInfo.SetNode(node1)
 
-	missingClaimNodeInfo := schedulerframework.NewNodeInfo(pod1, pod2, noClaimsPod1, noClaimsPod2, missingClaimPod)
+	missingClaimNodeInfo := schedulerimpl.NewNodeInfo(pod1, pod2, noClaimsPod1, noClaimsPod2, missingClaimPod)
 	missingClaimNodeInfo.SetNode(node1)
 
 	for _, tc := range []struct {
 		testName      string
-		schedNodeInfo *schedulerframework.NodeInfo
+		schedNodeInfo *schedulerimpl.NodeInfo
 		wantNodeInfo  *framework.NodeInfo
 		wantErr       error
 	}{
@@ -579,8 +579,8 @@ func TestSnapshotWrapSchedulerNodeInfo(t *testing.T) {
 			if diff := cmp.Diff(tc.wantErr, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("Snapshot.WrapSchedulerNodeInfo(): unexpected error (-want +got): %s", diff)
 			}
-			cmpOpts := []cmp.Option{cmpopts.EquateEmpty(), cmp.AllowUnexported(framework.NodeInfo{}, schedulerframework.NodeInfo{}),
-				cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
+			cmpOpts := []cmp.Option{cmpopts.EquateEmpty(), cmp.AllowUnexported(framework.NodeInfo{}, schedulerimpl.NodeInfo{}),
+				cmpopts.IgnoreUnexported(schedulerimpl.PodInfo{}),
 				test.IgnoreObjectOrder[*resourceapi.ResourceClaim](), test.IgnoreObjectOrder[*resourceapi.ResourceSlice]()}
 
 			if diff := cmp.Diff(tc.wantNodeInfo, nodeInfo, cmpOpts...); diff != "" {

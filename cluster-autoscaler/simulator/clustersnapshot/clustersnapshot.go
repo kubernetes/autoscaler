@@ -24,13 +24,30 @@ import (
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	fwk "k8s.io/kube-scheduler/framework"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
+
+// Forkable is an interface for objects that can be forked, reverted and committed.
+type Forkable interface {
+	// Fork creates a fork of the object state. All modifications can later be reverted to moment of forking via Revert().
+	// Use WithForkedSnapshot() helper function instead if possible.
+	Fork()
+	// Revert reverts the object state to moment of forking.
+	Revert()
+	// Commit commits changes done after forking.
+	Commit() error
+}
 
 // ClusterSnapshot is abstraction of cluster state used for predicate simulations.
 // It exposes mutation methods and can be viewed as scheduler's SharedLister.
 type ClusterSnapshot interface {
+	framework.SharedLister
 	ClusterSnapshotStore
+	Forkable
+
+	// SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
+	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
+	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error
 
 	// AddNodeInfo adds the given NodeInfo to the snapshot without checking scheduler predicates. The Node and the Pods are added,
 	// as well as any DRA objects passed along them.
@@ -67,6 +84,12 @@ type ClusterSnapshot interface {
 	// checked against SchedulingInternalError to distinguish failing predicates from unexpected errors. Doesn't mutate the snapshot.
 	CheckPredicates(pod *apiv1.Pod, nodeName string) SchedulingError
 
+	// DraSnapshot returns an interface that allows accessing and modifying the DRA objects in the snapshot.
+	DraSnapshot() *drasnapshot.Snapshot
+
+	// CsiSnapshot returns an interface that allows accessing and modifying the CSINode objects in the snapshot.
+	CsiSnapshot() *csisnapshot.Snapshot
+
 	// TODO(DRA): Move unschedulable Pods inside ClusterSnapshot (since their DRA objects are already here), refactor PodListProcessor.
 }
 
@@ -74,11 +97,8 @@ type ClusterSnapshot interface {
 // without going through scheduler predicates. ClusterSnapshotStore shouldn't be directly used outside the clustersnapshot pkg, its methods
 // should be accessed via ClusterSnapshot.
 type ClusterSnapshotStore interface {
-	framework.SharedLister
-
-	// SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
-	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
-	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error
+	schedulerinterface.SharedLister
+	Forkable
 
 	// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot without checking scheduler predicates.
 	ForceAddPod(pod *apiv1.Pod, nodeName string) error
@@ -88,24 +108,13 @@ type ClusterSnapshotStore interface {
 	// AddSchedulerNodeInfo adds the given schedulerframework.NodeInfo to the snapshot without checking scheduler predicates, and
 	// without taking DRA objects into account. This shouldn't be used outside the clustersnapshot pkg, use ClusterSnapshot.AddNodeInfo()
 	// instead.
-	AddSchedulerNodeInfo(nodeInfo fwk.NodeInfo) error
+	AddSchedulerNodeInfo(nodeInfo schedulerinterface.NodeInfo) error
 	// RemoveSchedulerNodeInfo removes the given schedulerframework.NodeInfo from the snapshot without taking DRA objects into account. This shouldn't
 	// be used outside the clustersnapshot pkg, use ClusterSnapshot.RemoveNodeInfo() instead.
 	RemoveSchedulerNodeInfo(nodeName string) error
 
-	// DraSnapshot returns an interface that allows accessing and modifying the DRA objects in the snapshot.
-	DraSnapshot() *drasnapshot.Snapshot
-
-	// CsiSnapshot returns an interface that allows accessing and modifying the CSINode objects in the snapshot.
-	CsiSnapshot() *csisnapshot.Snapshot
-
-	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
-	// Use WithForkedSnapshot() helper function instead if possible.
-	Fork()
-	// Revert reverts snapshot state to moment of forking.
-	Revert()
-	// Commit commits changes done after forking.
-	Commit() error
+	// Clear resets the snapshot to an empty, unforked state.
+	Clear()
 }
 
 // ErrNodeNotFound means that a node wasn't found in the snapshot.
