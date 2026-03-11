@@ -63,6 +63,13 @@ rules:
     resourceNames: ["cluster-autoscaler"]
     resources: ["leases"]
     verbs: ["get", "update"]
+  - apiGroups: ["resource.k8s.io"]
+    resources:
+      - resourceclaims
+      - resourceclaimtemplates
+      - resourceslices
+      - deviceclasses
+    verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -146,8 +153,11 @@ spec:
           type: RuntimeDefault
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.1
+        - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.35.0
           name: cluster-autoscaler
+          env:
+            - name: AWS_REGION
+              value: eu-west-1 # Change this section according to your AWS region
           resources:
             limits:
               cpu: 100m
