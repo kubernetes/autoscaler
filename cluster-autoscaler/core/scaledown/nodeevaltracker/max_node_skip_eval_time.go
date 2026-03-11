@@ -18,8 +18,6 @@ package nodeevaltracker
 
 import (
 	"time"
-
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 )
 
 type metricObserver interface {
@@ -37,8 +35,8 @@ type MaxNodeSkipEvalTime struct {
 }
 
 // NewMaxNodeSkipEvalTime returns LongestNodeScaleDownEvalTime with lastEvalTime set to currentTime
-func NewMaxNodeSkipEvalTime(currentTime time.Time) *MaxNodeSkipEvalTime {
-	return &MaxNodeSkipEvalTime{lastEvalTime: currentTime, metrics: metrics.DefaultMetrics}
+func NewMaxNodeSkipEvalTime(currentTime time.Time, metrics metricObserver) *MaxNodeSkipEvalTime {
+	return &MaxNodeSkipEvalTime{lastEvalTime: currentTime, metrics: metrics}
 }
 
 // Retrieves the time of the last evaluation of a node.

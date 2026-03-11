@@ -23,7 +23,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog/v2"
 )
@@ -69,8 +68,8 @@ func OnEmptyCluster(autoscalingCtx *ca_context.AutoscalingContext, status string
 	klog.Warning(status)
 	autoscalingCtx.ProcessorCallbacks.ResetUnneededNodes()
 	// updates metrics related to empty cluster's state.
-	metrics.UpdateClusterSafeToAutoscale(false)
-	metrics.UpdateNodesCount(0, 0, 0, 0, 0)
+	autoscalingCtx.MetricsRegistry.UpdateClusterSafeToAutoscale(false)
+	autoscalingCtx.MetricsRegistry.UpdateNodesCount(0, 0, 0, 0, 0)
 	if autoscalingCtx.WriteStatusConfigMap {
 		utils.WriteStatusConfigMap(autoscalingCtx.ClientSet, autoscalingCtx.ConfigNamespace, api.ClusterAutoscalerStatus{AutoscalerStatus: api.ClusterAutoscalerInitializing, Message: status}, autoscalingCtx.LogRecorder, autoscalingCtx.StatusConfigMapName, time.Now())
 	}

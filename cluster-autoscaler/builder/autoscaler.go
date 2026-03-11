@@ -75,6 +75,7 @@ type AutoscalerBuilder struct {
 	podObserver          *loop.UnschedulablePodObserver
 	cloudProvider        cloudprovider.CloudProvider
 	informerFactory      informers.SharedInformerFactory
+	metricsRegistry      metrics.CAMetricsRegistry
 }
 
 // New creates a builder with default options.
@@ -82,6 +83,12 @@ func New(opts config.AutoscalingOptions) *AutoscalerBuilder {
 	return &AutoscalerBuilder{
 		options: opts,
 	}
+}
+
+// WithMetricsRegistry allows injecting a metrics registry.
+func (b *AutoscalerBuilder) WithMetricsRegistry(metricsRegistry metrics.CAMetricsRegistry) *AutoscalerBuilder {
+	b.metricsRegistry = metricsRegistry
+	return b
 }
 
 // WithDebuggingSnapshotter allows injecting a debuggingSnapshotter.
@@ -158,6 +165,7 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 		ScaleUpOrchestrator:  orchestrator.New(),
 		KubeClientNew:        b.manager.GetClient(),
 		KubeCache:            b.manager.GetCache(),
+		MetricsRegistry:      b.metricsRegistry,
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
@@ -297,11 +305,11 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	}
 
 	// These metrics should be published only once.
-	metrics.UpdateCPULimitsCores(autoscalingOptions.MinCoresTotal, autoscalingOptions.MaxCoresTotal)
-	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
+	opts.MetricsRegistry.UpdateCPULimitsCores(autoscalingOptions.MinCoresTotal, autoscalingOptions.MaxCoresTotal)
+	opts.MetricsRegistry.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
 
 	// Initialize metrics.
-	metrics.InitMetrics()
+	opts.MetricsRegistry.InitMetrics()
 
 	// Set cloud provider option if injected.
 	if b.cloudProvider != nil {
@@ -331,7 +339,7 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	// A ProvisioningRequestPodsInjector is used as provisioningRequestProcessingTimesGetter here to obtain the last time a
 	// ProvisioningRequest was processed. This is because the ProvisioningRequestPodsInjector in addition to injecting pods
 	// also marks the ProvisioningRequest as accepted or failed.
-	trigger := loop.NewLoopTrigger(autoscaler, ProvisioningRequestInjector, b.podObserver, autoscalingOptions.ScanInterval)
+	trigger := loop.NewLoopTrigger(autoscaler, ProvisioningRequestInjector, b.podObserver, autoscalingOptions.ScanInterval, opts.MetricsRegistry)
 
 	return autoscaler, trigger, nil
 }
