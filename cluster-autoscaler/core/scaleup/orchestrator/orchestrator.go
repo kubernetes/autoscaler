@@ -493,7 +493,7 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 		o.autoscalingCtx.ClusterSnapshot,
 		estimator.NewEstimationContext(o.autoscalingCtx.MaxNodesTotal, option.SimilarNodeGroups, currentNodeCount),
 	)
-	option.NodeCount, option.Pods = expansionEstimator.Estimate(podGroups, nodeInfo, nodeGroup)
+	option.NodeCount, option.Pods = expansionEstimator.Estimate(podGroups, nodeInfo, nodeGroup, o.autoscalingCtx.MetricsRegistry)
 	o.autoscalingCtx.MetricsRegistry.UpdateDurationFromStart(metrics.Estimate, estimateStart)
 
 	autoscalingOptions, err := nodeGroup.GetOptions(o.autoscalingCtx.NodeGroupDefaults)

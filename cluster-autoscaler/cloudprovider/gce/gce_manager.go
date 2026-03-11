@@ -44,6 +44,7 @@ import (
 	"golang.org/x/oauth2/google"
 	gce "google.golang.org/api/compute/v1"
 	gcfg "gopkg.in/gcfg.v1"
+	ca_metrics "k8s.io/autoscaler/cluster-autoscaler/metrics"
 	klog "k8s.io/klog/v2"
 )
 
@@ -128,7 +129,7 @@ type gceManagerImpl struct {
 // CreateGceManager constructs GceManager object.
 func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
 	localSSDDiskSizeProvider localssdsize.LocalSSDSizeProvider,
-	regional, bulkGceMigInstancesListingEnabled bool, concurrentGceRefreshes int, userAgent, domainUrl string, migInstancesMinRefreshWaitTime time.Duration) (GceManager, error) {
+	regional, bulkGceMigInstancesListingEnabled bool, concurrentGceRefreshes int, userAgent, domainUrl string, migInstancesMinRefreshWaitTime time.Duration, metricsRegistry ca_metrics.CAMetricsRegistry) (GceManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
@@ -188,7 +189,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 		cache:                    cache,
 		GceService:               gceService,
 		migLister:                migLister,
-		migInfoProvider:          NewCachingMigInfoProvider(cache, migLister, gceService, projectId, concurrentGceRefreshes, migInstancesMinRefreshWaitTime, bulkGceMigInstancesListingEnabled, false),
+		migInfoProvider:          NewCachingMigInfoProvider(cache, migLister, gceService, projectId, concurrentGceRefreshes, migInstancesMinRefreshWaitTime, bulkGceMigInstancesListingEnabled, false, metricsRegistry),
 		location:                 location,
 		regional:                 regional,
 		projectId:                projectId,

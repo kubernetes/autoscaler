@@ -556,6 +556,8 @@ func TestExpiredScaleUp(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupTargetSize", mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupsCount", mock.Anything, mock.Anything).Return()
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
@@ -927,6 +929,8 @@ func TestScaleUpBackoff(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupTargetSize", mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupsCount", mock.Anything, mock.Anything).Return()
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 	clusterstate := newClusterStateRegistry(
 		provider, ClusterStateRegistryConfig{
@@ -1700,6 +1704,8 @@ func TestHandleInstanceCreationErrors(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupTargetSize", mock.Anything).Return()
+	mockMetrics.On("UpdateNodeGroupsCount", mock.Anything, mock.Anything).Return()
 	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
 	clusterstate.RegisterScaleUp(mockedNodeGroup, 1, now)
 
@@ -1720,4 +1726,12 @@ func (m *mockMetrics) RegisterFailedScaleUp(reason ca_metrics.FailedScaleUpReaso
 
 func (m *mockMetrics) RegisterFailedNodeCreations(reason ca_metrics.FailedScaleUpReason, nodesCount int) {
 	m.Called(reason, nodesCount)
+}
+
+func (m *mockMetrics) UpdateNodeGroupsCount(autoscaled, autoprovisioned int) {
+	m.Called(autoscaled, autoprovisioned)
+}
+
+func (m *mockMetrics) UpdateNodeGroupTargetSize(targetSizes map[string]int) {
+	m.Called(targetSizes)
 }

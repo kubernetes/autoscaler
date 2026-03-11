@@ -204,9 +204,9 @@ func (e Evictor) initiateEviction(autoscalingCtx *ca_context.AutoscalingContext,
 		case evictionResult := <-fullEvictionConfirmations:
 			evictionResults[evictionResult.Pod.Name] = evictionResult
 			if evictionResult.WasEvictionSuccessful() {
-				metrics.RegisterEvictions(1, metrics.PodEvictionSucceed)
+				autoscalingCtx.MetricsRegistry.RegisterEvictions(1, metrics.PodEvictionSucceed)
 			} else {
-				metrics.RegisterEvictions(1, metrics.PodEvictionFailed)
+				autoscalingCtx.MetricsRegistry.RegisterEvictions(1, metrics.PodEvictionFailed)
 			}
 		case <-bestEffortEvictionConfirmations:
 		}

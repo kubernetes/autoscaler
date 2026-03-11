@@ -138,7 +138,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 				default:
 					trigger.Wait(previousRun)
 					previousRun, lastRun = lastRun, time.Now()
-					loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+					loop.RunAutoscalerOnce(autoscaler, healthCheck, metricsRegistry, lastRun)
 				}
 			}
 		} else {
@@ -148,7 +148,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 					// TODO: handle graceful shutdown with context
 					return nil
 				case <-time.After(autoscalingOpts.ScanInterval):
-					loop.RunAutoscalerOnce(autoscaler, healthCheck, time.Now())
+					loop.RunAutoscalerOnce(autoscaler, healthCheck, metricsRegistry, time.Now())
 				}
 			}
 		}

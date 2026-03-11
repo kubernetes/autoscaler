@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -354,7 +355,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 	manager := &gceManagerImpl{
 		cache:                  cache,
 		migLister:              migLister,
-		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1, 0*time.Second, false, false),
+		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1, 0*time.Second, false, false, metrics.NewCaMetrics()),
 		GceService:             gceService,
 		projectId:              projectId,
 		regional:               regional,

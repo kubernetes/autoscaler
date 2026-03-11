@@ -26,6 +26,7 @@ import (
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	processor "k8s.io/autoscaler/cluster-autoscaler/processors/status"
 )
 
@@ -33,7 +34,7 @@ const testStepDuration = 1 * time.Minute
 
 func TestNodeLatencyTracker_Decorator(t *testing.T) {
 	mock := &mockStatusProcessor{}
-	tracker := NewNodeLatencyTracker(mock)
+	tracker := NewNodeLatencyTracker(&ca_context.AutoscalingContext{MetricsRegistry: metrics.NewCaMetrics()}, mock)
 
 	tracker.Process(&ca_context.AutoscalingContext{}, &status.ScaleDownStatus{})
 
@@ -154,7 +155,7 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			tracker := NewNodeLatencyTracker(processor.NewDefaultScaleDownStatusProcessor())
+			tracker := NewNodeLatencyTracker(&ca_context.AutoscalingContext{MetricsRegistry: metrics.NewCaMetrics()}, processor.NewDefaultScaleDownStatusProcessor())
 
 			for i, step := range tc.steps {
 				stepTime := baseTime.Add(testStepDuration)

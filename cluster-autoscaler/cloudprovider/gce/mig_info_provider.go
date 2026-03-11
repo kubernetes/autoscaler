@@ -80,6 +80,7 @@ type cachingMigInfoProvider struct {
 	timeProvider                      timeProvider
 	bulkGceMigInstancesListingEnabled bool
 	multiProjectCachingEnabled        bool
+	metricsRegistry                   metrics.CAMetricsRegistry
 }
 
 type realTime struct{}
@@ -89,7 +90,7 @@ func (r *realTime) Now() time.Time {
 }
 
 // NewCachingMigInfoProvider creates an instance of caching MigInfoProvider
-func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int, migInstancesMinRefreshWaitTime time.Duration, bulkGceMigInstancesListingEnabled bool, multiProjectCachingEnabled bool) MigInfoProvider {
+func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int, migInstancesMinRefreshWaitTime time.Duration, bulkGceMigInstancesListingEnabled bool, multiProjectCachingEnabled bool, metricsRegistry metrics.CAMetricsRegistry) MigInfoProvider {
 	return &cachingMigInfoProvider{
 		cache:                             cache,
 		migLister:                         migLister,
@@ -100,6 +101,7 @@ func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient A
 		timeProvider:                      &realTime{},
 		bulkGceMigInstancesListingEnabled: bulkGceMigInstancesListingEnabled,
 		multiProjectCachingEnabled:        multiProjectCachingEnabled,
+		metricsRegistry:                   metricsRegistry,
 	}
 }
 
@@ -205,7 +207,7 @@ func (c *cachingMigInfoProvider) listInstancesInAllZonesWithMigs() ([]GceInstanc
 	var allInstances []GceInstance
 	errors := make([]error, len(zones))
 	zoneInstances := make([][]GceInstance, len(zones))
-	defer metrics.UpdateDurationFromStart(metrics.BulkListAllGceInstances, time.Now())
+	defer c.metricsRegistry.UpdateDurationFromStart(metrics.BulkListAllGceInstances, time.Now())
 
 	workqueue.ParallelizeUntil(context.Background(), len(zones), len(zones), func(piece int) {
 		zoneInstances[piece], errors[piece] = c.gceClient.FetchAllInstances(c.projectId, zones[piece], "")
@@ -256,13 +258,13 @@ func (c *cachingMigInfoProvider) isMigCreatingOrDeletingInstances(mig Mig) bool 
 
 // updateMigInstancesCache updates the mig instances for each mig
 func (c *cachingMigInfoProvider) updateMigInstancesCache(migToInstances map[GceRef][]GceInstance) error {
-	defer metrics.UpdateDurationFromStart(metrics.BulkListMigInstances, time.Now())
+	defer c.metricsRegistry.UpdateDurationFromStart(metrics.BulkListMigInstances, time.Now())
 	inconsistentInstancesMigsCount := 0
 	defer func() {
 		if inconsistentInstancesMigsCount > 0 {
 			klog.Warningf("Inconsistent instances migs count: %v", inconsistentInstancesMigsCount)
 		}
-		metrics.UpdateInconsistentInstancesMigsCount(inconsistentInstancesMigsCount)
+		c.metricsRegistry.UpdateInconsistentInstancesMigsCount(inconsistentInstancesMigsCount)
 	}()
 	var errors []error
 	for _, mig := range c.migLister.GetMigs() {

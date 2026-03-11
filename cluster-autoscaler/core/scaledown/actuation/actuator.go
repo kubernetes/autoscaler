@@ -133,7 +133,9 @@ func (a *Actuator) StartForceDeletion(empty, drain []*apiv1.Node) (status.ScaleD
 func (a *Actuator) startDeletion(empty, drain []*apiv1.Node, force bool) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
 	a.nodeDeletionScheduler.ResetAndReportMetrics()
 	deletionStartTime := time.Now()
-	defer func() { metrics.UpdateDuration(metrics.ScaleDownNodeDeletion, time.Since(deletionStartTime)) }()
+	defer func() {
+		a.autoscalingCtx.MetricsRegistry.UpdateDuration(metrics.ScaleDownNodeDeletion, time.Since(deletionStartTime))
+	}()
 
 	scaledDownNodes := make([]*status.ScaleDownNode, 0)
 	emptyToDelete, drainToDelete := a.budgetProcessor.CropNodes(a.nodeDeletionTracker, empty, drain)

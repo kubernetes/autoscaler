@@ -2582,7 +2582,8 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 				MaxNodeProvisionTime: 45 * time.Minute,
 			},
 		},
-		CloudProvider: provider,
+		CloudProvider:   provider,
+		MetricsRegistry: ca_metrics.NewCaMetricsWithRegistry(metrics.NewKubeRegistry()),
 	}
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
@@ -2692,7 +2693,8 @@ func setupTestRemoveOldUnregisteredNodesAtomic(t *testing.T, now time.Time, allo
 				MaxNodeProvisionTime: time.Hour,
 			},
 		},
-		CloudProvider: provider,
+		CloudProvider:   provider,
+		MetricsRegistry: ca_metrics.NewCaMetricsWithRegistry(metrics.NewKubeRegistry()),
 	}
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,

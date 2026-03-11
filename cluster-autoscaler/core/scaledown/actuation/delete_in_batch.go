@@ -218,7 +218,7 @@ func RegisterAndRecordSuccessfulScaleDownEvent(autoscalingCtx *ca_context.Autosc
 	scaleStateNotifier.RegisterScaleDown(nodeGroup, node.Name, currentTime, expectedDeleteTime)
 	gpuConfig := autoscalingCtx.CloudProvider.GetNodeGpuConfig(node)
 	metricResourceName, metricGpuType := gpu.GetGpuInfoForMetrics(gpuConfig, autoscalingCtx.CloudProvider.GetAvailableGPUTypes(), node, nodeGroup)
-	metrics.RegisterScaleDown(1, metricResourceName, metricGpuType, nodeScaleDownReason(node, drain))
+	autoscalingCtx.MetricsRegistry.RegisterScaleDown(1, metricResourceName, metricGpuType, nodeScaleDownReason(node, drain))
 	if drain {
 		autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDown", "Scale-down: node %s removed with drain", node.Name)
 	} else {

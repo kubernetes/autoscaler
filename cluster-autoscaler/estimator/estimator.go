@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
@@ -52,7 +53,7 @@ func (p *PodEquivalenceGroup) Exemplar() *apiv1.Pod {
 // to schedule on those nodes.
 type Estimator interface {
 	// Estimate estimates how many nodes are needed to provision pods coming from the given equivalence groups.
-	Estimate([]PodEquivalenceGroup, *framework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
+	Estimate([]PodEquivalenceGroup, *framework.NodeInfo, cloudprovider.NodeGroup, metrics.CAMetricsRegistry) (int, []*apiv1.Pod)
 }
 
 // EstimatorBuilder creates a new estimator object.

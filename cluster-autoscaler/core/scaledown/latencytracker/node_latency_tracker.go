@@ -24,7 +24,6 @@ import (
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/klog/v2"
 
 	processor "k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -45,15 +44,17 @@ type unneededNodeState struct {
 // NodeLatencyTracker keeps track of nodes that are marked as unneeded, when they became unneeded,
 // and removalThresholds to emit node removal latency metrics.
 type NodeLatencyTracker struct {
-	unneededNodes map[string]unneededNodeState
-	wrapped       processor.ScaleDownStatusProcessor
+	unneededNodes  map[string]unneededNodeState
+	wrapped        processor.ScaleDownStatusProcessor
+	autoscalingCtx *ca_context.AutoscalingContext
 }
 
 // NewNodeLatencyTracker creates a new tracker.
-func NewNodeLatencyTracker(wrapped processor.ScaleDownStatusProcessor) *NodeLatencyTracker {
+func NewNodeLatencyTracker(autoscalingCtx *ca_context.AutoscalingContext, wrapped processor.ScaleDownStatusProcessor) *NodeLatencyTracker {
 	return &NodeLatencyTracker{
-		unneededNodes: make(map[string]unneededNodeState),
-		wrapped:       wrapped,
+		unneededNodes:  make(map[string]unneededNodeState),
+		wrapped:        wrapped,
+		autoscalingCtx: autoscalingCtx,
 	}
 }
 
@@ -114,7 +115,7 @@ func (t *NodeLatencyTracker) recordAndCleanup(nodeName string, isRemoved bool) {
 	latency := duration - info.removalThreshold
 
 	if latency > 0 {
-		metrics.UpdateScaleDownNodeRemovalLatency(isRemoved, latency)
+		t.autoscalingCtx.MetricsRegistry.UpdateScaleDownNodeRemovalLatency(isRemoved, latency)
 	} else {
 		klog.V(6).Infof("Node %q was unneeded for %s (threshold %s). Latency %s is <= 0, skipping metric. isRemoved: %v",
 			nodeName, duration, info.removalThreshold, latency, isRemoved)
