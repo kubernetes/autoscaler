@@ -766,6 +766,13 @@ func (c *machineController) nodeGroups() ([]cloudprovider.NodeGroup, error) {
 		}
 
 		if ng != nil {
+			if isScalableResourceAndPaused(*r) {
+				// if the resource is paused from reconciling by cluster api controllers, we don't want to include it
+				// as an active node group.
+				klog.V(4).Infof("discovered a paused node group: %s", ng.Debug())
+				continue
+			}
+
 			nodegroups = append(nodegroups, ng)
 			klog.V(4).Infof("discovered node group: %s", ng.Debug())
 		}
@@ -779,6 +786,13 @@ func (c *machineController) nodeGroupForNode(node *corev1.Node) (*nodegroup, err
 		return nil, err
 	}
 	if scalableResource == nil {
+		return nil, nil
+	}
+
+	// if the scalable resource associated with this node is paused, we do not want to associate
+	// the node with a node group as the group will also be paused. we return nil here to ensure
+	// that the core autoscaler does not try to remove the node while it is paused.
+	if isScalableResourceAndPaused(*scalableResource) {
 		return nil, nil
 	}
 
