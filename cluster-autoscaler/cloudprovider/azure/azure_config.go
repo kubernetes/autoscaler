@@ -352,6 +352,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		// This means, if it is valued by the config file, but explicitly set to 0 in the env, it will retreat to default.
 		cfg.MaxDeploymentsCount = int64(defaultMaxDeploymentsCount)
 	}
+	if cfg.ZombieMinAgeMinutes < 1 {
+		cfg.ZombieMinAgeMinutes = 5
+	}
 	if cfg.SubscriptionID == "" {
 		metadataService, err := providerazure.NewInstanceMetadataService(imdsServerURL)
 		if err != nil {

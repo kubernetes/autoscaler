@@ -257,7 +257,7 @@ func (m *AzureManager) evaluateZombieStatus(
 			if ext.Statuses != nil {
 				for _, status := range ext.Statuses {
 					code := ptr.Deref(status.Code, "")
-					if status.Level != nil && *status.Level == armcompute.StatusLevelTypesError || code == "ProvisioningState/failed" {
+					if (status.Level != nil && *status.Level == armcompute.StatusLevelTypesError) || code == "ProvisioningState/failed" {
 						extensionsFailed = true
 						break
 					}
