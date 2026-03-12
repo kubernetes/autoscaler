@@ -89,9 +89,10 @@ func TestStatusUpdater(t *testing.T) {
 				},
 			)
 			buffersUpdater := NewStatusUpdater(fakeCapacityBuffersClient)
-			errors := buffersUpdater.Update(test.buffers)
+			updatedBuffers, errors := buffersUpdater.Update(test.buffers)
 			assert.Equal(t, test.expectedNumberOfErrors, len(errors))
 			assert.Equal(t, test.expectedNumberOfCalls, updateCallsCount)
+			assert.Equal(t, len(test.buffers)-test.expectedNumberOfErrors, len(updatedBuffers))
 		})
 	}
 }
