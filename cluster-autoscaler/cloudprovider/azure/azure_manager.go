@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	clientset "k8s.io/client-go/kubernetes"
 	kretry "k8s.io/client-go/util/retry"
 	klog "k8s.io/klog/v2"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
@@ -70,6 +71,9 @@ type AzureManager struct {
 	azClient *azClient
 	env      azure.Environment
 
+	// kubeClient is the Kubernetes client used for node lookups during zombie cleanup.
+	kubeClient clientset.Interface
+
 	// azureCache is used for caching Azure resources.
 	// It keeps track of nodegroups and instances
 	// (and of which nodegroup instances belong to)
@@ -88,7 +92,7 @@ type AzureManager struct {
 }
 
 // createAzureManagerInternal allows for a custom azClient to be passed in by tests.
-func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, azClient *azClient) (*AzureManager, error) {
+func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, azClient *azClient, kubeClient clientset.Interface) (*AzureManager, error) {
 	cfg, err := BuildAzureConfig(configReader)
 	if err != nil {
 		return nil, err
@@ -117,6 +121,7 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 		config:               cfg,
 		env:                  env,
 		azClient:             azClient,
+		kubeClient:           kubeClient,
 		explicitlyConfigured: make(map[string]bool),
 	}
 
@@ -165,8 +170,8 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 }
 
 // CreateAzureManager creates Azure Manager object to work with Azure.
-func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*AzureManager, error) {
-	return createAzureManagerInternal(configReader, discoveryOpts, nil)
+func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, kubeClient clientset.Interface) (*AzureManager, error) {
+	return createAzureManagerInternal(configReader, discoveryOpts, nil, kubeClient)
 }
 
 func (m *AzureManager) fetchExplicitNodeGroups(specs []string) error {
@@ -252,6 +257,15 @@ func (m *AzureManager) forceRefresh() error {
 	}
 	m.lastRefresh = time.Now()
 	klog.V(2).Infof("Refreshed Azure VM and VMSS list, next refresh after %v", m.lastRefresh.Add(m.azureCache.refreshInterval))
+
+	// Cleanup zombie nodes if enabled
+	if m.config.EnableZombieCleanup {
+		if err := m.cleanupZombieNodes(); err != nil {
+			klog.Errorf("Failed to cleanup zombie nodes: %v", err)
+			// Don't fail the refresh if zombie cleanup fails
+		}
+	}
+
 	return nil
 }
 
