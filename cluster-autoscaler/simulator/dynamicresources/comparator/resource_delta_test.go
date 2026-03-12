@@ -30,15 +30,93 @@ import (
 )
 
 var (
-	deviceShapeA     = map[string]struct{}{"A": {}}
-	deviceShapeB     = map[string]struct{}{"B": {}}
-	deviceShapeAB    = map[string]struct{}{"A": {}, "B": {}}
-	deviceShapeEmpty = map[string]struct{}{}
-	deviceShapeABC   = map[string]struct{}{"A": {}, "B": {}, "C": {}}
-	deviceShapeABCD  = map[string]struct{}{"A": {}, "B": {}, "C": {}, "D": {}}
-	deviceShapeA_BC  = map[string]struct{}{"A": {}, "BC": {}}
-	deviceShapeAB_C  = map[string]struct{}{"AB": {}, "C": {}}
+	deviceShapeA       = map[string]struct{}{"A": {}}
+	deviceShapeB       = map[string]struct{}{"B": {}}
+	deviceShapeAB      = map[string]struct{}{"A": {}, "B": {}}
+	deviceShapeEmpty   = map[string]struct{}{}
+	deviceShapeABC     = map[string]struct{}{"A": {}, "B": {}, "C": {}}
+	deviceShapeABCD    = map[string]struct{}{"A": {}, "B": {}, "C": {}, "D": {}}
+	deviceShapeAPlusBC = map[string]struct{}{"A": {}, "BC": {}}
+	deviceShapeABPlusC = map[string]struct{}{"AB": {}, "C": {}}
 )
+
+func TestResourceDeltaType(t *testing.T) {
+	tests := map[string]struct {
+		delta      resourceDelta
+		want       resourceDeltaType
+		wantString string
+	}{
+		"Missing": {
+			delta:      resourceDelta{TemplateResourcePool: "pool", NodeResourcePool: ""},
+			want:       resourceDeltaTypeMissing,
+			wantString: "Missing",
+		},
+		"Extra": {
+			delta:      resourceDelta{TemplateResourcePool: "", NodeResourcePool: "pool"},
+			want:       resourceDeltaTypeExtra,
+			wantString: "Extra",
+		},
+		"Mismatch": {
+			delta:      resourceDelta{TemplateResourcePool: "pool1", NodeResourcePool: "pool2"},
+			want:       resourceDeltaTypeMismatch,
+			wantString: "Mismatch",
+		},
+		"Unknown": {
+			delta:      resourceDelta{TemplateResourcePool: "", NodeResourcePool: ""},
+			want:       resourceDeltaTypeUnknown,
+			wantString: "Unknown",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			deltaType := tc.delta.Type()
+			if deltaType != tc.want {
+				t.Errorf("resourceDelta.Type() = %v, want %v", deltaType, tc.want)
+			}
+			if deltaType.String() != tc.wantString {
+				t.Errorf("resourceDelta.String() = %v, want %v", deltaType.String(), tc.wantString)
+			}
+		})
+	}
+}
+
+func TestAttributesMatch(t *testing.T) {
+	tests := map[string]struct {
+		a    attributesMap
+		b    attributesMap
+		want bool
+	}{
+		"EmptyMatch": {
+			a:    attributesMap{},
+			b:    attributesMap{},
+			want: true,
+		},
+		"LengthMismatch": {
+			a:    attributesMap{v1.QualifiedName("A"): {}},
+			b:    attributesMap{},
+			want: false,
+		},
+		"KeyMismatch": {
+			a:    attributesMap{v1.QualifiedName("A"): {}},
+			b:    attributesMap{v1.QualifiedName("B"): {}},
+			want: false,
+		},
+		"ExactMatch": {
+			a:    attributesMap{v1.QualifiedName("A"): {}},
+			b:    attributesMap{v1.QualifiedName("A"): {}},
+			want: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := attributesMatch(tc.a, tc.b); got != tc.want {
+				t.Errorf("attributesMatch() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
 
 func TestCompareDraResources(t *testing.T) {
 	tests := map[string]struct {
@@ -58,8 +136,8 @@ func TestCompareDraResources(t *testing.T) {
 				{
 					Driver:               "driver",
 					TemplateResourcePool: "pool",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("A"): {}},
-					NodeSignatureMap:     signatureMap{},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
+					NodeSignatureMap:     attributesMap{},
 					DeviceCountDelta:     1,
 				},
 			},
@@ -77,8 +155,8 @@ func TestCompareDraResources(t *testing.T) {
 					Driver:               "driver",
 					TemplateResourcePool: "pool",
 					NodeResourcePool:     "pool",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("A"): {}},
-					NodeSignatureMap:     signatureMap{v1.QualifiedName("B"): {}},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("B"): {}},
 					DeviceCountDelta:     0,
 				},
 			},
@@ -101,8 +179,8 @@ func TestCompareDraResources(t *testing.T) {
 					Driver:               "driver",
 					TemplateResourcePool: "pool",
 					NodeResourcePool:     "pool",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("A"): {}},
-					NodeSignatureMap: signatureMap{v1.QualifiedName("A"): {}},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("A"): {}},
 					DeviceCountDelta:     1,
 				},
 			},
@@ -115,8 +193,8 @@ func TestCompareDraResources(t *testing.T) {
 					Driver:               "driver",
 					TemplateResourcePool: "pool",
 					NodeResourcePool:     "pool",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
-					NodeSignatureMap:     signatureMap{v1.QualifiedName("A"): {}},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("A"): {}},
 				},
 			},
 		},
@@ -128,8 +206,8 @@ func TestCompareDraResources(t *testing.T) {
 					Driver:               "driver",
 					TemplateResourcePool: "pool",
 					NodeResourcePool:     "pool",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("A"): {}},
-					NodeSignatureMap:     signatureMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
 				},
 			},
 		},
@@ -148,7 +226,7 @@ func TestCompareDraResources(t *testing.T) {
 				{
 					Driver:           "driver",
 					NodeResourcePool: "pool-extra",
-					NodeSignatureMap: signatureMap{v1.QualifiedName("B"): {}},
+					NodeSignatureMap: attributesMap{v1.QualifiedName("B"): {}},
 					DeviceCountDelta: -1,
 				},
 			},
@@ -179,16 +257,16 @@ func TestCompareDraResources(t *testing.T) {
 					Driver:               "driver",
 					TemplateResourcePool: "pool-1",
 					NodeResourcePool:     "pool-1",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("A"): {}},
-					NodeSignatureMap:     signatureMap{v1.QualifiedName("A"): {}},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("A"): {}},
 					DeviceCountDelta:     1,
 				},
 				{
 					Driver:               "driver",
 					TemplateResourcePool: "pool-2",
 					NodeResourcePool:     "pool-2",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("B"): {}},
-					NodeSignatureMap:     signatureMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("B"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
 				},
 			},
 		},
@@ -210,21 +288,21 @@ func TestCompareDraResources(t *testing.T) {
 					Driver:               "driver-beta",
 					TemplateResourcePool: "pool-b",
 					NodeResourcePool:     "pool-b",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("B"): {}},
-					NodeSignatureMap:     signatureMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("B"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
 				},
 			},
 		},
 		"HashDelimiterAntiCollision": { // "A"+"BC" and "AB"+"C" both concat to "ABC".
-			templateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA_BC})},
-			nodeSlices:     []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeAB_C})},
+			templateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeAPlusBC})},
+			nodeSlices:     []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeABPlusC})},
 			wantReports: []resourceDelta{
 				{
 					Driver:               "driver",
 					TemplateResourcePool: "pool",
 					NodeResourcePool:     "pool",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("A"): {}, v1.QualifiedName("BC"): {}},
-					NodeSignatureMap:     signatureMap{v1.QualifiedName("AB"): {}, v1.QualifiedName("C"): {}},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("BC"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("AB"): {}, v1.QualifiedName("C"): {}},
 				},
 			},
 		},
@@ -241,14 +319,14 @@ func TestCompareDraResources(t *testing.T) {
 					Driver:               "driver",
 					TemplateResourcePool: "pool-t",
 					NodeResourcePool:     "pool-n2",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}, v1.QualifiedName("C"): {}},
-					NodeSignatureMap:     signatureMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}, v1.QualifiedName("C"): {}, v1.QualifiedName("D"): {}},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}, v1.QualifiedName("C"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}, v1.QualifiedName("C"): {}, v1.QualifiedName("D"): {}},
 					DeviceCountDelta:     2,
 				},
 				{
 					Driver:           "driver",
 					NodeResourcePool: "pool-n1",
-					NodeSignatureMap: signatureMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
+					NodeSignatureMap: attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
 					DeviceCountDelta: -5,
 				},
 			},
@@ -267,14 +345,14 @@ func TestCompareDraResources(t *testing.T) {
 					Driver:               "driver",
 					TemplateResourcePool: "pool",
 					NodeResourcePool:     "pool",
-					TemplateSignatureMap: signatureMap{},
-					NodeSignatureMap:     signatureMap{},
+					TemplateSignatureMap: attributesMap{},
+					NodeSignatureMap:     attributesMap{},
 					DeviceCountDelta:     1,
 				},
 				{
 					Driver:           "driver",
 					NodeResourcePool: "missing",
-					NodeSignatureMap: signatureMap{v1.QualifiedName("A"): {}},
+					NodeSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
 					DeviceCountDelta: -1,
 				},
 			},
@@ -390,20 +468,20 @@ func TestCompareDraResources(t *testing.T) {
 					Driver:               "custom-driver",
 					TemplateResourcePool: "custom-expected-pool",
 					NodeResourcePool:     "custom-actual-fuzzy-1",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
-					NodeSignatureMap:     signatureMap{v1.QualifiedName("B"): {}},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("B"): {}},
 				},
 				{
 					Driver:               "missing-driver",
 					TemplateResourcePool: "missing-pool",
-					TemplateSignatureMap: signatureMap{v1.QualifiedName("A"): {}},
-					NodeSignatureMap:     signatureMap{},
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
+					NodeSignatureMap:     attributesMap{},
 					DeviceCountDelta:     1,
 				},
 				{
 					Driver:           "custom-driver",
 					NodeResourcePool: "custom-actual-fuzzy-2",
-					NodeSignatureMap: signatureMap{v1.QualifiedName("A"): {}},
+					NodeSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
 					DeviceCountDelta: -5,
 				},
 			},
@@ -413,7 +491,8 @@ func TestCompareDraResources(t *testing.T) {
 	cmdOpt := cmpopts.EquateEmpty()
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			reports := compareDraResources(test.templateSlices, test.nodeSlices, nil)
+			comparator := newResourcePoolComparator()
+			reports := comparator.CompareResourcePools(test.templateSlices, test.nodeSlices, nil)
 			reports = normalizeReports(reports)
 			test.wantReports = normalizeReports(test.wantReports)
 			if diff := cmp.Diff(test.wantReports, reports, cmdOpt); diff != "" {
@@ -430,8 +509,12 @@ func BenchmarkCompareDraResourcesExact(b *testing.B) {
 	nodeSlices := []*resourceapi.ResourceSlice{
 		makeResourceSlice("gpu-driver", "gpu-actual-pool", 1, poolDevices{deviceCount: 10, shape: deviceShapeAB}),
 	}
-	for i := 0; i < b.N; i++ {
-		compareDraResources(templateSlices, nodeSlices, nil)
+
+	comparator := newResourcePoolComparator()
+	deltas := make([]resourceDelta, 0)
+	for b.Loop() {
+		deltas = comparator.CompareResourcePools(templateSlices, nodeSlices, deltas)
+		deltas = deltas[:0]
 	}
 }
 
@@ -442,8 +525,12 @@ func BenchmarkCompareDraResourcesFuzzy(b *testing.B) {
 	nodeSlices := []*resourceapi.ResourceSlice{
 		makeResourceSlice("gpu-driver", "gpu-actual-pool", 1, poolDevices{deviceCount: 10, shape: deviceShapeABC}),
 	}
-	for i := 0; i < b.N; i++ {
-		compareDraResources(templateSlices, nodeSlices, nil)
+
+	comparator := newResourcePoolComparator()
+	deltas := make([]resourceDelta, 0)
+	for b.Loop() {
+		deltas = comparator.CompareResourcePools(templateSlices, nodeSlices, deltas)
+		deltas = deltas[:0]
 	}
 }
 
@@ -456,8 +543,12 @@ func BenchmarkCompareDraResourcesRankingFuzzy(b *testing.B) {
 		makeResourceSlice("gpu-driver", "gpu-actual-pool", 3, poolDevices{deviceCount: 11, shape: deviceShapeA}),
 		makeResourceSlice("gpu-driver", "gpu-actual-pool", 3, poolDevices{deviceCount: 10, shape: deviceShapeB}),
 	}
-	for i := 0; i < b.N; i++ {
-		compareDraResources(templateSlices, nodeSlices, nil)
+
+	comparator := newResourcePoolComparator()
+	deltas := make([]resourceDelta, 0)
+	for b.Loop() {
+		deltas = comparator.CompareResourcePools(templateSlices, nodeSlices, deltas)
+		deltas = deltas[:0]
 	}
 }
 
