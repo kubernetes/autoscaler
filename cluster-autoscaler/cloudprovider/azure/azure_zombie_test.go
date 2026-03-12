@@ -233,6 +233,72 @@ func TestZombieCleanup_RespectsMinAge(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestZombieCleanup_SkipsNilTimeCreated(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager, mockVMSSClient, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
+	manager.config.EnableZombieCleanup = true
+	manager.config.ZombieCleanupDryRun = false
+	manager.config.ZombieMinAgeMinutes = 5
+
+	vmssName := "test-vmss"
+	mockVMSSList := []*armcompute.VirtualMachineScaleSet{
+		{Name: ptr.To(vmssName)},
+	}
+
+	nilTimeCreatedVMs := []*armcompute.VirtualMachineScaleSetVM{
+		// Never-registered VM with nil TimeCreated
+		{
+			ID:         ptr.To(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0)),
+			InstanceID: ptr.To("0"),
+			Properties: &armcompute.VirtualMachineScaleSetVMProperties{
+				ProvisioningState: ptr.To("Succeeded"),
+				TimeCreated:       nil,
+				InstanceView: &armcompute.VirtualMachineScaleSetVMInstanceView{
+					Statuses: []*armcompute.InstanceViewStatus{
+						{Code: ptr.To("ProvisioningState/succeeded")},
+						{Code: ptr.To("PowerState/running")},
+					},
+				},
+			},
+		},
+		// Failed extensions VM with nil TimeCreated
+		{
+			ID:         ptr.To(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 1)),
+			InstanceID: ptr.To("1"),
+			Properties: &armcompute.VirtualMachineScaleSetVMProperties{
+				ProvisioningState: ptr.To("Succeeded"),
+				TimeCreated:       nil,
+				InstanceView: &armcompute.VirtualMachineScaleSetVMInstanceView{
+					Statuses: []*armcompute.InstanceViewStatus{
+						{Code: ptr.To("ProvisioningState/succeeded")},
+						{Code: ptr.To("PowerState/running")},
+					},
+					Extensions: []*armcompute.VirtualMachineExtensionInstanceView{
+						{
+							Name: ptr.To("vmssCSE"),
+							Statuses: []*armcompute.InstanceViewStatus{
+								{
+									Level: ptr.To(armcompute.StatusLevelTypesError),
+									Code:  ptr.To("ProvisioningState/failed"),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(mockVMSSList, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(nilTimeCreatedVMs, nil)
+
+	// No delete calls should be made, skip both VMs
+	err := manager.cleanupZombieNodes()
+	assert.NoError(t, err)
+}
+
 func TestZombieCleanup_DryRunMode(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
