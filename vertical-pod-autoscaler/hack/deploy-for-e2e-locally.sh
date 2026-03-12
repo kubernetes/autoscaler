@@ -132,7 +132,7 @@ if [ -n "${FEATURE_GATES:-}" ]; then
         HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
         ;;
       admission-controller)
-        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[1]=--feature-gates=${FEATURE_GATES}")
         ;;
     esac
   done
