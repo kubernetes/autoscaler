@@ -22,79 +22,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	resourceapi "k8s.io/api/resource/v1"
-	v1 "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 )
 
-func TestLogSampledDiscrepancies(t *testing.T) {
-	tests := map[string]struct {
-		sampledNodes  []string
-		sampledDeltas [][]resourceDelta
-		want          string
-	}{
-		"Empty": {
-			sampledNodes:  []string{},
-			sampledDeltas: [][]resourceDelta{},
-			want:          "",
-		},
-		"SingleNodeSingleDelta": {
-			sampledNodes: []string{"node-1"},
-			sampledDeltas: [][]resourceDelta{
-				{
-					{
-						Driver:               "test-driver",
-						TemplateResourcePool: "pool-1",
-						DeviceCountDelta:     1,
-						TemplateSignatureMap: signatureMap{v1.QualifiedName("attr1"): {}},
-					},
-				},
-			},
-			want: "DRA Resource Discrepancies detected between node templates and actual nodes:\n- node-1: MissingResource{Driver=\"test-driver\", ResourcePool=\"pool-1\", DeviceCount=\"1\", AttributeSignature=\"attr1\"}",
-		},
-		"MultipleNodesMultipleDeltas": {
-			sampledNodes: []string{"node-1", "node-2"},
-			sampledDeltas: [][]resourceDelta{
-				{
-					{
-						Driver:           "test-driver",
-						NodeResourcePool: "pool-1",
-						DeviceCountDelta: -1,
-						NodeSignatureMap: signatureMap{v1.QualifiedName("attr2"): {}},
-					},
-				},
-				{
-					{
-						Driver:               "test-driver",
-						TemplateResourcePool: "pool-1",
-						NodeResourcePool:     "pool-2",
-						DeviceCountDelta:     0,
-						TemplateSignatureMap: signatureMap{v1.QualifiedName("attr1"): {}},
-						NodeSignatureMap:     signatureMap{v1.QualifiedName("attr2"): {}},
-					},
-				},
-			},
-			want: "DRA Resource Discrepancies detected between node templates and actual nodes:\n- node-1: ExtraResource{Driver=\"test-driver\", ResourcePool=\"pool-1\", DeviceCount=\"1\", AttributeSignature=\"attr2\"}\n- node-2: MismatchResource{Driver=\"test-driver\", TemplatePool=\"pool-1\", NodePool=\"pool-2\", DeviceCountDelta=\"0\", MissingAttributes=\"attr1\", ExtraAttributes=\"attr2\"}",
-		},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			var got string
-			c := &NodeResourcesComparator{
-				logger: func(format string, args ...any) {
-					got = fmt.Sprintf(format, args...)
-				},
-			}
-
-			c.logSampledDiscrepancies(tc.sampledNodes, tc.sampledDeltas)
-
-			if got != tc.want {
-				t.Errorf("logSampledDiscrepancies() = %q, want %q", got, tc.want)
-			}
-		})
-	}
-}
-
+var noOpLogger logger = func(format string, args ...any) {}
 
 type fakeMetricsEmitter struct {
 	metrics map[string]uint32
@@ -106,6 +37,39 @@ func (f *fakeMetricsEmitter) SetNodeTemplateResourcesMismatch(driver string, mis
 	}
 	key := fmt.Sprintf("%s/%s", driver, mismatchType)
 	f.metrics[key] = value
+}
+
+// nodeComparisonData is used to simulate node resource topology for testing,
+// has no difference from passing raw slices, but drastically improves readability
+// by grouping related data together.
+type nodeComparisonData struct {
+	NodeName       string
+	TemplateSlices []*resourceapi.ResourceSlice
+	NodeSlices     []*resourceapi.ResourceSlice
+}
+
+func nodeNamesArray(data []nodeComparisonData) []string {
+	result := make([]string, len(data))
+	for i, d := range data {
+		result[i] = d.NodeName
+	}
+	return result
+}
+
+func nodeSlicesArray(data []nodeComparisonData) [][]*resourceapi.ResourceSlice {
+	result := make([][]*resourceapi.ResourceSlice, len(data))
+	for i, d := range data {
+		result[i] = d.NodeSlices
+	}
+	return result
+}
+
+func templateSlicesArray(data []nodeComparisonData) [][]*resourceapi.ResourceSlice {
+	result := make([][]*resourceapi.ResourceSlice, len(data))
+	for i, d := range data {
+		result[i] = d.TemplateSlices
+	}
+	return result
 }
 
 func TestEmitMetrics(t *testing.T) {
@@ -182,8 +146,8 @@ func TestEmitMetrics(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			fake := &fakeMetricsEmitter{}
-			c := &NodeResourcesComparator{metrics: fake}
-			c.emitMetrics(tc.aggregatedDiscrepancies)
+			c := &NodeResourcesComparator{metrics: fake, discrepanciesPerDriver: tc.aggregatedDiscrepancies}
+			c.emitMetrics()
 
 			if diff := cmp.Diff(tc.wantMetrics, fake.metrics); diff != "" {
 				t.Errorf("emitMetrics() diff (-want +got):\n%s", diff)
@@ -194,161 +158,296 @@ func TestEmitMetrics(t *testing.T) {
 
 type noOpMetricsEmitter struct{}
 
-func (n *noOpMetricsEmitter) SetNodeTemplateResourcesMismatch(driver string, mismatchType metrics.ResourceMismatchType, value uint32) {}
+func (n *noOpMetricsEmitter) SetNodeTemplateResourcesMismatch(driver string, mismatchType metrics.ResourceMismatchType, value uint32) {
+}
 
-
-func BenchmarkReportResourceDiscrepancies_1Node_0Discrepancies(b *testing.B) {
-	comparator := NewNodeResourcesComparator(&noOpMetricsEmitter{})
-	comparator.logger = func(format string, args ...any) {}
-
-	data := []NodeComparisonData{
-		{
-			NodeName:       "node-1",
-			TemplateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})},
-			NodeSlices:     []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})},
+func TestReportResourceDiscrepancies(t *testing.T) {
+	tests := map[string]struct {
+		data        []nodeComparisonData
+		wantMetrics map[string]uint32
+	}{
+		"EmptyData": {
+			data:        nil,
+			wantMetrics: nil,
+		},
+		"NoSlicesToCompare": {
+			data: []nodeComparisonData{
+				{
+					NodeName:       "node-1",
+					TemplateSlices: nil,
+					NodeSlices:     nil,
+				},
+			},
+			wantMetrics: nil,
+		},
+		"PerfectMatch": {
+			data: []nodeComparisonData{
+				{
+					NodeName:       "node-1",
+					TemplateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 2, shape: deviceShapeA})},
+					NodeSlices:     []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 2, shape: deviceShapeA})},
+				},
+			},
+			wantMetrics: nil,
+		},
+		"MissingResourcePool": {
+			data: []nodeComparisonData{
+				{
+					NodeName:       "node-1",
+					TemplateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})},
+					NodeSlices:     nil,
+				},
+			},
+			wantMetrics: map[string]uint32{
+				"driver/missing": 1,
+			},
+		},
+		"ExtraResourcePool": {
+			data: []nodeComparisonData{
+				{
+					NodeName:       "node-1",
+					TemplateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool-1", poolDevices{deviceCount: 1, shape: deviceShapeA})},
+					NodeSlices: []*resourceapi.ResourceSlice{
+						makeSingleResourceSlice("driver", "pool-1", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+						makeSingleResourceSlice("driver", "pool-2", poolDevices{deviceCount: 1, shape: deviceShapeB}),
+					},
+				},
+			},
+			wantMetrics: map[string]uint32{
+				"driver/extra": 1,
+			},
+		},
+		"FuzzyMismatch_Attributes": {
+			data: []nodeComparisonData{
+				{
+					NodeName:       "node-1",
+					TemplateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})},
+					NodeSlices:     []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeB})},
+				},
+			},
+			wantMetrics: map[string]uint32{
+				"driver/mismatch": 1,
+			},
+		},
+		"FuzzyMismatch_DeviceCount": {
+			data: []nodeComparisonData{
+				{
+					NodeName:       "node-1",
+					TemplateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 4, shape: deviceShapeA})},
+					NodeSlices:     []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 2, shape: deviceShapeA})},
+				},
+			},
+			wantMetrics: map[string]uint32{
+				"driver/mismatch": 1,
+			},
+		},
+		"IgnoredDriver": {
+			data: []nodeComparisonData{
+				{
+					NodeName:       "node-1",
+					TemplateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("known-driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})},
+					NodeSlices: []*resourceapi.ResourceSlice{
+						makeSingleResourceSlice("known-driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+						makeSingleResourceSlice("rogue-driver", "pool", poolDevices{deviceCount: 5, shape: deviceShapeB}),
+					},
+				},
+			},
+			wantMetrics: nil,
+		},
+		"MultiNodeMultiDriver": {
+			data: []nodeComparisonData{
+				{
+					// Node 1: driver-A is missing a pool
+					NodeName: "node-1",
+					TemplateSlices: []*resourceapi.ResourceSlice{
+						makeSingleResourceSlice("driver-A", "pool-1", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+						makeSingleResourceSlice("driver-B", "pool-1", poolDevices{deviceCount: 1, shape: deviceShapeB}),
+					},
+					NodeSlices: []*resourceapi.ResourceSlice{
+						makeSingleResourceSlice("driver-B", "pool-1", poolDevices{deviceCount: 1, shape: deviceShapeB}),
+					},
+				},
+				{
+					// Node 2: driver-A has a fuzzy mismatch, driver-B has an extra pool
+					NodeName: "node-2",
+					TemplateSlices: []*resourceapi.ResourceSlice{
+						makeSingleResourceSlice("driver-A", "pool-1", poolDevices{deviceCount: 2, shape: deviceShapeA}),
+						makeSingleResourceSlice("driver-B", "pool-1", poolDevices{deviceCount: 1, shape: deviceShapeB}),
+					},
+					NodeSlices: []*resourceapi.ResourceSlice{
+						makeSingleResourceSlice("driver-A", "pool-1", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+						makeSingleResourceSlice("driver-B", "pool-1", poolDevices{deviceCount: 1, shape: deviceShapeB}),
+						makeSingleResourceSlice("driver-B", "pool-2", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+					},
+				},
+			},
+			wantMetrics: map[string]uint32{
+				"driver-A/missing":  1,
+				"driver-A/mismatch": 1,
+				"driver-B/extra":    1,
+			},
+		},
+		"MultipleMissing": {
+			data: []nodeComparisonData{
+				{
+					NodeName: "node-1",
+					TemplateSlices: []*resourceapi.ResourceSlice{
+						makeSingleResourceSlice("driver", "pool1", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+						makeSingleResourceSlice("driver", "pool2", poolDevices{deviceCount: 1, shape: deviceShapeB}),
+						makeSingleResourceSlice("driver", "pool3", poolDevices{deviceCount: 1, shape: deviceShapeABC}),
+					},
+					NodeSlices: []*resourceapi.ResourceSlice{},
+				},
+			},
+			wantMetrics: map[string]uint32{
+				"driver/missing": 3,
+			},
 		},
 	}
 
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			fake := &fakeMetricsEmitter{}
+			c := NewNodeResourcesComparator(fake)
+			c.ReportResourceDiscrepancies(nodeNamesArray(tc.data), templateSlicesArray(tc.data), nodeSlicesArray(tc.data))
+			if diff := cmp.Diff(tc.wantMetrics, fake.metrics); diff != "" {
+				t.Errorf("ReportResourceDiscrepancies() metrics diff (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func BenchmarkReportResourceDiscrepancies_1Node_0Discrepancies(b *testing.B) {
+	comparator := NewNodeResourcesComparator(&noOpMetricsEmitter{})
+	nodeNames := []string{"node-1"}
+	templateSlices := [][]*resourceapi.ResourceSlice{
+		{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})},
+	}
+	nodeSlices := [][]*resourceapi.ResourceSlice{
+		{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})},
+	}
+
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(data)
+		comparator.ReportResourceDiscrepancies(nodeNames, templateSlices, nodeSlices)
 	}
 }
 
 func BenchmarkReportResourceDiscrepancies_1Node_NoDRA(b *testing.B) {
-	comparator := NewNodeResourcesComparator(&noOpMetricsEmitter{})
-	comparator.logger = func(format string, args ...any) {}
-
-	data := []NodeComparisonData{
-		{
-			NodeName:       "node-1",
-			TemplateSlices: nil,
-			NodeSlices:     nil,
-		},
-	}
+	comparator := newNodeResourcesComparatorWithLogger(&noOpMetricsEmitter{}, noOpLogger)
+	nodeNames := []string{"node-1"}
+	templateSlices := [][]*resourceapi.ResourceSlice{nil}
+	nodeSlices := [][]*resourceapi.ResourceSlice{nil}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(data)
+		comparator.ReportResourceDiscrepancies(nodeNames, templateSlices, nodeSlices)
 	}
 }
 
 func BenchmarkReportResourceDiscrepancies_1Node_10Discrepancies(b *testing.B) {
-	comparator := NewNodeResourcesComparator(&noOpMetricsEmitter{})
-	comparator.logger = func(format string, args ...any) {}
+	comparator := newNodeResourcesComparatorWithLogger(&noOpMetricsEmitter{}, noOpLogger)
 
-	templateSlices := make([]*resourceapi.ResourceSlice, 10)
+	templateSlice := make([]*resourceapi.ResourceSlice, 10)
 	for i := 0; i < 10; i++ {
-		templateSlices[i] = makeSingleResourceSlice("driver", fmt.Sprintf("pool-%d", i), poolDevices{deviceCount: 1, shape: deviceShapeA})
-	}
-	data := []NodeComparisonData{
-		{
-			NodeName:       "node-1",
-			TemplateSlices: templateSlices,
-			NodeSlices:     nil,
-		},
+		templateSlice[i] = makeSingleResourceSlice("driver", fmt.Sprintf("pool-%d", i), poolDevices{deviceCount: 1, shape: deviceShapeA})
 	}
 
+	nodeNames := []string{"node-1"}
+	nodeSlices := [][]*resourceapi.ResourceSlice{{}}
+	templateSlices := [][]*resourceapi.ResourceSlice{templateSlice}
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(data)
+		comparator.ReportResourceDiscrepancies(nodeNames, templateSlices, nodeSlices)
 	}
 }
 
 func BenchmarkReportResourceDiscrepancies_10Nodes_10DiscrepanciesEach(b *testing.B) {
-	comparator := NewNodeResourcesComparator(&noOpMetricsEmitter{})
-	comparator.logger = func(format string, args ...any) {}
+	comparator := newNodeResourcesComparatorWithLogger(&noOpMetricsEmitter{}, noOpLogger)
+	templateSlices := make([][]*resourceapi.ResourceSlice, 10)
+	nodeSlices := make([][]*resourceapi.ResourceSlice, 10)
+	nodeNames := make([]string, 10)
 
-	data := make([]NodeComparisonData, 10)
 	for n := 0; n < 10; n++ {
-		templateSlices := make([]*resourceapi.ResourceSlice, 10)
+		templateSlice := make([]*resourceapi.ResourceSlice, 10)
 		for i := 0; i < 10; i++ {
-			templateSlices[i] = makeSingleResourceSlice("driver", fmt.Sprintf("pool-%d", i), poolDevices{deviceCount: 1, shape: deviceShapeA})
+			templateSlice[i] = makeSingleResourceSlice("driver", fmt.Sprintf("pool-%d", i), poolDevices{deviceCount: 1, shape: deviceShapeA})
 		}
-		data[n] = NodeComparisonData{
-			NodeName:       fmt.Sprintf("node-%d", n),
-			TemplateSlices: templateSlices,
-			NodeSlices:     nil,
-		}
+
+		nodeNames[n] = fmt.Sprintf("node-%d", n)
+		templateSlices[n] = templateSlice
+		nodeSlices[n] = nil
 	}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(data)
+		comparator.ReportResourceDiscrepancies(nodeNames, templateSlices, nodeSlices)
 	}
 }
 
 func BenchmarkReportResourceDiscrepancies_10Nodes_NoDRA(b *testing.B) {
-	comparator := NewNodeResourcesComparator(&noOpMetricsEmitter{})
-	comparator.logger = func(format string, args ...any) {}
+	comparator := newNodeResourcesComparatorWithLogger(&noOpMetricsEmitter{}, noOpLogger)
+	nodeNames := make([]string, 10)
+	templateSlices := make([][]*resourceapi.ResourceSlice, 10)
+	nodeSlices := make([][]*resourceapi.ResourceSlice, 10)
 
-	data := make([]NodeComparisonData, 10)
 	for n := 0; n < 10; n++ {
-		data[n] = NodeComparisonData{
-			NodeName:       fmt.Sprintf("node-%d", n),
-			TemplateSlices: nil,
-			NodeSlices:     nil,
-		}
+		nodeNames[n] = fmt.Sprintf("node-%d", n)
+		templateSlices[n] = nil
+		nodeSlices[n] = nil
 	}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(data)
+		comparator.ReportResourceDiscrepancies(nodeNames, templateSlices, nodeSlices)
 	}
 }
 
 func BenchmarkReportResourceDiscrepancies_10Nodes_0Discrepancies(b *testing.B) {
-	comparator := NewNodeResourcesComparator(&noOpMetricsEmitter{})
-	comparator.logger = func(format string, args ...any) {}
+	comparator := newNodeResourcesComparatorWithLogger(&noOpMetricsEmitter{}, noOpLogger)
+	names := make([]string, 10)
+	tpl := make([][]*resourceapi.ResourceSlice, 10)
+	nodes := make([][]*resourceapi.ResourceSlice, 10)
 
-	data := make([]NodeComparisonData, 10)
 	for n := 0; n < 10; n++ {
 		slice := makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})
-		data[n] = NodeComparisonData{
-			NodeName:       fmt.Sprintf("node-%d", n),
-			TemplateSlices: []*resourceapi.ResourceSlice{slice},
-			NodeSlices:     []*resourceapi.ResourceSlice{slice},
-		}
+		names[n] = fmt.Sprintf("node-%d", n)
+		tpl[n] = []*resourceapi.ResourceSlice{slice}
+		nodes[n] = []*resourceapi.ResourceSlice{slice}
 	}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(data)
+		comparator.ReportResourceDiscrepancies(names, tpl, nodes)
 	}
 }
 func BenchmarkReportResourceDiscrepancies_1Node_10Drivers_10Discrepancies(b *testing.B) {
-	comparator := NewNodeResourcesComparator(&noOpMetricsEmitter{})
-	comparator.logger = func(format string, args ...any) {}
-
+	comparator := newNodeResourcesComparatorWithLogger(&noOpMetricsEmitter{}, noOpLogger)
 	templateSlices := make([]*resourceapi.ResourceSlice, 10)
 	for i := 0; i < 10; i++ {
 		templateSlices[i] = makeSingleResourceSlice(fmt.Sprintf("driver-%d", i), "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})
 	}
-	data := []NodeComparisonData{
-		{
-			NodeName:       "node-1",
-			TemplateSlices: templateSlices,
-			NodeSlices:     nil,
-		},
-	}
+
+	names := []string{"node-1"}
+	tpl := [][]*resourceapi.ResourceSlice{templateSlices}
+	nodes := [][]*resourceapi.ResourceSlice{nil}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(data)
+		comparator.ReportResourceDiscrepancies(names, tpl, nodes)
 	}
 }
 
 func BenchmarkReportResourceDiscrepancies_10Nodes_10Drivers_10DiscrepanciesEach(b *testing.B) {
-	comparator := NewNodeResourcesComparator(&noOpMetricsEmitter{})
-	comparator.logger = func(format string, args ...any) {}
+	comparator := newNodeResourcesComparatorWithLogger(&noOpMetricsEmitter{}, noOpLogger)
 
-	data := make([]NodeComparisonData, 10)
-	for n := 0; n < 10; n++ {
+	names := make([]string, 10)
+	tpl := make([][]*resourceapi.ResourceSlice, 10)
+	nodes := make([][]*resourceapi.ResourceSlice, 10)
+	for i := 0; i < 10; i++ {
 		templateSlices := make([]*resourceapi.ResourceSlice, 10)
-		for i := 0; i < 10; i++ {
-			templateSlices[i] = makeSingleResourceSlice(fmt.Sprintf("driver-%d", i), "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})
+		for j := 0; j < 10; j++ {
+			templateSlices[j] = makeSingleResourceSlice(fmt.Sprintf("driver-%d", j), "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})
 		}
-		data[n] = NodeComparisonData{
-			NodeName:       fmt.Sprintf("node-%d", n),
-			TemplateSlices: templateSlices,
-			NodeSlices:     nil,
-		}
+		names[i] = fmt.Sprintf("node-%d", i)
+		tpl[i] = templateSlices
+		nodes[i] = nil
 	}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(data)
+		comparator.ReportResourceDiscrepancies(names, tpl, nodes)
 	}
 }

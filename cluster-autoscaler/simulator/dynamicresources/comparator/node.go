@@ -17,50 +17,59 @@ limitations under the License.
 package comparator
 
 import (
-	"fmt"
-	"math/rand/v2"
-	"slices"
-	"strings"
-
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/klog/v2"
 )
 
 const (
-	maxLoggedSampleSize          = 5
+	// countOfDiscrepanciesEstimate is an estimate of the number of discrepancies for
+	// a single report cycle
 	countOfDiscrepanciesEstimate = 10
 )
-
-// NodeComparisonData encapsulates the resource slices for a node and its template.
-type NodeComparisonData struct {
-	NodeName       string
-	TemplateSlices []*resourceapi.ResourceSlice
-	NodeSlices     []*resourceapi.ResourceSlice
-}
 
 // metricsEmitter interface is used to emit gauge metrics for DRA discrepancies.
 type metricsEmitter interface {
 	SetNodeTemplateResourcesMismatch(driver string, mismatchType metrics.ResourceMismatchType, value uint32)
 }
 
-// logger is a function that logs messages, used for testing purposes.
-type logger func(format string, args ...any)
-
 // NodeResourcesComparator detects discrepancies between expected and actual resource topologies.
+// For more details on the algorithm - see resourcePoolComparator.CompareResourcePools.
 type NodeResourcesComparator struct {
-	metrics metricsEmitter
-	logger  logger
+	// Reusable map to store intermediate results while comparing nodes
+	discrepanciesPerDriver map[string]driverDiscrepancy
+	// Reusable buffer to store intermediate per node resource deltas
+	// while comparing nodes
+	deltas []resourceDelta
+
+	metrics    metricsEmitter
+	comparator resourcePoolComparator
+	sampler    loggingSampler
 }
 
 // NewNodeResourcesComparator returns a new stateful NodeResourcesComparator.
 func NewNodeResourcesComparator(metric metricsEmitter) *NodeResourcesComparator {
 	return &NodeResourcesComparator{
-		metrics: metric,
-		logger:  klog.Warningf,
+		metrics:                metric,
+		comparator:             newResourcePoolComparator(),
+		sampler:                newLoggingSampler(),
+		deltas:                 make([]resourceDelta, 0, countOfDiscrepanciesEstimate),
+		discrepanciesPerDriver: make(map[string]driverDiscrepancy, countOfDriversEstimate),
 	}
 }
 
+// newNodeResourcesComparatorWithLogger returns a new NodeResourcesComparator with a custom logger.
+func newNodeResourcesComparatorWithLogger(metric metricsEmitter, logger logger) *NodeResourcesComparator {
+	return &NodeResourcesComparator{
+		metrics:                metric,
+		comparator:             newResourcePoolComparator(),
+		sampler:                newLoggingSamplerWithLogger(logger),
+		deltas:                 make([]resourceDelta, 0, countOfDiscrepanciesEstimate),
+		discrepanciesPerDriver: make(map[string]driverDiscrepancy, countOfDriversEstimate),
+	}
+}
+
+// driverDiscrepancy holds aggregate discrepancies for a single driver.
 type driverDiscrepancy struct {
 	missing  uint32
 	extra    uint32
@@ -68,26 +77,9 @@ type driverDiscrepancy struct {
 	unknown  uint32
 }
 
-func (c *NodeResourcesComparator) logSampledDiscrepancies(sampledNodes []string, sampledDeltas [][]resourceDelta) {
-	if len(sampledNodes) == 0 {
-		return
-	}
-
-	nodeReports := make([]string, len(sampledNodes))
-	for i, nodeName := range sampledNodes {
-		deltas := sampledDeltas[i]
-		deltaSummaries := make([]string, len(deltas))
-		for j, delta := range deltas {
-			deltaSummaries[j] = delta.Summary()
-		}
-		nodeReports[i] = fmt.Sprintf("- %s: %s", nodeName, strings.Join(deltaSummaries, ", "))
-	}
-
-	c.logger("DRA Resource Discrepancies detected between node templates and actual nodes:\n%s", strings.Join(nodeReports, "\n"))
-}
-
-func (c *NodeResourcesComparator) emitMetrics(aggregatedDiscrepancies map[string]driverDiscrepancy) {
-	for driver, disc := range aggregatedDiscrepancies {
+// emitMetrics emits the aggregated discrepancies to the metrics emitter.
+func (c *NodeResourcesComparator) emitMetrics() {
+	for driver, disc := range c.discrepanciesPerDriver {
 		if disc.missing > 0 {
 			c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeMissing, disc.missing)
 		}
@@ -100,73 +92,78 @@ func (c *NodeResourcesComparator) emitMetrics(aggregatedDiscrepancies map[string
 		if disc.unknown > 0 {
 			c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeUnknown, disc.unknown)
 		}
-	}	
+	}
 }
 
+// reset resets the comparator to its initial state making it ready for the next batch of nodes.
+func (c *NodeResourcesComparator) reset() {
+	c.sampler.Reset()
+	c.deltas = c.deltas[:0]
+	clear(c.discrepanciesPerDriver)
+}
 
 // ReportResourceDiscrepancies compares DRA resources for a batch of nodes,
 // aggregates discrepancies across all drivers, emits metrics, and logs a summary report.
-func (c *NodeResourcesComparator) ReportResourceDiscrepancies(data []NodeComparisonData) {
-	if len(data) == 0 {
+//
+// Function assumes that nodeNames, templateSlices, and nodeSlices have the same length,
+// and aborts execution if they don't.
+func (c *NodeResourcesComparator) ReportResourceDiscrepancies(
+	nodeNames []string,
+	templateSlices [][]*resourceapi.ResourceSlice,
+	nodeSlices [][]*resourceapi.ResourceSlice,
+) {
+	c.reset()
+
+	if len(nodeNames) == 0 {
 		return
 	}
 
-	aggregatedDiscrepancies := make(map[string]driverDiscrepancy, countOfDriversEstimate)
-	sampledNodes := make([]string, 0, maxLoggedSampleSize)
-	sampledDeltas := make([][]resourceDelta, 0, maxLoggedSampleSize)
-	deltas := make([]resourceDelta, 0, countOfDiscrepanciesEstimate)
-	discrepantNodesCount := 0
-	for nodeIndex := range data {
-		nodeData := &data[nodeIndex]
+	if len(nodeNames) != len(templateSlices) || len(nodeNames) != len(nodeSlices) {
+		klog.Errorf("NodeResourcesComparator: nodeNames, templateSlices, and nodeSlices must have the same length")
+		return
+	}
+
+	for nodeIndex := range nodeNames {
 		// No slices to compare, delta is missing
-		if len(nodeData.TemplateSlices) == 0 && len(nodeData.NodeSlices) == 0 {
+		if len(templateSlices[nodeIndex]) == 0 && len(nodeSlices[nodeIndex]) == 0 {
 			continue
 		}
 
-		deltas = compareDraResources(nodeData.TemplateSlices, nodeData.NodeSlices, deltas)
-		if len(deltas) == 0 {
+		c.deltas = c.comparator.CompareResourcePools(templateSlices[nodeIndex], nodeSlices[nodeIndex], c.deltas)
+		if len(c.deltas) == 0 {
 			continue
 		}
 
-		for _, delta := range deltas {
-			disc := aggregatedDiscrepancies[delta.Driver]
-			switch delta.Type() {
-			case resourceDeltaTypeMissing:
-				disc.missing++
-			case resourceDeltaTypeExtra:
-				disc.extra++
-			case resourceDeltaTypeMismatch:
-				disc.mismatch++
-			case resourceDeltaTypeUnknown:
-				disc.unknown++
-			}
-			aggregatedDiscrepancies[delta.Driver] = disc
-		}
-
-		discrepantNodesCount++
-		if len(sampledNodes) < maxLoggedSampleSize {
-			sampledNodes = append(sampledNodes, nodeData.NodeName)
-			// Sampled deltas need to be cloned because the deltas slice is reused
-			sampledDeltas = append(sampledDeltas, slices.Clone(deltas))
-		} else {
-			// Only swap if the random index hits our target range
-			// to guarantee fairness of the sampling
-			j := rand.IntN(discrepantNodesCount)
-			if j < maxLoggedSampleSize {
-				sampledNodes[j] = nodeData.NodeName
-				// Sampled deltas need to be cloned because the deltas slice is reused
-				sampledDeltas[j] = slices.Clone(deltas)
-			}
-		}
+		c.updateDiscrepanciesPerDriver()
+		c.sampler.Sample(nodeNames[nodeIndex], c.deltas)
 
 		// Reset the buffer for the next iteration
-		deltas = deltas[:0]
+		c.deltas = c.deltas[:0]
 	}
 
-	if len(aggregatedDiscrepancies) == 0 {
+	if len(c.discrepanciesPerDriver) == 0 {
 		return
 	}
 
-	c.emitMetrics(aggregatedDiscrepancies)
-	c.logSampledDiscrepancies(sampledNodes, sampledDeltas)
+	c.emitMetrics()
+	c.sampler.LogSampled()
+}
+
+// updateDiscrepanciesPerDriver iterates through comparator found deltas and increases
+// disrepancy counters accordingly to deltas found during the last comparison.
+func (c *NodeResourcesComparator) updateDiscrepanciesPerDriver() {
+	for _, delta := range c.deltas {
+		disc := c.discrepanciesPerDriver[delta.Driver]
+		switch delta.Type() {
+		case resourceDeltaTypeMissing:
+			disc.missing++
+		case resourceDeltaTypeExtra:
+			disc.extra++
+		case resourceDeltaTypeMismatch:
+			disc.mismatch++
+		case resourceDeltaTypeUnknown:
+			disc.unknown++
+		}
+		c.discrepanciesPerDriver[delta.Driver] = disc
+	}
 }
