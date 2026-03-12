@@ -33,16 +33,19 @@ func NewStatusUpdater(client *cbclient.CapacityBufferClient) *StatusUpdater {
 	}
 }
 
-// Update updates the buffer status with pod capacity
-func (u *StatusUpdater) Update(buffers []*v1.CapacityBuffer) []error {
+// Update updates the buffer status and returns the updated buffers objects and list of errors
+func (u *StatusUpdater) Update(buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []error) {
 	var errors []error
+	var updatedBuffers []*v1.CapacityBuffer
 	for _, buffer := range buffers {
-		_, err := u.client.UpdateCapacityBuffer(buffer)
+		updatedBuffer, err := u.client.UpdateCapacityBuffer(buffer)
 		if err != nil {
 			errors = append(errors, err)
+		} else {
+			updatedBuffers = append(updatedBuffers, updatedBuffer)
 		}
 	}
-	return errors
+	return updatedBuffers, errors
 }
 
 // CleanUp cleans up the updater's internal structures.

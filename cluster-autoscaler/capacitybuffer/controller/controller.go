@@ -51,7 +51,7 @@ type bufferController struct {
 	strategyFilter filters.Filter
 	translator     translators.Translator
 	quotaAllocator *resourceQuotaAllocator
-	updater        updater.StatusUpdater
+	updater        updater.BufferUpdater
 	queue          workqueue.TypedRateLimitingInterface[string]
 }
 
@@ -60,7 +60,7 @@ func NewBufferController(
 	client *cbclient.CapacityBufferClient,
 	strategyFilter filters.Filter,
 	translator translators.Translator,
-	updater updater.StatusUpdater,
+	updater updater.BufferUpdater,
 ) BufferController {
 	bc := &bufferController{
 		client:         client,
@@ -93,7 +93,7 @@ func NewDefaultBufferController(
 			},
 		),
 		quotaAllocator: newResourceQuotaAllocator(client),
-		updater:        *updater.NewStatusUpdater(client),
+		updater:        updater.NewStatusUpdater(client),
 		queue: workqueue.NewTypedRateLimitingQueueWithConfig(
 			workqueue.DefaultTypedControllerRateLimiter[string](), workqueue.TypedRateLimitingQueueConfig[string]{Name: "CapacityBuffers"},
 		),
@@ -307,7 +307,7 @@ func (c *bufferController) reconcileNamespace(namespace string) error {
 	}
 
 	// Update buffer status by calling API server
-	updateErrors := c.updater.Update(filteredBuffers)
+	_, updateErrors := c.updater.Update(filteredBuffers)
 	for _, err := range updateErrors {
 		runtime.HandleError(fmt.Errorf("capacity buffer controller error: %w", err))
 	}
