@@ -17,7 +17,6 @@ limitations under the License.
 package azure
 
 import (
-	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -53,7 +52,10 @@ func (m *AzureManager) cleanupZombieNodes() error {
 		return m.cleanupZombieNodesWithContext(nil)
 	}
 
-	nodeList, err := m.kubeClient.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
+	defer cancel()
+
+	nodeList, err := m.kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		klog.Warningf("Failed to list K8s nodes for zombie cleanup, proceeding without K8s context: %v", err)
 		return m.cleanupZombieNodesWithContext(nil)
