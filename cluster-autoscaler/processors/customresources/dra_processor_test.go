@@ -25,6 +25,7 @@ import (
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/comparator"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -35,8 +36,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
+
+type noOpMetricsEmitter struct{}
+
+func (m noOpMetricsEmitter) SetNodeTemplateResourcesMismatch(driver string, mismatchType metrics.ResourceMismatchType, value uint32) {
+}
 
 type mockTemplateNodeInfoRegistry struct {
 	nodeInfos map[string]*framework.NodeInfo
@@ -404,7 +411,7 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 				ClusterSnapshot:          clusterSnapshot,
 				TemplateNodeInfoRegistry: newMockTemplateNodeInfoRegistry(tc.registryNodeInfos),
 			}
-			processor := DraCustomResourcesProcessor{}
+			processor := DraCustomResourcesProcessor{resourcesComparator: comparator.NewNodeResourcesComparator(noOpMetricsEmitter{})}
 			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot, nil)
 
 			readyNodes := make(map[string]bool)
@@ -467,4 +474,98 @@ func getNodeReadiness(node *apiv1.Node) bool {
 		}
 	}
 	return false
+}
+
+type fakeResourceDiscrepancyReporter struct {
+	reportedNodeNames      []string
+	reportedTemplateSlices [][]*resourceapi.ResourceSlice
+	reportedNodeSlices     [][]*resourceapi.ResourceSlice
+}
+
+func (m *fakeResourceDiscrepancyReporter) ReportResourceDiscrepancies(nodeNames []string, templateSlices [][]*resourceapi.ResourceSlice, nodeSlices [][]*resourceapi.ResourceSlice) {
+	m.reportedNodeNames = nodeNames
+	m.reportedTemplateSlices = templateSlices
+	m.reportedNodeSlices = nodeSlices
+}
+
+func TestDraProcessorResourceComparator(t *testing.T) {
+	templateSlices := createNodeResourceSlices("template", []int{1, 1})
+	nodeSlices := createNodeResourceSlices("node", []int{1, 1})
+	slicesExtra := createNodeResourceSlices("node", []int{1, 1, 1})
+	slicesMissing := createNodeResourceSlices("node", []int{1})
+	slicesMismatch := createNodeResourceSlices("node", []int{1, 0})
+
+	testCases := map[string]struct {
+		nodeSlices             []*resourceapi.ResourceSlice
+		templateSlices         []*resourceapi.ResourceSlice
+		expectedTemplateSlices [][]*resourceapi.ResourceSlice
+		expectedNodeSlices     [][]*resourceapi.ResourceSlice
+		expectReported         bool
+	}{
+		"Match": {
+			nodeSlices:             nodeSlices,
+			templateSlices:         templateSlices,
+			expectReported:         true,
+			expectedTemplateSlices: [][]*resourceapi.ResourceSlice{templateSlices},
+			expectedNodeSlices:     [][]*resourceapi.ResourceSlice{nodeSlices},
+		},
+		"Extra": {
+			nodeSlices:             slicesExtra,
+			templateSlices:         templateSlices,
+			expectReported:         true,
+			expectedTemplateSlices: [][]*resourceapi.ResourceSlice{templateSlices},
+			expectedNodeSlices:     [][]*resourceapi.ResourceSlice{slicesExtra},
+		},
+		"Missing": {
+			nodeSlices:     slicesMissing,
+			templateSlices: templateSlices,
+			expectReported: false,
+		},
+		"Mismatch": {
+			nodeSlices:     slicesMismatch,
+			templateSlices: templateSlices,
+			expectReported: false,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			node := buildTestNode("node1", true)
+			nodeGroup := "ng1"
+
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
+			provider.AddAutoprovisionedNodeGroup(nodeGroup, 0, 10, 1, "template")
+			provider.AddNode(nodeGroup, node)
+
+			nodeResourceSlices := map[string][]*resourceapi.ResourceSlice{node.Name: tc.nodeSlices}
+			draSnapshot := drasnapshot.NewSnapshot(nil, nodeResourceSlices, nil, nil)
+
+			clusterSnapshotStore := store.NewBasicSnapshotStore()
+			clusterSnapshotStore.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot, nil)
+			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
+
+			autoscalingCtx := &ca_context.AutoscalingContext{
+				CloudProvider:   provider,
+				ClusterSnapshot: clusterSnapshot,
+				TemplateNodeInfoRegistry: newMockTemplateNodeInfoRegistry(map[string]*framework.NodeInfo{
+					nodeGroup: createTemplateNodeInfo("template", tc.templateSlices),
+				}),
+			}
+
+			mockComparator := &fakeResourceDiscrepancyReporter{}
+			processor := DraCustomResourcesProcessor{resourcesComparator: mockComparator}
+
+			processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, []*apiv1.Node{node}, []*apiv1.Node{node}, draSnapshot, nil)
+
+			if tc.expectReported {
+				assert.Equal(t, []string{node.Name}, mockComparator.reportedNodeNames)
+				assert.Equal(t, tc.expectedTemplateSlices, mockComparator.reportedTemplateSlices)
+				assert.Equal(t, tc.expectedNodeSlices, mockComparator.reportedNodeSlices)
+			} else {
+				assert.Empty(t, mockComparator.reportedNodeNames)
+				assert.Empty(t, mockComparator.reportedTemplateSlices)
+				assert.Empty(t, mockComparator.reportedNodeSlices)
+			}
+		})
+	}
 }
