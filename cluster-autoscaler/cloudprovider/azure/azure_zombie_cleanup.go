@@ -404,8 +404,8 @@ func (m *AzureManager) evaluateZombieStatus(
 // normalizeProviderID normalizes Azure provider IDs for comparison
 // Removes "azure://" prefix and ensures consistent format
 func normalizeProviderID(providerID string) string {
-	normalized := strings.TrimPrefix(providerID, "azure://")
+	normalized := strings.ToLower(providerID)
+	normalized = strings.TrimPrefix(normalized, "azure://")
 	normalized = strings.ReplaceAll(normalized, "\\", "/")
-	normalized = strings.ToLower(normalized)
 	return normalized
 }
