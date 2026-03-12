@@ -30,6 +30,14 @@ admissionController:
     - name: tls-certs
       secret:
         secretName: vpa-tls-certs
+        defaultMode: 420
+        items:
+          - key: caCert.pem
+            path: caCert.pem
+          - key: serverCert.pem
+            path: serverCert.pem
+          - key: serverKey.pem
+            path: serverKey.pem
   volumeMounts:
     - name: tls-certs
       mountPath: /etc/tls-certs
