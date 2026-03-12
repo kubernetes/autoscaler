@@ -402,7 +402,7 @@ func TestZombieCleanup_MultipleZombiesInSamePool(t *testing.T) {
 		vmssName,
 		gomock.AssignableToTypeOf(armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{}),
 		gomock.Any(),
-	).DoAndReturn(func(ctx context.Context, resourceGroup, vmssName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (interface{}, error) {
+	).DoAndReturn(func(ctx context.Context, resourceGroup, vmssName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (*armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse, error) {
 		// Verify all 3 instance IDs are in the batch
 		assert.NotNil(t, vmInstanceIDs.InstanceIDs)
 		assert.Equal(t, 3, len(vmInstanceIDs.InstanceIDs))
@@ -480,7 +480,7 @@ func TestZombieCleanup_MixedZombiesAndHealthy(t *testing.T) {
 		vmssName,
 		gomock.AssignableToTypeOf(armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{}),
 		gomock.Any(),
-	).DoAndReturn(func(ctx context.Context, resourceGroup, vmssName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (interface{}, error) {
+	).DoAndReturn(func(ctx context.Context, resourceGroup, vmssName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (*armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse, error) {
 		assert.NotNil(t, vmInstanceIDs.InstanceIDs)
 		assert.Equal(t, 2, len(vmInstanceIDs.InstanceIDs))
 		// Verify only zombie instance IDs
@@ -881,28 +881,6 @@ func newUnreachableZombieVM(instanceID int, age time.Duration) *armcompute.Virtu
 		Properties: &armcompute.VirtualMachineScaleSetVMProperties{
 			ProvisioningState: ptr.To("Succeeded"),
 			TimeCreated:       ptr.To(time.Now().Add(-age)),
-			InstanceView: &armcompute.VirtualMachineScaleSetVMInstanceView{
-				Statuses: []*armcompute.InstanceViewStatus{
-					{
-						Code: ptr.To("ProvisioningState/succeeded"),
-					},
-					{
-						Code: ptr.To("PowerState/running"),
-					},
-				},
-			},
-		},
-	}
-}
-
-// newRecentVM creates a recently created VM (below age threshold)
-func newRecentVM(instanceID int) *armcompute.VirtualMachineScaleSetVM {
-	return &armcompute.VirtualMachineScaleSetVM{
-		ID:         ptr.To(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, instanceID)),
-		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),
-		Properties: &armcompute.VirtualMachineScaleSetVMProperties{
-			ProvisioningState: ptr.To("Succeeded"),
-			TimeCreated:       ptr.To(time.Now().Add(-2 * time.Minute)), // Less than 5 minutes
 			InstanceView: &armcompute.VirtualMachineScaleSetVMInstanceView{
 				Statuses: []*armcompute.InstanceViewStatus{
 					{
