@@ -27,6 +27,7 @@ import (
 	"go.uber.org/mock/gomock"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient/mock_virtualmachinescalesetclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient/mock_virtualmachinescalesetvmclient"
@@ -204,6 +205,52 @@ func TestZombieCleanup_WithK8sNodesContext(t *testing.T) {
 	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(zombieVMs, nil)
 
 	err := manager.cleanupZombieNodesWithContext(nodes)
+	assert.NoError(t, err)
+}
+
+func TestZombieCleanup_UsesKubeClientForNodeContext(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager, mockVMSSClient, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
+	manager.config.EnableZombieCleanup = true
+	manager.config.ZombieCleanupDryRun = false
+	manager.config.ZombieMinAgeMinutes = 5
+
+	// Create a K8s node with unreachable taint using the fake clientset
+	unreachableNode := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "node-0",
+			CreationTimestamp: metav1.Time{Time: time.Now().Add(-10 * time.Minute)},
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: azurePrefix + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0),
+			Taints: []apiv1.Taint{
+				{
+					Key:    "node.kubernetes.io/unreachable",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+			},
+		},
+	}
+	manager.kubeClient = fake.NewSimpleClientset(unreachableNode)
+
+	vmssName := "test-vmss"
+	mockVMSSList := []*armcompute.VirtualMachineScaleSet{
+		{Name: ptr.To(vmssName)},
+	}
+
+	// Succeeded+running VM that matches the unreachable K8s node
+	zombieVM := newUnreachableZombieVM(0, 10*time.Minute)
+
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(mockVMSSList, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(
+		[]*armcompute.VirtualMachineScaleSetVM{zombieVM}, nil,
+	)
+
+	// Call cleanupZombieNodes() not cleanupZombieNodesWithContext)
+	// hasK8sNode=true so the zombie is logged only, not deleted.
+	err := manager.cleanupZombieNodes()
 	assert.NoError(t, err)
 }
 
