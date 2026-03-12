@@ -295,16 +295,16 @@ func (m *AzureManager) evaluateZombieStatus(
 
 	// SCENARIO 1: Extensions failed or never installed
 	if !hasK8sNode && (!extensionsInstalled || extensionsFailed) {
-		if vmssAge != nil && *vmssAge > minAgeDuration {
+		if vmssAge == nil {
+			klog.V(4).Infof("Skipping instance %s: no TimeCreated yet (extensions installed=%v, failed=%v)",
+				ptr.Deref(vm.InstanceID, ""), extensionsInstalled, extensionsFailed)
+			return false, false, ""
+		}
+		if *vmssAge > minAgeDuration {
 			if extensionsFailed {
 				return true, false, fmt.Sprintf("Extensions FAILED, age: %.0f minutes", vmssAge.Minutes())
 			}
 			return true, false, fmt.Sprintf("Extensions NOT INSTALLED (flapping zombie), age: %.0f minutes", vmssAge.Minutes())
-		} else if vmssAge == nil {
-			if extensionsFailed {
-				return true, false, "Extensions FAILED, no timestamp"
-			}
-			return true, false, "Extensions NOT INSTALLED, no timestamp"
 		}
 	}
 
@@ -315,10 +315,13 @@ func (m *AzureManager) evaluateZombieStatus(
 
 	// SCENARIO 3: VMSS succeeded but never registered in K8s
 	if !hasK8sNode && provisioningState == "Succeeded" {
-		if vmssAge != nil && *vmssAge > minAgeDuration {
+		if vmssAge == nil {
+			klog.V(4).Infof("Skipping instance %s: no TimeCreated yet (provisioning succeeded, not in K8s)",
+				ptr.Deref(vm.InstanceID, ""))
+			return false, false, ""
+		}
+		if *vmssAge > minAgeDuration {
 			return true, false, fmt.Sprintf("Never registered in K8s (AllocationFailed), age: %.0f minutes", vmssAge.Minutes())
-		} else if vmssAge == nil {
-			return true, false, "Never registered in K8s (AllocationFailed), no timestamp"
 		}
 	}
 
