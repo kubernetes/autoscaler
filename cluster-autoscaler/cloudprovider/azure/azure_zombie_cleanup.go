@@ -323,7 +323,7 @@ func (m *AzureManager) evaluateZombieStatus(
 	}
 
 	// SCENARIO 1: Extensions failed or never installed
-	if !hasK8sNode && (!extensionsInstalled || extensionsFailed) {
+	if !hasK8sNode && provisioningState == "Succeeded" && (!extensionsInstalled || extensionsFailed) {
 		if vmssAge == nil {
 			klog.V(4).Infof("Skipping instance %s: no TimeCreated yet (extensions installed=%v, failed=%v)",
 				ptr.Deref(vm.InstanceID, ""), extensionsInstalled, extensionsFailed)
