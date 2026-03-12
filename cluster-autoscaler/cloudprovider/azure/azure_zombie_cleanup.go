@@ -79,7 +79,7 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 	scaleSets, err := m.azClient.virtualMachineScaleSetsClient.List(ctx, m.config.ResourceGroup)
 	if err != nil {
 		klog.Errorf("Failed to list VMSS: %v", err)
-		return fmt.Errorf("failed to list VMSS: %v", err)
+		return fmt.Errorf("failed to list VMSS: %w", err)
 	}
 
 	// Build K8s node lookup table
