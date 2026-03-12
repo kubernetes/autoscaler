@@ -212,7 +212,7 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 			len(instanceIDs), vmssName, instanceIDs)
 
 		// Delete VMSS instances
-		_, err := m.azClient.vmssClientForDelete.BeginDeleteInstances(
+		poller, err := m.azClient.vmssClientForDelete.BeginDeleteInstances(
 			ctx,
 			m.config.ResourceGroup,
 			vmssName,
@@ -227,9 +227,20 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 			continue
 		}
 
-		// Log success for each zombie
-		for _, zombie := range zombies {
-			klog.V(2).Infof("Successfully cleaned zombie: Instance %s (VMSS: %s)", zombie.instanceID, vmssName)
+		klog.V(2).Infof("Initiated deletion of %d zombie instance(s) from VMSS %s", len(zombies), vmssName)
+
+		// Poll for completion in background
+		if poller != nil {
+			go func(vmssName string, ids []*string) {
+				pollCtx, pollCancel := getContextWithTimeout(asyncContextTimeout)
+				defer pollCancel()
+				_, pollErr := poller.PollUntilDone(pollCtx, nil)
+				if pollErr != nil {
+					klog.Errorf("Zombie deletion polling failed for VMSS %s instances %v: %v", vmssName, ids, pollErr)
+					return
+				}
+				klog.V(2).Infof("Zombie deletion completed for VMSS %s instances %v", vmssName, ids)
+			}(vmssName, instanceIDs)
 		}
 	}
 
