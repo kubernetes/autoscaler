@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testcloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -195,14 +196,15 @@ func NewScaleTestAutoscalingContext(
 			LogRecorder:    fakeLogRecorder,
 			ListerRegistry: listers,
 		},
-		CloudProvider:            provider,
-		ClusterSnapshot:          clusterSnapshot,
-		FrameworkHandle:          fwHandle,
-		ExpanderStrategy:         random.NewStrategy(),
-		ProcessorCallbacks:       processorCallbacks,
-		DebuggingSnapshotter:     debuggingSnapshotter,
-		RemainingPdbTracker:      remainingPdbTracker,
-		TemplateNodeInfoRegistry: templateNodeInfoRegistry,
+		CloudProvider:                   provider,
+		ClusterSnapshot:                 clusterSnapshot,
+		FrameworkHandle:                 fwHandle,
+		ExpanderStrategy:                random.NewStrategy(),
+		ProcessorCallbacks:              processorCallbacks,
+		DebuggingSnapshotter:            debuggingSnapshotter,
+		RemainingPdbTracker:             remainingPdbTracker,
+		TemplateNodeInfoRegistry:        templateNodeInfoRegistry,
+		CapacityBuffersFakePodsRegistry: fakepods.NewRegistry(nil),
 	}, nil
 }
 

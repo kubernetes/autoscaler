@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -82,9 +81,11 @@ func TestProcess(t *testing.T) {
 				PodsAwaitEvaluation:     tc.podsAwaitEvaluation,
 				PodsRemainUnschedulable: makeNoScaleUpInfoFromPods(tc.podsRemainUnschedulable),
 			}
-			autoscalingCtx := &ca_context.AutoscalingContext{}
+			autoscalingCtx := &ca_context.AutoscalingContext{
+				CapacityBuffersFakePodsRegistry: fakepods.NewRegistry(nil),
+			}
 
-			p := NewFakePodsScaleUpStatusProcessor(fakepods.NewRegistry(nil))
+			p := NewFakePodsScaleUpStatusProcessor()
 			p.Process(autoscalingCtx, scaleUpStatus)
 
 			assert.ElementsMatch(t, tc.expectedPodsRemainUnschedulable, extractPodsFromNoScaleUpInfo(scaleUpStatus.PodsRemainUnschedulable))
@@ -282,12 +283,13 @@ func TestBuffersEvent(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			fakeRecorder := kube_record.NewFakeRecorder(5)
-			ctx := &context.AutoscalingContext{
-				AutoscalingKubeClients: context.AutoscalingKubeClients{
+			ctx := &ca_context.AutoscalingContext{
+				AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
 					Recorder: fakeRecorder,
 				},
+				CapacityBuffersFakePodsRegistry: tc.buffersRegistry,
 			}
-			p := NewFakePodsScaleUpStatusProcessor(tc.buffersRegistry)
+			p := NewFakePodsScaleUpStatusProcessor()
 			p.Process(ctx, tc.state)
 
 			triggeredScaleUp := 0

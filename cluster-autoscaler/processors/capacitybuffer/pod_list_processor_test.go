@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 
 	corev1 "k8s.io/api/core/v1"
@@ -192,8 +193,11 @@ func TestPodListProcessor(t *testing.T) {
 			fakeBuffersClient := buffersfake.NewSimpleClientset(test.objectsInBuffersClient...)
 			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
 
-			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, fakepods.NewRegistry(nil), test.forceSafeToEvict)
-			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
+			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, test.forceSafeToEvict)
+			ctx := &ca_context.AutoscalingContext{
+				CapacityBuffersFakePodsRegistry: fakepods.NewRegistry(nil),
+			}
+			resUnschedulablePods, err := processor.Process(ctx, test.unschedulablePods)
 			assert.Equal(t, err != nil, test.expectError)
 
 			numberOfFakePods := 0
@@ -265,8 +269,11 @@ func TestCapacityBufferFakePodsRegistry(t *testing.T) {
 			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
 
 			registry := fakepods.NewRegistry(nil)
-			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, registry, false)
-			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
+			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, false)
+			ctx := &ca_context.AutoscalingContext{
+				CapacityBuffersFakePodsRegistry: registry,
+			}
+			resUnschedulablePods, err := processor.Process(ctx, test.unschedulablePods)
 			assert.Equal(t, nil, err)
 			assert.Equal(t, test.expectedUnschedPodsCount, len(resUnschedulablePods))
 			for _, pod := range resUnschedulablePods {

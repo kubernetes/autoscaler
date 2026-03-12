@@ -60,12 +60,11 @@ type CapacityBufferPodListProcessor struct {
 	statusFilter             buffersfilter.Filter
 	podTemplateGenFilter     buffersfilter.Filter
 	provStrategies           map[string]bool
-	buffersRegistry          *fakepods.Registry
 	forceSafeToEvictFakePods bool
 }
 
 // NewCapacityBufferPodListProcessor creates a new CapacityRequestPodListProcessor.
-func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, provStrategies []string, buffersRegistry *fakepods.Registry, forceSafeToEvictFakePods bool) *CapacityBufferPodListProcessor {
+func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, provStrategies []string, forceSafeToEvictFakePods bool) *CapacityBufferPodListProcessor {
 	provStrategiesMap := map[string]bool{}
 	for _, ps := range provStrategies {
 		provStrategiesMap[ps] = true
@@ -78,7 +77,6 @@ func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, prov
 		}),
 		podTemplateGenFilter:     buffersfilter.NewPodTemplateGenerationChangedFilter(client),
 		provStrategies:           provStrategiesMap,
-		buffersRegistry:          buffersRegistry,
 		forceSafeToEvictFakePods: forceSafeToEvictFakePods,
 	}
 }
@@ -95,10 +93,9 @@ func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.Auto
 	_, buffers = p.podTemplateGenFilter.Filter(buffers)
 
 	totalFakePods := []*apiv1.Pod{}
-	p.clearCapacityBufferRegistry()
 	for _, buffer := range buffers {
 		fakePods := p.provision(buffer)
-		p.updateCapacityBufferRegistry(fakePods, buffer)
+		p.updateCapacityBufferRegistry(fakePods, buffer, autoscalingCtx.CapacityBuffersFakePodsRegistry)
 		totalFakePods = append(totalFakePods, fakePods...)
 	}
 	klog.V(2).Infof("Capacity pod processor injecting %v fake pods provisioning %v capacity buffers", len(totalFakePods), len(buffers))
@@ -110,20 +107,13 @@ func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.Auto
 func (p *CapacityBufferPodListProcessor) CleanUp() {
 }
 
-func (p *CapacityBufferPodListProcessor) updateCapacityBufferRegistry(fakePods []*apiv1.Pod, buffer *v1beta1.CapacityBuffer) {
-	if p.buffersRegistry == nil {
+func (p *CapacityBufferPodListProcessor) updateCapacityBufferRegistry(fakePods []*apiv1.Pod, buffer *v1beta1.CapacityBuffer, bufferRegistry *fakepods.Registry) {
+	if bufferRegistry == nil {
 		return
 	}
 	for _, fakePod := range fakePods {
-		p.buffersRegistry.SetCapacityBuffer(fakePod.UID, buffer)
+		bufferRegistry.SetCapacityBuffer(fakePod.UID, buffer)
 	}
-}
-
-func (p *CapacityBufferPodListProcessor) clearCapacityBufferRegistry() {
-	if p.buffersRegistry == nil {
-		return
-	}
-	p.buffersRegistry.Clear()
 }
 
 func (p *CapacityBufferPodListProcessor) provision(buffer *v1beta1.CapacityBuffer) []*apiv1.Pod {
