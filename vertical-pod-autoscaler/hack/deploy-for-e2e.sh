@@ -59,6 +59,19 @@ case ${SUITE} in
     ;;
 esac
 
+# Install Helm if not available
+if ! command -v helm > /dev/null 2>&1; then
+  HELM_VERSION="v4.1.1"
+  HELM_CHECKSUM="5d4c7623283e6dfb1971957f4b755468ab64917066a8567dd50464af298f4031"
+  HELM_ARCHIVE="helm-${HELM_VERSION}-linux-amd64.tar.gz"
+  echo "Helm not found, installing ${HELM_VERSION}..."
+  curl -fsSL -o "${HELM_ARCHIVE}" "https://get.helm.sh/${HELM_ARCHIVE}"
+  echo "${HELM_CHECKSUM}  ${HELM_ARCHIVE}" | sha256sum --check
+  tar -zxf "${HELM_ARCHIVE}"
+  mv linux-amd64/helm /usr/local/bin/helm
+  rm -rf linux-amd64 "${HELM_ARCHIVE}"
+fi
+
 export REGISTRY=gcr.io/`gcloud config get-value core/project`
 export TAG=latest
 
@@ -66,18 +79,75 @@ echo "Configuring registry authentication"
 mkdir -p "${HOME}/.docker"
 gcloud auth configure-docker -q
 
+# Build and release Docker images for each component
 for i in ${COMPONENTS}; do
-  if [ $i == admission-controller ] ; then
-    (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh e2e || true)
-    kubectl apply -f ${SCRIPT_ROOT}/deploy/admission-controller-service.yaml
-  fi
   ALL_ARCHITECTURES=amd64 make --directory ${SCRIPT_ROOT}/pkg/${i} release
 done
 
-kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-v1-crd-gen.yaml
-kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml
+# Prepare Helm values
+HELM_CHART_PATH="${SCRIPT_ROOT}/charts/vertical-pod-autoscaler"
+VALUES_FILE="${SCRIPT_ROOT}/hack/e2e/values-e2e.yaml"
+HELM_RELEASE_NAME="vpa"
+HELM_NAMESPACE="kube-system"
 
-for i in ${COMPONENTS}; do
-  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh  ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | kubectl create -f -
+# Build dynamic Helm set arguments based on components
+HELM_SET_ARGS=()
+
+# Enable components
+for COMPONENT in ${COMPONENTS}; do
+  case ${COMPONENT} in
+    recommender)
+      HELM_SET_ARGS+=("--set" "recommender.enabled=true")
+      HELM_SET_ARGS+=("--set" "recommender.image.repository=${REGISTRY}/vpa-recommender")
+      HELM_SET_ARGS+=("--set" "recommender.image.tag=${TAG}")
+      ;;
+    updater)
+      HELM_SET_ARGS+=("--set" "updater.enabled=true")
+      HELM_SET_ARGS+=("--set" "updater.image.repository=${REGISTRY}/vpa-updater")
+      HELM_SET_ARGS+=("--set" "updater.image.tag=${TAG}")
+      ;;
+    admission-controller)
+      HELM_SET_ARGS+=("--set" "admissionController.enabled=true")
+      HELM_SET_ARGS+=("--set" "admissionController.image.repository=${REGISTRY}/vpa-admission-controller")
+      HELM_SET_ARGS+=("--set" "admissionController.image.tag=${TAG}")
+      ;;
+  esac
 done
 
+# Add feature gates if specified
+if [ -n "${FEATURE_GATES:-}" ]; then
+  for COMPONENT in ${COMPONENTS}; do
+    case ${COMPONENT} in
+      recommender)
+        HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
+        ;;
+      updater)
+        HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
+        ;;
+      admission-controller)
+        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[1]=--feature-gates=${FEATURE_GATES}")
+        ;;
+    esac
+  done
+fi
+
+# Uninstall any existing VPA Helm release
+helm uninstall ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE} 2>/dev/null || true
+
+# Generate TLS certificates for admission-controller before Helm install
+for COMPONENT in ${COMPONENTS}; do
+  if [[ "${COMPONENT}" == "admission-controller" ]]; then
+    echo " ** Generating TLS certificates for admission-controller"
+    (cd ${SCRIPT_ROOT}/pkg/admission-controller && bash ./gencerts.sh e2e || true)
+    break
+  fi
+done
+
+# Install/Upgrade VPA using Helm chart
+echo " ** Installing/Upgrading VPA via Helm chart"
+helm upgrade --install ${HELM_RELEASE_NAME} "${HELM_CHART_PATH}" \
+  --namespace ${HELM_NAMESPACE} \
+  --values "${VALUES_FILE}" \
+  "${HELM_SET_ARGS[@]}" \
+  --wait \
+  --timeout 15m

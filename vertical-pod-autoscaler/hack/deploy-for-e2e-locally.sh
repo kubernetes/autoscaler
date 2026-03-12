@@ -93,7 +93,7 @@ done
 
 # Prepare Helm values
 HELM_CHART_PATH="${SCRIPT_ROOT}/charts/vertical-pod-autoscaler"
-VALUES_FILE="${SCRIPT_ROOT}/hack/e2e/values-e2e-local.yaml"
+VALUES_FILE="${SCRIPT_ROOT}/hack/e2e/values-e2e.yaml"
 HELM_RELEASE_NAME="vpa"
 HELM_NAMESPACE="kube-system"
 
@@ -107,16 +107,19 @@ for COMPONENT in ${COMPONENTS}; do
       HELM_SET_ARGS+=("--set" "recommender.enabled=true")
       HELM_SET_ARGS+=("--set" "recommender.image.repository=${REGISTRY}/vpa-recommender")
       HELM_SET_ARGS+=("--set" "recommender.image.tag=${TAG}")
+      HELM_SET_ARGS+=("--set" "recommender.image.pullPolicy=Never")
       ;;
     updater)
       HELM_SET_ARGS+=("--set" "updater.enabled=true")
       HELM_SET_ARGS+=("--set" "updater.image.repository=${REGISTRY}/vpa-updater")
       HELM_SET_ARGS+=("--set" "updater.image.tag=${TAG}")
+      HELM_SET_ARGS+=("--set" "updater.image.pullPolicy=Never")
       ;;
     admission-controller)
       HELM_SET_ARGS+=("--set" "admissionController.enabled=true")
       HELM_SET_ARGS+=("--set" "admissionController.image.repository=${REGISTRY}/vpa-admission-controller")
       HELM_SET_ARGS+=("--set" "admissionController.image.tag=${TAG}")
+      HELM_SET_ARGS+=("--set" "admissionController.image.pullPolicy=Never")
       ;;
   esac
 done
@@ -135,7 +138,7 @@ if [ -n "${FEATURE_GATES:-}" ]; then
         HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
         ;;
       admission-controller)
-        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[1]=--feature-gates=${FEATURE_GATES}")
         ;;
     esac
   done
