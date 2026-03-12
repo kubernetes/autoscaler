@@ -17,12 +17,14 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 )
@@ -35,7 +37,7 @@ type zombieInstance struct {
 }
 
 // cleanupZombieNodes detects and cleans up zombie VMSS instances that are in non-functional states.
-// A zombie instance is one that:
+// A zombie instance is one that meets any of the following conditions:
 // - Has failed provisioning state
 // - Has failed VM extensions
 // - Never registered in Kubernetes (age > threshold)
@@ -46,7 +48,23 @@ type zombieInstance struct {
 // - VMs that never registered in K8s are directly deleted
 // - VMs with K8s nodes (unreachable/NotReady) are logged only (autoscaler handles deletion)
 func (m *AzureManager) cleanupZombieNodes() error {
-	return m.cleanupZombieNodesWithContext(nil)
+	if m.kubeClient == nil {
+		klog.V(4).Info("No kubeClient available, running zombie cleanup without K8s node context")
+		return m.cleanupZombieNodesWithContext(nil)
+	}
+
+	nodeList, err := m.kubeClient.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		klog.Warningf("Failed to list K8s nodes for zombie cleanup, proceeding without K8s context: %v", err)
+		return m.cleanupZombieNodesWithContext(nil)
+	}
+
+	nodes := make([]*apiv1.Node, len(nodeList.Items))
+	for i := range nodeList.Items {
+		nodes[i] = &nodeList.Items[i]
+	}
+
+	return m.cleanupZombieNodesWithContext(nodes)
 }
 
 // cleanupZombieNodesWithContext is similar to cleanupZombieNodes but accepts Kubernetes nodes
