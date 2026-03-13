@@ -37,7 +37,7 @@ func init() {
 	utilruntime.Must(corev1.AddToScheme(scheme))
 }
 
-const pod1Yaml = `
+const runningPodYaml = `
 apiVersion: v1
 kind: Pod
 metadata:
@@ -52,10 +52,9 @@ spec:
 status:
   containerStatuses:
   - name: Name11
-    restartCount: 0
 `
 
-const pod2Yaml = `
+const oomPodYaml = `
 apiVersion: v1
 kind: Pod
 metadata:
@@ -70,8 +69,7 @@ spec:
 status:
   containerStatuses:
   - name: Name11
-    restartCount: 1
-    lastState:
+    state:
       terminated:
         finishedAt: 2018-02-23T13:38:48Z
         reason: OOMKilled
@@ -96,9 +94,9 @@ func newEvent(yaml string) (*corev1.Event, error) {
 }
 
 func TestOOMReceived(t *testing.T) {
-	p1, err := newPod(pod1Yaml)
+	p1, err := newPod(runningPodYaml)
 	assert.NoError(t, err)
-	p2, err := newPod(pod2Yaml)
+	p2, err := newPod(oomPodYaml)
 	assert.NoError(t, err)
 	timestamp, err := time.Parse(time.RFC3339, "2018-02-23T13:38:48Z")
 	assert.NoError(t, err)
@@ -181,18 +179,33 @@ func TestOOMReceived(t *testing.T) {
 	}
 }
 
-func TestMalformedPodReceived(t *testing.T) {
-	p1, err := newPod(pod1Yaml)
+func TestOOMStateAfterTerminatedState(t *testing.T) {
+	p1, err := newPod(`
+apiVersion: v1
+kind: Pod
+metadata:
+  name: Pod1
+  namespace: mockNamespace
+spec:
+  containers:
+  - name: Name11
+    resources:
+      requests:
+        memory: "1024"
+status:
+  containerStatuses:
+  - name: Name11
+    state:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+`)
 	assert.NoError(t, err)
-	p2, err := newPod(pod2Yaml)
+	p2, err := newPod(oomPodYaml)
 	assert.NoError(t, err)
-
-	// Malformed pod: restart count > 0, but last termination status is nil
-	p2.Status.ContainerStatuses[0].RestartCount = 1
-	p2.Status.ContainerStatuses[0].LastTerminationState.Terminated = nil
-
 	observer := NewObserver()
 	observer.OnUpdate(p1, p2)
+
+	// No OOM event should be sent if previous state was also "terminated".
 	assert.Empty(t, observer.observedOomsChannel)
 }
 

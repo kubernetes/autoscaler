@@ -148,33 +148,63 @@ func (o *observer) OnUpdate(oldObj, newObj any) {
 	}
 
 	for _, containerStatus := range newPod.Status.ContainerStatuses {
-		if containerStatus.RestartCount > 0 &&
-			containerStatus.LastTerminationState.Terminated != nil &&
-			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled" {
-			oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
-			if oldStatus != nil && containerStatus.RestartCount > oldStatus.RestartCount {
-				oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
-				if oldSpec != nil {
-					requests, _ := resourcehelpers.ContainerRequestsAndLimits(containerStatus.Name, oldPod)
-					var memory resource.Quantity
-					if requests != nil {
-						memory = requests[corev1.ResourceMemory]
-					}
-					oomInfo := OomInfo{
-						Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.UTC(),
-						Memory:    model.ResourceAmount(memory.Value()),
-						ContainerID: model.ContainerID{
-							PodID: model.PodID{
-								Namespace: newPod.Namespace,
-								PodName:   newPod.Name,
-							},
-							ContainerName: containerStatus.Name,
-						},
-					}
-					o.observedOomsChannel <- oomInfo
-				}
-			}
+		oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
+		if oldStatus == nil {
+			continue
 		}
+
+		// Check if container changes state from non-Terminated to Terminated
+		// with OOMKilled reason. Also if container fails too fast, it may
+		// skip Running state and change state direcly to Terminated
+		// (from Terminated or Waiting) with increased RestartCount.
+		// We check for this case as well.
+		isNewOOM := containerStatus.State.Terminated != nil &&
+			containerStatus.State.Terminated.Reason == "OOMKilled" &&
+			(oldStatus.State.Terminated == nil ||
+				containerStatus.RestartCount > oldStatus.RestartCount)
+
+		// If controller restarts container, it may skip
+		// Terminated state and change directly from Running
+		// to Running with increased RestartCount. In this
+		// case we check LastTerminationState.
+		isPreviousOOM := containerStatus.State.Running != nil &&
+			oldStatus.State.Terminated == nil &&
+			containerStatus.RestartCount > oldStatus.RestartCount &&
+			containerStatus.LastTerminationState.Terminated != nil &&
+			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled"
+
+		if !isNewOOM && !isPreviousOOM {
+			continue
+		}
+
+		var oomState *apiv1.ContainerStateTerminated
+		if isNewOOM {
+			oomState = containerStatus.State.Terminated
+		} else {
+			oomState = containerStatus.LastTerminationState.Terminated
+		}
+
+		oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
+		if oldSpec == nil {
+			continue
+		}
+		var memory resource.Quantity
+		requests, _ := resourcehelpers.ContainerRequestsAndLimits(containerStatus.Name, oldPod)
+		if requests != nil {
+			memory = requests[apiv1.ResourceMemory]
+		}
+		oomInfo := OomInfo{
+			Timestamp: oomState.FinishedAt.UTC(),
+			Memory:    model.ResourceAmount(memory.Value()),
+			ContainerID: model.ContainerID{
+				PodID: model.PodID{
+					Namespace: newPod.Namespace,
+					PodName:   newPod.Name,
+				},
+				ContainerName: containerStatus.Name,
+			},
+		}
+		o.observedOomsChannel <- oomInfo
 	}
 }
 
