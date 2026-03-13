@@ -314,9 +314,6 @@ func (b *verticalPodAutoscalerBuilder) WithPodLevelScalingMode(scalingMode vpa_t
 }
 
 func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
-	if len(b.containerNames) == 0 {
-		panic("Must call WithContainer() before Get()")
-	}
 	var recommenders []*vpa_types.VerticalPodAutoscalerRecommenderSelector
 	if b.recommender != "" {
 		recommenders = []*vpa_types.VerticalPodAutoscalerRecommenderSelector{{Name: b.recommender}}

@@ -69,8 +69,8 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *core.Pod, vpa *v
 	}
 
 	if podResources != nil {
-		result = appendPodLevelResourcePatches(result, "requests", podResources.Requests)
-		result = appendPodLevelResourcePatches(result, "limits", podResources.Limits)
+		result = AppendPodLevelResourcePatches(result, "requests", podResources.Requests)
+		result = AppendPodLevelResourcePatches(result, "limits", podResources.Limits)
 	}
 
 	updatesAnnotation := []string{}

@@ -33,6 +33,12 @@ type RecommendationBuilder interface {
 	WithUncappedTarget(cpu, memory string) RecommendationBuilder
 	Get() *vpa_types.RecommendedPodResources
 	GetContainerResources() vpa_types.RecommendedContainerResources
+	// pod-level
+	GetPodLevelRecommendations() *vpa_types.RecommendedPodRes
+	WithPodLevelLowerBound(cpu, memory string) RecommendationBuilder
+	WithPodLevelTarget(cpu, memory string) RecommendationBuilder
+	WithPodLevelUpperBound(cpu, memory string) RecommendationBuilder
+	WithPodLevelUncappedTarget(cpu, memory string) RecommendationBuilder
 }
 
 // TODO part of this interface is repeated in VerticalPodAutoscalerBuilder, we can probably factorize some code
@@ -43,11 +49,15 @@ func Recommendation() RecommendationBuilder {
 }
 
 type recommendationBuilder struct {
-	containerName  string
-	target         apiv1.ResourceList
-	lowerBound     apiv1.ResourceList
-	upperBound     apiv1.ResourceList
-	uncappedTarget apiv1.ResourceList
+	containerName          string
+	target                 apiv1.ResourceList
+	lowerBound             apiv1.ResourceList
+	upperBound             apiv1.ResourceList
+	uncappedTarget         apiv1.ResourceList
+	podLevelLowerBound     apiv1.ResourceList
+	podLevelTarget         apiv1.ResourceList
+	podLevelUpperBound     apiv1.ResourceList
+	podLevelUncappedTarget apiv1.ResourceList
 }
 
 func (b *recommendationBuilder) WithContainer(containerName string) RecommendationBuilder {
@@ -116,6 +126,43 @@ func (b *recommendationBuilder) GetContainerResources() vpa_types.RecommendedCon
 		UncappedTarget: uncappedTarget,
 		LowerBound:     b.lowerBound,
 		UpperBound:     b.upperBound,
+	}
+}
+
+func (b *recommendationBuilder) WithPodLevelLowerBound(cpu, memory string) RecommendationBuilder {
+	c := *b
+	c.podLevelLowerBound = Resources(cpu, memory)
+	return &c
+}
+
+func (b *recommendationBuilder) WithPodLevelTarget(cpu, memory string) RecommendationBuilder {
+	c := *b
+	c.podLevelTarget = Resources(cpu, memory)
+	return &c
+}
+
+func (b *recommendationBuilder) WithPodLevelUpperBound(cpu, memory string) RecommendationBuilder {
+	c := *b
+	c.upperBound = Resources(cpu, memory)
+	return &c
+}
+
+func (b *recommendationBuilder) WithPodLevelUncappedTarget(cpu, memory string) RecommendationBuilder {
+	c := *b
+	c.podLevelUncappedTarget = Resources(cpu, memory)
+	return &c
+}
+
+func (b *recommendationBuilder) GetPodLevelRecommendations() *vpa_types.RecommendedPodRes {
+	uncappedTarget := b.podLevelTarget
+	if b.podLevelUncappedTarget != nil {
+		uncappedTarget = b.podLevelUncappedTarget
+	}
+	return &vpa_types.RecommendedPodRes{
+		Target:         b.podLevelTarget,
+		UncappedTarget: uncappedTarget,
+		LowerBound:     b.podLevelLowerBound,
+		UpperBound:     b.podLevelUpperBound,
 	}
 }
 

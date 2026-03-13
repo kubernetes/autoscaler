@@ -167,6 +167,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
 	inPlaceFeatureEnable := features.Enabled(features.InPlaceOrRecreate)
+	podLevelFeatureEnable := features.Enabled(features.PodLevelResourcesSupportForVPA)
 
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
@@ -259,6 +260,16 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 		evictionLimiter := u.restrictionFactory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 		inPlaceLimiter := u.restrictionFactory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+		if podLevelFeatureEnable {
+			updatedContainerRecommendations := vpa_api_util.FilterContainerRecommendations(vpa)
+			vpa.Status.Recommendation.ContainerRecommendations = updatedContainerRecommendations
+		} else {
+			// Remove pod-level recommendations when the `PodLevelResourcesSupportForVPA` feature gate is disabled.
+			// This behavior prevents the updater from making eviction decisions or applying patches at the pod level
+			// when pod-level resource support is disabled.
+			vpa.Status.Recommendation.PodRecommendations = nil
+		}
 
 		podsForInPlace := make([]*apiv1.Pod, 0)
 		podsForEviction := make([]*apiv1.Pod, 0)

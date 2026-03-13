@@ -78,7 +78,9 @@ func GetAddResourceRequirementValuePatchAtPodLevel(kind string, resource core.Re
 		Value: quantity.String()}
 }
 
-func appendPodLevelResourcePatches(result []resource_admission.PatchRecord, field string, rl core.ResourceList) []resource_admission.PatchRecord {
+// AppendPodLevelResourcePatches returns a slice of patch records
+// for CPU and memory resources at the Pod level.
+func AppendPodLevelResourcePatches(result []resource_admission.PatchRecord, field string, rl core.ResourceList) []resource_admission.PatchRecord {
 	if rl == nil {
 		return result
 	}

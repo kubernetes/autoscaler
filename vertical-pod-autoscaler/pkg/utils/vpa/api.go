@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -291,11 +292,30 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 	return nil
 }
 
-// DetermineManagedContainers determines which containers resource
-// stanzas the VPA components should manage based on container-level policies
-// when the Pod-level recommendation feature is enabled.
-// In other words, it returns the names of containers whose scaling mode is Auto
-func DetermineManagedContainers(vpa *vpa_types.VerticalPodAutoscaler) []string {
+// FilterContainerRecommendations returns container-level recommendations whose Mode is "Auto" (the default value).
+// This behavior allows the existing code to process only containers
+// that the user wants to manage when pod-level scaling mode is enabled.
+func FilterContainerRecommendations(vpa *vpa_types.VerticalPodAutoscaler) []vpa_types.RecommendedContainerResources {
+	containerRecommendations := vpa.Status.Recommendation.ContainerRecommendations
+	if !IsPodLevelScalingModeEnabled(vpa) {
+		return containerRecommendations
+	}
+	managedContainers := determineManagedContainers(vpa)
+	if len(managedContainers) == 0 {
+		// Return nil because all containers use the "RecommendationOnly" mode
+		return nil
+	}
+	filtered := make([]vpa_types.RecommendedContainerResources, 0, len(containerRecommendations))
+	for _, c := range containerRecommendations {
+		if slices.Contains(managedContainers, c.ContainerName) {
+			filtered = append(filtered, c)
+		}
+	}
+	return filtered
+}
+
+// determineManagedContainers returns the names of containers whose scaling mode is Auto
+func determineManagedContainers(vpa *vpa_types.VerticalPodAutoscaler) []string {
 	recs := vpa.Status.Recommendation.ContainerRecommendations
 	containers := make([]string, 0, len(recs))
 

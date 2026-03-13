@@ -130,7 +130,7 @@ func TestGetUpdatePriority(t *testing.T) {
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("2", "20M").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
-				ResourceDiff:            1.5 + 0.0, // summed relative diffs for resources
+				ResourceDiff:            0.5 + 1, // summed relative diffs for resources
 				ScaleUp:                 true,
 			},
 		}, {
@@ -216,6 +216,236 @@ func TestGetUpdatePriority(t *testing.T) {
 				// relative diff between summed requests and summed recommendations, summed over resources
 				ResourceDiff: 0.5 + 0.25,
 				ScaleUp:      true,
+			},
+		},
+		{
+			name: "pod level simple scale up",
+			pod: test.Pod().
+				WithName("POD1").
+				AddContainer(
+					test.Container().
+						WithName(containerName).
+						Get()).
+				WithCPURequest(resource.MustParse("2")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithPodLevelTarget("10", "").
+				Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            4.0,
+				ScaleUp:                 true,
+			},
+		},
+		{
+			name: "pod level simple scale down",
+			pod: test.Pod().
+				WithName("POD1").
+				AddContainer(
+					test.Container().
+						WithName(containerName).
+						Get()).
+				WithCPURequest(resource.MustParse("4")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithPodLevelTarget("2", "").
+				Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            0.5,
+				ScaleUp:                 false,
+			},
+		},
+		{
+			name: "pod level no resource diff",
+			pod: test.Pod().
+				WithName("POD1").
+				AddContainer(
+					test.Container().
+						WithName(containerName).
+						Get()).
+				WithCPURequest(resource.MustParse("2")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithPodLevelTarget("2", "").
+				Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            0,
+				ScaleUp:                 false,
+			},
+		},
+		{
+			name: "pod level no resource diff at either container or pod level",
+			pod: test.Pod().
+				WithName("POD1").
+				AddContainer(
+					test.Container().
+						WithName(containerName).
+						WithCPURequest(resource.MustParse("1")).
+						Get()).
+				WithCPURequest(resource.MustParse("2")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName).
+				AppendRecommendation(
+					test.Recommendation().
+						WithContainer(containerName).
+						WithTarget("1", "").
+						GetContainerResources()).
+				WithPodLevelTarget("2", "").
+				Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            0,
+				ScaleUp:                 false,
+			},
+		},
+		{
+			name: "pod level scale up outside recommended range",
+			pod: test.Pod().
+				WithName("POD1").
+				AddContainer(
+					test.Container().
+						WithName(containerName).
+						Get()).
+				WithCPURequest(resource.MustParse("2")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithPodLevelLowerBound("3", "").
+				WithPodLevelTarget("4", "").
+				WithPodLevelUpperBound("5", "").
+				Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: true,
+				ResourceDiff:            1,
+				ScaleUp:                 true,
+			},
+		},
+		{
+			name: "pod level scale down outside recommended range",
+			pod: test.Pod().
+				WithName("POD1").
+				AddContainer(
+					test.Container().
+						WithName(containerName).
+						Get()).
+				WithCPURequest(resource.MustParse("8")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithPodLevelLowerBound("1", "").
+				WithPodLevelTarget("2", "").
+				WithPodLevelUpperBound("3", "").
+				Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: true,
+				ResourceDiff:            0.75,
+				ScaleUp:                 false,
+			},
+		},
+		{
+			name: "pod level scale up outside recommended range with one container recommendation",
+			pod: test.Pod().
+				WithName("POD1").
+				AddContainer(
+					test.Container().
+						WithName("test-container2").
+						WithCPURequest(resource.MustParse("9999")).
+						Get()).
+				AddContainer(
+					test.Container().
+						WithName(containerName).
+						WithCPURequest(resource.MustParse("2")).
+						Get()).
+				WithCPURequest(resource.MustParse("6")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName).
+				AppendRecommendation(
+					test.Recommendation().
+						WithContainer(containerName).
+						WithLowerBound("3", "").
+						WithTarget("4", "").
+						WithUpperBound("5", "").
+						GetContainerResources()).
+				WithPodLevelLowerBound("10", "").
+				WithPodLevelTarget("12", "").
+				WithPodLevelUpperBound("14", "").
+				Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: true,
+				ResourceDiff:            1, // (8−16)/8
+				ScaleUp:                 true,
+			},
+		},
+		{
+			name: "pod level scale down with one container recommendation",
+			pod: test.Pod().
+				WithName("POD1").
+				AddContainer(
+					test.Container().
+						WithName("test-container2").
+						WithCPURequest(resource.MustParse("9999")).
+						Get()).
+				AddContainer(
+					test.Container().
+						WithName(containerName).
+						WithCPURequest(resource.MustParse("14")).
+						Get()).
+				WithCPURequest(resource.MustParse("22")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName).
+				AppendRecommendation(
+					test.Recommendation().
+						WithContainer(containerName).
+						WithLowerBound("8", "").
+						WithTarget("12", "").
+						WithUpperBound("14", "").
+						GetContainerResources()).
+				WithPodLevelLowerBound("18", "").
+				WithPodLevelTarget("20", "").
+				WithPodLevelUpperBound("24", "").
+				Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            0.1111111111111111, // (36−32)/36
+				ScaleUp:                 false,
+			},
+		},
+		{
+			name: "pod level scale down outside recommended range with one container recommendation",
+			pod: test.Pod().
+				WithName("POD1").
+				AddContainer(
+					test.Container().
+						WithName("test-container2").
+						WithCPURequest(resource.MustParse("9999")).
+						Get()).
+				AddContainer(
+					test.Container().
+						WithName(containerName).
+						WithCPURequest(resource.MustParse("14")).
+						Get()).
+				WithCPURequest(resource.MustParse("26")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName).
+				AppendRecommendation(
+					test.Recommendation().
+						WithContainer(containerName).
+						WithLowerBound("8", "").
+						WithTarget("12", "").
+						WithUpperBound("14", "").
+						GetContainerResources()).
+				WithPodLevelLowerBound("18", "").
+				WithPodLevelTarget("20", "").
+				WithPodLevelUpperBound("24", "").
+				Get(),
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: true,
+				ResourceDiff:            0.2, // (40-32)/40
+				ScaleUp:                 false,
 			},
 		},
 	}
