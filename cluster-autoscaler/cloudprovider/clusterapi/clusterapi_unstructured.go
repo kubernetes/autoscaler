@@ -655,3 +655,16 @@ func parseTaint(st string) (apiv1.Taint, error) {
 
 	return taint, nil
 }
+
+// returns true if the unstructured resource is a MachineDeployment, MachinePool, or MachineSet,
+// and contains the pause annotation.
+func isScalableResourceAndPaused(resource unstructured.Unstructured) bool {
+	switch resource.GetKind() {
+	case machineDeploymentKind, machinePoolKind, machineSetKind:
+		annotations := resource.GetAnnotations()
+		if _, found := annotations[resourcePausedAnnotation]; found {
+			return true
+		}
+	}
+	return false
+}
