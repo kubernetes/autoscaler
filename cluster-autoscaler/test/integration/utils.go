@@ -17,6 +17,8 @@ limitations under the License.
 package integration
 
 import (
+	"testing"
+
 	"k8s.io/autoscaler/cluster-autoscaler/builder"
 	fakecloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -28,7 +30,6 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
-	"testing"
 )
 
 // TestInfrastructure holds the dependencies for a test.
@@ -84,7 +85,7 @@ func NewFakeSet() *FakeSet {
 }
 
 // MustCreateControllerRuntimeMgr creates a controller-runtime manager with metrics and health probes disabled.
-func MustCreateControllerRuntimeMgr(t *testing.T) manager.Manager {
+func MustCreateControllerRuntimeMgr(t testing.TB) manager.Manager {
 	t.Helper()
 
 	mgr, err := manager.New(&rest.Config{}, manager.Options{
