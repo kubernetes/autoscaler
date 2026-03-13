@@ -2046,6 +2046,143 @@ func TestAuthErrorHandling(t *testing.T) {
 	assertLegacyRegistryEntry(t, "cluster_autoscaler_failed_scale_ups_total{reason=\"authError\"} 1")
 }
 
+func TestScaleUpSimulationForSkippedNodeGroups(t *testing.T) {
+	node1 := BuildTestNode("n1", 2000, 2000)
+	SetNodeReadyState(node1, true, time.Time{})
+	nodeInfo1 := framework.NewTestNodeInfo(node1)
+
+	node2 := BuildTestNode("n2", 1000, 1000)
+	SetNodeReadyState(node2, true, time.Time{})
+	nodeInfo2 := framework.NewTestNodeInfo(node2)
+
+	// p1 needs 1500 cpu. It fits n1 but not n2.
+	p1 := BuildTestPod("p1", 1500, 1500)
+	// p2 asks for 3000 cpu, so it will fail to schedule on both n1 and n2
+	p2 := BuildTestPod("p2", 3000, 3000)
+
+	provider := testprovider.NewTestCloudProviderBuilder().
+		WithMachineTypes([]string{"ng1", "ng2"}).
+		WithMachineTemplates(map[string]*framework.NodeInfo{"ng1": nodeInfo1, "ng2": nodeInfo2}).Build()
+
+	// ng1 will be skipped due to MaxLimitReached (MaxSize=1, current size=1)
+	provider.AddNodeGroup("ng1", 0, 1, 1)
+	// ng2 will not be skipped (MaxSize=2, current size=1)
+	provider.AddNodeGroup("ng2", 0, 2, 1)
+	provider.AddNode("ng1", node1)
+	provider.AddNode("ng2", node2)
+
+	testCases := []struct {
+		name                                         string
+		scaleUpSimulationForSkippedNodeGroupsEnabled bool
+		expectedNoScaleUpInfo                        map[string]status.NoScaleUpInfo
+	}{
+		{
+			name: "feature flag is disabled: ng2 is rejected and ng1 is skipped for both p1 and p2",
+			expectedNoScaleUpInfo: map[string]status.NoScaleUpInfo{
+				p1.Name: {
+					Pod: p1,
+					RejectedNodeGroups: map[string]status.Reasons{
+						"ng2": NewRejectedReasons(""),
+					},
+					SkippedNodeGroups: map[string]status.Reasons{
+						"ng1": NotReadyReason,
+					},
+				},
+				p2.Name: {
+					Pod: p2,
+					RejectedNodeGroups: map[string]status.Reasons{
+						"ng2": NewRejectedReasons(""),
+					},
+					SkippedNodeGroups: map[string]status.Reasons{
+						"ng1": NotReadyReason,
+					},
+				},
+			},
+		},
+		{
+			name: "feature flag is enabled: ng2 is rejected and ng1 is skipped for p1, ng1 and ng2 are rejected for p2",
+			// ng1 satisfies the predicated of p1, so it remains skipped for it, but it does not work for p2, so it is moved to rejected.
+			scaleUpSimulationForSkippedNodeGroupsEnabled: true,
+			expectedNoScaleUpInfo: map[string]status.NoScaleUpInfo{
+				p1.Name: {
+					Pod: p1,
+					RejectedNodeGroups: map[string]status.Reasons{
+						"ng2": NewRejectedReasons(""),
+					},
+					SkippedNodeGroups: map[string]status.Reasons{
+						"ng1": NotReadyReason,
+					},
+				},
+				p2.Name: {
+					Pod: p2,
+					RejectedNodeGroups: map[string]status.Reasons{
+						"ng2": NewRejectedReasons(""),
+						"ng1": NewRejectedReasons(""),
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			options := config.AutoscalingOptions{
+				// enable this flag to test the simulation run for the skipped node groups
+				ScaleUpSimulationForSkippedNodeGroupsEnabled: tc.scaleUpSimulationForSkippedNodeGroupsEnabled,
+				EstimatorName: estimator.BinpackingEstimatorName,
+			}
+
+			podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+			listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+			fakeClient := &fake.Clientset{}
+
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil, templateNodeInfoRegistry)
+			assert.NoError(t, err)
+
+			nodes := []*apiv1.Node{node1, node2}
+			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
+			assert.NoError(t, err)
+			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
+
+			registryConfig := clusterstate.ClusterStateRegistryConfig{}
+			clusterState := clusterstate.NewClusterStateRegistry(provider, registryConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+			clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+
+			quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
+			trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+				QuotaProvider:            quotasProvider,
+				CustomResourcesProcessor: processors.CustomResourcesProcessor,
+			})
+
+			suOrchestrator := New()
+			suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, trackerFactory)
+
+			scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1, p2}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
+			assert.NoError(t, err)
+
+			assert.False(t, scaleUpStatus.WasSuccessful())
+			assert.Equal(t, status.ScaleUpNoOptionsAvailable, scaleUpStatus.Result)
+
+			remaining := scaleUpStatus.PodsRemainUnschedulable
+			assert.Equal(t, len(tc.expectedNoScaleUpInfo), len(remaining))
+			for _, actualInfo := range remaining {
+				expectedInfo, expectedInfoFound := tc.expectedNoScaleUpInfo[actualInfo.Pod.Name]
+				assert.True(t, expectedInfoFound, "Unexpected pod found in remaining pods: "+actualInfo.Pod.Name)
+				assert.Equal(t, len(expectedInfo.SkippedNodeGroups), len(actualInfo.SkippedNodeGroups))
+				assert.Equal(t, len(expectedInfo.RejectedNodeGroups), len(actualInfo.RejectedNodeGroups))
+				for ng := range expectedInfo.SkippedNodeGroups {
+					assert.Contains(t, actualInfo.SkippedNodeGroups, ng)
+				}
+				for ng := range expectedInfo.RejectedNodeGroups {
+					assert.Contains(t, actualInfo.RejectedNodeGroups, ng)
+				}
+			}
+		})
+	}
+}
+
 func assertLegacyRegistryEntry(t *testing.T, entry string) {
 	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
