@@ -285,6 +285,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	podLister := a.AllPodLister()
 	autoscalingCtx := a.AutoscalingContext
+	autoscalingCtx.CapacityBuffersFakePodsRegistry.Clear()
 
 	klog.V(4).Info("Starting main loop")
 

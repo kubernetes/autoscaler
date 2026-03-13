@@ -22,6 +22,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -77,6 +78,8 @@ type AutoscalingContext struct {
 	TemplateNodeInfoRegistry TemplateNodeInfoRegistry
 	// CsiProvider is the provider for CSI node aware scheduling.
 	CsiProvider *csinodeprovider.Provider
+	// CapacityBuffersFakePodsRegistry tracks the fake pods created for capacity buffers.
+	CapacityBuffersFakePodsRegistry *fakepods.Registry
 }
 
 // TemplateNodeInfoRegistry is the interface for getting template node infos.
@@ -145,19 +148,20 @@ func NewAutoscalingContext(
 	csiProvider *csinodeprovider.Provider,
 ) *AutoscalingContext {
 	return &AutoscalingContext{
-		AutoscalingOptions:       options,
-		CloudProvider:            cloudProvider,
-		AutoscalingKubeClients:   *autoscalingKubeClients,
-		FrameworkHandle:          fwHandle,
-		ClusterSnapshot:          clusterSnapshot,
-		ExpanderStrategy:         expanderStrategy,
-		ProcessorCallbacks:       processorCallbacks,
-		DebuggingSnapshotter:     debuggingSnapshotter,
-		RemainingPdbTracker:      remainingPdbTracker,
-		ClusterStateRegistry:     clusterStateRegistry,
-		DraProvider:              draProvider,
-		TemplateNodeInfoRegistry: templateNodeInfoRegistry,
-		CsiProvider:              csiProvider,
+		AutoscalingOptions:              options,
+		CloudProvider:                   cloudProvider,
+		AutoscalingKubeClients:          *autoscalingKubeClients,
+		FrameworkHandle:                 fwHandle,
+		ClusterSnapshot:                 clusterSnapshot,
+		ExpanderStrategy:                expanderStrategy,
+		ProcessorCallbacks:              processorCallbacks,
+		DebuggingSnapshotter:            debuggingSnapshotter,
+		RemainingPdbTracker:             remainingPdbTracker,
+		ClusterStateRegistry:            clusterStateRegistry,
+		DraProvider:                     draProvider,
+		TemplateNodeInfoRegistry:        templateNodeInfoRegistry,
+		CsiProvider:                     csiProvider,
+		CapacityBuffersFakePodsRegistry: fakepods.NewRegistry(nil),
 	}
 }
 
