@@ -861,6 +861,28 @@ func TestNodesToDelete(t *testing.T) {
 			wantDrain:      []*apiv1.Node{},
 		},
 		{
+			name: "single empty with active on-completion pods delayed",
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("test-ng", 3, false): {
+					buildRemovableNodeWithOnCompletion("test-node-active", 0, false),
+				},
+			},
+			wantEmpty: []*apiv1.Node{},
+			wantDrain: []*apiv1.Node{},
+		},
+		{
+			name: "single drain with terminal on-completion pods allowed",
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("test-ng", 3, false): {
+					buildRemovableNodeWithOnCompletion("test-node-terminal", 1, true),
+				},
+			},
+			wantEmpty: []*apiv1.Node{},
+			wantDrain: []*apiv1.Node{
+				buildRemovableNodeWithOnCompletion("test-node-terminal", 1, true).Node,
+			},
+		},
+		{
 			name: "single empty",
 			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("test-ng", 3, false): {
@@ -1060,6 +1082,20 @@ func buildRemovableNode(name string, podCount int) simulator.NodeToBeRemoved {
 		Node:             BuildTestNode(name, 1000, 10),
 		PodsToReschedule: podsToReschedule,
 	}
+}
+
+func buildRemovableNodeWithOnCompletion(name string, podCount int, terminal bool) simulator.NodeToBeRemoved {
+	node := buildRemovableNode(name, podCount)
+	pod := &apiv1.Pod{
+		Spec: apiv1.PodSpec{
+			RestartPolicy: apiv1.RestartPolicyNever,
+		},
+	}
+	if terminal {
+		pod.Status.Phase = apiv1.PodSucceeded
+	}
+	node.OnCompletionPods = []*apiv1.Pod{pod}
+	return node
 }
 
 func generateReplicaSets(name string, replicas int32) []*appsv1.ReplicaSet {

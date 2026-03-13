@@ -34,6 +34,11 @@ const (
 	// PodSafeToEvictKey - annotation that ignores constraints to evict a pod like not being replicated, being on
 	// kube-system namespace or having a local storage.
 	PodSafeToEvictKey = "cluster-autoscaler.kubernetes.io/safe-to-evict"
+
+	// PodSafeToEvictOnCompletionValue - value for safe-to-evict annotation
+	// that allows the pod to finish execution naturally without being actively evicted.
+	PodSafeToEvictOnCompletionValue = "on-completion"
+
 	// SafeToEvictLocalVolumesKey - annotation that ignores (doesn't block on) a local storage volume during node scale down
 	SafeToEvictLocalVolumesKey = "cluster-autoscaler.kubernetes.io/safe-to-evict-local-volumes"
 )
@@ -146,6 +151,12 @@ func HasSafeToEvictAnnotation(pod *apiv1.Pod) bool {
 	return pod.GetAnnotations()[PodSafeToEvictKey] == "true"
 }
 
+// HasSafeToEvictOnCompletionAnnotation checks if pod has PodSafeToEvictKey
+// annotation set to "on-completion".
+func HasSafeToEvictOnCompletionAnnotation(pod *apiv1.Pod) bool {
+	return pod.GetAnnotations()[PodSafeToEvictKey] == PodSafeToEvictOnCompletionValue
+}
+
 // HasNotSafeToEvictAnnotation checks if pod has PodSafeToEvictKey annotation
 // set to false.
 func HasNotSafeToEvictAnnotation(pod *apiv1.Pod) bool {
@@ -165,4 +176,14 @@ func IsPodLongTerminating(pod *apiv1.Pod, currentTime time.Time) bool {
 		gracePeriod = &defaultGracePeriod
 	}
 	return pod.DeletionTimestamp.Time.Add(time.Duration(*gracePeriod) * time.Second).Add(PodLongTerminatingExtraThreshold).Before(currentTime)
+}
+
+// HasActiveOnCompletionPods returns true if any of the provided pods is not terminal.
+func HasActiveOnCompletionPods(pods []*apiv1.Pod) bool {
+	for _, pod := range pods {
+		if !IsPodTerminal(pod) {
+			return true
+		}
+	}
+	return false
 }
