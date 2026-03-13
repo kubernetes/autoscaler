@@ -18,22 +18,28 @@ package updater
 
 import (
 	"testing"
+	"time"
 
 	ctesting "k8s.io/client-go/testing"
 
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	fakeclientset "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	cbmetrics "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/metrics"
+	testclock "k8s.io/utils/clock/testing"
 )
 
 func TestStatusUpdater(t *testing.T) {
+	now := time.Now()
 	exitingBuffer := &v1.CapacityBuffer{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "buffer1",
 			Namespace: "default",
+			UID:       types.UID("uid1"),
 		},
 		Spec: v1.CapacityBufferSpec{},
 	}
@@ -41,6 +47,7 @@ func TestStatusUpdater(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "buffer2",
 			Namespace: "default",
+			UID:       types.UID("uid2"),
 		},
 		Spec: v1.CapacityBufferSpec{},
 	}
@@ -52,6 +59,7 @@ func TestStatusUpdater(t *testing.T) {
 		buffers                []*v1.CapacityBuffer
 		expectedNumberOfCalls  int
 		expectedNumberOfErrors int
+		expectedCacheEntries   map[string]time.Time
 	}{
 		{
 			name: "Update one buffer",
@@ -60,6 +68,9 @@ func TestStatusUpdater(t *testing.T) {
 			},
 			expectedNumberOfCalls:  1,
 			expectedNumberOfErrors: 0,
+			expectedCacheEntries: map[string]time.Time{
+				"uid1": now,
+			},
 		},
 		{
 			name: "Update one buffer not existing",
@@ -68,6 +79,7 @@ func TestStatusUpdater(t *testing.T) {
 			},
 			expectedNumberOfCalls:  1,
 			expectedNumberOfErrors: 1,
+			expectedCacheEntries:   map[string]time.Time{},
 		},
 		{
 			name: "Update multiple buffers",
@@ -77,6 +89,9 @@ func TestStatusUpdater(t *testing.T) {
 			},
 			expectedNumberOfCalls:  2,
 			expectedNumberOfErrors: 1,
+			expectedCacheEntries: map[string]time.Time{
+				"uid1": now,
+			},
 		},
 	}
 	for _, test := range tests {
@@ -88,10 +103,14 @@ func TestStatusUpdater(t *testing.T) {
 					return false, nil, nil
 				},
 			)
-			buffersUpdater := NewStatusUpdater(fakeCapacityBuffersClient)
+			fakeClock := testclock.NewFakeClock(now)
+			processedCache := cbmetrics.NewProcessingCache()
+			buffersUpdater := NewStatusUpdater(fakeCapacityBuffersClient, fakeClock, processedCache)
 			errors := buffersUpdater.Update(test.buffers)
 			assert.Equal(t, test.expectedNumberOfErrors, len(errors))
 			assert.Equal(t, test.expectedNumberOfCalls, updateCallsCount)
+
+			assert.Equal(t, test.expectedCacheEntries, processedCache.Snapshot())
 		})
 	}
 }
