@@ -213,8 +213,7 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 			} else {
 				fakePodsResolver = fakepods.NewDefaultingResolver()
 			}
-			nodeBufferController := cbctrl.NewDefaultBufferController(capacitybufferClient, fakePodsResolver)
-			go nodeBufferController.Run(ctx.Done())
+			cbctrl.InitializeAndRunDefaultBufferController(capacitybufferClient, fakePodsResolver, ctx.Done())
 		}
 	}
 

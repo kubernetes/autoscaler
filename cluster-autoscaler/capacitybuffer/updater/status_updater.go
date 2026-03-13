@@ -17,31 +17,47 @@ limitations under the License.
 package updater
 
 import (
+	"time"
+
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	cbmetrics "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/metrics"
+	"k8s.io/utils/clock"
 )
 
 // StatusUpdater updates the buffer status bassed
 type StatusUpdater struct {
 	client *cbclient.CapacityBufferClient
+	clock  clock.Clock
+	processedBuffers *cbmetrics.ProcessingCache
 }
 
 // NewStatusUpdater creates an instance of StatusUpdater.
-func NewStatusUpdater(client *cbclient.CapacityBufferClient) *StatusUpdater {
+func NewStatusUpdater(client *cbclient.CapacityBufferClient, clock clock.Clock, processedBuffers *cbmetrics.ProcessingCache) *StatusUpdater {
 	return &StatusUpdater{
 		client: client,
+		clock:  clock,
+		processedBuffers: processedBuffers,
 	}
 }
 
 // Update updates the buffer status with pod capacity
 func (u *StatusUpdater) Update(buffers []*v1.CapacityBuffer) []error {
 	var errors []error
+	buffersUpdatedTime := map[string]time.Time{}
+
 	for _, buffer := range buffers {
-		_, err := u.client.UpdateCapacityBuffer(buffer)
+		updatedBuffer, err := u.client.UpdateCapacityBuffer(buffer)
 		if err != nil {
 			errors = append(errors, err)
+			continue
+		}
+		if updatedBuffer != nil {
+			buffersUpdatedTime[string(updatedBuffer.UID)] = u.clock.Now()
 		}
 	}
+	u.processedBuffers.Update(buffersUpdatedTime)
+
 	return errors
 }
 

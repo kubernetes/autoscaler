@@ -36,8 +36,10 @@ import (
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	filters "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
+	cbmetrics "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/metrics"
 	translators "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators"
 	updater "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/updater"
+	"k8s.io/utils/clock"
 )
 
 // BufferController performs updates on Buffers and convert them to pods to be injected
@@ -76,10 +78,30 @@ func NewBufferController(
 	return bc
 }
 
+// InitializeAndRunDefaultBufferController creates the default Capacity buffer controller and processing interval metric reporter
+// and runs each of them in go routines asyncrounsly
+func InitializeAndRunDefaultBufferController(
+	client *cbclient.CapacityBufferClient,
+	resolver fakepods.Resolver,
+	stopCh <-chan struct{},
+) {
+	realClock := clock.RealClock{}
+	processedBuffersCache := cbmetrics.NewProcessingCache()
+	defaultStratigies := []string{capacitybuffer.ActiveProvisioningStrategy, ""}
+	controller := NewDefaultBufferController(client, resolver, defaultStratigies, processedBuffersCache, realClock)
+	go controller.Run(stopCh)
+
+	reporter := cbmetrics.NewProcessingIntervalMetricReporter(client, filters.NewStrategyFilter(defaultStratigies), processedBuffersCache, realClock)
+	go reporter.Run(stopCh)
+}
+
 // NewDefaultBufferController creates bufferController with default configs
 func NewDefaultBufferController(
 	client *cbclient.CapacityBufferClient,
 	resolver fakepods.Resolver,
+	defaultStratigies []string,
+	processingTimeCache *cbmetrics.ProcessingCache,
+	clock clock.Clock,
 ) BufferController {
 	bc := &bufferController{
 		client: client,
@@ -93,7 +115,7 @@ func NewDefaultBufferController(
 			},
 		),
 		quotaAllocator: newResourceQuotaAllocator(client),
-		updater:        *updater.NewStatusUpdater(client),
+		updater:        *updater.NewStatusUpdater(client, clock, processingTimeCache),
 		queue: workqueue.NewTypedRateLimitingQueueWithConfig(
 			workqueue.DefaultTypedControllerRateLimiter[string](), workqueue.TypedRateLimitingQueueConfig[string]{Name: "CapacityBuffers"},
 		),

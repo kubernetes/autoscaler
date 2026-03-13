@@ -145,28 +145,29 @@ type caMetrics struct {
 	pendingNodeDeletions    *k8smetrics.Gauge
 
 	// Metrics related to autoscaler operations
-	errorsCount                      *k8smetrics.CounterVec
-	scaleUpCount                     *k8smetrics.Counter
-	gpuScaleUpCount                  *k8smetrics.CounterVec
-	failedScaleUpCount               *k8smetrics.CounterVec
-	failedNodeCreationCount          *k8smetrics.CounterVec
-	failedGPUScaleUpCount            *k8smetrics.CounterVec
-	scaleDownCount                   *k8smetrics.CounterVec
-	gpuScaleDownCount                *k8smetrics.CounterVec
-	evictionsCount                   *k8smetrics.CounterVec
-	unneededNodesCount               *k8smetrics.Gauge
-	unremovableNodesCount            *k8smetrics.GaugeVec
-	scaleDownInCooldown              *k8smetrics.Gauge
-	oldUnregisteredNodesRemovedCount *k8smetrics.Counter
-	overflowingControllersCount      *k8smetrics.Gauge
-	skippedScaleEventsCount          *k8smetrics.CounterVec
-	nodeGroupCreationCount           *k8smetrics.CounterVec
-	nodeGroupDeletionCount           *k8smetrics.CounterVec
-	nodeTaintsCount                  *k8smetrics.GaugeVec
-	inconsistentInstancesMigsCount   *k8smetrics.Gauge
-	binpackingHeterogeneity          *k8smetrics.HistogramVec
-	maxNodeSkipEvalDurationSeconds   *k8smetrics.Gauge
-	scaleDownNodeRemovalLatency      *k8smetrics.HistogramVec
+	errorsCount                              *k8smetrics.CounterVec
+	scaleUpCount                             *k8smetrics.Counter
+	gpuScaleUpCount                          *k8smetrics.CounterVec
+	failedScaleUpCount                       *k8smetrics.CounterVec
+	failedNodeCreationCount                  *k8smetrics.CounterVec
+	failedGPUScaleUpCount                    *k8smetrics.CounterVec
+	scaleDownCount                           *k8smetrics.CounterVec
+	gpuScaleDownCount                        *k8smetrics.CounterVec
+	evictionsCount                           *k8smetrics.CounterVec
+	unneededNodesCount                       *k8smetrics.Gauge
+	unremovableNodesCount                    *k8smetrics.GaugeVec
+	scaleDownInCooldown                      *k8smetrics.Gauge
+	oldUnregisteredNodesRemovedCount         *k8smetrics.Counter
+	overflowingControllersCount              *k8smetrics.Gauge
+	skippedScaleEventsCount                  *k8smetrics.CounterVec
+	nodeGroupCreationCount                   *k8smetrics.CounterVec
+	nodeGroupDeletionCount                   *k8smetrics.CounterVec
+	nodeTaintsCount                          *k8smetrics.GaugeVec
+	inconsistentInstancesMigsCount           *k8smetrics.Gauge
+	binpackingHeterogeneity                  *k8smetrics.HistogramVec
+	maxNodeSkipEvalDurationSeconds           *k8smetrics.Gauge
+	scaleDownNodeRemovalLatency              *k8smetrics.HistogramVec
+	capacityBuffersProcessingIntervalSeconds *k8smetrics.HistogramVec
 }
 
 func newCaMetrics() *caMetrics {
@@ -503,6 +504,15 @@ func newCaMetrics() *caMetrics {
 				Buckets:   k8smetrics.ExponentialBuckets(1, 1.5, 19), // ~1s → ~24min
 			}, []string{"deleted"},
 		),
+
+		capacityBuffersProcessingIntervalSeconds: k8smetrics.NewHistogramVec(
+			&k8smetrics.HistogramOpts{
+				Namespace: caNamespace,
+				Name:      "capacity_buffer_processing_interval_seconds",
+				Help:      "How long ago each capacity buffer was last processed by its controller (maximum value).",
+			},
+			[]string{"new_buffer"},
+		),
 	}
 }
 
@@ -551,6 +561,7 @@ func (m *caMetrics) RegisterAll(emitPerNodeGroupMetrics bool) {
 	m.mustRegister(m.binpackingHeterogeneity)
 	m.mustRegister(m.maxNodeSkipEvalDurationSeconds)
 	m.mustRegister(m.scaleDownNodeRemovalLatency)
+	m.mustRegister(m.capacityBuffersProcessingIntervalSeconds)
 
 	if emitPerNodeGroupMetrics {
 		m.mustRegister(m.nodesGroupMinNodes)
@@ -854,4 +865,9 @@ func (m *caMetrics) UpdateScaleDownNodeRemovalLatency(deleted bool, duration tim
 // If a node is skipped multiple times consecutively, we store only the earliest timestamp.
 func (m *caMetrics) ObserveMaxNodeSkipEvalDurationSeconds(duration time.Duration) {
 	m.maxNodeSkipEvalDurationSeconds.Set(duration.Seconds())
+}
+
+// ObserveCapacityBuffersProcessingIntervalSeconds registers capacity buffers processing interval time by controllers.
+func (m *caMetrics) ObserveCapacityBuffersProcessingIntervalSeconds(isNewBuffer bool, duration time.Duration) {
+	m.capacityBuffersProcessingIntervalSeconds.WithLabelValues(strconv.FormatBool(isNewBuffer)).Observe(duration.Seconds())
 }
