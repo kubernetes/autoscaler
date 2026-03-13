@@ -541,8 +541,8 @@ func TestDraProcessorResourceComparator(t *testing.T) {
 			draSnapshot := drasnapshot.NewSnapshot(nil, nodeResourceSlices, nil, nil)
 
 			clusterSnapshotStore := store.NewBasicSnapshotStore()
-			clusterSnapshotStore.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot, nil)
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
+			clusterSnapshot.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot, nil)
 
 			autoscalingCtx := &ca_context.AutoscalingContext{
 				CloudProvider:   provider,
