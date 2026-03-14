@@ -7,6 +7,8 @@ package common
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
+	"k8s.io/klog/v2"
+
 	"strings"
 )
 
@@ -45,8 +47,10 @@ func NodeToOciRef(n *apiv1.Node) (OciRef, error) {
 func getNodeShape(node *apiv1.Node) string {
 	// First check for the deprecated label
 	if shape, ok := node.Labels[apiv1.LabelInstanceType]; ok {
+		klog.V(5).Infof("Extracting node shape %s from label %s", shape, apiv1.LabelInstanceType)
 		return shape
 	} else if shape, ok := node.Labels[apiv1.LabelInstanceTypeStable]; ok {
+		klog.V(5).Infof("Extracting node shape %s from label %s", shape, apiv1.LabelInstanceTypeStable)
 		return shape
 	}
 	return ""
@@ -56,8 +60,10 @@ func getNodeShape(node *apiv1.Node) string {
 func getNodeAZ(node *apiv1.Node) string {
 	// First check for the deprecated label
 	if az, ok := node.Labels[apiv1.LabelZoneFailureDomain]; ok {
+		klog.V(5).Infof("Extracting availability domain %s from label %s", az, apiv1.LabelZoneFailureDomain)
 		return az
 	} else if az, ok := node.Labels[apiv1.LabelTopologyZone]; ok {
+		klog.V(5).Infof("Extracting availability domain %s from label %s", az, apiv1.LabelTopologyZone)
 		return az
 	}
 	return ""
@@ -67,6 +73,7 @@ func getNodeAZ(node *apiv1.Node) string {
 func getNodeInternalAddress(node *apiv1.Node) string {
 	for _, address := range node.Status.Addresses {
 		if address.Type == apiv1.NodeInternalIP {
+			klog.V(5).Infof("Extracting node internal IP %s from node %s", address.Address, node.Name)
 			return address.Address
 		}
 	}
@@ -77,6 +84,7 @@ func getNodeInternalAddress(node *apiv1.Node) string {
 func getNodeExternalAddress(node *apiv1.Node) string {
 	for _, address := range node.Status.Addresses {
 		if address.Type == apiv1.NodeExternalIP {
+			klog.V(5).Infof("Extracting node external IP %s from node %s", address.Address, node.Name)
 			return address.Address
 		}
 	}
@@ -96,10 +104,12 @@ func getNodeInstancePoolID(node *apiv1.Node) string {
 	poolIDSuffixLabel, _ := node.Labels[consts.InstancePoolIDLabelSuffix]
 
 	if poolIDPrefixLabel != "" && poolIDSuffixLabel != "" {
+		klog.V(5).Infof("Extracting instance-pool %s from labels %s + %s", poolIDPrefixLabel+"."+poolIDSuffixLabel, consts.InstancePoolIDLabelPrefix, consts.InstancePoolIDLabelSuffix)
 		return poolIDPrefixLabel + "." + poolIDSuffixLabel
 	}
 
 	poolIDAnnotation, _ := node.Annotations[consts.OciInstancePoolIDAnnotation]
+	klog.V(5).Infof("Extracting instance-pool %s from annotation %s", poolIDAnnotation, consts.OciInstanceIDAnnotation)
 	return poolIDAnnotation
 }
 
@@ -107,6 +117,7 @@ func getNodeInstancePoolID(node *apiv1.Node) string {
 func getNodeInstanceID(node *apiv1.Node) string {
 	providerID := strings.TrimPrefix(node.Spec.ProviderID, "oci://")
 	if len(providerID) != 0 {
+		klog.V(5).Infof("Extracting instance-id %s from .spec.providerID", providerID)
 		return providerID
 	}
 
@@ -119,9 +130,11 @@ func getNodeInstanceID(node *apiv1.Node) string {
 	instanceSuffixLabel, _ := node.Labels[consts.InstanceIDLabelSuffix]
 
 	if instancePrefixLabel != "" && instanceSuffixLabel != "" {
+		klog.V(5).Infof("Extracting instance-id %s from labels %s + %s", instancePrefixLabel+"."+instanceSuffixLabel, consts.InstanceIDLabelPrefix, consts.InstanceIDLabelSuffix)
 		return instancePrefixLabel + "." + instanceSuffixLabel
 	}
 
 	instanceIDAnnotation, _ := node.Annotations[consts.OciInstanceIDAnnotation]
+	klog.V(5).Infof("Extracting instance-id %s from annotation %s", instanceIDAnnotation, consts.OciInstanceIDAnnotation)
 	return instanceIDAnnotation
 }
