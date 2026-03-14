@@ -120,7 +120,7 @@ The following terms and definitions are used throughout this AEP:
 
 Before this AEP, the recommender computes recommendations only at the container level. With this proposal, the recommender also computes pod-level recommendations in addition to container-level ones. Pod-level recommendations derive from per-container recommendations. Container-level policy (the `containerPolicies` stanza) influences pod-level recommendations: setting `mode: Off` in `spec.resourcePolicy.containerPolicies` excludes a container from pod-level recommendations, and `minAllowed` and `maxAllowed` bounds continue to apply.
 
-This AEP extends the VPA CRD `spec.resourcePolicy` with a new `podPolicies` stanza that influences pod-level recommendations. The AEP also introduces two global pod-level flags `pod-recommendation-max-allowed-cpu` and `pod-recommendation-max-allowed-memory`. Details are covered in later section.
+This AEP extends the VPA CRD `spec.resourcePolicy` with a new `podPolicies` stanza that influences pod-level recommendations (and possibly container-level recommendations as well). The AEP also introduces two global pod-level flags `pod-recommendation-max-allowed-cpu` and `pod-recommendation-max-allowed-memory`. Details are covered in later section.
 
 Today, the updater makes decisions based solely on container-level resource stanzas and recommendations, and both the updater and admission controller modify resources only at the container level. This proposal extends the updater to make eviction or in-place update decisions using pod-level resources and recommendations, and adds support for the admission controller to compute and apply pod-level resource patches.
 
@@ -164,11 +164,11 @@ Per-container recommendations must be adjusted so that their total does not exce
 
 #### Admission Controller
 
-The admission controller must be extended to generate pod-level resource patches alongside container-level patches. The admission controller should follow these rules after implementing this proposal:
+The admission controller must be extended to generate pod-level resource patches alongside container-level patches. The admission controller should follow these rules after implementing this proposal when pod-level scaling is enabled in the VPA object:
 
 1. Calculate only container-level patches for containers whose `mode` is set to `Auto`. Ignore containers with `Off` mode, as well as containers whose `mode` is set to `RecommendationOnly`.
 
-2. Calculate pod-level patches when the `mode` under the `spec.resourcePolicy.podPolicies` stanza is set to `Auto`.
+2. Calculate pod-level patches based on pod-level recommendations.
 
 #### capping.go
 
@@ -204,9 +204,7 @@ With the introduction of pod-level recommendations and pod-level resources, the 
 
 ##### Dynamic Validation
 
-Admission Controller:
-
-* The admission controller should validate the following rules. If a rule is violated, it should return an error to the user:
+The admission controller should validate the following rules. If a rule is violated, it should return an error to the user:
   * When the pod-level `minAllowed` is set by the user, the sum of container-level `minAllowed` values must be equal to or greater than the pod-level constraint.
   * When the pod-level `maxAllowed` is set by the user, the sum of container-level `maxAllowed` values must be equal to or less than the pod-level constraint.
 
@@ -316,7 +314,7 @@ spec:
 
 #### Example 3
 
-The manifest below is an example of incorrect usage of this new feature, as the user directs the updater and admission controller to continue managing container-level `resources` stanzas for all containers, preventing any benefit from the pod-level `resources` stanza.
+The manifest below is an example of incorrect usage of this new feature, as the user directs the updater and admission controller to continue managing container-level `resources` stanzas for all containers (because the container-level scaling mode defaults to `Auto`), preventing any benefit from the pod-level `resources` stanza.
 
 ```yaml
 apiVersion: autoscaling.k8s.io/v1
