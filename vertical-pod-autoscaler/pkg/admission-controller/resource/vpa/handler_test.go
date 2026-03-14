@@ -435,25 +435,6 @@ func TestValidateVPA(t *testing.T) {
 			emulatedVersion:                      "1.6",
 			expectError:                          errors.New("in order to use podPolicies stanza, you must enable feature gate PodLevelResourcesSupportForVPA in the admission-controller args"),
 		},
-		{
-			name: "support for pod level and per-vpa config active and used",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode: &validUpdateMode,
-					},
-					ResourcePolicy: &vpa_types.PodResourcePolicy{
-						PodPolicies: &vpa_types.PodResourcePolicies{
-							Mode:           &validPodScalingMode,
-							OOMBumpUpRatio: resource.NewQuantity(2, resource.DecimalSI),
-						},
-					},
-				},
-			},
-			PerVPAConfigDisabled:                 false,
-			ContainerScalingModeRecsOnlyDisabled: false,
-			emulatedVersion:                      "1.6",
-		},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {

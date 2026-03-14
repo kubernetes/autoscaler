@@ -72,7 +72,7 @@ func (s *scalingDirectionPodEvictionAdmission) Admit(pod *apiv1.Pod, resources *
 	return false
 }
 
-func (s *scalingDirectionPodEvictionAdmission) admitAtPodLevel(podRequests apiv1.ResourceList, podRecommendations *vpa_types.RecommendedPodRes, podEvictionRequirements []*vpa_types.EvictionRequirement) bool {
+func (s *scalingDirectionPodEvictionAdmission) admitAtPodLevel(podRequests apiv1.ResourceList, podRecommendations *vpa_types.PodRecommendations, podEvictionRequirements []*vpa_types.EvictionRequirement) bool {
 	_, foundCPURequests := podRequests[apiv1.ResourceCPU]
 	if !foundCPURequests {
 		return true

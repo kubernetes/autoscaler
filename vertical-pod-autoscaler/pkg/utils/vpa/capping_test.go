@@ -2599,14 +2599,14 @@ func TestCapPodMemoryWithUnderByteSplit(t *testing.T) {
 func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 	tests := []struct {
 		name                       string
-		podRecommendations         vpa_types.RecommendedPodRes
+		podRecommendations         vpa_types.PodRecommendations
 		podLimitRange              apiv1.LimitRangeItem
 		pod                        *apiv1.Pod
-		expectedPodRecommendations vpa_types.RecommendedPodRes
+		expectedPodRecommendations vpa_types.PodRecommendations
 	}{
 		{
 			name: "pod limitRange with cpu and memory min exists and pod level resource stanza omitted",
-			podRecommendations: vpa_types.RecommendedPodRes{
+			podRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2621,7 +2621,7 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 			},
 			pod: test.Pod().
 				Get(),
-			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("130m"),
 					apiv1.ResourceMemory: resource.MustParse("130Mi"),
@@ -2630,7 +2630,7 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 		},
 		{
 			name: "pod limitRange with only cpu min exists and pod level resource stanza omitted",
-			podRecommendations: vpa_types.RecommendedPodRes{
+			podRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2644,7 +2644,7 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 			},
 			pod: test.Pod().
 				Get(),
-			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("130m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2653,7 +2653,7 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 		},
 		{
 			name: "pod limitRange with cpu and memory max exists and pod level limits omitted",
-			podRecommendations: vpa_types.RecommendedPodRes{
+			podRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2670,7 +2670,7 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 				WithCPURequest(resource.MustParse("11m")).
 				WithMemRequest(resource.MustParse("11Mi")).
 				Get(),
-			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2679,7 +2679,7 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 		},
 		{
 			name: "pod limitRange with cpu and memory max exists and only pod level cpu limit set",
-			podRecommendations: vpa_types.RecommendedPodRes{
+			podRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2696,7 +2696,7 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 			pod: test.Pod().
 				WithCPULimit(resource.MustParse("22m")).
 				Get(),
-			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    *resource.NewMilliQuantity(40, resource.DecimalSI),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"), // cannot lower because no memory limit is set
@@ -2705,7 +2705,7 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 		},
 		{
 			name: "pod limitRange with cpu and memory max exists and pod level limits set",
-			podRecommendations: vpa_types.RecommendedPodRes{
+			podRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2727,7 +2727,7 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 				WithCPULimit(resource.MustParse("2m")).
 				WithMemLimit(resource.MustParse("3Mi")).
 				Get(),
-			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    *resource.NewMilliQuantity(45, resource.DecimalSI), // (90*55)/110 = 45m
 					apiv1.ResourceMemory: *resource.NewQuantity(31457280, resource.BinarySI), // (90*55)/165 = 30Mi
@@ -2735,7 +2735,7 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 			},
 		},
 	}
-	getPodLevelTarget := func(rl vpa_types.RecommendedPodRes) *apiv1.ResourceList { return &rl.Target }
+	getPodLevelTarget := func(rl vpa_types.PodRecommendations) *apiv1.ResourceList { return &rl.Target }
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			got := applyPodLimitRangeAtPodLevel(tc.podRecommendations, &tc.podLimitRange, tc.pod, getPodLevelTarget)
@@ -2747,21 +2747,21 @@ func TestApplyPodLimitRangeAtPodLevel(t *testing.T) {
 func TestGetCappedRecommendationForPod(t *testing.T) {
 	tests := []struct {
 		name                       string
-		podRecommendations         *vpa_types.RecommendedPodRes
+		podRecommendations         *vpa_types.PodRecommendations
 		podPolicies                *vpa_types.PodResourcePolicies
-		expectedPodRecommendations *vpa_types.RecommendedPodRes
+		expectedPodRecommendations *vpa_types.PodRecommendations
 		expectedAnnotations        []string
 	}{
 		{
 			name: "pod level policy is omitted",
-			podRecommendations: &vpa_types.RecommendedPodRes{
+			podRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
 				},
 			},
 			podPolicies: nil,
-			expectedPodRecommendations: &vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2771,7 +2771,7 @@ func TestGetCappedRecommendationForPod(t *testing.T) {
 		},
 		{
 			name: "pod level policy is set only pod level cpu should be capped by MinAllowed",
-			podRecommendations: &vpa_types.RecommendedPodRes{
+			podRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2782,7 +2782,7 @@ func TestGetCappedRecommendationForPod(t *testing.T) {
 					apiv1.ResourceCPU: resource.MustParse("65m"),
 				},
 			},
-			expectedPodRecommendations: &vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("65m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2794,7 +2794,7 @@ func TestGetCappedRecommendationForPod(t *testing.T) {
 		},
 		{
 			name: "pod level policy is set both pod level cpu and memory should be capped by MinAllowed",
-			podRecommendations: &vpa_types.RecommendedPodRes{
+			podRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2806,7 +2806,7 @@ func TestGetCappedRecommendationForPod(t *testing.T) {
 					apiv1.ResourceMemory: resource.MustParse("65Mi"),
 				},
 			},
-			expectedPodRecommendations: &vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("65m"),
 					apiv1.ResourceMemory: resource.MustParse("65Mi"),
@@ -2819,7 +2819,7 @@ func TestGetCappedRecommendationForPod(t *testing.T) {
 		},
 		{
 			name: "pod level policy is set only pod level memory should be capped by MaxAllowed",
-			podRecommendations: &vpa_types.RecommendedPodRes{
+			podRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2830,7 +2830,7 @@ func TestGetCappedRecommendationForPod(t *testing.T) {
 					apiv1.ResourceMemory: resource.MustParse("45Mi"),
 				},
 			},
-			expectedPodRecommendations: &vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("45Mi"),
@@ -2842,7 +2842,7 @@ func TestGetCappedRecommendationForPod(t *testing.T) {
 		},
 		{
 			name: "pod level policy is set both pod level cpu and memory should be capped by MaxAllowed",
-			podRecommendations: &vpa_types.RecommendedPodRes{
+			podRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("55m"),
 					apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -2854,7 +2854,7 @@ func TestGetCappedRecommendationForPod(t *testing.T) {
 					apiv1.ResourceMemory: resource.MustParse("45Mi"),
 				},
 			},
-			expectedPodRecommendations: &vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("45m"),
 					apiv1.ResourceMemory: resource.MustParse("45Mi"),

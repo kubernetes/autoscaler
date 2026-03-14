@@ -627,7 +627,7 @@ func TestAddPodLogs(t *testing.T) {
 						UncappedTarget: test.Resources("24m", "24Mi"),
 					},
 				},
-				PodRecommendations: &vpa_types.RecommendedPodRes{
+				PodRecommendations: &vpa_types.PodRecommendations{
 					Target: apiv1.ResourceList{
 						apiv1.ResourceCPU:    resource.MustParse("55m"),
 						apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -643,7 +643,7 @@ func TestAddPodLogs(t *testing.T) {
 		{
 			name: "pod level recommendation with uncappedTarget",
 			givenRec: &vpa_types.RecommendedPodResources{
-				PodRecommendations: &vpa_types.RecommendedPodRes{
+				PodRecommendations: &vpa_types.PodRecommendations{
 					Target: apiv1.ResourceList{
 						apiv1.ResourceCPU:    resource.MustParse("55m"),
 						apiv1.ResourceMemory: resource.MustParse("55Mi"),
@@ -659,7 +659,7 @@ func TestAddPodLogs(t *testing.T) {
 		{
 			name: "pod level with cpu only recommendation with uncappedTarget",
 			givenRec: &vpa_types.RecommendedPodResources{
-				PodRecommendations: &vpa_types.RecommendedPodRes{
+				PodRecommendations: &vpa_types.PodRecommendations{
 					Target: apiv1.ResourceList{
 						apiv1.ResourceCPU: resource.MustParse("55m"),
 					},
@@ -673,7 +673,7 @@ func TestAddPodLogs(t *testing.T) {
 		{
 			name: "pod level with cpu only recommendation",
 			givenRec: &vpa_types.RecommendedPodResources{
-				PodRecommendations: &vpa_types.RecommendedPodRes{
+				PodRecommendations: &vpa_types.PodRecommendations{
 					Target: apiv1.ResourceList{
 						apiv1.ResourceCPU: resource.MustParse("55m"),
 					},
@@ -684,7 +684,7 @@ func TestAddPodLogs(t *testing.T) {
 		{
 			name: "pod level with memory only recommendation",
 			givenRec: &vpa_types.RecommendedPodResources{
-				PodRecommendations: &vpa_types.RecommendedPodRes{
+				PodRecommendations: &vpa_types.PodRecommendations{
 					Target: apiv1.ResourceList{
 						apiv1.ResourceMemory: resource.MustParse("55Mi"),
 					},

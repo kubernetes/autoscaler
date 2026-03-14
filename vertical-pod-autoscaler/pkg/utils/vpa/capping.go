@@ -91,7 +91,7 @@ func (c *cappingRecommendationProcessor) Apply(
 		klog.V(0).InfoS("Failed to fetch LimitRange for namespace", "namespace", pod.Namespace)
 	}
 
-	var updatedPodRecommendation *vpa_types.RecommendedPodRes
+	var updatedPodRecommendation *vpa_types.PodRecommendations
 	podAnnotations := []string{}
 	if vpa.Status.Recommendation.PodRecommendations != nil && IsPodLevelScalingModeEnabled(vpa) {
 		// Note: As with container recommendations, we do not generate annotations when a Pod LimitRange field is violated.
@@ -191,8 +191,8 @@ func getCappedRecommendationForContainer(
 // getCappedRecommendationForPod operates on Pod-level recommendations.
 // It updates recommendations when they fall outside the limits defined
 // in the podPolicies stanza. It also returns annotations when a violation occurs.
-func getCappedRecommendationForPod(podRecommendations *vpa_types.RecommendedPodRes,
-	podPolicy *vpa_types.PodResourcePolicies) (*vpa_types.RecommendedPodRes, []string) {
+func getCappedRecommendationForPod(podRecommendations *vpa_types.PodRecommendations,
+	podPolicy *vpa_types.PodResourcePolicies) (*vpa_types.PodRecommendations, []string) {
 	cappingAnnotations := make([]string, 0)
 	process := func(recommendation apiv1.ResourceList, genAnnotations bool) {
 		annotations := applyPodLevelVPAPolicy(recommendation, podPolicy)
@@ -423,7 +423,7 @@ func ApplyVPAPolicy(podLevel bool, podRecommendation *vpa_types.RecommendedPodRe
 // based on Pod-level constraints, such as minAllowed and maxAllowed,
 // or constraints passed to the recommender as flags.
 func applyPodLevelBoundsToContainers(
-	podLevelRecs vpa_types.RecommendedPodRes,
+	podLevelRecs vpa_types.PodRecommendations,
 	containerLevelRecs []vpa_types.RecommendedContainerResources,
 	minAllowed, maxAllowed apiv1.ResourceList,
 ) []vpa_types.RecommendedContainerResources {
@@ -811,7 +811,7 @@ func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRange(
 }
 
 func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRangeAtPodLevel(
-	podRecommendations vpa_types.RecommendedPodRes, pod *apiv1.Pod) (*vpa_types.RecommendedPodRes, error) {
+	podRecommendations vpa_types.PodRecommendations, pod *apiv1.Pod) (*vpa_types.PodRecommendations, error) {
 	podLimitRange, err := c.limitsRangeCalculator.GetPodLimitRangeItem(pod.Namespace)
 	if err != nil {
 		return nil, fmt.Errorf("error obtaining limit range: %s", err)
@@ -838,11 +838,11 @@ func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRangeAtPodLe
 // may fall below the min again if the max is also violated. This can
 // result in the Pod becoming unschedulable.
 func applyPodLimitRangeAtPodLevel(
-	podRecommendations vpa_types.RecommendedPodRes,
+	podRecommendations vpa_types.PodRecommendations,
 	podLimitRange *apiv1.LimitRangeItem,
 	pod *apiv1.Pod,
-	fieldGetter func(vpa_types.RecommendedPodRes) *apiv1.ResourceList,
-) vpa_types.RecommendedPodRes {
+	fieldGetter func(vpa_types.PodRecommendations) *apiv1.ResourceList,
+) vpa_types.PodRecommendations {
 	if podLimitRange == nil {
 		return podRecommendations
 	}
@@ -911,6 +911,6 @@ func getLower(rl vpa_types.RecommendedContainerResources) *apiv1.ResourceList  {
 func getTarget(rl vpa_types.RecommendedContainerResources) *apiv1.ResourceList { return &rl.Target }
 func getUpper(rl vpa_types.RecommendedContainerResources) *apiv1.ResourceList  { return &rl.UpperBound }
 
-func getPodLevelLower(rl vpa_types.RecommendedPodRes) *apiv1.ResourceList  { return &rl.LowerBound }
-func getPodLevelTarget(rl vpa_types.RecommendedPodRes) *apiv1.ResourceList { return &rl.Target }
-func getPodLevelUpper(rl vpa_types.RecommendedPodRes) *apiv1.ResourceList  { return &rl.UpperBound }
+func getPodLevelLower(rl vpa_types.PodRecommendations) *apiv1.ResourceList  { return &rl.LowerBound }
+func getPodLevelTarget(rl vpa_types.PodRecommendations) *apiv1.ResourceList { return &rl.Target }
+func getPodLevelUpper(rl vpa_types.PodRecommendations) *apiv1.ResourceList  { return &rl.UpperBound }

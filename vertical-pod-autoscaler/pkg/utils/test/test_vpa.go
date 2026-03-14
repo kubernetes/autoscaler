@@ -355,9 +355,9 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, b.appendedRecommendations...)
 
-	var podRecommendations *vpa_types.RecommendedPodRes
+	var podRecommendations *vpa_types.PodRecommendations
 	if b.podLevelLowerBound != nil || b.podLevelTarget != nil || b.podLevelUpperBound != nil || b.podLevelUncappedTarget != nil {
-		pr := &vpa_types.RecommendedPodRes{
+		pr := &vpa_types.PodRecommendations{
 			LowerBound: b.podLevelLowerBound,
 			Target:     b.podLevelTarget,
 			UpperBound: b.podLevelUpperBound,

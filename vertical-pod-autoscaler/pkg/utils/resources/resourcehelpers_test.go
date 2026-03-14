@@ -349,7 +349,7 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 	cases := []struct {
 		name                       string
 		containerRecommendations   []vpa_types.RecommendedContainerResources
-		expectedPodRecommendations vpa_types.RecommendedPodRes
+		expectedPodRecommendations vpa_types.PodRecommendations
 	}{
 		{
 			name: "no container recommendations",
@@ -361,7 +361,7 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 					WithUpperBound("", "").
 					GetContainerResources(),
 			},
-			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("0"),
 					apiv1.ResourceMemory: resource.MustParse("0"),
@@ -396,7 +396,7 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 					WithUpperBound("8m", "").
 					GetContainerResources(),
 			},
-			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("10m"),
 					apiv1.ResourceMemory: resource.MustParse("10Mi"),
@@ -437,7 +437,7 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 					WithUpperBound("2m", "2Mi").
 					GetContainerResources(),
 			},
-			expectedPodRecommendations: vpa_types.RecommendedPodRes{
+			expectedPodRecommendations: vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("10m"),
 					apiv1.ResourceMemory: resource.MustParse("10Mi"),

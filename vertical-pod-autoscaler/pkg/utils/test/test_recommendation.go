@@ -34,7 +34,7 @@ type RecommendationBuilder interface {
 	Get() *vpa_types.RecommendedPodResources
 	GetContainerResources() vpa_types.RecommendedContainerResources
 	// pod-level
-	GetPodLevelRecommendations() *vpa_types.RecommendedPodRes
+	GetPodLevelRecommendations() *vpa_types.PodRecommendations
 	WithPodLevelLowerBound(cpu, memory string) RecommendationBuilder
 	WithPodLevelTarget(cpu, memory string) RecommendationBuilder
 	WithPodLevelUpperBound(cpu, memory string) RecommendationBuilder
@@ -153,12 +153,12 @@ func (b *recommendationBuilder) WithPodLevelUncappedTarget(cpu, memory string) R
 	return &c
 }
 
-func (b *recommendationBuilder) GetPodLevelRecommendations() *vpa_types.RecommendedPodRes {
+func (b *recommendationBuilder) GetPodLevelRecommendations() *vpa_types.PodRecommendations {
 	uncappedTarget := b.podLevelTarget
 	if b.podLevelUncappedTarget != nil {
 		uncappedTarget = b.podLevelUncappedTarget
 	}
-	return &vpa_types.RecommendedPodRes{
+	return &vpa_types.PodRecommendations{
 		Target:         b.podLevelTarget,
 		UncappedTarget: uncappedTarget,
 		LowerBound:     b.podLevelLowerBound,
