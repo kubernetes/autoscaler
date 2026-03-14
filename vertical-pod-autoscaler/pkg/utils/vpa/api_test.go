@@ -637,7 +637,6 @@ func TestFilterContainerRecommendations(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			actual := FilterContainerRecommendations(tt.vpa)
 			assert.Equal(t, tt.expectedNumberOfContainerRecs, len(actual), "doesn't match")
-
 		})
 	}
 }
