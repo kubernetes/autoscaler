@@ -392,14 +392,11 @@ spec:
                       type: object
                     type: array
                   podPolicies:
-                    description: |-
-                      PodResourcePolicies controls how autoscaler computes the recommended
-                      resources for the pod.
+                    description: Pod-level resource policies.
                     properties:
                       controlledResources:
                         description: |-
-                          Specifies the type of recommendations that will be computed
-                          (and possibly applied) by VPA.
+                          Specifies the resource types (CPU, memory, or both) that VPA computes at the pod level and may apply.
                           If not specified, the default of [ResourceCPU, ResourceMemory] will be used.
                         items:
                           description: ResourceName is the name identifying various
@@ -408,7 +405,7 @@ spec:
                         type: array
                       controlledValues:
                         description: |-
-                          Specifies which resource values should be controlled.
+                          Specifies which resource values VPA controls at the pod level.
                           The default is "RequestsAndLimits".
                         enum:
                         - RequestsAndLimits
@@ -422,8 +419,8 @@ spec:
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
                         description: |-
-                          Specifies the maximum amount of resources that will be recommended
-                          for the pod. The default is no maximum.
+                          Specifies the maximum amount of resources that the autoscaler recommends at the pod level.
+                          The default is no maximum.
                         type: object
                       minAllowed:
                         additionalProperties:
@@ -433,32 +430,17 @@ spec:
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
                         description: |-
-                          Specifies the minimal amount of resources that will be recommended
-                          for the pod. The default is no minimum.
+                          Specifies the minimum amount of resources that the autoscaler recommends at the pod level.
+                          The default is no minimum.
                         type: object
                       mode:
-                        description: Whether autoscaler is enabled for pod level resource
-                          requests The default is "Off".
+                        description: |-
+                          Indicates whether the autoscaler is enabled at the pod level.
+                          The default is "Off", so the autoscaler does not compute recommendations at the pod level.
                         enum:
                         - Auto
                         - "Off"
                         type: string
-                      oomBumpUpRatio:
-                        anyOf:
-                        - type: integer
-                        - type: string
-                        description: oomBumpUpRatio is the ratio to increase memory
-                          when OOM is detected.
-                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                        x-kubernetes-int-or-string: true
-                      oomMinBumpUp:
-                        anyOf:
-                        - type: integer
-                        - type: string
-                        description: oomMinBumpUp is the minimum increase in memory
-                          when OOM is detected.
-                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                        x-kubernetes-int-or-string: true
                     type: object
                 type: object
               targetRef:
@@ -661,8 +643,9 @@ spec:
                       type: object
                     type: array
                   podRecommendations:
-                    description: Resources recommended by the autoscaler for each
-                      container.
+                    description: |-
+                      Resources recommended by the autoscaler at the pod level,
+                      computed by aggregating (e.g. summing) container-level recommendations.
                     properties:
                       lowerBound:
                         additionalProperties:
@@ -672,9 +655,8 @@ spec:
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
                         description: |-
-                          Minimum recommended amount of resources. Observes ContainerResourcePolicy and PodResourcePolicies.
-                          This amount is not guaranteed to be sufficient for the application to operate in a stable way, however
-                          running with less resources is likely to have significant impact on performance/availability.
+                          Pod-level minimum recommended amount of resources,
+                          computed by aggregating container-level lower bounds.
                         type: object
                       target:
                         additionalProperties:
@@ -683,8 +665,9 @@ spec:
                           - type: string
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
-                        description: Recommended amount of resources. Observes ContainerResourcePolicy
-                          and PodResourcePolicies.
+                        description: |-
+                          Pod-level recommended amount of resources,
+                          computed by aggregating container-level targets.
                         type: object
                       uncappedTarget:
                         additionalProperties:
@@ -693,14 +676,8 @@ spec:
                           - type: string
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
-                        description: |-
-                          The most recent recommended resources target computed by the autoscaler
-                          for the controlled pods, based only on actual resource usage, not taking
-                          into account the ContainerResourcePolicy and PodResourcePolicies.
-                          May differ from the Recommendation if the actual resource usage causes
-                          the target to violate the ContainerResourcePolicy (lower than MinAllowed
-                          or higher that MaxAllowed) or the PodResourcePolicies.
-                          Used only as status indication, will not affect actual resource assignment.
+                        description: Pod-level UncappedTarget, computed by aggregating
+                          container-level uncapped targets.
                         type: object
                       upperBound:
                         additionalProperties:
@@ -710,9 +687,8 @@ spec:
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
                         description: |-
-                          Maximum recommended amount of resources. Observes ContainerResourcePolicy and PodResourcePolicies.
-                          Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum
-                          amount of application is actually capable of consuming.
+                          Pod-level maximum recommended amount of resources,
+                          computed by aggregating container-level upper bounds.
                         type: object
                     type: object
                 type: object
