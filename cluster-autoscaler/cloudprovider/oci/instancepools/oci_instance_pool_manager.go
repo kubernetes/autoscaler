@@ -6,7 +6,6 @@ package instancepools
 
 import (
 	"fmt"
-	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	"os"
 	"strconv"
 	"strings"
@@ -14,6 +13,7 @@ import (
 
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
+	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -199,7 +199,7 @@ func instancePoolFromArg(value string) (*InstancePoolNodeGroup, error) {
 
 	spec.id = tokens[2]
 
-	klog.Infof("static instance pool wrapper spec constructed: %+v", spec)
+	klog.Infof("static instance-pool wrapper spec constructed: %+v", spec)
 
 	return spec, nil
 }
@@ -257,7 +257,7 @@ func (m *InstancePoolManagerImpl) GetInstancePools() []*InstancePoolNodeGroup {
 // GetInstancePoolNodes returns InstancePool nodes that are not in a terminal state.
 func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup) ([]cloudprovider.Instance, error) {
 
-	klog.V(4).Infof("getting (cached) instances for node pool: %q", ip.Id())
+	klog.V(4).Infof("getting (cached) instances for instance-pool: %q", ip.Id())
 
 	instanceSummaries, err := m.instancePoolCache.getInstanceSummaries(ip.Id())
 	if err != nil {
@@ -293,6 +293,7 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 			}
 		}
 
+		klog.V(5).Infof("instance %s is in state: %s", *instance.Id, *instance.State)
 		// Instance not in a terminal or unknown state, ok to add.
 		if status.State != 0 {
 			providerInstances = append(providerInstances, cloudprovider.Instance{
@@ -310,7 +311,7 @@ func (m *InstancePoolManagerImpl) GetInstancePoolNodes(ip InstancePoolNodeGroup)
 func (m *InstancePoolManagerImpl) GetInstancePoolForInstance(instanceDetails ocicommon.OciRef) (*InstancePoolNodeGroup, error) {
 	if m.cfg.Global.UseNonMemberAnnotation && instanceDetails.InstancePoolID == consts.OciInstancePoolIDNonPoolMember {
 		// Instance is not part of a configured pool. Return early and avoid additional API calls.
-		klog.V(4).Infof(instanceDetails.Name + " is not a member of any of the specified instance pool(s) and already annotated as " +
+		klog.V(4).Info("GetInstancePoolForInstance node " + instanceDetails.Name + " is not a member of any of the specified instance pool(s) and already annotated as " +
 			consts.OciInstancePoolIDNonPoolMember)
 		return nil, errInstanceInstancePoolNotFound
 	}
@@ -323,6 +324,7 @@ func (m *InstancePoolManagerImpl) GetInstancePoolForInstance(instanceDetails oci
 	if ip, ok := m.staticInstancePools[instanceDetails.InstancePoolID]; ok {
 		return ip, nil
 	}
+
 	// This instance is not in the cache.
 	// Try to resolve the pool ID and other details, though it may not be a member of an instance-pool we manage.
 	foundInstanceDetails, err := m.instancePoolCache.findInstanceByDetails(instanceDetails)
@@ -369,13 +371,14 @@ func (m *InstancePoolManagerImpl) GetInstancePoolSize(ip InstancePoolNodeGroup) 
 
 // SetInstancePoolSize sets instance-pool size.
 func (m *InstancePoolManagerImpl) SetInstancePoolSize(np InstancePoolNodeGroup, size int) error {
-	klog.Infof("SetInstancePoolSize (%d) called on instance pool %s", size, np.Id())
+	klog.Infof("SetInstancePoolSize (%d) called on instance-pool %s", size, np.Id())
 
 	setSizeErr := m.instancePoolCache.setSize(np.Id(), size)
-	klog.V(5).Infof("SetInstancePoolSize was called: refreshing instance pool cache")
+	klog.V(5).Infof("SetInstancePoolSize completed: refreshing instance-pool cache")
 	// refresh instance pool cache after update (regardless if there was an error or not)
 	_ = m.forceRefreshInstancePool(np.Id())
 	if setSizeErr != nil {
+		klog.V(4).Infof("SetInstancePoolSize to %d failed: %v", size, setSizeErr)
 		return setSizeErr
 	}
 
@@ -390,7 +393,7 @@ func (m *InstancePoolManagerImpl) SetInstancePoolSize(np InstancePoolNodeGroup, 
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same instance-pool.
 func (m *InstancePoolManagerImpl) DeleteInstances(instancePool InstancePoolNodeGroup, instances []ocicommon.OciRef) error {
-	klog.Infof("DeleteInstances called on instance pool %s", instancePool.Id())
+	klog.Infof("DeleteInstances called on instance-pool %s", instancePool.Id())
 
 	for _, instance := range instances {
 		// removeInstance auto decrements instance pool size.
