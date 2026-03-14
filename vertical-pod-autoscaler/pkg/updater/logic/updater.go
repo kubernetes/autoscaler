@@ -167,7 +167,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
 	inPlaceFeatureEnable := features.Enabled(features.InPlaceOrRecreate)
-	podLevelFeatureEnable := features.Enabled(features.PodLevelResourcesSupportForVPA)
+	podLevelFeatureEnable := features.Enabled(features.VPAPodLevelResources)
 
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
@@ -265,7 +265,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			updatedContainerRecommendations := vpa_api_util.FilterContainerRecommendations(vpa)
 			vpa.Status.Recommendation.ContainerRecommendations = updatedContainerRecommendations
 		} else {
-			// Remove pod-level recommendations when the `PodLevelResourcesSupportForVPA` feature gate is disabled.
+			// Remove pod-level recommendations when the `VPAPodLevelResources` feature gate is disabled.
 			// This behavior prevents the updater from making eviction decisions or applying patches at the pod level
 			// when pod-level resource support is disabled.
 			vpa.Status.Recommendation.PodRecommendations = nil

@@ -158,8 +158,8 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 				if _, found := possibleScalingModes[*mode]; !found {
 					return fmt.Errorf("unexpected Mode value %s", *mode)
 				}
-				if *mode == vpa_types.ContainerScalingModeRecsOnly && !features.Enabled(features.PodLevelResourcesSupportForVPA) {
-					return fmt.Errorf("in order to use %s containerPolicies mode, you must enable feature gate %s in the admission-controller args", vpa_types.ContainerScalingModeRecsOnly, features.PodLevelResourcesSupportForVPA)
+				if *mode == vpa_types.ContainerScalingModeRecsOnly && !features.Enabled(features.VPAPodLevelResources) {
+					return fmt.Errorf("in order to use %s containerPolicies mode, you must enable feature gate %s in the admission-controller args", vpa_types.ContainerScalingModeRecsOnly, features.VPAPodLevelResources)
 				}
 			}
 
@@ -188,8 +188,8 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 
 		// TODO: We may validate that the sum of container-level MaxAllowed values does not exceed the pod-level MaxAllowed, following the same approach for MinAllowed fields.
 		if podPolicies := vpa.Spec.ResourcePolicy.PodPolicies; podPolicies != nil {
-			if !features.Enabled(features.PodLevelResourcesSupportForVPA) {
-				return fmt.Errorf("in order to use podPolicies stanza, you must enable feature gate %s in the admission-controller args", features.PodLevelResourcesSupportForVPA)
+			if !features.Enabled(features.VPAPodLevelResources) {
+				return fmt.Errorf("in order to use podPolicies stanza, you must enable feature gate %s in the admission-controller args", features.VPAPodLevelResources)
 			}
 
 			for resource, min := range podPolicies.MinAllowed {

@@ -397,7 +397,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			ContainerScalingModeRecsOnlyDisabled: true,
-			expectError:                          errors.New("in order to use RecommendationOnly containerPolicies mode, you must enable feature gate PodLevelResourcesSupportForVPA in the admission-controller args"),
+			expectError:                          errors.New("in order to use RecommendationOnly containerPolicies mode, you must enable feature gate VPAPodLevelResources in the admission-controller args"),
 		},
 		{
 			name: "support for pod level active and used",
@@ -433,7 +433,7 @@ func TestValidateVPA(t *testing.T) {
 			},
 			ContainerScalingModeRecsOnlyDisabled: true,
 			emulatedVersion:                      "1.6",
-			expectError:                          errors.New("in order to use podPolicies stanza, you must enable feature gate PodLevelResourcesSupportForVPA in the admission-controller args"),
+			expectError:                          errors.New("in order to use podPolicies stanza, you must enable feature gate VPAPodLevelResources in the admission-controller args"),
 		},
 	}
 	for _, tc := range tests {
@@ -446,7 +446,7 @@ func TestValidateVPA(t *testing.T) {
 
 			if tc.emulatedVersion != "" && tc.emulatedVersion == "1.6" {
 				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse(tc.emulatedVersion))
-				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PodLevelResourcesSupportForVPA, !tc.ContainerScalingModeRecsOnlyDisabled)
+				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAPodLevelResources, !tc.ContainerScalingModeRecsOnlyDisabled)
 			}
 
 			err := ValidateVPA(&tc.vpa, tc.isCreate)
