@@ -85,19 +85,13 @@ func (ocp *OciCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 		klog.V(4).Infof("HasInstance: instance-pool check for node %s failed: %v", node.Name, err)
 		return false, err
 	}
-	instances, err := ocp.poolManager.GetInstancePoolNodes(*instancePool)
-	if err != nil {
-		klog.V(4).Infof("HasInstance: instance-pool cnode heck for node %s failed: %v", node.Name, err)
-		return false, err
+	if instancePool == nil || instancePool.Id() == "" {
+		klog.V(4).Infof("HasInstance: node %s is not a member of any of the specified instance-pool(s)", node.Name)
+		return false, nil
 	}
-	for _, i := range instances {
-		if i.Id == instance.InstanceID {
-			klog.V(4).Infof("HasInstance: node %s belongs to instance-pool %s", node.Name, instancePool.Id())
-			return true, nil
-		}
-	}
-	klog.V(4).Infof("HasInstance: node %s does NOT belong to instance-pool %s", node.Name, instancePool.Id())
-	return false, nil
+
+	klog.V(4).Infof("HasInstance: node %s belongs to instance-pool %s", node.Name, instancePool.Id())
+	return true, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
