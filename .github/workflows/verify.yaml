@@ -1,8 +1,12 @@
 name: Verify Go
 
 on:
-  - push
-  - pull_request
+  push:
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
 
 env:
   GOPATH: ${{ github.workspace }}/go
