@@ -325,6 +325,11 @@ func (m *InstancePoolManagerImpl) GetInstancePoolForInstance(instanceDetails oci
 		klog.V(4).Infof("GetInstancePoolForInstance instance-pool %s was not found", instanceDetails.InstancePoolID)
 		return ip, nil
 	}
+	// Skip search if the instance-pool is not set but the node-pool is (it is an OKE node)
+	if instanceDetails.NodePoolID != "" {
+		klog.V(4).Infof("GetInstancePoolForInstance skipping further search for %s since instance-pool is empty and node-pool is set to %s", instanceDetails.InstancePoolID, instanceDetails.NodePoolID)
+		return nil, errInstanceInstancePoolNotFound
+	}
 
 	// This instance is not in the cache.
 	// Try to resolve the pool ID and other details, though it may not be a member of an instance-pool we manage.
