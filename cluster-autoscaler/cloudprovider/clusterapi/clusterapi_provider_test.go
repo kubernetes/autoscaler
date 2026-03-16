@@ -18,6 +18,7 @@ package clusterapi
 
 import (
 	"reflect"
+	"slices"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -101,6 +102,7 @@ func TestProviderConstructorProperties(t *testing.T) {
 		t.Fatalf("expected 0 GPU types, got %d", got)
 	}
 }
+
 func BenchmarkNodeGroups(b *testing.B) {
 	resourceLimits := cloudprovider.ResourceLimiter{}
 	annotations := map[string]string{
@@ -132,4 +134,142 @@ func BenchmarkNodeGroups(b *testing.B) {
 			provider.NodeGroups()
 		}
 	})
+}
+
+func TestNodeGroups(t *testing.T) {
+	resourceLimits := cloudprovider.ResourceLimiter{}
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "2",
+	}
+	pausedAnnotations := map[string]string{
+		resourcePausedAnnotation: "true",
+	}
+
+	testConfigs := []struct {
+		name                    string
+		scalableResourceConfigs []*TestConfig
+		expectedNodeGroupCount  int
+	}{
+		{
+			"no node groups return empty list",
+			[]*TestConfig{},
+			0,
+		},
+		{
+			"multiple MachineSet node groups without scaling enabled returns empty list",
+			NewTestConfigBuilder().
+				ForMachineSet().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				BuildMultiple(10),
+			0,
+		},
+		{
+			"multiple MachineDeployment node groups without scaling enabled returns empty list",
+			NewTestConfigBuilder().
+				ForMachineDeployment().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				BuildMultiple(10),
+			0,
+		},
+		{
+			"multiple MachineSet node groups with scaling enabled returns correct length",
+			NewTestConfigBuilder().
+				ForMachineSet().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				WithAnnotations(annotations).
+				BuildMultiple(10),
+			10,
+		},
+		{
+			"multiple MachineDeployment node groups with scaling enabled returns correct length",
+			NewTestConfigBuilder().
+				ForMachineDeployment().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				WithAnnotations(annotations).
+				BuildMultiple(10),
+			10,
+		},
+		{
+			"multiple paused MachineSet node groups with scaling enabled returns correct length",
+			NewTestConfigBuilder().
+				ForMachineSet().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				WithAnnotations(annotations).
+				WithAnnotations(pausedAnnotations).
+				BuildMultiple(10),
+			0,
+		},
+		{
+			"multiple paused MachineDeployment node groups with scaling enabled returns correct length",
+			NewTestConfigBuilder().
+				ForMachineDeployment().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				WithAnnotations(annotations).
+				WithAnnotations(pausedAnnotations).
+				BuildMultiple(10),
+			0,
+		},
+		{
+			"blend of paused, unpaused, and non-scaling node groups returns correct length",
+			slices.Concat(
+				NewTestConfigBuilder().
+					ForMachineDeployment().
+					WithNamespace("namespace").
+					WithClusterName("").
+					WithNodeCount(1).
+					WithAnnotations(annotations).
+					WithAnnotations(pausedAnnotations).
+					BuildMultiple(5),
+				NewTestConfigBuilder().
+					ForMachineDeployment().
+					WithNamespace("namespace").
+					WithClusterName("").
+					WithNodeCount(1).
+					WithAnnotations(annotations).
+					BuildMultiple(5),
+				NewTestConfigBuilder().
+					ForMachineDeployment().
+					WithNamespace("namespace").
+					WithClusterName("").
+					WithNodeCount(1).
+					BuildMultiple(5),
+			),
+			5,
+		},
+	}
+
+	for _, tc := range testConfigs {
+		controller := NewTestMachineController(t)
+
+		if len(tc.scalableResourceConfigs) > 0 {
+			if err := controller.AddTestConfigs(tc.scalableResourceConfigs...); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+		}
+
+		provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller.machineController)
+		if actual := provider.Name(); actual != cloudprovider.ClusterAPIProviderName {
+			t.Errorf("expected %q, got %q", cloudprovider.ClusterAPIProviderName, actual)
+		}
+
+		observed := provider.NodeGroups()
+		if len(observed) != tc.expectedNodeGroupCount {
+			t.Fatalf("unexpected node group length, expected: %d, observed %d", tc.expectedNodeGroupCount, observed)
+		}
+
+		controller.Stop()
+	}
 }
