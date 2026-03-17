@@ -5,7 +5,7 @@
 
 - When VPA applies new resource recommendations, the Pod may be recreated if the resources
   cannot be updated in place. In such cases, all running containers are restarted and the Pod
-  may be scheduled on a different node.
+  may be scheduled on a different node. The `Initial` mode does not recreate running pods.
 - VPA cannot guarantee that pods it evicts or deletes to apply recommendations
   (when configured in `Auto` and `Recreate` modes) will be successfully
   recreated. This can be partly
