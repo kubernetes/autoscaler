@@ -58,7 +58,7 @@ func (t *podTemplateBufferTranslator) Translate(buffers []*v1.CapacityBuffer) []
 			continue
 		}
 
-		managedPodTemplate, err := t.ensureManagedPodTemplate(context.TODO(), buffer, sourcePodTemplate)
+		managedPodTemplate, err := t.ensureManagedPodTemplate(context.Background(), buffer, sourcePodTemplate)
 		if err != nil {
 			errors = append(errors, err)
 			common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, buffer.Spec.ProvisioningStrategy, err)

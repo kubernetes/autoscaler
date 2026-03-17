@@ -244,6 +244,6 @@ func (c *Controller) updateStatusIfNeeded(oldStatus *balancerapi.BalancerStatus,
 	if apiequality.Semantic.DeepEqual(oldStatus, &new.Status) {
 		return nil
 	}
-	_, err := c.balancerClientSet.BalancerV1alpha1().Balancers(new.Namespace).UpdateStatus(context.TODO(), new, metav1.UpdateOptions{})
+	_, err := c.balancerClientSet.BalancerV1alpha1().Balancers(new.Namespace).UpdateStatus(context.Background(), new, metav1.UpdateOptions{})
 	return err
 }

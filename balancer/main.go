@@ -93,7 +93,7 @@ func main() {
 	scaleClient, err := scaleclient.NewForConfig(cfg, restMapper, dynamic.LegacyAPIPathResolverFunc, scaleKindResolver)
 
 	podInformer := kubeInformerFactory.Core().V1().Pods()
-	core := controller.NewCore(controller.NewScaleClient(context.TODO(), scaleClient, restMapper), podInformer)
+	core := controller.NewCore(controller.NewScaleClient(context.Background(), scaleClient, restMapper), podInformer)
 
 	controller := controller.NewController(balancerClient,
 		balancerInformerFactory.Balancer().V1alpha1().Balancers(),

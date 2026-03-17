@@ -80,7 +80,7 @@ func (t *ScalableObjectsTranslator) Translate(buffers []*apiv1.CapacityBuffer) [
 		if !isScalableObjectBuffer(buffer) {
 			continue
 		}
-		if err := t.translateBuffer(context.TODO(), buffer); err != nil {
+		if err := t.translateBuffer(context.Background(), buffer); err != nil {
 			errors = append(errors, err)
 		}
 	}
