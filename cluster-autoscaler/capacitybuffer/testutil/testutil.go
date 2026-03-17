@@ -96,7 +96,7 @@ func GetBufferStatus(podTempRef *v1.LocalObjectRef, replicas *int32, podTemplate
 
 // GetConditionReady returns a list of conditions with a condition ready and empty message, should be used for testing purposes only
 func GetConditionReady() []metav1.Condition {
-	return GetConditionReadyWithMessage("")
+	return GetConditionReadyWithMessage("ready")
 }
 
 // GetConditionReadyWithMessage returns a list of conditions with a condition ready and the specified message
