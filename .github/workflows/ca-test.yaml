@@ -4,13 +4,9 @@ on:
   push:
     paths:
       - 'cluster-autoscaler/**'
-    paths-ignore:
-      - '**/*.md'
   pull_request:
     paths:
       - 'cluster-autoscaler/**'
-    paths-ignore:
-      - '**/*.md'
 
 env:
   GOPATH: ${{ github.workspace }}/go
