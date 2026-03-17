@@ -239,7 +239,7 @@ func (c *CapacityBufferClient) ListResourceQuotas(namespace string) ([]*corev1.R
 		return c.rqLister.ResourceQuotas(namespace).List(labels.Everything())
 	}
 	if c.kubernetesClient != nil {
-		rqList, err := c.kubernetesClient.CoreV1().ResourceQuotas(namespace).List(context.TODO(), metav1.ListOptions{})
+		rqList, err := c.kubernetesClient.CoreV1().ResourceQuotas(namespace).List(context.Background(), metav1.ListOptions{})
 		if err != nil {
 			return nil, err
 		}
@@ -263,7 +263,7 @@ func (c *CapacityBufferClient) GetPodTemplate(namespace, name string) (*corev1.P
 			return template.DeepCopy(), nil
 		}
 	}
-	template, err := c.kubernetesClient.CoreV1().PodTemplates(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	template, err := c.kubernetesClient.CoreV1().PodTemplates(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("capacity buffer client can't get pod template: %w", err)
 	}
@@ -276,7 +276,7 @@ func (c *CapacityBufferClient) UpdateCapacityBuffer(buffer *v1.CapacityBuffer) (
 		return nil, fmt.Errorf("Capacity buffer client is not configured for updating capacity buffer")
 	}
 
-	buffer, err := c.buffersClient.AutoscalingV1beta1().CapacityBuffers(buffer.Namespace).UpdateStatus(context.TODO(), buffer, metav1.UpdateOptions{})
+	buffer, err := c.buffersClient.AutoscalingV1beta1().CapacityBuffers(buffer.Namespace).UpdateStatus(context.Background(), buffer, metav1.UpdateOptions{})
 	if err == nil {
 		return buffer.DeepCopy(), nil
 	}
@@ -288,7 +288,7 @@ func (c *CapacityBufferClient) CreatePodTemplate(podTemplate *corev1.PodTemplate
 	if c.kubernetesClient == nil {
 		return nil, fmt.Errorf("Capacity buffer client is not configured for creating pod template")
 	}
-	template, err := c.kubernetesClient.CoreV1().PodTemplates(podTemplate.Namespace).Create(context.TODO(), podTemplate, metav1.CreateOptions{})
+	template, err := c.kubernetesClient.CoreV1().PodTemplates(podTemplate.Namespace).Create(context.Background(), podTemplate, metav1.CreateOptions{})
 	if err == nil {
 		return template.DeepCopy(), nil
 	}
@@ -300,7 +300,7 @@ func (c *CapacityBufferClient) UpdatePodTemplate(podTemplate *corev1.PodTemplate
 	if c.kubernetesClient == nil {
 		return nil, fmt.Errorf("Capacity buffer client is not configured for updating pod template")
 	}
-	template, err := c.kubernetesClient.CoreV1().PodTemplates(podTemplate.Namespace).Update(context.TODO(), podTemplate, metav1.UpdateOptions{})
+	template, err := c.kubernetesClient.CoreV1().PodTemplates(podTemplate.Namespace).Update(context.Background(), podTemplate, metav1.UpdateOptions{})
 	if err == nil {
 		return template.DeepCopy(), nil
 	}
@@ -406,7 +406,7 @@ func (c *CapacityBufferClient) GetScaleObject(namespace, group, kind, name strin
 	if err != nil {
 		return nil, err
 	}
-	obj, err := c.scaleGetter.Scales(namespace).Get(context.TODO(), mapping.Resource.GroupResource(), name, metav1.GetOptions{})
+	obj, err := c.scaleGetter.Scales(namespace).Get(context.Background(), mapping.Resource.GroupResource(), name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get scale sub resource: %w", err)
 	}
@@ -423,7 +423,7 @@ func (c *CapacityBufferClient) GetPodsBySelector(namespace, selector string) ([]
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse label selector: %v", err)
 	}
-	podList, err := c.kubernetesClient.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{
+	podList, err := c.kubernetesClient.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: labelSelector.String(),
 	})
 	if err != nil {
