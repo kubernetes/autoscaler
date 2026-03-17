@@ -73,8 +73,8 @@ Updater component for Vertical Pod Autoscaler described in the [Vertical Pod Aut
 
 Updater runs in Kubernetes cluster and decides which pods require resource
 updates based on resources allocation recommendation calculated by Recommender.
-Depending on the configured update mode, the update may be applied in place or
-by evicting the pod.
+Depending on the configured update mode, the update may be applied in place,
+by evicting the pod or no action may be taken (in `Initial` mode).
 It respects the pod disruption budget, by using Eviction API to evict pods.
 Updater does not perform the actual resources update, but relies on Vertical Pod Autoscaler admission plugin
 to update pod resources when the pod is recreated after eviction.
