@@ -7,6 +7,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -81,10 +82,16 @@ func (osf *shapeGetterImpl) Refresh() {
 // GetNodePoolShape gets the shape by querying the node pool's configuration
 func (osf *shapeGetterImpl) GetNodePoolShape(np *oke.NodePool, ephemeralStorage int64) (*Shape, error) {
 	shapeName := *np.NodeShape
+	// x86, Arm A2, Arm A4: 1 OCPU = 2 vCPUs.
+	// Arm A1: 1 OCPU = 1 vCPUs
+	cpuMultiplier := float32(2)
+	if strings.Contains(strings.ToLower(shapeName), strings.ToLower(".A1.")) {
+		cpuMultiplier = 1
+	}
 	if np.NodeShapeConfig != nil {
 		return &Shape{
 			Name: shapeName,
-			CPU:  *np.NodeShapeConfig.Ocpus * 2,
+			CPU:  *np.NodeShapeConfig.Ocpus * cpuMultiplier,
 			// num_bytes * kilo * mega * giga
 			MemoryInBytes:           *np.NodeShapeConfig.MemoryInGBs * 1024 * 1024 * 1024,
 			GPU:                     0,
