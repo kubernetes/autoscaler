@@ -17,6 +17,8 @@ limitations under the License.
 package estimator
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -24,11 +26,12 @@ import (
 )
 
 type thresholdBasedEstimationLimiter struct {
-	maxDuration time.Duration
-	maxNodes    int
-	nodes       int
-	start       time.Time
-	thresholds  []Threshold
+	maxDuration  time.Duration
+	maxNodes     int
+	nodes        int
+	start        time.Time
+	thresholds   []Threshold
+	debugStrings []string
 }
 
 func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []PodEquivalenceGroup, nodeGroup cloudprovider.NodeGroup, context EstimationContext) {
@@ -36,9 +39,18 @@ func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []PodEquivalenceG
 	tbel.nodes = 0
 	tbel.maxNodes = 0
 	tbel.maxDuration = time.Duration(0)
+	tbel.debugStrings = make([]string, 0)
 	for _, threshold := range tbel.thresholds {
-		tbel.maxNodes = getMinLimit(tbel.maxNodes, threshold.NodeLimit(nodeGroup, context))
-		tbel.maxDuration = getMinLimit(tbel.maxDuration, threshold.DurationLimit(nodeGroup, context))
+		nodeLimit, debug := threshold.NodeLimit(nodeGroup, context)
+		tbel.maxNodes = getMinLimit(tbel.maxNodes, nodeLimit)
+		if debug != "" {
+			tbel.debugStrings = append(tbel.debugStrings, fmt.Sprintf("%s(Node Limit): %s", threshold.Name(), debug))
+		}
+		durationLimit, debug := threshold.DurationLimit(nodeGroup, context)
+		tbel.maxDuration = getMinLimit(tbel.maxDuration, durationLimit)
+		if debug != "" {
+			tbel.debugStrings = append(tbel.debugStrings, fmt.Sprintf("%s(Duration Limit): %s", threshold.Name(), debug))
+		}
 	}
 }
 
@@ -56,12 +68,12 @@ func (*thresholdBasedEstimationLimiter) EndEstimation() {}
 
 func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
 	if tbel.maxNodes < 0 || (tbel.maxNodes > 0 && tbel.nodes >= tbel.maxNodes) {
-		klog.V(4).Infof("Capping binpacking after exceeding threshold of %d nodes", tbel.maxNodes)
+		klog.V(4).Infof("Capping binpacking after exceeding threshold of %d nodes. Debug: %s", tbel.maxNodes, strings.Join(tbel.debugStrings, ","))
 		return false
 	}
 	timeDefined := tbel.maxDuration > 0 && tbel.start != time.Time{}
 	if tbel.maxDuration < 0 || (timeDefined && time.Now().After(tbel.start.Add(tbel.maxDuration))) {
-		klog.V(4).Infof("Capping binpacking after exceeding max duration of %v", tbel.maxDuration)
+		klog.V(4).Infof("Capping binpacking after exceeding max duration of %v. Debug: %s", tbel.maxDuration, strings.Join(tbel.debugStrings, ","))
 		return false
 	}
 	tbel.nodes++

@@ -25,14 +25,20 @@ import (
 type staticThreshold struct {
 	maxNodes    int
 	maxDuration time.Duration
+	name        string
 }
 
-func (l *staticThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) int {
-	return l.maxNodes
+func (l *staticThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) (int, string) {
+	return l.maxNodes, ""
 }
 
-func (l *staticThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) time.Duration {
-	return l.maxDuration
+func (l *staticThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) (time.Duration, string) {
+	return l.maxDuration, ""
+}
+
+// Name returns the name of the Threshold
+func (l *staticThreshold) Name() string {
+	return l.name
 }
 
 // NewStaticThreshold returns a Threshold that should be used to limit
@@ -41,5 +47,6 @@ func NewStaticThreshold(maxNodes int, maxDuration time.Duration) Threshold {
 	return &staticThreshold{
 		maxNodes:    maxNodes,
 		maxDuration: maxDuration,
+		name:        "static-threshold",
 	}
 }

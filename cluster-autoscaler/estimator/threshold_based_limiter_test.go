@@ -41,15 +41,20 @@ func resetLimiter(_ *testing.T, l EstimationLimiter) {
 
 type dynamicThreshold struct {
 	nodeLimit int
+	name      string
 }
 
-func (d *dynamicThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) time.Duration {
-	return 0
+func (d *dynamicThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) (time.Duration, string) {
+	return 0, ""
 }
 
-func (d *dynamicThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) int {
+func (d *dynamicThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) (int, string) {
 	d.nodeLimit += 1
-	return d.nodeLimit
+	return d.nodeLimit, ""
+}
+
+func (d *dynamicThreshold) Name() string {
+	return d.name
 }
 
 func TestThresholdBasedLimiter(t *testing.T) {
@@ -153,7 +158,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 				expectDeny,
 			},
 			expectNodeCount: 3,
-			thresholds:      []Threshold{&dynamicThreshold{1}},
+			thresholds:      []Threshold{&dynamicThreshold{1, "dynamic-threshold"}},
 		},
 		{
 			name: "duration limit is set to runtime limit",
