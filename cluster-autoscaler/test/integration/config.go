@@ -102,3 +102,10 @@ func WithScaleDownUnneededTime(d time.Duration) AutoscalingOptionOverride {
 		o.NodeGroupDefaults.ScaleDownUnneededTime = d
 	}
 }
+
+// WithProvisioningRequestEnabled enables ProvisioningRequest support.
+func WithProvisioningRequestEnabled() AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ProvisioningRequestEnabled = true
+	}
+}
