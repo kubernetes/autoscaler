@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	cbv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	provreqclientset "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	capacityclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	cbctrl "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
@@ -34,7 +35,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/loop"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	cbprocessor "k8s.io/autoscaler/cluster-autoscaler/processors/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
@@ -47,10 +47,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/emptycandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/previouscandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
-	provreqorchestrator "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/orchestrator"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
@@ -75,6 +71,7 @@ type AutoscalerBuilder struct {
 	podObserver          *loop.UnschedulablePodObserver
 	cloudProvider        cloudprovider.CloudProvider
 	informerFactory      informers.SharedInformerFactory
+	prClient             provreqclientset.Interface
 }
 
 // New creates a builder with default options.
@@ -117,6 +114,12 @@ func (b *AutoscalerBuilder) WithCloudProvider(cloudProvider cloudprovider.CloudP
 // WithInformerFactory allows injecting a shared informer factory.
 func (b *AutoscalerBuilder) WithInformerFactory(f informers.SharedInformerFactory) *AutoscalerBuilder {
 	b.informerFactory = f
+	return b
+}
+
+// WithProvisioningRequestClient allows injecting a ProvisioningRequest API client.
+func (b *AutoscalerBuilder) WithProvisioningRequestClient(c provreqclientset.Interface) *AutoscalerBuilder {
+	b.prClient = c
 	return b
 }
 
@@ -164,41 +167,13 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(&autoscalingOptions.NodeInfoCacheExpireTime, autoscalingOptions.ForceDaemonSets)
 	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere)
 
-	var ProvisioningRequestInjector *provreq.ProvisioningRequestPodsInjector
+	var provisioningRequestInjector *provreq.ProvisioningRequestPodsInjector
 	if autoscalingOptions.ProvisioningRequestEnabled {
-		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
-
-		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
-		client, err := provreqclient.NewProvisioningRequestClient(restConfig)
+		injector, err := b.buildProvisioningRequest(ctx, autoscalingOptions, &opts, podListProcessor)
 		if err != nil {
 			return nil, nil, err
 		}
-
-		ProvisioningRequestInjector, err = provreq.NewProvisioningRequestPodsInjector(restConfig, opts.ProvisioningRequestInitialBackoffTime, opts.ProvisioningRequestMaxBackoffTime, opts.ProvisioningRequestMaxBackoffCacheSize, opts.CheckCapacityBatchProcessing, opts.CheckCapacityProcessorInstance)
-		if err != nil {
-			return nil, nil, err
-		}
-		podListProcessor.AddProcessor(ProvisioningRequestInjector)
-
-		var provisioningRequestPodsInjector *provreq.ProvisioningRequestPodsInjector
-		if autoscalingOptions.CheckCapacityBatchProcessing {
-			klog.Infof("Batch processing for check capacity requests is enabled. Passing provisioning request injector to check capacity processor.")
-			provisioningRequestPodsInjector = ProvisioningRequestInjector
-		}
-
-		provreqOrchestrator := provreqorchestrator.New(client, []provreqorchestrator.ProvisioningClass{
-			checkcapacity.New(client, provisioningRequestPodsInjector),
-			besteffortatomic.New(client),
-		})
-
-		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
-		opts.ScaleUpOrchestrator = scaleUpOrchestrator
-		provreqProcesor := provreq.NewProvReqProcessor(client, opts.CheckCapacityProcessorInstance)
-		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
-
-		podListProcessor.AddProcessor(provreqProcesor)
-
-		opts.Processors.ScaleUpEnforcer = provreq.NewProvisioningRequestScaleUpEnforcer()
+		provisioningRequestInjector = injector
 	}
 
 	var capacitybufferClient *capacityclient.CapacityBufferClient
@@ -331,7 +306,7 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	// A ProvisioningRequestPodsInjector is used as provisioningRequestProcessingTimesGetter here to obtain the last time a
 	// ProvisioningRequest was processed. This is because the ProvisioningRequestPodsInjector in addition to injecting pods
 	// also marks the ProvisioningRequest as accepted or failed.
-	trigger := loop.NewLoopTrigger(autoscaler, ProvisioningRequestInjector, b.podObserver, autoscalingOptions.ScanInterval)
+	trigger := loop.NewLoopTrigger(autoscaler, provisioningRequestInjector, b.podObserver, autoscalingOptions.ScanInterval)
 
 	return autoscaler, trigger, nil
 }
