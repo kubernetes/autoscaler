@@ -89,7 +89,6 @@ func NewDefaultBufferController(
 			[]translators.Translator{
 				translators.NewPodTemplateBufferTranslator(client, resolver),
 				translators.NewDefaultScalableObjectsTranslator(client, resolver),
-				translators.NewResourceLimitsTranslator(client),
 			},
 		),
 		quotaAllocator: newResourceQuotaAllocator(client),
