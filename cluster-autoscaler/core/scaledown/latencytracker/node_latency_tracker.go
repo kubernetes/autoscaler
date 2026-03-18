@@ -40,6 +40,7 @@ const (
 type unneededNodeState struct {
 	unneededSince    time.Time
 	removalThreshold time.Duration
+	nodeType         metrics.UnneededNodeType
 }
 
 // NodeLatencyTracker keeps track of nodes that are marked as unneeded, when they became unneeded,
@@ -67,13 +68,15 @@ func (t *NodeLatencyTracker) UpdateScaleDownCandidates(list []*scaledown.Unneede
 			t.unneededNodes[nodeName] = unneededNodeState{
 				unneededSince:    timestamp,
 				removalThreshold: candidate.RemovalThreshold,
+				nodeType:         candidate.NodeType,
 			}
-			klog.V(6).Infof("Started tracking unneeded node %s at %v with removal threshold %v.", nodeName, timestamp, candidate.RemovalThreshold)
+			klog.V(6).Infof("Started tracking unneeded node %s at %v with removal threshold %v, nodeType: %v.", nodeName, timestamp, candidate.RemovalThreshold, candidate.NodeType)
 		} else {
-			if info.removalThreshold != candidate.RemovalThreshold {
+			if info.removalThreshold != candidate.RemovalThreshold || info.nodeType != candidate.NodeType {
 				info.removalThreshold = candidate.RemovalThreshold
+				info.nodeType = candidate.NodeType
 				t.unneededNodes[nodeName] = info
-				klog.V(6).Infof("Updated removal threshold for tracked node %s to %v.", nodeName, candidate.RemovalThreshold)
+				klog.V(6).Infof("Updated tracked node %s: removal threshold %v, nodeType: %v.", nodeName, candidate.RemovalThreshold, candidate.NodeType)
 			}
 		}
 	}
@@ -114,7 +117,7 @@ func (t *NodeLatencyTracker) recordAndCleanup(nodeName string, isRemoved bool) {
 	latency := duration - info.removalThreshold
 
 	if latency > 0 {
-		metrics.UpdateScaleDownNodeRemovalLatency(isRemoved, latency)
+		metrics.UpdateScaleDownNodeRemovalLatency(isRemoved, info.nodeType, latency)
 	} else {
 		klog.V(6).Infof("Node %q was unneeded for %s (threshold %s). Latency %s is <= 0, skipping metric. isRemoved: %v",
 			nodeName, duration, info.removalThreshold, latency, isRemoved)

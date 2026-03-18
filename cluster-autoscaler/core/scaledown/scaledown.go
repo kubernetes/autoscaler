@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -96,4 +97,7 @@ type UnneededNode struct {
 	// This value is derived from either --scale-down-unneeded-time or
 	// --scale-down-unready-time, depending on the node's readiness state.
 	RemovalThreshold time.Duration
+
+	// NodeType indicates whether the node was empty (no pods to reschedule) or non-empty when it was scaled down.
+	NodeType metrics.UnneededNodeType
 }

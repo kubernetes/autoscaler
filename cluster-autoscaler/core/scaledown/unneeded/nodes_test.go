@@ -28,9 +28,11 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	nodeprocessors "k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -165,6 +167,7 @@ func TestUpdate(t *testing.T) {
 				assert.Equal(t, tc.wantTimestamps[n.Node.Name], nn.since)
 				assert.Equal(t, tc.wantVersions[n.Node.Name], version(nn.ntbr))
 				assert.Equal(t, tc.wantThresholds[n.Node.Name], n.RemovalThreshold)
+				assert.Equal(t, metrics.EmptyUnneededNode, n.NodeType)
 			}
 		})
 	}
@@ -280,9 +283,9 @@ func TestRemovableAt(t *testing.T) {
 			}
 
 			candidates := n.AsList()
-			candidateMap := make(map[string]time.Duration)
+			candidateMap := make(map[string]*scaledown.UnneededNode)
 			for _, c := range candidates {
-				candidateMap[c.Node.Name] = c.RemovalThreshold
+				candidateMap[c.Node.Name] = c
 			}
 
 			for _, node := range gotEmptyToRemove {
@@ -290,8 +293,27 @@ func TestRemovableAt(t *testing.T) {
 				got, ok := candidateMap[nodeName]
 				if !ok {
 					t.Errorf("Node %s not found in AsList", nodeName)
-				} else if got != expectedThreshold {
-					t.Errorf("Node %s has threshold %v, want %v", nodeName, got, expectedThreshold)
+				} else {
+					if got.RemovalThreshold != expectedThreshold {
+						t.Errorf("Node %s has threshold %v, want %v", nodeName, got.RemovalThreshold, expectedThreshold)
+					}
+					if got.NodeType != metrics.EmptyUnneededNode {
+						t.Errorf("Node %s in emptyToRemove list has NodeType=%v", nodeName, got.NodeType)
+					}
+				}
+			}
+			for _, node := range gotDrainToRemove {
+				nodeName := node.Node.Name
+				got, ok := candidateMap[nodeName]
+				if !ok {
+					t.Errorf("Node %s not found in AsList", nodeName)
+				} else {
+					if got.RemovalThreshold != expectedThreshold {
+						t.Errorf("Node %s has threshold %v, want %v", nodeName, got.RemovalThreshold, expectedThreshold)
+					}
+					if got.NodeType != metrics.NonEmptyUnneededNode {
+						t.Errorf("Node %s in drainToRemove list has NodeType=%v", nodeName, got.NodeType)
+					}
 				}
 			}
 		})
