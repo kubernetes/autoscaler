@@ -18,7 +18,6 @@ package translator
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
@@ -73,7 +72,7 @@ func (t *ScalableObjectsTranslator) useScaleResolver(buffer *apiv1.CapacityBuffe
 	return t.scaleResolver.GetTemplateAndReplicas(buffer.Namespace, buffer.Spec.ScalableRef.APIGroup, buffer.Spec.ScalableRef.Kind, buffer.Spec.ScalableRef.Name)
 }
 
-// Translate translates buffers processors into pod capacity.
+// Translate translates buffers with scalableRef in spec into pod capacity.
 func (t *ScalableObjectsTranslator) Translate(buffers []*apiv1.CapacityBuffer) []error {
 	errors := []error{}
 	for _, buffer := range buffers {
@@ -100,17 +99,17 @@ func (t *ScalableObjectsTranslator) translateBuffer(ctx context.Context, buffer 
 		return err
 	}
 
-	numberOfPods := t.getBufferNumberOfPods(buffer, replicas)
-	if numberOfPods == nil {
-		err := errors.New("couldn't get number of replicas for buffer, replicas and percentage are not defined")
-		common.SetBufferAsNotReadyForProvisioning(buffer, &apiv1.LocalObjectRef{Name: managedTemplate.Name}, &managedTemplate.Generation, nil, buffer.Spec.ProvisioningStrategy, err)
+	numberOfPods, err := getBufferNumberOfPods(buffer, managedTemplate.Template, replicas)
+	if err != nil {
+		conditionErr := fmt.Errorf("couldn't get number of replicas for buffer: %w", err)
+		common.SetBufferAsNotReadyForProvisioning(buffer, &apiv1.LocalObjectRef{Name: managedTemplate.Name}, &managedTemplate.Generation, nil, buffer.Spec.ProvisioningStrategy, conditionErr)
 		// not returning err here, as it would trigger requeue. Hitting this case means that
 		// the buffer is misconfigured and consecutive reconciliations will also fail until
-		// the buffer spec is fixed.
+		// the buffer spec or a related object (pod template, scalable object) is fixed.
 		return nil
 	}
 
-	common.SetBufferAsReadyForProvisioning(buffer, &apiv1.LocalObjectRef{Name: managedTemplate.Name}, &managedTemplate.Generation, numberOfPods, buffer.Spec.ProvisioningStrategy)
+	common.SetBufferAsReadyForProvisioning(buffer, &apiv1.LocalObjectRef{Name: managedTemplate.Name}, &managedTemplate.Generation, &numberOfPods, buffer.Spec.ProvisioningStrategy)
 	return nil
 }
 
@@ -151,31 +150,6 @@ func (t *ScalableObjectsTranslator) ensureManagedPodTemplate(ctx context.Context
 	targetPodTemplate := getPodTemplateFromSpec(spec, buffer)
 
 	return t.client.EnsurePodTemplate(ctx, targetPodTemplate)
-}
-
-func (t *ScalableObjectsTranslator) getBufferNumberOfPods(buffer *apiv1.CapacityBuffer, scalableReplicas *int32) *int32 {
-
-	var numberOfPodsFromPercentage *int32
-	var numberOfPodsFromReplicas *int32
-
-	if buffer.Spec.Percentage != nil {
-		if scalableReplicas != nil {
-			percentValue := buffer.Spec.Percentage
-			numberOfPods := max(0, int32(int32(*percentValue)*(*scalableReplicas)/100.0))
-			numberOfPodsFromPercentage = &numberOfPods
-		}
-	}
-	if buffer.Spec.Replicas != nil {
-		numberOfPods := max(0, int32(*buffer.Spec.Replicas))
-		numberOfPodsFromReplicas = &numberOfPods
-	}
-	if numberOfPodsFromPercentage != nil && numberOfPodsFromReplicas != nil {
-		numberOfPods := min(*numberOfPodsFromPercentage, *numberOfPodsFromReplicas)
-		return &numberOfPods
-	} else if numberOfPodsFromPercentage != nil {
-		return numberOfPodsFromPercentage
-	}
-	return numberOfPodsFromReplicas
 }
 
 func isScalableObjectBuffer(buffer *apiv1.CapacityBuffer) bool {

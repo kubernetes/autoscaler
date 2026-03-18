@@ -41,10 +41,9 @@ func NewPodTemplateBufferTranslator(client *cbclient.CapacityBufferClient, resol
 	}
 }
 
-// Translate translates buffers processors into pod capacity.
+// Translate translates buffers podTemplateRef specs to fill their status.
 func (t *podTemplateBufferTranslator) Translate(buffers []*v1.CapacityBuffer) []error {
-	var errors []error
-	var numberOfPods *int32
+	var errs []error
 	var podTemplateRef *v1.LocalObjectRef
 	for _, buffer := range buffers {
 		if !isPodTemplateBasedBuffer(buffer) {
@@ -54,28 +53,29 @@ func (t *podTemplateBufferTranslator) Translate(buffers []*v1.CapacityBuffer) []
 		sourcePodTemplate, err := t.client.GetPodTemplate(buffer.Namespace, podTemplateRef.Name)
 		if err != nil {
 			common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, buffer.Spec.ProvisioningStrategy, err)
-			errors = append(errors, err)
+			errs = append(errs, err)
 			continue
 		}
 
 		managedPodTemplate, err := t.ensureManagedPodTemplate(context.TODO(), buffer, sourcePodTemplate)
 		if err != nil {
-			errors = append(errors, err)
+			errs = append(errs, err)
 			common.SetBufferAsNotReadyForProvisioning(buffer, nil, nil, nil, buffer.Spec.ProvisioningStrategy, err)
 			continue
 		}
 
-		numberOfPods = t.getNumberOfReplicas(buffer)
-		if numberOfPods == nil {
-			common.SetBufferAsNotReadyForProvisioning(buffer, podTemplateRef, &sourcePodTemplate.Generation, nil, buffer.Spec.ProvisioningStrategy, fmt.Errorf("failed to get buffer's number of pods"))
+		numberOfPods, err := getBufferNumberOfPods(buffer, managedPodTemplate.Template, nil)
+		if err != nil {
+			conditionErr := fmt.Errorf("couldn't get number of replicas for buffer: %w", err)
+			common.SetBufferAsNotReadyForProvisioning(buffer, &v1.LocalObjectRef{Name: managedPodTemplate.Name}, &managedPodTemplate.Generation, nil, buffer.Spec.ProvisioningStrategy, conditionErr)
 			// not recording an error here, as it would trigger requeue. Hitting this case means that
 			// the buffer is misconfigured and consecutive reconciliations will also fail until
-			// the buffer spec is fixed.
+			// the buffer spec or a related object (pod template, scalable object) is fixed.
 			continue
 		}
-		common.SetBufferAsReadyForProvisioning(buffer, &v1.LocalObjectRef{Name: managedPodTemplate.Name}, &managedPodTemplate.Generation, numberOfPods, buffer.Spec.ProvisioningStrategy)
+		common.SetBufferAsReadyForProvisioning(buffer, &v1.LocalObjectRef{Name: managedPodTemplate.Name}, &managedPodTemplate.Generation, &numberOfPods, buffer.Spec.ProvisioningStrategy)
 	}
-	return errors
+	return errs
 }
 
 func (t *podTemplateBufferTranslator) ensureManagedPodTemplate(ctx context.Context, buffer *v1.CapacityBuffer, sourcePodTemplate *corev1.PodTemplate) (*corev1.PodTemplate, error) {
@@ -92,14 +92,6 @@ func (t *podTemplateBufferTranslator) ensureManagedPodTemplate(ctx context.Conte
 	}
 
 	return managedPodTemplate, nil
-}
-
-func (t *podTemplateBufferTranslator) getNumberOfReplicas(buffer *v1.CapacityBuffer) *int32 {
-	if buffer.Spec.Replicas != nil {
-		replicas := max(0, int32(*buffer.Spec.Replicas))
-		return &replicas
-	}
-	return nil
 }
 
 func isPodTemplateBasedBuffer(buffer *v1.CapacityBuffer) bool {
