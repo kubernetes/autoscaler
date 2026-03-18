@@ -22,7 +22,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_metrics "k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
+	"k8s.io/component-base/metrics"
 )
 
 func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
@@ -98,8 +101,11 @@ func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			ctx := &ca_context.AutoscalingContext{
+				MetricsRegistry: ca_metrics.NewCaMetricsWithRegistry(metrics.NewKubeRegistry()),
+			}
 			p := NewEnforceInjectedPodsLimitProcessor(tc.podLimit)
-			pods, _ := p.Process(nil, tc.unschedulablePods)
+			pods, _ := p.Process(ctx, tc.unschedulablePods)
 			assert.EqualValues(t, tc.expectedNumberOfResultedUnschedulablePods, len(pods))
 			numberOfFakePods := numberOfFakePods(pods)
 			assert.EqualValues(t, tc.expectedNumberOfResultedUnschedulableFakePods, numberOfFakePods)

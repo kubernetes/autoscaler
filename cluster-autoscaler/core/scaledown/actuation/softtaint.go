@@ -29,7 +29,7 @@ import (
 
 // UpdateSoftDeletionTaints manages soft taints of unneeded nodes.
 func UpdateSoftDeletionTaints(autoscalingCtx *ca_context.AutoscalingContext, uneededNodes, neededNodes []*apiv1.Node) (errors []error) {
-	defer metrics.UpdateDurationFromStart(metrics.ScaleDownSoftTaintUnneeded, time.Now())
+	defer autoscalingCtx.MetricsRegistry.UpdateDurationFromStart(metrics.ScaleDownSoftTaintUnneeded, time.Now())
 	b := &budgetTracker{
 		apiCallBudget: autoscalingCtx.AutoscalingOptions.MaxBulkSoftTaintCount,
 		timeBudget:    autoscalingCtx.AutoscalingOptions.MaxBulkSoftTaintTime,

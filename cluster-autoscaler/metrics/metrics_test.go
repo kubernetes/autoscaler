@@ -24,17 +24,11 @@ import (
 	"k8s.io/component-base/metrics"
 )
 
-func newCaMetricsWithRegistry(registry metrics.KubeRegistry) *caMetrics {
-	reg := newCaMetrics()
-	reg.registry = registry
-	return reg
-}
-
 func TestDisabledPerNodeGroupMetrics(t *testing.T) {
 	// Use a custom registry for isolation to avoid panics from re-registering metrics.
 	reg := metrics.NewKubeRegistry()
 	assert.NotNil(t, reg)
-	m := newCaMetricsWithRegistry(reg)
+	m := NewCaMetricsWithRegistry(reg).(*caMetrics)
 	m.RegisterAll(false)
 	assert.False(t, m.nodesGroupMinNodes.IsCreated())
 	assert.False(t, m.nodesGroupMaxNodes.IsCreated())
@@ -43,7 +37,7 @@ func TestDisabledPerNodeGroupMetrics(t *testing.T) {
 func TestEnabledPerNodeGroupMetrics(t *testing.T) {
 	// Use a custom registry for isolation
 	reg := metrics.NewKubeRegistry()
-	m := newCaMetricsWithRegistry(reg)
+	m := NewCaMetricsWithRegistry(reg).(*caMetrics)
 	m.RegisterAll(true)
 	assert.True(t, m.nodesGroupMinNodes.IsCreated())
 	assert.True(t, m.nodesGroupMaxNodes.IsCreated())

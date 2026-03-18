@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
@@ -71,7 +70,7 @@ func (ds *GroupDeletionScheduler) ResetAndReportMetrics() {
 	ds.failuresForGroup = map[string]bool{}
 	// Since the nodes are deleted asynchronously, it's easier to
 	// monitor the pending ones at the beginning of the next scale-down phase.
-	metrics.ObservePendingNodeDeletions(pendingNodeDeletions)
+	ds.autoscalingCtx.MetricsRegistry.ObservePendingNodeDeletions(pendingNodeDeletions)
 }
 
 // ScheduleDeletion schedules deletion of the node. Nodes that should be deleted in groups are queued until whole group is scheduled for deletion,

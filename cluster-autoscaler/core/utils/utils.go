@@ -23,7 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	ca_metrics "k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
@@ -109,13 +109,13 @@ func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) int64 {
 }
 
 // UpdateClusterStateMetrics updates metrics related to cluster state
-func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry) {
+func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry, metricsRegistry ca_metrics.CAMetricsRegistry) {
 	if csr == nil || reflect.ValueOf(csr).IsNil() {
 		return
 	}
-	metrics.UpdateClusterSafeToAutoscale(csr.IsClusterHealthy())
+	metricsRegistry.UpdateClusterSafeToAutoscale(csr.IsClusterHealthy())
 	readiness := csr.GetClusterReadiness()
-	metrics.UpdateNodesCount(len(readiness.Ready), len(readiness.Unready), len(readiness.NotStarted), len(readiness.LongUnregistered), len(readiness.Unregistered))
+	metricsRegistry.UpdateNodesCount(len(readiness.Ready), len(readiness.Unready), len(readiness.NotStarted), len(readiness.LongUnregistered), len(readiness.Unregistered))
 }
 
 // GetOldestCreateTime returns oldest creation time out of the pods in the set

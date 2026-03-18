@@ -19,7 +19,6 @@ package podinjection
 import (
 	apiv1 "k8s.io/api/core/v1"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
 )
 
@@ -62,8 +61,8 @@ func (p *EnforceInjectedPodsLimitProcessor) Process(autoscalingCtx *ca_context.A
 		unschedulablePodsAfterProcessing = append(unschedulablePodsAfterProcessing, pod)
 	}
 
-	metrics.UpdateUnschedulablePodsCountWithLabel(injectedFakePodsCount, InjectedMetricsLabel)
-	metrics.UpdateUnschedulablePodsCountWithLabel(removedFakePodsCount, SkippedInjectionMetricsLabel)
+	autoscalingCtx.MetricsRegistry.UpdateUnschedulablePodsCountWithLabel(injectedFakePodsCount, InjectedMetricsLabel)
+	autoscalingCtx.MetricsRegistry.UpdateUnschedulablePodsCountWithLabel(removedFakePodsCount, SkippedInjectionMetricsLabel)
 
 	return unschedulablePodsAfterProcessing, nil
 }

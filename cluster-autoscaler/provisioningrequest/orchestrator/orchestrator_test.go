@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
+	ca_metrics "k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/provreq"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -48,6 +49,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/component-base/metrics"
 	clocktesting "k8s.io/utils/clock/testing"
 )
 
@@ -511,8 +513,8 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		nil,
 		false,
 	)
-
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
+	metricsRegistry := ca_metrics.NewCaMetricsWithRegistry(metrics.NewKubeRegistry())
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker, metricsRegistry)
 	clusterState.UpdateNodes(nodes, nodeInfos, now)
 
 	var injector *provreq.ProvisioningRequestPodsInjector

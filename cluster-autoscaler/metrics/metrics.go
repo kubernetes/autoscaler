@@ -18,9 +18,12 @@ package metrics
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	dto "github.com/prometheus/client_model/go"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -120,6 +123,158 @@ const (
 	BulkListMigInstances       FunctionLabel = "bulkListInstances:listMigInstances"
 )
 
+// CAMetricsRegistry is an interface for Cluster Autoscaler metrics.
+type CAMetricsRegistry interface {
+	// InitMetrics initializes all metrics
+	InitMetrics()
+
+	Handler() http.Handler
+
+	Gather() ([]*dto.MetricFamily, error)
+
+	// RegisterAll registers all metrics
+	RegisterAll(emitPerNodeGroupMetrics bool)
+
+	// UpdateDurationFromStart records the duration of the step identified by the
+	// label using start time
+	UpdateDurationFromStart(label FunctionLabel, start time.Time)
+
+	// UpdateDuration records the duration of the step identified by the label
+	UpdateDuration(label FunctionLabel, duration time.Duration)
+
+	// UpdateLastTime records the time the step identified by the label was started
+	UpdateLastTime(label FunctionLabel, now time.Time)
+
+	// UpdateClusterSafeToAutoscale records if cluster is safe to autoscale
+	UpdateClusterSafeToAutoscale(safe bool)
+
+	// UpdateNodesCount records the number of nodes in cluster
+	UpdateNodesCount(ready, unready, starting, longUnregistered, unregistered int)
+
+	// UpdateNodeGroupsCount records the number of node groups managed by CA
+	UpdateNodeGroupsCount(autoscaled, autoprovisioned int)
+
+	// UpdateUnschedulablePodsCount records number of currently unschedulable pods
+	UpdateUnschedulablePodsCount(uschedulablePodsCount, schedulerUnprocessedCount int)
+
+	// UpdateUnschedulablePodsCountWithLabel records number of currently unschedulable pods wil label "type" value "label"
+	UpdateUnschedulablePodsCountWithLabel(uschedulablePodsCount int, label string)
+
+	// UpdateMaxNodesCount records the current maximum number of nodes being set for all node groups
+	UpdateMaxNodesCount(nodesCount int)
+
+	// UpdateClusterCPUCurrentCores records the number of cores in the cluster, minus deleting nodes
+	UpdateClusterCPUCurrentCores(coresCount int64)
+
+	// UpdateCPULimitsCores records the minimum and maximum number of cores in the cluster
+	UpdateCPULimitsCores(minCoresCount int64, maxCoresCount int64)
+
+	// UpdateClusterMemoryCurrentBytes records the number of bytes of memory in the cluster, minus deleting nodes
+	UpdateClusterMemoryCurrentBytes(memoryCount int64)
+
+	// UpdateMemoryLimitsBytes records the minimum and maximum bytes of memory in the cluster
+	UpdateMemoryLimitsBytes(minMemoryCount int64, maxMemoryCount int64)
+
+	// UpdateNodeGroupMin records the node group minimum allowed number of nodes
+	UpdateNodeGroupMin(nodeGroup string, minNodes int)
+
+	// UpdateNodeGroupMax records the node group maximum allowed number of nodes
+	UpdateNodeGroupMax(nodeGroup string, maxNodes int)
+
+	// UpdateNodeGroupTargetSize records the node group target size
+	UpdateNodeGroupTargetSize(targetSizes map[string]int)
+
+	// UpdateNodeGroupHealthStatus records if node group is healthy to autoscaling
+	UpdateNodeGroupHealthStatus(nodeGroup string, healthy bool)
+
+	// UpdateNodeGroupBackOffStatus records if node group is backoff for not autoscaling
+	UpdateNodeGroupBackOffStatus(nodeGroup string, backoffReasonStatus map[string]bool)
+
+	// RegisterError records any errors preventing Cluster Autoscaler from working.
+	// No more than one error should be recorded per loop.
+	RegisterError(err errors.AutoscalerError)
+
+	// RegisterScaleUp records number of nodes added by scale up
+	RegisterScaleUp(nodesCount int, gpuResourceName, gpuType string)
+
+	// RegisterFailedScaleUp records a failed scale-up operation
+	RegisterFailedScaleUp(reason FailedScaleUpReason, gpuResourceName, gpuType string)
+
+	// RegisterFailedNodeCreations records a failed scale-up operation
+	RegisterFailedNodeCreations(reason FailedScaleUpReason, nodesCount int)
+
+	// RegisterScaleDown records number of nodes removed by scale down
+	RegisterScaleDown(nodesCount int, gpuResourceName, gpuType string, reason NodeScaleDownReason)
+
+	// RegisterEvictions records number of evicted pods succeed or failed
+	RegisterEvictions(podsCount int, result PodEvictionResult)
+
+	// UpdateUnneededNodesCount records number of currently unneeded nodes
+	UpdateUnneededNodesCount(nodesCount int)
+
+	// UpdateUnremovableNodesCount records number of currently unremovable nodes
+	UpdateUnremovableNodesCount(unremovableReasonCounts map[simulator.UnremovableReason]int)
+
+	// RegisterNodeGroupCreation registers node group creation
+	RegisterNodeGroupCreation()
+
+	// RegisterNodeGroupCreationWithLabelValues registers node group creation with the provided labels
+	RegisterNodeGroupCreationWithLabelValues(groupType string)
+
+	// RegisterNodeGroupDeletion registers node group deletion
+	RegisterNodeGroupDeletion()
+
+	// RegisterNodeGroupDeletionWithLabelValues registers node group deletion with the provided labels
+	RegisterNodeGroupDeletionWithLabelValues(groupType string)
+
+	// UpdateScaleDownInCooldown registers if the cluster autoscaler
+	// scaledown is in cooldown
+	UpdateScaleDownInCooldown(inCooldown bool)
+
+	// RegisterOldUnregisteredNodesRemoved records number of old unregistered
+	// nodes that have been removed by the cluster autoscaler
+	RegisterOldUnregisteredNodesRemoved(nodesCount int)
+
+	// UpdateOverflowingControllers sets the number of controllers that could not
+	// have their pods cached.
+	UpdateOverflowingControllers(count int)
+
+	// RegisterSkippedScaleDownCPU increases the count of skipped scale outs because of CPU resource limits
+	RegisterSkippedScaleDownCPU()
+
+	// RegisterSkippedScaleDownMemory increases the count of skipped scale outs because of Memory resource limits
+	RegisterSkippedScaleDownMemory()
+
+	// RegisterSkippedScaleUpCPU increases the count of skipped scale outs because of CPU resource limits
+	RegisterSkippedScaleUpCPU()
+
+	// RegisterSkippedScaleUpMemory increases the count of skipped scale outs because of Memory resource limits
+	RegisterSkippedScaleUpMemory()
+
+	// ObservePendingNodeDeletions records the current value of nodes_pending_deletion metric
+	ObservePendingNodeDeletions(value int)
+
+	// ObserveNodeTaintsCount records the node taints count of given type.
+	ObserveNodeTaintsCount(taintType string, count float64)
+
+	// UpdateInconsistentInstancesMigsCount records the observed number of migs where instance count
+	// according to InstanceGroupManagers.List() differs from the results of Instances.List().
+	// This can happen when some instances are abandoned or a user edits instance 'created-by' metadata.
+	UpdateInconsistentInstancesMigsCount(migCount int)
+
+	// ObserveBinpackingHeterogeneity records the number of pod equivalence groups
+	// considered in a single binpacking estimation.
+	ObserveBinpackingHeterogeneity(instanceType, cpuCount, namespaceCount string, pegCount int)
+
+	// UpdateScaleDownNodeRemovalLatency records the time after which node was deleted/needed
+	// again after being marked unneded
+	UpdateScaleDownNodeRemovalLatency(deleted bool, duration time.Duration)
+
+	// ObserveMaxNodeSkipEvalDurationSeconds records the longest time during which node was skipped during ScaleDown.
+	// If a node is skipped multiple times consecutively, we store only the earliest timestamp.
+	ObserveMaxNodeSkipEvalDurationSeconds(duration time.Duration)
+}
+
 type caMetrics struct {
 	registry metrics.KubeRegistry
 
@@ -169,7 +324,15 @@ type caMetrics struct {
 	scaleDownNodeRemovalLatency      *k8smetrics.HistogramVec
 }
 
-func newCaMetrics() *caMetrics {
+// NewCaMetricsWithRegistry creates a new CAMetricsRegistry with the given registry.
+func NewCaMetricsWithRegistry(registry metrics.KubeRegistry) CAMetricsRegistry {
+	res := NewCaMetrics()
+	res.registry = registry
+	return res
+}
+
+// NewCaMetrics creates a new CAMetricsRegistry.
+func NewCaMetrics() *caMetrics {
 	return &caMetrics{
 		/**** Metrics related to cluster state ****/
 		clusterSafeToAutoscale: k8smetrics.NewGauge(
@@ -559,6 +722,21 @@ func (m *caMetrics) RegisterAll(emitPerNodeGroupMetrics bool) {
 		m.mustRegister(m.nodesGroupHealthiness)
 		m.mustRegister(m.nodeGroupBackOffStatus)
 	}
+}
+
+func (m *caMetrics) Handler() http.Handler {
+	if m.registry != nil {
+		return promhttp.InstrumentMetricHandler(m.registry.Registerer(), promhttp.HandlerFor(m.registry, promhttp.HandlerOpts{ProcessStartTime: time.Now()}))
+	}
+	return legacyregistry.Handler()
+}
+
+// Gather gathered metrics from the registry.
+func (m *caMetrics) Gather() ([]*dto.MetricFamily, error) {
+	if m.registry != nil {
+		return m.registry.Gather()
+	}
+	return legacyregistry.DefaultGatherer.Gather()
 }
 
 // InitMetrics initializes all metrics

@@ -121,6 +121,8 @@ type ScaleUpFailure struct {
 type metricObserver interface {
 	RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType string)
 	RegisterFailedNodeCreations(reason metrics.FailedScaleUpReason, nodesCount int)
+	UpdateNodeGroupTargetSize(targetSizes map[string]int)
+	UpdateNodeGroupsCount(autoscaled, autoprovisioned int)
 }
 
 // ClusterStateRegistry is a structure to keep track the current state of the cluster.
@@ -164,8 +166,8 @@ type NodeGroupScalingSafety struct {
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
-func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor, asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker) *ClusterStateRegistry {
-	return newClusterStateRegistry(cloudProvider, config, logRecorder, backoff, nodeGroupConfigProcessor, asyncNodeGroupStateChecker, metrics.DefaultMetrics)
+func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor, asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker, metrics metricObserver) *ClusterStateRegistry {
+	return newClusterStateRegistry(cloudProvider, config, logRecorder, backoff, nodeGroupConfigProcessor, asyncNodeGroupStateChecker, metrics)
 }
 
 func newClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor, asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker, metrics metricObserver) *ClusterStateRegistry {
@@ -370,7 +372,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	if err != nil {
 		return err
 	}
-	metrics.UpdateNodeGroupTargetSize(targetSizes)
+	csr.metrics.UpdateNodeGroupTargetSize(targetSizes)
 
 	cloudProviderNodeInstances, err := csr.getCloudProviderNodeInstances()
 	if err != nil {
@@ -486,7 +488,7 @@ func (csr *ClusterStateRegistry) updateNodeGroupMetrics() {
 			autoscaled++
 		}
 	}
-	metrics.UpdateNodeGroupsCount(autoscaled, autoprovisioned)
+	csr.metrics.UpdateNodeGroupsCount(autoscaled, autoprovisioned)
 }
 
 // BackoffStatusForNodeGroup queries the backoff status of the node group
