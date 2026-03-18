@@ -90,7 +90,7 @@ func NewFakeSet() *FakeSet {
 }
 
 // MustCreateControllerRuntimeMgr creates a controller-runtime manager with metrics and health probes disabled.
-func MustCreateControllerRuntimeMgr(t *testing.T) manager.Manager {
+func MustCreateControllerRuntimeMgr(t testing.TB) manager.Manager {
 	t.Helper()
 
 	mgr, err := manager.New(&rest.Config{}, manager.Options{

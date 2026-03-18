@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	cacontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
@@ -68,6 +69,7 @@ type AutoscalerBuilder struct {
 	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	manager              manager.Manager
 	kubeClient           kubernetes.Interface
+	kubeClients          *cacontext.AutoscalingKubeClients
 	podObserver          *loop.UnschedulablePodObserver
 	cloudProvider        cloudprovider.CloudProvider
 	informerFactory      informers.SharedInformerFactory
@@ -123,6 +125,14 @@ func (b *AutoscalerBuilder) WithProvisioningRequestClient(c provreqclientset.Int
 	return b
 }
 
+// WithAutoscalingKubeClients allows injecting autoscaling kube clients.
+// It is not needed for most use-cases.
+// Once used, it has to be in sync with the object provided in WithKubeClient and WithInformerFactory.
+func (b *AutoscalerBuilder) WithAutoscalingKubeClients(kubeClients *cacontext.AutoscalingKubeClients) *AutoscalerBuilder {
+	b.kubeClients = kubeClients
+	return b
+}
+
 // Build constructs the Autoscaler based on the provided configuration.
 func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.LoopTrigger, error) {
 	// Get AutoscalingOptions from flags.
@@ -150,17 +160,18 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 
 	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore(autoscalingOptions.ClusterSnapshotParallelism)
 	opts := coreoptions.AutoscalerOptions{
-		AutoscalingOptions:   autoscalingOptions,
-		FrameworkHandle:      fwHandle,
-		ClusterSnapshot:      predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.PredicateParallelism, autoscalingOptions.CSINodeAwareSchedulingEnabled),
-		KubeClient:           b.kubeClient,
-		InformerFactory:      b.informerFactory,
-		DebuggingSnapshotter: b.debuggingSnapshotter,
-		DeleteOptions:        deleteOptions,
-		DrainabilityRules:    drainabilityRules,
-		ScaleUpOrchestrator:  orchestrator.New(),
-		KubeClientNew:        b.manager.GetClient(),
-		KubeCache:            b.manager.GetCache(),
+		AutoscalingOptions:     autoscalingOptions,
+		FrameworkHandle:        fwHandle,
+		ClusterSnapshot:        predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.PredicateParallelism, autoscalingOptions.CSINodeAwareSchedulingEnabled),
+		KubeClient:             b.kubeClient,
+		InformerFactory:        b.informerFactory,
+		AutoscalingKubeClients: b.kubeClients,
+		DebuggingSnapshotter:   b.debuggingSnapshotter,
+		DeleteOptions:          deleteOptions,
+		DrainabilityRules:      drainabilityRules,
+		ScaleUpOrchestrator:    orchestrator.New(),
+		KubeClientNew:          b.manager.GetClient(),
+		KubeCache:              b.manager.GetCache(),
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
