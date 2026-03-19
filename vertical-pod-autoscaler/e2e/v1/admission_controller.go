@@ -1119,7 +1119,9 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		podList := utils.StartDeploymentPods(f, d)
 
-		// Should lower Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio
+		// Should lower Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio.
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
 		for _, pod := range podList.Items {
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("40m")))
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("40Mi")))
@@ -1151,7 +1153,9 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		podList := utils.StartDeploymentPods(f, d)
 
-		// Should raise Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio
+		// Should raise Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio.
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
 		for _, pod := range podList.Items {
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("80m")))
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("80Mi")))
@@ -1184,7 +1188,9 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		podList := utils.StartDeploymentPods(f, d)
 
-		// Should raise only Pod-level requests
+		// Should raise only Pod-level requests.
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
 		for _, pod := range podList.Items {
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("80m")))
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("80Mi")))
@@ -1215,7 +1221,9 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		podList := utils.StartDeploymentPods(f, d)
 
-		// Should raise Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio
+		// Should raise Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio.
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
 		for _, pod := range podList.Items {
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("90m")))
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("90Mi")))
@@ -1247,7 +1255,9 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		podList := utils.StartDeploymentPods(f, d)
 
-		// Should lower Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio
+		// Should lower Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio.
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
 		for _, pod := range podList.Items {
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("80m")))
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("80Mi")))
@@ -1295,6 +1305,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		podList := utils.StartDeploymentPods(f, d)
 
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
 		for _, pod := range podList.Items {
 			// check pod level resources stanza, should maintain 1:2 request-to-limit ratio
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("110m")))
@@ -1306,6 +1318,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("33Mi")))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Limits).To(gomega.BeNil())
 			gomega.Expect(pod.Spec.Containers[1].Resources.Requests).To(gomega.BeNil())
+			gomega.Expect(pod.Spec.Containers[1].Resources.Limits).To(gomega.BeNil())
 		}
 	})
 
@@ -1325,8 +1338,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName1 := "hamster1"
-		containerName2 := "hamster2"
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
+		containerName2 := utils.GetHamsterContainerNameByIndexV2(1)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
@@ -1355,6 +1368,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		podList := utils.StartDeploymentPods(f, d)
 
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
 		for _, pod := range podList.Items {
 			// check pod level resources stanza, should maintain 1:2 request-to-limit ratio
 			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("110m")))
