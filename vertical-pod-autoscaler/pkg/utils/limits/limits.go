@@ -16,7 +16,7 @@ limitations under the License.
 
 package limits
 
-import apiv1 "k8s.io/api/core/v1"
+import corev1 "k8s.io/api/core/v1"
 
 // GlobalMaxAllowed holds global maximum caps for recommendations, i.e. the constraints defined by the recommender flags.
 // The VPA-level maxAllowed takes precedence.
@@ -24,7 +24,7 @@ import apiv1 "k8s.io/api/core/v1"
 // another part of the code.
 type GlobalMaxAllowed struct {
 	// Container-level maximums apply to per-Container recommendations.
-	Container apiv1.ResourceList
+	Container corev1.ResourceList
 	// Pod-level maximums apply to the Pod-level recommendations
-	Pod apiv1.ResourceList
+	Pod corev1.ResourceList
 }

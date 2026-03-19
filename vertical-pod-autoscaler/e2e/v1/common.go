@@ -530,7 +530,7 @@ func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxC
 
 // InstallLimitRangeWithMax installs a LimitRange with a maximum limit for CPU and memory.
 func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimit string, lrType apiv1.LimitType) {
-	ginkgo.By(fmt.Sprintf("Setting up LimitRange with max limits - CPU: %v, memory: %v", maxCpuLimit, maxMemoryLimit))
+	ginkgo.By(fmt.Sprintf("Setting up %v LimitRange with max limits - CPU: %v, memory: %v", lrType, maxCpuLimit, maxMemoryLimit))
 	maxCpuLimitQuantity := ParseQuantityOrDie(maxCpuLimit)
 	maxMemoryLimitQuantity := ParseQuantityOrDie(maxMemoryLimit)
 	installLimitRange(f, nil, nil, &maxCpuLimitQuantity, &maxMemoryLimitQuantity, lrType)
@@ -538,7 +538,7 @@ func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimi
 
 // InstallLimitRangeWithMin installs a LimitRange with a minimum limit for CPU and memory.
 func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimit string, lrType apiv1.LimitType) {
-	ginkgo.By(fmt.Sprintf("Setting up LimitRange with min limits - CPU: %v, memory: %v", minCpuLimit, minMemoryLimit))
+	ginkgo.By(fmt.Sprintf("Setting up %v LimitRange with min limits - CPU: %v, memory: %v", lrType, minCpuLimit, minMemoryLimit))
 	minCpuLimitQuantity := ParseQuantityOrDie(minCpuLimit)
 	minMemoryLimitQuantity := ParseQuantityOrDie(minMemoryLimit)
 	installLimitRange(f, &minCpuLimitQuantity, &minMemoryLimitQuantity, nil, nil, lrType)

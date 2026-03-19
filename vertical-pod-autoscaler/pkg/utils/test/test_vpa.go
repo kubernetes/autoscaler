@@ -82,8 +82,6 @@ func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 		maxAllowed:              map[string]corev1.ResourceList{},
 		controlledValues:        map[string]*vpa_types.ContainerControlledValues{},
 		scalingMode:             map[string]*vpa_types.ContainerScalingMode{},
-		podLevelMinAllowed:      corev1.ResourceList{},
-		podLevelMaxAllowed:      corev1.ResourceList{},
 		containerStartupBoost:   map[string]*vpa_types.StartupBoost{},
 	}
 }
@@ -392,13 +390,17 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 		resourcePolicy.ContainerPolicies = append(resourcePolicy.ContainerPolicies, containerResourcePolicy)
 	}
 
-	podResourcePolicy := vpa_types.PodResourcePolicies{}
-	podResourcePolicy.MinAllowed = b.podLevelMinAllowed
-	podResourcePolicy.MaxAllowed = b.podLevelMaxAllowed
-	podResourcePolicy.ControlledValues = b.podLevelControlledValues
-	podResourcePolicy.Mode = b.podLevelScalingMode
-
-	resourcePolicy.PodPolicies = &podResourcePolicy
+	var podResourcePolicy *vpa_types.PodResourcePolicies
+	if b.podLevelMinAllowed != nil || b.podLevelMaxAllowed != nil || b.podLevelControlledValues != nil || b.podLevelScalingMode != nil {
+		prp := &vpa_types.PodResourcePolicies{
+			MinAllowed:       b.podLevelMinAllowed,
+			MaxAllowed:       b.podLevelMaxAllowed,
+			ControlledValues: b.podLevelControlledValues,
+			Mode:             b.podLevelScalingMode,
+		}
+		podResourcePolicy = prp
+	}
+	resourcePolicy.PodPolicies = podResourcePolicy
 
 	// VPAs with a single container may still use the old/implicit way of adding recommendations
 	if b.recommendation != nil && b.containerNames != nil {

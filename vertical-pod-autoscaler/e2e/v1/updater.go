@@ -208,8 +208,14 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
+})
 
-	framework.It("evict pods with pod-level resources stanza", framework.WithSerial(), func() {
+// E2E tests for Pod-level resource stanzas and recommendation support introduced in AEP-7571.
+var _ = UpdaterE2eDescribe("Updater with VPAPodLevelResources", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
+
+	f.It("evict pods with pod-level resources stanza", framework.WithSerial(), framework.WithFeatureGate(features.VPAPodLevelResources), func() {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")
@@ -260,7 +266,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	framework.It("evict pods with pod-level and container-level resource stanzas", framework.WithSerial(), func() {
+	f.It("evict pods with pod-level and container-level resource stanzas", framework.WithSerial(), framework.WithFeatureGate(features.VPAPodLevelResources), func() {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")
@@ -328,7 +334,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	framework.It("In-place update pods with pod-level resources stanza", framework.WithSerial(), func(ctx ginkgo.SpecContext) {
+	f.It("In-place update pods with pod-level resources stanza", framework.WithSerial(), framework.WithFeatureGate(features.VPAPodLevelResources), func(ctx ginkgo.SpecContext) {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")

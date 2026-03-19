@@ -17,7 +17,7 @@ limitations under the License.
 package test
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -57,24 +57,24 @@ func (ps *podStatusBuilder) WithMemLimit(memLimit resource.Quantity) *podStatusB
 	return &r
 }
 
-func (ps *podStatusBuilder) Get() apiv1.PodStatus {
-	podStatus := apiv1.PodStatus{
-		Resources: &apiv1.ResourceRequirements{
-			Requests: apiv1.ResourceList{},
-			Limits:   apiv1.ResourceList{},
+func (ps *podStatusBuilder) Get() corev1.PodStatus {
+	podStatus := corev1.PodStatus{
+		Resources: &corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{},
+			Limits:   corev1.ResourceList{},
 		},
 	}
 	if ps.cpuRequest != nil {
-		podStatus.Resources.Requests[apiv1.ResourceCPU] = *ps.cpuRequest
+		podStatus.Resources.Requests[corev1.ResourceCPU] = *ps.cpuRequest
 	}
 	if ps.memRequest != nil {
-		podStatus.Resources.Requests[apiv1.ResourceMemory] = *ps.memRequest
+		podStatus.Resources.Requests[corev1.ResourceMemory] = *ps.memRequest
 	}
 	if ps.cpuLimit != nil {
-		podStatus.Resources.Limits[apiv1.ResourceCPU] = *ps.cpuLimit
+		podStatus.Resources.Limits[corev1.ResourceCPU] = *ps.cpuLimit
 	}
 	if ps.memLimit != nil {
-		podStatus.Resources.Limits[apiv1.ResourceMemory] = *ps.memLimit
+		podStatus.Resources.Limits[corev1.ResourceMemory] = *ps.memLimit
 	}
 	return podStatus
 }

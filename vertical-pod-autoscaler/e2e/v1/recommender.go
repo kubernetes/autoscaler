@@ -478,8 +478,8 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	})
 })
 
-// E2E tests related to pod-level recommendations, introduced in AEP-7571.
-var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
+// E2E tests for Pod-level resource stanzas and recommendation support introduced in AEP-7571.
+var _ = utils.RecommenderE2eDescribe("VPA CRD object with VPAPodLevelResources", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
@@ -489,7 +489,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		vpaClientSet = utils.GetVpaClientSet(f)
 	})
 
-	ginkgo.It("calculate pod-level recommendations when one container is opted out", func() {
+	f.It("calculate pod-level recommendations when one container is opted out", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
 		ginkgo.By("Setting up a hamster deployment")
 		d := utils.NewNHamstersDeployment(f, 2 /*number of containers*/)
 		_ = utils.StartDeploymentPods(f, d)

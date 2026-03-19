@@ -337,10 +337,10 @@ func maybeCapToPodLevelPolicyMax(recommended resource.Quantity, resourceName cor
 }
 
 func maybeCapToMax(recommended resource.Quantity, resourceName corev1.ResourceName,
-	max corev1.ResourceList) (resource.Quantity, bool) {
-	maxResource, found := max[resourceName]
-	if found && !maxResource.IsZero() && recommended.Cmp(maxResource) > 0 {
-		return maxResource, true
+	maxVal corev1.ResourceList) (resource.Quantity, bool) {
+	val, found := maxVal[resourceName]
+	if found && !val.IsZero() && recommended.Cmp(val) > 0 {
+		return val, true
 	}
 	return recommended, false
 }
@@ -874,12 +874,12 @@ func applyPodLimitRangeAtPodLevel(
 		}
 
 		// Enforce min
-		if min, ok := podLimitRange.Min[resourceName]; ok && min.Cmp(recommendation) > 0 {
-			(*recRL)[resourceName] = min
-			recommendation = min
+		if minValue, ok := podLimitRange.Min[resourceName]; ok && minValue.Cmp(recommendation) > 0 {
+			(*recRL)[resourceName] = minValue
+			recommendation = minValue
 		}
 
-		max, hasMax := podLimitRange.Max[resourceName]
+		maxValue, hasMax := podLimitRange.Max[resourceName]
 		if !hasMax {
 			return
 		}
@@ -900,8 +900,8 @@ func applyPodLimitRangeAtPodLevel(
 		scaledLimit := scale(resourceName, podLimit, podRequest, recommendation)
 
 		// If the scaled limit would exceed the LimitRange max, reduce the recommendation proportionally
-		if max.Cmp(scaledLimit) < 0 {
-			newRecommendation := scale(resourceName, max, scaledLimit, recommendation)
+		if maxValue.Cmp(scaledLimit) < 0 {
+			newRecommendation := scale(resourceName, maxValue, scaledLimit, recommendation)
 			(*recRL)[resourceName] = newRecommendation
 		}
 	}

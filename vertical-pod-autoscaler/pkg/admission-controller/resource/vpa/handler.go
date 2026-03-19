@@ -196,14 +196,14 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 				if err := validateResourceResolution(resource, podLevelMin); err != nil {
 					return fmt.Errorf("minAllowed: %v", err)
 				}
-				if ok, qt := isValidPodLevelConstraint(resource, podLevelMin, func(min, sum apires.Quantity) bool {
-					return min.Cmp(sum) <= 0
+				if ok, qt := isValidPodLevelConstraint(resource, podLevelMin, func(podLevelMin, sum apires.Quantity) bool {
+					return podLevelMin.Cmp(sum) <= 0
 				}, vpa.Spec.ResourcePolicy, getContainerLevelMinAllowed); !ok {
 					return fmt.Errorf("sum of container-level %v MinAllowed values (%v) must be equal to or greater than the Pod-level MinAllowed value (%v)", resource, qt, podLevelMin.String())
 				}
 
-				max, found := podPolicies.MaxAllowed[resource]
-				if found && max.Cmp(podLevelMin) < 0 {
+				podLevelMax, found := podPolicies.MaxAllowed[resource]
+				if found && podLevelMax.Cmp(podLevelMin) < 0 {
 					return fmt.Errorf("max resource for %v is lower than min", resource)
 				}
 			}
@@ -212,8 +212,8 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 				if err := validateResourceResolution(resource, podLevelMax); err != nil {
 					return fmt.Errorf("maxAllowed: %v", err)
 				}
-				if ok, qt := isValidPodLevelConstraint(resource, podLevelMax, func(max, sum apires.Quantity) bool {
-					return max.Cmp(sum) >= 0
+				if ok, qt := isValidPodLevelConstraint(resource, podLevelMax, func(podLevelMax, sum apires.Quantity) bool {
+					return podLevelMax.Cmp(sum) >= 0
 				}, vpa.Spec.ResourcePolicy, getContainerLevelMaxAllowed); !ok {
 					return fmt.Errorf("sum of container-level %v maxAllowed values (%v) must be equal to or lower than the Pod-level maxAllowed value (%v)", resource, qt, podLevelMax.String())
 				}
@@ -338,7 +338,7 @@ func validateMemoryResolution(val apires.Quantity) error {
 
 func validatePerVPAFeatureFlag(vpa *vpa_types.VerticalPodAutoscaler) error {
 	featureFlagOn := features.Enabled(features.PerVPAConfig)
-	if !featureFlagOn && vpa.Spec.UpdatePolicy.EvictAfterOOMSeconds != nil {
+	if !featureFlagOn && vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.EvictAfterOOMSeconds != nil {
 		return fmt.Errorf("EvictAfterOOMSeconds is not supported when feature flag %s is disabled", features.PerVPAConfig)
 	}
 

@@ -23,7 +23,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -487,7 +486,7 @@ func TestAdmitForPodLevelResources(t *testing.T) {
 	t.Run("it should admit pod for eviction if config is provided through a nil map", func(tt *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = nil
-		recommendation := &v1.RecommendedPodResources{
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
 			ContainerRecommendations: nil,
 			PodRecommendations: test.Recommendation().
 				WithPodLevelTarget("155m", "155Mi").
@@ -498,8 +497,8 @@ func TestAdmitForPodLevelResources(t *testing.T) {
 
 	t.Run("it should admit pod for eviction if config is provided through a map with nil value", func(tt *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = map[*corev1.Pod][]*v1.EvictionRequirement{pod: {}}
-		recommendation := &v1.RecommendedPodResources{
+		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{pod: {}}
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
 			ContainerRecommendations: nil,
 			PodRecommendations: test.Recommendation().
 				WithPodLevelTarget("155m", "155Mi").
@@ -511,7 +510,7 @@ func TestAdmitForPodLevelResources(t *testing.T) {
 	t.Run("it should admit pod for eviction if pod level resource does not exist but pod level recommendation does", func(tt *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = nil
-		recommendation := &v1.RecommendedPodResources{
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
 			ContainerRecommendations: nil,
 			PodRecommendations: test.Recommendation().
 				WithPodLevelTarget("200m", "200Mi").
@@ -526,17 +525,17 @@ func TestAdmitForPodLevelResources(t *testing.T) {
 			WithCPURequest(resource.MustParse("199m")).
 			WithMemRequest(resource.MustParse("199Mi")).Get()
 
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			podWithPodStatus: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-		recommendation := &v1.RecommendedPodResources{
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
 			ContainerRecommendations: nil,
 			PodRecommendations: test.Recommendation().
 				WithPodLevelTarget("200m", "200Mi").
@@ -552,17 +551,17 @@ func TestAdmitForPodLevelResources(t *testing.T) {
 	// 		WithCPURequest(resource.MustParse("9999m")).
 	// 		WithMemRequest(resource.MustParse("199Mi")).Get()
 
-	// 	evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+	// 	evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 	// 		podWithPodStatus: {
 	// 			{
 	// 				Resources:         []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
-	// 				ChangeRequirement: v1.TargetHigherThanRequests,
+	// 				ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 	// 			},
 	// 		},
 	// 	}
 	// 	sdpea := NewScalingDirectionPodEvictionAdmission()
 	// 	sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-	// 	recommendation := &v1.RecommendedPodResources{
+	// 	recommendation := &vpaautoscalingv1.RecommendedPodResources{
 	// 		ContainerRecommendations: nil,
 	// 		PodRecommendations: test.Recommendation().
 	// 			WithPodLevelTarget("200m", "200Mi").
@@ -578,17 +577,17 @@ func TestAdmitForPodLevelResources(t *testing.T) {
 	// 		WithCPURequest(resource.MustParse("9999m")).
 	// 		WithMemRequest(resource.MustParse("9999Mi")).Get()
 
-	// 	evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+	// 	evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 	// 		podWithPodStatus: {
 	// 			{
 	// 				Resources:         []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
-	// 				ChangeRequirement: v1.TargetHigherThanRequests,
+	// 				ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 	// 			},
 	// 		},
 	// 	}
 	// 	sdpea := NewScalingDirectionPodEvictionAdmission()
 	// 	sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-	// 	recommendation := &v1.RecommendedPodResources{
+	// 	recommendation := &vpaautoscalingv1.RecommendedPodResources{
 	// 		ContainerRecommendations: nil,
 	// 		PodRecommendations: test.Recommendation().
 	// 			WithPodLevelTarget("200m", "200Mi").
@@ -598,17 +597,17 @@ func TestAdmitForPodLevelResources(t *testing.T) {
 	// })
 
 	t.Run("it should admit a Pod for eviction if pod level resource fulfills EvictionRequirements through PodSpec", func(tt *testing.T) {
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			pod: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-		recommendation := &v1.RecommendedPodResources{
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
 			ContainerRecommendations: nil,
 			PodRecommendations: test.Recommendation().
 				WithPodLevelTarget("201m", "201Mi").
@@ -625,18 +624,18 @@ func TestAdmitForPodLevelResources(t *testing.T) {
 				WithMemRequest(resource.MustParse("20Mi")).Get(),
 		)
 
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			podWithExtraContainer: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-		recommendation := &v1.RecommendedPodResources{
-			ContainerRecommendations: []v1.RecommendedContainerResources{
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
+			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
 				test.Recommendation().
 					WithContainer("test-container-3").
 					WithTarget("1m", "1Mi").
@@ -657,18 +656,18 @@ func TestAdmitForPodLevelResources(t *testing.T) {
 				WithMemRequest(resource.MustParse("20Mi")).Get(),
 		)
 
-		evictionRequirements := map[*corev1.Pod][]*v1.EvictionRequirement{
+		evictionRequirements := map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
 			podWithExtraContainer: {
 				{
 					Resources:         []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory},
-					ChangeRequirement: v1.TargetHigherThanRequests,
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
 				},
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
-		recommendation := &v1.RecommendedPodResources{
-			ContainerRecommendations: []v1.RecommendedContainerResources{
+		recommendation := &vpaautoscalingv1.RecommendedPodResources{
+			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
 				test.Recommendation().
 					WithContainer("test-container-3").
 					WithTarget("21m", "21Mi").

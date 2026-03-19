@@ -99,7 +99,7 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 	// Create a channel to send VPA updates to workers
 	vpaUpdates := make(chan *vpaautoscalingv1.VerticalPodAutoscaler, len(apiObjectVPAs))
 
-	var counter int64
+	var counter int64 //nolint:modernize
 
 	// Start workers
 	for range updateWorkerCount {

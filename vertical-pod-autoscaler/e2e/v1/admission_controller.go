@@ -1281,12 +1281,23 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		gomega.Expect(err).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
 		gomega.Expect(err.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`), "Admission controller did not inspect the object")
 	})
+})
 
-	ginkgo.It("lowers pod-level requests and limits according to the pod max defined in LimitRange", func() {
+// E2E tests for Pod-level resource stanzas and recommendation support introduced in AEP-7571.
+var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelResources", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
+
+	ginkgo.BeforeEach(func() {
+		waitForVpaWebhookRegistration(f)
+	})
+
+	f.It("lowers pod-level requests and limits according to the pod max defined in LimitRange", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
 		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
 			nil,
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
+
 		InstallLimitRangeWithMax(f, "80m", "80Mi", apiv1.LimitTypePod)
 
 		ginkgo.By("Setting up a VPA CRD")
@@ -1316,11 +1327,12 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
-	ginkgo.It("raises pod-level requests and limits according to the pod min defined in LimitRange", func() {
+	f.It("raises pod-level requests and limits according to the pod min defined in LimitRange", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
 		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
 			nil,
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
+
 		InstallLimitRangeWithMin(f, "80m", "80Mi", apiv1.LimitTypePod)
 
 		ginkgo.By("Setting up a VPA CRD")
@@ -1350,7 +1362,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
-	ginkgo.It("raises only pod-level requests according to the pod min defined in LimitRange", func() {
+	f.It("raises only pod-level requests according to the pod min defined in LimitRange", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
 		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
 			nil,
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
@@ -1384,7 +1396,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
-	ginkgo.It("raises pod-level requests and limits according to pod-level minAllowed", func() {
+	f.It("raises pod-level requests and limits according to pod-level minAllowed", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
 		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
 			nil,
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
@@ -1418,7 +1430,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
-	ginkgo.It("lowers pod-level requests and limits according to pod-level maxAllowed", func() {
+	f.It("lowers pod-level requests and limits according to pod-level maxAllowed", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
 		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
 			nil,
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
@@ -1452,7 +1464,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
-	ginkgo.It("starts pod with new pod-level requests limits and with new container-level requests for one container", func() {
+	f.It("starts pod with new pod-level requests limits and with new container-level requests for one container", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
 		d := NewHamsterDeploymentWithPodLevelResources(f, 2,
 			nil,
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
@@ -1506,7 +1518,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
-	ginkgo.It("starts pod with new pod-level requests limits and with new container-level request limits for one container", func() {
+	f.It("starts pod with new pod-level requests limits and with new container-level request limits for one container", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
 		d := NewHamsterDeploymentWithPodLevelResources(f, 2,
 			[]containerResources{
 				{
