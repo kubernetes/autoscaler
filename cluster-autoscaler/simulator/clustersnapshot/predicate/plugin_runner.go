@@ -116,7 +116,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 
 		// Run the Filter phase of the framework. Plugins retrieve the state they saved during PreFilter from CycleState, and answer whether the
 		// given Pod can be scheduled on the given Node.
-		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
+		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
 		if filterStatus.IsSuccess() {
 			// Filter passed for all plugins, so this pod can be scheduled on this Node.
 			mu.Lock()
@@ -164,7 +164,7 @@ func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string
 	}
 
 	// Run the Filter phase of the framework for the Pod and the Node and check the results. See the corresponding comments in RunFiltersUntilPassingNode() for more info.
-	filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
+	filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
 	if !filterStatus.IsSuccess() {
 		filterName := filterStatus.Plugin()
 		filterReasons := filterStatus.Reasons()

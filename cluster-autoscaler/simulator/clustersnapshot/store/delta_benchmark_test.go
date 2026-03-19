@@ -21,9 +21,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 func BenchmarkBuildNodeInfoList(b *testing.B) {
@@ -49,17 +48,15 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 			nodes := clustersnapshot.CreateTestNodes(tc.nodeCount + 1000)
 			deltaStore := NewDeltaSnapshotStore(16)
 			for _, node := range nodes[:tc.nodeCount] {
-				schedNodeInfo := schedulerimpl.NewNodeInfo()
-				schedNodeInfo.SetNode(node)
-				if err := deltaStore.AddSchedulerNodeInfo(schedNodeInfo); err != nil {
+				nodeInfo := framework.NewNodeInfo(node, nil)
+				if err := deltaStore.StoreNodeInfo(nodeInfo); err != nil {
 					assert.NoError(b, err)
 				}
 			}
 			deltaStore.Fork()
 			for _, node := range nodes[tc.nodeCount:] {
-				schedNodeInfo := schedulerimpl.NewNodeInfo()
-				schedNodeInfo.SetNode(node)
-				if err := deltaStore.AddSchedulerNodeInfo(schedNodeInfo); err != nil {
+				nodeInfo := framework.NewNodeInfo(node, nil)
+				if err := deltaStore.StoreNodeInfo(nodeInfo); err != nil {
 					assert.NoError(b, err)
 				}
 			}
@@ -75,9 +72,8 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 			nodes := clustersnapshot.CreateTestNodes(tc.nodeCount)
 			deltaStore := NewDeltaSnapshotStore(16)
 			for _, node := range nodes {
-				schedNodeInfo := schedulerimpl.NewNodeInfo()
-				schedNodeInfo.SetNode(node)
-				if err := deltaStore.AddSchedulerNodeInfo(schedNodeInfo); err != nil {
+				nodeInfo := framework.NewNodeInfo(node, nil)
+				if err := deltaStore.StoreNodeInfo(nodeInfo); err != nil {
 					assert.NoError(b, err)
 				}
 			}
