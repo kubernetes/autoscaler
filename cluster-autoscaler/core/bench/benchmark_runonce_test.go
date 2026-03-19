@@ -213,7 +213,7 @@ func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet) 
 
 // noOpRecorder is a dummy implementation of record.EventRecorder that discards all events.
 // Benchmark workloads generate a lot of events in a short period
-// which results in events drops and noise in the logs.
+// which results in event drops and noise in the logs.
 type noOpRecorder struct{}
 
 func (n *noOpRecorder) Event(_ apimachineryruntime.Object, _, _, _ string)                    {}
