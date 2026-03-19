@@ -17,7 +17,7 @@ limitations under the License.
 package resourcehelpers
 
 import (
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -32,7 +32,7 @@ import (
 //   - Otherwise, fallback to the resource requests defined in the pod spec.
 //
 // [1] https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources
-func ContainerRequestsAndLimits(containerName string, pod *v1.Pod) (v1.ResourceList, v1.ResourceList) {
+func ContainerRequestsAndLimits(containerName string, pod *corev1.Pod) (corev1.ResourceList, corev1.ResourceList) {
 	cs := containerStatusFor(containerName, pod)
 	if cs != nil && cs.Resources != nil {
 		metrics_resources.RecordGetResourcesCount(metrics_resources.ContainerStatus)
@@ -57,7 +57,7 @@ func ContainerRequestsAndLimits(containerName string, pod *v1.Pod) (v1.ResourceL
 //   - Otherwise, fallback to the resource requests defined in the pod spec.
 //
 // [1] https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources
-func InitContainerRequestsAndLimits(initContainerName string, pod *v1.Pod) (v1.ResourceList, v1.ResourceList) {
+func InitContainerRequestsAndLimits(initContainerName string, pod *corev1.Pod) (corev1.ResourceList, corev1.ResourceList) {
 	cs := initContainerStatusFor(initContainerName, pod)
 	if cs != nil && cs.Resources != nil {
 		metrics_resources.RecordGetResourcesCount(metrics_resources.InitContainerStatus)
@@ -74,7 +74,7 @@ func InitContainerRequestsAndLimits(initContainerName string, pod *v1.Pod) (v1.R
 	return nil, nil
 }
 
-func findContainer(containerName string, pod *v1.Pod) *v1.Container {
+func findContainer(containerName string, pod *corev1.Pod) *corev1.Container {
 	for i, container := range pod.Spec.Containers {
 		if container.Name == containerName {
 			return &pod.Spec.Containers[i]
@@ -83,7 +83,7 @@ func findContainer(containerName string, pod *v1.Pod) *v1.Container {
 	return nil
 }
 
-func findInitContainer(initContainerName string, pod *v1.Pod) *v1.Container {
+func findInitContainer(initContainerName string, pod *corev1.Pod) *corev1.Container {
 	for i, initContainer := range pod.Spec.InitContainers {
 		if initContainer.Name == initContainerName {
 			return &pod.Spec.InitContainers[i]
@@ -92,7 +92,7 @@ func findInitContainer(initContainerName string, pod *v1.Pod) *v1.Container {
 	return nil
 }
 
-func containerStatusFor(containerName string, pod *v1.Pod) *v1.ContainerStatus {
+func containerStatusFor(containerName string, pod *corev1.Pod) *corev1.ContainerStatus {
 	for i, containerStatus := range pod.Status.ContainerStatuses {
 		if containerStatus.Name == containerName {
 			return &pod.Status.ContainerStatuses[i]
@@ -101,7 +101,7 @@ func containerStatusFor(containerName string, pod *v1.Pod) *v1.ContainerStatus {
 	return nil
 }
 
-func initContainerStatusFor(initContainerName string, pod *v1.Pod) *v1.ContainerStatus {
+func initContainerStatusFor(initContainerName string, pod *corev1.Pod) *corev1.ContainerStatus {
 	for i, initContainerStatus := range pod.Status.InitContainerStatuses {
 		if initContainerStatus.Name == initContainerName {
 			return &pod.Status.InitContainerStatuses[i]
@@ -117,7 +117,7 @@ func SumContainerLevelRecommendations(containerRecommendations []vpa_types.Recom
 		return nil
 	}
 
-	add := func(dst, src v1.ResourceList) v1.ResourceList {
+	add := func(dst, src corev1.ResourceList) corev1.ResourceList {
 		for name, q := range src {
 			if existing, ok := dst[name]; ok {
 				existing.Add(q)
@@ -130,10 +130,10 @@ func SumContainerLevelRecommendations(containerRecommendations []vpa_types.Recom
 	}
 
 	podRecommendations := vpa_types.PodRecommendations{
-		Target:         make(v1.ResourceList),
-		LowerBound:     make(v1.ResourceList),
-		UpperBound:     make(v1.ResourceList),
-		UncappedTarget: make(v1.ResourceList),
+		Target:         make(corev1.ResourceList),
+		LowerBound:     make(corev1.ResourceList),
+		UpperBound:     make(corev1.ResourceList),
+		UncappedTarget: make(corev1.ResourceList),
 	}
 
 	for _, container := range containerRecommendations {
@@ -154,7 +154,7 @@ func SumContainerLevelRecommendations(containerRecommendations []vpa_types.Recom
 //   - Otherwise, fall back to the resource requests defined in PodSpec.
 //
 // [1] https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/5419-pod-level-resources-in-place-resize/
-func PodRequestsAndLimits(pod *v1.Pod) (v1.ResourceList, v1.ResourceList) {
+func PodRequestsAndLimits(pod *corev1.Pod) (corev1.ResourceList, corev1.ResourceList) {
 	// TODO: Comment out this part once https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions.
 	// ps := podStatus(pod)
 	// if ps != nil && ps.Resources != nil {
@@ -167,7 +167,7 @@ func PodRequestsAndLimits(pod *v1.Pod) (v1.ResourceList, v1.ResourceList) {
 	return nil, nil
 }
 
-// func podStatus(pod *v1.Pod) *v1.PodStatus {
+// func podStatus(pod *corev1.Pod) *corev1.PodStatus {
 // 	if pod.Status.Resources != nil {
 // 		return &pod.Status
 // 	}

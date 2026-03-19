@@ -47,7 +47,7 @@ pod (re-)creation time.
 * Allow VPA to scale pods down [in-place](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources)
 to the existing VPA recommendation for that container, if any, or to the CPU
 resources configured in the pod spec, as soon as their [`Ready`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions)
-condition is true and `StartupBoost.CPU.Duration` has elapsed.
+condition is true and `StartupBoost.CPU.DurationSeconds` has elapsed.
 
 ### Non-Goals
 
@@ -79,13 +79,23 @@ VPA object) without having to ALSO use the traditional VPA functionality.
 1. When a pod targeted by that VPA is created, the kube-apiserver invokes the
 VPA Admission Controller
 
-1. The VPA Admission Controller modifies the pod's containers CPU request and
-limits to align with its `StartupBoost` policy, if specified, during the pod
-creation. The boosted value is based on the VPA recommendation available at the
-time of admission. During the boost period, no resizing will take place.
+
+1.  The VPA Admission Controller modifies the pod's containers CPU request and
+    limits to align with its `StartupBoost` policy, if specified, during the pod
+    creation. The base value for the boost calculation is the VPA recommended CPU
+    request. If the VPA recommendation is not available or is zero, the container's
+    original CPU request from the Pod spec is used as the base.
+
+    The behavior for CPU limits depends on the `ControlledValues` setting in the
+    `ContainerResourcePolicy`:
+
+    *   If `ControlledValues` is `RequestsOnly` , the boosted CPU request
+        will be capped just below the container's original CPU limit(to preserve pod QoS), if one is set.
+    *   If `ControlledValues` is `RequestsAndLimits` (the default), the CPU limit is also boosted.
+        The new limit is calculated to maintain the container's original limit-to-request ratio, applied to the new boosted CPU request. In cases where this ratio cannot be established (e.g., if the original CPU limit was unspecified), the limit will not be changed by the boost.
 
 1. The VPA Updater monitors pods targeted by the VPA object and when the pod
-condition is `Ready` and `StartupBoost.CPU.Duration` has elapsed, it scales
+condition is `Ready` and `StartupBoost.CPU.DurationSeconds` has elapsed, it scales
 down the CPU resources to the appropriate non-boosted value. This "unboosting"
 resizes the pod to whatever the recommendation is at that moment. The specific
 behavior is determined by the VPA `updatePolicy`:
@@ -130,7 +140,7 @@ type CPUStartupBoost struct {
     Quantity *resource.Quantity `json:"quantity,omitempty"`
 
     // +optional
-    Duration *metav1.Duration `json:"duration,omitempty"`
+    DurationSeconds *int32 `json:"durationSeconds,omitempty"`
 }
 ```
 
@@ -144,19 +154,22 @@ type CPUStartupBoost struct {
     additional CPU resource quantity (e.g., `"500m"`, `"1"`) to be added to the existing CPU
     request or limit during the boost phase.
 
+    > [!NOTE]
+    > For forward compatibility, an unrecognized `StartupBoost.CPU.Type` value will be treated as no boost.
+
   * [Optional] `StartupBoost.CPU.Factor`: (type: `integer`): The factor to apply to the CPU request. Defaults to 1 if not specified.
      * If `StartupBoost.CPU.Type`is `Factor`, this field is required.
      * If `StartupBoost.CPU.Type`is `Quantity`, this field is not allowed.
   * [Optional] `StartupBoost.CPU.Quantity`: (type: `resource.Quantity`): The additional CPU resource quantity.
      * If `StartupBoost.CPU.Type`is `Quantity`, this field is required.
      * If `StartupBoost.CPU.Type`is `Factor`, this field is not allowed.
-  * [Optional] `StartupBoost.CPU.Duration` (type: `duration`): if specified, it
+  * [Optional] `StartupBoost.CPU.DurationSeconds` (type: `integer`): if specified, it
   indicates for how long to keep the pod boosted **after** it goes to `Ready`.
-     * It defaults to `0s` if not specified.
+     * It defaults to `0` if not specified.
 
 > [!IMPORTANT]
 > The boosted CPU value will be capped by
-> [`--container-recommendation-max-allowed-cpu`](https://github.com/kubernetes/autoscaler/blob/4d294562e505431d518a81e8833accc0ec99c9b8/vertical-pod-autoscaler/pkg/recommender/main.go#L122)
+> [`--max-allowed-cpu-boost`](https://github.com/kubernetes/autoscaler/blob/4b40a55bebd2ce184b289cd028969182d15f412c/vertical-pod-autoscaler/pkg/admission-controller/main.go#L86C1-L86C2)
 > flag value, if set.
 
 > [!NOTE]
@@ -165,7 +178,7 @@ type CPUStartupBoost struct {
 > [Readiness or a Startup probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
 > for the containers that will be CPU boosted. Check the [Test Plan](#test-plan)
 > section for more details on this feature's behavior for different combinations
-> of probers + `StartupBoost.CPU.Duration`.
+> of probers + `StartupBoost.CPU.DurationSeconds`.
 
 #### Priority of `StartupBoost`
 
@@ -255,18 +268,18 @@ Other than comprehensive unit tests, we will also add the following scenarios to
 our e2e tests:
 
 * CPU Startup Boost recommendation is applied to pod controlled by VPA until it
-becomes `Ready` and `StartupBoost.CPU.Duration` has elapsed. Then, the pod is
+becomes `Ready` and `StartupBoost.CPU.DurationSeconds` has elapsed. Then, the pod is
 scaled back down in-place. We'll also test the following sub-cases:
   * Boost is applied to all containers of a pod.
   * Boost is applied only to a subset of containers in a pod.
-  * Combinations of probes + `StartupBoost.CPU.Duration`:
-    * No probes and no `StartupBoost.CPU.Duration` specified: unboost will
+  * Combinations of probes + `StartupBoost.CPU.DurationSeconds`:
+    * No probes and no `StartupBoost.CPU.DurationSeconds` specified: unboost will
     likely happen immediately.
-    * No probes and a 60s `StartupBoost.CPU.Duration`: unboost will likely
+    * No probes and a 60s `StartupBoost.CPU.DurationSeconds`: unboost will likely
     happen after 60s.
-    * A readiness/startup probe and no `StartupBoost.CPU.Duration` specified:
+    * A readiness/startup probe and no `StartupBoost.CPU.DurationSeconds` specified:
     unboost will likely as soon as the pod becomes `Ready`.
-    *  A readiness/startup probe and a 60s `StartupBoost.CPU.Duration`
+    *  A readiness/startup probe and a 60s `StartupBoost.CPU.DurationSeconds`
     specified: unboost will likely happen 60s **after** the pod becomes `Ready`.
 
 * Pod is not evicted if the in-place update fails when scaling the pod back
@@ -299,7 +312,7 @@ spec:
     cpu:
       type: "Factor"
       factor: 3
-      duration: 10s
+      durationSeconds: 10
 ```
 
 #### Startup CPU Boost Disabled & VPA Enabled
@@ -336,7 +349,7 @@ spec:
     cpu:
       type: "Factor"
       factor: 3
-      duration: 10s
+      durationSeconds: 10
 ```
 
 ### Per-container configurations (`startupBoost` configured in `ContainerPolicies`)
@@ -436,10 +449,10 @@ spec:
 
 ## Implementation History
 
+* 2026-02-02: Change `startupBoost.cpu.duration` to `startupBoost.cpu.durationSeconds` and its type from string to int32 (seconds).
 * 2025-10-04: Update `startupBoost.cpu.type` field to correctly indicate it is a required field, not optional. The field has no default value and must be explicitly set to either "Factor" or "Quantity".
 * 2025-08-05: Make some API changes and clarify behavior during and after boost period in the workflow section.
 * 2025-06-23: Decouple Startup CPU Boost from InPlaceOrRecreate mode, allow
 users to specify a `startupBoost` config in `VerticalPodAutoscalerSpec` and in
 `ContainerPolicies` to make the API simpler and add more yaml examples.
 * 2025-03-20: Initial version.
-

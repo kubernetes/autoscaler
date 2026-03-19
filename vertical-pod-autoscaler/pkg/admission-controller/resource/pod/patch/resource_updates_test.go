@@ -17,17 +17,21 @@ limitations under the License.
 package patch
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -46,7 +50,7 @@ type fakeRecommendationProvider struct {
 	e            error
 }
 
-func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, *utils.Annotations, *vpa_api_util.ContainerResources, error) {
+func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, *utils.Annotations, *vpa_api_util.ContainerResources, error) {
 	return frp.resources, frp.annotations, frp.podResources, frp.e
 }
 
@@ -54,7 +58,7 @@ func addResourcesPatch(idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources", idx),
-		Value: core.ResourceRequirements{},
+		Value: corev1.ResourceRequirements{},
 	}
 }
 
@@ -62,7 +66,7 @@ func addRequestsPatch(idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/requests", idx),
-		Value: core.ResourceList{},
+		Value: corev1.ResourceList{},
 	}
 }
 
@@ -70,7 +74,7 @@ func addLimitsPatch(idx int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/limits", idx),
-		Value: core.ResourceList{},
+		Value: corev1.ResourceList{},
 	}
 }
 
@@ -107,7 +111,7 @@ func addAnnotationRequest(updateResources [][]string, kind string) resource_admi
 func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 	tests := []struct {
 		name                 string
-		pod                  *core.Pod
+		pod                  *corev1.Pod
 		namespace            string
 		recommendResources   []vpa_api_util.ContainerResources
 		recommendAnnotations utils.Annotations
@@ -117,15 +121,15 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 	}{
 		{
 			name: "new cpu recommendation",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{{}},
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{}},
 				},
 			},
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -140,11 +144,11 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		},
 		{
 			name: "replacement cpu recommendation",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{{
-						Resources: core.ResourceRequirements{
-							Requests: core.ResourceList{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
 								cpu: resource.MustParse("0"),
 							},
 						},
@@ -154,7 +158,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -168,13 +172,13 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		{
 			name: "replacement cpu request recommendation from container status",
 			pod: test.Pod().
-				AddContainer(core.Container{}).
+				AddContainer(corev1.Container{}).
 				AddContainerStatus(test.ContainerStatus().
 					WithCPURequest(resource.MustParse("0")).Get()).Get(),
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -187,12 +191,12 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		},
 		{
 			name: "two containers",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
 						Name: "container-1",
-						Resources: core.ResourceRequirements{
-							Requests: core.ResourceList{
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
 								cpu: resource.MustParse("0"),
 							},
 						},
@@ -202,12 +206,12 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
 				{
-					Requests: core.ResourceList{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("2"),
 					},
 				},
@@ -223,15 +227,15 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		},
 		{
 			name: "new cpu limit",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{{}},
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{}},
 				},
 			},
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -246,11 +250,11 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		},
 		{
 			name: "replacement cpu limit",
-			pod: &core.Pod{
-				Spec: core.PodSpec{
-					Containers: []core.Container{{
-						Resources: core.ResourceRequirements{
-							Limits: core.ResourceList{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Resources: corev1.ResourceRequirements{
+							Limits: corev1.ResourceList{
 								cpu: resource.MustParse("0"),
 							},
 						},
@@ -260,7 +264,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -274,13 +278,13 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		{
 			name: "replacement cpu limit from container status",
 			pod: test.Pod().
-				AddContainer(core.Container{}).
+				AddContainer(corev1.Container{}).
 				AddContainerStatus(test.ContainerStatus().
 					WithCPULimit(resource.MustParse("0")).Get()).Get(),
 			namespace: "default",
 			recommendResources: []vpa_api_util.ContainerResources{
 				{
-					Limits: core.ResourceList{
+					Limits: corev1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -291,11 +295,22 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 				addAnnotationRequest([][]string{{cpu}}, limit),
 			},
 		},
+		{
+			name: "no recommendation present",
+			pod: test.Pod().
+				AddContainer(corev1.Container{}).
+				AddContainerStatus(test.ContainerStatus().
+					WithCPULimit(resource.MustParse("0")).Get()).Get(),
+			namespace:            "default",
+			recommendResources:   make([]vpa_api_util.ContainerResources, 1),
+			recommendAnnotations: utils.Annotations{},
+			expectPatches:        []resource_admission.PatchRecord{},
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			frp := fakeRecommendationProvider{tc.recommendResources, &tc.recommendAnnotations, nil, tc.recommendError}
-			c := NewResourceUpdatesCalculator(&frp)
+			c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
 			patches, err := c.CalculatePatches(tc.pod, test.VerticalPodAutoscaler().WithContainer("test").WithName("name").Get())
 			if tc.expectError == nil {
 				assert.NoError(t, err)
@@ -318,17 +333,17 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 func TestGetPatches_TwoReplacementResources(t *testing.T) {
 	recommendResources := []vpa_api_util.ContainerResources{
 		{
-			Requests: core.ResourceList{
+			Requests: corev1.ResourceList{
 				cpu:        resource.MustParse("1"),
 				unobtanium: resource.MustParse("2"),
 			},
 		},
 	}
-	pod := &core.Pod{
-		Spec: core.PodSpec{
-			Containers: []core.Container{{
-				Resources: core.ResourceRequirements{
-					Requests: core.ResourceList{
+	pod := &corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{{
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
 						cpu: resource.MustParse("0"),
 					},
 				},
@@ -337,7 +352,7 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 	}
 	recommendAnnotations := utils.Annotations{}
 	frp := fakeRecommendationProvider{recommendResources, &recommendAnnotations, nil, nil}
-	c := NewResourceUpdatesCalculator(&frp)
+	c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
 	patches, err := c.CalculatePatches(pod, test.VerticalPodAutoscaler().WithName("name").WithContainer("test").Get())
 	assert.NoError(t, err)
 	// Order of updates for cpu and unobtanium depends on order of iterating a map, both possible results are valid.
@@ -350,5 +365,568 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 		cpuFirstUnobtaniumSecond := addAnnotationRequest([][]string{{cpu, unobtanium}}, request)
 		unobtaniumFirstCpuSecond := addAnnotationRequest([][]string{{unobtanium, cpu}}, request)
 		AssertPatchOneOf(t, patches[2], []resource_admission.PatchRecord{cpuFirstUnobtaniumSecond, unobtaniumFirstCpuSecond})
+	}
+}
+
+func TestCalculatePatches_StartupBoost(t *testing.T) {
+	factor2 := int32(2)
+	factor3 := int32(3)
+	quantity := resource.MustParse("500m")
+	invalidFactor := int32(0)
+	invalidQuantity := resource.MustParse("200m")
+	tests := []struct {
+		name                 string
+		pod                  *corev1.Pod
+		vpa                  *vpa_types.VerticalPodAutoscaler
+		recommendResources   []vpa_api_util.ContainerResources
+		recommendAnnotations utils.Annotations
+		recommendError       error
+		maxAllowedCpu        resource.QuantityValue
+		expectPatches        []resource_admission.PatchRecord
+		expectError          error
+		featureGateEnabled   bool
+	}{
+		{
+			name: "startup boost factor",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+								Limits: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+					Limits: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
+				addResourceRequestPatch(0, cpu, "200m"),
+				addResourceLimitPatch(0, cpu, "200m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
+			},
+		},
+		{
+			name: "startup boost factor with 0s duration",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+								Limits: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 0).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+					Limits: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
+				addResourceRequestPatch(0, cpu, "200m"),
+				addResourceLimitPatch(0, cpu, "200m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
+			},
+		},
+		{
+			name: "startup boost quantity",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+								Limits: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &quantity, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+					Limits: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
+				addResourceRequestPatch(0, cpu, "600m"),
+				addResourceLimitPatch(0, cpu, "600m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
+			},
+		},
+		{
+			name: "feature gate disabled",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("100m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: false,
+			expectPatches: []resource_admission.PatchRecord{
+				addResourceRequestPatch(0, cpu, "100m"),
+				addAnnotationRequest([][]string{{cpu}}, "request"),
+			},
+		},
+		{
+			name: "invalid factor",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &invalidFactor, nil, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectError:        errors.New("boost factor must be >= 1"),
+		},
+		{
+			name: "quantity less than request",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("400m"),
+								},
+								Limits: corev1.ResourceList{
+									cpu: resource.MustParse("400m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &invalidQuantity, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("500m"),
+					},
+					Limits: corev1.ResourceList{
+						cpu: resource.MustParse("500m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"400m\"},\"limits\":{\"cpu\":\"400m\"}}"),
+				addResourceRequestPatch(0, cpu, "700m"),
+				addResourceLimitPatch(0, cpu, "700m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
+			},
+		},
+		{
+			name: "startup boost capped",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+								Limits: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor3, nil, 1).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("20m"),
+					},
+					Limits: corev1.ResourceList{
+						cpu: resource.MustParse("20m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{Quantity: resource.MustParse("40m")},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
+				addResourceRequestPatch(0, cpu, "40m"),
+				addResourceLimitPatch(0, cpu, "40m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
+			},
+		},
+		{
+			name: "startup boost with scaling mode off",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("100m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithScalingMode("container1", vpa_types.ContainerScalingModeOff).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches:      []resource_admission.PatchRecord{},
+		},
+		{
+			name: "startup boost no recommendation",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("100m"),
+								},
+								Limits: corev1.ResourceList{
+									cpu: resource.MustParse("100m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa:                test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
+			recommendResources: make([]vpa_api_util.ContainerResources, 1),
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"100m\"}}"),
+				addResourceRequestPatch(0, cpu, "200m"),
+				addResourceLimitPatch(0, cpu, "200m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
+			},
+		},
+		{
+			name: "startup boost with ControlledValues=RequestsOnly",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("100m"),
+								},
+								Limits: corev1.ResourceList{
+									cpu: resource.MustParse("300m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsOnly).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"300m\"}}"),
+				addResourceRequestPatch(0, cpu, "200m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
+			},
+		},
+		{
+			name: "startup boost with RequestsOnly - capped below limit to preserve pod Qos",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("100m"),
+								},
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("150m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsOnly).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						corev1.ResourceCPU: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"150m\"}}"),
+				addResourceRequestPatch(0, cpu, "149m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
+			},
+		},
+		{
+			name: "startup boost with ControlledValues=RequestsandLimits and limits set",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("100m"),
+								},
+								Limits: corev1.ResourceList{
+									cpu: resource.MustParse("300m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsAndLimits).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("150m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"300m\"}}"),
+				addResourceRequestPatch(0, cpu, "300m"),
+				addResourceLimitPatch(0, cpu, "900m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
+			},
+		},
+		{
+			name: "startup boost with ControlledValues=RequestsandLimits and limits not set",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("100m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).WithControlledValues("container1", vpa_types.ContainerControlledValuesRequestsAndLimits).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("150m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{}}"),
+				addResourceRequestPatch(0, cpu, "300m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
+			},
+		},
+		{
+			name: "startup boost invalid type",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost("Invalid", &factor2, nil, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectError:        errors.New("unsupported startup boost type: Invalid"),
+		},
+		{
+			name: "startup boost container policy takes precedence",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+								Limits: corev1.ResourceList{
+									cpu: resource.MustParse("1m"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").
+				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).
+				WithContainerCPUStartupBoost("container1", vpa_types.FactorStartupBoostType, &factor3, nil, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+					Limits: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
+				addResourceRequestPatch(0, cpu, "300m"),
+				addResourceLimitPatch(0, cpu, "300m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, tc.featureGateEnabled)
+
+			frp := fakeRecommendationProvider{tc.recommendResources, &tc.recommendAnnotations, nil, tc.recommendError}
+			c := NewResourceUpdatesCalculator(&frp, tc.maxAllowedCpu)
+			patches, err := c.CalculatePatches(tc.pod, tc.vpa)
+			if tc.expectError == nil {
+				assert.NoError(t, err)
+			} else {
+				if assert.Error(t, err) {
+					assert.Equal(t, tc.expectError.Error(), err.Error())
+				}
+			}
+			if assert.Len(t, patches, len(tc.expectPatches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
+				for i, gotPatch := range patches {
+					if !EqPatch(gotPatch, tc.expectPatches[i]) {
+						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
+					}
+				}
+			}
+		})
 	}
 }

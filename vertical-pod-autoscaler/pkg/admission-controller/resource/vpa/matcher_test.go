@@ -23,9 +23,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/autoscaling/v1"
-	core "k8s.io/api/core/v1"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -35,28 +35,28 @@ import (
 )
 
 func parseLabelSelector(selector string) labels.Selector {
-	labelSelector, _ := meta.ParseToLabelSelector(selector)
-	parsedSelector, _ := meta.LabelSelectorAsSelector(labelSelector)
+	labelSelector, _ := metav1.ParseToLabelSelector(selector)
+	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
 	return parsedSelector
 }
 
 func TestGetMatchingVpa(t *testing.T) {
 	sts := appsv1.StatefulSet{
-		TypeMeta: meta.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
 			APIVersion: "apps/v1",
 		},
-		ObjectMeta: meta.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "sts",
 			Namespace: "default",
 		},
 	}
-	targetRef := &v1.CrossVersionObjectReference{
+	targetRef := &autoscalingv1.CrossVersionObjectReference{
 		Kind:       sts.Kind,
 		Name:       sts.Name,
 		APIVersion: sts.APIVersion,
 	}
-	targetRefWithNoMatches := &v1.CrossVersionObjectReference{
+	targetRefWithNoMatches := &autoscalingv1.CrossVersionObjectReference{
 		Kind:       "ReplicaSet",
 		Name:       "rs",
 		APIVersion: "apps/v1",
@@ -68,7 +68,7 @@ func TestGetMatchingVpa(t *testing.T) {
 
 	testCases := []struct {
 		name            string
-		pod             *core.Pod
+		pod             *corev1.Pod
 		vpas            []*vpa_types.VerticalPodAutoscaler
 		labelSelector   string
 		expectedFound   bool

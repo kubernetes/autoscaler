@@ -19,7 +19,7 @@ package patch
 import (
 	"fmt"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
@@ -43,8 +43,16 @@ func GetAddAnnotationPatch(annotationName, annotationValue string) resource_admi
 	}
 }
 
+// GetRemoveAnnotationPatch returns a patch to remove an annotation.
+func GetRemoveAnnotationPatch(annotationName string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:   "remove",
+		Path: fmt.Sprintf("/metadata/annotations/%s", annotationName),
+	}
+}
+
 // GetAddResourceRequirementValuePatch returns a patch record to add resource requirements to a container.
-func GetAddResourceRequirementValuePatch(i int, kind string, resource core.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
+func GetAddResourceRequirementValuePatch(i int, kind string, resource corev1.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s/%s", i, kind, resource),
@@ -56,7 +64,7 @@ func GetPatchInitializingEmptyResources(i int) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources", i),
-		Value: core.ResourceRequirements{},
+		Value: corev1.ResourceRequirements{},
 	}
 }
 
@@ -66,12 +74,12 @@ func GetPatchInitializingEmptyResourcesSubfield(i int, kind string) resource_adm
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s", i, kind),
-		Value: core.ResourceList{},
+		Value: corev1.ResourceList{},
 	}
 }
 
 // GetAddResourceRequirementValuePatchAtPodLevel returns a patch record at the Pod level.
-func GetAddResourceRequirementValuePatchAtPodLevel(kind string, resource core.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
+func GetAddResourceRequirementValuePatchAtPodLevel(kind string, resource corev1.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/resources/%s/%s", kind, resource),
@@ -80,11 +88,11 @@ func GetAddResourceRequirementValuePatchAtPodLevel(kind string, resource core.Re
 
 // AppendPodLevelResourcePatches returns a slice of patch records
 // for CPU and memory resources at the Pod level.
-func AppendPodLevelResourcePatches(result []resource_admission.PatchRecord, field string, rl core.ResourceList) []resource_admission.PatchRecord {
+func AppendPodLevelResourcePatches(result []resource_admission.PatchRecord, field string, rl corev1.ResourceList) []resource_admission.PatchRecord {
 	if rl == nil {
 		return result
 	}
-	for _, rn := range []core.ResourceName{core.ResourceCPU, core.ResourceMemory} {
+	for _, rn := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory} {
 		if qty, ok := rl[rn]; ok {
 			result = append(result, GetAddResourceRequirementValuePatchAtPodLevel(field, rn, qty))
 		}

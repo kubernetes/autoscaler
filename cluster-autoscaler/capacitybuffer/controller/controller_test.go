@@ -32,8 +32,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	fakebuffers "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
 	fakek8s "k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
@@ -88,7 +89,9 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 	client, err := cbclient.NewCapacityBufferClientFromClients(buffersClient, k8sClient, nil, nil)
 	assert.NoError(t, err)
 
-	controller := NewDefaultBufferController(client).(*bufferController)
+	// TODO: use DryRunResolver once migrated to envtest
+	resolver := fakepods.NewDefaultingResolver()
+	controller := NewDefaultBufferController(client, resolver).(*bufferController)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -113,7 +116,7 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 			if checkLimited {
 				hasLimit := false
 				for _, c := range b.Status.Conditions {
-					if c.Type == common.LimitedByQuotasCondition && c.Status == common.ConditionTrue {
+					if c.Type == capacitybuffer.LimitedByQuotasCondition && c.Status == metav1.ConditionTrue {
 						hasLimit = true
 					}
 				}
@@ -128,11 +131,16 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 			b, _ := buffersClient.AutoscalingV1beta1().CapacityBuffers("default").Get(ctx, name, metav1.GetOptions{})
 			var gotLimited bool
 			for _, c := range b.Status.Conditions {
-				if c.Type == common.LimitedByQuotasCondition && c.Status == common.ConditionTrue {
+				if c.Type == capacitybuffer.LimitedByQuotasCondition && c.Status == metav1.ConditionTrue {
 					gotLimited = true
 				}
 			}
-			t.Errorf("%s reconciliation failed, got replicas: %d, limited: %t, want replicas: %d, limited: %t", name, *b.Status.Replicas, gotLimited, expectedReplicas, checkLimited)
+			if b.Status.Replicas != nil {
+				gotReplicas := *b.Status.Replicas
+				t.Errorf("%s reconciliation failed, got replicas: %d, limited: %t, want replicas: %d, limited: %t", name, gotReplicas, gotLimited, expectedReplicas, checkLimited)
+			} else {
+				t.Errorf("%s reconciliation failed, got replicas: nil, want replicas: %d", name, expectedReplicas)
+			}
 		}
 	}
 

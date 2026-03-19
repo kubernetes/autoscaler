@@ -20,20 +20,20 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func TestIsNonDisruptiveResize(t *testing.T) {
 	testCases := []struct {
 		name     string
-		pod      *apiv1.Pod
+		pod      *corev1.Pod
 		expected bool
 	}{
 		{
 			name: "No resize policy - defaults to NotRequired",
-			pod: &apiv1.Pod{
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{Name: "container1"},
 					},
 				},
@@ -42,14 +42,14 @@ func TestIsNonDisruptiveResize(t *testing.T) {
 		},
 		{
 			name: "All NotRequired",
-			pod: &apiv1.Pod{
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							ResizePolicy: []apiv1.ContainerResizePolicy{
-								{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.NotRequired},
-								{ResourceName: apiv1.ResourceMemory, RestartPolicy: apiv1.NotRequired},
+							ResizePolicy: []corev1.ContainerResizePolicy{
+								{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.NotRequired},
+								{ResourceName: corev1.ResourceMemory, RestartPolicy: corev1.NotRequired},
 							},
 						},
 					},
@@ -59,14 +59,14 @@ func TestIsNonDisruptiveResize(t *testing.T) {
 		},
 		{
 			name: "One RestartContainer",
-			pod: &apiv1.Pod{
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							ResizePolicy: []apiv1.ContainerResizePolicy{
-								{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.NotRequired},
-								{ResourceName: apiv1.ResourceMemory, RestartPolicy: apiv1.RestartContainer},
+							ResizePolicy: []corev1.ContainerResizePolicy{
+								{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.NotRequired},
+								{ResourceName: corev1.ResourceMemory, RestartPolicy: corev1.RestartContainer},
 							},
 						},
 					},
@@ -76,19 +76,19 @@ func TestIsNonDisruptiveResize(t *testing.T) {
 		},
 		{
 			name: "Multiple containers - one with RestartContainer",
-			pod: &apiv1.Pod{
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							ResizePolicy: []apiv1.ContainerResizePolicy{
-								{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.NotRequired},
+							ResizePolicy: []corev1.ContainerResizePolicy{
+								{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.NotRequired},
 							},
 						},
 						{
 							Name: "container2",
-							ResizePolicy: []apiv1.ContainerResizePolicy{
-								{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.RestartContainer},
+							ResizePolicy: []corev1.ContainerResizePolicy{
+								{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.RestartContainer},
 							},
 						},
 					},
@@ -98,19 +98,19 @@ func TestIsNonDisruptiveResize(t *testing.T) {
 		},
 		{
 			name: "Multiple containers - all NotRequired",
-			pod: &apiv1.Pod{
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name: "container1",
-							ResizePolicy: []apiv1.ContainerResizePolicy{
-								{ResourceName: apiv1.ResourceCPU, RestartPolicy: apiv1.NotRequired},
+							ResizePolicy: []corev1.ContainerResizePolicy{
+								{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.NotRequired},
 							},
 						},
 						{
 							Name: "container2",
-							ResizePolicy: []apiv1.ContainerResizePolicy{
-								{ResourceName: apiv1.ResourceMemory, RestartPolicy: apiv1.NotRequired},
+							ResizePolicy: []corev1.ContainerResizePolicy{
+								{ResourceName: corev1.ResourceMemory, RestartPolicy: corev1.NotRequired},
 							},
 						},
 					},

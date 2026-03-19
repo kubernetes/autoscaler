@@ -13,6 +13,8 @@ commonLabels: {}
 rbac:
   # If `true`, create `ClusterRole` & `ClusterRoleBinding` resources to enable access to the Kubernetes API.
   create: true
+  # extraRules -- Additional rules to add to the ClusterRole
+  extraRules: []
 
 podSecurityContext:
   runAsNonRoot: true
@@ -22,6 +24,10 @@ containerSecurityContext: {}
 
 admissionController:
   enabled: true
+
+  # Annotations to add to the Admission Controller deployment.
+  annotations: {}
+
   image:
     # Image repository for the Admission Controller default container.
     repository: registry.k8s.io/autoscaling/vpa-admission-controller
@@ -49,6 +55,9 @@ admissionController:
 
   # Number of Admission Controller replicas to create.
   replicas: 2
+
+  # The number of old history revisions to retain to allow rollback.
+  revisionHistoryLimit: 10
 
   # Labels to add to the Admission Controller pod.
   podLabels: {}
@@ -93,6 +102,9 @@ admissionController:
 
   # admissionController.registerWebhook -- Whether to register webhook via the application itself or via Helm. Set to false when using Helm-managed webhook. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations.
   registerWebhook: false
+
+  # admissionController.hostNetwork -- Enable host network for the admission controller pod. Set to true when the pod needs direct access to the host's network namespace. Note: this bypasses Kubernetes network isolation and may cause port conflicts if multiple replicas run on the same node.
+  hostNetwork: false
 
   certGen:
     enabled: true
@@ -180,6 +192,10 @@ admissionController:
 
 recommender:
   enabled: true
+
+  # Annotations to add to the Recommender deployment.
+  annotations: {}
+
   image:
     # Image repository for the Recommender default container.
     repository: registry.k8s.io/autoscaling/vpa-recommender
@@ -198,6 +214,9 @@ recommender:
 
   # Number of Recommender replicas to create.
   replicas: 2
+
+  # The number of old history revisions to retain to allow rollback.
+  revisionHistoryLimit: 10
 
   # Labels to add to the Recommender pod.
   podLabels: {}
@@ -274,6 +293,9 @@ recommender:
 updater:
   enabled: true
 
+  # Annotations to add to the Updater deployment.
+  annotations: {}
+
   # Additional args for the updater
   extraArgs: []
 
@@ -287,6 +309,9 @@ updater:
 
   # Number of Updater replicas to create.
   replicas: 2
+
+  # The number of old history revisions to retain to allow rollback.
+  revisionHistoryLimit: 10
 
   # Labels to add to the Updater pod.
   podLabels: {}

@@ -42,7 +42,7 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	featuretesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/kubernetes/pkg/features"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
@@ -419,7 +419,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, largeCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, func(_ *framework.NodeInfo) bool { return true })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if diff := cmp.Diff(largeNode.Name, foundNodeName); diff != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
 				}
@@ -438,7 +438,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, largeCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, func(info *framework.NodeInfo) bool { return info.Node().Name == node.Name })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(info *framework.NodeInfo) bool { return info.Node().Name == node.Name }})
 				if diff := cmp.Diff(node.Name, foundNodeName); diff != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
 				}
@@ -474,7 +474,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, func(_ *framework.NodeInfo) bool { return true })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -495,7 +495,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, func(_ *framework.NodeInfo) bool { return false })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return false }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -953,7 +953,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// Run SchedulePod, which should allocate the claims in the DRA snapshot via the DRA scheduler plugin.
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if diff := cmp.Diff(node.Name, foundNodeName); diff != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
 				}
@@ -987,7 +987,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -1021,7 +1021,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, func(_ *framework.NodeInfo) bool { return true })
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -1189,9 +1189,9 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
 				nodeInfoDiffOpts := []cmp.Option{
 					// We don't care about this field staying the same, and it differs because it's a global counter bumped on every AddPod.
-					cmpopts.IgnoreFields(schedulerframework.NodeInfo{}, "Generation"),
-					cmp.AllowUnexported(framework.NodeInfo{}, schedulerframework.NodeInfo{}),
-					cmpopts.IgnoreUnexported(schedulerframework.PodInfo{}),
+					cmpopts.IgnoreFields(schedulerimpl.NodeInfo{}, "Generation"),
+					cmp.AllowUnexported(framework.NodeInfo{}, schedulerimpl.NodeInfo{}),
+					cmpopts.IgnoreUnexported(schedulerimpl.PodInfo{}),
 					cmpopts.SortSlices(func(i1, i2 *framework.NodeInfo) bool { return i1.Node().Name < i2.Node().Name }),
 					IgnoreObjectOrder[*resourceapi.ResourceClaim](),
 					IgnoreObjectOrder[*resourceapi.ResourceSlice](),
@@ -1636,7 +1636,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 		op   func(clustersnapshot.ClusterSnapshot) error
 	}{
 		{"add scheduler nodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
-			nodeInfo := schedulerframework.NewNodeInfo()
+			nodeInfo := schedulerimpl.NewNodeInfo()
 			nodeInfo.SetNode(node)
 			return snapshot.AddSchedulerNodeInfo(nodeInfo)
 		}},
@@ -1839,14 +1839,14 @@ func TestPVCUsedByPods(t *testing.T) {
 				err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(tc.node, csiNode, tc.pods...))
 				assert.NoError(t, err)
 
-				volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
+				volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", tc.claimName))
 				assert.Equal(t, tc.exists, volumeExists)
 
 				if tc.removePod != "" {
 					err = snapshot.ForceRemovePod("default", tc.removePod, "node")
 					assert.NoError(t, err)
 
-					volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
+					volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", tc.claimName))
 					assert.Equal(t, tc.existsAfterRemove, volumeExists)
 				}
 			})
@@ -1910,23 +1910,23 @@ func TestPVCClearAndFork(t *testing.T) {
 			csiNode := BuildCSINode(node)
 			err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode, pod1))
 			assert.NoError(t, err)
-			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
 			snapshot.Fork()
 			assert.NoError(t, err)
-			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
 			err = snapshot.ForceAddPod(pod2, "node")
 			assert.NoError(t, err)
 
-			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
+			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", "claim2"))
 			assert.Equal(t, true, volumeExists)
 
 			snapshot.Revert()
 
-			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
+			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", "claim2"))
 			assert.Equal(t, false, volumeExists)
 
 		})
@@ -1937,11 +1937,11 @@ func TestPVCClearAndFork(t *testing.T) {
 			csiNode := BuildCSINode(node)
 			err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode, pod1))
 			assert.NoError(t, err)
-			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
 			assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil /*csiSnapshot*/))
-			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, false, volumeExists)
 
 		})

@@ -25,20 +25,22 @@ import (
 	"strings"
 	"time"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
+	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 )
 
 // VpaWithSelector is a pair of VPA and its selector.
@@ -60,7 +62,7 @@ func patchVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName st
 		return nil, err
 	}
 
-	return vpaClient.Patch(context.TODO(), vpaName, types.JSONPatchType, bytes, meta.PatchOptions{}, "status")
+	return vpaClient.Patch(context.TODO(), vpaName, types.JSONPatchType, bytes, metav1.PatchOptions{}, "status")
 }
 
 // UpdateVpaStatusIfNeeded updates the status field of the VPA API object.
@@ -139,7 +141,7 @@ func NewVpaCheckpointLister(vpaClient *vpa_clientset.Clientset, stopChannel <-ch
 }
 
 // PodMatchesVPA returns true iff the vpaWithSelector matches the Pod.
-func PodMatchesVPA(pod *core.Pod, vpaWithSelector *VpaWithSelector) bool {
+func PodMatchesVPA(pod *corev1.Pod, vpaWithSelector *VpaWithSelector) bool {
 	return PodLabelsMatchVPA(pod.Namespace, labels.Set(pod.GetLabels()), vpaWithSelector.Vpa.Namespace, vpaWithSelector.Selector)
 }
 
@@ -158,7 +160,7 @@ func Stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 		return true
 	}
 	// Compare creation timestamps of the VPA objects. This is the clue of the stronger logic.
-	var aTime, bTime meta.Time
+	var aTime, bTime metav1.Time
 	aTime = a.GetCreationTimestamp()
 	bTime = b.GetCreationTimestamp()
 	if !aTime.Equal(&bTime) {
@@ -169,7 +171,7 @@ func Stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
-func GetControllingVPAForPod(ctx context.Context, pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
+func GetControllingVPAForPod(ctx context.Context, pod *corev1.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
 	parentController, err := FindParentControllerForPod(ctx, pod, ctrlFetcher)
 	if err != nil {
 		klog.ErrorS(err, "Failed to get parent controller for pod", "pod", klog.KObj(pod))
@@ -201,8 +203,8 @@ func GetControllingVPAForPod(ctx context.Context, pod *core.Pod, vpas []*VpaWith
 }
 
 // FindParentControllerForPod returns the parent controller (topmost well-known or scalable controller) for the given Pod.
-func FindParentControllerForPod(ctx context.Context, pod *core.Pod, ctrlFetcher controllerfetcher.ControllerFetcher) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
-	var ownerRefrence *meta.OwnerReference
+func FindParentControllerForPod(ctx context.Context, pod *corev1.Pod, ctrlFetcher controllerfetcher.ControllerFetcher) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
+	var ownerRefrence *metav1.OwnerReference
 	for i := range pod.OwnerReferences {
 		r := pod.OwnerReferences[i]
 		if r.Controller != nil && *r.Controller {
@@ -282,9 +284,9 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 	if err != nil {
 		return fmt.Errorf("cannot marshal VPA checkpoint status patches %+v. Reason: %+v", patches, err)
 	}
-	_, err = vpaCheckpointClient.Patch(context.TODO(), vpaCheckpoint.Name, types.JSONPatchType, bytes, meta.PatchOptions{})
+	_, err = vpaCheckpointClient.Patch(context.TODO(), vpaCheckpoint.Name, types.JSONPatchType, bytes, metav1.PatchOptions{})
 	if err != nil && strings.Contains(err.Error(), fmt.Sprintf("\"%s\" not found", vpaCheckpoint.Name)) {
-		_, err = vpaCheckpointClient.Create(context.TODO(), vpaCheckpoint, meta.CreateOptions{})
+		_, err = vpaCheckpointClient.Create(context.TODO(), vpaCheckpoint, metav1.CreateOptions{})
 	}
 	if err != nil {
 		return fmt.Errorf("cannot save checkpoint for vpa %s/%s container %s. Reason: %+v", vpaCheckpoint.Namespace, vpaCheckpoint.Name, vpaCheckpoint.Spec.ContainerName, err)
@@ -353,4 +355,59 @@ func GetPodControlledValues(vpaResourcePolicy *vpa_types.PodResourcePolicy) vpa_
 		return vpa_types.ContainerControlledValuesRequestsAndLimits
 	}
 	return *vpaResourcePolicy.PodPolicies.ControlledValues
+}
+
+// IsPodReadyAndStartupBoostDurationPassed returns true if the pod is ready and all container startup boost durations have passed.
+// TODO(kamarabbas99): Instead of allowing the pod to be unboosted only after all containers have passed their boost duration, we
+// can allow unboosting as soon as any container has passed its boost duration. This will require changes in the
+// way we track unboost and unboosting logic in the updater.
+func IsPodReadyAndStartupBoostDurationPassed(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if !PodHasCPUBoostInProgressAnnotation(pod) {
+		return false
+	}
+
+	if !podutil.IsPodReady(pod) {
+		return false
+	}
+
+	var maxBoostDuration int32
+	if vpa.Spec.StartupBoost != nil && vpa.Spec.StartupBoost.CPU != nil && vpa.Spec.StartupBoost.CPU.DurationSeconds != nil {
+		maxBoostDuration = *vpa.Spec.StartupBoost.CPU.DurationSeconds // Default to pod-level
+	}
+
+	if vpa.Spec.ResourcePolicy != nil {
+		for _, container := range pod.Spec.Containers {
+			crp := GetContainerResourcePolicy(container.Name, vpa.Spec.ResourcePolicy)
+
+			if crp == nil || crp.StartupBoost == nil || crp.StartupBoost.CPU == nil || crp.StartupBoost.CPU.DurationSeconds == nil {
+				continue
+			}
+
+			if *crp.StartupBoost.CPU.DurationSeconds > maxBoostDuration {
+				maxBoostDuration = *crp.StartupBoost.CPU.DurationSeconds
+			}
+		}
+	}
+
+	if maxBoostDuration == 0 {
+		return true
+	}
+
+	readyTime := time.Time{}
+	for _, cond := range pod.Status.Conditions {
+		if cond.Type == corev1.PodReady && cond.Status == corev1.ConditionTrue {
+			readyTime = cond.LastTransitionTime.Time
+			break
+		}
+	}
+	return time.Since(readyTime) > time.Duration(maxBoostDuration)*time.Second
+}
+
+// PodHasCPUBoostInProgressAnnotation returns true if the pod has the CPU boost annotation.
+func PodHasCPUBoostInProgressAnnotation(pod *corev1.Pod) bool {
+	if pod.Annotations == nil {
+		return false
+	}
+	_, found := pod.Annotations[annotations.StartupCPUBoostAnnotation]
+	return found
 }

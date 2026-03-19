@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -31,9 +31,9 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 	testCases := []struct {
 		desc          string
 		containerName string
-		pod           *apiv1.Pod
-		wantRequests  apiv1.ResourceList
-		wantLimits    apiv1.ResourceList
+		pod           *corev1.Pod
+		wantRequests  corev1.ResourceList
+		wantLimits    corev1.ResourceList
 	}{
 		{
 			desc:          "Prefer resource requests from container status",
@@ -50,13 +50,13 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 						WithMemRequest(resource.MustParse("30Mi")).
 						WithCPULimit(resource.MustParse("4")).
 						WithMemLimit(resource.MustParse("40Mi")).Get()).Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("3"),
-				apiv1.ResourceMemory: resource.MustParse("30Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("3"),
+				corev1.ResourceMemory: resource.MustParse("30Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("4"),
-				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("40Mi"),
 			},
 		},
 		{
@@ -68,13 +68,13 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 					WithMemRequest(resource.MustParse("10Mi")).
 					WithCPULimit(resource.MustParse("2")).
 					WithMemLimit(resource.MustParse("20Mi")).Get()).Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("1"),
-				apiv1.ResourceMemory: resource.MustParse("10Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("10Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("2"),
-				apiv1.ResourceMemory: resource.MustParse("20Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("20Mi"),
 			},
 		},
 		{
@@ -86,13 +86,13 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 					WithMemRequest(resource.MustParse("30Mi")).
 					WithCPULimit(resource.MustParse("4")).
 					WithMemLimit(resource.MustParse("40Mi")).Get()).Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("0"),
-				apiv1.ResourceMemory: resource.MustParse("30Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("0"),
+				corev1.ResourceMemory: resource.MustParse("30Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("4"),
-				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("40Mi"),
 			},
 		},
 		{
@@ -123,21 +123,21 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 						WithCPULimit(resource.MustParse("5")).
 						WithMemLimit(resource.MustParse("50Mi")).Get()).
 				Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("4"),
-				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("40Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("5"),
-				apiv1.ResourceMemory: resource.MustParse("50Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("5"),
+				corev1.ResourceMemory: resource.MustParse("50Mi"),
 			},
 		},
 		{
 			desc:          "Container with no requests or limits returns non-nil resources",
 			containerName: "container",
 			pod:           test.Pod().AddContainer(test.Container().WithName("container").Get()).Get(),
-			wantRequests:  apiv1.ResourceList{},
-			wantLimits:    apiv1.ResourceList{},
+			wantRequests:  corev1.ResourceList{},
+			wantLimits:    corev1.ResourceList{},
 		},
 		{
 			desc:          "2 containers",
@@ -167,13 +167,13 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 						WithCPULimit(resource.MustParse("5")).
 						WithMemLimit(resource.MustParse("5Mi")).Get()).
 				Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("3"),
-				apiv1.ResourceMemory: resource.MustParse("30Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("3"),
+				corev1.ResourceMemory: resource.MustParse("30Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("4"),
-				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("40Mi"),
 			},
 		},
 	}
@@ -190,9 +190,9 @@ func TestInitContainerRequestsAndLimits(t *testing.T) {
 	testCases := []struct {
 		desc              string
 		initContainerName string
-		pod               *apiv1.Pod
-		wantRequests      apiv1.ResourceList
-		wantLimits        apiv1.ResourceList
+		pod               *corev1.Pod
+		wantRequests      corev1.ResourceList
+		wantLimits        corev1.ResourceList
 	}{
 		{
 			desc:              "Prefer resource requests from initContainer status",
@@ -209,13 +209,13 @@ func TestInitContainerRequestsAndLimits(t *testing.T) {
 						WithMemRequest(resource.MustParse("30Mi")).
 						WithCPULimit(resource.MustParse("4")).
 						WithMemLimit(resource.MustParse("40Mi")).Get()).Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("3"),
-				apiv1.ResourceMemory: resource.MustParse("30Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("3"),
+				corev1.ResourceMemory: resource.MustParse("30Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("4"),
-				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("40Mi"),
 			},
 		},
 		{
@@ -227,13 +227,13 @@ func TestInitContainerRequestsAndLimits(t *testing.T) {
 					WithMemRequest(resource.MustParse("10Mi")).
 					WithCPULimit(resource.MustParse("2")).
 					WithMemLimit(resource.MustParse("20Mi")).Get()).Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("1"),
-				apiv1.ResourceMemory: resource.MustParse("10Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("10Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("2"),
-				apiv1.ResourceMemory: resource.MustParse("20Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("20Mi"),
 			},
 		},
 		{
@@ -245,13 +245,13 @@ func TestInitContainerRequestsAndLimits(t *testing.T) {
 					WithMemRequest(resource.MustParse("30Mi")).
 					WithCPULimit(resource.MustParse("4")).
 					WithMemLimit(resource.MustParse("40Mi")).Get()).Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("0"),
-				apiv1.ResourceMemory: resource.MustParse("30Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("0"),
+				corev1.ResourceMemory: resource.MustParse("30Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("4"),
-				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("40Mi"),
 			},
 		},
 		{
@@ -282,21 +282,21 @@ func TestInitContainerRequestsAndLimits(t *testing.T) {
 						WithCPULimit(resource.MustParse("5")).
 						WithMemLimit(resource.MustParse("50Mi")).Get()).
 				Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("1"),
-				apiv1.ResourceMemory: resource.MustParse("10Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("10Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("2"),
-				apiv1.ResourceMemory: resource.MustParse("20Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("20Mi"),
 			},
 		},
 		{
 			desc:              "InitContainer with no requests or limits returns non-nil resources",
 			initContainerName: "init-container",
 			pod:               test.Pod().AddInitContainer(test.Container().WithName("init-container").Get()).Get(),
-			wantRequests:      apiv1.ResourceList{},
-			wantLimits:        apiv1.ResourceList{},
+			wantRequests:      corev1.ResourceList{},
+			wantLimits:        corev1.ResourceList{},
 		},
 		{
 			desc:              "2 init containers",
@@ -326,13 +326,13 @@ func TestInitContainerRequestsAndLimits(t *testing.T) {
 						WithCPULimit(resource.MustParse("5")).
 						WithMemLimit(resource.MustParse("5Mi")).Get()).
 				Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("3"),
-				apiv1.ResourceMemory: resource.MustParse("30Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("3"),
+				corev1.ResourceMemory: resource.MustParse("30Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("4"),
-				apiv1.ResourceMemory: resource.MustParse("40Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("40Mi"),
 			},
 		},
 	}
@@ -376,21 +376,21 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 					GetContainerResources(),
 			},
 			expectedPodRecommendations: &vpa_types.PodRecommendations{
-				Target: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("10m"),
-					apiv1.ResourceMemory: resource.MustParse("10Mi"),
+				Target: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("10m"),
+					corev1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				LowerBound: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("10m"),
-					apiv1.ResourceMemory: resource.MustParse("10Mi"),
+				LowerBound: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("10m"),
+					corev1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				UpperBound: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("10m"),
-					apiv1.ResourceMemory: resource.MustParse("10Mi"),
+				UpperBound: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("10m"),
+					corev1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				UncappedTarget: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("10m"),
-					apiv1.ResourceMemory: resource.MustParse("10Mi"),
+				UncappedTarget: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("10m"),
+					corev1.ResourceMemory: resource.MustParse("10Mi"),
 				},
 			},
 		},
@@ -417,21 +417,21 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 					GetContainerResources(),
 			},
 			expectedPodRecommendations: &vpa_types.PodRecommendations{
-				Target: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("10m"),
-					apiv1.ResourceMemory: resource.MustParse("10Mi"),
+				Target: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("10m"),
+					corev1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				LowerBound: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("10m"),
-					apiv1.ResourceMemory: resource.MustParse("10Mi"),
+				LowerBound: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("10m"),
+					corev1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				UpperBound: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("10m"),
-					apiv1.ResourceMemory: resource.MustParse("10Mi"),
+				UpperBound: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("10m"),
+					corev1.ResourceMemory: resource.MustParse("10Mi"),
 				},
-				UncappedTarget: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("10m"),
-					apiv1.ResourceMemory: resource.MustParse("10Mi"),
+				UncappedTarget: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("10m"),
+					corev1.ResourceMemory: resource.MustParse("10Mi"),
 				},
 			},
 		},
@@ -461,15 +461,15 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 func TestPodRequestsAndLimits(t *testing.T) {
 	testCases := []struct {
 		name         string
-		pod          *apiv1.Pod
-		wantRequests apiv1.ResourceList
-		wantLimits   apiv1.ResourceList
+		pod          *corev1.Pod
+		wantRequests corev1.ResourceList
+		wantLimits   corev1.ResourceList
 	}{
 		{
 			name:         "resources in the pod spec and the resources in the pod status are both omitted",
 			pod:          test.Pod().Get(),
-			wantRequests: apiv1.ResourceList{},
-			wantLimits:   apiv1.ResourceList{},
+			wantRequests: corev1.ResourceList{},
+			wantLimits:   corev1.ResourceList{},
 		},
 		{
 			name: "resources in the pod spec is set and no resources in the pod status",
@@ -479,13 +479,13 @@ func TestPodRequestsAndLimits(t *testing.T) {
 				WithCPULimit(resource.MustParse("120m")).
 				WithMemLimit(resource.MustParse("120Mi")).
 				Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("100m"),
-				apiv1.ResourceMemory: resource.MustParse("100Mi"),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("100m"),
+				corev1.ResourceMemory: resource.MustParse("100Mi"),
 			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("120m"),
-				apiv1.ResourceMemory: resource.MustParse("120Mi"),
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("120m"),
+				corev1.ResourceMemory: resource.MustParse("120Mi"),
 			},
 		},
 		// TODO: Comment out this part once https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions.
@@ -503,13 +503,13 @@ func TestPodRequestsAndLimits(t *testing.T) {
 		// 				WithCPULimit(resource.MustParse("133m")).
 		// 				WithMemLimit(resource.MustParse("133Mi")).Get()).
 		// 		Get(),
-		// 	wantRequests: apiv1.ResourceList{
-		// 		apiv1.ResourceCPU:    resource.MustParse("111m"),
-		// 		apiv1.ResourceMemory: resource.MustParse("111Mi"),
+		// 	wantRequests: corev1.ResourceList{
+		// 		corev1.ResourceCPU:    resource.MustParse("111m"),
+		// 		corev1.ResourceMemory: resource.MustParse("111Mi"),
 		// 	},
-		// 	wantLimits: apiv1.ResourceList{
-		// 		apiv1.ResourceCPU:    resource.MustParse("133m"),
-		// 		apiv1.ResourceMemory: resource.MustParse("133Mi"),
+		// 	wantLimits: corev1.ResourceList{
+		// 		corev1.ResourceCPU:    resource.MustParse("133m"),
+		// 		corev1.ResourceMemory: resource.MustParse("133Mi"),
 		// 	},
 		// },
 		// TODO: Comment out this part once https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions.
@@ -523,11 +523,11 @@ func TestPodRequestsAndLimits(t *testing.T) {
 		// 				WithCPURequest(resource.MustParse("111m")).
 		// 				WithCPULimit(resource.MustParse("133m")).Get()).
 		// 		Get(),
-		// 	wantRequests: apiv1.ResourceList{
-		// 		apiv1.ResourceCPU: resource.MustParse("111m"),
+		// 	wantRequests: corev1.ResourceList{
+		// 		corev1.ResourceCPU: resource.MustParse("111m"),
 		// 	},
-		// 	wantLimits: apiv1.ResourceList{
-		// 		apiv1.ResourceCPU: resource.MustParse("133m"),
+		// 	wantLimits: corev1.ResourceList{
+		// 		corev1.ResourceCPU: resource.MustParse("133m"),
 		// 	},
 		// },
 	}

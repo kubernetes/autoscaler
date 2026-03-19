@@ -6,8 +6,15 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+  {{- with .Values.recommender.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
-  replicas: {{ .Values.recommender.replicas }}
+  {{- with .Values.recommender.replicas }}
+  replicas: {{ . }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.recommender.revisionHistoryLimit }}
   {{- with .Values.recommender.updateStrategy }}
   strategy:
     {{- toYaml . | nindent 4 }}

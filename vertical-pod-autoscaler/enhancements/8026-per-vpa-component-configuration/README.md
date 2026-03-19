@@ -51,7 +51,7 @@ Currently, supporting these different needs requires running multiple VPA compon
   - oomMinBumpUp
   - memoryAggregationInterval
   - memoryAggregationIntervalCount
-  - evictAfterOOMThreshold
+  - evictAfterOOMSeconds
 
 ### Non-Goals
 
@@ -75,7 +75,7 @@ spec:
     name: my-app
   updatePolicy:
     updateMode: Auto
-    evictAfterOOMThreshold: "5m"
+    evictAfterOOMSeconds: 300
   resourcePolicy:
     containerPolicies:
     - containerName: "*"
@@ -99,7 +99,7 @@ spec:
   This ensures:
     - Small containers receive a guaranteed minimum bump (via `oomMinBumpUp`, e.g., +100MB).
     - Larger containers receive proportional scaling (via `oomBumpUpRatio`, e.g., ×1.5).
-  
+
   Implementation logic:
 
   ```golang
@@ -111,10 +111,10 @@ spec:
   Example: with oomBumpUpRatio: "1.5" and oomMinBumpUp: 104857600 (100MB):
     - For a container using 50MB: max(50MB + 100MB, 50MB * 1.5) = 150MB
     - For a container using 1GB: max(1GB + 100MB, 1GB * 1.5) = 1.5GB
-  
+
   Note: Using a single field approach (e.g., a unified `oomBumpUp` field) would not provide sufficient flexibility for users who need both a minimum absolute increase and a proportional ratio.
   For example, if a user wants to ensure a minimum increase of 100MB while also applying a 1.5x ratio for larger containers, a single field cannot express this combined behavior. The current dual-field design allows users to specify both constraints independently, ensuring small containers get a guaranteed minimum bump while larger containers receive appropriate proportional scaling. This approach provides more precise control over memory recommendation adjustments after OOM events than a simplified single-field model could offer.
-  
+
 
   - `oomBumpUpRatio` (Quantity):
     - Multiplier applied to memory recommendations after OOM events
@@ -123,7 +123,7 @@ spec:
     - Setting to 1 effectively disables the OOM ratio-based increase
     - Controls how aggressively memory is increased after container crashes
 
-  - `oomMinBumpUp` (bytes): 
+  - `oomMinBumpUp` (bytes):
     - Minimum absolute memory increase after OOM events
     - Setting to 0 effectively disables the OOM minimum increase
 
@@ -137,8 +137,8 @@ spec:
   - Total window length = memoryAggregationInterval * memoryAggregationIntervalCount
 
 #### Update Policy Parameters
-* `evictAfterOOMThreshold` (duration):
-  - Time to wait after OOM before considering pod eviction
+* `evictAfterOOMSeconds` (int32):
+  - Time in seconds to wait after OOM before considering pod eviction
   - Helps prevent rapid eviction cycles while maintaining stability
 
 Each parameter can be configured independently, falling back to global defaults if not specified. Values should be chosen based on workload characteristics and stability requirements.
@@ -167,7 +167,7 @@ When designing the configuration parameters, we analyzed each parameter to deter
   - Consistent with existing VPA container-level resource policies
   - While `memoryAggregationInterval` and `memoryAggregationIntervalCount` are container-level, VPA-wide configuration can still be achieved using the wildcard container name "*"
 
-3. **Eviction Parameters (`evictAfterOOMThreshold`)**
+3. **Eviction Parameters (`evictAfterOOMSeconds`)**
 - **Recommended Level**: VPA-level
 - **Rationale**:
   - Eviction decisions affect the entire pod
@@ -190,7 +190,7 @@ This override behavior applies to all parameters introduced in this AEP:
 - `oomMinBumpUp`
 - `memoryAggregationInterval`
 - `memoryAggregationIntervalCount`
-- `evictAfterOOMThreshold`
+- `evictAfterOOMSeconds`
 
 Validation and error handling will ensure that invalid or conflicting values are caught early, either through CEL rules or admission controller logic.
 
@@ -205,7 +205,7 @@ Extend `ContainerResourcePolicy` with:
 * `memoryAggregationIntervalCount`
 
 Extend `PodUpdatePolicy` with:
-* `evictAfterOOMThreshold`
+* `evictAfterOOMSeconds`
 
 #### Future Extensions
 
@@ -220,7 +220,7 @@ This AEP will be updated as additional parameters are identified for per-object 
 #### How can this feature be enabled / disabled in a live cluster?
 
 - Feature gate name: `PerVPAConfig`
-- Default: Off (Alpha) 
+- Default: Off (Alpha)
 - Components depending on the feature gate:
   - admission-controller
   - recommender
@@ -255,7 +255,7 @@ Initial validation rules (CEL):
 * `oomMinBumpUp` >= 0
 * `memoryAggregationInterval` > 0
 * `memoryAggregationIntervalCount` > 0
-* `evictAfterOOMThreshold` > 0
+* `evictAfterOOMSeconds` > 0
 
 Validation via Admission Controller:
 Some components cann't be validated using Common Expression Language (CEL). This validation is performed within the admission controller.

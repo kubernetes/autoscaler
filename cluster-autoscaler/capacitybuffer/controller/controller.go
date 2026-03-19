@@ -24,6 +24,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
@@ -31,8 +32,9 @@ import (
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	filters "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	translators "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators"
 	updater "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/updater"
@@ -77,16 +79,16 @@ func NewBufferController(
 // NewDefaultBufferController creates bufferController with default configs
 func NewDefaultBufferController(
 	client *cbclient.CapacityBufferClient,
+	resolver fakepods.Resolver,
 ) BufferController {
 	bc := &bufferController{
 		client: client,
 		// Accepting empty string as it represents nil value for ProvisioningStrategy
-		strategyFilter: filters.NewStrategyFilter([]string{common.ActiveProvisioningStrategy, ""}),
+		strategyFilter: filters.NewStrategyFilter([]string{capacitybuffer.ActiveProvisioningStrategy, ""}),
 		translator: translators.NewCombinedTranslator(
 			[]translators.Translator{
-				translators.NewPodTemplateBufferTranslator(client),
-				translators.NewDefaultScalableObjectsTranslator(client),
-				translators.NewResourceLimitsTranslator(client),
+				translators.NewPodTemplateBufferTranslator(client, resolver),
+				translators.NewDefaultScalableObjectsTranslator(client, resolver),
 			},
 		),
 		quotaAllocator: newResourceQuotaAllocator(client),
@@ -135,10 +137,6 @@ func (c *bufferController) configureEventHandlers() {
 			oldQuota := oldObj.(*corev1.ResourceQuota)
 			newQuota := newObj.(*corev1.ResourceQuota)
 
-			if oldQuota.ResourceVersion == newQuota.ResourceVersion {
-				c.enqueueNamespace(newObj)
-				return
-			}
 			// Reconcile only on Status changes (Status.Hard and Status.Used)
 			if equality.Semantic.DeepEqual(oldQuota.Status.Hard, newQuota.Status.Hard) &&
 				equality.Semantic.DeepEqual(oldQuota.Status.Used, newQuota.Status.Used) {
@@ -157,6 +155,19 @@ func (c *bufferController) configureEventHandlers() {
 			c.enqueueBuffersReferencingPodTemplate(obj)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
+			oldMeta, err := meta.Accessor(oldObj)
+			if err != nil {
+				klog.Errorf("CapacityBuffer controller: failed to get meta for object, err: %v", err)
+				return
+			}
+			newMeta, err := meta.Accessor(newObj)
+			if err != nil {
+				klog.Errorf("CapacityBuffer controller: failed to get meta for object, err: %v", err)
+				return
+			}
+			if oldMeta.GetGeneration() == newMeta.GetGeneration() {
+				return
+			}
 			c.enqueueBuffersReferencingPodTemplate(newObj)
 		},
 		DeleteFunc: func(obj interface{}) {
@@ -247,7 +258,7 @@ func (c *bufferController) processNextItem() bool {
 	} else {
 		// Put the item back on the queue to handle it later
 		c.queue.AddRateLimited(key)
-		runtime.HandleError(fmt.Errorf("error syncing namespace %q", key))
+		runtime.HandleError(fmt.Errorf("capacity buffer controller: error syncing namespace %q, requeueing", key))
 	}
 	return true
 }

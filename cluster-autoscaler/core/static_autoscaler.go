@@ -320,7 +320,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return err
 	}
 
-	podsBySchedulability, err := listPods(podLister, a.BypassedSchedulers)
+	podsBySchedulability, err := listPods(podLister, a.BypassedSchedulers, a.AllowedSchedulers)
 	if err != nil {
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
@@ -1203,18 +1203,23 @@ func retrieveNodes(candidates []*scaledown.UnneededNode) []*apiv1.Node {
 	return nodes
 }
 
-func listPods(podLister kube_util.PodLister, bypassedSchedulers map[string]bool) (podsBySchedulability kube_util.PodsBySchedulability, err error) {
+func listPods(podLister kube_util.PodLister, bypassedSchedulers, allowedSchedulers map[string]bool) (podsBySchedulability kube_util.PodsBySchedulability, err error) {
 	pods, err := podLister.List()
 	if err != nil {
 		klog.Errorf("Failed to list pods: %v", err)
 		return podsBySchedulability, err
 	}
+	initialPodCount := len(pods)
+	if len(allowedSchedulers) > 0 {
+		pods = kube_util.FilterOutPodsByScheduler(pods, allowedSchedulers)
+	}
 	podsBySchedulability = kube_util.ArrangePodsBySchedulability(pods, bypassedSchedulers)
 	// Skip logging in case of the boring scenario, when all pods are scheduled.
 	if len(pods) != len(podsBySchedulability.Scheduled) {
+		ignoredDueToDisallowed := initialPodCount - len(pods)
 		ignored := len(pods) - len(podsBySchedulability.Scheduled) - len(podsBySchedulability.Unschedulable) - len(podsBySchedulability.Unprocessed)
-		klog.Infof("Found %d pods in the cluster: %d scheduled, %d unschedulable, %d unprocessed by scheduler, %d ignored (most likely using custom scheduler)",
-			len(pods), len(podsBySchedulability.Scheduled), len(podsBySchedulability.Unschedulable), len(podsBySchedulability.Unprocessed), ignored)
+		klog.Infof("Found %d pods in the cluster: %d scheduled, %d unschedulable, %d unprocessed by scheduler, %d ignored by allowed schedulers (most likely using custom scheduler), %d ignored due to dissallowed schedulers",
+			initialPodCount, len(podsBySchedulability.Scheduled), len(podsBySchedulability.Unschedulable), len(podsBySchedulability.Unprocessed), ignored, ignoredDueToDisallowed)
 	}
 	return
 }

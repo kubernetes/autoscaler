@@ -19,7 +19,7 @@ package recommendation
 import (
 	"fmt"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -31,9 +31,8 @@ import (
 
 // Provider gets current recommendation, annotations and vpaName for the given pod.
 type Provider interface {
-	GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, *utils.Annotations, *vpa_api_util.ContainerResources, error)
+	GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, *utils.Annotations, *vpa_api_util.ContainerResources, error)
 }
-
 type recommendationProvider struct {
 	limitsRangeCalculator   limitrange.LimitRangeCalculator
 	recommendationProcessor vpa_api_util.RecommendationProcessor
@@ -51,7 +50,7 @@ func NewProvider(calculator limitrange.LimitRangeCalculator,
 // GetContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
 // If addAll is set to true, containers w/o a recommendation are also added to the list (and their non-recommended requests and limits will always be preserved if present),
 // otherwise they're skipped (default behaviour).
-func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources, limitRange *core.LimitRangeItem,
+func GetContainersResources(pod *corev1.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources, limitRange *corev1.LimitRangeItem,
 	addAll bool, annotations utils.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
 	resources := make([]vpa_api_util.ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
@@ -67,7 +66,7 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 		} else {
 			resources[i].Requests = recommendation.Target
 		}
-		defaultLimit := core.ResourceList{}
+		defaultLimit := corev1.ResourceList{}
 		if limitRange != nil {
 			defaultLimit = limitRange.Default
 		}
@@ -85,27 +84,27 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 		// Only do this when the addAll flag is true.
 		if addAll {
 			if resources[i].Requests == nil {
-				resources[i].Requests = core.ResourceList{}
+				resources[i].Requests = corev1.ResourceList{}
 			}
 			if resources[i].Limits == nil {
-				resources[i].Limits = core.ResourceList{}
+				resources[i].Limits = corev1.ResourceList{}
 			}
 
-			cpuRequest, hasCpuRequest := containerRequests[core.ResourceCPU]
-			if _, ok := resources[i].Requests[core.ResourceCPU]; !ok && hasCpuRequest {
-				resources[i].Requests[core.ResourceCPU] = cpuRequest
+			cpuRequest, hasCpuRequest := containerRequests[corev1.ResourceCPU]
+			if _, ok := resources[i].Requests[corev1.ResourceCPU]; !ok && hasCpuRequest {
+				resources[i].Requests[corev1.ResourceCPU] = cpuRequest
 			}
-			memRequest, hasMemRequest := containerRequests[core.ResourceMemory]
-			if _, ok := resources[i].Requests[core.ResourceMemory]; !ok && hasMemRequest {
-				resources[i].Requests[core.ResourceMemory] = memRequest
+			memRequest, hasMemRequest := containerRequests[corev1.ResourceMemory]
+			if _, ok := resources[i].Requests[corev1.ResourceMemory]; !ok && hasMemRequest {
+				resources[i].Requests[corev1.ResourceMemory] = memRequest
 			}
-			cpuLimit, hasCpuLimit := containerLimits[core.ResourceCPU]
-			if _, ok := resources[i].Limits[core.ResourceCPU]; !ok && hasCpuLimit {
-				resources[i].Limits[core.ResourceCPU] = cpuLimit
+			cpuLimit, hasCpuLimit := containerLimits[corev1.ResourceCPU]
+			if _, ok := resources[i].Limits[corev1.ResourceCPU]; !ok && hasCpuLimit {
+				resources[i].Limits[corev1.ResourceCPU] = cpuLimit
 			}
-			memLimit, hasMemLimit := containerLimits[core.ResourceMemory]
-			if _, ok := resources[i].Limits[core.ResourceMemory]; !ok && hasMemLimit {
-				resources[i].Limits[core.ResourceMemory] = memLimit
+			memLimit, hasMemLimit := containerLimits[corev1.ResourceMemory]
+			if _, ok := resources[i].Limits[corev1.ResourceMemory]; !ok && hasMemLimit {
+				resources[i].Limits[corev1.ResourceMemory] = memLimit
 			}
 		}
 	}
@@ -114,7 +113,7 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 
 // GetContainersResourcesForPod returns recommended request for a given pod and associated annotations.
 // The returned slice corresponds 1-1 to containers in the Pod.
-func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, *utils.Annotations, *vpa_api_util.ContainerResources, error) {
+func (p *recommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, *utils.Annotations, *vpa_api_util.ContainerResources, error) {
 	if vpa == nil || pod == nil {
 		klog.V(2).InfoS("Can't calculate recommendations, one of VPA or Pod is nil", "vpa", vpa, "pod", pod)
 		return nil, nil, nil, nil
@@ -171,7 +170,7 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 //
 //   - RequestsOnly: Return the requests, the limits from the Pod spec, if present.
 //     Also ensure that the requests are not greater than the limits.
-func GetPodResources(pod *core.Pod,
+func GetPodResources(pod *corev1.Pod,
 	vpaResourcePolicy *vpa_types.PodResourcePolicy,
 	recommendation vpa_types.RecommendedPodResources) vpa_api_util.ContainerResources {
 	resources := vpa_api_util.ContainerResources{}
@@ -184,7 +183,7 @@ func GetPodResources(pod *core.Pod,
 
 	containerControlledValues := vpa_api_util.GetPodControlledValues(vpaResourcePolicy)
 	if containerControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
-		proportionalLimits, _ := vpa_api_util.GetProportionalLimit(podLimits, podRequests, resources.Requests, core.ResourceList{})
+		proportionalLimits, _ := vpa_api_util.GetProportionalLimit(podLimits, podRequests, resources.Requests, corev1.ResourceList{})
 		if proportionalLimits != nil {
 			resources.Limits = proportionalLimits
 		}
@@ -192,7 +191,7 @@ func GetPodResources(pod *core.Pod,
 		if podLimits != nil {
 			resources.Limits = podLimits
 			// Ensure requests are not greater than limits for CPU and memory.
-			for _, rn := range []core.ResourceName{core.ResourceCPU, core.ResourceMemory} {
+			for _, rn := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory} {
 				limit, hasLimit := resources.Limits[rn]
 				if !hasLimit {
 					continue

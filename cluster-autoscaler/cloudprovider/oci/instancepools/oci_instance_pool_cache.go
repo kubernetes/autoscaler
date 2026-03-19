@@ -213,7 +213,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) 
 
 	if c.unownedInstances[ociInstance] {
 		// We already know this instance is not part of a configured pool. Return early and avoid additional API calls.
-		klog.V(4).Infof("Node " + ociInstance.Name + " is known to not be a member of any of the specified instance pool(s)")
+		klog.V(4).Info("Node " + ociInstance.Name + " is known to not be a member of any of the specified instance pool(s)")
 		return nil, errInstanceInstancePoolNotFound
 	}
 
@@ -307,7 +307,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) 
 	}
 
 	c.unownedInstances[ociInstance] = true
-	klog.V(4).Infof(ociInstance.Name + " is not a member of any of the specified instance pool(s)")
+	klog.V(4).Info(ociInstance.Name + " is not a member of any of the specified instance pool(s)")
 	return nil, errInstanceInstancePoolNotFound
 }
 

@@ -17,7 +17,7 @@ limitations under the License.
 package restriction
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
@@ -41,6 +41,6 @@ func (f *FakePodsRestrictionFactory) NewPodsInPlaceRestriction(creatorToSingleGr
 }
 
 // GetCreatorMaps returns nil maps.
-func (f *FakePodsRestrictionFactory) GetCreatorMaps(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error) {
+func (f *FakePodsRestrictionFactory) GetCreatorMaps(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error) {
 	return nil, nil, nil
 }

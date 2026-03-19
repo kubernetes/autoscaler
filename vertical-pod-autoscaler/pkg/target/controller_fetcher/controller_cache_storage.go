@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	autoscalingapi "k8s.io/api/autoscaling/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -38,7 +38,7 @@ type scaleCacheKey struct {
 type scaleCacheEntry struct {
 	refreshAfter time.Time
 	deleteAfter  time.Time
-	resource     *autoscalingapi.Scale
+	resource     *autoscalingv1.Scale
 	err          error
 }
 
@@ -76,7 +76,7 @@ type controllerCacheStorage struct {
 
 // Returns bool indicating whether the entry was present in the cache and the cached response.
 // Updates deleteAfter for the element.
-func (cc *controllerCacheStorage) Get(namespace string, groupResource schema.GroupResource, name string) (ok bool, controller *autoscalingapi.Scale, err error) {
+func (cc *controllerCacheStorage) Get(namespace string, groupResource schema.GroupResource, name string) (ok bool, controller *autoscalingv1.Scale, err error) {
 	key := scaleCacheKey{namespace: namespace, groupResource: groupResource, name: name}
 	cc.mux.Lock()
 	defer cc.mux.Unlock()
@@ -93,7 +93,7 @@ func (cc *controllerCacheStorage) Get(namespace string, groupResource schema.Gro
 // If the key is missing from the cache does nothing (relevant when we're
 // concurrently updating cache and removing stale entries from it, to avoid
 // adding back an entry which we just removed).
-func (cc *controllerCacheStorage) Refresh(namespace string, groupResource schema.GroupResource, name string, controller *autoscalingapi.Scale, err error) {
+func (cc *controllerCacheStorage) Refresh(namespace string, groupResource schema.GroupResource, name string, controller *autoscalingv1.Scale, err error) {
 	key := scaleCacheKey{namespace: namespace, groupResource: groupResource, name: name}
 	cc.mux.Lock()
 	defer cc.mux.Unlock()
@@ -114,7 +114,7 @@ func (cc *controllerCacheStorage) Refresh(namespace string, groupResource schema
 
 // If the key is missing from the cache, updates the cached value, error and refresh time (but not deleteAfter time).
 // If key is in the cache, does nothing (to make sure updating element doesn't change its deleteAfter time).
-func (cc *controllerCacheStorage) Insert(namespace string, groupResource schema.GroupResource, name string, controller *autoscalingapi.Scale, err error) {
+func (cc *controllerCacheStorage) Insert(namespace string, groupResource schema.GroupResource, name string, controller *autoscalingv1.Scale, err error) {
 	key := scaleCacheKey{namespace: namespace, groupResource: groupResource, name: name}
 	cc.mux.Lock()
 	defer cc.mux.Unlock()

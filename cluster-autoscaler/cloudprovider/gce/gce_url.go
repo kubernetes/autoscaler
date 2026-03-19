@@ -82,8 +82,7 @@ func GenerateInstanceUrl(domainUrl string, ref GceRef) string {
 	if domainUrl == "" {
 		domainUrl = defaultDomainUrl
 	}
-	instanceUrlTemplate := domainUrl + projectsSubstring + "%s/zones/%s/instances/%s"
-	return fmt.Sprintf(instanceUrlTemplate, ref.Project, ref.Zone, ref.Name)
+	return domainUrl + projectsSubstring + ref.Project + "/zones/" + ref.Zone + "/instances/" + ref.Name
 }
 
 // GenerateMigUrl generates url for instance.
@@ -91,8 +90,7 @@ func GenerateMigUrl(domainUrl string, ref GceRef) string {
 	if domainUrl == "" {
 		domainUrl = defaultDomainUrl
 	}
-	migUrlTemplate := domainUrl + projectsSubstring + "%s/zones/%s/instanceGroups/%s"
-	return fmt.Sprintf(migUrlTemplate, ref.Project, ref.Zone, ref.Name)
+	return domainUrl + projectsSubstring + ref.Project + "/zones/" + ref.Zone + "/instanceGroups/" + ref.Name
 }
 
 // IsInstanceTemplateRegional determines whether or not an instance template is regional based on the url
@@ -116,13 +114,13 @@ func InstanceTemplateNameFromUrl(instanceTemplateLink string) (InstanceTemplateN
 }
 
 func parseGceUrl(prefix, url, expectedResource string) (project string, zone string, name string, err error) {
-	reg := regexp.MustCompile(fmt.Sprintf("%sprojects/.*/zones/.*/%s/.*", prefix, expectedResource))
+	reg := regexp.MustCompile(prefix + "projects/.*/zones/.*/" + expectedResource + "/.*")
 	errMsg := fmt.Errorf("wrong url: expected format %sprojects/<project-id>/zones/<zone>/%s/<name>, got %s", prefix, expectedResource, url)
 	if !reg.MatchString(url) {
 		return "", "", "", errMsg
 	}
 
-	subMatches := regexp.MustCompile(fmt.Sprintf("%sprojects/(.*)/zones/(.*)/%s/(.*)", prefix, expectedResource)).FindStringSubmatch(url)
+	subMatches := regexp.MustCompile(prefix + "projects/(.*)/zones/(.*)/" + expectedResource + "/(.*)").FindStringSubmatch(url)
 	project = subMatches[1]
 	zone = subMatches[2]
 	name = subMatches[3]

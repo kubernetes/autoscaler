@@ -24,7 +24,7 @@ There are five modes in which *VPAs* operate:
   from the new recommendation (respecting the Pod Disruption Budget, if defined).
   This mode should be used rarely, only if you need to ensure that the pods are restarted
   whenever the resource request changes.
-- `"InPlaceOrRecreate"`[__beta feature__]: VPA assigns resource requests on pod creation as well as updates
+- `"InPlaceOrRecreate"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods by leveraging [Kubernetes `in-place` update](https://kubernetes.io/blog/2025/05/16/kubernetes-v1-33-in-place-pod-resize-beta/) capability.
   If `in-place` update fails, it falls back to evicting the pods, performing a _recreation_.
   For more details, see the [In-Place Updates documentation](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/features.md#in-place-updates-inplaceorrecreate).

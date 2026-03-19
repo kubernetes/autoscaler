@@ -38,9 +38,12 @@ import (
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=capacitybuffers,scope=Namespaced,shortName=cb
-// +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.provisioningStrategy",description="The strategy used for provisioning buffer capacity."
-// +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".spec.replicas",description="The desired number of buffer chunks, if specified."
-// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].reason",description="The readiness status of the CapacityBuffer."
+// +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.provisioningStrategy",description="The strategy to be used."
+// +kubebuilder:printcolumn:name="PodTemplate",type="string",JSONPath=".status.podTemplateRef.name",description="The name of the PodTemplate used."
+// +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".status.replicas",description="The actual number of buffer chunks."
+// +kubebuilder:printcolumn:name="ConditionsType",type="string",JSONPath=".status.conditions[*].type",description="List of all condition types."
+// +kubebuilder:printcolumn:name="ConditionsStatus",type="string",JSONPath=".status.conditions[*].status",description="List of all condition statuses."
+// +kubebuilder:printcolumn:name="ConditionsReason",type="string",JSONPath=".status.conditions[*].reason",description="List of all condition reasons."
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the CapacityBuffer."
 // +versionName=v1beta1
 // +kubebuilder:storageversion
@@ -98,7 +101,7 @@ type ResourceList map[ResourceName]resource.Quantity
 
 // CapacityBufferSpec defines the desired state of CapacityBuffer.
 // +kubebuilder:validation:XValidation:rule="!has(self.podTemplateRef) || has(self.replicas) || has(self.limits)",message="If X is set, replicas or limits must also be set"
-// +kubebuilder:validation:XValidation:rule="!(has(self.podTemplateRef) && has(self.scalableRef))",message="You must define both PodTemplateRef and ScalableRef"
+// +kubebuilder:validation:XValidation:rule="!(has(self.podTemplateRef) && has(self.scalableRef))",message="You must define either PodTemplateRef or ScalableRef, but not both"
 type CapacityBufferSpec struct {
 	// ProvisioningStrategy defines how the buffer is utilized.
 	// "buffer.x-k8s.io/active-capacity" is the default strategy, where the buffer actively scales up the cluster by creating placeholder pods.

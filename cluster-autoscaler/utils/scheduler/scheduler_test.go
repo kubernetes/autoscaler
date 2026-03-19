@@ -27,7 +27,7 @@ import (
 	testconfig "k8s.io/autoscaler/cluster-autoscaler/config/test"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	apiv1 "k8s.io/api/core/v1"
 
@@ -61,11 +61,11 @@ func TestCreateNodeNameToInfoMap(t *testing.T) {
 
 func TestResourceList(t *testing.T) {
 	tests := []struct {
-		resource *schedulerframework.Resource
+		resource *schedulerimpl.Resource
 		expected apiv1.ResourceList
 	}{
 		{
-			resource: &schedulerframework.Resource{},
+			resource: &schedulerimpl.Resource{},
 			expected: map[apiv1.ResourceName]resource.Quantity{
 				apiv1.ResourceCPU:              *resource.NewScaledQuantity(0, -3),
 				apiv1.ResourceMemory:           *resource.NewQuantity(0, resource.BinarySI),
@@ -74,7 +74,7 @@ func TestResourceList(t *testing.T) {
 			},
 		},
 		{
-			resource: &schedulerframework.Resource{
+			resource: &schedulerimpl.Resource{
 				MilliCPU:         4,
 				Memory:           2000,
 				EphemeralStorage: 5000,
