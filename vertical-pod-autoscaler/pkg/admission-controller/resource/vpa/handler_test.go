@@ -44,11 +44,9 @@ func TestValidateVPA(t *testing.T) {
 	badScalingMode := vpa_types.ContainerScalingMode("bad")
 	badCPUResource := resource.MustParse("187500u")
 	validScalingMode := vpa_types.ContainerScalingModeAuto
-	validPodScalingMode := vpa_types.PodScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff
 	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
 	inPlaceOrRecreateUpdateMode := vpa_types.UpdateModeInPlaceOrRecreate
-	containerScalingModeRecsOnlyMode := vpa_types.ContainerScalingModeRecsOnly
 	tests := []struct {
 		name                                 string
 		vpa                                  vpa_types.VerticalPodAutoscaler
@@ -56,8 +54,7 @@ func TestValidateVPA(t *testing.T) {
 		expectError                          error
 		inPlaceOrRecreateFeatureGateDisabled bool
 		PerVPAConfigDisabled                 bool
-		ContainerScalingModeRecsOnlyDisabled bool
-		emulatedVersion                      string
+		VPAPodLevelResourcesEnabled          bool
 	}{
 		{
 			name: "empty update",
@@ -379,46 +376,40 @@ func TestValidateVPA(t *testing.T) {
 			PerVPAConfigDisabled: true,
 			expectError:          errors.New("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag PerVPAConfig is disabled"),
 		},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			if tc.inPlaceOrRecreateFeatureGateDisabled {
+				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.5"))
+				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, !tc.inPlaceOrRecreateFeatureGateDisabled)
+			}
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, !tc.PerVPAConfigDisabled)
+
+			err := ValidateVPA(&tc.vpa, tc.isCreate)
+			if tc.expectError == nil {
+				assert.NoError(t, err)
+			} else {
+				if assert.Error(t, err) {
+					assert.Equal(t, tc.expectError.Error(), err.Error())
+				}
+			}
+		})
+	}
+}
+
+func TestValidateVPAPodLevel(t *testing.T) {
+	validUpdateMode := vpa_types.UpdateModeRecreate
+	validPodScalingMode := vpa_types.PodScalingModeAuto
+	containerControlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
+	containerScalingModeRecsOnly := vpa_types.ContainerScalingModeRecsOnly
+	tests := []struct {
+		name                        string
+		vpa                         vpa_types.VerticalPodAutoscaler
+		expectError                 error
+		VPAPodLevelResourcesEnabled bool
+	}{
 		{
-			name: "support for pod level stanzas disabled and used",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode: &validUpdateMode,
-					},
-					ResourcePolicy: &vpa_types.PodResourcePolicy{
-						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
-							{
-								ContainerName: "c1",
-								Mode:          &containerScalingModeRecsOnlyMode,
-							},
-						},
-					},
-				},
-			},
-			ContainerScalingModeRecsOnlyDisabled: true,
-			expectError:                          errors.New("in order to use RecommendationOnly containerPolicies mode, you must enable feature gate VPAPodLevelResources in the admission-controller args"),
-		},
-		{
-			name: "support for pod level active and used",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode: &validUpdateMode,
-					},
-					ResourcePolicy: &vpa_types.PodResourcePolicy{
-						PodPolicies: &vpa_types.PodResourcePolicies{
-							Mode:             &validPodScalingMode,
-							ControlledValues: &controlledValuesRequestsAndLimits,
-						},
-					},
-				},
-			},
-			ContainerScalingModeRecsOnlyDisabled: false,
-			emulatedVersion:                      "1.6",
-		},
-		{
-			name: "support for pod level active and used should fail",
+			name: "Pod-level policy is set with the feature gate disabled the test must fail",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
@@ -431,25 +422,280 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			ContainerScalingModeRecsOnlyDisabled: true,
-			emulatedVersion:                      "1.6",
-			expectError:                          errors.New("in order to use podPolicies stanza, you must enable feature gate VPAPodLevelResources in the admission-controller args"),
+			VPAPodLevelResourcesEnabled: false,
+			expectError:                 errors.New("enable the VPAPodLevelResources feature gate in the admission controller arguments to use any field in the PodPolicies stanza"),
+		},
+		{
+			name: "Pod-level policy is set with the feature gate disabled the test must fail",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						PodPolicies: &vpa_types.PodResourcePolicies{
+							ControlledValues: &containerControlledValuesRequestsAndLimits,
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: false,
+			expectError:                 errors.New("enable the VPAPodLevelResources feature gate in the admission controller arguments to use any field in the PodPolicies stanza"),
+		},
+		{
+			name: "Pod-level policy is set with the feature gate disabled the test must fail",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						PodPolicies: &vpa_types.PodResourcePolicies{
+							MinAllowed: apiv1.ResourceList{
+								cpu: resource.MustParse("1"),
+							},
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: false,
+			expectError:                 errors.New("enable the VPAPodLevelResources feature gate in the admission controller arguments to use any field in the PodPolicies stanza"),
+		},
+		{
+			name: "Pod-level policy is set with the feature gate enabled the test must succeed",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						PodPolicies: &vpa_types.PodResourcePolicies{
+							Mode:             &validPodScalingMode,
+							ControlledValues: &containerControlledValuesRequestsAndLimits,
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: true,
+		},
+		{
+			name: "Container-level scaling mode RecommendationOnly is set with the feature gate disabled the test must fail",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "c1",
+								Mode:          &containerScalingModeRecsOnly,
+							},
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: false,
+			expectError:                 errors.New("enable the VPAPodLevelResources feature gate in the admission controller arguments to use the RecommendationOnly container policy mode"),
+		},
+		{
+			name: "Pod-level and container-level cpu minAllowed values are set and violation occurs",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "c1",
+								MinAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("10m"),
+								},
+							},
+							{
+								ContainerName: "c2",
+								MinAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("20m"),
+								},
+							},
+							{
+								ContainerName: "c3",
+								MinAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("30m"),
+								},
+							},
+						},
+						PodPolicies: &vpa_types.PodResourcePolicies{
+							MinAllowed: apiv1.ResourceList{
+								cpu: resource.MustParse("61m"),
+							},
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: true,
+			expectError:                 errors.New("sum of container-level cpu MinAllowed values (60m) must be equal to or greater than the Pod-level MinAllowed value (61m)"),
+		},
+		{
+			name: "Pod-level and container-level memory minAllowed values are set and violation occurs",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "c1",
+								MinAllowed: apiv1.ResourceList{
+									memory: resource.MustParse("10Mi"),
+								},
+							},
+							{
+								ContainerName: "c2",
+								MinAllowed: apiv1.ResourceList{
+									memory: resource.MustParse("20Mi"),
+								},
+							},
+							{
+								ContainerName: "c3",
+								MinAllowed: apiv1.ResourceList{
+									memory: resource.MustParse("30Mi"),
+								},
+							},
+						},
+						PodPolicies: &vpa_types.PodResourcePolicies{
+							MinAllowed: apiv1.ResourceList{
+								memory: resource.MustParse("61Mi"),
+							},
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: true,
+			expectError:                 errors.New("sum of container-level memory MinAllowed values (60Mi) must be equal to or greater than the Pod-level MinAllowed value (61Mi)"),
+		},
+		{
+			name: "Pod-level and container-level memory maxAllowed values are set and violation occurs",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "c1",
+								MaxAllowed: apiv1.ResourceList{
+									memory: resource.MustParse("10Mi"),
+								},
+							},
+							{
+								ContainerName: "c2",
+								MaxAllowed: apiv1.ResourceList{
+									memory: resource.MustParse("20Mi"),
+								},
+							},
+							{
+								ContainerName: "c3",
+								MaxAllowed: apiv1.ResourceList{
+									memory: resource.MustParse("30Mi"),
+								},
+							},
+						},
+						PodPolicies: &vpa_types.PodResourcePolicies{
+							MaxAllowed: apiv1.ResourceList{
+								memory: resource.MustParse("59Mi"),
+							},
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: true,
+			expectError:                 errors.New("sum of container-level memory maxAllowed values (60Mi) must be equal to or lower than the Pod-level maxAllowed value (59Mi)"),
+		},
+		{
+			name: "Pod-level and container-level minAllowed and maxAllowed values are set and no violation occurs",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "c1",
+								MinAllowed: apiv1.ResourceList{
+									cpu:    resource.MustParse("1m"),
+									memory: resource.MustParse("1Mi"),
+								},
+								MaxAllowed: apiv1.ResourceList{
+									cpu:    resource.MustParse("10m"),
+									memory: resource.MustParse("10Mi"),
+								},
+							},
+							{
+								ContainerName: "c2",
+								MinAllowed: apiv1.ResourceList{
+									cpu:    resource.MustParse("1m"),
+									memory: resource.MustParse("1Mi"),
+								},
+								MaxAllowed: apiv1.ResourceList{
+									cpu:    resource.MustParse("20m"),
+									memory: resource.MustParse("20Mi"),
+								},
+							},
+						},
+						PodPolicies: &vpa_types.PodResourcePolicies{
+							MinAllowed: apiv1.ResourceList{
+								cpu:    resource.MustParse("2m"),
+								memory: resource.MustParse("2Mi"),
+							},
+							MaxAllowed: apiv1.ResourceList{
+								cpu:    resource.MustParse("30m"),
+								memory: resource.MustParse("30Mi"),
+							},
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: true,
+			expectError:                 nil,
+		},
+		{
+			name: "Pod-level and container-level minAllowed and maxAllowed values are set and no violation occurs",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						PodPolicies: &vpa_types.PodResourcePolicies{
+							MinAllowed: apiv1.ResourceList{
+								cpu:    resource.MustParse("2m"),
+								memory: resource.MustParse("2Mi"),
+							},
+							MaxAllowed: apiv1.ResourceList{
+								cpu:    resource.MustParse("30m"),
+								memory: resource.MustParse("30Mi"),
+							},
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: true,
+			expectError:                 nil,
 		},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			if tc.inPlaceOrRecreateFeatureGateDisabled {
-				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.5"))
-				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, !tc.inPlaceOrRecreateFeatureGateDisabled)
+			if !tc.VPAPodLevelResourcesEnabled {
+				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.6"))
 			}
-			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, !tc.PerVPAConfigDisabled)
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAPodLevelResources, tc.VPAPodLevelResourcesEnabled)
 
-			if tc.emulatedVersion != "" && tc.emulatedVersion == "1.6" {
-				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse(tc.emulatedVersion))
-				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAPodLevelResources, !tc.ContainerScalingModeRecsOnlyDisabled)
-			}
-
-			err := ValidateVPA(&tc.vpa, tc.isCreate)
+			err := ValidateVPA(&tc.vpa, false)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
 			} else {

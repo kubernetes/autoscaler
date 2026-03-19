@@ -44,16 +44,18 @@ type defaultPriorityProcessor struct {
 
 func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler,
 	recommendation *vpa_types.RecommendedPodResources) PodPriority {
-	outsideRecommendedRange := false
 	scaleUp := false
-	// Sum of requests over all containers, per resource type.
+	outsideRecommendedRange := false
+	resourceDiff := 0.0
+	// Sum of requests for all containers or at the Pod level, per resource type.
 	totalRequestPerResource := make(map[apiv1.ResourceName]int64)
-	// Sum of recommendations over all containers, per resource type.
+	// Sum of recommendations for all containers or at the Pod level, per resource type.
 	totalRecommendedPerResource := make(map[apiv1.ResourceName]int64)
 
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
 
 	setPodPriorityFields := func(target, lowerBound, upperBound, requests apiv1.ResourceList) {
+		// TODO: Do not use MilliValue() on memory quantities.
 		for resourceName, recommended := range target {
 			totalRecommendedPerResource[resourceName] += recommended.MilliValue()
 			lowerBound, hasLowerBound := lowerBound[resourceName]
@@ -78,6 +80,13 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 		}
 	}
 
+	calculateResourceDiff := func() {
+		for resource, totalRecommended := range totalRecommendedPerResource {
+			totalRequest := math.Max(float64(totalRequestPerResource[resource]), 1.0)
+			resourceDiff += math.Abs(totalRequest-float64(totalRecommended)) / totalRequest
+		}
+	}
+
 	for _, podContainer := range pod.Spec.Containers {
 		if hasObservedContainers && !vpaContainerSet.Has(podContainer.Name) {
 			klog.V(4).InfoS("Not listed in VPA observed containers label. Skipping container priority calculations", "label", annotations.VpaObservedContainersLabel, "observedContainers", pod.GetAnnotations()[annotations.VpaObservedContainersLabel], "containerName", podContainer.Name, "vpa", klog.KObj(vpa))
@@ -90,18 +99,19 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 		containerRequests, _ := resourcehelpers.ContainerRequestsAndLimits(podContainer.Name, pod)
 		setPodPriorityFields(recommendedRequest.Target, recommendedRequest.LowerBound, recommendedRequest.UpperBound, containerRequests)
 	}
+	// Calculate the relative difference between summed requests and summed recommendations at the container level
+	calculateResourceDiff()
 
 	podRecommendations := vpa.Status.Recommendation.PodRecommendations
 	if podRecommendations != nil {
 		podRequests, _ := resourcehelpers.PodRequestsAndLimits(pod)
+		clear(totalRequestPerResource)
+		clear(totalRecommendedPerResource)
 		setPodPriorityFields(podRecommendations.Target, podRecommendations.LowerBound, podRecommendations.UpperBound, podRequests)
+		// Calculate the relative difference between summed requests and summed recommendations at the Pod level
+		calculateResourceDiff()
 	}
 
-	resourceDiff := 0.0
-	for resource, totalRecommended := range totalRecommendedPerResource {
-		totalRequest := math.Max(float64(totalRequestPerResource[resource]), 1.0)
-		resourceDiff += math.Abs(totalRequest-float64(totalRecommended)) / totalRequest
-	}
 	return PodPriority{
 		OutsideRecommendedRange: outsideRecommendedRange,
 		ScaleUp:                 scaleUp,

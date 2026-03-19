@@ -379,23 +379,14 @@ func initGlobalMaxAllowed() limits.GlobalMaxAllowed {
 
 	if !containerMaxAllowedCPU.IsZero() || !containerMaxAllowedMemory.IsZero() {
 		result.Container = apiv1.ResourceList{}
-		if !containerMaxAllowedCPU.IsZero() {
-			result.Container[apiv1.ResourceCPU] = containerMaxAllowedCPU.Quantity
-		}
-		if !containerMaxAllowedMemory.IsZero() {
-			result.Container[apiv1.ResourceMemory] = containerMaxAllowedMemory.Quantity
-		}
+		result.Container[apiv1.ResourceCPU] = containerMaxAllowedCPU.Quantity
+		result.Container[apiv1.ResourceMemory] = containerMaxAllowedMemory.Quantity
 	}
 
 	if !podMaxAllowedCPU.IsZero() || !podMaxAllowedMemory.IsZero() {
 		result.Pod = apiv1.ResourceList{}
-		if !podMaxAllowedCPU.IsZero() {
-			result.Pod[apiv1.ResourceCPU] = podMaxAllowedCPU.Quantity
-		}
-		if !podMaxAllowedMemory.IsZero() {
-			result.Pod[apiv1.ResourceMemory] = podMaxAllowedMemory.Quantity
-		}
+		result.Pod[apiv1.ResourceCPU] = podMaxAllowedCPU.Quantity
+		result.Pod[apiv1.ResourceMemory] = podMaxAllowedMemory.Quantity
 	}
-
 	return result
 }

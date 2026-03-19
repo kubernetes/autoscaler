@@ -159,7 +159,7 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 					return fmt.Errorf("unexpected Mode value %s", *mode)
 				}
 				if *mode == vpa_types.ContainerScalingModeRecsOnly && !features.Enabled(features.VPAPodLevelResources) {
-					return fmt.Errorf("in order to use %s containerPolicies mode, you must enable feature gate %s in the admission-controller args", vpa_types.ContainerScalingModeRecsOnly, features.VPAPodLevelResources)
+					return fmt.Errorf("enable the %s feature gate in the admission controller arguments to use the %s container policy mode", features.VPAPodLevelResources, vpa_types.ContainerScalingModeRecsOnly)
 				}
 			}
 
@@ -186,25 +186,35 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 			}
 		}
 
-		// TODO: We may validate that the sum of container-level MaxAllowed values does not exceed the pod-level MaxAllowed, following the same approach for MinAllowed fields.
 		if podPolicies := vpa.Spec.ResourcePolicy.PodPolicies; podPolicies != nil {
 			if !features.Enabled(features.VPAPodLevelResources) {
-				return fmt.Errorf("in order to use podPolicies stanza, you must enable feature gate %s in the admission-controller args", features.VPAPodLevelResources)
+				return fmt.Errorf("enable the %s feature gate in the admission controller arguments to use any field in the PodPolicies stanza", features.VPAPodLevelResources)
 			}
 
-			for resource, min := range podPolicies.MinAllowed {
-				if err := validateResourceResolution(resource, min); err != nil {
+			for resource, podLevelMin := range podPolicies.MinAllowed {
+				if err := validateResourceResolution(resource, podLevelMin); err != nil {
 					return fmt.Errorf("minAllowed: %v", err)
 				}
+				if ok, qt := isValidPodLevelConstraint(resource, podLevelMin, func(min, sum apires.Quantity) bool {
+					return min.Cmp(sum) <= 0
+				}, vpa.Spec.ResourcePolicy, getContainerLevelMinAllowed); !ok {
+					return fmt.Errorf("sum of container-level %v MinAllowed values (%v) must be equal to or greater than the Pod-level MinAllowed value (%v)", resource, qt, podLevelMin.String())
+				}
+
 				max, found := podPolicies.MaxAllowed[resource]
-				if found && max.Cmp(min) < 0 {
+				if found && max.Cmp(podLevelMin) < 0 {
 					return fmt.Errorf("max resource for %v is lower than min", resource)
 				}
 			}
 
-			for resource, max := range podPolicies.MaxAllowed {
-				if err := validateResourceResolution(resource, max); err != nil {
+			for resource, podLevelMax := range podPolicies.MaxAllowed {
+				if err := validateResourceResolution(resource, podLevelMax); err != nil {
 					return fmt.Errorf("maxAllowed: %v", err)
+				}
+				if ok, qt := isValidPodLevelConstraint(resource, podLevelMax, func(max, sum apires.Quantity) bool {
+					return max.Cmp(sum) >= 0
+				}, vpa.Spec.ResourcePolicy, getContainerLevelMaxAllowed); !ok {
+					return fmt.Errorf("sum of container-level %v maxAllowed values (%v) must be equal to or lower than the Pod-level maxAllowed value (%v)", resource, qt, podLevelMax.String())
 				}
 			}
 		}
@@ -219,6 +229,42 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 	}
 
 	return nil
+}
+
+// isValidPodLevelConstraint validates Pod-level MinAllowed and MaxAllowed against container-level fields:
+//
+// - The sum of container-level MinAllowed values must be equal to or greater than the Pod-level constraint.
+//
+// - The sum of container-level MaxAllowed values must be equal to or less than the Pod-level constraint.
+func isValidPodLevelConstraint(resource corev1.ResourceName, boundary apires.Quantity,
+	boundValid func(bound, floor apires.Quantity) bool,
+	policies *vpa_types.PodResourcePolicy,
+	fieldGetter func(vpa_types.ContainerResourcePolicy) corev1.ResourceList) (bool, *apires.Quantity) {
+
+	// Cannot determine container-level constraint, therefore the Pod-level constraint is not violated
+	if policies == nil || policies.ContainerPolicies == nil || len(policies.ContainerPolicies) == 0 {
+		return true, nil
+	}
+
+	var sum apires.Quantity
+
+	for _, policy := range policies.ContainerPolicies {
+		rl := fieldGetter(policy)
+		if rl == nil {
+			continue
+		}
+		if qt, ok := rl[resource]; ok {
+			sum.Add(qt)
+		}
+	}
+	return boundValid(boundary, sum), &sum
+}
+
+func getContainerLevelMaxAllowed(rl vpa_types.ContainerResourcePolicy) corev1.ResourceList {
+	return rl.MaxAllowed
+}
+func getContainerLevelMinAllowed(rl vpa_types.ContainerResourcePolicy) corev1.ResourceList {
+	return rl.MinAllowed
 }
 
 func validateResourceResolution(name corev1.ResourceName, val apires.Quantity) error {

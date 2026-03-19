@@ -505,46 +505,48 @@ func TestPodRequestsAndLimits(t *testing.T) {
 				apiv1.ResourceMemory: resource.MustParse("120Mi"),
 			},
 		},
-		{
-			name: "resources in the pod spec and the pod status are both set but the latter is preferred",
-			pod: test.Pod().
-				WithCPURequest(resource.MustParse("100m")).
-				WithMemRequest(resource.MustParse("100Mi")).
-				WithCPULimit(resource.MustParse("120m")).
-				WithMemLimit(resource.MustParse("120Mi")).
-				AddPodStatus(
-					test.PodStatus().
-						WithCPURequest(resource.MustParse("111m")).
-						WithMemRequest(resource.MustParse("111Mi")).
-						WithCPULimit(resource.MustParse("133m")).
-						WithMemLimit(resource.MustParse("133Mi")).Get()).
-				Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("111m"),
-				apiv1.ResourceMemory: resource.MustParse("111Mi"),
-			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("133m"),
-				apiv1.ResourceMemory: resource.MustParse("133Mi"),
-			},
-		},
-		{
-			name: "resources in the pod spec and the pod status are both set but the latter is preferred only cpu",
-			pod: test.Pod().
-				WithCPURequest(resource.MustParse("100m")).
-				WithCPULimit(resource.MustParse("120m")).
-				AddPodStatus(
-					test.PodStatus().
-						WithCPURequest(resource.MustParse("111m")).
-						WithCPULimit(resource.MustParse("133m")).Get()).
-				Get(),
-			wantRequests: apiv1.ResourceList{
-				apiv1.ResourceCPU: resource.MustParse("111m"),
-			},
-			wantLimits: apiv1.ResourceList{
-				apiv1.ResourceCPU: resource.MustParse("133m"),
-			},
-		},
+		// TODO: Comment out this part once https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions.
+		// {
+		// 	name: "resources in the pod spec and the pod status are both set but the latter is preferred",
+		// 	pod: test.Pod().
+		// 		WithCPURequest(resource.MustParse("100m")).
+		// 		WithMemRequest(resource.MustParse("100Mi")).
+		// 		WithCPULimit(resource.MustParse("120m")).
+		// 		WithMemLimit(resource.MustParse("120Mi")).
+		// 		AddPodStatus(
+		// 			test.PodStatus().
+		// 				WithCPURequest(resource.MustParse("111m")).
+		// 				WithMemRequest(resource.MustParse("111Mi")).
+		// 				WithCPULimit(resource.MustParse("133m")).
+		// 				WithMemLimit(resource.MustParse("133Mi")).Get()).
+		// 		Get(),
+		// 	wantRequests: apiv1.ResourceList{
+		// 		apiv1.ResourceCPU:    resource.MustParse("111m"),
+		// 		apiv1.ResourceMemory: resource.MustParse("111Mi"),
+		// 	},
+		// 	wantLimits: apiv1.ResourceList{
+		// 		apiv1.ResourceCPU:    resource.MustParse("133m"),
+		// 		apiv1.ResourceMemory: resource.MustParse("133Mi"),
+		// 	},
+		// },
+		// TODO: Comment out this part once https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions.
+		// {
+		// 	name: "resources in the pod spec and the pod status are both set but the latter is preferred only cpu",
+		// 	pod: test.Pod().
+		// 		WithCPURequest(resource.MustParse("100m")).
+		// 		WithCPULimit(resource.MustParse("120m")).
+		// 		AddPodStatus(
+		// 			test.PodStatus().
+		// 				WithCPURequest(resource.MustParse("111m")).
+		// 				WithCPULimit(resource.MustParse("133m")).Get()).
+		// 		Get(),
+		// 	wantRequests: apiv1.ResourceList{
+		// 		apiv1.ResourceCPU: resource.MustParse("111m"),
+		// 	},
+		// 	wantLimits: apiv1.ResourceList{
+		// 		apiv1.ResourceCPU: resource.MustParse("133m"),
+		// 	},
+		// },
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

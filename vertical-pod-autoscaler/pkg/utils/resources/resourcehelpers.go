@@ -151,11 +151,12 @@ func SumContainerLevelRecommendations(containerRecommendations []vpa_types.Recom
 //
 // [1] https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/5419-pod-level-resources-in-place-resize/
 func PodRequestsAndLimits(pod *v1.Pod) (v1.ResourceList, v1.ResourceList) {
-	ps := podStatus(pod)
-	if ps != nil && ps.Resources != nil {
-		return ps.Resources.Requests.DeepCopy(), ps.Resources.Limits.DeepCopy()
-	}
-	klog.V(6).InfoS("Resources are not found in PodStatus. Fall back to resources defined in the PodSpec. This behavior is expected when InPlacePodLevelResourcesVerticalScaling feature gate is disabled.", "podStatus", ps)
+	// TODO: Comment out this part once https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions.
+	// ps := podStatus(pod)
+	// if ps != nil && ps.Resources != nil {
+	// 	return ps.Resources.Requests.DeepCopy(), ps.Resources.Limits.DeepCopy()
+	// }
+	// klog.V(6).InfoS("Resources are not found in PodStatus. Fall back to resources defined in the PodSpec. This behavior is expected when InPlacePodLevelResourcesVerticalScaling feature gate is disabled.", "podStatus", ps)
 	if pod.Spec.Resources != nil {
 		return pod.Spec.Resources.Requests.DeepCopy(), pod.Spec.Resources.Limits.DeepCopy()
 	}
