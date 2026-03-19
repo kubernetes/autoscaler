@@ -240,7 +240,6 @@ func isValidPodLevelConstraint(resource corev1.ResourceName, boundary apires.Qua
 	boundValid func(bound, floor apires.Quantity) bool,
 	policies *vpa_types.PodResourcePolicy,
 	fieldGetter func(vpa_types.ContainerResourcePolicy) corev1.ResourceList) (bool, *apires.Quantity) {
-
 	// Cannot determine container-level constraint, therefore the Pod-level constraint is not violated
 	if policies == nil || policies.ContainerPolicies == nil || len(policies.ContainerPolicies) == 0 {
 		return true, nil

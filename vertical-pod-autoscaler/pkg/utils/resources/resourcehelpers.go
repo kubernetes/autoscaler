@@ -163,9 +163,9 @@ func PodRequestsAndLimits(pod *v1.Pod) (v1.ResourceList, v1.ResourceList) {
 	return nil, nil
 }
 
-func podStatus(pod *v1.Pod) *v1.PodStatus {
-	if pod.Status.Resources != nil {
-		return &pod.Status
-	}
-	return nil
-}
+// func podStatus(pod *v1.Pod) *v1.PodStatus {
+// 	if pod.Status.Resources != nil {
+// 		return &pod.Status
+// 	}
+// 	return nil
+// }
