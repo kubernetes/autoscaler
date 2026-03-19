@@ -18,5 +18,7 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: {{ template "cluster-autoscaler.name" . }}
-      {{- .Values.vpa.containerPolicy | toYaml | nindent 6 }}
+      {{- with .Values.vpa.containerPolicy }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
 {{- end -}}
