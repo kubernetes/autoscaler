@@ -1286,7 +1286,7 @@ func TestEnsureValidBounds(t *testing.T) {
 			},
 		},
 		{
-			name: "LowerBound in c2 is violated and freed milicores can not be redistributed", // i.e. for c2 container, "LowerBound <= Target" is false.
+			name: "LowerBound in c2 is violated and freed milicores cannot be redistributed to c1", // i.e. for c2 container, "LowerBound <= Target" is false.
 			containerLevelRecs: []vpa_types.RecommendedContainerResources{
 				{
 					ContainerName: "c1",
@@ -1328,6 +1328,49 @@ func TestEnsureValidBounds(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "UpperBound in c2 is violated and millicores cannot be taken from c1", // i.e. for c2 container, Target <= UpperBound" is false
+			containerLevelRecs: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU: resource.MustParse("41m"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU: resource.MustParse("41m"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU: resource.MustParse("25m"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU: resource.MustParse("23m"),
+					},
+				},
+			},
+			expected: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU: resource.MustParse("41m"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU: resource.MustParse("41m"), // should reduce by 2m, but cannot because it would violate its Target
+					},
+				},
+				{
+					ContainerName: "c2",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU: resource.MustParse("25m"),
+					},
+					UpperBound: apiv1.ResourceList{
+						apiv1.ResourceCPU: resource.MustParse("25m"), // +2m
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1349,8 +1392,7 @@ func TestProcessContainerLevelRecs(t *testing.T) {
 		{
 			name: "no constrains return same recommendations",
 			podLevelRec: apiv1.ResourceList{
-				apiv1.ResourceCPU:    resource.MustParse("20m"),
-				apiv1.ResourceMemory: resource.MustParse("20Mi"),
+				apiv1.ResourceCPU: resource.MustParse("40m"),
 			},
 			containerLevelRecs: []vpa_types.RecommendedContainerResources{
 				{

@@ -267,7 +267,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		} else {
 			// Remove pod-level recommendations when the `VPAPodLevelResources` feature gate is disabled.
 			// This behavior prevents the updater from making eviction decisions or applying patches at the pod level
-			// when pod-level resource support is disabled.
+			// when pod-level resource support is enabled at the recommender level.
 			vpa.Status.Recommendation.PodRecommendations = nil
 		}
 

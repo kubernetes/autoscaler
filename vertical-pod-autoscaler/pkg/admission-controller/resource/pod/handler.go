@@ -103,7 +103,7 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 	} else {
 		// Remove pod-level recommendations when the `VPAPodLevelResources` feature gate is disabled.
 		// This behavior prevents the admission-controller applying patches at the pod level
-		// when pod-level resource support is disabled.
+		// when pod-level resource support is enabled at the recommender level
 		controllingVpa.Status.Recommendation.PodRecommendations = nil
 	}
 

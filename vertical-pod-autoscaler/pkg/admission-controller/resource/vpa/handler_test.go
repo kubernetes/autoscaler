@@ -54,7 +54,6 @@ func TestValidateVPA(t *testing.T) {
 		expectError                          error
 		inPlaceOrRecreateFeatureGateDisabled bool
 		PerVPAConfigDisabled                 bool
-		VPAPodLevelResourcesEnabled          bool
 	}{
 		{
 			name: "empty update",

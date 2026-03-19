@@ -487,9 +487,14 @@ func processContainerLevelRecs(
 
 // ensureBoundsAreValid ensures that for each container-level recommendation,
 // LowerBound <= Target <= UpperBound always holds.
+//
 // The function treats Target as the reference value and adjusts LowerBound
 // and UpperBound as needed to maintain valid bounds.
-// It redistributes values across containers to restore the invariant where violations occur.
+//
+// When a violation occurs, the function redistributes freed values
+// across containers where violations do not occur. It may also take values
+// from containers without violations and assign them to containers that
+// lack sufficient values to resolve the violation.
 func ensureBoundsAreValid(containerLevelRecs []vpa_types.RecommendedContainerResources) []vpa_types.RecommendedContainerResources {
 	validateBounds := func(
 		getBound func(vpa_types.RecommendedContainerResources) *apiv1.ResourceList,
@@ -514,7 +519,6 @@ func ensureBoundsAreValid(containerLevelRecs []vpa_types.RecommendedContainerRes
 					added := target.DeepCopy()
 					added.Sub(bound) // target - bound
 					valuesToRedistribute.Add(added)
-
 					(*boundRL)[resourceName] = target
 					continue
 				}
@@ -531,9 +535,9 @@ func ensureBoundsAreValid(containerLevelRecs []vpa_types.RecommendedContainerRes
 				targetRL := getTarget(containerLevelRecs[idx])
 				boundRL := getBound(containerLevelRecs[idx])
 
-				target, ok1 := (*targetRL)[resourceName]
-				bound, ok2 := (*boundRL)[resourceName]
-				if !ok1 || !ok2 {
+				target, targetOK := (*targetRL)[resourceName]
+				bound, boundOK := (*boundRL)[resourceName]
+				if !targetOK || !boundOK {
 					continue
 				}
 				var toSubtract *resource.Quantity
@@ -556,10 +560,10 @@ func ensureBoundsAreValid(containerLevelRecs []vpa_types.RecommendedContainerRes
 	}
 
 	// enforces "target >= LowerBound" (per-container)
-	validateBounds(getLower, func(target, lowerBound resource.Quantity) bool { return target.Cmp(lowerBound) > 0 })
+	validateBounds(getLower, func(target, lowerBound resource.Quantity) bool { return target.Cmp(lowerBound) >= 0 })
 
 	// enforces "target <= UpperBound" (per-container)
-	validateBounds(getUpper, func(target, upperBound resource.Quantity) bool { return target.Cmp(upperBound) < 0 })
+	validateBounds(getUpper, func(target, upperBound resource.Quantity) bool { return target.Cmp(upperBound) <= 0 })
 
 	return containerLevelRecs
 }

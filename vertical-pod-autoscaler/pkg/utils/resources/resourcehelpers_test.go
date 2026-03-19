@@ -349,36 +349,15 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 	cases := []struct {
 		name                       string
 		containerRecommendations   []vpa_types.RecommendedContainerResources
-		expectedPodRecommendations vpa_types.PodRecommendations
+		expectedPodRecommendations *vpa_types.PodRecommendations
 	}{
 		{
-			name: "no container recommendations",
-			containerRecommendations: []vpa_types.RecommendedContainerResources{
-				test.Recommendation().
-					WithContainer("container1").
-					WithTarget("", "").
-					WithLowerBound("", "").
-					WithUpperBound("", "").
-					GetContainerResources(),
-			},
-			expectedPodRecommendations: vpa_types.PodRecommendations{
-				Target: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("0"),
-					apiv1.ResourceMemory: resource.MustParse("0"),
-				},
-				LowerBound: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("0"),
-					apiv1.ResourceMemory: resource.MustParse("0"),
-				},
-				UpperBound: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("0"),
-					apiv1.ResourceMemory: resource.MustParse("0"),
-				},
-				UncappedTarget: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("0"),
-					apiv1.ResourceMemory: resource.MustParse("0"),
-				},
-			},
+			name:                     "no container recommendations",
+			containerRecommendations: nil,
+		},
+		{
+			name:                     "no container recommendations",
+			containerRecommendations: []vpa_types.RecommendedContainerResources{},
 		},
 		{
 			name: "one container resource does not include a recommendations",
@@ -396,7 +375,7 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 					WithUpperBound("8m", "").
 					GetContainerResources(),
 			},
-			expectedPodRecommendations: vpa_types.PodRecommendations{
+			expectedPodRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("10m"),
 					apiv1.ResourceMemory: resource.MustParse("10Mi"),
@@ -437,7 +416,7 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 					WithUpperBound("2m", "2Mi").
 					GetContainerResources(),
 			},
-			expectedPodRecommendations: vpa_types.PodRecommendations{
+			expectedPodRecommendations: &vpa_types.PodRecommendations{
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("10m"),
 					apiv1.ResourceMemory: resource.MustParse("10Mi"),
@@ -460,17 +439,21 @@ func TestSumContainerLevelRecommendations(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			outRecommendations := SumContainerLevelRecommendations(tc.containerRecommendations)
-			assert.Equal(t, tc.expectedPodRecommendations.Target.Cpu().MilliValue(), outRecommendations.Target.Cpu().MilliValue())
-			assert.Equal(t, tc.expectedPodRecommendations.Target.Memory().Value(), outRecommendations.Target.Memory().Value())
+			if outRecommendations != nil {
+				assert.Equal(t, tc.expectedPodRecommendations.Target.Cpu().MilliValue(), outRecommendations.Target.Cpu().MilliValue())
+				assert.Equal(t, tc.expectedPodRecommendations.Target.Memory().Value(), outRecommendations.Target.Memory().Value())
 
-			assert.Equal(t, tc.expectedPodRecommendations.LowerBound.Cpu().MilliValue(), outRecommendations.LowerBound.Cpu().MilliValue())
-			assert.Equal(t, tc.expectedPodRecommendations.LowerBound.Memory().Value(), outRecommendations.LowerBound.Memory().Value())
+				assert.Equal(t, tc.expectedPodRecommendations.LowerBound.Cpu().MilliValue(), outRecommendations.LowerBound.Cpu().MilliValue())
+				assert.Equal(t, tc.expectedPodRecommendations.LowerBound.Memory().Value(), outRecommendations.LowerBound.Memory().Value())
 
-			assert.Equal(t, tc.expectedPodRecommendations.UpperBound.Cpu().MilliValue(), outRecommendations.UpperBound.Cpu().MilliValue())
-			assert.Equal(t, tc.expectedPodRecommendations.UpperBound.Memory().Value(), outRecommendations.UpperBound.Memory().Value())
+				assert.Equal(t, tc.expectedPodRecommendations.UpperBound.Cpu().MilliValue(), outRecommendations.UpperBound.Cpu().MilliValue())
+				assert.Equal(t, tc.expectedPodRecommendations.UpperBound.Memory().Value(), outRecommendations.UpperBound.Memory().Value())
 
-			assert.Equal(t, tc.expectedPodRecommendations.UncappedTarget.Cpu().MilliValue(), outRecommendations.UncappedTarget.Cpu().MilliValue())
-			assert.Equal(t, tc.expectedPodRecommendations.UncappedTarget.Memory().Value(), outRecommendations.UncappedTarget.Memory().Value())
+				assert.Equal(t, tc.expectedPodRecommendations.UncappedTarget.Cpu().MilliValue(), outRecommendations.UncappedTarget.Cpu().MilliValue())
+				assert.Equal(t, tc.expectedPodRecommendations.UncappedTarget.Memory().Value(), outRecommendations.UncappedTarget.Memory().Value())
+			} else {
+				assert.Nil(t, outRecommendations, "No recommendations are expected")
+			}
 		})
 	}
 }
