@@ -422,7 +422,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 				}
 
 				// Container-level resources should be unset
-				for i, c := range pod.Spec.Containers {
+				for _, c := range pod.Spec.Containers {
 					if c.Resources.Requests != nil {
 						return fmt.Errorf("pod %s, container %s, requests to be nil, got %v", pod.Name, c.Name, c.Resources.Requests)
 					}

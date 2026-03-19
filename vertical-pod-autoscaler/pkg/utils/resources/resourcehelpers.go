@@ -113,7 +113,7 @@ func initContainerStatusFor(initContainerName string, pod *v1.Pod) *v1.Container
 // SumContainerLevelRecommendations implements the algorithm that calculates Pod-level recommendations.
 // It sums all container-level recommendations, such as Target LowerBound, UpperBound and UncappedTarget
 func SumContainerLevelRecommendations(containerRecommendations []vpa_types.RecommendedContainerResources) *vpa_types.PodRecommendations {
-	if containerRecommendations == nil || len(containerRecommendations) == 0 {
+	if len(containerRecommendations) == 0 {
 		return nil
 	}
 
