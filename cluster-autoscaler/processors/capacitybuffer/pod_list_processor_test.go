@@ -219,6 +219,8 @@ func TestPodListProcessor(t *testing.T) {
 					originalBuffer, ok := buffersMap[ownerName]
 					assert.True(t, ok, "can't find original buffer for fake pod")
 
+					assert.Equal(t, *originalBuffer.Status.ProvisioningStrategy, pod.Annotations[CapacityBufferProvisioningStrategyAnnotation])
+
 					assert.Equal(t, metav1.OwnerReference{
 						Kind:       capacitybuffer.CapacityBufferKind,
 						APIVersion: capacitybuffer.CapacityBufferApiVersion,

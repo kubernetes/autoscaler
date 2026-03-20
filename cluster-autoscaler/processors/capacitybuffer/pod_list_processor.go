@@ -41,6 +41,9 @@ const (
 	CapacityBufferFakePodAnnotationKey   = "podType"
 	CapacityBufferFakePodAnnotationValue = "capacityBufferFakePod"
 
+	// CapacityBufferProvisioningStrategyAnnotation is annotation in capacity buffer fake pods that specifies the provisioning strategy of the buffer.
+	CapacityBufferProvisioningStrategyAnnotation = "buffer.x-k8s.io/provisioning-strategy"
+
 	// NotReadyForProvisioningReason is the reason used when the buffer is not ready for provisioning.
 	NotReadyForProvisioningReason = "NotReadyForProvisioning"
 	// BufferIsEmptyReason is the reason used when the buffer has 0 replicas.
@@ -171,6 +174,7 @@ func makeFakePods(buffer *v1beta1.CapacityBuffer, samplePodTemplate *apiv1.PodTe
 	if forceSafeToEvictFakePods {
 		samplePod = withSafeToEvictAnnotation(samplePod)
 	}
+	samplePod = withBufferProvisioningStrategyAnnotation(samplePod, buffer.Status.ProvisioningStrategy)
 	for i := 1; i <= podCount; i++ {
 		fakePod := samplePod.DeepCopy()
 		fakePod.Name = fmt.Sprintf("capacity-buffer-%s-%d", buffer.Name, i)
@@ -209,6 +213,18 @@ func withSafeToEvictAnnotation(pod *apiv1.Pod) *apiv1.Pod {
 		pod.Annotations = make(map[string]string, 1)
 	}
 	pod.Annotations[drain.PodSafeToEvictKey] = "true"
+	return pod
+}
+
+func withBufferProvisioningStrategyAnnotation(pod *apiv1.Pod, strategy *string) *apiv1.Pod {
+	s := ""
+	if strategy != nil {
+		s = *strategy
+	}
+	if pod.Annotations == nil {
+		pod.Annotations = make(map[string]string, 1)
+	}
+	pod.Annotations[CapacityBufferProvisioningStrategyAnnotation] = s
 	return pod
 }
 
