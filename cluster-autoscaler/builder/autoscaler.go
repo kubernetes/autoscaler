@@ -294,7 +294,7 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	}
 
 	// Create autoscaler.
-	autoscaler, err := core.NewAutoscaler(ctx, opts, b.informerFactory)
+	autoscaler, err := NewAutoscaler(ctx, opts, b.informerFactory)
 	if err != nil {
 		return nil, nil, err
 	}
