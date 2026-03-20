@@ -54,6 +54,7 @@ const (
 	readyLabel            = "ready"
 	unreadyLabel          = "unready"
 	startingLabel         = "notStarted"
+	suspendedLabel        = "suspended"
 	unregisteredLabel     = "unregistered"
 	longUnregisteredLabel = "longUnregistered"
 
@@ -614,10 +615,11 @@ func (m *caMetrics) UpdateClusterSafeToAutoscale(safe bool) {
 }
 
 // UpdateNodesCount records the number of nodes in cluster
-func (m *caMetrics) UpdateNodesCount(ready, unready, starting, longUnregistered, unregistered int) {
+func (m *caMetrics) UpdateNodesCount(ready, unready, starting, suspended, longUnregistered, unregistered int) {
 	m.nodesCount.WithLabelValues(readyLabel).Set(float64(ready))
 	m.nodesCount.WithLabelValues(unreadyLabel).Set(float64(unready))
 	m.nodesCount.WithLabelValues(startingLabel).Set(float64(starting))
+	m.nodesCount.WithLabelValues(suspendedLabel).Set(float64(suspended))
 	m.nodesCount.WithLabelValues(longUnregisteredLabel).Set(float64(longUnregistered))
 	m.nodesCount.WithLabelValues(unregisteredLabel).Set(float64(unregistered))
 }

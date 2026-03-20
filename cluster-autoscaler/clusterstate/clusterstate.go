@@ -51,6 +51,8 @@ const (
 	maxErrorMessageSize = 500
 	// messageTrancated is displayed at the end of a trancated message.
 	messageTrancated = "<truncated>"
+	// suspendedNodeCondition is the node condition type for suspended nodes.
+	suspendedNodeCondition = "Suspended"
 )
 
 var (
@@ -462,13 +464,13 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 
 	unjustifiedUnready := 0
 	// Too few nodes, something is missing. Below the expected node count.
-	if len(readiness.Ready) < acceptable.MinNodes {
-		unjustifiedUnready += acceptable.MinNodes - len(readiness.Ready)
+	if len(readiness.Ready)+len(readiness.Suspended) < acceptable.MinNodes {
+		unjustifiedUnready += acceptable.MinNodes - len(readiness.Ready) - len(readiness.Suspended)
 	}
 	// TODO: verify against max nodes as well.
 	if unjustifiedUnready > csr.config.OkTotalUnreadyCount &&
 		float64(unjustifiedUnready) > csr.config.MaxTotalUnreadyPercentage/100.0*
-			float64(len(readiness.Ready)+len(readiness.Unready)+len(readiness.NotStarted)) {
+			float64(len(readiness.Ready)+len(readiness.Unready)+len(readiness.NotStarted)+len(readiness.Suspended)) {
 		return false
 	}
 
@@ -620,6 +622,8 @@ type Readiness struct {
 	Deleted []string
 	// Names of nodes that are not yet fully started.
 	NotStarted []string
+	// Names of suspended nodes, identified by node condition "Suspended=True".
+	Suspended []string
 	// Names of all registered nodes in the group (ready/unready/deleted/etc).
 	Registered []string
 	// Names of nodes that failed to register within a reasonable limit.
@@ -632,6 +636,15 @@ type Readiness struct {
 	// This field is only used for exposing information externally and
 	// doesn't influence CA behavior.
 	ResourceUnready []string
+}
+
+func isSuspendedNode(node *apiv1.Node) bool {
+	for _, condition := range node.Status.Conditions {
+		if condition.Type == suspendedNodeCondition {
+			return condition.Status == apiv1.ConditionTrue
+		}
+	}
+	return false
 }
 
 func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
@@ -649,6 +662,8 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		current.Registered = append(current.Registered, node.Name)
 		if _, isDeleted := csr.deletedNodes[node.Name]; isDeleted {
 			current.Deleted = append(current.Deleted, node.Name)
+		} else if isSuspendedNode(node) {
+			current.Suspended = append(current.Suspended, node.Name)
 		} else if nr.Ready {
 			current.Ready = append(current.Ready, node.Name)
 		} else if node.CreationTimestamp.Time.Add(maxNodeStartupTime).After(currentTime) {
@@ -862,6 +877,7 @@ func buildNodeCount(readiness Readiness) api.NodeCount {
 			Total:        len(readiness.Registered),
 			Ready:        len(readiness.Ready),
 			NotStarted:   len(readiness.NotStarted),
+			Suspended:    len(readiness.Suspended),
 			BeingDeleted: len(readiness.Deleted),
 			Unready: api.RegisteredUnreadyNodeCount{
 				Total:           len(readiness.Unready),
@@ -1033,7 +1049,7 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 		readiness := csr.perNodeGroupReadiness[id]
 		ar := csr.acceptableRanges[id]
 		// newNodes is the number of nodes that
-		newNodes := ar.CurrentTarget - (len(readiness.Ready) + len(readiness.Unready) + len(readiness.LongUnregistered))
+		newNodes := ar.CurrentTarget - (len(readiness.Ready) + len(readiness.Unready) + len(readiness.Suspended) + len(readiness.LongUnregistered))
 		if newNodes <= 0 {
 			// Negative value is unlikely but theoretically possible.
 			continue

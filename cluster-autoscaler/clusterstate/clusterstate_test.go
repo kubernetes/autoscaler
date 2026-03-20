@@ -1717,3 +1717,121 @@ func (m *mockMetrics) RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, 
 func (m *mockMetrics) RegisterFailedNodeCreations(reason metrics.FailedScaleUpReason, nodesCount int) {
 	m.Called(reason, nodesCount)
 }
+
+func TestSuspendedNodes(t *testing.T) {
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
+
+	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	// Suspended node
+	ng1_2.Status.Conditions = append(ng1_2.Status.Conditions, apiv1.NodeCondition{
+		Type:   apiv1.NodeConditionType(suspendedNodeCondition),
+		Status: apiv1.ConditionTrue,
+	})
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", ng1_1)
+	provider.AddNode("ng1", ng1_2)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, now)
+	assert.NoError(t, err)
+
+	// Check readiness stats
+	readiness := clusterstate.GetClusterReadiness()
+	expectedReadiness := Readiness{
+		Registered: []string{"ng1-1", "ng1-2"},
+		Ready:      []string{"ng1-1"},
+		Suspended:  []string{"ng1-2"},
+		Time:       now,
+	}
+	assert.Equal(t, expectedReadiness, readiness)
+
+	// Check node group health - Suspended nodes should count towards health
+	// Target is 2, 1 Ready + 1 Suspended = 2. Should be healthy.
+	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
+
+	// Check upcoming nodes
+	// Target is 2, 1 Ready + 1 Suspended = 2. Upcoming should be 0.
+	upcomingNodes, _ := clusterstate.GetUpcomingNodes()
+	assert.Equal(t, 0, upcomingNodes["ng1"])
+
+	// Check status
+	status := clusterstate.GetStatus(now)
+	assert.Equal(t, 1, status.ClusterWide.Health.NodeCounts.Registered.Suspended)
+}
+
+func TestIsSuspendedNode(t *testing.T) {
+	testCases := []struct {
+		name     string
+		node     *apiv1.Node
+		expected bool
+	}{
+		{
+			name: "Node with Suspended=True condition",
+			node: &apiv1.Node{
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{
+						{
+							Type:   apiv1.NodeConditionType(suspendedNodeCondition),
+							Status: apiv1.ConditionTrue,
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Node with Suspended=False condition",
+			node: &apiv1.Node{
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{
+						{
+							Type:   apiv1.NodeConditionType(suspendedNodeCondition),
+							Status: apiv1.ConditionFalse,
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Node with other conditions",
+			node: &apiv1.Node{
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{
+						{
+							Type:   apiv1.NodeReady,
+							Status: apiv1.ConditionTrue,
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Node with no conditions",
+			node: &apiv1.Node{
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{},
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, isSuspendedNode(tc.node))
+		})
+	}
+}
