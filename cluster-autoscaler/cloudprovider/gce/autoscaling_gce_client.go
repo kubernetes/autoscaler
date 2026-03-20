@@ -113,6 +113,9 @@ type GceInstance struct {
 	NumericId            uint64
 	Igm                  GceRef
 	InstanceTemplateName string
+	// GCEStatus is used to describe instance statuses that
+	// are not included in cloudprovider.InstanceStatus.
+	GCEStatus string
 }
 
 // AutoscalingGceClient is used for communicating with GCE API.
@@ -421,6 +424,7 @@ func externalToInternalInstance(gceInstance *gce.Instance, loggingQuota *klogx.Q
 		},
 		NumericId: gceInstance.Id,
 		Igm:       createIgmRef(gceInstance, ref.Project, loggingQuota),
+		GCEStatus: gceInstance.Status,
 	}, nil
 }
 
@@ -497,6 +501,7 @@ func (i *instanceListBuilder) gceInstanceToInstance(ref GceRef, gceInstance *gce
 			},
 		},
 		NumericId: gceInstance.Id,
+		GCEStatus: gceInstance.InstanceStatus,
 	}
 
 	if gceInstance.Version != nil {
