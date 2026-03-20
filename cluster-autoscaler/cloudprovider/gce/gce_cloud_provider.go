@@ -27,10 +27,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -411,5 +413,14 @@ func BuildGCE(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDis
 	}
 	// Register GCE API usage metrics.
 	RegisterMetrics()
+
+	// Configure GCE specific processors
+	if opts.Processors != nil {
+		opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewAnnotationNodeInfoProvider(&opts.AutoscalingOptions.NodeInfoCacheExpireTime, opts.AutoscalingOptions.ForceDaemonSets)
+		opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+			Comparator: nodegroupset.CreateGceNodeInfoComparator(opts.AutoscalingOptions.BalancingExtraIgnoredLabels, opts.AutoscalingOptions.NodeGroupSetRatios),
+		}
+	}
+
 	return provider
 }
