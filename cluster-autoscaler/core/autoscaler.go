@@ -84,6 +84,7 @@ func NewAutoscaler(ctx context.Context, opts coreoptions.AutoscalerOptions, info
 		opts.DraProvider,
 		opts.QuotasTrackerOptions,
 		opts.CSIProvider,
+		opts.CapacityBufferPodsRegistry,
 	), nil
 }
 
