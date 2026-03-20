@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -81,18 +82,19 @@ type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*ca_context.AutoscalingContext
 	// ClusterState for maintaining the state of cluster nodes.
-	clusterStateRegistry    *clusterstate.ClusterStateRegistry
-	lastScaleUpTime         time.Time
-	lastScaleDownDeleteTime time.Time
-	lastScaleDownFailTime   time.Time
-	scaleDownPlanner        scaledown.Planner
-	scaleDownActuator       scaledown.Actuator
-	scaleUpOrchestrator     scaleup.Orchestrator
-	processors              *ca_processors.AutoscalingProcessors
-	loopStartNotifier       *loopstart.ObserversList
-	processorCallbacks      *staticAutoscalerProcessorCallbacks
-	initialized             bool
-	taintConfig             taints.TaintConfig
+	clusterStateRegistry       *clusterstate.ClusterStateRegistry
+	lastScaleUpTime            time.Time
+	lastScaleDownDeleteTime    time.Time
+	lastScaleDownFailTime      time.Time
+	scaleDownPlanner           scaledown.Planner
+	scaleDownActuator          scaledown.Actuator
+	scaleUpOrchestrator        scaleup.Orchestrator
+	processors                 *ca_processors.AutoscalingProcessors
+	loopStartNotifier          *loopstart.ObserversList
+	processorCallbacks         *staticAutoscalerProcessorCallbacks
+	initialized                bool
+	taintConfig                taints.TaintConfig
+	capacityBufferPodsRegistry *fakepods.Registry
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -148,7 +150,8 @@ func NewStaticAutoscaler(
 	drainabilityRules rules.Rules,
 	draProvider *draprovider.Provider,
 	quotasTrackerOptions resourcequotas.TrackerOptions,
-	csiProvider *csinodeprovider.Provider) *StaticAutoscaler {
+	csiProvider *csinodeprovider.Provider,
+	capacityBufferPodsRegistry *fakepods.Registry) *StaticAutoscaler {
 
 	klog.V(4).Infof("Creating new static autoscaler with opts: %v", opts)
 
@@ -205,18 +208,19 @@ func NewStaticAutoscaler(
 	// not start in cooldown mode.
 	initialScaleTime := time.Now().Add(-time.Hour)
 	return &StaticAutoscaler{
-		AutoscalingContext:      autoscalingCtx,
-		lastScaleUpTime:         initialScaleTime,
-		lastScaleDownDeleteTime: initialScaleTime,
-		lastScaleDownFailTime:   initialScaleTime,
-		scaleDownPlanner:        scaleDownPlanner,
-		scaleDownActuator:       scaleDownActuator,
-		scaleUpOrchestrator:     scaleUpOrchestrator,
-		processors:              processors,
-		loopStartNotifier:       loopStartNotifier,
-		processorCallbacks:      processorCallbacks,
-		clusterStateRegistry:    clusterStateRegistry,
-		taintConfig:             taintConfig,
+		AutoscalingContext:         autoscalingCtx,
+		lastScaleUpTime:            initialScaleTime,
+		lastScaleDownDeleteTime:    initialScaleTime,
+		lastScaleDownFailTime:      initialScaleTime,
+		scaleDownPlanner:           scaleDownPlanner,
+		scaleDownActuator:          scaleDownActuator,
+		scaleUpOrchestrator:        scaleUpOrchestrator,
+		processors:                 processors,
+		loopStartNotifier:          loopStartNotifier,
+		processorCallbacks:         processorCallbacks,
+		clusterStateRegistry:       clusterStateRegistry,
+		taintConfig:                taintConfig,
+		capacityBufferPodsRegistry: capacityBufferPodsRegistry,
 	}
 }
 
@@ -282,6 +286,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	a.clusterStateRegistry.PeriodicCleanup()
 	a.DebuggingSnapshotter.StartDataCollection()
 	defer a.DebuggingSnapshotter.Flush()
+	if a.capacityBufferPodsRegistry != nil {
+		a.capacityBufferPodsRegistry.Clear()
+	}
 
 	podLister := a.AllPodLister()
 	autoscalingCtx := a.AutoscalingContext
