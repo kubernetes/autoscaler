@@ -87,20 +87,20 @@ func TestSimulateNodeRemoval(t *testing.T) {
 	pod1 := BuildTestPod("p1", 100, 100000)
 	pod1.OwnerReferences = ownerRefs
 	pod1.Spec.NodeName = "n2"
-	drainableNodeInfo.AddPod(&framework.PodInfo{Pod: pod1})
+	drainableNodeInfo.AddPod(framework.NewPodInfo(pod1, nil))
 
 	pod2 := BuildTestPod("p2", 100, 100000)
 	pod2.OwnerReferences = ownerRefs
 	pod2.Spec.NodeName = "n2"
-	drainableNodeInfo.AddPod(&framework.PodInfo{Pod: pod2})
+	drainableNodeInfo.AddPod(framework.NewPodInfo(pod2, nil))
 
 	pod3 := BuildTestPod("p3", 100, 100000)
 	pod3.Spec.NodeName = "n3"
-	nonDrainableNodeInfo.AddPod(&framework.PodInfo{Pod: pod3})
+	nonDrainableNodeInfo.AddPod(framework.NewPodInfo(pod3, nil))
 
 	pod4 := BuildTestPod("p4", 1000, 100000)
 	pod4.Spec.NodeName = "n4"
-	fullNodeInfo.AddPod(&framework.PodInfo{Pod: pod4})
+	fullNodeInfo.AddPod(framework.NewPodInfo(pod4, nil))
 
 	clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 
