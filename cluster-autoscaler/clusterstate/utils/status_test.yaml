@@ -6,9 +6,10 @@ clusterWide:
     status: "Healthy"
     nodeCounts:
       registered:
-        total: 10
+        total: 11
         ready: 4
         notStarted: 3
+        suspended: 1
         beingDeleted: 1
         unready:
           total: 2
@@ -33,9 +34,10 @@ nodeGroups:
       status: "Healthy"
       nodeCounts:
         registered:
-          total: 10
+          total: 11
           ready: 4
           notStarted: 3
+          suspended: 1
           beingDeleted: 1
           unready:
             total: 2
