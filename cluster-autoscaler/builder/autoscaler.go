@@ -214,13 +214,14 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 			capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
 		}
 		if capacitybufferClientError == nil && capacitybufferClient != nil {
+			buffersPodsRegistry := cbprocessor.NewDefaultCapacityBuffersFakePodsRegistry()
 			bufferPodInjector := cbprocessor.NewCapacityBufferPodListProcessor(
 				capacitybufferClient,
 				[]string{capacitybuffer.ActiveProvisioningStrategy},
-				true)
+				buffersPodsRegistry, true)
 			podListProcessor = pods.NewCombinedPodListProcessor([]pods.PodListProcessor{bufferPodInjector, podListProcessor})
 			opts.Processors.ScaleUpStatusProcessor = status.NewCombinedScaleUpStatusProcessor([]status.ScaleUpStatusProcessor{
-				cbprocessor.NewFakePodsScaleUpStatusProcessor(), opts.Processors.ScaleUpStatusProcessor})
+				cbprocessor.NewFakePodsScaleUpStatusProcessor(buffersPodsRegistry), opts.Processors.ScaleUpStatusProcessor})
 		}
 	}
 

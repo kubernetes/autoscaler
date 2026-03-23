@@ -24,7 +24,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -53,24 +52,24 @@ func TestProcess(t *testing.T) {
 		expectedPodsTriggeredScaleUp    []*apiv1.Pod
 	}{
 		"Fake pods are removed from PodsRemainUnschedulable": {
-			podsRemainUnschedulable:         []*apiv1.Pod{createPod("pod-1", false, nil), createPod("fake-pod-1", true, nil)},
-			expectedPodsRemainUnschedulable: []*apiv1.Pod{createPod("pod-1", false, nil)},
+			podsRemainUnschedulable:         []*apiv1.Pod{createPod("pod-1", false), createPod("fake-pod-1", true)},
+			expectedPodsRemainUnschedulable: []*apiv1.Pod{createPod("pod-1", false)},
 		},
 		"Fake pods are removed from PodsTriggerScaleup": {
-			podsTriggeredScaleUp:         []*apiv1.Pod{createPod("pod-1", false, nil), createPod("fake-pod-1", true, nil)},
-			expectedPodsTriggeredScaleUp: []*apiv1.Pod{createPod("pod-1", false, nil)},
+			podsTriggeredScaleUp:         []*apiv1.Pod{createPod("pod-1", false), createPod("fake-pod-1", true)},
+			expectedPodsTriggeredScaleUp: []*apiv1.Pod{createPod("pod-1", false)},
 		},
 		"Fake pods are removed from PodsAwaitEvaluation": {
-			podsAwaitEvaluation:         []*apiv1.Pod{createPod("pod-1", false, nil), createPod("fake-pod-1", true, nil)},
-			expectedPodsAwaitEvaluation: []*apiv1.Pod{createPod("pod-1", false, nil)},
+			podsAwaitEvaluation:         []*apiv1.Pod{createPod("pod-1", false), createPod("fake-pod-1", true)},
+			expectedPodsAwaitEvaluation: []*apiv1.Pod{createPod("pod-1", false)},
 		},
 		"Fake pods are removed from all pod related lists in scaleup status": {
-			podsTriggeredScaleUp:            []*apiv1.Pod{createPod("pod-1", false, nil), createPod("fake-pod-1", true, nil)},
-			expectedPodsTriggeredScaleUp:    []*apiv1.Pod{createPod("pod-1", false, nil)},
-			podsRemainUnschedulable:         []*apiv1.Pod{createPod("pod-2", false, nil), createPod("fake-pod-2", true, nil)},
-			expectedPodsRemainUnschedulable: []*apiv1.Pod{createPod("pod-2", false, nil)},
-			podsAwaitEvaluation:             []*apiv1.Pod{createPod("pod-3", false, nil), createPod("fake-pod-3", true, nil)},
-			expectedPodsAwaitEvaluation:     []*apiv1.Pod{createPod("pod-3", false, nil)},
+			podsTriggeredScaleUp:            []*apiv1.Pod{createPod("pod-1", false), createPod("fake-pod-1", true)},
+			expectedPodsTriggeredScaleUp:    []*apiv1.Pod{createPod("pod-1", false)},
+			podsRemainUnschedulable:         []*apiv1.Pod{createPod("pod-2", false), createPod("fake-pod-2", true)},
+			expectedPodsRemainUnschedulable: []*apiv1.Pod{createPod("pod-2", false)},
+			podsAwaitEvaluation:             []*apiv1.Pod{createPod("pod-3", false), createPod("fake-pod-3", true)},
+			expectedPodsAwaitEvaluation:     []*apiv1.Pod{createPod("pod-3", false)},
 		},
 	}
 
@@ -83,7 +82,7 @@ func TestProcess(t *testing.T) {
 			}
 			autoscalingCtx := &ca_context.AutoscalingContext{}
 
-			p := NewFakePodsScaleUpStatusProcessor()
+			p := NewFakePodsScaleUpStatusProcessor(NewDefaultCapacityBuffersFakePodsRegistry())
 			p.Process(autoscalingCtx, scaleUpStatus)
 
 			assert.ElementsMatch(t, tc.expectedPodsRemainUnschedulable, extractPodsFromNoScaleUpInfo(scaleUpStatus.PodsRemainUnschedulable))
@@ -110,20 +109,12 @@ func TestBuffersEvent(t *testing.T) {
 		MaxSize:     nodeGroup1.MaxSize(),
 	}
 	buffer1 := &v1beta1.CapacityBuffer{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       capacitybuffer.CapacityBufferKind,
-			APIVersion: capacitybuffer.CapacityBufferApiVersion,
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "buffer_1",
 			UID:  "buffer_1",
 		},
 	}
 	buffer2 := &v1beta1.CapacityBuffer{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       capacitybuffer.CapacityBufferKind,
-			APIVersion: capacitybuffer.CapacityBufferApiVersion,
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "buffer_2",
 			UID:  "buffer_2",
@@ -138,15 +129,17 @@ func TestBuffersEvent(t *testing.T) {
 	}
 	testCases := map[string]struct {
 		state                       *status.ScaleUpStatus
+		buffersRegistry             *CapacityBuffersFakePodsRegistry
 		expectedTriggeredScaleUp    int
 		expectedNotTriggeredScaleUp int
 	}{
 		"One fake pod, successful scale up": {
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:                  status.ScaleUpSuccessful,
 				ConsideredNodeGroups:    consideredNodeGroups,
 				ScaleUpInfos:            []nodegroupset.ScaleUpInfo{scaleUpInfo1},
-				PodsTriggeredScaleUp:    []*apiv1.Pod{createPod("pod-1", false, nil), createPod("fake-pod-1", true, buffer1)},
+				PodsTriggeredScaleUp:    []*apiv1.Pod{createPod("pod-1", false), createPod("fake-pod-1", true)},
 				PodsRemainUnschedulable: []status.NoScaleUpInfo{},
 				PodsAwaitEvaluation:     []*apiv1.Pod{},
 			},
@@ -154,6 +147,7 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 0,
 		},
 		"One fake pod, error scale up": {
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:                  status.ScaleUpError,
 				ConsideredNodeGroups:    consideredNodeGroups,
@@ -166,22 +160,24 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 0,
 		},
 		"One fake pod, empty scale up infos": {
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:                  status.ScaleUpError,
 				ScaleUpInfos:            []nodegroupset.ScaleUpInfo{},
-				PodsTriggeredScaleUp:    []*apiv1.Pod{createPod("pod-1", false, nil), createPod("fake-pod-1", true, buffer1)},
+				PodsTriggeredScaleUp:    []*apiv1.Pod{createPod("pod-1", false), createPod("fake-pod-1", true)},
 				PodsRemainUnschedulable: []status.NoScaleUpInfo{},
 				PodsAwaitEvaluation:     []*apiv1.Pod{},
 			},
 			expectedTriggeredScaleUp:    0,
 			expectedNotTriggeredScaleUp: 0,
 		},
-		"One fake pod, with no ownerReference": {
+		"One fake pod, with no node in Registry": {
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{}),
 			state: &status.ScaleUpStatus{
 				Result:                  status.ScaleUpError,
 				ConsideredNodeGroups:    consideredNodeGroups,
 				ScaleUpInfos:            []nodegroupset.ScaleUpInfo{},
-				PodsTriggeredScaleUp:    []*apiv1.Pod{createPod("pod-1", false, nil), createPod("fake-pod-1", true, nil)},
+				PodsTriggeredScaleUp:    []*apiv1.Pod{createPod("pod-1", false), createPod("fake-pod-1", true)},
 				PodsRemainUnschedulable: []status.NoScaleUpInfo{},
 				PodsAwaitEvaluation:     []*apiv1.Pod{},
 			},
@@ -189,14 +185,15 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 0,
 		},
 		"One fake pod, unschedulalble": {
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:               status.ScaleUpNoOptionsAvailable,
 				ConsideredNodeGroups: consideredNodeGroups,
 				ScaleUpInfos:         []nodegroupset.ScaleUpInfo{},
-				PodsTriggeredScaleUp: []*apiv1.Pod{createPod("pod-1", false, nil)},
+				PodsTriggeredScaleUp: []*apiv1.Pod{createPod("pod-1", false)},
 				PodsRemainUnschedulable: []status.NoScaleUpInfo{
 					{
-						Pod:                createPod("fake-pod-1", true, buffer1),
+						Pod:                createPod("fake-pod-1", true),
 						RejectedNodeGroups: reasons,
 					},
 				},
@@ -206,14 +203,15 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 1,
 		},
 		"One fake pod, unschedulalble with error": {
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:               status.ScaleUpError,
 				ConsideredNodeGroups: consideredNodeGroups,
 				ScaleUpInfos:         []nodegroupset.ScaleUpInfo{},
-				PodsTriggeredScaleUp: []*apiv1.Pod{createPod("pod-1", false, nil)},
+				PodsTriggeredScaleUp: []*apiv1.Pod{createPod("pod-1", false)},
 				PodsRemainUnschedulable: []status.NoScaleUpInfo{
 					{
-						Pod:                createPod("fake-pod-1", true, buffer1),
+						Pod:                createPod("fake-pod-1", true),
 						RejectedNodeGroups: reasons,
 					},
 				},
@@ -223,14 +221,15 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 0,
 		},
 		"two fake pods for same buffer, one triggers scale up and the other doesn't": {
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{"fake-pod-1": buffer1, "fake-pod-2": buffer1}),
 			state: &status.ScaleUpStatus{
 				Result:               status.ScaleUpNoOptionsAvailable,
 				ConsideredNodeGroups: consideredNodeGroups,
 				ScaleUpInfos:         []nodegroupset.ScaleUpInfo{scaleUpInfo1},
-				PodsTriggeredScaleUp: []*apiv1.Pod{createPod("pod-1", false, nil), createPod("fake-pod-1", true, buffer1)},
+				PodsTriggeredScaleUp: []*apiv1.Pod{createPod("pod-1", false), createPod("fake-pod-1", true)},
 				PodsRemainUnschedulable: []status.NoScaleUpInfo{
 					{
-						Pod:                createPod("fake-pod-2", true, buffer1),
+						Pod:                createPod("fake-pod-2", true),
 						RejectedNodeGroups: reasons,
 					},
 				},
@@ -240,27 +239,34 @@ func TestBuffersEvent(t *testing.T) {
 			expectedNotTriggeredScaleUp: 1,
 		},
 		"multiple pods for multiple buffers with mixed conditions": {
+			buffersRegistry: NewCapacityBuffersFakePodsRegistry(map[string]*v1beta1.CapacityBuffer{
+				"fake-pod-1": buffer1,
+				"fake-pod-2": buffer1,
+				"fake-pod-3": buffer2,
+				"fake-pod-4": buffer2,
+				"fake-pod-5": buffer2,
+			}),
 			state: &status.ScaleUpStatus{
 				Result:               status.ScaleUpNoOptionsAvailable,
 				ScaleUpInfos:         []nodegroupset.ScaleUpInfo{scaleUpInfo1, scaleUpInfo2},
 				ConsideredNodeGroups: consideredNodeGroups,
 				PodsTriggeredScaleUp: []*apiv1.Pod{
-					createPod("pod-1", false, nil),
-					createPod("fake-pod-2", true, buffer1),
-					createPod("fake-pod-4", true, buffer2),
-					createPod("fake-pod-5", true, buffer2),
+					createPod("pod-1", false),
+					createPod("fake-pod-2", true),
+					createPod("fake-pod-4", true),
+					createPod("fake-pod-5", true),
 				},
 				PodsRemainUnschedulable: []status.NoScaleUpInfo{
 					{
-						Pod:                createPod("fake-pod-1", true, buffer1),
+						Pod:                createPod("fake-pod-1", true),
 						RejectedNodeGroups: reasons,
 					},
 					{
-						Pod:                createPod("fake-pod-3", true, buffer2),
+						Pod:                createPod("fake-pod-3", true),
 						RejectedNodeGroups: reasons,
 					},
 					{
-						Pod:                createPod("pod-2", false, nil),
+						Pod:                createPod("pod-2", false),
 						RejectedNodeGroups: reasons,
 					},
 				},
@@ -274,12 +280,12 @@ func TestBuffersEvent(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			fakeRecorder := kube_record.NewFakeRecorder(5)
-			ctx := &ca_context.AutoscalingContext{
+			ctx := &context.AutoscalingContext{
 				AutoscalingKubeClients: context.AutoscalingKubeClients{
 					Recorder: fakeRecorder,
 				},
 			}
-			p := NewFakePodsScaleUpStatusProcessor()
+			p := NewFakePodsScaleUpStatusProcessor(tc.buffersRegistry)
 			p.Process(ctx, tc.state)
 
 			triggeredScaleUp := 0
@@ -305,89 +311,12 @@ func TestBuffersEvent(t *testing.T) {
 	}
 }
 
-func TestGetBufferReference(t *testing.T) {
-	buffer := &v1beta1.CapacityBuffer{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       capacitybuffer.CapacityBufferKind,
-			APIVersion: capacitybuffer.CapacityBufferApiVersion,
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-buffer",
-			Namespace: "test-ns",
-			UID:       "test-uid",
-		},
-	}
-	expectedRef := &apiv1.ObjectReference{
-		Kind:       capacitybuffer.CapacityBufferKind,
-		APIVersion: capacitybuffer.CapacityBufferApiVersion,
-		Name:       "test-buffer",
-		UID:        "test-uid",
-		Namespace:  "test-ns",
-	}
-
-	tests := []struct {
-		name          string
-		pod           *apiv1.Pod
-		expectedFound bool
-		expectedOwner *apiv1.ObjectReference
-	}{
-		{
-			name:          "Pod with CapacityBuffer owner",
-			pod:           createPod("pod-1", true, buffer),
-			expectedFound: true,
-			expectedOwner: expectedRef,
-		},
-		{
-			name:          "Pod with no owner",
-			pod:           createPod("pod-2", true, nil),
-			expectedFound: false,
-		},
-		{
-			name: "Pod with different owner type",
-			pod: BuildTestPod("pod-3", 10, 10, func(p *apiv1.Pod) {
-				p.OwnerReferences = []metav1.OwnerReference{
-					{
-						Kind:       "ReplicaSet",
-						Name:       "rs-1",
-						APIVersion: "apps/v1",
-						UID:        "rs-uid",
-					},
-				}
-			}),
-			expectedFound: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			owner := getBufferReference(tt.pod)
-			if tt.expectedFound {
-				assert.NotNil(t, owner)
-				assert.Equal(t, tt.expectedOwner, owner)
-			} else {
-				assert.Nil(t, owner)
-			}
-		})
-	}
-}
-
-func createPod(name string, isFake bool, owner *v1beta1.CapacityBuffer) *apiv1.Pod {
+func createPod(name string, isFake bool) *apiv1.Pod {
 	return BuildTestPod(name, 10, 10, func(p *apiv1.Pod) {
 		if !isFake {
 			return
 		}
 		*p = *withCapacityBufferFakePodAnnotation(p)
-		if owner != nil {
-			p.OwnerReferences = []metav1.OwnerReference{
-				{
-					APIVersion: owner.APIVersion,
-					Kind:       owner.Kind,
-					Name:       owner.Name,
-					UID:        owner.UID,
-				},
-			}
-			p.Namespace = owner.Namespace
-		}
 	})
 }
 
