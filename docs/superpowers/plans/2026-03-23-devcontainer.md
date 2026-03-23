@@ -25,7 +25,7 @@ No other files are created or modified.
 **Files:**
 - Create: `.devcontainer/devcontainer.json`
 
-- [ ] **Step 1: Create the `.devcontainer/` directory and `devcontainer.json`**
+- [x] **Step 1: Create the `.devcontainer/` directory and `devcontainer.json`**
 
 Create `.devcontainer/devcontainer.json` with this exact content:
 
@@ -64,12 +64,12 @@ Create `.devcontainer/devcontainer.json` with this exact content:
 }
 ```
 
-- [ ] **Step 2: Validate the JSON is well-formed**
+- [x] **Step 2: Validate the JSON is well-formed**
 
 Run: `python3 -c "import json; json.load(open('.devcontainer/devcontainer.json')); print('Valid JSON')"`
 Expected: `Valid JSON`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add .devcontainer/devcontainer.json
