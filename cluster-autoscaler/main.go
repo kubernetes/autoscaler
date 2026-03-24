@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"net/http"
 	"os"
 	"os/signal"
@@ -190,6 +191,12 @@ func mustBuildAutoscaler(ctx context.Context, opts config.AutoscalingOptions, de
 
 func main() {
 	klog.InitFlags(nil)
+
+	// Opt into new klog behavior where -stderrthreshold is honored even when
+	// -logtostderr=true (kubernetes/klog#212, kubernetes/klog#432).
+	flag.Set("legacy_stderr_threshold_behavior", "false")
+	// Preserve backward-compatible default; users can override to WARNING or ERROR.
+	flag.Set("stderrthreshold", "INFO")
 
 	featureGate := utilfeature.DefaultMutableFeatureGate
 	loggingConfig := logsapi.NewLoggingConfiguration()
