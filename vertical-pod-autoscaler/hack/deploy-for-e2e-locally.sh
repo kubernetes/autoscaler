@@ -114,6 +114,8 @@ for COMPONENT in ${COMPONENTS}; do
       HELM_SET_ARGS+=("--set" "admissionController.image.repository=${REGISTRY}/vpa-admission-controller")
       HELM_SET_ARGS+=("--set" "admissionController.image.tag=${TAG}")
       HELM_SET_ARGS+=("--set" "admissionController.image.pullPolicy=Never")
+      # Local e2e uses manual certs for cert rotation test
+      HELM_SET_ARGS+=("--values" "${SCRIPT_ROOT}/hack/e2e/values-e2e-ac-override.yaml")
       ;;
   esac
 done

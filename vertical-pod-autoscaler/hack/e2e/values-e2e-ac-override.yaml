@@ -1,0 +1,17 @@
+# Admission controller overrides for local e2e testing.
+# Used by deploy-for-e2e-locally.sh to enable manual cert management
+# for the cert rotation test.
+admissionController:
+  certGen:
+    enabled: false
+  registerWebhook: true
+  extraArgs:
+    - --reload-cert
+  volumes:
+    - name: tls-certs
+      secret:
+        secretName: vpa-tls-certs
+  volumeMounts:
+    - name: tls-certs
+      mountPath: /etc/tls-certs
+      readOnly: true
