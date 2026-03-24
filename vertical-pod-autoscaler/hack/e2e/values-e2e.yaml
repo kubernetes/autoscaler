@@ -18,30 +18,6 @@ admissionController:
   affinity: {}
   podDisruptionBudget:
     enabled: false
-  # Use application-managed webhook for e2e testing (cert rotation test requires this)
-  registerWebhook: true
-  certGen:
-    enabled: false
-  # Enable certificate reload for e2e rotation test
-  extraArgs:
-    - --reload-cert
-  # Mount certificates with legacy key names (matching gencerts.sh format)
-  volumes:
-    - name: tls-certs
-      secret:
-        secretName: vpa-tls-certs
-        defaultMode: 420
-        items:
-          - key: caCert.pem
-            path: caCert.pem
-          - key: serverCert.pem
-            path: serverCert.pem
-          - key: serverKey.pem
-            path: serverKey.pem
-  volumeMounts:
-    - name: tls-certs
-      mountPath: /etc/tls-certs
-      readOnly: true
 
 recommender:
   enabled: false  # Enabled dynamically based on suite

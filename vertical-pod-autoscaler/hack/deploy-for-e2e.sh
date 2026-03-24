@@ -125,7 +125,7 @@ if [ -n "${FEATURE_GATES:-}" ]; then
         HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
         ;;
       admission-controller)
-        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[1]=--feature-gates=${FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
         ;;
     esac
   done
@@ -133,15 +133,6 @@ fi
 
 # Uninstall any existing VPA Helm release
 helm uninstall ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE} 2>/dev/null || true
-
-# Generate TLS certificates for admission-controller before Helm install
-for COMPONENT in ${COMPONENTS}; do
-  if [[ "${COMPONENT}" == "admission-controller" ]]; then
-    echo " ** Generating TLS certificates for admission-controller"
-    (cd ${SCRIPT_ROOT}/pkg/admission-controller && bash ./gencerts.sh e2e || true)
-    break
-  fi
-done
 
 # Install/Upgrade VPA using Helm chart
 echo " ** Installing/Upgrading VPA via Helm chart"
