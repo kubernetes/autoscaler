@@ -31,6 +31,8 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	cbv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -39,6 +41,7 @@ import (
 	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	mockprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mocks"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -3614,4 +3617,61 @@ func TestStaticAutoscalerWithNodeDeclaredFeatures(t *testing.T) {
 			mock.AssertExpectationsForObjects(t, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 		})
 	}
+}
+
+func TestStaticAutoscalerRunOnceClearsRegistry(t *testing.T) {
+	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	allNodeLister := kubernetes.NewTestNodeLister(nil)
+	allPodListerMock := &podListerMock{}
+	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
+	daemonSetListerMock := &daemonSetListerMock{}
+
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, time.Now())
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNode("ng1", n1)
+
+	options := config.AutoscalingOptions{}
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, _ := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock, nil, nil, nil, nil)
+	autoscalingCtx.ListerRegistry = listerRegistry
+
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&autoscalingCtx, processors, clusterState, nil)
+	autoscalingCtx.ScaleDownActuator = sdActuator
+	quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
+	suOrchestrator := orchestrator.New()
+	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, quotasTrackerFactory)
+
+	registry := fakepods.NewRegistry(nil)
+	fakePodUID := types.UID("fake-pod-uid")
+	registry.SetCapacityBuffer(fakePodUID, &cbv1beta1.CapacityBuffer{})
+	assert.NotNil(t, registry.GetCapacityBuffer(fakePodUID))
+
+	autoscaler := &StaticAutoscaler{
+		AutoscalingContext:         &autoscalingCtx,
+		clusterStateRegistry:       clusterState,
+		scaleDownPlanner:           sdPlanner,
+		scaleDownActuator:          sdActuator,
+		scaleUpOrchestrator:        suOrchestrator,
+		processors:                 processors,
+		loopStartNotifier:          loopstart.NewObserversList(nil),
+		processorCallbacks:         processorCallbacks,
+		capacityBufferPodsRegistry: registry,
+		initialized:                true,
+	}
+
+	readyNodeLister.SetNodes([]*apiv1.Node{n1})
+	allNodeLister.SetNodes([]*apiv1.Node{n1})
+	allPodListerMock.On("List").Return([]*apiv1.Pod{}, nil).Once()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
+
+	err := autoscaler.RunOnce(time.Now())
+	assert.NoError(t, err)
+	assert.Nil(t, registry.GetCapacityBuffer(fakePodUID))
 }
