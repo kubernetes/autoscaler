@@ -411,7 +411,7 @@ func (ng *AwsNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		return nil, err
 	}
 
-	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.asg.Name)})
+	nodeInfo := framework.NewNodeInfo(node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.asg.Name), nil))
 	return nodeInfo, nil
 }
 
@@ -437,7 +437,7 @@ func BuildAWS(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDis
 	if opts.AWSUseStaticInstanceList {
 		klog.Warningf("Using static EC2 Instance Types, this list could be outdated. Last update time: %s", lastUpdateTime)
 	} else {
-		generatedInstanceTypes, err := GenerateEC2InstanceTypes(sdkProvider.session)
+		generatedInstanceTypes, err := GenerateEC2InstanceTypes(sdkProvider.cfg)
 		if err != nil {
 			klog.Errorf("Failed to generate AWS EC2 Instance Types: %v, falling back to static list with last update time: %s", err, lastUpdateTime)
 		}

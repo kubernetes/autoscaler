@@ -5,4 +5,4 @@ processor:
    - "autoscaling.k8s.io/v1beta2"
 
 render:
-  kubernetesVersion: 1.32
+  kubernetesVersion: 1.35

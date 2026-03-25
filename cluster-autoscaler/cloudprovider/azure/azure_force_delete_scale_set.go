@@ -20,11 +20,12 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/azure"
+	azerrors "github.com/Azure/azure-sdk-for-go-extensions/pkg/errors"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 
 	"k8s.io/klog/v2"
-	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
+	"k8s.io/utils/ptr"
 )
 
 // When Azure Dedicated Host is enabled or using isolated vm skus, force deleting a VMSS fails with the following error:
@@ -62,25 +63,37 @@ var isolatedVMSizes = map[string]bool{
 	strings.ToLower("Standard_M128ms"):      true,
 }
 
-func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs, commonAsgId string) (*azure.Future, *retry.Error) {
+func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, commonAsgId string) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], error) {
 	scaleSet.instanceMutex.Lock()
 	defer scaleSet.instanceMutex.Unlock()
 
 	skuName := scaleSet.getSKU()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 	forceDelete := shouldForceDelete(skuName, scaleSet)
-	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsgId, *requiredIds, forceDelete)
-	if forceDelete && isOperationNotAllowed(rerr) {
-		klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIds, scaleSet.Name)
-		return scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsgId, *requiredIds, false)
+
+	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
+		ForceDeletion: &forceDelete,
+	})
+	if forceDelete && isOperationNotAllowed(err) {
+		klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIDs, scaleSet.Name)
+		return scaleSet.manager.azClient.vmssClientForDelete.BeginDeleteInstances(ctx, resourceGroup, commonAsgId, *requiredIds, &armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
+			ForceDeletion: ptr.To(false),
+		})
 	}
-	return future, rerr
+	return poller, err
 }
 
 func shouldForceDelete(skuName string, scaleSet *ScaleSet) bool {
 	return scaleSet.enableForceDelete && !isolatedVMSizes[strings.ToLower(skuName)] && !scaleSet.dedicatedHost
 }
 
-func isOperationNotAllowed(rerr *retry.Error) bool {
-	return rerr != nil && rerr.ServiceErrorCode() == retry.OperationNotAllowed
+// isOperationNotAllowed checks if `error` is an OperationNotAllowed error.
+func isOperationNotAllowed(err error) bool {
+	if err == nil {
+		return false
+	}
+	if azerr := azerrors.IsResponseError(err); azerr != nil {
+		return azerr.ErrorCode == azerrors.OperationNotAllowed
+	}
+	return strings.Contains(err.Error(), azerrors.OperationNotAllowed)
 }

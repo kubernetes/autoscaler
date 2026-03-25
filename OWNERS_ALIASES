@@ -1,4 +1,33 @@
 aliases:
+  api-approvers:
+    - deads2k
+    - msau42
+    - smarterclayton
+    - thockin
+    - liggitt
+  api-reviewers:
+    - andrewsykim
+    - smarterclayton
+    - thockin
+    - liggitt
+    - wojtek-t
+    - deads2k
+    - yujuhong
+    - derekwaynecarr
+    - mikedanese
+    - sttts
+    - dchen1107
+    - saad-ali
+    - luxas
+    - janetkuo
+    - justinsb
+    - pwittrock
+    - tallclair
+    - mwielgus
+    - soltysh
+    - jsafrane
+    - dims
+    - cici37
   sig-autoscaling-leads:
     - adrianmoisey
     - gjtempleton

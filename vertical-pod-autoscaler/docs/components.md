@@ -2,17 +2,18 @@
 
 ## Contents
 
-- [Components](#components)
-  - [Introduction](#introduction)
-  - [Recommender](#recommender)
-    - [Running](#running-the-recommender)
-    - [Implementation](#implementation-of-the-recommender)
-  - [Updater](#updater)
-    - [Current implementation](#current-implementation)
-    - [Missing Parts](#missing-parts)
-  - [Admission Controller](#admission-controller)
-    - [Running](#running-the-admission-controller)
-    - [Implementation](#implementation-of-the-admission-controller)
+<!-- toc -->
+- [Introduction](#introduction)
+- [Recommender](#recommender)
+- [Running the recommender](#running-the-recommender)
+  - [Implementation of the recommender](#implementation-of-the-recommender)
+- [Updater](#updater)
+  - [Current implementation](#current-implementation)
+  - [Missing parts](#missing-parts)
+- [Admission-controller](#admission-controller)
+  - [Running the admission-controller](#running-the-admission-controller)
+  - [Implementation of the Admission Controller](#implementation-of-the-admission-controller)
+<!-- /toc -->
 
 ## Introduction
 

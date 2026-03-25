@@ -46,10 +46,10 @@ func TestPercentileEstimator(t *testing.T) {
 	memoryPeaksHistogram.AddSample(2e9, 1.0, anyTime)
 	memoryPeaksHistogram.AddSample(3e9, 1.0, anyTime)
 	// Create an estimator.
-	CPUPercentile := 0.2
-	MemoryPercentile := 0.5
-	cpuEstimator := NewPercentileCPUEstimator(CPUPercentile)
-	memoryEstimator := NewPercentileMemoryEstimator(MemoryPercentile)
+	cpuPercentile := 0.2
+	memoryPercentile := 0.5
+	cpuEstimator := NewPercentileCPUEstimator(cpuPercentile)
+	memoryEstimator := NewPercentileMemoryEstimator(memoryPercentile)
 	combinedEstimator := NewCombinedEstimator(cpuEstimator, memoryEstimator)
 
 	resourceEstimation := combinedEstimator.GetResourceEstimation(
@@ -162,7 +162,6 @@ func TestConfidenceMultiplierNoHistory(t *testing.T) {
 // Verifies that the MarginEstimator adds margin to the originally
 // estimated resources.
 func TestMarginEstimator(t *testing.T) {
-
 	// Use 10% margin on top of the recommended resources.
 	marginFraction := 0.1
 	baseCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(3.14))
@@ -190,5 +189,4 @@ func TestMinResourcesEstimator(t *testing.T) {
 	memoryEstimator := WithMemoryMinResource(minMemory, constMemoryEstimator)
 	memoryEstimation := memoryEstimator.GetMemoryEstimation(s)
 	assert.Equal(t, 4e8, model.BytesFromMemoryAmount(memoryEstimation))
-
 }

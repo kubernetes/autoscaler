@@ -26,6 +26,7 @@ import (
 	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/utils/ptr"
 	"k8s.io/utils/set"
 )
 
@@ -322,6 +323,86 @@ func TestSanitizedPodResourceClaims(t *testing.T) {
 			},
 		},
 	}
+	singleNodeAllocationWithAdminAccessRequest := &resourceapi.AllocationResult{
+		NodeSelector: &apiv1.NodeSelector{NodeSelectorTerms: []apiv1.NodeSelectorTerm{{
+			MatchFields: []apiv1.NodeSelectorRequirement{
+				{Key: "metadata.name", Operator: apiv1.NodeSelectorOpIn, Values: []string{"testNode"}},
+			}},
+		}},
+		Devices: resourceapi.DeviceAllocationResult{
+			Results: []resourceapi.DeviceRequestAllocationResult{
+				{Request: "request1", Driver: "driver.foo.com", Pool: "testNodePool1", Device: "device1"},
+				{Request: "request2", Driver: "driver.foo.com", Pool: "testNodePool1", Device: "device2", AdminAccess: ptr.To(false)},
+				{Request: "request3", Driver: "driver.foo.com", Pool: "testNodePool2", Device: "device1", AdminAccess: ptr.To(true)},
+			},
+		},
+	}
+	singleNodeAllocationWithAdminAccessRequestSanitized := &resourceapi.AllocationResult{
+		NodeSelector: &apiv1.NodeSelector{NodeSelectorTerms: []apiv1.NodeSelectorTerm{{
+			MatchFields: []apiv1.NodeSelectorRequirement{
+				{Key: "metadata.name", Operator: apiv1.NodeSelectorOpIn, Values: []string{"newNode"}},
+			}},
+		}},
+		Devices: resourceapi.DeviceAllocationResult{
+			Results: []resourceapi.DeviceRequestAllocationResult{
+				{Request: "request1", Driver: "driver.foo.com", Pool: "testNodePool1-abc", Device: "device1"},
+				{Request: "request2", Driver: "driver.foo.com", Pool: "testNodePool1-abc", Device: "device2", AdminAccess: ptr.To(false)},
+				{Request: "request3", Driver: "driver.foo.com", Pool: "testNodePool2", Device: "device1", AdminAccess: ptr.To(true)},
+			},
+		},
+	}
+	singleNodeAllocationOnlyAdminAccess := &resourceapi.AllocationResult{
+		NodeSelector: &apiv1.NodeSelector{NodeSelectorTerms: []apiv1.NodeSelectorTerm{{
+			MatchFields: []apiv1.NodeSelectorRequirement{
+				{Key: "metadata.name", Operator: apiv1.NodeSelectorOpIn, Values: []string{"testNode"}},
+			}},
+		}},
+		Devices: resourceapi.DeviceAllocationResult{
+			Results: []resourceapi.DeviceRequestAllocationResult{
+				{Request: "request1", Driver: "driver.foo.com", Pool: "testNodePool1", Device: "device1", AdminAccess: ptr.To(true)},
+				{Request: "request2", Driver: "driver.foo.com", Pool: "testNodePool2", Device: "device2", AdminAccess: ptr.To(true)},
+			},
+		},
+	}
+	singleNodeAllocationOnlyAdminAccessSanitized := &resourceapi.AllocationResult{
+		NodeSelector: &apiv1.NodeSelector{NodeSelectorTerms: []apiv1.NodeSelectorTerm{{
+			MatchFields: []apiv1.NodeSelectorRequirement{
+				{Key: "metadata.name", Operator: apiv1.NodeSelectorOpIn, Values: []string{"newNode"}},
+			}},
+		}},
+		Devices: resourceapi.DeviceAllocationResult{
+			Results: []resourceapi.DeviceRequestAllocationResult{
+				{Request: "request1", Driver: "driver.foo.com", Pool: "testNodePool1", Device: "device1", AdminAccess: ptr.To(true)},
+				{Request: "request2", Driver: "driver.foo.com", Pool: "testNodePool2", Device: "device2", AdminAccess: ptr.To(true)},
+			},
+		},
+	}
+	multipleNodesAllocationOnlyAdminAccess := &resourceapi.AllocationResult{
+		NodeSelector: &apiv1.NodeSelector{NodeSelectorTerms: []apiv1.NodeSelectorTerm{{
+			MatchExpressions: []apiv1.NodeSelectorRequirement{
+				{Key: "someLabel", Operator: apiv1.NodeSelectorOpIn, Values: []string{"val1", "val2"}},
+			}},
+		}},
+		Devices: resourceapi.DeviceAllocationResult{
+			Results: []resourceapi.DeviceRequestAllocationResult{
+				{Request: "request1", Driver: "driver.foo.com", Pool: "sharedPool1", Device: "device1", AdminAccess: ptr.To(true)},
+				{Request: "request2", Driver: "driver.foo.com", Pool: "sharedPool1", Device: "device2", AdminAccess: ptr.To(true)},
+			},
+		},
+	}
+	multipleNodesAllocationOnlyAdminAccessSanitized := &resourceapi.AllocationResult{
+		NodeSelector: &apiv1.NodeSelector{NodeSelectorTerms: []apiv1.NodeSelectorTerm{{
+			MatchFields: []apiv1.NodeSelectorRequirement{
+				{Key: "metadata.name", Operator: apiv1.NodeSelectorOpIn, Values: []string{"newNode"}},
+			}},
+		}},
+		Devices: resourceapi.DeviceAllocationResult{
+			Results: []resourceapi.DeviceRequestAllocationResult{
+				{Request: "request1", Driver: "driver.foo.com", Pool: "sharedPool1", Device: "device1", AdminAccess: ptr.To(true)},
+				{Request: "request2", Driver: "driver.foo.com", Pool: "sharedPool1", Device: "device2", AdminAccess: ptr.To(true)},
+			},
+		},
+	}
 
 	for _, tc := range []struct {
 		testName         string
@@ -414,6 +495,46 @@ func TestSanitizedPodResourceClaims(t *testing.T) {
 			wantClaims: []*resourceapi.ResourceClaim{
 				TestClaimWithPodReservations(TestClaimWithAllocation(newOwnerClaim1, singleNodeAllocationSanitized), newOwner),
 				TestClaimWithPodReservations(TestClaimWithAllocation(newOwnerClaim2, singleNodeAllocationSanitized), newOwner),
+			},
+		},
+		{
+			testName: "adminAccess pod-owned claims are sanitized",
+			claims: []*resourceapi.ResourceClaim{
+				TestClaimWithPodReservations(TestClaimWithAllocation(oldOwnerClaim1, singleNodeAllocationWithAdminAccessRequest), oldOwner),
+				TestClaimWithPodReservations(TestClaimWithAllocation(oldOwnerClaim2, singleNodeAllocationWithAdminAccessRequest), oldOwner),
+			},
+			oldNodeName:      "testNode",
+			newNodeName:      "newNode",
+			oldNodePoolNames: set.New("testNodePool1", "testNodePool2"),
+			wantClaims: []*resourceapi.ResourceClaim{
+				TestClaimWithPodReservations(TestClaimWithAllocation(newOwnerClaim1, singleNodeAllocationWithAdminAccessRequestSanitized), newOwner),
+				TestClaimWithPodReservations(TestClaimWithAllocation(newOwnerClaim2, singleNodeAllocationWithAdminAccessRequestSanitized), newOwner),
+			},
+		},
+		{
+			testName: "pod with multiple claims, one without AdminAccess and one with only AdminAccess",
+			claims: []*resourceapi.ResourceClaim{
+				TestClaimWithPodReservations(TestClaimWithAllocation(oldOwnerClaim1, singleNodeAllocation), oldOwner),
+				TestClaimWithPodReservations(TestClaimWithAllocation(oldOwnerClaim2, singleNodeAllocationOnlyAdminAccess), oldOwner),
+			},
+			oldNodeName:      "testNode",
+			newNodeName:      "newNode",
+			oldNodePoolNames: set.New("testNodePool1", "testNodePool2"),
+			wantClaims: []*resourceapi.ResourceClaim{
+				TestClaimWithPodReservations(TestClaimWithAllocation(newOwnerClaim1, singleNodeAllocationSanitized), newOwner),
+				TestClaimWithPodReservations(TestClaimWithAllocation(newOwnerClaim2, singleNodeAllocationOnlyAdminAccessSanitized), newOwner),
+			},
+		},
+		{
+			testName: "claim available on multiple nodes with all AdminAccess allocations can be sanitized",
+			claims: []*resourceapi.ResourceClaim{
+				TestClaimWithPodReservations(TestClaimWithAllocation(oldOwnerClaim1, multipleNodesAllocationOnlyAdminAccess), oldOwner),
+			},
+			oldNodeName:      "testNode",
+			newNodeName:      "newNode",
+			oldNodePoolNames: set.New("testNodePool1", "testNodePool2"),
+			wantClaims: []*resourceapi.ResourceClaim{
+				TestClaimWithPodReservations(TestClaimWithAllocation(newOwnerClaim1, multipleNodesAllocationOnlyAdminAccessSanitized), newOwner),
 			},
 		},
 	} {

@@ -31,9 +31,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2edebug "k8s.io/kubernetes/test/e2e/framework/debug"
+	e2eendpointslice "k8s.io/kubernetes/test/e2e/framework/endpointslice"
 	e2ekubectl "k8s.io/kubernetes/test/e2e/framework/kubectl"
 	e2erc "k8s.io/kubernetes/test/e2e/framework/rc"
 	"k8s.io/kubernetes/test/e2e/framework/resource"
@@ -54,11 +56,6 @@ const (
 	port                            = 80
 	targetPort                      = 8080
 	timeoutRC                       = 120 * time.Second
-	startServiceTimeout             = time.Minute
-	startServiceInterval            = 5 * time.Second
-	rcIsNil                         = "ERROR: replicationController = nil"
-	deploymentIsNil                 = "ERROR: deployment = nil"
-	rsIsNil                         = "ERROR: replicaset = nil"
 	invalidKind                     = "ERROR: invalid workload kind for resource consumer"
 	customMetricName                = "QPS"
 	serviceInitializationTimeout    = 2 * time.Minute
@@ -420,8 +417,8 @@ func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, ns, name st
 	framework.ExpectNoError(e2erc.RunRC(context.TODO(), controllerRcConfig))
 
 	// Wait for endpoints to propagate for the controller service.
-	framework.ExpectNoError(framework.WaitForServiceEndpointsNum(
-		context.TODO(), c, ns, controllerName, 1, startServiceInterval, startServiceTimeout))
+	framework.ExpectNoError(e2eendpointslice.WaitForEndpointCount(
+		context.TODO(), c, ns, controllerName, 1))
 }
 
 // runReplicaSet launches (and verifies correctness) of a replicaset.
@@ -444,6 +441,7 @@ func runOomingReplicationController(c clientset.Interface, ns, name string, repl
 		Namespace:   ns,
 		Timeout:     timeoutRC,
 		Replicas:    replicas,
+		Labels:      utils.OOMLabels,
 		Annotations: make(map[string]string),
 		MemRequest:  1024 * 1024 * 1024,
 		MemLimit:    1024 * 1024 * 1024,

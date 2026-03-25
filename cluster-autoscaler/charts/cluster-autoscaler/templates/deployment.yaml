@@ -14,10 +14,14 @@ spec:
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   selector:
     matchLabels:
+{{- if .Values.deployment.selector }}
+{{ toYaml .Values.deployment.selector | indent 6 }}
+{{- else }}
 {{ include "cluster-autoscaler.instance-name" . | indent 6 }}
     {{- if .Values.podLabels }}
 {{ toYaml .Values.podLabels | indent 6 }}
     {{- end }}
+{{- end }}
 {{- if .Values.updateStrategy }}
   strategy:
     {{ toYaml .Values.updateStrategy | nindent 4 | trim }}
@@ -75,7 +79,7 @@ spec:
             {{- end }}
             {{- end }}
           {{- end }}
-          {{- if eq .Values.cloudProvider "rancher" }}
+          {{- if or (eq .Values.cloudProvider "rancher") (eq .Values.cloudProvider "vultr") }}
             {{- if .Values.cloudConfigPath }}
             - --cloud-config={{ .Values.cloudConfigPath }}
             {{- end }}

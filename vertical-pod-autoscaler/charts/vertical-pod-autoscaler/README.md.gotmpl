@@ -11,8 +11,63 @@ WARNING: This chart is currently under development and is not ready for producti
 ## Introduction
 The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resource requests of pods to match their actual resource utilization.
 
+## Helm Installation & upgrade
+
+```bash
+helm repo add autoscalers https://kubernetes.github.io/autoscaler
+helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
+```
+
 {{ template "chart.maintainersSection" . }}
 
 {{ template "chart.requirementsSection" . }}
 
+## Webhook Management
+The admission controller requires a `MutatingWebhookConfiguration` and TLS certificates. This chart supports two mutually exclusive modes:
+
+### Helm-managed (default)
+```yaml
+admissionController:
+  registerWebhook: false
+  certGen:
+    enabled: true
+```
+In this mode:
+- Helm creates the MutatingWebhookConfiguration
+- The kube-webhook-certgen job generates TLS certificates and stores them in a Secret
+- The certificates are automatically injected into the webhook configuration
+
+### Application-managed
+```yaml
+admissionController:
+  registerWebhook: true
+  certGen:
+    enabled: false
+```
+In this mode:
+- The VPA admission controller creates and manages the webhook itself
+Important: You are responsible for creating the TLS secret before or after installing the chart. The admission controller will only create the `MutatingWebhookConfiguration` once the secret exists.
+If the secret is created after the Helm install, you must restart the admission controller pod to trigger webhook registration.
+
+## Migration Guides
+
+### Migrating from vpa-up.sh script
+TBD
+
+### Migrating from Application-managed to Helm-managed webhook
+If you previously deployed with registerWebhook: true and want to switch to Helm-managed:
+- Delete the existing webhook:
+```bash
+kubectl delete mutatingwebhookconfiguration vpa-webhook-config
+```
+- Delete the existing secret (to allow certgen to create new certificates):
+```bash
+kubectl delete secret -n <namespace> vpa-tls-certs
+```
+- Upgrade with the new values:
+```bash
+helm upgrade <release-name> <chart> \
+  --set admissionController.registerWebhook=false \
+  --set admissionController.certGen.enabled=true
+```
 {{ template "chart.valuesSection" . }}

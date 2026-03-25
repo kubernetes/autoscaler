@@ -27,6 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -218,6 +219,25 @@ func WithNodeNamesAffinity(nodeNames ...string) func(*apiv1.Pod) {
 	}
 }
 
+// WithPodHostnameAntiAffinity sets pod's anti-affinity for pods matching the given labels at hostname topology level.
+func WithPodHostnameAntiAffinity(labels map[string]string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		if pod.Spec.Affinity == nil {
+			pod.Spec.Affinity = &apiv1.Affinity{}
+		}
+		pod.Spec.Affinity.PodAntiAffinity = &apiv1.PodAntiAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
+				{
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: labels,
+					},
+					TopologyKey: "kubernetes.io/hostname",
+				},
+			},
+		}
+	}
+}
+
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)
@@ -326,8 +346,18 @@ func TolerateGpuForPod(pod *apiv1.Pod) {
 	pod.Spec.Tolerations = append(pod.Spec.Tolerations, apiv1.Toleration{Key: resourceNvidiaGPU, Operator: apiv1.TolerationOpExists})
 }
 
+// NodeOption is a function that modifies a Node during construction.
+type NodeOption func(*apiv1.Node)
+
+// IsReady sets the node to a Ready state.
+func IsReady(ready bool) NodeOption {
+	return func(node *apiv1.Node) {
+		SetNodeReadyState(node, ready, time.Now())
+	}
+}
+
 // BuildTestNode creates a node with specified capacity.
-func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64) *apiv1.Node {
+func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64, opts ...NodeOption) *apiv1.Node {
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:     name,
@@ -356,7 +386,30 @@ func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64) *apiv
 		node.Status.Allocatable[k] = v
 	}
 
+	for _, opt := range opts {
+		opt(node)
+	}
+
 	return node
+}
+
+// BuildCSINode returns a CSINode object given a node object
+func BuildCSINode(node *apiv1.Node) *storagev1.CSINode {
+	return &storagev1.CSINode{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: node.Name,
+			UID:  types.UID("csi-node" + node.UID),
+		},
+		Spec: storagev1.CSINodeSpec{
+			Drivers: []storagev1.CSINodeDriver{
+				{
+					Name:         "ebs.csi.aws.com",
+					NodeID:       string(node.UID),
+					TopologyKeys: []string{"topology.ebs.csi.aws.com/zone"},
+				},
+			},
+		},
+	}
 }
 
 // WithSchedulingGatedStatus upserts the condition with type PodScheduled to be of status false

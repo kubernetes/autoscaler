@@ -1,5 +1,20 @@
 # VPA Sidecar Container Management
 
+<!-- toc -->
+- [Understanding VPA and Container Policies](#understanding-vpa-and-container-policies)
+  - [Default Container Policies](#default-container-policies)
+- [Default Behavior: Ignoring Sidecar Containers](#default-behavior-ignoring-sidecar-containers)
+  - [The vpaObservedContainers Annotation](#the-vpaobservedcontainers-annotation)
+  - [Webhook Ordering Importance](#webhook-ordering-importance)
+  - [The Eviction Loop Problem](#the-eviction-loop-problem)
+- [Customizing VPA Behavior for Sidecar Containers](#customizing-vpa-behavior-for-sidecar-containers)
+  - [Option 1: Webhook Ordering](#option-1-webhook-ordering)
+  - [Option 2: Webhook Reinvocation](#option-2-webhook-reinvocation)
+- [Implementation Examples](#implementation-examples)
+  - [Example 1: Istio Sidecar Integration](#example-1-istio-sidecar-integration)
+  - [Example 2: Custom VPA Configuration with Sidecars](#example-2-custom-vpa-configuration-with-sidecars)
+<!-- /toc -->
+
 In this document, "sidecar container" refers to any additional Container that isn't the main application Container in a Pod. This is distinct from the [native Kubernetes sidecar pattern](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/), which makes use of `initContainers`. Our usage here applies to all additional regular `containers` only, as VPA does not support `initContainers` yet.
 
 The Vertical Pod Autoscaler (VPA) has specific behavior when dealing with these additional containers that are injected into pods via admission webhooks.

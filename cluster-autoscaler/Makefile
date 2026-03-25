@@ -60,6 +60,9 @@ test-build-tags:
 test-unit: clean build
 	go test --test.short -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
+benchmark:
+	go test ./... -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
+
 dev-release: dev-release-arch-$(GOARCH)
 
 dev-release-arch-%: build-arch-% make-image-arch-% push-image-arch-%
@@ -70,6 +73,8 @@ make-image: make-image-arch-$(GOARCH)
 make-image-arch-%:
 	GOOS=$(GOOS) docker buildx build --pull --platform linux/$* \
 		--build-arg "GOARCH=$*" \
+		--build-arg "LDFLAGS_FLAG=${LDFLAGS_FLAG}" \
+		--build-arg "TAGS_FLAG=${TAGS_FLAG}" \
 		-t ${IMAGE}-$*:${TAG} \
 		-f Dockerfile .
 	@echo "Image ${TAG}${FOR_PROVIDER}-$* completed"
@@ -136,23 +141,3 @@ test-in-docker: clean docker-builder
 	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
 
 .PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest
-
-## Location to install dependencies to
-LOCALBIN ?= $(shell pwd)/bin
-$(LOCALBIN):
-	mkdir -p $(LOCALBIN)
-
-## Tool Binaries
-CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
-
-## Tool Versions
-CONTROLLER_TOOLS_VERSION ?= v0.14.0
-
-.PHONY: controller-gen
-controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
-$(CONTROLLER_GEN): $(LOCALBIN)
-	test -s $(LOCALBIN)/controller-gen || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
-
-.PHONY: manifest
-manifest: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./apis/..." output:crd:artifacts:config=apis/config/crd

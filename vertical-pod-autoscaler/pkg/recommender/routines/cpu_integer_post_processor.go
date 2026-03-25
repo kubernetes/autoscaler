@@ -19,7 +19,7 @@ package routines
 import (
 	"strings"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -42,7 +42,6 @@ var _ RecommendationPostProcessor = &IntegerCPUPostProcessor{}
 // Process apply the capping post-processing to the recommendation.
 // For this post processor the CPU value is rounded up to an integer
 func (p *IntegerCPUPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
-
 	amendedRecommendation := recommendation.DeepCopy()
 
 	for key, value := range vpa.Annotations {
@@ -64,9 +63,9 @@ func (p *IntegerCPUPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, 
 	return amendedRecommendation
 }
 
-func setIntegerCPURecommendation(recommendation apiv1.ResourceList) {
+func setIntegerCPURecommendation(recommendation corev1.ResourceList) {
 	for resourceName, recommended := range recommendation {
-		if resourceName != apiv1.ResourceCPU {
+		if resourceName != corev1.ResourceCPU {
 			continue
 		}
 		recommended.RoundUp(resource.Scale(0))

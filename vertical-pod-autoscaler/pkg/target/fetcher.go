@@ -18,6 +18,7 @@ package target
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -30,7 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/discovery"
-	cacheddiscovery "k8s.io/client-go/discovery/cached"
+	cacheddiscovery "k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -109,7 +110,7 @@ type vpaTargetSelectorFetcher struct {
 
 func (f *vpaTargetSelectorFetcher) Fetch(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
 	if vpa.Spec.TargetRef == nil {
-		return nil, fmt.Errorf("targetRef not defined. If this is a v1beta1 object, switch to v1")
+		return nil, errors.New("targetRef not defined. If this is a v1beta1 object, switch to v1")
 	}
 	kind := wellKnownController(vpa.Spec.TargetRef.Kind)
 	informer, exists := f.informersMap[kind]
@@ -160,7 +161,7 @@ func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name 
 	case (*corev1.ReplicationController):
 		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.Selector))
 	}
-	return nil, fmt.Errorf("don't know how to read label selector")
+	return nil, errors.New("don't know how to read label selector")
 }
 
 func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(

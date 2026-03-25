@@ -20,7 +20,8 @@ import (
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
-	v1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -28,17 +29,17 @@ import (
 
 // FakePodsScaleUpStatusProcessor is a ScaleUpStatusProcessor used for filtering out fake pods from scaleup status.
 type FakePodsScaleUpStatusProcessor struct {
-	buffersRegistry *capacityBuffersFakePodsRegistry
+	buffersRegistry *fakepods.Registry
 }
 
 type bufferInfo struct {
-	buffer         *v1alpha1.CapacityBuffer
+	buffer         *v1beta1.CapacityBuffer
 	numberOfPods   int
 	reasonMessages []string
 }
 
 // NewFakePodsScaleUpStatusProcessor return an instance of FakePodsScaleUpStatusProcessor
-func NewFakePodsScaleUpStatusProcessor(buffersRegistry *capacityBuffersFakePodsRegistry) *FakePodsScaleUpStatusProcessor {
+func NewFakePodsScaleUpStatusProcessor(buffersRegistry *fakepods.Registry) *FakePodsScaleUpStatusProcessor {
 	return &FakePodsScaleUpStatusProcessor{buffersRegistry: buffersRegistry}
 }
 
@@ -61,8 +62,8 @@ func (p *FakePodsScaleUpStatusProcessor) createBuffersNoScaleUpEvents(context *c
 		consideredNodeGroupsMap := cloudprovider.NodeGroupListToMapById(scaleUpStatus.ConsideredNodeGroups)
 		buffersInfo := map[string]*bufferInfo{}
 		for _, noScaleUpInfo := range fakePodsRemainUnschedulable {
-			parentCapacityBuffer, found := p.buffersRegistry.fakePodsUIDToBuffer[string(noScaleUpInfo.Pod.UID)]
-			if found {
+			parentCapacityBuffer := p.buffersRegistry.GetCapacityBuffer(noScaleUpInfo.Pod.UID)
+			if parentCapacityBuffer != nil {
 				bufferUID := string(parentCapacityBuffer.UID)
 				if _, found := buffersInfo[bufferUID]; !found {
 					buffersInfo[bufferUID] = &bufferInfo{
@@ -87,8 +88,8 @@ func (p *FakePodsScaleUpStatusProcessor) createBuffersScaleUpEvents(context *ca_
 	if len(scaleUpStatus.ScaleUpInfos) > 0 && len(fakePodsTriggeredScaleUp) > 0 {
 		buffersInfo := map[string]*bufferInfo{}
 		for _, pod := range fakePodsTriggeredScaleUp {
-			parentCapacityBuffer, found := p.buffersRegistry.fakePodsUIDToBuffer[string(pod.UID)]
-			if found {
+			parentCapacityBuffer := p.buffersRegistry.GetCapacityBuffer(pod.UID)
+			if parentCapacityBuffer != nil {
 				bufferUID := string(parentCapacityBuffer.UID)
 				if _, found := buffersInfo[bufferUID]; !found {
 					buffersInfo[bufferUID] = &bufferInfo{
@@ -112,7 +113,7 @@ func filterOutCapacityBuffersPod[T any](podsWrappers []T, getPod func(T) *apiv1.
 	filteredOutPodsSources := make([]T, 0)
 	for _, podsWrapper := range podsWrappers {
 		currentPod := getPod(podsWrapper)
-		if isFakeCapacityBuffersPod(currentPod) {
+		if IsFakeCapacityBuffersPod(currentPod) {
 			filteredOutPodsSources = append(filteredOutPodsSources, podsWrapper)
 		} else {
 			filteredPodsSources = append(filteredPodsSources, podsWrapper)

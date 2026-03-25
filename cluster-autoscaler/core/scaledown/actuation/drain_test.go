@@ -38,6 +38,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	capacitybufferpodlister "k8s.io/autoscaler/cluster-autoscaler/processors/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	simulator_fake "k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
@@ -141,7 +142,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			provider.AddNode("ng1", n1)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil, nil)
 			assert.NoError(t, err)
 
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, []*apiv1.Node{n1}, dsPods)
@@ -208,7 +209,7 @@ func TestDrainNodeWithPods(t *testing.T) {
 		MaxPodEvictionTime:                5 * time.Second,
 		DaemonSetEvictionForOccupiedNodes: true,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
 	legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
@@ -272,7 +273,7 @@ func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 		MaxGracefulTerminationSec: 20,
 		MaxPodEvictionTime:        5 * time.Second,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
 	legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
@@ -341,7 +342,7 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 		MaxPodEvictionTime:                5 * time.Second,
 		DaemonSetEvictionForOccupiedNodes: true,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
 	legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
@@ -416,7 +417,7 @@ func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 		MaxGracefulTerminationSec: 20,
 		MaxPodEvictionTime:        0 * time.Second,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
 	legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
@@ -478,7 +479,7 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 		MaxGracefulTerminationSec: 20,
 		MaxPodEvictionTime:        0 * time.Second,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 	r := evRegister{}
 	legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
@@ -559,7 +560,7 @@ func TestDrainForceNodeWithPodsEvictionFailure(t *testing.T) {
 		MaxGracefulTerminationSec: 20,
 		MaxPodEvictionTime:        0 * time.Second,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 	r := evRegister{}
 	legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
@@ -621,7 +622,7 @@ func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
 		MaxGracefulTerminationSec: 0,
 		MaxPodEvictionTime:        0 * time.Second,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
 	legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
@@ -686,6 +687,11 @@ func TestPodsToEvict(t *testing.T) {
 		},
 		"fake pods are never returned": {
 			pods:          []*apiv1.Pod{fakePod("pod-1"), fakePod("pod-2")},
+			wantDsPods:    []*apiv1.Pod{},
+			wantNonDsPods: []*apiv1.Pod{},
+		},
+		"capacity buffers fake pods are never returned": {
+			pods:          []*apiv1.Pod{capacitybufferFakePod("pod-1"), capacitybufferFakePod("pod-2")},
 			wantDsPods:    []*apiv1.Pod{},
 			wantNonDsPods: []*apiv1.Pod{},
 		},
@@ -774,6 +780,17 @@ func mirrorPod(name string) *apiv1.Pod {
 
 func fakePod(name string) *apiv1.Pod {
 	return simulator_fake.WithFakePodAnnotation(regularPod(name))
+}
+
+func capacitybufferFakePod(name string) *apiv1.Pod {
+	return &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+			Annotations: map[string]string{
+				capacitybufferpodlister.CapacityBufferFakePodAnnotationKey: capacitybufferpodlister.CapacityBufferFakePodAnnotationValue,
+			},
+		},
+	}
 }
 
 func dsPod(name string, evictable bool) *apiv1.Pod {

@@ -17,11 +17,13 @@ limitations under the License.
 package model
 
 import (
+	"maps"
 	"sort"
+	"sync"
 	"time"
 
-	autoscaling "k8s.io/api/autoscaling/v1"
-	apiv1 "k8s.io/api/core/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -46,9 +48,9 @@ func (conditionsMap *vpaConditionsMap) Set(
 		Message: message,
 	}
 	if status {
-		condition.Status = apiv1.ConditionTrue
+		condition.Status = corev1.ConditionTrue
 	} else {
-		condition.Status = apiv1.ConditionFalse
+		condition.Status = corev1.ConditionFalse
 	}
 	if alreadyPresent && oldCondition.Status == condition.Status {
 		condition.LastTransitionTime = oldCondition.LastTransitionTime
@@ -75,7 +77,97 @@ func (conditionsMap *vpaConditionsMap) AsList() []vpa_types.VerticalPodAutoscale
 
 func (conditionsMap *vpaConditionsMap) ConditionActive(conditionType vpa_types.VerticalPodAutoscalerConditionType) bool {
 	condition, found := (*conditionsMap)[conditionType]
-	return found && condition.Status == apiv1.ConditionTrue
+	return found && condition.Status == corev1.ConditionTrue
+}
+
+// ConditionActive returns true if the condition is present and active.
+// This method is thread-safe and should be used instead of direct map access
+// from concurrent code paths.
+func (vpa *Vpa) ConditionActive(conditionType vpa_types.VerticalPodAutoscalerConditionType) bool {
+	vpa.mutex.RLock()
+	defer vpa.mutex.RUnlock()
+	return vpa.conditions.ConditionActive(conditionType)
+}
+
+// SetCondition sets a condition in a thread-safe manner.
+func (vpa *Vpa) SetCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType, status bool, reason string, message string) {
+	vpa.mutex.Lock()
+	defer vpa.mutex.Unlock()
+	vpa.conditions.Set(conditionType, status, reason, message)
+}
+
+// DeleteCondition deletes a condition in a thread-safe manner.
+func (vpa *Vpa) DeleteCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType) {
+	vpa.mutex.Lock()
+	defer vpa.mutex.Unlock()
+	delete(vpa.conditions, conditionType)
+}
+
+// SetConditionsMap replaces the entire conditions map in a thread-safe manner.
+// Used during VPA initialization/update from API objects.
+func (vpa *Vpa) SetConditionsMap(conditionsMap vpaConditionsMap) {
+	vpa.mutex.Lock()
+	defer vpa.mutex.Unlock()
+	vpa.conditions = conditionsMap
+}
+
+// GetConditionsMap returns a copy of the conditions map in a thread-safe manner.
+// Used by tests to inspect VPA state.
+func (vpa *Vpa) GetConditionsMap() vpaConditionsMap {
+	vpa.mutex.RLock()
+	defer vpa.mutex.RUnlock()
+	// Return a copy to prevent external mutations
+	conditionsCopy := make(vpaConditionsMap, len(vpa.conditions))
+	maps.Copy(conditionsCopy, vpa.conditions)
+	return conditionsCopy
+}
+
+// Private helpers - assume vpa.mutex is held by caller.
+// These methods can safely call each other without deadlock risk.
+// Methods with the 'Locked' suffix must only be called when the caller holds vpa.mutex.
+
+// hasRecommendationLocked checks if VPA has a recommendation.
+// Caller must hold vpa.mutex (read or write lock).
+func (vpa *Vpa) hasRecommendationLocked() bool {
+	return (vpa.recommendation != nil) && len(vpa.recommendation.ContainerRecommendations) > 0
+}
+
+// updateConditionsLocked updates the conditions based on VPA state.
+// Caller must hold vpa.mutex write lock.
+func (vpa *Vpa) updateConditionsLocked(podsMatched bool) {
+	reason := ""
+	msg := ""
+	if podsMatched {
+		delete(vpa.conditions, vpa_types.NoPodsMatched)
+	} else {
+		reason = "NoPodsMatched"
+		msg = "No pods match this VPA object"
+		vpa.conditions.Set(vpa_types.NoPodsMatched, true, reason, msg)
+	}
+
+	// Can safely call hasRecommendationLocked() - no deadlock risk
+	if vpa.hasRecommendationLocked() {
+		vpa.conditions.Set(vpa_types.RecommendationProvided, true, "", "")
+	} else {
+		vpa.conditions.Set(vpa_types.RecommendationProvided, false, reason, msg)
+	}
+}
+
+// updateRecommendationLocked updates the recommendation and metrics.
+// Caller must hold vpa.mutex write lock.
+func (vpa *Vpa) updateRecommendationLocked(recommendation *vpa_types.RecommendedPodResources) {
+	for _, containerRecommendation := range recommendation.ContainerRecommendations {
+		for container, state := range vpa.aggregateContainerStates {
+			if container.ContainerName() == containerRecommendation.ContainerName {
+				metrics_quality.ObserveRecommendationChange(state.GetLastRecommendation(), containerRecommendation.UncappedTarget, vpa.UpdateMode, vpa.PodCount)
+				// TODO(jkyros): state.SetLastRecommendation takes the AggregateContainerState mutex. Right now we're
+				// consistent everywhere (VPA mutex -> AggregateContainerState mutex) but if we're
+				// ever not consistent and something grabs AggregateContainerState first, we could deadlock.
+				state.SetLastRecommendation(containerRecommendation.UncappedTarget)
+			}
+		}
+	}
+	vpa.recommendation = recommendation
 }
 
 // Vpa (Vertical Pod Autoscaler) object is responsible for vertical scaling of
@@ -87,10 +179,12 @@ type Vpa struct {
 	PodSelector labels.Selector
 	// Map of the object annotations (key-value pairs).
 	Annotations vpaAnnotationsMap
-	// Map of the status conditions (keys are condition types).
-	Conditions vpaConditionsMap
-	// Most recently computed recommendation. Can be nil.
-	Recommendation *vpa_types.RecommendedPodResources
+	// conditions is the map of status conditions (keys are condition types).
+	// Access via thread-safe methods: SetCondition, DeleteCondition, ConditionActive, etc.
+	conditions vpaConditionsMap
+	// recommendation is the most recently computed recommendation. Can be nil.
+	// Access via thread-safe methods: UpdateRecommendation, HasRecommendation, GetRecommendation.
+	recommendation *vpa_types.RecommendedPodResources
 	// All container aggregations that contribute to this VPA.
 	// TODO: Garbage collect old AggregateContainerStates.
 	aggregateContainerStates aggregateContainerStatesMap
@@ -108,9 +202,12 @@ type Vpa struct {
 	// APIVersion of the VPA object.
 	APIVersion string
 	// TargetRef points to the controller managing the set of pods.
-	TargetRef *autoscaling.CrossVersionObjectReference
+	TargetRef *autoscalingv1.CrossVersionObjectReference
 	// PodCount contains number of live Pods matching a given VPA object.
 	PodCount int
+
+	// mutex protects concurrent access to conditions and recommendation fields
+	mutex sync.RWMutex
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
@@ -123,7 +220,7 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 		ContainersInitialAggregateState: make(ContainerNameToAggregateStateMap),
 		Created:                         created,
 		Annotations:                     make(vpaAnnotationsMap),
-		Conditions:                      make(vpaConditionsMap),
+		conditions:                      make(vpaConditionsMap),
 		// APIVersion defaults to the version of the client used to read resources.
 		// If a new version is introduced that needs to be differentiated beyond the
 		// client conversion, this needs to be done based on the resource content.
@@ -163,15 +260,24 @@ func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggre
 // UpdateRecommendation updates the recommended resources in the VPA and its
 // aggregations with the given recommendation.
 func (vpa *Vpa) UpdateRecommendation(recommendation *vpa_types.RecommendedPodResources) {
-	for _, containerRecommendation := range recommendation.ContainerRecommendations {
-		for container, state := range vpa.aggregateContainerStates {
-			if container.ContainerName() == containerRecommendation.ContainerName {
-				metrics_quality.ObserveRecommendationChange(state.GetLastRecommendation(), containerRecommendation.UncappedTarget, vpa.UpdateMode, vpa.PodCount)
-				state.SetLastRecommendation(containerRecommendation.UncappedTarget)
-			}
-		}
-	}
-	vpa.Recommendation = recommendation
+	vpa.mutex.Lock()
+	defer vpa.mutex.Unlock()
+	vpa.updateRecommendationLocked(recommendation)
+}
+
+// SetRecommendationDirect sets the recommendation without the extra processing
+// in UpdateRecommendation. Used during VPA initialization from API objects.
+func (vpa *Vpa) SetRecommendationDirect(recommendation *vpa_types.RecommendedPodResources) {
+	vpa.mutex.Lock()
+	defer vpa.mutex.Unlock()
+	vpa.recommendation = recommendation
+}
+
+// GetRecommendation returns the current recommendation in a thread-safe manner.
+func (vpa *Vpa) GetRecommendation() *vpa_types.RecommendedPodResources {
+	vpa.mutex.RLock()
+	defer vpa.mutex.RUnlock()
+	return vpa.recommendation
 }
 
 // UsesAggregation returns true iff an aggregation with the given key contributes to the VPA.
@@ -212,7 +318,9 @@ func (vpa *Vpa) AggregateStateByContainerName() ContainerNameToAggregateStateMap
 
 // HasRecommendation returns if the VPA object contains any recommendation
 func (vpa *Vpa) HasRecommendation() bool {
-	return (vpa.Recommendation != nil) && len(vpa.Recommendation.ContainerRecommendations) > 0
+	vpa.mutex.RLock()
+	defer vpa.mutex.RUnlock()
+	return vpa.hasRecommendationLocked()
 }
 
 // matchesAggregation returns true iff the VPA matches the given aggregation key.
@@ -254,31 +362,21 @@ func (vpa *Vpa) SetUpdateMode(updatePolicy *vpa_types.PodUpdatePolicy) {
 // PodsMatched is passed to indicate if there are currently active pods in the
 // cluster matching this VPA.
 func (vpa *Vpa) UpdateConditions(podsMatched bool) {
-	reason := ""
-	msg := ""
-	if podsMatched {
-		delete(vpa.Conditions, vpa_types.NoPodsMatched)
-	} else {
-		reason = "NoPodsMatched"
-		msg = "No pods match this VPA object"
-		vpa.Conditions.Set(vpa_types.NoPodsMatched, true, reason, msg)
-	}
-	if vpa.HasRecommendation() {
-		vpa.Conditions.Set(vpa_types.RecommendationProvided, true, "", "")
-	} else {
-		vpa.Conditions.Set(vpa_types.RecommendationProvided, false, reason, msg)
-	}
-
+	vpa.mutex.Lock()
+	defer vpa.mutex.Unlock()
+	vpa.updateConditionsLocked(podsMatched)
 }
 
 // AsStatus returns this objects equivalent of VPA Status. UpdateConditions
 // should be called first.
 func (vpa *Vpa) AsStatus() *vpa_types.VerticalPodAutoscalerStatus {
+	vpa.mutex.RLock()
+	defer vpa.mutex.RUnlock()
 	status := &vpa_types.VerticalPodAutoscalerStatus{
-		Conditions: vpa.Conditions.AsList(),
+		Conditions: vpa.conditions.AsList(),
 	}
-	if vpa.Recommendation != nil {
-		status.Recommendation = vpa.Recommendation
+	if vpa.recommendation != nil {
+		status.Recommendation = vpa.recommendation
 	}
 	return status
 }
@@ -287,8 +385,10 @@ func (vpa *Vpa) AsStatus() *vpa_types.VerticalPodAutoscalerStatus {
 // cluster matching this VPA, based on conditions. UpdateConditions should be
 // called first.
 func (vpa *Vpa) HasMatchedPods() bool {
-	noPodsMatched, found := vpa.Conditions[vpa_types.NoPodsMatched]
-	if found && noPodsMatched.Status == apiv1.ConditionTrue {
+	vpa.mutex.RLock()
+	defer vpa.mutex.RUnlock()
+	noPodsMatched, found := vpa.conditions[vpa_types.NoPodsMatched]
+	if found && noPodsMatched.Status == corev1.ConditionTrue {
 		return false
 	}
 	return true

@@ -19,10 +19,12 @@ package customresources
 import (
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -36,7 +38,7 @@ type DraCustomResourcesProcessor struct {
 
 // FilterOutNodesWithUnreadyResources removes nodes that should have DRA resource, but don't have
 // it in allocatable from ready nodes list and updates their status to unready on all nodes list.
-func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *snapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *snapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyDraResources := make(map[string]*apiv1.Node)
@@ -57,7 +59,7 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 			continue
 		}
 
-		nodeInfo, err := ng.TemplateNodeInfo()
+		nodeInfo, err := getNodeInfo(autoscalingCtx, ng)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
 			klog.Warningf("Failed to get template node info for node group %s with error: %v", ng.Id(), err)
@@ -81,6 +83,15 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		}
 	}
 	return newAllNodes, newReadyNodes
+}
+
+func getNodeInfo(autoscalingCtx *ca_context.AutoscalingContext, ng cloudprovider.NodeGroup) (*framework.NodeInfo, error) {
+	// Prefer the cached template from the registry. This template may contain enrichments (e.g.
+	// custom DRA slices) that are not present in the raw CloudProvider template.
+	if ni, found := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfo(ng.Id()); found {
+		return ni, nil
+	}
+	return ng.TemplateNodeInfo()
 }
 
 type resourceSliceSpecs struct {

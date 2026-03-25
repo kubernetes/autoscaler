@@ -183,8 +183,6 @@ spec:
               mountPath: /etc/ssl/certs/ca-certificates.crt
               readOnly: true
           imagePullPolicy: "Always"
-      imagePullSecrets:
-        - name: gitlab-registry
       volumes:
         - name: ssl-certs
           hostPath:

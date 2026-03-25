@@ -26,11 +26,22 @@ import (
 
 // ProvisioningRequestApplyConfiguration represents a declarative configuration of the ProvisioningRequest type for use
 // with apply.
+//
+// ProvisioningRequest is a way to express additional capacity
+// that we would like to provision in the cluster. Cluster Autoscaler
+// can use this information in its calculations and signal if the capacity
+// is available in the cluster or actively add capacity if needed.
 type ProvisioningRequestApplyConfiguration struct {
-	v1.TypeMetaApplyConfiguration    `json:",inline"`
+	v1.TypeMetaApplyConfiguration `json:",inline"`
+	// Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *ProvisioningRequestSpecApplyConfiguration   `json:"spec,omitempty"`
-	Status                           *ProvisioningRequestStatusApplyConfiguration `json:"status,omitempty"`
+	// Spec contains specification of the ProvisioningRequest object.
+	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.
+	// The spec is immutable, to make changes to the request users are expected to delete an existing
+	// and create a new object with the corrected fields.
+	Spec *ProvisioningRequestSpecApplyConfiguration `json:"spec,omitempty"`
+	// Status of the ProvisioningRequest. CA constantly reconciles this field.
+	Status *ProvisioningRequestStatusApplyConfiguration `json:"status,omitempty"`
 }
 
 // ProvisioningRequest constructs a declarative configuration of the ProvisioningRequest type for use with
@@ -43,6 +54,8 @@ func ProvisioningRequest(name, namespace string) *ProvisioningRequestApplyConfig
 	b.WithAPIVersion("autoscaling.x-k8s.io/v1beta1")
 	return b
 }
+
+func (b ProvisioningRequestApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
@@ -218,8 +231,24 @@ func (b *ProvisioningRequestApplyConfiguration) WithStatus(value *ProvisioningRe
 	return b
 }
 
+// GetKind retrieves the value of the Kind field in the declarative configuration.
+func (b *ProvisioningRequestApplyConfiguration) GetKind() *string {
+	return b.TypeMetaApplyConfiguration.Kind
+}
+
+// GetAPIVersion retrieves the value of the APIVersion field in the declarative configuration.
+func (b *ProvisioningRequestApplyConfiguration) GetAPIVersion() *string {
+	return b.TypeMetaApplyConfiguration.APIVersion
+}
+
 // GetName retrieves the value of the Name field in the declarative configuration.
 func (b *ProvisioningRequestApplyConfiguration) GetName() *string {
 	b.ensureObjectMetaApplyConfigurationExists()
 	return b.ObjectMetaApplyConfiguration.Name
+}
+
+// GetNamespace retrieves the value of the Namespace field in the declarative configuration.
+func (b *ProvisioningRequestApplyConfiguration) GetNamespace() *string {
+	b.ensureObjectMetaApplyConfigurationExists()
+	return b.ObjectMetaApplyConfiguration.Namespace
 }

@@ -23,7 +23,6 @@ import (
 	"sync"
 	"time"
 
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 
@@ -55,11 +54,7 @@ func NewCheckpointWriter(cluster model.ClusterState, vpaCheckpointClient vpa_api
 }
 
 func isFetchingHistory(vpa *model.Vpa) bool {
-	condition, found := vpa.Conditions[vpa_types.FetchingHistory]
-	if !found {
-		return false
-	}
-	return condition.Status == v1.ConditionTrue
+	return vpa.ConditionActive(vpa_types.FetchingHistory)
 }
 
 func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
@@ -114,10 +109,8 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, concurrent
 	// Create a wait group to wait for all workers to finish
 	var wg sync.WaitGroup
 	// Start workers. Each worker processes at least one checkpoint before checking for a cancelled context.
-	for i := 0; i < concurrentWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range concurrentWorkers {
+		wg.Go(func() {
 			for vpaToCheckpoint := range vpaCheckpointUpdates {
 				processCheckpointUpdateForVPA(vpaToCheckpoint, writer)
 				select {
@@ -126,7 +119,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, concurrent
 				default:
 				}
 			}
-		}()
+		})
 	}
 
 	// Send VPA Checkpoint updates to the workers

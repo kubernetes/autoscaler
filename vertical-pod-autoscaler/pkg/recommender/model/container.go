@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -97,6 +98,9 @@ func (container *ContainerState) observeQualityMetrics(usage ResourceAmount, isO
 		usageValue = CoresFromCPUAmount(usage)
 	case corev1.ResourceMemory:
 		usageValue = BytesFromMemoryAmount(usage)
+	default:
+		klog.V(0).InfoS("Unknown resource", "resource", resource)
+		return
 	}
 	if container.aggregator.GetLastRecommendation() == nil {
 		metrics_quality.ObserveQualityMetricsRecommendationMissing(usageValue, isOOM, resource, updateMode)
@@ -212,7 +216,7 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 		Resource:     ResourceMemory,
 	}
 	if !container.addMemorySample(&oomMemorySample, true) {
-		return fmt.Errorf("adding OOM sample failed")
+		return errors.New("adding OOM sample failed")
 	}
 	return nil
 }

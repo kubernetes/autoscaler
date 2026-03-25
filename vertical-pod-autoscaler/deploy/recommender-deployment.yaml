@@ -13,6 +13,8 @@ spec:
     metadata:
       labels:
         app: vpa-recommender
+        app.kubernetes.io/component: recommender
+        app.kubernetes.io/name: vertical-pod-autoscaler
     spec:
       serviceAccountName: vpa-recommender
       securityContext:
@@ -20,7 +22,7 @@ spec:
         runAsUser: 65534 # nobody
       containers:
       - name: recommender
-        image: registry.k8s.io/autoscaling/vpa-recommender:1.5.1
+        image: registry.k8s.io/autoscaling/vpa-recommender:1.6.0
         imagePullPolicy: IfNotPresent
         resources:
           limits:

@@ -19,7 +19,7 @@ package signers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jmespath/go-jmespath"
+	"github.com/jmespath-community/go-jmespath"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"

@@ -17,7 +17,7 @@ limitations under the License.
 package translator
 
 import (
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1alpha1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 )
 
 // Translator translates the passed buffers to pod template and number of replicas

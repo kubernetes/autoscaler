@@ -17,19 +17,19 @@ limitations under the License.
 package pod
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // PreProcessor processes the pods before building patches.
 type PreProcessor interface {
-	Process(apiv1.Pod) (apiv1.Pod, error)
+	Process(corev1.Pod) (corev1.Pod, error)
 }
 
 // NoopPreProcessor leaves pods unchanged when processing
 type NoopPreProcessor struct{}
 
 // Process leaves the pod unchanged
-func (p *NoopPreProcessor) Process(pod apiv1.Pod) (apiv1.Pod, error) {
+func (p *NoopPreProcessor) Process(pod corev1.Pod) (corev1.Pod, error) {
 	return pod, nil
 }
 

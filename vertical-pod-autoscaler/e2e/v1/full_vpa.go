@@ -70,7 +70,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 	// This schedules AfterEach block that needs to run after the AfterEach above and
 	// BeforeEach that needs to run before the BeforeEach below - thus the order of these matters.
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	f.Describe("with InPlaceOrRecreate update mode", framework.WithFeatureGate(features.InPlaceOrRecreate), func() {
 		ginkgo.BeforeEach(func() {
@@ -229,7 +229,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with default recommender explicitly c
 	// This schedules AfterEach block that needs to run after the AfterEach above and
 	// BeforeEach that needs to run before the BeforeEach below - thus the order of these matters.
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
 		ns := f.Namespace.Name
@@ -299,7 +299,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 	// This schedules AfterEach block that needs to run after the AfterEach above and
 	// BeforeEach that needs to run before the BeforeEach below - thus the order of these matters.
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
 		ns := f.Namespace.Name
@@ -341,7 +341,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 
 	})
 
-	ginkgo.It("deployment not updated by non-recognized recommender", func() {
+	f.It("deployment not updated by non-recognized recommender", framework.WithSlow(), func() {
 		err := waitForResourceRequestInRangeInPods(
 			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 			ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
@@ -356,11 +356,126 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 	})
 })
 
+var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
+	var (
+		rc *ResourceConsumer
+	)
+	replicas := 3
+
+	ginkgo.AfterEach(func() {
+		rc.CleanUp()
+	})
+
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
+
+	ginkgo.Describe("have CPU startup boost recommendation applied", func() {
+		ginkgo.BeforeEach(func() {
+			waitForVpaWebhookRegistration(f)
+		})
+
+		f.It("to all containers of a pod", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+			ns := f.Namespace.Name
+			ginkgo.By("Setting up a VPA CRD with CPUStartupBoost")
+			targetRef := &autoscaling.CrossVersionObjectReference{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       "hamster",
+			}
+
+			containerName := utils.GetHamsterContainerNameByIndex(0)
+			factor := int32(20)
+			vpaCRD := test.VerticalPodAutoscaler().
+				WithName("hamster-vpa").
+				WithNamespace(f.Namespace.Name).
+				WithTargetRef(targetRef).
+				WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+				WithContainer(containerName).
+				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 10).
+				Get()
+			utils.InstallVPA(f, vpaCRD)
+
+			ginkgo.By("Setting up a hamster deployment")
+			rc = NewDynamicResourceConsumer("hamster", ns, KindDeployment,
+				replicas,
+				1,             /*initCPUTotal*/
+				10,            /*initMemoryTotal*/
+				1,             /*initCustomMetric*/
+				initialCPU,    /*cpuRequest*/
+				initialMemory, /*memRequest*/
+				f.ClientSet,
+				f.ScalesGetter)
+
+			// Pods should be created with boosted CPU (10m * 20 = 200m)
+			err := waitForResourceRequestInRangeInPods(
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+				ParseQuantityOrDie("180m"), ParseQuantityOrDie("220m"))
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+			// Pods should be scaled back down in-place after they become Ready and
+			// StartupBoost.CPU.DurationSeconds has elapsed
+			err = waitForResourceRequestInRangeInPods(
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+				ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		})
+
+		f.It("to a subset of containers in a pod", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+			ns := f.Namespace.Name
+
+			ginkgo.By("Setting up a VPA CRD with CPUStartupBoost")
+			targetRef := &autoscaling.CrossVersionObjectReference{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       "hamster",
+			}
+
+			containerName := utils.GetHamsterContainerNameByIndex(0)
+			factor := int32(20)
+			vpaCRD := test.VerticalPodAutoscaler().
+				WithName("hamster-vpa").
+				WithNamespace(f.Namespace.Name).
+				WithTargetRef(targetRef).
+				WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+				WithContainer(containerName).
+				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 10).
+				Get()
+
+			utils.InstallVPA(f, vpaCRD)
+
+			ginkgo.By("Setting up a hamster deployment")
+			rc = NewDynamicResourceConsumer("hamster", ns, KindDeployment,
+				replicas,
+				1,             /*initCPUTotal*/
+				10,            /*initMemoryTotal*/
+				1,             /*initCustomMetric*/
+				initialCPU,    /*cpuRequest*/
+				initialMemory, /*memRequest*/
+				f.ClientSet,
+				f.ScalesGetter)
+
+			// Pods should be created with boosted CPU (10m * 20 = 200m)
+			err := waitForResourceRequestInRangeInPods(
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+				ParseQuantityOrDie("180m"), ParseQuantityOrDie("220m"))
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+			// Pods should be scaled back down in-place after they become Ready and
+			// StartupBoost.CPU.DurationSeconds has elapsed
+			err = waitForResourceRequestInRangeInPods(
+				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+				ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		})
+	})
+
+})
+
 var _ = FullVpaE2eDescribe("OOMing pods under VPA", func() {
 	const replicas = 3
 
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.BeforeEach(func() {
 		ns := f.Namespace.Name

@@ -23,7 +23,7 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingapi "k8s.io/api/autoscaling/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -32,7 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/discovery"
-	cacheddiscovery "k8s.io/client-go/discovery/cached"
+	cacheddiscovery "k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -190,7 +190,7 @@ func getParentOfWellKnownController(informer cache.SharedIndexInformer, controll
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	}
 
-	return nil, fmt.Errorf("don't know how to read owner controller")
+	return nil, errors.New("don't know how to read owner controller")
 }
 
 func (f *controllerFetcher) getParentOfController(ctx context.Context, controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
@@ -238,7 +238,7 @@ func (f *controllerFetcher) isWellKnown(key *ControllerKeyWithAPIVersion) bool {
 	return exists
 }
 
-func (f *controllerFetcher) getScaleForResource(ctx context.Context, namespace string, groupResource schema.GroupResource, name string) (controller *autoscalingapi.Scale, err error) {
+func (f *controllerFetcher) getScaleForResource(ctx context.Context, namespace string, groupResource schema.GroupResource, name string) (controller *autoscalingv1.Scale, err error) {
 	if ok, scale, err := f.scaleSubresourceCacheStorage.Get(namespace, groupResource, name); ok {
 		return scale, err
 	}
@@ -252,7 +252,7 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 		return true
 	}
 
-	//if not well known check if it supports scaling
+	// if not well known check if it supports scaling
 	groupKind, err := key.groupKind()
 	if err != nil {
 		klog.ErrorS(err, "Could not find groupKind", "object", klog.KRef(key.Namespace, key.Name))
@@ -335,7 +335,7 @@ func (f *controllerFetcher) FindTopMostWellKnownOrScalable(ctx context.Context, 
 
 		_, alreadyVisited := visited[*owner]
 		if alreadyVisited {
-			return nil, fmt.Errorf("cycle detected in ownership chain")
+			return nil, errors.New("cycle detected in ownership chain")
 		}
 		visited[*key] = true
 

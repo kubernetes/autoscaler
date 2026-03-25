@@ -361,12 +361,17 @@ func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		},
 	}
 
+	nsi := ng.scalableResource.InstanceSystemInfo()
+	if nsi != nil {
+		node.Status.NodeInfo = *nsi
+	}
+
 	node.Status.Capacity = capacity
 	node.Status.Allocatable = capacity
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	node.Spec.Taints = ng.scalableResource.Taints()
 
-	node.Labels, err = ng.buildTemplateLabels(nodeName)
+	node.Labels, err = ng.buildTemplateLabels(nodeName, nsi)
 	if err != nil {
 		return nil, err
 	}
@@ -375,13 +380,28 @@ func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	csiNode := ng.scalableResource.InstanceCSINode()
 
-	nodeInfo := framework.NewNodeInfo(&node, resourceSlices, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.scalableResource.Name())})
+	nodeInfo := framework.NewNodeInfo(&node, resourceSlices, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.scalableResource.Name()), nil))
+	if csiNode != nil {
+		nodeInfo.SetCSINode(csiNode)
+	}
 	return nodeInfo, nil
 }
 
-func (ng *nodegroup) buildTemplateLabels(nodeName string) (map[string]string, error) {
-	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), ng.scalableResource.Labels())
+func (ng *nodegroup) buildTemplateLabels(nodeName string, nsi *corev1.NodeSystemInfo) (map[string]string, error) {
+	nsiLabels := make(map[string]string)
+	if nsi != nil {
+		nsiLabels[corev1.LabelArchStable] = nsi.Architecture
+		nsiLabels[corev1.LabelOSStable] = nsi.OperatingSystem
+	}
+
+	// The order of priority is:
+	// - Labels set in existing nodes for not-autoscale-from-zero cases
+	// - Labels set in the labels capacity annotation of machine template, machine set, and machine deployment.
+	// - Values in the status.nodeSystemInfo of MachineTemplates
+	// - Generic/default labels set in the environment of the cluster autoscaler
+	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), nsiLabels, ng.scalableResource.Labels())
 
 	nodes, err := ng.Nodes()
 	if err != nil {
@@ -453,6 +473,9 @@ func (ng *nodegroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*c
 	}
 	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultMaxNodeProvisionTimeKey); ok {
 		defaults.MaxNodeProvisionTime = opt
+	}
+	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultMaxNodeStartupTimeKey); ok {
+		defaults.MaxNodeStartupTime = opt
 	}
 
 	return &defaults, nil

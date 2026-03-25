@@ -14,23 +14,22 @@ metadata:
   labels:
     {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
 rules:
-- apiGroups:
-  - "coordination.k8s.io"
-  resources:
-  - leases
-  verbs:
-  - create
-- apiGroups:
-  - "coordination.k8s.io"
-  resourceNames:
-  - vpa-recommender
-  - vpa-recommender-lease
-  resources:
-  - leases
-  verbs:
-  - get
-  - watch
-  - update
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    verbs:
+      - create
+  - apiGroups:
+      - "coordination.k8s.io"
+    resourceNames:
+      - {{ .Values.recommender.leaderElection.resourceName }}
+    resources:
+      - leases
+    verbs:
+      - get
+      - watch
+      - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -44,8 +43,8 @@ roleRef:
   kind: Role
   name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-leader-locking
 subjects:
-- kind: ServiceAccount
-  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
 {{- end -}}
 {{- end -}}

@@ -18,13 +18,14 @@ package pod
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	admissionv1 "k8s.io/api/admission/v1"
-	apiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
@@ -37,7 +38,7 @@ type fakePodPreProcessor struct {
 	err error
 }
 
-func (fpp *fakePodPreProcessor) Process(pod apiv1.Pod) (apiv1.Pod, error) {
+func (fpp *fakePodPreProcessor) Process(pod corev1.Pod) (corev1.Pod, error) {
 	return pod, fpp.err
 }
 
@@ -45,7 +46,7 @@ type fakeVpaMatcher struct {
 	vpa *vpa_types.VerticalPodAutoscaler
 }
 
-func (m *fakeVpaMatcher) GetMatchingVPA(_ context.Context, _ *apiv1.Pod) *vpa_types.VerticalPodAutoscaler {
+func (m *fakeVpaMatcher) GetMatchingVPA(_ context.Context, _ *corev1.Pod) *vpa_types.VerticalPodAutoscaler {
 	return m.vpa
 }
 
@@ -58,7 +59,7 @@ func (*fakePatchCalculator) PatchResourceTarget() patch.PatchResourceTarget {
 	return patch.Pod
 }
 
-func (c *fakePatchCalculator) CalculatePatches(_ *apiv1.Pod, _ *vpa_types.VerticalPodAutoscaler) (
+func (c *fakePatchCalculator) CalculatePatches(_ *corev1.Pod, _ *vpa_types.VerticalPodAutoscaler) (
 	[]resource_admission.PatchRecord, error) {
 	return c.patches, c.err
 }
@@ -91,15 +92,15 @@ func TestGetPatches(t *testing.T) {
 			namespace:            "default",
 			vpa:                  testVpa,
 			podPreProcessorError: nil,
-			expectError:          fmt.Errorf("unexpected end of JSON input"),
+			expectError:          errors.New("unexpected end of JSON input"),
 		},
 		{
 			name:                 "invalid pod",
 			podJson:              []byte("{}"),
 			namespace:            "default",
 			vpa:                  testVpa,
-			podPreProcessorError: fmt.Errorf("bad pod"),
-			expectError:          fmt.Errorf("bad pod"),
+			podPreProcessorError: errors.New("bad pod"),
+			expectError:          errors.New("bad pod"),
 		},
 		{
 			name:                 "no vpa found",
@@ -116,10 +117,10 @@ func TestGetPatches(t *testing.T) {
 			namespace: "test",
 			vpa:       testVpa,
 			calculators: []patch.Calculator{&fakePatchCalculator{
-				[]resource_admission.PatchRecord{}, fmt.Errorf("Can't calculate this"),
+				[]resource_admission.PatchRecord{}, errors.New("Can't calculate this"),
 			}},
 			podPreProcessorError: nil,
-			expectError:          fmt.Errorf("Can't calculate this"),
+			expectError:          errors.New("Can't calculate this"),
 			expectPatches:        []resource_admission.PatchRecord{},
 		},
 		{
@@ -132,10 +133,10 @@ func TestGetPatches(t *testing.T) {
 					testPatchRecord,
 				}, nil},
 				&fakePatchCalculator{
-					[]resource_admission.PatchRecord{}, fmt.Errorf("Can't calculate this"),
+					[]resource_admission.PatchRecord{}, errors.New("Can't calculate this"),
 				}},
 			podPreProcessorError: nil,
-			expectError:          fmt.Errorf("Can't calculate this"),
+			expectError:          errors.New("Can't calculate this"),
 			expectPatches:        []resource_admission.PatchRecord{},
 		},
 		{
@@ -183,7 +184,7 @@ func TestGetPatches(t *testing.T) {
 			fvm := &fakeVpaMatcher{vpa: tc.vpa}
 			h := NewResourceHandler(fppp, fvm, tc.calculators)
 			patches, err := h.GetPatches(context.Background(), &admissionv1.AdmissionRequest{
-				Resource: v1.GroupVersionResource{
+				Resource: metav1.GroupVersionResource{
 					Version: "v1",
 				},
 				Namespace: tc.namespace,

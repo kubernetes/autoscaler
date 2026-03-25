@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
@@ -36,6 +36,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
+
 	updaterutils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	clientset "k8s.io/client-go/kubernetes"
@@ -54,7 +55,7 @@ import (
 
 var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-	f.NamespacePodSecurityEnforceLevel = podsecurity.LevelBaseline
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
 	ginkgo.It("still applies recommendations on restart when update mode is InPlaceOrRecreate", func() {
 		ginkgo.By("Setting up a hamster deployment")
@@ -207,7 +208,9 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	ginkgo.It("falls back to evicting pods when resize is Deferred and more than 5 minute has elapsed since last in-place update when update mode is InPlaceOrRecreate", func() {
+	// Consumes the entire node's CPU, causing other pods to be pending - requires WithSerial()
+	// issue.k8s.io/135107 could change the need for WithSerial()
+	framework.It("falls back to evicting pods when resize is Deferred and more than 5 minute has elapsed since last in-place update when update mode is InPlaceOrRecreate", framework.WithSerial(), framework.WithSlow(), func() {
 		ginkgo.By("Setting up a hamster deployment")
 		replicas := int32(2)
 		SetupHamsterDeployment(f, "100m", "100Mi", replicas)
@@ -437,7 +440,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 				Name:       tc.name,
 			})
 		})
-		ginkgo.It("by default does not evict pods in a 1-Pod "+tc.kind, func() {
+		f.It("by default does not evict pods in a 1-Pod "+tc.kind, framework.WithSlow(), func() {
 			testDoesNotEvictSingletonPodByDefault(f, &autoscaling.CrossVersionObjectReference{
 				APIVersion: tc.apiVersion,
 				Kind:       tc.kind,
@@ -499,12 +502,23 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, sleep for %s", VpaEvictionTimeout.String()))
-		time.Sleep(VpaEvictionTimeout)
+		err = wait.PollUntilContextTimeout(context.TODO(), 10*time.Second, VpaEvictionTimeout, false, func(ctx context.Context) (done bool, err error) {
+			currentPodList, err := GetHamsterPods(f)
+			if err != nil {
+				framework.Logf("Error listing hamster pods: %v", err)
+				return false, err
+			}
+
+			evictedCount := GetEvictedPodsCount(MakePodSet(currentPodList), podSet)
+
+			return evictedCount >= permissiveMaxUnavailable, nil
+		})
+
+		framework.ExpectNoError(err)
 		ginkgo.By("Checking enough pods were evicted.")
 		currentPodList, err := GetHamsterPods(f)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		framework.ExpectNoError(err)
 		evictedCount := GetEvictedPodsCount(MakePodSet(currentPodList), podSet)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(evictedCount >= permissiveMaxUnavailable).To(gomega.BeTrue())
 	})
 
@@ -666,7 +680,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
 
-	ginkgo.It("does not act on injected sidecars", func() {
+	f.It("does not act on injected sidecars", framework.WithSlow(), func() {
 		const (
 			agnhostImage  = "registry.k8s.io/e2e-test-images/agnhost:2.40"
 			sidecarParam  = "--sidecar-image=registry.k8s.io/pause:3.1"
@@ -884,7 +898,7 @@ func testEvictsSingletonPodWhenConfigured(f *framework.Framework, controller *au
 		WithName("hamster-vpa").
 		WithNamespace(f.Namespace.Name).
 		WithTargetRef(controller).
-		WithMinReplicas(pointer.Int32(1)).
+		WithMinReplicas(ptr.To(int32(1))).
 		WithContainer(containerName).
 		AppendRecommendation(
 			test.Recommendation().
@@ -1001,12 +1015,6 @@ func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1
 	_, err := f.ClientSet.PolicyV1().PodDisruptionBudgets(f.Namespace.Name).Create(context.TODO(), pdb, metav1.CreateOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return pdb
-}
-
-func getCurrentPodSetForDeployment(c clientset.Interface, d *appsv1.Deployment) PodSet {
-	podList, err := framework_deployment.GetPodsForDeployment(context.TODO(), c, d)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	return MakePodSet(podList)
 }
 
 func createReplicaSetWithRetries(c clientset.Interface, namespace string, obj *appsv1.ReplicaSet) error {

@@ -95,10 +95,10 @@ func TestNodePoolAsyncInitialization(t *testing.T) {
 	listers := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 	upcomingNodeGroup := provider.BuildNodeGroup("upcoming-ng", 0, 100, 0, false, true, "T1", nil)
 	options := config.AutoscalingOptions{AsyncNodeGroupsEnabled: true}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 	option := expander.Option{NodeGroup: upcomingNodeGroup, Pods: []*apiv1.Pod{pod}}
-	processors := processorstest.NewTestProcessors(&context)
 	processors.AsyncNodeGroupStateChecker = &asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: map[string]bool{upcomingNodeGroup.Id(): true}}
 	nodeInfo := framework.NewTestNodeInfo(BuildTestNode("t1", 100, 0))
 	executor := newScaleUpExecutor(&context, processors.ScaleStateNotifier, processors.AsyncNodeGroupStateChecker)

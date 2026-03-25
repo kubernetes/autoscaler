@@ -2,17 +2,19 @@
 
 ## Contents
 
-- [VPA restarts my pods but does not modify CPU or memory settings. Why?](#vpa-restarts-my-pods-but-does-not-modify-cpu-or-memory-settings)
+<!-- toc -->
+- [VPA restarts my pods but does not modify CPU or memory settings](#vpa-restarts-my-pods-but-does-not-modify-cpu-or-memory-settings)
 - [How can I apply VPA to my Custom Resource?](#how-can-i-apply-vpa-to-my-custom-resource)
-- [How can I use Prometheus as a history provider for the VPA recommender?](#how-can-i-use-prometheus-as-a-history-provider-for-the-vpa-recommender)
-- [I get recommendations for my single pod replicaSet, but they are not applied. Why?](#i-get-recommendations-for-my-single-pod-replicaset-but-they-are-not-applied)
+- [How can I use Prometheus as a history provider for the VPA recommender](#how-can-i-use-prometheus-as-a-history-provider-for-the-vpa-recommender)
+- [I get recommendations for my single pod replicaset but they are not applied](#i-get-recommendations-for-my-single-pod-replicaset-but-they-are-not-applied)
 - [Can I run the VPA in an HA configuration?](#can-i-run-the-vpa-in-an-ha-configuration)
 - [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
 - [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
-- [What are the parameters to VPA admission-controller?](#what-are-the-parameters-to-vpa-admission-controller)
+- [What are the parameters to VPA admission controller?](#what-are-the-parameters-to-vpa-admission-controller)
 - [How can I configure VPA to manage only specific resources?](#how-can-i-configure-vpa-to-manage-only-specific-resources)
 - [How can I have Pods in the kube-system namespace under VPA control in AKS?](#how-can-i-have-pods-in-the-kube-system-namespace-under-vpa-control-in-aks)
 - [How can I configure VPA when running in EKS with Cilium?](#how-can-i-configure-vpa-when-running-in-eks-with-cilium)
+<!-- /toc -->
 
 ### VPA restarts my pods but does not modify CPU or memory settings
 

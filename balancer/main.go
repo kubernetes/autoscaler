@@ -26,7 +26,7 @@ import (
 	balancerclientset "k8s.io/autoscaler/balancer/pkg/client/clientset/versioned"
 	balancerinformers "k8s.io/autoscaler/balancer/pkg/client/informers/externalversions"
 	"k8s.io/autoscaler/balancer/pkg/controller"
-	cacheddiscovery "k8s.io/client-go/discovery/cached"
+	cacheddiscovery "k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"

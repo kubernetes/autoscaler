@@ -28,14 +28,10 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/informers/externalversions"
 	listers "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/listers/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
-	"k8s.io/client-go/informers"
-	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/rest"
 
 	klog "k8s.io/klog/v2"
 )
@@ -51,33 +47,18 @@ type ProvisioningRequestClient struct {
 	podTemplLister corev1.PodTemplateLister
 }
 
-// NewProvisioningRequestClient configures and returns a provisioningRequestClient.
-func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequestClient, error) {
-	prClient, err := newPRClient(kubeConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Provisioning Request client: %v", err)
-	}
-
-	provReqLister, err := newPRsLister(prClient, make(chan struct{}))
-	if err != nil {
-		return nil, err
-	}
-
-	podTemplateClient, err := kubernetes.NewForConfig(kubeConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Pod Template client: %v", err)
-	}
-
-	podTemplLister, err := newPodTemplatesLister(podTemplateClient, make(chan struct{}))
-	if err != nil {
-		return nil, err
-	}
-
+// NewProvisioningRequestClient supports dependency injection.
+// kubeclient, provreq lister and podtemplate lister are initialized outside of the ProvisioningRequestClient.
+func NewProvisioningRequestClient(
+	client versioned.Interface,
+	provReqLister listers.ProvisioningRequestLister,
+	podTemplLister corev1.PodTemplateLister,
+) *ProvisioningRequestClient {
 	return &ProvisioningRequestClient{
-		client:         prClient,
+		client:         client,
 		provReqLister:  provReqLister,
 		podTemplLister: podTemplLister,
-	}, nil
+	}
 }
 
 // ProvisioningRequest gets a specific ProvisioningRequest CR.
@@ -137,41 +118,6 @@ func (c *ProvisioningRequestClient) UpdateProvisioningRequest(pr *v1.Provisionin
 	}
 	klog.V(4).Infof("Updated ProvisioningRequest %s/%s,  status: %q,", updatedPr.Namespace, updatedPr.Name, updatedPr.Status)
 	return updatedPr, nil
-}
-
-// newPRClient creates a new Provisioning Request client from the given config.
-func newPRClient(kubeConfig *rest.Config) (*versioned.Clientset, error) {
-	return versioned.NewForConfig(kubeConfig)
-}
-
-// newPRsLister creates a lister for the Provisioning Requests in the cluster.
-func newPRsLister(prClient versioned.Interface, stopChannel <-chan struct{}) (listers.ProvisioningRequestLister, error) {
-	factory := externalversions.NewSharedInformerFactory(prClient, 1*time.Hour)
-	provReqLister := factory.Autoscaling().V1().ProvisioningRequests().Lister()
-	factory.Start(stopChannel)
-	informersSynced := factory.WaitForCacheSync(stopChannel)
-	for _, synced := range informersSynced {
-		if !synced {
-			return nil, fmt.Errorf("can't create Provisioning Request lister")
-		}
-	}
-	klog.V(2).Info("Successful initial Provisioning Request sync")
-	return provReqLister, nil
-}
-
-// newPodTemplatesLister creates a lister for the Pod Templates in the cluster.
-func newPodTemplatesLister(client *kubernetes.Clientset, stopChannel <-chan struct{}) (corev1.PodTemplateLister, error) {
-	factory := informers.NewSharedInformerFactory(client, 1*time.Hour)
-	podTemplLister := factory.Core().V1().PodTemplates().Lister()
-	factory.Start(stopChannel)
-	informersSynced := factory.WaitForCacheSync(stopChannel)
-	for _, synced := range informersSynced {
-		if !synced {
-			return nil, fmt.Errorf("can't create Pod Template lister")
-		}
-	}
-	klog.V(2).Info("Successful initial Pod Template sync")
-	return podTemplLister, nil
 }
 
 // ProvisioningRequestsForPods check that all pods belong to one ProvisioningRequest and return it.

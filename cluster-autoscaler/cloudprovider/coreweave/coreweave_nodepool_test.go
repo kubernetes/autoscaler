@@ -19,6 +19,7 @@ package coreweave
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -29,7 +30,7 @@ import (
 )
 
 // Helper to create a minimal nodepool object
-func makeTestNodePool(uid, name string, min, max, target int64) *CoreWeaveNodePool {
+func makeTestNodePool(uid, name string, min, max, target int64, option ...NodeGroupOption) *CoreWeaveNodePool {
 	dynamicClientset := fake.NewSimpleDynamicClientWithCustomListKinds(
 		runtime.NewScheme(),
 		map[schema.GroupVersionResource]string{
@@ -48,6 +49,11 @@ func makeTestNodePool(uid, name string, min, max, target int64) *CoreWeaveNodePo
 			"targetNodes": target,
 		},
 	}
+
+	for _, o := range option {
+		o(obj)
+	}
+
 	u := &unstructured.Unstructured{Object: obj}
 	// add fake kubernetes client
 	fakeClient := k8sfake.NewSimpleClientset(
@@ -163,5 +169,101 @@ func TestGetNodes(t *testing.T) {
 	}
 	if len(nodes) != 1 || nodes[0].Name != "node1" {
 		t.Errorf("expected to get node1, got %+v", nodes)
+	}
+}
+
+func TestGetInstanceType(t *testing.T) {
+	testCases := map[string]struct {
+		nodePool *CoreWeaveNodePool
+		expected string
+	}{
+		"empty instance type": {
+			makeTestNodePool("uid1", "np1", 1, 5, 3, withInstanceType("")),
+			"",
+		},
+		"instance type present": {
+			makeTestNodePool("uid1", "np1", 1, 5, 3, withInstanceType("turin-gp-l")),
+			"turin-gp-l",
+		},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			actual := tc.nodePool.GetInstanceType()
+			require.Equal(t, tc.expected, actual)
+		})
+	}
+}
+
+func TestGetNodeLabels(t *testing.T) {
+	nodeLabels := map[string]string{
+		"foo": "bar",
+	}
+	testCases := map[string]struct {
+		nodePool *CoreWeaveNodePool
+		expected map[string]string
+	}{
+		"empty node labels": {
+			makeTestNodePool("uid1", "np1", 1, 5, 3, withNodeLabels(map[string]string{})),
+			map[string]string{},
+		},
+		"node labels does not exist": {
+			makeTestNodePool("uid1", "np1", 1, 5, 3),
+			map[string]string{},
+		},
+		"node labels present": {
+			makeTestNodePool("uid1", "np1", 1, 5, 3, withNodeLabels(nodeLabels)),
+			nodeLabels,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			actual := tc.nodePool.GetNodeLabels()
+			require.Equal(t, tc.expected, actual)
+		})
+	}
+}
+
+func TestGetNodeTaints(t *testing.T) {
+	taints := []apiv1.Taint{
+		{
+			Key:    "dedicated",
+			Value:  "gpu",
+			Effect: apiv1.TaintEffectNoSchedule,
+		},
+		{
+			Key:    "app",
+			Value:  "foo",
+			Effect: apiv1.TaintEffectNoExecute,
+		},
+	}
+
+	testCases := map[string]struct {
+		nodePool *CoreWeaveNodePool
+		expected []apiv1.Taint
+	}{
+		"empty node taints": {
+			makeTestNodePool("uid1", "np1", 1, 5, 3, withNodeTaints([]apiv1.Taint{})),
+			[]apiv1.Taint{},
+		},
+		"node taints does not exist": {
+			makeTestNodePool("uid1", "np1", 1, 5, 3),
+			[]apiv1.Taint{},
+		},
+		"node taints present": {
+			makeTestNodePool("uid1", "np1", 1, 5, 3, withNodeTaints(taints)),
+			taints,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			actual := tc.nodePool.GetNodeTaints()
+			if len(tc.expected) == 0 {
+				require.Empty(t, actual)
+			} else {
+				require.Equal(t, tc.expected, actual)
+			}
+		})
 	}
 }

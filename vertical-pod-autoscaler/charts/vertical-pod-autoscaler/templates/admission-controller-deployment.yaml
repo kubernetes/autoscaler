@@ -1,3 +1,6 @@
+{{- if and .Values.admissionController.registerWebhook .Values.admissionController.certGen.enabled }}
+{{- fail "admissionController.registerWebhook and admissionController.certGen.enabled cannot both be true. Choose either application-managed webhook (registerWebhook: true) or Helm-managed webhook with certGen (certGen.enabled: true)." -}}
+{{- end -}}
 {{- if .Values.admissionController.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -6,8 +9,15 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+  {{- with .Values.admissionController.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
-  replicas: {{ .Values.admissionController.replicas }}
+  {{- with .Values.admissionController.replicas }}
+  replicas: {{ . }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.admissionController.revisionHistoryLimit }}
   {{- with .Values.admissionController.updateStrategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
@@ -32,9 +42,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName:  {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 65534
+        {{ toYaml . | nindent 8 | trim }}
+      {{- end }}
       {{- with .Values.admissionController.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -46,6 +57,12 @@ spec:
       {{- with .Values.admissionController.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.admissionController.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- if .Values.admissionController.hostNetwork }}
+      hostNetwork: true
       {{- end }}
       containers:
         - name: admission-controller
@@ -60,8 +77,14 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           args:
-          - --v=4
-          - --stderrthreshold=info
+            - --v=4
+            - --stderrthreshold=info
+          {{- if .Values.admissionController.registerWebhook }}
+            - --register-webhook=true
+            {{- else }}
+            - --register-webhook=false
+          {{- end }}
+            - --webhook-service={{ .Values.admissionController.service.name }}
           {{- with .Values.admissionController.extraArgs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -92,6 +115,10 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{ toYaml . | nindent 12 | trim }}
+          {{- end }}
       volumes:
-        {{- toYaml .Values.admissionController.volumes | nindent 12 }}
+        {{- toYaml .Values.admissionController.volumes | nindent 8 }}
 {{- end -}}

@@ -20,7 +20,7 @@ import (
 	"context"
 	"time"
 
-	k8sapiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
@@ -55,7 +55,7 @@ type metricsClient struct {
 }
 
 // NewMetricsClient creates new instance of MetricsClient, which is used by recommender.
-// namespace limits queries to particular namespace, use k8sapiv1.NamespaceAll to select all namespaces.
+// namespace limits queries to particular namespace, use corev1.NamespaceAll to select all namespaces.
 func NewMetricsClient(source PodMetricsLister, namespace, clientName string) MetricsClient {
 	return &metricsClient{
 		source:     source,
@@ -72,7 +72,7 @@ func (c *metricsClient) GetContainersMetrics(ctx context.Context) ([]*ContainerM
 	if err != nil {
 		return nil, err
 	}
-	if c.namespace == k8sapiv1.NamespaceAll {
+	if c.namespace == corev1.NamespaceAll {
 		klog.V(3).InfoS("podMetrics retrieved for all namespaces", "podMetrics", len(podMetricsList.Items))
 	} else {
 		klog.V(3).InfoS("podMetrics retrieved", "namespace", c.namespace, "podMetrics", len(podMetricsList.Items))
@@ -110,11 +110,11 @@ func newContainerMetricsSnapshot(containerMetrics v1beta1.ContainerMetrics, podM
 	}
 }
 
-func calculateUsage(containerUsage k8sapiv1.ResourceList) model.Resources {
-	cpuQuantity := containerUsage[k8sapiv1.ResourceCPU]
+func calculateUsage(containerUsage corev1.ResourceList) model.Resources {
+	cpuQuantity := containerUsage[corev1.ResourceCPU]
 	cpuMillicores := cpuQuantity.MilliValue()
 
-	memoryQuantity := containerUsage[k8sapiv1.ResourceMemory]
+	memoryQuantity := containerUsage[corev1.ResourceMemory]
 	memoryBytes := memoryQuantity.Value()
 
 	return model.Resources{

@@ -37,11 +37,16 @@ import (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:path=capacitybuffers,scope=Cluster,shortName=cb
-// +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.provisioningStrategy",description="The strategy used for provisioning buffer capacity."
-// +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".spec.replicas",description="The desired number of buffer chunks, if specified."
-// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].reason",description="The readiness status of the CapacityBuffer."
+// +kubebuilder:resource:path=capacitybuffers,scope=Namespaced,shortName=cb
+// +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.provisioningStrategy",description="The strategy to be used."
+// +kubebuilder:printcolumn:name="PodTemplate",type="string",JSONPath=".status.podTemplateRef.name",description="The name of the PodTemplate used."
+// +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".status.replicas",description="The actual number of buffer chunks."
+// +kubebuilder:printcolumn:name="ConditionsType",type="string",JSONPath=".status.conditions[*].type",description="List of all condition types."
+// +kubebuilder:printcolumn:name="ConditionsStatus",type="string",JSONPath=".status.conditions[*].status",description="List of all condition statuses."
+// +kubebuilder:printcolumn:name="ConditionsReason",type="string",JSONPath=".status.conditions[*].reason",description="List of all condition reasons."
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the CapacityBuffer."
+// +versionName=v1alpha1
+// +kubebuilder:deprecatedversion
 // +k8s:openapi-gen=true
 
 // CapacityBuffer is the configuration that an autoscaler can use to provision buffer capacity within a cluster.
@@ -100,7 +105,6 @@ type ResourceList map[ResourceName]resource.Quantity
 type CapacityBufferSpec struct {
 	// ProvisioningStrategy defines how the buffer is utilized.
 	// "buffer.x-k8s.io/active-capacity" is the default strategy, where the buffer actively scales up the cluster by creating placeholder pods.
-	// +kubebuilder:validation:Enum=buffer.x-k8s.io/active-capacity
 	// +kubebuilder:default="buffer.x-k8s.io/active-capacity"
 	// +optional
 	ProvisioningStrategy *string `json:"provisioningStrategy,omitempty" protobuf:"bytes,1,opt,name=provisioningStrategy"`

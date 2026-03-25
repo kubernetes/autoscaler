@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -30,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/latencytracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
 	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
@@ -42,9 +44,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	csinodeprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/provider"
+	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
@@ -76,18 +82,19 @@ type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*ca_context.AutoscalingContext
 	// ClusterState for maintaining the state of cluster nodes.
-	clusterStateRegistry    *clusterstate.ClusterStateRegistry
-	lastScaleUpTime         time.Time
-	lastScaleDownDeleteTime time.Time
-	lastScaleDownFailTime   time.Time
-	scaleDownPlanner        scaledown.Planner
-	scaleDownActuator       scaledown.Actuator
-	scaleUpOrchestrator     scaleup.Orchestrator
-	processors              *ca_processors.AutoscalingProcessors
-	loopStartNotifier       *loopstart.ObserversList
-	processorCallbacks      *staticAutoscalerProcessorCallbacks
-	initialized             bool
-	taintConfig             taints.TaintConfig
+	clusterStateRegistry       *clusterstate.ClusterStateRegistry
+	lastScaleUpTime            time.Time
+	lastScaleDownDeleteTime    time.Time
+	lastScaleDownFailTime      time.Time
+	scaleDownPlanner           scaledown.Planner
+	scaleDownActuator          scaledown.Actuator
+	scaleUpOrchestrator        scaleup.Orchestrator
+	processors                 *ca_processors.AutoscalingProcessors
+	loopStartNotifier          *loopstart.ObserversList
+	processorCallbacks         *staticAutoscalerProcessorCallbacks
+	initialized                bool
+	taintConfig                taints.TaintConfig
+	capacityBufferPodsRegistry *fakepods.Registry
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -141,7 +148,10 @@ func NewStaticAutoscaler(
 	scaleUpOrchestrator scaleup.Orchestrator,
 	deleteOptions options.NodeDeleteOptions,
 	drainabilityRules rules.Rules,
-	draProvider *draprovider.Provider) *StaticAutoscaler {
+	draProvider *draprovider.Provider,
+	quotasTrackerOptions resourcequotas.TrackerOptions,
+	csiProvider *csinodeprovider.Provider,
+	capacityBufferPodsRegistry *fakepods.Registry) *StaticAutoscaler {
 
 	klog.V(4).Infof("Creating new static autoscaler with opts: %v", opts)
 
@@ -151,6 +161,9 @@ func NewStaticAutoscaler(
 	}
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker)
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+
+	templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(processors.TemplateNodeInfoProvider)
+
 	autoscalingCtx := ca_context.NewAutoscalingContext(
 		opts,
 		fwHandle,
@@ -162,7 +175,9 @@ func NewStaticAutoscaler(
 		debuggingSnapshotter,
 		remainingPdbTracker,
 		clusterStateRegistry,
-		draProvider)
+		draProvider,
+		templateNodeInfoRegistry,
+		csiProvider)
 
 	taintConfig := taints.NewTaintConfig(opts)
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
@@ -170,6 +185,12 @@ func NewStaticAutoscaler(
 
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.
+	var ndlt *latencytracker.NodeLatencyTracker
+	if autoscalingCtx.AutoscalingOptions.NodeRemovalLatencyTrackingEnabled {
+		ndlt = latencytracker.NewNodeLatencyTracker(processors.ScaleDownStatusProcessor)
+		processors.ScaleDownCandidatesNotifier.Register(ndlt)
+		processors.ScaleDownStatusProcessor = ndlt
+	}
 	scaleDownPlanner := planner.New(autoscalingCtx, processors, deleteOptions, drainabilityRules)
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
@@ -177,27 +198,29 @@ func NewStaticAutoscaler(
 	scaleDownActuator := actuation.NewActuator(autoscalingCtx, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 	autoscalingCtx.ScaleDownActuator = scaleDownActuator
 
+	quotasTrackerFactory := resourcequotas.NewTrackerFactory(quotasTrackerOptions)
 	if scaleUpOrchestrator == nil {
 		scaleUpOrchestrator = orchestrator.New()
 	}
-	scaleUpOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
+	scaleUpOrchestrator.Initialize(autoscalingCtx, processors, clusterStateRegistry, estimatorBuilder, taintConfig, quotasTrackerFactory)
 
 	// Set the initial scale times to be less than the start time so as to
 	// not start in cooldown mode.
 	initialScaleTime := time.Now().Add(-time.Hour)
 	return &StaticAutoscaler{
-		AutoscalingContext:      autoscalingCtx,
-		lastScaleUpTime:         initialScaleTime,
-		lastScaleDownDeleteTime: initialScaleTime,
-		lastScaleDownFailTime:   initialScaleTime,
-		scaleDownPlanner:        scaleDownPlanner,
-		scaleDownActuator:       scaleDownActuator,
-		scaleUpOrchestrator:     scaleUpOrchestrator,
-		processors:              processors,
-		loopStartNotifier:       loopStartNotifier,
-		processorCallbacks:      processorCallbacks,
-		clusterStateRegistry:    clusterStateRegistry,
-		taintConfig:             taintConfig,
+		AutoscalingContext:         autoscalingCtx,
+		lastScaleUpTime:            initialScaleTime,
+		lastScaleDownDeleteTime:    initialScaleTime,
+		lastScaleDownFailTime:      initialScaleTime,
+		scaleDownPlanner:           scaleDownPlanner,
+		scaleDownActuator:          scaleDownActuator,
+		scaleUpOrchestrator:        scaleUpOrchestrator,
+		processors:                 processors,
+		loopStartNotifier:          loopStartNotifier,
+		processorCallbacks:         processorCallbacks,
+		clusterStateRegistry:       clusterStateRegistry,
+		taintConfig:                taintConfig,
+		capacityBufferPodsRegistry: capacityBufferPodsRegistry,
 	}
 }
 
@@ -263,6 +286,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	a.clusterStateRegistry.PeriodicCleanup()
 	a.DebuggingSnapshotter.StartDataCollection()
 	defer a.DebuggingSnapshotter.Flush()
+	if a.capacityBufferPodsRegistry != nil {
+		a.capacityBufferPodsRegistry.Clear()
+	}
 
 	podLister := a.AllPodLister()
 	autoscalingCtx := a.AutoscalingContext
@@ -280,8 +306,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		}
 	}
 
+	var csiSnapshot *csisnapshot.Snapshot
+	if a.AutoscalingContext.CsiProvider != nil {
+		var err error
+		csiSnapshot, err = a.AutoscalingContext.CsiProvider.Snapshot()
+		if err != nil {
+			return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
+		}
+	}
+
 	// Get nodes and pods currently living on cluster
-	allNodes, readyNodes, typedErr := a.obtainNodeLists(draSnapshot)
+	allNodes, readyNodes, typedErr := a.obtainNodeLists(draSnapshot, csiSnapshot)
 	if typedErr != nil {
 		klog.Errorf("Failed to get node list: %v", typedErr)
 		return typedErr
@@ -292,7 +327,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return err
 	}
 
-	originalScheduledPods, unschedulablePods, schedulerUnprocessed, err := listPods(podLister, a.BypassedSchedulers)
+	podsBySchedulability, err := listPods(podLister, a.BypassedSchedulers, a.AllowedSchedulers)
 	if err != nil {
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
@@ -338,9 +373,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	} else {
 		metrics.UpdateMaxNodesCount(maxNodesCount)
 	}
-	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
+	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(podsBySchedulability.Scheduled, a.ExpendablePodsPriorityCutoff)
 
-	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableScheduledPods, draSnapshot); err != nil {
+	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableScheduledPods, draSnapshot, csiSnapshot); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err).AddPrefix("failed to initialize ClusterSnapshot: ")
 	}
 	// Initialize Pod Disruption Budget tracking
@@ -348,15 +383,14 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return typedErr.AddPrefix("failed to initialize RemainingPdbTracker: ")
 	}
 
-	nodeInfosForGroups, autoscalerError := a.processors.TemplateNodeInfoProvider.Process(autoscalingCtx, allNodes, daemonsets, a.taintConfig, currentTime)
-	if autoscalerError != nil {
-		klog.Errorf("Failed to get node infos for groups: %v", autoscalerError)
-		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
+	if autoscalerError := a.AutoscalingContext.TemplateNodeInfoRegistry.Recompute(a.AutoscalingContext, allNodes, daemonsets, a.taintConfig, currentTime); autoscalerError != nil {
+		klog.Errorf("Failed to recompute template node infos: %v", autoscalerError)
+		return autoscalerError.AddPrefix("failed to recompute template node infos: ")
 	}
 
-	a.DebuggingSnapshotter.SetTemplateNodes(nodeInfosForGroups)
+	a.DebuggingSnapshotter.SetTemplateNodes(autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos())
 
-	if typedErr := a.updateClusterState(allNodes, nodeInfosForGroups, currentTime); typedErr != nil {
+	if typedErr := a.updateClusterState(allNodes, currentTime); typedErr != nil {
 		klog.Errorf("Failed to update cluster state: %v", typedErr)
 		return typedErr
 	}
@@ -439,16 +473,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
 	// SchedulerUnprocessed might be zero here if it was disabled
-	metrics.UpdateUnschedulablePodsCount(len(unschedulablePods), len(schedulerUnprocessed))
+	metrics.UpdateUnschedulablePodsCount(len(podsBySchedulability.Unschedulable), len(podsBySchedulability.Unprocessed))
 	// Treat unknown pods as unschedulable, pod list processor will remove schedulable pods
-	unschedulablePods = append(unschedulablePods, schedulerUnprocessed...)
+	podsBySchedulability.Unschedulable = append(podsBySchedulability.Unschedulable, podsBySchedulability.Unprocessed...)
 	// Upcoming nodes are recently created nodes that haven't registered in the cluster yet, or haven't become ready yet.
 	upcomingCounts, registeredUpcoming := a.clusterStateRegistry.GetUpcomingNodes()
 	// For each upcoming node we inject a placeholder node faked to appear ready into the cluster snapshot, so that we can pack unschedulable pods on
 	// them and not trigger another scale-up.
 	// The fake nodes are intentionally not added to the all nodes list, so that they are not considered as candidates for scale-down (which
 	// doesn't make sense as they're not real).
-	err = a.addUpcomingNodesToClusterSnapshot(upcomingCounts, nodeInfosForGroups)
+	err = a.addUpcomingNodesToClusterSnapshot(upcomingCounts)
 	if err != nil {
 		klog.Errorf("Failed adding upcoming nodes to cluster snapshot: %v", err)
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err)
@@ -473,14 +507,14 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 			}
 		}
 	}
-	l, err := a.ClusterSnapshot.ListNodeInfos()
+	allNodeInfos, err := a.ClusterSnapshot.ListNodeInfos()
 	if err != nil {
 		klog.Errorf("Unable to fetch ClusterNode List for Debugging Snapshot, %v", err)
 	} else {
-		a.AutoscalingContext.DebuggingSnapshotter.SetClusterNodes(l)
+		a.AutoscalingContext.DebuggingSnapshotter.SetClusterNodes(allNodeInfos)
 	}
 
-	unschedulablePodsToHelp, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePods)
+	unschedulablePodsToHelp, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, podsBySchedulability.Unschedulable)
 
 	if err != nil {
 		klog.Warningf("Failed to process unschedulable pods: %v", err)
@@ -549,7 +583,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	if shouldScaleUp || a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp) {
 		scaleUpStart := preScaleUp()
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, false)
+		nodes := make([]*apiv1.Node, len(allNodeInfos))
+		for i, nodeInfo := range allNodeInfos {
+			nodes[i] = nodeInfo.Node()
+		}
+		nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, nodes, daemonsets, nodeInfos, false)
 		postScaleUp(scaleUpStart)
 	}
 
@@ -654,7 +693,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	if a.EnforceNodeGroupMinSize {
 		scaleUpStart := preScaleUp()
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(readyNodes, nodeInfosForGroups)
+		nodes := make([]*apiv1.Node, len(allNodeInfos))
+		for i, nodeInfo := range allNodeInfos {
+			nodes[i] = nodeInfo.Node()
+		}
+		nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
 		postScaleUp(scaleUpStart)
 	}
 
@@ -663,7 +707,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 func (a *StaticAutoscaler) updateSoftDeletionTaints(allNodes []*apiv1.Node) {
 	if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
-		taintableNodes := a.scaleDownPlanner.UnneededNodes()
+		taintableNodes := retrieveNodes(a.scaleDownPlanner.UnneededNodes())
 
 		// Make sure we are only cleaning taints from selected node groups.
 		selectedNodes := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
@@ -676,11 +720,12 @@ func (a *StaticAutoscaler) updateSoftDeletionTaints(allNodes []*apiv1.Node) {
 	}
 }
 
-func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[string]int, nodeInfosForGroups map[string]*framework.NodeInfo) error {
+func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[string]int) error {
 	nodeGroups := a.nodeGroupsById()
 	upcomingNodeGroups := make(map[string]int)
 	upcomingNodesFromUpcomingNodeGroups := 0
-	upcomingNodeInfosPerNg, err := getUpcomingNodeInfos(upcomingCounts, nodeInfosForGroups)
+	nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
+	upcomingNodeInfosPerNg, err := getUpcomingNodeInfos(upcomingCounts, nodeInfos)
 	if err != nil {
 		return err
 	}
@@ -990,7 +1035,7 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	a.clusterStateRegistry.Stop()
 }
 
-func (a *StaticAutoscaler) obtainNodeLists(draSnapshot *drasnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node, caerrors.AutoscalerError) {
+func (a *StaticAutoscaler) obtainNodeLists(draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node, caerrors.AutoscalerError) {
 	allNodes, err := a.AllNodeLister().List()
 	if err != nil {
 		klog.Errorf("Failed to list all nodes: %v", err)
@@ -1008,7 +1053,7 @@ func (a *StaticAutoscaler) obtainNodeLists(draSnapshot *drasnapshot.Snapshot) ([
 	// Treat those nodes as unready until GPU actually becomes available and let
 	// our normal handling for booting up nodes deal with this.
 	// TODO: Remove this call when we handle dynamically provisioned resources.
-	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes, draSnapshot)
+	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes, draSnapshot, csiSnapshot)
 	allNodes, readyNodes = taints.FilterOutNodesWithStartupTaints(a.taintConfig, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
 }
@@ -1025,8 +1070,9 @@ func filterNodesFromSelectedGroups(cp cloudprovider.CloudProvider, nodes ...*api
 	return filtered
 }
 
-func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*framework.NodeInfo, currentTime time.Time) caerrors.AutoscalerError {
-	err := a.clusterStateRegistry.UpdateNodes(allNodes, nodeInfosForGroups, currentTime)
+func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTime time.Time) caerrors.AutoscalerError {
+	nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
+	err := a.clusterStateRegistry.UpdateNodes(allNodes, nodeInfos, currentTime)
 	if err != nil {
 		klog.Errorf("Failed to update node registry: %v", err)
 		a.scaleDownPlanner.CleanUpUnneededNodes()
@@ -1156,22 +1202,31 @@ func nodeNames(ns []*apiv1.Node) []string {
 	return names
 }
 
-func listPods(podLister kube_util.PodLister, bypassedSchedulers map[string]bool) (scheduled, unschedulable, unprocessed []*apiv1.Pod, err error) {
+func retrieveNodes(candidates []*scaledown.UnneededNode) []*apiv1.Node {
+	nodes := make([]*apiv1.Node, 0, len(candidates))
+	for _, c := range candidates {
+		nodes = append(nodes, c.Node)
+	}
+	return nodes
+}
+
+func listPods(podLister kube_util.PodLister, bypassedSchedulers, allowedSchedulers map[string]bool) (podsBySchedulability kube_util.PodsBySchedulability, err error) {
 	pods, err := podLister.List()
 	if err != nil {
 		klog.Errorf("Failed to list pods: %v", err)
-		return nil, nil, nil, err
+		return podsBySchedulability, err
 	}
-	scheduled = kube_util.ScheduledPods(pods)
-	unschedulable = kube_util.UnschedulablePods(pods)
-	if len(bypassedSchedulers) > 0 {
-		unprocessed = kube_util.SchedulerUnprocessedPods(pods, bypassedSchedulers)
+	initialPodCount := len(pods)
+	if len(allowedSchedulers) > 0 {
+		pods = kube_util.FilterOutPodsByScheduler(pods, allowedSchedulers)
 	}
+	podsBySchedulability = kube_util.ArrangePodsBySchedulability(pods, bypassedSchedulers)
 	// Skip logging in case of the boring scenario, when all pods are scheduled.
-	if len(pods) != len(scheduled) {
-		ignored := len(pods) - len(scheduled) - len(unschedulable) - len(unprocessed)
-		klog.Infof("Found %d pods in the cluster: %d scheduled, %d unschedulable, %d unprocessed by scheduler, %d ignored (most likely using custom scheduler)",
-			len(pods), len(scheduled), len(unschedulable), len(unprocessed), ignored)
+	if len(pods) != len(podsBySchedulability.Scheduled) {
+		ignoredDueToDisallowed := initialPodCount - len(pods)
+		ignored := len(pods) - len(podsBySchedulability.Scheduled) - len(podsBySchedulability.Unschedulable) - len(podsBySchedulability.Unprocessed)
+		klog.Infof("Found %d pods in the cluster: %d scheduled, %d unschedulable, %d unprocessed by scheduler, %d ignored by allowed schedulers (most likely using custom scheduler), %d ignored due to dissallowed schedulers",
+			initialPodCount, len(podsBySchedulability.Scheduled), len(podsBySchedulability.Unschedulable), len(podsBySchedulability.Unprocessed), ignored, ignoredDueToDisallowed)
 	}
 	return
 }

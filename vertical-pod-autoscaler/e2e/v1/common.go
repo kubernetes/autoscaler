@@ -53,28 +53,25 @@ const (
 	// VpaInPlaceTimeout is a timeout for the VPA to finish in-place resizing a
 	// pod, if there are no mechanisms blocking it.
 	VpaInPlaceTimeout = 2 * time.Minute
-
-	// VpaNamespace is the default namespace that holds the all the VPA components.
-	VpaNamespace = "kube-system"
 )
 
 // UpdaterE2eDescribe describes a VPA updater e2e test.
-func UpdaterE2eDescribe(name string, args ...interface{}) bool {
+func UpdaterE2eDescribe(name string, args ...any) bool {
 	return utils.SIGDescribe(updateComponent, name, args...)
 }
 
 // AdmissionControllerE2eDescribe describes a VPA admission controller e2e test.
-func AdmissionControllerE2eDescribe(name string, args ...interface{}) bool {
+func AdmissionControllerE2eDescribe(name string, args ...any) bool {
 	return utils.SIGDescribe(admissionControllerComponent, name, args...)
 }
 
 // FullVpaE2eDescribe describes a VPA full stack e2e test.
-func FullVpaE2eDescribe(name string, args ...interface{}) bool {
+func FullVpaE2eDescribe(name string, args ...any) bool {
 	return utils.SIGDescribe(fullVpaSuite, name, args...)
 }
 
 // ActuationSuiteE2eDescribe describes a VPA actuation e2e test.
-func ActuationSuiteE2eDescribe(name string, args ...interface{}) bool {
+func ActuationSuiteE2eDescribe(name string, args ...any) bool {
 	return utils.SIGDescribe(actuationSuite, name, args...)
 }
 
@@ -143,6 +140,14 @@ func getPodSelectorExcludingDonePodsOrDie() string {
 // GetHamsterPods returns running hamster pods (matched by utils.HamsterLabels)
 func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 	label := labels.SelectorFromSet(labels.Set(utils.HamsterLabels))
+	options := metav1.ListOptions{LabelSelector: label.String(), FieldSelector: getPodSelectorExcludingDonePodsOrDie()}
+	return f.ClientSet.CoreV1().Pods(f.Namespace.Name).List(context.TODO(), options)
+}
+
+// GetOOMPods returns running OOM test pods (matched by utils.OOMLabels)
+func GetOOMPods(f *framework.Framework) (*apiv1.PodList, error) {
+	// TODO(omerap12): merge GetHamsterPods and GetOOMPods functions.
+	label := labels.SelectorFromSet(labels.Set(utils.OOMLabels))
 	options := metav1.ListOptions{LabelSelector: label.String(), FieldSelector: getPodSelectorExcludingDonePodsOrDie()}
 	return f.ClientSet.CoreV1().Pods(f.Namespace.Name).List(context.TODO(), options)
 }
@@ -219,7 +224,7 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 
 	return apiv1.Container{
 		Name:  "hamster",
-		Image: "registry.k8s.io/ubuntu-slim:0.14",
+		Image: "registry.k8s.io/e2e-test-images/busybox:1.37.0-2",
 		Resources: apiv1.ResourceRequirements{
 			Requests: apiv1.ResourceList{
 				apiv1.ResourceCPU:    cpuQuantity,
@@ -232,7 +237,7 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 }
 
 // InstallRawVPA installs a VPA object passed in as raw json in the test cluster.
-func InstallRawVPA(f *framework.Framework, obj interface{}) error {
+func InstallRawVPA(f *framework.Framework, obj any) error {
 	vpaClientSet := utils.GetVpaClientSet(f)
 	err := vpaClientSet.AutoscalingV1().RESTClient().Post().
 		Namespace(f.Namespace.Name).
@@ -244,14 +249,30 @@ func InstallRawVPA(f *framework.Framework, obj interface{}) error {
 
 // AnnotatePod adds annotation for an existing pod.
 func AnnotatePod(f *framework.Framework, podName, annotationName, annotationValue string) {
-	bytes, err := json.Marshal([]utils.PatchRecord{{
+	pod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Get(context.TODO(), podName, metav1.GetOptions{})
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to get pod.")
+
+	patches := []utils.PatchRecord{}
+	if pod.Annotations == nil {
+		patches = append(patches, utils.PatchRecord{
+			Op:    "add",
+			Path:  "/metadata/annotations",
+			Value: make(map[string]string),
+		})
+	}
+
+	patches = append(patches, utils.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/metadata/annotations/%v", annotationName),
+		Path:  fmt.Sprintf("/metadata/annotations/%s", annotationName),
 		Value: annotationValue,
-	}})
-	pod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Patch(context.TODO(), podName, types.JSONPatchType, bytes, metav1.PatchOptions{})
+	})
+
+	bytes, err := json.Marshal(patches)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	patchedPod, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).Patch(context.TODO(), podName, types.JSONPatchType, bytes, metav1.PatchOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch pod.")
-	gomega.Expect(pod.Annotations[annotationName]).To(gomega.Equal(annotationValue))
+	gomega.Expect(patchedPod.Annotations[annotationName]).To(gomega.Equal(annotationValue))
 }
 
 // ParseQuantityOrDie parses quantity from string and dies with an error if
@@ -305,6 +326,21 @@ func WaitForPodsEvicted(f *framework.Framework, podList *apiv1.PodList) error {
 	})
 }
 
+// WaitForPodsEvictedOOM waits until some pods from the list are evicted.
+// TODO(omerap12): merge this with WaitForPodsEvicted
+func WaitForPodsEvictedOOM(f *framework.Framework, podList *apiv1.PodList) error {
+	initialPodSet := MakePodSet(podList)
+
+	return wait.PollUntilContextTimeout(context.Background(), utils.PollInterval, utils.PollTimeout, true, func(ctx context.Context) (done bool, err error) {
+		currentPodList, err := GetOOMPods(f)
+		if err != nil {
+			return false, err
+		}
+		currentPodSet := MakePodSet(currentPodList)
+		return GetEvictedPodsCount(currentPodSet, initialPodSet) > 0, nil
+	})
+}
+
 // WerePodsSuccessfullyRestarted returns true if some pods from initialPodSet have been
 // successfully restarted comparing to currentPodSet (pods were evicted and
 // are running).
@@ -340,6 +376,16 @@ func GetEvictedPodsCount(currentPodSet PodSet, initialPodSet PodSet) int {
 func CheckNoPodsEvicted(f *framework.Framework, initialPodSet PodSet) {
 	time.Sleep(VpaEvictionTimeout)
 	currentPodList, err := GetHamsterPods(f)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when listing hamster pods to check number of pod evictions")
+	restarted := GetEvictedPodsCount(MakePodSet(currentPodList), initialPodSet)
+	gomega.Expect(restarted).To(gomega.Equal(0), "there should be no pod evictions")
+}
+
+// CheckNoPodsEvictedOOM waits for long enough period for VPA to start evicting
+// TODO(omerap12): merge this CheckNoPodsEvicted
+func CheckNoPodsEvictedOOM(f *framework.Framework, initialPodSet PodSet) {
+	time.Sleep(VpaEvictionTimeout)
+	currentPodList, err := GetOOMPods(f)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when listing hamster pods to check number of pod evictions")
 	restarted := GetEvictedPodsCount(MakePodSet(currentPodList), initialPodSet)
 	gomega.Expect(restarted).To(gomega.Equal(0), "there should be no pod evictions")

@@ -19,10 +19,8 @@ package autoscaling
 import (
 	"flag"
 	"fmt"
-	"math/rand"
 	"os"
 	"testing"
-	"time"
 
 	// Never, ever remove the line with "/ginkgo". Without it,
 	// the ginkgo test runner will not detect that this
@@ -30,13 +28,12 @@ import (
 	// See https://github.com/kubernetes/kubernetes/issues/74827
 	// "github.com/onsi/ginkgo"
 
+	"k8s.io/kubernetes/test/e2e"
 	"k8s.io/kubernetes/test/e2e/framework"
 	"k8s.io/kubernetes/test/e2e/framework/config"
 	"k8s.io/kubernetes/test/e2e/framework/testfiles"
 	"k8s.io/kubernetes/test/utils/image"
 )
-
-var viperConfig = flag.String("viper-config", "", "The name of a viper config file (https://github.com/spf13/viper#what-is-viper). All e2e command line parameters can also be configured in such a file. May contain a path and may or may not contain the file suffix. The default is to look for an optional file with `e2e` as base name. If a file is specified explicitly, it must be present.")
 
 // handleFlags sets up all flags and parses the command line.
 func handleFlags() {
@@ -68,10 +65,9 @@ func TestMain(m *testing.M) {
 		testfiles.AddFileSource(testfiles.RootFileSource{Root: framework.TestContext.RepoRoot})
 	}
 
-	rand.Seed(time.Now().UnixNano())
 	os.Exit(m.Run())
 }
 
 func TestE2E(t *testing.T) {
-	RunE2ETests(t)
+	e2e.RunE2ETests(t)
 }

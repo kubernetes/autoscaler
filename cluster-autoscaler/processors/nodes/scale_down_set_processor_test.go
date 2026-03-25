@@ -345,7 +345,7 @@ func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
 			}
 			context, _ := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{},
-			}, &fake.Clientset{}, nil, provider, nil, nil)
+			}, &fake.Clientset{}, nil, provider, nil, nil, nil)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)
 
 			toBeRemoved, unRemovable := processor.FilterUnremovableNodes(&context, tc.scaleDownContext, candidates)

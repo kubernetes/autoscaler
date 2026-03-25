@@ -22,11 +22,11 @@ import (
 
 // KeyError is returned when the mapping key was not found.
 type KeyError struct {
-	key interface{}
+	key any
 }
 
 // NewKeyError returns a new KeyError.
-func NewKeyError(key interface{}) KeyError {
+func NewKeyError(key any) KeyError {
 	return KeyError{key}
 }
 

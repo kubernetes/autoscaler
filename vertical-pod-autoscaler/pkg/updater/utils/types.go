@@ -16,10 +16,6 @@ limitations under the License.
 
 package utils
 
-import (
-	apiv1 "k8s.io/api/core/v1"
-)
-
 // InPlaceDecision is the type of decision that can be made for a pod.
 type InPlaceDecision string
 
@@ -31,13 +27,3 @@ const (
 	// InPlaceEvict means we will attempt to evict the pod.
 	InPlaceEvict InPlaceDecision = "InPlaceEvict"
 )
-
-// GetPodCondition will get Pod's condition.
-func GetPodCondition(pod *apiv1.Pod, conditionType apiv1.PodConditionType) (apiv1.PodCondition, bool) {
-	for _, cond := range pod.Status.Conditions {
-		if cond.Type == conditionType {
-			return cond, true
-		}
-	}
-	return apiv1.PodCondition{}, false
-}

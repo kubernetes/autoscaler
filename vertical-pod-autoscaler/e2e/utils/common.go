@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -44,8 +45,6 @@ const (
 
 	// RecommenderDeploymentName is VPA recommender deployment name
 	RecommenderDeploymentName = "vpa-recommender"
-	// RecommenderNamespace is namespace to deploy VPA recommender
-	RecommenderNamespace = "kube-system"
 	// PollInterval is interval for polling
 	PollInterval = 10 * time.Second
 	// PollTimeout is timeout for polling
@@ -56,6 +55,18 @@ const (
 	// DefaultHamsterBackoffLimit is BackoffLimit of hamster app
 	DefaultHamsterBackoffLimit = int32(10)
 )
+
+var (
+	// VpaNamespace is namespace to deploy VPA components.
+	// Can be overridden via VPA_NAMESPACE environment variable.
+	VpaNamespace = "kube-system"
+)
+
+func init() {
+	if ns := os.Getenv("VPA_NAMESPACE"); ns != "" {
+		VpaNamespace = ns
+	}
+}
 
 // HamsterTargetRef is CrossVersionObjectReference of hamster app
 var HamsterTargetRef = &autoscaling.CrossVersionObjectReference{
@@ -70,15 +81,18 @@ var RecommenderLabels = map[string]string{"app": "vpa-recommender"}
 // HamsterLabels are labels of hamster app
 var HamsterLabels = map[string]string{"app": "hamster"}
 
+// OOMLabels are labels for OOM test pods
+var OOMLabels = map[string]string{"app": "oom-test"}
+
 // SIGDescribe adds sig-autoscaling tag to test description.
 // Takes args that are passed to ginkgo.Describe.
-func SIGDescribe(scenario, name string, args ...interface{}) bool {
+func SIGDescribe(scenario, name string, args ...any) bool {
 	full := fmt.Sprintf("[sig-autoscaling] [VPA] [%s] [v1] %s", scenario, name)
 	return ginkgo.Describe(full, args...)
 }
 
 // RecommenderE2eDescribe describes a VPA recommender e2e test.
-func RecommenderE2eDescribe(name string, args ...interface{}) bool {
+func RecommenderE2eDescribe(name string, args ...any) bool {
 	return SIGDescribe(recommenderComponent, name, args...)
 }
 
@@ -127,9 +141,9 @@ func isStatusEmpty(status *vpa_types.VerticalPodAutoscalerStatus) bool {
 
 // PatchRecord used for patch action
 type PatchRecord struct {
-	Op    string      `json:"op,inline"`
-	Path  string      `json:"path,inline"`
-	Value interface{} `json:"value"`
+	Op    string `json:"op,inline"`
+	Path  string `json:"path,inline"`
+	Value any    `json:"value"`
 }
 
 // PatchVpaRecommendation installs a new recommendation for VPA object.
@@ -222,16 +236,16 @@ func NewNHamstersDeployment(f *framework.Framework, n int) *appsv1.Deployment {
 		panic("container count should be greater than 0")
 	}
 	d := framework_deployment.NewDeployment(
-		"hamster-deployment",                       /*deploymentName*/
-		DefaultHamsterReplicas,                     /*replicas*/
-		HamsterLabels,                              /*podLabels*/
-		GetHamsterContainerNameByIndex(0),          /*imageName*/
-		"registry.k8s.io/ubuntu-slim:0.14",         /*image*/
-		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
+		"hamster-deployment",                               /*deploymentName*/
+		DefaultHamsterReplicas,                             /*replicas*/
+		HamsterLabels,                                      /*podLabels*/
+		GetHamsterContainerNameByIndex(0),                  /*imageName*/
+		"registry.k8s.io/e2e-test-images/busybox:1.37.0-2", /*image*/
+		appsv1.RollingUpdateDeploymentStrategyType,         /*strategyType*/
 	)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].Command = []string{"/bin/sh"}
-	d.Spec.Template.Spec.Containers[0].Args = []string{"-c", "/usr/bin/yes >/dev/null"}
+	d.Spec.Template.Spec.Containers[0].Args = []string{"-c", "yes >/dev/null"}
 	for i := 1; i < n; i++ {
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, d.Spec.Template.Spec.Containers[0])
 		d.Spec.Template.Spec.Containers[i].Name = GetHamsterContainerNameByIndex(i)
