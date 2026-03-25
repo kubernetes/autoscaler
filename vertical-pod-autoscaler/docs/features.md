@@ -211,7 +211,7 @@ status:
 
 ### Example 1
 
-Here is the defined LimitRange object that applies to our Deployment:
+Here is the defined Container LimitRange object that applies to our Deployment:
 
 ```yaml
 apiVersion: v1
@@ -228,7 +228,7 @@ spec:
       memory: 50Mi
 ```
 
-When the Pod is killed/evicted, the admission-controller recreates it to obey the constraints set in the LimitRange object, using the following container-level resource sections:
+The admission-controller creates the Pod to comply with the constraints set in the LimitRange object, using the following container-level resource sections:
 
 ```yaml
 containers:
@@ -271,8 +271,8 @@ spec:
       memory: 25Mi
 ```
 
-By using this LimitRange object and the container-level recommendations, when the Pod is killed, the admission-controller sets the following values:
-* For the container called `main`, the request-to-limit ratio is still 1:2, which initially results in a 160Mi memory request and a 320Mi memory limit. However, the limit now violates the `max` value in the LimitRange object. The admission-controller therefore decreases the request and limit proportionally to maintain the 1:2 ratio, resulting in a 125Mi request and a 250Mi limit.
+By using this LimitRange object and the container-level recommendations, the admission-controller sets the following values:
+* For the container called `main`, the request-to-limit ratio is still 1:2, which initially results in a 160Mi memory request and a 320Mi memory limit. However, the limit now violates the `max` value in the LimitRange object. The admission-controller therefore decreases the request and limit proportionally to maintain the 1:2 ratio, resulting in a 125Mi request and a 250Mi limit, allowing it to fix within the defined LimitRange.
 * For the container called `sidecar1`, there is no violation based on the LimitRange. Therefore, the admission-controller sets a 25Mi request and a 25Mi limit.
 
 For this example, here are the updated container resource sections:
