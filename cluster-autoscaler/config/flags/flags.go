@@ -245,7 +245,6 @@ var (
 
 	// Deprecated flags
 	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
-	scaleDownEnabled = flag.Bool("scale-down-enabled", true, "[Deprecated] Should CA scale down the cluster")
 )
 
 var autoscalingOptions *config.AutoscalingOptions
@@ -306,10 +305,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("--enable-dynamic-resource-allocation flag must be true: %t", ptr.Deref(enableDynamicResourceAllocation, false))
 	}
 
-	if *scaleDownEnabled == false {
-		klog.Warningf("--scale-down-enabled flag is deprecated and will be removed in a future release")
-	}
-
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
@@ -348,7 +343,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownDelayTypeLocal:          *scaleDownDelayTypeLocal,
 		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
-		ScaleDownEnabled:                 *scaleDownEnabled,
 		ScaleDownUnreadyEnabled:          *scaleDownUnreadyEnabled,
 		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
 		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,

@@ -592,102 +592,100 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		postScaleUp(scaleUpStart)
 	}
 
-	if a.ScaleDownEnabled {
-		unneededStart := time.Now()
+	unneededStart := time.Now()
 
-		klog.V(4).Infof("Calculating unneeded nodes")
+	klog.V(4).Infof("Calculating unneeded nodes")
 
-		var scaleDownCandidates []*apiv1.Node
-		var podDestinations []*apiv1.Node
+	var scaleDownCandidates []*apiv1.Node
+	var podDestinations []*apiv1.Node
 
-		// podDestinations and scaleDownCandidates are initialized based on allNodes variable, which contains only
-		// registered nodes in cluster.
-		// It does not include any upcoming nodes which can be part of clusterSnapshot. As an alternative to using
-		// allNodes here, we could use nodes from clusterSnapshot and explicitly filter out upcoming nodes here but it
-		// is of little (if any) benefit.
+	// podDestinations and scaleDownCandidates are initialized based on allNodes variable, which contains only
+	// registered nodes in cluster.
+	// It does not include any upcoming nodes which can be part of clusterSnapshot. As an alternative to using
+	// allNodes here, we could use nodes from clusterSnapshot and explicitly filter out upcoming nodes here but it
+	// is of little (if any) benefit.
 
-		if a.processors == nil || a.processors.ScaleDownNodeProcessor == nil {
-			scaleDownCandidates = allNodes
-			podDestinations = allNodes
-		} else {
-			var err caerrors.AutoscalerError
-			scaleDownCandidates, err = a.processors.ScaleDownNodeProcessor.GetScaleDownCandidates(
-				autoscalingCtx, allNodes)
-			if err != nil {
-				klog.Error(err)
-				return err
-			}
-			podDestinations, err = a.processors.ScaleDownNodeProcessor.GetPodDestinationCandidates(autoscalingCtx, allNodes)
-			if err != nil {
-				klog.Error(err)
-				return err
-			}
+	if a.processors == nil || a.processors.ScaleDownNodeProcessor == nil {
+		scaleDownCandidates = allNodes
+		podDestinations = allNodes
+	} else {
+		var err caerrors.AutoscalerError
+		scaleDownCandidates, err = a.processors.ScaleDownNodeProcessor.GetScaleDownCandidates(
+			autoscalingCtx, allNodes)
+		if err != nil {
+			klog.Error(err)
+			return err
 		}
+		podDestinations, err = a.processors.ScaleDownNodeProcessor.GetPodDestinationCandidates(autoscalingCtx, allNodes)
+		if err != nil {
+			klog.Error(err)
+			return err
+		}
+	}
 
-		typedErr := a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, scaleDownActuationStatus, currentTime)
-		// Update clusterStateRegistry and metrics regardless of whether ScaleDown was successful or not.
-		unneededNodes := a.scaleDownPlanner.UnneededNodes()
-		a.processors.ScaleDownCandidatesNotifier.Update(unneededNodes, currentTime)
-		metrics.UpdateUnneededNodesCount(len(unneededNodes))
+	typedErr = a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, scaleDownActuationStatus, currentTime)
+	// Update clusterStateRegistry and metrics regardless of whether ScaleDown was successful or not.
+	unneededNodes := a.scaleDownPlanner.UnneededNodes()
+	a.processors.ScaleDownCandidatesNotifier.Update(unneededNodes, currentTime)
+	metrics.UpdateUnneededNodesCount(len(unneededNodes))
+	if typedErr != nil {
+		scaleDownStatus.Result = scaledownstatus.ScaleDownError
+		klog.Errorf("Failed to scale down: %v", typedErr)
+		return typedErr
+	}
+
+	metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
+
+	scaleDownInCooldown := a.isScaleDownInCooldown(currentTime)
+	klog.V(4).Infof("Scale down status: lastScaleUpTime=%s lastScaleDownDeleteTime=%v "+
+		"lastScaleDownFailTime=%s scaleDownForbidden=%v scaleDownInCooldown=%v",
+		a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
+		a.processorCallbacks.disableScaleDownForLoop, scaleDownInCooldown)
+	metrics.UpdateScaleDownInCooldown(scaleDownInCooldown)
+	// We want to delete unneeded Node Groups only if here is no current delete
+	// in progress.
+	_, drained := scaleDownActuationStatus.DeletionsInProgress()
+	var removedNodeGroups []cloudprovider.NodeGroup
+	if len(drained) == 0 {
+		var err error
+		removedNodeGroups, err = a.processors.NodeGroupManager.RemoveUnneededNodeGroups(autoscalingCtx)
+		if err != nil {
+			klog.Errorf("Error while removing unneeded node groups: %v", err)
+		}
+		scaleDownStatus.RemovedNodeGroups = removedNodeGroups
+	}
+
+	if scaleDownInCooldown {
+		scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
+		a.updateSoftDeletionTaints(allNodes)
+	} else if len(scaleDownCandidates) == 0 {
+		klog.V(4).Infof("Starting scale down: no scale down candidates. skipping...")
+		scaleDownStatus.Result = scaledownstatus.ScaleDownNoCandidates
+		metrics.UpdateLastTime(metrics.ScaleDown, time.Now())
+		a.updateSoftDeletionTaints(allNodes)
+	} else {
+		klog.V(4).Infof("Starting scale down")
+
+		scaleDownStart := time.Now()
+		metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
+		empty, needDrain := a.scaleDownPlanner.NodesToDelete(currentTime)
+		scaleDownResult, scaledDownNodes, typedErr := a.scaleDownActuator.StartDeletion(empty, needDrain)
+		scaleDownStatus.Result = scaleDownResult
+		scaleDownStatus.ScaledDownNodes = scaledDownNodes
+		metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
+		metrics.UpdateUnremovableNodesCount(countsByReason(a.scaleDownPlanner.UnremovableNodes()))
+
+		scaleDownStatus.RemovedNodeGroups = removedNodeGroups
+
+		if scaleDownStatus.Result == scaledownstatus.ScaleDownNodeDeleteStarted {
+			a.lastScaleDownDeleteTime = currentTime
+			a.clusterStateRegistry.Recalculate()
+		}
+		a.updateSoftDeletionTaints(allNodes)
 		if typedErr != nil {
-			scaleDownStatus.Result = scaledownstatus.ScaleDownError
 			klog.Errorf("Failed to scale down: %v", typedErr)
+			a.lastScaleDownFailTime = currentTime
 			return typedErr
-		}
-
-		metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
-
-		scaleDownInCooldown := a.isScaleDownInCooldown(currentTime)
-		klog.V(4).Infof("Scale down status: lastScaleUpTime=%s lastScaleDownDeleteTime=%v "+
-			"lastScaleDownFailTime=%s scaleDownForbidden=%v scaleDownInCooldown=%v",
-			a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
-			a.processorCallbacks.disableScaleDownForLoop, scaleDownInCooldown)
-		metrics.UpdateScaleDownInCooldown(scaleDownInCooldown)
-		// We want to delete unneeded Node Groups only if here is no current delete
-		// in progress.
-		_, drained := scaleDownActuationStatus.DeletionsInProgress()
-		var removedNodeGroups []cloudprovider.NodeGroup
-		if len(drained) == 0 {
-			var err error
-			removedNodeGroups, err = a.processors.NodeGroupManager.RemoveUnneededNodeGroups(autoscalingCtx)
-			if err != nil {
-				klog.Errorf("Error while removing unneeded node groups: %v", err)
-			}
-			scaleDownStatus.RemovedNodeGroups = removedNodeGroups
-		}
-
-		if scaleDownInCooldown {
-			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
-			a.updateSoftDeletionTaints(allNodes)
-		} else if len(scaleDownCandidates) == 0 {
-			klog.V(4).Infof("Starting scale down: no scale down candidates. skipping...")
-			scaleDownStatus.Result = scaledownstatus.ScaleDownNoCandidates
-			metrics.UpdateLastTime(metrics.ScaleDown, time.Now())
-			a.updateSoftDeletionTaints(allNodes)
-		} else {
-			klog.V(4).Infof("Starting scale down")
-
-			scaleDownStart := time.Now()
-			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
-			empty, needDrain := a.scaleDownPlanner.NodesToDelete(currentTime)
-			scaleDownResult, scaledDownNodes, typedErr := a.scaleDownActuator.StartDeletion(empty, needDrain)
-			scaleDownStatus.Result = scaleDownResult
-			scaleDownStatus.ScaledDownNodes = scaledDownNodes
-			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
-			metrics.UpdateUnremovableNodesCount(countsByReason(a.scaleDownPlanner.UnremovableNodes()))
-
-			scaleDownStatus.RemovedNodeGroups = removedNodeGroups
-
-			if scaleDownStatus.Result == scaledownstatus.ScaleDownNodeDeleteStarted {
-				a.lastScaleDownDeleteTime = currentTime
-				a.clusterStateRegistry.Recalculate()
-			}
-			a.updateSoftDeletionTaints(allNodes)
-			if typedErr != nil {
-				klog.Errorf("Failed to scale down: %v", typedErr)
-				a.lastScaleDownFailTime = currentTime
-				return typedErr
-			}
 		}
 	}
 
