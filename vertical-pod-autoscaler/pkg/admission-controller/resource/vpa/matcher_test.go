@@ -65,6 +65,7 @@ func TestGetMatchingVpa(t *testing.T) {
 		AddContainer(test.Container().WithName("i-am-container").Get())
 	podBuilder := podBuilderWithoutCreator.WithCreator(&sts.ObjectMeta, &sts.TypeMeta)
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("i-am-container")
+	factor := int32(1)
 
 	testCases := []struct {
 		name            string
@@ -143,6 +144,35 @@ func TestGetMatchingVpa(t *testing.T) {
 			pod:           podBuilder.Get(),
 			vpas:          []*vpa_types.VerticalPodAutoscaler{},
 			expectedFound: false,
+		}, {
+			name: "vpa with update mode off but with startup boost is matched",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithName("off-with-boost-vpa").WithTargetRef(targetRef).WithUpdateMode(vpa_types.UpdateModeOff).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 0).Get(),
+			},
+			labelSelector:   "app = test",
+			expectedFound:   true,
+			expectedVpaName: "off-with-boost-vpa",
+			// Tests that UpdateModeOff is bypassed if the VPA has a pod-level startup boost defined.
+		}, {
+			name: "vpa with update mode off but with container-level startup boost is matched",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithName("off-with-container-boost-vpa").WithTargetRef(targetRef).WithUpdateMode(vpa_types.UpdateModeOff).WithContainerCPUStartupBoost("i-am-container", vpa_types.FactorStartupBoostType, &factor, nil, 0).Get(),
+			},
+			labelSelector:   "app = test",
+			expectedFound:   true,
+			expectedVpaName: "off-with-container-boost-vpa",
+			// Tests that UpdateModeOff is bypassed if the VPA has only a container-level startup boost defined.
+		}, {
+			name: "vpa with default update mode and startup boost is matched",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithName("auto-with-boost-vpa").WithTargetRef(targetRef).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 0).Get(),
+			},
+			labelSelector:   "app = test",
+			expectedFound:   true,
+			expectedVpaName: "auto-with-boost-vpa",
 		},
 	}
 

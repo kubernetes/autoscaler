@@ -243,6 +243,21 @@ func GetUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
 	return *vpa.Spec.UpdatePolicy.UpdateMode
 }
 
+// HasStartupBoost returns true if VPA has StartupBoost defined either globally or at container level.
+func HasStartupBoost(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if vpa.Spec.StartupBoost != nil {
+		return true
+	}
+	if vpa.Spec.ResourcePolicy != nil {
+		for _, containerPolicy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
+			if containerPolicy.StartupBoost != nil {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // GetContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
 // and container name. It returns nil if there is no policy specified for the container.
 func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
