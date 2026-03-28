@@ -23,6 +23,11 @@ updates:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
     - "ok-to-test"
+  groups:
+    actions:
+      update-types:
+        - "minor"
+        - "patch"
 - package-ecosystem: gomod
   directory: "/addon-resizer"
   schedule:
