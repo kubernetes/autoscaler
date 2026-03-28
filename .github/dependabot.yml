@@ -15,9 +15,6 @@ updates:
     - "/vertical-pod-autoscaler/pkg/updater"
   schedule:
     interval: daily
-  ignore:
-    - dependency-name: "golang"
-      versions: ["*.*rc*"]
   open-pull-requests-limit: 3
   labels:
     - "area/vertical-pod-autoscaler"
