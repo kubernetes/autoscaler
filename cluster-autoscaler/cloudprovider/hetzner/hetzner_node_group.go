@@ -476,6 +476,16 @@ func createServer(n *hetznerNodeGroup) error {
 
 	// dont start the server if we need to attach the server to a private subnet network
 	StartAfterCreate := n.manager.network != nil && n.subnetIPRange == nil
+
+	// Start with the mandatory node-group label, then merge any extra labels
+	// configured for this node pool. This allows operators to add cloud-provider
+	// labels (e.g. kops authentication labels) that must be present on the
+	// Hetzner server object itself, not just on the Kubernetes node.
+	serverLabels := map[string]string{nodeGroupLabel: n.id}
+	if n.manager.clusterConfig.IsUsingNewFormat {
+		maps.Copy(serverLabels, n.manager.clusterConfig.NodeConfigs[n.id].Labels)
+	}
+
 	opts := hcloud.ServerCreateOpts{
 		Name:             newNodeName(n),
 		UserData:         cloudInit,
@@ -483,9 +493,7 @@ func createServer(n *hetznerNodeGroup) error {
 		ServerType:       serverType,
 		Image:            image,
 		StartAfterCreate: &StartAfterCreate,
-		Labels: map[string]string{
-			nodeGroupLabel: n.id,
-		},
+		Labels:           serverLabels,
 		PublicNet: &hcloud.ServerCreatePublicNet{
 			EnableIPv4: n.manager.publicIPv4,
 			EnableIPv6: n.manager.publicIPv6,
