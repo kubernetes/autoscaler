@@ -6,9 +6,11 @@ package instancepools
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/core"
@@ -86,6 +88,7 @@ type mockComputeManagementClient struct {
 	getInstancePoolResponse            core.GetInstancePoolResponse
 	getInstancePoolInstanceResponse    core.GetInstancePoolInstanceResponse
 	listInstancePoolInstancesResponse  core.ListInstancePoolInstancesResponse
+	listInstancePoolsResponse          core.ListInstancePoolsResponse
 	updateInstancePoolResponse         core.UpdateInstancePoolResponse
 	detachInstancePoolInstanceResponse core.DetachInstancePoolInstanceResponse
 }
@@ -144,6 +147,10 @@ func (m *mockComputeManagementClient) DetachInstancePoolInstance(context.Context
 	return m.detachInstancePoolInstanceResponse, m.err
 }
 
+func (m *mockComputeManagementClient) ListInstancePools(_ context.Context, req core.ListInstancePoolsRequest) (core.ListInstancePoolsResponse, error) {
+	return m.listInstancePoolsResponse, m.err
+}
+
 var computeClient = &mockComputeClient{
 	err: nil,
 	listVnicAttachmentsResponse: core.ListVnicAttachmentsResponse{
@@ -200,6 +207,14 @@ var virtualNetworkClient = &mockVirtualNetworkClient{
 
 var workRequestsClient = &mockWorkRequestClient{
 	err: nil,
+}
+
+func TestCreateInstancePoolManagerRejectsMixedDiscovery(t *testing.T) {
+	_, err := CreateInstancePoolManager("", cloudprovider.NodeGroupDiscoveryOptions{
+		NodeGroupSpecs:              []string{"1:5:ocid1.instancepool.oc1.phx.aaaaaaaah"},
+		NodeGroupAutoDiscoverySpecs: []string{"compartmentId:ocid1.compartment.oc1..aaaaaaaa1,instancepoolTags:env=prod,min:1,max:5"},
+	}, nil)
+	require.Error(t, err, "expected error when both static and auto-discovery specs are provided")
 }
 
 func TestInstancePoolFromArgs(t *testing.T) {
@@ -744,4 +759,462 @@ func TestBuildGenericLabels(t *testing.T) {
 		t.Fatalf("got %+v\nwanted %+v", output, expected)
 	}
 
+}
+
+func TestNodeGroupFromArg(t *testing.T) {
+	testCases := []struct {
+		name        string
+		value       string
+		expected    *nodeGroupAutoDiscovery
+		expectError bool
+	}{
+		{
+			name:  "valid input",
+			value: "compartmentId:ocid1.compartment.oc1..aaaaaaaa1,instancepoolTags:env=prod,min:1,max:5",
+			expected: &nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"env": "prod"},
+				minSize:       1,
+				maxSize:       5,
+			},
+		},
+		{
+			name:  "valid input with multiple tags",
+			value: "compartmentId:ocid1.compartment.oc1..aaaaaaaa1,instancepoolTags:env=prod&team=backend,min:2,max:10",
+			expected: &nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"env": "prod", "team": "backend"},
+				minSize:       2,
+				maxSize:       10,
+			},
+		},
+		{
+			name:  "valid input with different parameter order",
+			value: "min:1,max:5,instancepoolTags:env=prod,compartmentId:ocid1.compartment.oc1..aaaaaaaa1",
+			expected: &nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"env": "prod"},
+				minSize:       1,
+				maxSize:       5,
+			},
+		},
+		{
+			name:  "valid input with defined tag (dot-notation)",
+			value: "compartmentId:ocid1.compartment.oc1..aaaaaaaa1,instancepoolTags:ns.key=value,min:1,max:5",
+			expected: &nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"ns.key": "value"},
+				minSize:       1,
+				maxSize:       5,
+			},
+		},
+		{
+			name:        "missing compartmentId",
+			value:       "instancepoolTags:env=prod,min:1,max:5",
+			expectError: true,
+		},
+		{
+			name:        "missing instancepoolTags",
+			value:       "compartmentId:ocid1.compartment.oc1..aaaaaaaa1,min:1,max:5",
+			expectError: true,
+		},
+		{
+			name:        "missing min",
+			value:       "compartmentId:ocid1.compartment.oc1..aaaaaaaa1,instancepoolTags:env=prod,max:5",
+			expectError: true,
+		},
+		{
+			name:        "missing max",
+			value:       "compartmentId:ocid1.compartment.oc1..aaaaaaaa1,instancepoolTags:env=prod,min:1",
+			expectError: true,
+		},
+		{
+			name:        "non-integer min",
+			value:       "compartmentId:ocid1.compartment.oc1..aaaaaaaa1,instancepoolTags:env=prod,min:notanumber,max:5",
+			expectError: true,
+		},
+		{
+			name:        "non-integer max",
+			value:       "compartmentId:ocid1.compartment.oc1..aaaaaaaa1,instancepoolTags:env=prod,min:1,max:notanumber",
+			expectError: true,
+		},
+		{
+			name:        "invalid tag format missing equals sign",
+			value:       "compartmentId:ocid1.compartment.oc1..aaaaaaaa1,instancepoolTags:envprod,min:1,max:5",
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := nodeGroupFromArg(tc.value)
+			if tc.expectError {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.expected.compartmentId, result.compartmentId)
+			require.Equal(t, tc.expected.minSize, result.minSize)
+			require.Equal(t, tc.expected.maxSize, result.maxSize)
+			require.Equal(t, tc.expected.tags, result.tags)
+		})
+	}
+}
+
+func TestValidateInstancePoolTags(t *testing.T) {
+	testCases := []struct {
+		name          string
+		nodeGroupTags map[string]string
+		freeFormTags  map[string]string
+		definedTags   map[string]map[string]interface{}
+		expected      bool
+	}{
+		{
+			name:          "nil nodeGroupTags matches everything",
+			nodeGroupTags: nil,
+			freeFormTags:  map[string]string{"env": "prod"},
+			expected:      true,
+		},
+		{
+			name:          "matching freeform tag",
+			nodeGroupTags: map[string]string{"env": "prod"},
+			freeFormTags:  map[string]string{"env": "prod"},
+			expected:      true,
+		},
+		{
+			name:          "non-matching freeform tag value",
+			nodeGroupTags: map[string]string{"env": "prod"},
+			freeFormTags:  map[string]string{"env": "staging"},
+			expected:      false,
+		},
+		{
+			name:          "missing freeform tag key",
+			nodeGroupTags: map[string]string{"env": "prod"},
+			freeFormTags:  map[string]string{},
+			expected:      false,
+		},
+		{
+			name:          "matching defined tag",
+			nodeGroupTags: map[string]string{"ns.key": "value"},
+			definedTags:   map[string]map[string]interface{}{"ns": {"key": "value"}},
+			expected:      true,
+		},
+		{
+			name:          "non-matching defined tag value",
+			nodeGroupTags: map[string]string{"ns.key": "value"},
+			definedTags:   map[string]map[string]interface{}{"ns": {"key": "other"}},
+			expected:      false,
+		},
+		{
+			name:          "missing defined tag namespace",
+			nodeGroupTags: map[string]string{"ns.key": "value"},
+			definedTags:   map[string]map[string]interface{}{"ns2": {"key": "value"}},
+			expected:      false,
+		},
+		{
+			name:          "all of multiple freeform tags match",
+			nodeGroupTags: map[string]string{"env": "prod", "team": "backend"},
+			freeFormTags:  map[string]string{"env": "prod", "team": "backend"},
+			expected:      true,
+		},
+		{
+			name:          "one of multiple freeform tags does not match",
+			nodeGroupTags: map[string]string{"env": "prod", "team": "backend"},
+			freeFormTags:  map[string]string{"env": "prod", "team": "frontend"},
+			expected:      false,
+		},
+		{
+			name:          "mixed freeform and defined tags all match",
+			nodeGroupTags: map[string]string{"env": "prod", "ns.key": "val"},
+			freeFormTags:  map[string]string{"env": "prod"},
+			definedTags:   map[string]map[string]interface{}{"ns": {"key": "val"}},
+			expected:      true,
+		},
+		{
+			name:          "mixed freeform and defined tags defined does not match",
+			nodeGroupTags: map[string]string{"env": "prod", "ns.key": "val"},
+			freeFormTags:  map[string]string{"env": "prod"},
+			definedTags:   map[string]map[string]interface{}{"ns": {"key": "other"}},
+			expected:      false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := validateInstancePoolTags(tc.nodeGroupTags, tc.freeFormTags, tc.definedTags)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestAutoDiscoverNodeGroups(t *testing.T) {
+	testCases := []struct {
+		name            string
+		nodeGroup       nodeGroupAutoDiscovery
+		pools           []core.InstancePoolSummary
+		apiErr          error
+		expectedPoolIds []string
+		expectError     bool
+	}{
+		{
+			name: "single pool matching freeform tag",
+			nodeGroup: nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"cluster": "test"},
+				minSize:       1,
+				maxSize:       5,
+			},
+			pools: []core.InstancePoolSummary{
+				{
+					Id:             common.String("ocid1.instancepool.oc1.phx.aaa1"),
+					LifecycleState: core.InstancePoolSummaryLifecycleStateRunning,
+					FreeformTags:   map[string]string{"cluster": "test"},
+					DefinedTags:    map[string]map[string]interface{}{},
+				},
+			},
+			expectedPoolIds: []string{"ocid1.instancepool.oc1.phx.aaa1"},
+		},
+		{
+			name: "pool not matching freeform tag",
+			nodeGroup: nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"cluster": "test"},
+				minSize:       1,
+				maxSize:       5,
+			},
+			pools: []core.InstancePoolSummary{
+				{
+					Id:             common.String("ocid1.instancepool.oc1.phx.aaa1"),
+					LifecycleState: core.InstancePoolSummaryLifecycleStateRunning,
+					FreeformTags:   map[string]string{"cluster": "other"},
+					DefinedTags:    map[string]map[string]interface{}{},
+				},
+			},
+			expectedPoolIds: []string{},
+		},
+		{
+			name: "pool not in running state",
+			nodeGroup: nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"cluster": "test"},
+				minSize:       1,
+				maxSize:       5,
+			},
+			pools: []core.InstancePoolSummary{
+				{
+					Id:             common.String("ocid1.instancepool.oc1.phx.aaa1"),
+					LifecycleState: core.InstancePoolSummaryLifecycleStateTerminating,
+					FreeformTags:   map[string]string{"cluster": "other"},
+					DefinedTags:    map[string]map[string]interface{}{},
+				},
+			},
+			expectedPoolIds: []string{},
+		},
+		{
+			name: "pool matching defined tag",
+			nodeGroup: nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"ns.key": "value"},
+				minSize:       2,
+				maxSize:       8,
+			},
+			pools: []core.InstancePoolSummary{
+				{
+					Id:             common.String("ocid1.instancepool.oc1.phx.aaa1"),
+					LifecycleState: core.InstancePoolSummaryLifecycleStateRunning,
+					FreeformTags:   map[string]string{},
+					DefinedTags:    map[string]map[string]interface{}{"ns": {"key": "value"}},
+				},
+			},
+			expectedPoolIds: []string{"ocid1.instancepool.oc1.phx.aaa1"},
+		},
+		{
+			name: "multiple pools some matching",
+			nodeGroup: nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"cluster": "test"},
+				minSize:       1,
+				maxSize:       10,
+			},
+			pools: []core.InstancePoolSummary{
+				{
+					Id:             common.String("ocid1.instancepool.oc1.phx.aaa1"),
+					LifecycleState: core.InstancePoolSummaryLifecycleStateRunning,
+					FreeformTags:   map[string]string{"cluster": "test"},
+					DefinedTags:    map[string]map[string]interface{}{},
+				},
+				{
+					Id:             common.String("ocid1.instancepool.oc1.phx.aaa2"),
+					LifecycleState: core.InstancePoolSummaryLifecycleStateRunning,
+					FreeformTags:   map[string]string{"cluster": "other"},
+					DefinedTags:    map[string]map[string]interface{}{},
+				},
+			},
+			expectedPoolIds: []string{"ocid1.instancepool.oc1.phx.aaa1"},
+		},
+		{
+			name: "no pools in compartment",
+			nodeGroup: nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"cluster": "test"},
+				minSize:       1,
+				maxSize:       5,
+			},
+			pools:           []core.InstancePoolSummary{},
+			expectedPoolIds: []string{},
+		},
+		{
+			name: "api error propagates",
+			nodeGroup: nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"cluster": "test"},
+				minSize:       1,
+				maxSize:       5,
+			},
+			apiErr:      fmt.Errorf("OCI API error"),
+			expectError: true,
+		},
+		{
+			name: "min and max sizes set from nodegroup config",
+			nodeGroup: nodeGroupAutoDiscovery{
+				compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+				tags:          map[string]string{"env": "prod"},
+				minSize:       3,
+				maxSize:       7,
+			},
+			pools: []core.InstancePoolSummary{
+				{
+					Id:             common.String("ocid1.instancepool.oc1.phx.aaa1"),
+					LifecycleState: core.InstancePoolSummaryLifecycleStateRunning,
+					FreeformTags:   map[string]string{"env": "prod"},
+					DefinedTags:    map[string]map[string]interface{}{},
+				},
+			},
+			expectedPoolIds: []string{"ocid1.instancepool.oc1.phx.aaa1"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockClient := &mockComputeManagementClient{
+				err: tc.apiErr,
+				listInstancePoolsResponse: core.ListInstancePoolsResponse{
+					Items: tc.pools,
+				},
+			}
+
+			manager := &InstancePoolManagerImpl{
+				staticInstancePools: map[string]*InstancePoolNodeGroup{},
+			}
+			tc.nodeGroup.manager = manager
+
+			err := autoDiscoverNodeGroups(manager, mockClient, tc.nodeGroup)
+			if tc.expectError {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Len(t, manager.staticInstancePools, len(tc.expectedPoolIds))
+			for _, id := range tc.expectedPoolIds {
+				pool, ok := manager.staticInstancePools[id]
+				require.Truef(t, ok, "expected pool %q to be discovered but it was not", id)
+				require.Equal(t, tc.nodeGroup.minSize, pool.minSize)
+				require.Equal(t, tc.nodeGroup.maxSize, pool.maxSize)
+			}
+		})
+	}
+}
+
+func TestForceRefreshWithAutoDiscovery(t *testing.T) {
+	cloudConfig := &ocicommon.CloudConfig{}
+	cloudConfig.Global.CompartmentID = "ocid1.compartment.oc1..aaaaaaaa1"
+	nodeGroups := []nodeGroupAutoDiscovery{
+		{
+			compartmentId: "ocid1.compartment.oc1..aaaaaaaa1",
+			tags:          map[string]string{"cluster": "test"},
+			minSize:       1,
+			maxSize:       5,
+		},
+	}
+	t.Run("newly discovered pool is added", func(t *testing.T) {
+		mockClient := &mockComputeManagementClient{
+			listInstancePoolsResponse: core.ListInstancePoolsResponse{
+				Items: []core.InstancePoolSummary{
+					{
+						Id:             common.String("ocid1.instancepool.oc1.phx.aaa1"),
+						LifecycleState: core.InstancePoolSummaryLifecycleStateRunning,
+						FreeformTags:   map[string]string{"cluster": "test"},
+						DefinedTags:    map[string]map[string]interface{}{},
+					},
+				},
+			},
+			getInstancePoolResponse: core.GetInstancePoolResponse{
+				InstancePool: core.InstancePool{
+					Id:             common.String("ocid1.instancepool.oc1.phx.aaa1"),
+					CompartmentId:  common.String("ocid1.compartment.oc1..aaaaaaaa1"),
+					LifecycleState: core.InstancePoolLifecycleStateRunning,
+					Size:           common.Int(0),
+					FreeformTags:   map[string]string{"cluster": "test"},
+					DefinedTags:    map[string]map[string]interface{}{},
+				},
+			},
+			listInstancePoolInstancesResponse: core.ListInstancePoolInstancesResponse{Items: []core.InstanceSummary{}},
+		}
+
+		manager := &InstancePoolManagerImpl{
+			cfg:                     cloudConfig,
+			computeManagementClient: mockClient,
+			staticInstancePools:     map[string]*InstancePoolNodeGroup{},
+			ShapeGetter:             ocicommon.CreateShapeGetter(shapeClient),
+			instancePoolCache:       newInstancePoolCache(mockClient, computeClient, virtualNetworkClient, workRequestsClient),
+			nodeGroups:              nodeGroups,
+		}
+
+		require.NoError(t, manager.forceRefresh())
+		require.Len(t, manager.staticInstancePools, 1)
+		require.Contains(t, manager.staticInstancePools, "ocid1.instancepool.oc1.phx.aaa1")
+	})
+
+	t.Run("pool no longer matching tags is removed on refresh", func(t *testing.T) {
+		// First refresh: one matching pool
+		mockClient := &mockComputeManagementClient{
+			listInstancePoolsResponse: core.ListInstancePoolsResponse{
+				Items: []core.InstancePoolSummary{
+					{
+						Id:             common.String("ocid1.instancepool.oc1.phx.aaa1"),
+						LifecycleState: core.InstancePoolSummaryLifecycleStateRunning,
+						FreeformTags:   map[string]string{"cluster": "test"},
+						DefinedTags:    map[string]map[string]interface{}{},
+					},
+				},
+			},
+			getInstancePoolResponse: core.GetInstancePoolResponse{
+				InstancePool: core.InstancePool{
+					Id:             common.String("ocid1.instancepool.oc1.phx.aaa1"),
+					CompartmentId:  common.String("ocid1.compartment.oc1..aaaaaaaa1"),
+					LifecycleState: core.InstancePoolLifecycleStateRunning,
+					Size:           common.Int(0),
+					FreeformTags:   map[string]string{"cluster": "test"},
+					DefinedTags:    map[string]map[string]interface{}{},
+				},
+			},
+			listInstancePoolInstancesResponse: core.ListInstancePoolInstancesResponse{Items: []core.InstanceSummary{}},
+		}
+		manager := &InstancePoolManagerImpl{
+			cfg:                     cloudConfig,
+			computeManagementClient: mockClient,
+			staticInstancePools:     map[string]*InstancePoolNodeGroup{},
+			ShapeGetter:             ocicommon.CreateShapeGetter(shapeClient),
+			instancePoolCache:       newInstancePoolCache(mockClient, computeClient, virtualNetworkClient, workRequestsClient),
+			nodeGroups:              nodeGroups,
+		}
+		require.NoError(t, manager.forceRefresh())
+		require.Len(t, manager.staticInstancePools, 1, "expected 1 pool after first refresh")
+
+		// Subsequent response returns no instance pools
+		mockClient.listInstancePoolsResponse = core.ListInstancePoolsResponse{}
+
+		require.NoError(t, manager.forceRefresh())
+		require.Empty(t, manager.staticInstancePools, "expected 0 pools after second refresh")
+	})
 }
