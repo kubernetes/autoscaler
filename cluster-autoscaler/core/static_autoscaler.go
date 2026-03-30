@@ -592,6 +592,40 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		postScaleUp(scaleUpStart)
 	}
 
+	if typedErr = a.scaleDown(currentTime, allNodes, scaleDownActuationStatus, scaleDownStatus); typedErr != nil {
+		return typedErr
+	}
+
+	if a.EnforceNodeGroupMinSize {
+		scaleUpStart := preScaleUp()
+		nodes := make([]*apiv1.Node, len(allNodeInfos))
+		for i, nodeInfo := range allNodeInfos {
+			nodes[i] = nodeInfo.Node()
+		}
+		nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
+		postScaleUp(scaleUpStart)
+	}
+
+	return nil
+}
+
+func (a *StaticAutoscaler) updateSoftDeletionTaints(allNodes []*apiv1.Node) {
+	if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
+		taintableNodes := retrieveNodes(a.scaleDownPlanner.UnneededNodes())
+
+		// Make sure we are only cleaning taints from selected node groups.
+		selectedNodes := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
+
+		// This is a sanity check to make sure `taintableNodes` only includes
+		// nodes from selected nodes.
+		taintableNodes = intersectNodes(selectedNodes, taintableNodes)
+		untaintableNodes := subtractNodes(selectedNodes, taintableNodes)
+		actuation.UpdateSoftDeletionTaints(a.AutoscalingContext, taintableNodes, untaintableNodes)
+	}
+}
+
+func (a *StaticAutoscaler) scaleDown(currentTime time.Time, allNodes []*apiv1.Node, scaleDownActuationStatus scaledown.ActuationStatus, scaleDownStatus *scaledownstatus.ScaleDownStatus) caerrors.AutoscalerError {
 	unneededStart := time.Now()
 
 	klog.V(4).Infof("Calculating unneeded nodes")
@@ -611,19 +645,19 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	} else {
 		var err caerrors.AutoscalerError
 		scaleDownCandidates, err = a.processors.ScaleDownNodeProcessor.GetScaleDownCandidates(
-			autoscalingCtx, allNodes)
+			a.AutoscalingContext, allNodes)
 		if err != nil {
 			klog.Error(err)
 			return err
 		}
-		podDestinations, err = a.processors.ScaleDownNodeProcessor.GetPodDestinationCandidates(autoscalingCtx, allNodes)
+		podDestinations, err = a.processors.ScaleDownNodeProcessor.GetPodDestinationCandidates(a.AutoscalingContext, allNodes)
 		if err != nil {
 			klog.Error(err)
 			return err
 		}
 	}
 
-	typedErr = a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, scaleDownActuationStatus, currentTime)
+	typedErr := a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, scaleDownActuationStatus, currentTime)
 	// Update clusterStateRegistry and metrics regardless of whether ScaleDown was successful or not.
 	unneededNodes := a.scaleDownPlanner.UnneededNodes()
 	a.processors.ScaleDownCandidatesNotifier.Update(unneededNodes, currentTime)
@@ -648,7 +682,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	var removedNodeGroups []cloudprovider.NodeGroup
 	if len(drained) == 0 {
 		var err error
-		removedNodeGroups, err = a.processors.NodeGroupManager.RemoveUnneededNodeGroups(autoscalingCtx)
+		removedNodeGroups, err = a.processors.NodeGroupManager.RemoveUnneededNodeGroups(a.AutoscalingContext)
 		if err != nil {
 			klog.Errorf("Error while removing unneeded node groups: %v", err)
 		}
@@ -688,34 +722,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 			return typedErr
 		}
 	}
-
-	if a.EnforceNodeGroupMinSize {
-		scaleUpStart := preScaleUp()
-		nodes := make([]*apiv1.Node, len(allNodeInfos))
-		for i, nodeInfo := range allNodeInfos {
-			nodes[i] = nodeInfo.Node()
-		}
-		nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
-		postScaleUp(scaleUpStart)
-	}
-
 	return nil
-}
-
-func (a *StaticAutoscaler) updateSoftDeletionTaints(allNodes []*apiv1.Node) {
-	if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
-		taintableNodes := retrieveNodes(a.scaleDownPlanner.UnneededNodes())
-
-		// Make sure we are only cleaning taints from selected node groups.
-		selectedNodes := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
-
-		// This is a sanity check to make sure `taintableNodes` only includes
-		// nodes from selected nodes.
-		taintableNodes = intersectNodes(selectedNodes, taintableNodes)
-		untaintableNodes := subtractNodes(selectedNodes, taintableNodes)
-		actuation.UpdateSoftDeletionTaints(a.AutoscalingContext, taintableNodes, untaintableNodes)
-	}
 }
 
 func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[string]int) error {
