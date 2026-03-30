@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strconv"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/exp/ctxutil"
@@ -26,7 +27,19 @@ type PrimaryIP struct {
 	AutoDelete   bool
 	Blocked      bool
 	Created      time.Time
-	Datacenter   *Datacenter
+	Location     *Location
+
+	// Deprecated: [PrimaryIP.Datacenter] is deprecated and will be removed after 1 July 2026.
+	// Use [PrimaryIP.Location] instead.
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+	Datacenter *Datacenter
+}
+
+func (o *PrimaryIP) pathID() (string, error) {
+	if o.ID == 0 {
+		return "", missingField(o, "ID")
+	}
+	return strconv.FormatInt(o.ID, 10), nil
 }
 
 // PrimaryIPProtection represents the protection level of a Primary IP.
@@ -43,11 +56,11 @@ type PrimaryIPDNSPTR struct {
 
 // changeDNSPtr changes or resets the reverse DNS pointer for a IP address.
 // Pass a nil ptr to reset the reverse DNS pointer to its default value.
-func (p *PrimaryIP) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
+func (o *PrimaryIP) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
 	const opPath = "/primary_ips/%d/actions/change_dns_ptr"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, p.ID)
+	reqPath := fmt.Sprintf(opPath, o.ID)
 
 	reqBody := schema.PrimaryIPActionChangeDNSPtrRequest{
 		IP:     ip.String(),
@@ -64,8 +77,8 @@ func (p *PrimaryIP) changeDNSPtr(ctx context.Context, client *Client, ip net.IP,
 
 // GetDNSPtrForIP searches for the dns assigned to the given IP address.
 // It returns an error if there is no dns set for the given IP address.
-func (p *PrimaryIP) GetDNSPtrForIP(ip net.IP) (string, error) {
-	dns, ok := p.DNSPtr[ip.String()]
+func (o *PrimaryIP) GetDNSPtrForIP(ip net.IP) (string, error) {
+	dns, ok := o.DNSPtr[ip.String()]
 	if !ok {
 		return "", DNSNotFoundError{ip}
 	}
@@ -88,10 +101,15 @@ type PrimaryIPCreateOpts struct {
 	AssigneeID   *int64
 	AssigneeType string
 	AutoDelete   *bool
-	Datacenter   string
+	Location     string
 	Labels       map[string]string
 	Name         string
 	Type         PrimaryIPType
+
+	// Deprecated: [PrimaryIPCreateOpts.Datacenter] is deprecated and will be removed after 1 July 2026.
+	// Use [PrimaryIPCreateOpts.Location] instead.
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+	Datacenter string
 }
 
 // PrimaryIPCreateResult defines the response
@@ -144,7 +162,7 @@ type PrimaryIPChangeProtectionResult = schema.PrimaryIPActionChangeProtectionRes
 // PrimaryIPClient is a client for the Primary IP API.
 type PrimaryIPClient struct {
 	client *Client
-	Action *ResourceActionClient
+	Action *ResourceActionClient[*PrimaryIP]
 }
 
 // GetByID retrieves a Primary IP by its ID. If the Primary IP does not exist, nil is returned.
@@ -230,11 +248,14 @@ func (c *PrimaryIPClient) List(ctx context.Context, opts PrimaryIPListOpts) ([]*
 
 // All returns all Primary IPs.
 func (c *PrimaryIPClient) All(ctx context.Context) ([]*PrimaryIP, error) {
-	return c.AllWithOpts(ctx, PrimaryIPListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, PrimaryIPListOpts{})
 }
 
 // AllWithOpts returns all Primary IPs for the given options.
 func (c *PrimaryIPClient) AllWithOpts(ctx context.Context, opts PrimaryIPListOpts) ([]*PrimaryIP, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*PrimaryIP, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

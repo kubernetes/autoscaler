@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strconv"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud/exp/ctxutil"
@@ -61,8 +62,8 @@ type CertificateStatus struct {
 // IsFailed returns true if either the Issuance or the Renewal of a certificate
 // failed. In this case the FailureReason field details the nature of the
 // failure.
-func (st *CertificateStatus) IsFailed() bool {
-	return st.Issuance == CertificateStatusTypeFailed || st.Renewal == CertificateStatusTypeFailed
+func (o *CertificateStatus) IsFailed() bool {
+	return o.Issuance == CertificateStatusTypeFailed || o.Renewal == CertificateStatusTypeFailed
 }
 
 // Certificate represents a certificate in the Hetzner Cloud.
@@ -81,6 +82,13 @@ type Certificate struct {
 	UsedBy         []CertificateUsedByRef
 }
 
+func (o *Certificate) pathID() (string, error) {
+	if o.ID == 0 {
+		return "", missingField(o, "ID")
+	}
+	return strconv.FormatInt(o.ID, 10), nil
+}
+
 // CertificateCreateResult is the result of creating a certificate.
 type CertificateCreateResult struct {
 	Certificate *Certificate
@@ -90,7 +98,7 @@ type CertificateCreateResult struct {
 // CertificateClient is a client for the Certificates API.
 type CertificateClient struct {
 	client *Client
-	Action *ResourceActionClient
+	Action *ResourceActionClient[*Certificate]
 }
 
 // GetByID retrieves a Certificate by its ID. If the Certificate does not exist, nil is returned.
@@ -161,11 +169,14 @@ func (c *CertificateClient) List(ctx context.Context, opts CertificateListOpts) 
 
 // All returns all Certificates.
 func (c *CertificateClient) All(ctx context.Context) ([]*Certificate, error) {
-	return c.AllWithOpts(ctx, CertificateListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, CertificateListOpts{})
 }
 
 // AllWithOpts returns all Certificates for the given options.
 func (c *CertificateClient) AllWithOpts(ctx context.Context, opts CertificateListOpts) ([]*Certificate, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Certificate, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)
@@ -219,7 +230,7 @@ func (o CertificateCreateOpts) validateUploaded() error {
 // Create returns an error for certificates of any other type. Use
 // CreateCertificate to create such certificates.
 func (c *CertificateClient) Create(ctx context.Context, opts CertificateCreateOpts) (*Certificate, *Response, error) {
-	if !(opts.Type == "" || opts.Type == CertificateTypeUploaded) {
+	if opts.Type != "" && opts.Type != CertificateTypeUploaded {
 		return nil, nil, invalidFieldValue(opts, "Type", opts.Type)
 	}
 	result, resp, err := c.CreateCertificate(ctx, opts)
