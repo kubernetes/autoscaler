@@ -207,6 +207,9 @@ type AutoscalingOptions struct {
 	Regional bool
 	// Pods newer than this will not be considered as unschedulable for scale-up.
 	NewPodScaleUpDelay time.Duration
+	// UnschedulableGpuPodTimeBuffer is the minimum age of unschedulable pods
+	// with GPU resources before triggering scale-up.
+	UnschedulableGpuPodTimeBuffer time.Duration
 	// MaxBulkSoftTaint sets the maximum number of nodes that can be (un)tainted PreferNoSchedule during single scaling down run.
 	// Value of 0 turns turn off such tainting.
 	MaxBulkSoftTaintCount int
