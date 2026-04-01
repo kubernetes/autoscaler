@@ -565,12 +565,12 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 	}
 
 	if poller != nil {
-		go scaleSet.waitForDeleteInstances(poller, requiredIds)
+		go scaleSet.waitForDeleteInstances(poller, requiredIds, commonAsg.Id())
 	}
 	return nil
 }
 
-func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
+func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, commonAsgId string) {
 	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
 	defer cancel()
 
@@ -585,6 +585,28 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompu
 			scaleSet.invalidateInstanceCache()
 		}
 		return
+	}
+	if isOperationPreempted(err) {
+		klog.V(2).Infof("PollUntilDone for DeleteInstances(%v) for %s was preempted, retrying", requiredIds.InstanceIDs, scaleSet.Name)
+		retryCtx, retryCancel := getContextWithTimeout(vmssContextTimeout)
+		retryPoller, retryErr := scaleSet.deleteInstances(retryCtx, requiredIds, commonAsgId)
+		retryCancel()
+		if retryErr == nil && retryPoller != nil {
+			_, retryErr = retryPoller.PollUntilDone(ctx, nil)
+			if retryErr == nil {
+				klog.V(3).Infof("PollUntilDone for DeleteInstances(%v) for %s retry success", requiredIds.InstanceIDs, scaleSet.Name)
+				if scaleSet.manager.config.StrictCacheUpdates {
+					if err := scaleSet.manager.forceRefresh(); err != nil {
+						klog.Errorf("forceRefresh failed with error: %v", err)
+					}
+					scaleSet.invalidateInstanceCache()
+				}
+				return
+			}
+		}
+		if retryErr != nil {
+			err = retryErr
+		}
 	}
 	if !scaleSet.manager.config.StrictCacheUpdates {
 		scaleSet.invalidateInstanceCache()
