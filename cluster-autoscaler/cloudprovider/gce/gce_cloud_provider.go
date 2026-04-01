@@ -201,6 +201,8 @@ type Mig interface {
 	cloudprovider.NodeGroup
 
 	GceRef() GceRef
+	// IsStable returns whether the MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
+	IsStable() (bool, error)
 }
 
 type gceMig struct {
@@ -215,6 +217,11 @@ type gceMig struct {
 // GceRef returns Mig's GceRef
 func (mig *gceMig) GceRef() GceRef {
 	return mig.gceRef
+}
+
+// IsStable returns whether the MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
+func (mig *gceMig) IsStable() (bool, error) {
+	return mig.gceManager.IsMigStable(mig)
 }
 
 // MaxSize returns maximum size of the node group.
