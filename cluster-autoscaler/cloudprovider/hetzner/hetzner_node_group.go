@@ -481,10 +481,11 @@ func createServer(n *hetznerNodeGroup) error {
 	// configured for this node pool. This allows operators to add cloud-provider
 	// labels (e.g. kops authentication labels) that must be present on the
 	// Hetzner server object itself, not just on the Kubernetes node.
-	serverLabels := map[string]string{nodeGroupLabel: n.id}
+	serverLabels := make(map[string]string)
 	if n.manager.clusterConfig.IsUsingNewFormat {
 		maps.Copy(serverLabels, n.manager.clusterConfig.NodeConfigs[n.id].Labels)
 	}
+	serverLabels[nodeGroupLabel] = n.id
 
 	opts := hcloud.ServerCreateOpts{
 		Name:             newNodeName(n),
