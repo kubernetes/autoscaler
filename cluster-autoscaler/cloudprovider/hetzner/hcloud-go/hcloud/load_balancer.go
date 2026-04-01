@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"slices"
 	"strconv"
 	"time"
 
@@ -29,6 +30,13 @@ type LoadBalancer struct {
 	IncludedTraffic  uint64
 	OutgoingTraffic  uint64
 	IngoingTraffic   uint64
+}
+
+func (o *LoadBalancer) pathID() (string, error) {
+	if o.ID == 0 {
+		return "", missingField(o, "ID")
+	}
+	return strconv.FormatInt(o.ID, 10), nil
 }
 
 // LoadBalancerPublicNet represents a Load Balancer's public network.
@@ -197,11 +205,11 @@ type LoadBalancerProtection struct {
 
 // changeDNSPtr changes or resets the reverse DNS pointer for an IP address.
 // Pass a nil ptr to reset the reverse DNS pointer to its default value.
-func (lb *LoadBalancer) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
+func (o *LoadBalancer) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
 	const opPath = "/load_balancers/%d/actions/change_dns_ptr"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, lb.ID)
+	reqPath := fmt.Sprintf(opPath, o.ID)
 
 	reqBody := schema.LoadBalancerActionChangeDNSPtrRequest{
 		IP:     ip.String(),
@@ -218,20 +226,32 @@ func (lb *LoadBalancer) changeDNSPtr(ctx context.Context, client *Client, ip net
 
 // GetDNSPtrForIP searches for the dns assigned to the given IP address.
 // It returns an error if there is no dns set for the given IP address.
-func (lb *LoadBalancer) GetDNSPtrForIP(ip net.IP) (string, error) {
-	if net.IP.Equal(lb.PublicNet.IPv4.IP, ip) {
-		return lb.PublicNet.IPv4.DNSPtr, nil
-	} else if net.IP.Equal(lb.PublicNet.IPv6.IP, ip) {
-		return lb.PublicNet.IPv6.DNSPtr, nil
+func (o *LoadBalancer) GetDNSPtrForIP(ip net.IP) (string, error) {
+	if net.IP.Equal(o.PublicNet.IPv4.IP, ip) {
+		return o.PublicNet.IPv4.DNSPtr, nil
+	} else if net.IP.Equal(o.PublicNet.IPv6.IP, ip) {
+		return o.PublicNet.IPv6.DNSPtr, nil
 	}
 
 	return "", DNSNotFoundError{ip}
 }
 
+// PrivateNetFor returns the load balancer's network attachment information in the given
+// Network, and nil if no attachment was found.
+func (o *LoadBalancer) PrivateNetFor(network *Network) *LoadBalancerPrivateNet {
+	index := slices.IndexFunc(o.PrivateNet, func(n LoadBalancerPrivateNet) bool {
+		return n.Network != nil && n.Network.ID == network.ID
+	})
+	if index < 0 {
+		return nil
+	}
+	return &o.PrivateNet[index]
+}
+
 // LoadBalancerClient is a client for the Load Balancers API.
 type LoadBalancerClient struct {
 	client *Client
-	Action *ResourceActionClient
+	Action *ResourceActionClient[*LoadBalancer]
 }
 
 // GetByID retrieves a Load Balancer by its ID. If the Load Balancer does not exist, nil is returned.
@@ -303,11 +323,14 @@ func (c *LoadBalancerClient) List(ctx context.Context, opts LoadBalancerListOpts
 
 // All returns all Load Balancers.
 func (c *LoadBalancerClient) All(ctx context.Context) ([]*LoadBalancer, error) {
-	return c.AllWithOpts(ctx, LoadBalancerListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, LoadBalancerListOpts{})
 }
 
 // AllWithOpts returns all Load Balancers for the given options.
 func (c *LoadBalancerClient) AllWithOpts(ctx context.Context, opts LoadBalancerListOpts) ([]*LoadBalancer, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*LoadBalancer, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)
@@ -945,7 +968,7 @@ func (c *LoadBalancerClient) GetMetrics(
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
 	if loadBalancer == nil {
-		return nil, nil, missingArgument("loadBalancer", loadBalancer)
+		return nil, nil, invalidArgument("loadBalancer", loadBalancer, emptyValue(loadBalancer))
 	}
 
 	if err := opts.Validate(); err != nil {
