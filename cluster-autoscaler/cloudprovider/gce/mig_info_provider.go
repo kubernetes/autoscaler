@@ -112,6 +112,7 @@ func (c *cachingMigInfoProvider) GetMigInstances(migRef GceRef) ([]GceInstance, 
 		return instances, nil
 	}
 
+	// MIG is not in the cache.
 	err := c.fillMigInstances(migRef)
 	if err != nil {
 		return nil, err
@@ -135,16 +136,24 @@ func (c *cachingMigInfoProvider) GetMigForInstance(instanceRef GceRef) (Mig, err
 		return nil, nil
 	}
 
+	// Cache is cleared every loop.
+	// If it's not empty, it's been refreshed this loop, and we don't want to refresh it again.
+	if !c.cache.IsMigInstancesCacheEmpty(mig.GceRef()) {
+		c.cache.MarkInstanceMigUnknown(instanceRef)
+		return nil, nil
+	}
+
 	err = c.fillMigInstances(mig.GceRef())
 	if err != nil {
 		return nil, err
 	}
-
+	// Check in the cache again after it's been refilled
 	mig, found, err = c.getCachedMigForInstance(instanceRef)
 	if !found {
 		c.cache.MarkInstanceMigUnknown(instanceRef)
 	}
 	return mig, err
+
 }
 
 func (c *cachingMigInfoProvider) getCachedMigForInstance(instanceRef GceRef) (Mig, bool, error) {
