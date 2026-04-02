@@ -15,6 +15,10 @@ linters:
       disable:
         # Disabling omitzero linter as it catches issues with API types, which would be best if kube-api-lint can handle
         - omitzero
+        # simplify code by using go1.26's new(expr)
+        # should only be updated in old code where it really matters (= always disable in base)
+        # and needs to remain disabled as until Go 1.26 is also available for backported code (https://github.com/kubernetes/kubernetes/issues/137595)
+        - newexpr
 
     importas:
       alias:
@@ -76,7 +80,7 @@ linters:
         # Discourages boolean parameters; disabled since it is mostly been followed across to take boolean values as func params.
         - name: flag-parameter
           disabled: true
-        
+
         # Limits number of exported structs; disabled because API/codegen packages expose many types by design.
         - name: max-public-structs
           disabled: true
