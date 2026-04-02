@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
-source "${KUBE_ROOT}/hack/kube-env.sh"
+source "${KUBE_ROOT}/../hack/kube-env.sh"
 
 SILENT=true
 EXCLUDE=${EXCLUDE:-} # nothing excluded by default
