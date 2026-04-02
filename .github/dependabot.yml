@@ -58,10 +58,14 @@ updates:
     include: scope
   ignore:
     # Update providers manually.
+    - dependency-name: "k8s.io/cloud-provider-aws"
     - dependency-name: "k8s.io/cloud-provider-aws/*"
     - dependency-name: "github.com/aws/*"
+    - dependency-name: "k8s.io/cloud-provider-gcp"
     - dependency-name: "k8s.io/cloud-provider-gcp/*"
+    - dependency-name: "cloud.google.com/go/compute"
     - dependency-name: "cloud.google.com/go/compute/*"
+    - dependency-name: "sigs.k8s.io/cloud-provider-azure"
     - dependency-name: "sigs.k8s.io/cloud-provider-azure/*"
     - dependency-name: "github.com/Azure/*"
     - dependency-name: "github.com/Azure/go-autorest/autorest/*"
