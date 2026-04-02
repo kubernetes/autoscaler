@@ -1187,15 +1187,11 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				nodeInfoDiffOpts := []cmp.Option{
-					// We don't care about this field staying the same, and it differs because it's a global counter bumped on every AddPod.
-					cmpopts.IgnoreFields(schedulerimpl.NodeInfo{}, "Generation"),
-					cmp.AllowUnexported(framework.NodeInfo{}, schedulerimpl.NodeInfo{}),
-					cmpopts.IgnoreUnexported(schedulerimpl.PodInfo{}),
+				nodeInfoDiffOpts := append(framework.NodeInfoCmpOptions(),
 					cmpopts.SortSlices(func(i1, i2 *framework.NodeInfo) bool { return i1.Node().Name < i2.Node().Name }),
 					IgnoreObjectOrder[*resourceapi.ResourceClaim](),
 					IgnoreObjectOrder[*resourceapi.ResourceSlice](),
-				}
+				)
 
 				// Verify that GetNodeInfo works as expected.
 				nodeInfo, err := snapshot.GetNodeInfo(node.Name)
@@ -1636,9 +1632,8 @@ func TestNodeAlreadyExists(t *testing.T) {
 		op   func(clustersnapshot.ClusterSnapshot) error
 	}{
 		{"add scheduler nodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
-			nodeInfo := schedulerimpl.NewNodeInfo()
-			nodeInfo.SetNode(node)
-			return snapshot.AddSchedulerNodeInfo(nodeInfo)
+			nodeInfo := framework.NewNodeInfo(node, nil)
+			return snapshot.StoreNodeInfo(nodeInfo)
 		}},
 		{"add internal NodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
 			return snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode, pod))

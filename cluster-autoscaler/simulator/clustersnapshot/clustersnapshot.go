@@ -47,20 +47,31 @@ type ClusterSnapshot interface {
 
 	// SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
 	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
+	// The provided draSnapshot and csiSnapshot are treated as the source of truth and are
+	// eagerly loaded into the internal NodeInfo and PodInfo objects.
 	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error
 
-	// AddNodeInfo adds the given NodeInfo to the snapshot without checking scheduler predicates. The Node and the Pods are added,
-	// as well as any DRA objects passed along them.
+	// AddNodeInfo adds the given NodeInfo to the snapshot without checking scheduler predicates.
+	// The Node and the Pods are added, as well as any DRA and CSI objects passed along them.
 	AddNodeInfo(nodeInfo *framework.NodeInfo) error
-	// RemoveNodeInfo removes the given NodeInfo from the snapshot The Node and the Pods are removed, as well as
-	// any DRA objects owned by them.
+	// RemoveNodeInfo removes the given NodeInfo from the snapshot.
+	// The Node and the Pods are removed, as well as any DRA and CSI objects owned by them.
 	RemoveNodeInfo(nodeName string) error
 	// GetNodeInfo returns an internal NodeInfo for a given Node - all information about the Node tracked in the snapshot.
-	// This means the Node itself, its scheduled Pods, as well as all relevant DRA objects. The internal NodeInfos
-	// obtained via this method should always be used in CA code instead of directly using *schedulerframework.NodeInfo.
+	// The returned framework.NodeInfo is fully populated with DRA and CSI data.
+	// The internal NodeInfos obtained via this method should always be used in CA code instead of directly using *schedulerframework.NodeInfo.
 	GetNodeInfo(nodeName string) (*framework.NodeInfo, error)
 	// ListNodeInfos returns internal NodeInfos for all Nodes tracked in the snapshot. See the comment on GetNodeInfo.
 	ListNodeInfos() ([]*framework.NodeInfo, error)
+
+	// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot without checking scheduler predicates.
+	// This method will allocate an internal PodInfo and populate it with existing claims pulled directly from the DRA snapshot.
+	// It assumes the caller has already populated the necessary DRA data into the DRA snapshot.
+	// It will not ReservePodClaims or compute new allocations.
+	ForceAddPod(pod *apiv1.Pod, nodeName string) error
+	// ForceRemovePod removes the given Pod from the snapshot.
+	// It will not UnreservePodClaims.
+	ForceRemovePod(namespace string, podName string, nodeName string) error
 
 	// SchedulePod tries to schedule the given Pod on the Node with the given name inside the snapshot,
 	// checking scheduling predicates. The pod is only scheduled if the predicates pass. If the pod is scheduled,
@@ -100,18 +111,17 @@ type ClusterSnapshotStore interface {
 	schedulerinterface.SharedLister
 	Forkable
 
-	// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot without checking scheduler predicates.
-	ForceAddPod(pod *apiv1.Pod, nodeName string) error
-	// ForceRemovePod removes the given Pod (and all DRA objects it owns) from the snapshot.
-	ForceRemovePod(namespace string, podName string, nodeName string) error
+	// StorePodInfo adds the given PodInfo to the Node with the given nodeName inside the snapshot.
+	StorePodInfo(podInfo *framework.PodInfo, nodeName string) error
+	// RemovePodInfo removes the given Pod from the snapshot.
+	RemovePodInfo(namespace string, podName string, nodeName string) error
 
-	// AddSchedulerNodeInfo adds the given schedulerframework.NodeInfo to the snapshot without checking scheduler predicates, and
-	// without taking DRA objects into account. This shouldn't be used outside the clustersnapshot pkg, use ClusterSnapshot.AddNodeInfo()
-	// instead.
-	AddSchedulerNodeInfo(nodeInfo schedulerinterface.NodeInfo) error
-	// RemoveSchedulerNodeInfo removes the given schedulerframework.NodeInfo from the snapshot without taking DRA objects into account. This shouldn't
-	// be used outside the clustersnapshot pkg, use ClusterSnapshot.RemoveNodeInfo() instead.
-	RemoveSchedulerNodeInfo(nodeName string) error
+	// StoreNodeInfo adds the given *framework.NodeInfo to the snapshot without checking scheduler predicates.
+	// This shouldn't be used outside the clustersnapshot pkg, use ClusterSnapshot.AddNodeInfo() instead.
+	StoreNodeInfo(nodeInfo *framework.NodeInfo) error
+	// RemoveNodeInfo removes the given *framework.NodeInfo from the snapshot.
+	// This shouldn't be used outside the clustersnapshot pkg, use ClusterSnapshot.RemoveNodeInfo() instead.
+	RemoveNodeInfo(nodeName string) error
 
 	// Clear resets the snapshot to an empty, unforked state.
 	Clear()

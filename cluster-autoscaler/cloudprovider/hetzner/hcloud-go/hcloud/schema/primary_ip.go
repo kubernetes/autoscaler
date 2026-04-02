@@ -16,7 +16,12 @@ type PrimaryIP struct {
 	AutoDelete   bool                `json:"auto_delete"`
 	Blocked      bool                `json:"blocked"`
 	Created      time.Time           `json:"created"`
-	Datacenter   Datacenter          `json:"datacenter"`
+	Location     Location            `json:"location"`
+
+	// Deprecated: [PrimaryIP.Datacenter] is deprecated and will be removed after 1 July 2026.
+	// Use [PrimaryIP.Location] instead.
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+	Datacenter *Datacenter `json:"datacenter"`
 }
 
 // PrimaryIPProtection represents the protection level of a Primary IP.
@@ -40,7 +45,12 @@ type PrimaryIPCreateRequest struct {
 	AssigneeID   *int64             `json:"assignee_id,omitempty"`
 	Labels       *map[string]string `json:"labels,omitempty"`
 	AutoDelete   *bool              `json:"auto_delete,omitempty"`
-	Datacenter   string             `json:"datacenter,omitempty"`
+	Location     string             `json:"location,omitempty"`
+
+	// Deprecated: [PrimaryIPCreateRequest.Datacenter] is deprecated and will be removed after 1 July 2026.
+	// Use [PrimaryIPCreateRequest.Location] instead.
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+	Datacenter string `json:"datacenter,omitempty"`
 }
 
 // PrimaryIPCreateResponse defines the schema of the response

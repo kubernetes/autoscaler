@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	"k8s.io/klog/v2"
-	"k8s.io/utils/ptr"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	buffersfilter "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
@@ -60,11 +60,12 @@ type CapacityBufferPodListProcessor struct {
 	statusFilter             buffersfilter.Filter
 	podTemplateGenFilter     buffersfilter.Filter
 	provStrategies           map[string]bool
+	buffersRegistry          *fakepods.Registry
 	forceSafeToEvictFakePods bool
 }
 
 // NewCapacityBufferPodListProcessor creates a new CapacityRequestPodListProcessor.
-func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, provStrategies []string, forceSafeToEvictFakePods bool) *CapacityBufferPodListProcessor {
+func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, provStrategies []string, buffersRegistry *fakepods.Registry, forceSafeToEvictFakePods bool) *CapacityBufferPodListProcessor {
 	provStrategiesMap := map[string]bool{}
 	for _, ps := range provStrategies {
 		provStrategiesMap[ps] = true
@@ -77,6 +78,7 @@ func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, prov
 		}),
 		podTemplateGenFilter:     buffersfilter.NewPodTemplateGenerationChangedFilter(client),
 		provStrategies:           provStrategiesMap,
+		buffersRegistry:          buffersRegistry,
 		forceSafeToEvictFakePods: forceSafeToEvictFakePods,
 	}
 }
@@ -95,6 +97,7 @@ func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.Auto
 	totalFakePods := []*apiv1.Pod{}
 	for _, buffer := range buffers {
 		fakePods := p.provision(buffer)
+		p.updateCapacityBufferRegistry(fakePods, buffer)
 		totalFakePods = append(totalFakePods, fakePods...)
 	}
 	klog.V(2).Infof("Capacity pod processor injecting %v fake pods provisioning %v capacity buffers", len(totalFakePods), len(buffers))
@@ -104,6 +107,22 @@ func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.Auto
 
 // CleanUp is called at CA termination
 func (p *CapacityBufferPodListProcessor) CleanUp() {
+}
+
+func (p *CapacityBufferPodListProcessor) updateCapacityBufferRegistry(fakePods []*apiv1.Pod, buffer *v1beta1.CapacityBuffer) {
+	if p.buffersRegistry == nil {
+		return
+	}
+	for _, fakePod := range fakePods {
+		p.buffersRegistry.SetCapacityBuffer(fakePod.UID, buffer)
+	}
+}
+
+func (p *CapacityBufferPodListProcessor) clearCapacityBufferRegistry() {
+	if p.buffersRegistry == nil {
+		return
+	}
+	p.buffersRegistry.Clear()
 }
 
 func (p *CapacityBufferPodListProcessor) provision(buffer *v1beta1.CapacityBuffer) []*apiv1.Pod {
@@ -167,7 +186,6 @@ func makeFakePods(buffer *v1beta1.CapacityBuffer, samplePodTemplate *apiv1.PodTe
 	samplePod := pod.GetPodFromTemplate(samplePodTemplate)
 	samplePod.Spec.NodeName = ""
 	samplePod = withCapacityBufferFakePodAnnotation(samplePod)
-	addOwnerReference(samplePod, buffer)
 	if forceSafeToEvictFakePods {
 		samplePod = withSafeToEvictAnnotation(samplePod)
 	}
@@ -179,21 +197,6 @@ func makeFakePods(buffer *v1beta1.CapacityBuffer, samplePodTemplate *apiv1.PodTe
 		fakePods = append(fakePods, fakePod)
 	}
 	return fakePods, nil
-}
-
-func addOwnerReference(pod *apiv1.Pod, buffer *v1beta1.CapacityBuffer) {
-	if ref := getBufferReference(pod); ref != nil {
-		return
-	}
-	pod.OwnerReferences = append(pod.OwnerReferences,
-		metav1.OwnerReference{
-			APIVersion: capacitybuffer.CapacityBufferApiVersion,
-			Kind:       buffer.Kind,
-			Name:       buffer.Name,
-			UID:        buffer.UID,
-			Controller: ptr.To(true),
-		},
-	)
 }
 
 func withCapacityBufferFakePodAnnotation(pod *apiv1.Pod) *apiv1.Pod {

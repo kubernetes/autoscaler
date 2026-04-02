@@ -70,7 +70,7 @@ func OnEmptyCluster(autoscalingCtx *ca_context.AutoscalingContext, status string
 	autoscalingCtx.ProcessorCallbacks.ResetUnneededNodes()
 	// updates metrics related to empty cluster's state.
 	metrics.UpdateClusterSafeToAutoscale(false)
-	metrics.UpdateNodesCount(0, 0, 0, 0, 0)
+	metrics.UpdateNodesCount(0, 0, 0, 0, 0, 0)
 	if autoscalingCtx.WriteStatusConfigMap {
 		utils.WriteStatusConfigMap(autoscalingCtx.ClientSet, autoscalingCtx.ConfigNamespace, api.ClusterAutoscalerStatus{AutoscalerStatus: api.ClusterAutoscalerInitializing, Message: status}, autoscalingCtx.LogRecorder, autoscalingCtx.StatusConfigMapName, time.Now())
 	}
