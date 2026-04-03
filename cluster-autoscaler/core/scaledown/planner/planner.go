@@ -18,6 +18,7 @@ package planner
 
 import (
 	"fmt"
+	"reflect"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -338,6 +339,10 @@ func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
 	nodeGroup, err := p.autoscalingCtx.CloudProvider.NodeGroupForNode(node.Node)
 	if err != nil {
 		klog.Errorf("failed to get node info for %v: %s", node.Node.Name, err)
+		return false
+	}
+	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		klog.V(4).Infof("Skipping node %v for atomic scale down - no node group found", node.Node.Name)
 		return false
 	}
 	autoscalingOptions, err := nodeGroup.GetOptions(p.autoscalingCtx.NodeGroupDefaults)
