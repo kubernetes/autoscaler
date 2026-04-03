@@ -1,6 +1,6 @@
 module k8s.io/autoscaler/cluster-autoscaler/genproto
 
-go 1.25.3
+go 1.26.0
 
 tool (
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc

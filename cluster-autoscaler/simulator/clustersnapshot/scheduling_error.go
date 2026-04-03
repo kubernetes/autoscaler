@@ -102,7 +102,7 @@ func (se *schedulingError) Error() string {
 	case NoNodesPassingPredicatesFoundError:
 		msg = fmt.Sprintf("couldn't find a matching Node with passing predicates")
 	default:
-		msg = fmt.Sprintf("SchedulingErrorType type %q unknown - this shouldn't happen", se.errorType)
+		msg = fmt.Sprintf("SchedulingErrorType type %d unknown - this shouldn't happen", se.errorType)
 	}
 
 	return fmt.Sprintf("can't schedule pod %s/%s: %s", se.pod.Namespace, se.pod.Name, msg)
