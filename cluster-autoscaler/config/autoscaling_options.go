@@ -370,6 +370,8 @@ type AutoscalingOptions struct {
 	// NodeRemovalLatencyTrackingEnabled is used to enable/disable node removal latency tracking.
 	NodeRemovalLatencyTrackingEnabled bool
 	CapacityQuotasEnabled             bool
+	// ScaleUpSimulationForSkippedNodeGroupsEnabled is used to enable/disable the scaleUpSimulation for the skipped node groups
+	ScaleUpSimulationForSkippedNodeGroupsEnabled bool
 }
 
 // KubeClientOptions specify options for kube client
