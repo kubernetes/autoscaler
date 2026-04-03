@@ -91,7 +91,7 @@ type PrometheusHistoryProviderConfig struct {
 	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel string
 	CadvisorMetricsJobName                           string
 	Namespace                                        string
-	CpuMetricName, MemoryMetricName                  string
+	CPUMetricName, MemoryMetricName                  string
 
 	Authentication PrometheusCredentials
 }
@@ -368,7 +368,7 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 	if p.config.Namespace != "" {
 		podSelector = fmt.Sprintf("%s, %s=\"%s\"", podSelector, p.config.CtrNamespaceLabel, p.config.Namespace)
 	}
-	historicalCpuQuery := fmt.Sprintf("rate(%s{%s}[%s])", p.config.CpuMetricName, podSelector, p.config.HistoryResolution)
+	historicalCpuQuery := fmt.Sprintf("rate(%s{%s}[%s])", p.config.CPUMetricName, podSelector, p.config.HistoryResolution)
 	klog.V(4).InfoS("Historical CPU usage query", "query", historicalCpuQuery)
 	err := p.readResourceHistory(res, historicalCpuQuery, model.ResourceCPU)
 	if err != nil {

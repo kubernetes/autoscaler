@@ -53,7 +53,7 @@ func getDefaultPrometheusHistoryProviderConfigForTest() PrometheusHistoryProvide
 		CtrPodNameLabel:        "pod_name",
 		CtrNameLabel:           "name",
 		CadvisorMetricsJobName: "kubernetes-cadvisor",
-		CpuMetricName:          "container_cpu_usage_seconds_total",
+		CPUMetricName:          "container_cpu_usage_seconds_total",
 		MemoryMetricName:       "container_memory_working_set_bytes",
 	}
 }
