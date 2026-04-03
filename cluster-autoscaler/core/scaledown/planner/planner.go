@@ -18,6 +18,7 @@ package planner
 
 import (
 	"fmt"
+	"reflect"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -342,7 +343,7 @@ func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
 		klog.Errorf("failed to get node info for %v: %s", node.Node.Name, err)
 		return false
 	}
-	if nodeGroup == nil {
+	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 		klog.Errorf("Node group for node %s not found", node.Node.Name)
 		return false
 	}
