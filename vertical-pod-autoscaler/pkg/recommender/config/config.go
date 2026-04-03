@@ -88,14 +88,14 @@ type RecommenderConfig struct {
 
 	// External metrics provider configuration
 	UseExternalMetrics   bool
-	ExternalCPUMetric    string
+	ExternalCpuMetric    string
 	ExternalMemoryMetric string
 
 	// Aggregation configuration
 	MemoryAggregationInterval      time.Duration
 	MemoryAggregationIntervalCount int64
 	MemoryHistogramDecayHalfLife   time.Duration
-	CPUHistogramDecayHalfLife      time.Duration
+	CpuHistogramDecayHalfLife      time.Duration
 	OOMBumpUpRatio                 float64
 	OOMMinBumpUp                   float64
 
@@ -160,14 +160,14 @@ func DefaultRecommenderConfig() *RecommenderConfig {
 
 		// External metrics provider flags
 		UseExternalMetrics:   false,
-		ExternalCPUMetric:    "",
+		ExternalCpuMetric:    "",
 		ExternalMemoryMetric: "",
 
 		// Aggregation configuration flags
 		MemoryAggregationInterval:      model.DefaultMemoryAggregationInterval,
 		MemoryAggregationIntervalCount: model.DefaultMemoryAggregationIntervalCount,
 		MemoryHistogramDecayHalfLife:   model.DefaultMemoryHistogramDecayHalfLife,
-		CPUHistogramDecayHalfLife:      model.DefaultCPUHistogramDecayHalfLife,
+		CpuHistogramDecayHalfLife:      model.DefaultCPUHistogramDecayHalfLife,
 		OOMBumpUpRatio:                 model.DefaultOOMBumpUpRatio,
 		OOMMinBumpUp:                   model.DefaultOOMMinBumpUp,
 
@@ -233,14 +233,14 @@ func InitRecommenderFlags() *RecommenderConfig {
 
 	// External metrics provider flags
 	flag.BoolVar(&config.UseExternalMetrics, "use-external-metrics", config.UseExternalMetrics, "ALPHA.  Use an external metrics provider instead of metrics_server.")
-	flag.StringVar(&config.ExternalCPUMetric, "external-metrics-cpu-metric", config.ExternalCPUMetric, "ALPHA.  Metric to use with external metrics provider for CPU usage.")
+	flag.StringVar(&config.ExternalCpuMetric, "external-metrics-cpu-metric", config.ExternalCpuMetric, "ALPHA.  Metric to use with external metrics provider for CPU usage.")
 	flag.StringVar(&config.ExternalMemoryMetric, "external-metrics-memory-metric", config.ExternalMemoryMetric, "ALPHA.  Metric to use with external metrics provider for memory usage.")
 
 	// Aggregation configuration flags
 	flag.DurationVar(&config.MemoryAggregationInterval, "memory-aggregation-interval", config.MemoryAggregationInterval, `The length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval)`)
 	flag.Int64Var(&config.MemoryAggregationIntervalCount, "memory-aggregation-interval-count", config.MemoryAggregationIntervalCount, `The number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count.`)
 	flag.DurationVar(&config.MemoryHistogramDecayHalfLife, "memory-histogram-decay-half-life", config.MemoryHistogramDecayHalfLife, `The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period.`)
-	flag.DurationVar(&config.CPUHistogramDecayHalfLife, "cpu-histogram-decay-half-life", config.CPUHistogramDecayHalfLife, `The amount of time it takes a historical CPU usage sample to lose half of its weight.`)
+	flag.DurationVar(&config.CpuHistogramDecayHalfLife, "cpu-histogram-decay-half-life", config.CpuHistogramDecayHalfLife, `The amount of time it takes a historical CPU usage sample to lose half of its weight.`)
 	flag.Float64Var(&config.OOMBumpUpRatio, "oom-bump-up-ratio", config.OOMBumpUpRatio, `Default memory bump up ratio when OOM occurs. This value applies to all VPAs unless overridden in the VPA spec. Default is 1.2.`)
 	flag.Float64Var(&config.OOMMinBumpUp, "oom-min-bump-up-bytes", config.OOMMinBumpUp, `Default minimal increase of memory (in bytes) when OOM occurs. This value applies to all VPAs unless overridden in the VPA spec. Default is 100 * 1024 * 1024 (100Mi).`)
 
