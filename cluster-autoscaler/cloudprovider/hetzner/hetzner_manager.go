@@ -78,6 +78,7 @@ type NodeConfig struct {
 	PlacementGroup string
 	Taints         []apiv1.Taint
 	Labels         map[string]string
+	ServerLabels   map[string]string
 	ImagesForArch  *ImageList
 	SubnetIPRange  string
 }
