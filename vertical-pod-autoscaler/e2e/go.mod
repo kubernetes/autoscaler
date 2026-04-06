@@ -153,7 +153,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.36.0-beta.0 // indirect
-	k8s.io/cloud-provider v0.35.0 // indirect
+	k8s.io/cloud-provider v0.36.0-beta.0 // indirect
 	k8s.io/component-base v0.36.0-beta.0 // indirect
 	k8s.io/component-helpers v0.36.0-beta.0 // indirect
 	k8s.io/controller-manager v0.36.0-beta.0 // indirect
@@ -193,6 +193,7 @@ replace (
 	k8s.io/controller-manager => k8s.io/controller-manager v0.36.0-beta.0
 	k8s.io/cri-api => k8s.io/cri-api v0.36.0-beta.0
 	k8s.io/cri-client => k8s.io/cri-client v0.36.0-beta.0
+	k8s.io/cri-streaming => k8s.io/cri-streaming v0.36.0-beta.0
 	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.36.0-beta.0
 	k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation v0.36.0-beta.0
 	k8s.io/endpointslice => k8s.io/endpointslice v0.36.0-beta.0
@@ -210,8 +211,5 @@ replace (
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.36.0-beta.0
 	k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.36.0-beta.0
 	k8s.io/sample-controller => k8s.io/sample-controller v0.36.0-beta.0
+	k8s.io/streaming => k8s.io/streaming v0.36.0-beta.0
 )
-
-replace k8s.io/cri-streaming => k8s.io/cri-streaming v0.36.0-beta.0
-
-replace k8s.io/streaming => k8s.io/streaming v0.36.0-beta.0

@@ -66,12 +66,15 @@ func main() {
 
 	kubeConfig := common.CreateKubeConfigOrDie(config.CommonFlags.KubeConfig, float32(config.CommonFlags.KubeApiQps), int(config.CommonFlags.KubeApiBurst))
 
+	stopCh := make(chan struct{})
+	defer close(stopCh)
+
 	vpaClient := vpa_clientset.NewForConfigOrDie(kubeConfig)
 	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), config.CommonFlags.VpaObjectNamespace)
 	kubeClient := kube_client.NewForConfigOrDie(kubeConfig)
 	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(config.CommonFlags.VpaObjectNamespace))
-	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, factory)
-	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, factory, stopCh)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor, stopCh)
 
 	podPreprocessor := pod.NewDefaultPreProcessor()
 	vpaPreprocessor := vpa.NewDefaultPreProcessor()
@@ -84,8 +87,6 @@ func main() {
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
 	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher)
 
-	stopCh := make(chan struct{})
-	defer close(stopCh)
 	factory.Start(stopCh)
 	informerMap := factory.WaitForCacheSync(stopCh)
 	for kind, synced := range informerMap {
