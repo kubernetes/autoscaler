@@ -76,7 +76,9 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `external-metrics-cpu-metric` | string |  | ALPHA.  Metric to use with external metrics provider for CPU usage. |
 | `external-metrics-memory-metric` | string |  | ALPHA.  Metric to use with external metrics provider for memory usage. |
 | `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
+| `history-cpu-metric` | string |  "container_cpu_usage_seconds_total" | Name of the metric to use for CPU history when querying Prometheus.  |
 | `history-length` | string |  "8d" | How much time back prometheus have to be queried to get historical metrics  |
+| `history-memory-metric` | string |  "container_memory_working_set_bytes" | Name of the metric to use for memory history when querying Prometheus  |
 | `history-resolution` | string |  "1h" | Resolution at which Prometheus is queried for historical metrics  |
 | `humanize-memory` |  |  | DEPRECATED: Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. This flag is deprecated and will be removed in a future version. Use --round-memory-bytes instead. |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
@@ -182,3 +184,4 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `v,` |  | : 4 | , --v Level                                                         set the log level verbosity  (default 4) |
 | `vmodule` | moduleSpec |  | comma-separated list of pattern=N settings for file-filtered logging |
 | `vpa-object-namespace` | string |  | Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace. |
+
