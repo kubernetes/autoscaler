@@ -86,7 +86,7 @@ The benefits and implementation details of pod-level `resources` are described i
 
 Furthermore, the In-Place Pod Resize (IPPR) functionality has been extended to support pod-level resources, as defined in [KEP-5419](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/5419-pod-level-resources-in-place-resize/README.md).
 
-Prior to this AEP, VPA computes recommendations only at the container level, and those recommendations are applied exclusively at the container level. With the new pod-level resource specifications, VPA should be capable of reading the pod-level resources stanza, calculating pod-level recommendations, and managing pod-level resource stanzas using any of the available VPA modes, including `InPlaceOrRecreate`.
+Prior to this AEP, VPA computes recommendations only at the container level, and those recommendations are applied exclusively at the container level. With the new pod-level resource specifications, VPA should be capable of reading the pod-level resources stanza, calculating pod-level recommendations, and managing pod-level resource stanzas using any of the available VPA modes, including `InPlaceOrRecreate, InPlace etc`.
 
 ### Goals
 
