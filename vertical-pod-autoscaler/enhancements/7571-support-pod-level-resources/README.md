@@ -132,7 +132,7 @@ Today, the updater makes decisions based solely on container-level resource stan
 
   1. Add a new enum to the container resource policy's `mode` field with the value `RecommendationOnly`. This enum allows users to indicate that the container-level recommendation should be calculated by the recommender, while the updater and admission controller ignore it. For example, the updater will not evict the pod based on this container-level recommendation. The primary purpose of this enum is to give users finer control compared to the `Auto` mode, which instructs VPA to calculate the container-level recommendation and manage the corresponding resource stanza. The AEP includes example VPA objects and behaviors in the [Examples](#examples) section.
 
-  2. Add a new `spec.resourcePolicy.podPolicies` stanza. This stanza is user-modifiable and allows setting constraints for pod-level recommendations:
+  2. Add a new `spec.resourcePolicy.podPolicies` stanza. This stanza allows setting constraints for pod-level recommendations:
 
     - `mode`: This new field is similar to the one that already exists at the container level, with two possible values: `Off` and `Auto`. It indicates whether the autoscaler is enabled at the pod level. The default is `Off`, so the autoscaler does not compute recommendations at the pod level, and the updater and admission controller ignore the pod-level `resources` stanza.
 
