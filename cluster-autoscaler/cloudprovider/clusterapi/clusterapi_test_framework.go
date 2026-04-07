@@ -579,6 +579,7 @@ func NewTestMachineController(t testing.TB) *testMachineController {
 					APIResources: []metav1.APIResource{
 						{
 							Name: "machinetemplates",
+							Kind: machineTemplateKind,
 						},
 					},
 				},
