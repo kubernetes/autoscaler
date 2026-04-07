@@ -163,25 +163,8 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 			ginkgo.DeferCleanup(e2erc.DeleteRCAndWaitForGC, f.ClientSet, f.Namespace.Name, "memory-reservation")
 
 			ginkgo.By("Waiting for scale up hoping it won't happen")
-			// Verify that the appropriate event was generated
-			eventFound := false
-		EventsLoop:
-			for start := time.Now(); time.Since(start) < scaleUpTimeout; time.Sleep(20 * time.Second) {
-				ginkgo.By("Waiting for NotTriggerScaleUp event")
-				events, err := f.ClientSet.CoreV1().Events(f.Namespace.Name).List(ctx, metav1.ListOptions{})
-				framework.ExpectNoError(err)
+			framework.ExpectNoError(waitForEventWithReason(ctx, f, "Pod", "NotTriggerScaleUp", scaleUpTimeout))
 
-				for _, e := range events.Items {
-					if e.InvolvedObject.Kind == "Pod" && e.Reason == "NotTriggerScaleUp" {
-						ginkgo.By("NotTriggerScaleUp event found")
-						eventFound = true
-						break EventsLoop
-					}
-				}
-			}
-			if !eventFound {
-				framework.Failf("Expected event with kind 'Pod' and reason 'NotTriggerScaleUp' not found.")
-			}
 			// Verify that cluster size is not changed
 			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, f.ClientSet,
 				func(size int) bool { return size <= nodeCount }, time.Second))
@@ -495,23 +478,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 			ginkgo.DeferCleanup(cleanup)
 
 			ginkgo.By("Waiting for NotTriggerScaleUp event")
-			eventFound := false
-		EventsLoop:
-			for start := time.Now(); time.Since(start) < scaleUpTimeout; time.Sleep(20 * time.Second) {
-				events, err := f.ClientSet.CoreV1().Events(f.Namespace.Name).List(ctx, metav1.ListOptions{})
-				framework.ExpectNoError(err)
-
-				for _, e := range events.Items {
-					if e.InvolvedObject.Kind == "Pod" && e.Reason == "NotTriggerScaleUp" {
-						ginkgo.By("NotTriggerScaleUp event found")
-						eventFound = true
-						break EventsLoop
-					}
-				}
-			}
-			if !eventFound {
-				framework.Failf("Expected event with kind 'Pod' and reason 'NotTriggerScaleUp' not found.")
-			}
+			framework.ExpectNoError(waitForEventWithReason(ctx, f, "Pod", "NotTriggerScaleUp", scaleUpTimeout))
 
 			// Verify that cluster size is not changed.
 			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, f.ClientSet,
@@ -1294,4 +1261,22 @@ func ReserveDRA(ctx context.Context, f *framework.Framework, id string, replicas
 		}
 		return nil
 	}
+}
+
+func waitForEventWithReason(ctx context.Context, f *framework.Framework, kind, reason string, timeout time.Duration) error {
+	for start := time.Now(); time.Since(start) < timeout; time.Sleep(20 * time.Second) {
+		ginkgo.By(fmt.Sprintf("Waiting for %s event", reason))
+		events, err := f.ClientSet.CoreV1().Events(f.Namespace.Name).List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return err
+		}
+
+		for _, e := range events.Items {
+			if e.InvolvedObject.Kind == kind && e.Reason == reason {
+				ginkgo.By(fmt.Sprintf("%s event found", reason))
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("expected event with kind %q and reason %q not found", kind, reason)
 }
