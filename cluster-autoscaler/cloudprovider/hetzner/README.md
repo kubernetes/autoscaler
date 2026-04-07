@@ -67,7 +67,7 @@ If you do not set this value, the default setting from Hetzner Cloud will be use
 
 The global `defaultSubnetIPRange` can be overridden on a per-nodepool basis by adding a `subnetIPRange` field to individual nodepool configurations.
 
-The `labels` field in a `nodeConfig` specifies key-value pairs used to simulate Kubernetes node labels for autoscaler scheduling decisions. These labels appear on the Kubernetes node object but are **not** applied to the Hetzner Cloud server.
+The `labels` field in a `nodeConfig` specifies key-value pairs used to simulate Kubernetes node labels for autoscaler scheduling decisions.
 
 The `serverLabels` field specifies key-value pairs applied directly to the Hetzner Cloud server at creation time (via the Hetzner API). They are merged with the mandatory internal label `cluster.autoscaler.nodeGroupLabel` (which identifies the node group) before being sent to the API. This allows you to tag servers with metadata visible in the Hetzner Cloud Console, usable for filtering via the Hetzner API, or required by cluster bootstrappers that authenticate nodes via Hetzner server labels (e.g. kops).
 
