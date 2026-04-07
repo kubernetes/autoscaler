@@ -152,7 +152,7 @@ This section and its subsections describe the proposed modifications to the reco
 
 - Implement a new function that calculates pod-level recommendations when the `mode` field is set to `Auto` by the user in the `spec.resourcePolicy.podPolicies` stanza. The calculation loops through all container-level recommendations and sums values of the same type. For example, summing all container-level targets produces the pod-level target.
 
-- Update the `ApplyVPAPolicy` function to enforce the new recommender-level constraints, such as the `pod-recommendation-max-allowed-cpu` and `pod-recommendation-max-allowed-memory` flags, as well as the pod-level `minAllowed` and `maxAllowed` values for both **pod-level and container-level recommendations**.
+- Update the `ApplyVPAPolicy` function to enforce the new recommender-level constraints, such as the `pod-recommendation-max-allowed-cpu` and `pod-recommendation-max-allowed-memory` flags, as well as the pod-level `minAllowed` and `maxAllowed` values for both **pod-level and container-level recommendations**. To enforce pod-level constraints on container-level recommendations, this document proposes using the formula introduced by @omerap12 here: [see discussion](https://github.com/kubernetes/autoscaler/issues/7147#issuecomment-2515296024).
 
 ##### New Global Pod maximums
 
