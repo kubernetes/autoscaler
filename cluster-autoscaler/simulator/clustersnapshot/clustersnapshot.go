@@ -20,6 +20,7 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -111,6 +112,10 @@ type ClusterSnapshotStore interface {
 	schedulerinterface.SharedLister
 	Forkable
 
+	// FastPredicateLister returns an interface that allows querying internal state for fast predicate checking.
+	// The lister may return nil if the internal state is not available (fast predicates are disabled).
+	FastPredicateLister() FastPredicateLister
+
 	// StorePodInfo adds the given PodInfo to the Node with the given nodeName inside the snapshot.
 	StorePodInfo(podInfo *framework.PodInfo, nodeName string) error
 	// RemovePodInfo removes the given Pod from the snapshot.
@@ -125,6 +130,16 @@ type ClusterSnapshotStore interface {
 
 	// Clear resets the snapshot to an empty, unforked state.
 	Clear()
+}
+
+// FastPredicateLister allows querying precomputed internal state for fast predicate checking.
+type FastPredicateLister interface {
+	// PodAffinityCount returns the number of pods matching the given selector in the given topology domain.
+	PodAffinityCount(topologyKey, topologyValue string, selector labels.Selector) int
+	// TopologyValueCount returns the number of unique values for the given topology key in the snapshot.
+	TopologyValueCount(topologyKey string) int
+	// TopologyDomains returns all unique values for the given topology key in the snapshot.
+	TopologyDomains(topologyKey string) []string
 }
 
 // ErrNodeNotFound means that a node wasn't found in the snapshot.

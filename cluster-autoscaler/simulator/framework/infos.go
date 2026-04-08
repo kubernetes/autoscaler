@@ -18,6 +18,8 @@ package framework
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
@@ -177,4 +179,24 @@ func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...
 		result.AddPod(pod)
 	}
 	return result
+}
+
+// GetPodLabelSetHash returns a deterministic hash of the pod's labels.
+func GetPodLabelSetHash(pod *apiv1.Pod) string {
+	if pod == nil || len(pod.Labels) == 0 {
+		return ""
+	}
+	keys := make([]string, 0, len(pod.Labels))
+	for k := range pod.Labels {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	var sb strings.Builder
+	for _, k := range keys {
+		sb.WriteString(k)
+		sb.WriteString("=")
+		sb.WriteString(pod.Labels[k])
+		sb.WriteString(",")
+	}
+	return sb.String()
 }

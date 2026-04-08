@@ -48,7 +48,7 @@ func NewCustomTestSnapshotOrDie(t testFailer, snapshotStore clustersnapshot.Clus
 
 // NewTestSnapshotAndHandle returns an instance of ClusterSnapshot and a framework handle that can be used in tests.
 func NewTestSnapshotAndHandle() (clustersnapshot.ClusterSnapshot, *framework.Handle, error) {
-	return NewCustomTestSnapshotAndHandle(store.NewBasicSnapshotStore())
+	return NewCustomTestSnapshotAndHandle(store.NewBasicSnapshotStore(false))
 }
 
 // NewCustomTestSnapshotAndHandle returns an instance of ClusterSnapshot with a specific ClusterSnapshotStore that can be used in tests.
@@ -57,5 +57,5 @@ func NewCustomTestSnapshotAndHandle(snapshotStore clustersnapshot.ClusterSnapsho
 	if err != nil {
 		return nil, nil, err
 	}
-	return predicate.NewPredicateSnapshot(snapshotStore, testFwHandle, true, 1, false), testFwHandle, nil
+	return predicate.NewPredicateSnapshot(snapshotStore, testFwHandle, true, 1, false, false), testFwHandle, nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package predicate
 
 import (
+	"context"
 	"fmt"
 	"maps"
 	"math/rand"
@@ -40,6 +41,8 @@ import (
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/client-go/informers"
+	clientsetfake "k8s.io/client-go/kubernetes/fake"
 	featuretesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/kubernetes/pkg/features"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -51,14 +54,21 @@ var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, true), nil
+		return NewPredicateSnapshot(store.NewBasicSnapshotStore(false), fwHandle, true, 1, true, false), nil
 	},
 	"delta": func() (clustersnapshot.ClusterSnapshot, error) {
 		fwHandle, err := framework.NewTestFrameworkHandle()
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true, 1, true), nil
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16, false), fwHandle, true, 1, true, false), nil
+	},
+	"fast": func() (clustersnapshot.ClusterSnapshot, error) {
+		fwHandle, err := framework.NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), nil, true, true, true)
+		if err != nil {
+			return nil, err
+		}
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16, true), fwHandle, true, 1, true, true), nil
 	},
 }
 
@@ -2042,8 +2052,119 @@ func TestSetClusterStateConcurrentDRA(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Set parallelism to 8 to ensure the workqueue utilizes multiple goroutines.
-	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 8, false)
+	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(false), fwHandle, true, 8, false, false)
 
 	err = snapshot.SetClusterState(nodes, pods, draSnap, nil)
 	assert.NoError(t, err)
+}
+
+func TestSchedulingPredicatesMatch(t *testing.T) {
+	for name, snapshotFactory := range snapshots {
+		t.Run(name, func(t *testing.T) {
+			snapshot, err := snapshotFactory()
+			assert.NoError(t, err)
+
+			node1 := BuildTestNode("node1", 100, 1000)
+			node1.Labels = map[string]string{"zone": "z1", "region": "r1"}
+
+			node2 := BuildTestNode("node2", 100, 1000)
+			node2.Labels = map[string]string{"zone": "z1", "region": "r1"}
+
+			node3 := BuildTestNode("node3", 100, 1000)
+			node3.Labels = map[string]string{"zone": "z2", "region": "r1"}
+
+			pod1 := BuildTestPod("pod1", 1, 1)
+			pod1.Labels = map[string]string{"app": "foo", "tier": "backend"}
+			pod1.Spec.NodeName = "node1"
+
+			pod2 := BuildTestPod("pod2", 1, 1)
+			pod2.Labels = map[string]string{"app": "foo", "tier": "frontend"}
+			pod2.Spec.NodeName = "node1"
+
+			pod3 := BuildTestPod("pod3", 1, 1)
+			pod3.Labels = map[string]string{"app": "bar", "tier": "backend"}
+			pod3.Spec.NodeName = "node3"
+
+			// 1. Initial State
+			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node1, pod1, pod2))
+			assert.NoError(t, err)
+			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node2))
+			assert.NoError(t, err)
+			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node3, pod3))
+			assert.NoError(t, err)
+
+			// Test PodAntiAffinity
+			podAntiAffinity := BuildTestPod("pod-anti-affinity", 1, 1)
+			podAntiAffinity.Spec.Affinity = &apiv1.Affinity{
+				PodAntiAffinity: &apiv1.PodAntiAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
+						{
+							LabelSelector: &metav1.LabelSelector{MatchLabels: map[string]string{"app": "foo"}},
+							TopologyKey:   "zone",
+						},
+					},
+				},
+			}
+
+			// Should fail on node1 and node2 (zone z1 has app=foo pods)
+			err = snapshot.SchedulePod(podAntiAffinity, "node1")
+			assert.Error(t, err)
+			err = snapshot.SchedulePod(podAntiAffinity, "node2")
+			assert.Error(t, err)
+
+			// Should succeed on node3 (zone z2 has no app=foo pods)
+			err = snapshot.SchedulePod(podAntiAffinity, "node3")
+			assert.NoError(t, err)
+			err = snapshot.UnschedulePod("default", "pod-anti-affinity", "node3")
+			assert.NoError(t, err)
+
+			// Test TopologySpreadConstraints
+			podSpread := BuildTestPod("pod-spread", 1, 1)
+			podSpread.Labels = map[string]string{"app": "foo"}
+			podSpread.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{
+				{
+					MaxSkew:           1,
+					TopologyKey:       "zone",
+					WhenUnsatisfiable: apiv1.DoNotSchedule,
+					LabelSelector:     &metav1.LabelSelector{MatchLabels: map[string]string{"app": "foo"}},
+				},
+			}
+
+			// Currently app=foo pods: 2 in z1, 0 in z2. Skew if scheduled to z1 = 3-0=3 (fails).
+			err = snapshot.SchedulePod(podSpread, "node1")
+			assert.Error(t, err)
+
+			// Skew if scheduled to z2 = 2-1=1 (succeeds)
+			err = snapshot.SchedulePod(podSpread, "node3")
+			assert.NoError(t, err)
+			err = snapshot.UnschedulePod("default", "pod-spread", "node3")
+			assert.NoError(t, err)
+
+			// Forking behavior
+			snapshot.Fork()
+
+			// Add an app=foo pod to z2 (node3) manually.
+			pod4 := BuildTestPod("pod4", 1, 1)
+			pod4.Labels = map[string]string{"app": "foo"}
+			err = snapshot.ForceAddPod(pod4, "node3")
+			assert.NoError(t, err)
+
+			// Now app=foo pods: 2 in z1, 1 in z2.
+			// Scheduling podSpread on z1 -> 3 in z1 vs 1 in z2 -> skew 2 -> fails.
+			err = snapshot.SchedulePod(podSpread, "node1")
+			assert.Error(t, err)
+
+			// Scheduling podAntiAffinity on z2 -> 1 app=foo pod in z2 -> fails.
+			err = snapshot.SchedulePod(podAntiAffinity, "node3")
+			assert.Error(t, err)
+
+			snapshot.Revert()
+
+			// Back to 2 in z1, 0 in z2.
+			err = snapshot.SchedulePod(podAntiAffinity, "node3")
+			assert.NoError(t, err)
+			err = snapshot.UnschedulePod("default", "pod-anti-affinity", "node3")
+			assert.NoError(t, err)
+		})
+	}
 }

@@ -100,14 +100,14 @@ func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerO
 		opts.AutoscalingKubeClients = ca_context.NewAutoscalingKubeClients(ctx, opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
 	if opts.FrameworkHandle == nil {
-		fwHandle, err := framework.NewHandle(ctx, opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled)
+		fwHandle, err := framework.NewHandle(ctx, opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled, opts.FastPredicatesEnabled)
 		if err != nil {
 			return err
 		}
 		opts.FrameworkHandle = fwHandle
 	}
 	if opts.ClusterSnapshot == nil {
-		opts.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), opts.FrameworkHandle, opts.DynamicResourceAllocationEnabled, opts.PredicateParallelism, opts.CSINodeAwareSchedulingEnabled)
+		opts.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(opts.FastPredicatesEnabled), opts.FrameworkHandle, opts.DynamicResourceAllocationEnabled, opts.PredicateParallelism, opts.CSINodeAwareSchedulingEnabled, opts.FastPredicatesEnabled)
 	}
 	if opts.RemainingPdbTracker == nil {
 		opts.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()

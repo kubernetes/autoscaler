@@ -506,12 +506,29 @@ func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfigurati
 		schedConfig = defaultConfig
 	}
 
-	fwHandle, err := framework.NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true, false)
+	fwHandle, err := framework.NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true, false, false)
 	if err != nil {
 		return nil, nil, err
 	}
-	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, false)
-	return NewSchedulerPluginRunner(fwHandle, snapshot, 1), snapshot, nil
+	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(false), fwHandle, true, 1, false, false)
+	return NewSchedulerPluginRunner(fwHandle, snapshot, 1, false), snapshot, nil
+}
+
+func newTestPluginRunnerAndSnapshotFast(schedConfig *config.KubeSchedulerConfiguration) (*SchedulerPluginRunner, clustersnapshot.ClusterSnapshot, error) {
+	if schedConfig == nil {
+		defaultConfig, err := scheduler_config_latest.Default()
+		if err != nil {
+			return nil, nil, err
+		}
+		schedConfig = defaultConfig
+	}
+
+	fwHandle, err := framework.NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true, false, true)
+	if err != nil {
+		return nil, nil, err
+	}
+	snapshot := NewPredicateSnapshot(store.NewDeltaSnapshotStore(16, true), fwHandle, true, 1, false, true)
+	return NewSchedulerPluginRunner(fwHandle, snapshot, 1, true), snapshot, nil
 }
 
 func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
@@ -535,7 +552,7 @@ func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
 	lastNode := BuildTestNode(lastNodeName, 1000, 1000)
 	nodes = append(nodes, lastNode)
 
-	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil)
+	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshotFast(nil)
 	assert.NoError(b, err)
 
 	for _, node := range nodes {

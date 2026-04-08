@@ -48,8 +48,9 @@ import (
 // memory and time complexities of DeltaSnapshotStore - they are optimized for
 // cluster autoscaler operations
 type DeltaSnapshotStore struct {
-	data        *internalDeltaSnapshotData
-	parallelism int
+	data                  *internalDeltaSnapshotData
+	parallelism           int
+	fastPredicatesEnabled bool
 }
 
 type deltaSnapshotStoreNodeLister DeltaSnapshotStore
@@ -66,14 +67,19 @@ type internalDeltaSnapshotData struct {
 	havePodsWithAffinity             []schedulerinterface.NodeInfo
 	havePodsWithRequiredAntiAffinity []schedulerinterface.NodeInfo
 	pvcNamespaceMap                  map[string]int
+	fastPredicateIndex               *fastPredicateIndex
 }
 
-func newInternalDeltaSnapshotData() *internalDeltaSnapshotData {
-	return &internalDeltaSnapshotData{
+func newInternalDeltaSnapshotData(fastPredicatesEnabled bool) *internalDeltaSnapshotData {
+	data := &internalDeltaSnapshotData{
 		addedNodeInfoMap:    make(map[string]schedulerinterface.NodeInfo),
 		modifiedNodeInfoMap: make(map[string]schedulerinterface.NodeInfo),
 		deletedNodeInfos:    make(map[string]bool),
 	}
+	if fastPredicatesEnabled {
+		data.fastPredicateIndex = newFastPredicateIndex()
+	}
+	return data
 }
 
 func (data *internalDeltaSnapshotData) getNodeInfo(name string) (schedulerinterface.NodeInfo, bool) {
@@ -162,6 +168,13 @@ func (data *internalDeltaSnapshotData) addNodeInfo(nodeInfo schedulerinterface.N
 		data.clearPodCaches()
 	}
 
+	if data.fastPredicateIndex != nil {
+		data.fastPredicateIndex.addNode(nodeInfo.Node())
+		for _, podInfo := range nodeInfo.GetPods() {
+			data.fastPredicateIndex.addPod(podInfo.GetPod(), nodeInfo.Node())
+		}
+	}
+
 	return nil
 }
 
@@ -178,6 +191,14 @@ func (data *internalDeltaSnapshotData) clearPodCaches() {
 }
 
 func (data *internalDeltaSnapshotData) removeNodeInfo(nodeName string) error {
+	nodeInfo, found := data.getNodeInfoLocal(nodeName)
+	if !found {
+		ni, foundInBase := data.baseData.getNodeInfo(nodeName)
+		if foundInBase {
+			nodeInfo = ni
+		}
+	}
+
 	_, foundInDelta := data.addedNodeInfoMap[nodeName]
 	if foundInDelta {
 		// If node was added within this delta, delete this change.
@@ -203,6 +224,13 @@ func (data *internalDeltaSnapshotData) removeNodeInfo(nodeName string) error {
 	if !foundInBase && !foundInDelta {
 		// Node not found in the chain.
 		return clustersnapshot.ErrNodeNotFound
+	}
+
+	if data.fastPredicateIndex != nil && nodeInfo != nil {
+		for _, pod := range nodeInfo.GetPods() {
+			data.fastPredicateIndex.removePod(pod.GetPod(), nodeInfo.Node())
+		}
+		data.fastPredicateIndex.removeNode(nodeInfo.Node())
 	}
 
 	// Maybe consider deleting from the lists instead. Maybe not.
@@ -235,6 +263,10 @@ func (data *internalDeltaSnapshotData) addPodInfo(podInfo schedulerinterface.Pod
 
 	ni.AddPodInfo(podInfo)
 
+	if data.fastPredicateIndex != nil {
+		data.fastPredicateIndex.addPod(podInfo.GetPod(), ni.Node())
+	}
+
 	// Maybe consider deleting from the list in the future. Maybe not.
 	data.clearCaches()
 	return nil
@@ -253,7 +285,13 @@ func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName strin
 	logger := klog.Background()
 	for _, podInfo := range ni.GetPods() {
 		if podInfo.GetPod().Namespace == namespace && podInfo.GetPod().Name == name {
+			if data.fastPredicateIndex != nil {
+				data.fastPredicateIndex.removePod(podInfo.GetPod(), ni.Node())
+			}
 			if err := ni.RemovePod(logger, podInfo.GetPod()); err != nil {
+				if data.fastPredicateIndex != nil {
+					data.fastPredicateIndex.addPod(podInfo.GetPod(), ni.Node())
+				}
 				return fmt.Errorf("cannot remove pod; %v", err)
 			}
 			podFound = true
@@ -285,8 +323,15 @@ func (data *internalDeltaSnapshotData) isPVCUsedByPods(key string) bool {
 }
 
 func (data *internalDeltaSnapshotData) fork() *internalDeltaSnapshotData {
-	forkedData := newInternalDeltaSnapshotData()
+	fastPredicatesEnabled := data.fastPredicateIndex != nil
+	forkedData := newInternalDeltaSnapshotData(fastPredicatesEnabled)
 	forkedData.baseData = data
+	if fastPredicatesEnabled {
+		// Reuse the same index object and call Fork on it.
+		// fastPredicateIndex uses PatchSet, which handles O(1) Fork/Revert/Commit.
+		forkedData.fastPredicateIndex = data.fastPredicateIndex
+		forkedData.fastPredicateIndex.Fork()
+	}
 	return forkedData
 }
 
@@ -295,6 +340,11 @@ func (data *internalDeltaSnapshotData) commit() (*internalDeltaSnapshotData, err
 		// do nothing... as in basic snapshot.
 		return data, nil
 	}
+
+	if data.fastPredicateIndex != nil {
+		data.fastPredicateIndex.Commit()
+	}
+
 	for node := range data.deletedNodeInfos {
 		if err := data.baseData.removeNodeInfo(node); err != nil {
 			return nil, err
@@ -388,9 +438,10 @@ func (snapshot *DeltaSnapshotStore) StorageInfos() schedulerinterface.StorageInf
 }
 
 // NewDeltaSnapshotStore creates instances of DeltaSnapshotStore.
-func NewDeltaSnapshotStore(parallelism int) *DeltaSnapshotStore {
+func NewDeltaSnapshotStore(parallelism int, fastPredicatesEnabled bool) *DeltaSnapshotStore {
 	snapshot := &DeltaSnapshotStore{
-		parallelism: parallelism,
+		parallelism:           parallelism,
+		fastPredicatesEnabled: fastPredicatesEnabled,
 	}
 	snapshot.Clear()
 	return snapshot
@@ -399,6 +450,14 @@ func NewDeltaSnapshotStore(parallelism int) *DeltaSnapshotStore {
 // RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
 func (snapshot *DeltaSnapshotStore) RemoveNodeInfo(nodeName string) error {
 	return snapshot.data.removeNodeInfo(nodeName)
+}
+
+// FastPredicateLister returns an interface that allows querying internal state for fast predicate checking.
+func (snapshot *DeltaSnapshotStore) FastPredicateLister() clustersnapshot.FastPredicateLister {
+	if snapshot.data.fastPredicateIndex != nil {
+		return snapshot.data.fastPredicateIndex
+	}
+	return nil
 }
 
 // StoreNodeInfo adds the given *framework.NodeInfo to the snapshot without checking scheduler predicates.
@@ -431,6 +490,9 @@ func (snapshot *DeltaSnapshotStore) Fork() {
 // Time: O(1)
 func (snapshot *DeltaSnapshotStore) Revert() {
 	if snapshot.data.baseData != nil {
+		if snapshot.data.fastPredicateIndex != nil {
+			snapshot.data.fastPredicateIndex.Revert()
+		}
 		snapshot.data = snapshot.data.baseData
 	}
 }
@@ -449,5 +511,5 @@ func (snapshot *DeltaSnapshotStore) Commit() error {
 // Clear reset cluster snapshot to empty, unforked state
 // Time: O(1)
 func (snapshot *DeltaSnapshotStore) Clear() {
-	snapshot.data = newInternalDeltaSnapshotData()
+	snapshot.data = newInternalDeltaSnapshotData(snapshot.fastPredicatesEnabled)
 }

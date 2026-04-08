@@ -96,7 +96,7 @@ func NewTestFrameworkHandle() (*Handle, error) {
 	if err != nil {
 		return nil, err
 	}
-	fwHandle, err := NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig, true, true)
+	fwHandle, err := NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig, true, true, false)
 	if err != nil {
 		return nil, err
 	}

@@ -19,6 +19,7 @@ package predicate
 import (
 	"context"
 	"fmt"
+	"math"
 	"strings"
 	"sync"
 
@@ -32,19 +33,21 @@ import (
 
 // SchedulerPluginRunner can be used to run various phases of scheduler plugins through the scheduler framework.
 type SchedulerPluginRunner struct {
-	fwHandle            *framework.Handle
-	snapshot            clustersnapshot.ClusterSnapshot
-	defaultNodeOrdering clustersnapshot.NodeOrderMapping
-	parallelism         int
+	fwHandle              *framework.Handle
+	snapshot              clustersnapshot.ClusterSnapshot
+	defaultNodeOrdering   clustersnapshot.NodeOrderMapping
+	parallelism           int
+	fastPredicatesEnabled bool
 }
 
 // NewSchedulerPluginRunner builds a SchedulerPluginRunner.
-func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapshot.ClusterSnapshot, parallelism int) *SchedulerPluginRunner {
+func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapshot.ClusterSnapshot, parallelism int, fastPredicatesEnabled bool) *SchedulerPluginRunner {
 	return &SchedulerPluginRunner{
-		fwHandle:            fwHandle,
-		snapshot:            snapshot,
-		defaultNodeOrdering: clustersnapshot.NewLastIndexOrderMapping(1),
-		parallelism:         parallelism,
+		fwHandle:              fwHandle,
+		snapshot:              snapshot,
+		defaultNodeOrdering:   clustersnapshot.NewLastIndexOrderMapping(1),
+		parallelism:           parallelism,
+		fastPredicatesEnabled: fastPredicatesEnabled,
 	}
 }
 
@@ -83,6 +86,15 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 
 	nodeOrdering.Reset(nodeInfosList)
 
+	var fastState *FastPredicateState
+	if p.fastPredicatesEnabled {
+		var err error
+		fastState, err = p.computeFastPredicateState(pod)
+		if err != nil {
+			return nil, nil, clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error computing fast predicate state: %v", err))
+		}
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	earliestMatch := len(nodeInfosList)
@@ -114,6 +126,13 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 			return
 		}
 
+		if p.fastPredicatesEnabled {
+			if err := p.fastCheckPredicates(pod, nodeInfo, fastState); err != nil {
+				// Fast check failed, so this Node won't work.
+				return
+			}
+		}
+
 		// Run the Filter phase of the framework. Plugins retrieve the state they saved during PreFilter from CycleState, and answer whether the
 		// given Pod can be scheduled on the given Node.
 		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
@@ -131,7 +150,8 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 		// Filter didn't pass for some plugin, so this Node won't work - move on to the next one.
 	}
 
-	workqueue.ParallelizeUntil(ctx, p.parallelism, len(nodeInfosList), checkNode)
+	chunkSize := chunkSizeFor(len(nodeInfosList), p.parallelism)
+	workqueue.ParallelizeUntil(ctx, p.parallelism, len(nodeInfosList), checkNode, workqueue.WithChunkSize(chunkSize))
 
 	if foundNode != nil {
 		nodeOrdering.MarkMatch(foundIndex)
@@ -161,6 +181,16 @@ func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string
 	if !preFilterResult.AllNodes() && !preFilterResult.NodeNames.Has(nodeInfo.Node().Name) {
 		// in this scope, preFilterStatus is most likely nil
 		return nil, nil, clustersnapshot.NewFailingPredicateError(pod, strings.Join(nodeFilteringPlugins.UnsortedList(), ", "), nil, "PreFilter filtered the Node out", "")
+	}
+
+	if p.fastPredicatesEnabled {
+		fastState, err := p.computeFastPredicateState(pod)
+		if err != nil {
+			return nil, nil, clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error computing fast predicate state: %v", err))
+		}
+		if err := p.fastCheckPredicates(pod, nodeInfo, fastState); err != nil {
+			return nil, nil, err
+		}
 	}
 
 	// Run the Filter phase of the framework for the Pod and the Node and check the results. See the corresponding comments in RunFiltersUntilPassingNode() for more info.
@@ -200,4 +230,18 @@ func (p *SchedulerPluginRunner) failingFilterDebugInfo(filterName string, nodeIn
 	}
 
 	return strings.Join(infoParts, ", ")
+}
+
+// chunkSizeFor returns a chunk size for the given number of items to use for
+// parallel work. The size aims to produce good CPU utilization.
+// returns max(1, min(sqrt(n), n/Parallelism))
+func chunkSizeFor(n, parallelism int) int {
+	s := int(math.Sqrt(float64(n)))
+
+	if r := n/parallelism + 1; s > r {
+		s = r
+	} else if s < 1 {
+		s = 1
+	}
+	return s
 }

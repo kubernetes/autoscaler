@@ -41,17 +41,19 @@ type PredicateSnapshot struct {
 	draEnabled                   bool
 	enableCSINodeAwareScheduling bool
 	parallelism                  int
+	fastPredicatesEnabled        bool
 	draSnapshot                  *drasnapshot.Snapshot
 	csiSnapshot                  *csisnapshot.Snapshot
 }
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
-func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle, draEnabled bool, parallelism int, enableCSINodeAwareScheduling bool) *PredicateSnapshot {
+func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle, draEnabled bool, parallelism int, enableCSINodeAwareScheduling bool, fastPredicatesEnabled bool) *PredicateSnapshot {
 	snapshot := &PredicateSnapshot{
 		ClusterSnapshotStore:         snapshotStore,
 		draEnabled:                   draEnabled,
 		enableCSINodeAwareScheduling: enableCSINodeAwareScheduling,
 		parallelism:                  parallelism,
+		fastPredicatesEnabled:        fastPredicatesEnabled,
 		draSnapshot:                  drasnapshot.NewEmptySnapshot(),
 		csiSnapshot:                  csisnapshot.NewEmptySnapshot(),
 	}
@@ -59,7 +61,7 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 	// which operate on *framework.NodeInfo. The only object that allows obtaining *framework.NodeInfos is PredicateSnapshot, so we have an ugly circular
 	// dependency between PluginRunner and PredicateSnapshot.
 	// TODO: Refactor PluginRunner so that it doesn't depend on PredicateSnapshot (e.g. move retrieving NodeInfos out of PluginRunner, to PredicateSnapshot).
-	snapshot.pluginRunner = NewSchedulerPluginRunner(fwHandle, snapshot, parallelism)
+	snapshot.pluginRunner = NewSchedulerPluginRunner(fwHandle, snapshot, parallelism, fastPredicatesEnabled)
 	return snapshot
 }
 
@@ -165,12 +167,13 @@ func (s *PredicateSnapshot) setClusterStatePodsParallelized(nodeInfos []*framewo
 	}
 
 	ctx := context.Background()
+	chunkSize := chunkSizeFor(len(nodeInfos), s.parallelism)
 	workqueue.ParallelizeUntil(ctx, s.parallelism, len(nodeInfos), func(nodeIdx int) {
 		nodeInfo := nodeInfos[nodeIdx]
 		for _, pi := range podInfosForNode[nodeIdx] {
 			nodeInfo.AddPodInfo(pi)
 		}
-	})
+	}, workqueue.WithChunkSize(chunkSize))
 
 	return nil
 }
@@ -384,6 +387,11 @@ func (s *PredicateSnapshot) ForceRemovePod(namespace string, podName string, nod
 func (s *PredicateSnapshot) CheckPredicates(pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
 	_, _, err := s.pluginRunner.RunFiltersOnNode(pod, nodeName)
 	return err
+}
+
+// FastPredicateLister returns an interface that allows querying internal state for fast predicate checking.
+func (s *PredicateSnapshot) FastPredicateLister() clustersnapshot.FastPredicateLister {
+	return s.ClusterSnapshotStore.FastPredicateLister()
 }
 
 // DraSnapshot returns an interface that allows accessing and modifying the DRA objects in the snapshot.

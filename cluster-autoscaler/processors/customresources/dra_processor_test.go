@@ -395,7 +395,7 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 			}
 			provider.SetMachineTemplates(machineTemplates)
 			draSnapshot := drasnapshot.NewSnapshot(nil, tc.nodesSlices, nil, nil)
-			clusterSnapshotStore := store.NewBasicSnapshotStore()
+			clusterSnapshotStore := store.NewBasicSnapshotStore(false)
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
 			clusterSnapshot.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot, nil)
 

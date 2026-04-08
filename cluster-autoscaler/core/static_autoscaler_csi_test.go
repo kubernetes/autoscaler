@@ -223,7 +223,7 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 			// Create a framework handle with informer-backed listers for StorageClass/PVC/CSIDriver.
 			client := clientsetfake.NewSimpleClientset(k8sObjects...)
 			informerFactory := informers.NewSharedInformerFactory(client, 0)
-			fwHandle, err := framework.NewHandle(context.Background(), informerFactory, nil, false, true)
+			fwHandle, err := framework.NewHandle(context.Background(), informerFactory, nil, false, true, false)
 			require.NoError(t, err)
 			stopCh := make(chan struct{})
 			t.Cleanup(func() { close(stopCh) })
@@ -279,7 +279,7 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 
 			// Replace framework handle + snapshot with CSI-aware snapshot using the handle that has PVC/SC/CSIDriver informers.
 			autoscaler.AutoscalingContext.FrameworkHandle = fwHandle
-			autoscaler.AutoscalingContext.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, true)
+			autoscaler.AutoscalingContext.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(false), fwHandle, true, 1, true, false)
 
 			// Provide CSI nodes snapshotting for the real nodes.
 			autoscaler.AutoscalingContext.CsiProvider = csinodeprovider.NewCSINodeProvider(&fakeCSINodeLister{nodes: csiNodes})

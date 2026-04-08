@@ -30,12 +30,14 @@ import (
 // BasicSnapshotStore is simple, reference implementation of ClusterSnapshotStore.
 // It is inefficient. But hopefully bug-free and good for initial testing.
 type BasicSnapshotStore struct {
-	data []*internalBasicSnapshotData
+	data                  []*internalBasicSnapshotData
+	fastPredicatesEnabled bool
 }
 
 type internalBasicSnapshotData struct {
 	nodeInfoMap        map[string]schedulerinterface.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
+	fastPredicateIndex *fastPredicateIndex
 }
 
 func (data *internalBasicSnapshotData) listNodeInfos() []schedulerinterface.NodeInfo {
@@ -120,11 +122,15 @@ func (data *internalBasicSnapshotData) removePvcUsedByPod(pod *apiv1.Pod) {
 	}
 }
 
-func newInternalBasicSnapshotData() *internalBasicSnapshotData {
-	return &internalBasicSnapshotData{
+func newInternalBasicSnapshotData(fastPredicatesEnabled bool) *internalBasicSnapshotData {
+	data := &internalBasicSnapshotData{
 		nodeInfoMap:        make(map[string]schedulerinterface.NodeInfo),
 		pvcNamespacePodMap: make(map[string]map[string]bool),
 	}
+	if fastPredicatesEnabled {
+		data.fastPredicateIndex = newFastPredicateIndex()
+	}
+	return data
 }
 
 func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
@@ -139,10 +145,14 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 			clonedPvcNamespaceNodeMap[k][k1] = v1
 		}
 	}
-	return &internalBasicSnapshotData{
+	clonedData := &internalBasicSnapshotData{
 		nodeInfoMap:        clonedNodeInfoMap,
 		pvcNamespacePodMap: clonedPvcNamespaceNodeMap,
 	}
+	if data.fastPredicateIndex != nil {
+		clonedData.fastPredicateIndex = data.fastPredicateIndex.clone()
+	}
+	return clonedData
 }
 
 func (data *internalBasicSnapshotData) addNodeInfo(nodeInfo schedulerinterface.NodeInfo) error {
@@ -154,26 +164,43 @@ func (data *internalBasicSnapshotData) addNodeInfo(nodeInfo schedulerinterface.N
 	for _, podInfo := range nodeInfo.GetPods() {
 		data.addPvcUsedByPod(podInfo.GetPod())
 	}
+	if data.fastPredicateIndex != nil {
+		data.fastPredicateIndex.addNode(nodeInfo.Node())
+		for _, podInfo := range nodeInfo.GetPods() {
+			data.fastPredicateIndex.addPod(podInfo.GetPod(), nodeInfo.Node())
+		}
+	}
 	return nil
 }
 
 func (data *internalBasicSnapshotData) removeNodeInfo(nodeName string) error {
-	if _, found := data.nodeInfoMap[nodeName]; !found {
+	nodeInfo, found := data.nodeInfoMap[nodeName]
+	if !found {
 		return clustersnapshot.ErrNodeNotFound
 	}
-	for _, pod := range data.nodeInfoMap[nodeName].GetPods() {
+	for _, pod := range nodeInfo.GetPods() {
 		data.removePvcUsedByPod(pod.GetPod())
+	}
+	if data.fastPredicateIndex != nil {
+		for _, pod := range nodeInfo.GetPods() {
+			data.fastPredicateIndex.removePod(pod.GetPod(), nodeInfo.Node())
+		}
+		data.fastPredicateIndex.removeNode(nodeInfo.Node())
 	}
 	delete(data.nodeInfoMap, nodeName)
 	return nil
 }
 
 func (data *internalBasicSnapshotData) addPodInfo(podInfo schedulerinterface.PodInfo, nodeName string) error {
-	if _, found := data.nodeInfoMap[nodeName]; !found {
+	nodeInfo, found := data.nodeInfoMap[nodeName]
+	if !found {
 		return clustersnapshot.ErrNodeNotFound
 	}
-	data.nodeInfoMap[nodeName].AddPodInfo(podInfo)
+	nodeInfo.AddPodInfo(podInfo)
 	data.addPvcUsedByPod(podInfo.GetPod())
+	if data.fastPredicateIndex != nil {
+		data.fastPredicateIndex.addPod(podInfo.GetPod(), nodeInfo.Node())
+	}
 	return nil
 }
 
@@ -186,9 +213,15 @@ func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName st
 	for _, podInfo := range nodeInfo.GetPods() {
 		if podInfo.GetPod().Namespace == namespace && podInfo.GetPod().Name == podName {
 			data.removePvcUsedByPod(podInfo.GetPod())
+			if data.fastPredicateIndex != nil {
+				data.fastPredicateIndex.removePod(podInfo.GetPod(), nodeInfo.Node())
+			}
 			err := nodeInfo.RemovePod(logger, podInfo.GetPod())
 			if err != nil {
 				data.addPvcUsedByPod(podInfo.GetPod())
+				if data.fastPredicateIndex != nil {
+					data.fastPredicateIndex.addPod(podInfo.GetPod(), nodeInfo.Node())
+				}
 				return fmt.Errorf("cannot remove pod; %v", err)
 			}
 			return nil
@@ -198,8 +231,10 @@ func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName st
 }
 
 // NewBasicSnapshotStore creates instances of BasicSnapshotStore.
-func NewBasicSnapshotStore() *BasicSnapshotStore {
-	snapshot := &BasicSnapshotStore{}
+func NewBasicSnapshotStore(fastPredicatesEnabled bool) *BasicSnapshotStore {
+	snapshot := &BasicSnapshotStore{
+		fastPredicatesEnabled: fastPredicatesEnabled,
+	}
 	snapshot.Clear()
 	return snapshot
 }
@@ -211,6 +246,15 @@ func (snapshot *BasicSnapshotStore) getInternalData() *internalBasicSnapshotData
 // RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
 func (snapshot *BasicSnapshotStore) RemoveNodeInfo(nodeName string) error {
 	return snapshot.getInternalData().removeNodeInfo(nodeName)
+}
+
+// FastPredicateLister returns an interface that allows querying internal state for fast predicate checking.
+func (snapshot *BasicSnapshotStore) FastPredicateLister() clustersnapshot.FastPredicateLister {
+	data := snapshot.getInternalData()
+	if data.fastPredicateIndex != nil {
+		return data.fastPredicateIndex
+	}
+	return nil
 }
 
 // StoreNodeInfo adds the given *framework.NodeInfo to the snapshot without checking scheduler predicates.
@@ -259,7 +303,7 @@ func (snapshot *BasicSnapshotStore) Commit() error {
 
 // Clear reset cluster snapshot to empty, unforked state
 func (snapshot *BasicSnapshotStore) Clear() {
-	baseData := newInternalBasicSnapshotData()
+	baseData := newInternalBasicSnapshotData(snapshot.fastPredicatesEnabled)
 	snapshot.data = []*internalBasicSnapshotData{baseData}
 }
 

@@ -301,7 +301,7 @@ func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {
 				csiSnapshot = tc.csiSnapshot
 			}
 
-			clusterSnapshotStore := store.NewBasicSnapshotStore()
+			clusterSnapshotStore := store.NewBasicSnapshotStore(false)
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
 			clusterSnapshot.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, nil, csiSnapshot)
 
