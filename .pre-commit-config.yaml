@@ -22,9 +22,9 @@ repos:
     rev: v0.1.9
   - repo: https://github.com/norwoodj/helm-docs
     hooks:
-      - id: helm-docs
+      - id: helm-docs-built
         files: (README\.md\.gotmpl|(Chart|requirements|values)\.yaml)$
-    rev: v1.3.0
+    rev: v1.14.2
   - repo: local
     hooks:
       - id : update-flags
