@@ -194,14 +194,20 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 	})
 
 	f.It("shouldn't trigger additional scale-ups during processing scale-up", feature.ClusterSizeAutoscalingScaleUp, func(ctx context.Context) {
-		e2eskipper.Skipf("Test is flaky and disabled for now")
 		// Wait for the situation to stabilize - CA should be running and have up-to-date node readiness info.
 		status, err := waitForScaleUpStatus(ctx, c, func(s *scaleUpStatus) bool {
 			return s.ready == s.target && s.ready <= nodeCount
 		}, scaleUpTriggerTimeout)
 		framework.ExpectNoError(err)
-
-		unmanagedNodes := nodeCount - status.ready
+		allNodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+		framework.ExpectNoError(err)
+		taintFilteredCount := 0
+		for _, n := range allNodes.Items {
+			if !isNodeTainted(&n) {
+				taintFilteredCount++
+			}
+		}
+		unmanagedNodes := taintFilteredCount - status.ready
 
 		ginkgo.By("Schedule more pods than can fit and wait for cluster to scale-up")
 		ReserveMemory(ctx, f, "memory-reservation", 100, nodeCount*memAllocatableMb, false, 1*time.Second)
