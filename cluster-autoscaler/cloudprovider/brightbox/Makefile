@@ -40,5 +40,5 @@ secret: ${HOME}/.docker/config.json
 build: ../../cluster-autoscaler
 
 .PHONY: clean
-clean: 
+clean:
 	$(MAKE) -C ../.. $@

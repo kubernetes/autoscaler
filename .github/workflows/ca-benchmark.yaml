@@ -56,12 +56,12 @@ jobs:
           echo "### Cluster Autoscaler Benchmark Results" >> $GITHUB_STEP_SUMMARY
           echo "Comparing PR branch against \`${{ github.event.pull_request.base.ref }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ -s base.txt ] && [ -s pr.txt ]; then
             echo '```' >> $GITHUB_STEP_SUMMARY
             $(go env GOPATH)/bin/benchstat base.txt pr.txt | tee benchstat.txt >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-            
+
             # Fail if any regression is > 10%
             grep -qE '\+[1-9][0-9].*%' benchstat.txt && { echo "Regression detected > 10%"; exit 1; } || true
           else

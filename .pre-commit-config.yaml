@@ -36,4 +36,4 @@ repos:
     rev: v1.0.0-rc.4
     hooks:
       - id: go-fmt
-        
+

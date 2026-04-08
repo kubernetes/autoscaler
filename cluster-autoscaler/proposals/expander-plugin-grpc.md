@@ -18,7 +18,7 @@ To do this, we propose a solution that adds a new expander to CA, but does not b
 ## Proposal
 
 We will extend CA to utilize a pluggable external expander. The design for this expander plugin is heavily based off of this [proposal](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/plugable-provider-grpc.md) to CA, for a pluggable cloud provider interface.
- 
+
 The solution will include a server acting as an external expander alongside CA, and communicate via gRPC with TLS. This expander will run in another pod, as a separate service, deployed independently of CA.
 This is depicted below.
 

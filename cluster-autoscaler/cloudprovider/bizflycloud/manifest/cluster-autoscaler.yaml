@@ -33,7 +33,7 @@ spec:
             - --skip-nodes-with-local-storage=false
             - --leader-elect=true
             - --expander=least-waste
-            - --kubeconfig=/var/lib/kubernetes/clusterxxxx.kubeconfig 
+            - --kubeconfig=/var/lib/kubernetes/clusterxxxx.kubeconfig
           env:
             - name: BIZFLYCLOUD_AUTH_METHOD
               value: password #application_credential
@@ -57,7 +57,7 @@ spec:
               value: xxxxxxxxxxxxxxxxx
           volumeMounts:
             - name: kubeconfig
-              mountPath: /var/lib/kubernetes/clusterxxxx.kubeconfig 
+              mountPath: /var/lib/kubernetes/clusterxxxx.kubeconfig
               readOnly: true
           imagePullPolicy: "Always"
       volumes:

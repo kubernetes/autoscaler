@@ -16,8 +16,8 @@ resource aks 'Microsoft.ContainerService/managedClusters@2023-11-01' = {
     dnsPrefix: dnsPrefix
     oidcIssuerProfile: { enabled: true }  // --enable-oidc-issuer
     securityProfile: {
-       workloadIdentity: { enabled: true } // --enable-workload-identity 
-    } 
+       workloadIdentity: { enabled: true } // --enable-workload-identity
+    }
     agentPoolProfiles: [
       {
         count: 1
@@ -37,7 +37,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2023-11-01' = {
     networkProfile: {
       networkPlugin: 'azure'
       networkPluginMode: 'overlay'
-    } 
+    }
   }
 }
 

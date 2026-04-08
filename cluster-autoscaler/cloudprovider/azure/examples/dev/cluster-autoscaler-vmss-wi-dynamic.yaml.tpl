@@ -203,7 +203,7 @@ spec:
                   operator: In
                   values: ["system"]
       restartPolicy: Always
-      volumes: 
+      volumes:
         - hostPath:
             path: /etc/ssl/certs/ca-certificates.crt
             type: ""
