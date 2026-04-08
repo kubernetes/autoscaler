@@ -96,15 +96,20 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 		patches = append(patches, patch.GetAddEmptyAnnotationsPatch())
 	}
 
-	podLevelFeatureEnable := features.Enabled(features.VPAPodLevelResources)
-	if podLevelFeatureEnable {
-		updatedContainerRecommendations := vpa_api_util.FilterContainerRecommendations(controllingVpa)
-		controllingVpa.Status.Recommendation.ContainerRecommendations = updatedContainerRecommendations
-	} else {
-		// Remove pod-level recommendations when the `VPAPodLevelResources` feature gate is disabled.
-		// This behavior prevents the admission-controller applying patches at the pod level
-		// when pod-level resource support is enabled at the recommender level
-		controllingVpa.Status.Recommendation.PodRecommendations = nil
+	if controllingVpa.Status.Recommendation != nil {
+		podLevelFeatureEnable := features.Enabled(features.VPAPodLevelResources)
+		if podLevelFeatureEnable {
+			if controllingVpa.Status.Recommendation.ContainerRecommendations != nil {
+				controllingVpa.Status.Recommendation.ContainerRecommendations = vpa_api_util.FilterContainerRecommendations(controllingVpa)
+			}
+		} else {
+			// Remove pod-level recommendations when the `VPAPodLevelResources` feature gate is disabled.
+			// This behavior prevents the admission-controller applying patches at the pod level
+			// when pod-level resource support is enabled at the recommender level.
+			if controllingVpa.Status.Recommendation.PodRecommendations != nil {
+				controllingVpa.Status.Recommendation.PodRecommendations = nil
+			}
+		}
 	}
 
 	for _, c := range h.patchCalculators {

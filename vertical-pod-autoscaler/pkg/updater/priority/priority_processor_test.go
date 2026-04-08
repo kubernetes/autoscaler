@@ -220,6 +220,20 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		},
 		{
+			name: "VPA with an empty status stanza",
+			pod: test.Pod().
+				WithName("POD1").
+				Get(),
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				Status: vpa_types.VerticalPodAutoscalerStatus{},
+			},
+			expectedPrio: PodPriority{
+				OutsideRecommendedRange: false,
+				ResourceDiff:            0,
+				ScaleUp:                 false,
+			},
+		},
+		{
 			name: "pod level simple scale up",
 			pod: test.Pod().
 				WithName("POD1").

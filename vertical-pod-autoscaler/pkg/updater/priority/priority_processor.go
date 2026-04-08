@@ -102,12 +102,16 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_typ
 	// Calculate the relative difference between summed requests and summed recommendations at the container level
 	calculateResourceDiff()
 
-	podRecommendations := vpa.Status.Recommendation.PodRecommendations
-	if podRecommendations != nil {
+	if rec := vpa.Status.Recommendation; rec != nil && rec.PodRecommendations != nil {
+		podRecommendations := rec.PodRecommendations
 		podRequests, _ := resourcehelpers.PodRequestsAndLimits(pod)
 		clear(totalRequestPerResource)
 		clear(totalRecommendedPerResource)
-		setPodPriorityFields(podRecommendations.Target, podRecommendations.LowerBound, podRecommendations.UpperBound, podRequests)
+		setPodPriorityFields(
+			podRecommendations.Target,
+			podRecommendations.LowerBound,
+			podRecommendations.UpperBound,
+			podRequests)
 		// Calculate the relative difference between summed requests and summed recommendations at the Pod level
 		calculateResourceDiff()
 	}

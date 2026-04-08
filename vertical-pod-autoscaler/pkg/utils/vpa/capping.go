@@ -93,7 +93,7 @@ func (c *cappingRecommendationProcessor) Apply(
 
 	var updatedPodRecommendation *vpa_types.PodRecommendations
 	podAnnotations := []string{}
-	if vpa.Status.Recommendation.PodRecommendations != nil && IsPodLevelScalingModeEnabled(vpa) {
+	if podRecommendation.PodRecommendations != nil && IsPodLevelScalingModeEnabled(vpa) {
 		// Note: As with container recommendations, we do not generate annotations when a Pod LimitRange field is violated.
 		// We may implement this capability in the future.
 		updatedPodRecommendation, err = c.capProportionallyToPodLimitRangeAtPodLevel(*podRecommendation.PodRecommendations, pod)

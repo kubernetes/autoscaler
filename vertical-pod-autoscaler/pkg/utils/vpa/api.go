@@ -295,13 +295,14 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 }
 
 // FilterContainerRecommendations returns container-level recommendations whose Mode is "Auto" (the default value).
-// This behavior allows the existing code to process only containers
-// that the user wants to manage when pod-level scaling mode is enabled.
+// This behavior allows the existing code to process only containers that the user wants to manage.
+// It can be used regardless of whether pod-level scaling mode is enabled.
 func FilterContainerRecommendations(vpa *vpa_types.VerticalPodAutoscaler) []vpa_types.RecommendedContainerResources {
-	containerRecommendations := vpa.Status.Recommendation.ContainerRecommendations
-	if !IsPodLevelScalingModeEnabled(vpa) {
-		return containerRecommendations
+	if vpa == nil || vpa.Status.Recommendation == nil || vpa.Status.Recommendation.ContainerRecommendations == nil {
+		return nil
 	}
+
+	containerRecommendations := vpa.Status.Recommendation.ContainerRecommendations
 	managedContainers := determineManagedContainers(vpa)
 	if len(managedContainers) == 0 {
 		// Return nil because all containers use the "RecommendationOnly" mode
@@ -318,6 +319,10 @@ func FilterContainerRecommendations(vpa *vpa_types.VerticalPodAutoscaler) []vpa_
 
 // determineManagedContainers returns the names of containers whose scaling mode is Auto
 func determineManagedContainers(vpa *vpa_types.VerticalPodAutoscaler) []string {
+	if vpa == nil || vpa.Status.Recommendation == nil || vpa.Status.Recommendation.ContainerRecommendations == nil {
+		return nil
+	}
+
 	recs := vpa.Status.Recommendation.ContainerRecommendations
 	containers := make([]string, 0, len(recs))
 
@@ -340,13 +345,13 @@ func isContainerScalingModeAuto(containerName string, resourcePolicy *vpa_types.
 
 // IsPodLevelScalingModeEnabled checks whether scaling at the Pod level is enabled.
 func IsPodLevelScalingModeEnabled(vpa *vpa_types.VerticalPodAutoscaler) bool {
-	if vpa.Spec.ResourcePolicy != nil &&
-		vpa.Spec.ResourcePolicy.PodPolicies != nil &&
-		vpa.Spec.ResourcePolicy.PodPolicies.Mode != nil &&
-		*vpa.Spec.ResourcePolicy.PodPolicies.Mode == vpa_types.PodScalingModeAuto {
-		return true
+	if vpa == nil ||
+		vpa.Spec.ResourcePolicy == nil ||
+		vpa.Spec.ResourcePolicy.PodPolicies == nil ||
+		vpa.Spec.ResourcePolicy.PodPolicies.Mode == nil {
+		return false
 	}
-	return false
+	return *vpa.Spec.ResourcePolicy.PodPolicies.Mode == vpa_types.PodScalingModeAuto
 }
 
 // GetPodControlledValues returns controlled resource values from the podPolicies stanza.

@@ -856,12 +856,33 @@ func TestGetPodControlledValues(t *testing.T) {
 
 func TestFilterContainerRecommendations(t *testing.T) {
 	tests := []struct {
-		name                          string
-		vpa                           *vpa_types.VerticalPodAutoscaler
-		expectedNumberOfContainerRecs int
+		name                  string
+		vpa                   *vpa_types.VerticalPodAutoscaler
+		expectedContainerRecs []vpa_types.RecommendedContainerResources
 	}{
 		{
-			name: "Pod level scaling mode is disabled and all containers use Auto mode",
+			name:                  "nil VPA object",
+			vpa:                   nil,
+			expectedContainerRecs: nil,
+		},
+		{
+			name: "Empty VPA status stanza",
+			vpa: test.VerticalPodAutoscaler().
+				Get(),
+			expectedContainerRecs: nil,
+		},
+		{
+			name: "Container level policies are set and empty VPA status stanza",
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer("container1").
+				WithScalingMode("container1", vpa_types.ContainerScalingModeRecsOnly).
+				WithContainer("container2").
+				WithScalingMode("container2", vpa_types.ContainerScalingModeRecsOnly).
+				Get(),
+			expectedContainerRecs: nil,
+		},
+		{
+			name: "All containers use Auto mode and container level recommendations are present",
 			vpa: test.VerticalPodAutoscaler().
 				WithContainer("container1").
 				AppendRecommendation(
@@ -875,32 +896,14 @@ func TestFilterContainerRecommendations(t *testing.T) {
 						WithContainer("container2").
 						WithTarget("2", "2").
 						GetContainerResources()).
-				WithPodLevelTarget("10", "10").
 				Get(),
-			expectedNumberOfContainerRecs: 2,
+			expectedContainerRecs: []vpa_types.RecommendedContainerResources{
+				test.Recommendation().WithContainer("container1").WithTarget("1", "1").GetContainerResources(),
+				test.Recommendation().WithContainer("container2").WithTarget("2", "2").GetContainerResources(),
+			},
 		},
 		{
-			name: "Pod level scaling mode is enabled and all containers use Auto mode",
-			vpa: test.VerticalPodAutoscaler().
-				WithContainer("container1").
-				AppendRecommendation(
-					test.Recommendation().
-						WithContainer("container1").
-						WithTarget("1", "1").
-						GetContainerResources()).
-				WithContainer("container2").
-				AppendRecommendation(
-					test.Recommendation().
-						WithContainer("container2").
-						WithTarget("2", "2").
-						GetContainerResources()).
-				WithPodLevelTarget("10", "10").
-				WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
-				Get(),
-			expectedNumberOfContainerRecs: 2,
-		},
-		{
-			name: "Pod level scaling mode is enabled and one container uses RecommendationOnly mode the other uses Auto mode",
+			name: "One container uses RecommendationOnly mode the other uses Auto mode and container level recommendations are present",
 			vpa: test.VerticalPodAutoscaler().
 				WithContainer("container1").
 				WithScalingMode("container1", vpa_types.ContainerScalingModeRecsOnly).
@@ -915,13 +918,13 @@ func TestFilterContainerRecommendations(t *testing.T) {
 						WithContainer("container2").
 						WithTarget("2", "2").
 						GetContainerResources()).
-				WithPodLevelTarget("10", "10").
-				WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 				Get(),
-			expectedNumberOfContainerRecs: 1,
+			expectedContainerRecs: []vpa_types.RecommendedContainerResources{
+				test.Recommendation().WithContainer("container2").WithTarget("2", "2").GetContainerResources(),
+			},
 		},
 		{
-			name: "Pod level scaling mode is enabled and all containers use RecommendationOnly mode",
+			name: "All containers use RecommendationOnly mode and container level recommendations are present",
 			vpa: test.VerticalPodAutoscaler().
 				WithContainer("container1").
 				WithScalingMode("container1", vpa_types.ContainerScalingModeRecsOnly).
@@ -938,15 +941,54 @@ func TestFilterContainerRecommendations(t *testing.T) {
 						WithTarget("2", "2").
 						GetContainerResources()).
 				WithPodLevelTarget("10", "10").
-				WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 				Get(),
-			expectedNumberOfContainerRecs: 0,
+			expectedContainerRecs: nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			actual := FilterContainerRecommendations(tt.vpa)
-			assert.Equal(t, tt.expectedNumberOfContainerRecs, len(actual), "doesn't match")
+			assert.Equal(t, tt.expectedContainerRecs, actual, "doesn't match")
+		})
+	}
+}
+
+func TestIsPodLevelScalingModeEnabled(t *testing.T) {
+	tests := []struct {
+		name     string
+		vpa      *vpa_types.VerticalPodAutoscaler
+		expected bool
+	}{
+		{
+			name:     "nil VPA object",
+			vpa:      nil,
+			expected: false,
+		},
+		{
+			name: "VPA object with nil PodPolicies",
+			vpa: test.VerticalPodAutoscaler().
+				Get(),
+			expected: false,
+		},
+		{
+			name: "Pod level scaling mode is set to Off",
+			vpa: test.VerticalPodAutoscaler().
+				WithPodLevelScalingMode(vpa_types.PodScalingModeOff).
+				Get(),
+			expected: false,
+		},
+		{
+			name: "Pod level scaling mode is set to Auto",
+			vpa: test.VerticalPodAutoscaler().
+				WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+				Get(),
+			expected: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := IsPodLevelScalingModeEnabled(tt.vpa)
+			assert.Equal(t, tt.expected, actual, "doesn't match")
 		})
 	}
 }

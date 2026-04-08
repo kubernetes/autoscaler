@@ -314,14 +314,19 @@ func (u *updater) RunOnce(ctx context.Context) {
 			continue
 		}
 
-		if podLevelFeatureEnable {
-			updatedContainerRecommendations := vpa_api_util.FilterContainerRecommendations(vpa)
-			vpa.Status.Recommendation.ContainerRecommendations = updatedContainerRecommendations
-		} else {
-			// Remove pod-level recommendations when the `VPAPodLevelResources` feature gate is disabled.
-			// This behavior prevents the updater from making eviction decisions or applying patches at the pod level
-			// when pod-level resource support is enabled at the recommender level.
-			vpa.Status.Recommendation.PodRecommendations = nil
+		if vpa.Status.Recommendation != nil {
+			if podLevelFeatureEnable {
+				if vpa.Status.Recommendation.ContainerRecommendations != nil {
+					vpa.Status.Recommendation.ContainerRecommendations = vpa_api_util.FilterContainerRecommendations(vpa)
+				}
+			} else {
+				// Remove pod-level recommendations when the `VPAPodLevelResources` feature gate is disabled.
+				// This behavior prevents the updater from making eviction decisions or applying patches at the pod level
+				// when pod-level resource support is enabled at the recommender level.
+				if vpa.Status.Recommendation.PodRecommendations != nil {
+					vpa.Status.Recommendation.PodRecommendations = nil
+				}
+			}
 		}
 
 		evictionLimiter := u.restrictionFactory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
