@@ -1,11 +1,11 @@
 # Generated folders and files are supposed to be excluded from the
 # list if pre-commit inconsistencies in generated content by modifying
-# them
+# them.
 exclude: |
   (?x)^(
     addon-resizer/vendor/ |
     cluster-autoscaler/cloudprovider/oci/vendor-internal/ |
-    vertical-pod-autoscaler/docs/api.md
+    vertical-pod-autoscaler/
   )
 
 repos:
