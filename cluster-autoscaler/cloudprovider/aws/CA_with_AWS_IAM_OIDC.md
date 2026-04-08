@@ -174,7 +174,3 @@ I1025 13:48:42.975037       1 scale_up.go:529] Final scale-up plan: [{eksctl-xxx
    [IAM OIDC]: <https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html>
    [IAM policy]: <https://docs.aws.amazon.com/eks/latest/userguide/create-service-account-iam-policy-and-role.html>
    [documentation]: <https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html>
-
-
-
-

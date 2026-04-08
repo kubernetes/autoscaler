@@ -19,4 +19,3 @@ extraVolumes:
 extraVolumeMounts:
   - name: cloud-config
     mountPath: config
-

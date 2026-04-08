@@ -405,4 +405,3 @@ cluster by the cluster autoscaler
 
 - Wait for nodes to be removed: as pods being removed from nodes, several nodes will become underutilized or empty,
 and will be removed by the cluster autoscaler
-

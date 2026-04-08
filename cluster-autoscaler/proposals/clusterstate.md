@@ -79,4 +79,3 @@ of long-missing nodes. Skip the rest of the iteration. Helps with [UC4], uses [S
 8. Calculate the unneeded nodes in the whole cluster, including the unready nodes [UC6]. Unneeded nodes must be monitored every iteration to be sure that they have been unneeded for the prolonged time.
 9. Try to remove some unneeded node, if there was no recent scale up and the node has been unneeded for more than
 10 min. Use higher delay for unready nodes [UC6].
-
