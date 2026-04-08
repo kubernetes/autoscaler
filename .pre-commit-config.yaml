@@ -1,4 +1,12 @@
-exclude: '(^|/)vendor/' # We don't want to format/check vendor golang folders
+# Generated folders and files are supposed to be excluded from the
+# list if pre-commit inconsistencies in generated content by modifying
+# them
+exclude: |
+  (?x)^(
+    addon-resizer/vendor/ |
+    cluster-autoscaler/cloudprovider/oci/vendor-internal/ |
+    vertical-pod-autoscaler/docs/api.md
+  )
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
