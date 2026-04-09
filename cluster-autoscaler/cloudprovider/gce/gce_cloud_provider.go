@@ -122,25 +122,7 @@ func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (gce *GceCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
-	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
-	if err != nil {
-		return false, err
-	}
-
-	mig, err := gce.gceManager.GetMigForInstance(ref)
-	if err != nil {
-		return false, err
-	}
-
-	// Not managed by any registered MIG; there's not enough information to confidently say if this instance exists,
-	// so err on the side of safety and return an error. ErrNotImplemented is returned (vs. a generic error) to
-	// avoid repeated warning logging in clusterstate.
-	if mig == nil {
-		return true, cloudprovider.ErrNotImplemented
-	}
-
-	// Instance belongs to a managed MIG, so it's known to be backed by a live instance.
-	return true, nil
+	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
