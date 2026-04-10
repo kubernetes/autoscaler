@@ -82,6 +82,10 @@ type cachingMigInfoProvider struct {
 	timeProvider                      timeProvider
 	bulkGceMigInstancesListingEnabled bool
 	multiProjectCachingEnabled        bool
+	lastInstancesToMigClear           time.Time
+	// migPrefixMap is a map of instance name prefixes to Instance refs.
+	// It is used to find MIG by basename of an instance.
+	migPrefixMap map[string][]GceRef
 }
 
 type realTime struct{}
@@ -102,6 +106,7 @@ func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient A
 		timeProvider:                      &realTime{},
 		bulkGceMigInstancesListingEnabled: bulkGceMigInstancesListingEnabled,
 		multiProjectCachingEnabled:        multiProjectCachingEnabled,
+		lastInstancesToMigClear:           time.Now(),
 	}
 }
 
@@ -149,7 +154,7 @@ func (c *cachingMigInfoProvider) GetMigForInstance(instanceRef GceRef) (Mig, err
 	}
 	// Check in the cache again after it's been refilled
 	mig, found, err = c.getCachedMigForInstance(instanceRef)
-	if !found {
+	if !found && err == nil{
 		c.cache.MarkInstanceMigUnknown(instanceRef)
 	}
 	return mig, err
@@ -173,12 +178,13 @@ func (c *cachingMigInfoProvider) getCachedMigForInstance(instanceRef GceRef) (Mi
 func (c *cachingMigInfoProvider) RegenerateMigInstancesCache() error {
 	c.cache.InvalidateAllMigInstances()
 	c.cache.InvalidateAllInstancesToMig()
+	c.migPrefixMap = map[string][]GceRef{}
 
 	if c.bulkGceMigInstancesListingEnabled {
 		return c.bulkListMigInstances()
 	}
-
 	migs := c.migLister.GetMigs()
+
 	errors := make([]error, len(migs))
 	workqueue.ParallelizeUntil(context.Background(), c.concurrentGceRefreshes, len(migs), func(piece int) {
 		errors[piece] = c.fillMigInstances(migs[piece].GceRef())
@@ -314,14 +320,42 @@ func (c *cachingMigInfoProvider) updateMigInstancesCache(migToInstances map[GceR
 }
 
 func (c *cachingMigInfoProvider) findMigWithMatchingBasename(instanceRef GceRef) Mig {
-	for _, mig := range c.migLister.GetMigs() {
-		migRef := mig.GceRef()
-		basename, err := c.GetMigBasename(migRef)
-		if err == nil && migRef.Project == instanceRef.Project && migRef.Zone == instanceRef.Zone && strings.HasPrefix(instanceRef.Name, basename) {
-			return mig
+	klog.Info("WOW! in findMigWithMatchingBasename")
+	if len(c.migPrefixMap) == 0 {
+		c.migPrefixMap = c.buildMigPrefixMap()
+	}
+	// Split by hyphen and try prefixes from longest to shortest
+	parts := strings.Split(instanceRef.Name, "-")
+	for i := len(parts) - 1; i > 0; i-- {
+		prefix := strings.Join(parts[:i], "-")
+		if migRefs, found := c.migPrefixMap[prefix]; found {
+			for _, migRef := range migRefs {
+				if migRef.Project == instanceRef.Project && migRef.Zone == instanceRef.Zone {
+					if mig, found := c.cache.GetMig(migRef); found {
+						return mig
+					}
+
+				}
+			}
 		}
 	}
 	return nil
+}
+
+func (c *cachingMigInfoProvider) buildMigPrefixMap() map[string][]GceRef {
+	klog.Info("WOW! in buildMigPrefixMap")
+	// Build prefix map for fast lookup
+	prefixMap := make(map[string][]GceRef)
+	for _, mig := range c.migLister.GetMigs() {
+		basename, err := c.GetMigBasename(mig.GceRef())
+		if err == nil {
+			prefixMap[basename] = append(prefixMap[basename], mig.GceRef())
+		} else {
+			klog.V(4).Infof("Could not get basename for MIG %v: %v", mig.GceRef(), err)
+		}
+	}
+	klog.Infof("WOW! prefix map: %v", prefixMap)
+	return prefixMap
 }
 
 func (c *cachingMigInfoProvider) fillMigInstances(migRef GceRef) error {
