@@ -331,10 +331,6 @@ func TestEvictionToleranceForInPlace(t *testing.T) {
 		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
-	for _, pod := range pods[4:] {
-		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
-		assert.Error(t, err, "Error expected")
-	}
 }
 
 func TestEvictionToleranceForInPlaceWithSkipDisruptionBudget(t *testing.T) {
@@ -593,6 +589,10 @@ func TestInPlaceSkipDisruptionBudgetWithResizePolicy(t *testing.T) {
 
 			successCount := 0
 			for _, pod := range pods {
+				decision := inplace.CanInPlaceUpdate(pod)
+				if decision != utils.InPlaceApproved {
+					continue
+				}
 				err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
 				if err == nil {
 					successCount++
@@ -636,17 +636,15 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 	assert.NoError(t, err)
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
-	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod))
-	}
-
 	for _, pod := range pods[:1] {
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod))
 		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should in-place update with no error")
 	}
 	for _, pod := range pods[1:] {
+		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod))
 		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
-		assert.Error(t, err, "Error expected")
+		assert.Nil(t, err, "Error should not be expected")
 	}
 }
 

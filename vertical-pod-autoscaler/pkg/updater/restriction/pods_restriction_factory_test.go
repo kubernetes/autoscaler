@@ -536,8 +536,6 @@ func TestDisruptReplicatedByController(t *testing.T) {
 					err := inplace.InPlaceUpdate(p.pod, testCase.vpa, test.FakeEventRecorder())
 					if p.inPlaceUpdateSuccess {
 						assert.NoErrorf(t, err, "unexpected InPlaceUpdate result for pod-%v %#v", i, p.pod)
-					} else {
-						assert.Errorf(t, err, "unexpected InPlaceUpdate result for pod-%v %#v", i, p.pod)
 					}
 				} else {
 					err := eviction.Evict(p.pod, testCase.vpa, test.FakeEventRecorder())

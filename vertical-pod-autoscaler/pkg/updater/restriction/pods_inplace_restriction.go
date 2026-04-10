@@ -125,23 +125,26 @@ func (ip *PodsInPlaceRestrictionImpl) CanUnboost(pod *corev1.Pod, vpa *vpa_types
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
 		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
+		if pod.Status.Phase == corev1.PodPending {
+			return false
+		}
 		if present {
+			if isInPlaceUpdating(pod) {
+				return false
+			}
 			return singleGroupStats.isPodDisruptable()
 		}
 	}
 	return false
 }
 
-// InPlaceUpdate sends calculates patches and sends resize request to api client. Returns error if pod cannot be in-place updated or if client returned error.
+// InPlaceUpdate sends calculates patches and sends resize request to api client. Returns error if client returned error.
 // Does not check if pod was actually in-place updated after grace period.
+// CanInPlaceUpdate / CanUnboost should be called first.
 func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
 	cr, present := ip.podToReplicaCreatorMap[getPodID(podToUpdate)]
 	if !present {
 		return fmt.Errorf("pod not suitable for in-place update %v: not in replicated pods map", podToUpdate.Name)
-	}
-
-	if ip.CanInPlaceUpdate(podToUpdate) != utils.InPlaceApproved {
-		return fmt.Errorf("cannot in-place update pod %s", klog.KObj(podToUpdate))
 	}
 
 	// separate patches since we have to patch resize and spec separately
