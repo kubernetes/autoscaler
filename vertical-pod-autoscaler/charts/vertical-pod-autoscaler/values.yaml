@@ -73,12 +73,12 @@ admissionController:
 
   # Resources for the Admission Controller default container.
   resources: {}
-    # limits:
-    #   cpu: 200m
-    #   memory: 500Mi
-    # requests:
-    #   cpu: 50m
-    #   memory: 200Mi
+  # limits:
+  #   cpu: 200m
+  #   memory: 500Mi
+  # requests:
+  #   cpu: 50m
+  #   memory: 200Mi
 
   # Node selector labels for scheduling the Admission Controller.
   nodeSelector: {}
@@ -87,15 +87,15 @@ admissionController:
   affinity:
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: app.kubernetes.io/component
-              operator: In
-              values:
-              - admission-controller
-          topologyKey: kubernetes.io/hostname
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/component
+                  operator: In
+                  values:
+                    - admission-controller
+            topologyKey: kubernetes.io/hostname
 
   # List of node taints to tolerate.
   tolerations: []
@@ -115,7 +115,7 @@ admissionController:
       tag: v20231011-8b53cabe0
       # admissionController.certGen.image.pullPolicy -- The pull policy for the certgen image. Recommend not changing this
       pullPolicy: IfNotPresent
-       # admissionController.certGen.env -- Additional environment variables to be added to the certgen container. Format is KEY: Value format
+      # admissionController.certGen.env -- Additional environment variables to be added to the certgen container. Format is KEY: Value format
     env: {}
     # admissionController.certGen.resources -- The resources block for the certgen pod
     resources: {}
@@ -147,7 +147,6 @@ admissionController:
     objectSelector: {}
     # admissionController.mutatingWebhookConfiguration.timeoutSeconds -- Sets the amount of time the API server will wait on a response from the webhook service
     timeoutSeconds: 5
-
 
   tls:
     # If true, Helm will generate the TLS secret using genCA/genSignedCert
@@ -185,6 +184,18 @@ admissionController:
     # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
     maxUnavailable:
     # maxUnavailable: 1
+
+  # -- Enables a Prometheus Operator PodMonitor for the Admission Controller.
+  # Requires the prometheus-operator-crds to be installed in the cluster.
+  podMonitor:
+    # admissionController.podMonitor.enabled -- If true, create a PodMonitor resource for the Admission Controller.
+    enabled: false
+    # admissionController.podMonitor.annotations -- Annotations to add to the PodMonitor.
+    annotations: {}
+    # admissionController.podMonitor.labels -- Additional labels to add to the PodMonitor.
+    labels: {}
+    # admissionController.podMonitor.extraPodMetricsEndpoints -- Additional podMetricsEndpoints to add to the PodMonitor.
+    extraPodMetricsEndpoints: []
 
   # name of priorityclass for scheduling
   priorityClassName:
@@ -232,12 +243,12 @@ recommender:
 
   # Resources for the Recommender default container.
   resources: {}
-    # limits:
-    #   cpu: 200m
-    #   memory: 1000Mi
-    # requests:
-    #   cpu: 50m
-    #   memory: 500Mi
+  # limits:
+  #   cpu: 200m
+  #   memory: 1000Mi
+  # requests:
+  #   cpu: 50m
+  #   memory: 500Mi
 
   # Node selector labels for scheduling the Recommender.
   nodeSelector: {}
@@ -246,15 +257,15 @@ recommender:
   affinity:
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: app.kubernetes.io/component
-              operator: In
-              values:
-              - recommender
-          topologyKey: kubernetes.io/hostname
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/component
+                  operator: In
+                  values:
+                    - recommender
+            topologyKey: kubernetes.io/hostname
 
   # Tolerations for scheduling the Recommender.
   tolerations: []
@@ -285,6 +296,18 @@ recommender:
     # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
     maxUnavailable:
     # maxUnavailable: 1
+
+  # -- Enables a Prometheus Operator PodMonitor for the Recommender.
+  # Requires the prometheus-operator-crds to be installed in the cluster.
+  podMonitor:
+    # recommender.podMonitor.enabled -- If true, create a PodMonitor resource for the Recommender.
+    enabled: false
+    # recommender.podMonitor.annotations -- Annotations to add to the PodMonitor.
+    annotations: {}
+    # recommender.podMonitor.labels -- Additional labels to add to the PodMonitor.
+    labels: {}
+    # recommender.podMonitor.extraPodMetricsEndpoints -- Additional podMetricsEndpoints to add to the PodMonitor.
+    extraPodMetricsEndpoints: []
 
   # name of priorityclass for scheduling
   priorityClassName:
@@ -330,15 +353,15 @@ updater:
   affinity:
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: app.kubernetes.io/component
-              operator: In
-              values:
-              - updater
-          topologyKey: kubernetes.io/hostname
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/component
+                  operator: In
+                  values:
+                    - updater
+            topologyKey: kubernetes.io/hostname
 
   # Node selector labels for scheduling the Updater.
   nodeSelector: {}
@@ -374,12 +397,24 @@ updater:
 
   # Resources for the updater Controller
   resources: {}
-    # limits:
-    #   cpu: 200m
-    #   memory: 500Mi
-    # requests:
-    #   cpu: 50m
-    #   memory: 200Mi
+  # limits:
+  #   cpu: 200m
+  #   memory: 500Mi
+  # requests:
+  #   cpu: 50m
+  #   memory: 200Mi
+
+  # -- Enables a Prometheus Operator PodMonitor for the Updater.
+  # Requires the prometheus-operator-crds to be installed in the cluster.
+  podMonitor:
+    # updater.podMonitor.enabled -- If true, create a PodMonitor resource for the Updater.
+    enabled: false
+    # updater.podMonitor.annotations -- Annotations to add to the PodMonitor.
+    annotations: {}
+    # updater.podMonitor.labels -- Additional labels to add to the PodMonitor.
+    labels: {}
+    # updater.podMonitor.extraPodMetricsEndpoints -- Additional podMetricsEndpoints to add to the PodMonitor.
+    extraPodMetricsEndpoints: []
 
   # name of priorityclass for scheduling
   priorityClassName:

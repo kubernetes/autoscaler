@@ -4,7 +4,7 @@ WARNING: This chart is currently under development and is not ready for producti
 
 Automatically adjust resources for your workloads
 
-![Version: 0.8.1](https://img.shields.io/badge/Version-0.8.1-informational?style=flat-square)
+![Version: 0.9.0](https://img.shields.io/badge/Version-0.9.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.6.0](https://img.shields.io/badge/AppVersion-1.6.0-informational?style=flat-square)
 
@@ -112,6 +112,11 @@ helm upgrade <release-name> <chart> \
 | admissionController.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podLabels | object | `{}` |  |
+| admissionController.podMonitor | object | `{"annotations":{},"enabled":false,"extraPodMetricsEndpoints":[],"labels":{}}` | Enables a Prometheus Operator PodMonitor for the Admission Controller. Requires the prometheus-operator-crds to be installed in the cluster. |
+| admissionController.podMonitor.annotations | object | `{}` | Annotations to add to the PodMonitor. |
+| admissionController.podMonitor.enabled | bool | `false` | If true, create a PodMonitor resource for the Admission Controller. |
+| admissionController.podMonitor.extraPodMetricsEndpoints | list | `[]` | Additional podMetricsEndpoints to add to the PodMonitor. |
+| admissionController.podMonitor.labels | object | `{}` | Additional labels to add to the PodMonitor. |
 | admissionController.priorityClassName | string | `nil` |  |
 | admissionController.registerWebhook | bool | `false` | Whether to register webhook via the application itself or via Helm. Set to false when using Helm-managed webhook. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations. |
 | admissionController.replicas | int | `2` |  |
@@ -176,6 +181,11 @@ helm upgrade <release-name> <chart> \
 | recommender.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | recommender.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | recommender.podLabels | object | `{}` |  |
+| recommender.podMonitor | object | `{"annotations":{},"enabled":false,"extraPodMetricsEndpoints":[],"labels":{}}` | Enables a Prometheus Operator PodMonitor for the Recommender. Requires the prometheus-operator-crds to be installed in the cluster. |
+| recommender.podMonitor.annotations | object | `{}` | Annotations to add to the PodMonitor. |
+| recommender.podMonitor.enabled | bool | `false` | If true, create a PodMonitor resource for the Recommender. |
+| recommender.podMonitor.extraPodMetricsEndpoints | list | `[]` | Additional podMetricsEndpoints to add to the PodMonitor. |
+| recommender.podMonitor.labels | object | `{}` | Additional labels to add to the PodMonitor. |
 | recommender.priorityClassName | string | `nil` |  |
 | recommender.replicas | int | `2` |  |
 | recommender.resources | object | `{}` |  |
@@ -207,6 +217,11 @@ helm upgrade <release-name> <chart> \
 | updater.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | updater.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | updater.podLabels | object | `{}` |  |
+| updater.podMonitor | object | `{"annotations":{},"enabled":false,"extraPodMetricsEndpoints":[],"labels":{}}` | Enables a Prometheus Operator PodMonitor for the Updater. Requires the prometheus-operator-crds to be installed in the cluster. |
+| updater.podMonitor.annotations | object | `{}` | Annotations to add to the PodMonitor. |
+| updater.podMonitor.enabled | bool | `false` | If true, create a PodMonitor resource for the Updater. |
+| updater.podMonitor.extraPodMetricsEndpoints | list | `[]` | Additional podMetricsEndpoints to add to the PodMonitor. |
+| updater.podMonitor.labels | object | `{}` | Additional labels to add to the PodMonitor. |
 | updater.priorityClassName | string | `nil` |  |
 | updater.replicas | int | `2` |  |
 | updater.resources | object | `{}` |  |
