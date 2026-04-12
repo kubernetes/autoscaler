@@ -128,6 +128,9 @@ resource recommendations, this ensures that all Pods with a matching VPA object 
 recreate them after eviction. Furthermore, it avoids misconfigurations that happened in the past when label selectors
 were specified manually.
 
+> [!WARNING]
+> VPA can only manage Pods that are directly owned by the targeted Custom Resource. It does not support indirect ownership (e.g., targeting a resource that owns another controller, which in turn owns the Pods).
+
 ### How can I use Prometheus as a history provider for the VPA recommender
 
 Configure your Prometheus to get metrics from cadvisor. Make sure that the metrics from the cadvisor have the label `job=kubernetes-cadvisor`
