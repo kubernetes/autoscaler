@@ -122,7 +122,25 @@ func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (gce *GceCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
+	if err != nil {
+		return false, err
+	}
+
+	mig, err := gce.gceManager.GetMigForInstance(ref)
+	if err != nil {
+		return false, err
+	}
+
+	// Not managed by any registered MIG; there's not enough information to confidently say if this instance exists,
+	// so err on the side of safety and return an error. ErrNotImplemented is returned (vs. a generic error) to
+	// avoid repeated warning logging in clusterstate.
+	if mig == nil {
+		return true, cloudprovider.ErrNotImplemented
+	}
+
+	// Instance belongs to a managed MIG, so it's known to be backed by a live instance.
+	return true, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
@@ -201,6 +219,8 @@ type Mig interface {
 	cloudprovider.NodeGroup
 
 	GceRef() GceRef
+	// IsStable returns whether the MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
+	IsStable() (bool, error)
 }
 
 type gceMig struct {
@@ -215,6 +235,11 @@ type gceMig struct {
 // GceRef returns Mig's GceRef
 func (mig *gceMig) GceRef() GceRef {
 	return mig.gceRef
+}
+
+// IsStable returns whether the MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
+func (mig *gceMig) IsStable() (bool, error) {
+	return mig.gceManager.IsMigStable(mig)
 }
 
 // MaxSize returns maximum size of the node group.

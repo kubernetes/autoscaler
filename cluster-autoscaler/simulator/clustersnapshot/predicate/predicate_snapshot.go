@@ -19,7 +19,6 @@ package predicate
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
@@ -145,38 +144,35 @@ func (s *PredicateSnapshot) setClusterStatePodsSequential(nodeInfos []*framework
 }
 
 func (s *PredicateSnapshot) setClusterStatePodsParallelized(nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
-	podsForNode := make([][]*apiv1.Pod, len(nodeInfos))
+	podInfosForNode := make([][]*framework.PodInfo, len(nodeInfos))
 	for _, pod := range scheduledPods {
-		if nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]; ok {
-			podsForNode[nodeIdx] = append(podsForNode[nodeIdx], pod)
+		nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]
+		if !ok {
+			continue
 		}
-	}
 
-	var (
-		firstErr error
-		errOnce  sync.Once
-	)
+		var claims []*resourceapi.ResourceClaim
+		if s.draEnabled && s.draSnapshot != nil {
+			var err error
+			claims, err = s.draSnapshot.PodClaims(pod)
+			if err != nil {
+				return fmt.Errorf("couldn't obtain pod %s/%s claims: %v", pod.Namespace, pod.Name, err)
+			}
+		}
+
+		podInfo := framework.NewPodInfo(pod, claims)
+		podInfosForNode[nodeIdx] = append(podInfosForNode[nodeIdx], podInfo)
+	}
 
 	ctx := context.Background()
 	workqueue.ParallelizeUntil(ctx, s.parallelism, len(nodeInfos), func(nodeIdx int) {
 		nodeInfo := nodeInfos[nodeIdx]
-		for _, pod := range podsForNode[nodeIdx] {
-			var claims []*resourceapi.ResourceClaim
-			if s.draEnabled && s.draSnapshot != nil {
-				var err error
-				claims, err = s.draSnapshot.PodClaims(pod)
-				if err != nil {
-					errOnce.Do(func() {
-						firstErr = fmt.Errorf("couldn't obtain pod %s/%s claims: %v", pod.Namespace, pod.Name, err)
-					})
-					return
-				}
-			}
-			podInfo := framework.NewPodInfo(pod, claims)
-			nodeInfo.AddPodInfo(podInfo)
+		for _, pi := range podInfosForNode[nodeIdx] {
+			nodeInfo.AddPodInfo(pi)
 		}
 	})
-	return firstErr
+
+	return nil
 }
 
 // GetNodeInfo returns an internal NodeInfo wrapping the relevant schedulerimpl.NodeInfo.

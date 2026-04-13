@@ -45,6 +45,8 @@ type NodeToBeRemoved struct {
 	// PodsToReschedule contains pods on the node that should be rescheduled elsewhere.
 	PodsToReschedule []*apiv1.Pod
 	DaemonSetPods    []*apiv1.Pod
+	// OnCompletionPods contains pods on the node that have safe-to-evict=on-completion annotation
+	OnCompletionPods []*apiv1.Pod
 }
 
 // UnremovableNode represents a node that can't be removed by CA.
@@ -95,6 +97,8 @@ const (
 	UnexpectedError
 	// NoNodeInfo - node can't be removed because it doesn't have any node info in the cluster snapshot.
 	NoNodeInfo
+	// BlockedByOnCompletionPod - node can't be removed because it has a pod with safe-to-evict=on-completion annotation
+	BlockedByOnCompletionPod
 )
 
 // RemovalSimulator is a helper object for simulating node removal scenarios.
@@ -141,17 +145,17 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	}
 	klog.V(2).Infof("Simulating node %s removal", nodeName)
 
-	podsToRemove, daemonSetPods, blockingPod, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, r.listers, remainingPdbTracker, timestamp)
+	podMoveInfo, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, r.listers, remainingPdbTracker, timestamp)
 	if err != nil {
 		klog.V(2).Infof("Node %s cannot be removed: %v", nodeName, err)
-		if blockingPod != nil {
-			return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: BlockedByPod, BlockingPod: blockingPod}
+		if podMoveInfo.BlockingPod != nil {
+			return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: BlockedByPod, BlockingPod: podMoveInfo.BlockingPod}
 		}
 		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError}
 	}
 
 	err = r.withForkedSnapshot(func() error {
-		return r.findPlaceFor(nodeName, podsToRemove, destinationMap, timestamp)
+		return r.findPlaceFor(nodeName, podMoveInfo.Pods, destinationMap, timestamp)
 	})
 	if err != nil {
 		klog.V(2).Infof("Node %s is not suitable for removal: %v", nodeName, err)
@@ -160,8 +164,9 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	klog.V(2).Infof("Node %s may be removed", nodeName)
 	return &NodeToBeRemoved{
 		Node:             nodeInfo.Node(),
-		PodsToReschedule: podsToRemove,
-		DaemonSetPods:    daemonSetPods,
+		PodsToReschedule: podMoveInfo.Pods,
+		DaemonSetPods:    podMoveInfo.DaemonSetPods,
+		OnCompletionPods: podMoveInfo.OnCompletionPods,
 	}, nil
 }
 

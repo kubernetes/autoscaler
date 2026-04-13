@@ -156,8 +156,6 @@ type AutoscalingOptions struct {
 	NodeGroups []string
 	// EnforceNodeGroupMinSize is used to allow CA to scale up the node group to the configured min size if needed.
 	EnforceNodeGroupMinSize bool
-	// ScaleDownEnabled is used to allow CA to scale down the cluster
-	ScaleDownEnabled bool
 	// ScaleDownUnreadyEnabled is used to allow CA to scale down unready nodes of the cluster
 	ScaleDownUnreadyEnabled bool
 	// ScaleDownDelayAfterAdd sets the duration from the last scale up to the time when CA starts to check scale down options
@@ -372,6 +370,8 @@ type AutoscalingOptions struct {
 	// NodeRemovalLatencyTrackingEnabled is used to enable/disable node removal latency tracking.
 	NodeRemovalLatencyTrackingEnabled bool
 	CapacityQuotasEnabled             bool
+	// ScaleUpSimulationForSkippedNodeGroupsEnabled is used to enable/disable the scaleUpSimulation for the skipped node groups
+	ScaleUpSimulationForSkippedNodeGroupsEnabled bool
 }
 
 // KubeClientOptions specify options for kube client

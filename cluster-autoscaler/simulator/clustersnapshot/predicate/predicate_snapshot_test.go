@@ -2007,3 +2007,43 @@ func fullyReservedClaim(claim *resourceapi.ResourceClaim) *resourceapi.ResourceC
 	}
 	return result
 }
+
+func TestSetClusterStateConcurrentDRA(t *testing.T) {
+	nodeCount := 20
+	podCount := 1000
+
+	nodes := clustersnapshot.CreateTestNodes(nodeCount)
+	var pods []*apiv1.Pod
+
+	claimsMap := make(map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim)
+
+	for i := 0; i < podCount; i++ {
+		podName := fmt.Sprintf("pod-%d", i)
+		claimName := fmt.Sprintf("claim-%d", i)
+		nodeName := nodes[i%nodeCount].Name
+
+		pod := BuildTestPod(podName, 100, 100, WithNodeName(nodeName), WithResourceClaim("ref", claimName, ""))
+		pod.Namespace = "default"
+		pods = append(pods, pod)
+
+		claim := &resourceapi.ResourceClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      claimName,
+				Namespace: "default",
+			},
+		}
+		claimId := drasnapshot.ResourceClaimId{Name: claimName, Namespace: "default"}
+		claimsMap[claimId] = claim
+	}
+
+	draSnap := drasnapshot.NewSnapshot(claimsMap, nil, nil, nil)
+
+	fwHandle, err := framework.NewTestFrameworkHandle()
+	assert.NoError(t, err)
+
+	// Set parallelism to 8 to ensure the workqueue utilizes multiple goroutines.
+	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 8, false)
+
+	err = snapshot.SetClusterState(nodes, pods, draSnap, nil)
+	assert.NoError(t, err)
+}

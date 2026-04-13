@@ -335,6 +335,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		instances:               make(map[GceRef][]GceInstance),
 		instancesUpdateTime:     make(map[GceRef]time.Time),
 		instancesToMig:          make(map[GceRef]GceRef),
+		migIsStableCache:        make(map[GceRef]bool),
 		instancesFromUnknownMig: make(map[GceRef]bool),
 		autoscalingOptionsCache: map[GceRef]map[string]string{},
 		machinesCache: map[MachineTypeKey]MachineType{
@@ -686,13 +687,15 @@ func TestGetMigForInstance(t *testing.T) {
 
 	setupTestDefaultPool(g, false)
 	g.cache.InvalidateAllMigBasenames()
+	g.cache.InvalidateAllInstancesToMig()
+	g.cache.InvalidateAllMigInstances()
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers").Return(
 		buildListInstanceGroupManagersResponse(
 			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
 			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 8),
 		)).Once()
-	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Twice()
+	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
 	gceRef1 := GceRef{
 		Project: projectId,
 		Zone:    zoneB,

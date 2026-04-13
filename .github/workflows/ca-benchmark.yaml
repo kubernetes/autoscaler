@@ -16,18 +16,18 @@ jobs:
     continue-on-error: true
     steps:
       - name: Checkout PR
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           path: pr
 
       - name: Checkout Base
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           path: base
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
           go-version-file: pr/cluster-autoscaler/go.mod
           cache-dependency-path: pr/cluster-autoscaler/go.sum
@@ -39,13 +39,13 @@ jobs:
         shell: bash
         run: |
           cd base/cluster-autoscaler
-          go test -v -bench=BenchmarkRunOnce -benchmem -count=10 ./core/bench/... -args -gc true | tee ../../base.txt
+          go test -v -bench=BenchmarkRunOnce -benchmem -count=8 ./core/bench/... -args -gc true | tee ../../base.txt
 
       - name: Run Benchmark (PR)
         shell: bash
         run: |
           cd pr/cluster-autoscaler
-          go test -v -bench=BenchmarkRunOnce -benchmem -count=10 ./core/bench/... -args -gc true | tee ../../pr.txt
+          go test -v -bench=BenchmarkRunOnce -benchmem -count=8 ./core/bench/... -args -gc true | tee ../../pr.txt
 
       - name: Install benchstat
         run: go install golang.org/x/perf/cmd/benchstat@latest
@@ -59,8 +59,11 @@ jobs:
           
           if [ -s base.txt ] && [ -s pr.txt ]; then
             echo '```' >> $GITHUB_STEP_SUMMARY
-            $(go env GOPATH)/bin/benchstat base.txt pr.txt >> $GITHUB_STEP_SUMMARY
+            $(go env GOPATH)/bin/benchstat base.txt pr.txt | tee benchstat.txt >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
+            
+            # Fail if any regression is > 10%
+            grep -qE '\+[1-9][0-9].*%' benchstat.txt && { echo "Regression detected > 10%"; exit 1; } || true
           else
             echo "Error: Benchmark results not found or empty." >> $GITHUB_STEP_SUMMARY
             exit 1

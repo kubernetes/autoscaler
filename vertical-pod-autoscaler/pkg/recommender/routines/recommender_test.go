@@ -99,7 +99,7 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 	// Create a channel to send VPA updates to workers
 	vpaUpdates := make(chan *vpaautoscalingv1.VerticalPodAutoscaler, len(apiObjectVPAs))
 
-	var counter int64
+	var counter atomic.Int64
 
 	// Start workers
 	for range updateWorkerCount {
@@ -115,7 +115,7 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 					return
 				}
 
-				atomic.AddInt64(&counter, 1)
+				counter.Add(1)
 
 				processVPAUpdate(r, vpa, observedVpa)
 				cnt.Add(vpa)
@@ -131,7 +131,7 @@ func TestProcessUpdateVPAsConcurrency(t *testing.T) {
 	close(vpaUpdates)
 	wg.Wait()
 
-	assert.Equal(t, int64(vpaCount), atomic.LoadInt64(&counter), "Not all VPAs were processed")
+	assert.Equal(t, int64(vpaCount), counter.Load(), "Not all VPAs were processed")
 }
 
 // TestConcurrentAccessToSameVPA tests multiple goroutines updating the same VPA's conditions and recommendations

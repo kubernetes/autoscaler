@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	buffersfilter "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
@@ -59,28 +60,12 @@ type CapacityBufferPodListProcessor struct {
 	statusFilter             buffersfilter.Filter
 	podTemplateGenFilter     buffersfilter.Filter
 	provStrategies           map[string]bool
-	buffersRegistry          *CapacityBuffersFakePodsRegistry
+	buffersRegistry          *fakepods.Registry
 	forceSafeToEvictFakePods bool
 }
 
-// CapacityBuffersFakePodsRegistry a struct that keeps the status of capacity buffer
-// the fake pods generated for adding buffer event later
-type CapacityBuffersFakePodsRegistry struct {
-	FakePodsUIDToBuffer map[string]*v1beta1.CapacityBuffer
-}
-
-// NewCapacityBuffersFakePodsRegistry returns a new pointer to empty capacityBuffersFakePodsRegistry
-func NewCapacityBuffersFakePodsRegistry(fakePodsToBuffers map[string]*v1beta1.CapacityBuffer) *CapacityBuffersFakePodsRegistry {
-	return &CapacityBuffersFakePodsRegistry{FakePodsUIDToBuffer: fakePodsToBuffers}
-}
-
-// NewDefaultCapacityBuffersFakePodsRegistry returns a new pointer to empty capacityBuffersFakePodsRegistry
-func NewDefaultCapacityBuffersFakePodsRegistry() *CapacityBuffersFakePodsRegistry {
-	return &CapacityBuffersFakePodsRegistry{FakePodsUIDToBuffer: map[string]*v1beta1.CapacityBuffer{}}
-}
-
 // NewCapacityBufferPodListProcessor creates a new CapacityRequestPodListProcessor.
-func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, provStrategies []string, buffersRegistry *CapacityBuffersFakePodsRegistry, forceSafeToEvictFakePods bool) *CapacityBufferPodListProcessor {
+func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, provStrategies []string, buffersRegistry *fakepods.Registry, forceSafeToEvictFakePods bool) *CapacityBufferPodListProcessor {
 	provStrategiesMap := map[string]bool{}
 	for _, ps := range provStrategies {
 		provStrategiesMap[ps] = true
@@ -110,7 +95,6 @@ func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.Auto
 	_, buffers = p.podTemplateGenFilter.Filter(buffers)
 
 	totalFakePods := []*apiv1.Pod{}
-	p.clearCapacityBufferRegistry()
 	for _, buffer := range buffers {
 		fakePods := p.provision(buffer)
 		p.updateCapacityBufferRegistry(fakePods, buffer)
@@ -130,7 +114,7 @@ func (p *CapacityBufferPodListProcessor) updateCapacityBufferRegistry(fakePods [
 		return
 	}
 	for _, fakePod := range fakePods {
-		p.buffersRegistry.FakePodsUIDToBuffer[string(fakePod.UID)] = buffer
+		p.buffersRegistry.SetCapacityBuffer(fakePod.UID, buffer)
 	}
 }
 
@@ -138,7 +122,7 @@ func (p *CapacityBufferPodListProcessor) clearCapacityBufferRegistry() {
 	if p.buffersRegistry == nil {
 		return
 	}
-	p.buffersRegistry.FakePodsUIDToBuffer = make(map[string]*v1beta1.CapacityBuffer, 0)
+	p.buffersRegistry.Clear()
 }
 
 func (p *CapacityBufferPodListProcessor) provision(buffer *v1beta1.CapacityBuffer) []*apiv1.Pod {

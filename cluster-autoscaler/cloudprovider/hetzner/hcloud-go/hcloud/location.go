@@ -99,11 +99,14 @@ func (c *LocationClient) List(ctx context.Context, opts LocationListOpts) ([]*Lo
 
 // All returns all locations.
 func (c *LocationClient) All(ctx context.Context) ([]*Location, error) {
-	return c.AllWithOpts(ctx, LocationListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, LocationListOpts{})
 }
 
 // AllWithOpts returns all locations for the given options.
 func (c *LocationClient) AllWithOpts(ctx context.Context, opts LocationListOpts) ([]*Location, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Location, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)
