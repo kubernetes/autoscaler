@@ -60,14 +60,14 @@ const (
 	// per-PodSet capacity evaluation. Supported values are "bookPartial" and "checkOnly".
 	// By default this is not set, and checkCapacity evaluates all pods atomically.
 	PartialCapacityCheckKey = "partialCapacityCheck"
-	// When partialCapacityCheck Parameter is set to PartialCapacityCheckBookPartial,
-	// the ProvisioningRequest condition is set to Provisioned=true if capacity is found for
-	// some of the ProvReq PodSets.
+	// PartialCapacityCheckBookPartial is a value for the partialCapacityCheck Parameter
+	// that causes the CA to set the ProvisioningRequest condition
+	// to Provisioned=true if capacity is found for some of the ProvReq PodSets.
 	PartialCapacityCheckBookPartial = "bookPartial"
-	// When partialCapacityCheck Parameter is set to PartialCapacityCheckCheckOnly,
-	// the ProvisioningRequest condition is set to Provisioned=false even if capacity is found for
-	// some of the ProvReq PodSets. If partial capacity is found, the condition message and ProvReq Details
-	// will reflect the capacity state.
+	// PartialCapacityCheckCheckOnly is a value for the partialCapacityCheck Parameter
+	// that causes the CA to set the ProvisioningRequest condition to Provisioned=false
+	// even if capacity is found for some of the ProvReq PodSets. If partial capacity
+	// is found, the condition message and ProvReq Details will reflect the capacity state.
 	PartialCapacityCheckCheckOnly = "checkOnly"
 )
 
