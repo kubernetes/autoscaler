@@ -139,4 +139,18 @@ func TestProvisioningRequestWrapper(t *testing.T) {
 	podSets, err := wrappedBetaPRMissingPodTemplates.PodSets()
 	assert.Nil(t, podSets)
 	assert.EqualError(t, err, "missing pod templates, 1 pod templates were referenced, 1 templates were missing: name-pod-template-beta")
+
+	// Set a detail and check the value.
+	wrappedBetaPR.SetProvisioningClassDetail("key", "value")
+	assert.Equal(t, v1.Detail("value"), wrappedBetaPR.Status.ProvisioningClassDetails["key"])
+
+	// Delete the detail and check it is removed.
+	wrappedBetaPR.DeleteProvisioningClassDetail("key")
+	_, exists := wrappedBetaPR.Status.ProvisioningClassDetails["key"]
+	assert.False(t, exists)
+
+	// Set a detail on a PR with nil ProvisioningClassDetails and check the value.
+	wrappedBetaPR.Status.ProvisioningClassDetails = nil
+	wrappedBetaPR.SetProvisioningClassDetail("key", "value")
+	assert.Equal(t, v1.Detail("value"), wrappedBetaPR.Status.ProvisioningClassDetails["key"])
 }

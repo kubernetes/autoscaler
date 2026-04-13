@@ -351,3 +351,76 @@ func TestPodsForProvisioningRequest(t *testing.T) {
 		})
 	}
 }
+
+func TestPodsForProvisioningRequestPodSets(t *testing.T) {
+	pr := &v1.ProvisioningRequest{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-pr-name",
+			Namespace: "test-namespace",
+		},
+		Spec: v1.ProvisioningRequestSpec{
+			PodSets: []v1.PodSet{
+				{Count: 2, PodTemplateRef: v1.Reference{Name: "template-1"}},
+				{Count: 3, PodTemplateRef: v1.Reference{Name: "template-2"}},
+			},
+			ProvisioningClassName: testProvisioningClassName,
+		},
+	}
+	podTemplates := []*corev1.PodTemplate{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "template-1", Namespace: "test-namespace"},
+			Template: corev1.PodTemplateSpec{Spec: corev1.PodSpec{
+				Containers: []corev1.Container{{Name: "c1", Image: "img1"}},
+			}},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "template-2", Namespace: "test-namespace"},
+			Template: corev1.PodTemplateSpec{Spec: corev1.PodSpec{
+				Containers: []corev1.Container{{Name: "c2", Image: "img2"}},
+			}},
+		},
+	}
+	wrapped := provreqwrapper.NewProvisioningRequest(pr, podTemplates)
+
+	tests := []struct {
+		desc          string
+		allowedPodSets map[string]bool
+		wantNames     []string
+	}{
+		{
+			desc:          "nil allowedPodSets returns all pods",
+			allowedPodSets: nil,
+			wantNames:     []string{"test-pr-name-0-0", "test-pr-name-0-1", "test-pr-name-1-0", "test-pr-name-1-1", "test-pr-name-1-2"},
+		},
+		{
+			desc:          "only first podset allowed",
+			allowedPodSets: map[string]bool{"template-1": true},
+			wantNames:     []string{"test-pr-name-0-0", "test-pr-name-0-1"},
+		},
+		{
+			desc:          "only second podset allowed, index preserved in pod name",
+			allowedPodSets: map[string]bool{"template-2": true},
+			wantNames:     []string{"test-pr-name-1-0", "test-pr-name-1-1", "test-pr-name-1-2"},
+		},
+		{
+			desc:          "empty allowedPodSets returns no pods",
+			allowedPodSets: map[string]bool{},
+			wantNames:     []string{},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.desc, func(t *testing.T) {
+			got, err := PodsForProvisioningRequestPodSets(wrapped, tc.allowedPodSets)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			gotNames := make([]string, len(got))
+			for i, p := range got {
+				gotNames[i] = p.Name
+			}
+			if diff := cmp.Diff(tc.wantNames, gotNames); diff != "" {
+				t.Errorf("unexpected pod names (-want +got): %v", diff)
+			}
+		})
+	}
+}

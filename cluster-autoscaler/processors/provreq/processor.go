@@ -17,6 +17,7 @@ limitations under the License.
 package provreq
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -147,7 +148,7 @@ func (p *provReqProcessor) bookCapacity(autoscalingCtx *ca_context.AutoscalingCo
 		if !conditions.ShouldCapacityBeBooked(provReq, p.checkCapacityProcessorInstance) {
 			continue
 		}
-		pods, err := provreq_pods.PodsForProvisioningRequest(provReq)
+		pods, err := podsForProvReq(provReq)
 		if err != nil {
 			// ClusterAutoscaler was able to create pods before, so we shouldn't have error here.
 			// If there is an error, mark PR as invalid, because we won't be able to book capacity
@@ -168,6 +169,25 @@ func (p *provReqProcessor) bookCapacity(autoscalingCtx *ca_context.AutoscalingCo
 		return err
 	}
 	return nil
+}
+
+// podsForProvReq returns pods to book capacity for. If the ProvReq has a
+// schedulablePodSets detail, only pods for those podsets are returned.
+func podsForProvReq(provReq *provreqwrapper.ProvisioningRequest) ([]*apiv1.Pod, error) {
+	detail, ok := provReq.Status.ProvisioningClassDetails[conditions.SchedulablePodSetsDetailKey]
+	if !ok || detail == "" {
+		return provreq_pods.PodsForProvisioningRequest(provReq)
+	}
+	var podSetNames []string
+	if err := json.Unmarshal([]byte(detail), &podSetNames); err != nil {
+		klog.Errorf("failed to parse schedulablePodSets detail for ProvReq %s: %v", provReq.Name, err)
+		return provreq_pods.PodsForProvisioningRequest(provReq)
+	}
+	allowedPodSets := make(map[string]bool, len(podSetNames))
+	for _, name := range podSetNames {
+		allowedPodSets[name] = true
+	}
+	return provreq_pods.PodsForProvisioningRequestPodSets(provReq, allowedPodSets)
 }
 
 // DeleteOldProvReqs delete ProvReq that have terminal state (Provisioned/Failed == True) more than a week.
