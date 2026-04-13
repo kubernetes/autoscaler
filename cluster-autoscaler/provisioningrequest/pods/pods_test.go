@@ -383,29 +383,29 @@ func TestPodsForProvisioningRequestPodSets(t *testing.T) {
 	wrapped := provreqwrapper.NewProvisioningRequest(pr, podTemplates)
 
 	tests := []struct {
-		desc          string
+		desc           string
 		allowedPodSets map[string]bool
-		wantNames     []string
+		wantNames      []string
 	}{
 		{
-			desc:          "nil allowedPodSets returns all pods",
+			desc:           "nil allowedPodSets returns all pods",
 			allowedPodSets: nil,
-			wantNames:     []string{"test-pr-name-0-0", "test-pr-name-0-1", "test-pr-name-1-0", "test-pr-name-1-1", "test-pr-name-1-2"},
+			wantNames:      []string{"test-pr-name-0-0", "test-pr-name-0-1", "test-pr-name-1-0", "test-pr-name-1-1", "test-pr-name-1-2"},
 		},
 		{
-			desc:          "only first podset allowed",
+			desc:           "only first podset allowed",
 			allowedPodSets: map[string]bool{"template-1": true},
-			wantNames:     []string{"test-pr-name-0-0", "test-pr-name-0-1"},
+			wantNames:      []string{"test-pr-name-0-0", "test-pr-name-0-1"},
 		},
 		{
-			desc:          "only second podset allowed, index preserved in pod name",
+			desc:           "only second podset allowed, index preserved in pod name",
 			allowedPodSets: map[string]bool{"template-2": true},
-			wantNames:     []string{"test-pr-name-1-0", "test-pr-name-1-1", "test-pr-name-1-2"},
+			wantNames:      []string{"test-pr-name-1-0", "test-pr-name-1-1", "test-pr-name-1-2"},
 		},
 		{
-			desc:          "empty allowedPodSets returns no pods",
+			desc:           "empty allowedPodSets returns no pods",
 			allowedPodSets: map[string]bool{},
-			wantNames:     []string{},
+			wantNames:      []string{},
 		},
 	}
 	for _, tc := range tests {
