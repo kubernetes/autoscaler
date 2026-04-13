@@ -36,6 +36,11 @@ const (
 	CapacityIsFoundReason = "CapacityIsFound"
 	// CapacityIsFoundMsg is added when capacity was found in the cluster.
 	CapacityIsFoundMsg = "Capacity is found in the cluster"
+	// PartialCapacityIsFoundReason is added when capacity was found in the cluster for some but not all pods.
+	// Only used in check-capacity class when partialCapacityCheck parameter is set to "bookPartial" or "checkOnly".
+	PartialCapacityIsFoundReason = "PartialCapacityIsFound"
+	// PartialCapacityIsFoundMsg is added when partial capacity was found in the cluster.
+	PartialCapacityIsFoundMsg = "Partial capacity is found in the cluster"
 	// CapacityIsProvisionedReason is added when capacity was requested successfully.
 	CapacityIsProvisionedReason = "CapacityIsProvisioned"
 	// CapacityIsProvisionedMsg is added when capacity was requested successfully.
@@ -56,6 +61,9 @@ const (
 	ExpiredReason = "Expired"
 	// ExpiredMsg is added if ProvisioningRequest is expired.
 	ExpiredMsg = "ProvisioningRequest is expired"
+	// SchedulablePodSetsDetailKey is the ProvisioningClassDetails key indicating
+	// which PodSets CA found capacity for.
+	SchedulablePodSetsDetailKey = "schedulablePodSets"
 )
 
 // ShouldCapacityBeBooked returns whether capacity should be booked.

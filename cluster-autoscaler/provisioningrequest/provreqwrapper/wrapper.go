@@ -22,7 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 )
 
 // ProvisioningRequest wrapper representation of the ProvisioningRequest
@@ -50,6 +50,20 @@ func NewProvisioningRequest(pr *v1.ProvisioningRequest, podTemplates []*apiv1.Po
 // SetConditions of the Provisioning Request.
 func (pr *ProvisioningRequest) SetConditions(conditions []metav1.Condition) {
 	pr.Status.Conditions = conditions
+}
+
+// SetProvisioningClassDetail set the key entry to the given value for the ProvisiongRequest Details.
+func (pr *ProvisioningRequest) SetProvisioningClassDetail(key string, value v1.Detail) {
+	if pr.Status.ProvisioningClassDetails == nil {
+		pr.Status.ProvisioningClassDetails = make(map[string]v1.Detail)
+	}
+
+	pr.Status.ProvisioningClassDetails[key] = value
+}
+
+// DeleteProvisioningClassDetail deletes the given key entry for the ProvisiongRequest Details.
+func (pr *ProvisioningRequest) DeleteProvisioningClassDetail(key string) {
+	delete(pr.Status.ProvisioningClassDetails, key)
 }
 
 // PodSets of the Provisioning Request.
