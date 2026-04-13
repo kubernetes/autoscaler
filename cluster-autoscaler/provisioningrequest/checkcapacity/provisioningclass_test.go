@@ -231,9 +231,9 @@ func TestGroupPodsByPodSet(t *testing.T) {
 			},
 		},
 		{
-			name:    "empty pod list",
-			pods:    []*apiv1.Pod{},
-			provReq: makeProvReq("my-pr", v1.PodSet{PodTemplateRef: v1.Reference{Name: "workers"}, Count: 1}),
+			name:     "empty pod list",
+			pods:     []*apiv1.Pod{},
+			provReq:  makeProvReq("my-pr", v1.PodSet{PodTemplateRef: v1.Reference{Name: "workers"}, Count: 1}),
 			expected: map[int][]string{},
 		},
 	}
