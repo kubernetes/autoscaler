@@ -494,12 +494,20 @@ func (r *unstructuredScalableResource) readInfrastructureReferenceResource() (*u
 		return nil, nil
 	}
 
+	// kind must be read before version discovery — getKindPreferredVersion needs it.
+	kind, ok := infraref["kind"]
+	if !ok {
+		info := fmt.Sprintf("Missing kind from %s %s's InfrastructureReference", obKind, obName)
+		klog.V(4).Info(info)
+		return nil, errors.New(info)
+	}
+
 	var apiversion string
 
 	apiGroup, ok := infraref["apiGroup"]
 	if ok {
-		if apiversion, err = getAPIGroupPreferredVersion(r.controller.managementDiscoveryClient, apiGroup); err != nil {
-			klog.V(4).Infof("Unable to read preferred version from api group %s, error: %v", apiGroup, err)
+		if apiversion, err = getKindPreferredVersion(r.controller.managementDiscoveryClient, apiGroup, kind); err != nil {
+			klog.V(4).Infof("Unable to read preferred version for kind %s in api group %s, error: %v", kind, apiGroup, err)
 			return nil, err
 		}
 		apiversion = fmt.Sprintf("%s/%s", apiGroup, apiversion)
@@ -511,13 +519,6 @@ func (r *unstructuredScalableResource) readInfrastructureReferenceResource() (*u
 			klog.V(4).Info(info)
 			return nil, errors.New(info)
 		}
-	}
-
-	kind, ok := infraref["kind"]
-	if !ok {
-		info := fmt.Sprintf("Missing kind from %s %s's InfrastructureReference", obKind, obName)
-		klog.V(4).Info(info)
-		return nil, errors.New(info)
 	}
 	name, ok := infraref["name"]
 	if !ok {

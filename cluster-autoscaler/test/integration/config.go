@@ -17,9 +17,10 @@ limitations under the License.
 package integration
 
 import (
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
-	"time"
 )
 
 // DefaultAutoscalingOptions provides the baseline configuration for all tests.
@@ -37,7 +38,6 @@ var DefaultAutoscalingOptions = config.AutoscalingOptions{
 	ScaleDownDelayAfterDelete:  0,
 	ScaleDownDelayAfterFailure: 0,
 	ScaleDownDelayTypeLocal:    true,
-	ScaleDownEnabled:           true,
 	MaxNodesTotal:              10,
 	MaxCoresTotal:              10,
 	MaxMemoryTotal:             100000,

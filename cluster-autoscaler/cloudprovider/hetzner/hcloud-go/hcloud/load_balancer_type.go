@@ -100,11 +100,14 @@ func (c *LoadBalancerTypeClient) List(ctx context.Context, opts LoadBalancerType
 
 // All returns all Load Balancer types.
 func (c *LoadBalancerTypeClient) All(ctx context.Context) ([]*LoadBalancerType, error) {
-	return c.AllWithOpts(ctx, LoadBalancerTypeListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, LoadBalancerTypeListOpts{})
 }
 
 // AllWithOpts returns all Load Balancer types for the given options.
 func (c *LoadBalancerTypeClient) AllWithOpts(ctx context.Context, opts LoadBalancerTypeListOpts) ([]*LoadBalancerType, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*LoadBalancerType, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

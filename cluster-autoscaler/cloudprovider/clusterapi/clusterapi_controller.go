@@ -611,6 +611,36 @@ func getAPIGroupPreferredVersion(client discovery.DiscoveryInterface, APIGroup s
 	return "", fmt.Errorf("failed to find API group %q", APIGroup)
 }
 
+// getKindPreferredVersion returns the first version in apiGroup that serves the given Kind.
+// In CAPI v1beta2, infrastructureRef only carries apiGroup (no apiVersion), so the
+// group-level preferred version may not match what the infra provider actually serves.
+func getKindPreferredVersion(client discovery.DiscoveryInterface, apiGroup, kind string) (string, error) {
+	groupList, err := client.ServerGroups()
+	if err != nil {
+		return "", fmt.Errorf("failed to get ServerGroups: %v", err)
+	}
+
+	for _, group := range groupList.Groups {
+		if group.Name != apiGroup {
+			continue
+		}
+		for _, v := range group.Versions {
+			resourceList, err := client.ServerResourcesForGroupVersion(v.GroupVersion)
+			if err != nil {
+				return "", fmt.Errorf("failed to get resources for %s: %v", v.GroupVersion, err)
+			}
+			for _, r := range resourceList.APIResources {
+				if r.Kind == kind {
+					return v.Version, nil
+				}
+			}
+		}
+		return "", fmt.Errorf("kind %q not found in any version of group %q", kind, apiGroup)
+	}
+
+	return "", fmt.Errorf("failed to find API group %q", apiGroup)
+}
+
 func (c *machineController) scalableResourceProviderIDs(scalableResource *unstructured.Unstructured) ([]string, error) {
 	if scalableResource.GetKind() == machinePoolKind {
 		return c.findMachinePoolProviderIDs(scalableResource)

@@ -4,47 +4,27 @@ updates:
   directory: "/vertical-pod-autoscaler"
   schedule:
     interval: daily
-  open-pull-requests-limit: 0 # setting this to 0 means only allowing security updates, see https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#open-pull-requests-limit
   labels:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
     - "ok-to-test"
 - package-ecosystem: docker
-  directory: "/vertical-pod-autoscaler/pkg/recommender"
+  directories:
+    - "/vertical-pod-autoscaler/pkg/admission-controller"
+    - "/vertical-pod-autoscaler/pkg/recommender"
+    - "/vertical-pod-autoscaler/pkg/updater"
   schedule:
     interval: daily
-  ignore:
-    - dependency-name: "golang"
-      versions: ["*.*rc*"]
   open-pull-requests-limit: 3
   labels:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
     - "ok-to-test"
-- package-ecosystem: docker
-  directory: "/vertical-pod-autoscaler/pkg/updater"
-  schedule:
-    interval: daily
-  ignore:
-    - dependency-name: "golang"
-      versions: ["*.*rc*"]
-  open-pull-requests-limit: 3
-  labels:
-    - "area/vertical-pod-autoscaler"
-    - "release-note-none"
-    - "ok-to-test"
-- package-ecosystem: docker
-  directory: "/vertical-pod-autoscaler/pkg/admission-controller"
-  schedule:
-    interval: daily
-  ignore:
-    - dependency-name: "golang"
-      versions: ["*.*rc*"]
-  open-pull-requests-limit: 3
-  labels:
-    - "area/vertical-pod-autoscaler"
-    - "release-note-none"
-    - "ok-to-test"
+  groups:
+    actions:
+      update-types:
+        - "minor"
+        - "patch"
 - package-ecosystem: gomod
   directory: "/addon-resizer"
   schedule:
@@ -78,10 +58,14 @@ updates:
     include: scope
   ignore:
     # Update providers manually.
+    - dependency-name: "k8s.io/cloud-provider-aws"
     - dependency-name: "k8s.io/cloud-provider-aws/*"
     - dependency-name: "github.com/aws/*"
+    - dependency-name: "k8s.io/cloud-provider-gcp"
     - dependency-name: "k8s.io/cloud-provider-gcp/*"
+    - dependency-name: "cloud.google.com/go/compute"
     - dependency-name: "cloud.google.com/go/compute/*"
+    - dependency-name: "sigs.k8s.io/cloud-provider-azure"
     - dependency-name: "sigs.k8s.io/cloud-provider-azure/*"
     - dependency-name: "github.com/Azure/*"
     - dependency-name: "github.com/Azure/go-autorest/autorest/*"

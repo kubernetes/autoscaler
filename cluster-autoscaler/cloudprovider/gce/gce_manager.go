@@ -94,6 +94,8 @@ type GceManager interface {
 	GetMigSize(mig Mig) (int64, error)
 	// GetMigOptions returns MIG's NodeGroupAutoscalingOptions
 	GetMigOptions(mig Mig, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions
+	// IsMigStable returns whether the MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
+	IsMigStable(mig Mig) (bool, error)
 
 	// SetMigSize sets MIG size.
 	SetMigSize(mig Mig, size int64) error
@@ -246,6 +248,11 @@ func (m *gceManagerImpl) GetMigSize(mig Mig) (int64, error) {
 	return m.migInfoProvider.GetMigTargetSize(mig.GceRef())
 }
 
+// IsMigStable returns whether the MIG is stable.
+func (m *gceManagerImpl) IsMigStable(mig Mig) (bool, error) {
+	return m.migInfoProvider.GetMigIsStable(mig.GceRef())
+}
+
 // SetMigSize sets MIG size.
 func (m *gceManagerImpl) SetMigSize(mig Mig, size int64) error {
 	klog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
@@ -300,6 +307,7 @@ func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]GceInstance, error) {
 func (m *gceManagerImpl) Refresh() error {
 	m.cache.InvalidateAllMigInstances()
 	m.cache.InvalidateAllMigTargetSizes()
+	m.cache.InvalidateAllMigIsStable()
 	m.cache.InvalidateAllMigBasenames()
 	m.cache.InvalidateAllListManagedInstancesResults()
 	m.cache.InvalidateAllMigInstanceTemplateNames()

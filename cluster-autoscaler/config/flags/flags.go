@@ -242,10 +242,10 @@ var (
 	nodeRemovalLatencyTrackingEnabled            = flag.Bool("node-removal-latency-tracking-enabled", false, "Whether to track latency from when an unneeded node is eligible for scale down until it is removed or needed again.")
 	maxNodeSkipEvalTimeTrackerEnabled            = flag.Bool("max-node-skip-eval-time-tracker-enabled", false, "Whether to enable the tracking of the maximum time of node being skipped during ScaleDown")
 	capacityQuotasEnabled                        = flag.Bool("capacity-quotas-enabled", false, "Whether to enable CapacityQuota CRD support.")
+	scaleUpSimulationForSkippedNodeGroupsEnabled = flag.Bool("scaleup-simulation-for-skipped-node-groups-enabled", false, "Whether to enable the scale up simulation for skipped node groups.")
 
 	// Deprecated flags
 	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
-	scaleDownEnabled = flag.Bool("scale-down-enabled", true, "[Deprecated] Should CA scale down the cluster")
 )
 
 var autoscalingOptions *config.AutoscalingOptions
@@ -306,10 +306,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("--enable-dynamic-resource-allocation flag must be true: %t", ptr.Deref(enableDynamicResourceAllocation, false))
 	}
 
-	if *scaleDownEnabled == false {
-		klog.Warningf("--scale-down-enabled flag is deprecated and will be removed in a future release")
-	}
-
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
@@ -348,7 +344,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownDelayTypeLocal:          *scaleDownDelayTypeLocal,
 		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
-		ScaleDownEnabled:                 *scaleDownEnabled,
 		ScaleDownUnreadyEnabled:          *scaleDownUnreadyEnabled,
 		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
 		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
@@ -450,6 +445,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		NodeRemovalLatencyTrackingEnabled:            *nodeRemovalLatencyTrackingEnabled,
 		MaxNodeSkipEvalTimeTrackerEnabled:            *maxNodeSkipEvalTimeTrackerEnabled,
 		CapacityQuotasEnabled:                        *capacityQuotasEnabled,
+		ScaleUpSimulationForSkippedNodeGroupsEnabled: *scaleUpSimulationForSkippedNodeGroupsEnabled,
 	}
 }
 
