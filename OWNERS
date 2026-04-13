@@ -10,5 +10,3 @@ reviewers:
 - elmiko
 - mtrqq
 - norbertcyran
-labels:
-- area/cluster-autoscaler
