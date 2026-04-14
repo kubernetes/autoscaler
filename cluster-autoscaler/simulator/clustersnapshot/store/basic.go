@@ -17,7 +17,6 @@ limitations under the License.
 package store
 
 import (
-	"errors"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -26,10 +25,6 @@ import (
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
-)
-
-var (
-	errorGettingPodGroupState = errors.New("PodGroupState is not integrated with CA simulator")
 )
 
 // BasicSnapshotStore is simple, reference implementation of ClusterSnapshotStore.

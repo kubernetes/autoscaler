@@ -106,6 +106,12 @@ func (s *Snapshot) DeviceClassResolver() schedulerinterface.DeviceClassResolver 
 	return newSnapshotDeviceClassResolver(s)
 }
 
+// PodGroups exposes the Snapshot as schedulerinterface.PodGroupLister, in order to interact with
+// the scheduler framework.
+func (s *Snapshot) PodGroups() schedulerinterface.PodGroupLister {
+	return &snapshotPodGroupLister{snapshot: s}
+}
+
 // AddClaims adds additional ResourceClaims to the Snapshot. It can be used e.g. if we need to duplicate a Pod that
 // owns ResourceClaims. Returns an error if any of the claims is already tracked in the snapshot.
 func (s *Snapshot) AddClaims(newClaims []*resourceapi.ResourceClaim) error {
