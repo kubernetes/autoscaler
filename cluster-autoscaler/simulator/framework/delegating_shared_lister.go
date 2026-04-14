@@ -21,6 +21,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	schedulingapi "k8s.io/api/scheduling/v1alpha2"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -95,6 +96,11 @@ func (lister *DelegatingSchedulerSharedLister) DeviceClassResolver() schedulerin
 	return lister.delegate.DeviceClassResolver()
 }
 
+// PodGroups returns a PodGroupLister
+func (lister *DelegatingSchedulerSharedLister) PodGroups() schedulerinterface.PodGroupLister {
+	return lister.delegate.PodGroups()
+}
+
 // ResetDelegate resets delegate to the unsetSharedListerSingleton.
 func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
 	lister.delegate = unsetSharedListerSingleton
@@ -108,6 +114,7 @@ type unsetResourceClaimTracker unsetSharedLister
 type unsetResourceSliceLister unsetSharedLister
 type unsetDeviceClassLister unsetSharedLister
 type unsetDeviceClassResolver unsetSharedLister
+type unsetPodGroupLister unsetSharedLister
 type unsetCSINodeLister unsetSharedLister
 
 // List always returns an error
@@ -193,6 +200,10 @@ func (u *unsetDeviceClassResolver) GetDeviceClass(resourceName corev1.ResourceNa
 	return nil
 }
 
+func (l *unsetPodGroupLister) Get(namespace, podGroupName string) (*schedulingapi.PodGroup, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
 func (u *unsetCSINodeLister) List() ([]*storagev1.CSINode, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
@@ -229,6 +240,10 @@ func (lister *unsetSharedLister) DeviceClasses() schedulerinterface.DeviceClassL
 
 func (lister *unsetSharedLister) DeviceClassResolver() schedulerinterface.DeviceClassResolver {
 	return (*unsetDeviceClassResolver)(lister)
+}
+
+func (lister *unsetSharedLister) PodGroups() schedulerinterface.PodGroupLister {
+	return (*unsetPodGroupLister)(lister)
 }
 
 func (lister *unsetSharedLister) CSINodes() schedulerinterface.CSINodeLister {
