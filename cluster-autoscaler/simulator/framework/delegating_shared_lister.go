@@ -60,6 +60,11 @@ func (lister *DelegatingSchedulerSharedLister) StorageInfos() schedulerinterface
 	return lister.delegate.StorageInfos()
 }
 
+// PodGroupStates returns a PodGroupStateLister
+func (lister *DelegatingSchedulerSharedLister) PodGroupStates() schedulerinterface.PodGroupStateLister {
+	return lister.delegate.PodGroupStates()
+}
+
 // ResourceClaims returns a ResourceClaimTracker.
 func (lister *DelegatingSchedulerSharedLister) ResourceClaims() schedulerinterface.ResourceClaimTracker {
 	return lister.delegate.ResourceClaims()
@@ -98,6 +103,7 @@ func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
 type unsetSharedLister struct{}
 type unsetNodeInfoLister unsetSharedLister
 type unsetStorageInfoLister unsetSharedLister
+type unsetPodGroupStateLister unsetSharedLister
 type unsetResourceClaimTracker unsetSharedLister
 type unsetResourceSliceLister unsetSharedLister
 type unsetDeviceClassLister unsetSharedLister
@@ -126,6 +132,10 @@ func (lister *unsetNodeInfoLister) Get(nodeName string) (schedulerinterface.Node
 
 func (lister *unsetStorageInfoLister) IsPVCUsedByPods(key string) bool {
 	return false
+}
+
+func (lister *unsetPodGroupStateLister) Get(podGroupNamespace, podGroupName string) (schedulerinterface.PodGroupState, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
 }
 
 func (u *unsetResourceClaimTracker) List() ([]*resourceapi.ResourceClaim, error) {
@@ -199,6 +209,10 @@ func (lister *unsetSharedLister) NodeInfos() schedulerinterface.NodeInfoLister {
 // StorageInfos returns a fake StorageInfoLister which always returns an error
 func (lister *unsetSharedLister) StorageInfos() schedulerinterface.StorageInfoLister {
 	return (*unsetStorageInfoLister)(lister)
+}
+
+func (lister *unsetSharedLister) PodGroupStates() schedulerinterface.PodGroupStateLister {
+	return (*unsetPodGroupStateLister)(lister)
 }
 
 func (lister *unsetSharedLister) ResourceClaims() schedulerinterface.ResourceClaimTracker {
