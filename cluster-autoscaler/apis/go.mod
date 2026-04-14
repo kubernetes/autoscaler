@@ -8,7 +8,7 @@ require (
 	k8s.io/apimachinery v0.36.0
 	k8s.io/client-go v0.36.0
 	k8s.io/code-generator v0.36.0
-	sigs.k8s.io/controller-runtime v0.22.4
+	sigs.k8s.io/controller-runtime v0.23.1-0.20260311113219-28c991a58709
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.2
 )
 
