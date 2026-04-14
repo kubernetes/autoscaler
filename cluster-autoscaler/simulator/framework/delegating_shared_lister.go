@@ -165,12 +165,12 @@ func (u *unsetResourceClaimTracker) SignalClaimPendingAllocation(claimUID types.
 	return fmt.Errorf("lister not set in delegate")
 }
 
-func (u *unsetResourceClaimTracker) ClaimHasPendingAllocation(claimUID types.UID) bool {
+func (u *unsetResourceClaimTracker) GetPendingAllocation(claimUID types.UID) *resourceapi.AllocationResult {
 	klog.Errorf("lister not set in delegate")
-	return false
+	return nil
 }
 
-func (u *unsetResourceClaimTracker) RemoveClaimPendingAllocation(claimUID types.UID) (deleted bool) {
+func (u *unsetResourceClaimTracker) MaybeRemoveClaimPendingAllocation(claimUID types.UID, forceRemove bool) (deleted bool) {
 	klog.Errorf("lister not set in delegate")
 	return false
 }

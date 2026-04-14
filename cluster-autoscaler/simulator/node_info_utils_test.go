@@ -762,9 +762,11 @@ func verifySanitizedPodResourceClaims(initialPod, sanitizedPod *framework.PodInf
 
 	for i, sanitizedClaim := range sanitizedClaims {
 		initialClaim := initialClaims[i]
-
+		// TODO(autoscaler/issues/9570): KEP-5729 changed IsForPod to be able to work
+		// with pod groups, re-evaluate whether they need to be considered here.
+		//
 		// Pod-owned claims should be sanitized, other claims shouldn't.
-		err := resourceclaim.IsForPod(owningPod, initialClaim)
+		err := resourceclaim.IsForPod(owningPod, initialClaim, false)
 		isPodOwned := err == nil
 		if isPodOwned {
 			// Pod-owned claim, verify that it was sanitized.

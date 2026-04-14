@@ -65,7 +65,7 @@ func SanitizedNodeResourceSlices(nodeLocalSlices []*resourceapi.ResourceSlice, n
 func SanitizedPodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceapi.ResourceClaim, nameSuffix, newNodeName, oldNodeName string, oldNodePoolNames set.Set[string]) ([]*resourceapi.ResourceClaim, error) {
 	var result []*resourceapi.ResourceClaim
 	for _, claim := range claims {
-		// TODO(mfuhol): KEP-5729 changed IsReservedForPod to be able to work
+		// TODO(autoscaler/issues/9570): KEP-5729 changed IsReservedForPod to be able to work
 		// with pod groups, re-evaluate whether they need to be considered here.
 		if err := resourceclaim.IsForPod(oldOwner, claim, false); err != nil {
 			// Only claims owned by the pod are bound to its lifecycle. The lifecycle of other claims is independent, and they're most likely shared

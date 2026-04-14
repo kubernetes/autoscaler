@@ -139,7 +139,9 @@ func (s *Snapshot) RemovePodOwnedClaims(pod *apiv1.Pod) {
 
 	for _, claim := range claims {
 		claimId := GetClaimId(claim)
-		if err := resourceclaim.IsForPod(pod, claim); err == nil {
+		// TODO(autoscaler/issues/9570): KEP-5729 changed IsForPod to be able to work
+		// with pod groups, re-evaluate whether they need to be considered here.
+		if err := resourceclaim.IsForPod(pod, claim, false); err == nil {
 			s.resourceClaims.DeleteCurrent(claimId)
 			continue
 		}
@@ -160,7 +162,9 @@ func (s *Snapshot) ReservePodClaims(pod *apiv1.Pod) error {
 	}
 
 	for _, claim := range claims {
-		if drautils.ClaimFullyReserved(claim) && !resourceclaim.IsReservedForPod(pod, claim) {
+		// TODO(autoscaler/issues/9570): KEP-5729 changed IsReservedForPod to be able to work
+		// with pod groups, re-evaluate whether they need to be considered here.
+		if drautils.ClaimFullyReserved(claim) && !resourceclaim.IsReservedForPod(pod, claim, false) {
 			return fmt.Errorf("claim %s/%s already has max number of reservations set, can't add more", claim.Namespace, claim.Name)
 		}
 	}
@@ -188,7 +192,9 @@ func (s *Snapshot) UnreservePodClaims(pod *apiv1.Pod) error {
 		claimId := GetClaimId(claim)
 		claim := s.ensureClaimWritable(claim)
 		drautils.ClearPodReservationInPlace(claim, pod)
-		if err := resourceclaim.IsForPod(pod, claim); err == nil || !drautils.ClaimInUse(claim) {
+		// TODO(autoscaler/issues/9570): KEP-5729 changed IsForPod to be able to work
+		// with pod groups, re-evaluate whether they need to be considered here.
+		if err := resourceclaim.IsForPod(pod, claim, false); err == nil || !drautils.ClaimInUse(claim) {
 			drautils.DeallocateClaimInPlace(claim)
 		}
 
