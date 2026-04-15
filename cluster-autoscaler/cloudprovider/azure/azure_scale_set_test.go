@@ -1513,3 +1513,28 @@ func TestInstanceStatusFromProvisioningStateAndPowerState(t *testing.T) {
 		})
 	})
 }
+
+func TestGetCurSizeReturnsInMemorySizeWhenAPIReturnsZeroForLargeVMSS(t *testing.T) {
+
+	// test for bug #9452
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager := newTestAzureManager(t)
+
+	vmssListWithZeroCapacity := newTestVMSSList(0, "test-asg", testLocation, armcompute.OrchestrationModeUniform)
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(vmssListWithZeroCapacity, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	err := manager.forceRefresh()
+	assert.NoError(t, err)
+
+	ss := newTestScaleSet(manager, "test-asg")
+	ss.curSize = 90
+	ss.lastSizeRefresh = time.Now().Add(-2 * manager.azureCache.refreshInterval)
+
+	size, err2 := ss.getCurSize()
+	assert.Nil(t, err2)
+	assert.Equal(t, int64(90), size, "getCurSize() must not accept capacity=0 when in-memory size is 90 (transient API anomaly)")
+}
