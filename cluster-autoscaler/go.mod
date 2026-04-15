@@ -2,7 +2,7 @@ module k8s.io/autoscaler/cluster-autoscaler
 
 go 1.26.0
 
-godebug default=go1.25
+godebug default=go1.26
 
 require (
 	cloud.google.com/go/compute/metadata v0.9.0
