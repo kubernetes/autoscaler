@@ -293,7 +293,7 @@ func TestCompareDraResources(t *testing.T) {
 				},
 			},
 		},
-		"HashDelimiterAntiCollision": { // "A"+"BC" and "AB"+"C" both concat to "ABC".
+		"HashWithDelimiter": { // "A"+"BC" and "AB"+"C" both concat to "ABC".
 			templateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeAPlusBC})},
 			nodeSlices:     []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeABPlusC})},
 			wantReports: []resourceDelta{
@@ -305,6 +305,17 @@ func TestCompareDraResources(t *testing.T) {
 					NodeSignatureMap:     attributesMap{v1.QualifiedName("AB"): {}, v1.QualifiedName("C"): {}},
 				},
 			},
+		},
+		"DuplicateCollision": {
+			templateSlices: []*resourceapi.ResourceSlice{
+				makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+				makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+			},
+			nodeSlices: []*resourceapi.ResourceSlice{
+				makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+				makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+			},
+			wantReports: []resourceDelta{},
 		},
 		"FuzzyPriorityOverlapOverCount": {
 			templateSlices: []*resourceapi.ResourceSlice{
