@@ -116,6 +116,26 @@ type nodeResourceIdentifier struct {
 	signature uint64
 }
 
+// resourcePoolIdentifier is used to identify a group of devices with the same attributes, driver and resource pool.
+type resourcePoolIdentifier struct {
+	driver    string
+	pool      string
+	signature uint64
+}
+
+// poolReference is used to identify a resource pool.
+type poolReference struct {
+	driver string
+	pool   string
+}
+
+// poolState is used to track the state of a resource pool.
+type poolState struct {
+	generation    int64
+	count         int64
+	completeCount int64
+}
+
 // resourcePoolComparator is used to compare the resource topologies of the template and the node.
 // Component heavily relies on reusable buffers to minimize allocations and thus is not thread-safe
 // and functions apart of CompareResourcePools are not recommended to be called directly as it may
@@ -231,169 +251,6 @@ func (c *resourcePoolComparator) CompareResourcePools(
 	return deltasBuffer
 }
 
-// findNodeFuzzyMatch finds the best matching resource group available on the node
-// and returns the index of the found group in the nodeResources list or -1 if none
-// found
-func (c *resourcePoolComparator) findNodeFuzzyMatch(target *resourceGroup) int {
-	bestMatchIndex := -1
-	bestOverlap := -1
-	bestDeviceCountDelta := int64(math.MaxInt64)
-
-	for j, node := range c.nodeResources {
-		if target.driver != node.driver {
-			continue
-		}
-
-		overlap := computeSetOverlap(target.attrs, node.attrs)
-		deviceCountDelta := int64(target.deviceCount) - int64(node.deviceCount)
-
-		if overlap < bestOverlap {
-			continue
-		}
-
-		// Primary objective: Maximize attribute overlap
-		// Secondary objective: Minimize difference in device counts
-		if overlap > bestOverlap || absInt64(deviceCountDelta) < absInt64(bestDeviceCountDelta) {
-			bestDeviceCountDelta = deviceCountDelta
-			bestOverlap = overlap
-			bestMatchIndex = j
-		}
-	}
-
-	return bestMatchIndex
-}
-
-// eliminateFuzzyMatchResources eliminates resource groups that match with the best overlap and reports discrepancies.
-func (c *resourcePoolComparator) eliminateFuzzyMatchResources(deltasBuffer []resourceDelta) []resourceDelta {
-	for i := len(c.templateResources) - 1; i >= 0; i-- {
-		template := &c.templateResources[i]
-		bestMatchIndex := c.findNodeFuzzyMatch(template)
-
-		// Completely unmatched driver pool
-		if bestMatchIndex == -1 {
-			continue
-		}
-
-		bestMatch := c.nodeResources[bestMatchIndex]
-		c.templateResources = swapDelete(c.templateResources, i)
-		c.nodeResources = swapDelete(c.nodeResources, bestMatchIndex)
-		hasMissing := mapsHaveKeyDifference(template.attrs, bestMatch.attrs)
-		hasExtra := mapsHaveKeyDifference(bestMatch.attrs, template.attrs)
-		deviceCountDelta := int64(template.deviceCount) - int64(bestMatch.deviceCount)
-
-		// Only report if a real diff exists (e.g. different attributes or device count)
-		if hasMissing || hasExtra || deviceCountDelta != 0 {
-			deltasBuffer = append(deltasBuffer, resourceDelta{
-				Driver:               template.driver,
-				TemplateResourcePool: template.pool,
-				NodeResourcePool:     bestMatch.pool,
-				DeviceCountDelta:     deviceCountDelta,
-				TemplateSignatureMap: template.attrs,
-				NodeSignatureMap:     bestMatch.attrs,
-			})
-		}
-	}
-
-	return deltasBuffer
-}
-
-// eliminateExactMatchResources eliminates resource groups that match exactly by attribute signatures and device counts.
-func (c *resourcePoolComparator) eliminateExactMatchResources() {
-	for i := len(c.templateResources) - 1; i >= 0; i-- {
-		t := c.templateResources[i]
-		identifier := nodeResourceIdentifier{driver: t.driver, signature: t.signature}
-		index, ok := c.nodeResourceAddressMap[identifier]
-		if !ok {
-			continue
-		}
-
-		// Fast path: check if the resource group at the found index matches exactly
-		if attributesMatch(t.attrs, c.nodeResources[index].attrs) && t.deviceCount == c.nodeResources[index].deviceCount {
-			c.templateResources = swapDelete(c.templateResources, i)
-			c.nodeResources = swapDelete(c.nodeResources, index)
-
-			// Update address map with a new moved element and clear old entry
-			delete(c.nodeResourceAddressMap, identifier)
-			if index < len(c.nodeResources) {
-				movedIdentifier := nodeResourceIdentifier{
-					driver:    c.nodeResources[index].driver,
-					signature: c.nodeResources[index].signature,
-				}
-				c.nodeResourceAddressMap[movedIdentifier] = index
-			}
-
-			continue
-		}
-
-		// Slow path: in case of a hash collision, iterate over the node resources to find the matching resource group
-		for j, n := range c.nodeResources {
-			if n.signature != t.signature || n.driver != t.driver {
-				continue
-			}
-
-			if attributesMatch(t.attrs, n.attrs) && t.deviceCount == n.deviceCount {
-				c.templateResources = swapDelete(c.templateResources, i)
-				c.nodeResources = swapDelete(c.nodeResources, j)
-
-				// Update address map with a new moved element and clear old entry
-				delete(c.nodeResourceAddressMap, identifier)
-				if j < len(c.nodeResources) {
-					movedIdentifier := nodeResourceIdentifier{
-						driver:    c.nodeResources[j].driver,
-						signature: c.nodeResources[j].signature,
-					}
-					c.nodeResourceAddressMap[movedIdentifier] = j
-				}
-
-				break
-			}
-		}
-	}
-}
-
-// populateTemplateGroups populates the template resource groups from the template slices.
-func (c *resourcePoolComparator) populateTemplateGroups(templateSlices []*v1.ResourceSlice) {
-	c.templateResources = c.buildResourceGroups(templateSlices, c.templateResources, c.templatePoolAddressMap)
-}
-
-// populateNodeGroups populates the node resource groups from the node slices.
-func (c *resourcePoolComparator) populateNodeGroups(nodeSlices []*v1.ResourceSlice) {
-	c.nodeResources = c.buildResourceGroups(nodeSlices, c.nodeResources, c.nodePoolAddressMap)
-	for i, n := range c.nodeResources {
-		identifier := nodeResourceIdentifier{driver: n.driver, signature: n.signature}
-		c.nodeResourceAddressMap[identifier] = i
-	}
-}
-
-// poolReference is used to identify a resource pool.
-type poolReference struct {
-	driver string
-	pool   string
-}
-
-// poolState is used to track the state of a resource pool.
-type poolState struct {
-	generation    int64
-	count         int64
-	completeCount int64
-}
-
-// populateComparedDrivers populates the list of drivers that should be compared, assumes that
-// drivers in flux are already filtered out.
-func (c *resourcePoolComparator) populateComparedDrivers(templateSlices []*v1.ResourceSlice) {
-	for _, t := range templateSlices {
-		if slices.Contains(c.comparedDrivers, t.Spec.Driver) {
-			continue
-		}
-
-		if slices.Contains(c.driversInFlux, t.Spec.Driver) {
-			continue
-		}
-
-		c.comparedDrivers = append(c.comparedDrivers, t.Spec.Driver)
-	}
-}
-
 // populateDriversInFlux detects drivers which have at least a single resource pool with multiple generation numbers.
 func (c *resourcePoolComparator) populateDriversInFlux(resourceSlices []*v1.ResourceSlice) {
 	for _, rs := range resourceSlices {
@@ -428,11 +285,139 @@ func (c *resourcePoolComparator) populateDriversInFlux(resourceSlices []*v1.Reso
 	}
 }
 
-// resourcePoolIdentifier is used to identify a group of devices with the same attributes, driver and resource pool.
-type resourcePoolIdentifier struct {
-	driver    string
-	pool      string
-	signature uint64
+// populateComparedDrivers populates the list of drivers that should be compared, assumes that
+// drivers in flux are already filtered out.
+func (c *resourcePoolComparator) populateComparedDrivers(templateSlices []*v1.ResourceSlice) {
+	for _, t := range templateSlices {
+		if slices.Contains(c.comparedDrivers, t.Spec.Driver) {
+			continue
+		}
+
+		if slices.Contains(c.driversInFlux, t.Spec.Driver) {
+			continue
+		}
+
+		c.comparedDrivers = append(c.comparedDrivers, t.Spec.Driver)
+	}
+}
+
+// populateTemplateGroups populates the template resource groups from the template slices.
+func (c *resourcePoolComparator) populateTemplateGroups(templateSlices []*v1.ResourceSlice) {
+	c.templateResources = c.buildResourceGroups(templateSlices, c.templateResources, c.templatePoolAddressMap)
+}
+
+// populateNodeGroups populates the node resource groups from the node slices.
+func (c *resourcePoolComparator) populateNodeGroups(nodeSlices []*v1.ResourceSlice) {
+	c.nodeResources = c.buildResourceGroups(nodeSlices, c.nodeResources, c.nodePoolAddressMap)
+	for i, n := range c.nodeResources {
+		identifier := nodeResourceIdentifier{driver: n.driver, signature: n.signature}
+		c.nodeResourceAddressMap[identifier] = i
+	}
+}
+
+// eliminateExactMatchResources eliminates resource groups that match exactly by attribute signatures and device counts.
+func (c *resourcePoolComparator) eliminateExactMatchResources() {
+	for i := len(c.templateResources) - 1; i >= 0; i-- {
+		t := c.templateResources[i]
+		identifier := nodeResourceIdentifier{driver: t.driver, signature: t.signature}
+		index, ok := c.nodeResourceAddressMap[identifier]
+
+		// Fast path: check if the resource group at the found index matches exactly
+		if ok && attributesMatch(t.attrs, c.nodeResources[index].attrs) && t.deviceCount == c.nodeResources[index].deviceCount {
+			c.templateResources = swapDelete(c.templateResources, i)
+			c.nodeResources = swapDelete(c.nodeResources, index)
+			c.deleteNodeResourceAddress(identifier, index)
+
+			continue
+		}
+
+		// Slow path: in case of a hash collision, iterate over the node resources to find the matching resource group
+		for j, n := range c.nodeResources {
+			if n.signature != t.signature || n.driver != t.driver {
+				continue
+			}
+
+			if attributesMatch(t.attrs, n.attrs) && t.deviceCount == n.deviceCount {
+				c.templateResources = swapDelete(c.templateResources, i)
+				c.nodeResources = swapDelete(c.nodeResources, j)
+				c.deleteNodeResourceAddress(identifier, j)
+				break
+			}
+		}
+	}
+}
+
+// eliminateFuzzyMatchResources eliminates resource groups that match with the best overlap and reports discrepancies.
+func (c *resourcePoolComparator) eliminateFuzzyMatchResources(deltasBuffer []resourceDelta) []resourceDelta {
+	for i := len(c.templateResources) - 1; i >= 0; i-- {
+		template := &c.templateResources[i]
+		bestMatchIndex := c.findNodeFuzzyMatch(template)
+
+		// Completely unmatched driver pool
+		if bestMatchIndex == -1 {
+			continue
+		}
+
+		bestMatch := c.nodeResources[bestMatchIndex]
+		c.templateResources = swapDelete(c.templateResources, i)
+		c.nodeResources = swapDelete(c.nodeResources, bestMatchIndex)
+		deviceCountDelta := int64(template.deviceCount) - int64(bestMatch.deviceCount)
+
+		deltasBuffer = append(deltasBuffer, resourceDelta{
+			Driver:               template.driver,
+			TemplateResourcePool: template.pool,
+			NodeResourcePool:     bestMatch.pool,
+			DeviceCountDelta:     deviceCountDelta,
+			TemplateSignatureMap: template.attrs,
+			NodeSignatureMap:     bestMatch.attrs,
+		})
+	}
+
+	return deltasBuffer
+}
+
+// findNodeFuzzyMatch finds the best matching resource group available on the node
+// and returns the index of the found group in the nodeResources list or -1 if none
+// found
+func (c *resourcePoolComparator) findNodeFuzzyMatch(target *resourceGroup) int {
+	bestMatchIndex := -1
+	bestOverlap := -1
+	bestDeviceCountDelta := int64(math.MaxInt64)
+
+	for j, node := range c.nodeResources {
+		if target.driver != node.driver {
+			continue
+		}
+
+		overlap := computeSetOverlap(target.attrs, node.attrs)
+		deviceCountDelta := int64(target.deviceCount) - int64(node.deviceCount)
+
+		if overlap < bestOverlap {
+			continue
+		}
+
+		// Primary objective: Maximize attribute overlap
+		// Secondary objective: Minimize difference in device counts
+		if overlap > bestOverlap || absInt64(deviceCountDelta) < absInt64(bestDeviceCountDelta) {
+			bestDeviceCountDelta = deviceCountDelta
+			bestOverlap = overlap
+			bestMatchIndex = j
+		}
+	}
+
+	return bestMatchIndex
+}
+
+// deleteNodeResourceAddress deletes the node resource address from the map and updates the map with a new moved element.
+func (c *resourcePoolComparator) deleteNodeResourceAddress(identifier nodeResourceIdentifier, index int) {
+	delete(c.nodeResourceAddressMap, identifier)
+	if index < len(c.nodeResources) {
+		movedIdentifier := nodeResourceIdentifier{
+			driver:    c.nodeResources[index].driver,
+			signature: c.nodeResources[index].signature,
+		}
+		c.nodeResourceAddressMap[movedIdentifier] = index
+	}
 }
 
 // ingestPoolDevice ingests device into a resource group by either placing it into one of the
@@ -444,8 +429,8 @@ func (c *resourcePoolComparator) ingestPoolDevice(
 	groups []resourceGroup,
 	addresses map[resourcePoolIdentifier]int,
 ) []resourceGroup {
-	signature := computeAttrMapHash(attributes)
-	identifier := resourcePoolIdentifier{driver: driver, pool: pool, signature: signature}
+	hash := computeAttrMapHash(attributes)
+	identifier := resourcePoolIdentifier{driver: driver, pool: pool, signature: hash}
 
 	if idx, ok := addresses[identifier]; ok {
 		// Fast path: if the attributes match the attributes of the resource group at the found index
@@ -456,7 +441,7 @@ func (c *resourcePoolComparator) ingestPoolDevice(
 
 		// Slow path: in case of a hash collision, iterate over the resource groups to find the matching resource group
 		for i := range groups {
-			if groups[i].signature == signature && groups[i].driver == driver && groups[i].pool == pool {
+			if groups[i].signature == hash && groups[i].driver == driver && groups[i].pool == pool {
 				if attributesMatch(groups[i].attrs, attributes) {
 					groups[i].deviceCount++
 					return groups
@@ -470,7 +455,7 @@ func (c *resourcePoolComparator) ingestPoolDevice(
 		driver:      driver,
 		pool:        pool,
 		attrs:       attributes,
-		signature:   signature,
+		signature:   hash,
 		deviceCount: 1,
 	})
 	addresses[identifier] = len(groups) - 1
@@ -557,19 +542,4 @@ func absInt64(a int64) int64 {
 		return -a
 	}
 	return a
-}
-
-// mapsHaveKeyDifference checks if two maps have any difference.
-func mapsHaveKeyDifference(base, subtract attributesMap) bool {
-	if len(base) != len(subtract) {
-		return true
-	}
-
-	for k := range base {
-		if _, ok := subtract[k]; !ok {
-			return true
-		}
-	}
-
-	return false
 }
