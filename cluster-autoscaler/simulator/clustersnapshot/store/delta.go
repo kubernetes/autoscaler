@@ -402,6 +402,7 @@ func (snapshot *DeltaSnapshotStore) StorageInfos() schedulerinterface.StorageInf
 	return (*deltaSnapshotStoreStorageLister)(snapshot)
 }
 
+// PodGroupStates returns pod group state lister.
 func (snapshot *DeltaSnapshotStore) PodGroupStates() schedulerinterface.PodGroupStateLister {
 	return (*deltaSnapshotPodGroupStateLister)(snapshot)
 }
