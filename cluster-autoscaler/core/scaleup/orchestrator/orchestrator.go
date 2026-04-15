@@ -239,7 +239,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		nodeGroups = appendCreatedNodeGroups(nodeGroups, oldId, createNodeGroupResults)
 	}
 
-	scaleUpInfos, aErr := o.balanceScaleUps(now, bestOption.NodeGroup, newNodes, nodeInfos, schedulablePodGroups)
+	scaleUpInfos, aErr := o.balanceScaleUps(now, bestOption.NodeGroup, newNodes, nodeInfos, schedulablePodGroups, tracker)
 	if aErr != nil {
 		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
@@ -725,6 +725,7 @@ func (o *ScaleUpOrchestrator) balanceScaleUps(
 	newNodes int,
 	nodeInfos map[string]*framework.NodeInfo,
 	schedulablePodGroups map[string][]estimator.PodEquivalenceGroup,
+	tracker *resourcequotas.Tracker,
 ) ([]nodegroupset.ScaleUpInfo, errors.AutoscalerError) {
 	// Recompute similar node groups in case they need to be updated
 	similarNodeGroups := o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePodGroups, now)
@@ -741,6 +742,21 @@ func (o *ScaleUpOrchestrator) balanceScaleUps(
 		klog.V(2).Info("No similar node groups found")
 	}
 
+	// Filter out similar node groups that already exceed their quota.
+	var quotaValidGroups []cloudprovider.NodeGroup
+	for _, ng := range similarNodeGroups {
+		nodeInfo, found := nodeInfos[ng.Id()]
+		if !found {
+			continue
+		}
+		if skipReason := o.IsNodeGroupResourceExceeded(tracker, ng, nodeInfo, 1); skipReason != nil {
+			klog.V(2).Infof("Ignoring node group %s when balancing: quota exceeded", ng.Id())
+			continue
+		}
+		quotaValidGroups = append(quotaValidGroups, ng)
+	}
+	similarNodeGroups = quotaValidGroups
+
 	targetNodeGroups := []cloudprovider.NodeGroup{nodeGroup}
 	for _, ng := range similarNodeGroups {
 		targetNodeGroups = append(targetNodeGroups, ng)
@@ -753,7 +769,59 @@ func (o *ScaleUpOrchestrator) balanceScaleUps(
 		}
 		klog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), strings.Join(names, ", "))
 	}
-	return o.processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(o.autoscalingCtx, targetNodeGroups, newNodes)
+	scaleUpInfos, aErr := o.processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(o.autoscalingCtx, targetNodeGroups, newNodes)
+	if aErr != nil {
+		return nil, aErr
+	}
+	return o.capScaleUpsByQuota(scaleUpInfos, nodeInfos, tracker), nil
+}
+
+// capScaleUpsByQuota caps each group's scale-up delta by its available quota and filters
+// out groups capped to zero. Uses ApplyDelta to commit consumed quota so subsequent groups
+// sharing the same quota see the updated limits.
+// Note: unclaimed capacity from a capped group is not redistributed to other groups;
+// a group capped below its balanced delta may leave some pods unschedulable until the
+// next autoscaler cycle.
+func (o *ScaleUpOrchestrator) capScaleUpsByQuota(
+	scaleUpInfos []nodegroupset.ScaleUpInfo,
+	nodeInfos map[string]*framework.NodeInfo,
+	tracker *resourcequotas.Tracker,
+) []nodegroupset.ScaleUpInfo {
+	for i := range scaleUpInfos {
+		sui := &scaleUpInfos[i]
+		delta := sui.NewSize - sui.CurrentSize
+		if delta <= 0 {
+			continue
+		}
+		nodeInfo, found := nodeInfos[sui.Group.Id()]
+		if !found {
+			continue
+		}
+		checkResult, err := tracker.CheckDelta(o.autoscalingCtx, sui.Group, nodeInfo.Node(), delta)
+		if err != nil {
+			klog.Errorf("Failed to check quota for balanced group %s: %v", sui.Group.Id(), err)
+			continue
+		}
+		allowedDelta := checkResult.AllowedDelta
+		if allowedDelta < delta {
+			klog.V(1).Infof("Capping scale-up of %s from %d to %d nodes due to quota", sui.Group.Id(), delta, allowedDelta)
+			sui.NewSize = sui.CurrentSize + allowedDelta
+		}
+		if allowedDelta > 0 {
+			if _, err := tracker.ApplyDelta(o.autoscalingCtx, sui.Group, nodeInfo.Node(), allowedDelta); err != nil {
+				klog.Errorf("Failed to apply quota delta for balanced group %s: %v", sui.Group.Id(), err)
+			}
+		}
+	}
+
+	// Filter out groups that were capped to zero additional nodes by quota.
+	filtered := make([]nodegroupset.ScaleUpInfo, 0, len(scaleUpInfos))
+	for _, sui := range scaleUpInfos {
+		if sui.NewSize != sui.CurrentSize {
+			filtered = append(filtered, sui)
+		}
+	}
+	return filtered
 }
 
 // ComputeSimilarNodeGroups finds similar node groups which can schedule the same
