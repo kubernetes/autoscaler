@@ -59,6 +59,8 @@ func (n *instancePoolNodeGroup) MaxSize() int {
 // MinSize returns minimum size of the node group.
 func (n *instancePoolNodeGroup) MinSize() int {
 
+	// NOTE: minSize is expected to be >= 1.
+	// Update this check to allow 0 if scale-from-zero support is added.
 	if n.minSize <= 0 {
 		return 1
 	}
