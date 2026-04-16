@@ -22,7 +22,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -89,6 +91,7 @@ type PrometheusHistoryProviderConfig struct {
 	PodLabelPrefix, PodLabelsMetricName              string
 	PodNamespaceLabel, PodNameLabel                  string
 	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel string
+	ClusterLabel, ClusterID                          string
 	CadvisorMetricsJobName                           string
 	Namespace                                        string
 	CPUMetricName, MemoryMetricName                  string
@@ -327,47 +330,189 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 	if err != nil {
 		return fmt.Errorf("cannot get timeseries for labels: %v", err)
 	}
-
-	matrix, ok := result.(prommodel.Matrix)
-	if !ok {
-		return fmt.Errorf("expected query to return a matrix; got result type %T", result)
-	}
-
-	for _, ts := range matrix {
-		podID, err := p.getPodIDFromLabels(ts.Metric)
-		if err != nil {
-			return fmt.Errorf("cannot get container ID from labels %v: %v", ts.Metric, err)
+	switch value := result.(type) {
+	case prommodel.Vector:
+		for _, sample := range value {
+			if err := p.updatePodLabelsFromMetric(res, sample.Metric, sample.Timestamp.Time()); err != nil {
+				return err
+			}
 		}
-		podHistory, ok := res[*podID]
-		if !ok {
-			podHistory = newEmptyHistory()
-			res[*podID] = podHistory
+	case prommodel.Matrix:
+		for _, ts := range value {
+			// time series results will always be sorted chronologically from oldest to
+			// newest, so the last element is the latest sample
+			lastSample := ts.Values[len(ts.Values)-1]
+			if err := p.updatePodLabelsFromMetric(res, ts.Metric, lastSample.Timestamp.Time()); err != nil {
+				return err
+			}
 		}
-		podLabels := p.getPodLabelsMap(ts.Metric)
-
-		// time series results will always be sorted chronologically from oldest to
-		// newest, so the last element is the latest sample
-		lastSample := ts.Values[len(ts.Values)-1]
-		if lastSample.Timestamp.Time().After(podHistory.LastSeen) {
-			podHistory.LastSeen = lastSample.Timestamp.Time()
-			podHistory.LastLabels = podLabels
-		}
+	default:
+		return fmt.Errorf("expected query to return a matrix or vector; got result type %T", result)
 	}
 	return nil
 }
 
+func (p *prometheusHistoryProvider) updatePodLabelsFromMetric(res map[model.PodID]*PodHistory, metric prommodel.Metric, sampleTime time.Time) error {
+	if p.config.ClusterLabel != "" {
+		clusterLabelValue, ok := metric[prommodel.LabelName(p.config.ClusterLabel)]
+		if !ok || string(clusterLabelValue) != p.config.ClusterID {
+			return nil
+		}
+	}
+	podID, err := p.getPodIDFromLabels(metric)
+	if err != nil {
+		return fmt.Errorf("cannot get container ID from labels %v: %v", metric, err)
+	}
+	podHistory, ok := res[*podID]
+	if !ok {
+		podHistory = newEmptyHistory()
+		res[*podID] = podHistory
+	}
+	podLabels := p.getPodLabelsMap(metric)
+	if sampleTime.After(podHistory.LastSeen) {
+		podHistory.LastSeen = sampleTime
+		podHistory.LastLabels = podLabels
+	}
+	return nil
+}
+
+type clusterMatcherStatus int
+
+const (
+	clusterMatcherMissing clusterMatcherStatus = iota
+	clusterMatcherCompatible
+	clusterMatcherIncompatible
+)
+
+var metricNamePattern = regexp.MustCompile(`^[a-zA-Z_:][a-zA-Z0-9_:]*$`)
+
+func matchRegexOperator(expr, clusterID string) (bool, error) {
+	compiled, err := regexp.Compile("^(?:" + expr + ")$")
+	if err != nil {
+		return false, fmt.Errorf("invalid regex matcher %q: %v", expr, err)
+	}
+	return compiled.MatchString(clusterID), nil
+}
+
+func isRegexExactlyClusterID(expr, clusterID string) bool {
+	trimmed := strings.TrimSpace(expr)
+	escapedClusterID := regexp.QuoteMeta(clusterID)
+	return trimmed == escapedClusterID || trimmed == "^"+escapedClusterID+"$"
+}
+
+func isStrictClusterRegex(expr, clusterID string) (bool, error) {
+	matchesClusterID, err := matchRegexOperator(expr, clusterID)
+	if err != nil {
+		return false, err
+	}
+	if !matchesClusterID {
+		return false, nil
+	}
+	return isRegexExactlyClusterID(expr, clusterID), nil
+}
+
+func getClusterMatcherStatus(selector, clusterLabel, clusterID string) (clusterMatcherStatus, error) {
+	escapedLabel := regexp.QuoteMeta(clusterLabel)
+	matcherPattern := fmt.Sprintf(`(^|,)\s*%s\s*(=~|!~|=|!=)\s*"(?:[^"\\]|\\.)*"\s*(,|$)`, escapedLabel)
+	matcherRegex := regexp.MustCompile(matcherPattern)
+	matches := matcherRegex.FindAllStringSubmatch(selector, -1)
+	if len(matches) == 0 {
+		return clusterMatcherMissing, nil
+	}
+	if len(matches) > 1 {
+		return clusterMatcherIncompatible, fmt.Errorf("pod label query selector %q contains multiple matchers for label %q", selector, clusterLabel)
+	}
+
+	fullMatcher := strings.TrimSpace(matches[0][0])
+	operator := matches[0][2]
+	valueRegex := regexp.MustCompile(`"(?:[^"\\]|\\.)*"`)
+	quotedValue := valueRegex.FindString(fullMatcher)
+	if quotedValue == "" {
+		return clusterMatcherIncompatible, fmt.Errorf("pod label query selector %q has invalid matcher for label %q", selector, clusterLabel)
+	}
+	rawValue, err := strconv.Unquote(quotedValue)
+	if err != nil {
+		return clusterMatcherIncompatible, fmt.Errorf("cannot parse matcher value %q for label %q: %v", quotedValue, clusterLabel, err)
+	}
+
+	switch operator {
+	case "=":
+		if rawValue == clusterID {
+			return clusterMatcherCompatible, nil
+		}
+		return clusterMatcherIncompatible, nil
+	case "!=":
+		return clusterMatcherIncompatible, nil
+	case "=~":
+		isStrictMatcher, err := isStrictClusterRegex(rawValue, clusterID)
+		if err != nil {
+			return clusterMatcherIncompatible, err
+		}
+		if isStrictMatcher {
+			return clusterMatcherCompatible, nil
+		}
+		return clusterMatcherIncompatible, nil
+	case "!~":
+		return clusterMatcherIncompatible, nil
+	default:
+		return clusterMatcherIncompatible, fmt.Errorf("unsupported operator %q for label %q", operator, clusterLabel)
+	}
+}
+
+func (p *prometheusHistoryProvider) getClusterScopedPodLabelsQuery() (string, error) {
+	query := strings.TrimSpace(p.config.PodLabelsMetricName)
+	if p.config.ClusterLabel == "" {
+		return query, nil
+	}
+
+	clusterMatcher := fmt.Sprintf(`%s="%s"`, p.config.ClusterLabel, p.config.ClusterID)
+	open := strings.Index(query, "{")
+	close := strings.LastIndex(query, "}")
+	if open == -1 && close == -1 {
+		// Plain metric names (for example "up") are valid selector queries.
+		// Convert them into an explicitly cluster-scoped selector.
+		if metricNamePattern.MatchString(query) {
+			return fmt.Sprintf(`%s{%s}`, query, clusterMatcher), nil
+		}
+		return "", fmt.Errorf("cannot inject cluster matcher into pod label query %q", query)
+	}
+	if open == -1 || close == -1 || close < open {
+		return "", fmt.Errorf("cannot inject cluster matcher into pod label query %q", query)
+	}
+
+	selector := strings.TrimSpace(query[open+1 : close])
+	matcherStatus, err := getClusterMatcherStatus(selector, p.config.ClusterLabel, p.config.ClusterID)
+	if err != nil {
+		return "", err
+	}
+	if matcherStatus == clusterMatcherCompatible {
+		return query, nil
+	}
+
+	if selector == "" {
+		return query[:open+1] + clusterMatcher + query[close:], nil
+	}
+	return query[:close] + ", " + clusterMatcher + query[close:], nil
+}
+
 func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHistory, error) {
 	res := make(map[model.PodID]*PodHistory)
-	var podSelector string
+
+	selectorParts := []string{}
 	if p.config.CadvisorMetricsJobName != "" {
-		podSelector = fmt.Sprintf("job=\"%s\", ", p.config.CadvisorMetricsJobName)
+		selectorParts = append(selectorParts, fmt.Sprintf("job=\"%s\"", p.config.CadvisorMetricsJobName))
 	}
-	podSelector = podSelector + fmt.Sprintf("%s=~\".+\", %s!=\"POD\", %s!=\"\"",
-		p.config.CtrPodNameLabel, p.config.CtrNameLabel, p.config.CtrNameLabel)
+	if p.config.ClusterLabel != "" {
+		selectorParts = append(selectorParts, fmt.Sprintf("%s=\"%s\"", p.config.ClusterLabel, p.config.ClusterID))
+	}
+	selectorParts = append(selectorParts, fmt.Sprintf("%s=~\".+\"", p.config.CtrPodNameLabel))
+	selectorParts = append(selectorParts, fmt.Sprintf("%s!=\"POD\"", p.config.CtrNameLabel))
+	selectorParts = append(selectorParts, fmt.Sprintf("%s!=\"\"", p.config.CtrNameLabel))
 
 	if p.config.Namespace != "" {
-		podSelector = fmt.Sprintf("%s, %s=\"%s\"", podSelector, p.config.CtrNamespaceLabel, p.config.Namespace)
+		selectorParts = append(selectorParts, fmt.Sprintf("%s=\"%s\"", p.config.CtrNamespaceLabel, p.config.Namespace))
 	}
+	podSelector := strings.Join(selectorParts, ", ")
 	historicalCpuQuery := fmt.Sprintf("rate(%s{%s}[%s])", p.config.CPUMetricName, podSelector, p.config.HistoryResolution)
 	klog.V(4).InfoS("Historical CPU usage query", "query", historicalCpuQuery)
 	err := p.readResourceHistory(res, historicalCpuQuery, model.ResourceCPU)
@@ -386,7 +531,11 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 			sort.Slice(samples, func(i, j int) bool { return samples[i].MeasureStart.Before(samples[j].MeasureStart) })
 		}
 	}
-	err = p.readLastLabels(res, p.config.PodLabelsMetricName)
+	labelsQuery, err := p.getClusterScopedPodLabelsQuery()
+	if err != nil {
+		return nil, fmt.Errorf("cannot scope pod labels query by cluster: %v", err)
+	}
+	err = p.readLastLabels(res, labelsQuery)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read last labels: %v", err)
 	}

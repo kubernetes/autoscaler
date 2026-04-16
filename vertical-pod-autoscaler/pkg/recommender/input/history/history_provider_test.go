@@ -33,11 +33,14 @@ import (
 )
 
 const (
-	cpuQuery              = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[30s])"
-	memoryQuery           = "container_memory_working_set_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}"
-	labelsQuery           = "up{job=\"kubernetes-pods\"}"
-	cpuNamespacedQuery    = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\", namespace=\"kube-system\"}[30s])"
-	memoryNamespacedQuery = "container_memory_working_set_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\", namespace=\"kube-system\"}"
+	cpuQuery                 = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[30s])"
+	memoryQuery              = "container_memory_working_set_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}"
+	labelsQuery              = "up{job=\"kubernetes-pods\"}"
+	clusterScopedLabelsQuery = "up{job=\"kubernetes-pods\", cluster=\"cluster-a\"}"
+	clusterScopedCPUQuery    = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", cluster=\"cluster-a\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[30s])"
+	clusterScopedMemQuery    = "container_memory_working_set_bytes{job=\"kubernetes-cadvisor\", cluster=\"cluster-a\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}"
+	cpuNamespacedQuery       = "rate(container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\", namespace=\"kube-system\"}[30s])"
+	memoryNamespacedQuery    = "container_memory_working_set_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\", namespace=\"kube-system\"}"
 )
 
 func getDefaultPrometheusHistoryProviderConfigForTest() PrometheusHistoryProviderConfig {
@@ -52,6 +55,8 @@ func getDefaultPrometheusHistoryProviderConfigForTest() PrometheusHistoryProvide
 		CtrNamespaceLabel:      "namespace",
 		CtrPodNameLabel:        "pod_name",
 		CtrNameLabel:           "name",
+		ClusterLabel:           "",
+		ClusterID:              "",
 		CadvisorMetricsJobName: "kubernetes-cadvisor",
 		CPUMetricName:          "container_cpu_usage_seconds_total",
 		MemoryMetricName:       "container_memory_working_set_bytes",
@@ -163,7 +168,7 @@ func TestGetEmptyClusterHistory(t *testing.T) {
 		prometheusClient: &mockClient,
 	}
 	mockClient.On("Query", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Times(1).Return(
-		prommodel.Matrix{}, nil)
+		prommodel.Vector{}, nil)
 	mockClient.On("QueryRange", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return().Times(2).Return(
 		prommodel.Matrix{}, nil)
 	tss, err := historyProvider.GetClusterHistory()
@@ -208,7 +213,7 @@ func TestGetCPUSamples(t *testing.T) {
 		},
 		nil)
 	mockClient.On("QueryRange", mock.Anything, memoryQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
-	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Matrix{}, nil)
+	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Vector{}, nil)
 	podID := model.PodID{Namespace: "default", PodName: "pod"}
 	podHistory := &PodHistory{
 		LastLabels: map[string]string{},
@@ -246,7 +251,7 @@ func TestGetMemorySamples(t *testing.T) {
 				},
 			},
 		}, nil)
-	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Matrix{}, nil)
+	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Vector{}, nil)
 	podID := model.PodID{Namespace: "default", PodName: "pod"}
 	podHistory := &PodHistory{
 		LastLabels: map[string]string{},
@@ -287,7 +292,7 @@ func TestGetNamespacedMemorySamples(t *testing.T) {
 				},
 			},
 		}, nil)
-	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Matrix{}, nil)
+	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Vector{}, nil)
 	podID := model.PodID{Namespace: "kube-system", PodName: "pod"}
 	podHistory := &PodHistory{
 		LastLabels: map[string]string{},
@@ -311,19 +316,15 @@ func TestGetLabels(t *testing.T) {
 	mockClient.On("QueryRange", mock.Anything, cpuQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
 	mockClient.On("QueryRange", mock.Anything, memoryQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
 	mockClient.On("Query", mock.Anything, labelsQuery, mock.AnythingOfType("time.Time")).Return(
-		prommodel.Matrix{
+		prommodel.Vector{
 			{
 				Metric: map[prommodel.LabelName]prommodel.LabelValue{
 					"kubernetes_namespace": "default",
 					"kubernetes_pod_name":  "pod",
 					"pod_label_x":          "y",
 				},
-				Values: []prommodel.SamplePair{
-					{
-						Timestamp: prommodel.TimeFromUnix(1),
-						Value:     12345,
-					},
-				},
+				Timestamp: prommodel.TimeFromUnix(1),
+				Value:     12345,
 			},
 			{
 				Metric: map[prommodel.LabelName]prommodel.LabelValue{
@@ -331,12 +332,8 @@ func TestGetLabels(t *testing.T) {
 					"kubernetes_pod_name":  "pod",
 					"pod_label_x":          "z",
 				},
-				Values: []prommodel.SamplePair{
-					{
-						Timestamp: prommodel.TimeFromUnix(20),
-						Value:     12345,
-					},
-				},
+				Timestamp: prommodel.TimeFromUnix(20),
+				Value:     12345,
 			},
 		}, nil)
 	podID := model.PodID{Namespace: "default", PodName: "pod"}
@@ -348,6 +345,180 @@ func TestGetLabels(t *testing.T) {
 	histories, err := historyProvider.GetClusterHistory()
 	assert.Nil(t, err)
 	assert.Equal(t, histories, map[model.PodID]*PodHistory{podID: podHistory})
+}
+
+func TestGetClusterScopedQueries(t *testing.T) {
+	mockClient := mockPrometheusAPI{}
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.ClusterLabel = "cluster"
+	promConfig.ClusterID = "cluster-a"
+	historyProvider := prometheusHistoryProvider{
+		config:           promConfig,
+		prometheusClient: &mockClient,
+	}
+
+	mockClient.On("QueryRange", mock.Anything, clusterScopedCPUQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
+	mockClient.On("QueryRange", mock.Anything, clusterScopedMemQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
+	mockClient.On("Query", mock.Anything, clusterScopedLabelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Vector{}, nil)
+	_, err := historyProvider.GetClusterHistory()
+	assert.Nil(t, err)
+}
+
+func TestGetClusterScopedLabels(t *testing.T) {
+	mockClient := mockPrometheusAPI{}
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.ClusterLabel = "cluster"
+	promConfig.ClusterID = "cluster-a"
+	historyProvider := prometheusHistoryProvider{
+		config:           promConfig,
+		prometheusClient: &mockClient,
+	}
+
+	mockClient.On("QueryRange", mock.Anything, clusterScopedCPUQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
+	mockClient.On("QueryRange", mock.Anything, clusterScopedMemQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
+	mockClient.On("Query", mock.Anything, clusterScopedLabelsQuery, mock.AnythingOfType("time.Time")).Return(
+		prommodel.Vector{
+			{
+				Metric: map[prommodel.LabelName]prommodel.LabelValue{
+					"cluster":              "cluster-b",
+					"kubernetes_namespace": "default",
+					"kubernetes_pod_name":  "pod-b",
+					"pod_label_x":          "b",
+				},
+				Timestamp: prommodel.TimeFromUnix(1),
+				Value:     1,
+			},
+			{
+				Metric: map[prommodel.LabelName]prommodel.LabelValue{
+					"cluster":              "cluster-a",
+					"kubernetes_namespace": "default",
+					"kubernetes_pod_name":  "pod-a",
+					"pod_label_x":          "a",
+				},
+				Timestamp: prommodel.TimeFromUnix(2),
+				Value:     1,
+			},
+		}, nil)
+
+	histories, err := historyProvider.GetClusterHistory()
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(histories))
+	_, ok := histories[model.PodID{Namespace: "default", PodName: "pod-a"}]
+	assert.True(t, ok)
+}
+
+func TestGetClusterScopedLabelsQueryPlainMetricName(t *testing.T) {
+	mockClient := mockPrometheusAPI{}
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.ClusterLabel = "cluster"
+	promConfig.ClusterID = "cluster-a"
+	promConfig.PodLabelsMetricName = "up"
+	historyProvider := prometheusHistoryProvider{
+		config:           promConfig,
+		prometheusClient: &mockClient,
+	}
+
+	mockClient.On("QueryRange", mock.Anything, clusterScopedCPUQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
+	mockClient.On("QueryRange", mock.Anything, clusterScopedMemQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
+	mockClient.On("Query", mock.Anything, `up{cluster="cluster-a"}`, mock.AnythingOfType("time.Time")).Return(prommodel.Vector{}, nil)
+	_, err := historyProvider.GetClusterHistory()
+	assert.Nil(t, err)
+}
+
+func TestGetClusterScopedLabelsQueryInjectionFailure(t *testing.T) {
+	mockClient := mockPrometheusAPI{}
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.ClusterLabel = "cluster"
+	promConfig.ClusterID = "cluster-a"
+	promConfig.PodLabelsMetricName = "sum(up)"
+	historyProvider := prometheusHistoryProvider{
+		config:           promConfig,
+		prometheusClient: &mockClient,
+	}
+
+	mockClient.On("QueryRange", mock.Anything, clusterScopedCPUQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
+	mockClient.On("QueryRange", mock.Anything, clusterScopedMemQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
+	_, err := historyProvider.GetClusterHistory()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot scope pod labels query by cluster")
+}
+
+func TestGetClusterScopedLabelsQueryAlreadyContainsMatcher(t *testing.T) {
+	mockClient := mockPrometheusAPI{}
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.ClusterLabel = "cluster"
+	promConfig.ClusterID = "cluster-a"
+	promConfig.PodLabelsMetricName = clusterScopedLabelsQuery
+	historyProvider := prometheusHistoryProvider{
+		config:           promConfig,
+		prometheusClient: &mockClient,
+	}
+
+	mockClient.On("QueryRange", mock.Anything, clusterScopedCPUQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
+	mockClient.On("QueryRange", mock.Anything, clusterScopedMemQuery, mock.AnythingOfType("v1.Range")).Return().Return(prommodel.Matrix{}, nil)
+	mockClient.On("Query", mock.Anything, clusterScopedLabelsQuery, mock.AnythingOfType("time.Time")).Return(prommodel.Vector{}, nil)
+	_, err := historyProvider.GetClusterHistory()
+	assert.Nil(t, err)
+}
+
+func TestGetClusterScopedPodLabelsQueryWhitespaceMatcher(t *testing.T) {
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.ClusterLabel = "cluster"
+	promConfig.ClusterID = "cluster-a"
+	promConfig.PodLabelsMetricName = `up{job="kubernetes-pods",  cluster = "cluster-a"}`
+	historyProvider := prometheusHistoryProvider{config: promConfig}
+
+	query, err := historyProvider.getClusterScopedPodLabelsQuery()
+	assert.Nil(t, err)
+	assert.Equal(t, promConfig.PodLabelsMetricName, query)
+}
+
+func TestGetClusterScopedPodLabelsQueryRegexMatcher(t *testing.T) {
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.ClusterLabel = "cluster"
+	promConfig.ClusterID = "cluster-a"
+	promConfig.PodLabelsMetricName = `up{job="kubernetes-pods", cluster=~"cluster-a|cluster-b"}`
+	historyProvider := prometheusHistoryProvider{config: promConfig}
+
+	query, err := historyProvider.getClusterScopedPodLabelsQuery()
+	assert.Nil(t, err)
+	assert.Equal(t, `up{job="kubernetes-pods", cluster=~"cluster-a|cluster-b", cluster="cluster-a"}`, query)
+}
+
+func TestGetClusterScopedPodLabelsQueryStrictRegexMatcher(t *testing.T) {
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.ClusterLabel = "cluster"
+	promConfig.ClusterID = "cluster-a"
+	promConfig.PodLabelsMetricName = `up{job="kubernetes-pods", cluster=~"^cluster-a$"}`
+	historyProvider := prometheusHistoryProvider{config: promConfig}
+
+	query, err := historyProvider.getClusterScopedPodLabelsQuery()
+	assert.Nil(t, err)
+	assert.Equal(t, promConfig.PodLabelsMetricName, query)
+}
+
+func TestGetClusterScopedPodLabelsQueryConflictingMatcher(t *testing.T) {
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.ClusterLabel = "cluster"
+	promConfig.ClusterID = "cluster-a"
+	promConfig.PodLabelsMetricName = `up{job="kubernetes-pods", cluster=~"cluster-b|cluster-c"}`
+	historyProvider := prometheusHistoryProvider{config: promConfig}
+
+	query, err := historyProvider.getClusterScopedPodLabelsQuery()
+	assert.Nil(t, err)
+	assert.Equal(t, `up{job="kubernetes-pods", cluster=~"cluster-b|cluster-c", cluster="cluster-a"}`, query)
+}
+
+func TestGetClusterScopedPodLabelsQueryNegativeMatcher(t *testing.T) {
+	promConfig := getDefaultPrometheusHistoryProviderConfigForTest()
+	promConfig.ClusterLabel = "cluster"
+	promConfig.ClusterID = "cluster-a"
+	promConfig.PodLabelsMetricName = `up{job="kubernetes-pods", cluster!="cluster-b"}`
+	historyProvider := prometheusHistoryProvider{config: promConfig}
+
+	query, err := historyProvider.getClusterScopedPodLabelsQuery()
+	assert.Nil(t, err)
+	assert.Equal(t, `up{job="kubernetes-pods", cluster!="cluster-b", cluster="cluster-a"}`, query)
 }
 
 func TestPrometheusAuth(t *testing.T) {

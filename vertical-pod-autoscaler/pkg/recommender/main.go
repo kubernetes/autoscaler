@@ -272,6 +272,8 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, commonFlag *comm
 			CtrNamespaceLabel:      config.CtrNamespaceLabel,
 			CtrPodNameLabel:        config.CtrPodNameLabel,
 			CtrNameLabel:           config.CtrNameLabel,
+			ClusterLabel:           config.PrometheusClusterLabel,
+			ClusterID:              config.PrometheusClusterID,
 			CadvisorMetricsJobName: config.PrometheusJobName,
 			Namespace:              commonFlag.VpaObjectNamespace,
 			Authentication: history.PrometheusCredentials{

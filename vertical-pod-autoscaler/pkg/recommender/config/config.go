@@ -69,6 +69,8 @@ type RecommenderConfig struct {
 	PrometheusAddress         string
 	PrometheusInsecure        bool
 	PrometheusJobName         string
+	PrometheusClusterLabel    string
+	PrometheusClusterID       string
 	HistoryLength             string
 	HistoryResolution         string
 	HistoryCPUMetric          string
@@ -141,6 +143,8 @@ func DefaultRecommenderConfig() *RecommenderConfig {
 		PrometheusAddress:         "http://prometheus.monitoring.svc",
 		PrometheusInsecure:        false,
 		PrometheusJobName:         "kubernetes-cadvisor",
+		PrometheusClusterLabel:    "",
+		PrometheusClusterID:       "",
 		HistoryLength:             "8d",
 		HistoryResolution:         "1h",
 		HistoryCPUMetric:          "container_cpu_usage_seconds_total",
@@ -214,6 +218,8 @@ func InitRecommenderFlags() *RecommenderConfig {
 	flag.StringVar(&config.PrometheusAddress, "prometheus-address", config.PrometheusAddress, `Where to reach for Prometheus metrics`)
 	flag.BoolVar(&config.PrometheusInsecure, "prometheus-insecure", config.PrometheusInsecure, `Skip tls verify if https is used in the prometheus-address`)
 	flag.StringVar(&config.PrometheusJobName, "prometheus-cadvisor-job-name", config.PrometheusJobName, `Name of the prometheus job name which scrapes the cAdvisor metrics`)
+	flag.StringVar(&config.PrometheusClusterLabel, "prometheus-cluster-label", config.PrometheusClusterLabel, `Label name used to identify cluster-scoped metrics in Prometheus history queries`)
+	flag.StringVar(&config.PrometheusClusterID, "prometheus-cluster-id", config.PrometheusClusterID, `Cluster label value used to scope Prometheus history queries`)
 	flag.StringVar(&config.HistoryLength, "history-length", config.HistoryLength, `How much time back prometheus have to be queried to get historical metrics`)
 	flag.StringVar(&config.HistoryResolution, "history-resolution", config.HistoryResolution, `Resolution at which Prometheus is queried for historical metrics`)
 	flag.StringVar(&config.HistoryCPUMetric, "history-cpu-metric", config.HistoryCPUMetric, `Name of the metric to use for CPU history when querying Prometheus.`)
@@ -273,6 +279,11 @@ func ValidateRecommenderConfig(config *RecommenderConfig) {
 
 	if config.PrometheusBearerToken != "" && config.PrometheusBearerTokenFile != "" && config.Username != "" {
 		klog.ErrorS(nil, "--bearer-token, --bearer-token-file and --username are mutually exclusive and can't be set together.")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	if (config.PrometheusClusterLabel == "") != (config.PrometheusClusterID == "") {
+		klog.ErrorS(nil, "--prometheus-cluster-label and --prometheus-cluster-id must be set together")
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
