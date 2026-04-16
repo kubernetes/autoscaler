@@ -61,7 +61,6 @@ func helmValuesForScaleUp() map[string]interface{} {
 func helmValuesForFastScaleDown() map[string]interface{} {
 	return map[string]interface{}{
 		"extraArgs": map[string]interface{}{
-			"scale-down-enabled":               "true",
 			"scale-down-delay-after-add":       "10s",
 			"scale-down-unneeded-time":         "10s",
 			"scale-down-candidates-pool-ratio": "1.0",
