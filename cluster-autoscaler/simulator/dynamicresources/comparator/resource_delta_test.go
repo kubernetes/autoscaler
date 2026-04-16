@@ -145,7 +145,14 @@ func TestCompareDraResources(t *testing.T) {
 		"NoDriverInTemplate": {
 			templateSlices: []*resourceapi.ResourceSlice{},
 			nodeSlices:     []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})},
-			wantReports:    []resourceDelta{},
+			wantReports: []resourceDelta{
+				{
+					Driver:           "driver",
+					NodeResourcePool: "pool",
+					NodeSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
+					DeviceCountDelta: -1,
+				},
+			},
 		},
 		"ShapeMismatch": {
 			templateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})},
@@ -274,14 +281,15 @@ func TestCompareDraResources(t *testing.T) {
 			templateSlices: []*resourceapi.ResourceSlice{
 				makeSingleResourceSlice("driver-alpha", "pool-a", poolDevices{deviceCount: 1, shape: deviceShapeA}),
 				makeSingleResourceSlice("driver-beta", "pool-b", poolDevices{deviceCount: 1, shape: deviceShapeB}),
+				makeSingleResourceSlice("driver-gamma", "pool-c", poolDevices{deviceCount: 1, shape: deviceShapeA}),
 			},
 			nodeSlices: []*resourceapi.ResourceSlice{
 				// alpha matches perfectly
 				makeSingleResourceSlice("driver-alpha", "pool-a", poolDevices{deviceCount: 1, shape: deviceShapeA}),
 				// beta has a mismatch
 				makeSingleResourceSlice("driver-beta", "pool-b", poolDevices{deviceCount: 1, shape: deviceShapeAB}),
-				// gamma should be completely ignored (not in template)
-				makeSingleResourceSlice("driver-gamma", "pool-c", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+				// gamma has wrong count
+				makeSingleResourceSlice("driver-gamma", "pool-c", poolDevices{deviceCount: 2, shape: deviceShapeA}),
 			},
 			wantReports: []resourceDelta{
 				{
@@ -290,6 +298,14 @@ func TestCompareDraResources(t *testing.T) {
 					NodeResourcePool:     "pool-b",
 					TemplateSignatureMap: attributesMap{v1.QualifiedName("B"): {}},
 					NodeSignatureMap:     attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
+				},
+				{
+					Driver:               "driver-gamma",
+					TemplateResourcePool: "pool-c",
+					NodeResourcePool:     "pool-c",
+					TemplateSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
+					NodeSignatureMap:     attributesMap{v1.QualifiedName("A"): {}},
+					DeviceCountDelta:     -1,
 				},
 			},
 		},
@@ -472,7 +488,7 @@ func TestCompareDraResources(t *testing.T) {
 				makeSingleResourceSlice("custom-driver", "custom-actual-fuzzy-1", poolDevices{deviceCount: 2, shape: deviceShapeB}),
 				makeSingleResourceSlice("custom-driver", "custom-actual-fuzzy-2", poolDevices{deviceCount: 5, shape: deviceShapeA}),
 				// DRIVER 4: ROGUE
-				makeSingleResourceSlice("rogue-driver", "rogue-pool", poolDevices{deviceCount: 99, shape: deviceShapeAB}),
+				makeSingleResourceSlice("only-node-driver", "only-node-driver-pool", poolDevices{deviceCount: 99, shape: deviceShapeAB}),
 			},
 			wantReports: []resourceDelta{
 				{
@@ -494,6 +510,12 @@ func TestCompareDraResources(t *testing.T) {
 					NodeResourcePool: "custom-actual-fuzzy-2",
 					NodeSignatureMap: attributesMap{v1.QualifiedName("A"): {}},
 					DeviceCountDelta: -5,
+				},
+				{
+					Driver:           "only-node-driver",
+					NodeResourcePool: "only-node-driver-pool",
+					NodeSignatureMap: attributesMap{v1.QualifiedName("A"): {}, v1.QualifiedName("B"): {}},
+					DeviceCountDelta: -99,
 				},
 			},
 		},
