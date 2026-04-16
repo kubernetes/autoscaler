@@ -411,7 +411,7 @@ func GetDefaultScaleFromZeroArchitecture() SystemArchitecture {
 		if arch == UnknownArch {
 			arch = DefaultArch
 			klog.Errorf("Unrecognized architecture '%s', falling back to %s",
-				scaleUpFromZeroDefaultArchEnvVar, DefaultArch.Name())
+				archStr, DefaultArch.Name())
 		}
 		systemArchitecture = &arch
 	})
