@@ -169,7 +169,7 @@ func (env *Environment) EnsureHelmRelease(extraValues map[string]interface{}) {
 	upgrade := action.NewUpgrade(helmCfg)
 	upgrade.Timeout = 5 * time.Minute
 	upgrade.Wait = true
-	upgrade.ReuseValues = true
+	upgrade.ResetValues = true
 	_, err = upgrade.Run(casReleaseName, chart, values)
 	Expect(err).NotTo(HaveOccurred())
 }
