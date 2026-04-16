@@ -68,8 +68,8 @@ var _ = BeforeSuite(func() {
 	var helm *environment.HelmConfig
 	if casImageRepository != "" && casImageTag != "" {
 		helm = &environment.HelmConfig{
-			// From suites/scaleup/, 6 levels up reaches the repo root where charts/ lives.
-			ChartPath:             "../../../../../../charts/cluster-autoscaler",
+			// From suites/scaleup/, 5 levels up reaches cluster-autoscaler/ where charts/ lives.
+			ChartPath:             "../../../../../charts/cluster-autoscaler",
 			ClusterName:           clusterName,
 			ClientID:              clientID,
 			CASNamespace:          casNamespace,
