@@ -467,8 +467,8 @@ func (p *prometheusHistoryProvider) getClusterScopedPodLabelsQuery() (string, er
 
 	clusterMatcher := fmt.Sprintf(`%s="%s"`, p.config.ClusterLabel, p.config.ClusterID)
 	open := strings.Index(query, "{")
-	close := strings.LastIndex(query, "}")
-	if open == -1 && close == -1 {
+	selectorEnd := strings.LastIndex(query, "}")
+	if open == -1 && selectorEnd == -1 {
 		// Plain metric names (for example "up") are valid selector queries.
 		// Convert them into an explicitly cluster-scoped selector.
 		if metricNamePattern.MatchString(query) {
@@ -476,11 +476,11 @@ func (p *prometheusHistoryProvider) getClusterScopedPodLabelsQuery() (string, er
 		}
 		return "", fmt.Errorf("cannot inject cluster matcher into pod label query %q", query)
 	}
-	if open == -1 || close == -1 || close < open {
+	if open == -1 || selectorEnd == -1 || selectorEnd < open {
 		return "", fmt.Errorf("cannot inject cluster matcher into pod label query %q", query)
 	}
 
-	selector := strings.TrimSpace(query[open+1 : close])
+	selector := strings.TrimSpace(query[open+1 : selectorEnd])
 	matcherStatus, err := getClusterMatcherStatus(selector, p.config.ClusterLabel, p.config.ClusterID)
 	if err != nil {
 		return "", err
@@ -490,9 +490,9 @@ func (p *prometheusHistoryProvider) getClusterScopedPodLabelsQuery() (string, er
 	}
 
 	if selector == "" {
-		return query[:open+1] + clusterMatcher + query[close:], nil
+		return query[:open+1] + clusterMatcher + query[selectorEnd:], nil
 	}
-	return query[:close] + ", " + clusterMatcher + query[close:], nil
+	return query[:selectorEnd] + ", " + clusterMatcher + query[selectorEnd:], nil
 }
 
 func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHistory, error) {
