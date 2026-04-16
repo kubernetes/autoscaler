@@ -49,6 +49,28 @@ var (
 	casImageTag           string
 )
 
+func helmValuesForScaleUp() map[string]interface{} {
+	return map[string]interface{}{
+		"extraArgs": map[string]interface{}{
+			"scale-down-enabled": "false",
+		},
+	}
+}
+
+func helmValuesForFastScaleDown() map[string]interface{} {
+	return map[string]interface{}{
+		"extraArgs": map[string]interface{}{
+			"scale-down-enabled":               "true",
+			"scale-down-delay-after-add":       "10s",
+			"scale-down-unneeded-time":         "10s",
+			"scale-down-candidates-pool-ratio": "1.0",
+			"unremovable-node-recheck-timeout": "10s",
+			"skip-nodes-with-system-pods":      "false",
+			"skip-nodes-with-local-storage":    "false",
+		},
+	}
+}
+
 func init() {
 	flag.StringVar(&resourceGroup, "resource-group", "", "resource group containing cluster-autoscaler-managed resources (the MC_ node resource group)")
 	flag.StringVar(&clusterName, "cluster-name", "", "Cluster API Cluster name (CI only)")
@@ -79,16 +101,7 @@ var _ = BeforeSuite(func() {
 		}
 	}
 	env = environment.NewEnvironment(resourceGroup, helm)
-	env.EnsureHelmRelease(map[string]interface{}{
-		"extraArgs": map[string]interface{}{
-			"scale-down-delay-after-add":       "10s",
-			"scale-down-unneeded-time":         "10s",
-			"scale-down-candidates-pool-ratio": "1.0",
-			"unremovable-node-recheck-timeout": "10s",
-			"skip-nodes-with-system-pods":      "false",
-			"skip-nodes-with-local-storage":    "false",
-		},
-	})
+	env.EnsureHelmRelease(helmValuesForScaleUp())
 })
 
 var _ = Describe("Azure Provider", func() {
@@ -173,7 +186,10 @@ var _ = Describe("Azure Provider", func() {
 			return readyCount, nil
 		}, "10m", "10s").Should(BeNumerically(">", nodeCountBefore))
 
-		Eventually(env.AllVMSSStable, "10m", "30s").Should(Succeed())
+		Eventually(env.AllVMSSStable, "20m", "30s").Should(Succeed())
+
+		By("Reconfiguring Cluster Autoscaler for fast scale down")
+		env.EnsureHelmRelease(helmValuesForFastScaleDown())
 
 		By("Deleting 100 Pods")
 		Expect(env.K8s.Delete(env.Ctx, deploy)).To(Succeed())
