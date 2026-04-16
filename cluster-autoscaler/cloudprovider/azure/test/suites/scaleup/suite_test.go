@@ -52,7 +52,8 @@ var (
 func helmValuesForScaleUp() map[string]interface{} {
 	return map[string]interface{}{
 		"extraArgs": map[string]interface{}{
-			"scale-down-enabled": "false",
+			"scale-down-delay-after-add": "30m",
+			"scale-down-unneeded-time":   "30m",
 		},
 	}
 }
