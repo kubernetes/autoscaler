@@ -28,7 +28,7 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-// When Azure Dedicated Host is enabled or using isolated vm skus, force deleting a VMSS fails with the following er:
+// When Azure Dedicated Host is enabled or using isolated vm skus, force deleting a VMSS fails with the following error:
 //
 // "predominantErrorDetail": {
 //   "innererror": {
