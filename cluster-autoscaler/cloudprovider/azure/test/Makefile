@@ -10,9 +10,12 @@ CLUSTER_AUTOSCALER_NAMESPACE?=default
 CLUSTER_AUTOSCALER_SERVICEACCOUNT_NAME?=cluster-autoscaler
 
 # TEST_SUITE selects a specific test suite directory (e.g., TEST_SUITE=scaleup).
-# Default "..." runs all suites.
-TEST_SUITE?=...
+# When unset, all suites under suites/ are run.
+TEST_SUITE?=
 TEST_TIMEOUT?=3h
+
+# Compute ginkgo suite path: ./suites/... (all) or ./suites/<name>/... (single)
+SUITE_PATH=$(if $(TEST_SUITE),./suites/$(shell echo $(TEST_SUITE) | tr A-Z a-z)/...,./suites/...)
 FOCUS?=
 LABEL_FILTER?=
 ARTIFACTS?=_artifacts
@@ -31,7 +34,7 @@ test-e2e: build-e2e ## CI: build image + run tests (Prow/CAPZ)
 	go run github.com/onsi/ginkgo/v2/ginkgo --tags e2e -v --trace \
 		--timeout $(TEST_TIMEOUT) \
 		--output-dir "$(ARTIFACTS)" --junit-report="junit.e2e_suite.1.xml" \
-		./suites/$$(echo $(TEST_SUITE) | tr A-Z a-z)/... -- \
+		$(SUITE_PATH) -- \
 		-resource-group="$$(KUBECONFIG= kubectl get managedclusters -n default -o jsonpath='{.items[0].status.nodeResourceGroup}')" \
 		-cluster-name="$$(KUBECONFIG= kubectl get cluster -n default -o jsonpath='{.items[0].metadata.name}')" \
 		-client-id="$$(KUBECONFIG= kubectl get userassignedidentities -n default -o jsonpath='{.items[0].status.clientId}')" \
@@ -85,7 +88,7 @@ e2etests: ## Run e2e tests (CAS must already be deployed)
 		--junit-report="junit.e2e_suite.1.xml" \
 		$(if $(FOCUS),--focus="$(FOCUS)",) \
 		$(if $(LABEL_FILTER),--label-filter="$(LABEL_FILTER)",) \
-		./suites/$$(echo $(TEST_SUITE) | tr A-Z a-z)/... -- \
+		$(SUITE_PATH) -- \
 		-resource-group="$(AZURE_RESOURCE_GROUP)"
 
 ##@ Utilities
