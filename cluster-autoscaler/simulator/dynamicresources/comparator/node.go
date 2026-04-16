@@ -17,6 +17,8 @@ limitations under the License.
 package comparator
 
 import (
+	"slices"
+
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/klog/v2"
@@ -35,7 +37,12 @@ type metricsEmitter interface {
 
 // NodeResourcesComparator detects discrepancies between expected and actual resource topologies.
 // For more details on the algorithm - see resourcePoolComparator.CompareResourcePools.
+// Component assumes that it's working on the evolving set of nodes and it's not suitable
+// to use it interchangeably for completely disjoint sets of nodes.
 type NodeResourcesComparator struct {
+	// List of drivers which were seen in the latest evaluation loop.
+	// and had at least a single reported data point.
+	lastSeenDrivers []string
 	// Reusable map to store intermediate results while comparing nodes
 	discrepanciesPerDriver map[string]driverDiscrepancy
 	// Reusable buffer to store intermediate per node resource deltas
@@ -80,26 +87,19 @@ type driverDiscrepancy struct {
 // emitMetrics emits the aggregated discrepancies to the metrics emitter.
 func (c *NodeResourcesComparator) emitMetrics() {
 	for driver, disc := range c.discrepanciesPerDriver {
-		if disc.missing > 0 {
-			c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeMissing, disc.missing)
-		}
-		if disc.extra > 0 {
-			c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeExtra, disc.extra)
-		}
-		if disc.mismatch > 0 {
-			c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeMismatch, disc.mismatch)
-		}
-		if disc.unknown > 0 {
-			c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeUnknown, disc.unknown)
-		}
+		c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeMissing, disc.missing)
+		c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeExtra, disc.extra)
+		c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeMismatch, disc.mismatch)
+		c.metrics.SetNodeTemplateResourcesMismatch(driver, metrics.ResourceMismatchTypeUnknown, disc.unknown)
 	}
 }
 
 // reset resets the comparator to its initial state making it ready for the next batch of nodes.
 func (c *NodeResourcesComparator) reset() {
 	c.sampler.Reset()
+	c.resetDiscrepanciesPerDriver()
+	c.lastSeenDrivers = c.lastSeenDrivers[:0]
 	c.deltas = c.deltas[:0]
-	clear(c.discrepanciesPerDriver)
 }
 
 // ReportResourceDiscrepancies compares DRA resources for a batch of nodes,
@@ -113,10 +113,6 @@ func (c *NodeResourcesComparator) ReportResourceDiscrepancies(
 	nodeSlices [][]*resourceapi.ResourceSlice,
 ) {
 	c.reset()
-
-	if len(nodeNames) == 0 {
-		return
-	}
 
 	if len(nodeNames) != len(templateSlices) || len(nodeNames) != len(nodeSlices) {
 		klog.Errorf("NodeResourcesComparator: nodeNames, templateSlices, and nodeSlices must have the same length")
@@ -135,14 +131,11 @@ func (c *NodeResourcesComparator) ReportResourceDiscrepancies(
 		}
 
 		c.updateDiscrepanciesPerDriver()
+		c.updateSeenDrivers()
 		c.sampler.Sample(nodeNames[nodeIndex], c.deltas)
 
 		// Reset the buffer for the next iteration
 		c.deltas = c.deltas[:0]
-	}
-
-	if len(c.discrepanciesPerDriver) == 0 {
-		return
 	}
 
 	c.emitMetrics()
@@ -165,5 +158,28 @@ func (c *NodeResourcesComparator) updateDiscrepanciesPerDriver() {
 			disc.unknown++
 		}
 		c.discrepanciesPerDriver[delta.Driver] = disc
+	}
+}
+
+// resetDiscrepanciesPerDriver resets the discrepanciesPerDriver map
+// while also recreates entries for drivers which were found during
+// the latest evaluation.
+func (c *NodeResourcesComparator) resetDiscrepanciesPerDriver() {
+	clear(c.discrepanciesPerDriver)
+	for _, driver := range c.lastSeenDrivers {
+		c.discrepanciesPerDriver[driver] = driverDiscrepancy{}
+	}
+}
+
+// updateSeenDrivers updates the list of drivers which were seen during the
+// latest evaluation loop.
+func (c *NodeResourcesComparator) updateSeenDrivers() {
+	for i := range c.deltas {
+		driver := c.deltas[i].Driver
+		if slices.Contains(c.lastSeenDrivers, driver) {
+			continue
+		}
+
+		c.lastSeenDrivers = append(c.lastSeenDrivers, driver)
 	}
 }

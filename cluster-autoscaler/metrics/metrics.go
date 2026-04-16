@@ -715,6 +715,8 @@ func (m *caMetrics) UpdateNodeGroupTargetSize(targetSizes map[string]int) {
 	}
 }
 
+// SetNodeTemplateResourcesMismatch records the number of resource mismatches between
+// predicted and real nodes in DRA-enabled node groups.
 func (m *caMetrics) SetNodeTemplateResourcesMismatch(driver string, mismatchType ResourceMismatchType, value uint32) {
 	m.nodeTemplateResourcesMismatch.With(map[string]string{
 		"driver":        driver,

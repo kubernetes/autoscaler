@@ -39,6 +39,10 @@ func (f *fakeMetricsEmitter) SetNodeTemplateResourcesMismatch(driver string, mis
 	f.metrics[key] = value
 }
 
+func (f *fakeMetricsEmitter) Reset() {
+	clear(f.metrics)
+}
+
 // nodeComparisonData is used to simulate node resource topology for testing,
 // has no difference from passing raw slices, but drastically improves readability
 // by grouping related data together.
@@ -86,7 +90,10 @@ func TestEmitMetrics(t *testing.T) {
 				"driver-1": {missing: 1},
 			},
 			wantMetrics: map[string]uint32{
-				"driver-1/missing": 1,
+				"driver-1/missing":  1,
+				"driver-1/extra":    0,
+				"driver-1/mismatch": 0,
+				"driver-1/unknown":  0,
 			},
 		},
 		"ExtraDiscrepancy": {
@@ -94,7 +101,10 @@ func TestEmitMetrics(t *testing.T) {
 				"driver-1": {extra: 2},
 			},
 			wantMetrics: map[string]uint32{
-				"driver-1/extra": 2,
+				"driver-1/extra":    2,
+				"driver-1/missing":  0,
+				"driver-1/mismatch": 0,
+				"driver-1/unknown":  0,
 			},
 		},
 		"MismatchDiscrepancy": {
@@ -103,6 +113,9 @@ func TestEmitMetrics(t *testing.T) {
 			},
 			wantMetrics: map[string]uint32{
 				"driver-1/mismatch": 3,
+				"driver-1/missing":  0,
+				"driver-1/extra":    0,
+				"driver-1/unknown":  0,
 			},
 		},
 		"UnknownDiscrepancy": {
@@ -110,7 +123,10 @@ func TestEmitMetrics(t *testing.T) {
 				"driver-1": {unknown: 4},
 			},
 			wantMetrics: map[string]uint32{
-				"driver-1/unknown": 4,
+				"driver-1/unknown":  4,
+				"driver-1/missing":  0,
+				"driver-1/extra":    0,
+				"driver-1/mismatch": 0,
 			},
 		},
 		"AllMetricsCombined": {
@@ -131,6 +147,12 @@ func TestEmitMetrics(t *testing.T) {
 			},
 			wantMetrics: map[string]uint32{
 				"driver-1/missing":  1,
+				"driver-1/unknown":  0,
+				"driver-1/extra":    0,
+				"driver-1/mismatch": 0,
+
+				"driver-2/missing":  0,
+				"driver-2/unknown":  0,
 				"driver-2/extra":    5,
 				"driver-2/mismatch": 2,
 			},
@@ -139,7 +161,12 @@ func TestEmitMetrics(t *testing.T) {
 			aggregatedDiscrepancies: map[string]driverDiscrepancy{
 				"driver-1": {missing: 0, extra: 0},
 			},
-			wantMetrics: nil,
+			wantMetrics: map[string]uint32{
+				"driver-1/missing":  0,
+				"driver-1/extra":    0,
+				"driver-1/mismatch": 0,
+				"driver-1/unknown":  0,
+			},
 		},
 	}
 
@@ -199,7 +226,10 @@ func TestReportResourceDiscrepancies(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]uint32{
-				"driver/missing": 1,
+				"driver/missing":  1,
+				"driver/extra":    0,
+				"driver/mismatch": 0,
+				"driver/unknown":  0,
 			},
 		},
 		"ExtraResourcePool": {
@@ -214,7 +244,10 @@ func TestReportResourceDiscrepancies(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]uint32{
-				"driver/extra": 1,
+				"driver/extra":    1,
+				"driver/missing":  0,
+				"driver/mismatch": 0,
+				"driver/unknown":  0,
 			},
 		},
 		"FuzzyMismatch_Attributes": {
@@ -227,6 +260,9 @@ func TestReportResourceDiscrepancies(t *testing.T) {
 			},
 			wantMetrics: map[string]uint32{
 				"driver/mismatch": 1,
+				"driver/missing":  0,
+				"driver/extra":    0,
+				"driver/unknown":  0,
 			},
 		},
 		"FuzzyMismatch_DeviceCount": {
@@ -239,20 +275,30 @@ func TestReportResourceDiscrepancies(t *testing.T) {
 			},
 			wantMetrics: map[string]uint32{
 				"driver/mismatch": 1,
+				"driver/missing":  0,
+				"driver/extra":    0,
+				"driver/unknown":  0,
 			},
 		},
 		"IgnoredDriver": {
 			data: []nodeComparisonData{
 				{
-					NodeName:       "node-1",
-					TemplateSlices: []*resourceapi.ResourceSlice{makeSingleResourceSlice("known-driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA})},
+					NodeName: "node-1",
+					TemplateSlices: []*resourceapi.ResourceSlice{
+						makeSingleResourceSlice("known-driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+					},
 					NodeSlices: []*resourceapi.ResourceSlice{
 						makeSingleResourceSlice("known-driver", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA}),
-						makeSingleResourceSlice("rogue-driver", "pool", poolDevices{deviceCount: 5, shape: deviceShapeB}),
+						makeSingleResourceSlice("node-only-driver", "pool", poolDevices{deviceCount: 5, shape: deviceShapeB}),
 					},
 				},
 			},
-			wantMetrics: nil,
+			wantMetrics: map[string]uint32{
+				"node-only-driver/missing":  0,
+				"node-only-driver/extra":    1,
+				"node-only-driver/mismatch": 0,
+				"node-only-driver/unknown":  0,
+			},
 		},
 		"MultiNodeMultiDriver": {
 			data: []nodeComparisonData{
@@ -284,7 +330,13 @@ func TestReportResourceDiscrepancies(t *testing.T) {
 			wantMetrics: map[string]uint32{
 				"driver-A/missing":  1,
 				"driver-A/mismatch": 1,
+				"driver-A/extra":    0,
+				"driver-A/unknown":  0,
+
+				"driver-B/missing":  0,
 				"driver-B/extra":    1,
+				"driver-B/mismatch": 0,
+				"driver-B/unknown":  0,
 			},
 		},
 		"MultipleMissing": {
@@ -300,7 +352,10 @@ func TestReportResourceDiscrepancies(t *testing.T) {
 				},
 			},
 			wantMetrics: map[string]uint32{
-				"driver/missing": 3,
+				"driver/missing":  3,
+				"driver/extra":    0,
+				"driver/mismatch": 0,
+				"driver/unknown":  0,
 			},
 		},
 	}
@@ -314,6 +369,79 @@ func TestReportResourceDiscrepancies(t *testing.T) {
 				t.Errorf("ReportResourceDiscrepancies() metrics diff (-want +got):\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestMissingNodesGaugesAreReset(t *testing.T) {
+	nodeNames := []string{"node-1"}
+
+	templateSlices := [][]*resourceapi.ResourceSlice{
+		{
+			makeSingleResourceSlice("driver1", "pool", poolDevices{deviceCount: 1, shape: deviceShapeA}),
+			makeSingleResourceSlice("driver2", "pool", poolDevices{deviceCount: 4, shape: deviceShapeA}),
+			makeSingleResourceSlice("driver3", "pool", poolDevices{deviceCount: 1, shape: deviceShapeABC}),
+		},
+	}
+
+	nodeSlices := [][]*resourceapi.ResourceSlice{
+		{
+			makeSingleResourceSlice("driver1", "pool1", poolDevices{deviceCount: 1, shape: deviceShapeB}),
+			makeSingleResourceSlice("driver2", "pool", poolDevices{deviceCount: 2, shape: deviceShapeA}),
+			makeSingleResourceSlice("driver1", "pool2", poolDevices{deviceCount: 1, shape: deviceShapeABC}),
+		},
+	}
+
+	wantMetricsBeforeScaleDown := map[string]uint32{
+		"driver1/mismatch": 1,
+		"driver1/unknown":  0,
+		"driver1/extra":    1,
+		"driver1/missing":  0,
+
+		"driver2/mismatch": 1,
+		"driver2/unknown":  0,
+		"driver2/extra":    0,
+		"driver2/missing":  0,
+
+		"driver3/mismatch": 0,
+		"driver3/unknown":  0,
+		"driver3/extra":    0,
+		"driver3/missing":  1,
+	}
+
+	wantMetricsAfterScaleDown := map[string]uint32{
+		"driver1/mismatch": 0,
+		"driver1/unknown":  0,
+		"driver1/extra":    0,
+		"driver1/missing":  0,
+
+		"driver2/mismatch": 0,
+		"driver2/unknown":  0,
+		"driver2/extra":    0,
+		"driver2/missing":  0,
+
+		"driver3/mismatch": 0,
+		"driver3/unknown":  0,
+		"driver3/extra":    0,
+		"driver3/missing":  0,
+	}
+
+	fake := &fakeMetricsEmitter{}
+	c := NewNodeResourcesComparator(fake)
+	c.ReportResourceDiscrepancies(nodeNames, templateSlices, nodeSlices)
+	if diff := cmp.Diff(wantMetricsBeforeScaleDown, fake.metrics); diff != "" {
+		t.Errorf("ReportResourceDiscrepancies() metrics diff (-want +got):\n%s", diff)
+	}
+
+	fake.Reset()
+	c.ReportResourceDiscrepancies([]string{}, [][]*resourceapi.ResourceSlice{}, [][]*resourceapi.ResourceSlice{})
+	if diff := cmp.Diff(wantMetricsAfterScaleDown, fake.metrics); diff != "" {
+		t.Errorf("ReportResourceDiscrepancies() metrics diff (-want +got):\n%s", diff)
+	}
+
+	fake.Reset()
+	c.ReportResourceDiscrepancies([]string{}, [][]*resourceapi.ResourceSlice{}, [][]*resourceapi.ResourceSlice{})
+	if len(fake.metrics) != 0 {
+		t.Errorf("Expected no metrics after second reset, while reported: %v", fake.metrics)
 	}
 }
 

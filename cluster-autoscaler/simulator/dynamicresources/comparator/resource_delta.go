@@ -193,7 +193,7 @@ func (c *resourcePoolComparator) resetBuffers() {
 // Algorithm for deltas detection consists of the following steps:
 // 1. Define a list of drivers used for the current comparison, in order to do that we search drivers
 // which have at least a single resource pool being incomplete or having multiple generations as this
-// point of time and remove them from the list of drivers exposed through template resource slices
+// point of time and remove them from the list of drivers exposed through template or nodes resource slices
 // 2. Organize list of node and template slices into resource groups ignoring non-compared drivers, each
 // resource group representing different resource pool or device attribute signature. We assume that resource
 // pool consists of homogeneous set of devices, but if this assumption doesn't hold true - resource
@@ -207,8 +207,6 @@ func (c *resourcePoolComparator) resetBuffers() {
 // missing on the node, and as extra when resource is only defined in the node, but missing from the template
 //
 // Warnings:
-//   - Resource pool exposed for a driver X in the real node is only checked if the template
-//     exposes at least one resource pool for the same driver, otherwise - it's ignored.
 //   - Drivers which have at least a single resource pool with multiple generation numbers
 //     or incomplete resource pools are not compared.
 //   - Function is not thread-safe and manipulates internal buffers of the comparator
@@ -223,7 +221,7 @@ func (c *resourcePoolComparator) CompareResourcePools(
 	c.resetBuffers()
 
 	c.populateDriversInFlux(nodeSlices)
-	c.populateComparedDrivers(templateSlices)
+	c.populateComparedDrivers(templateSlices, nodeSlices)
 	c.populateTemplateGroups(templateSlices)
 	c.populateNodeGroups(nodeSlices)
 	c.eliminateExactMatchResources()
@@ -287,7 +285,7 @@ func (c *resourcePoolComparator) populateDriversInFlux(resourceSlices []*v1.Reso
 
 // populateComparedDrivers populates the list of drivers that should be compared, assumes that
 // drivers in flux are already filtered out.
-func (c *resourcePoolComparator) populateComparedDrivers(templateSlices []*v1.ResourceSlice) {
+func (c *resourcePoolComparator) populateComparedDrivers(templateSlices []*v1.ResourceSlice, nodeSlices []*v1.ResourceSlice) {
 	for _, t := range templateSlices {
 		if slices.Contains(c.comparedDrivers, t.Spec.Driver) {
 			continue
@@ -298,6 +296,18 @@ func (c *resourcePoolComparator) populateComparedDrivers(templateSlices []*v1.Re
 		}
 
 		c.comparedDrivers = append(c.comparedDrivers, t.Spec.Driver)
+	}
+
+	for _, n := range nodeSlices {
+		if slices.Contains(c.comparedDrivers, n.Spec.Driver) {
+			continue
+		}
+
+		if slices.Contains(c.driversInFlux, n.Spec.Driver) {
+			continue
+		}
+
+		c.comparedDrivers = append(c.comparedDrivers, n.Spec.Driver)
 	}
 }
 
