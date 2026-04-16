@@ -357,8 +357,8 @@ func newCaMetrics() *caMetrics {
 		failedNodeCreationCount: k8smetrics.NewCounterVec(
 			&k8smetrics.CounterOpts{
 				Namespace: caNamespace,
-				Name:      "failed_node_creation_total",
-				Help:      "Number of nodes, which failed to be added by CA.",
+				Name:      "failed_node_creations_total",
+				Help:      "Number of nodes which failed to be added by CA.",
 			}, []string{"reason"},
 		),
 
