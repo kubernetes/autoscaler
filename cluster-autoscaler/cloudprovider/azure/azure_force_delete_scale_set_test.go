@@ -67,3 +67,29 @@ func TestIsOperationNotAllowed(t *testing.T) {
 	// function should return true.
 
 }
+
+func TestIsOperationPreempted(t *testing.T) {
+	t.Run("should return false because error is nil", func(t *testing.T) {
+		assert.Equal(t, isOperationPreempted(nil), false)
+	})
+
+	t.Run("should return false for unrelated error", func(t *testing.T) {
+		err := errors.New("BadRequest: something went wrong")
+		assert.Equal(t, isOperationPreempted(err), false)
+	})
+
+	t.Run("should return true for exact preempted message", func(t *testing.T) {
+		err := errors.New("Operation execution has been preempted by a more recent operation")
+		assert.Equal(t, isOperationPreempted(err), true)
+	})
+
+	t.Run("should return true for case-varied message", func(t *testing.T) {
+		err := errors.New("OPERATION EXECUTION HAS BEEN PREEMPTED BY A MORE RECENT OPERATION")
+		assert.Equal(t, isOperationPreempted(err), true)
+	})
+
+	t.Run("should return true for embedded message", func(t *testing.T) {
+		err := errors.New("Azure error: Operation execution has been preempted by a more recent operation: details here")
+		assert.Equal(t, isOperationPreempted(err), true)
+	})
+}

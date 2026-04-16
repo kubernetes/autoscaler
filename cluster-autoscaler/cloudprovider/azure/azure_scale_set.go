@@ -586,6 +586,24 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompu
 		}
 		return
 	}
+
+	// Retry once on OperationPreempted, mirroring the pattern in vmssvmclient.updateVMSSVMs()
+	if isOperationPreempted(err) {
+		klog.V(2).Infof("PollUntilDone for DeleteInstances(%v) for %s was preempted, retrying once", requiredIds.InstanceIDs, scaleSet.Name)
+		retryCtx, retryCancel := getContextWithTimeout(vmssContextTimeout)
+		retryPoller, retryErr := scaleSet.deleteInstances(retryCtx, requiredIds, scaleSet.Name)
+		retryCancel()
+		if retryErr == nil && retryPoller != nil {
+			_, retryErr = retryPoller.PollUntilDone(ctx, nil)
+		}
+		if retryErr == nil {
+			klog.V(3).Infof("PollUntilDone for DeleteInstances(%v) for %s retry success", requiredIds.InstanceIDs, scaleSet.Name)
+			scaleSet.invalidateInstanceCache()
+			return
+		}
+		klog.Errorf("PollUntilDone for DeleteInstances(%v) for %s retry failed: %v", requiredIds.InstanceIDs, scaleSet.Name, retryErr)
+	}
+
 	if !scaleSet.manager.config.StrictCacheUpdates {
 		scaleSet.invalidateInstanceCache()
 	}
