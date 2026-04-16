@@ -359,10 +359,7 @@ func (c *resourcePoolComparator) eliminateFuzzyMatchResources(deltasBuffer []res
 		}
 
 		bestMatch := c.nodeResources[bestMatchIndex]
-		c.templateResources = swapDelete(c.templateResources, i)
-		c.nodeResources = swapDelete(c.nodeResources, bestMatchIndex)
 		deviceCountDelta := int64(template.deviceCount) - int64(bestMatch.deviceCount)
-
 		deltasBuffer = append(deltasBuffer, resourceDelta{
 			Driver:               template.driver,
 			TemplateResourcePool: template.pool,
@@ -371,6 +368,9 @@ func (c *resourcePoolComparator) eliminateFuzzyMatchResources(deltasBuffer []res
 			TemplateSignatureMap: template.attrs,
 			NodeSignatureMap:     bestMatch.attrs,
 		})
+
+		c.templateResources = swapDelete(c.templateResources, i)
+		c.nodeResources = swapDelete(c.nodeResources, bestMatchIndex)
 	}
 
 	return deltasBuffer
