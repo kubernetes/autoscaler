@@ -169,9 +169,9 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnExistingNodes(
 		pod := pods[index]
 
 		// Try to schedule the pod on all nodes created during simulation
-		nodeName, err := e.clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, func(nodeInfo *framework.NodeInfo) bool {
+		nodeName, err := e.clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(nodeInfo *framework.NodeInfo) bool {
 			return estimationState.newNodeNames[nodeInfo.Node().Name]
-		})
+		}})
 		if err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
 			// Unexpected error.
 			return nil, err
@@ -212,9 +212,9 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			if isPodUsingHostNameTopologyKey(pod) && hasTopologyConstraintError(err) {
 				// If the pod can't be scheduled on the last node because of topology constraints, we can stop binpacking.
 				// The pod can't be scheduled on any new node either, because it has the same topology constraints.
-				nodeName, err := e.clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, func(nodeInfo *framework.NodeInfo) bool {
+				nodeName, err := e.clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(nodeInfo *framework.NodeInfo) bool {
 					return nodeInfo.Node().Name != estimationState.lastNodeName // only skip the last node that failed scheduling
-				})
+				}})
 				if err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
 					// Unexpected error.
 					return false, err

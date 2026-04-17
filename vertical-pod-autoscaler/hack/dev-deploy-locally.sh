@@ -32,6 +32,7 @@ REQUIRED_COMMANDS="
 docker
 git
 go
+helm
 kubectl
 make
 "

@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	storagev1 "k8s.io/api/storage/v1"
@@ -227,21 +226,60 @@ func (r *unstructuredScalableResource) Labels() map[string]string {
 	return allLabels
 }
 
-func (r *unstructuredScalableResource) Taints() []apiv1.Taint {
+func (r *unstructuredScalableResource) Taints() []corev1.Taint {
+	var allTaints []corev1.Taint
+
+	// Read taints from spec.template.spec.taints. Requires CAPI v1.12+ with the
+	// MachineTaintPropagation feature gate enabled.
+	if rawTaints, found, err := unstructured.NestedSlice(r.unstructured.UnstructuredContent(), "spec", "template", "spec", "taints"); found && err == nil {
+		for _, item := range rawTaints {
+			taintMap, ok := item.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			taint := corev1.Taint{}
+			if key, ok := taintMap["key"].(string); ok {
+				taint.Key = key
+			}
+			if value, ok := taintMap["value"].(string); ok {
+				taint.Value = value
+			}
+			if effect, ok := taintMap["effect"].(string); ok {
+				taint.Effect = corev1.TaintEffect(effect)
+			}
+			allTaints = append(allTaints, taint)
+		}
+	}
+
+	// Annotation taints take highest priority. If an annotation taint has the same
+	// key+effect as a spec taint, it overrides it; otherwise it is appended.
+	// Format: "key1=value1:NoSchedule,key2=value2:NoExecute"
 	annotations := r.unstructured.GetAnnotations()
-	// annotation value the form of "key1=value1:condition,key2=value2:condition"
 	if val, found := annotations[taintsKey]; found {
-		taints := strings.Split(val, ",")
-		ret := make([]apiv1.Taint, 0, len(taints))
-		for _, taintStr := range taints {
-			taint, err := parseTaint(taintStr)
-			if err == nil {
-				ret = append(ret, taint)
+		for _, taintStr := range strings.Split(val, ",") {
+			t, err := parseTaint(taintStr)
+			if err != nil {
+				klog.V(4).Infof("Failed to parse taint %q from annotation %s: %v", taintStr, taintsKey, err)
+				continue
+			}
+			replaced := false
+			for i, existing := range allTaints {
+				if existing.Key == t.Key && existing.Effect == t.Effect {
+					allTaints[i] = t
+					replaced = true
+					break
+				}
+			}
+			if !replaced {
+				allTaints = append(allTaints, t)
 			}
 		}
-		return ret
 	}
-	return nil
+
+	if len(allTaints) == 0 {
+		return nil
+	}
+	return allTaints
 }
 
 // A node group can scale from zero if it can inform about the CPU and memory
@@ -337,7 +375,7 @@ func (r *unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNa
 
 // InstanceSystemInfo sets the nodeSystemInfo from the infrastructure reference resource.
 // If the infrastructure reference resource is not found, returns nil.
-func (r *unstructuredScalableResource) InstanceSystemInfo() *apiv1.NodeSystemInfo {
+func (r *unstructuredScalableResource) InstanceSystemInfo() *corev1.NodeSystemInfo {
 	infraObj, err := r.readInfrastructureReferenceResource()
 	if err != nil || infraObj == nil {
 		return nil
@@ -455,12 +493,20 @@ func (r *unstructuredScalableResource) readInfrastructureReferenceResource() (*u
 		return nil, nil
 	}
 
+	// kind must be read before version discovery — getKindPreferredVersion needs it.
+	kind, ok := infraref["kind"]
+	if !ok {
+		info := fmt.Sprintf("Missing kind from %s %s's InfrastructureReference", obKind, obName)
+		klog.V(4).Info(info)
+		return nil, errors.New(info)
+	}
+
 	var apiversion string
 
 	apiGroup, ok := infraref["apiGroup"]
 	if ok {
-		if apiversion, err = getAPIGroupPreferredVersion(r.controller.managementDiscoveryClient, apiGroup); err != nil {
-			klog.V(4).Infof("Unable to read preferred version from api group %s, error: %v", apiGroup, err)
+		if apiversion, err = getKindPreferredVersion(r.controller.managementDiscoveryClient, apiGroup, kind); err != nil {
+			klog.V(4).Infof("Unable to read preferred version for kind %s in api group %s, error: %v", kind, apiGroup, err)
 			return nil, err
 		}
 		apiversion = fmt.Sprintf("%s/%s", apiGroup, apiversion)
@@ -472,13 +518,6 @@ func (r *unstructuredScalableResource) readInfrastructureReferenceResource() (*u
 			klog.V(4).Info(info)
 			return nil, errors.New(info)
 		}
-	}
-
-	kind, ok := infraref["kind"]
-	if !ok {
-		info := fmt.Sprintf("Missing kind from %s %s's InfrastructureReference", obKind, obName)
-		klog.V(4).Info(info)
-		return nil, errors.New(info)
 	}
 	name, ok := infraref["name"]
 	if !ok {
@@ -536,8 +575,8 @@ func resourceCapacityFromInfrastructureObject(infraobj *unstructured.Unstructure
 	return capacity
 }
 
-func systemInfoFromInfrastructureObject(infraobj *unstructured.Unstructured) apiv1.NodeSystemInfo {
-	nsi := apiv1.NodeSystemInfo{}
+func systemInfoFromInfrastructureObject(infraobj *unstructured.Unstructured) corev1.NodeSystemInfo {
+	nsi := corev1.NodeSystemInfo{}
 	infransi, found, err := unstructured.NestedStringMap(infraobj.Object, "status", "nodeInfo")
 	if !found || err != nil {
 		return nsi
@@ -616,19 +655,19 @@ func parseCSIDriverAnnotation(annotationValue string) []storagev1.CSINodeDriver 
 }
 
 // adapted from https://github.com/kubernetes/kubernetes/blob/release-1.25/pkg/util/taints/taints.go#L39
-func parseTaint(st string) (apiv1.Taint, error) {
-	var taint apiv1.Taint
+func parseTaint(st string) (corev1.Taint, error) {
+	var taint corev1.Taint
 
 	var key string
 	var value string
-	var effect apiv1.TaintEffect
+	var effect corev1.TaintEffect
 
 	parts := strings.Split(st, ":")
 	switch len(parts) {
 	case 1:
 		key = parts[0]
 	case 2:
-		effect = apiv1.TaintEffect(parts[1])
+		effect = corev1.TaintEffect(parts[1])
 
 		partsKV := strings.Split(parts[0], "=")
 		if len(partsKV) > 2 {
@@ -654,4 +693,17 @@ func parseTaint(st string) (apiv1.Taint, error) {
 	taint.Effect = effect
 
 	return taint, nil
+}
+
+// returns true if the unstructured resource is a MachineDeployment, MachinePool, or MachineSet,
+// and contains the pause annotation.
+func isScalableResourceAndPaused(resource unstructured.Unstructured) bool {
+	switch resource.GetKind() {
+	case machineDeploymentKind, machinePoolKind, machineSetKind:
+		annotations := resource.GetAnnotations()
+		if _, found := annotations[resourcePausedAnnotation]; found {
+			return true
+		}
+	}
+	return false
 }

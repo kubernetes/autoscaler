@@ -146,24 +146,16 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	kubeConfig := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(kubeConfig)
 	vpaClient := vpa_clientset.NewForConfigOrDie(kubeConfig)
-	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.VpaObjectNamespace))
-	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, factory)
-	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	kubeFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.VpaObjectNamespace))
+	podLister := updater.NewPodLister(kubeClient, commonFlag.VpaObjectNamespace, stopCh)
+	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, kubeFactory)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, kubeFactory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 
 	var limitRangeCalculator limitrange.LimitRangeCalculator
-	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
+	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(kubeFactory)
 	if err != nil {
 		klog.ErrorS(err, "Failed to create limitRangeCalculator, falling back to not checking limits")
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
-	}
-
-	factory.Start(stopCh)
-	informerMap := factory.WaitForCacheSync(stopCh)
-	for kind, synced := range informerMap {
-		if !synced {
-			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
-			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
-		}
 	}
 
 	admissionControllerStatusNamespace := status.AdmissionControllerStatusNamespace
@@ -177,10 +169,11 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	calculators := []patch.Calculator{inplace.NewResourceInPlaceUpdatesCalculator(recommendationProvider), inplace.NewInPlaceUpdatedCalculator(), inplace.NewUnboostAnnotationCalculator()}
 
-	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
 		kubeClient,
 		vpaClient,
+		kubeFactory,
+		podLister,
 		config.MinReplicas,
 		config.EvictionRateLimit,
 		config.EvictionRateBurst,
@@ -203,6 +196,16 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	if err != nil {
 		klog.ErrorS(err, "Failed to create updater")
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	// Start factories
+	kubeFactory.Start(stopCh)
+	informerMap := kubeFactory.WaitForCacheSync(stopCh)
+	for kind, synced := range informerMap {
+		if !synced {
+			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
 	}
 
 	// Start updating health check endpoint.

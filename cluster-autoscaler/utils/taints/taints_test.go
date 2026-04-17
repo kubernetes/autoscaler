@@ -953,3 +953,49 @@ func TestCleanStaleDeletionCandidates(t *testing.T) {
 		})
 	}
 }
+
+func TestNewTaintConfigWithCustomPrefixes(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		startupTaintPrefixes []string
+		taintKeyToTest       string
+		expectIsStartupTaint bool
+	}{
+		{
+			name:                 "empty custom prefixes - non-matching taint",
+			startupTaintPrefixes: []string{},
+			taintKeyToTest:       "readiness.k8s.io/not-ready",
+			expectIsStartupTaint: false,
+		},
+		{
+			name:                 "custom prefix - matching taint",
+			startupTaintPrefixes: []string{"readiness.k8s.io/"},
+			taintKeyToTest:       "readiness.k8s.io/not-ready",
+			expectIsStartupTaint: true,
+		},
+		{
+			name:                 "custom prefix - non-matching taint",
+			startupTaintPrefixes: []string{"readiness.k8s.io/"},
+			taintKeyToTest:       "other.io/my-taint",
+			expectIsStartupTaint: false,
+		},
+		{
+			name:                 "built-in prefixes still work with custom prefix",
+			startupTaintPrefixes: []string{"readiness.k8s.io/"},
+			taintKeyToTest:       StartupTaintPrefix + "some-taint",
+			expectIsStartupTaint: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			opts := config.AutoscalingOptions{
+				StartupTaintPrefixes: tc.startupTaintPrefixes,
+			}
+			taintConfig := NewTaintConfig(opts)
+
+			result := taintConfig.IsStartupTaint(tc.taintKeyToTest)
+			assert.Equal(t, tc.expectIsStartupTaint, result, "IsStartupTaint(%q) = %v, want %v", tc.taintKeyToTest, result, tc.expectIsStartupTaint)
+		})
+	}
+}

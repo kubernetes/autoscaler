@@ -35,6 +35,9 @@ const (
 	// SkipDrain means that the pod doesn't block drain of other pods, but
 	// should not be drained itself.
 	SkipDrain
+	// WaitForCompletion means that the pod should be allowed to run to
+	// completion before the node is drained.
+	WaitForCompletion
 )
 
 // Status contains all information about drainability of a single pod.
@@ -76,6 +79,13 @@ func NewBlockedStatus(reason drain.BlockingPodReason, err error) Status {
 func NewSkipStatus() Status {
 	return Status{
 		Outcome: SkipDrain,
+	}
+}
+
+// NewWaitStatus returns a new Status indicating that a pod should be allowed to run to completion.
+func NewWaitStatus() Status {
+	return Status{
+		Outcome: WaitForCompletion,
 	}
 }
 

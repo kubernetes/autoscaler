@@ -664,7 +664,7 @@ func (mgr *cherryManagerRest) templateNodeInfo(nodegroup string) (*framework.Nod
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, BuildGenericLabels(nodegroup, cherryPlan))
 
-	nodeInfo := framework.NewNodeInfo(&node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(nodegroup)})
+	nodeInfo := framework.NewNodeInfo(&node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(nodegroup), nil))
 	return nodeInfo, nil
 }
 

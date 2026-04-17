@@ -60,8 +60,8 @@ func UpdateClusterSafeToAutoscale(safe bool) {
 }
 
 // UpdateNodesCount records the number of nodes in cluster
-func UpdateNodesCount(ready, unready, starting, longUnregistered, unregistered int) {
-	DefaultMetrics.UpdateNodesCount(ready, unready, starting, longUnregistered, unregistered)
+func UpdateNodesCount(ready, unready, starting, suspended, longUnregistered, unregistered int) {
+	DefaultMetrics.UpdateNodesCount(ready, unready, starting, suspended, longUnregistered, unregistered)
 }
 
 // UpdateNodeGroupsCount records the number of node groups managed by CA

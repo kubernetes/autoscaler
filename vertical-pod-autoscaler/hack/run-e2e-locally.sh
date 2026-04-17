@@ -17,8 +17,8 @@
 set -o nounset
 set -o pipefail
 
-BASE_NAME=$(basename $0)
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
+BASE_NAME=$(basename "$0")
+SCRIPT_ROOT=$(dirname "${BASH_SOURCE}")/..
 KIND_CONFIG="${SCRIPT_ROOT}/../.github/kind-config.yaml"
 
 function print_help {
@@ -46,6 +46,7 @@ SUITE=$1
 REQUIRED_COMMANDS="
 docker
 go
+helm
 kind
 kubectl
 make
@@ -70,6 +71,13 @@ then
   exit 1
 fi
 
+# Clean up before exit
+function cleanup {
+  echo " ** Cleaning up..."
+  helm uninstall vpa --namespace kube-system 2>/dev/null || true
+  kubectl delete namespace monitoring --ignore-not-found=true 2>/dev/null || true
+}
+trap cleanup EXIT
 
 echo "Deleting KIND cluster 'kind'."
 kind delete cluster -n kind -q
@@ -85,11 +93,12 @@ if ! kind create cluster --config "${KIND_CONFIG}"; then
     exit 1
 fi
 
-echo "Building metrics-pump image"
-docker build -t localhost:5001/write-metrics:dev -f ${SCRIPT_ROOT}/hack/e2e/Dockerfile.externalmetrics-writer ${SCRIPT_ROOT}/hack
-echo "  loading image into kind"
-kind load docker-image localhost:5001/write-metrics:dev
-
+# Build and deploy external metrics writer if needed
+if [[ "${SUITE}" == "recommender-externalmetrics" ]]; then
+  echo " ** Building external metrics writer image"
+  docker build -t localhost:5001/write-metrics:dev -f "${SCRIPT_ROOT}"/hack/e2e/Dockerfile.externalmetrics-writer "${SCRIPT_ROOT}"/hack
+  kind load docker-image localhost:5001/write-metrics:dev
+fi
 
 export FEATURE_GATES=""
 export TEST_WITH_FEATURE_GATES_ENABLED=""
@@ -101,15 +110,21 @@ fi
 
 case ${SUITE} in
   recommender|recommender-externalmetrics|updater|admission-controller|actuation|full-vpa)
-    ${SCRIPT_ROOT}/hack/vpa-down.sh
-    echo " ** Deploying for suite ${SUITE}"
-    ${SCRIPT_ROOT}/hack/deploy-for-e2e-locally.sh ${SUITE}
+    # Checking if user specified artifact directory to dump logs
+    if [[ -z "${ARTIFACTS:-}" ]]; then
+      # Create temp dir for artifacts
+      ARTIFACTS=$(mktemp -d)
+      echo " ** Log artifacts will be stored in ${ARTIFACTS}"
+    fi
 
-    echo " ** Running suite ${SUITE}"
-    if [ ${SUITE} == recommender-externalmetrics ]; then
-       ARTIFACTS=./workspace/_artifacts ${SCRIPT_ROOT}/hack/run-e2e-tests.sh recommender
-    else
-      ARTIFACTS=./workspace/_artifacts ${SCRIPT_ROOT}/hack/run-e2e-tests.sh ${SUITE}
+    echo " ** Deploying VPA components..."
+    "${SCRIPT_ROOT}"/hack/deploy-for-e2e-locally.sh "${SUITE}"
+
+    echo " ** Running E2E tests..."
+    if [ "${SUITE}" == recommender-externalmetrics ]; then
+       ARTIFACTS="${ARTIFACTS}" "${SCRIPT_ROOT}"/hack/run-e2e-tests.sh recommender
+    else 
+       ARTIFACTS="${ARTIFACTS}" "${SCRIPT_ROOT}"/hack/run-e2e-tests.sh "${SUITE}"
     fi
     ;;
   *)

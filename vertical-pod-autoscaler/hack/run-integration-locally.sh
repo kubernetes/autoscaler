@@ -44,6 +44,7 @@ SUITE=$1
 REQUIRED_COMMANDS="
 docker
 go
+helm
 kind
 kubectl
 make
@@ -101,7 +102,10 @@ patch -c ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml -i ${SCRIPT_ROOT}/hack/e2e/vpa-rbac
 kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/vpa-rbac.yaml
 # Other-versioned CRDs are irrelevant as we're running a modern-ish cluster.
 kubectl apply -f ${SCRIPT_ROOT}/deploy/vpa-v1-crd-gen.yaml
-kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/k8s-metrics-server.yaml
+# Deploy metrics server for integration tests via Helm chart
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+helm repo update metrics-server
+helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system --version 3.13.0 --wait
 
 for i in ${COMPONENTS}; do
   ALL_ARCHITECTURES=${ARCH} make --directory ${SCRIPT_ROOT}/pkg/${i} docker-build REGISTRY=${REGISTRY} TAG=${TAG}

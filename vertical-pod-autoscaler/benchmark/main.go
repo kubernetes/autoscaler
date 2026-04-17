@@ -387,7 +387,7 @@ func scaleUpRecommender(ctx context.Context, kubeClient kubernetes.Interface) er
 		return err
 	}
 	fmt.Println("  Waiting for recommender to be ready...")
-	if err := waitForVPAPodReady(ctx, kubeClient, "vpa-recommender"); err != nil {
+	if err := waitForVPAPodReady(ctx, kubeClient, "recommender"); err != nil {
 		return err
 	}
 	fmt.Println("  Recommender ready")
@@ -399,7 +399,7 @@ func scaleUpUpdater(ctx context.Context, kubeClient kubernetes.Interface) error 
 		return err
 	}
 	fmt.Println("  Waiting for updater to be ready...")
-	if err := waitForVPAPodReady(ctx, kubeClient, "vpa-updater"); err != nil {
+	if err := waitForVPAPodReady(ctx, kubeClient, "updater"); err != nil {
 		return err
 	}
 	fmt.Println("  Updater ready")
@@ -409,7 +409,7 @@ func scaleUpUpdater(ctx context.Context, kubeClient kubernetes.Interface) error 
 func waitForVPAPodReady(ctx context.Context, kubeClient kubernetes.Interface, appLabel string) error {
 	return wait.PollUntilContextTimeout(ctx, 2*time.Second, 120*time.Second, true, func(ctx context.Context) (bool, error) {
 		pods, _ := kubeClient.CoreV1().Pods(vpaNamespace).List(ctx, metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("app=%s", appLabel),
+			LabelSelector: fmt.Sprintf("app.kubernetes.io/component=%s", appLabel),
 		})
 		for _, p := range pods.Items {
 			if p.Status.Phase == corev1.PodRunning {
@@ -500,7 +500,7 @@ func cleanupBenchmarkResources(ctx context.Context, kubeClient kubernetes.Interf
 }
 
 func waitForAndScrapeMetrics(ctx context.Context, kubeClient kubernetes.Interface) (map[string]float64, error) {
-	pods, err := kubeClient.CoreV1().Pods(vpaNamespace).List(ctx, metav1.ListOptions{LabelSelector: "app=vpa-updater"})
+	pods, err := kubeClient.CoreV1().Pods(vpaNamespace).List(ctx, metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=updater"})
 	if err != nil || len(pods.Items) == 0 {
 		return nil, fmt.Errorf("no vpa-updater pod found")
 	}

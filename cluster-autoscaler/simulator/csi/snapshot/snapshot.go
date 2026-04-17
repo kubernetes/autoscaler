@@ -22,7 +22,7 @@ import (
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	fwk "k8s.io/kube-scheduler/framework"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 
 // Snapshot represents a snapshot of CSI node information for cluster simulation.
@@ -51,7 +51,7 @@ func (s *Snapshot) listCSINodes() []*storagev1.CSINode {
 }
 
 // CSINodes returns a CSI node lister for the snapshot.
-func (s *Snapshot) CSINodes() fwk.CSINodeLister {
+func (s *Snapshot) CSINodes() schedulerinterface.CSINodeLister {
 	return SnapshotCSINodeLister{snapshot: s}
 }
 

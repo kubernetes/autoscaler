@@ -27,6 +27,16 @@ type InstancePoolNodeGroup struct {
 	maxSize    int
 }
 
+type nodeGroupAutoDiscovery struct {
+	manager    InstancePoolManager
+	kubeClient kubernetes.Interface
+
+	compartmentId string
+	tags          map[string]string
+	minSize       int
+	maxSize       int
+}
+
 // MaxSize returns maximum size of the instance-pool based node group.
 func (ip *InstancePoolNodeGroup) MaxSize() int {
 	return ip.maxSize
@@ -70,24 +80,9 @@ func (ip *InstancePoolNodeGroup) AtomicIncreaseSize(delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
-// DeleteNodes deletes nodes from this instance-pool. Error is returned either on
-// failure or if the given node doesn't belong to this instance-pool. This function
-// should wait until instance-pool size is updated. Implementation required.
-func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
-
-	// FYI, unregistered nodes come in as the provider id as node name.
-
-	klog.Infof("DeleteNodes called with %d node(s)", len(nodes))
-
-	size, err := ip.manager.GetInstancePoolSize(*ip)
-	if err != nil {
-		return err
-	}
-
-	if size <= ip.MinSize() {
-		return fmt.Errorf("min size reached, nodes will not be deleted")
-	}
-
+// deleteNodes performs the actual node deletion logic, converting nodes to OCI refs
+// and deleting them. It does not check min size constraints.
+func (ip *InstancePoolNodeGroup) deleteNodes(nodes []*apiv1.Node) error {
 	refs := make([]common.OciRef, 0, len(nodes))
 	for _, node := range nodes {
 		belongs, err := ip.Belongs(node)
@@ -108,9 +103,33 @@ func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return ip.manager.DeleteInstances(*ip, refs)
 }
 
+// DeleteNodes deletes nodes from this instance-pool. Error is returned either on
+// failure or if the given node doesn't belong to this instance-pool. This function
+// should wait until instance-pool size is updated. Implementation required.
+func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+	// FYI, unregistered nodes come in as the provider id as node name.
+
+	klog.Infof("DeleteNodes called with %d node(s)", len(nodes))
+
+	size, err := ip.manager.GetInstancePoolSize(*ip)
+	if err != nil {
+		return err
+	}
+
+	if size <= ip.MinSize() {
+		return fmt.Errorf("min size reached, nodes will not be deleted")
+	}
+
+	return ip.deleteNodes(nodes)
+}
+
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
 func (ip *InstancePoolNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	return cloudprovider.ErrNotImplemented
+	// FYI, unregistered nodes come in as the provider id as node name.
+
+	klog.Infof("ForceDeleteNodes called with %d node(s) (ignoring min size constraint)", len(nodes))
+
+	return ip.deleteNodes(nodes)
 }
 
 // DecreaseTargetSize decreases the target size of the instance-pool based node group. This function
@@ -192,8 +211,8 @@ func (ip *InstancePoolNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error)
 
 	nodeInfo := framework.NewNodeInfo(
 		node, nil,
-		&framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ip.id)},
-		&framework.PodInfo{Pod: ocicommon.BuildCSINodePod()},
+		framework.NewPodInfo(cloudprovider.BuildKubeProxy(ip.id), nil),
+		framework.NewPodInfo(ocicommon.BuildCSINodePod(), nil),
 	)
 	return nodeInfo, nil
 }

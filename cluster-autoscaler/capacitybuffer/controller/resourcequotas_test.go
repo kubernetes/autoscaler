@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
+	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	fakeClient "k8s.io/client-go/kubernetes/fake"
 )
 
@@ -69,6 +70,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("podTemp"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -81,6 +83,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("podTemp"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -93,10 +96,12 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("podTemp"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("podTemp"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(10),
 				),
 			},
@@ -115,6 +120,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("podTemp"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -138,6 +144,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("podTemp"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -166,6 +173,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("podTemp"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -193,6 +201,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("pod-with-limits"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -217,6 +226,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("buffer-pod"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -241,6 +251,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("pod"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -266,6 +277,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("best-effort-pod"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -290,6 +302,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("burstable-pod"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -329,10 +342,12 @@ func TestResourceQuotaAllocator(t *testing.T) {
 				// of not matching quotas.
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("regular-pod"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("priority-pod"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -364,10 +379,12 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("pod-a"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("pod-b"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -426,14 +443,17 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			buffers: []*v1.CapacityBuffer{
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("affinity-pod"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("anti-affinity-pod"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(2),
 				),
 				testutil.NewBuffer(
 					testutil.WithStatusPodTemplateRef("regular-pod"),
+					testutil.WithStatusPodTemplateGeneration(0),
 					testutil.WithStatusReplicas(5),
 				),
 			},
@@ -455,6 +475,25 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			for _, q := range tt.quotas {
 				objs = append(objs, q)
 			}
+
+			// Pre-populate PodTemplates with defaulted requests (simulating Admission/DryRun)
+			for _, obj := range objs {
+				if pt, ok := obj.(*corev1.PodTemplate); ok {
+					// Simple defaulting for tests: if limits set and requests not, copy limits to requests
+					// This mimics what dry-run would do for the fields relevant to tests
+					for i := range pt.Template.Spec.Containers {
+						if pt.Template.Spec.Containers[i].Resources.Requests == nil {
+							pt.Template.Spec.Containers[i].Resources.Requests = make(corev1.ResourceList)
+						}
+						for k, v := range pt.Template.Spec.Containers[i].Resources.Limits {
+							if _, exists := pt.Template.Spec.Containers[i].Resources.Requests[k]; !exists {
+								pt.Template.Spec.Containers[i].Resources.Requests[k] = v
+							}
+						}
+					}
+				}
+			}
+
 			fakeK8s := fakeClient.NewSimpleClientset(objs...)
 			client, _ := cbclient.NewCapacityBufferClient(nil, fakeK8s, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			allocator := newResourceQuotaAllocator(client)
@@ -816,7 +855,8 @@ func TestPodMatchesQuotaScope(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pod := getPodFromTemplate(tt.podTemplate)
+			pod := podutils.GetPodFromTemplate(&tt.podTemplate.Template)
+			pod.Namespace = tt.podTemplate.Namespace
 			gotMatch, err := podMatchesQuotaScope(pod, tt.quota)
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -824,312 +864,6 @@ func TestPodMatchesQuotaScope(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			assert.Equal(t, tt.wantMatch, gotMatch)
-		})
-	}
-}
-
-func TestDefaultPodResources(t *testing.T) {
-	tests := []struct {
-		name string
-		pod  *corev1.Pod
-		want *corev1.Pod
-	}{
-		{
-			name: "no resources",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{Name: "c1"},
-					},
-				},
-			},
-			want: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Requests: corev1.ResourceList{},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "container limits imply requests",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceCPU: resource.MustParse("1"),
-								},
-							},
-						},
-					},
-				},
-			},
-			want: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceCPU: resource.MustParse("1"),
-								},
-								Requests: corev1.ResourceList{
-									corev1.ResourceCPU: resource.MustParse("1"),
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "init container limits imply requests",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					InitContainers: []corev1.Container{
-						{
-							Name: "ic1",
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceMemory: resource.MustParse("1Gi"),
-								},
-							},
-						},
-					},
-					Containers: []corev1.Container{
-						{Name: "c1"},
-					},
-				},
-			},
-			want: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					InitContainers: []corev1.Container{
-						{
-							Name: "ic1",
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceMemory: resource.MustParse("1Gi"),
-								},
-								Requests: corev1.ResourceList{
-									corev1.ResourceMemory: resource.MustParse("1Gi"),
-								},
-							},
-						},
-					},
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Requests: corev1.ResourceList{},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "requests already set",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceCPU: resource.MustParse("1"),
-								},
-								Requests: corev1.ResourceList{
-									corev1.ResourceCPU: resource.MustParse("500m"),
-								},
-							},
-						},
-					},
-				},
-			},
-			want: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceCPU: resource.MustParse("1"),
-								},
-								Requests: corev1.ResourceList{
-									corev1.ResourceCPU: resource.MustParse("500m"),
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "mixed resources",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceCPU:    resource.MustParse("1"),
-									corev1.ResourceMemory: resource.MustParse("1Gi"),
-								},
-								Requests: corev1.ResourceList{
-									corev1.ResourceCPU: resource.MustParse("500m"),
-								},
-							},
-						},
-					},
-				},
-			},
-			want: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceCPU:    resource.MustParse("1"),
-									corev1.ResourceMemory: resource.MustParse("1Gi"),
-								},
-								Requests: corev1.ResourceList{
-									corev1.ResourceCPU:    resource.MustParse("500m"),
-									corev1.ResourceMemory: resource.MustParse("1Gi"),
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "pod level limits imply requests",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Resources: &corev1.ResourceRequirements{
-						Limits: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("1"),
-						},
-					},
-					Containers: []corev1.Container{
-						{Name: "c1"},
-					},
-				},
-			},
-			want: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Resources: &corev1.ResourceRequirements{
-						Limits: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("1"),
-						},
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("1"),
-						},
-					},
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Requests: corev1.ResourceList{},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "pod level limits is empty",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Resources: &corev1.ResourceRequirements{
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("100m"),
-						},
-					},
-					Containers: []corev1.Container{
-						{Name: "c1"},
-					},
-				},
-			},
-			want: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Resources: &corev1.ResourceRequirements{
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("100m"),
-						},
-					},
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Requests: corev1.ResourceList{},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "default pod requests for overcommittable resources",
-			pod: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Resources: &corev1.ResourceRequirements{
-						Limits: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("1"),
-						},
-					},
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Requests: corev1.ResourceList{
-									corev1.ResourceHugePagesPrefix + "2Mi": resource.MustParse("1Gi"),
-								},
-							},
-						},
-					},
-				},
-			},
-			want: &corev1.Pod{
-				Spec: corev1.PodSpec{
-					Resources: &corev1.ResourceRequirements{
-						Limits: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("1"),
-						},
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU:                     resource.MustParse("1"),
-							corev1.ResourceHugePagesPrefix + "2Mi": resource.MustParse("1Gi"),
-						},
-					},
-					Containers: []corev1.Container{
-						{
-							Name: "c1",
-							Resources: corev1.ResourceRequirements{
-								Requests: corev1.ResourceList{
-									corev1.ResourceHugePagesPrefix + "2Mi": resource.MustParse("1Gi"),
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defaultPodResources(tt.pod)
-			assert.Equal(t, tt.want, tt.pod)
 		})
 	}
 }

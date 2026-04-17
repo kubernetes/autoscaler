@@ -1,0 +1,16 @@
+recommender:
+  extraArgs:
+    - --kube-api-qps=100
+    - --kube-api-burst=200
+    - --memory-saver=true
+
+updater:
+  extraArgs:
+    - --kube-api-qps=100
+    - --kube-api-burst=200
+    - --updater-interval=2m
+
+admissionController:
+  extraArgs:
+    - --kube-api-qps=100
+    - --kube-api-burst=200

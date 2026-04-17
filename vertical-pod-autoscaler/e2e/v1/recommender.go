@@ -19,7 +19,6 @@ package autoscaling
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -481,7 +480,9 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 
 func deleteRecommender(c clientset.Interface) error {
 	namespace := utils.VpaNamespace
-	listOptions := metav1.ListOptions{}
+	listOptions := metav1.ListOptions{
+		LabelSelector: "app.kubernetes.io/component=recommender",
+	}
 	podList, err := c.CoreV1().Pods(namespace).List(context.TODO(), listOptions)
 	if err != nil {
 		fmt.Println("Could not list pods.", err)
@@ -489,14 +490,12 @@ func deleteRecommender(c clientset.Interface) error {
 	}
 	fmt.Println("Pods list items:", len(podList.Items))
 	for _, pod := range podList.Items {
-		if strings.HasPrefix(pod.Name, "vpa-recommender") {
-			fmt.Println("Deleting pod.", namespace, pod.Name)
-			err := c.CoreV1().Pods(namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
-			if err != nil {
-				return err
-			}
-			return nil
+		fmt.Println("Deleting pod.", namespace, pod.Name)
+		err := c.CoreV1().Pods(namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
+		if err != nil {
+			return err
 		}
+		return nil
 	}
 	return fmt.Errorf("vpa recommender not found")
 }

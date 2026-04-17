@@ -18,6 +18,9 @@ package gce
 
 import (
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMachineCache(t *testing.T) {
@@ -112,4 +115,36 @@ func TestListManagedInstancesResultsCache(t *testing.T) {
 	if cacheSize := len(c.listManagedInstancesResultsCache); cacheSize > 0 {
 		t.Errorf("Expected listManagedInstancesResultsCache to be empty, but it still contains %d entries", cacheSize)
 	}
+}
+
+func TestMigInstancesCache(t *testing.T) {
+	c := NewGceCache()
+	migRef := GceRef{
+		Project: "project",
+		Zone:    "us-test1",
+		Name:    "mig",
+	}
+
+	// Pecondition: Cache is empty before it is set
+	assert.True(t, c.IsMigInstancesCacheEmpty(migRef), "Expected MIG instances cache to be empty before SetMigInstances was called")
+
+	// When: set MIG instances cache
+	instances := make([]GceInstance, 0)
+	instances = append(instances, GceInstance{NumericId: 123})
+	instances = append(instances, GceInstance{NumericId: 456})
+	c.SetMigInstances(migRef, instances, time.Now())
+
+	// Then: can retrieve instances from cache by MIG reference
+	gotInstances, found := c.GetMigInstances(migRef)
+	assert.False(t, c.IsMigInstancesCacheEmpty(migRef), "Expected MIG instances cache to not be empty after SetMigInstances was called")
+	assert.True(t, found, "Expected MIG insatcnes cache to be populated")
+	assert.Equal(t, gotInstances, instances)
+
+	// When: Invalidate the cache
+	c.InvalidateAllMigInstances()
+
+	// Then: Cache is empty
+	_, found = c.GetMigInstances(migRef)
+	assert.False(t, found, "Expected MIG instances cache to be empty after InvalidateAllMigInstances was called")
+	assert.True(t, c.IsMigInstancesCacheEmpty(migRef))
 }

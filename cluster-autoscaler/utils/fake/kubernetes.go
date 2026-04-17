@@ -71,6 +71,16 @@ func (k *Kubernetes) DeletePod(namespace, name string) {
 	_ = k.Client.CoreV1().Pods(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 }
 
+// AddPodTemplate adds a pod template to the fake client.
+func (k *Kubernetes) AddPodTemplate(podTemplate *apiv1.PodTemplate) {
+	_, _ = k.Client.CoreV1().PodTemplates(podTemplate.Namespace).Create(context.TODO(), podTemplate, metav1.CreateOptions{})
+}
+
+// DeletePodTemplate deletes a pod template from the fake client.
+func (k *Kubernetes) DeletePodTemplate(namespace, name string) {
+	_ = k.Client.CoreV1().PodTemplates(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
+}
+
 // ListerRegistry returns a real ListerRegistry populated with the fake listers.
 func (k *Kubernetes) ListerRegistry() kubernetes.ListerRegistry {
 	return kubernetes.NewListerRegistryWithDefaultListers(k.InformerFactory)

@@ -96,10 +96,15 @@ func GetBufferStatus(podTempRef *v1.LocalObjectRef, replicas *int32, podTemplate
 
 // GetConditionReady returns a list of conditions with a condition ready and empty message, should be used for testing purposes only
 func GetConditionReady() []metav1.Condition {
+	return GetConditionReadyWithMessage("ready")
+}
+
+// GetConditionReadyWithMessage returns a list of conditions with a condition ready and the specified message
+func GetConditionReadyWithMessage(message string) []metav1.Condition {
 	readyCondition := metav1.Condition{
 		Type:               capacitybuffer.ReadyForProvisioningCondition,
 		Status:             metav1.ConditionTrue,
-		Message:            "",
+		Message:            message,
 		Reason:             capacitybuffer.AttributesSetSuccessfullyReason,
 		LastTransitionTime: metav1.Time{},
 	}
@@ -108,10 +113,15 @@ func GetConditionReady() []metav1.Condition {
 
 // GetConditionNotReady returns a list of conditions with a condition not ready and empty message, should be used for testing purposes only
 func GetConditionNotReady() []metav1.Condition {
+	return GetConditionNotReadyWithMessage("")
+}
+
+// GetConditionNotReadyWithMessage returns a list of condition with a condition not ready and specified message.
+func GetConditionNotReadyWithMessage(message string) []metav1.Condition {
 	notReadyCondition := metav1.Condition{
 		Type:               capacitybuffer.ReadyForProvisioningCondition,
 		Status:             metav1.ConditionFalse,
-		Message:            "",
+		Message:            message,
 		Reason:             "error",
 		LastTransitionTime: metav1.Time{},
 	}
@@ -155,6 +165,13 @@ func WithReplicas(replicas int32) BufferOption {
 	}
 }
 
+// WithLimits sets the Spec.Limits
+func WithLimits(limits v1.ResourceList) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Spec.Limits = &limits
+	}
+}
+
 // WithStatusPodTemplateRef sets the Status.PodTemplateRef
 func WithStatusPodTemplateRef(name string) BufferOption {
 	return func(b *v1.CapacityBuffer) {
@@ -166,6 +183,13 @@ func WithStatusPodTemplateRef(name string) BufferOption {
 func WithStatusReplicas(replicas int32) BufferOption {
 	return func(b *v1.CapacityBuffer) {
 		b.Status.Replicas = &replicas
+	}
+}
+
+// WithStatusPodTemplateGeneration sets the Status.PodTemplateGeneration
+func WithStatusPodTemplateGeneration(generation int64) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Status.PodTemplateGeneration = &generation
 	}
 }
 

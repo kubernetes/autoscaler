@@ -1,0 +1,70 @@
+name: Cluster Autoscaler Benchmark
+
+on:
+  pull_request:
+    paths:
+      - 'cluster-autoscaler/**'
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: Run and Compare Benchmarks
+    runs-on: ubuntu-latest
+    # Do not block valid PRs on benchmark issues as we are still stabilizing.
+    continue-on-error: true
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: pr
+
+      - name: Checkout Base
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: base
+
+      - name: Set up Go
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version-file: pr/cluster-autoscaler/go.mod
+          cache-dependency-path: pr/cluster-autoscaler/go.sum
+
+      - name: Apt-get dependencies
+        run: sudo apt-get install libseccomp-dev -qq
+
+      - name: Run Benchmark (Base)
+        shell: bash
+        run: |
+          cd base/cluster-autoscaler
+          go test -v -bench=BenchmarkRunOnce -benchmem -count=8 ./core/bench/... -args -gc true | tee ../../base.txt
+
+      - name: Run Benchmark (PR)
+        shell: bash
+        run: |
+          cd pr/cluster-autoscaler
+          go test -v -bench=BenchmarkRunOnce -benchmem -count=8 ./core/bench/... -args -gc true | tee ../../pr.txt
+
+      - name: Install benchstat
+        run: go install golang.org/x/perf/cmd/benchstat@latest
+
+      - name: Compare Results
+        shell: bash
+        run: |
+          echo "### Cluster Autoscaler Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "Comparing PR branch against \`${{ github.event.pull_request.base.ref }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -s base.txt ] && [ -s pr.txt ]; then
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            $(go env GOPATH)/bin/benchstat base.txt pr.txt | tee benchstat.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            
+            # Fail if any regression is > 10%
+            grep -qE '\+[1-9][0-9].*%' benchstat.txt && { echo "Regression detected > 10%"; exit 1; } || true
+          else
+            echo "Error: Benchmark results not found or empty." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

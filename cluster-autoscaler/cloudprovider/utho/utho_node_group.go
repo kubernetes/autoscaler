@@ -334,7 +334,7 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	node.Status.Conditions = readyConditions()
 
 	// Wrap in NodeInfo, add kube-proxy pod
-	ni := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: buildKubeProxy(n.id)})
+	ni := framework.NewNodeInfo(node, nil, framework.NewPodInfo(buildKubeProxy(n.id), nil))
 	klog.V(4).Infof("TemplateNodeInfo: completed for node-group %s, returning NodeInfo", n.id)
 	return ni, nil
 }

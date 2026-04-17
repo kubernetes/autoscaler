@@ -48,7 +48,7 @@ func GetDaemonSetPodsForNode(nodeInfo *framework.NodeInfo, daemonsets []*appsv1.
 			pod.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
 				{Kind: "DaemonSet", UID: ds.UID, Name: ds.Name, Controller: &ptrVal},
 			}
-			result = append(result, &framework.PodInfo{Pod: pod})
+			result = append(result, framework.NewPodInfo(pod, nil))
 		}
 	}
 	return result, nil

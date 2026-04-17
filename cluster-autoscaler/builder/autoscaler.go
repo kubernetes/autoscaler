@@ -21,11 +21,14 @@ import (
 	"fmt"
 
 	cbv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	provreqclientset "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	capacityclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	cbctrl "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	cacontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
@@ -33,7 +36,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/loop"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	cbprocessor "k8s.io/autoscaler/cluster-autoscaler/processors/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
@@ -46,10 +48,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/emptycandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/previouscandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
-	provreqorchestrator "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/orchestrator"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
@@ -71,9 +69,11 @@ type AutoscalerBuilder struct {
 	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	manager              manager.Manager
 	kubeClient           kubernetes.Interface
+	kubeClients          *cacontext.AutoscalingKubeClients
 	podObserver          *loop.UnschedulablePodObserver
 	cloudProvider        cloudprovider.CloudProvider
 	informerFactory      informers.SharedInformerFactory
+	prClient             provreqclientset.Interface
 }
 
 // New creates a builder with default options.
@@ -119,6 +119,20 @@ func (b *AutoscalerBuilder) WithInformerFactory(f informers.SharedInformerFactor
 	return b
 }
 
+// WithProvisioningRequestClient allows injecting a ProvisioningRequest API client.
+func (b *AutoscalerBuilder) WithProvisioningRequestClient(c provreqclientset.Interface) *AutoscalerBuilder {
+	b.prClient = c
+	return b
+}
+
+// WithAutoscalingKubeClients allows injecting autoscaling kube clients.
+// It is not needed for most use-cases.
+// Once used, it has to be in sync with the object provided in WithKubeClient and WithInformerFactory.
+func (b *AutoscalerBuilder) WithAutoscalingKubeClients(kubeClients *cacontext.AutoscalingKubeClients) *AutoscalerBuilder {
+	b.kubeClients = kubeClients
+	return b
+}
+
 // Build constructs the Autoscaler based on the provided configuration.
 func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.LoopTrigger, error) {
 	// Get AutoscalingOptions from flags.
@@ -146,68 +160,46 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 
 	var snapshotStore clustersnapshot.ClusterSnapshotStore = store.NewDeltaSnapshotStore(autoscalingOptions.ClusterSnapshotParallelism)
 	opts := coreoptions.AutoscalerOptions{
-		AutoscalingOptions:   autoscalingOptions,
-		FrameworkHandle:      fwHandle,
-		ClusterSnapshot:      predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.PredicateParallelism, autoscalingOptions.CSINodeAwareSchedulingEnabled),
-		KubeClient:           b.kubeClient,
-		InformerFactory:      b.informerFactory,
-		DebuggingSnapshotter: b.debuggingSnapshotter,
-		DeleteOptions:        deleteOptions,
-		DrainabilityRules:    drainabilityRules,
-		ScaleUpOrchestrator:  orchestrator.New(),
-		KubeClientNew:        b.manager.GetClient(),
-		KubeCache:            b.manager.GetCache(),
+		AutoscalingOptions:     autoscalingOptions,
+		FrameworkHandle:        fwHandle,
+		ClusterSnapshot:        predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.PredicateParallelism, autoscalingOptions.CSINodeAwareSchedulingEnabled),
+		KubeClient:             b.kubeClient,
+		InformerFactory:        b.informerFactory,
+		AutoscalingKubeClients: b.kubeClients,
+		DebuggingSnapshotter:   b.debuggingSnapshotter,
+		DeleteOptions:          deleteOptions,
+		DrainabilityRules:      drainabilityRules,
+		ScaleUpOrchestrator:    orchestrator.New(),
+		KubeClientNew:          b.manager.GetClient(),
+		KubeCache:              b.manager.GetCache(),
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(&autoscalingOptions.NodeInfoCacheExpireTime, autoscalingOptions.ForceDaemonSets)
 	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere)
 
-	var ProvisioningRequestInjector *provreq.ProvisioningRequestPodsInjector
+	var provisioningRequestInjector *provreq.ProvisioningRequestPodsInjector
 	if autoscalingOptions.ProvisioningRequestEnabled {
-		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
-
-		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
-		client, err := provreqclient.NewProvisioningRequestClient(restConfig)
+		injector, err := b.buildProvisioningRequest(ctx, autoscalingOptions, &opts, podListProcessor)
 		if err != nil {
 			return nil, nil, err
 		}
-
-		ProvisioningRequestInjector, err = provreq.NewProvisioningRequestPodsInjector(restConfig, opts.ProvisioningRequestInitialBackoffTime, opts.ProvisioningRequestMaxBackoffTime, opts.ProvisioningRequestMaxBackoffCacheSize, opts.CheckCapacityBatchProcessing, opts.CheckCapacityProcessorInstance)
-		if err != nil {
-			return nil, nil, err
-		}
-		podListProcessor.AddProcessor(ProvisioningRequestInjector)
-
-		var provisioningRequestPodsInjector *provreq.ProvisioningRequestPodsInjector
-		if autoscalingOptions.CheckCapacityBatchProcessing {
-			klog.Infof("Batch processing for check capacity requests is enabled. Passing provisioning request injector to check capacity processor.")
-			provisioningRequestPodsInjector = ProvisioningRequestInjector
-		}
-
-		provreqOrchestrator := provreqorchestrator.New(client, []provreqorchestrator.ProvisioningClass{
-			checkcapacity.New(client, provisioningRequestPodsInjector),
-			besteffortatomic.New(client),
-		})
-
-		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
-		opts.ScaleUpOrchestrator = scaleUpOrchestrator
-		provreqProcesor := provreq.NewProvReqProcessor(client, opts.CheckCapacityProcessorInstance)
-		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
-
-		podListProcessor.AddProcessor(provreqProcesor)
-
-		opts.Processors.ScaleUpEnforcer = provreq.NewProvisioningRequestScaleUpEnforcer()
+		provisioningRequestInjector = injector
 	}
 
 	var capacitybufferClient *capacityclient.CapacityBufferClient
 	var capacitybufferClientError error
+	var fakePodsResolver fakepods.Resolver
 	if autoscalingOptions.CapacitybufferControllerEnabled {
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
 		capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
 		if capacitybufferClientError == nil && capacitybufferClient != nil {
-			nodeBufferController := cbctrl.NewDefaultBufferController(capacitybufferClient)
-			go nodeBufferController.Run(ctx.Done())
+			if autoscalingOptions.CapacityBufferPodDryRunEnabled {
+				fakePodsResolver = fakepods.NewDryRunResolver(b.kubeClient)
+			} else {
+				fakePodsResolver = fakepods.NewDefaultingResolver()
+			}
+			cbctrl.InitializeAndRunDefaultBufferController(ctx, capacitybufferClient, fakePodsResolver)
 		}
 	}
 
@@ -221,7 +213,8 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 			capacitybufferClient, capacitybufferClientError = capacityclient.NewCapacityBufferClientFromConfig(restConfig)
 		}
 		if capacitybufferClientError == nil && capacitybufferClient != nil {
-			buffersPodsRegistry := cbprocessor.NewDefaultCapacityBuffersFakePodsRegistry()
+			buffersPodsRegistry := fakepods.NewRegistry(nil)
+			opts.CapacityBufferPodsRegistry = buffersPodsRegistry
 			bufferPodInjector := cbprocessor.NewCapacityBufferPodListProcessor(
 				capacitybufferClient,
 				[]string{capacitybuffer.ActiveProvisioningStrategy},
@@ -324,7 +317,7 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	// A ProvisioningRequestPodsInjector is used as provisioningRequestProcessingTimesGetter here to obtain the last time a
 	// ProvisioningRequest was processed. This is because the ProvisioningRequestPodsInjector in addition to injecting pods
 	// also marks the ProvisioningRequest as accepted or failed.
-	trigger := loop.NewLoopTrigger(autoscaler, ProvisioningRequestInjector, b.podObserver, autoscalingOptions.ScanInterval)
+	trigger := loop.NewLoopTrigger(autoscaler, provisioningRequestInjector, b.podObserver, autoscalingOptions.ScanInterval)
 
 	return autoscaler, trigger, nil
 }

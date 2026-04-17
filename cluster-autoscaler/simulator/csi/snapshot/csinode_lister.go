@@ -18,7 +18,7 @@ package snapshot
 
 import (
 	storagev1 "k8s.io/api/storage/v1"
-	fwk "k8s.io/kube-scheduler/framework"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 
 // SnapshotCSINodeLister provides access to CSI nodes within a snapshot.
@@ -26,7 +26,7 @@ type SnapshotCSINodeLister struct {
 	snapshot *Snapshot
 }
 
-var _ fwk.CSINodeLister = SnapshotCSINodeLister{}
+var _ schedulerinterface.CSINodeLister = SnapshotCSINodeLister{}
 
 // List returns all CSI nodes in the snapshot.
 func (s SnapshotCSINodeLister) List() ([]*storagev1.CSINode, error) {

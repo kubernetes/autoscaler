@@ -54,6 +54,7 @@ const (
 	readyLabel            = "ready"
 	unreadyLabel          = "unready"
 	startingLabel         = "notStarted"
+	suspendedLabel        = "suspended"
 	unregisteredLabel     = "unregistered"
 	longUnregisteredLabel = "longUnregistered"
 
@@ -149,6 +150,7 @@ type caMetrics struct {
 	scaleUpCount                     *k8smetrics.Counter
 	gpuScaleUpCount                  *k8smetrics.CounterVec
 	failedScaleUpCount               *k8smetrics.CounterVec
+	failedNodeCreationCount          *k8smetrics.CounterVec
 	failedGPUScaleUpCount            *k8smetrics.CounterVec
 	scaleDownCount                   *k8smetrics.CounterVec
 	gpuScaleDownCount                *k8smetrics.CounterVec
@@ -352,6 +354,14 @@ func newCaMetrics() *caMetrics {
 			}, []string{"reason"},
 		),
 
+		failedNodeCreationCount: k8smetrics.NewCounterVec(
+			&k8smetrics.CounterOpts{
+				Namespace: caNamespace,
+				Name:      "failed_node_creations_total",
+				Help:      "Number of nodes which failed to be added by CA.",
+			}, []string{"reason"},
+		),
+
 		failedGPUScaleUpCount: k8smetrics.NewCounterVec(
 			&k8smetrics.CounterOpts{
 				Namespace: caNamespace,
@@ -523,6 +533,7 @@ func (m *caMetrics) RegisterAll(emitPerNodeGroupMetrics bool) {
 	m.mustRegister(m.scaleUpCount)
 	m.mustRegister(m.gpuScaleUpCount)
 	m.mustRegister(m.failedScaleUpCount)
+	m.mustRegister(m.failedNodeCreationCount)
 	m.mustRegister(m.failedGPUScaleUpCount)
 	m.mustRegister(m.scaleDownCount)
 	m.mustRegister(m.gpuScaleDownCount)
@@ -604,10 +615,11 @@ func (m *caMetrics) UpdateClusterSafeToAutoscale(safe bool) {
 }
 
 // UpdateNodesCount records the number of nodes in cluster
-func (m *caMetrics) UpdateNodesCount(ready, unready, starting, longUnregistered, unregistered int) {
+func (m *caMetrics) UpdateNodesCount(ready, unready, starting, suspended, longUnregistered, unregistered int) {
 	m.nodesCount.WithLabelValues(readyLabel).Set(float64(ready))
 	m.nodesCount.WithLabelValues(unreadyLabel).Set(float64(unready))
 	m.nodesCount.WithLabelValues(startingLabel).Set(float64(starting))
+	m.nodesCount.WithLabelValues(suspendedLabel).Set(float64(suspended))
 	m.nodesCount.WithLabelValues(longUnregisteredLabel).Set(float64(longUnregistered))
 	m.nodesCount.WithLabelValues(unregisteredLabel).Set(float64(unregistered))
 }
@@ -717,6 +729,11 @@ func (m *caMetrics) RegisterFailedScaleUp(reason FailedScaleUpReason, gpuResourc
 	if gpuType != gpu.MetricsNoGPU {
 		m.failedGPUScaleUpCount.WithLabelValues(string(reason), gpuResourceName, gpuType).Inc()
 	}
+}
+
+// RegisterFailedNodeCreations records a failed scale-up operation
+func (m *caMetrics) RegisterFailedNodeCreations(reason FailedScaleUpReason, nodesCount int) {
+	m.failedNodeCreationCount.WithLabelValues(string(reason)).Add(float64(nodesCount))
 }
 
 // RegisterScaleDown records number of nodes removed by scale down

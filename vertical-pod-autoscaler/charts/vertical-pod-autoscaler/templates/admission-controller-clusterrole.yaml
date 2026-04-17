@@ -47,6 +47,7 @@ rules:
       - list
       - get
       - create
+      - patch
       - delete
   {{- end }}
   - apiGroups:

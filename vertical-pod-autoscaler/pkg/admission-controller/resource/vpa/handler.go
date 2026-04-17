@@ -265,7 +265,7 @@ func validateMemoryResolution(val apires.Quantity) error {
 
 func validatePerVPAFeatureFlag(vpa *vpa_types.VerticalPodAutoscaler) error {
 	featureFlagOn := features.Enabled(features.PerVPAConfig)
-	if !featureFlagOn && vpa.Spec.UpdatePolicy.EvictAfterOOMSeconds != nil {
+	if !featureFlagOn && vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.EvictAfterOOMSeconds != nil {
 		return fmt.Errorf("EvictAfterOOMSeconds is not supported when feature flag %s is disabled", features.PerVPAConfig)
 	}
 
