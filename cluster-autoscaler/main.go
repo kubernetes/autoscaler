@@ -380,7 +380,7 @@ func main() {
 		klog.Fatalf("Failed to validate and apply logging configuration: %v", err)
 	}
 
-	healthCheck := metrics.NewHealthCheck(autoscalingOpts.MaxInactivityTime, autoscalingOpts.MaxFailingTime)
+	healthCheck := metrics.NewHealthCheck(autoscalingOpts.MaxInactivityTime, autoscalingOpts.MaxFailingTime, autoscalingOpts.MaxStartupTime)
 
 	klog.V(1).Infof("Cluster Autoscaler %s", version.ClusterAutoscalerVersion)
 
