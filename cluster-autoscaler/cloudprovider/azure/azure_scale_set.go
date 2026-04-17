@@ -326,9 +326,34 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 	return scaleSet.setScaleSetSize(size+int64(delta), delta)
 }
 
-// AtomicIncreaseSize is not implemented.
+// AtomicIncreaseSize increases the VMSS capacity atomically by delta.
+// The Azure VMSS BeginCreateOrUpdate API accepts or rejects the entire capacity change
+// as a single request. The method does not wait for VMs to finish provisioning.
+//
+// Note: while the API request itself is atomic, Azure VMSS does not guarantee that all
+// requested VMs will successfully provision. Partial provisioning failures are possible
+// and are handled by the CA's ProvisioningRequest retry/cleanup logic.
 func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
-	return cloudprovider.ErrNotImplemented
+	if delta <= 0 {
+		return fmt.Errorf("size increase must be positive")
+	}
+
+	size, err := scaleSet.getScaleSetSize()
+	if err != nil {
+		return err
+	}
+
+	if size == -1 {
+		return fmt.Errorf("the scale set %s is under initialization, skipping AtomicIncreaseSize", scaleSet.Name)
+	}
+
+	if int(size)+delta > scaleSet.MaxSize() {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
+	}
+
+	klog.V(3).Infof("AtomicIncreaseSize: requesting atomic scale-up of %d instances for scale set %q (current size: %d, new size: %d)",
+		delta, scaleSet.Name, size, size+int64(delta))
+	return scaleSet.setScaleSetSize(size+int64(delta), delta)
 }
 
 // GetScaleSetVms returns list of nodes for the given scale set (includes InstanceView for power state).
