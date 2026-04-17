@@ -22,7 +22,6 @@ import (
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -40,10 +39,9 @@ func (*unboostAnnotationPatchCalculator) PatchResourceTarget() patch.PatchResour
 
 // CalculatePatches calculates the patch to remove the startup CPU boost annotation if the pod is ready to be unboosted.
 func (c *unboostAnnotationPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
-	if vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa) {
-		return []resource_admission.PatchRecord{
-			patch.GetRemoveAnnotationPatch(annotations.StartupCPUBoostAnnotation),
-		}, nil
+	var patches []resource_admission.PatchRecord
+	for _, annotationKey := range vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa) {
+		patches = append(patches, patch.GetRemoveAnnotationPatch(annotationKey))
 	}
-	return []resource_admission.PatchRecord{}, nil
+	return patches, nil
 }

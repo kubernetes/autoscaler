@@ -23,9 +23,9 @@ import (
 )
 
 const (
-	// StartupCPUBoostAnnotation is the annotation set on a pod when a CPU boost is applied.
+	// StartupCPUBoostAnnotationSuffix is the suffix for the annotation set on a pod when a CPU boost is applied.
 	// The value of the annotation is the original resource specification of the container.
-	StartupCPUBoostAnnotation = "startup-cpu-boost"
+	StartupCPUBoostAnnotationSuffix = "/cpu-startup-boost"
 )
 
 // OriginalResources contains the original resources of a container.
@@ -56,9 +56,14 @@ func GetOriginalResourcesAnnotationValue(container *corev1.Container) (string, e
 	return string(b), err
 }
 
-// GetOriginalResourcesFromAnnotation returns the original resources from the annotation.
-func GetOriginalResourcesFromAnnotation(pod *corev1.Pod) (*OriginalResources, error) {
-	val, ok := pod.Annotations[StartupCPUBoostAnnotation]
+// GetStartupCPUBoostAnnotationKey returns the annotation key for a given container.
+func GetStartupCPUBoostAnnotationKey(containerName string) string {
+	return containerName + StartupCPUBoostAnnotationSuffix
+}
+
+// GetOriginalResourcesFromAnnotation returns the original resources from the annotation for a specific container.
+func GetOriginalResourcesFromAnnotation(pod *corev1.Pod, containerName string) (*OriginalResources, error) {
+	val, ok := pod.Annotations[GetStartupCPUBoostAnnotationKey(containerName)]
 	if !ok {
 		return nil, nil
 	}

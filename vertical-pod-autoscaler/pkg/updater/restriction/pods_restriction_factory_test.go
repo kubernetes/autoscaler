@@ -302,7 +302,7 @@ func TestDisruptReplicatedByController(t *testing.T) {
 			pods: []podWithExpectations{
 				{
 					pod: generatePod().WithAnnotations(map[string]string{
-						annotations.StartupCPUBoostAnnotation: "",
+						annotations.GetStartupCPUBoostAnnotationKey("container1"): "",
 					}).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
