@@ -17,7 +17,6 @@ limitations under the License.
 package simulator
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -28,7 +27,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -48,15 +46,12 @@ func TestSimulateNodeRemoval(t *testing.T) {
 
 	// two small pods backed by ReplicaSet
 	drainableNode := BuildTestNode("n2", 1000, 2000000)
-	drainableNodeInfo := framework.NewTestNodeInfo(drainableNode)
 
 	// one small pod, not backed by anything
 	nonDrainableNode := BuildTestNode("n3", 1000, 2000000)
-	nonDrainableNodeInfo := framework.NewTestNodeInfo(nonDrainableNode)
 
 	// one very large pod
 	fullNode := BuildTestNode("n4", 1000, 2000000)
-	fullNodeInfo := framework.NewTestNodeInfo(fullNode)
 
 	// noExistNode it doesn't have any node info in the cluster snapshot.
 	noExistNode := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n5"}}
@@ -83,24 +78,17 @@ func TestSimulateNodeRemoval(t *testing.T) {
 	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 
 	ownerRefs := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
-
-	pod1 := BuildTestPod("p1", 100, 100000)
-	pod1.OwnerReferences = ownerRefs
-	pod1.Spec.NodeName = "n2"
-	drainableNodeInfo.AddPod(&framework.PodInfo{Pod: pod1})
-
-	pod2 := BuildTestPod("p2", 100, 100000)
-	pod2.OwnerReferences = ownerRefs
-	pod2.Spec.NodeName = "n2"
-	drainableNodeInfo.AddPod(&framework.PodInfo{Pod: pod2})
-
-	pod3 := BuildTestPod("p3", 100, 100000)
-	pod3.Spec.NodeName = "n3"
-	nonDrainableNodeInfo.AddPod(&framework.PodInfo{Pod: pod3})
-
-	pod4 := BuildTestPod("p4", 1000, 100000)
-	pod4.Spec.NodeName = "n4"
-	fullNodeInfo.AddPod(&framework.PodInfo{Pod: pod4})
+	buildReplicaSetPod := func(name, nodeName string, cpu, memory int64) *apiv1.Pod {
+		pod := BuildTestPod(name, cpu, memory)
+		pod.OwnerReferences = ownerRefs
+		pod.Spec.NodeName = nodeName
+		return pod
+	}
+	buildStandalonePod := func(name, nodeName string, cpu, memory int64) *apiv1.Pod {
+		pod := BuildTestPod(name, cpu, memory)
+		pod.Spec.NodeName = nodeName
+		return pod
+	}
 
 	clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 
@@ -115,66 +103,33 @@ func TestSimulateNodeRemoval(t *testing.T) {
 	SetNodeReadyState(topoNode2, true, time.Time{})
 	SetNodeReadyState(topoNode3, true, time.Time{})
 
+	// buildTopoPod creates a topology-spread-constrained pod on a given node.
+	buildTopoPod := func(name, nodeName string, tsc apiv1.TopologySpreadConstraint) *apiv1.Pod {
+		pod := BuildTestPod(name, 100, 100000)
+		pod.Labels = map[string]string{"app": "topo-app"}
+		pod.OwnerReferences = ownerRefs
+		pod.Spec.NodeName = nodeName
+		pod.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{tsc}
+		return pod
+	}
+
 	minDomains := int32(2)
 	maxSkew := int32(1)
-	topoConstraint := apiv1.TopologySpreadConstraint{
+	defaultTSC := apiv1.TopologySpreadConstraint{
 		MaxSkew:           maxSkew,
 		TopologyKey:       "kubernetes.io/hostname",
 		WhenUnsatisfiable: apiv1.DoNotSchedule,
 		MinDomains:        &minDomains,
 		LabelSelector: &metav1.LabelSelector{
-			MatchLabels: map[string]string{
-				"app": "topo-app",
-			},
+			MatchLabels: map[string]string{"app": "topo-app"},
 		},
 	}
 
-	pod5 := BuildTestPod("p5", 100, 100000)
-	pod5.Labels = map[string]string{"app": "topo-app"}
-	pod5.OwnerReferences = ownerRefs
-	pod5.Spec.NodeName = "topo-n1"
-	pod5.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{topoConstraint}
-
-	pod6 := BuildTestPod("p6", 100, 100000)
-	pod6.Labels = map[string]string{"app": "topo-app"}
-	pod6.OwnerReferences = ownerRefs
-	pod6.Spec.NodeName = "topo-n2"
-	pod6.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{topoConstraint}
-
-	pod7 := BuildTestPod("p7", 100, 100000)
-	pod7.Labels = map[string]string{"app": "topo-app"}
-	pod7.OwnerReferences = ownerRefs
-	pod7.Spec.NodeName = "topo-n3"
-	pod7.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{topoConstraint}
-
-	blocker1 := BuildTestPod("blocker1", 100, 100000)
-	blocker1.Spec.NodeName = "topo-n2"
-	blocker2 := BuildTestPod("blocker2", 100, 100000)
-	blocker2.Spec.NodeName = "topo-n3"
-
-	// Same constraint but with NodeTaintsPolicy: Honor — ghost node's taint
-	// excludes it from domain counting, so removal succeeds even with maxSkew=1.
+	// NodeTaintsPolicy: Honor — ghost node's taint excludes it from domain
+	// counting, so removal succeeds even with maxSkew=1.
 	honorPolicy := apiv1.NodeInclusionPolicyHonor
-	honorTopoConstraint := topoConstraint
-	honorTopoConstraint.NodeTaintsPolicy = &honorPolicy
-
-	pod8 := BuildTestPod("p8", 100, 100000)
-	pod8.Labels = map[string]string{"app": "topo-app"}
-	pod8.OwnerReferences = ownerRefs
-	pod8.Spec.NodeName = "topo-n1"
-	pod8.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{honorTopoConstraint}
-
-	pod9 := BuildTestPod("p9", 100, 100000)
-	pod9.Labels = map[string]string{"app": "topo-app"}
-	pod9.OwnerReferences = ownerRefs
-	pod9.Spec.NodeName = "topo-n2"
-	pod9.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{honorTopoConstraint}
-
-	pod10 := BuildTestPod("p10", 100, 100000)
-	pod10.Labels = map[string]string{"app": "topo-app"}
-	pod10.OwnerReferences = ownerRefs
-	pod10.Spec.NodeName = "topo-n3"
-	pod10.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{honorTopoConstraint}
+	honorTSC := defaultTSC
+	honorTSC.NodeTaintsPolicy = &honorPolicy
 
 	tests := []simulateNodeRemovalTestConfig{
 		{
@@ -184,60 +139,92 @@ func TestSimulateNodeRemoval(t *testing.T) {
 			toRemove:    &NodeToBeRemoved{Node: emptyNode},
 			unremovable: nil,
 		},
-		{
-			name:     "just a drainable node, but nowhere for pods to go to",
-			pods:     []*apiv1.Pod{pod1, pod2},
-			nodeName: drainableNode.Name,
-			allNodes: []*apiv1.Node{drainableNode},
-			toRemove: nil,
-			unremovable: &UnremovableNode{
-				Node:   drainableNode,
-				Reason: NoPlaceToMovePods,
-			},
-		},
-		{
-			name:        "drainable node, and a mostly empty node that can take its pods",
-			pods:        []*apiv1.Pod{pod1, pod2, pod3},
-			nodeName:    drainableNode.Name,
-			allNodes:    []*apiv1.Node{drainableNode, nonDrainableNode},
-			toRemove:    &NodeToBeRemoved{Node: drainableNode, PodsToReschedule: []*apiv1.Pod{pod1, pod2}},
-			unremovable: nil,
-		},
-		{
-			name:        "drainable node, and a full node that cannot fit anymore pods",
-			pods:        []*apiv1.Pod{pod1, pod2, pod4},
-			nodeName:    drainableNode.Name,
-			allNodes:    []*apiv1.Node{drainableNode, fullNode},
-			toRemove:    nil,
-			unremovable: &UnremovableNode{Node: drainableNode, Reason: NoPlaceToMovePods},
-		},
-		{
-			name:        "4 nodes, 1 empty, 1 drainable",
-			pods:        []*apiv1.Pod{pod1, pod2, pod3, pod4},
-			nodeName:    emptyNode.Name,
-			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
-			toRemove:    &NodeToBeRemoved{Node: emptyNode},
-			unremovable: nil,
-		},
-		{
-			name:     "topology spread constraint test - node unremovable due to phantom zone",
-			pods:     []*apiv1.Pod{pod5, pod6, pod7, blocker1, blocker2},
-			allNodes: []*apiv1.Node{topoNode1, topoNode2, topoNode3},
-			nodeName: topoNode1.Name,
-			toRemove: nil,
-			unremovable: &UnremovableNode{
-				Node:   topoNode1,
-				Reason: NoPlaceToMovePods,
-			},
-		},
-		{
-			name:        "topology spread constraint test - node removable with nodeTaintsPolicy Honor",
-			pods:        []*apiv1.Pod{pod8, pod9, pod10},
-			allNodes:    []*apiv1.Node{topoNode1, topoNode2, topoNode3},
-			nodeName:    topoNode1.Name,
-			toRemove:    &NodeToBeRemoved{Node: topoNode1, PodsToReschedule: []*apiv1.Pod{pod8}},
-			unremovable: nil,
-		},
+		func() simulateNodeRemovalTestConfig {
+			drainableReplicaPodA := buildReplicaSetPod("drainable-rs-pod-a", drainableNode.Name, 100, 100000)
+			drainableReplicaPodB := buildReplicaSetPod("drainable-rs-pod-b", drainableNode.Name, 100, 100000)
+			return simulateNodeRemovalTestConfig{
+				name:     "just a drainable node, but nowhere for pods to go to",
+				pods:     []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB},
+				nodeName: drainableNode.Name,
+				allNodes: []*apiv1.Node{drainableNode},
+				toRemove: nil,
+				unremovable: &UnremovableNode{
+					Node:   drainableNode,
+					Reason: NoPlaceToMovePods,
+				},
+			}
+		}(),
+		func() simulateNodeRemovalTestConfig {
+			drainableReplicaPodA := buildReplicaSetPod("drainable-rs-pod-a", drainableNode.Name, 100, 100000)
+			drainableReplicaPodB := buildReplicaSetPod("drainable-rs-pod-b", drainableNode.Name, 100, 100000)
+			existingStandalonePod := buildStandalonePod("existing-standalone-pod", nonDrainableNode.Name, 100, 100000)
+			return simulateNodeRemovalTestConfig{
+				name:        "drainable node, and a mostly empty node that can take its pods",
+				pods:        []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB, existingStandalonePod},
+				nodeName:    drainableNode.Name,
+				allNodes:    []*apiv1.Node{drainableNode, nonDrainableNode},
+				toRemove:    &NodeToBeRemoved{Node: drainableNode, PodsToReschedule: []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB}},
+				unremovable: nil,
+			}
+		}(),
+		func() simulateNodeRemovalTestConfig {
+			drainableReplicaPodA := buildReplicaSetPod("drainable-rs-pod-a", drainableNode.Name, 100, 100000)
+			drainableReplicaPodB := buildReplicaSetPod("drainable-rs-pod-b", drainableNode.Name, 100, 100000)
+			existingLargePod := buildStandalonePod("existing-large-pod", fullNode.Name, 1000, 100000)
+			return simulateNodeRemovalTestConfig{
+				name:        "drainable node, and a full node that cannot fit anymore pods",
+				pods:        []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB, existingLargePod},
+				nodeName:    drainableNode.Name,
+				allNodes:    []*apiv1.Node{drainableNode, fullNode},
+				toRemove:    nil,
+				unremovable: &UnremovableNode{Node: drainableNode, Reason: NoPlaceToMovePods},
+			}
+		}(),
+		func() simulateNodeRemovalTestConfig {
+			drainableReplicaPodA := buildReplicaSetPod("drainable-rs-pod-a", drainableNode.Name, 100, 100000)
+			drainableReplicaPodB := buildReplicaSetPod("drainable-rs-pod-b", drainableNode.Name, 100, 100000)
+			existingStandalonePod := buildStandalonePod("existing-standalone-pod", nonDrainableNode.Name, 100, 100000)
+			existingLargePod := buildStandalonePod("existing-large-pod", fullNode.Name, 1000, 100000)
+			return simulateNodeRemovalTestConfig{
+				name:        "4 nodes, 1 empty, 1 drainable",
+				pods:        []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB, existingStandalonePod, existingLargePod},
+				nodeName:    emptyNode.Name,
+				allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
+				toRemove:    &NodeToBeRemoved{Node: emptyNode},
+				unremovable: nil,
+			}
+		}(),
+		func() simulateNodeRemovalTestConfig {
+			constrainedPodOnNode1 := buildTopoPod("default-policy-pod-topo-n1", topoNode1.Name, defaultTSC)
+			constrainedPodOnNode2 := buildTopoPod("default-policy-pod-topo-n2", topoNode2.Name, defaultTSC)
+			constrainedPodOnNode3 := buildTopoPod("default-policy-pod-topo-n3", topoNode3.Name, defaultTSC)
+			blockerOnNode2 := buildStandalonePod("blocker-n2", topoNode2.Name, 100, 100000)
+			blockerOnNode3 := buildStandalonePod("blocker-n3", topoNode3.Name, 100, 100000)
+			return simulateNodeRemovalTestConfig{
+				name:     "topology spread constraint test - node unremovable due to phantom zone",
+				pods:     []*apiv1.Pod{constrainedPodOnNode1, constrainedPodOnNode2, constrainedPodOnNode3, blockerOnNode2, blockerOnNode3},
+				allNodes: []*apiv1.Node{topoNode1, topoNode2, topoNode3},
+				nodeName: topoNode1.Name,
+				toRemove: nil,
+				unremovable: &UnremovableNode{
+					Node:   topoNode1,
+					Reason: NoPlaceToMovePods,
+				},
+			}
+		}(),
+		func() simulateNodeRemovalTestConfig {
+			honorConstrainedPodOnNode1 := buildTopoPod("honor-policy-pod-topo-n1", topoNode1.Name, honorTSC)
+			honorConstrainedPodOnNode2 := buildTopoPod("honor-policy-pod-topo-n2", topoNode2.Name, honorTSC)
+			honorConstrainedPodOnNode3 := buildTopoPod("honor-policy-pod-topo-n3", topoNode3.Name, honorTSC)
+			return simulateNodeRemovalTestConfig{
+				name:        "topology spread constraint test - node removable with nodeTaintsPolicy Honor",
+				pods:        []*apiv1.Pod{honorConstrainedPodOnNode1, honorConstrainedPodOnNode2, honorConstrainedPodOnNode3},
+				allNodes:    []*apiv1.Node{topoNode1, topoNode2, topoNode3},
+				nodeName:    topoNode1.Name,
+				toRemove:    &NodeToBeRemoved{Node: topoNode1, PodsToReschedule: []*apiv1.Pod{honorConstrainedPodOnNode1}},
+				unremovable: nil,
+			}
+		}(),
 		{
 			name:        "candidate not in clusterSnapshot should be marked unremovable",
 			nodeName:    noExistNode.Name,
@@ -257,7 +244,6 @@ func TestSimulateNodeRemoval(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
 			r := NewRemovalSimulator(registry, clusterSnapshot, testDeleteOptions(), nil, false)
 			toRemove, unremovable := r.SimulateNodeRemoval(test.nodeName, destinations, time.Now(), nil)
-			fmt.Printf("Test scenario: %s, toRemove=%v, unremovable=%v\n", test.name, toRemove, unremovable)
 			assert.Equal(t, test.toRemove, toRemove)
 			assert.Equal(t, test.unremovable, unremovable)
 		})
