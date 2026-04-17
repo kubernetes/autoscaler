@@ -157,6 +157,7 @@ var (
 	maxInactivityTimeFlag        = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 	maxBinpackingTimeFlag        = flag.Duration("max-binpacking-time", 5*time.Minute, "Maximum time spend on binpacking for a single scale-up. If binpacking is limited by this, scale-up will continue with the already calculated scale-up options.")
 	maxFailingTimeFlag           = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
+	maxStartupTimeFlag           = flag.Duration("max-startup-time", 20*time.Minute, "Maximum time until first recorded successful autoscaler run before automatic restart")
 	balanceSimilarNodeGroupsFlag = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
 
 	unremovableNodeRecheckTimeout = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
@@ -305,6 +306,13 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Warningf("--scale-down-enabled flag is deprecated and will be removed in a future release")
 	}
 
+	maxStartupTime := *maxStartupTimeFlag
+	maxHealthCheckTimeout := max(*maxInactivityTimeFlag, *maxFailingTimeFlag, maxStartupTime)
+	if maxStartupTime < maxHealthCheckTimeout {
+		klog.Warningf("--max-startup-time needs to be at least as high as --max-failing-time and --max-inactivity, overriding it to the highest value out of them: %v", maxHealthCheckTimeout)
+		maxStartupTime = maxHealthCheckTimeout
+	}
+
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
@@ -425,6 +433,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		CheckCapacityProcessorInstance:               *checkCapacityProcessorInstance,
 		MaxInactivityTime:                            *maxInactivityTimeFlag,
 		MaxFailingTime:                               *maxFailingTimeFlag,
+		MaxStartupTime:                               maxStartupTime,
 		DebuggingSnapshotEnabled:                     *debuggingSnapshotEnabled,
 		EnableProfiling:                              *enableProfiling,
 		Address:                                      *address,

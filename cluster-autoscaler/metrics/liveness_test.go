@@ -24,10 +24,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func getTestResponse(start time.Time, activityTimeout, successTimeout time.Duration, checkMonitoring bool) *httptest.ResponseRecorder {
+func getTestResponse(start time.Time, activityTimeout, successTimeout, startupTimeout time.Duration, checkMonitoring bool) *httptest.ResponseRecorder {
 	req := httptest.NewRequest("GET", "/health-check", nil)
 	w := httptest.NewRecorder()
-	healthCheck := NewHealthCheck(activityTimeout, successTimeout)
+	healthCheck := NewHealthCheck(activityTimeout, successTimeout, startupTimeout)
 	if checkMonitoring {
 		healthCheck.StartMonitoring()
 	}
@@ -38,22 +38,22 @@ func getTestResponse(start time.Time, activityTimeout, successTimeout time.Durat
 }
 
 func TestOkServeHTTP(t *testing.T) {
-	w := getTestResponse(time.Now(), time.Second, time.Second, true)
+	w := getTestResponse(time.Now(), time.Second, time.Second, time.Second, true)
 	assert.Equal(t, 200, w.Code)
 }
 
 func TestFailTimeoutServeHTTP(t *testing.T) {
-	w := getTestResponse(time.Now().Add(time.Second*-2), time.Second, time.Second, true)
+	w := getTestResponse(time.Now().Add(time.Second*-2), time.Second, time.Second, time.Second, true)
 	assert.Equal(t, 500, w.Code)
 }
 
 func TestMonitoringOffAfterTimeout(t *testing.T) {
-	w := getTestResponse(time.Now().Add(time.Second*-2), time.Second, time.Second, false)
+	w := getTestResponse(time.Now().Add(time.Second*-2), time.Second, time.Second, time.Second, false)
 	assert.Equal(t, 200, w.Code)
 }
 
 func TestMonitoringOffBeforeTimeout(t *testing.T) {
-	w := getTestResponse(time.Now().Add(time.Second*2), time.Second, time.Second, false)
+	w := getTestResponse(time.Now().Add(time.Second*2), time.Second, time.Second, time.Second, false)
 	assert.Equal(t, 200, w.Code)
 }
 
@@ -64,7 +64,7 @@ func TestUpdateLastActivity(t *testing.T) {
 	lastSuccess := time.Now().Add(timeout * 10)
 
 	req := httptest.NewRequest("GET", "/health-check", nil)
-	healthCheck := NewHealthCheck(timeout, timeout)
+	healthCheck := NewHealthCheck(timeout, timeout, timeout)
 	healthCheck.StartMonitoring()
 	healthCheck.lastActivity = start
 	healthCheck.lastSuccessfulRun = lastSuccess
@@ -86,7 +86,7 @@ func TestUpdateActivityAtUpdateLastSuccessfulRun(t *testing.T) {
 	lastSuccess := time.Now().Add(timeout * 10)
 
 	req := httptest.NewRequest("GET", "/health-check", nil)
-	healthCheck := NewHealthCheck(timeout, timeout)
+	healthCheck := NewHealthCheck(timeout, timeout, timeout)
 	healthCheck.StartMonitoring()
 	healthCheck.lastActivity = start
 	healthCheck.lastSuccessfulRun = lastSuccess
@@ -111,7 +111,7 @@ func TestUpdateLastSuccessfulRun(t *testing.T) {
 	lastActivity := time.Now().Add(timeout * 10)
 
 	req := httptest.NewRequest("GET", "/health-check", nil)
-	healthCheck := NewHealthCheck(timeout, timeout)
+	healthCheck := NewHealthCheck(timeout, timeout, timeout)
 	healthCheck.StartMonitoring()
 	healthCheck.lastActivity = lastActivity
 	healthCheck.lastSuccessfulRun = start
@@ -127,4 +127,27 @@ func TestUpdateLastSuccessfulRun(t *testing.T) {
 
 	// verify last activity timestamp from the future wasn't overwritten
 	assert.Equal(t, true, healthCheck.lastActivity.After(healthCheck.lastSuccessfulRun))
+}
+
+func TestStartupTimeout(t *testing.T) {
+	timeout := time.Second
+	startupTimeout := timeout * 4
+	start := time.Now().Add(timeout * -3)
+
+	req := httptest.NewRequest("GET", "/health-check", nil)
+	healthCheck := NewHealthCheck(timeout, timeout, startupTimeout)
+	healthCheck.StartMonitoring()
+	healthCheck.lastActivity = start
+	healthCheck.lastSuccessfulRun = start
+
+	w := httptest.NewRecorder()
+	healthCheck.ServeHTTP(w, req)
+	// should pass due to longer startup timeout
+	assert.Equal(t, 200, w.Code)
+
+	w = httptest.NewRecorder()
+	healthCheck.UpdateLastSuccessfulRun(time.Now().Add(timeout * -2))
+	healthCheck.ServeHTTP(w, req)
+	// should fail since now we should check with the regular timeout
+	assert.Equal(t, 500, w.Code)
 }
