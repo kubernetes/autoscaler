@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	fakeclientset "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
@@ -34,6 +35,7 @@ func TestStatusUpdater(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "buffer1",
 			Namespace: "default",
+			UID:       types.UID("uid1"),
 		},
 		Spec: v1.CapacityBufferSpec{},
 	}
@@ -41,6 +43,7 @@ func TestStatusUpdater(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "buffer2",
 			Namespace: "default",
+			UID:       types.UID("uid2"),
 		},
 		Spec: v1.CapacityBufferSpec{},
 	}
@@ -48,26 +51,29 @@ func TestStatusUpdater(t *testing.T) {
 	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	tests := []struct {
-		name                   string
-		buffers                []*v1.CapacityBuffer
-		expectedNumberOfCalls  int
-		expectedNumberOfErrors int
+		name               string
+		buffers            []*v1.CapacityBuffer
+		wantNumberOfCalls  int
+		wantNumberOfErrors int
+		wantUpdatedCount   int
 	}{
 		{
 			name: "Update one buffer",
 			buffers: []*v1.CapacityBuffer{
 				exitingBuffer,
 			},
-			expectedNumberOfCalls:  1,
-			expectedNumberOfErrors: 0,
+			wantNumberOfCalls:  1,
+			wantNumberOfErrors: 0,
+			wantUpdatedCount:   1,
 		},
 		{
 			name: "Update one buffer not existing",
 			buffers: []*v1.CapacityBuffer{
 				notExistingBuffer,
 			},
-			expectedNumberOfCalls:  1,
-			expectedNumberOfErrors: 1,
+			wantNumberOfCalls:  1,
+			wantNumberOfErrors: 1,
+			wantUpdatedCount:   0,
 		},
 		{
 			name: "Update multiple buffers",
@@ -75,12 +81,13 @@ func TestStatusUpdater(t *testing.T) {
 				exitingBuffer,
 				notExistingBuffer,
 			},
-			expectedNumberOfCalls:  2,
-			expectedNumberOfErrors: 1,
+			wantNumberOfCalls:  2,
+			wantNumberOfErrors: 1,
+			wantUpdatedCount:   1,
 		},
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 			updateCallsCount := 0
 			fakeClient.Fake.PrependReactor("update", "capacitybuffers",
 				func(action ctesting.Action) (handled bool, ret runtime.Object, err error) {
@@ -89,9 +96,10 @@ func TestStatusUpdater(t *testing.T) {
 				},
 			)
 			buffersUpdater := NewStatusUpdater(fakeCapacityBuffersClient)
-			errors := buffersUpdater.Update(test.buffers)
-			assert.Equal(t, test.expectedNumberOfErrors, len(errors))
-			assert.Equal(t, test.expectedNumberOfCalls, updateCallsCount)
+			updatedBuffers, errors := buffersUpdater.Update(tc.buffers)
+			assert.Equal(t, tc.wantNumberOfErrors, len(errors))
+			assert.Equal(t, tc.wantNumberOfCalls, updateCallsCount)
+			assert.Equal(t, tc.wantUpdatedCount, len(updatedBuffers))
 		})
 	}
 }

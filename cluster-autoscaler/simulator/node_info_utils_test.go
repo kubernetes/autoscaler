@@ -131,12 +131,12 @@ func TestSanitizedTemplateNodeInfoFromNodeGroup(t *testing.T) {
 			testName: "template with all kinds of pods",
 			nodeGroup: &fakeNodeGroup{
 				templateNodeInfoResult: framework.NewNodeInfo(exampleNode, nil,
-					&framework.PodInfo{Pod: BuildScheduledTestPod("p1", 100, 1, "n")},
-					&framework.PodInfo{Pod: BuildScheduledTestPod("p2", 100, 1, "n")},
-					&framework.PodInfo{Pod: SetMirrorPodSpec(BuildScheduledTestPod("p3", 100, 1, "n"))},
-					&framework.PodInfo{Pod: setDeletionTimestamp(SetMirrorPodSpec(BuildScheduledTestPod("p4", 100, 1, "n")))},
-					&framework.PodInfo{Pod: buildDSPod(ds1, "n")},
-					&framework.PodInfo{Pod: setDeletionTimestamp(buildDSPod(ds2, "n"))},
+					framework.NewPodInfo(BuildScheduledTestPod("p1", 100, 1, "n"), nil),
+					framework.NewPodInfo(BuildScheduledTestPod("p2", 100, 1, "n"), nil),
+					framework.NewPodInfo(SetMirrorPodSpec(BuildScheduledTestPod("p3", 100, 1, "n")), nil),
+					framework.NewPodInfo(setDeletionTimestamp(SetMirrorPodSpec(BuildScheduledTestPod("p4", 100, 1, "n"))), nil),
+					framework.NewPodInfo(buildDSPod(ds1, "n"), nil),
+					framework.NewPodInfo(setDeletionTimestamp(buildDSPod(ds2, "n")), nil),
 				),
 			},
 			wantPods: []*apiv1.Pod{
@@ -361,7 +361,7 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 			nodeGroupId := "nodeGroupId"
 			exampleNodeInfo := framework.NewNodeInfo(exampleNode, nil)
 			for _, pod := range tc.pods {
-				exampleNodeInfo.AddPod(&framework.PodInfo{Pod: pod})
+				exampleNodeInfo.AddPod(framework.NewPodInfo(pod, nil))
 			}
 			if tc.csiNode != nil {
 				exampleNodeInfo.SetCSINode(tc.csiNode)
@@ -406,8 +406,8 @@ func TestSanitizedNodeInfo(t *testing.T) {
 	}
 
 	pods := []*framework.PodInfo{
-		{Pod: BuildTestPod("p1", 80, 0, WithNodeName(nodeName))},
-		{Pod: BuildTestPod("p2", 80, 0, WithNodeName(nodeName))},
+		framework.NewPodInfo(BuildTestPod("p1", 80, 0, WithNodeName(nodeName)), nil),
+		framework.NewPodInfo(BuildTestPod("p2", 80, 0, WithNodeName(nodeName)), nil),
 	}
 	templateNodeInfo := framework.NewNodeInfo(templateNode, nil, pods...)
 
@@ -614,7 +614,7 @@ func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.No
 		// Then we can just compare things pod-by-pod as if the set didn't change.
 		initialNodeInfo = framework.NewNodeInfo(initialNodeInfo.Node(), nil)
 		for _, pod := range expectedPods {
-			initialNodeInfo.AddPod(&framework.PodInfo{Pod: pod})
+			initialNodeInfo.AddPod(framework.NewPodInfo(pod, nil))
 		}
 	}
 
@@ -630,7 +630,7 @@ func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.No
 		return err
 	}
 
-	gotDeclaredFeatures := sanitizedNodeInfo.ToScheduler().GetNodeDeclaredFeatures()
+	gotDeclaredFeatures := sanitizedNodeInfo.GetNodeDeclaredFeatures()
 	// Verify DeclaredFeatures on the NodeInfo struct
 	if nodeDeclaredFeaturesEnabled {
 		wantDeclaredFeatures := ndf.NewFeatureSet(initialNodeInfo.Node().Status.DeclaredFeatures...)
@@ -638,7 +638,7 @@ func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.No
 			return fmt.Errorf("sanitized NodeInfo.DeclaredFeatures unexpected, diff (-want +got): %s", diff)
 		}
 	} else if gotDeclaredFeatures.Len() != 0 {
-		return fmt.Errorf("sanitized NodeInfo.DeclaredFeatures unexpected: got %v, want empty when feature gate is disabled", sanitizedNodeInfo.ToScheduler().GetNodeDeclaredFeatures())
+		return fmt.Errorf("sanitized NodeInfo.DeclaredFeatures unexpected: got %v, want empty when feature gate is disabled", sanitizedNodeInfo.GetNodeDeclaredFeatures())
 	}
 
 	if wantsCSINode {

@@ -165,6 +165,7 @@ var (
 	newPodScaleUpDelay            = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up. Can be increased for individual pods through annotation 'cluster-autoscaler.kubernetes.io/pod-scale-up-delay'.")
 
 	startupTaintsFlag         = multiStringFlag("startup-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint)")
+	startupTaintPrefixesFlag  = multiStringFlag("startup-taint-prefix", "Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times.")
 	statusTaintsFlag          = multiStringFlag("status-taint", "Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready")
 	balancingIgnoreLabelsFlag = multiStringFlag("balancing-ignore-label", "Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar")
 	balancingLabelsFlag       = multiStringFlag("balancing-label", "Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label.")
@@ -237,13 +238,14 @@ var (
 	nodeDeletionCandidateTTL                     = flag.Duration("node-deletion-candidate-ttl", time.Duration(0), "Maximum time a node can be marked as removable before the marking becomes stale. This sets the TTL of Cluster-Autoscaler's state if the Cluste-Autoscaler deployment becomes inactive")
 	capacitybufferControllerEnabled              = flag.Bool("capacity-buffer-controller-enabled", false, "Whether to enable the default controller for capacity buffers or not")
 	capacitybufferPodInjectionEnabled            = flag.Bool("capacity-buffer-pod-injection-enabled", false, "Whether to enable pod list processor that processes ready capacity buffers and injects fake pods accordingly")
+	capacityBufferPodDryRunEnabled               = flag.Bool("capacity-buffer-pod-dry-run-enabled", true, "Whether to use server dry run to build managed pod templates for capacity buffers. That ensures that the buffers' fake pods will more reliably resemble real pods by going through the pod defaulting, mutating and validating webhooks. No-op if --capacity-buffer-controller-enabled is false. Note: requires \"create\" permission on pods to call server dry run. No real pods will be created.")
 	nodeRemovalLatencyTrackingEnabled            = flag.Bool("node-removal-latency-tracking-enabled", false, "Whether to track latency from when an unneeded node is eligible for scale down until it is removed or needed again.")
 	maxNodeSkipEvalTimeTrackerEnabled            = flag.Bool("max-node-skip-eval-time-tracker-enabled", false, "Whether to enable the tracking of the maximum time of node being skipped during ScaleDown")
 	capacityQuotasEnabled                        = flag.Bool("capacity-quotas-enabled", false, "Whether to enable CapacityQuota CRD support.")
+	scaleUpSimulationForSkippedNodeGroupsEnabled = flag.Bool("scaleup-simulation-for-skipped-node-groups-enabled", false, "Whether to enable the scale up simulation for skipped node groups.")
 
 	// Deprecated flags
 	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
-	scaleDownEnabled = flag.Bool("scale-down-enabled", true, "[Deprecated] Should CA scale down the cluster")
 )
 
 var autoscalingOptions *config.AutoscalingOptions
@@ -304,10 +306,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("--enable-dynamic-resource-allocation flag must be true: %t", ptr.Deref(enableDynamicResourceAllocation, false))
 	}
 
-	if *scaleDownEnabled == false {
-		klog.Warningf("--scale-down-enabled flag is deprecated and will be removed in a future release")
-	}
-
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
@@ -346,7 +344,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownDelayTypeLocal:          *scaleDownDelayTypeLocal,
 		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
-		ScaleDownEnabled:                 *scaleDownEnabled,
 		ScaleDownUnreadyEnabled:          *scaleDownUnreadyEnabled,
 		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
 		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
@@ -363,6 +360,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		Regional:                         *regional,
 		NewPodScaleUpDelay:               *newPodScaleUpDelay,
 		StartupTaints:                    append(*ignoreTaintsFlag, *startupTaintsFlag...),
+		StartupTaintPrefixes:             *startupTaintPrefixesFlag,
 		StatusTaints:                     *statusTaintsFlag,
 		BalancingExtraIgnoredLabels:      *balancingIgnoreLabelsFlag,
 		BalancingLabels:                  *balancingLabelsFlag,
@@ -443,9 +441,11 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		NodeDeletionCandidateTTL:                     *nodeDeletionCandidateTTL,
 		CapacitybufferControllerEnabled:              *capacitybufferControllerEnabled,
 		CapacitybufferPodInjectionEnabled:            *capacitybufferPodInjectionEnabled,
+		CapacityBufferPodDryRunEnabled:               *capacityBufferPodDryRunEnabled,
 		NodeRemovalLatencyTrackingEnabled:            *nodeRemovalLatencyTrackingEnabled,
 		MaxNodeSkipEvalTimeTrackerEnabled:            *maxNodeSkipEvalTimeTrackerEnabled,
 		CapacityQuotasEnabled:                        *capacityQuotasEnabled,
+		ScaleUpSimulationForSkippedNodeGroupsEnabled: *scaleUpSimulationForSkippedNodeGroupsEnabled,
 	}
 }
 

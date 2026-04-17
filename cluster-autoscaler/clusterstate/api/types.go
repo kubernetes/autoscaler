@@ -77,6 +77,7 @@ type RegisteredNodeCount struct {
 	Total      int `json:"total" yaml:"total"`
 	Ready      int `json:"ready" yaml:"ready"`
 	NotStarted int `json:"notStarted" yaml:"notStarted"`
+	Suspended  int `json:"suspended" yaml:"suspended"`
 	// Number of nodes that are being currently deleted. They exist in K8S but are not included in NodeGroup.TargetSize().
 	BeingDeleted int                        `json:"beingDeleted,omitempty" yaml:"beingDeleted,omitempty"`
 	Unready      RegisteredUnreadyNodeCount `json:"unready,omitempty" yaml:"unready,omitempty"`

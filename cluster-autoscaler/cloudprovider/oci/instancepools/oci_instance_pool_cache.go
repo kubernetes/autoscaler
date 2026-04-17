@@ -29,6 +29,7 @@ type ComputeMgmtClient interface {
 	GetInstancePoolInstance(context.Context, core.GetInstancePoolInstanceRequest) (core.GetInstancePoolInstanceResponse, error)
 	ListInstancePoolInstances(context.Context, core.ListInstancePoolInstancesRequest) (core.ListInstancePoolInstancesResponse, error)
 	DetachInstancePoolInstance(context.Context, core.DetachInstancePoolInstanceRequest) (core.DetachInstancePoolInstanceResponse, error)
+	ListInstancePools(context.Context, core.ListInstancePoolsRequest) (core.ListInstancePoolsResponse, error)
 }
 
 // ComputeClient wraps core.ComputeClient exposing the functions we actually require.

@@ -29,16 +29,73 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	fakebuffers "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
 	fakek8s "k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
+	"k8s.io/utils/clock"
+	testclock "k8s.io/utils/clock/testing"
 	"k8s.io/utils/ptr"
 )
+
+func TestController_CacheUpdates(t *testing.T) {
+	now := metav1.Now().Time
+	fakeClock := testclock.NewFakeClock(now)
+	reconciliationCache := metrics.NewReconciliationCache()
+
+	bSupported := &v1.CapacityBuffer{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "supported",
+			Namespace: "default",
+			UID:       types.UID("uid-supported"),
+		},
+		Spec: v1.CapacityBufferSpec{
+			ProvisioningStrategy: ptr.To(capacitybuffer.ActiveProvisioningStrategy),
+		},
+	}
+	bUnsupported := &v1.CapacityBuffer{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "unsupported",
+			Namespace: "default",
+			UID:       types.UID("uid-unsupported"),
+		},
+		Spec: v1.CapacityBufferSpec{
+			ProvisioningStrategy: ptr.To("unsupported-strategy"),
+		},
+	}
+
+	buffersClient := fakebuffers.NewSimpleClientset(bSupported, bUnsupported)
+	k8sClient := fakek8s.NewSimpleClientset()
+	client, _ := cbclient.NewCapacityBufferClientFromClients(buffersClient, k8sClient, nil, nil)
+
+	resolver := fakepods.NewDefaultingResolver()
+	controller := NewDefaultBufferController(
+		client,
+		resolver,
+		[]string{capacitybuffer.ActiveProvisioningStrategy},
+		reconciliationCache,
+		fakeClock,
+	).(*bufferController)
+
+	// Reconcile
+	err := controller.reconcileNamespace("default")
+	assert.NoError(t, err)
+
+	// Verify Cache
+	snapshot := reconciliationCache.Snapshot()
+	assert.Len(t, snapshot, 2)
+	assert.Contains(t, snapshot, types.UID("uid-supported"))
+	assert.Contains(t, snapshot, types.UID("uid-unsupported"))
+	assert.Equal(t, now, snapshot[types.UID("uid-supported")])
+	assert.Equal(t, now, snapshot[types.UID("uid-unsupported")])
+}
 
 func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 	// TODO: refactor to ginkgo and envtest
@@ -88,7 +145,9 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 	client, err := cbclient.NewCapacityBufferClientFromClients(buffersClient, k8sClient, nil, nil)
 	assert.NoError(t, err)
 
-	controller := NewDefaultBufferController(client).(*bufferController)
+	// TODO: use DryRunResolver once migrated to envtest
+	resolver := fakepods.NewDefaultingResolver()
+	controller := NewDefaultBufferController(client, resolver, []string{capacitybuffer.ActiveProvisioningStrategy}, metrics.NewReconciliationCache(), clock.RealClock{}).(*bufferController)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -132,7 +191,12 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 					gotLimited = true
 				}
 			}
-			t.Errorf("%s reconciliation failed, got replicas: %d, limited: %t, want replicas: %d, limited: %t", name, *b.Status.Replicas, gotLimited, expectedReplicas, checkLimited)
+			if b.Status.Replicas != nil {
+				gotReplicas := *b.Status.Replicas
+				t.Errorf("%s reconciliation failed, got replicas: %d, limited: %t, want replicas: %d, limited: %t", name, gotReplicas, gotLimited, expectedReplicas, checkLimited)
+			} else {
+				t.Errorf("%s reconciliation failed, got replicas: nil, want replicas: %d", name, expectedReplicas)
+			}
 		}
 	}
 

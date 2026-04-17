@@ -52,7 +52,8 @@ func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_MinSize() {
 			ID:   &testInstancePoolID,
 			Name: &testInstancePoolName,
 		},
-		m: ts.p.manager,
+		m:       ts.p.manager,
+		minSize: 1,
 	}
 
 	ts.Require().Equal(1, nodeGroup.MinSize())
@@ -199,4 +200,17 @@ func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_Exist() {
 	}
 
 	ts.Require().True(nodeGroup.Exist())
+}
+
+func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_MinSize_Custom() {
+	nodeGroup := &instancePoolNodeGroup{
+		instancePool: &egoscale.InstancePool{
+			ID:   &testInstancePoolID,
+			Name: &testInstancePoolName,
+		},
+		m:       ts.p.manager,
+		minSize: 3,
+	}
+
+	ts.Require().Equal(3, nodeGroup.MinSize())
 }

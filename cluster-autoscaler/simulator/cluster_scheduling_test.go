@@ -127,8 +127,10 @@ func TestTopologySpreadTaintScheduling(t *testing.T) {
 			replacementPod.Labels = map[string]string{"app": "topo-app"}
 			replacementPod.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{tc.tsc}
 
-			nodeName, schedErr := snapshot.SchedulePodOnAnyNodeMatching(replacementPod, func(ni *framework.NodeInfo) bool {
-				return true
+			nodeName, schedErr := snapshot.SchedulePodOnAnyNodeMatching(replacementPod, clustersnapshot.SchedulingOptions{
+				IsNodeAcceptable: func(ni *framework.NodeInfo) bool {
+					return true
+				},
 			})
 
 			if tc.expectFailure {

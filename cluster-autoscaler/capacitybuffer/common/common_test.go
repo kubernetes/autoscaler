@@ -77,7 +77,7 @@ func TestConditionUpdates(t *testing.T) {
 					Type:    capacitybuffer.ReadyForProvisioningCondition,
 					Status:  metav1.ConditionFalse,
 					Reason:  "error",
-					Message: "some error",
+					Message: "Buffer not ready for provisioning: some error",
 				},
 			},
 		},

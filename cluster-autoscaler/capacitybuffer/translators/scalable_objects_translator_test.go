@@ -19,20 +19,25 @@ package translator
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	buffersfake "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
 	fakeclient "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/utils/ptr"
 )
 
 const defaultNamespace = "default"
 
-func TestScalabaleObjectsTranslator(t *testing.T) {
+func TestScalableObjectsTranslator(t *testing.T) {
 	podTemplate1 := &corev1.PodTemplate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:       "podTemp1",
@@ -53,12 +58,36 @@ func TestScalabaleObjectsTranslator(t *testing.T) {
 			Namespace: defaultNamespace,
 		},
 		Spec: appsv1.ReplicaSetSpec{
-			Replicas: pointerToInt32(10),
+			Replicas: ptr.To[int32](10),
 		},
 	}
-	fakeKubernetesClient := fakeclient.NewSimpleClientset(podTemplate1, podTemplate2, replicaSet1)
+	replicaSetWithResources := &appsv1.ReplicaSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "replicaSetWithResources",
+			Namespace: defaultNamespace,
+		},
+		Spec: appsv1.ReplicaSetSpec{
+			Replicas: ptr.To[int32](10),
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									"cpu":    resource.MustParse("100m"),
+									"memory": resource.MustParse("4Gi"),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	fakeKubernetesClient := fakeclient.NewSimpleClientset(podTemplate1, podTemplate2, replicaSet1, replicaSetWithResources)
 	fakeBuffersClient := buffersfake.NewSimpleClientset()
 	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
+	notReadyMsg := "Buffer not ready for provisioning: couldn't get number of replicas for buffer: replicas, percentage and limits are not defined"
 	tests := []struct {
 		name                   string
 		buffers                []*v1.CapacityBuffer
@@ -82,10 +111,10 @@ func TestScalabaleObjectsTranslator(t *testing.T) {
 					Name:     "replicaSet1",
 					Kind:     "ReplicaSet",
 					APIGroup: "apps",
-				}, nil, pointerToInt32(2)),
+				}, nil, ptr.To[int32](2)),
 			},
 			expectedStatus: []*v1.CapacityBufferStatus{
-				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, pointerToInt32(2), pointerToInt64(0), nil, testutil.GetConditionReady()),
+				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, ptr.To[int32](2), ptr.To[int64](0), nil, testutil.GetConditionReady()),
 			},
 			expectedNumberOfErrors: 0,
 		},
@@ -96,10 +125,10 @@ func TestScalabaleObjectsTranslator(t *testing.T) {
 					Name:     "replicaSet1",
 					Kind:     "ReplicaSet",
 					APIGroup: "apps",
-				}, pointerToInt32(50), nil),
+				}, ptr.To[int32](50), nil),
 			},
 			expectedStatus: []*v1.CapacityBufferStatus{
-				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, pointerToInt32(5), pointerToInt64(0), nil, testutil.GetConditionReady()),
+				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, ptr.To[int32](5), ptr.To[int64](0), nil, testutil.GetConditionReady()),
 			},
 			expectedNumberOfErrors: 0,
 		},
@@ -110,10 +139,10 @@ func TestScalabaleObjectsTranslator(t *testing.T) {
 					Name:     "replicaSet1",
 					Kind:     "ReplicaSet",
 					APIGroup: "apps",
-				}, pointerToInt32(200), nil),
+				}, ptr.To[int32](200), nil),
 			},
 			expectedStatus: []*v1.CapacityBufferStatus{
-				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, pointerToInt32(20), pointerToInt64(0), nil, testutil.GetConditionReady()),
+				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, ptr.To[int32](20), ptr.To[int64](0), nil, testutil.GetConditionReady()),
 			},
 			expectedNumberOfErrors: 0,
 		},
@@ -124,10 +153,10 @@ func TestScalabaleObjectsTranslator(t *testing.T) {
 					Name:     "replicaSet1",
 					Kind:     "ReplicaSet",
 					APIGroup: "apps",
-				}, pointerToInt32(200), pointerToInt32(15)),
+				}, ptr.To[int32](200), ptr.To[int32](15)),
 			},
 			expectedStatus: []*v1.CapacityBufferStatus{
-				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, pointerToInt32(15), pointerToInt64(0), nil, testutil.GetConditionReady()),
+				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, ptr.To[int32](15), ptr.To[int64](0), nil, testutil.GetConditionReady()),
 			},
 			expectedNumberOfErrors: 0,
 		},
@@ -141,19 +170,101 @@ func TestScalabaleObjectsTranslator(t *testing.T) {
 				}, nil, nil),
 			},
 			expectedStatus: []*v1.CapacityBufferStatus{
-				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, nil, pointerToInt64(0), nil, testutil.GetConditionNotReady()),
+				testutil.GetBufferStatus(
+					&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, nil, ptr.To[int64](0), nil, testutil.GetConditionNotReadyWithMessage(notReadyMsg),
+				),
+			},
+			expectedNumberOfErrors: 0,
+		},
+		{
+			name: "A buffer referencing replica set with percentage 50% and limits",
+			buffers: []*v1.CapacityBuffer{
+				getTestBufferWithScalableAttributesAndLimits("buffer1", &v1.ScalableRef{
+					Name:     "replicaSetWithResources",
+					Kind:     "ReplicaSet",
+					APIGroup: "apps",
+				}, ptr.To[int32](50), nil, &v1.ResourceList{
+					"memory": resource.MustParse("9Gi"),
+					"cpu":    resource.MustParse("200m"),
+				}),
+			},
+			expectedStatus: []*v1.CapacityBufferStatus{
+				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, ptr.To[int32](2), ptr.To[int64](0), nil, testutil.GetConditionReady()),
+			},
+			expectedNumberOfErrors: 0,
+		},
+		{
+			name: "Limits exist and no replicas",
+			buffers: []*v1.CapacityBuffer{
+				getTestBufferWithScalableAttributesAndLimits("buffer1", &v1.ScalableRef{
+					Name:     "replicaSetWithResources",
+					Kind:     "ReplicaSet",
+					APIGroup: "apps",
+				}, nil, nil, &v1.ResourceList{
+					"memory": resource.MustParse("9Gi"),
+					"cpu":    resource.MustParse("200m"),
+				}),
+			},
+			expectedStatus: []*v1.CapacityBufferStatus{
+				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, ptr.To[int32](2), ptr.To[int64](0), nil, testutil.GetConditionReady()),
+			},
+			expectedNumberOfErrors: 0,
+		},
+		{
+			name: "Limits exist with smaller replicas",
+			buffers: []*v1.CapacityBuffer{
+				getTestBufferWithScalableAttributesAndLimits("buffer1", &v1.ScalableRef{
+					Name:     "replicaSetWithResources",
+					Kind:     "ReplicaSet",
+					APIGroup: "apps",
+				}, nil, ptr.To[int32](1), &v1.ResourceList{
+					"memory": resource.MustParse("9Gi"),
+					"cpu":    resource.MustParse("200m"),
+				}),
+			},
+			expectedStatus: []*v1.CapacityBufferStatus{
+				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, ptr.To[int32](1), ptr.To[int64](0), nil, testutil.GetConditionReady()),
+			},
+			expectedNumberOfErrors: 0,
+		},
+		{
+			name: "Limits exist with bigger replicas",
+			buffers: []*v1.CapacityBuffer{
+				getTestBufferWithScalableAttributesAndLimits("buffer1", &v1.ScalableRef{
+					Name:     "replicaSetWithResources",
+					Kind:     "ReplicaSet",
+					APIGroup: "apps",
+				}, nil, ptr.To[int32](5), &v1.ResourceList{
+					"memory": resource.MustParse("9Gi"),
+					"cpu":    resource.MustParse("200m"),
+				}),
+			},
+			expectedStatus: []*v1.CapacityBufferStatus{
+				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, ptr.To[int32](2), ptr.To[int64](0), nil, testutil.GetConditionReady()),
 			},
 			expectedNumberOfErrors: 0,
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			translator := NewDefaultScalableObjectsTranslator(fakeCapacityBuffersClient)
+			resolver := fakepods.NewDefaultingResolver()
+			translator := NewDefaultScalableObjectsTranslator(fakeCapacityBuffersClient, resolver)
 			errors := translator.Translate(test.buffers)
 			assert.Equal(t, test.expectedNumberOfErrors, len(errors))
-			assert.ElementsMatch(t, test.expectedStatus, testutil.SanitizeBuffersStatus(test.buffers))
+			for i, buffer := range test.buffers {
+				wantStatus := test.expectedStatus[i]
+				if diff := cmp.Diff(wantStatus, &buffer.Status, cmpopts.IgnoreFields(metav1.Condition{}, "LastTransitionTime")); diff != "" {
+					t.Errorf("buffer status mismatch (-want +got):\n%s", diff)
+				}
+			}
 		})
 	}
+}
+
+func getTestBufferWithScalableAttributesAndLimits(bufferName string, scalableRef *v1.ScalableRef, percentage *int32, replicas *int32, limits *v1.ResourceList) *v1.CapacityBuffer {
+	buffer := getTestBufferWithScalableAttributes(bufferName, scalableRef, percentage, replicas)
+	buffer.Spec.Limits = limits
+	return buffer
 }
 
 func getTestBufferWithScalableAttributes(bufferName string, scalableRef *v1.ScalableRef, percentage *int32, replicas *int32) *v1.CapacityBuffer {

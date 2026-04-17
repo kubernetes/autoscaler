@@ -56,6 +56,7 @@ const (
 	migAutoDiscovererKeyPrefix   = "namePrefix"
 	migAutoDiscovererKeyMinNodes = "min"
 	migAutoDiscovererKeyMaxNodes = "max"
+	createInstancesRequestLimit  = 1000
 )
 
 var (
@@ -94,6 +95,8 @@ type GceManager interface {
 	GetMigSize(mig Mig) (int64, error)
 	// GetMigOptions returns MIG's NodeGroupAutoscalingOptions
 	GetMigOptions(mig Mig, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions
+	// IsMigStable returns whether the MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
+	IsMigStable(mig Mig) (bool, error)
 
 	// SetMigSize sets MIG size.
 	SetMigSize(mig Mig, size int64) error
@@ -246,6 +249,11 @@ func (m *gceManagerImpl) GetMigSize(mig Mig) (int64, error) {
 	return m.migInfoProvider.GetMigTargetSize(mig.GceRef())
 }
 
+// IsMigStable returns whether the MIG is stable.
+func (m *gceManagerImpl) IsMigStable(mig Mig) (bool, error) {
+	return m.migInfoProvider.GetMigIsStable(mig.GceRef())
+}
+
 // SetMigSize sets MIG size.
 func (m *gceManagerImpl) SetMigSize(mig Mig, size int64) error {
 	klog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
@@ -300,6 +308,7 @@ func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]GceInstance, error) {
 func (m *gceManagerImpl) Refresh() error {
 	m.cache.InvalidateAllMigInstances()
 	m.cache.InvalidateAllMigTargetSizes()
+	m.cache.InvalidateAllMigIsStable()
 	m.cache.InvalidateAllMigBasenames()
 	m.cache.InvalidateAllListManagedInstancesResults()
 	m.cache.InvalidateAllMigInstanceTemplateNames()
@@ -324,16 +333,32 @@ func (m *gceManagerImpl) CreateInstances(mig Mig, delta int64) error {
 	if err != nil {
 		return err
 	}
-	instancesNames := make([]string, 0, len(instances))
+	instanceIds := make([]string, 0, len(instances)+int(delta))
 	for _, ins := range instances {
-		instancesNames = append(instancesNames, ins.Id)
+		instanceIds = append(instanceIds, ins.Id)
 	}
 	baseName, err := m.migInfoProvider.GetMigBasename(mig.GceRef())
 	if err != nil {
 		return fmt.Errorf("can't upscale %s: failed to collect BaseInstanceName: %w", mig.GceRef(), err)
 	}
 	m.cache.InvalidateMigTargetSize(mig.GceRef())
-	return m.GceService.CreateInstances(mig.GceRef(), baseName, delta, instancesNames)
+	totalReqs := int((delta + createInstancesRequestLimit - 1) / createInstancesRequestLimit)
+	remaining := delta
+	for i := 0; i < totalReqs; i++ {
+		increment := min(remaining, createInstancesRequestLimit)
+		if totalReqs > 1 {
+			klog.Infof("Sending chunked GCE createInstances request. Request: %d/%d RequestSize: %v", i+1, totalReqs, increment)
+		}
+		ids, err := m.GceService.CreateInstances(mig.GceRef(), baseName, increment, instanceIds)
+		if err != nil {
+			return err
+		}
+		remaining -= increment
+		for _, id := range ids {
+			instanceIds = append(instanceIds, id)
+		}
+	}
+	return nil
 }
 
 func (m *gceManagerImpl) forceRefresh() error {

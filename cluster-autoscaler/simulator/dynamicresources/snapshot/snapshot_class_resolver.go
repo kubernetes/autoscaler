@@ -19,7 +19,7 @@ package snapshot
 import (
 	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
-	fwk "k8s.io/kube-scheduler/framework"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 
 type snapshotDeviceClassResolver struct {
@@ -27,10 +27,10 @@ type snapshotDeviceClassResolver struct {
 	deviceClassMap map[v1.ResourceName]*resourceapi.DeviceClass
 }
 
-var _ fwk.DeviceClassResolver = &snapshotDeviceClassResolver{}
+var _ schedulerinterface.DeviceClassResolver = &snapshotDeviceClassResolver{}
 
 // newSnapshotDeviceClassResolver implements DeviceClassResolver for a snapshot
-func newSnapshotDeviceClassResolver(snapshot *Snapshot) fwk.DeviceClassResolver {
+func newSnapshotDeviceClassResolver(snapshot *Snapshot) schedulerinterface.DeviceClassResolver {
 	deviceClassMap := make(map[v1.ResourceName]*resourceapi.DeviceClass)
 	for _, class := range snapshot.listDeviceClasses() {
 		if class != nil {

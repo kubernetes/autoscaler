@@ -115,7 +115,7 @@ func IsCloudProviderNodeInfoSimilar(
 		for res, quantity := range node.Node().Status.Allocatable {
 			allocatable[res] = append(allocatable[res], quantity)
 		}
-		for res, quantity := range scheduler.ResourceToResourceList(node.ToScheduler().GetRequested()) {
+		for res, quantity := range scheduler.ResourceToResourceList(node.GetRequested()) {
 			freeRes := node.Node().Status.Allocatable[res].DeepCopy()
 			freeRes.Sub(quantity)
 			free[res] = append(free[res], freeRes)
