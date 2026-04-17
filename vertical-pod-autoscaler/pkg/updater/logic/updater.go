@@ -274,11 +274,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 		if cpuStartupBoostEnabled && vpa_api_util.HasStartupBoost(vpa) {
 			// First, handle unboosting for pods that have finished their startup period.
 			for _, pod := range livePods {
-				if vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
-					if vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa) {
-						podsToUnboost = append(podsToUnboost, pod)
-					}
-				} else {
+				if len(vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)) > 0 {
+					podsToUnboost = append(podsToUnboost, pod)
+				}
+				if !vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
 					podsAvailableForUpdate = append(podsAvailableForUpdate, pod)
 				}
 			}

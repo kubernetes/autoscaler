@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
+	imageutils "k8s.io/kubernetes/test/utils/image"
 	podsecurity "k8s.io/pod-security-admission/api"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -438,7 +439,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				WithTargetRef(targetRef).
 				WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 				WithContainer(containerName).
-				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 10).
+				WithContainerCPUStartupBoost(containerName, vpa_types.FactorStartupBoostType, &factor, nil, 10).
 				Get()
 
 			utils.InstallVPA(f, vpaCRD)
@@ -454,17 +455,43 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				f.ClientSet,
 				f.ScalesGetter)
 
-			// Pods should be created with boosted CPU (10m * 20 = 200m)
-			err := waitForResourceRequestInRangeInPods(
-				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
-				ParseQuantityOrDie("180m"), ParseQuantityOrDie("220m"))
+			ginkgo.By("Adding a second container to the deployment")
+			deployment, err := f.ClientSet.AppsV1().Deployments(ns).Get(context.TODO(), "hamster", metav1.GetOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+			deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, apiv1.Container{
+				Name:    "container2",
+				Image:   imageutils.GetE2EImage(imageutils.Agnhost),
+				Command: []string{"/agnhost", "pause"},
+				Resources: apiv1.ResourceRequirements{
+					Requests: apiv1.ResourceList{
+						apiv1.ResourceCPU: ParseQuantityOrDie("20m"),
+					},
+				},
+			})
+			_, err = f.ClientSet.AppsV1().Deployments(ns).Update(context.TODO(), deployment, metav1.UpdateOptions{})
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
+			// Wait for the new pods to roll out
+			err = waitForPodsMatch(f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"},
+				func(pod apiv1.Pod) bool {
+					return len(pod.Spec.Containers) == 2
+				})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+			ginkgo.By("Verifying only the targeted container is boosted")
+			err = waitForResourceRequestsInRangeInPods(f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, []containerExpectation{
+				{Index: 0, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("180m"), UpperBound: ParseQuantityOrDie("220m")},
+				{Index: 1, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie(minimalCPULowerBound), UpperBound: ParseQuantityOrDie(minimalCPUUpperBound)},
+			})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+			ginkgo.By("Verifying pods are unboosted in-place")
 			// Pods should be scaled back down in-place after they become Ready and
 			// StartupBoost.CPU.DurationSeconds has elapsed
-			err = waitForResourceRequestInRangeInPods(
-				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
-				ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
+			err = waitForResourceRequestsInRangeInPods(f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, []containerExpectation{
+				{Index: 0, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie(minimalCPULowerBound), UpperBound: ParseQuantityOrDie(minimalCPUUpperBound)},
+				{Index: 1, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie(minimalCPULowerBound), UpperBound: ParseQuantityOrDie(minimalCPUUpperBound)},
+			})
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		})
 	})
@@ -545,16 +572,37 @@ func waitForPodsMatch(f *framework.Framework, timeout time.Duration, listOptions
 	})
 }
 
-func waitForResourceRequestInRangeInPods(f *framework.Framework, timeout time.Duration, listOptions metav1.ListOptions, resourceName apiv1.ResourceName, lowerBound, upperBound resource.Quantity) error {
+type containerExpectation struct {
+	Index        int
+	ResourceName apiv1.ResourceName
+	LowerBound   resource.Quantity
+	UpperBound   resource.Quantity
+}
+
+func waitForResourceRequestsInRangeInPods(f *framework.Framework, timeout time.Duration, listOptions metav1.ListOptions, expectations []containerExpectation) error {
 	err := waitForPodsMatch(f, timeout, listOptions,
 		func(pod apiv1.Pod) bool {
-			resourceRequest, found := pod.Spec.Containers[0].Resources.Requests[resourceName]
-			framework.Logf("Comparing %v request %v against range of (%v, %v)", resourceName, resourceRequest, lowerBound, upperBound)
-			return found && resourceRequest.MilliValue() > lowerBound.MilliValue() && resourceRequest.MilliValue() < upperBound.MilliValue()
+			for _, exp := range expectations {
+				if exp.Index >= len(pod.Spec.Containers) {
+					return false
+				}
+				req, found := pod.Spec.Containers[exp.Index].Resources.Requests[exp.ResourceName]
+				framework.Logf("Pod %s container %d: Comparing %v request %v against range of (%v, %v)", pod.Name, exp.Index, exp.ResourceName, req, exp.LowerBound, exp.UpperBound)
+				if !found || req.MilliValue() < exp.LowerBound.MilliValue() || req.MilliValue() > exp.UpperBound.MilliValue() {
+					return false
+				}
+			}
+			return true
 		})
 
 	if err != nil {
-		return fmt.Errorf("error waiting for %s request in range of (%v,%v) for pods: %+v", resourceName, lowerBound, upperBound, listOptions)
+		return fmt.Errorf("error waiting for resource requests in range %+v for pods: %+v", expectations, listOptions)
 	}
 	return nil
+}
+
+func waitForResourceRequestInRangeInPods(f *framework.Framework, timeout time.Duration, listOptions metav1.ListOptions, resourceName apiv1.ResourceName, lowerBound, upperBound resource.Quantity) error {
+	return waitForResourceRequestsInRangeInPods(f, timeout, listOptions, []containerExpectation{
+		{Index: 0, ResourceName: resourceName, LowerBound: lowerBound, UpperBound: upperBound},
+	})
 }
