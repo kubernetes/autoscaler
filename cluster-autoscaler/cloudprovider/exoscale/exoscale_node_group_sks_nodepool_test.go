@@ -67,7 +67,7 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_MinSize() {
 		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
-	ts.Require().Equal(1, nodeGroup.MinSize())
+	ts.Require().Equal(int(testSKSNodepoolSize), nodeGroup.MinSize())
 }
 
 func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_TargetSize() {
