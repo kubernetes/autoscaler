@@ -153,6 +153,12 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, config *recommen
 		stopCh,
 	)
 
+	if err != nil {
+		close(stopCh) // Clean up any started routines
+		klog.ErrorS(err, "Failed to create recommender controller")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
 	factory.Start(stopCh)
 	informerMap := factory.WaitForCacheSync(stopCh)
 	for kind, synced := range informerMap {
@@ -160,11 +166,6 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, config *recommen
 			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
 			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
-	}
-
-	if err != nil {
-		klog.ErrorS(err, "Failed to create recommender controller")
-		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
 	if err := controller.Run(ctx); err != nil {

@@ -158,6 +158,7 @@ func recommenderSetup(t *testing.T, recommenderConfig *recommender_config.Recomm
 		stopCh,
 	)
 	if err != nil {
+		close(stopCh) // Clean up any started routines
 		t.Fatalf("Error creating recommender controller: %v", err)
 	}
 
