@@ -39,6 +39,8 @@ and PR titles.
   - [API Changes](#api-changes)
   - [Test Plan](#test-plan)
   - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
+  - [Graduation Criteria](#graduation-criteria)
+  - [Version Skew](#version-skew)
   - [Kubernetes Version Compatibility](#kubernetes-version-compatibility)
 - [Implementation History](#implementation-history)
 - [Alternatives](#alternatives)
@@ -126,6 +128,27 @@ Answer the following if this AEP is gated by a feature flag:
 
 If the change is not gated (for example, a backward-compatible API extension
 with safe defaults), state that explicitly and explain why no gate is needed.
+-->
+
+### Graduation Criteria
+
+<!--
+A few bullets describing what needs to be true to move the feature from alpha
+to beta and from beta to GA. For most AEPs this is short — typical signals are
+"tests are stable for N releases", "no open bugs against the feature gate",
+and "positive user feedback". Remove this subsection if the change does not go
+through a graduation lifecycle (e.g. a pure bug fix).
+-->
+
+### Version Skew
+
+<!--
+The VPA ships multiple components (recommender, updater, admission-controller).
+Describe what happens when they are not all running the same version during a
+rollout — for example, a new recommender writing a field that an older updater
+does not understand. If the feature gate fully mitigates skew (the gate must
+be enabled on all components before the behavior takes effect), state that.
+Remove this subsection if only one component is affected.
 -->
 
 ### Kubernetes Version Compatibility
