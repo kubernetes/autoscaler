@@ -1,1 +1,1 @@
-Lightweight enhancements proposals for Vertical Pod Autoscaler. Please use [KEP template](https://github.com/kubernetes/enhancements/blob/master/keps/NNNN-kep-template/README.md) as guidance.
+Lightweight enhancements proposals (AEPs) for Vertical Pod Autoscaler. Please use the [AEP template](NNNN-aep-template/README.md) as the skeleton for new proposals.
