@@ -36,6 +36,9 @@ import (
 // NodeScaleDownReason describes reason for removing node
 type NodeScaleDownReason string
 
+// UnneededNodeType describes if an unneeded node is empty or non-empty
+type UnneededNodeType string
+
 // FailedScaleUpReason describes reason of failed scale-up
 type FailedScaleUpReason string
 
@@ -97,6 +100,11 @@ const (
 	PodEvictionSucceed PodEvictionResult = "succeeded"
 	// PodEvictionFailed means creation of the pod eviction object failed
 	PodEvictionFailed PodEvictionResult = "failed"
+
+	// EmptyUnneededNode is an unneeded node with no pods to reschedule
+	EmptyUnneededNode UnneededNodeType = "empty"
+	// NonEmptyUnneededNode is an unneeded node with pods to reschedule
+	NonEmptyUnneededNode UnneededNodeType = "non-empty"
 )
 
 // Names of Cluster Autoscaler operations
@@ -502,7 +510,7 @@ func newCaMetrics() *caMetrics {
 				Name:      "node_removal_latency_seconds",
 				Help:      "Latency from when an unneeded node is eligible for scale down until it is removed (deleted=true) or it became needed again (deleted=false).",
 				Buckets:   k8smetrics.ExponentialBuckets(1, 1.5, 19), // ~1s → ~24min
-			}, []string{"deleted"},
+			}, []string{"deleted", "type"},
 		),
 	}
 }
@@ -848,8 +856,8 @@ func (m *caMetrics) ObserveBinpackingHeterogeneity(instanceType, cpuCount, names
 
 // UpdateScaleDownNodeRemovalLatency records the time after which node was deleted/needed
 // again after being marked unneded
-func (m *caMetrics) UpdateScaleDownNodeRemovalLatency(deleted bool, duration time.Duration) {
-	m.scaleDownNodeRemovalLatency.WithLabelValues(strconv.FormatBool(deleted)).Observe(duration.Seconds())
+func (m *caMetrics) UpdateScaleDownNodeRemovalLatency(deleted bool, nodeType UnneededNodeType, duration time.Duration) {
+	m.scaleDownNodeRemovalLatency.WithLabelValues(strconv.FormatBool(deleted), string(nodeType)).Observe(duration.Seconds())
 }
 
 // ObserveMaxNodeSkipEvalDurationSeconds records the longest time during which node was skipped during ScaleDown.

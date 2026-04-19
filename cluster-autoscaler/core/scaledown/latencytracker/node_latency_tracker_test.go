@@ -26,6 +26,7 @@ import (
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	processor "k8s.io/autoscaler/cluster-autoscaler/processors/status"
 )
 
@@ -53,12 +54,14 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 	// 1. Planner calculates unneeded nodes (UpdateScaleDownCandidates)
 	// 2. Actuator attempts deletion and reports status (Process)
 	type step struct {
-		unneededList     []string                 // Nodes found unneeded this loop
-		thresholds       map[string]time.Duration // Specific thresholds for this loop
-		scaledDownList   []string                 // Nodes successfully deleted this loop
-		unremovableList  []string                 // Nodes failed to delete this loop
-		wantTrackedNodes []string                 // Expected internal state after this loop
-		wantThresholds   map[string]time.Duration // Expected threshold values in internal state
+		unneededList     []string                            // Nodes found unneeded this loop
+		emptyList        []string                            // Nodes found empty this loop
+		thresholds       map[string]time.Duration            // Specific thresholds for this loop
+		scaledDownList   []string                            // Nodes successfully deleted this loop
+		unremovableList  []string                            // Nodes failed to delete this loop
+		wantTrackedNodes []string                            // Expected internal state after this loop
+		wantThresholds   map[string]time.Duration            // Expected threshold values in internal state
+		wantNodeType     map[string]metrics.UnneededNodeType // Expected nodeType values in internal state
 	}
 
 	tests := []struct {
@@ -148,6 +151,23 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "NodeType updates dynamically",
+			steps: []step{
+				{
+					unneededList:     []string{"node1"},
+					emptyList:        []string{"node1"},
+					wantTrackedNodes: []string{"node1"},
+					wantNodeType:     map[string]metrics.UnneededNodeType{"node1": metrics.EmptyUnneededNode},
+				},
+				{
+					unneededList:     []string{"node1"},
+					emptyList:        []string{},
+					wantTrackedNodes: []string{"node1"},
+					wantNodeType:     map[string]metrics.UnneededNodeType{"node1": metrics.NonEmptyUnneededNode},
+				},
+			},
+		},
 	}
 
 	baseTime := time.Now()
@@ -159,7 +179,7 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 			for i, step := range tc.steps {
 				stepTime := baseTime.Add(testStepDuration)
 
-				candidates := candidatesFromNames(step.unneededList, step.thresholds)
+				candidates := candidatesFromNames(step.unneededList, step.thresholds, sets.New(step.emptyList...))
 				tracker.UpdateScaleDownCandidates(candidates, stepTime)
 
 				sd := newScaleDownStatus(step.scaledDownList, step.unremovableList)
@@ -178,10 +198,17 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 					if val, ok := step.wantThresholds[nodeName]; ok {
 						wantThreshold = val
 					}
+					wantNodeType := metrics.NonEmptyUnneededNode
+					if val, ok := step.wantNodeType[nodeName]; ok {
+						wantNodeType = val
+					}
 
 					if actualInfo, ok := tracker.unneededNodes[nodeName]; ok {
 						if actualInfo.removalThreshold != wantThreshold {
 							t.Errorf("Step %d: node %q incorrect threshold: got %v, want %v", i, nodeName, actualInfo.removalThreshold, wantThreshold)
+						}
+						if actualInfo.nodeType != wantNodeType {
+							t.Errorf("Step %d: node %q incorrect nodeType: got %v, want %v", i, nodeName, actualInfo.nodeType, wantNodeType)
 						}
 					} else {
 						t.Errorf("Step %d: node %q expected to be tracked but was not", i, nodeName)
@@ -193,16 +220,21 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 }
 
 // nodesFromNames is a test helper to convert a slice of node names and threshold  into a slice of *scaledown.UnneededNode
-func candidatesFromNames(names []string, thresholds map[string]time.Duration) []*scaledown.UnneededNode {
+func candidatesFromNames(names []string, thresholds map[string]time.Duration, emptyNodes sets.Set[string]) []*scaledown.UnneededNode {
 	list := make([]*scaledown.UnneededNode, len(names))
 	for i, name := range names {
 		t := time.Duration(0)
 		if val, ok := thresholds[name]; ok {
 			t = val
 		}
+		nodeType := metrics.NonEmptyUnneededNode
+		if emptyNodes.Has(name) {
+			nodeType = metrics.EmptyUnneededNode
+		}
 		list[i] = &scaledown.UnneededNode{
 			Node:             &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: name}},
 			RemovalThreshold: t,
+			NodeType:         nodeType,
 		}
 	}
 	return list
