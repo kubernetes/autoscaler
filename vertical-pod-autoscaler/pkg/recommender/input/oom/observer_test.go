@@ -124,14 +124,14 @@ func TestOOMReceived(t *testing.T) {
 			},
 		},
 		{
-			desc: "Old pod does not set memory requests",
-			oldPod: func() *corev1.Pod {
-				oldPod := p1.DeepCopy()
-				oldPod.Spec.Containers[0].Resources.Requests = nil
-				oldPod.Status.ContainerStatuses[0].Resources = nil
-				return oldPod
+			desc:   "New pod does not set memory requests",
+			oldPod: p1,
+			newPod: func() *corev1.Pod {
+				newPod := p2.DeepCopy()
+				newPod.Spec.Containers[0].Resources.Requests = nil
+				newPod.Status.ContainerStatuses[0].Resources = nil
+				return newPod
 			}(),
-			newPod: p2,
 			wantOOMInfo: OomInfo{
 				ContainerID: model.ContainerID{
 					ContainerName: "Name11",
@@ -145,17 +145,17 @@ func TestOOMReceived(t *testing.T) {
 			},
 		},
 		{
-			desc: "Old pod also set memory request in containerStatus, prefer info from containerStatus",
-			oldPod: func() *corev1.Pod {
-				oldPod := p1.DeepCopy()
-				oldPod.Status.ContainerStatuses[0].Resources = &corev1.ResourceRequirements{
+			desc:   "New pod also set memory request in containerStatus, prefer info from containerStatus",
+			oldPod: p1,
+			newPod: func() *corev1.Pod {
+				newPod := p2.DeepCopy()
+				newPod.Status.ContainerStatuses[0].Resources = &corev1.ResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceMemory: resource.MustParse("2048"),
 					},
 				}
-				return oldPod
+				return newPod
 			}(),
-			newPod: p2,
 			wantOOMInfo: OomInfo{
 				ContainerID: model.ContainerID{
 					ContainerName: "Name11",

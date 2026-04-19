@@ -123,15 +123,6 @@ func findStatus(name string, containerStatuses []corev1.ContainerStatus) *corev1
 	return nil
 }
 
-func findSpec(name string, containers []corev1.Container) *corev1.Container {
-	for _, containerSpec := range containers {
-		if containerSpec.Name == name {
-			return &containerSpec
-		}
-	}
-	return nil
-}
-
 // OnAdd is Noop
 func (o *observer) OnAdd(obj any, isInInitialList bool) {}
 
@@ -153,23 +144,25 @@ func (o *observer) OnUpdate(oldObj, newObj any) {
 			continue
 		}
 
+		oldNotTerminated := oldStatus.State.Terminated == nil
+		restartCountIncreased := containerStatus.RestartCount > oldStatus.RestartCount
+
 		// Check if container changes state from non-Terminated to Terminated
 		// with OOMKilled reason. Also if container fails too fast, it may
-		// skip Running state and change state direcly to Terminated
+		// skip Running state and change state directly to Terminated
 		// (from Terminated or Waiting) with increased RestartCount.
 		// We check for this case as well.
 		isNewOOM := containerStatus.State.Terminated != nil &&
 			containerStatus.State.Terminated.Reason == "OOMKilled" &&
-			(oldStatus.State.Terminated == nil ||
-				containerStatus.RestartCount > oldStatus.RestartCount)
+			(oldNotTerminated || restartCountIncreased)
 
 		// If controller restarts container, it may skip
 		// Terminated state and change directly from Running
 		// to Running with increased RestartCount. In this
 		// case we check LastTerminationState.
 		isPreviousOOM := containerStatus.State.Running != nil &&
-			oldStatus.State.Terminated == nil &&
-			containerStatus.RestartCount > oldStatus.RestartCount &&
+			oldNotTerminated &&
+			restartCountIncreased &&
 			containerStatus.LastTerminationState.Terminated != nil &&
 			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled"
 
@@ -177,21 +170,25 @@ func (o *observer) OnUpdate(oldObj, newObj any) {
 			continue
 		}
 
-		var oomState *apiv1.ContainerStateTerminated
+		var oomState *corev1.ContainerStateTerminated
+		// For isNewOOM the OOM happened during the transition to the current
+		// terminated state, so the resources in effect are those of newPod.
+		// For isPreviousOOM the OOM happened in the previous container instance
+		// (before the restart observed in this update), whose resources are
+		// reflected in oldPod.
+		var oomPod *corev1.Pod
 		if isNewOOM {
 			oomState = containerStatus.State.Terminated
+			oomPod = newPod
 		} else {
 			oomState = containerStatus.LastTerminationState.Terminated
+			oomPod = oldPod
 		}
 
-		oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
-		if oldSpec == nil {
-			continue
-		}
 		var memory resource.Quantity
-		requests, _ := resourcehelpers.ContainerRequestsAndLimits(containerStatus.Name, oldPod)
+		requests, _ := resourcehelpers.ContainerRequestsAndLimits(containerStatus.Name, oomPod)
 		if requests != nil {
-			memory = requests[apiv1.ResourceMemory]
+			memory = requests[corev1.ResourceMemory]
 		}
 		oomInfo := OomInfo{
 			Timestamp: oomState.FinishedAt.UTC(),
