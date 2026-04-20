@@ -366,6 +366,7 @@ _Appears in:_
 | `lastTransitionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#time-v1-meta)_ | lastTransitionTime is the last time the condition transitioned from<br />one status to another |  | Optional: \{\} <br /> |
 | `reason` _string_ | reason is the reason for the condition's last transition. |  | Optional: \{\} <br /> |
 | `message` _string_ | message is a human-readable explanation containing details about<br />the transition |  | Optional: \{\} <br /> |
+| `observedGeneration` _integer_ | observedGeneration represents the .metadata.generation that the condition was set based upon.<br />For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date<br />with respect to the current state of the instance. |  | Minimum: 0 <br />Optional: \{\} <br /> |
 
 
 #### VerticalPodAutoscalerConditionType
@@ -436,5 +437,6 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `recommendation` _[RecommendedPodResources](#recommendedpodresources)_ | The most recently computed amount of resources recommended by the<br />autoscaler for the controlled pods. |  | Optional: \{\} <br /> |
 | `conditions` _[VerticalPodAutoscalerCondition](#verticalpodautoscalercondition) array_ | Conditions is the set of conditions required for this autoscaler to scale its target,<br />and indicates whether or not those conditions are met. |  | Optional: \{\} <br /> |
+| `observedGeneration` _integer_ | observedGeneration is the most recent generation observed by this autoscaler. |  | Optional: \{\} <br /> |
 
 

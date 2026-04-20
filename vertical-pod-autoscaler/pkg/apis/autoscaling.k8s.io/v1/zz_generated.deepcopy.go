@@ -574,6 +574,11 @@ func (in *VerticalPodAutoscalerStatus) DeepCopyInto(out *VerticalPodAutoscalerSt
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.ObservedGeneration != nil {
+		in, out := &in.ObservedGeneration, &out.ObservedGeneration
+		*out = new(int64)
+		**out = **in
+	}
 	return
 }
 

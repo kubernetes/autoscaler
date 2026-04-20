@@ -40,12 +40,14 @@ type vpaConditionsMap map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types
 
 func (conditionsMap *vpaConditionsMap) Set(
 	conditionType vpa_types.VerticalPodAutoscalerConditionType,
+	observedGeneration int64,
 	status bool, reason string, message string) *vpaConditionsMap {
 	oldCondition, alreadyPresent := (*conditionsMap)[conditionType]
 	condition := vpa_types.VerticalPodAutoscalerCondition{
-		Type:    conditionType,
-		Reason:  reason,
-		Message: message,
+		Type:               conditionType,
+		Reason:             reason,
+		Message:            message,
+		ObservedGeneration: observedGeneration,
 	}
 	if status {
 		condition.Status = corev1.ConditionTrue
@@ -93,7 +95,7 @@ func (vpa *Vpa) ConditionActive(conditionType vpa_types.VerticalPodAutoscalerCon
 func (vpa *Vpa) SetCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType, status bool, reason string, message string) {
 	vpa.mutex.Lock()
 	defer vpa.mutex.Unlock()
-	vpa.conditions.Set(conditionType, status, reason, message)
+	vpa.conditions.Set(conditionType, vpa.Generation, status, reason, message)
 }
 
 // DeleteCondition deletes a condition in a thread-safe manner.
@@ -142,14 +144,14 @@ func (vpa *Vpa) updateConditionsLocked(podsMatched bool) {
 	} else {
 		reason = "NoPodsMatched"
 		msg = "No pods match this VPA object"
-		vpa.conditions.Set(vpa_types.NoPodsMatched, true, reason, msg)
+		vpa.conditions.Set(vpa_types.NoPodsMatched, vpa.Generation, true, reason, msg)
 	}
 
 	// Can safely call hasRecommendationLocked() - no deadlock risk
 	if vpa.hasRecommendationLocked() {
-		vpa.conditions.Set(vpa_types.RecommendationProvided, true, "", "")
+		vpa.conditions.Set(vpa_types.RecommendationProvided, vpa.Generation, true, "", "")
 	} else {
-		vpa.conditions.Set(vpa_types.RecommendationProvided, false, reason, msg)
+		vpa.conditions.Set(vpa_types.RecommendationProvided, vpa.Generation, false, reason, msg)
 	}
 }
 
@@ -208,6 +210,9 @@ type Vpa struct {
 
 	// mutex protects concurrent access to conditions and recommendation fields
 	mutex sync.RWMutex
+
+	// Generation is the generation of the VPA object observed by the recommender.
+	Generation int64
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
@@ -228,6 +233,7 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 		// to the version requested by the client server side.
 		APIVersion: vpa_types.SchemeGroupVersion.Version,
 		PodCount:   0,
+		Generation: 0,
 	}
 	return vpa
 }
@@ -378,6 +384,7 @@ func (vpa *Vpa) AsStatus() *vpa_types.VerticalPodAutoscalerStatus {
 	if vpa.recommendation != nil {
 		status.Recommendation = vpa.recommendation
 	}
+	status.ObservedGeneration = &vpa.Generation
 	return status
 }
 

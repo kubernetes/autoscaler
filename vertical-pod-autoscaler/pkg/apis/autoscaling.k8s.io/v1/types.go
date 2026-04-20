@@ -348,6 +348,10 @@ type VerticalPodAutoscalerStatus struct {
 	// +patchMergeKey=type
 	// +patchStrategy=merge
 	Conditions []VerticalPodAutoscalerCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,2,rep,name=conditions"`
+
+	// observedGeneration is the most recent generation observed by this autoscaler.
+	// +optional
+	ObservedGeneration *int64 `json:"observedGeneration,omitempty" protobuf:"varint,3,opt,name=observedGeneration"`
 }
 
 // RecommendedPodResources is the recommendation of resources computed by
@@ -429,6 +433,13 @@ type VerticalPodAutoscalerCondition struct {
 	// the transition
 	// +optional
 	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
+
+	// observedGeneration represents the .metadata.generation that the condition was set based upon.
+	// For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+	// with respect to the current state of the instance.
+	// +optional
+	// +kubebuilder:validation:Minimum=0
+	ObservedGeneration int64 `json:"observedGeneration,omitempty" protobuf:"bytes,6,opt,name=observedGeneration"`
 }
 
 // +genclient
