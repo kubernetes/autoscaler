@@ -45,10 +45,27 @@ support for filtering by `--node-group-auto-discovery` at this time.
 - **Node-to-group mapping** — Uses the `nebius.com/node-group-id` label
   on Kubernetes nodes, falling back to cached compute instance provider IDs.
 
+## Important: autoscaling mode conversion
+
+The Nebius MK8S API uses a oneOf for node group size — either
+`Autoscaling{min, max}` or `FixedNodeCount`. There is no
+"desired count" field within the autoscaling spec.
+
+**The first time the cluster autoscaler scales a node group, it will
+permanently convert it from autoscaling mode to fixed mode.** This is
+irreversible via the autoscaler — an operator must manually re-enable
+autoscaling through the Nebius console or API. A warning is logged
+when this conversion occurs.
+
+If your node groups use Nebius-native autoscaling and you do not want
+the cluster autoscaler to override it, exclude those node groups from
+management.
+
 ## Limitations
 
-- **TemplateNodeInfo** is not yet implemented. The autoscaler cannot
-  simulate what a new node would look like for scale-up decisions.
+- **Scale-from-zero** is not supported. `TemplateNodeInfo` is not yet
+  implemented, so the autoscaler cannot simulate what a new node would
+  look like. Scale-up works when at least one node exists in the group.
 - **ListInstances** fetches all compute instances in the parent folder
   because the Nebius API does not support label-based filtering. Use a
   dedicated parent folder to minimize unnecessary API calls.

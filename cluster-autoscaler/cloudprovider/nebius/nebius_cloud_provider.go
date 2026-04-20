@@ -1,5 +1,5 @@
 /*
-Copyright 2025 The Kubernetes Authors.
+Copyright 2026 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -39,7 +39,9 @@ const (
 	// nebiusProviderIDPrefix is the prefix for Nebius provider IDs.
 	nebiusProviderIDPrefix = "nebius://"
 
-	// nodeGroupIDLabel is the label on Kubernetes nodes that identifies the node group.
+	// nodeGroupIDLabel is the label that identifies which node group a node belongs to.
+	// Nebius MK8S sets this label on both Kubernetes node objects and compute instance
+	// metadata, so the same key is used for lookups in both contexts.
 	nodeGroupIDLabel = "nebius.com/node-group-id"
 )
 
