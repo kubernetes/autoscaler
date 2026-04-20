@@ -383,6 +383,7 @@ func TestScaleSetAtomicIncreaseSize(t *testing.T) {
 	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
+	// BeginCreateOrUpdate returns nil poller — simulates immediate success
 	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
 	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
@@ -428,7 +429,7 @@ func TestScaleSetAtomicIncreaseSize(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 3, targetSize)
 
-	// Success: atomic increase by 2.
+	// Success: atomic increase by 2 (blocks until complete, nil poller = immediate).
 	err = provider.NodeGroups()[0].AtomicIncreaseSize(2)
 	assert.NoError(t, err)
 
@@ -436,6 +437,51 @@ func TestScaleSetAtomicIncreaseSize(t *testing.T) {
 	targetSize, err = provider.NodeGroups()[0].TargetSize()
 	assert.NoError(t, err)
 	assert.Equal(t, 5, targetSize)
+}
+
+func TestScaleSetAtomicIncreaseSizeFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedScaleSets := newTestVMSSList(3, testASG, "eastus", armcompute.OrchestrationModeUniform)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	provider := newTestProvider(t)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	// BeginCreateOrUpdate returns an error — simulates Azure rejecting the request
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, fmt.Errorf("azure capacity unavailable")).AnyTimes()
+	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
+
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), provider.azureManager.config.ResourceGroup, testASG).Return(expectedVMSSVMs, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	err := provider.azureManager.forceRefresh()
+	assert.NoError(t, err)
+
+	registered := provider.azureManager.RegisterNodeGroup(
+		newTestScaleSet(provider.azureManager, testASG))
+	assert.True(t, registered)
+
+	// BeginCreateOrUpdate fails — size should NOT be updated.
+	err = provider.NodeGroups()[0].AtomicIncreaseSize(2)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "azure capacity unavailable")
+
+	// Target size should remain 3 (not updated on failure).
+	targetSize, err := provider.NodeGroups()[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
 }
 
 // TestIncreaseSizeOnVMProvisioningFailed has been tweeked only for Uniform Orchestration mode.
