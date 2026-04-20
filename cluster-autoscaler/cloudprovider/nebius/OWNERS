@@ -1,7 +1,5 @@
-approvers:
-- wemoveon2
-reviewers:
-- wemoveon2
+approvers: []
+reviewers: []
 
 labels:
 - area/provider/nebius
