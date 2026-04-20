@@ -31,12 +31,13 @@ import (
 // configuration info and functions to control a set of nodes that have the
 // same capacity and set of labels.
 type NodeGroup struct {
-	id        string
-	manager   *Manager
-	nodeGroup *mk8sv1.NodeGroup
-	minSize   int
-	maxSize   int
-	instances map[string]struct{} // cached set of provider IDs
+	id         string
+	manager    *Manager
+	nodeGroup  *mk8sv1.NodeGroup
+	minSize    int
+	maxSize    int
+	targetSize int                  // in-memory target size, updated on mutations
+	instances  map[string]struct{} // cached set of provider IDs
 }
 
 // MaxSize returns maximum size of the node group.
@@ -54,11 +55,7 @@ func (n *NodeGroup) MinSize() int {
 // be equal to Size() once everything stabilizes (new nodes finish startup and
 // registration or removed nodes are deleted completely). Implementation required.
 func (n *NodeGroup) TargetSize() (int, error) {
-	status := n.nodeGroup.GetStatus()
-	if status == nil {
-		return 0, nil
-	}
-	return int(status.GetTargetNodeCount()), nil
+	return n.targetSize, nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node you need
@@ -81,7 +78,11 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 	}
 
 	klog.V(4).Infof("Increasing node group %s from %d to %d", n.id, currentSize, targetSize)
-	return n.manager.setNodeGroupSize(n.id, targetSize)
+	if err := n.manager.setNodeGroupSize(n.id, targetSize); err != nil {
+		return err
+	}
+	n.targetSize = targetSize
+	return nil
 }
 
 // AtomicIncreaseSize is not implemented.
@@ -113,7 +114,11 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	klog.V(4).Infof("Deleting %d nodes from node group %s (new size: %d)", len(nodes), n.id, newSize)
-	return n.manager.deleteInstances(n.id, providerIDs, newSize)
+	if err := n.manager.deleteInstances(n.id, providerIDs, newSize); err != nil {
+		return err
+	}
+	n.targetSize = newSize
+	return nil
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
@@ -143,7 +148,11 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 	}
 
 	klog.V(4).Infof("Decreasing node group %s target from %d to %d", n.id, currentSize, newSize)
-	return n.manager.setNodeGroupSize(n.id, newSize)
+	if err := n.manager.setNodeGroupSize(n.id, newSize); err != nil {
+		return err
+	}
+	n.targetSize = newSize
+	return nil
 }
 
 // Id returns an unique identifier of the node group.

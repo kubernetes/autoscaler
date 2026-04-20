@@ -266,10 +266,12 @@ func TestRefresh_BasicNodeGroups(t *testing.T) {
 	assert.Equal(t, "ng-1", groups[0].id)
 	assert.Equal(t, 1, groups[0].minSize)
 	assert.Equal(t, 5, groups[0].maxSize)
+	assert.Equal(t, 3, groups[0].targetSize)
 
 	assert.Equal(t, "ng-2", groups[1].id)
 	assert.Equal(t, 2, groups[1].minSize)
 	assert.Equal(t, 8, groups[1].maxSize)
+	assert.Equal(t, 4, groups[1].targetSize)
 }
 
 func TestRefresh_WithPagination(t *testing.T) {
@@ -377,19 +379,22 @@ func TestIncreaseSize_Success(t *testing.T) {
 	}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
-		id:      "ng-1",
-		manager: m,
-		nodeGroup: &mk8sv1.NodeGroup{
-			Status: &mk8sv1.NodeGroupStatus{TargetNodeCount: 3},
-		},
-		minSize: 1,
-		maxSize: 10,
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 3,
+		minSize:    1,
+		maxSize:    10,
 	}
 
 	err := ng.IncreaseSize(2)
 	require.NoError(t, err)
 	require.NotNil(t, mock.lastUpdateReq)
 	assert.Equal(t, int64(5), mock.lastUpdateReq.GetSpec().GetFixedNodeCount())
+
+	// Verify in-memory target size is updated for subsequent calls.
+	size, err := ng.TargetSize()
+	require.NoError(t, err)
+	assert.Equal(t, 5, size)
 }
 
 func TestIncreaseSize_ExceedsMax(t *testing.T) {
@@ -397,13 +402,11 @@ func TestIncreaseSize_ExceedsMax(t *testing.T) {
 	mock := &mockNebiusAPI{}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
-		id:      "ng-1",
-		manager: m,
-		nodeGroup: &mk8sv1.NodeGroup{
-			Status: &mk8sv1.NodeGroupStatus{TargetNodeCount: 8},
-		},
-		minSize: 1,
-		maxSize: 10,
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 8,
+		minSize:    1,
+		maxSize:    10,
 	}
 
 	err := ng.IncreaseSize(3)
@@ -417,13 +420,11 @@ func TestIncreaseSize_NegativeDelta(t *testing.T) {
 	mock := &mockNebiusAPI{}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
-		id:      "ng-1",
-		manager: m,
-		nodeGroup: &mk8sv1.NodeGroup{
-			Status: &mk8sv1.NodeGroupStatus{TargetNodeCount: 5},
-		},
-		minSize: 1,
-		maxSize: 10,
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 5,
+		minSize:    1,
+		maxSize:    10,
 	}
 
 	err := ng.IncreaseSize(-1)
@@ -441,13 +442,11 @@ func TestDeleteNodes_Success(t *testing.T) {
 	}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
-		id:      "ng-1",
-		manager: m,
-		nodeGroup: &mk8sv1.NodeGroup{
-			Status: &mk8sv1.NodeGroupStatus{TargetNodeCount: 5},
-		},
-		minSize: 1,
-		maxSize: 10,
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 5,
+		minSize:    1,
+		maxSize:    10,
 	}
 
 	nodes := []*apiv1.Node{
@@ -476,13 +475,11 @@ func TestDeleteNodes_BelowMin(t *testing.T) {
 	mock := &mockNebiusAPI{}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
-		id:      "ng-1",
-		manager: m,
-		nodeGroup: &mk8sv1.NodeGroup{
-			Status: &mk8sv1.NodeGroupStatus{TargetNodeCount: 3},
-		},
-		minSize: 2,
-		maxSize: 10,
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 3,
+		minSize:    2,
+		maxSize:    10,
 	}
 
 	nodes := []*apiv1.Node{
@@ -506,13 +503,11 @@ func TestDeleteNodes_MissingProviderID(t *testing.T) {
 	mock := &mockNebiusAPI{}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
-		id:      "ng-1",
-		manager: m,
-		nodeGroup: &mk8sv1.NodeGroup{
-			Status: &mk8sv1.NodeGroupStatus{TargetNodeCount: 5},
-		},
-		minSize: 1,
-		maxSize: 10,
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 5,
+		minSize:    1,
+		maxSize:    10,
 	}
 
 	nodes := []*apiv1.Node{
@@ -530,13 +525,11 @@ func TestDeleteNodes_DeleteInstanceError(t *testing.T) {
 	}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
-		id:      "ng-1",
-		manager: m,
-		nodeGroup: &mk8sv1.NodeGroup{
-			Status: &mk8sv1.NodeGroupStatus{TargetNodeCount: 5},
-		},
-		minSize: 1,
-		maxSize: 10,
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 5,
+		minSize:    1,
+		maxSize:    10,
 	}
 
 	nodes := []*apiv1.Node{
@@ -584,13 +577,11 @@ func TestDecreaseTargetSize_Success(t *testing.T) {
 	}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
-		id:      "ng-1",
-		manager: m,
-		nodeGroup: &mk8sv1.NodeGroup{
-			Status: &mk8sv1.NodeGroupStatus{TargetNodeCount: 5},
-		},
-		minSize: 1,
-		maxSize: 10,
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 5,
+		minSize:    1,
+		maxSize:    10,
 	}
 
 	err := ng.DecreaseTargetSize(-2)
@@ -604,13 +595,11 @@ func TestDecreaseTargetSize_PositiveDelta(t *testing.T) {
 	mock := &mockNebiusAPI{}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
-		id:      "ng-1",
-		manager: m,
-		nodeGroup: &mk8sv1.NodeGroup{
-			Status: &mk8sv1.NodeGroupStatus{TargetNodeCount: 5},
-		},
-		minSize: 1,
-		maxSize: 10,
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 5,
+		minSize:    1,
+		maxSize:    10,
 	}
 
 	err := ng.DecreaseTargetSize(1)
@@ -624,13 +613,11 @@ func TestDecreaseTargetSize_BelowMin(t *testing.T) {
 	mock := &mockNebiusAPI{}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
-		id:      "ng-1",
-		manager: m,
-		nodeGroup: &mk8sv1.NodeGroup{
-			Status: &mk8sv1.NodeGroupStatus{TargetNodeCount: 3},
-		},
-		minSize: 2,
-		maxSize: 10,
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 3,
+		minSize:    2,
+		maxSize:    10,
 	}
 
 	err := ng.DecreaseTargetSize(-2)

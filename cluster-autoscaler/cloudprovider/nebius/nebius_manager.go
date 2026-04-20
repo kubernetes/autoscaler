@@ -252,13 +252,19 @@ func (m *Manager) Refresh() error {
 		klog.V(4).Infof("Adding node group: id=%q name=%q min=%d max=%d instances=%d",
 			ngID, ng.GetMetadata().GetName(), minSize, maxSize, len(instances))
 
+		var currentTargetSize int
+		if status := ng.GetStatus(); status != nil {
+			currentTargetSize = int(status.GetTargetNodeCount())
+		}
+
 		groups = append(groups, &NodeGroup{
-			id:        ngID,
-			manager:   m,
-			nodeGroup: ng,
-			minSize:   minSize,
-			maxSize:   maxSize,
-			instances: instances,
+			id:         ngID,
+			manager:    m,
+			nodeGroup:  ng,
+			minSize:    minSize,
+			maxSize:    maxSize,
+			targetSize: currentTargetSize,
+			instances:  instances,
 		})
 	}
 
