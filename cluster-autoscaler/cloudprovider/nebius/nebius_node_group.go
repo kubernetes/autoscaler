@@ -36,7 +36,7 @@ type NodeGroup struct {
 	nodeGroup  *mk8sv1.NodeGroup
 	minSize    int
 	maxSize    int
-	targetSize int                  // in-memory target size, updated on mutations
+	targetSize int                 // in-memory target size, updated on mutations
 	instances  map[string]struct{} // cached set of provider IDs
 }
 

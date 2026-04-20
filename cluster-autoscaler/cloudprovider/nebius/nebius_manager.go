@@ -311,6 +311,11 @@ func (m *Manager) setNodeGroupSize(nodeGroupID string, targetSize int) error {
 		spec = &mk8sv1.NodeGroupSpec{}
 	}
 
+	if ng.GetSpec().GetAutoscaling() != nil {
+		klog.Warningf("Node group %s is switching from autoscaling to fixed mode (target size %d). "+
+			"The Nebius MK8S API does not support setting a desired count within autoscaling bounds.", nodeGroupID, targetSize)
+	}
+
 	fixedCount := int64(targetSize)
 	updateReq := &mk8sv1.UpdateNodeGroupRequest{
 		Metadata: ng.GetMetadata(),
@@ -332,17 +337,29 @@ func (m *Manager) setNodeGroupSize(nodeGroupID string, targetSize int) error {
 }
 
 // deleteInstances deletes specific compute instances by their provider IDs and
-// then updates the node group target size to reflect the removal.
+// then updates the node group target size to reflect the removal. If a deletion
+// fails mid-way, the target size is still adjusted to account for instances that
+// were successfully deleted.
 func (m *Manager) deleteInstances(nodeGroupID string, providerIDs []string, newTargetSize int) error {
 	ctx := context.Background()
 
+	deleted := 0
 	for _, providerID := range providerIDs {
 		instanceID := strings.TrimPrefix(providerID, nebiusProviderIDPrefix)
 		if err := m.client.DeleteInstance(ctx, &computev1.DeleteInstanceRequest{
 			Id: instanceID,
 		}); err != nil {
+			// Adjust target size for instances we did successfully delete,
+			// then return the error.
+			if deleted > 0 {
+				adjustedSize := newTargetSize + len(providerIDs) - deleted
+				if sizeErr := m.setNodeGroupSize(nodeGroupID, adjustedSize); sizeErr != nil {
+					klog.Errorf("Failed to adjust node group %s size after partial deletion: %v", nodeGroupID, sizeErr)
+				}
+			}
 			return fmt.Errorf("failed to delete instance %s from node group %s: %w", instanceID, nodeGroupID, err)
 		}
+		deleted++
 		klog.V(4).Infof("Deleted instance %s from node group %s", instanceID, nodeGroupID)
 	}
 

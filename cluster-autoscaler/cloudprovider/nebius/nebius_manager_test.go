@@ -45,6 +45,7 @@ type mockNebiusAPI struct {
 	lastUpdateReq            *mk8sv1.UpdateNodeGroupRequest
 	deleteInstanceIDs        []string
 	deleteInstanceErr        error
+	deleteInstanceErrAfter   int // fail after this many successful deletes (0 = fail immediately)
 }
 
 func (m *mockNebiusAPI) ListNodeGroups(_ context.Context, req *mk8sv1.ListNodeGroupsRequest) (*mk8sv1.ListNodeGroupsResponse, error) {
@@ -87,7 +88,10 @@ func (m *mockNebiusAPI) UpdateNodeGroup(_ context.Context, req *mk8sv1.UpdateNod
 
 func (m *mockNebiusAPI) DeleteInstance(_ context.Context, req *computev1.DeleteInstanceRequest) error {
 	m.deleteInstanceIDs = append(m.deleteInstanceIDs, req.GetId())
-	return m.deleteInstanceErr
+	if m.deleteInstanceErr != nil && len(m.deleteInstanceIDs) > m.deleteInstanceErrAfter {
+		return m.deleteInstanceErr
+	}
+	return nil
 }
 
 // Helper to build a node group proto with autoscaling spec.
@@ -541,6 +545,46 @@ func TestDeleteNodes_DeleteInstanceError(t *testing.T) {
 	err := ng.DeleteNodes(nodes)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to delete instance")
+}
+
+func TestDeleteNodes_PartialFailureAdjustsSize(t *testing.T) {
+	t.Parallel()
+	mock := &mockNebiusAPI{
+		deleteInstanceErr:      fmt.Errorf("instance unavailable"),
+		deleteInstanceErrAfter: 1, // first delete succeeds, second fails
+		getNodeGroupResponse:   makeNodeGroupProto("ng-1", "group-one", 1, 10, 5),
+	}
+	m := newTestManager(mock)
+	ng := &NodeGroup{
+		id:         "ng-1",
+		manager:    m,
+		targetSize: 5,
+		minSize:    1,
+		maxSize:    10,
+	}
+
+	nodes := []*apiv1.Node{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
+			Spec:       apiv1.NodeSpec{ProviderID: "nebius://inst-1"},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "node-2"},
+			Spec:       apiv1.NodeSpec{ProviderID: "nebius://inst-2"},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "node-3"},
+			Spec:       apiv1.NodeSpec{ProviderID: "nebius://inst-3"},
+		},
+	}
+	err := ng.DeleteNodes(nodes)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to delete instance")
+
+	// One instance was deleted successfully, so target size should be adjusted
+	// to account for that deletion (5 - 1 = 4, not the original target of 2).
+	require.NotNil(t, mock.lastUpdateReq)
+	assert.Equal(t, int64(4), mock.lastUpdateReq.GetSpec().GetFixedNodeCount())
 }
 
 // --- SetNodeGroupSize tests ---
