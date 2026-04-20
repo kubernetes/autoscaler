@@ -98,15 +98,15 @@ func isOperationNotAllowed(err error) bool {
 	return strings.Contains(err.Error(), azerrors.OperationNotAllowed)
 }
 
-const operationPreemptedErrorMessage = "Operation execution has been preempted by a more recent operation"
+const operationPreemptedErrorCode = "OperationPreempted"
 
 // isOperationPreempted checks if `error` is an OperationPreempted error.
 func isOperationPreempted(err error) bool {
 	if err == nil {
 		return false
 	}
-	return strings.Contains(
-		strings.ToLower(err.Error()),
-		strings.ToLower(operationPreemptedErrorMessage),
-	)
+	if azerr := azerrors.IsResponseError(err); azerr != nil {
+		return azerr.ErrorCode == operationPreemptedErrorCode
+	}
+	return strings.Contains(err.Error(), operationPreemptedErrorCode)
 }
