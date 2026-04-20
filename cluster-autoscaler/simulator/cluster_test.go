@@ -302,17 +302,21 @@ func TestSimulateNodeRemoval(t *testing.T) {
 	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 
 	ownerRefs := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
-	buildReplicaSetPod := func(name, nodeName string, cpu, memory int64) *apiv1.Pod {
-		pod := BuildTestPod(name, cpu, memory)
-		pod.OwnerReferences = ownerRefs
-		pod.Spec.NodeName = nodeName
-		return pod
-	}
-	buildStandalonePod := func(name, nodeName string, cpu, memory int64) *apiv1.Pod {
-		pod := BuildTestPod(name, cpu, memory)
-		pod.Spec.NodeName = nodeName
-		return pod
-	}
+
+	// Pods for the basic drain/capacity test cases.
+	drainableReplicaPodA := BuildTestPod("drainable-rs-pod-a", 100, 100000)
+	drainableReplicaPodA.OwnerReferences = ownerRefs
+	drainableReplicaPodA.Spec.NodeName = drainableNode.Name
+
+	drainableReplicaPodB := BuildTestPod("drainable-rs-pod-b", 100, 100000)
+	drainableReplicaPodB.OwnerReferences = ownerRefs
+	drainableReplicaPodB.Spec.NodeName = drainableNode.Name
+
+	standalonePodOnNonDrainable := BuildTestPod("standalone-on-non-drainable", 100, 100000)
+	standalonePodOnNonDrainable.Spec.NodeName = nonDrainableNode.Name
+
+	largePodOnFull := BuildTestPod("large-pod-on-full", 1000, 100000)
+	largePodOnFull.Spec.NodeName = fullNode.Name
 
 	clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 
@@ -355,6 +359,20 @@ func TestSimulateNodeRemoval(t *testing.T) {
 	honorTSC := defaultTSC
 	honorTSC.NodeTaintsPolicy = &honorPolicy
 
+	// Pods for topology-spread test cases (default policy).
+	defaultPodN1 := buildTopoPod("default-tsc-pod-n1", topoNode1.Name, defaultTSC)
+	defaultPodN2 := buildTopoPod("default-tsc-pod-n2", topoNode2.Name, defaultTSC)
+	defaultPodN3 := buildTopoPod("default-tsc-pod-n3", topoNode3.Name, defaultTSC)
+	blockerN2 := BuildTestPod("blocker-n2", 100, 100000)
+	blockerN2.Spec.NodeName = topoNode2.Name
+	blockerN3 := BuildTestPod("blocker-n3", 100, 100000)
+	blockerN3.Spec.NodeName = topoNode3.Name
+
+	// Pods for topology-spread test cases (Honor policy).
+	honorPodN1 := buildTopoPod("honor-tsc-pod-n1", topoNode1.Name, honorTSC)
+	honorPodN2 := buildTopoPod("honor-tsc-pod-n2", topoNode2.Name, honorTSC)
+	honorPodN3 := buildTopoPod("honor-tsc-pod-n3", topoNode3.Name, honorTSC)
+
 	tests := []simulateNodeRemovalTestConfig{
 		{
 			name:        "just an empty node, should be removed",
@@ -363,92 +381,60 @@ func TestSimulateNodeRemoval(t *testing.T) {
 			toRemove:    &NodeToBeRemoved{Node: emptyNode},
 			unremovable: nil,
 		},
-		func() simulateNodeRemovalTestConfig {
-			drainableReplicaPodA := buildReplicaSetPod("drainable-rs-pod-a", drainableNode.Name, 100, 100000)
-			drainableReplicaPodB := buildReplicaSetPod("drainable-rs-pod-b", drainableNode.Name, 100, 100000)
-			return simulateNodeRemovalTestConfig{
-				name:     "just a drainable node, but nowhere for pods to go to",
-				pods:     []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB},
-				nodeName: drainableNode.Name,
-				allNodes: []*apiv1.Node{drainableNode},
-				toRemove: nil,
-				unremovable: &UnremovableNode{
-					Node:   drainableNode,
-					Reason: NoPlaceToMovePods,
-				},
-			}
-		}(),
-		func() simulateNodeRemovalTestConfig {
-			drainableReplicaPodA := buildReplicaSetPod("drainable-rs-pod-a", drainableNode.Name, 100, 100000)
-			drainableReplicaPodB := buildReplicaSetPod("drainable-rs-pod-b", drainableNode.Name, 100, 100000)
-			existingStandalonePod := buildStandalonePod("existing-standalone-pod", nonDrainableNode.Name, 100, 100000)
-			return simulateNodeRemovalTestConfig{
-				name:        "drainable node, and a mostly empty node that can take its pods",
-				pods:        []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB, existingStandalonePod},
-				nodeName:    drainableNode.Name,
-				allNodes:    []*apiv1.Node{drainableNode, nonDrainableNode},
-				toRemove:    &NodeToBeRemoved{Node: drainableNode, PodsToReschedule: []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB}},
-				unremovable: nil,
-			}
-		}(),
-		func() simulateNodeRemovalTestConfig {
-			drainableReplicaPodA := buildReplicaSetPod("drainable-rs-pod-a", drainableNode.Name, 100, 100000)
-			drainableReplicaPodB := buildReplicaSetPod("drainable-rs-pod-b", drainableNode.Name, 100, 100000)
-			existingLargePod := buildStandalonePod("existing-large-pod", fullNode.Name, 1000, 100000)
-			return simulateNodeRemovalTestConfig{
-				name:        "drainable node, and a full node that cannot fit anymore pods",
-				pods:        []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB, existingLargePod},
-				nodeName:    drainableNode.Name,
-				allNodes:    []*apiv1.Node{drainableNode, fullNode},
-				toRemove:    nil,
-				unremovable: &UnremovableNode{Node: drainableNode, Reason: NoPlaceToMovePods},
-			}
-		}(),
-		func() simulateNodeRemovalTestConfig {
-			drainableReplicaPodA := buildReplicaSetPod("drainable-rs-pod-a", drainableNode.Name, 100, 100000)
-			drainableReplicaPodB := buildReplicaSetPod("drainable-rs-pod-b", drainableNode.Name, 100, 100000)
-			existingStandalonePod := buildStandalonePod("existing-standalone-pod", nonDrainableNode.Name, 100, 100000)
-			existingLargePod := buildStandalonePod("existing-large-pod", fullNode.Name, 1000, 100000)
-			return simulateNodeRemovalTestConfig{
-				name:        "4 nodes, 1 empty, 1 drainable",
-				pods:        []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB, existingStandalonePod, existingLargePod},
-				nodeName:    emptyNode.Name,
-				allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
-				toRemove:    &NodeToBeRemoved{Node: emptyNode},
-				unremovable: nil,
-			}
-		}(),
-		func() simulateNodeRemovalTestConfig {
-			constrainedPodOnNode1 := buildTopoPod("default-policy-pod-topo-n1", topoNode1.Name, defaultTSC)
-			constrainedPodOnNode2 := buildTopoPod("default-policy-pod-topo-n2", topoNode2.Name, defaultTSC)
-			constrainedPodOnNode3 := buildTopoPod("default-policy-pod-topo-n3", topoNode3.Name, defaultTSC)
-			blockerOnNode2 := buildStandalonePod("blocker-n2", topoNode2.Name, 100, 100000)
-			blockerOnNode3 := buildStandalonePod("blocker-n3", topoNode3.Name, 100, 100000)
-			return simulateNodeRemovalTestConfig{
-				name:     "topology spread constraint test - node unremovable due to phantom zone",
-				pods:     []*apiv1.Pod{constrainedPodOnNode1, constrainedPodOnNode2, constrainedPodOnNode3, blockerOnNode2, blockerOnNode3},
-				allNodes: []*apiv1.Node{topoNode1, topoNode2, topoNode3},
-				nodeName: topoNode1.Name,
-				toRemove: nil,
-				unremovable: &UnremovableNode{
-					Node:   topoNode1,
-					Reason: NoPlaceToMovePods,
-				},
-			}
-		}(),
-		func() simulateNodeRemovalTestConfig {
-			honorConstrainedPodOnNode1 := buildTopoPod("honor-policy-pod-topo-n1", topoNode1.Name, honorTSC)
-			honorConstrainedPodOnNode2 := buildTopoPod("honor-policy-pod-topo-n2", topoNode2.Name, honorTSC)
-			honorConstrainedPodOnNode3 := buildTopoPod("honor-policy-pod-topo-n3", topoNode3.Name, honorTSC)
-			return simulateNodeRemovalTestConfig{
-				name:        "topology spread constraint test - node removable with nodeTaintsPolicy Honor",
-				pods:        []*apiv1.Pod{honorConstrainedPodOnNode1, honorConstrainedPodOnNode2, honorConstrainedPodOnNode3},
-				allNodes:    []*apiv1.Node{topoNode1, topoNode2, topoNode3},
-				nodeName:    topoNode1.Name,
-				toRemove:    &NodeToBeRemoved{Node: topoNode1, PodsToReschedule: []*apiv1.Pod{honorConstrainedPodOnNode1}},
-				unremovable: nil,
-			}
-		}(),
+		{
+			name:     "just a drainable node, but nowhere for pods to go to",
+			pods:     []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB},
+			nodeName: drainableNode.Name,
+			allNodes: []*apiv1.Node{drainableNode},
+			toRemove: nil,
+			unremovable: &UnremovableNode{
+				Node:   drainableNode,
+				Reason: NoPlaceToMovePods,
+			},
+		},
+		{
+			name:        "drainable node, and a mostly empty node that can take its pods",
+			pods:        []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB, standalonePodOnNonDrainable},
+			nodeName:    drainableNode.Name,
+			allNodes:    []*apiv1.Node{drainableNode, nonDrainableNode},
+			toRemove:    &NodeToBeRemoved{Node: drainableNode, PodsToReschedule: []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB}},
+			unremovable: nil,
+		},
+		{
+			name:        "drainable node, and a full node that cannot fit anymore pods",
+			pods:        []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB, largePodOnFull},
+			nodeName:    drainableNode.Name,
+			allNodes:    []*apiv1.Node{drainableNode, fullNode},
+			toRemove:    nil,
+			unremovable: &UnremovableNode{Node: drainableNode, Reason: NoPlaceToMovePods},
+		},
+		{
+			name:        "4 nodes, 1 empty, 1 drainable",
+			pods:        []*apiv1.Pod{drainableReplicaPodA, drainableReplicaPodB, standalonePodOnNonDrainable, largePodOnFull},
+			nodeName:    emptyNode.Name,
+			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
+			toRemove:    &NodeToBeRemoved{Node: emptyNode},
+			unremovable: nil,
+		},
+		{
+			name:     "topology spread constraint test - node unremovable due to phantom zone",
+			pods:     []*apiv1.Pod{defaultPodN1, defaultPodN2, defaultPodN3, blockerN2, blockerN3},
+			allNodes: []*apiv1.Node{topoNode1, topoNode2, topoNode3},
+			nodeName: topoNode1.Name,
+			toRemove: nil,
+			unremovable: &UnremovableNode{
+				Node:   topoNode1,
+				Reason: NoPlaceToMovePods,
+			},
+		},
+		{
+			name:        "topology spread constraint test - node removable with nodeTaintsPolicy Honor",
+			pods:        []*apiv1.Pod{honorPodN1, honorPodN2, honorPodN3},
+			allNodes:    []*apiv1.Node{topoNode1, topoNode2, topoNode3},
+			nodeName:    topoNode1.Name,
+			toRemove:    &NodeToBeRemoved{Node: topoNode1, PodsToReschedule: []*apiv1.Pod{honorPodN1}},
+			unremovable: nil,
+		},
 		{
 			name:        "candidate not in clusterSnapshot should be marked unremovable",
 			nodeName:    noExistNode.Name,
