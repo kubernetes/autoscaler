@@ -337,10 +337,11 @@ func (m *Manager) setNodeGroupSize(nodeGroupID string, targetSize int) error {
 }
 
 // deleteInstances deletes specific compute instances by their provider IDs and
-// then updates the node group target size to reflect the removal. If a deletion
-// fails mid-way, the target size is still adjusted to account for instances that
-// were successfully deleted.
-func (m *Manager) deleteInstances(nodeGroupID string, providerIDs []string, newTargetSize int) error {
+// then updates the node group target size to reflect the removal. Returns the
+// number of instances successfully deleted and any error. If a deletion fails
+// mid-way, the target size is still adjusted to account for instances that were
+// successfully deleted.
+func (m *Manager) deleteInstances(nodeGroupID string, providerIDs []string, currentSize int) (int, error) {
 	ctx := context.Background()
 
 	deleted := 0
@@ -349,21 +350,21 @@ func (m *Manager) deleteInstances(nodeGroupID string, providerIDs []string, newT
 		if err := m.client.DeleteInstance(ctx, &computev1.DeleteInstanceRequest{
 			Id: instanceID,
 		}); err != nil {
-			// Adjust target size for instances we did successfully delete,
-			// then return the error.
+			// Adjust target size for instances we did successfully delete.
 			if deleted > 0 {
-				adjustedSize := newTargetSize + len(providerIDs) - deleted
+				adjustedSize := currentSize - deleted
 				if sizeErr := m.setNodeGroupSize(nodeGroupID, adjustedSize); sizeErr != nil {
 					klog.Errorf("Failed to adjust node group %s size after partial deletion: %v", nodeGroupID, sizeErr)
 				}
 			}
-			return fmt.Errorf("failed to delete instance %s from node group %s: %w", instanceID, nodeGroupID, err)
+			return deleted, fmt.Errorf("failed to delete instance %s from node group %s: %w", instanceID, nodeGroupID, err)
 		}
 		deleted++
 		klog.V(4).Infof("Deleted instance %s from node group %s", instanceID, nodeGroupID)
 	}
 
-	return m.setNodeGroupSize(nodeGroupID, newTargetSize)
+	newTargetSize := currentSize - deleted
+	return deleted, m.setNodeGroupSize(nodeGroupID, newTargetSize)
 }
 
 // Cleanup cleans up resources used by the manager.

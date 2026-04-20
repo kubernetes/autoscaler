@@ -114,11 +114,10 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	klog.V(4).Infof("Deleting %d nodes from node group %s (new size: %d)", len(nodes), n.id, newSize)
-	if err := n.manager.deleteInstances(n.id, providerIDs, newSize); err != nil {
-		return err
-	}
-	n.targetSize = newSize
-	return nil
+	deleted, err := n.manager.deleteInstances(n.id, providerIDs, currentSize)
+	// Always update targetSize to reflect actual deletions, even on partial failure.
+	n.targetSize = currentSize - deleted
+	return err
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.

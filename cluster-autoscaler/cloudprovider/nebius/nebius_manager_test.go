@@ -585,6 +585,11 @@ func TestDeleteNodes_PartialFailureAdjustsSize(t *testing.T) {
 	// to account for that deletion (5 - 1 = 4, not the original target of 2).
 	require.NotNil(t, mock.lastUpdateReq)
 	assert.Equal(t, int64(4), mock.lastUpdateReq.GetSpec().GetFixedNodeCount())
+
+	// In-memory targetSize should also reflect the partial deletion.
+	size, sizeErr := ng.TargetSize()
+	require.NoError(t, sizeErr)
+	assert.Equal(t, 4, size)
 }
 
 // --- SetNodeGroupSize tests ---
