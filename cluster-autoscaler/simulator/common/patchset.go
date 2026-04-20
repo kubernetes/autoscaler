@@ -189,6 +189,37 @@ func (p *PatchSet[K, V]) AsMap() map[K]V {
 	return patchSetMap
 }
 
+// ForEach iterates through the current effective state of the PatchSet, calling the provided
+// function f for each key-value pair. If f returns false, iteration stops.
+// This is significantly more memory-efficient than AsMap() as it avoids allocating a new map.
+func (p *PatchSet[K, V]) ForEach(f func(K, V) bool) {
+	if !p.cacheInSync {
+		// Rebuild cache directly without intermediate map allocation
+		for k := range p.cache {
+			delete(p.cache, k)
+		}
+		for _, patch := range p.patches {
+			for key, value := range patch.modified {
+				v := value
+				p.cache[key] = &v
+			}
+			for key := range patch.deleted {
+				delete(p.cache, key)
+			}
+		}
+		p.cacheInSync = true
+	}
+
+	for key, value := range p.cache {
+		if value != nil {
+			if !f(key, *value) {
+				return
+			}
+		}
+	}
+}
+
+
 // SetCurrent adds or updates a key-value pair in the topmost patch layer.
 func (p *PatchSet[K, V]) SetCurrent(key K, value V) {
 	if len(p.patches) == 0 {

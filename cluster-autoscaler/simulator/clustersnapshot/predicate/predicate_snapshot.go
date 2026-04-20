@@ -43,6 +43,9 @@ type PredicateSnapshot struct {
 	parallelism                  int
 	draSnapshot                  *drasnapshot.Snapshot
 	csiSnapshot                  *csisnapshot.Snapshot
+
+	evaluator      *PredicateEvaluator
+	evaluatorStack []*PredicateEvaluator
 }
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
@@ -55,6 +58,13 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 		draSnapshot:                  drasnapshot.NewEmptySnapshot(),
 		csiSnapshot:                  csisnapshot.NewEmptySnapshot(),
 	}
+
+	podInformer := snapshotStore.GetPodInformer()
+	nodeInformer := snapshotStore.GetNodeInformer()
+	if podInformer != nil && nodeInformer != nil {
+		snapshot.evaluator = NewPredicateEvaluator(podInformer, nodeInformer)
+	}
+
 	// Plugin runner really only needs a framework.SharedLister for running the plugins, but it also needs to run the provided Node-matching functions
 	// which operate on *framework.NodeInfo. The only object that allows obtaining *framework.NodeInfos is PredicateSnapshot, so we have an ugly circular
 	// dependency between PluginRunner and PredicateSnapshot.
@@ -401,6 +411,10 @@ func (s *PredicateSnapshot) Clear() {
 	s.ClusterSnapshotStore.Clear()
 	s.draSnapshot = drasnapshot.NewEmptySnapshot()
 	s.csiSnapshot = csisnapshot.NewEmptySnapshot()
+
+	if s.evaluator != nil {
+		s.evaluator.Clear()
+	}
 }
 
 // Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
@@ -408,6 +422,11 @@ func (s *PredicateSnapshot) Fork() {
 	s.ClusterSnapshotStore.Fork()
 	s.draSnapshot.Fork()
 	s.csiSnapshot.Fork()
+
+	if s.evaluator != nil {
+		s.evaluatorStack = append(s.evaluatorStack, s.evaluator)
+		s.evaluator = s.evaluator.Fork(s.ClusterSnapshotStore.GetPodInformer(), s.ClusterSnapshotStore.GetNodeInformer())
+	}
 }
 
 // Revert reverts snapshot state to moment of forking.
@@ -415,6 +434,12 @@ func (s *PredicateSnapshot) Revert() {
 	s.ClusterSnapshotStore.Revert()
 	s.draSnapshot.Revert()
 	s.csiSnapshot.Revert()
+
+	if len(s.evaluatorStack) > 0 {
+		s.evaluator.Revert()
+		s.evaluator = s.evaluatorStack[len(s.evaluatorStack)-1]
+		s.evaluatorStack = s.evaluatorStack[:len(s.evaluatorStack)-1]
+	}
 }
 
 // Commit commits changes done after forking.
@@ -424,6 +449,11 @@ func (s *PredicateSnapshot) Commit() error {
 	}
 	s.draSnapshot.Commit()
 	s.csiSnapshot.Commit()
+
+	if len(s.evaluatorStack) > 0 {
+		s.evaluator.Commit()
+		s.evaluatorStack = s.evaluatorStack[:len(s.evaluatorStack)-1]
+	}
 	return nil
 }
 

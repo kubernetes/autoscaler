@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
+	"k8s.io/client-go/tools/cache"
 )
 
 // Forkable is an interface for objects that can be forked, reverted and committed.
@@ -125,6 +126,11 @@ type ClusterSnapshotStore interface {
 
 	// Clear resets the snapshot to an empty, unforked state.
 	Clear()
+
+	// GetPodInformer returns a SharedInformer for Pods.
+	GetPodInformer() cache.SharedInformer
+	// GetNodeInformer returns a SharedInformer for Nodes.
+	GetNodeInformer() cache.SharedInformer
 }
 
 // ErrNodeNotFound means that a node wasn't found in the snapshot.

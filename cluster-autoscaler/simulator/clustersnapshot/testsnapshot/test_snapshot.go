@@ -17,6 +17,8 @@ limitations under the License.
 package testsnapshot
 
 import (
+	"context"
+
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
@@ -53,7 +55,7 @@ func NewTestSnapshotAndHandle() (clustersnapshot.ClusterSnapshot, *framework.Han
 
 // NewCustomTestSnapshotAndHandle returns an instance of ClusterSnapshot with a specific ClusterSnapshotStore that can be used in tests.
 func NewCustomTestSnapshotAndHandle(snapshotStore clustersnapshot.ClusterSnapshotStore) (clustersnapshot.ClusterSnapshot, *framework.Handle, error) {
-	testFwHandle, err := framework.NewTestFrameworkHandle()
+	testFwHandle, err := framework.NewTestFrameworkHandle(context.Background())
 	if err != nil {
 		return nil, nil, err
 	}

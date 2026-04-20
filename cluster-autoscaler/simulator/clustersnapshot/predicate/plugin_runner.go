@@ -19,6 +19,7 @@ package predicate
 import (
 	"context"
 	"fmt"
+	"math"
 	"strings"
 	"sync"
 
@@ -36,15 +37,21 @@ type SchedulerPluginRunner struct {
 	snapshot            clustersnapshot.ClusterSnapshot
 	defaultNodeOrdering clustersnapshot.NodeOrderMapping
 	parallelism         int
+	evaluator           *PredicateEvaluator
 }
 
 // NewSchedulerPluginRunner builds a SchedulerPluginRunner.
 func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapshot.ClusterSnapshot, parallelism int) *SchedulerPluginRunner {
+	var evaluator *PredicateEvaluator
+	if ps, ok := snapshot.(*PredicateSnapshot); ok {
+		evaluator = ps.evaluator
+	}
 	return &SchedulerPluginRunner{
 		fwHandle:            fwHandle,
 		snapshot:            snapshot,
 		defaultNodeOrdering: clustersnapshot.NewLastIndexOrderMapping(1),
 		parallelism:         parallelism,
+		evaluator:           evaluator,
 	}
 }
 
@@ -58,6 +65,11 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 
 	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshot)
 	defer p.fwHandle.DelegatingLister.ResetDelegate()
+
+	var podCtx *PodAffinityContext
+	if p.evaluator != nil {
+		podCtx = p.evaluator.PreparePod(pod)
+	}
 
 	state := schedulerimpl.NewCycleState()
 	// Run the PreFilter phase of the framework for the Pod. This allows plugins to precompute some things (for all Nodes in the cluster at once) and
@@ -114,6 +126,12 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 			return
 		}
 
+		if p.evaluator != nil {
+			if err := p.evaluator.FastCheckAffinity(podCtx, nodeInfo.Node()); err != nil {
+				return
+			}
+		}
+
 		// Run the Filter phase of the framework. Plugins retrieve the state they saved during PreFilter from CycleState, and answer whether the
 		// given Pod can be scheduled on the given Node.
 		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
@@ -131,7 +149,8 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 		// Filter didn't pass for some plugin, so this Node won't work - move on to the next one.
 	}
 
-	workqueue.ParallelizeUntil(ctx, p.parallelism, len(nodeInfosList), checkNode)
+	chunkSize := chunkSizeFor(len(nodeInfosList), p.parallelism)
+	workqueue.ParallelizeUntil(ctx, p.parallelism, len(nodeInfosList), checkNode, workqueue.WithChunkSize(chunkSize))
 
 	if foundNode != nil {
 		nodeOrdering.MarkMatch(foundIndex)
@@ -146,6 +165,14 @@ func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string
 	nodeInfo, err := p.snapshot.GetNodeInfo(nodeName)
 	if err != nil {
 		return nil, nil, clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error obtaining NodeInfo for name %q: %v", nodeName, err))
+	}
+
+	var podCtx *PodAffinityContext
+	if p.evaluator != nil {
+		podCtx = p.evaluator.PreparePod(pod)
+		if err := p.evaluator.FastCheckAffinity(podCtx, nodeInfo.Node()); err != nil {
+			return nil, nil, err
+		}
 	}
 
 	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshot)
@@ -200,4 +227,21 @@ func (p *SchedulerPluginRunner) failingFilterDebugInfo(filterName string, nodeIn
 	}
 
 	return strings.Join(infoParts, ", ")
+}
+
+// chunkSizeFor returns a chunk size for the given number of items to use for
+// parallel work. The size aims to produce good CPU utilization.
+// returns max(1, min(sqrt(n), n/Parallelism))
+func chunkSizeFor(n, parallelism int) int {
+	if parallelism <= 0 {
+		return 1
+	}
+	s := int(math.Sqrt(float64(n)))
+
+	if r := n/parallelism + 1; s > r {
+		s = r
+	} else if s < 1 {
+		s = 1
+	}
+	return s
 }

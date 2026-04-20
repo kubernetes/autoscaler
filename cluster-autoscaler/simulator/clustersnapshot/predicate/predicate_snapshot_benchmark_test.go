@@ -33,7 +33,7 @@ func BenchmarkAddNodeInfo(b *testing.B) {
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range testCases {
 			nodes := clustersnapshot.CreateTestNodes(tc)
-			clusterSnapshot, err := snapshotFactory()
+			clusterSnapshot, err := snapshotFactory(b)
 			assert.NoError(b, err)
 			b.ResetTimer()
 			b.Run(fmt.Sprintf("%s: AddNodeInfo() %d", snapshotName, tc), func(b *testing.B) {
@@ -59,7 +59,7 @@ func BenchmarkListNodeInfos(b *testing.B) {
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range testCases {
 			nodes := clustersnapshot.CreateTestNodes(tc)
-			clusterSnapshot, err := snapshotFactory()
+			clusterSnapshot, err := snapshotFactory(b)
 			assert.NoError(b, err)
 			err = clusterSnapshot.SetClusterState(nodes, nil, nil, nil)
 			if err != nil {
@@ -89,7 +89,7 @@ func BenchmarkAddPods(b *testing.B) {
 			nodes := clustersnapshot.CreateTestNodes(tc)
 			pods := clustersnapshot.CreateTestPods(tc * 30)
 			clustersnapshot.AssignTestPodsToNodes(pods, nodes)
-			clusterSnapshot, err := snapshotFactory()
+			clusterSnapshot, err := snapshotFactory(b)
 			assert.NoError(b, err)
 			err = clusterSnapshot.SetClusterState(nodes, nil, nil, nil)
 			assert.NoError(b, err)
@@ -125,7 +125,7 @@ func BenchmarkForkAddRevert(b *testing.B) {
 			for _, ptc := range podTestCases {
 				pods := clustersnapshot.CreateTestPods(ntc * ptc)
 				clustersnapshot.AssignTestPodsToNodes(pods, nodes)
-				clusterSnapshot, err := snapshotFactory()
+				clusterSnapshot, err := snapshotFactory(b)
 				assert.NoError(b, err)
 				err = clusterSnapshot.SetClusterState(nodes, pods, nil, nil)
 				assert.NoError(b, err)

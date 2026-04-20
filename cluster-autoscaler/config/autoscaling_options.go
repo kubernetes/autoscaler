@@ -327,6 +327,8 @@ type AutoscalingOptions struct {
 	ClusterSnapshotParallelism int
 	// PredicateParallelism is the number of goroutines to use for running scheduler predicates.
 	PredicateParallelism int
+	// FastPredicatesEnabled enables the fast predicates feature.
+	FastPredicatesEnabled bool
 	// CheckCapacityProcessorInstance is the name of the processor instance.
 	// Only ProvisioningRequests that define this name in their parameters with the key "processorInstance" will be processed by this CA instance.
 	// It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance.

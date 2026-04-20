@@ -234,6 +234,7 @@ var (
 	enableCSINodeAwareScheduling                 = flag.Bool("enable-csi-node-aware-scheduling", false, "Whether logic for handling CSINode objects is enabled.")
 	clusterSnapshotParallelism                   = flag.Int("cluster-snapshot-parallelism", 16, "Maximum parallelism of cluster snapshot creation.")
 	predicateParallelism                         = flag.Int("predicate-parallelism", 4, "Maximum parallelism of scheduler predicate checking.")
+	fastPredicatesEnabled                        = flag.Bool("fast-predicates-enabled", false, "Whether logic for fast predicate checking is enabled.")
 	checkCapacityProcessorInstance               = flag.String("check-capacity-processor-instance", "", "Name of the processor instance. Only ProvisioningRequests that define this name in their parameters with the key \"processorInstance\" will be processed by this CA instance. It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance. Not recommended: Until CA 1.35, ProvisioningRequests with this name as prefix in their class will be also processed.")
 	nodeDeletionCandidateTTL                     = flag.Duration("node-deletion-candidate-ttl", time.Duration(0), "Maximum time a node can be marked as removable before the marking becomes stale. This sets the TTL of Cluster-Autoscaler's state if the Cluste-Autoscaler deployment becomes inactive")
 	capacitybufferControllerEnabled              = flag.Bool("capacity-buffer-controller-enabled", false, "Whether to enable the default controller for capacity buffers or not")
@@ -425,6 +426,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		CSINodeAwareSchedulingEnabled:                *enableCSINodeAwareScheduling,
 		ClusterSnapshotParallelism:                   *clusterSnapshotParallelism,
 		PredicateParallelism:                         *predicateParallelism,
+		FastPredicatesEnabled:                        *fastPredicatesEnabled,
 		CheckCapacityProcessorInstance:               *checkCapacityProcessorInstance,
 		MaxInactivityTime:                            *maxInactivityTimeFlag,
 		MaxFailingTime:                               *maxFailingTimeFlag,

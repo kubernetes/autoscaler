@@ -33,8 +33,10 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store/streaming"
 	csinodeprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/provider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
@@ -100,14 +102,20 @@ func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerO
 		opts.AutoscalingKubeClients = ca_context.NewAutoscalingKubeClients(ctx, opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
 	if opts.FrameworkHandle == nil {
-		fwHandle, err := framework.NewHandle(ctx, opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled)
+		fwHandle, err := framework.NewHandle(ctx, opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled, opts.FastPredicatesEnabled)
 		if err != nil {
 			return err
 		}
 		opts.FrameworkHandle = fwHandle
 	}
 	if opts.ClusterSnapshot == nil {
-		opts.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), opts.FrameworkHandle, opts.DynamicResourceAllocationEnabled, opts.PredicateParallelism, opts.CSINodeAwareSchedulingEnabled)
+		var snapshotStore clustersnapshot.ClusterSnapshotStore
+		if opts.FastPredicatesEnabled {
+			snapshotStore = streaming.NewStreamingSnapshotStore()
+		} else {
+			snapshotStore = store.NewBasicSnapshotStore()
+		}
+		opts.ClusterSnapshot = predicate.NewPredicateSnapshot(snapshotStore, opts.FrameworkHandle, opts.DynamicResourceAllocationEnabled, opts.PredicateParallelism, opts.CSINodeAwareSchedulingEnabled)
 	}
 	if opts.RemainingPdbTracker == nil {
 		opts.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()

@@ -34,7 +34,7 @@ import (
 
 	testconfig "k8s.io/autoscaler/cluster-autoscaler/config/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store/streaming"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -170,7 +170,7 @@ func TestRunFiltersOnNode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(tt.customConfig)
+			pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(tt.customConfig, true)
 			assert.NoError(t, err)
 			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(tt.node, tt.scheduledPods...))
 			assert.NoError(t, err)
@@ -271,7 +271,7 @@ func TestRunFilterUntilPassingNode(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(tc.customConfig)
+			pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(tc.customConfig, true)
 			assert.NoError(t, err)
 
 			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(n1000))
@@ -305,7 +305,7 @@ func TestRunFilterUntilPassingNode_NodeOrdering(t *testing.T) {
 		return a.Node().Name > b.Node().Name
 	})
 
-	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil)
+	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil, true)
 	pluginRunner.parallelism = 1 // Parallelism being 1 is essential in this test to make sure we go through nodes in order.
 	assert.NoError(t, err)
 	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n1)))
@@ -361,7 +361,7 @@ func TestRunFilterUntilPassingNode_ExitEarlyWhenOrderingReturnNegativeOne(t *tes
 	n2 := BuildTestNode("n2", 1000, 2000000)
 	n3 := BuildTestNode("n3", 1000, 2000000)
 
-	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil)
+	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil, true)
 	pluginRunner.parallelism = 1
 	assert.NoError(t, err)
 	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n1)))
@@ -395,7 +395,7 @@ func TestRunFilterUntilPassingNode_PreferSmallestSteps(t *testing.T) {
 		return a.Node().Name < b.Node().Name
 	})
 
-	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil)
+	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil, true)
 	pluginRunner.parallelism = 16
 	assert.NoError(t, err)
 	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n1)))
@@ -456,7 +456,7 @@ func TestDebugInfo(t *testing.T) {
 	SetNodeReadyState(node1, true, time.Time{})
 
 	// with default predicate checker
-	defaultPluginRunner, clusterSnapshot, err := newTestPluginRunnerAndSnapshot(nil)
+	defaultPluginRunner, clusterSnapshot, err := newTestPluginRunnerAndSnapshot(nil, true)
 	assert.NoError(t, err)
 
 	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
@@ -487,7 +487,7 @@ func TestDebugInfo(t *testing.T) {
 
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
 	assert.NoError(t, err)
-	customPluginRunner, clusterSnapshot, err := newTestPluginRunnerAndSnapshot(customConfig)
+	customPluginRunner, clusterSnapshot, err := newTestPluginRunnerAndSnapshot(customConfig, true)
 	assert.NoError(t, err)
 
 	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
@@ -497,7 +497,7 @@ func TestDebugInfo(t *testing.T) {
 	assert.Nil(t, predicateErr)
 }
 
-func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfiguration) (*SchedulerPluginRunner, clustersnapshot.ClusterSnapshot, error) {
+func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfiguration, fastPredicatesEnabled bool) (*SchedulerPluginRunner, clustersnapshot.ClusterSnapshot, error) {
 	if schedConfig == nil {
 		defaultConfig, err := scheduler_config_latest.Default()
 		if err != nil {
@@ -506,11 +506,11 @@ func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfigurati
 		schedConfig = defaultConfig
 	}
 
-	fwHandle, err := framework.NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true, false)
+	fwHandle, err := framework.NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true, false, fastPredicatesEnabled)
 	if err != nil {
 		return nil, nil, err
 	}
-	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, false)
+	snapshot := NewPredicateSnapshot(streaming.NewStreamingSnapshotStore(), fwHandle, fastPredicatesEnabled, 1, false)
 	return NewSchedulerPluginRunner(fwHandle, snapshot, 1), snapshot, nil
 }
 
@@ -535,33 +535,45 @@ func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
 	lastNode := BuildTestNode(lastNodeName, 1000, 1000)
 	nodes = append(nodes, lastNode)
 
-	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil)
-	assert.NoError(b, err)
-
-	for _, node := range nodes {
-		err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, podsOnNodes[node.Name]...))
-		assert.NoError(b, err)
-	}
-
-	testCases := []struct {
-		parallelism int
+	testConfigs := []struct {
+		name                  string
+		fastPredicatesEnabled bool
 	}{
-		{parallelism: 1},
-		{parallelism: 2},
-		{parallelism: 4},
-		{parallelism: 8},
-		{parallelism: 16},
+		{name: "Before (Default Plugins)", fastPredicatesEnabled: false},
+		{name: "After (Fast O(1) Predicates)", fastPredicatesEnabled: true},
 	}
 
-	for _, tc := range testCases {
-		b.Run(fmt.Sprintf("parallelism-%d", tc.parallelism), func(b *testing.B) {
-			pluginRunner.parallelism = tc.parallelism
-			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
-				_, _, err := pluginRunner.RunFiltersUntilPassingNode(pod, clustersnapshot.SchedulingOptions{
-					NodeOrdering: clustersnapshot.NewLastIndexOrderMapping(1),
-				})
+	for _, config := range testConfigs {
+		b.Run(config.name, func(b *testing.B) {
+			pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil, config.fastPredicatesEnabled)
+			assert.NoError(b, err)
+
+			for _, node := range nodes {
+				err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, podsOnNodes[node.Name]...))
 				assert.NoError(b, err)
+			}
+
+			testCases := []struct {
+				parallelism int
+			}{
+				{parallelism: 1},
+				{parallelism: 2},
+				{parallelism: 4},
+				{parallelism: 8},
+				{parallelism: 16},
+			}
+
+			for _, tc := range testCases {
+				b.Run(fmt.Sprintf("parallelism-%d", tc.parallelism), func(b *testing.B) {
+					pluginRunner.parallelism = tc.parallelism
+					b.ResetTimer()
+					for i := 0; i < b.N; i++ {
+						_, _, err := pluginRunner.RunFiltersUntilPassingNode(pod, clustersnapshot.SchedulingOptions{
+							NodeOrdering: clustersnapshot.NewLastIndexOrderMapping(1),
+						})
+						assert.NoError(b, err)
+					}
+				})
 			}
 		})
 	}

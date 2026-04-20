@@ -22,6 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -261,6 +262,16 @@ func (snapshot *BasicSnapshotStore) Commit() error {
 func (snapshot *BasicSnapshotStore) Clear() {
 	baseData := newInternalBasicSnapshotData()
 	snapshot.data = []*internalBasicSnapshotData{baseData}
+}
+
+// GetPodInformer returns a SharedInformer for Pods.
+func (snapshot *BasicSnapshotStore) GetPodInformer() cache.SharedInformer {
+	return nil
+}
+
+// GetNodeInformer returns a SharedInformer for Nodes.
+func (snapshot *BasicSnapshotStore) GetNodeInformer() cache.SharedInformer {
+	return nil
 }
 
 // implementation of SharedLister interface

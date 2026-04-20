@@ -17,6 +17,7 @@ limitations under the License.
 package predicate
 
 import (
+	"context"
 	"fmt"
 	"maps"
 	"math/rand"
@@ -35,6 +36,7 @@ import (
 	"k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store/streaming"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
@@ -45,20 +47,18 @@ import (
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
-	"basic": func() (clustersnapshot.ClusterSnapshot, error) {
-		fwHandle, err := framework.NewTestFrameworkHandle()
-		if err != nil {
-			return nil, err
-		}
+var snapshots = map[string]func(t testing.TB) (clustersnapshot.ClusterSnapshot, error){
+	"basic": func(t testing.TB) (clustersnapshot.ClusterSnapshot, error) {
+		fwHandle := framework.NewTestFrameworkHandleOrDie(t)
 		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, true), nil
 	},
-	"delta": func() (clustersnapshot.ClusterSnapshot, error) {
-		fwHandle, err := framework.NewTestFrameworkHandle()
-		if err != nil {
-			return nil, err
-		}
+	"delta": func(t testing.TB) (clustersnapshot.ClusterSnapshot, error) {
+		fwHandle := framework.NewTestFrameworkHandleOrDie(t)
 		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true, 1, true), nil
+	},
+	"streaming": func(t testing.TB) (clustersnapshot.ClusterSnapshot, error) {
+		fwHandle := framework.NewTestFrameworkHandleOrDie(t)
+		return NewPredicateSnapshot(streaming.NewStreamingSnapshotStore(), fwHandle, true, 1, true), nil
 	},
 }
 
@@ -156,8 +156,8 @@ func getSnapshotState(t *testing.T, snapshot clustersnapshot.ClusterSnapshot) sn
 	return snapshotState{nodes: extractNodes(nodes), podsByNode: pods, draSnapshot: snapshot.DraSnapshot(), csiSnapshot: snapshot.CsiSnapshot()}
 }
 
-func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.ClusterSnapshot, error), state snapshotState) clustersnapshot.ClusterSnapshot {
-	snapshot, err := snapshotFactory()
+func startSnapshot(t *testing.T, snapshotFactory func(t testing.TB) (clustersnapshot.ClusterSnapshot, error), state snapshotState) clustersnapshot.ClusterSnapshot {
+	snapshot, err := snapshotFactory(t)
 	assert.NoError(t, err)
 	var pods []*apiv1.Pod
 	for _, nodePods := range state.podsByNode {
@@ -1564,7 +1564,7 @@ func TestNode404(t *testing.T) {
 		for _, op := range ops {
 			t.Run(fmt.Sprintf("%s: %s empty", name, op.name),
 				func(t *testing.T) {
-					snapshot, err := snapshotFactory()
+					snapshot, err := snapshotFactory(t)
 					assert.NoError(t, err)
 
 					// Empty snapshot - shouldn't be able to operate on nodes that are not here.
@@ -1574,7 +1574,7 @@ func TestNode404(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s fork", name, op.name),
 				func(t *testing.T) {
-					snapshot, err := snapshotFactory()
+					snapshot, err := snapshotFactory(t)
 					assert.NoError(t, err)
 
 					node := BuildTestNode("node", 10, 100)
@@ -1602,7 +1602,7 @@ func TestNode404(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s base", name, op.name),
 				func(t *testing.T) {
-					snapshot, err := snapshotFactory()
+					snapshot, err := snapshotFactory(t)
 					assert.NoError(t, err)
 
 					node := BuildTestNode("node", 10, 100)
@@ -1644,7 +1644,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 		for _, op := range ops {
 			t.Run(fmt.Sprintf("%s: %s base", name, op.name),
 				func(t *testing.T) {
-					snapshot, err := snapshotFactory()
+					snapshot, err := snapshotFactory(t)
 					assert.NoError(t, err)
 
 					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
@@ -1657,7 +1657,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s base, forked", name, op.name),
 				func(t *testing.T) {
-					snapshot, err := snapshotFactory()
+					snapshot, err := snapshotFactory(t)
 					assert.NoError(t, err)
 
 					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
@@ -1673,7 +1673,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s fork", name, op.name),
 				func(t *testing.T) {
-					snapshot, err := snapshotFactory()
+					snapshot, err := snapshotFactory(t)
 					assert.NoError(t, err)
 
 					snapshot.Fork()
@@ -1687,7 +1687,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 				})
 			t.Run(fmt.Sprintf("%s: %s committed", name, op.name),
 				func(t *testing.T) {
-					snapshot, err := snapshotFactory()
+					snapshot, err := snapshotFactory(t)
 					assert.NoError(t, err)
 
 					snapshot.Fork()
@@ -1828,7 +1828,7 @@ func TestPVCUsedByPods(t *testing.T) {
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range testcase {
 			t.Run(fmt.Sprintf("%s with snapshot (%s)", tc.desc, snapshotName), func(t *testing.T) {
-				snapshot, err := snapshotFactory()
+				snapshot, err := snapshotFactory(t)
 				assert.NoError(t, err)
 				csiNode := BuildCSINode(tc.node)
 				err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(tc.node, csiNode, tc.pods...))
@@ -1900,7 +1900,7 @@ func TestPVCClearAndFork(t *testing.T) {
 
 	for snapshotName, snapshotFactory := range snapshots {
 		t.Run(fmt.Sprintf("fork and revert snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
-			snapshot, err := snapshotFactory()
+			snapshot, err := snapshotFactory(t)
 			assert.NoError(t, err)
 			csiNode := BuildCSINode(node)
 			err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode, pod1))
@@ -1927,7 +1927,7 @@ func TestPVCClearAndFork(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("clear snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
-			snapshot, err := snapshotFactory()
+			snapshot, err := snapshotFactory(t)
 			assert.NoError(t, err)
 			csiNode := BuildCSINode(node)
 			err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode, pod1))
@@ -2038,7 +2038,7 @@ func TestSetClusterStateConcurrentDRA(t *testing.T) {
 
 	draSnap := drasnapshot.NewSnapshot(claimsMap, nil, nil, nil)
 
-	fwHandle, err := framework.NewTestFrameworkHandle()
+	fwHandle, err := framework.NewTestFrameworkHandle(context.Background())
 	assert.NoError(t, err)
 
 	// Set parallelism to 8 to ensure the workqueue utilizes multiple goroutines.

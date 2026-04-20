@@ -23,6 +23,8 @@ import (
 	resourceapi "k8s.io/api/resource/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sort"
+	"strings"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -178,3 +180,34 @@ func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...
 	}
 	return result
 }
+
+// PodWithNode is a pair of Pod and Node.
+type PodWithNode struct {
+	Pod  *apiv1.Pod
+	Node *apiv1.Node
+}
+
+func (p PodWithNode) ExplicitKey() string {
+	return p.Node.Name + "\x00" + p.Pod.Namespace + "\x00" + p.Pod.Name
+}
+
+// GetPodLabelSetHash returns a deterministic hash of the pod's labels.
+func GetPodLabelSetHash(pod *apiv1.Pod) string {
+	if pod == nil || len(pod.Labels) == 0 {
+		return ""
+	}
+	keys := make([]string, 0, len(pod.Labels))
+	for k := range pod.Labels {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	var sb strings.Builder
+	for _, k := range keys {
+		sb.WriteString(k)
+		sb.WriteString("=")
+		sb.WriteString(pod.Labels[k])
+		sb.WriteString(",")
+	}
+	return sb.String()
+}
+
