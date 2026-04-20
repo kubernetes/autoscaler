@@ -24,6 +24,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	"github.com/stretchr/testify/assert"
@@ -1609,7 +1610,7 @@ func TestWaitForDeleteInstancesWithOperationPreemptedRetry(t *testing.T) {
 	assert.True(t, scaleSet.lastInstanceRefresh.IsZero())
 
 	// Create a poller that returns an OperationPreempted error on PollUntilDone
-	preemptedPoller := newTestPollerWithError(errors.New("Operation execution has been preempted by a more recent operation"))
+	preemptedPoller := newTestPollerWithError(&azcore.ResponseError{ErrorCode: "OperationPreempted"})
 
 	// Act: the initial PollUntilDone fails with OperationPreempted, triggering a retry.
 	// The retry calls deleteInstances which returns (nil, nil) from the mock — retryPoller is nil,
@@ -1737,7 +1738,7 @@ func TestWaitForDeleteInstancesRetryFailure(t *testing.T) {
 	assert.True(t, scaleSet.lastInstanceRefresh.IsZero())
 
 	// Create a poller that returns OperationPreempted
-	preemptedPoller := newTestPollerWithError(errors.New("Operation execution has been preempted by a more recent operation"))
+	preemptedPoller := newTestPollerWithError(&azcore.ResponseError{ErrorCode: "OperationPreempted"})
 
 	// Act: PollUntilDone fails with OperationPreempted, retry is attempted but deleteInstances fails.
 	// Should fall through to the error path and invalidate cache.
