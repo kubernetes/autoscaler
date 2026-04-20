@@ -94,6 +94,8 @@ const (
 	RancherProviderName = "rancher"
 	// UthoProviderName gets the provider name of utho
 	UthoProviderName = "utho"
+	// NebiusProviderName gets the provider name of nebius
+	NebiusProviderName = "nebius"
 )
 
 // GpuConfig contains the label, type and the resource name for a GPU.
