@@ -198,7 +198,8 @@ func (m *Manager) Refresh() error {
 			PageToken: pageToken,
 		})
 		if err != nil {
-			klog.Warningf("Failed to list instances for parent %s: %v. Node membership detection may be limited.", m.parentID, err)
+			klog.Warningf("Failed to list instances for parent %s: %v. Node membership detection will be unavailable.", m.parentID, err)
+			allInstances = nil
 			break
 		}
 		allInstances = append(allInstances, resp.GetItems()...)
