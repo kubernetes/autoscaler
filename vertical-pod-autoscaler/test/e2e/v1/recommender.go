@@ -41,6 +41,7 @@ import (
 	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
+	"k8s.io/utils/ptr"
 )
 
 func init() {
@@ -239,6 +240,28 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 	ginkgo.It("serves recommendation", func() {
 		ginkgo.By("Waiting for recommendation to be filled")
 		_, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	// FIXME: Move this to an integration test once we have integration test available
+	ginkgo.It("sets observedGeneration and conditions.observedGeneration", func() {
+		ginkgo.By("Waiting for observedGeneration to be updated")
+
+		_, err := utils.WaitForVPAMatch(vpaClientSet, vpaCRD, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
+			return vpa.Generation > 0 && ptr.Deref(vpa.Status.ObservedGeneration, 0) == vpa.Generation
+		})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Waiting for conditions.observedGeneration to be updated")
+		_, err = utils.WaitForVPAMatch(vpaClientSet, vpaCRD, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
+			for _, cond := range vpa.Status.Conditions {
+				if cond.ObservedGeneration == 0 || cond.ObservedGeneration != vpa.Generation {
+					return false
+				}
+			}
+			return true
+		})
+
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
