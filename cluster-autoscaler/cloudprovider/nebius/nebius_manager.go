@@ -1,5 +1,5 @@
 /*
-Copyright 2024 The Kubernetes Authors.
+Copyright 2025 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
+	"sync"
 
 	gosdk "github.com/nebius/gosdk"
 	computev1 "github.com/nebius/gosdk/proto/nebius/compute/v1"
@@ -44,6 +46,7 @@ type nebiusAPI interface {
 	ListInstances(ctx context.Context, req *computev1.ListInstancesRequest) (*computev1.ListInstancesResponse, error)
 	GetNodeGroup(ctx context.Context, req *mk8sv1.GetNodeGroupRequest) (*mk8sv1.NodeGroup, error)
 	UpdateNodeGroup(ctx context.Context, req *mk8sv1.UpdateNodeGroupRequest) error
+	DeleteInstance(ctx context.Context, req *computev1.DeleteInstanceRequest) error
 }
 
 // nebiusSDKClient implements nebiusAPI using the real Nebius SDK.
@@ -68,6 +71,11 @@ func (c *nebiusSDKClient) UpdateNodeGroup(ctx context.Context, req *mk8sv1.Updat
 	return err
 }
 
+func (c *nebiusSDKClient) DeleteInstance(ctx context.Context, req *computev1.DeleteInstanceRequest) error {
+	_, err := c.sdk.Services().Compute().V1().Instance().Delete(ctx, req)
+	return err
+}
+
 // Config is the configuration for the Nebius cloud provider.
 type Config struct {
 	// ClusterID is the ID of the Nebius MK8S cluster.
@@ -88,6 +96,7 @@ type Config struct {
 // Manager handles Nebius communication and data caching of
 // node groups (node groups in MK8S).
 type Manager struct {
+	mu         sync.Mutex
 	client     nebiusAPI
 	closer     io.Closer // SDK closer for Cleanup()
 	clusterID  string
@@ -178,6 +187,9 @@ func (m *Manager) Refresh() error {
 	}
 
 	// List all instances in the parent folder to cache instance membership, handling pagination.
+	// NOTE: The Nebius ListInstances API does not support filtering by label,
+	// so we must list all instances and filter client-side. Instances not belonging
+	// to any node group are discarded below.
 	var allInstances []*computev1.Instance
 	pageToken = ""
 	for {
@@ -197,7 +209,7 @@ func (m *Manager) Refresh() error {
 	}
 
 	// Build instance map by node group ID.
-	instancesByNodeGroup := make(map[string][]string)
+	instancesByNodeGroup := make(map[string]map[string]struct{})
 	for _, instance := range allInstances {
 		if instance.GetMetadata() == nil {
 			continue
@@ -205,7 +217,10 @@ func (m *Manager) Refresh() error {
 		labels := instance.GetMetadata().GetLabels()
 		if ngID, ok := labels[nodeGroupIDLabel]; ok && ngID != "" {
 			provID := toProviderID(instance.GetMetadata().GetId())
-			instancesByNodeGroup[ngID] = append(instancesByNodeGroup[ngID], provID)
+			if instancesByNodeGroup[ngID] == nil {
+				instancesByNodeGroup[ngID] = make(map[string]struct{})
+			}
+			instancesByNodeGroup[ngID][provID] = struct{}{}
 		}
 	}
 
@@ -218,7 +233,7 @@ func (m *Manager) Refresh() error {
 		minSize := defaultMinSize
 		maxSize := defaultMaxSize
 
-		// Default min/max from autoscaling spec.
+		// Read min/max from autoscaling spec.
 		if autoscaling := ng.GetSpec().GetAutoscaling(); autoscaling != nil {
 			if autoscaling.GetMinNodeCount() > 0 {
 				minSize = int(autoscaling.GetMinNodeCount())
@@ -230,6 +245,9 @@ func (m *Manager) Refresh() error {
 
 		ngID := ng.GetMetadata().GetId()
 		instances := instancesByNodeGroup[ngID]
+		if instances == nil {
+			instances = make(map[string]struct{})
+		}
 
 		klog.V(4).Infof("Adding node group: id=%q name=%q min=%d max=%d instances=%d",
 			ngID, ng.GetMetadata().GetName(), minSize, maxSize, len(instances))
@@ -248,11 +266,26 @@ func (m *Manager) Refresh() error {
 		klog.V(4).Info("No node groups found for cluster")
 	}
 
+	m.mu.Lock()
 	m.nodeGroups = groups
+	m.mu.Unlock()
 	return nil
 }
 
+// nodeGroups returns a snapshot of the current node groups.
+func (m *Manager) getNodeGroups() []*NodeGroup {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.nodeGroups
+}
+
 // setNodeGroupSize updates the node group's target size via the Nebius API.
+//
+// The Nebius MK8S API uses a oneOf for node group size: either Autoscaling{min, max}
+// or FixedNodeCount. There is no "desired count" field within the autoscaling spec.
+// To set a specific target size, we must switch to FixedNodeCount mode. On the next
+// Refresh(), min/max will fall back to defaults until autoscaling is re-enabled
+// externally.
 func (m *Manager) setNodeGroupSize(nodeGroupID string, targetSize int) error {
 	ctx := context.Background()
 
@@ -265,14 +298,12 @@ func (m *Manager) setNodeGroupSize(nodeGroupID string, targetSize int) error {
 	}
 
 	// Build update request with new fixed node count.
-	// NOTE: This switches the node group from autoscaling mode to fixed mode.
 	// We preserve the existing spec template and strategy.
 	spec := ng.GetSpec()
 	if spec == nil {
 		spec = &mk8sv1.NodeGroupSpec{}
 	}
 
-	// Set the fixed node count.
 	fixedCount := int64(targetSize)
 	updateReq := &mk8sv1.UpdateNodeGroupRequest{
 		Metadata: ng.GetMetadata(),
@@ -293,20 +324,28 @@ func (m *Manager) setNodeGroupSize(nodeGroupID string, targetSize int) error {
 	return nil
 }
 
+// deleteInstances deletes specific compute instances by their provider IDs and
+// then updates the node group target size to reflect the removal.
+func (m *Manager) deleteInstances(nodeGroupID string, providerIDs []string, newTargetSize int) error {
+	ctx := context.Background()
+
+	for _, providerID := range providerIDs {
+		instanceID := strings.TrimPrefix(providerID, nebiusProviderIDPrefix)
+		if err := m.client.DeleteInstance(ctx, &computev1.DeleteInstanceRequest{
+			Id: instanceID,
+		}); err != nil {
+			return fmt.Errorf("failed to delete instance %s from node group %s: %w", instanceID, nodeGroupID, err)
+		}
+		klog.V(4).Infof("Deleted instance %s from node group %s", instanceID, nodeGroupID)
+	}
+
+	return m.setNodeGroupSize(nodeGroupID, newTargetSize)
+}
+
 // Cleanup cleans up resources used by the manager.
 func (m *Manager) Cleanup() error {
 	if m.closer != nil {
 		return m.closer.Close()
-	}
-	return nil
-}
-
-// getNodeGroupForInstance finds the node group for a given instance provider ID.
-func (m *Manager) getNodeGroupForInstance(providerID string) *NodeGroup {
-	for _, ng := range m.nodeGroups {
-		if ng.hasInstance(providerID) {
-			return ng
-		}
 	}
 	return nil
 }

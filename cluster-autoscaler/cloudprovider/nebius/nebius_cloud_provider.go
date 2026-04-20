@@ -1,5 +1,5 @@
 /*
-Copyright 2024 The Kubernetes Authors.
+Copyright 2025 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -67,8 +67,9 @@ func (d *nebiusCloudProvider) Name() string {
 
 // NodeGroups returns all node groups configured for this cloud provider.
 func (d *nebiusCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	nodeGroups := make([]cloudprovider.NodeGroup, len(d.manager.nodeGroups))
-	for i, ng := range d.manager.nodeGroups {
+	groups := d.manager.getNodeGroups()
+	nodeGroups := make([]cloudprovider.NodeGroup, len(groups))
+	for i, ng := range groups {
 		nodeGroups[i] = ng
 	}
 	return nodeGroups
@@ -78,9 +79,11 @@ func (d *nebiusCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
 func (d *nebiusCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	groups := d.manager.getNodeGroups()
+
 	// Check node labels for node group ID.
 	if nodeGroupID, ok := node.Labels[nodeGroupIDLabel]; ok {
-		for _, ng := range d.manager.nodeGroups {
+		for _, ng := range groups {
 			if ng.id == nodeGroupID {
 				return ng, nil
 			}
@@ -93,7 +96,7 @@ func (d *nebiusCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.
 		return nil, nil
 	}
 
-	for _, ng := range d.manager.nodeGroups {
+	for _, ng := range groups {
 		if ng.hasInstance(providerID) {
 			return ng, nil
 		}

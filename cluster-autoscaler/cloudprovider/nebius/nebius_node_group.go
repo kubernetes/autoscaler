@@ -1,5 +1,5 @@
 /*
-Copyright 2024 The Kubernetes Authors.
+Copyright 2025 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package nebius
 import (
 	"fmt"
 
-	apiv1 "k8s.io/api/core/v1"
 	mk8sv1 "github.com/nebius/gosdk/proto/nebius/mk8s/v1"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -36,7 +36,7 @@ type NodeGroup struct {
 	nodeGroup *mk8sv1.NodeGroup
 	minSize   int
 	maxSize   int
-	instances []string // cached list of provider IDs
+	instances map[string]struct{} // cached set of provider IDs
 }
 
 // MaxSize returns maximum size of the node group.
@@ -89,10 +89,9 @@ func (n *NodeGroup) AtomicIncreaseSize(delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
-// DeleteNodes deletes nodes from this node group (and also decreasing the size
-// of the node group with that). Error is returned either on failure or if the
-// given node doesn't belong to this node group. This function should wait
-// until node group size is updated. Implementation required.
+// DeleteNodes deletes nodes from this node group. Each node is deleted via the
+// Nebius Compute API by its specific instance ID, then the node group target
+// size is updated to reflect the removal.
 func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	currentSize, err := n.TargetSize()
 	if err != nil {
@@ -105,8 +104,16 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 			currentSize, len(nodes), n.MinSize())
 	}
 
+	var providerIDs []string
+	for _, node := range nodes {
+		if node.Spec.ProviderID == "" {
+			return fmt.Errorf("node %s has no provider ID", node.Name)
+		}
+		providerIDs = append(providerIDs, node.Spec.ProviderID)
+	}
+
 	klog.V(4).Infof("Deleting %d nodes from node group %s (new size: %d)", len(nodes), n.id, newSize)
-	return n.manager.setNodeGroupSize(n.id, newSize)
+	return n.manager.deleteInstances(n.id, providerIDs, newSize)
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
@@ -154,7 +161,7 @@ func (n *NodeGroup) Debug() string {
 // Other fields are optional.
 func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	instances := make([]cloudprovider.Instance, 0, len(n.instances))
-	for _, providerID := range n.instances {
+	for providerID := range n.instances {
 		instances = append(instances, cloudprovider.Instance{
 			Id: providerID,
 		})
@@ -202,10 +209,6 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 
 // hasInstance returns true if the node group contains the given provider ID.
 func (n *NodeGroup) hasInstance(providerID string) bool {
-	for _, id := range n.instances {
-		if id == providerID {
-			return true
-		}
-	}
-	return false
+	_, ok := n.instances[providerID]
+	return ok
 }
