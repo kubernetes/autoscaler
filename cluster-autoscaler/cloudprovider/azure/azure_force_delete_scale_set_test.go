@@ -20,6 +20,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -78,18 +79,18 @@ func TestIsOperationPreempted(t *testing.T) {
 		assert.Equal(t, isOperationPreempted(err), false)
 	})
 
-	t.Run("should return true for exact preempted message", func(t *testing.T) {
-		err := errors.New("Operation execution has been preempted by a more recent operation")
+	t.Run("should return true for azcore.ResponseError with OperationPreempted code", func(t *testing.T) {
+		err := &azcore.ResponseError{ErrorCode: "OperationPreempted"}
 		assert.Equal(t, isOperationPreempted(err), true)
 	})
 
-	t.Run("should return true for case-varied message", func(t *testing.T) {
-		err := errors.New("OPERATION EXECUTION HAS BEEN PREEMPTED BY A MORE RECENT OPERATION")
-		assert.Equal(t, isOperationPreempted(err), true)
+	t.Run("should return false for azcore.ResponseError with different code", func(t *testing.T) {
+		err := &azcore.ResponseError{ErrorCode: "SomeOtherError"}
+		assert.Equal(t, isOperationPreempted(err), false)
 	})
 
-	t.Run("should return true for embedded message", func(t *testing.T) {
-		err := errors.New("Azure error: Operation execution has been preempted by a more recent operation: details here")
+	t.Run("should return true for plain error containing OperationPreempted code", func(t *testing.T) {
+		err := errors.New("Code: OperationPreempted, Message: operation was preempted")
 		assert.Equal(t, isOperationPreempted(err), true)
 	})
 }
