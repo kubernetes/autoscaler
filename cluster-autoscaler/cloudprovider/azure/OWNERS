@@ -1,16 +1,14 @@
 approvers:
-- feiskyer
-- nilo19
 - tallaxes
 - comtalyst
 - jackfrancis
 reviewers:
-- feiskyer
-- nilo19
 - tallaxes
 - comtalyst
 - jackfrancis
 emeritus_approvers:
+- nilo19 # 2026-04-16
+- feisker #2026-04-16
 - marwanad
 
 labels:
