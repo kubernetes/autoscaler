@@ -21,7 +21,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
@@ -126,4 +130,128 @@ func generateStatuses(n int, result status.ScaleUpResult) []*status.ScaleUpStatu
 		statuses[i] = &status.ScaleUpStatus{Result: result, ScaleUpError: scaleUpErr}
 	}
 	return statuses
+}
+
+func TestGroupPodsByPodSet(t *testing.T) {
+	makePod := func(name, prName string) *apiv1.Pod {
+		return &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: name,
+				Annotations: map[string]string{
+					v1.ProvisioningRequestPodAnnotationKey: prName,
+				},
+			},
+		}
+	}
+	makeProvReq := func(name string, podSets ...v1.PodSet) *provreqwrapper.ProvisioningRequest {
+		return &provreqwrapper.ProvisioningRequest{
+			ProvisioningRequest: &v1.ProvisioningRequest{
+				ObjectMeta: metav1.ObjectMeta{Name: name},
+				Spec: v1.ProvisioningRequestSpec{
+					PodSets: podSets,
+				},
+			},
+		}
+	}
+
+	testCases := []struct {
+		name     string
+		pods     []*apiv1.Pod
+		provReq  *provreqwrapper.ProvisioningRequest
+		expected map[int][]string // podset index -> pod names
+	}{
+		{
+			name: "groups pods by podset index",
+			pods: []*apiv1.Pod{
+				makePod("my-pr-0-0", "my-pr"),
+				makePod("my-pr-0-1", "my-pr"),
+				makePod("my-pr-1-0", "my-pr"),
+			},
+			provReq: makeProvReq("my-pr",
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "workers"}, Count: 2},
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps"}, Count: 1},
+			),
+			expected: map[int][]string{
+				0: {"my-pr-0-0", "my-pr-0-1"},
+				1: {"my-pr-1-0"},
+			},
+		},
+		{
+			name: "filters pods from other ProvReqs",
+			pods: []*apiv1.Pod{
+				makePod("my-pr-0-0", "my-pr"),
+				makePod("other-pr-0-1", "other-pr"),
+			},
+			provReq: makeProvReq("my-pr",
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "workers"}, Count: 1},
+			),
+			expected: map[int][]string{
+				0: {"my-pr-0-0"},
+			},
+		},
+		{
+			name: "ignores pods with non-matching name pattern",
+			pods: []*apiv1.Pod{
+				makePod("my-pr-0-0", "my-pr"),
+				makePod("no-index-suffix", "my-pr"),
+			},
+			provReq: makeProvReq("my-pr",
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "workers"}, Count: 1},
+			),
+			expected: map[int][]string{
+				0: {"my-pr-0-0"},
+			},
+		},
+		{
+			name: "multi-digit podset indices",
+			pods: []*apiv1.Pod{
+				makePod("my-pr-0-0", "my-pr"),
+				makePod("my-pr-10-0", "my-pr"),
+				makePod("my-pr-10-1", "my-pr"),
+				makePod("my-pr-2-5", "my-pr"),
+			},
+			provReq: makeProvReq("my-pr",
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps0"}, Count: 1},
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps1"}, Count: 1},
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps2"}, Count: 1},
+				// podsets 3-9 have no pods
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps3"}, Count: 1},
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps4"}, Count: 1},
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps5"}, Count: 1},
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps6"}, Count: 1},
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps7"}, Count: 1},
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps8"}, Count: 1},
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps9"}, Count: 1},
+				v1.PodSet{PodTemplateRef: v1.Reference{Name: "ps10"}, Count: 2},
+			),
+			expected: map[int][]string{
+				0:  {"my-pr-0-0"},
+				2:  {"my-pr-2-5"},
+				10: {"my-pr-10-0", "my-pr-10-1"},
+			},
+		},
+		{
+			name:     "empty pod list",
+			pods:     []*apiv1.Pod{},
+			provReq:  makeProvReq("my-pr", v1.PodSet{PodTemplateRef: v1.Reference{Name: "workers"}, Count: 1}),
+			expected: map[int][]string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			result := groupPodsByPodSet(tc.pods, tc.provReq)
+			resultNames := make(map[int][]string)
+			for idx, pods := range result {
+				names := make([]string, len(pods))
+				for i, p := range pods {
+					names[i] = p.Name
+				}
+				resultNames[idx] = names
+			}
+			assert.Equal(t, tc.expected, resultNames)
+		})
+	}
 }
