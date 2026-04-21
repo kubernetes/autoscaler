@@ -437,6 +437,105 @@ status:
 	}
 }
 
+func TestOOMNotDoubleCountedAcrossCrashLoopBackoff(t *testing.T) {
+	// After a container is OOMKilled and enters CrashLoopBackOff, the
+	// subsequent Waiting -> Running transition keeps lastState.terminated
+	// set to the previous OOMKill. That previous OOM has already been
+	// recorded as isNewOOM on the preceding Running -> Terminated
+	// transition, so this update must NOT emit a second OOM event.
+	oldPod, err := newPod(`
+apiVersion: v1
+kind: Pod
+metadata:
+  name: Pod1
+  namespace: mockNamespace
+spec:
+  containers:
+  - name: Name11
+    resources:
+      requests:
+        memory: "1024"
+status:
+  containerStatuses:
+  - name: Name11
+    restartCount: 3
+    state:
+      waiting:
+        reason: CrashLoopBackOff
+    lastState:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+        reason: OOMKilled
+`)
+	assert.NoError(t, err)
+	newPod, err := newPod(`
+apiVersion: v1
+kind: Pod
+metadata:
+  name: Pod1
+  namespace: mockNamespace
+spec:
+  containers:
+  - name: Name11
+    resources:
+      requests:
+        memory: "1024"
+status:
+  containerStatuses:
+  - name: Name11
+    restartCount: 4
+    state:
+      running:
+        startedAt: 2018-02-23T13:40:00Z
+    lastState:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+        reason: OOMKilled
+`)
+	assert.NoError(t, err)
+	observer := NewObserver()
+	observer.OnUpdate(oldPod, newPod)
+	assert.Empty(t, observer.observedOomsChannel)
+}
+
+func TestOOMNotDoubleCountedOnInformerRelist(t *testing.T) {
+	// An informer relist can deliver an update whose old and new states are
+	// identical — the container is in Running with lastState.terminated set
+	// to an OOMKill that has already been processed. Such an update must NOT
+	// emit a second OOM event.
+	podYaml := `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: Pod1
+  namespace: mockNamespace
+spec:
+  containers:
+  - name: Name11
+    resources:
+      requests:
+        memory: "1024"
+status:
+  containerStatuses:
+  - name: Name11
+    restartCount: 1
+    state:
+      running:
+        startedAt: 2018-02-23T13:38:50Z
+    lastState:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+        reason: OOMKilled
+`
+	oldPod, err := newPod(podYaml)
+	assert.NoError(t, err)
+	newPod, err := newPod(podYaml)
+	assert.NoError(t, err)
+	observer := NewObserver()
+	observer.OnUpdate(oldPod, newPod)
+	assert.Empty(t, observer.observedOomsChannel)
+}
+
 func TestOOMStateAfterTerminatedState(t *testing.T) {
 	p1, err := newPod(`
 apiVersion: v1

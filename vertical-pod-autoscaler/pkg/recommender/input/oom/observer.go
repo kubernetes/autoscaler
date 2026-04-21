@@ -144,7 +144,6 @@ func (o *observer) OnUpdate(oldObj, newObj any) {
 			continue
 		}
 
-		oldNotTerminated := oldStatus.State.Terminated == nil
 		restartCountIncreased := containerStatus.RestartCount > oldStatus.RestartCount
 
 		// Check if container changes state from non-Terminated to Terminated
@@ -154,14 +153,17 @@ func (o *observer) OnUpdate(oldObj, newObj any) {
 		// We check for this case as well.
 		isNewOOM := containerStatus.State.Terminated != nil &&
 			containerStatus.State.Terminated.Reason == "OOMKilled" &&
-			(oldNotTerminated || restartCountIncreased)
+			(oldStatus.State.Terminated == nil || restartCountIncreased)
 
 		// If controller restarts container, it may skip
 		// Terminated state and change directly from Running
 		// to Running with increased RestartCount. In this
-		// case we check LastTerminationState.
+		// case we check LastTerminationState. We require the
+		// old state to be Running, not just non-Terminated,
+		// to avoid double-counting on a Waiting -> Running
+		// transition after CrashLoopBackOff.
 		isPreviousOOM := containerStatus.State.Running != nil &&
-			oldNotTerminated &&
+			oldStatus.State.Running != nil &&
 			restartCountIncreased &&
 			containerStatus.LastTerminationState.Terminated != nil &&
 			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled"
