@@ -154,7 +154,6 @@ func run(ctx context.Context, healthCheck *metrics.HealthCheck, config *recommen
 	)
 
 	if err != nil {
-		close(stopCh) // Clean up any started routines
 		klog.ErrorS(err, "Failed to create recommender controller")
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}

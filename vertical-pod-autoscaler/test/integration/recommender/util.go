@@ -29,11 +29,11 @@ import (
 
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	"k8s.io/apiextensions-apiserver/test/integration/fixtures"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/util/wait"
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
-	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -94,17 +94,31 @@ func loadCRDs(path string) ([]*apiextensionsv1.CustomResourceDefinition, error) 
 	return crds, nil
 }
 
+func createAndWaitForCRD(crd *apiextensionsv1.CustomResourceDefinition, client apiextensionsclient.Interface) error {
+	_, err := client.ApiextensionsV1().CustomResourceDefinitions().Create(context.TODO(), crd, metav1.CreateOptions{})
+	if err != nil {
+		return err
+	}
+	return wait.PollUntilContextTimeout(context.TODO(), 500*time.Millisecond, 30*time.Second, false, func(ctx context.Context) (bool, error) {
+		got, err := client.ApiextensionsV1().CustomResourceDefinitions().Get(context.TODO(), crd.Name, metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+		for _, cond := range got.Status.Conditions {
+			if cond.Type == apiextensionsv1.Established && cond.Status == apiextensionsv1.ConditionTrue {
+				return true, nil
+			}
+		}
+		return false, nil
+	})
+}
+
 func installVPACRDs(t *testing.T, config *rest.Config) {
 	t.Helper()
 
 	crdClient, err := apiextensionsclient.NewForConfig(config)
 	if err != nil {
 		t.Fatalf("Error creating apiextensions client: %v", err)
-	}
-
-	dynamicClient, err := dynamic.NewForConfig(config)
-	if err != nil {
-		t.Fatalf("Error creating dynamic client: %v", err)
 	}
 
 	_, thisFile, _, _ := aruntime.Caller(0)
@@ -116,13 +130,15 @@ func installVPACRDs(t *testing.T, config *rest.Config) {
 	}
 
 	for _, crd := range crds {
-		_, _ = fixtures.CreateNewV1CustomResourceDefinition(crd, crdClient, dynamicClient)
+		err := createAndWaitForCRD(crd, crdClient)
+		if err != nil {
+			t.Fatalf("Error creating CRDs: %v", err)
+		}
 	}
 }
 
 func recommenderSetup(t *testing.T, recommenderConfig *recommender_config.RecommenderConfig) (context.Context, kubeapiservertesting.TearDownFunc, *routines.RecommenderController, informers.SharedInformerFactory, clientset.Interface, *vpa_clientset.Clientset) {
 	tCtx := ktesting.Init(t)
-	// Disable ServiceAccount admission plugin as we don't have serviceaccount controller running.
 	server := kubeapiservertesting.StartTestServerOrDie(t, nil, framework.DefaultTestServerFlags(), framework.SharedEtcd())
 
 	config := rest.CopyConfig(server.ClientConfig)
@@ -141,9 +157,10 @@ func recommenderSetup(t *testing.T, recommenderConfig *recommender_config.Recomm
 	vpaClientConfig.ContentType = "application/json"
 
 	vpaClient := vpa_clientset.NewForConfigOrDie(rest.AddUserAgent(vpaClientConfig, "vpa-updater-vpa-client"))
-	healthCheck := metrics.NewHealthCheck(1 * 5)
 
 	recommenderConfig.MetricsFetcherInterval = 1 * time.Second // Short interval for testing
+
+	healthCheck := metrics.NewHealthCheck(recommenderConfig.MetricsFetcherInterval * 5)
 
 	stopCh := make(chan struct{})
 

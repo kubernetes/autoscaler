@@ -28,7 +28,6 @@ import (
 	"k8s.io/klog/v2"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	recommender_config "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/config"
@@ -168,7 +167,7 @@ func NewRecommenderController(
 		UpdateWorkerCount:            config.UpdateWorkerCount,
 	}.Make()
 
-	if err := initHistoryProvider(ctx, recommender, config, commonFlags); err != nil {
+	if err := initHistoryProvider(ctx, recommender, config); err != nil {
 		return nil, err
 	}
 
@@ -209,7 +208,7 @@ func initGlobalMaxAllowed(config *recommender_config.RecommenderConfig) corev1.R
 	return result
 }
 
-func initHistoryProvider(ctx context.Context, rec Recommender, config *recommender_config.RecommenderConfig, commonFlags *common.CommonFlags) error {
+func initHistoryProvider(ctx context.Context, rec Recommender, config *recommender_config.RecommenderConfig) error {
 	useCheckpoints := config.Storage != "prometheus"
 	if useCheckpoints {
 		rec.GetClusterStateFeeder().InitFromCheckpoints(ctx)
@@ -232,7 +231,7 @@ func initHistoryProvider(ctx context.Context, rec Recommender, config *recommend
 			CtrPodNameLabel:        config.CtrPodNameLabel,
 			CtrNameLabel:           config.CtrNameLabel,
 			CadvisorMetricsJobName: config.PrometheusJobName,
-			Namespace:              commonFlags.VpaObjectNamespace,
+			Namespace:              config.CommonFlags.VpaObjectNamespace,
 			Authentication: history.PrometheusCredentials{
 				BearerToken: config.PrometheusBearerToken,
 				Username:    config.Username,
