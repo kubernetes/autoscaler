@@ -99,6 +99,11 @@ type PredicateEvaluator struct {
 	presence  fort.BTreeMap[[]int32]
 	forbidden fort.BTreeMap[[]int32]
 
+	// presenceModified and forbiddenModified track which slices were already
+	// cloned in the current fork to avoid redundant allocations.
+	presenceModified  map[string]bool
+	forbiddenModified map[string]bool
+
 	// hashDomainCounts tracks how many pods of a specific type (hash) exist in each domain.
 	// podHash\x00domain -> count
 	hashDomainCounts *common.PatchSet[string, int32]
@@ -134,6 +139,8 @@ func NewPredicateEvaluator(podInformer, nodeInformer cache.SharedInformer) *Pred
 		termLabelIndex:      common.NewPatchSet[string, []int](),
 		presence:            fort.NewBTreeMap[[]int32](),
 		forbidden:           fort.NewBTreeMap[[]int32](),
+		presenceModified:    make(map[string]bool),
+		forbiddenModified:   make(map[string]bool),
 		hashDomainCounts:    common.NewPatchSet[string, int32](),
 		hashDomains:         common.NewPatchSet[string, []string](),
 		hashRepresentatives: common.NewPatchSet[string, *apiv1.Pod](),
@@ -384,7 +391,10 @@ func (e *PredicateEvaluator) updatePresence(domain string, matchingTerms []int, 
 		return
 	}
 	m, _ := e.presence.Get(domain)
-	m = cloneCounts(m, len(e.termsByID))
+	if !e.presenceModified[domain] || len(m) < len(e.termsByID) {
+		m = cloneCounts(m, len(e.termsByID))
+		e.presenceModified[domain] = true
+	}
 	for _, id := range matchingTerms {
 		m[id] += delta
 	}
@@ -398,7 +408,10 @@ func (e *PredicateEvaluator) updateForbidden(nodeLabels map[string]string, owned
 		if topoVal, ok := nodeLabels[term.TopologyKey]; ok {
 			key := term.TopologyKey + "\x00" + topoVal
 			f, _ := e.forbidden.Get(key)
-			f = cloneCounts(f, len(e.termsByID))
+			if !e.forbiddenModified[key] || len(f) < len(e.termsByID) {
+				f = cloneCounts(f, len(e.termsByID))
+				e.forbiddenModified[key] = true
+			}
 			f[id] += delta
 			e.forbidden.Set(key, f)
 		}
@@ -525,6 +538,8 @@ func (e *PredicateEvaluator) Clear() {
 	e.complexTerms = nil
 	e.presence = fort.NewBTreeMap[[]int32]()
 	e.forbidden = fort.NewBTreeMap[[]int32]()
+	e.presenceModified = make(map[string]bool)
+	e.forbiddenModified = make(map[string]bool)
 	e.hashDomainCounts = common.NewPatchSet[string, int32]()
 	e.hashDomains = common.NewPatchSet[string, []string]()
 	e.hashRepresentatives = common.NewPatchSet[string, *apiv1.Pod]()
@@ -553,6 +568,8 @@ func (e *PredicateEvaluator) Fork(newPods, newNodes cache.SharedInformer) *Predi
 		complexTerms:        make([]int, len(e.complexTerms)),
 		presence:            e.presence.Clone(),
 		forbidden:           e.forbidden.Clone(),
+		presenceModified:    make(map[string]bool),
+		forbiddenModified:   make(map[string]bool),
 		hashDomainCounts:    e.hashDomainCounts,
 		hashDomains:         e.hashDomains,
 		hashRepresentatives: e.hashRepresentatives,
