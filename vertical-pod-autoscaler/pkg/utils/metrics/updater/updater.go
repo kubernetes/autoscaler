@@ -56,7 +56,7 @@ var (
 		prometheus.GaugeOpts{
 			Namespace: metricsNamespace,
 			Name:      "evictable_pods_total",
-			Help:      "Number of Pods matching evicition criteria.",
+			Help:      "Number of Pods matching eviction criteria.",
 		}, []string{"vpa_size_log2", "update_mode"},
 	)
 
