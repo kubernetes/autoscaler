@@ -37,7 +37,10 @@ func init() {
 	utilruntime.Must(corev1.AddToScheme(scheme))
 }
 
-const runningPodYaml = `
+// podYamlHeader is the common metadata/spec prefix for all pod fixtures in
+// this file. Every YAML below appends only the containerStatus fields that
+// distinguish the scenario.
+const podYamlHeader = `
 apiVersion: v1
 kind: Pod
 metadata:
@@ -54,26 +57,96 @@ status:
   - name: Name11
 `
 
-const oomPodYaml = `
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
+const (
+	runningPodYaml = podYamlHeader
+
+	oomPodYaml = podYamlHeader + `
     state:
       terminated:
         finishedAt: 2018-02-23T13:38:48Z
         reason: OOMKilled
 `
+
+	runningBeforeOOMRestartYaml = podYamlHeader + `
+    restartCount: 0
+    state:
+      running:
+        startedAt: 2018-02-23T13:00:00Z
+`
+
+	runningAfterOOMRestartYaml = podYamlHeader + `
+    restartCount: 1
+    state:
+      running:
+        startedAt: 2018-02-23T13:38:50Z
+    lastState:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+        reason: OOMKilled
+`
+
+	runningAfterNonOOMRestartYaml = podYamlHeader + `
+    restartCount: 1
+    state:
+      running:
+        startedAt: 2018-02-23T13:38:50Z
+    lastState:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+        reason: Error
+`
+
+	terminatedBeforeFastRestartYaml = podYamlHeader + `
+    restartCount: 0
+    state:
+      terminated:
+        finishedAt: 2018-02-23T13:00:00Z
+        reason: Error
+`
+
+	terminatedAfterFastRestartYaml = podYamlHeader + `
+    restartCount: 1
+    state:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+        reason: OOMKilled
+`
+
+	terminatedNonOOMYaml = podYamlHeader + `
+    state:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+        reason: Error
+`
+
+	terminatedNoReasonYaml = podYamlHeader + `
+    state:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+`
+
+	waitingCrashLoopOOMYaml = podYamlHeader + `
+    restartCount: 3
+    state:
+      waiting:
+        reason: CrashLoopBackOff
+    lastState:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+        reason: OOMKilled
+`
+
+	runningAfterCrashLoopYaml = podYamlHeader + `
+    restartCount: 4
+    state:
+      running:
+        startedAt: 2018-02-23T13:40:00Z
+    lastState:
+      terminated:
+        finishedAt: 2018-02-23T13:38:48Z
+        reason: OOMKilled
+`
+)
 
 func newPod(yaml string) (*corev1.Pod, error) {
 	decode := codecs.UniversalDeserializer().Decode
@@ -82,6 +155,15 @@ func newPod(yaml string) (*corev1.Pod, error) {
 		return nil, err
 	}
 	return obj.(*corev1.Pod), nil
+}
+
+func mustNewPod(t *testing.T, yaml string) *corev1.Pod {
+	t.Helper()
+	pod, err := newPod(yaml)
+	if err != nil {
+		t.Fatalf("failed to parse pod YAML: %v", err)
+	}
+	return pod
 }
 
 func newEvent(yaml string) (*corev1.Event, error) {
@@ -93,195 +175,115 @@ func newEvent(yaml string) (*corev1.Event, error) {
 	return obj.(*corev1.Event), nil
 }
 
-func TestOOMReceived(t *testing.T) {
-	p1, err := newPod(runningPodYaml)
-	assert.NoError(t, err)
-	p2, err := newPod(oomPodYaml)
-	assert.NoError(t, err)
+func TestOOMObserverOnUpdate(t *testing.T) {
 	timestamp, err := time.Parse(time.RFC3339, "2018-02-23T13:38:48Z")
 	assert.NoError(t, err)
 
-	testCases := []struct {
-		desc        string
-		oldPod      *corev1.Pod
-		newPod      *corev1.Pod
-		wantOOMInfo OomInfo
-	}{
-		{
-			desc:   "OK",
-			oldPod: p1,
-			newPod: p2,
-			wantOOMInfo: OomInfo{
-				ContainerID: model.ContainerID{
-					ContainerName: "Name11",
-					PodID: model.PodID{
-						Namespace: "mockNamespace",
-						PodName:   "Pod1",
-					},
-				},
-				Memory:    model.ResourceAmount(int64(1024)),
-				Timestamp: timestamp,
-			},
-		},
-		{
-			desc:   "New pod does not set memory requests",
-			oldPod: p1,
-			newPod: func() *corev1.Pod {
-				newPod := p2.DeepCopy()
-				newPod.Spec.Containers[0].Resources.Requests = nil
-				newPod.Status.ContainerStatuses[0].Resources = nil
-				return newPod
-			}(),
-			wantOOMInfo: OomInfo{
-				ContainerID: model.ContainerID{
-					ContainerName: "Name11",
-					PodID: model.PodID{
-						Namespace: "mockNamespace",
-						PodName:   "Pod1",
-					},
-				},
-				Memory:    model.ResourceAmount(int64(0)),
-				Timestamp: timestamp,
-			},
-		},
-		{
-			desc:   "New pod also set memory request in containerStatus, prefer info from containerStatus",
-			oldPod: p1,
-			newPod: func() *corev1.Pod {
-				newPod := p2.DeepCopy()
-				newPod.Status.ContainerStatuses[0].Resources = &corev1.ResourceRequirements{
-					Requests: corev1.ResourceList{
-						corev1.ResourceMemory: resource.MustParse("2048"),
-					},
-				}
-				return newPod
-			}(),
-			wantOOMInfo: OomInfo{
-				ContainerID: model.ContainerID{
-					ContainerName: "Name11",
-					PodID: model.PodID{
-						Namespace: "mockNamespace",
-						PodName:   "Pod1",
-					},
-				},
-				Memory:    model.ResourceAmount(int64(2048)),
-				Timestamp: timestamp,
-			},
+	containerID := model.ContainerID{
+		ContainerName: "Name11",
+		PodID: model.PodID{
+			Namespace: "mockNamespace",
+			PodName:   "Pod1",
 		},
 	}
-	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
-			observer := NewObserver()
-			observer.OnUpdate(tc.oldPod, tc.newPod)
-			info := <-observer.observedOomsChannel
-			assert.Equal(t, tc.wantOOMInfo, info)
-		})
+	wantOOM := func(memory int64) *OomInfo {
+		return &OomInfo{
+			ContainerID: containerID,
+			Memory:      model.ResourceAmount(memory),
+			Timestamp:   timestamp,
+		}
 	}
-}
-
-func TestOOMReceivedPreviousOOM(t *testing.T) {
-	oldPodYaml := `
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
-    restartCount: 0
-    state:
-      running:
-        startedAt: 2018-02-23T13:00:00Z
-`
-	newPodYaml := `
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
-    restartCount: 1
-    state:
-      running:
-        startedAt: 2018-02-23T13:38:50Z
-    lastState:
-      terminated:
-        finishedAt: 2018-02-23T13:38:48Z
-        reason: OOMKilled
-`
-	timestamp, err := time.Parse(time.RFC3339, "2018-02-23T13:38:48Z")
-	assert.NoError(t, err)
+	setContainerStatusMemory := func(quantity string) func(*corev1.Pod) {
+		return func(pod *corev1.Pod) {
+			pod.Status.ContainerStatuses[0].Resources = &corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse(quantity),
+				},
+			}
+		}
+	}
 
 	testCases := []struct {
 		desc        string
+		oldPodYaml  string
+		newPodYaml  string
 		mutateOld   func(*corev1.Pod)
 		mutateNew   func(*corev1.Pod)
-		wantOOMInfo OomInfo
+		wantOOMInfo *OomInfo // nil => expect no OOM event
 	}{
 		{
-			desc: "OK",
-			wantOOMInfo: OomInfo{
-				ContainerID: model.ContainerID{
-					ContainerName: "Name11",
-					PodID: model.PodID{
-						Namespace: "mockNamespace",
-						PodName:   "Pod1",
-					},
-				},
-				Memory:    model.ResourceAmount(int64(1024)),
-				Timestamp: timestamp,
-			},
+			desc:        "Running -> Terminated OOMKilled records a new OOM",
+			oldPodYaml:  runningPodYaml,
+			newPodYaml:  oomPodYaml,
+			wantOOMInfo: wantOOM(1024),
 		},
 		{
-			desc: "Resources are read from oldPod, not newPod",
-			mutateOld: func(pod *corev1.Pod) {
-				pod.Status.ContainerStatuses[0].Resources = &corev1.ResourceRequirements{
-					Requests: corev1.ResourceList{
-						corev1.ResourceMemory: resource.MustParse("2048"),
-					},
-				}
-			},
+			desc:       "isNewOOM reads zero memory when new pod has no requests",
+			oldPodYaml: runningPodYaml,
+			newPodYaml: oomPodYaml,
 			mutateNew: func(pod *corev1.Pod) {
-				pod.Status.ContainerStatuses[0].Resources = &corev1.ResourceRequirements{
-					Requests: corev1.ResourceList{
-						corev1.ResourceMemory: resource.MustParse("4096"),
-					},
-				}
+				pod.Spec.Containers[0].Resources.Requests = nil
+				pod.Status.ContainerStatuses[0].Resources = nil
 			},
-			wantOOMInfo: OomInfo{
-				ContainerID: model.ContainerID{
-					ContainerName: "Name11",
-					PodID: model.PodID{
-						Namespace: "mockNamespace",
-						PodName:   "Pod1",
-					},
-				},
-				Memory:    model.ResourceAmount(int64(2048)),
-				Timestamp: timestamp,
-			},
+			wantOOMInfo: wantOOM(0),
+		},
+		{
+			desc:        "isNewOOM prefers containerStatus.resources over spec.resources",
+			oldPodYaml:  runningPodYaml,
+			newPodYaml:  oomPodYaml,
+			mutateNew:   setContainerStatusMemory("2048"),
+			wantOOMInfo: wantOOM(2048),
+		},
+		{
+			desc:        "Running -> Running with OOM lastState records a previous OOM",
+			oldPodYaml:  runningBeforeOOMRestartYaml,
+			newPodYaml:  runningAfterOOMRestartYaml,
+			wantOOMInfo: wantOOM(1024),
+		},
+		{
+			desc:        "isPreviousOOM reads resources from oldPod, not newPod",
+			oldPodYaml:  runningBeforeOOMRestartYaml,
+			newPodYaml:  runningAfterOOMRestartYaml,
+			mutateOld:   setContainerStatusMemory("2048"),
+			mutateNew:   setContainerStatusMemory("4096"),
+			wantOOMInfo: wantOOM(2048),
+		},
+		{
+			desc:        "Terminated non-OOM -> Terminated OOMKilled with restart records a new OOM",
+			oldPodYaml:  terminatedBeforeFastRestartYaml,
+			newPodYaml:  terminatedAfterFastRestartYaml,
+			wantOOMInfo: wantOOM(1024),
+		},
+		{
+			desc:       "Running -> Terminated with non-OOM reason is ignored",
+			oldPodYaml: runningPodYaml,
+			newPodYaml: terminatedNonOOMYaml,
+		},
+		{
+			desc:       "Running -> Running with non-OOM lastState is ignored",
+			oldPodYaml: runningPodYaml,
+			newPodYaml: runningAfterNonOOMRestartYaml,
+		},
+		{
+			desc:       "Waiting(CrashLoopBackOff) -> Running with OOM lastState is not double-counted",
+			oldPodYaml: waitingCrashLoopOOMYaml,
+			newPodYaml: runningAfterCrashLoopYaml,
+		},
+		{
+			desc:       "Informer relist emitting identical Running state is not double-counted",
+			oldPodYaml: runningAfterOOMRestartYaml,
+			newPodYaml: runningAfterOOMRestartYaml,
+		},
+		{
+			desc:       "Terminated -> Terminated OOMKilled without restart is ignored",
+			oldPodYaml: terminatedNoReasonYaml,
+			newPodYaml: oomPodYaml,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			oldPod, err := newPod(oldPodYaml)
-			assert.NoError(t, err)
-			newPod, err := newPod(newPodYaml)
-			assert.NoError(t, err)
+			oldPod := mustNewPod(t, tc.oldPodYaml)
+			newPod := mustNewPod(t, tc.newPodYaml)
 			if tc.mutateOld != nil {
 				tc.mutateOld(oldPod)
 			}
@@ -290,280 +292,14 @@ status:
 			}
 			observer := NewObserver()
 			observer.OnUpdate(oldPod, newPod)
+			if tc.wantOOMInfo == nil {
+				assert.Empty(t, observer.observedOomsChannel)
+				return
+			}
 			info := <-observer.observedOomsChannel
-			assert.Equal(t, tc.wantOOMInfo, info)
+			assert.Equal(t, *tc.wantOOMInfo, info)
 		})
 	}
-}
-
-func TestOOMReceivedFastRestart(t *testing.T) {
-	// Container went Terminated -> Terminated (OOMKilled) with RestartCount
-	// bumped, skipping the Running state entirely. This happens when the
-	// container fails very fast after restart.
-	oldPod, err := newPod(`
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
-    restartCount: 0
-    state:
-      terminated:
-        finishedAt: 2018-02-23T13:00:00Z
-        reason: Error
-`)
-	assert.NoError(t, err)
-	newPod, err := newPod(`
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
-    restartCount: 1
-    state:
-      terminated:
-        finishedAt: 2018-02-23T13:38:48Z
-        reason: OOMKilled
-`)
-	assert.NoError(t, err)
-	timestamp, err := time.Parse(time.RFC3339, "2018-02-23T13:38:48Z")
-	assert.NoError(t, err)
-
-	observer := NewObserver()
-	observer.OnUpdate(oldPod, newPod)
-	info := <-observer.observedOomsChannel
-	assert.Equal(t, OomInfo{
-		ContainerID: model.ContainerID{
-			ContainerName: "Name11",
-			PodID: model.PodID{
-				Namespace: "mockNamespace",
-				PodName:   "Pod1",
-			},
-		},
-		Memory:    model.ResourceAmount(int64(1024)),
-		Timestamp: timestamp,
-	}, info)
-}
-
-func TestNonOOMTerminationIgnored(t *testing.T) {
-	runningRestarted := `
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
-    restartCount: 1
-    state:
-      running:
-        startedAt: 2018-02-23T13:38:50Z
-    lastState:
-      terminated:
-        finishedAt: 2018-02-23T13:38:48Z
-        reason: Error
-`
-	terminatedNonOOM := `
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
-    state:
-      terminated:
-        finishedAt: 2018-02-23T13:38:48Z
-        reason: Error
-`
-	testCases := []struct {
-		desc       string
-		oldPodYaml string
-		newPodYaml string
-	}{
-		{
-			desc:       "Running -> Terminated with non-OOM reason",
-			oldPodYaml: runningPodYaml,
-			newPodYaml: terminatedNonOOM,
-		},
-		{
-			desc:       "Running -> Running with restart but non-OOM lastState",
-			oldPodYaml: runningPodYaml,
-			newPodYaml: runningRestarted,
-		},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
-			oldPod, err := newPod(tc.oldPodYaml)
-			assert.NoError(t, err)
-			newPod, err := newPod(tc.newPodYaml)
-			assert.NoError(t, err)
-			observer := NewObserver()
-			observer.OnUpdate(oldPod, newPod)
-			assert.Empty(t, observer.observedOomsChannel)
-		})
-	}
-}
-
-func TestOOMNotDoubleCountedAcrossCrashLoopBackoff(t *testing.T) {
-	// After a container is OOMKilled and enters CrashLoopBackOff, the
-	// subsequent Waiting -> Running transition keeps lastState.terminated
-	// set to the previous OOMKill. That previous OOM has already been
-	// recorded as isNewOOM on the preceding Running -> Terminated
-	// transition, so this update must NOT emit a second OOM event.
-	oldPod, err := newPod(`
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
-    restartCount: 3
-    state:
-      waiting:
-        reason: CrashLoopBackOff
-    lastState:
-      terminated:
-        finishedAt: 2018-02-23T13:38:48Z
-        reason: OOMKilled
-`)
-	assert.NoError(t, err)
-	newPod, err := newPod(`
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
-    restartCount: 4
-    state:
-      running:
-        startedAt: 2018-02-23T13:40:00Z
-    lastState:
-      terminated:
-        finishedAt: 2018-02-23T13:38:48Z
-        reason: OOMKilled
-`)
-	assert.NoError(t, err)
-	observer := NewObserver()
-	observer.OnUpdate(oldPod, newPod)
-	assert.Empty(t, observer.observedOomsChannel)
-}
-
-func TestOOMNotDoubleCountedOnInformerRelist(t *testing.T) {
-	// An informer relist can deliver an update whose old and new states are
-	// identical — the container is in Running with lastState.terminated set
-	// to an OOMKill that has already been processed. Such an update must NOT
-	// emit a second OOM event.
-	podYaml := `
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
-    restartCount: 1
-    state:
-      running:
-        startedAt: 2018-02-23T13:38:50Z
-    lastState:
-      terminated:
-        finishedAt: 2018-02-23T13:38:48Z
-        reason: OOMKilled
-`
-	oldPod, err := newPod(podYaml)
-	assert.NoError(t, err)
-	newPod, err := newPod(podYaml)
-	assert.NoError(t, err)
-	observer := NewObserver()
-	observer.OnUpdate(oldPod, newPod)
-	assert.Empty(t, observer.observedOomsChannel)
-}
-
-func TestOOMStateAfterTerminatedState(t *testing.T) {
-	p1, err := newPod(`
-apiVersion: v1
-kind: Pod
-metadata:
-  name: Pod1
-  namespace: mockNamespace
-spec:
-  containers:
-  - name: Name11
-    resources:
-      requests:
-        memory: "1024"
-status:
-  containerStatuses:
-  - name: Name11
-    state:
-      terminated:
-        finishedAt: 2018-02-23T13:38:48Z
-`)
-	assert.NoError(t, err)
-	p2, err := newPod(oomPodYaml)
-	assert.NoError(t, err)
-	observer := NewObserver()
-	observer.OnUpdate(p1, p2)
-
-	// No OOM event should be sent if previous state was also "terminated".
-	assert.Empty(t, observer.observedOomsChannel)
 }
 
 func TestParseEvictionEvent(t *testing.T) {
