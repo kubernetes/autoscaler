@@ -20,6 +20,7 @@ import (
 	"time"
 
 	gce_localssdsize "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
+	"k8s.io/autoscaler/cluster-autoscaler/diagnostics"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 )
@@ -105,6 +106,8 @@ func NewDefaultNodeGroupDifferenceRatios() NodeGroupDifferenceRatios {
 
 // AutoscalingOptions contain various options to customize how autoscaling works
 type AutoscalingOptions struct {
+	// DiagnosticConfig holds configuration for the diagnostic system.
+	DiagnosticConfig diagnostics.Config
 	// NodeGroupDefaults are default values for per NodeGroup options.
 	// They will be used any time a specific value is not provided for a given NodeGroup.
 	NodeGroupDefaults NodeGroupAutoscalingOptions

@@ -39,7 +39,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/flags"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/diagnostics"
 	"k8s.io/autoscaler/cluster-autoscaler/loop"
+
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
@@ -124,6 +126,23 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 		klog.Fatalf("Failed to autoscaler background components: %v", err)
 	}
 
+	runAutoscalerOnce := func(ctx context.Context, lastRun time.Time) {
+		loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+	}
+
+	if autoscalingOpts.DiagnosticConfig.Directory != "" {
+		sink, err := diagnostics.NewFileSink(autoscalingOpts.DiagnosticConfig.Directory)
+		if err != nil {
+			klog.Fatalf("Failed to create diagnostic sink: %v", err)
+		}
+		diagnosticManager := diagnostics.NewManager(sink, autoscalingOpts.DiagnosticConfig)
+		runAutoscalerOnce = func(ctx context.Context, lastRun time.Time) {
+			diagnosticManager.RunWithDiagnostic(ctx, func() {
+				loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+			})
+		}
+	}
+
 	err = mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
 		// Autoscale ad infinitum.
 		if autoscalingOpts.FrequentLoopsEnabled {
@@ -139,7 +158,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 				default:
 					trigger.Wait(previousRun)
 					previousRun, lastRun = lastRun, time.Now()
-					loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+					runAutoscalerOnce(ctx, lastRun)
 				}
 			}
 		} else {
@@ -149,7 +168,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 					// TODO: handle graceful shutdown with context
 					return nil
 				case <-time.After(autoscalingOpts.ScanInterval):
-					loop.RunAutoscalerOnce(autoscaler, healthCheck, time.Now())
+					runAutoscalerOnce(ctx, time.Now())
 				}
 			}
 		}
