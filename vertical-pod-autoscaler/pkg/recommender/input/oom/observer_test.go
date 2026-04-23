@@ -148,22 +148,14 @@ const (
 `
 )
 
-func newPod(yaml string) (*corev1.Pod, error) {
+func mustNewPod(t *testing.T, yaml string) *corev1.Pod {
+	t.Helper()
 	decode := codecs.UniversalDeserializer().Decode
 	obj, _, err := decode([]byte(yaml), nil, nil)
 	if err != nil {
-		return nil, err
-	}
-	return obj.(*corev1.Pod), nil
-}
-
-func mustNewPod(t *testing.T, yaml string) *corev1.Pod {
-	t.Helper()
-	pod, err := newPod(yaml)
-	if err != nil {
 		t.Fatalf("failed to parse pod YAML: %v", err)
 	}
-	return pod
+	return obj.(*corev1.Pod)
 }
 
 func newEvent(yaml string) (*corev1.Event, error) {
