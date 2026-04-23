@@ -483,6 +483,20 @@ func TestClusterStateFeeder_LoadPods_ContainerTracking(t *testing.T) {
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].InitContainers), 2)
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].Containers), 2)
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].InitContainers), 0)
+
+	// Re-loading the same pods must not cause the init container list to grow.
+	// This guards against a regression where LoadPods appended to the existing
+	// slice on every invocation, leading to unbounded growth over time.
+	feeder.LoadPods()
+	feeder.LoadPods()
+
+	assert.Equal(t, len(feeder.clusterState.Pods()), 2)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].InitContainers), 2)
+	assert.ElementsMatch(t,
+		[]string{"init1", "init2"},
+		feeder.clusterState.Pods()[podWithInitContainersID].InitContainers,
+	)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].InitContainers), 0)
 }
 
 func TestClusterStateFeeder_LoadPods_MemorySaverMode(t *testing.T) {
