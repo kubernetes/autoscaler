@@ -282,6 +282,6 @@ func ValidateRecommenderConfig(config *RecommenderConfig) {
 			klog.ErrorS(err, "Unable to read bearer token file", "filename", config.PrometheusBearerTokenFile)
 			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
-		config.PrometheusBearerTokenFile = strings.TrimSpace(string(fileContent))
+		config.PrometheusBearerToken = strings.TrimSpace(string(fileContent))
 	}
 }
