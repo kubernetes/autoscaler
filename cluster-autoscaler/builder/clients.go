@@ -53,6 +53,9 @@ func (b *AutoscalerBuilder) buildProvisioningRequest(
 	} else {
 		var err error
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
+		// Use a static JSON content type config for ProvisioningRequest CRD data exchange
+		// to adhere to CRD requirements.
+		restConfig.ContentType = "application/json"
 		prClient, err = provreqclientset.NewForConfig(restConfig)
 		if err != nil {
 			return nil, err
