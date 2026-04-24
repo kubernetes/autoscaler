@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Copyright 2014 The Kubernetes Authors.
+# Copyright The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@ set -o nounset
 
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
 
-pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler
-go test -count=1  -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e | grep -v integration)
-popd
-pushd ${CONTRIB_ROOT}/vertical-pod-autoscaler/e2e
-go test -run=None ./...
-popd
+cd $CONTRIB_ROOT
+
+go test -count=1  -race $(go list ./... | grep integration)
