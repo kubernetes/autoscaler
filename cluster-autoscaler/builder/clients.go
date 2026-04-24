@@ -53,6 +53,9 @@ func (b *AutoscalerBuilder) buildProvisioningRequest(
 	} else {
 		var err error
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
+		// ProvisioningRequests are CRDs, which only support JSON serialization.
+		// Override the content type so protobuf can still be used for all other traffic.
+		restConfig.ContentType = "application/json"
 		prClient, err = provreqclientset.NewForConfig(restConfig)
 		if err != nil {
 			return nil, err

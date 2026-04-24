@@ -326,9 +326,98 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 	return scaleSet.setScaleSetSize(size+int64(delta), delta)
 }
 
-// AtomicIncreaseSize is not implemented.
+// AtomicIncreaseSize increases the VMSS capacity by delta and blocks until the
+// VMSS update operation completes. This ensures that the capacity change has been
+// fully applied by Azure before returning.
+//
+// On success, the VMSS capacity has been updated and new VM instances have been
+// created (though they may still be booting/joining the cluster). On failure, all
+// caches are invalidated so CA fetches fresh state from Azure.
+//
+// Note: this intentionally deviates from the NodeGroup interface comment that says
+// "doesn't wait until the new instances appear" — the blocking behavior is required
+// for atomic-scale-up ProvisioningRequest support to provide a capacity guarantee
+// before workloads are admitted.
 func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
-	return cloudprovider.ErrNotImplemented
+	if delta <= 0 {
+		return fmt.Errorf("size increase must be positive")
+	}
+
+	size, err := scaleSet.getScaleSetSize()
+	if err != nil {
+		return err
+	}
+
+	if size == -1 {
+		return fmt.Errorf("the scale set %s is under initialization, skipping AtomicIncreaseSize", scaleSet.Name)
+	}
+
+	if int(size)+delta > scaleSet.MaxSize() {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
+	}
+
+	newSize := size + int64(delta)
+
+	vmssInfo, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		return err
+	}
+
+	// Build the update request from copied values, not the cached object,
+	// to avoid other readers observing the new capacity before it's confirmed.
+	op := armcompute.VirtualMachineScaleSet{
+		Name:     vmssInfo.Name,
+		Location: vmssInfo.Location,
+		SKU: &armcompute.SKU{
+			Name:     vmssInfo.SKU.Name,
+			Tier:     vmssInfo.SKU.Tier,
+			Capacity: &newSize,
+		},
+	}
+
+	if vmssInfo.ExtendedLocation != nil {
+		op.ExtendedLocation = &armcompute.ExtendedLocation{
+			Name: vmssInfo.ExtendedLocation.Name,
+			Type: vmssInfo.ExtendedLocation.Type,
+		}
+	}
+
+	klog.V(3).Infof("AtomicIncreaseSize: requesting atomic scale-up of %d instances for scale set %q (current size: %d, new size: %d)",
+		delta, scaleSet.Name, size, newSize)
+
+	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
+	defer cancel()
+
+	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginCreateOrUpdate(
+		ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op, nil)
+	if err != nil {
+		klog.Errorf("AtomicIncreaseSize: BeginCreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
+		return err
+	}
+
+	if poller != nil {
+		klog.V(3).Infof("AtomicIncreaseSize: waiting for VMSS %q capacity update to complete", scaleSet.Name)
+		_, err = poller.PollUntilDone(ctx, nil)
+		scaleSet.invalidateInstanceCache()
+		if err != nil {
+			klog.Errorf("AtomicIncreaseSize: VMSS %q capacity update failed during polling: %v", scaleSet.Name, err)
+			scaleSet.invalidateLastSizeRefreshWithLock()
+			scaleSet.manager.invalidateCache()
+			return fmt.Errorf("AtomicIncreaseSize: VMSS %q capacity update failed: %w", scaleSet.Name, err)
+		}
+	}
+
+	// Only update the size cache after the operation has successfully completed.
+	scaleSet.sizeMutex.Lock()
+	vmssSizeMutex.Lock()
+	vmssInfo.SKU.Capacity = &newSize
+	vmssSizeMutex.Unlock()
+	scaleSet.curSize = newSize
+	scaleSet.lastSizeRefresh = time.Now()
+	scaleSet.sizeMutex.Unlock()
+
+	klog.V(3).Infof("AtomicIncreaseSize: VMSS %q capacity update completed successfully (new size: %d)", scaleSet.Name, newSize)
+	return nil
 }
 
 // GetScaleSetVms returns list of nodes for the given scale set (includes InstanceView for power state).
