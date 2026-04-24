@@ -14,7 +14,7 @@
 Sure, here's the enhancement proposal in the requested format:
 
 ## Summary
-- **Goals:** The goal of this enhancement is to improve the user experience for applying nanny configuration changes in the addon-resizer 1.8 when used with the metrics server. The proposed solution involves automatically reloading the nanny configuration whenever changes occur, eliminating the need for manual intervention and sidecar containers. 
+- **Goals:** The goal of this enhancement is to improve the user experience for applying nanny configuration changes in the addon-resizer 1.8 when used with the metrics server. The proposed solution involves automatically reloading the nanny configuration whenever changes occur, eliminating the need for manual intervention and sidecar containers.
 - **Non-Goals:** This proposal does not aim to update the functional behavior of the addon-resizer.
 
 ## Proposal

@@ -25,4 +25,3 @@ find "$vendor_path" -type d -empty -delete
 
 echo "# Rewriting module path"
 find "$vendor_path" -type f -exec sed -i "s@${original_module_path}@${vendor_module_path}@g" {} +
-

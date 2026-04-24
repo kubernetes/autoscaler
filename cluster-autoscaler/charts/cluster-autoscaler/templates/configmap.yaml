@@ -4,7 +4,7 @@ kind: ConfigMap
 metadata:
   name: {{ .Values.kwokConfigMapName | default "kwok-provider-config" }}
   namespace: {{ .Release.Namespace }}
-data: 
+data:
   config: |-
     # if you see '\n' everywhere, remove all the trailing spaces
     apiVersion: v1alpha1
@@ -38,13 +38,13 @@ data:
     # # you can also disable installing kwok in CA code (and install your own kwok release)
     # kwok:
     #   install: false (true if not specified)
---- 
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: kwok-provider-templates
   namespace: {{ .Release.Namespace }}
-data: 
+data:
   templates: |-
     # if you see '\n' everywhere, remove all the trailing spaces
     apiVersion: v1
@@ -412,5 +412,5 @@ data:
     metadata:
       resourceVersion: ""
 
-    
+
 {{- end }}

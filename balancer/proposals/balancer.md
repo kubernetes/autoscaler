@@ -1,50 +1,50 @@
 
-# KEP - Balancer 
+# KEP - Balancer
 
 ## Introduction
 
-One of the problems that the users are facing when running Kubernetes deployments is how to 
-deploy pods across several domains and keep them balanced and autoscaled at the same time. 
+One of the problems that the users are facing when running Kubernetes deployments is how to
+deploy pods across several domains and keep them balanced and autoscaled at the same time.
 These domains may include:
 
 * Cloud provider zones inside a single region, to ensure that the application is still up and running, even if one of the zones has issues.
-* Different types of Kubernetes nodes. These may involve nodes that are spot/preemptible, or of different machine families. 
+* Different types of Kubernetes nodes. These may involve nodes that are spot/preemptible, or of different machine families.
 
-A single Kubernetes deployment may either leave the placement entirely up to the scheduler 
-(most likely leading to something not entirely desired, like all pods going to a single domain) or 
-focus on a single domain (thus not achieving the goal of being in two or more domains). 
+A single Kubernetes deployment may either leave the placement entirely up to the scheduler
+(most likely leading to something not entirely desired, like all pods going to a single domain) or
+focus on a single domain (thus not achieving the goal of being in two or more domains).
 
-PodTopologySpreading solves the problem a bit, but not completely. It allows only even spreading 
-and once the deployment gets skewed it doesn’t do anything to rebalance. Pod topology spreading 
-(with skew and/or ScheduleAnyway flag) is also just a hint, if skewed placement is available and 
-allowed then Cluster Autoscaler is not triggered and the user ends up with a skewed deployment. 
+PodTopologySpreading solves the problem a bit, but not completely. It allows only even spreading
+and once the deployment gets skewed it doesn’t do anything to rebalance. Pod topology spreading
+(with skew and/or ScheduleAnyway flag) is also just a hint, if skewed placement is available and
+allowed then Cluster Autoscaler is not triggered and the user ends up with a skewed deployment.
 A user could specify a strict pod topolog spreading but then, in case of problems the deployment
-would not move its pods to the domains that are available. The growth of the deployment would also 
+would not move its pods to the domains that are available. The growth of the deployment would also
 be totally blocked as the available domains would be too much skewed.
 
-Thus, if full flexibility is needed, the only option is to have multiple deployments, targeting 
-different domains. This setup however creates one big problem. How to consistently autoscale multiple 
-deployments? The simplest idea - having multiple HPAs is not stable, due to different loads, race 
-conditions or so, some domains may grow while the others are shrunk. As HPAs and deployments are 
-not connected anyhow, the skewed setup will not fix itself automatically. It may eventually come to 
-a semi-balanced state but it is not guaranteed. 
+Thus, if full flexibility is needed, the only option is to have multiple deployments, targeting
+different domains. This setup however creates one big problem. How to consistently autoscale multiple
+deployments? The simplest idea - having multiple HPAs is not stable, due to different loads, race
+conditions or so, some domains may grow while the others are shrunk. As HPAs and deployments are
+not connected anyhow, the skewed setup will not fix itself automatically. It may eventually come to
+a semi-balanced state but it is not guaranteed.
 
 
 Thus there is a need for some component that will:
 
 * Keep multiple deployments aligned. For example it may keep an equal ratio between the number of
 pods in one deployment and the other. Or put everything to the first and overflow to the second and so on.
-* React to individual deployment problems should it be zone outage or lack of spot/preemptible vms. 
+* React to individual deployment problems should it be zone outage or lack of spot/preemptible vms.
 * Actively try to rebalance and get to the desired layout.
 * Allow to autoscale all deployments with a single target, while maintaining the placement policy.
 
-## Balancer 
+## Balancer
 
-Balancer is a stand-alone controller, living in userspace (or in control plane, if needed) exposing 
-a CRD API object, also called Balancer. Each balancer object has pointers to multiple deployments 
-or other pod-controlling objects that expose the Scale subresource. Balancer periodically checks 
-the number of running and problematic pods inside each of the targets, compares it with the desired 
-number of replicas, constraints and policies and adjusts the number of replicas on the targets, 
+Balancer is a stand-alone controller, living in userspace (or in control plane, if needed) exposing
+a CRD API object, also called Balancer. Each balancer object has pointers to multiple deployments
+or other pod-controlling objects that expose the Scale subresource. Balancer periodically checks
+the number of running and problematic pods inside each of the targets, compares it with the desired
+number of replicas, constraints and policies and adjusts the number of replicas on the targets,
 should some of them run too many or too few of them. To allow being an HPA target Balancer itself
 exposes the Scale subresource.
 
@@ -66,7 +66,7 @@ type Balancer struct {
    // +optional
    Status BalancerStatus
 }
- 
+
 // BalancerSpec is the specification of the Balancer behavior.
 type BalancerSpec struct {
    // Targets is a list of targets between which Balancer tries to distribute
@@ -84,7 +84,7 @@ type BalancerSpec struct {
    // Policy defines how the balancer should distribute replicas among targets.
    Policy BalancerPolicy
 }
- 
+
 // BalancerTarget is the declaration of one of the targets between which the balancer
 // tries to distribute replicas.
 type BalancerTarget struct {
@@ -105,14 +105,14 @@ type BalancerTarget struct {
    // +optional
    MaxReplicas *int32
 }
- 
+
 // BalancerPolicyName is the name of the balancer Policy.
 type BalancerPolicyName string
 const (
    PriorityPolicyName     BalancerPolicyName = "priority"
    ProportionalPolicyName BalancerPolicyName = "proportional"
 )
- 
+
 // BalancerPolicy defines Balancer policy for replica distribution.
 type BalancerPolicy struct {
    // PolicyName decides how to balance replicas across the targets.
@@ -131,7 +131,7 @@ type BalancerPolicy struct {
    // +optional
    Fallback *Fallback
 }
- 
+
 // PriorityPolicy contains details for Priority-based policy for Balancer.
 type PriorityPolicy struct {
    // TargetOrder is the priority-based list of Balancer targets names. The first target
@@ -141,7 +141,7 @@ type PriorityPolicy struct {
    // list, and/or total Balancer's replica count.
    TargetOrder []string
 }
- 
+
 // ProportionalPolicy contains details for Proportion-based policy for Balancer.
 type ProportionalPolicy struct {
    // TargetProportions is a map from Balancer targets names to rates. Replicas are
@@ -152,7 +152,7 @@ type ProportionalPolicy struct {
    // of the total Balancer's replica count, proportions or the presence in the map.
    TargetProportions map[string]int32
 }
- 
+
 // Fallback contains information how to recognize and handle replicas
 // that failed to start within the specified time period.
 type Fallback struct {
@@ -162,7 +162,7 @@ type Fallback struct {
    // may be stopped.
    StartupTimeout metav1.Duration
 }
- 
+
 // BalancerStatus describes the Balancer runtime state.
 type BalancerStatus struct {
    // Replicas is an actual number of observed pods matching Balancer selector.

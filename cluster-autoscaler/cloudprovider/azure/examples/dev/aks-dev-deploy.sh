@@ -75,7 +75,7 @@ exit
 
 # To recover access after restarting codespace with existing AKS and ACR:
 # az login & az account set -n ...
-# az aks get-credentials -n cas-test -g $CODESPACE_NAME 
+# az aks get-credentials -n cas-test -g $CODESPACE_NAME
 # ACR_NAME=$(echo "$CODESPACE_NAME" | tr -d -)
 # az acr login -n $ACR_NAME
 # skaffold config set default-repo "${ACR_NAME}.azurecr.io/cluster-autoscaler"

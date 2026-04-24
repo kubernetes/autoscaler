@@ -17,8 +17,8 @@
 
 - [ ] E2e test implemented and healthy
 - [ ] In beta for at least 1 full version
-- [ ] Waiting up to k8s 1.37 (inclusive) in beta for second OSS implementation 
-    (karpenter). In case of no implementation in order to avoid permanent beta 
+- [ ] Waiting up to k8s 1.37 (inclusive) in beta for second OSS implementation
+    (karpenter). In case of no implementation in order to avoid permanent beta
     (following the spirit of [guidance for k8s REST APIs](https://kubernetes.io/blog/2020/08/21/moving-forward-from-beta/#avoiding-permanent-beta))
     we will reevaluate the graduation criteria with sig-autoscaling leads based on:
     - existing adoption and feedback
@@ -43,9 +43,9 @@ drive scaling decisions for the cluster.
 
 # Motivation
 
-While some use cases of buffers can be already accomplished using balloon 
-pods/deployments 
-([overprovisioning node capacity documentation](https://kubernetes.io/docs/tasks/administer-cluster/node-overprovisioning/)) 
+While some use cases of buffers can be already accomplished using balloon
+pods/deployments
+([overprovisioning node capacity documentation](https://kubernetes.io/docs/tasks/administer-cluster/node-overprovisioning/))
 there are reasons to introduce Buffers as a separate API concept:
 *   simplify configuration of additional capacity in the cluster.
     *   Today it is possible to create balloon pods and deployments, but they
@@ -111,7 +111,7 @@ In order to support buffers the cluster will need to run:
 *   A controller that translates the buffer configuration into a number of pods
     specs that would represent the spare space in the cluster that is needed.
     The reference implementation would be provided within the cluster autoscaler
-    repository with the controller running as a subprocess of the cluster 
+    repository with the controller running as a subprocess of the cluster
     autoscaler, but it is expected that other integrations will depend on it as
     a library rather than full implementation
 *   An autoscaler should allow for processing additional pods that are
@@ -199,7 +199,7 @@ the deployment size so that when the HPA scales my deployment the new pods are
 started faster. Additionally, this speeds up the feedback loop of the metrics
 allowing the HPA also to faster provide next scaling decisions.
 
-Note: the size of the buffer will be calculated based on existing replicas to 
+Note: the size of the buffer will be calculated based on existing replicas to
 avoid situation when the buffer grows before all pods are there to be considered
 for a scale up.
 
@@ -262,7 +262,7 @@ spec:
 
 ## Notes/Constraints/Caveats (Optional)
 
-*   The NodeAutoscalingBuffer implementation assumes that the pods run as a part 
+*   The NodeAutoscalingBuffer implementation assumes that the pods run as a part
     of scale subresource are homogeneous.
 
 ## Risks and Mitigations
@@ -321,13 +321,13 @@ type CapacityBufferSpec struct {
   // +optional
   Percentage *int
 
-  // If empty it will create additional nodes to provide capacity in the cluster.  
+  // If empty it will create additional nodes to provide capacity in the cluster.
   // Cloud providers can offer their own buffering strategies.
   // +optional
   ProvisioningStrategy *string
 
-  // If specified it will limit the number of chunks created for this buffer. 
-  // If there are no other limitations for  the number of chunks it will be used to 
+  // If specified it will limit the number of chunks created for this buffer.
+  // If there are no other limitations for  the number of chunks it will be used to
   // create as many chunks as fit into these limits.
   // +optional
   Limits *ResourceList
@@ -336,7 +336,7 @@ type CapacityBufferSpec struct {
 type CapacityBufferStatus struct {
   // If pod template, replicas and generation id are not set conditions will
   //provide details about the error state.
-  // +optional  
+  // +optional
   PodTemplateRef *PodTemplateRef
   // Number of replicas calculated by the buffer controller that autoscaler
   // should act on.
@@ -344,7 +344,7 @@ type CapacityBufferStatus struct {
   Replicas *int
   // Number of replicas from this buffer that have provisioned capacity in the
   // cluster that is ready to be used.
-  // +optional 
+  // +optional
   ReadyReplicas *int
   // +optional
   PodTemplateGeneration  *int
@@ -383,12 +383,12 @@ library that would be used in autoscaler code:
 
 Base on the full Buffer spec writes the status including conditions (to mark it
 as ready for provisioning) and PodBufferCapacity. In the future the number of
-chunks will take into account the k8s Resource Quotas. 
+chunks will take into account the k8s Resource Quotas.
 
 #### Autoscaler
 
 Autoscaler will use the buffer status field and buffer type to determine how
-many and what spare capacity to deploy. 
+many and what spare capacity to deploy.
 Autoscaler can additionally set conditions on the buffer to communicate error
 states and unforeseen circumstances.
 
@@ -402,7 +402,7 @@ than specified because of the quotas. The message field will contain info which
 quotas are blocking the buffer.
 - Provisioning - set by autoscaler once it processes the buffer for the first
 time. False in case the buffer is unhelpable (otherwise the scale up events will
-be available for each scale up decision). 
+be available for each scale up decision).
 
 ### How to directly define cluster capacity?
 
@@ -430,8 +430,8 @@ users can already set any scaling targets for HPA. However:
 ### Buffers and k8s resource quotas
 
 Today it is possible to set a resource quota per namespace that will prevent the
-user who has access to the namespace from creating too many objects of a 
-given type or pods that use too many resources. 
+user who has access to the namespace from creating too many objects of a
+given type or pods that use too many resources.
 
 Since buffers are not pods they will not be accounted by the quota system and so
 any user who is able to create buffers will be able to create a buffer of any
@@ -440,18 +440,18 @@ size.
 For the initial implementation on buffers the users should use other tools to
 limit the size of the cluster (max size on the GKE node pool/CCC or karpenter
 pool, max total size). Once we launch we will reassess the need for other
-mechanisms for buffers. 
+mechanisms for buffers.
 
 Two options that should be considered are:
 - [recommended at the moment, to reevaluate before implementation] integrating
-with k8s resource quotas mechanism: make the buffer controller quota aware, 
-apply the quota when translating the buffer config to a pod spec and 
+with k8s resource quotas mechanism: make the buffer controller quota aware,
+apply the quota when translating the buffer config to a pod spec and
 periodically check the total resources used by the namespace
 - create a separate API surface (like `BufferPolicy`) to manage what buffers can
 be created. This may be needed if we would like to offer different quotas
 depending on the `Buffer` type.
 
-Other considered alternatives: 
+Other considered alternatives:
 [Buffers and k8s quotas](https://docs.google.com/document/d/1dNxpAb5_fSv4SOIOUYsBYKpE-o_qsCUiSUTS5wCXiT8)
 
 ## Dependencies

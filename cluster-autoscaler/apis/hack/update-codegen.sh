@@ -15,7 +15,7 @@
 # limitations under the License.
 
 ###
-# This script is to be used when updating the generated clients of 
+# This script is to be used when updating the generated clients of
 # the Provisioning Request CRD.
 ###
 

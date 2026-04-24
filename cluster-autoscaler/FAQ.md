@@ -981,6 +981,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `address` | The address to expose prometheus metrics. | ":8085" |
 | `allowed-scheduler-names` | If set to non-empty value, CA will proceed only with pods targeting schedulers in the list, from the list of unschedulable and scheduler unprocessed pods |  |
 | `alsologtostderr` | log to standard error as well as files (no effect when -logtostderr=true) |  |
+| `alsologtostderrthreshold` | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |  |
 | `async-node-groups` | Whether clusterautoscaler creates and deletes node groups asynchronously. Experimental: requires cloud provider supporting async node group operations, enable at your own risk. |  |
 | `aws-use-static-instance-list` | Should CA fetch instance types in runtime or use a static list. AWS only |  |
 | `balance-similar-node-groups` | Detect similar node groups and balance the number of nodes between them |  |
@@ -1047,6 +1048,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `leader-elect-resource-name` | The name of resource object that is used for locking during leader election. | "cluster-autoscaler" |
 | `leader-elect-resource-namespace` | The namespace of resource object that is used for locking during leader election. |  |
 | `leader-elect-retry-period` | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. | 2s |
+| `legacy-stderr-threshold-behavior` | If true, stderrthreshold is ignored when logtostderr=true (legacy behavior). If false, stderrthreshold is honored even when logtostderr=true | true |
 | `log-backtrace-at` | when logging hits line file:N, emit a stack trace | :0 |
 | `log-dir` | If non-empty, write log files in this directory (no effect when -logtostderr=true) |  |
 | `log-file` | If non-empty, use this log file (no effect when -logtostderr=true) |  |
@@ -1108,7 +1110,6 @@ The following startup parameters are supported for cluster autoscaler:
 | `scale-down-delay-after-delete` | How long after node deletion that scale down evaluation resumes | 0s |
 | `scale-down-delay-after-failure` | How long after scale down failure that scale down evaluation resumes | 3m0s |
 | `scale-down-delay-type-local` | Should --scale-down-delay-after-* flags be applied locally per nodegroup or globally across all nodegroups |  |
-| `scale-down-enabled` | [Deprecated] Should CA scale down the cluster | true |
 | `scale-down-gpu-utilization-threshold` | Sum of gpu requests of all pods running on the node divided by node's allocatable resource, below which a node can be considered for scale down.Utilization calculation only cares about gpu resource for accelerator node. cpu and memory utilization will be ignored. | 0.5 |
 | `scale-down-non-empty-candidates-count` | Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain.Lower value means better CA responsiveness but possible slower scale down latency.Higher value can affect CA performance with big clusters (hundreds of nodes).Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers. | 30 |
 | `scale-down-simulation-timeout` | How long should we run scale down simulation. | 30s |
@@ -1118,6 +1119,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `scale-down-utilization-threshold` | The maximum value between the sum of cpu requests and sum of memory requests of all pods running on the node divided by node's corresponding allocatable resource, below which a node can be considered for scale down | 0.5 |
 | `scale-from-unschedulable` | Specifies that the CA should ignore a node's .spec.unschedulable field in node templates when considering to scale a node group. |  |
 | `scale-up-from-zero` | Should CA scale up when there are 0 ready nodes. | true |
+| `scaleup-simulation-for-skipped-node-groups-enabled` | Whether to enable the scale up simulation for skipped node groups. |  |
 | `scan-interval` | How often cluster is reevaluated for scale up or down | 10s |
 | `scheduler-config-file` | scheduler-config allows changing configuration of in-tree scheduler plugins acting on PreFilter and Filter extension points |  |
 | `skip-headers` | If true, avoid header prefixes in the log messages |  |
@@ -1129,7 +1131,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `startup-taint-prefix` | Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times. | [] |
 | `status-config-map-name` | Status configmap name | "cluster-autoscaler-status" |
 | `status-taint` | Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready | [] |
-| `stderrthreshold` | logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true) | 2 |
+| `stderrthreshold` | logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true unless -legacy_stderr_threshold_behavior=false) | 2 |
 | `unremovable-node-recheck-timeout` | The timeout before we check again a node that couldn't be removed before | 5m0s |
 | `user-agent` | User agent used for HTTP calls. | "cluster-autoscaler" |
 | `v` | number for the log level verbosity |  |

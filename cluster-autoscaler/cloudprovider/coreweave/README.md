@@ -43,12 +43,12 @@ To enable the CoreWeave provider, set the following flag when running the autosc
 ```
 ## Usage with Helm Charts
 
-When deploying the Cluster Autoscaler for CoreWeave using the provided Helm chart, you can customize its behavior using the `extraArgs` section in your `values.yaml` file.  
+When deploying the Cluster Autoscaler for CoreWeave using the provided Helm chart, you can customize its behavior using the `extraArgs` section in your `values.yaml` file.
 These arguments are passed directly to the Cluster Autoscaler container.
 
 ## Helm Chart Deployment
 
-You can deploy the Cluster Autoscaler for CoreWeave using the official Helm chart.  
+You can deploy the Cluster Autoscaler for CoreWeave using the official Helm chart.
 Below are the basic steps:
 
 1. **Add the Helm repository (if not already added):**

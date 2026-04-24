@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: stress-container
-        image: nginx 
+        image: nginx
         resources:
           requests:
             cpu: "750m" # Request .75 CPU cores
