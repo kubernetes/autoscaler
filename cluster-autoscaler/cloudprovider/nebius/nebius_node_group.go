@@ -17,11 +17,13 @@ limitations under the License.
 package nebius
 
 import (
+	"context"
 	"fmt"
+	"sync"
 
-	mk8sv1 "github.com/nebius/gosdk/proto/nebius/mk8s/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/nebius/sdk"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
@@ -33,9 +35,10 @@ import (
 type NodeGroup struct {
 	id         string
 	manager    *Manager
-	nodeGroup  *mk8sv1.NodeGroup
+	nodeGroup  *sdk.NodeGroup
 	minSize    int
 	maxSize    int
+	mu         sync.Mutex
 	targetSize int                 // in-memory target size, updated on mutations
 	instances  map[string]struct{} // cached set of provider IDs
 }
@@ -55,6 +58,8 @@ func (n *NodeGroup) MinSize() int {
 // be equal to Size() once everything stabilizes (new nodes finish startup and
 // registration or removed nodes are deleted completely). Implementation required.
 func (n *NodeGroup) TargetSize() (int, error) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
 	return n.targetSize, nil
 }
 
@@ -66,10 +71,9 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("delta must be positive, have: %d", delta)
 	}
 
-	currentSize, err := n.TargetSize()
-	if err != nil {
-		return err
-	}
+	n.mu.Lock()
+	currentSize := n.targetSize
+	n.mu.Unlock()
 
 	targetSize := currentSize + delta
 	if targetSize > n.MaxSize() {
@@ -77,11 +81,15 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 			currentSize, targetSize, n.MaxSize())
 	}
 
+	ctx := context.TODO()
 	klog.V(4).Infof("Increasing node group %s from %d to %d", n.id, currentSize, targetSize)
-	if err := n.manager.setNodeGroupSize(n.id, targetSize); err != nil {
+	if err := n.manager.setNodeGroupSize(ctx, n.id, targetSize); err != nil {
 		return err
 	}
+
+	n.mu.Lock()
 	n.targetSize = targetSize
+	n.mu.Unlock()
 	return nil
 }
 
@@ -94,10 +102,9 @@ func (n *NodeGroup) AtomicIncreaseSize(delta int) error {
 // Nebius Compute API by its specific instance ID, then the node group target
 // size is updated to reflect the removal.
 func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
-	currentSize, err := n.TargetSize()
-	if err != nil {
-		return err
-	}
+	n.mu.Lock()
+	currentSize := n.targetSize
+	n.mu.Unlock()
 
 	newSize := currentSize - len(nodes)
 	if newSize < n.MinSize() {
@@ -113,10 +120,13 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		providerIDs = append(providerIDs, node.Spec.ProviderID)
 	}
 
+	ctx := context.TODO()
 	klog.V(4).Infof("Deleting %d nodes from node group %s (new size: %d)", len(nodes), n.id, newSize)
-	deleted, err := n.manager.deleteInstances(n.id, providerIDs, currentSize)
+	deleted, err := n.manager.deleteInstances(ctx, n.id, providerIDs, currentSize)
 	// Always update targetSize to reflect actual deletions, even on partial failure.
+	n.mu.Lock()
 	n.targetSize = currentSize - deleted
+	n.mu.Unlock()
 	return err
 }
 
@@ -135,10 +145,9 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 		return fmt.Errorf("delta must be negative, have: %d", delta)
 	}
 
-	currentSize, err := n.TargetSize()
-	if err != nil {
-		return err
-	}
+	n.mu.Lock()
+	currentSize := n.targetSize
+	n.mu.Unlock()
 
 	newSize := currentSize + delta
 	if newSize < n.MinSize() {
@@ -146,11 +155,15 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 			currentSize, delta, n.MinSize())
 	}
 
+	ctx := context.TODO()
 	klog.V(4).Infof("Decreasing node group %s target from %d to %d", n.id, currentSize, newSize)
-	if err := n.manager.setNodeGroupSize(n.id, newSize); err != nil {
+	if err := n.manager.setNodeGroupSize(ctx, n.id, newSize); err != nil {
 		return err
 	}
+
+	n.mu.Lock()
 	n.targetSize = newSize
+	n.mu.Unlock()
 	return nil
 }
 

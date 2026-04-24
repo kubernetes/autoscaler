@@ -22,104 +22,100 @@ import (
 	"fmt"
 	"testing"
 
-	commonv1 "github.com/nebius/gosdk/proto/nebius/common/v1"
-	computev1 "github.com/nebius/gosdk/proto/nebius/compute/v1"
-	mk8sv1 "github.com/nebius/gosdk/proto/nebius/mk8s/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/nebius/sdk"
 )
 
 // mockNebiusAPI implements nebiusAPI for testing.
 type mockNebiusAPI struct {
-	listNodeGroupsResponses  []*mk8sv1.ListNodeGroupsResponse
+	listNodeGroupsResponses  []*sdk.ListNodeGroupsResponse
 	listNodeGroupsErr        error
 	listNodeGroupsPageTokens []string
-	listInstancesResponses   []*computev1.ListInstancesResponse
+	listInstancesResponses   []*sdk.ListInstancesResponse
 	listInstancesErr         error
 	listInstancesPageTokens  []string
-	getNodeGroupResponse     *mk8sv1.NodeGroup
+	getNodeGroupResponse     *sdk.NodeGroup
 	getNodeGroupErr          error
 	updateNodeGroupErr       error
-	lastUpdateReq            *mk8sv1.UpdateNodeGroupRequest
+	lastUpdateReq            *sdk.UpdateNodeGroupRequest
 	deleteInstanceIDs        []string
 	deleteInstanceErr        error
 	deleteInstanceErrAfter   int // fail after this many successful deletes (0 = fail immediately)
 }
 
-func (m *mockNebiusAPI) ListNodeGroups(_ context.Context, req *mk8sv1.ListNodeGroupsRequest) (*mk8sv1.ListNodeGroupsResponse, error) {
-	m.listNodeGroupsPageTokens = append(m.listNodeGroupsPageTokens, req.GetPageToken())
+func (m *mockNebiusAPI) ListNodeGroups(_ context.Context, req *sdk.ListNodeGroupsRequest) (*sdk.ListNodeGroupsResponse, error) {
+	m.listNodeGroupsPageTokens = append(m.listNodeGroupsPageTokens, req.PageToken)
 	if m.listNodeGroupsErr != nil {
 		return nil, m.listNodeGroupsErr
 	}
 	if len(m.listNodeGroupsResponses) == 0 {
-		return &mk8sv1.ListNodeGroupsResponse{}, nil
+		return &sdk.ListNodeGroupsResponse{}, nil
 	}
 	resp := m.listNodeGroupsResponses[0]
 	m.listNodeGroupsResponses = m.listNodeGroupsResponses[1:]
 	return resp, nil
 }
 
-func (m *mockNebiusAPI) ListInstances(_ context.Context, req *computev1.ListInstancesRequest) (*computev1.ListInstancesResponse, error) {
-	m.listInstancesPageTokens = append(m.listInstancesPageTokens, req.GetPageToken())
+func (m *mockNebiusAPI) ListInstances(_ context.Context, req *sdk.ListInstancesRequest) (*sdk.ListInstancesResponse, error) {
+	m.listInstancesPageTokens = append(m.listInstancesPageTokens, req.PageToken)
 	if m.listInstancesErr != nil {
 		return nil, m.listInstancesErr
 	}
 	if len(m.listInstancesResponses) == 0 {
-		return &computev1.ListInstancesResponse{}, nil
+		return &sdk.ListInstancesResponse{}, nil
 	}
 	resp := m.listInstancesResponses[0]
 	m.listInstancesResponses = m.listInstancesResponses[1:]
 	return resp, nil
 }
 
-func (m *mockNebiusAPI) GetNodeGroup(_ context.Context, _ *mk8sv1.GetNodeGroupRequest) (*mk8sv1.NodeGroup, error) {
+func (m *mockNebiusAPI) GetNodeGroup(_ context.Context, _ *sdk.GetNodeGroupRequest) (*sdk.NodeGroup, error) {
 	if m.getNodeGroupErr != nil {
 		return nil, m.getNodeGroupErr
 	}
 	return m.getNodeGroupResponse, nil
 }
 
-func (m *mockNebiusAPI) UpdateNodeGroup(_ context.Context, req *mk8sv1.UpdateNodeGroupRequest) error {
+func (m *mockNebiusAPI) UpdateNodeGroup(_ context.Context, req *sdk.UpdateNodeGroupRequest) error {
 	m.lastUpdateReq = req
 	return m.updateNodeGroupErr
 }
 
-func (m *mockNebiusAPI) DeleteInstance(_ context.Context, req *computev1.DeleteInstanceRequest) error {
-	m.deleteInstanceIDs = append(m.deleteInstanceIDs, req.GetId())
+func (m *mockNebiusAPI) DeleteInstance(_ context.Context, req *sdk.DeleteInstanceRequest) error {
+	m.deleteInstanceIDs = append(m.deleteInstanceIDs, req.ID)
 	if m.deleteInstanceErr != nil && len(m.deleteInstanceIDs) > m.deleteInstanceErrAfter {
 		return m.deleteInstanceErr
 	}
 	return nil
 }
 
-// Helper to build a node group proto with autoscaling spec.
-func makeNodeGroupProto(id, name string, minCount, maxCount, targetCount int64) *mk8sv1.NodeGroup {
-	return &mk8sv1.NodeGroup{
-		Metadata: &commonv1.ResourceMetadata{
-			Id:   id,
+// Helper to build a node group with autoscaling spec.
+func makeNodeGroup(id, name string, minCount, maxCount, targetCount int64) *sdk.NodeGroup {
+	return &sdk.NodeGroup{
+		Metadata: &sdk.ResourceMetadata{
+			ID:   id,
 			Name: name,
 		},
-		Spec: &mk8sv1.NodeGroupSpec{
-			Size: &mk8sv1.NodeGroupSpec_Autoscaling{
-				Autoscaling: &mk8sv1.NodeGroupAutoscalingSpec{
-					MinNodeCount: minCount,
-					MaxNodeCount: maxCount,
-				},
+		Spec: &sdk.NodeGroupSpec{
+			Autoscaling: &sdk.NodeGroupAutoscalingSpec{
+				MinNodeCount: minCount,
+				MaxNodeCount: maxCount,
 			},
 		},
-		Status: &mk8sv1.NodeGroupStatus{
+		Status: &sdk.NodeGroupStatus{
 			TargetNodeCount: targetCount,
 		},
 	}
 }
 
-// Helper to build an instance proto.
-func makeInstanceProto(id string, labels map[string]string) *computev1.Instance {
-	return &computev1.Instance{
-		Metadata: &commonv1.ResourceMetadata{
-			Id:     id,
+// Helper to build an instance.
+func makeInstance(id string, labels map[string]string) *sdk.Instance {
+	return &sdk.Instance{
+		Metadata: &sdk.ResourceMetadata{
+			ID:     id,
 			Labels: labels,
 		},
 	}
@@ -160,14 +156,14 @@ func TestNewManagerEnvVarFallback(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "not provided")
 
-	// With env vars set, config validation should pass (SDK init may still fail).
+	// With env vars set, config validation should pass (client init may still fail).
 	t.Setenv("NEBIUS_IAM_TOKEN", "env-token")
 	t.Setenv("NEBIUS_CLUSTER_ID", "env-cluster")
 	t.Setenv("NEBIUS_PARENT_ID", "env-parent")
 
 	_, err = newManager(bytes.NewBufferString(`{}`))
 	if err != nil {
-		// SDK init may fail, but config validation should have passed.
+		// Client init may fail, but config validation should have passed.
 		assert.NotContains(t, err.Error(), "not provided")
 	}
 }
@@ -233,7 +229,7 @@ func TestNodeGroupExist(t *testing.T) {
 	ng := &NodeGroup{nodeGroup: nil}
 	assert.False(t, ng.Exist())
 
-	ng2 := &NodeGroup{nodeGroup: makeNodeGroupProto("ng-1", "group", 1, 5, 3)}
+	ng2 := &NodeGroup{nodeGroup: makeNodeGroup("ng-1", "group", 1, 5, 3)}
 	assert.True(t, ng2.Exist())
 }
 
@@ -247,21 +243,21 @@ func TestToProviderID(t *testing.T) {
 func TestRefresh_BasicNodeGroups(t *testing.T) {
 	t.Parallel()
 	mock := &mockNebiusAPI{
-		listNodeGroupsResponses: []*mk8sv1.ListNodeGroupsResponse{
+		listNodeGroupsResponses: []*sdk.ListNodeGroupsResponse{
 			{
-				Items: []*mk8sv1.NodeGroup{
-					makeNodeGroupProto("ng-1", "group-one", 1, 5, 3),
-					makeNodeGroupProto("ng-2", "group-two", 2, 8, 4),
+				Items: []*sdk.NodeGroup{
+					makeNodeGroup("ng-1", "group-one", 1, 5, 3),
+					makeNodeGroup("ng-2", "group-two", 2, 8, 4),
 				},
 			},
 		},
-		listInstancesResponses: []*computev1.ListInstancesResponse{
-			{Items: []*computev1.Instance{}},
+		listInstancesResponses: []*sdk.ListInstancesResponse{
+			{Items: []*sdk.Instance{}},
 		},
 	}
 
 	m := newTestManager(mock)
-	err := m.Refresh()
+	err := m.Refresh(context.Background())
 	require.NoError(t, err)
 
 	groups := m.getNodeGroups()
@@ -281,22 +277,22 @@ func TestRefresh_BasicNodeGroups(t *testing.T) {
 func TestRefresh_WithPagination(t *testing.T) {
 	t.Parallel()
 	mock := &mockNebiusAPI{
-		listNodeGroupsResponses: []*mk8sv1.ListNodeGroupsResponse{
+		listNodeGroupsResponses: []*sdk.ListNodeGroupsResponse{
 			{
-				Items:         []*mk8sv1.NodeGroup{makeNodeGroupProto("ng-1", "group-one", 1, 5, 2)},
+				Items:         []*sdk.NodeGroup{makeNodeGroup("ng-1", "group-one", 1, 5, 2)},
 				NextPageToken: "page2",
 			},
 			{
-				Items: []*mk8sv1.NodeGroup{makeNodeGroupProto("ng-2", "group-two", 0, 10, 5)},
+				Items: []*sdk.NodeGroup{makeNodeGroup("ng-2", "group-two", 0, 10, 5)},
 			},
 		},
-		listInstancesResponses: []*computev1.ListInstancesResponse{
-			{Items: []*computev1.Instance{}},
+		listInstancesResponses: []*sdk.ListInstancesResponse{
+			{Items: []*sdk.Instance{}},
 		},
 	}
 
 	m := newTestManager(mock)
-	err := m.Refresh()
+	err := m.Refresh(context.Background())
 	require.NoError(t, err)
 
 	groups := m.getNodeGroups()
@@ -309,28 +305,28 @@ func TestRefresh_WithPagination(t *testing.T) {
 func TestRefresh_InstancePagination(t *testing.T) {
 	t.Parallel()
 	mock := &mockNebiusAPI{
-		listNodeGroupsResponses: []*mk8sv1.ListNodeGroupsResponse{
+		listNodeGroupsResponses: []*sdk.ListNodeGroupsResponse{
 			{
-				Items: []*mk8sv1.NodeGroup{makeNodeGroupProto("ng-1", "group-one", 0, 10, 3)},
+				Items: []*sdk.NodeGroup{makeNodeGroup("ng-1", "group-one", 0, 10, 3)},
 			},
 		},
-		listInstancesResponses: []*computev1.ListInstancesResponse{
+		listInstancesResponses: []*sdk.ListInstancesResponse{
 			{
-				Items: []*computev1.Instance{
-					makeInstanceProto("inst-1", map[string]string{nodeGroupIDLabel: "ng-1"}),
+				Items: []*sdk.Instance{
+					makeInstance("inst-1", map[string]string{nodeGroupIDLabel: "ng-1"}),
 				},
 				NextPageToken: "page2",
 			},
 			{
-				Items: []*computev1.Instance{
-					makeInstanceProto("inst-2", map[string]string{nodeGroupIDLabel: "ng-1"}),
+				Items: []*sdk.Instance{
+					makeInstance("inst-2", map[string]string{nodeGroupIDLabel: "ng-1"}),
 				},
 			},
 		},
 	}
 
 	m := newTestManager(mock)
-	err := m.Refresh()
+	err := m.Refresh(context.Background())
 	require.NoError(t, err)
 
 	groups := m.getNodeGroups()
@@ -344,16 +340,16 @@ func TestRefresh_InstancePagination(t *testing.T) {
 func TestRefresh_InstanceListError(t *testing.T) {
 	t.Parallel()
 	mock := &mockNebiusAPI{
-		listNodeGroupsResponses: []*mk8sv1.ListNodeGroupsResponse{
+		listNodeGroupsResponses: []*sdk.ListNodeGroupsResponse{
 			{
-				Items: []*mk8sv1.NodeGroup{makeNodeGroupProto("ng-1", "group-one", 1, 5, 2)},
+				Items: []*sdk.NodeGroup{makeNodeGroup("ng-1", "group-one", 1, 5, 2)},
 			},
 		},
 		listInstancesErr: fmt.Errorf("instance API unavailable"),
 	}
 
 	m := newTestManager(mock)
-	err := m.Refresh()
+	err := m.Refresh(context.Background())
 	// Refresh should still succeed even if instance listing fails.
 	require.NoError(t, err)
 
@@ -369,7 +365,7 @@ func TestRefresh_NodeGroupListError(t *testing.T) {
 	}
 
 	m := newTestManager(mock)
-	err := m.Refresh()
+	err := m.Refresh(context.Background())
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to list node groups")
 }
@@ -379,7 +375,7 @@ func TestRefresh_NodeGroupListError(t *testing.T) {
 func TestIncreaseSize_Success(t *testing.T) {
 	t.Parallel()
 	mock := &mockNebiusAPI{
-		getNodeGroupResponse: makeNodeGroupProto("ng-1", "group-one", 1, 10, 3),
+		getNodeGroupResponse: makeNodeGroup("ng-1", "group-one", 1, 10, 3),
 	}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
@@ -393,7 +389,8 @@ func TestIncreaseSize_Success(t *testing.T) {
 	err := ng.IncreaseSize(2)
 	require.NoError(t, err)
 	require.NotNil(t, mock.lastUpdateReq)
-	assert.Equal(t, int64(5), mock.lastUpdateReq.GetSpec().GetFixedNodeCount())
+	require.NotNil(t, mock.lastUpdateReq.Spec.FixedNodeCount)
+	assert.Equal(t, int64(5), *mock.lastUpdateReq.Spec.FixedNodeCount)
 
 	// Verify in-memory target size is updated for subsequent calls.
 	size, err := ng.TargetSize()
@@ -442,7 +439,7 @@ func TestIncreaseSize_NegativeDelta(t *testing.T) {
 func TestDeleteNodes_Success(t *testing.T) {
 	t.Parallel()
 	mock := &mockNebiusAPI{
-		getNodeGroupResponse: makeNodeGroupProto("ng-1", "group-one", 1, 10, 5),
+		getNodeGroupResponse: makeNodeGroup("ng-1", "group-one", 1, 10, 5),
 	}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
@@ -471,7 +468,8 @@ func TestDeleteNodes_Success(t *testing.T) {
 
 	// Verify node group size was updated.
 	require.NotNil(t, mock.lastUpdateReq)
-	assert.Equal(t, int64(3), mock.lastUpdateReq.GetSpec().GetFixedNodeCount())
+	require.NotNil(t, mock.lastUpdateReq.Spec.FixedNodeCount)
+	assert.Equal(t, int64(3), *mock.lastUpdateReq.Spec.FixedNodeCount)
 }
 
 func TestDeleteNodes_BelowMin(t *testing.T) {
@@ -552,7 +550,7 @@ func TestDeleteNodes_PartialFailureAdjustsSize(t *testing.T) {
 	mock := &mockNebiusAPI{
 		deleteInstanceErr:      fmt.Errorf("instance unavailable"),
 		deleteInstanceErrAfter: 1, // first delete succeeds, second fails
-		getNodeGroupResponse:   makeNodeGroupProto("ng-1", "group-one", 1, 10, 5),
+		getNodeGroupResponse:   makeNodeGroup("ng-1", "group-one", 1, 10, 5),
 	}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
@@ -584,7 +582,8 @@ func TestDeleteNodes_PartialFailureAdjustsSize(t *testing.T) {
 	// One instance was deleted successfully, so target size should be adjusted
 	// to account for that deletion (5 - 1 = 4, not the original target of 2).
 	require.NotNil(t, mock.lastUpdateReq)
-	assert.Equal(t, int64(4), mock.lastUpdateReq.GetSpec().GetFixedNodeCount())
+	require.NotNil(t, mock.lastUpdateReq.Spec.FixedNodeCount)
+	assert.Equal(t, int64(4), *mock.lastUpdateReq.Spec.FixedNodeCount)
 
 	// In-memory targetSize should also reflect the partial deletion.
 	size, sizeErr := ng.TargetSize()
@@ -600,7 +599,7 @@ func TestSetNodeGroupSize_APIError(t *testing.T) {
 		getNodeGroupErr: fmt.Errorf("node group not found"),
 	}
 	m := newTestManager(mock)
-	err := m.setNodeGroupSize("ng-1", 5)
+	err := m.setNodeGroupSize(context.Background(), "ng-1", 5)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get node group")
 }
@@ -608,11 +607,11 @@ func TestSetNodeGroupSize_APIError(t *testing.T) {
 func TestSetNodeGroupSize_UpdateError(t *testing.T) {
 	t.Parallel()
 	mock := &mockNebiusAPI{
-		getNodeGroupResponse: makeNodeGroupProto("ng-1", "group-one", 1, 10, 3),
+		getNodeGroupResponse: makeNodeGroup("ng-1", "group-one", 1, 10, 3),
 		updateNodeGroupErr:   fmt.Errorf("update failed"),
 	}
 	m := newTestManager(mock)
-	err := m.setNodeGroupSize("ng-1", 5)
+	err := m.setNodeGroupSize(context.Background(), "ng-1", 5)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to update node group")
 }
@@ -622,7 +621,7 @@ func TestSetNodeGroupSize_UpdateError(t *testing.T) {
 func TestDecreaseTargetSize_Success(t *testing.T) {
 	t.Parallel()
 	mock := &mockNebiusAPI{
-		getNodeGroupResponse: makeNodeGroupProto("ng-1", "group-one", 1, 10, 5),
+		getNodeGroupResponse: makeNodeGroup("ng-1", "group-one", 1, 10, 5),
 	}
 	m := newTestManager(mock)
 	ng := &NodeGroup{
@@ -636,7 +635,8 @@ func TestDecreaseTargetSize_Success(t *testing.T) {
 	err := ng.DecreaseTargetSize(-2)
 	require.NoError(t, err)
 	require.NotNil(t, mock.lastUpdateReq)
-	assert.Equal(t, int64(3), mock.lastUpdateReq.GetSpec().GetFixedNodeCount())
+	require.NotNil(t, mock.lastUpdateReq.Spec.FixedNodeCount)
+	assert.Equal(t, int64(3), *mock.lastUpdateReq.Spec.FixedNodeCount)
 }
 
 func TestDecreaseTargetSize_PositiveDelta(t *testing.T) {
@@ -681,8 +681,8 @@ func TestNodeGroupForNode_ByLabel(t *testing.T) {
 	t.Parallel()
 	m := newTestManager(&mockNebiusAPI{})
 	m.nodeGroups = []*NodeGroup{
-		{id: "ng-1", manager: m, nodeGroup: makeNodeGroupProto("ng-1", "group-one", 1, 5, 3)},
-		{id: "ng-2", manager: m, nodeGroup: makeNodeGroupProto("ng-2", "group-two", 1, 5, 3)},
+		{id: "ng-1", manager: m, nodeGroup: makeNodeGroup("ng-1", "group-one", 1, 5, 3)},
+		{id: "ng-2", manager: m, nodeGroup: makeNodeGroup("ng-2", "group-two", 1, 5, 3)},
 	}
 
 	provider := &nebiusCloudProvider{manager: m}
@@ -708,7 +708,7 @@ func TestNodeGroupForNode_ByProviderID(t *testing.T) {
 		{
 			id:        "ng-1",
 			manager:   m,
-			nodeGroup: makeNodeGroupProto("ng-1", "group-one", 1, 5, 3),
+			nodeGroup: makeNodeGroup("ng-1", "group-one", 1, 5, 3),
 			instances: map[string]struct{}{
 				"nebius://inst-1": {},
 				"nebius://inst-2": {},
@@ -739,7 +739,7 @@ func TestNodeGroupForNode_NotFound(t *testing.T) {
 		{
 			id:        "ng-1",
 			manager:   m,
-			nodeGroup: makeNodeGroupProto("ng-1", "group-one", 1, 5, 3),
+			nodeGroup: makeNodeGroup("ng-1", "group-one", 1, 5, 3),
 			instances: map[string]struct{}{
 				"nebius://inst-1": {},
 			},
