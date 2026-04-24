@@ -23,7 +23,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_scheme "k8s.io/kubernetes/pkg/scheduler/apis/config/scheme"
@@ -36,43 +35,6 @@ const (
 	schedulerConfigTypeCastErr = "couldn't assert type as KubeSchedulerConfiguration"
 	schedulerConfigInvalidErr  = "invalid KubeSchedulerConfiguration"
 )
-
-// CreateNodeNameToInfoMap obtains a list of pods and pivots that list into a map where the keys are node names
-// and the values are the aggregated information for that node. Pods waiting lower priority pods preemption
-// (pod.Status.NominatedNodeName is set) are also added to list of pods for a node.
-func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]*framework.NodeInfo {
-	nodeNameToNodeInfo := make(map[string]*framework.NodeInfo)
-	for _, pod := range pods {
-		nodeName := pod.Spec.NodeName
-		if nodeName == "" {
-			nodeName = pod.Status.NominatedNodeName
-		}
-		if _, ok := nodeNameToNodeInfo[nodeName]; !ok {
-			nodeNameToNodeInfo[nodeName] = framework.NewNodeInfo(nil, nil)
-		}
-		nodeNameToNodeInfo[nodeName].AddPod(framework.NewPodInfo(pod, nil))
-	}
-
-	for _, node := range nodes {
-		if _, ok := nodeNameToNodeInfo[node.Name]; !ok {
-			nodeNameToNodeInfo[node.Name] = framework.NewNodeInfo(nil, nil)
-		}
-		nodeNameToNodeInfo[node.Name].SetNode(node)
-	}
-
-	// Some pods may be out of sync with node lists. Removing incomplete node infos.
-	keysToRemove := make([]string, 0)
-	for key, nodeInfo := range nodeNameToNodeInfo {
-		if nodeInfo.Node() == nil {
-			keysToRemove = append(keysToRemove, key)
-		}
-	}
-	for _, key := range keysToRemove {
-		delete(nodeNameToNodeInfo, key)
-	}
-
-	return nodeNameToNodeInfo
-}
 
 func isHugePageResourceName(name apiv1.ResourceName) bool {
 	return strings.HasPrefix(string(name), apiv1.ResourceHugePagesPrefix)
