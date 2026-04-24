@@ -23,7 +23,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_scheme "k8s.io/kubernetes/pkg/scheduler/apis/config/scheme"
