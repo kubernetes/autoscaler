@@ -17,6 +17,7 @@ limitations under the License.
 package nebius
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -52,7 +53,7 @@ type nebiusCloudProvider struct {
 }
 
 func newNebiusCloudProvider(manager *Manager, rl *cloudprovider.ResourceLimiter) (*nebiusCloudProvider, error) {
-	if err := manager.Refresh(); err != nil {
+	if err := manager.Refresh(context.Background()); err != nil {
 		return nil, err
 	}
 
@@ -110,7 +111,11 @@ func (d *nebiusCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (d *nebiusCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+	ng, err := d.NodeGroupForNode(node)
+	if err != nil {
+		return false, err
+	}
+	return ng != nil, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not
@@ -172,7 +177,7 @@ func (d *nebiusCloudProvider) Cleanup() error {
 // by NodeGroups() can change as a result of CloudProvider.Refresh().
 func (d *nebiusCloudProvider) Refresh() error {
 	klog.V(4).Info("Refreshing Nebius node group cache")
-	return d.manager.Refresh()
+	return d.manager.Refresh(context.TODO())
 }
 
 // BuildNebius builds the Nebius cloud provider.
