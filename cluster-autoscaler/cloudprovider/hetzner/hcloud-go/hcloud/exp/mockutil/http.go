@@ -25,6 +25,7 @@ type Request struct {
 	Status  int
 	JSON    any
 	JSONRaw string
+	TextRaw string
 }
 
 // Handler is using a [Server] to mock http requests provided by the user.
@@ -83,7 +84,7 @@ func (m *Server) close() {
 
 	m.Server.Close()
 
-	assert.EqualValues(m.t, len(m.requests), m.index, "expected more calls")
+	assert.Equal(m.t, len(m.requests), m.index, "expected more calls")
 }
 
 func (m *Server) handler(w http.ResponseWriter, r *http.Request) {
@@ -120,6 +121,13 @@ func (m *Server) handler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(expected.Status)
 		_, err := w.Write([]byte(expected.JSONRaw))
+		if err != nil {
+			m.t.Fatal(err)
+		}
+	case expected.TextRaw != "":
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(expected.Status)
+		_, err := w.Write([]byte(expected.TextRaw))
 		if err != nil {
 			m.t.Fatal(err)
 		}

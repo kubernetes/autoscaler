@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/longterminating"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/mirror"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/notsafetoevict"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/oncompletion"
 	pdbrule "k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicacount"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicated"
@@ -62,6 +63,7 @@ func Default(deleteOptions options.NodeDeleteOptions) Rules {
 		{rule: daemonset.New()},
 		{rule: safetoevict.New()},
 		{rule: terminal.New()},
+		{rule: oncompletion.New()},
 
 		// Blocking checks
 		{rule: replicated.New(deleteOptions.SkipNodesWithCustomControllerPods)},

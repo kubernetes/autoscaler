@@ -514,19 +514,32 @@ func TestGetPodsToMove(t *testing.T) {
 				DisruptionsAllowed: 1,
 			},
 		}
+		onCompletionPod = &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "bar",
+				Namespace: "default",
+				Annotations: map[string]string{
+					drain.PodSafeToEvictKey: drain.PodSafeToEvictOnCompletionValue,
+				},
+			},
+			Spec: apiv1.PodSpec{
+				NodeName: "node",
+			},
+		}
 	)
 
 	testCases := []struct {
-		desc         string
-		pods         []*apiv1.Pod
-		pdbs         []*policyv1.PodDisruptionBudget
-		rcs          []*apiv1.ReplicationController
-		replicaSets  []*appsv1.ReplicaSet
-		rules        rules.Rules
-		wantPods     []*apiv1.Pod
-		wantDs       []*apiv1.Pod
-		wantBlocking *drain.BlockingPod
-		wantErr      bool
+		desc             string
+		pods             []*apiv1.Pod
+		pdbs             []*policyv1.PodDisruptionBudget
+		rcs              []*apiv1.ReplicationController
+		replicaSets      []*appsv1.ReplicaSet
+		rules            rules.Rules
+		wantPods         []*apiv1.Pod
+		wantDs           []*apiv1.Pod
+		wantOnCompletion []*apiv1.Pod
+		wantBlocking     *drain.BlockingPod
+		wantErr          bool
 	}{
 		{
 			desc:    "Unreplicated pod",
@@ -575,9 +588,10 @@ func TestGetPodsToMove(t *testing.T) {
 			wantPods: []*apiv1.Pod{drainableBlockingSystemPod},
 		},
 		{
-			desc:    "Kube-system no pdb system pods blocking",
-			pods:    []*apiv1.Pod{drainableBlockingSystemPod, nonDrainableBlockingSystemPod},
-			wantErr: true,
+			desc:     "Kube-system no pdb system pods blocking",
+			pods:     []*apiv1.Pod{drainableBlockingSystemPod, nonDrainableBlockingSystemPod},
+			wantErr:  true,
+			wantPods: []*apiv1.Pod{drainableBlockingSystemPod},
 			wantBlocking: &drain.BlockingPod{
 				Pod:    nonDrainableBlockingSystemPod,
 				Reason: drain.UnmovableKubeSystemPod,
@@ -790,6 +804,11 @@ func TestGetPodsToMove(t *testing.T) {
 			wantErr:      true,
 			wantBlocking: &drain.BlockingPod{Pod: kubeSystemRcPod, Reason: drain.UnmovableKubeSystemPod},
 		},
+		{
+			desc:             "pod with safe-to-evict=on-completion annotation",
+			pods:             []*apiv1.Pod{onCompletionPod},
+			wantOnCompletion: []*apiv1.Pod{onCompletionPod},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -819,15 +838,16 @@ func TestGetPodsToMove(t *testing.T) {
 			tracker := pdb.NewBasicRemainingPdbTracker()
 			tracker.SetPdbs(tc.pdbs)
 			ni := framework.NewTestNodeInfo(nil, tc.pods...)
-			p, d, b, err := GetPodsToMove(ni, deleteOptions, rules, registry, tracker, testTime)
+			podMoveInfo, err := GetPodsToMove(ni, deleteOptions, rules, registry, tracker, testTime)
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 			}
-			assert.ElementsMatch(t, tc.wantPods, p)
-			assert.ElementsMatch(t, tc.wantDs, d)
-			assert.Equal(t, tc.wantBlocking, b)
+			assert.ElementsMatch(t, tc.wantPods, podMoveInfo.Pods)
+			assert.ElementsMatch(t, tc.wantDs, podMoveInfo.DaemonSetPods)
+			assert.ElementsMatch(t, tc.wantOnCompletion, podMoveInfo.OnCompletionPods)
+			assert.Equal(t, tc.wantBlocking, podMoveInfo.BlockingPod)
 		})
 	}
 }

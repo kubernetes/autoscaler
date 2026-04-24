@@ -71,9 +71,13 @@ TABLE=$(printf "%s\n" "${ARGS[@]}")
 # Search the flag table
 TITLE_PATTERN="\|[[:space:]]*Parameter[[:space:]]*\|[[:space:]]*Description[[:space:]]*\|[[:space:]]*Default[[:space:]]*\|"
 START_LINE=$($GREP_CMD -n -E "${TITLE_PATTERN}" "${TARGET_FILE}" | cut -d: -f1)
-# next empty line
-END_LINE=$(awk -v start="${START_LINE}" 'NR > start && /^[[:space:]]*$/{print NR; exit}' "${TARGET_FILE}")
-((END_LINE--))
+# Find the last consecutive empty line after the table
+END_LINE=$(awk -v start="${START_LINE}" '
+    BEGIN { last_empty = 0; found = 0 }
+    NR > start && /^[[:space:]]*$/ { last_empty = NR; next }
+    NR > start && last_empty > 0 && /[^[:space:]]/ { print last_empty; found = 1; exit }
+    END { if (found == 0 && last_empty > 0) print last_empty }
+' "${TARGET_FILE}")
 
 # Replace the table with the generated one
 TEMP=$(mktemp)

@@ -88,9 +88,9 @@ type ProvisioningRequestSpec struct {
 
 	// ProvisioningClass describes the different modes of provisioning the resources.
 	// Supported values:
-	// * check-capacity.kubernetes.io - check if current cluster state can fullfil this request,
+	// * check-capacity.autoscaling.x-k8s.io - check if current cluster state can fullfil this request,
 	//   do not reserve the capacity.
-	// * atomic-scale-up.kubernetes.io - provision the resources in an atomic manner
+	// * best-effort-atomic-scale-up.autoscaling.x-k8s.io - provision the resources in an atomic manner
     // * ... - potential other classes that are specific to the cloud providers
 	//
 	// +kubebuilder:validation:Required
@@ -152,18 +152,18 @@ type ProvisioningRequestStatus struct {
 
 ### Provisioning Classes
 
-#### check-capacity.kubernetes.io class
+#### check-capacity.autoscaling.x-k8s.io class
 
-The `check-capacity.kubernetes.io` is one-off check to verify that the in the cluster
+The `check-capacity.autoscaling.x-k8s.io` is one-off check to verify that the in the cluster
 there is enough capacity to provision given set of pods.
 
 Note: If two of such objects are created around the same time, CA will consider
 them independently and place no guards for the capacity.
 Also the capacity is not reserved in any manner so it may be scaled-down.
 
-#### atomic-scale-up.kubernetes.io class
+#### best-effort-atomic-scale-up.autoscaling.x-k8s.io class
 
-The `atomic-scale-up.kubernetes.io` aims to provision the resources required for the
+The `best-effort-atomic-scale-up.autoscaling.x-k8s.io` aims to provision the resources required for the
 specified pods in an atomic way. The proposed logic is to:
 1. Try to provision required VMs in one loop.
 2. If it failed, remove the partially provisioned VMs and back-off.
@@ -191,7 +191,7 @@ annotations:
 Previous prosoal included annotations with prefix `cluster-autoscaler.kubernetes.io`
 but were deprecated as part of API reivew.
 
-If those are provided for the pods that consume the ProvReq with `check-capacity.kubernetes.io` class,
+If those are provided for the pods that consume the ProvReq with `check-capacity.autoscaling.x-k8s.io` class,
 the CA will not provision the capacity, even if it was needed (as some other pods might have been
 scheduled on it) and will result in visibility events passed to the ProvReq and pods.
 If those are not passed the CA will behave normally and just provision the capacity if it needed.
@@ -281,9 +281,9 @@ loop. This will require changes in multiple parts of CA:
 The following e2e test scenarios will be created to check whether ProvReq
 handling works as expected:
 
-1.  A new ProvReq with `check-capacity.kubernetes.io` provisioning class is created, CA
+1.  A new ProvReq with `check-capacity.autoscaling.x-k8s.io` provisioning class is created, CA
     checks if there is enough capacity in cluster to provision specified pods.
-2.  A new ProvReq with `atomic-scale-up.kubernetes.io` provisioning class is created, CA
+2.  A new ProvReq with `best-effort-atomic-scale-up.autoscaling.x-k8s.io` provisioning class is created, CA
     picks an appropriate node group scales it up atomically.
 3.  A new atomic ProvReq is created for which a NAP needs to provision a new
     node group. NAP creates it CA scales it atomically.
@@ -311,7 +311,7 @@ which follows the same approach as
 [StorageClass object](https://kubernetes.io/docs/concepts/storage/storage-classes/).
 Such approach would allow administrators of the cluster to introduce a list of allowed
 ProvisioningClasses. Such CRD can also contain a pre set configuration, i.e.
-administrators may set that `atomic-scale-up.kubernetes.io` would retry up to `2h`.
+administrators may set that `best-effort-atomic-scale-up.autoscaling.x-k8s.io` would retry up to `2h`.
 
 Possible CRD definition:
 ```go

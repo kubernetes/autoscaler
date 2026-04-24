@@ -675,9 +675,9 @@ func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory stri
 		AppendRecommendation(
 			test.Recommendation().
 				WithContainer(containerName).
-				WithTarget(containerName, "200m").
-				WithLowerBound(containerName, "200m").
-				WithUpperBound(containerName, "200m").
+				WithTarget("200m", "200Mi").
+				WithLowerBound("200m", "200Mi").
+				WithUpperBound("200m", "200Mi").
 				GetContainerResources()).
 		Get()
 
@@ -719,9 +719,9 @@ func setupPodsForInPlace(f *framework.Framework, hamsterCPU, hamsterMemory strin
 		vpaBuilder = vpaBuilder.AppendRecommendation(
 			test.Recommendation().
 				WithContainer(containerName).
-				WithTarget(containerName, "200m").
-				WithLowerBound(containerName, "200m").
-				WithUpperBound(containerName, "200m").
+				WithTarget("200m", "200Mi").
+				WithLowerBound("200m", "200Mi").
+				WithUpperBound("200m", "200Mi").
 				GetContainerResources())
 	}
 

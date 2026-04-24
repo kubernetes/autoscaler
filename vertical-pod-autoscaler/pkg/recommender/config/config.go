@@ -71,6 +71,8 @@ type RecommenderConfig struct {
 	PrometheusJobName         string
 	HistoryLength             string
 	HistoryResolution         string
+	HistoryCPUMetric          string
+	HistoryMemoryMetric       string
 	QueryTimeout              string
 	PodLabelPrefix            string
 	PodLabelsMetricName       string
@@ -143,6 +145,8 @@ func DefaultRecommenderConfig() *RecommenderConfig {
 		PrometheusJobName:         "kubernetes-cadvisor",
 		HistoryLength:             "8d",
 		HistoryResolution:         "1h",
+		HistoryCPUMetric:          "container_cpu_usage_seconds_total",
+		HistoryMemoryMetric:       "container_memory_working_set_bytes",
 		QueryTimeout:              "5m",
 		PodLabelPrefix:            "pod_label_",
 		PodLabelsMetricName:       "up{job=\"kubernetes-pods\"}",
@@ -216,6 +220,8 @@ func InitRecommenderFlags() *RecommenderConfig {
 	flag.StringVar(&config.PrometheusJobName, "prometheus-cadvisor-job-name", config.PrometheusJobName, `Name of the prometheus job name which scrapes the cAdvisor metrics`)
 	flag.StringVar(&config.HistoryLength, "history-length", config.HistoryLength, `How much time back prometheus have to be queried to get historical metrics`)
 	flag.StringVar(&config.HistoryResolution, "history-resolution", config.HistoryResolution, `Resolution at which Prometheus is queried for historical metrics`)
+	flag.StringVar(&config.HistoryCPUMetric, "history-cpu-metric", config.HistoryCPUMetric, `Name of the metric to use for CPU history when querying Prometheus.`)
+	flag.StringVar(&config.HistoryMemoryMetric, "history-memory-metric", config.HistoryMemoryMetric, `Name of the metric to use for memory history when querying Prometheus`)
 	flag.StringVar(&config.QueryTimeout, "prometheus-query-timeout", config.QueryTimeout, `How long to wait before killing long queries`)
 	flag.StringVar(&config.PodLabelPrefix, "pod-label-prefix", config.PodLabelPrefix, `Which prefix to look for pod labels in metrics`)
 	flag.StringVar(&config.PodLabelsMetricName, "metric-for-pod-labels", config.PodLabelsMetricName, `Which metric to look for pod labels in metrics`)
@@ -282,6 +288,6 @@ func ValidateRecommenderConfig(config *RecommenderConfig) {
 			klog.ErrorS(err, "Unable to read bearer token file", "filename", config.PrometheusBearerTokenFile)
 			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
-		config.PrometheusBearerTokenFile = strings.TrimSpace(string(fileContent))
+		config.PrometheusBearerToken = strings.TrimSpace(string(fileContent))
 	}
 }

@@ -19,11 +19,10 @@ package store
 import (
 	"fmt"
 
-	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
-	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // DeltaSnapshotStore is an implementation of ClusterSnapshotStore optimized for typical Cluster Autoscaler usage - (fork, add stuff, revert), repeated many times per loop.
@@ -143,16 +142,6 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []schedulerinterface.
 	return nodeInfoList
 }
 
-func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) (schedulerinterface.NodeInfo, error) {
-	nodeInfo := schedulerimpl.NewNodeInfo()
-	nodeInfo.SetNode(node)
-	err := data.addNodeInfo(nodeInfo)
-	if err != nil {
-		return nil, err
-	}
-	return nodeInfo, nil
-}
-
 func (data *internalDeltaSnapshotData) addNodeInfo(nodeInfo schedulerinterface.NodeInfo) error {
 	if _, found := data.getNodeInfo(nodeInfo.Node().Name); found {
 		return fmt.Errorf("node %s already in snapshot", nodeInfo.Node().Name)
@@ -238,13 +227,12 @@ func (data *internalDeltaSnapshotData) nodeInfoToModify(nodeName string) (schedu
 	return dni, true
 }
 
-func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
+func (data *internalDeltaSnapshotData) addPodInfo(podInfo schedulerinterface.PodInfo, nodeName string) error {
 	ni, found := data.nodeInfoToModify(nodeName)
 	if !found {
 		return clustersnapshot.ErrNodeNotFound
 	}
 
-	podInfo, _ := schedulerimpl.NewPodInfo(pod)
 	ni.AddPodInfo(podInfo)
 
 	// Maybe consider deleting from the list in the future. Maybe not.
@@ -408,31 +396,23 @@ func NewDeltaSnapshotStore(parallelism int) *DeltaSnapshotStore {
 	return snapshot
 }
 
-// AddSchedulerNodeInfo adds a NodeInfo.
-func (snapshot *DeltaSnapshotStore) AddSchedulerNodeInfo(nodeInfo schedulerinterface.NodeInfo) error {
-	if _, err := snapshot.data.addNode(nodeInfo.Node()); err != nil {
-		return err
-	}
-	for _, podInfo := range nodeInfo.GetPods() {
-		if err := snapshot.data.addPod(podInfo.GetPod(), nodeInfo.Node().Name); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// RemoveSchedulerNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *DeltaSnapshotStore) RemoveSchedulerNodeInfo(nodeName string) error {
+// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *DeltaSnapshotStore) RemoveNodeInfo(nodeName string) error {
 	return snapshot.data.removeNodeInfo(nodeName)
 }
 
-// ForceAddPod adds pod to the snapshot and schedules it to given node.
-func (snapshot *DeltaSnapshotStore) ForceAddPod(pod *apiv1.Pod, nodeName string) error {
-	return snapshot.data.addPod(pod, nodeName)
+// StoreNodeInfo adds the given *framework.NodeInfo to the snapshot without checking scheduler predicates.
+func (snapshot *DeltaSnapshotStore) StoreNodeInfo(nodeInfo *framework.NodeInfo) error {
+	return snapshot.data.addNodeInfo(nodeInfo)
 }
 
-// ForceRemovePod removes pod from the snapshot.
-func (snapshot *DeltaSnapshotStore) ForceRemovePod(namespace, podName, nodeName string) error {
+// StorePodInfo adds pod to the snapshot and schedules it to given node.
+func (snapshot *DeltaSnapshotStore) StorePodInfo(podInfo *framework.PodInfo, nodeName string) error {
+	return snapshot.data.addPodInfo(podInfo, nodeName)
+}
+
+// RemovePodInfo removes pod from the snapshot.
+func (snapshot *DeltaSnapshotStore) RemovePodInfo(namespace, podName, nodeName string) error {
 	return snapshot.data.removePod(namespace, podName, nodeName)
 }
 

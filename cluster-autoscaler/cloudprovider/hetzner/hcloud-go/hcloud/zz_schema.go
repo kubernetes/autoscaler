@@ -442,7 +442,8 @@ func (c *converterImpl) PrimaryIPFromSchema(source schema.PrimaryIP) *PrimaryIP 
 	hcloudPrimaryIP.AutoDelete = source.AutoDelete
 	hcloudPrimaryIP.Blocked = source.Blocked
 	hcloudPrimaryIP.Created = c.timeTimeToTimeTime(source.Created)
-	hcloudPrimaryIP.Datacenter = c.DatacenterFromSchema(source.Datacenter)
+	hcloudPrimaryIP.Location = c.LocationFromSchema(source.Location)
+	hcloudPrimaryIP.Datacenter = c.pSchemaDatacenterToPHcloudDatacenter(source.Datacenter)
 	return &hcloudPrimaryIP
 }
 func (c *converterImpl) SSHKeyFromSchema(source schema.SSHKey) *SSHKey {
@@ -956,7 +957,8 @@ func (c *converterImpl) SchemaFromPrimaryIP(source *PrimaryIP) schema.PrimaryIP 
 		schemaPrimaryIP.AutoDelete = (*source).AutoDelete
 		schemaPrimaryIP.Blocked = (*source).Blocked
 		schemaPrimaryIP.Created = c.timeTimeToTimeTime((*source).Created)
-		schemaPrimaryIP.Datacenter = c.SchemaFromDatacenter((*source).Datacenter)
+		schemaPrimaryIP.Location = c.SchemaFromLocation((*source).Location)
+		schemaPrimaryIP.Datacenter = c.pHcloudDatacenterToPSchemaDatacenter((*source).Datacenter)
 	}
 	return schemaPrimaryIP
 }
@@ -986,6 +988,7 @@ func (c *converterImpl) SchemaFromPrimaryIPCreateOpts(source PrimaryIPCreateOpts
 	schemaPrimaryIPCreateRequest.AssigneeID = source.AssigneeID
 	schemaPrimaryIPCreateRequest.Labels = stringMapToStringMapPtr(source.Labels)
 	schemaPrimaryIPCreateRequest.AutoDelete = source.AutoDelete
+	schemaPrimaryIPCreateRequest.Location = source.Location
 	schemaPrimaryIPCreateRequest.Datacenter = source.Datacenter
 	return schemaPrimaryIPCreateRequest
 }
@@ -1030,7 +1033,7 @@ func (c *converterImpl) SchemaFromServer(source *Server) schema.Server {
 		schemaServer.RescueEnabled = (*source).RescueEnabled
 		schemaServer.ISO = c.pHcloudISOToPSchemaISO((*source).ISO)
 		schemaServer.Locked = (*source).Locked
-		schemaServer.Datacenter = c.SchemaFromDatacenter((*source).Datacenter)
+		schemaServer.Location = c.SchemaFromLocation((*source).Location)
 		schemaServer.Image = c.pHcloudImageToPSchemaImage((*source).Image)
 		schemaServer.Protection = c.hcloudServerProtectionToSchemaServerProtection((*source).Protection)
 		schemaServer.Labels = (*source).Labels
@@ -1048,6 +1051,7 @@ func (c *converterImpl) SchemaFromServer(source *Server) schema.Server {
 				schemaServer.LoadBalancers[k] = c.pHcloudLoadBalancerToInt64((*source).LoadBalancers[k])
 			}
 		}
+		schemaServer.Datacenter = c.pHcloudDatacenterToPSchemaDatacenter((*source).Datacenter)
 	}
 	return schemaServer
 }
@@ -1120,8 +1124,190 @@ func (c *converterImpl) SchemaFromServerType(source *ServerType) schema.ServerTy
 		}
 		schemaServerType.Deprecated = isDeprecationNotNil((*source).DeprecatableResource.Deprecation)
 		schemaServerType.DeprecatableResource = c.hcloudDeprecatableResourceToSchemaDeprecatableResource((*source).DeprecatableResource)
+		if (*source).Locations != nil {
+			schemaServerType.Locations = make([]schema.ServerTypeLocation, len((*source).Locations))
+			for j := 0; j < len((*source).Locations); j++ {
+				schemaServerType.Locations[j] = c.schemaFromServerTypeLocation((*source).Locations[j])
+			}
+		}
 	}
 	return schemaServerType
+}
+func (c *converterImpl) SchemaFromStorageBox(source *StorageBox) schema.StorageBox {
+	var schemaStorageBox schema.StorageBox
+	if source != nil {
+		schemaStorageBox.ID = (*source).ID
+		pString := (*source).Username
+		schemaStorageBox.Username = &pString
+		schemaStorageBox.Status = string((*source).Status)
+		schemaStorageBox.Name = (*source).Name
+		schemaStorageBox.StorageBoxType = c.SchemaFromStorageBoxType((*source).StorageBoxType)
+		schemaStorageBox.Location = c.SchemaFromLocation((*source).Location)
+		schemaStorageBox.AccessSettings = c.hcloudStorageBoxAccessSettingsToSchemaStorageBoxAccessSettings((*source).AccessSettings)
+		pString2 := (*source).Server
+		schemaStorageBox.Server = &pString2
+		pString3 := (*source).System
+		schemaStorageBox.System = &pString3
+		schemaStorageBox.Stats = c.hcloudStorageBoxStatsToSchemaStorageBoxStats((*source).Stats)
+		schemaStorageBox.Labels = (*source).Labels
+		schemaStorageBox.Protection = c.hcloudStorageBoxProtectionToSchemaStorageBoxProtection((*source).Protection)
+		schemaStorageBox.SnapshotPlan = c.pHcloudStorageBoxSnapshotPlanToPSchemaStorageBoxSnapshotPlan((*source).SnapshotPlan)
+		schemaStorageBox.Created = c.timeTimeToTimeTime((*source).Created)
+	}
+	return schemaStorageBox
+}
+func (c *converterImpl) SchemaFromStorageBoxChangeProtectionOpts(source StorageBoxChangeProtectionOpts) schema.StorageBoxChangeProtectionRequest {
+	var schemaStorageBoxChangeProtectionRequest schema.StorageBoxChangeProtectionRequest
+	schemaStorageBoxChangeProtectionRequest.Delete = source.Delete
+	return schemaStorageBoxChangeProtectionRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxChangeTypeOpts(source StorageBoxChangeTypeOpts) schema.StorageBoxChangeTypeRequest {
+	var schemaStorageBoxChangeTypeRequest schema.StorageBoxChangeTypeRequest
+	schemaStorageBoxChangeTypeRequest.StorageBoxType = c.pHcloudStorageBoxTypeToSchemaIDOrName(source.StorageBoxType)
+	return schemaStorageBoxChangeTypeRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxCreateOpts(source StorageBoxCreateOpts) schema.StorageBoxCreateRequest {
+	var schemaStorageBoxCreateRequest schema.StorageBoxCreateRequest
+	schemaStorageBoxCreateRequest.Name = source.Name
+	schemaStorageBoxCreateRequest.StorageBoxType = c.pHcloudStorageBoxTypeToSchemaIDOrName(source.StorageBoxType)
+	schemaStorageBoxCreateRequest.Location = c.pHcloudLocationToSchemaIDOrName(source.Location)
+	schemaStorageBoxCreateRequest.Labels = stringMapToStringMapPtr(source.Labels)
+	schemaStorageBoxCreateRequest.Password = source.Password
+	schemaStorageBoxCreateRequest.SSHKeys = mapSSHKeyPtrSliceToPublicKeySlice(source.SSHKeys)
+	schemaStorageBoxCreateRequest.AccessSettings = c.pHcloudStorageBoxCreateOptsAccessSettingsToPSchemaStorageBoxCreateRequestAccessSettings(source.AccessSettings)
+	return schemaStorageBoxCreateRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxEnableSnapshotPlanOpts(source StorageBoxEnableSnapshotPlanOpts) schema.StorageBoxEnableSnapshotPlanRequest {
+	var schemaStorageBoxEnableSnapshotPlanRequest schema.StorageBoxEnableSnapshotPlanRequest
+	schemaStorageBoxEnableSnapshotPlanRequest.MaxSnapshots = source.MaxSnapshots
+	schemaStorageBoxEnableSnapshotPlanRequest.Minute = source.Minute
+	schemaStorageBoxEnableSnapshotPlanRequest.Hour = source.Hour
+	schemaStorageBoxEnableSnapshotPlanRequest.DayOfWeek = mapStorageBoxWeekdayPtrToIntPtr(source.DayOfWeek)
+	schemaStorageBoxEnableSnapshotPlanRequest.DayOfMonth = source.DayOfMonth
+	return schemaStorageBoxEnableSnapshotPlanRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxResetPasswordOpts(source StorageBoxResetPasswordOpts) schema.StorageBoxResetPasswordRequest {
+	var schemaStorageBoxResetPasswordRequest schema.StorageBoxResetPasswordRequest
+	schemaStorageBoxResetPasswordRequest.Password = source.Password
+	return schemaStorageBoxResetPasswordRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxRollbackSnapshotOpts(source StorageBoxRollbackSnapshotOpts) schema.StorageBoxRollbackSnapshotRequest {
+	var schemaStorageBoxRollbackSnapshotRequest schema.StorageBoxRollbackSnapshotRequest
+	schemaStorageBoxRollbackSnapshotRequest.Snapshot = c.pHcloudStorageBoxSnapshotToSchemaIDOrName(source.Snapshot)
+	return schemaStorageBoxRollbackSnapshotRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxSnapshot(source *StorageBoxSnapshot) schema.StorageBoxSnapshot {
+	var schemaStorageBoxSnapshot schema.StorageBoxSnapshot
+	if source != nil {
+		schemaStorageBoxSnapshot.ID = (*source).ID
+		schemaStorageBoxSnapshot.Name = (*source).Name
+		schemaStorageBoxSnapshot.Description = (*source).Description
+		schemaStorageBoxSnapshot.Stats = c.hcloudStorageBoxSnapshotStatsToSchemaStorageBoxSnapshotStats((*source).Stats)
+		schemaStorageBoxSnapshot.IsAutomatic = (*source).IsAutomatic
+		schemaStorageBoxSnapshot.Labels = (*source).Labels
+		schemaStorageBoxSnapshot.Created = c.timeTimeToTimeTime((*source).Created)
+		schemaStorageBoxSnapshot.StorageBox = int64FromStorageBox((*source).StorageBox)
+	}
+	return schemaStorageBoxSnapshot
+}
+func (c *converterImpl) SchemaFromStorageBoxSnapshotCreateOpts(source StorageBoxSnapshotCreateOpts) schema.StorageBoxSnapshotCreateRequest {
+	var schemaStorageBoxSnapshotCreateRequest schema.StorageBoxSnapshotCreateRequest
+	schemaStorageBoxSnapshotCreateRequest.Description = source.Description
+	schemaStorageBoxSnapshotCreateRequest.Labels = source.Labels
+	return schemaStorageBoxSnapshotCreateRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxSnapshotUpdateOpts(source StorageBoxSnapshotUpdateOpts) schema.StorageBoxSnapshotUpdateRequest {
+	var schemaStorageBoxSnapshotUpdateRequest schema.StorageBoxSnapshotUpdateRequest
+	schemaStorageBoxSnapshotUpdateRequest.Description = source.Description
+	schemaStorageBoxSnapshotUpdateRequest.Labels = stringMapToStringMapPtr(source.Labels)
+	return schemaStorageBoxSnapshotUpdateRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxSubaccount(source *StorageBoxSubaccount) schema.StorageBoxSubaccount {
+	var schemaStorageBoxSubaccount schema.StorageBoxSubaccount
+	if source != nil {
+		schemaStorageBoxSubaccount.ID = (*source).ID
+		schemaStorageBoxSubaccount.Name = (*source).Name
+		schemaStorageBoxSubaccount.Username = (*source).Username
+		schemaStorageBoxSubaccount.HomeDirectory = (*source).HomeDirectory
+		schemaStorageBoxSubaccount.Server = (*source).Server
+		schemaStorageBoxSubaccount.AccessSettings = c.pHcloudStorageBoxSubaccountAccessSettingsToSchemaStorageBoxSubaccountAccessSettings((*source).AccessSettings)
+		schemaStorageBoxSubaccount.Description = (*source).Description
+		schemaStorageBoxSubaccount.Labels = (*source).Labels
+		schemaStorageBoxSubaccount.Created = c.timeTimeToTimeTime((*source).Created)
+		schemaStorageBoxSubaccount.StorageBox = int64FromStorageBox((*source).StorageBox)
+	}
+	return schemaStorageBoxSubaccount
+}
+func (c *converterImpl) SchemaFromStorageBoxSubaccountChangeHomeDirectoryOpts(source StorageBoxSubaccountChangeHomeDirectoryOpts) schema.StorageBoxSubaccountChangeHomeDirectoryRequest {
+	var schemaStorageBoxSubaccountChangeHomeDirectoryRequest schema.StorageBoxSubaccountChangeHomeDirectoryRequest
+	schemaStorageBoxSubaccountChangeHomeDirectoryRequest.HomeDirectory = source.HomeDirectory
+	return schemaStorageBoxSubaccountChangeHomeDirectoryRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxSubaccountCreateOpts(source StorageBoxSubaccountCreateOpts) schema.StorageBoxSubaccountCreateRequest {
+	var schemaStorageBoxSubaccountCreateRequest schema.StorageBoxSubaccountCreateRequest
+	schemaStorageBoxSubaccountCreateRequest.Name = source.Name
+	schemaStorageBoxSubaccountCreateRequest.HomeDirectory = source.HomeDirectory
+	schemaStorageBoxSubaccountCreateRequest.Password = source.Password
+	schemaStorageBoxSubaccountCreateRequest.Description = source.Description
+	schemaStorageBoxSubaccountCreateRequest.AccessSettings = c.pHcloudStorageBoxSubaccountCreateOptsAccessSettingsToPSchemaStorageBoxSubaccountCreateRequestAccessSettings(source.AccessSettings)
+	schemaStorageBoxSubaccountCreateRequest.Labels = source.Labels
+	return schemaStorageBoxSubaccountCreateRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxSubaccountResetPasswordOpts(source StorageBoxSubaccountResetPasswordOpts) schema.StorageBoxSubaccountResetPasswordRequest {
+	var schemaStorageBoxSubaccountResetPasswordRequest schema.StorageBoxSubaccountResetPasswordRequest
+	schemaStorageBoxSubaccountResetPasswordRequest.Password = source.Password
+	return schemaStorageBoxSubaccountResetPasswordRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxSubaccountUpdateAccessSettingsOpts(source StorageBoxSubaccountUpdateAccessSettingsOpts) schema.StorageBoxSubaccountUpdateAccessSettingsRequest {
+	var schemaStorageBoxSubaccountUpdateAccessSettingsRequest schema.StorageBoxSubaccountUpdateAccessSettingsRequest
+	schemaStorageBoxSubaccountUpdateAccessSettingsRequest.ReachableExternally = source.ReachableExternally
+	schemaStorageBoxSubaccountUpdateAccessSettingsRequest.Readonly = source.Readonly
+	schemaStorageBoxSubaccountUpdateAccessSettingsRequest.SambaEnabled = source.SambaEnabled
+	schemaStorageBoxSubaccountUpdateAccessSettingsRequest.SSHEnabled = source.SSHEnabled
+	schemaStorageBoxSubaccountUpdateAccessSettingsRequest.WebDAVEnabled = source.WebDAVEnabled
+	return schemaStorageBoxSubaccountUpdateAccessSettingsRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxSubaccountUpdateOpts(source StorageBoxSubaccountUpdateOpts) schema.StorageBoxSubaccountUpdateRequest {
+	var schemaStorageBoxSubaccountUpdateRequest schema.StorageBoxSubaccountUpdateRequest
+	schemaStorageBoxSubaccountUpdateRequest.Name = source.Name
+	schemaStorageBoxSubaccountUpdateRequest.Description = source.Description
+	schemaStorageBoxSubaccountUpdateRequest.Labels = stringMapToStringMapPtr(source.Labels)
+	return schemaStorageBoxSubaccountUpdateRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxType(source *StorageBoxType) schema.StorageBoxType {
+	var schemaStorageBoxType schema.StorageBoxType
+	if source != nil {
+		schemaStorageBoxType.ID = (*source).ID
+		schemaStorageBoxType.Name = (*source).Name
+		schemaStorageBoxType.Description = (*source).Description
+		schemaStorageBoxType.SnapshotLimit = (*source).SnapshotLimit
+		schemaStorageBoxType.AutomaticSnapshotLimit = (*source).AutomaticSnapshotLimit
+		schemaStorageBoxType.SubaccountsLimit = (*source).SubaccountsLimit
+		schemaStorageBoxType.Size = (*source).Size
+		if (*source).Pricings != nil {
+			schemaStorageBoxType.Prices = make([]schema.StorageBoxTypePrice, len((*source).Pricings))
+			for i := 0; i < len((*source).Pricings); i++ {
+				schemaStorageBoxType.Prices[i] = c.hcloudStorageBoxTypeLocationPricingToSchemaStorageBoxTypePrice((*source).Pricings[i])
+			}
+		}
+		schemaStorageBoxType.DeprecatableResource = c.hcloudDeprecatableResourceToSchemaDeprecatableResource((*source).DeprecatableResource)
+	}
+	return schemaStorageBoxType
+}
+func (c *converterImpl) SchemaFromStorageBoxUpdateAccessSettingsOpts(source StorageBoxUpdateAccessSettingsOpts) schema.StorageBoxUpdateAccessSettingsRequest {
+	var schemaStorageBoxUpdateAccessSettingsRequest schema.StorageBoxUpdateAccessSettingsRequest
+	schemaStorageBoxUpdateAccessSettingsRequest.ReachableExternally = source.ReachableExternally
+	schemaStorageBoxUpdateAccessSettingsRequest.SambaEnabled = source.SambaEnabled
+	schemaStorageBoxUpdateAccessSettingsRequest.SSHEnabled = source.SSHEnabled
+	schemaStorageBoxUpdateAccessSettingsRequest.WebDAVEnabled = source.WebDAVEnabled
+	schemaStorageBoxUpdateAccessSettingsRequest.ZFSEnabled = source.ZFSEnabled
+	return schemaStorageBoxUpdateAccessSettingsRequest
+}
+func (c *converterImpl) SchemaFromStorageBoxUpdateOpts(source StorageBoxUpdateOpts) schema.StorageBoxUpdateRequest {
+	var schemaStorageBoxUpdateRequest schema.StorageBoxUpdateRequest
+	schemaStorageBoxUpdateRequest.Name = source.Name
+	schemaStorageBoxUpdateRequest.Labels = stringMapToStringMapPtr(source.Labels)
+	return schemaStorageBoxUpdateRequest
 }
 func (c *converterImpl) SchemaFromVolume(source *Volume) schema.Volume {
 	var schemaVolume schema.Volume
@@ -1140,6 +1326,169 @@ func (c *converterImpl) SchemaFromVolume(source *Volume) schema.Volume {
 	}
 	return schemaVolume
 }
+func (c *converterImpl) SchemaFromZone(source *Zone) schema.Zone {
+	var schemaZone schema.Zone
+	if source != nil {
+		schemaZone.ID = (*source).ID
+		schemaZone.Name = (*source).Name
+		schemaZone.Created = c.timeTimeToTimeTime((*source).Created)
+		schemaZone.TTL = (*source).TTL
+		schemaZone.Mode = string((*source).Mode)
+		if (*source).PrimaryNameservers != nil {
+			schemaZone.PrimaryNameservers = make([]schema.ZonePrimaryNameserver, len((*source).PrimaryNameservers))
+			for i := 0; i < len((*source).PrimaryNameservers); i++ {
+				schemaZone.PrimaryNameservers[i] = c.hcloudZonePrimaryNameserverToSchemaZonePrimaryNameserver((*source).PrimaryNameservers[i])
+			}
+		}
+		schemaZone.Protection = c.hcloudZoneProtectionToSchemaZoneProtection((*source).Protection)
+		schemaZone.Labels = (*source).Labels
+		schemaZone.AuthoritativeNameservers = c.hcloudZoneAuthoritativeNameserversToSchemaZoneAuthoritativeNameservers((*source).AuthoritativeNameservers)
+		schemaZone.Registrar = string((*source).Registrar)
+		schemaZone.Status = string((*source).Status)
+		schemaZone.RecordCount = (*source).RecordCount
+	}
+	return schemaZone
+}
+func (c *converterImpl) SchemaFromZoneChangePrimaryNameserversOpts(source ZoneChangePrimaryNameserversOpts) schema.ZoneChangePrimaryNameserversRequest {
+	var schemaZoneChangePrimaryNameserversRequest schema.ZoneChangePrimaryNameserversRequest
+	if source.PrimaryNameservers != nil {
+		schemaZoneChangePrimaryNameserversRequest.PrimaryNameservers = make([]schema.ZoneChangePrimaryNameserversRequestPrimaryNameserver, len(source.PrimaryNameservers))
+		for i := 0; i < len(source.PrimaryNameservers); i++ {
+			schemaZoneChangePrimaryNameserversRequest.PrimaryNameservers[i] = c.hcloudZoneChangePrimaryNameserversOptsPrimaryNameserverToSchemaZoneChangePrimaryNameserversRequestPrimaryNameserver(source.PrimaryNameservers[i])
+		}
+	}
+	return schemaZoneChangePrimaryNameserversRequest
+}
+func (c *converterImpl) SchemaFromZoneChangeProtectionOpts(source ZoneChangeProtectionOpts) schema.ZoneChangeProtectionRequest {
+	var schemaZoneChangeProtectionRequest schema.ZoneChangeProtectionRequest
+	schemaZoneChangeProtectionRequest.Delete = source.Delete
+	return schemaZoneChangeProtectionRequest
+}
+func (c *converterImpl) SchemaFromZoneChangeTTLOpts(source ZoneChangeTTLOpts) schema.ZoneChangeTTLRequest {
+	var schemaZoneChangeTTLRequest schema.ZoneChangeTTLRequest
+	schemaZoneChangeTTLRequest.TTL = source.TTL
+	return schemaZoneChangeTTLRequest
+}
+func (c *converterImpl) SchemaFromZoneCreateOpts(source ZoneCreateOpts) schema.ZoneCreateRequest {
+	var schemaZoneCreateRequest schema.ZoneCreateRequest
+	schemaZoneCreateRequest.Name = source.Name
+	schemaZoneCreateRequest.Mode = string(source.Mode)
+	schemaZoneCreateRequest.TTL = source.TTL
+	schemaZoneCreateRequest.Labels = stringMapToStringMapPtr(source.Labels)
+	if source.PrimaryNameservers != nil {
+		schemaZoneCreateRequest.PrimaryNameservers = make([]schema.ZoneCreateRequestPrimaryNameserver, len(source.PrimaryNameservers))
+		for i := 0; i < len(source.PrimaryNameservers); i++ {
+			schemaZoneCreateRequest.PrimaryNameservers[i] = c.hcloudZoneCreateOptsPrimaryNameserverToSchemaZoneCreateRequestPrimaryNameserver(source.PrimaryNameservers[i])
+		}
+	}
+	if source.RRSets != nil {
+		schemaZoneCreateRequest.RRSets = make([]schema.ZoneCreateRequestRRSet, len(source.RRSets))
+		for j := 0; j < len(source.RRSets); j++ {
+			schemaZoneCreateRequest.RRSets[j] = c.hcloudZoneCreateOptsRRSetToSchemaZoneCreateRequestRRSet(source.RRSets[j])
+		}
+	}
+	schemaZoneCreateRequest.Zonefile = source.Zonefile
+	return schemaZoneCreateRequest
+}
+func (c *converterImpl) SchemaFromZoneImportZonefileOpts(source ZoneImportZonefileOpts) schema.ZoneImportZonefileRequest {
+	var schemaZoneImportZonefileRequest schema.ZoneImportZonefileRequest
+	schemaZoneImportZonefileRequest.Zonefile = source.Zonefile
+	return schemaZoneImportZonefileRequest
+}
+func (c *converterImpl) SchemaFromZoneRRSet(source *ZoneRRSet) schema.ZoneRRSet {
+	var schemaZoneRRSet schema.ZoneRRSet
+	if source != nil {
+		schemaZoneRRSet.ID = (*source).ID
+		schemaZoneRRSet.Name = (*source).Name
+		schemaZoneRRSet.Type = string((*source).Type)
+		schemaZoneRRSet.TTL = (*source).TTL
+		schemaZoneRRSet.Labels = (*source).Labels
+		schemaZoneRRSet.Protection = c.hcloudZoneRRSetProtectionToSchemaZoneRRSetProtection((*source).Protection)
+		if (*source).Records != nil {
+			schemaZoneRRSet.Records = make([]schema.ZoneRRSetRecord, len((*source).Records))
+			for i := 0; i < len((*source).Records); i++ {
+				schemaZoneRRSet.Records[i] = c.hcloudZoneRRSetRecordToSchemaZoneRRSetRecord((*source).Records[i])
+			}
+		}
+		schemaZoneRRSet.Zone = int64FromZone((*source).Zone)
+	}
+	return schemaZoneRRSet
+}
+func (c *converterImpl) SchemaFromZoneRRSetAddRecordsOpts(source ZoneRRSetAddRecordsOpts) schema.ZoneRRSetAddRecordsRequest {
+	var schemaZoneRRSetAddRecordsRequest schema.ZoneRRSetAddRecordsRequest
+	if source.Records != nil {
+		schemaZoneRRSetAddRecordsRequest.Records = make([]schema.ZoneRRSetRecord, len(source.Records))
+		for i := 0; i < len(source.Records); i++ {
+			schemaZoneRRSetAddRecordsRequest.Records[i] = c.hcloudZoneRRSetRecordToSchemaZoneRRSetRecord(source.Records[i])
+		}
+	}
+	schemaZoneRRSetAddRecordsRequest.TTL = source.TTL
+	return schemaZoneRRSetAddRecordsRequest
+}
+func (c *converterImpl) SchemaFromZoneRRSetChangeProtectionOpts(source ZoneRRSetChangeProtectionOpts) schema.ZoneRRSetChangeProtectionRequest {
+	var schemaZoneRRSetChangeProtectionRequest schema.ZoneRRSetChangeProtectionRequest
+	schemaZoneRRSetChangeProtectionRequest.Change = source.Change
+	return schemaZoneRRSetChangeProtectionRequest
+}
+func (c *converterImpl) SchemaFromZoneRRSetChangeTTLOpts(source ZoneRRSetChangeTTLOpts) schema.ZoneRRSetChangeTTLRequest {
+	var schemaZoneRRSetChangeTTLRequest schema.ZoneRRSetChangeTTLRequest
+	schemaZoneRRSetChangeTTLRequest.TTL = source.TTL
+	return schemaZoneRRSetChangeTTLRequest
+}
+func (c *converterImpl) SchemaFromZoneRRSetCreateOpts(source ZoneRRSetCreateOpts) schema.ZoneRRSetCreateRequest {
+	var schemaZoneRRSetCreateRequest schema.ZoneRRSetCreateRequest
+	schemaZoneRRSetCreateRequest.Name = source.Name
+	schemaZoneRRSetCreateRequest.Type = string(source.Type)
+	schemaZoneRRSetCreateRequest.TTL = source.TTL
+	schemaZoneRRSetCreateRequest.Labels = stringMapToStringMapPtr(source.Labels)
+	if source.Records != nil {
+		schemaZoneRRSetCreateRequest.Records = make([]schema.ZoneRRSetRecord, len(source.Records))
+		for i := 0; i < len(source.Records); i++ {
+			schemaZoneRRSetCreateRequest.Records[i] = c.hcloudZoneRRSetRecordToSchemaZoneRRSetRecord(source.Records[i])
+		}
+	}
+	return schemaZoneRRSetCreateRequest
+}
+func (c *converterImpl) SchemaFromZoneRRSetRemoveRecordsOpts(source ZoneRRSetRemoveRecordsOpts) schema.ZoneRRSetRemoveRecordsRequest {
+	var schemaZoneRRSetRemoveRecordsRequest schema.ZoneRRSetRemoveRecordsRequest
+	if source.Records != nil {
+		schemaZoneRRSetRemoveRecordsRequest.Records = make([]schema.ZoneRRSetRecord, len(source.Records))
+		for i := 0; i < len(source.Records); i++ {
+			schemaZoneRRSetRemoveRecordsRequest.Records[i] = c.hcloudZoneRRSetRecordToSchemaZoneRRSetRecord(source.Records[i])
+		}
+	}
+	return schemaZoneRRSetRemoveRecordsRequest
+}
+func (c *converterImpl) SchemaFromZoneRRSetSetRecordsOpts(source ZoneRRSetSetRecordsOpts) schema.ZoneRRSetSetRecordsRequest {
+	var schemaZoneRRSetSetRecordsRequest schema.ZoneRRSetSetRecordsRequest
+	if source.Records != nil {
+		schemaZoneRRSetSetRecordsRequest.Records = make([]schema.ZoneRRSetRecord, len(source.Records))
+		for i := 0; i < len(source.Records); i++ {
+			schemaZoneRRSetSetRecordsRequest.Records[i] = c.hcloudZoneRRSetRecordToSchemaZoneRRSetRecord(source.Records[i])
+		}
+	}
+	return schemaZoneRRSetSetRecordsRequest
+}
+func (c *converterImpl) SchemaFromZoneRRSetUpdateOpts(source ZoneRRSetUpdateOpts) schema.ZoneRRSetUpdateRequest {
+	var schemaZoneRRSetUpdateRequest schema.ZoneRRSetUpdateRequest
+	schemaZoneRRSetUpdateRequest.Labels = stringMapToStringMapPtr(source.Labels)
+	return schemaZoneRRSetUpdateRequest
+}
+func (c *converterImpl) SchemaFromZoneRRSetUpdateRecordsOpts(source ZoneRRSetUpdateRecordsOpts) schema.ZoneRRSetUpdateRecordsRequest {
+	var schemaZoneRRSetUpdateRecordsRequest schema.ZoneRRSetUpdateRecordsRequest
+	if source.Records != nil {
+		schemaZoneRRSetUpdateRecordsRequest.Records = make([]schema.ZoneRRSetUpdateRecordsRequestRecord, len(source.Records))
+		for i := 0; i < len(source.Records); i++ {
+			schemaZoneRRSetUpdateRecordsRequest.Records[i] = c.hcloudZoneRRSetRecordToSchemaZoneRRSetUpdateRecordsRequestRecord(source.Records[i])
+		}
+	}
+	return schemaZoneRRSetUpdateRecordsRequest
+}
+func (c *converterImpl) SchemaFromZoneUpdateOpts(source ZoneUpdateOpts) schema.ZoneUpdateRequest {
+	var schemaZoneUpdateRequest schema.ZoneUpdateRequest
+	schemaZoneUpdateRequest.Labels = stringMapToStringMapPtr(source.Labels)
+	return schemaZoneUpdateRequest
+}
 func (c *converterImpl) ServerFromSchema(source schema.Server) *Server {
 	var hcloudServer Server
 	hcloudServer.ID = source.ID
@@ -1154,7 +1503,7 @@ func (c *converterImpl) ServerFromSchema(source schema.Server) *Server {
 		}
 	}
 	hcloudServer.ServerType = c.ServerTypeFromSchema(source.ServerType)
-	hcloudServer.Datacenter = c.DatacenterFromSchema(source.Datacenter)
+	hcloudServer.Location = c.LocationFromSchema(source.Location)
 	hcloudServer.IncludedTraffic = source.IncludedTraffic
 	if source.OutgoingTraffic != nil {
 		hcloudServer.OutgoingTraffic = *source.OutgoingTraffic
@@ -1186,6 +1535,7 @@ func (c *converterImpl) ServerFromSchema(source schema.Server) *Server {
 			hcloudServer.LoadBalancers[k] = &hcloudLoadBalancer
 		}
 	}
+	hcloudServer.Datacenter = c.pSchemaDatacenterToPHcloudDatacenter(source.Datacenter)
 	return &hcloudServer
 }
 func (c *converterImpl) ServerMetricsFromSchema(source *schema.ServerGetMetricsResponse) (*ServerMetrics, error) {
@@ -1278,7 +1628,96 @@ func (c *converterImpl) ServerTypeFromSchema(source schema.ServerType) *ServerTy
 		}
 	}
 	hcloudServerType.DeprecatableResource = c.schemaDeprecatableResourceToHcloudDeprecatableResource(source.DeprecatableResource)
+	if source.Locations != nil {
+		hcloudServerType.Locations = make([]ServerTypeLocation, len(source.Locations))
+		for j := 0; j < len(source.Locations); j++ {
+			hcloudServerType.Locations[j] = c.serverTypeLocationFromSchema(source.Locations[j])
+		}
+	}
 	return &hcloudServerType
+}
+func (c *converterImpl) StorageBoxFromSchema(source schema.StorageBox) *StorageBox {
+	var hcloudStorageBox StorageBox
+	hcloudStorageBox.ID = source.ID
+	if source.Username != nil {
+		hcloudStorageBox.Username = *source.Username
+	}
+	hcloudStorageBox.Status = StorageBoxStatus(source.Status)
+	hcloudStorageBox.Name = source.Name
+	hcloudStorageBox.StorageBoxType = c.StorageBoxTypeFromSchema(source.StorageBoxType)
+	hcloudStorageBox.Location = c.LocationFromSchema(source.Location)
+	hcloudStorageBox.AccessSettings = c.schemaStorageBoxAccessSettingsToHcloudStorageBoxAccessSettings(source.AccessSettings)
+	if source.Server != nil {
+		hcloudStorageBox.Server = *source.Server
+	}
+	if source.System != nil {
+		hcloudStorageBox.System = *source.System
+	}
+	hcloudStorageBox.Stats = c.schemaStorageBoxStatsToHcloudStorageBoxStats(source.Stats)
+	hcloudStorageBox.Labels = source.Labels
+	hcloudStorageBox.Protection = c.schemaStorageBoxProtectionToHcloudStorageBoxProtection(source.Protection)
+	hcloudStorageBox.SnapshotPlan = c.pSchemaStorageBoxSnapshotPlanToPHcloudStorageBoxSnapshotPlan(source.SnapshotPlan)
+	hcloudStorageBox.Created = c.timeTimeToTimeTime(source.Created)
+	return &hcloudStorageBox
+}
+func (c *converterImpl) StorageBoxSnapshotFromSchema(source schema.StorageBoxSnapshot) *StorageBoxSnapshot {
+	var hcloudStorageBoxSnapshot StorageBoxSnapshot
+	hcloudStorageBoxSnapshot.ID = source.ID
+	hcloudStorageBoxSnapshot.Name = source.Name
+	hcloudStorageBoxSnapshot.Description = source.Description
+	hcloudStorageBoxSnapshot.Stats = c.schemaStorageBoxSnapshotStatsToHcloudStorageBoxSnapshotStats(source.Stats)
+	hcloudStorageBoxSnapshot.IsAutomatic = source.IsAutomatic
+	hcloudStorageBoxSnapshot.Labels = source.Labels
+	hcloudStorageBoxSnapshot.Created = c.timeTimeToTimeTime(source.Created)
+	hcloudStorageBoxSnapshot.StorageBox = storageBoxFromInt64(source.StorageBox)
+	return &hcloudStorageBoxSnapshot
+}
+func (c *converterImpl) StorageBoxSnapshotPlanFromSchema(source schema.StorageBoxSnapshotPlan) StorageBoxSnapshotPlan {
+	var hcloudStorageBoxSnapshotPlan StorageBoxSnapshotPlan
+	hcloudStorageBoxSnapshotPlan.MaxSnapshots = source.MaxSnapshots
+	hcloudStorageBoxSnapshotPlan.Minute = source.Minute
+	hcloudStorageBoxSnapshotPlan.Hour = source.Hour
+	hcloudStorageBoxSnapshotPlan.DayOfWeek = mapStorageBoxIntPtrToWeekdayPtr(source.DayOfWeek)
+	hcloudStorageBoxSnapshotPlan.DayOfMonth = source.DayOfMonth
+	return hcloudStorageBoxSnapshotPlan
+}
+func (c *converterImpl) StorageBoxSubaccountFromCreateResponse(source schema.StorageBoxSubaccountCreateResponseSubaccount) *StorageBoxSubaccount {
+	var hcloudStorageBoxSubaccount StorageBoxSubaccount
+	hcloudStorageBoxSubaccount.ID = source.ID
+	hcloudStorageBoxSubaccount.StorageBox = storageBoxFromInt64(source.StorageBox)
+	return &hcloudStorageBoxSubaccount
+}
+func (c *converterImpl) StorageBoxSubaccountFromSchema(source schema.StorageBoxSubaccount) *StorageBoxSubaccount {
+	var hcloudStorageBoxSubaccount StorageBoxSubaccount
+	hcloudStorageBoxSubaccount.ID = source.ID
+	hcloudStorageBoxSubaccount.Name = source.Name
+	hcloudStorageBoxSubaccount.Username = source.Username
+	hcloudStorageBoxSubaccount.HomeDirectory = source.HomeDirectory
+	hcloudStorageBoxSubaccount.Server = source.Server
+	hcloudStorageBoxSubaccount.AccessSettings = c.schemaStorageBoxSubaccountAccessSettingsToPHcloudStorageBoxSubaccountAccessSettings(source.AccessSettings)
+	hcloudStorageBoxSubaccount.Description = source.Description
+	hcloudStorageBoxSubaccount.Labels = source.Labels
+	hcloudStorageBoxSubaccount.Created = c.timeTimeToTimeTime(source.Created)
+	hcloudStorageBoxSubaccount.StorageBox = storageBoxFromInt64(source.StorageBox)
+	return &hcloudStorageBoxSubaccount
+}
+func (c *converterImpl) StorageBoxTypeFromSchema(source schema.StorageBoxType) *StorageBoxType {
+	var hcloudStorageBoxType StorageBoxType
+	hcloudStorageBoxType.ID = source.ID
+	hcloudStorageBoxType.Name = source.Name
+	hcloudStorageBoxType.Description = source.Description
+	hcloudStorageBoxType.SnapshotLimit = source.SnapshotLimit
+	hcloudStorageBoxType.AutomaticSnapshotLimit = source.AutomaticSnapshotLimit
+	hcloudStorageBoxType.SubaccountsLimit = source.SubaccountsLimit
+	hcloudStorageBoxType.Size = source.Size
+	if source.Prices != nil {
+		hcloudStorageBoxType.Pricings = make([]StorageBoxTypeLocationPricing, len(source.Prices))
+		for i := 0; i < len(source.Prices); i++ {
+			hcloudStorageBoxType.Pricings[i] = c.schemaStorageBoxTypePriceToHcloudStorageBoxTypeLocationPricing(source.Prices[i])
+		}
+	}
+	hcloudStorageBoxType.DeprecatableResource = c.schemaDeprecatableResourceToHcloudDeprecatableResource(source.DeprecatableResource)
+	return &hcloudStorageBoxType
 }
 func (c *converterImpl) VolumeFromSchema(source schema.Volume) *Volume {
 	var hcloudVolume Volume
@@ -1297,6 +1736,48 @@ func (c *converterImpl) VolumeFromSchema(source schema.Volume) *Volume {
 	hcloudVolume.LinuxDevice = source.LinuxDevice
 	hcloudVolume.Created = c.timeTimeToTimeTime(source.Created)
 	return &hcloudVolume
+}
+func (c *converterImpl) ZoneFromSchema(source schema.Zone) *Zone {
+	var hcloudZone Zone
+	hcloudZone.ID = source.ID
+	hcloudZone.Name = source.Name
+	hcloudZone.Created = c.timeTimeToTimeTime(source.Created)
+	hcloudZone.TTL = source.TTL
+	hcloudZone.Mode = ZoneMode(source.Mode)
+	if source.PrimaryNameservers != nil {
+		hcloudZone.PrimaryNameservers = make([]ZonePrimaryNameserver, len(source.PrimaryNameservers))
+		for i := 0; i < len(source.PrimaryNameservers); i++ {
+			hcloudZone.PrimaryNameservers[i] = c.schemaZonePrimaryNameserverToHcloudZonePrimaryNameserver(source.PrimaryNameservers[i])
+		}
+	}
+	hcloudZone.Protection = c.schemaZoneProtectionToHcloudZoneProtection(source.Protection)
+	hcloudZone.Labels = source.Labels
+	hcloudZone.RecordCount = source.RecordCount
+	hcloudZone.AuthoritativeNameservers = c.schemaZoneAuthoritativeNameserversToHcloudZoneAuthoritativeNameservers(source.AuthoritativeNameservers)
+	hcloudZone.Registrar = ZoneRegistrar(source.Registrar)
+	hcloudZone.Status = ZoneStatus(source.Status)
+	return &hcloudZone
+}
+func (c *converterImpl) ZoneRRSetFromSchema(source schema.ZoneRRSet) *ZoneRRSet {
+	var hcloudZoneRRSet ZoneRRSet
+	hcloudZoneRRSet.Zone = zoneFromInt64(source.Zone)
+	hcloudZoneRRSet.ID = source.ID
+	hcloudZoneRRSet.Name = source.Name
+	hcloudZoneRRSet.Type = ZoneRRSetType(source.Type)
+	hcloudZoneRRSet.TTL = source.TTL
+	hcloudZoneRRSet.Labels = source.Labels
+	if source.Records != nil {
+		hcloudZoneRRSet.Records = make([]ZoneRRSetRecord, len(source.Records))
+		for i := 0; i < len(source.Records); i++ {
+			hcloudZoneRRSet.Records[i] = c.schemaZoneRRSetRecordToHcloudZoneRRSetRecord(source.Records[i])
+		}
+	}
+	hcloudZoneRRSet.Protection = c.schemaZoneRRSetProtectionToHcloudZoneRRSetProtection(source.Protection)
+	return &hcloudZoneRRSet
+}
+func (c *converterImpl) ZoneRRSetRecordFromSchema(source schema.ZoneRRSetRecord) *ZoneRRSetRecord {
+	hcloudZoneRRSetRecord := c.schemaZoneRRSetRecordToHcloudZoneRRSetRecord(source)
+	return &hcloudZoneRRSetRecord
 }
 func (c *converterImpl) hcloudCertificateStatusTypeToString(source CertificateStatusType) string {
 	return string(source)
@@ -1485,10 +1966,113 @@ func (c *converterImpl) hcloudServerProtectionToSchemaServerProtection(source Se
 	schemaServerProtection.Rebuild = source.Rebuild
 	return schemaServerProtection
 }
+func (c *converterImpl) hcloudStorageBoxAccessSettingsToSchemaStorageBoxAccessSettings(source StorageBoxAccessSettings) schema.StorageBoxAccessSettings {
+	var schemaStorageBoxAccessSettings schema.StorageBoxAccessSettings
+	schemaStorageBoxAccessSettings.ReachableExternally = source.ReachableExternally
+	schemaStorageBoxAccessSettings.SambaEnabled = source.SambaEnabled
+	schemaStorageBoxAccessSettings.SSHEnabled = source.SSHEnabled
+	schemaStorageBoxAccessSettings.WebDAVEnabled = source.WebDAVEnabled
+	schemaStorageBoxAccessSettings.ZFSEnabled = source.ZFSEnabled
+	return schemaStorageBoxAccessSettings
+}
+func (c *converterImpl) hcloudStorageBoxProtectionToSchemaStorageBoxProtection(source StorageBoxProtection) schema.StorageBoxProtection {
+	var schemaStorageBoxProtection schema.StorageBoxProtection
+	schemaStorageBoxProtection.Delete = source.Delete
+	return schemaStorageBoxProtection
+}
+func (c *converterImpl) hcloudStorageBoxSnapshotStatsToSchemaStorageBoxSnapshotStats(source StorageBoxSnapshotStats) schema.StorageBoxSnapshotStats {
+	var schemaStorageBoxSnapshotStats schema.StorageBoxSnapshotStats
+	schemaStorageBoxSnapshotStats.Size = source.Size
+	schemaStorageBoxSnapshotStats.SizeFilesystem = source.SizeFilesystem
+	return schemaStorageBoxSnapshotStats
+}
+func (c *converterImpl) hcloudStorageBoxStatsToSchemaStorageBoxStats(source StorageBoxStats) schema.StorageBoxStats {
+	var schemaStorageBoxStats schema.StorageBoxStats
+	schemaStorageBoxStats.Size = source.Size
+	schemaStorageBoxStats.SizeData = source.SizeData
+	schemaStorageBoxStats.SizeSnapshots = source.SizeSnapshots
+	return schemaStorageBoxStats
+}
+func (c *converterImpl) hcloudStorageBoxTypeLocationPricingToSchemaStorageBoxTypePrice(source StorageBoxTypeLocationPricing) schema.StorageBoxTypePrice {
+	var schemaStorageBoxTypePrice schema.StorageBoxTypePrice
+	schemaStorageBoxTypePrice.Location = source.Location
+	schemaStorageBoxTypePrice.PriceHourly = c.hcloudPriceToSchemaPrice(source.PriceHourly)
+	schemaStorageBoxTypePrice.PriceMonthly = c.hcloudPriceToSchemaPrice(source.PriceMonthly)
+	schemaStorageBoxTypePrice.SetupFee = c.hcloudPriceToSchemaPrice(source.SetupFee)
+	return schemaStorageBoxTypePrice
+}
 func (c *converterImpl) hcloudVolumeProtectionToSchemaVolumeProtection(source VolumeProtection) schema.VolumeProtection {
 	var schemaVolumeProtection schema.VolumeProtection
 	schemaVolumeProtection.Delete = source.Delete
 	return schemaVolumeProtection
+}
+func (c *converterImpl) hcloudZoneAuthoritativeNameserversToSchemaZoneAuthoritativeNameservers(source ZoneAuthoritativeNameservers) schema.ZoneAuthoritativeNameservers {
+	var schemaZoneAuthoritativeNameservers schema.ZoneAuthoritativeNameservers
+	schemaZoneAuthoritativeNameservers.Assigned = source.Assigned
+	schemaZoneAuthoritativeNameservers.Delegated = source.Delegated
+	schemaZoneAuthoritativeNameservers.DelegationLastCheck = c.timeTimeToTimeTime(source.DelegationLastCheck)
+	schemaZoneAuthoritativeNameservers.DelegationStatus = string(source.DelegationStatus)
+	return schemaZoneAuthoritativeNameservers
+}
+func (c *converterImpl) hcloudZoneChangePrimaryNameserversOptsPrimaryNameserverToSchemaZoneChangePrimaryNameserversRequestPrimaryNameserver(source ZoneChangePrimaryNameserversOptsPrimaryNameserver) schema.ZoneChangePrimaryNameserversRequestPrimaryNameserver {
+	var schemaZoneChangePrimaryNameserversRequestPrimaryNameserver schema.ZoneChangePrimaryNameserversRequestPrimaryNameserver
+	schemaZoneChangePrimaryNameserversRequestPrimaryNameserver.Address = source.Address
+	schemaZoneChangePrimaryNameserversRequestPrimaryNameserver.Port = source.Port
+	schemaZoneChangePrimaryNameserversRequestPrimaryNameserver.TSIGAlgorithm = string(source.TSIGAlgorithm)
+	schemaZoneChangePrimaryNameserversRequestPrimaryNameserver.TSIGKey = source.TSIGKey
+	return schemaZoneChangePrimaryNameserversRequestPrimaryNameserver
+}
+func (c *converterImpl) hcloudZoneCreateOptsPrimaryNameserverToSchemaZoneCreateRequestPrimaryNameserver(source ZoneCreateOptsPrimaryNameserver) schema.ZoneCreateRequestPrimaryNameserver {
+	var schemaZoneCreateRequestPrimaryNameserver schema.ZoneCreateRequestPrimaryNameserver
+	schemaZoneCreateRequestPrimaryNameserver.Address = source.Address
+	schemaZoneCreateRequestPrimaryNameserver.Port = source.Port
+	schemaZoneCreateRequestPrimaryNameserver.TSIGAlgorithm = string(source.TSIGAlgorithm)
+	schemaZoneCreateRequestPrimaryNameserver.TSIGKey = source.TSIGKey
+	return schemaZoneCreateRequestPrimaryNameserver
+}
+func (c *converterImpl) hcloudZoneCreateOptsRRSetToSchemaZoneCreateRequestRRSet(source ZoneCreateOptsRRSet) schema.ZoneCreateRequestRRSet {
+	var schemaZoneCreateRequestRRSet schema.ZoneCreateRequestRRSet
+	schemaZoneCreateRequestRRSet.Type = string(source.Type)
+	schemaZoneCreateRequestRRSet.Name = source.Name
+	schemaZoneCreateRequestRRSet.TTL = source.TTL
+	schemaZoneCreateRequestRRSet.Labels = stringMapToStringMapPtr(source.Labels)
+	if source.Records != nil {
+		schemaZoneCreateRequestRRSet.Records = make([]schema.ZoneRRSetRecord, len(source.Records))
+		for i := 0; i < len(source.Records); i++ {
+			schemaZoneCreateRequestRRSet.Records[i] = c.hcloudZoneRRSetRecordToSchemaZoneRRSetRecord(source.Records[i])
+		}
+	}
+	return schemaZoneCreateRequestRRSet
+}
+func (c *converterImpl) hcloudZonePrimaryNameserverToSchemaZonePrimaryNameserver(source ZonePrimaryNameserver) schema.ZonePrimaryNameserver {
+	var schemaZonePrimaryNameserver schema.ZonePrimaryNameserver
+	schemaZonePrimaryNameserver.Address = source.Address
+	schemaZonePrimaryNameserver.Port = source.Port
+	schemaZonePrimaryNameserver.TSIGAlgorithm = string(source.TSIGAlgorithm)
+	schemaZonePrimaryNameserver.TSIGKey = source.TSIGKey
+	return schemaZonePrimaryNameserver
+}
+func (c *converterImpl) hcloudZoneProtectionToSchemaZoneProtection(source ZoneProtection) schema.ZoneProtection {
+	var schemaZoneProtection schema.ZoneProtection
+	schemaZoneProtection.Delete = source.Delete
+	return schemaZoneProtection
+}
+func (c *converterImpl) hcloudZoneRRSetProtectionToSchemaZoneRRSetProtection(source ZoneRRSetProtection) schema.ZoneRRSetProtection {
+	var schemaZoneRRSetProtection schema.ZoneRRSetProtection
+	schemaZoneRRSetProtection.Change = source.Change
+	return schemaZoneRRSetProtection
+}
+func (c *converterImpl) hcloudZoneRRSetRecordToSchemaZoneRRSetRecord(source ZoneRRSetRecord) schema.ZoneRRSetRecord {
+	var schemaZoneRRSetRecord schema.ZoneRRSetRecord
+	schemaZoneRRSetRecord.Value = source.Value
+	schemaZoneRRSetRecord.Comment = source.Comment
+	return schemaZoneRRSetRecord
+}
+func (c *converterImpl) hcloudZoneRRSetRecordToSchemaZoneRRSetUpdateRecordsRequestRecord(source ZoneRRSetRecord) schema.ZoneRRSetUpdateRecordsRequestRecord {
+	var schemaZoneRRSetUpdateRecordsRequestRecord schema.ZoneRRSetUpdateRecordsRequestRecord
+	schemaZoneRRSetUpdateRecordsRequestRecord.Value = source.Value
+	schemaZoneRRSetUpdateRecordsRequestRecord.Comment = source.Comment
+	return schemaZoneRRSetUpdateRecordsRequestRecord
 }
 func (c *converterImpl) intISOFromSchema(source schema.ISO) ISO {
 	var hcloudISO ISO
@@ -1550,6 +2134,19 @@ func (c *converterImpl) pHcloudCertificateStatusToPSchemaCertificateStatusRef(so
 		pSchemaCertificateStatusRef = &schemaCertificateStatusRef
 	}
 	return pSchemaCertificateStatusRef
+}
+func (c *converterImpl) pHcloudDatacenterToPSchemaDatacenter(source *Datacenter) *schema.Datacenter {
+	var pSchemaDatacenter *schema.Datacenter
+	if source != nil {
+		var schemaDatacenter schema.Datacenter
+		schemaDatacenter.ID = (*source).ID
+		schemaDatacenter.Name = (*source).Name
+		schemaDatacenter.Description = (*source).Description
+		schemaDatacenter.Location = c.SchemaFromLocation((*source).Location)
+		schemaDatacenter.ServerTypes = c.hcloudDatacenterServerTypesToSchemaDatacenterServerTypes((*source).ServerTypes)
+		pSchemaDatacenter = &schemaDatacenter
+	}
+	return pSchemaDatacenter
 }
 func (c *converterImpl) pHcloudErrorToPSchemaError(source *Error) *schema.Error {
 	var pSchemaError *schema.Error
@@ -1820,6 +2417,14 @@ func (c *converterImpl) pHcloudLocationToPString(source *Location) *string {
 	}
 	return pString
 }
+func (c *converterImpl) pHcloudLocationToSchemaIDOrName(source *Location) schema.IDOrName {
+	var schemaIDOrName schema.IDOrName
+	if source != nil {
+		schemaIDOrName.ID = (*source).ID
+		schemaIDOrName.Name = (*source).Name
+	}
+	return schemaIDOrName
+}
 func (c *converterImpl) pHcloudLocationToString(source *Location) string {
 	var xstring string
 	if source != nil {
@@ -1881,6 +2486,75 @@ func (c *converterImpl) pHcloudServerToPSchemaImageCreatedFrom(source *Server) *
 	}
 	return pSchemaImageCreatedFrom
 }
+func (c *converterImpl) pHcloudStorageBoxCreateOptsAccessSettingsToPSchemaStorageBoxCreateRequestAccessSettings(source *StorageBoxCreateOptsAccessSettings) *schema.StorageBoxCreateRequestAccessSettings {
+	var pSchemaStorageBoxCreateRequestAccessSettings *schema.StorageBoxCreateRequestAccessSettings
+	if source != nil {
+		var schemaStorageBoxCreateRequestAccessSettings schema.StorageBoxCreateRequestAccessSettings
+		schemaStorageBoxCreateRequestAccessSettings.ReachableExternally = (*source).ReachableExternally
+		schemaStorageBoxCreateRequestAccessSettings.SambaEnabled = (*source).SambaEnabled
+		schemaStorageBoxCreateRequestAccessSettings.SSHEnabled = (*source).SSHEnabled
+		schemaStorageBoxCreateRequestAccessSettings.WebDAVEnabled = (*source).WebDAVEnabled
+		schemaStorageBoxCreateRequestAccessSettings.ZFSEnabled = (*source).ZFSEnabled
+		pSchemaStorageBoxCreateRequestAccessSettings = &schemaStorageBoxCreateRequestAccessSettings
+	}
+	return pSchemaStorageBoxCreateRequestAccessSettings
+}
+func (c *converterImpl) pHcloudStorageBoxSnapshotPlanToPSchemaStorageBoxSnapshotPlan(source *StorageBoxSnapshotPlan) *schema.StorageBoxSnapshotPlan {
+	var pSchemaStorageBoxSnapshotPlan *schema.StorageBoxSnapshotPlan
+	if source != nil {
+		var schemaStorageBoxSnapshotPlan schema.StorageBoxSnapshotPlan
+		schemaStorageBoxSnapshotPlan.MaxSnapshots = (*source).MaxSnapshots
+		schemaStorageBoxSnapshotPlan.Minute = (*source).Minute
+		schemaStorageBoxSnapshotPlan.Hour = (*source).Hour
+		if (*source).DayOfWeek != nil {
+			xint := int(*(*source).DayOfWeek)
+			schemaStorageBoxSnapshotPlan.DayOfWeek = &xint
+		}
+		schemaStorageBoxSnapshotPlan.DayOfMonth = (*source).DayOfMonth
+		pSchemaStorageBoxSnapshotPlan = &schemaStorageBoxSnapshotPlan
+	}
+	return pSchemaStorageBoxSnapshotPlan
+}
+func (c *converterImpl) pHcloudStorageBoxSnapshotToSchemaIDOrName(source *StorageBoxSnapshot) schema.IDOrName {
+	var schemaIDOrName schema.IDOrName
+	if source != nil {
+		schemaIDOrName.ID = (*source).ID
+		schemaIDOrName.Name = (*source).Name
+	}
+	return schemaIDOrName
+}
+func (c *converterImpl) pHcloudStorageBoxSubaccountAccessSettingsToSchemaStorageBoxSubaccountAccessSettings(source *StorageBoxSubaccountAccessSettings) schema.StorageBoxSubaccountAccessSettings {
+	var schemaStorageBoxSubaccountAccessSettings schema.StorageBoxSubaccountAccessSettings
+	if source != nil {
+		schemaStorageBoxSubaccountAccessSettings.ReachableExternally = (*source).ReachableExternally
+		schemaStorageBoxSubaccountAccessSettings.Readonly = (*source).Readonly
+		schemaStorageBoxSubaccountAccessSettings.SambaEnabled = (*source).SambaEnabled
+		schemaStorageBoxSubaccountAccessSettings.SSHEnabled = (*source).SSHEnabled
+		schemaStorageBoxSubaccountAccessSettings.WebDAVEnabled = (*source).WebDAVEnabled
+	}
+	return schemaStorageBoxSubaccountAccessSettings
+}
+func (c *converterImpl) pHcloudStorageBoxSubaccountCreateOptsAccessSettingsToPSchemaStorageBoxSubaccountCreateRequestAccessSettings(source *StorageBoxSubaccountCreateOptsAccessSettings) *schema.StorageBoxSubaccountCreateRequestAccessSettings {
+	var pSchemaStorageBoxSubaccountCreateRequestAccessSettings *schema.StorageBoxSubaccountCreateRequestAccessSettings
+	if source != nil {
+		var schemaStorageBoxSubaccountCreateRequestAccessSettings schema.StorageBoxSubaccountCreateRequestAccessSettings
+		schemaStorageBoxSubaccountCreateRequestAccessSettings.ReachableExternally = (*source).ReachableExternally
+		schemaStorageBoxSubaccountCreateRequestAccessSettings.Readonly = (*source).Readonly
+		schemaStorageBoxSubaccountCreateRequestAccessSettings.SambaEnabled = (*source).SambaEnabled
+		schemaStorageBoxSubaccountCreateRequestAccessSettings.SSHEnabled = (*source).SSHEnabled
+		schemaStorageBoxSubaccountCreateRequestAccessSettings.WebDAVEnabled = (*source).WebDAVEnabled
+		pSchemaStorageBoxSubaccountCreateRequestAccessSettings = &schemaStorageBoxSubaccountCreateRequestAccessSettings
+	}
+	return pSchemaStorageBoxSubaccountCreateRequestAccessSettings
+}
+func (c *converterImpl) pHcloudStorageBoxTypeToSchemaIDOrName(source *StorageBoxType) schema.IDOrName {
+	var schemaIDOrName schema.IDOrName
+	if source != nil {
+		schemaIDOrName.ID = (*source).ID
+		schemaIDOrName.Name = (*source).Name
+	}
+	return schemaIDOrName
+}
 func (c *converterImpl) pNetIPNetToString(source *net.IPNet) string {
 	var xstring string
 	if source != nil {
@@ -1898,6 +2572,19 @@ func (c *converterImpl) pSchemaCertificateStatusRefToPHcloudCertificateStatus(so
 		pHcloudCertificateStatus = &hcloudCertificateStatus
 	}
 	return pHcloudCertificateStatus
+}
+func (c *converterImpl) pSchemaDatacenterToPHcloudDatacenter(source *schema.Datacenter) *Datacenter {
+	var pHcloudDatacenter *Datacenter
+	if source != nil {
+		var hcloudDatacenter Datacenter
+		hcloudDatacenter.ID = (*source).ID
+		hcloudDatacenter.Name = (*source).Name
+		hcloudDatacenter.Description = (*source).Description
+		hcloudDatacenter.Location = c.LocationFromSchema((*source).Location)
+		hcloudDatacenter.ServerTypes = c.schemaDatacenterServerTypesToHcloudDatacenterServerTypes((*source).ServerTypes)
+		pHcloudDatacenter = &hcloudDatacenter
+	}
+	return pHcloudDatacenter
 }
 func (c *converterImpl) pSchemaErrorToPHcloudError(source *schema.Error) *Error {
 	var pHcloudError *Error
@@ -2044,6 +2731,14 @@ func (c *converterImpl) pSchemaPlacementGroupToPHcloudPlacementGroup(source *sch
 		pHcloudPlacementGroup = &hcloudPlacementGroup
 	}
 	return pHcloudPlacementGroup
+}
+func (c *converterImpl) pSchemaStorageBoxSnapshotPlanToPHcloudStorageBoxSnapshotPlan(source *schema.StorageBoxSnapshotPlan) *StorageBoxSnapshotPlan {
+	var pHcloudStorageBoxSnapshotPlan *StorageBoxSnapshotPlan
+	if source != nil {
+		hcloudStorageBoxSnapshotPlan := c.StorageBoxSnapshotPlanFromSchema((*source))
+		pHcloudStorageBoxSnapshotPlan = &hcloudStorageBoxSnapshotPlan
+	}
+	return pHcloudStorageBoxSnapshotPlan
 }
 func (c *converterImpl) pTimeTimeToTimeTime(source *time.Time) time.Time {
 	var timeTime time.Time
@@ -2199,6 +2894,25 @@ func (c *converterImpl) schemaFromPrimaryIPTypePricing(source PrimaryIPTypePrici
 	schemaPricingPrimaryIPTypePrice.PriceMonthly = c.hcloudPrimaryIPPriceToSchemaPrice(source.Monthly)
 	return schemaPricingPrimaryIPTypePrice
 }
+func (c *converterImpl) schemaFromServerTypeLocation(source ServerTypeLocation) schema.ServerTypeLocation {
+	var schemaServerTypeLocation schema.ServerTypeLocation
+	var pInt64 *int64
+	if source.Location != nil {
+		pInt64 = &source.Location.ID
+	}
+	if pInt64 != nil {
+		schemaServerTypeLocation.ID = *pInt64
+	}
+	var pString *string
+	if source.Location != nil {
+		pString = &source.Location.Name
+	}
+	if pString != nil {
+		schemaServerTypeLocation.Name = *pString
+	}
+	schemaServerTypeLocation.DeprecatableResource = c.hcloudDeprecatableResourceToSchemaDeprecatableResource(source.DeprecatableResource)
+	return schemaServerTypeLocation
+}
 func (c *converterImpl) schemaFromServerTypeLocationPricing(source ServerTypeLocationPricing) schema.PricingServerTypePrice {
 	var schemaPricingServerTypePrice schema.PricingServerTypePrice
 	schemaPricingServerTypePrice.Location = c.pHcloudLocationToString(source.Location)
@@ -2304,10 +3018,92 @@ func (c *converterImpl) schemaServerProtectionToHcloudServerProtection(source sc
 	hcloudServerProtection.Rebuild = source.Rebuild
 	return hcloudServerProtection
 }
+func (c *converterImpl) schemaStorageBoxAccessSettingsToHcloudStorageBoxAccessSettings(source schema.StorageBoxAccessSettings) StorageBoxAccessSettings {
+	var hcloudStorageBoxAccessSettings StorageBoxAccessSettings
+	hcloudStorageBoxAccessSettings.ReachableExternally = source.ReachableExternally
+	hcloudStorageBoxAccessSettings.SambaEnabled = source.SambaEnabled
+	hcloudStorageBoxAccessSettings.SSHEnabled = source.SSHEnabled
+	hcloudStorageBoxAccessSettings.WebDAVEnabled = source.WebDAVEnabled
+	hcloudStorageBoxAccessSettings.ZFSEnabled = source.ZFSEnabled
+	return hcloudStorageBoxAccessSettings
+}
+func (c *converterImpl) schemaStorageBoxProtectionToHcloudStorageBoxProtection(source schema.StorageBoxProtection) StorageBoxProtection {
+	var hcloudStorageBoxProtection StorageBoxProtection
+	hcloudStorageBoxProtection.Delete = source.Delete
+	return hcloudStorageBoxProtection
+}
+func (c *converterImpl) schemaStorageBoxSnapshotStatsToHcloudStorageBoxSnapshotStats(source schema.StorageBoxSnapshotStats) StorageBoxSnapshotStats {
+	var hcloudStorageBoxSnapshotStats StorageBoxSnapshotStats
+	hcloudStorageBoxSnapshotStats.Size = source.Size
+	hcloudStorageBoxSnapshotStats.SizeFilesystem = source.SizeFilesystem
+	return hcloudStorageBoxSnapshotStats
+}
+func (c *converterImpl) schemaStorageBoxStatsToHcloudStorageBoxStats(source schema.StorageBoxStats) StorageBoxStats {
+	var hcloudStorageBoxStats StorageBoxStats
+	hcloudStorageBoxStats.Size = source.Size
+	hcloudStorageBoxStats.SizeData = source.SizeData
+	hcloudStorageBoxStats.SizeSnapshots = source.SizeSnapshots
+	return hcloudStorageBoxStats
+}
+func (c *converterImpl) schemaStorageBoxSubaccountAccessSettingsToPHcloudStorageBoxSubaccountAccessSettings(source schema.StorageBoxSubaccountAccessSettings) *StorageBoxSubaccountAccessSettings {
+	var hcloudStorageBoxSubaccountAccessSettings StorageBoxSubaccountAccessSettings
+	hcloudStorageBoxSubaccountAccessSettings.ReachableExternally = source.ReachableExternally
+	hcloudStorageBoxSubaccountAccessSettings.Readonly = source.Readonly
+	hcloudStorageBoxSubaccountAccessSettings.SambaEnabled = source.SambaEnabled
+	hcloudStorageBoxSubaccountAccessSettings.SSHEnabled = source.SSHEnabled
+	hcloudStorageBoxSubaccountAccessSettings.WebDAVEnabled = source.WebDAVEnabled
+	return &hcloudStorageBoxSubaccountAccessSettings
+}
+func (c *converterImpl) schemaStorageBoxTypePriceToHcloudStorageBoxTypeLocationPricing(source schema.StorageBoxTypePrice) StorageBoxTypeLocationPricing {
+	var hcloudStorageBoxTypeLocationPricing StorageBoxTypeLocationPricing
+	hcloudStorageBoxTypeLocationPricing.Location = source.Location
+	hcloudStorageBoxTypeLocationPricing.PriceHourly = c.PriceFromSchema(source.PriceHourly)
+	hcloudStorageBoxTypeLocationPricing.PriceMonthly = c.PriceFromSchema(source.PriceMonthly)
+	hcloudStorageBoxTypeLocationPricing.SetupFee = c.PriceFromSchema(source.SetupFee)
+	return hcloudStorageBoxTypeLocationPricing
+}
 func (c *converterImpl) schemaVolumeProtectionToHcloudVolumeProtection(source schema.VolumeProtection) VolumeProtection {
 	var hcloudVolumeProtection VolumeProtection
 	hcloudVolumeProtection.Delete = source.Delete
 	return hcloudVolumeProtection
+}
+func (c *converterImpl) schemaZoneAuthoritativeNameserversToHcloudZoneAuthoritativeNameservers(source schema.ZoneAuthoritativeNameservers) ZoneAuthoritativeNameservers {
+	var hcloudZoneAuthoritativeNameservers ZoneAuthoritativeNameservers
+	hcloudZoneAuthoritativeNameservers.Assigned = source.Assigned
+	hcloudZoneAuthoritativeNameservers.Delegated = source.Delegated
+	hcloudZoneAuthoritativeNameservers.DelegationLastCheck = c.timeTimeToTimeTime(source.DelegationLastCheck)
+	hcloudZoneAuthoritativeNameservers.DelegationStatus = ZoneDelegationStatus(source.DelegationStatus)
+	return hcloudZoneAuthoritativeNameservers
+}
+func (c *converterImpl) schemaZonePrimaryNameserverToHcloudZonePrimaryNameserver(source schema.ZonePrimaryNameserver) ZonePrimaryNameserver {
+	var hcloudZonePrimaryNameserver ZonePrimaryNameserver
+	hcloudZonePrimaryNameserver.Address = source.Address
+	hcloudZonePrimaryNameserver.Port = source.Port
+	hcloudZonePrimaryNameserver.TSIGAlgorithm = ZoneTSIGAlgorithm(source.TSIGAlgorithm)
+	hcloudZonePrimaryNameserver.TSIGKey = source.TSIGKey
+	return hcloudZonePrimaryNameserver
+}
+func (c *converterImpl) schemaZoneProtectionToHcloudZoneProtection(source schema.ZoneProtection) ZoneProtection {
+	var hcloudZoneProtection ZoneProtection
+	hcloudZoneProtection.Delete = source.Delete
+	return hcloudZoneProtection
+}
+func (c *converterImpl) schemaZoneRRSetProtectionToHcloudZoneRRSetProtection(source schema.ZoneRRSetProtection) ZoneRRSetProtection {
+	var hcloudZoneRRSetProtection ZoneRRSetProtection
+	hcloudZoneRRSetProtection.Change = source.Change
+	return hcloudZoneRRSetProtection
+}
+func (c *converterImpl) schemaZoneRRSetRecordToHcloudZoneRRSetRecord(source schema.ZoneRRSetRecord) ZoneRRSetRecord {
+	var hcloudZoneRRSetRecord ZoneRRSetRecord
+	hcloudZoneRRSetRecord.Value = source.Value
+	hcloudZoneRRSetRecord.Comment = source.Comment
+	return hcloudZoneRRSetRecord
+}
+func (c *converterImpl) serverTypeLocationFromSchema(source schema.ServerTypeLocation) ServerTypeLocation {
+	var hcloudServerTypeLocation ServerTypeLocation
+	hcloudServerTypeLocation.Location = locationFromServerTypeLocationSchema(source)
+	hcloudServerTypeLocation.DeprecatableResource = c.schemaDeprecatableResourceToHcloudDeprecatableResource(source.DeprecatableResource)
+	return hcloudServerTypeLocation
 }
 func (c *converterImpl) serverTypePricingFromSchema(source schema.PricingServerTypePrice) ServerTypeLocationPricing {
 	var hcloudServerTypeLocationPricing ServerTypeLocationPricing

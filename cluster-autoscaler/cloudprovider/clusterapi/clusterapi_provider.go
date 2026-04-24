@@ -179,7 +179,7 @@ func BuildClusterAPI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeG
 	// Grab a dynamic interface that we can create informers from
 	managementClient, err := dynamic.NewForConfig(managementConfig)
 	if err != nil {
-		klog.Fatalf("could not generate dynamic client for config")
+		klog.Fatalf("could not generate dynamic client for config: %v", err)
 	}
 
 	workloadClient, err := kubernetes.NewForConfig(workloadConfig)
