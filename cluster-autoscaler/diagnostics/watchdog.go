@@ -75,19 +75,35 @@ func NewManager(sink DiagnosticSink, config Config) *Manager {
 		}
 	}
 
-	return &Manager{
-		sink:       sink,
-		config:     config,
-		collectors: collectors,
-	}
+	return NewManagerWithCollectors(sink, config, collectors)
 }
 
 // NewManagerWithCollectors creates a new Manager with custom collectors.
 func NewManagerWithCollectors(sink DiagnosticSink, config Config, collectors map[string]ProfileCollector) *Manager {
-	return &Manager{
+	dm := &Manager{
 		sink:       sink,
 		config:     config,
 		collectors: collectors,
+	}
+
+	dm.notifyCooldownEnd()
+
+	return dm
+}
+
+func (dm *Manager) notifyCooldownStart() {
+	for _, c := range dm.collectors {
+		if obs, ok := c.(CooldownObserver); ok {
+			obs.OnCooldownStart()
+		}
+	}
+}
+
+func (dm *Manager) notifyCooldownEnd() {
+	for _, c := range dm.collectors {
+		if obs, ok := c.(CooldownObserver); ok {
+			obs.OnCooldownEnd()
+		}
 	}
 }
 
@@ -105,6 +121,8 @@ func (c *cpuCollector) Collect(ctx context.Context) ([]byte, error) {
 
 type traceCollector struct {
 	flightRecorder *trace.FlightRecorder
+	mu             sync.Mutex
+	running        bool
 }
 
 func newTraceCollector(config Config) (*traceCollector, error) {
@@ -120,11 +138,30 @@ func newTraceCollector(config Config) (*traceCollector, error) {
 		MinAge:   minAge,
 	}
 	fr := trace.NewFlightRecorder(frConfig)
-	if err := fr.Start(); err != nil {
-		klog.ErrorS(err, "Failed to start flight recorder", "frConfig", frConfig)
-		return nil, err
-	}
 	return &traceCollector{flightRecorder: fr}, nil
+}
+
+func (c *traceCollector) OnCooldownEnd() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.running {
+		return
+	}
+	if err := c.flightRecorder.Start(); err != nil {
+		klog.ErrorS(err, "Failed to start flight recorder")
+		return
+	}
+	c.running = true
+}
+
+func (c *traceCollector) OnCooldownStart() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if !c.running {
+		return
+	}
+	c.flightRecorder.Stop()
+	c.running = false
 }
 
 func (c *traceCollector) Collect(ctx context.Context) ([]byte, error) {
@@ -188,6 +225,16 @@ func (dm *Manager) collectAndStore(ctx context.Context) {
 	defer func() {
 		dm.mu.Lock()
 		dm.isCollecting = false
+		dm.notifyCooldownStart()
+
+		// Schedule the end of the cooldown period.
+		// Using the lastTrigger to ensure we respect the full period from the start of the event.
+		nextEnable := time.Until(dm.lastTrigger.Add(dm.config.CooldownPeriod))
+		time.AfterFunc(nextEnable, func() {
+			dm.mu.Lock()
+			defer dm.mu.Unlock()
+			dm.notifyCooldownEnd()
+		})
 		dm.mu.Unlock()
 	}()
 

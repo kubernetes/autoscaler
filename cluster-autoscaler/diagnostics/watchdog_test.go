@@ -41,10 +41,60 @@ func (m *mockSink) Store(ctx context.Context, report *DiagnosticReport) error {
 
 type mockCollector struct {
 	profileType string
+	mu          sync.Mutex
+	startCalls  int
+	stopCalls   int
+}
+
+func (m *mockCollector) OnCooldownEnd() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.startCalls++
+}
+
+func (m *mockCollector) OnCooldownStart() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.stopCalls++
 }
 
 func (m *mockCollector) Collect(ctx context.Context) ([]byte, error) {
 	return []byte("test-" + m.profileType + "-profile"), nil
+}
+
+func TestManagerLifecycle(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		sink := &mockSink{}
+		config := Config{
+			MaxLoopTime:       10 * time.Second,
+			MaxCollectionTime: 5 * time.Second,
+			CooldownPeriod:    60 * time.Second,
+		}
+
+		collector := &mockCollector{profileType: "test"}
+		collectors := map[string]ProfileCollector{"test": collector}
+		dm := NewManagerWithCollectors(sink, config, collectors)
+
+		// 1. Verify initial start
+		assert.Equal(t, 1, collector.startCalls, "Should call OnCooldownEnd on creation")
+
+		// 2. Trigger collection
+		ctx := context.Background()
+		dm.RunWithDiagnostic(ctx, func() {
+			time.Sleep(20 * time.Second)
+		})
+		synctest.Wait()
+
+		// Verify stop was called after collection
+		assert.Equal(t, 1, collector.stopCalls, "Should call OnCooldownStart after collection")
+
+		// 3. Verify automatic resume after cooldown
+		// Advance time past the 60s cooldown
+		time.Sleep(65 * time.Second)
+		synctest.Wait()
+
+		assert.Equal(t, 2, collector.startCalls, "Should call OnCooldownEnd after cooldown expires via timer")
+	})
 }
 
 func TestDiagnosticManager(t *testing.T) {

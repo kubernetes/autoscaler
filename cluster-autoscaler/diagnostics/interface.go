@@ -40,3 +40,12 @@ type ProfileCollector interface {
 	// For "cpu" and "trace", it should respect the context's deadline for collection duration.
 	Collect(ctx context.Context) ([]byte, error)
 }
+
+// CooldownObserver is an optional interface that collectors can implement to be
+// notified of the system's cooldown state changes.
+type CooldownObserver interface {
+	// OnCooldownStart is called when a cooldown period begins (usually after a collection).
+	OnCooldownStart()
+	// OnCooldownEnd is called when a cooldown period expires, meaning the system is ready to collect again.
+	OnCooldownEnd()
+}
