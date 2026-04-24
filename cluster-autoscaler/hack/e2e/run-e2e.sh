@@ -48,7 +48,8 @@ CA_IMAGE="${REGISTRY}/cluster-autoscaler:${TAG}"
 
 echo "### STEP 1: Standard Autoscaling tests ###"
 ${CA_ROOT}/hack/e2e/deploy-ca-on-gce-for-e2e.sh "${CA_IMAGE}"
-${CA_ROOT}/hack/e2e/run-e2e-tests.sh "Standard Autoscaling${REMAINING_ARGS[0]:+.*${REMAINING_ARGS[0]}}"
+REPORT_PREFIX=standard_ \
+  ${CA_ROOT}/hack/e2e/run-e2e-tests.sh "Standard Autoscaling${REMAINING_ARGS[0]:+.*${REMAINING_ARGS[0]}}"
 
 echo "### STEP 2: DRA Autoscaling tests ###"
 echo "Removing Cluster Autoscaler to reset its state..."
@@ -64,4 +65,5 @@ echo "Redeploying Cluster Autoscaler..."
 ${CA_ROOT}/hack/e2e/deploy-ca-on-gce-for-e2e.sh "${CA_IMAGE}"
 
 echo "Running DRA tests..."
-${CA_ROOT}/hack/e2e/run-e2e-tests.sh "DRA Autoscaling${REMAINING_ARGS[0]:+.*${REMAINING_ARGS[0]}}"
+REPORT_PREFIX=dra_ \
+  ${CA_ROOT}/hack/e2e/run-e2e-tests.sh "DRA Autoscaling${REMAINING_ARGS[0]:+.*${REMAINING_ARGS[0]}}"

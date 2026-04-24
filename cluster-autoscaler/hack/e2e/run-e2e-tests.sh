@@ -29,6 +29,10 @@ function print_help {
   echo "    ARTIFACTS: Directory for report artifacts (default: e2e/_artifacts)"
   echo "    SKIP: Optional ginkgo skip string"
   echo "    TIMEOUT: Timeout for ginkgo tests (default: 400m)"
+  echo "    REPORT_PREFIX: Optional prefix for the JUnit report file name."
+  echo "                   When set, output becomes junit_\${REPORT_PREFIX}01.xml,"
+  echo "                   so multiple invocations sharing the same ARTIFACTS"
+  echo "                   directory do not overwrite each other."
 }
 
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
@@ -55,8 +59,13 @@ go install github.com/onsi/ginkgo/v2/ginkgo
 echo "Building e2e tests..."
 "${GOBIN}/ginkgo" build .
 
+REPORT_PREFIX_FLAG=()
+if [[ -n "${REPORT_PREFIX:-}" ]]; then
+  REPORT_PREFIX_FLAG=(--report-prefix="${REPORT_PREFIX}")
+fi
+
 echo "Running e2e tests with focus: ${FOCUS}"
-"${GOBIN}/ginkgo" -v --timeout="${TIMEOUT}" --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" --disable-log-dump ${SKIP:-}
+"${GOBIN}/ginkgo" -v --timeout="${TIMEOUT}" --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" "${REPORT_PREFIX_FLAG[@]}" --disable-log-dump ${SKIP:-}
 RESULT=$?
 
 popd >/dev/null
