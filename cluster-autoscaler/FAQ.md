@@ -578,8 +578,6 @@ For a detailed explanation of the ProvisioningRequest API, please refer to the
 2. __Feature Flag__: Enable ProvisioningRequest support by setting the following flag in your Cluster Autoscaler configuration:
 `--enable-provisioning-requests=true`.
 
-3. __Content Type__: Set [API content type flag](https://github.com/kubernetes/autoscaler/blob/522c6fcc06c8cf663175ba03549773cc66a02837/cluster-autoscaler/main.go#L114) to application/json in your Cluster Autoscaler configuration: `--kube-api-content-type application/json`.
-
 4. __RBAC permissions__: Ensure your cluster-autoscaler pod has the necessary permissions to interact with ProvisioningRequests and PodTemplates:
 
 ```
