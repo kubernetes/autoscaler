@@ -640,6 +640,10 @@ func TestValidateVPA(t *testing.T) {
 			name: "per-vpa config active and used",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode: &validUpdateMode,
 					},
@@ -661,11 +665,16 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			PerVPAConfigDisabled: false,
+			isCreate:             true,
 		},
 		{
 			name: "per-vpa config active and used evictOOMThreshold",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode:           &validUpdateMode,
 						EvictAfterOOMSeconds: ptr.To(int32(600)),
@@ -688,6 +697,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			PerVPAConfigDisabled: false,
+			isCreate:             true,
 		},
 		{
 			name: "per-vpa config disabled and used",
@@ -714,6 +724,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			PerVPAConfigDisabled: true,
+			isCreate:             true,
 			expectError:          errors.New("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag PerVPAConfig is disabled"),
 		},
 	}

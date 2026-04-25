@@ -109,7 +109,7 @@ func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
 // ValidateVPA checks the correctness of VPA Spec and returns an error if there is a problem.
 func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 	// check that perVPA is on if being used
-	if err := validatePerVPAFeatureFlag(vpa); err != nil {
+	if err := validatePerVPAFeatureFlag(vpa, isCreate); err != nil {
 		return err
 	}
 
@@ -263,16 +263,16 @@ func validateMemoryResolution(val apires.Quantity) error {
 	return nil
 }
 
-func validatePerVPAFeatureFlag(vpa *vpa_types.VerticalPodAutoscaler) error {
+func validatePerVPAFeatureFlag(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 	featureFlagOn := features.Enabled(features.PerVPAConfig)
-	if !featureFlagOn && vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.EvictAfterOOMSeconds != nil {
+	if isCreate && !featureFlagOn && vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.EvictAfterOOMSeconds != nil {
 		return fmt.Errorf("EvictAfterOOMSeconds is not supported when feature flag %s is disabled", features.PerVPAConfig)
 	}
 
 	if vpa.Spec.ResourcePolicy != nil {
 		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
 			perVPA := policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil
-			if !featureFlagOn && perVPA {
+			if !featureFlagOn && perVPA && isCreate {
 				return fmt.Errorf("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag %s is disabled", features.PerVPAConfig)
 			}
 		}
