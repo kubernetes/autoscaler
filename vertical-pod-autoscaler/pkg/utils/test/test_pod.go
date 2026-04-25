@@ -18,6 +18,7 @@ package test
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -34,6 +35,11 @@ type PodBuilder interface {
 	WithPhase(phase corev1.PodPhase) PodBuilder
 	WithQOSClass(class corev1.PodQOSClass) PodBuilder
 	WithPodConditions(conditions []corev1.PodCondition) PodBuilder
+	WithCPULimit(cpuLimit resource.Quantity) PodBuilder
+	WithCPURequest(cpuRequest resource.Quantity) PodBuilder
+	WithMemLimit(memLimit resource.Quantity) PodBuilder
+	WithMemRequest(memRequest resource.Quantity) PodBuilder
+	AddPodStatus(podStatus corev1.PodStatus) PodBuilder
 	Get() *corev1.Pod
 }
 
@@ -58,6 +64,11 @@ type podBuilderImpl struct {
 	initContainerStatuses []corev1.ContainerStatus
 	qosClass              corev1.PodQOSClass
 	conditions            []corev1.PodCondition
+	cpuRequest            *resource.Quantity
+	memRequest            *resource.Quantity
+	cpuLimit              *resource.Quantity
+	memLimit              *resource.Quantity
+	podStatus             *corev1.PodStatus
 }
 
 func (pb *podBuilderImpl) WithLabels(labels map[string]string) PodBuilder {
@@ -127,10 +138,51 @@ func (pb *podBuilderImpl) WithPodConditions(conditions []corev1.PodCondition) Po
 	return &r
 }
 
+func (pb *podBuilderImpl) WithCPURequest(cpuRequest resource.Quantity) PodBuilder {
+	r := *pb
+	r.cpuRequest = &cpuRequest
+	return &r
+}
+
+func (pb *podBuilderImpl) WithMemRequest(memRequest resource.Quantity) PodBuilder {
+	r := *pb
+	r.memRequest = &memRequest
+	return &r
+}
+
+func (pb *podBuilderImpl) WithCPULimit(cpuLimit resource.Quantity) PodBuilder {
+	r := *pb
+	r.cpuLimit = &cpuLimit
+	return &r
+}
+
+func (pb *podBuilderImpl) WithMemLimit(memLimit resource.Quantity) PodBuilder {
+	r := *pb
+	r.memLimit = &memLimit
+	return &r
+}
+
+func (pb *podBuilderImpl) AddPodStatus(podStatus corev1.PodStatus) PodBuilder {
+	r := *pb
+	r.podStatus = &podStatus
+	return &r
+}
+
 func (pb *podBuilderImpl) Get() *corev1.Pod {
 	startTime := metav1.Time{
 		Time: testTimestamp,
 	}
+
+	status := corev1.PodStatus{
+		StartTime:  &startTime,
+		Conditions: pb.conditions,
+	}
+	if pb.podStatus != nil {
+		status = *pb.podStatus
+		status.StartTime = &startTime
+		status.Conditions = pb.conditions
+	}
+
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
@@ -139,11 +191,12 @@ func (pb *podBuilderImpl) Get() *corev1.Pod {
 		Spec: corev1.PodSpec{
 			Containers:     pb.containers,
 			InitContainers: pb.initContainers,
+			Resources: &corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{},
+				Limits:   corev1.ResourceList{},
+			},
 		},
-		Status: corev1.PodStatus{
-			StartTime:  &startTime,
-			Conditions: pb.conditions,
-		},
+		Status: status,
 	}
 
 	if pb.labels != nil {
@@ -177,6 +230,18 @@ func (pb *podBuilderImpl) Get() *corev1.Pod {
 	}
 	if pb.initContainerStatuses != nil {
 		pod.Status.InitContainerStatuses = pb.initContainerStatuses
+	}
+	if pb.cpuRequest != nil {
+		pod.Spec.Resources.Requests[corev1.ResourceCPU] = *pb.cpuRequest
+	}
+	if pb.memRequest != nil {
+		pod.Spec.Resources.Requests[corev1.ResourceMemory] = *pb.memRequest
+	}
+	if pb.cpuLimit != nil {
+		pod.Spec.Resources.Limits[corev1.ResourceCPU] = *pb.cpuLimit
+	}
+	if pb.memLimit != nil {
+		pod.Spec.Resources.Limits[corev1.ResourceMemory] = *pb.memLimit
 	}
 
 	return pod

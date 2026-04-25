@@ -1,5 +1,5 @@
 /*
-Copyright 2022 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package routines
+package utils
 
-import (
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-)
+// ContainerToAnnotationsMap contains annotations per container.
+type ContainerToAnnotationsMap = map[string][]string
 
-// RecommendationPostProcessor can amend the recommendation according to the defined policies
-type RecommendationPostProcessor interface {
-	Process(podLevel bool, vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources
+// Annotations can store annotations at both the Pod and container levels
+type Annotations struct {
+	Container ContainerToAnnotationsMap
+	Pod       []string
 }

@@ -38,4 +38,7 @@ var defaultVersionedFeatureGates = map[featuregate.Feature]featuregate.Versioned
 	PerVPAConfig: {
 		{Version: version.MustParse("1.5"), Default: false, PreRelease: featuregate.Alpha},
 	},
+	VPAPodLevelResources: {
+		{Version: version.MustParse("1.6"), Default: false, PreRelease: featuregate.Alpha},
+	},
 }

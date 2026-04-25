@@ -51,6 +51,7 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *corev1.Po
 	result := []resource_admission.PatchRecord{}
 
 	var containersResources []vpa_api_util.ContainerResources
+	var podResources *vpa_api_util.ContainerResources
 	if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeOff {
 		// If update mode is "Off", we don't want to apply any recommendations,
 		// but we still want to unboost.
@@ -66,10 +67,15 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *corev1.Po
 		}
 	} else {
 		var err error
-		containersResources, _, err = c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
+		containersResources, _, podResources, err = c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
 		if err != nil {
 			return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
 		}
+	}
+
+	if podResources != nil {
+		result = patch.AppendPodLevelResourcePatches(result, "requests", podResources.Requests)
+		result = patch.AppendPodLevelResourcePatches(result, "limits", podResources.Limits)
 	}
 
 	for i, containerResources := range containersResources {

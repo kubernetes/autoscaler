@@ -635,6 +635,81 @@ func TestAddPodLogs(t *testing.T) {
 			},
 			expectedLog: "container-1: target: 10000k 4000m; uncappedTarget: 10000k 4000m;container-2: target: 8000m; uncappedTarget: 8000m;container-3: target: 1k uncappedTarget: 1k ",
 		},
+		{
+			name: "pod level recommendation with uncappedTarget and one container with uncappedTarget",
+			givenRec: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					{
+						ContainerName:  "container-1",
+						Target:         test.Resources("22m", "22Mi"),
+						UncappedTarget: test.Resources("24m", "24Mi"),
+					},
+				},
+				PodRecommendations: &vpa_types.PodRecommendations{
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("55m"),
+						corev1.ResourceMemory: resource.MustParse("55Mi"),
+					},
+					UncappedTarget: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("56m"),
+						corev1.ResourceMemory: resource.MustParse("56Mi"),
+					},
+				},
+			},
+			expectedLog: "container-1: target: 23069k 22m; uncappedTarget: 25166k 24m;pod-level recommendation: target: 57672k 55m; uncappedTarget: 58721k 56m;",
+		},
+		{
+			name: "pod level recommendation with uncappedTarget",
+			givenRec: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.PodRecommendations{
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("55m"),
+						corev1.ResourceMemory: resource.MustParse("55Mi"),
+					},
+					UncappedTarget: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("56m"),
+						corev1.ResourceMemory: resource.MustParse("56Mi"),
+					},
+				},
+			},
+			expectedLog: "pod-level recommendation: target: 57672k 55m; uncappedTarget: 58721k 56m;",
+		},
+		{
+			name: "pod level with cpu only recommendation with uncappedTarget",
+			givenRec: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.PodRecommendations{
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU: resource.MustParse("55m"),
+					},
+					UncappedTarget: corev1.ResourceList{
+						corev1.ResourceCPU: resource.MustParse("56m"),
+					},
+				},
+			},
+			expectedLog: "pod-level recommendation: target: 55m; uncappedTarget: 56m;",
+		},
+		{
+			name: "pod level with cpu only recommendation",
+			givenRec: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.PodRecommendations{
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU: resource.MustParse("55m"),
+					},
+				},
+			},
+			expectedLog: "pod-level recommendation: target: 55m;",
+		},
+		{
+			name: "pod level with memory only recommendation",
+			givenRec: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.PodRecommendations{
+					Target: corev1.ResourceList{
+						corev1.ResourceMemory: resource.MustParse("55Mi"),
+					},
+				},
+			},
+			expectedLog: "pod-level recommendation: target: 57672k;",
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

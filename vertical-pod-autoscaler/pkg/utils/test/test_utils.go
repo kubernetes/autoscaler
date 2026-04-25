@@ -34,6 +34,7 @@ import (
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	vpa_lister_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	common_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
 )
 
 var (
@@ -274,15 +275,15 @@ type RecommendationProcessorMock struct {
 
 // Apply is a mock implementation of RecommendationProcessor.Apply
 func (m *RecommendationProcessorMock) Apply(vpa *vpa_types.VerticalPodAutoscaler,
-	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
+	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, *common_utils.Annotations, error) {
 	args := m.Called()
 	var returnArg *vpa_types.RecommendedPodResources
 	if args.Get(0) != nil {
 		returnArg = args.Get(0).(*vpa_types.RecommendedPodResources)
 	}
-	var annotations map[string][]string
+	var annotations *common_utils.Annotations
 	if args.Get(1) != nil {
-		annotations = args.Get(1).(map[string][]string)
+		annotations = args.Get(1).(*common_utils.Annotations)
 	}
 	return returnArg, annotations, args.Error(1)
 }
@@ -292,7 +293,7 @@ type FakeRecommendationProcessor struct{}
 
 // Apply is a dummy implementation of RecommendationProcessor.Apply which returns provided podRecommendation
 func (f *FakeRecommendationProcessor) Apply(vpa *vpa_types.VerticalPodAutoscaler,
-	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
+	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, *common_utils.Annotations, error) {
 	return vpa.Status.Recommendation, nil, nil
 }
 

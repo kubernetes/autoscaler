@@ -17,31 +17,35 @@ limitations under the License.
 package routines
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limits"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 type cappingPostProcessor struct {
-	globalMaxAllowed corev1.ResourceList
+	globalMaxAllowed limits.GlobalMaxAllowed
 }
 
 var _ RecommendationPostProcessor = &cappingPostProcessor{}
 
 // NewCappingRecommendationProcessor constructs new RecommendationPostProcessor that adjusts recommendation
 // for given pod to obey VPA resources policy and a global max allowed configuration.
-func NewCappingRecommendationProcessor(globalMaxAllowed corev1.ResourceList) RecommendationPostProcessor {
+func NewCappingRecommendationProcessor(globalMaxAllowed limits.GlobalMaxAllowed) RecommendationPostProcessor {
 	return &cappingPostProcessor{
 		globalMaxAllowed: globalMaxAllowed,
 	}
 }
 
-// Process apply the capping post-processing to the recommendation. (use to be function getCappedRecommendation)
-func (c cappingPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
+// Process applies capping post-processing to container-level recommendations.
+//
+// - If you call this method with podLevel set to false, it uses only container-level constraints.
+//
+// - If you call this method with podLevel set to true, it also enforces Pod-level constraints on container-level recommendations.
+func (c cappingPostProcessor) Process(podLevel bool, vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
 	// TODO: maybe rename the vpa_utils.ApplyVPAPolicy to something that mention that it is doing capping only
-	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, vpa.Spec.ResourcePolicy, c.globalMaxAllowed)
+	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(podLevel, recommendation, vpa.Spec.ResourcePolicy, c.globalMaxAllowed)
 	if err != nil {
 		klog.ErrorS(err, "Failed to apply policy for VPA", "vpa", klog.KObj(vpa))
 		return recommendation

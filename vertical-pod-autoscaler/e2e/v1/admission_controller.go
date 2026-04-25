@@ -24,6 +24,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
@@ -1279,6 +1280,309 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		err = InstallRawVPA(f, invalidVPA)
 		gomega.Expect(err).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
 		gomega.Expect(err.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`), "Admission controller did not inspect the object")
+	})
+})
+
+// E2E tests for Pod-level resource stanzas and recommendation support introduced in AEP-7571.
+var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelResources", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
+
+	ginkgo.BeforeEach(func() {
+		waitForVpaWebhookRegistration(f)
+	})
+
+	f.It("lowers pod-level requests and limits according to the pod max defined in LimitRange", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
+		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
+			nil,
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
+
+		InstallLimitRangeWithMax(f, "80m", "80Mi", apiv1.LimitTypePod)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithPodLevelTarget("55m", "55Mi").
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		// Should lower Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio.
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("40m")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("40Mi")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("80m")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("80Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits).To(gomega.BeNil())
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests).To(gomega.BeNil())
+		}
+	})
+
+	f.It("raises pod-level requests and limits according to the pod min defined in LimitRange", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
+		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
+			nil,
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
+
+		InstallLimitRangeWithMin(f, "80m", "80Mi", apiv1.LimitTypePod)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithPodLevelTarget("55m", "55Mi").
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		// Should raise Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio.
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("80m")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("80Mi")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("160m")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("160Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits).To(gomega.BeNil())
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests).To(gomega.BeNil())
+		}
+	})
+
+	f.It("raises only pod-level requests according to the pod min defined in LimitRange", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
+		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
+			nil,
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
+			nil /*pod level cpu and memory limits*/)
+		InstallLimitRangeWithMin(f, "80m", "80Mi", apiv1.LimitTypePod)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithPodLevelTarget("55m", "55Mi").
+			WithPodLevelUncappedTarget("55m", "55Mi").
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		// Should raise only Pod-level requests.
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("80m")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("80Mi")))
+			gomega.Expect(pod.Spec.Resources.Limits).To(gomega.BeNil())
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits).To(gomega.BeNil())
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests).To(gomega.BeNil())
+		}
+	})
+
+	f.It("raises pod-level requests and limits according to pod-level minAllowed", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
+		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
+			nil,
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithPodLevelTarget("55m", "55Mi").
+			WithPodLevelMinAllowed("90m", "90Mi").
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		// Should raise Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio.
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("90m")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("90Mi")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("180m")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("180Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits).To(gomega.BeNil())
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests).To(gomega.BeNil())
+		}
+	})
+
+	f.It("lowers pod-level requests and limits according to pod-level maxAllowed", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
+		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
+			nil,
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithPodLevelTarget("110m", "110Mi").
+			WithPodLevelMaxAllowed("80m", "80Mi").
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		// Should lower Pod-level requests and limits proportionally while maintaining the 1:2 request-to-limit ratio.
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("80m")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("80Mi")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("160m")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("160Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits).To(gomega.BeNil())
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests).To(gomega.BeNil())
+		}
+	})
+
+	f.It("starts pod with new pod-level requests limits and with new container-level requests for one container", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
+		d := NewHamsterDeploymentWithPodLevelResources(f, 2,
+			nil,
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
+		containerName2 := utils.GetHamsterContainerNameByIndexV2(1)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName1).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName1).
+					WithTarget("33m", "33Mi").
+					GetContainerResources()).
+			WithContainer(containerName2).
+			WithScalingMode(containerName2, vpa_types.ContainerScalingModeRecsOnly).
+			// Even though c2 contains a recommendation, the admission controller
+			// should not manage its resource stanza because of its scaling mode.
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName2).
+					WithTarget("44m", "44Mi").
+					GetContainerResources()).
+			WithPodLevelTarget("110m", "110Mi").
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
+		for _, pod := range podList.Items {
+			// check pod level resources stanza, should maintain 1:2 request-to-limit ratio
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("110m")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("110Mi")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("220m")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("220Mi")))
+			// check container level resources stanza
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("33m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("33Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits).To(gomega.BeNil())
+			gomega.Expect(pod.Spec.Containers[1].Resources.Requests).To(gomega.BeNil())
+			gomega.Expect(pod.Spec.Containers[1].Resources.Limits).To(gomega.BeNil())
+		}
+	})
+
+	f.It("starts pod with new pod-level requests limits and with new container-level request limits for one container", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
+		d := NewHamsterDeploymentWithPodLevelResources(f, 2,
+			[]containerResources{
+				{
+					Requests: apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("10m"), apiv1.ResourceMemory: resource.MustParse("10Mi")},
+					Limits:   apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("30m"), apiv1.ResourceMemory: resource.MustParse("30Mi")},
+				},
+				{
+					Requests: apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("11m"), apiv1.ResourceMemory: resource.MustParse("11Mi")},
+					Limits:   apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("44m"), apiv1.ResourceMemory: resource.MustParse("44Mi")},
+				},
+			},
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
+		containerName2 := utils.GetHamsterContainerNameByIndexV2(1)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName1).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName1).
+					WithTarget("33m", "33Mi").
+					GetContainerResources()).
+			WithContainer(containerName2).
+			WithScalingMode(containerName2, vpa_types.ContainerScalingModeRecsOnly).
+			// Even though c2 contains a recommendation, the admission controller
+			// should not manage its resource stanza because of its scaling mode.
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName2).
+					WithTarget("88m", "88Mi").
+					GetContainerResources()).
+			WithPodLevelTarget("110m", "110Mi").
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
+		for _, pod := range podList.Items {
+			// check pod level resources stanza, should maintain 1:2 request-to-limit ratio
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("110m")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("110Mi")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("220m")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("220Mi")))
+			// check container level resources stanza for c1, should maintain 1:3 request-to-limit ratio
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("33m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("33Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("99m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("99Mi")))
+			// check container level resources stanza for c2, admission controller should not change the resource stanza
+			gomega.Expect(pod.Spec.Containers[1].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("11m")))
+			gomega.Expect(pod.Spec.Containers[1].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("11Mi")))
+			gomega.Expect(pod.Spec.Containers[1].Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("44m")))
+			gomega.Expect(pod.Spec.Containers[1].Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("44Mi")))
+		}
 	})
 })
 

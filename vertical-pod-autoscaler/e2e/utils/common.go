@@ -108,6 +108,16 @@ func GetHamsterContainerNameByIndex(i int) string {
 	}
 }
 
+// GetHamsterContainerNameByIndexV2 returns name of i-th hamster container.
+func GetHamsterContainerNameByIndexV2(i int) string {
+	switch {
+	case i < 0:
+		panic("negative index")
+	default:
+		return fmt.Sprintf("hamster%d", i+1)
+	}
+}
+
 // GetVpaClientSet return a VpaClientSet
 func GetVpaClientSet(f *framework.Framework) vpa_clientset.Interface {
 	config, err := framework.LoadConfig()
@@ -312,6 +322,14 @@ func StartDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) 
 func WaitForRecommendationPresent(c vpa_clientset.Interface, vpa *vpa_types.VerticalPodAutoscaler) (*vpa_types.VerticalPodAutoscaler, error) {
 	return WaitForVPAMatch(c, vpa, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
 		return vpa.Status.Recommendation != nil && len(vpa.Status.Recommendation.ContainerRecommendations) != 0
+	})
+}
+
+// WaitForPodLevelRecommendationPresent polls the VPA object until Pod-level recommendations are not empty.
+// It returns the polled VPA object. It returns an error on timeout.
+func WaitForPodLevelRecommendationPresent(c vpa_clientset.Interface, vpa *vpa_types.VerticalPodAutoscaler) (*vpa_types.VerticalPodAutoscaler, error) {
+	return WaitForVPAMatch(c, vpa, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
+		return vpa.Status.Recommendation != nil && vpa.Status.Recommendation.PodRecommendations != nil
 	})
 }
 

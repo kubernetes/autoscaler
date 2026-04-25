@@ -29,7 +29,9 @@ import (
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // resourceHandler builds patches for Pods.
@@ -93,6 +95,23 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 	if pod.Annotations == nil {
 		patches = append(patches, patch.GetAddEmptyAnnotationsPatch())
 	}
+
+	if controllingVpa.Status.Recommendation != nil {
+		podLevelFeatureEnable := features.Enabled(features.VPAPodLevelResources)
+		if podLevelFeatureEnable {
+			if controllingVpa.Status.Recommendation.ContainerRecommendations != nil {
+				controllingVpa.Status.Recommendation.ContainerRecommendations = vpa_api_util.FilterContainerRecommendations(controllingVpa)
+			}
+		} else {
+			// Remove pod-level recommendations when the `VPAPodLevelResources` feature gate is disabled.
+			// This behavior prevents the admission-controller applying patches at the pod level
+			// when pod-level resource support is enabled at the recommender level.
+			if controllingVpa.Status.Recommendation.PodRecommendations != nil {
+				controllingVpa.Status.Recommendation.PodRecommendations = nil
+			}
+		}
+	}
+
 	for _, c := range h.patchCalculators {
 		partialPatches, err := c.CalculatePatches(&pod, controllingVpa)
 		if err != nil {

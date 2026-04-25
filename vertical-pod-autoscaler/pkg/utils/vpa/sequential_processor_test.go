@@ -23,6 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
 )
 
 type fakeProcessor struct {
@@ -30,11 +31,13 @@ type fakeProcessor struct {
 }
 
 func (p *fakeProcessor) Apply(vpa *vpa_types.VerticalPodAutoscaler,
-	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
+	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, *utils.Annotations, error) {
 	result := vpa.Status.Recommendation
 	result.ContainerRecommendations[0].ContainerName += p.message
-	containerToAnnotationsMap := ContainerToAnnotationsMap{"trace": []string{p.message}}
-	return result, containerToAnnotationsMap, nil
+	annotations := utils.Annotations{
+		Container: utils.ContainerToAnnotationsMap{"trace": []string{p.message}},
+	}
+	return result, &annotations, nil
 }
 
 func TestSequentialProcessor(t *testing.T) {
@@ -54,7 +57,7 @@ func TestSequentialProcessor(t *testing.T) {
 	}
 	result, annotations, _ := tested.Apply(vpa1, nil)
 	assert.Equal(t, name1+name2, result.ContainerRecommendations[0].ContainerName)
-	assert.Contains(t, annotations, "trace")
-	assert.Contains(t, annotations["trace"], name1)
-	assert.Contains(t, annotations["trace"], name2)
+	assert.Contains(t, annotations.Container, "trace")
+	assert.Contains(t, annotations.Container["trace"], name1)
+	assert.Contains(t, annotations.Container["trace"], name2)
 }

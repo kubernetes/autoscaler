@@ -212,6 +212,7 @@ func MapToListOfRecommendedContainerResources(resources RecommendedPodResources,
 	}
 	recommendation := &vpa_types.RecommendedPodResources{
 		ContainerRecommendations: containerResources,
+		PodRecommendations:       nil,
 	}
 	return recommendation
 }

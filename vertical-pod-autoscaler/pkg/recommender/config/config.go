@@ -101,8 +101,10 @@ type RecommenderConfig struct {
 
 	// Post processors configuration
 	PostProcessorCPUasInteger bool
-	MaxAllowedCPU             resource.QuantityValue
-	MaxAllowedMemory          resource.QuantityValue
+	ContainerMaxAllowedCPU    resource.QuantityValue
+	ContainerMaxAllowedMemory resource.QuantityValue
+	PodMaxAllowedCPU          resource.QuantityValue
+	PodMaxAllowedMemory       resource.QuantityValue
 }
 
 // DefaultRecommenderConfig returns a RecommenderConfig with default values
@@ -173,8 +175,10 @@ func DefaultRecommenderConfig() *RecommenderConfig {
 
 		// Post processors flags
 		PostProcessorCPUasInteger: false,
-		MaxAllowedCPU:             resource.QuantityValue{},
-		MaxAllowedMemory:          resource.QuantityValue{},
+		ContainerMaxAllowedCPU:    resource.QuantityValue{},
+		ContainerMaxAllowedMemory: resource.QuantityValue{},
+		PodMaxAllowedCPU:          resource.QuantityValue{},
+		PodMaxAllowedMemory:       resource.QuantityValue{},
 	}
 }
 
@@ -247,8 +251,10 @@ func InitRecommenderFlags() *RecommenderConfig {
 	// Post processors flags
 	// CPU as integer to benefit for CPU management Static Policy ( https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy )
 	flag.BoolVar(&config.PostProcessorCPUasInteger, "cpu-integer-post-processor-enabled", config.PostProcessorCPUasInteger, "Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental)")
-	flag.Var(&config.MaxAllowedCPU, "container-recommendation-max-allowed-cpu", "Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
-	flag.Var(&config.MaxAllowedMemory, "container-recommendation-max-allowed-memory", "Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+	flag.Var(&config.ContainerMaxAllowedCPU, "container-recommendation-max-allowed-cpu", "Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+	flag.Var(&config.ContainerMaxAllowedMemory, "container-recommendation-max-allowed-memory", "Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+	flag.Var(&config.PodMaxAllowedCPU, "pod-recommendation-max-allowed-cpu", "The maximum amount of CPU that will be recommended at the Pod level (Pod-level resource stanza). The VerticalPodAutoscaler-level podPolicies.maxAllowed takes precedence over the value that you define with this flag.")
+	flag.Var(&config.PodMaxAllowedMemory, "pod-recommendation-max-allowed-memory", "The maximum amount of memory that will be recommended at the Pod level (Pod-level resource stanza). The VerticalPodAutoscaler-level podPolicies.maxAllowed takes precedence over the value that you define with this flag.")
 
 	// These need to happen last. kube_flag.InitFlags() synchronizes and parses
 	// flags from the flag package to pflag, so feature gates must be added to

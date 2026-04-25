@@ -20,10 +20,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
 )
-
-// ContainerToAnnotationsMap contains annotations per container.
-type ContainerToAnnotationsMap = map[string][]string
 
 // RecommendationProcessor post-processes recommendation adjusting it to limits and environment context
 type RecommendationProcessor interface {
@@ -31,5 +29,5 @@ type RecommendationProcessor interface {
 	// VPA policy and possibly other internal RecommendationProcessor context.
 	// Must return a non-nil pointer to RecommendedPodResources or error.
 	Apply(vpa *vpa_types.VerticalPodAutoscaler,
-		pod *corev1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error)
+		pod *corev1.Pod) (*vpa_types.RecommendedPodResources, *utils.Annotations, error)
 }

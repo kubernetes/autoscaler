@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -123,7 +124,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 		expectedMemLimit  *resource.Quantity
 		limitRange        *corev1.LimitRangeItem
 		limitRangeCalcErr error
-		annotations       vpa_api_util.ContainerToAnnotationsMap
+		annotations       utils.ContainerToAnnotationsMap
 	}{
 		{
 			name:           "uninitialized pod",
@@ -140,7 +141,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedAction: true,
 			expectedMem:    resource.MustParse("300Mi"), // MinMemory is expected to be used
 			expectedCPU:    resource.MustParse("4"),     // MinCpu is expected to be used
-			annotations: vpa_api_util.ContainerToAnnotationsMap{
+			annotations: utils.ContainerToAnnotationsMap{
 				containerName: []string{"cpu capped to minAllowed", "memory capped to minAllowed"},
 			},
 		},
@@ -151,7 +152,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedAction: true,
 			expectedMem:    resource.MustParse("1Gi"), // MaxMemory is expected to be used
 			expectedCPU:    resource.MustParse("5"),   // MaxCpu is expected to be used
-			annotations: vpa_api_util.ContainerToAnnotationsMap{
+			annotations: utils.ContainerToAnnotationsMap{
 				containerName: []string{"cpu capped to maxAllowed", "memory capped to maxAllowed"},
 			},
 		},
@@ -242,7 +243,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedAction: true,
 			expectedCPU:    resource.MustParse("2"),
 			expectedMem:    resource.MustParse("200Mi"),
-			annotations: vpa_api_util.ContainerToAnnotationsMap{
+			annotations: utils.ContainerToAnnotationsMap{
 				containerName: []string{
 					"cpu capped to container limit",
 					"memory capped to container limit",
@@ -258,7 +259,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedMem:      resource.MustParse("1Ei"),
 			expectedCPULimit: resource.NewMilliQuantity(math.MaxInt64, resource.DecimalExponent),
 			expectedMemLimit: resource.NewQuantity(math.MaxInt64, resource.DecimalExponent),
-			annotations: vpa_api_util.ContainerToAnnotationsMap{
+			annotations: utils.ContainerToAnnotationsMap{
 				containerName: []string{
 					"cpu: failed to keep limit to request ratio; capping limit to int64",
 					"memory: failed to keep limit to request ratio; capping limit to int64",
@@ -302,7 +303,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 				},
 			}
 
-			resources, annotations, err := recommendationProvider.GetContainersResourcesForPod(tc.pod, tc.vpa)
+			resources, annotations, _, err := recommendationProvider.GetContainersResourcesForPod(tc.pod, tc.vpa)
 
 			if tc.expectedAction {
 				assert.Nil(t, err)
@@ -336,12 +337,12 @@ func TestUpdateResourceRequests(t *testing.T) {
 					}
 				}
 
-				assert.Len(t, annotations, len(tc.annotations))
+				assert.Len(t, annotations.Container, len(tc.annotations))
 				if len(tc.annotations) > 0 {
 					for annotationKey, annotationValues := range tc.annotations {
-						assert.Len(t, annotations[annotationKey], len(annotationValues))
+						assert.Len(t, annotations.Container[annotationKey], len(annotationValues))
 						for _, annotation := range annotationValues {
-							assert.Contains(t, annotations[annotationKey], annotation)
+							assert.Contains(t, annotations.Container[annotationKey], annotation)
 						}
 					}
 				}
@@ -536,7 +537,7 @@ func TestGetContainersResources(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			pod := test.Pod().WithName("pod").AddContainer(tc.container).AddContainerStatus(tc.containerStatus).Get()
-			resources := GetContainersResources(pod, tc.vpa.Spec.ResourcePolicy, *tc.vpa.Status.Recommendation, nil, tc.addAll, vpa_api_util.ContainerToAnnotationsMap{})
+			resources := GetContainersResources(pod, tc.vpa.Spec.ResourcePolicy, *tc.vpa.Status.Recommendation, nil, tc.addAll, utils.ContainerToAnnotationsMap{})
 
 			cpu, cpuPresent := resources[0].Requests[corev1.ResourceCPU]
 			if tc.expectedCPU == nil {
@@ -568,6 +569,145 @@ func TestGetContainersResources(t *testing.T) {
 			} else {
 				assert.True(t, memLimitPresent, "expected mem limit, but it's missing")
 				assert.Equal(t, tc.expectedMemLimit.MilliValue(), memLimit.MilliValue(), "mem limit doesn't match")
+			}
+		})
+	}
+}
+
+func TestGetPodResources(t *testing.T) {
+	c1 := "container1"
+	c2 := "container2"
+
+	testCases := []struct {
+		name             string
+		pod              *corev1.Pod
+		vpa              *vpa_types.VerticalPodAutoscaler
+		expectedCPU      resource.Quantity
+		expectedMem      resource.Quantity
+		expectedCPULimit resource.Quantity
+		expectedMemLimit resource.Quantity
+	}{
+		{
+			name: "no pod level target is set no requests or limits are returned",
+			// Pod-level resources with a 1:2 request-to-limit ratio for both CPU and memory
+			pod: test.Pod().
+				WithCPURequest(resource.MustParse("10m")).
+				WithMemRequest(resource.MustParse("12Mi")).
+				WithCPULimit(resource.MustParse("20m")).
+				WithMemLimit(resource.MustParse("24Mi")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(c1).
+				WithContainer(c2).
+				Get(),
+		},
+		{
+			name: "should return cpu targets and limits according to the request to limit ratio",
+			// Pod-level resources with a 1:2 request-to-limit ratio for both CPU and memory
+			pod: test.Pod().
+				WithCPURequest(resource.MustParse("10m")).
+				WithMemRequest(resource.MustParse("12Mi")).
+				WithCPULimit(resource.MustParse("20m")).
+				WithMemLimit(resource.MustParse("24Mi")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(c1).
+				WithContainer(c2).
+				WithPodLevelTarget("155m", ""). // memory target is omitted
+				Get(),
+			expectedCPU:      resource.MustParse("155m"),
+			expectedCPULimit: *resource.NewMilliQuantity(310, resource.DecimalSI),
+		},
+		{
+			name: "should return both cpu and memory targets and limits according to the request to limit ratio",
+			// Pod-level resources with a 1:2 request-to-limit ratio for both CPU and memory
+			pod: test.Pod().
+				WithCPURequest(resource.MustParse("10m")).
+				WithMemRequest(resource.MustParse("12Mi")).
+				WithCPULimit(resource.MustParse("20m")).
+				WithMemLimit(resource.MustParse("24Mi")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(c1).
+				WithContainer(c2).
+				WithPodLevelTarget("155m", "155Mi").
+				Get(),
+			expectedCPU:      resource.MustParse("155m"),
+			expectedMem:      resource.MustParse("155Mi"),
+			expectedCPULimit: *resource.NewMilliQuantity(310, resource.DecimalSI),
+			expectedMemLimit: *resource.NewQuantity(325058560, resource.BinarySI), // 310Mi
+		},
+		{
+			name: "RequestsOnly is set return the requests and limits from the pod spec",
+			// Pod-level resources with a 1:2 request-to-limit ratio for both CPU and memory
+			pod: test.Pod().
+				WithCPURequest(resource.MustParse("10m")).
+				WithMemRequest(resource.MustParse("12Mi")).
+				WithCPULimit(resource.MustParse("20m")).
+				WithMemLimit(resource.MustParse("24Mi")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(c1).
+				WithContainer(c2).
+				WithPodLevelTarget("11m", "11Mi").
+				WithPodLevelControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).
+				Get(),
+			expectedCPU:      resource.MustParse("11m"),
+			expectedMem:      resource.MustParse("11Mi"),
+			expectedCPULimit: resource.MustParse("20m"),
+			expectedMemLimit: *resource.NewQuantity(25165824, resource.BinarySI), // 24Mi
+		},
+		{
+			name: "RequestsOnly is set return only the requests",
+			// Pod-level resources with a 1:2 request-to-limit ratio for both CPU and memory
+			pod: test.Pod().
+				WithCPURequest(resource.MustParse("10m")).
+				WithMemRequest(resource.MustParse("12Mi")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(c1).
+				WithContainer(c2).
+				WithPodLevelTarget("11m", "11Mi").
+				WithPodLevelControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).
+				Get(),
+			expectedCPU: resource.MustParse("11m"),
+			expectedMem: resource.MustParse("11Mi"),
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resources := GetPodResources(tc.pod, tc.vpa.Spec.ResourcePolicy, *tc.vpa.Status.Recommendation)
+
+			cpu, cpuPresent := resources.Requests[corev1.ResourceCPU]
+			if tc.expectedCPU.IsZero() {
+				assert.False(t, cpuPresent, "expected no cpu request, got %s", cpu.String())
+			} else {
+				assert.True(t, cpuPresent, "expected cpu request, but it's missing")
+				assert.Equal(t, tc.expectedCPU, cpu, "cpu request doesn't match")
+			}
+
+			mem, memPresent := resources.Requests[corev1.ResourceMemory]
+			if tc.expectedMem.IsZero() {
+				assert.False(t, memPresent, "expected no memory request, got %s", mem.String())
+			} else {
+				assert.True(t, memPresent, "expected memory request, but it's missing")
+				assert.Equal(t, tc.expectedMem, mem, "memory request doesn't match")
+			}
+
+			cpuLimit, cpuLimitPresent := resources.Limits[corev1.ResourceCPU]
+			if tc.expectedCPULimit.IsZero() {
+				assert.False(t, cpuLimitPresent, "expected no cpu limit, got %s", cpuLimit.String())
+			} else {
+				assert.True(t, cpuLimitPresent, "expected cpu limit, but it's missing")
+				assert.Equal(t, tc.expectedCPULimit, cpuLimit, "cpu limit doesn't match")
+			}
+
+			memLimit, memLimitPresent := resources.Limits[corev1.ResourceMemory]
+			if tc.expectedMemLimit.IsZero() {
+				assert.False(t, memLimitPresent, "expected no memory limit, got %s", memLimit.String())
+			} else {
+				assert.True(t, memLimitPresent, "expected memory limit, but it's missing")
+				assert.Equal(t, tc.expectedMemLimit, memLimit, "memory limit doesn't match")
 			}
 		})
 	}

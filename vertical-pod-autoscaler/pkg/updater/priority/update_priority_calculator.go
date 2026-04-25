@@ -177,14 +177,59 @@ func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_t
 		if cr.UncappedTarget != nil {
 			sb.WriteString("uncappedTarget: ")
 			if !cr.UncappedTarget.Memory().IsZero() {
-				sb.WriteString(strconv.FormatInt(cr.Target.Memory().ScaledValue(resource.Kilo), 10))
+				sb.WriteString(strconv.FormatInt(cr.UncappedTarget.Memory().ScaledValue(resource.Kilo), 10))
 				sb.WriteString("k ")
 			}
 			if !cr.UncappedTarget.Cpu().IsZero() {
-				sb.WriteString(strconv.FormatInt(cr.Target.Cpu().MilliValue(), 10))
+				sb.WriteString(strconv.FormatInt(cr.UncappedTarget.Cpu().MilliValue(), 10))
 				sb.WriteString("m;")
 			}
 		}
+	}
+	sbp := &strings.Builder{}
+	if r.PodRecommendations != nil {
+		addDelimiter := false
+		sbp.WriteString("pod-level recommendation:")
+		if r.PodRecommendations.Target != nil {
+			sbp.WriteString("target:")
+			if !r.PodRecommendations.Target.Memory().IsZero() {
+				sbp.WriteString(strconv.FormatInt(r.PodRecommendations.Target.Memory().ScaledValue(resource.Kilo), 10))
+				sbp.WriteString("k")
+				addDelimiter = true
+			}
+			if !r.PodRecommendations.Target.Cpu().IsZero() {
+				if addDelimiter {
+					sbp.WriteString(" ")
+				}
+				sbp.WriteString(strconv.FormatInt(r.PodRecommendations.Target.Cpu().MilliValue(), 10))
+				sbp.WriteString("m")
+				addDelimiter = true
+			}
+			if addDelimiter {
+				sbp.WriteString(";")
+			}
+		}
+		addDelimiter = false
+		if r.PodRecommendations.UncappedTarget != nil {
+			sbp.WriteString("uncappedTarget:")
+			if !r.PodRecommendations.UncappedTarget.Memory().IsZero() {
+				sbp.WriteString(strconv.FormatInt(r.PodRecommendations.UncappedTarget.Memory().ScaledValue(resource.Kilo), 10))
+				sbp.WriteString("k")
+				addDelimiter = true
+			}
+			if !r.PodRecommendations.UncappedTarget.Cpu().IsZero() {
+				if addDelimiter {
+					sbp.WriteString(" ")
+				}
+				sbp.WriteString(strconv.FormatInt(r.PodRecommendations.UncappedTarget.Cpu().MilliValue(), 10))
+				sbp.WriteString("m")
+				addDelimiter = true
+			}
+			if addDelimiter {
+				sbp.WriteString(";")
+			}
+		}
+		sb.WriteString(strings.TrimSpace(strings.NewReplacer(":", ": ", ";", "; ").Replace(sbp.String())))
 	}
 	return sb.String()
 }

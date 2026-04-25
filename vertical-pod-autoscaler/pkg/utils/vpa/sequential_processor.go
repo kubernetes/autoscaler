@@ -22,6 +22,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
 )
 
 // NewSequentialProcessor constructs RecommendationProcessor that will use provided RecommendationProcessor objects
@@ -36,7 +37,7 @@ type sequentialRecommendationProcessor struct {
 // Apply chains calls to underlying RecommendationProcessors in order provided on object construction
 func (p *sequentialRecommendationProcessor) Apply(
 	vpa *vpa_types.VerticalPodAutoscaler,
-	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
+	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, *utils.Annotations, error) {
 	if vpa == nil {
 		return nil, nil, errors.New("cannot process nil vpa")
 	}
@@ -46,28 +47,30 @@ func (p *sequentialRecommendationProcessor) Apply(
 
 	recommendation := vpa.Status.Recommendation
 
-	accumulatedContainerToAnnotationsMap := ContainerToAnnotationsMap{}
+	accumulatedAnnotations := utils.Annotations{
+		Container: utils.ContainerToAnnotationsMap{},
+	}
 
 	for _, processor := range p.processors {
 		var (
-			err                       error
-			containerToAnnotationsMap ContainerToAnnotationsMap
+			err         error
+			annotations *utils.Annotations
 		)
-		recommendation, containerToAnnotationsMap, err = processor.Apply(vpa, pod)
+		recommendation, annotations, err = processor.Apply(vpa, pod)
 		vpa.Status.Recommendation = recommendation
 
-		for container, newAnnotations := range containerToAnnotationsMap {
-			annotations, found := accumulatedContainerToAnnotationsMap[container]
+		for container, newAnnotations := range annotations.Container {
+			annotations, found := accumulatedAnnotations.Container[container]
 			if found {
-				accumulatedContainerToAnnotationsMap[container] = append(annotations, newAnnotations...)
+				accumulatedAnnotations.Container[container] = append(annotations, newAnnotations...)
 			} else {
-				accumulatedContainerToAnnotationsMap[container] = newAnnotations
+				accumulatedAnnotations.Container[container] = newAnnotations
 			}
 		}
 
 		if err != nil {
-			return nil, accumulatedContainerToAnnotationsMap, err
+			return nil, &accumulatedAnnotations, err
 		}
 	}
-	return recommendation, accumulatedContainerToAnnotationsMap, nil
+	return recommendation, &accumulatedAnnotations, nil
 }

@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -291,6 +292,74 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 		return fmt.Errorf("cannot save checkpoint for vpa %s/%s container %s. Reason: %+v", vpaCheckpoint.Namespace, vpaCheckpoint.Name, vpaCheckpoint.Spec.ContainerName, err)
 	}
 	return nil
+}
+
+// FilterContainerRecommendations returns container-level recommendations whose Mode is "Auto" (the default value).
+// This behavior allows the existing code to process only containers that the user wants to manage.
+// It can be used regardless of whether pod-level scaling mode is enabled.
+func FilterContainerRecommendations(vpa *vpa_types.VerticalPodAutoscaler) []vpa_types.RecommendedContainerResources {
+	if vpa == nil || vpa.Status.Recommendation == nil || vpa.Status.Recommendation.ContainerRecommendations == nil {
+		return nil
+	}
+
+	containerRecommendations := vpa.Status.Recommendation.ContainerRecommendations
+	managedContainers := determineManagedContainers(vpa)
+	if len(managedContainers) == 0 {
+		// Return nil because all containers use the "RecommendationOnly" mode
+		return nil
+	}
+	filtered := make([]vpa_types.RecommendedContainerResources, 0, len(containerRecommendations))
+	for _, c := range containerRecommendations {
+		if slices.Contains(managedContainers, c.ContainerName) {
+			filtered = append(filtered, c)
+		}
+	}
+	return filtered
+}
+
+// determineManagedContainers returns the names of containers whose scaling mode is Auto
+func determineManagedContainers(vpa *vpa_types.VerticalPodAutoscaler) []string {
+	if vpa == nil || vpa.Status.Recommendation == nil || vpa.Status.Recommendation.ContainerRecommendations == nil {
+		return nil
+	}
+
+	recs := vpa.Status.Recommendation.ContainerRecommendations
+	containers := make([]string, 0, len(recs))
+
+	for _, rec := range recs {
+		if isContainerScalingModeAuto(rec.ContainerName, vpa.Spec.ResourcePolicy) {
+			containers = append(containers, rec.ContainerName)
+		}
+	}
+	return containers
+}
+
+func isContainerScalingModeAuto(containerName string, resourcePolicy *vpa_types.PodResourcePolicy) bool {
+	policy := GetContainerResourcePolicy(containerName, resourcePolicy)
+	if policy == nil {
+		// no per-container policy container's mode is auto
+		return true
+	}
+	return policy.Mode == nil || *policy.Mode == vpa_types.ContainerScalingModeAuto
+}
+
+// IsPodLevelScalingModeEnabled checks whether scaling at the Pod level is enabled.
+func IsPodLevelScalingModeEnabled(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if vpa == nil ||
+		vpa.Spec.ResourcePolicy == nil ||
+		vpa.Spec.ResourcePolicy.PodPolicies == nil ||
+		vpa.Spec.ResourcePolicy.PodPolicies.Mode == nil {
+		return false
+	}
+	return *vpa.Spec.ResourcePolicy.PodPolicies.Mode == vpa_types.PodScalingModeAuto
+}
+
+// GetPodControlledValues returns controlled resource values from the podPolicies stanza.
+func GetPodControlledValues(vpaResourcePolicy *vpa_types.PodResourcePolicy) vpa_types.ContainerControlledValues {
+	if vpaResourcePolicy == nil || vpaResourcePolicy.PodPolicies == nil || vpaResourcePolicy.PodPolicies.ControlledValues == nil {
+		return vpa_types.ContainerControlledValuesRequestsAndLimits
+	}
+	return *vpaResourcePolicy.PodPolicies.ControlledValues
 }
 
 // IsPodReadyAndStartupBoostDurationPassed returns true if the pod is ready and all container startup boost durations have passed.
