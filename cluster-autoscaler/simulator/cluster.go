@@ -287,9 +287,6 @@ func (r *RemovalSimulator) replaceWithTaintedGhostNode(nodeName string, timestam
 		Effect: apiv1.TaintEffectNoSchedule,
 	})
 	ghostNodeInfo := framework.NewNodeInfo(taintedNode, nodeInfo.LocalResourceSlices)
-	if nodeInfo.CSINode != nil {
-		ghostNodeInfo.SetCSINode(nodeInfo.CSINode)
-	}
 	if err = r.clusterSnapshot.AddNodeInfo(ghostNodeInfo); err != nil {
 		return fmt.Errorf("couldn't add tainted ghost node for %s: %v", nodeName, err)
 	}

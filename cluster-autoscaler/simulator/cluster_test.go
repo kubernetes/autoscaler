@@ -17,6 +17,7 @@ limitations under the License.
 package simulator
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -186,11 +188,6 @@ func TestFindNodesToRemove(t *testing.T) {
 	blocker2 := BuildTestPod("blocker2", 100, 100000)
 	blocker2.Spec.NodeName = "topo-n3"
 
-	topoNodeToRemove := NodeToBeRemoved{
-		Node:             topoNode1,
-		PodsToReschedule: []*apiv1.Pod{pod5},
-	}
-
 	tests := []findNodesToRemoveTestConfig{
 		{
 			name:       "just an empty node, should be removed",
@@ -228,12 +225,12 @@ func TestFindNodesToRemove(t *testing.T) {
 			toRemove:   []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
 		},
 		{
-			name:       "topology spread constraint test - one node should be removable",
+			name:       "topology spread constraint test - node unremovable due to phantom zone",
 			pods:       []*apiv1.Pod{pod5, pod6, pod7, blocker1, blocker2},
 			allNodes:   []*apiv1.Node{topoNode1, topoNode2, topoNode3},
 			candidates: []string{topoNode1.Name, topoNode2.Name, topoNode3.Name},
-			toRemove:   []NodeToBeRemoved{topoNodeToRemove},
 			unremovable: []*UnremovableNode{
+				{Node: topoNode1, Reason: NoPlaceToMovePods},
 				{Node: topoNode2, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: blocker1, Reason: drain.NotReplicated}},
 				{Node: topoNode3, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: blocker2, Reason: drain.NotReplicated}},
 			},
