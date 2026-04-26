@@ -58,13 +58,10 @@ func TestValidateVPA(t *testing.T) {
 	validCPUBoostTypeQuantity := vpa_types.QuantityStartupBoostType
 
 	tests := []struct {
-		name                                 string
-		vpa                                  vpa_types.VerticalPodAutoscaler
-		isCreate                             bool
-		expectError                          error
-		inPlaceOrRecreateFeatureGateDisabled bool
-		PerVPAConfigDisabled                 bool
-		cpuStartupBoostFeatureGateDisabled   bool
+		name        string
+		vpa         vpa_types.VerticalPodAutoscaler
+		expectError error
+		opts        VPAValidationOptions
 	}{
 		{
 			name: "empty update",
@@ -73,7 +70,7 @@ func TestValidateVPA(t *testing.T) {
 		{
 			name:        "empty create",
 			vpa:         vpa_types.VerticalPodAutoscaler{},
-			isCreate:    true,
+			opts:        VPAValidationOptions{IsVPACreate: true},
 			expectError: errors.New("targetRef is required. If you're using v1beta1 version of the API, please migrate to v1"),
 		},
 		{
@@ -105,22 +102,8 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:                             true,
-			inPlaceOrRecreateFeatureGateDisabled: true,
-			expectError:                          fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate),
-		},
-		{
-			name: "updating VPA with InPlaceOrRecreate update mode allowed by disabled feature gate",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode: &inPlaceOrRecreateUpdateMode,
-					},
-				},
-			},
-			isCreate:                             false,
-			inPlaceOrRecreateFeatureGateDisabled: true,
-			expectError:                          nil,
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowInPlaceOrRecreate: false},
+			expectError: fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate),
 		},
 		{
 			name: "InPlaceOrRecreate update mode enabled by feature gate",
@@ -129,8 +112,13 @@ func TestValidateVPA(t *testing.T) {
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode: &inPlaceOrRecreateUpdateMode,
 					},
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 				},
 			},
+			opts: VPAValidationOptions{IsVPACreate: true, AllowInPlaceOrRecreate: true},
 		},
 		{
 			name: "zero minReplicas",
@@ -345,9 +333,8 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:                           true,
-			cpuStartupBoostFeatureGateDisabled: true,
-			expectError:                        fmt.Errorf("invalid startupBoost: in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost),
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: false},
+			expectError: fmt.Errorf("invalid startupBoost: in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost),
 		},
 		{
 			name: "container startupBoost with feature gate disabled",
@@ -367,9 +354,8 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:                           true,
-			cpuStartupBoostFeatureGateDisabled: true,
-			expectError:                        fmt.Errorf("invalid startupBoost in container loot box: in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost),
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: false},
+			expectError: fmt.Errorf("invalid startupBoost in container loot box: in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost),
 		},
 		{
 			name: "top-level startupBoost with bad factor",
@@ -383,7 +369,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:    true,
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 			expectError: errors.New("invalid startupBoost: invalid startupBoost.cpu.factor: must be >= 1 for type Factor"),
 		},
 		{
@@ -405,7 +391,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:    true,
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 			expectError: errors.New("invalid startupBoost in container loot box: invalid startupBoost.cpu.factor: must be >= 1 for type Factor"),
 		},
 		{
@@ -424,7 +410,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:    true,
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 			expectError: fmt.Errorf("invalid startupBoost: invalid startupBoost.cpu.quantity: CPU [%v] must be a whole number of milli CPUs", &badCPUBoostQuantity),
 		},
 		{
@@ -450,7 +436,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:    true,
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 			expectError: fmt.Errorf("invalid startupBoost in container loot box: invalid startupBoost.cpu.quantity: CPU [%v] must be a whole number of milli CPUs", &badCPUBoostQuantity),
 		},
 		{
@@ -464,7 +450,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:    true,
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 			expectError: fmt.Errorf("invalid startupBoost: startupBoost.cpu.type field is required and must be either %s or %s, got %v", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType, badCPUBoostType),
 		},
 		{
@@ -485,7 +471,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:    true,
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 			expectError: fmt.Errorf("invalid startupBoost in container loot box: startupBoost.cpu.type field is required and must be either %s or %s, got %v", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType, badCPUBoostType),
 		},
 		{
@@ -497,7 +483,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:    true,
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 			expectError: fmt.Errorf("invalid startupBoost: startupBoost.cpu.type field is required and must be either %s or %s", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType),
 		},
 		{
@@ -516,7 +502,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate:    true,
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 			expectError: fmt.Errorf("invalid startupBoost in container loot box: startupBoost.cpu.type field is required and must be either %s or %s", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType),
 		},
 		{
@@ -535,7 +521,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate: true,
+			opts: VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 		},
 		{
 			name: "container startupBoost with valid factor",
@@ -560,7 +546,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate: true,
+			opts: VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 		},
 		{
 			name: "top-level startupBoost with valid quantity",
@@ -578,7 +564,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate: true,
+			opts: VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 		},
 		{
 			name: "container startupBoost with valid quantity",
@@ -603,7 +589,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate: true,
+			opts: VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 		},
 		{
 			name: "top-level and container startupBoost",
@@ -634,7 +620,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			isCreate: true,
+			opts: VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 		},
 		{
 			name: "per-vpa config active and used",
@@ -642,6 +628,10 @@ func TestValidateVPA(t *testing.T) {
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode: &validUpdateMode,
+					},
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
 					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
@@ -660,12 +650,16 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			PerVPAConfigDisabled: false,
+			opts: VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
 		},
 		{
 			name: "per-vpa config active and used evictOOMThreshold",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode:           &validUpdateMode,
 						EvictAfterOOMSeconds: ptr.To(int32(600)),
@@ -687,7 +681,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			PerVPAConfigDisabled: false,
+			opts: VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
 		},
 		{
 			name: "per-vpa config disabled and used",
@@ -713,20 +707,20 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			PerVPAConfigDisabled: true,
-			expectError:          errors.New("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag PerVPAConfig is disabled"),
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: false},
+			expectError: errors.New("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag PerVPAConfig is disabled"),
 		},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			if tc.inPlaceOrRecreateFeatureGateDisabled {
+			if !tc.opts.AllowInPlaceOrRecreate || !tc.opts.AllowCPUStartupBoost {
 				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.5"))
-				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, !tc.inPlaceOrRecreateFeatureGateDisabled)
+				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, tc.opts.AllowInPlaceOrRecreate)
 			} else {
-				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, !tc.cpuStartupBoostFeatureGateDisabled)
+				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, tc.opts.AllowCPUStartupBoost)
 			}
-			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, !tc.PerVPAConfigDisabled)
-			err := ValidateVPA(&tc.vpa, tc.isCreate)
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, tc.opts.AllowPerVPAConfig)
+			err := ValidateVPA(&tc.vpa, tc.opts)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
 			} else {
