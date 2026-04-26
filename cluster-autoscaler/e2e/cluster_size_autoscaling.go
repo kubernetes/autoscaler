@@ -338,9 +338,9 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 			defer func() {
 				framework.ExpectNoError(cleanupFunc())
 			}()
-			// Verify that cluster size is not changed
+			// Verify that the cluster size increased.
 			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, f.ClientSet,
-				func(size int) bool { return size > nodeCount }, time.Second))
+				func(size int) bool { return size > nodeCount }, scaleUpTimeout))
 		})
 
 		f.It("shouldn't scale up when expendable pod is preempted", feature.ClusterSizeAutoscalingScaleUp, func(ctx context.Context) {
