@@ -33,7 +33,7 @@ The `full-benchmark.sh` script handles everything end-to-end: creates a Kind clu
 
 ```bash
 cd vertical-pod-autoscaler
-./benchmark/hack/full-benchmark.sh --profile=small --output=results.csv
+./test/benchmark/hack/full-benchmark.sh --profile=small --output=results.csv
 ```
 
 You can pass any benchmark flags directly:
