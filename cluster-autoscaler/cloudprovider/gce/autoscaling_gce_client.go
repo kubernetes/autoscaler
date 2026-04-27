@@ -80,6 +80,14 @@ const (
 	// be scaled up because the associated reservation is not compatible with the node group.
 	ErrorReservationIncompatible = "RESERVATION_INCOMPATIBLE"
 
+	// ErrorAutomaticReservationsNotAvailable happens if there is no automatic reservation with
+	// matching prespun instance properties, when using affinity ANY_RESERVATION_THEN_FAIL.
+	ErrorAutomaticReservationsNotAvailable = "AUTOMATIC_RESERVATIONS_NOT_AVAILABLE"
+
+	// ErrorAutomaticReservationsNoCapacity happens when trying to create an instance with
+	// affinity ANY_RESERVATION_THEN_FAIL but all reservations are full.
+	ErrorAutomaticReservationsNoCapacity = "AUTOMATIC_RESERVATIONS_NO_CAPACITY"
+
 	// ErrorUnsupportedTpuConfiguration is an error code for InstanceErrorInfo if the
 	// node group couldn't be scaled up because of invalid TPU configuration.
 	ErrorUnsupportedTpuConfiguration = "UNSUPPORTED_TPU_CONFIGURATION"
@@ -105,6 +113,8 @@ var (
 		regexp.MustCompile("Reservation (.*) is incorrect for the requested resources"),
 		regexp.MustCompile("Zone does not currently have sufficient capacity for the requested resources"),
 	}
+	automaticReservationsNoCapacityRegexp   = regexp.MustCompile("All automatic reservations in your project, or shared with your project, are fully consumed")
+	automaticReservationsNotAvailableRegexp = regexp.MustCompile("There is no automatic reservation matching the instance in your project")
 )
 
 // GceInstance extends cloudprovider.Instance with GCE specific numeric id.
@@ -613,6 +623,16 @@ func GetErrorInfo(errorCode, errorMessage, instanceStatus string, previousErrorI
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorUnsupportedTpuConfiguration,
 		}
+	} else if isAutomaticReservationNotAvailableError(errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorAutomaticReservationsNotAvailable,
+		}
+	} else if isAutomaticReservationsNoCapacity(errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorAutomaticReservationsNoCapacity,
+		}
 	} else if isInstanceStatusNotRunningYet(instanceStatus) {
 		if previousErrorInfo != nil {
 			// keep the current error
@@ -702,6 +722,14 @@ func isReservationCapacityExceeded(errorMessage string) bool {
 func isReservationIncompatible(errorMessage string) bool {
 	pattern := "No available resources in specified reservations"
 	return strings.Contains(errorMessage, pattern)
+}
+
+func isAutomaticReservationNotAvailableError(errorMessage string) bool {
+	return automaticReservationsNotAvailableRegexp.MatchString(errorMessage)
+}
+
+func isAutomaticReservationsNoCapacity(errorMessage string) bool {
+	return automaticReservationsNoCapacityRegexp.MatchString(errorMessage)
 }
 
 func isInvalidReservationError(errorMessage string) bool {
