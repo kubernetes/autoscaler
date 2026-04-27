@@ -28,7 +28,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
-	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/utils/clock"
 	baseclocktest "k8s.io/utils/clock/testing"
 	"k8s.io/utils/ptr"
@@ -36,7 +35,6 @@ import (
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -64,8 +62,6 @@ func getIPORVpa() *vpa_types.VerticalPodAutoscaler {
 }
 
 func TestDisruptReplicatedByController(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
-
 	rc := corev1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",

@@ -175,8 +175,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
-	inPlaceFeatureEnable := features.Enabled(features.InPlaceOrRecreate)
-
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
 			klog.V(3).InfoS("Skipping VPA object in ignored namespace", "vpa", klog.KObj(vpa), "namespace", vpa.Namespace)
@@ -319,17 +317,14 @@ func (u *updater) RunOnce(ctx context.Context) {
 		withInPlaceUpdatable := false
 		withEvictable := false
 
-		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceFeatureEnable {
+		if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
 			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter), vpa)
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
 			if len(podsForInPlace) > 0 {
 				withInPlaceUpdatable = true
 			}
 		} else {
-			// If the feature gate is not enabled but update mode is InPlaceOrRecreate, updater will always fallback to eviction.
-			if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
-				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", vpa_types.UpdateModeInPlaceOrRecreate)
-			}
+			// We may evict the pod when the mode is Recreate or Auto (deprecated)
 			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(podsAvailableForUpdate, evictionLimiter), vpa)
 			evictablePodsCounter.Add(vpaSize, updateMode, len(podsForEviction))
 			if len(podsForEviction) > 0 {

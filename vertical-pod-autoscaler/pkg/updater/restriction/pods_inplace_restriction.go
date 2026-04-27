@@ -76,10 +76,6 @@ type PodsInPlaceRestrictionImpl struct {
 
 // CanInPlaceUpdate checks if pod can be safely updated
 func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod) utils.InPlaceDecision {
-	if !features.Enabled(features.InPlaceOrRecreate) {
-		return utils.InPlaceEvict
-	}
-
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
 		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]

@@ -69,19 +69,17 @@ func (h *resourceHandler) DisallowIncorrectObjects() bool {
 // VPAValidationOptions contains the different settings for VPA validation
 type VPAValidationOptions struct {
 	// FIXME(adrian): IsVPACreate should be removed from here by splitting ValidateVPA() into ValidateVPACreate() and ValidateVPAUpdate() functions
-	IsVPACreate            bool
-	AllowCPUStartupBoost   bool
-	AllowInPlaceOrRecreate bool
-	AllowPerVPAConfig      bool
+	IsVPACreate          bool
+	AllowCPUStartupBoost bool
+	AllowPerVPAConfig    bool
 }
 
 // GetValidationOptionsForVPA generates VPAValidationOptions for VPA
 func GetValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAValidationOptions {
 	opts := VPAValidationOptions{
-		IsVPACreate:            oldObj == nil,
-		AllowCPUStartupBoost:   allowCPUBoost(oldObj),
-		AllowInPlaceOrRecreate: features.Enabled(features.InPlaceOrRecreate),
-		AllowPerVPAConfig:      allowPerVPAConfig(oldObj),
+		IsVPACreate:          oldObj == nil,
+		AllowCPUStartupBoost: allowCPUBoost(oldObj),
+		AllowPerVPAConfig:    allowPerVPAConfig(oldObj),
 	}
 
 	return opts
@@ -183,9 +181,6 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions
 		}
 		if _, found := vpa_types.GetUpdateModes()[*mode]; !found {
 			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
-		}
-		if *mode == vpa_types.UpdateModeInPlaceOrRecreate && !opts.AllowInPlaceOrRecreate {
-			return fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate)
 		}
 		if minReplicas := vpa.Spec.UpdatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
 			return fmt.Errorf("minReplicas has to be positive, got %v", *minReplicas)
