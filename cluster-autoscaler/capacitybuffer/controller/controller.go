@@ -26,6 +26,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
@@ -39,6 +40,7 @@ import (
 	filters "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	cbmetrics "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/metrics"
 	translators "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators"
+	scalableobject "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators/scalable_objects"
 	updater "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/updater"
 	"k8s.io/utils/clock"
 )
@@ -205,7 +207,48 @@ func (c *bufferController) configureEventHandlers() {
 			c.enqueueBuffersReferencingPodTemplate(obj)
 		},
 	})
-	// TODO: scalable objects
+
+	// Deployment Informer
+	c.client.GetDeploymentInformer().AddEventHandler(c.scalableObjectHandlerFuncs(scalableobject.ApiGroupApps, scalableobject.DeploymentKind))
+
+	// ReplicaSet Informer
+	c.client.GetReplicaSetInformer().AddEventHandler(c.scalableObjectHandlerFuncs(scalableobject.ApiGroupApps, scalableobject.ReplicaSetKind))
+
+	// StatefulSet Informer
+	c.client.GetStatefulSetInformer().AddEventHandler(c.scalableObjectHandlerFuncs(scalableobject.ApiGroupApps, scalableobject.StatefulSetKind))
+
+	// Job Informer
+	c.client.GetJobInformer().AddEventHandler(c.scalableObjectHandlerFuncs(scalableobject.ApiGroupBatch, scalableobject.JobKind))
+
+	// ReplicationController Informer
+	c.client.GetReplicationControllerInformer().AddEventHandler(c.scalableObjectHandlerFuncs(scalableobject.ApiGroupCore, scalableobject.ReplicationControllerKind))
+}
+
+func (c *bufferController) scalableObjectHandlerFuncs(apiGroup, kind string) cache.ResourceEventHandlerFuncs {
+	return cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			c.enqueueBuffersReferencingScalableObject(obj, apiGroup, kind)
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			oldMeta, err := meta.Accessor(oldObj)
+			if err != nil {
+				klog.Errorf("CapacityBuffer controller: failed to get meta for %s/%s object, err: %v", apiGroup, kind, err)
+				return
+			}
+			newMeta, err := meta.Accessor(newObj)
+			if err != nil {
+				klog.Errorf("CapacityBuffer controller: failed to get meta for %s/%s object, err: %v", apiGroup, kind, err)
+				return
+			}
+			if oldMeta.GetGeneration() == newMeta.GetGeneration() {
+				return
+			}
+			c.enqueueBuffersReferencingScalableObject(newObj, apiGroup, kind)
+		},
+		DeleteFunc: func(obj interface{}) {
+			c.enqueueBuffersReferencingScalableObject(obj, apiGroup, kind)
+		},
+	}
 }
 
 func (c *bufferController) enqueueNamespace(obj interface{}) {
@@ -247,6 +290,37 @@ func (c *bufferController) enqueueBuffersReferencingPodTemplate(obj interface{})
 	for _, obj := range buffers {
 		buffer := obj.(*v1.CapacityBuffer)
 		if buffer.Namespace == template.Namespace {
+			c.queue.Add(buffer.Namespace)
+			return // we reconcile the whole namespace, so finding one buffer is enough to trigger it.
+		}
+	}
+}
+
+func (c *bufferController) enqueueBuffersReferencingScalableObject(obj interface{}, apiGroup, kind string) {
+	object, err := meta.Accessor(obj)
+	if err != nil {
+		// handle tombstone
+		if tombstone, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+			if cast, ok := tombstone.Obj.(metav1.Object); ok {
+				object = cast
+			}
+		}
+	}
+	if object == nil {
+		return
+	}
+
+	// Use indexer to find buffers referencing this scalable object
+	buffers, err := c.client.GetBufferInformer().GetIndexer().ByIndex(cbclient.ScalableRefIndex, object.GetName())
+	if err != nil {
+		runtime.HandleError(fmt.Errorf("error looking up buffers for scalable object %s/%s: %w", kind, object.GetName(), err))
+		return
+	}
+
+	for _, obj := range buffers {
+		buffer := obj.(*v1.CapacityBuffer)
+		if buffer.Namespace == object.GetNamespace() && buffer.Spec.ScalableRef != nil &&
+			buffer.Spec.ScalableRef.Kind == kind && buffer.Spec.ScalableRef.APIGroup == apiGroup {
 			c.queue.Add(buffer.Namespace)
 			return // we reconcile the whole namespace, so finding one buffer is enough to trigger it.
 		}
