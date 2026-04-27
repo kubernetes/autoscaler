@@ -46,12 +46,25 @@ func NewTrackerFactory(opts TrackerOptions) *TrackerFactory {
 	}
 }
 
-// NewQuotasTracker builds a new Tracker.
+// NewMaxQuotasTracker builds a new Tracker for maximum limits enforcement.
 //
-// NewQuotasTracker calculates resources used by the nodes for every
+// NewMaxQuotasTracker calculates resources used by the nodes for every
 // quota returned by the Provider. Then, based on usages and limits it calculates
 // how many resources can be still added to the cluster. Returns a Tracker object.
-func (f *TrackerFactory) NewQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node) (*Tracker, error) {
+func (f *TrackerFactory) NewMaxQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node) (*Tracker, error) {
+	return f.newQuotasTrackerWithDirection(autoscalingCtx, nodes, MaxEnforcement)
+}
+
+// NewMinQuotasTracker builds a new Tracker for minimum limits enforcement.
+//
+// NewMinQuotasTracker calculates resources used by the nodes for every
+// quota returned by the Provider. Then, based on usages and limits it calculates
+// how many resources can be still added to the cluster. Returns a Tracker object.
+func (f *TrackerFactory) NewMinQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node) (*Tracker, error) {
+	return f.newQuotasTrackerWithDirection(autoscalingCtx, nodes, MinEnforcement)
+}
+
+func (f *TrackerFactory) newQuotasTrackerWithDirection(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node, direction EnforcementDirection) (*Tracker, error) {
 	quotas, err := f.quotasProvider.Quotas()
 	if err != nil {
 		return nil, err
@@ -69,13 +82,17 @@ func (f *TrackerFactory) NewQuotasTracker(autoscalingCtx *context.AutoscalingCon
 		limits := rq.Limits()
 		for resourceType, limit := range limits {
 			usage := usages[rq.ID()][resourceType]
-			limitsLeft[resourceType] = max(0, limit-usage)
+			if direction == MaxEnforcement {
+				limitsLeft[resourceType] = max(0, limit-usage)
+			} else {
+				limitsLeft[resourceType] = max(0, usage-limit)
+			}
 		}
 		quotaStatuses = append(quotaStatuses, &quotaStatus{
 			quota:      rq,
 			limitsLeft: limitsLeft,
 		})
 	}
-	tracker := newTracker(quotaStatuses, nc)
+	tracker := newTracker(quotaStatuses, nc, direction)
 	return tracker, nil
 }

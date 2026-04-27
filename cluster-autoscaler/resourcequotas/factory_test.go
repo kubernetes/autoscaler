@@ -36,7 +36,7 @@ func (n nodeExcludeFn) ExcludeFromTracking(node *apiv1.Node) bool {
 	return n(node)
 }
 
-func TestNewQuotasTracker(t *testing.T) {
+func TestNewMaxQuotasTracker(t *testing.T) {
 	testCases := []struct {
 		name       string
 		crp        customresources.CustomResourcesProcessor
@@ -228,7 +228,7 @@ func TestNewQuotasTracker(t *testing.T) {
 				QuotaProvider:            NewCloudQuotasProvider(cloudProvider),
 				NodeFilter:               tc.nodeFilter,
 			})
-			tracker, err := factory.NewQuotasTracker(ctx, tc.nodes)
+			tracker, err := factory.NewMaxQuotasTracker(ctx, tc.nodes)
 			if err != nil {
 				t.Errorf("failed to create tracker: %v", err)
 			}

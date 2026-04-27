@@ -45,7 +45,7 @@ func TestCheckDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 10, "memory": 1000, "nodes": 5},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 1000, 200),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
@@ -59,7 +59,7 @@ func TestCheckDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 1, "memory": 1000, "nodes": 5},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 1000, 200),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
@@ -77,7 +77,7 @@ func TestCheckDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 1, "memory": 300, "nodes": 5},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 1000, 200),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
@@ -99,7 +99,7 @@ func TestCheckDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter2", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 10, "memory": 300, "nodes": 5},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 1000, 200),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
@@ -122,7 +122,7 @@ func TestCheckDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter2", AppliesToFn: func(*apiv1.Node) bool { return false }},
 					limitsLeft: resourceList{"cpu": 10, "memory": 300, "nodes": 5},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 1000, 200),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
@@ -140,7 +140,7 @@ func TestCheckDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return false }},
 					limitsLeft: resourceList{"cpu": 1, "memory": 100, "nodes": 1},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 1000, 200),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
@@ -154,7 +154,7 @@ func TestCheckDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 4, "memory": 32 * units.GiB, "gpu": 2},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 1000, 2000),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
@@ -175,8 +175,54 @@ func TestCheckDelta(t *testing.T) {
 						ResourceCount: 1,
 					},
 				}
-			}})),
+			}}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 1000, 2000),
+			nodeDelta: 2,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: 2,
+			},
+		},
+		{
+			name: "min enforcement: scale-down fits within limits",
+			tracker: newTracker([]*quotaStatus{
+				{
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
+					limitsLeft: resourceList{"cpu": 10, "memory": 1000, "nodes": 5},
+				},
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MinEnforcement),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: -2,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: -2,
+			},
+		},
+		{
+			name: "min enforcement: scale-down exceeds limits",
+			tracker: newTracker([]*quotaStatus{
+				{
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
+					limitsLeft: resourceList{"cpu": 1, "memory": 1000, "nodes": 5},
+				},
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MinEnforcement),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: -2,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: -1,
+				ExceededQuotas: []ExceededQuota{
+					{ID: "limiter1", ExceededResources: []string{"cpu"}},
+				},
+			},
+			wantExceeded: true,
+		},
+		{
+			name: "min enforcement: scale-up always allowed",
+			tracker: newTracker([]*quotaStatus{
+				{
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
+					limitsLeft: resourceList{"cpu": 0, "memory": 0, "nodes": 0},
+				},
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MinEnforcement),
+			node:      test.BuildTestNode("n1", 1000, 200),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
 				AllowedDelta: 2,
@@ -219,7 +265,7 @@ func TestApplyDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 10, "memory": 1000, "nodes": 5},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 1000, 200),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
@@ -236,7 +282,7 @@ func TestApplyDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 3, "memory": 1000, "nodes": 5},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 2000, 200),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
@@ -256,7 +302,7 @@ func TestApplyDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 1, "memory": 100, "nodes": 5},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 2000, 200),
 			nodeDelta: 1,
 			wantResult: &CheckDeltaResult{
@@ -276,7 +322,7 @@ func TestApplyDelta(t *testing.T) {
 					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
 					limitsLeft: resourceList{"cpu": 2, "memory": 500, "nodes": 10},
 				},
-			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement),
 			node:      test.BuildTestNode("n1", 1000, 200),
 			nodeDelta: 2,
 			wantResult: &CheckDeltaResult{
@@ -284,6 +330,40 @@ func TestApplyDelta(t *testing.T) {
 			},
 			wantLimitsLeft: map[string]resourceList{
 				"limiter1": {"cpu": 0, "memory": 100, "nodes": 8},
+			},
+		},
+		{
+			name: "min enforcement: scale-down applied successfully",
+			tracker: newTracker([]*quotaStatus{
+				{
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
+					limitsLeft: resourceList{"cpu": 10, "memory": 1000, "nodes": 5},
+				},
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MinEnforcement),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: -2,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: -2,
+			},
+			wantLimitsLeft: map[string]resourceList{
+				"limiter1": {"cpu": 8, "memory": 600, "nodes": 3},
+			},
+		},
+		{
+			name: "min enforcement: scale-up increases headroom",
+			tracker: newTracker([]*quotaStatus{
+				{
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
+					limitsLeft: resourceList{"cpu": 10, "memory": 1000, "nodes": 5},
+				},
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MinEnforcement),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: 2,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: 2,
+			},
+			wantLimitsLeft: map[string]resourceList{
+				"limiter1": {"cpu": 12, "memory": 1400, "nodes": 7},
 			},
 		},
 	}
@@ -310,5 +390,49 @@ func TestApplyDelta(t *testing.T) {
 			}
 
 		})
+	}
+}
+
+func TestCrossDirectionalEnforcement(t *testing.T) {
+	provider := cptest.NewTestCloudProviderBuilder().Build()
+	ctx := &context.AutoscalingContext{CloudProvider: provider}
+	node := test.BuildTestNode("n1", 1000, 200)
+
+	// MaxEnforcement: scale-down increases headroom
+	maxTracker := newTracker([]*quotaStatus{
+		{
+			quota:      &FakeQuota{Name: "max-limiter", AppliesToFn: func(*apiv1.Node) bool { return true }},
+			limitsLeft: resourceList{"cpu": 10},
+		},
+	}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MaxEnforcement)
+
+	res, err := maxTracker.ApplyDelta(ctx, nil, node, -2)
+	if err != nil {
+		t.Fatalf("ApplyDelta() failed: %v", err)
+	}
+	if res.Exceeded() {
+		t.Errorf("ApplyDelta() unexpectedly exceeded limits")
+	}
+	if got := maxTracker.quotaStatuses[0].limitsLeft["cpu"]; got != 12 {
+		t.Errorf("limitsLeft mismatch, want: 12, got: %v", got)
+	}
+
+	// MinEnforcement: scale-up increases headroom
+	minTracker := newTracker([]*quotaStatus{
+		{
+			quota:      &FakeQuota{Name: "min-limiter", AppliesToFn: func(*apiv1.Node) bool { return true }},
+			limitsLeft: resourceList{"cpu": 10},
+		},
+	}, newNodeResourcesCache(&fakeCustomResourcesProcessor{}), MinEnforcement)
+
+	res, err = minTracker.ApplyDelta(ctx, nil, node, 2)
+	if err != nil {
+		t.Fatalf("ApplyDelta() failed: %v", err)
+	}
+	if res.Exceeded() {
+		t.Errorf("ApplyDelta() unexpectedly exceeded limits")
+	}
+	if got := minTracker.quotaStatuses[0].limitsLeft["cpu"]; got != 12 {
+		t.Errorf("limitsLeft mismatch, want: 12, got: %v", got)
 	}
 }

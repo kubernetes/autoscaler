@@ -39,10 +39,21 @@ type Quota interface {
 // resourceList is a map of resource names to their quantities.
 type resourceList map[string]int64
 
+// EnforcementDirection defines the direction of quota enforcement.
+type EnforcementDirection int
+
+const (
+	// MaxEnforcement enforces maximum limits (e.g. for scale-up).
+	MaxEnforcement EnforcementDirection = iota
+	// MinEnforcement enforces minimum limits (e.g. for scale-down).
+	MinEnforcement EnforcementDirection = iota
+)
+
 // Tracker tracks resource quotas.
 type Tracker struct {
 	quotaStatuses []*quotaStatus
 	nodeCache     *nodeResourcesCache
+	direction     EnforcementDirection
 }
 
 type quotaStatus struct {
@@ -51,10 +62,11 @@ type quotaStatus struct {
 }
 
 // newTracker creates a new Tracker.
-func newTracker(quotaStatuses []*quotaStatus, nodeCache *nodeResourcesCache) *Tracker {
+func newTracker(quotaStatuses []*quotaStatus, nodeCache *nodeResourcesCache, direction EnforcementDirection) *Tracker {
 	return &Tracker{
 		quotaStatuses: quotaStatuses,
 		nodeCache:     nodeCache,
+		direction:     direction,
 	}
 }
 
@@ -75,10 +87,16 @@ func (t *Tracker) ApplyDelta(
 		return result, nil
 	}
 
+	sign := int64(1)
+	if t.direction == MinEnforcement {
+		sign = -1
+	}
+
 	for _, qs := range matchingQuotas {
 		for resource, resourceDelta := range delta {
 			if limit, ok := qs.limitsLeft[resource]; ok {
-				qs.limitsLeft[resource] = max(limit-resourceDelta*int64(result.AllowedDelta), 0)
+				headroomDelta := int64(result.AllowedDelta) * resourceDelta * sign
+				qs.limitsLeft[resource] = max(limit-headroomDelta, 0)
 			}
 		}
 	}
@@ -109,10 +127,15 @@ func (t *Tracker) checkDelta(delta resourceList, matchingQuotas []*quotaStatus, 
 		AllowedDelta: nodeDelta,
 	}
 
+	sign := int64(1)
+	if t.direction == MinEnforcement {
+		sign = -1
+	}
+
 	for _, qs := range matchingQuotas {
 		var exceededResources []string
 		for resource, resourceDelta := range delta {
-			if resourceDelta <= 0 {
+			if resourceDelta == 0 {
 				continue
 			}
 
@@ -121,11 +144,21 @@ func (t *Tracker) checkDelta(delta resourceList, matchingQuotas []*quotaStatus, 
 				continue
 			}
 
-			// node has resourceDelta units of resource, and we try to add nodeDelta nodes.
-			// Therefore, we need to check if resourceDelta*nodeDelta is within the limitsLeft.
-			if resourcesNeeded := resourceDelta * int64(nodeDelta); limitsLeft < resourcesNeeded {
-				allowedNodes := limitsLeft / resourceDelta
-				if allowedNodes < int64(result.AllowedDelta) {
+			// headroomDelta = nodeDelta * resourceDelta * sign.
+			// headroomDelta is positive if we are consuming headroom (moving towards limit).
+			// headroomDelta is negative if we are releasing headroom (moving away from limit).
+			// sign = 1 for Max (adding nodes consumes headroom).
+			// sign = -1 for Min (removing nodes consumes headroom).
+			headroomDelta := int64(nodeDelta) * resourceDelta * sign
+			if headroomDelta <= 0 {
+				continue
+			}
+
+			if limitsLeft < headroomDelta {
+				allowedNodes := limitsLeft / (resourceDelta * sign)
+				if allowedNodes < int64(result.AllowedDelta) && nodeDelta > 0 {
+					result.AllowedDelta = int(allowedNodes)
+				} else if allowedNodes > int64(result.AllowedDelta) && nodeDelta < 0 {
 					result.AllowedDelta = int(allowedNodes)
 				}
 				exceededResources = append(exceededResources, resource)
