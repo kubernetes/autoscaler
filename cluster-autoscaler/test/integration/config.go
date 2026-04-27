@@ -46,6 +46,7 @@ var DefaultAutoscalingOptions = config.AutoscalingOptions{
 	FrequentLoopsEnabled:       true,
 	ClusterName:                "cluster-test",
 	MaxBinpackingTime:          10 * time.Second,
+	PredicateParallelism:       1,
 }
 
 // TestConfig is the "blueprint" for a test. It defines the entire
@@ -96,6 +97,13 @@ func WithCloudProviderName(name string) AutoscalingOptionOverride {
 	}
 }
 
+// WithMaxNodeGroupBinpackingDuration sets the maximum ng binpacking duration.
+func WithMaxNodeGroupBinpackingDuration(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxNodeGroupBinpackingDuration = d
+	}
+}
+
 // WithScaleDownUnneededTime sets the scale down unneeded time option.
 func WithScaleDownUnneededTime(d time.Duration) AutoscalingOptionOverride {
 	return func(o *config.AutoscalingOptions) {
@@ -103,9 +111,72 @@ func WithScaleDownUnneededTime(d time.Duration) AutoscalingOptionOverride {
 	}
 }
 
+// WithForceDeleteLongUnregisteredNodes sets the force delete long unregistered nodes option.
+func WithForceDeleteLongUnregisteredNodes(b bool) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ForceDeleteLongUnregisteredNodes = b
+	}
+}
+
 // WithProvisioningRequestEnabled enables ProvisioningRequest support.
 func WithProvisioningRequestEnabled() AutoscalingOptionOverride {
 	return func(o *config.AutoscalingOptions) {
 		o.ProvisioningRequestEnabled = true
+	}
+}
+
+// WithScaleDownDelayAfterAdd sets the scale down delay after add option.
+func WithScaleDownDelayAfterAdd(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ScaleDownDelayAfterAdd = d
+	}
+}
+
+// WithScaleDownDelayAfterDelete sets the scale down delay after delete option.
+func WithScaleDownDelayAfterDelete(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ScaleDownDelayAfterDelete = d
+	}
+}
+
+// WithScaleDownDelayAfterFailure sets the scale down delay after failure option.
+func WithScaleDownDelayAfterFailure(d time.Duration) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ScaleDownDelayAfterFailure = d
+	}
+}
+
+// WithMaxCoresTotal sets the maximum total cores.
+func WithMaxCoresTotal(n int64) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxCoresTotal = n
+	}
+}
+
+// WithMaxScaleDownParallelism sets the maximum scale down parallelism.
+func WithMaxScaleDownParallelism(sdp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxScaleDownParallelism = sdp
+	}
+}
+
+// WithPredicateParallelism sets the predicate parallelism.
+func WithPredicateParallelism(p int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.PredicateParallelism = p
+	}
+}
+
+// WithMaxDrainParallelism sets the maximum drain parallelism.
+func WithMaxDrainParallelism(dp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxDrainParallelism = dp
+	}
+}
+
+// WithExpendablePodsPriorityCutoff sets the priority cutoff to expandable pods.
+func WithExpendablePodsPriorityCutoff(dp int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.ExpendablePodsPriorityCutoff = dp
 	}
 }

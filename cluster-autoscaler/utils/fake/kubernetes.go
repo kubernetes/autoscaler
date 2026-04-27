@@ -66,6 +66,22 @@ func (k *Kubernetes) AddPod(pod *apiv1.Pod) {
 	_, _ = k.Client.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
 }
 
+// AddPods adds multiple pods to the fake client and allows chaining.
+func (k *Kubernetes) AddPods(pods ...*apiv1.Pod) *Kubernetes {
+	for _, pod := range pods {
+		k.AddPod(pod)
+	}
+	return k
+}
+
+// AddNodes adds multiple nodes to the fake client and allows chaining.
+func (k *Kubernetes) AddNodes(nodes ...*apiv1.Node) *Kubernetes {
+	for _, node := range nodes {
+		k.AddNode(node)
+	}
+	return k
+}
+
 // DeletePod deletes a pod.
 func (k *Kubernetes) DeletePod(namespace, name string) {
 	_ = k.Client.CoreV1().Pods(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})

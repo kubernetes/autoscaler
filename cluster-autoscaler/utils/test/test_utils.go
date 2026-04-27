@@ -238,6 +238,29 @@ func WithPodHostnameAntiAffinity(labels map[string]string) func(*apiv1.Pod) {
 	}
 }
 
+// WithNodeSelector sets the pod node selector.
+func WithNodeSelector(selector map[string]string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.NodeSelector = selector
+	}
+}
+
+// WithPriority sets the priority of a pod.
+func WithPriority(priority ...int32) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		if len(priority) > 0 {
+			pod.Spec.Priority = &priority[0]
+		}
+	}
+}
+
+// WithNominatedNodeName sets the nominated node name of a pod.
+func WithNominatedNodeName(nodeName string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Status.NominatedNodeName = nodeName
+	}
+}
+
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)
@@ -353,6 +376,16 @@ type NodeOption func(*apiv1.Node)
 func IsReady(ready bool) NodeOption {
 	return func(node *apiv1.Node) {
 		SetNodeReadyState(node, ready, time.Now())
+	}
+}
+
+// WithNodeLabel sets a label on a node.
+func WithNodeLabel(key, value string) NodeOption {
+	return func(node *apiv1.Node) {
+		if node.Labels == nil {
+			node.Labels = make(map[string]string)
+		}
+		node.Labels[key] = value
 	}
 }
 
