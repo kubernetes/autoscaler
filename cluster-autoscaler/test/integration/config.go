@@ -46,6 +46,7 @@ var DefaultAutoscalingOptions = config.AutoscalingOptions{
 	FrequentLoopsEnabled:       true,
 	ClusterName:                "cluster-test",
 	MaxBinpackingTime:          10 * time.Second,
+	PredicateParallelism:       1,
 }
 
 // TestConfig is the "blueprint" for a test. It defines the entire
