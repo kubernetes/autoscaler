@@ -48,7 +48,6 @@ func TestValidateVPA(t *testing.T) {
 	validScalingMode := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff
 	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
-	inPlaceOrRecreateUpdateMode := vpa_types.UpdateModeInPlaceOrRecreate
 	badCPUBoostFactor := int32(0)
 	validCPUBoostFactor := int32(2)
 	badCPUBoostQuantity := resource.MustParse("187500u")
@@ -92,33 +91,6 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			expectError: errors.New("unexpected UpdateMode value bad"),
-		},
-		{
-			name: "creating VPA with InPlaceOrRecreate update mode not allowed by disabled feature gate",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode: &inPlaceOrRecreateUpdateMode,
-					},
-				},
-			},
-			opts:        VPAValidationOptions{IsVPACreate: true, AllowInPlaceOrRecreate: false},
-			expectError: fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate),
-		},
-		{
-			name: "InPlaceOrRecreate update mode enabled by feature gate",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode: &inPlaceOrRecreateUpdateMode,
-					},
-					TargetRef: &autoscalingv1.CrossVersionObjectReference{
-						Kind: "Deployment",
-						Name: "my-app",
-					},
-				},
-			},
-			opts: VPAValidationOptions{IsVPACreate: true, AllowInPlaceOrRecreate: true},
 		},
 		{
 			name: "zero minReplicas",
@@ -713,9 +685,8 @@ func TestValidateVPA(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			if !tc.opts.AllowInPlaceOrRecreate || !tc.opts.AllowCPUStartupBoost {
+			if !tc.opts.AllowCPUStartupBoost {
 				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.5"))
-				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, tc.opts.AllowInPlaceOrRecreate)
 			} else {
 				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, tc.opts.AllowCPUStartupBoost)
 			}

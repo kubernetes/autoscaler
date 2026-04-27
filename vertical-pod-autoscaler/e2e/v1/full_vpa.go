@@ -72,7 +72,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
-	f.Describe("with InPlaceOrRecreate update mode", framework.WithFeatureGate(features.InPlaceOrRecreate), func() {
+	f.Describe("with InPlaceOrRecreate update mode", func() {
 		ginkgo.BeforeEach(func() {
 			ns := f.Namespace.Name
 			ginkgo.By("Setting up a hamster deployment")
