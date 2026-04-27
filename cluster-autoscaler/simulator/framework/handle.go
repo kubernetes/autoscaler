@@ -41,13 +41,16 @@ type Handle struct {
 }
 
 // NewHandle builds a framework Handle based on the provided informers and scheduler config.
-func NewHandle(ctx context.Context, informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool, csiEnabled bool) (*Handle, error) {
+func NewHandle(ctx context.Context, informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool, csiEnabled bool, fastPredicatesEnabled bool) (*Handle, error) {
 	if schedConfig == nil {
 		var err error
 		schedConfig, err = schedulerconfiglatest.Default()
 		if err != nil {
 			return nil, fmt.Errorf("couldn't create scheduler config: %v", err)
 		}
+	}
+	if fastPredicatesEnabled {
+		DisableInterPodAffinity(schedConfig)
 	}
 	if len(schedConfig.Profiles) != 1 {
 		return nil, fmt.Errorf("unexpected scheduler config: expected one scheduler profile only (found %d profiles)", len(schedConfig.Profiles))
@@ -89,4 +92,23 @@ func NewHandle(ctx context.Context, informerFactory informers.SharedInformerFact
 		Framework:        framework,
 		DelegatingLister: sharedLister,
 	}, nil
+}
+
+// DisableInterPodAffinity disables InterPodAffinity plugin in the given configuration.
+func DisableInterPodAffinity(cfg *schedulerconfig.KubeSchedulerConfiguration) {
+	if cfg == nil {
+		return
+	}
+	for i := range cfg.Profiles {
+		profile := &cfg.Profiles[i]
+		if profile.Plugins == nil {
+			profile.Plugins = &schedulerconfig.Plugins{}
+		}
+		profile.Plugins.PreFilter.Disabled = append(profile.Plugins.PreFilter.Disabled,
+			schedulerconfig.Plugin{Name: "InterPodAffinity"},
+		)
+		profile.Plugins.Filter.Disabled = append(profile.Plugins.Filter.Disabled,
+			schedulerconfig.Plugin{Name: "InterPodAffinity"},
+		)
+	}
 }

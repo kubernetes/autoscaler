@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
@@ -450,4 +451,14 @@ func (snapshot *DeltaSnapshotStore) Commit() error {
 // Time: O(1)
 func (snapshot *DeltaSnapshotStore) Clear() {
 	snapshot.data = newInternalDeltaSnapshotData()
+}
+
+// GetPodInformer returns a SharedInformer for Pods.
+func (snapshot *DeltaSnapshotStore) GetPodInformer() cache.SharedInformer {
+	return nil
+}
+
+// GetNodeInformer returns a SharedInformer for Nodes.
+func (snapshot *DeltaSnapshotStore) GetNodeInformer() cache.SharedInformer {
+	return nil
 }

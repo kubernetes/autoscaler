@@ -316,7 +316,7 @@ func BenchmarkScheduleRevert(b *testing.B) {
 			for cfgName, cfg := range configurations {
 				b.Run(cfgName, func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
-						snapshot, err := snapshotFactory()
+						snapshot, err := snapshotFactory(b)
 						if err != nil {
 							b.Errorf("Failed to create a snapshot: %v", err)
 						}

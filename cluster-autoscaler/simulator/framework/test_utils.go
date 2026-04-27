@@ -67,6 +67,7 @@ func NodeInfoCmpOptions() []cmp.Option {
 // testFailer is an abstraction that covers both *testing.T and *testing.B.
 type testFailer interface {
 	Fatalf(format string, args ...any)
+	Cleanup(func())
 }
 
 // NewTestNodeInfo returns a new NodeInfo without any DRA information - only to be used in test code.
@@ -91,12 +92,12 @@ func NewTestNodeInfoWithCSI(node *apiv1.Node, csiNode *storagev1.CSINode, pods .
 }
 
 // NewTestFrameworkHandle creates a Handle that can be used in tests.
-func NewTestFrameworkHandle() (*Handle, error) {
+func NewTestFrameworkHandle(ctx context.Context) (*Handle, error) {
 	defaultConfig, err := scheduler_config_latest.Default()
 	if err != nil {
 		return nil, err
 	}
-	fwHandle, err := NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig, true, true)
+	fwHandle, err := NewHandle(ctx, informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig, true, true, false)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +106,9 @@ func NewTestFrameworkHandle() (*Handle, error) {
 
 // NewTestFrameworkHandleOrDie creates a Handle that can be used in tests.
 func NewTestFrameworkHandleOrDie(t testFailer) *Handle {
-	handle, err := NewTestFrameworkHandle()
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+	handle, err := NewTestFrameworkHandle(ctx)
 	if err != nil {
 		t.Fatalf("TestFrameworkHandleOrDie: couldn't create test framework handle: %v", err)
 	}
