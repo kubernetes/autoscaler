@@ -158,10 +158,28 @@ func WithPodTemplateRef(name string) BufferOption {
 	}
 }
 
+// WithScalableRef sets the Spec.ScalableRef
+func WithScalableRef(apiGroup, kind, name string) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Spec.ScalableRef = &v1.ScalableRef{
+			APIGroup: apiGroup,
+			Kind:     kind,
+			Name:     name,
+		}
+	}
+}
+
 // WithReplicas sets the Spec.Replicas
 func WithReplicas(replicas int32) BufferOption {
 	return func(b *v1.CapacityBuffer) {
 		b.Spec.Replicas = &replicas
+	}
+}
+
+// WithPercentage sets the Spec.Percentage
+func WithPercentage(percentage int32) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Spec.Percentage = &percentage
 	}
 }
 

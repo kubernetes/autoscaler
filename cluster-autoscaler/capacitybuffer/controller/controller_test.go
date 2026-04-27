@@ -23,6 +23,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -248,6 +249,118 @@ func TestControllerIntegration_ResourceQuotas(t *testing.T) {
 	// Since we updated Status, the Informer should catch it and trigger reconcile.
 	waitForStatus("b1", 4, false)
 	waitForStatus("b2", 4, false) // Should no longer be limited
+}
+
+func TestControllerIntegration_ScalableObjects(t *testing.T) {
+	// Setup
+	now := metav1.Now().Time
+	fakeClock := testclock.NewFakeClock(now)
+	reconciliationCache := metrics.NewReconciliationCache()
+
+	dep := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:       "my-dep",
+			Namespace:  "default",
+			Generation: 1,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: ptr.To[int32](10),
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{Name: "c", Image: "i"}},
+				},
+			},
+		},
+	}
+
+	k8sClient := fakek8s.NewSimpleClientset(dep)
+	buffersClient := fakebuffers.NewSimpleClientset()
+
+	// Reactor for status updates (same as in TestControllerIntegration_ResourceQuotas)
+	buffersClient.PrependReactor("update", "capacitybuffers/status", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		updateAction := action.(k8stesting.UpdateAction)
+		buffer := updateAction.GetObject().(*v1.CapacityBuffer)
+		tracker := buffersClient.Tracker()
+
+		existingObj, err := tracker.Get(v1.SchemeGroupVersion.WithResource("capacitybuffers"), buffer.Namespace, buffer.Name)
+		if err != nil {
+			if errors.IsNotFound(err) {
+				return false, nil, nil
+			}
+			return true, nil, err
+		}
+		existingBuf := existingObj.(*v1.CapacityBuffer)
+		newObj := existingBuf.DeepCopy()
+		newObj.ObjectMeta = buffer.ObjectMeta
+		newObj.Status = buffer.Status
+		err = tracker.Update(v1.SchemeGroupVersion.WithResource("capacitybuffers"), newObj, buffer.Namespace)
+		return true, newObj, err
+	})
+
+	ensureResourceVersionUpdates(k8sClient)
+	ensureResourceVersionUpdates(buffersClient)
+
+	// We need to use NewCapacityBufferClientFromClients to initialize informers correctly
+	client, err := cbclient.NewCapacityBufferClientFromClients(buffersClient, k8sClient, nil, nil)
+	assert.NoError(t, err)
+
+	resolver := fakepods.NewDefaultingResolver()
+	controller := NewDefaultBufferController(client,
+		resolver,
+		[]string{capacitybuffer.ActiveProvisioningStrategy},
+		reconciliationCache,
+		fakeClock).(*bufferController)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Run controller in background
+	go controller.Run(ctx.Done())
+
+	// Helper to wait for buffer status (reusing logic from TestControllerIntegration_ResourceQuotas)
+	waitForStatus := func(name string, expectedReplicas int32) {
+		err := wait.PollUntilContextTimeout(ctx, 100*time.Millisecond, 5*time.Second, true, func(ctx context.Context) (bool, error) {
+			b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers("default").Get(ctx, name, metav1.GetOptions{})
+			if err != nil {
+				return false, nil
+			}
+			if b.Status.Replicas == nil {
+				return false, nil
+			}
+			return *b.Status.Replicas == expectedReplicas, nil
+		})
+		if err != nil {
+			b, _ := buffersClient.AutoscalingV1beta1().CapacityBuffers("default").Get(ctx, name, metav1.GetOptions{})
+			gotReplicas := int32(-1)
+			if b.Status.Replicas != nil {
+				gotReplicas = *b.Status.Replicas
+			}
+			t.Errorf("%s reconciliation failed, got replicas: %d, want replicas: %d", name, gotReplicas, expectedReplicas)
+		}
+	}
+
+	// 1. Create a buffer referencing the deployment with 20%
+	b1 := testutil.NewBuffer(
+		testutil.WithName("b1"),
+		testutil.WithScalableRef("apps", "Deployment", "my-dep"),
+		testutil.WithPercentage(20),
+		testutil.WithActiveProvisioningStrategy(),
+	)
+	_, err = buffersClient.AutoscalingV1beta1().CapacityBuffers("default").Create(ctx, b1, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// Wait for reconciliation: 20% of 10 is 2.
+	waitForStatus("b1", 2)
+
+	// 2. Update deployment replicas to 20
+	dep, _ = k8sClient.AppsV1().Deployments("default").Get(ctx, "my-dep", metav1.GetOptions{})
+	dep.Spec.Replicas = ptr.To[int32](20)
+	dep.Generation += 1
+	_, err = k8sClient.AppsV1().Deployments("default").Update(ctx, dep, metav1.UpdateOptions{})
+	assert.NoError(t, err)
+
+	// Wait for reconciliation: 20% of 20 is 4.
+	waitForStatus("b1", 4)
 }
 
 type withReactors interface {
