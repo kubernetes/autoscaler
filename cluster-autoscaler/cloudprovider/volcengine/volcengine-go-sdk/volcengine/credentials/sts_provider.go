@@ -62,7 +62,7 @@ func (s *StsProvider) Retrieve() (Value, error) {
 			if _err != nil {
 				return Value{}, _err
 			}
-			return Value{}, fmt.Errorf(string(bb))
+			return Value{}, fmt.Errorf("%s", string(bb))
 		}
 		return Value{}, err
 	}

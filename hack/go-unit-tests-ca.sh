@@ -21,9 +21,7 @@ set -o nounset
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
 
 pushd ${CONTRIB_ROOT}/cluster-autoscaler/
-# TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
-# Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
-# This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
-ANALYZERS="atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests"
-go test -race -count=1 ./... -vet="${ANALYZERS}"
+GO_VET_ANALYZER_NAME_FLAGS="-appends=false -asmdecl=false -assign=false -cgocall=false -composites=false -copylocks=false -defers=false -framepointer=false -hostport=false -httpresponse=false -loopclosure=false -lostcancel=false -shift=false -sigchanyzer=false -stdmethods=false -stdversion=false -structtag=false -testinggoroutine=false -timeformat=false -unmarshal=false -unreachable=false -unsafeptr=false -unusedresult=false -waitgroup=false"
+go test -race -count=1 ./...
+go vet "${GO_VET_ANALYZER_NAME_FLAGS}" "$(go list ./... | grep -v vendor | grep -v sdk-go | grep -v go-sdk)"
 popd

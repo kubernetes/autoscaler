@@ -566,7 +566,7 @@ func Debug(title, message string) {
 		klog.V(5).Infof("----------------------------DEBUG: start of %s ----------------------------", title)
 	}
 
-	klog.V(5).Infof(message)
+	klog.V(5).Infof("%s", message)
 
 	if title != "" {
 		klog.V(5).Infof("----------------------------DEBUG: end of %s------------------------------", title)
