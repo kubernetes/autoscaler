@@ -62,13 +62,13 @@ func NewFilteredBalancerInformer(client versioned.Interface, namespace string, r
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.BalancerV1alpha1().Balancers(namespace).List(context.TODO(), options)
+				return client.BalancerV1alpha1().Balancers(namespace).List(context.Background(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.BalancerV1alpha1().Balancers(namespace).Watch(context.TODO(), options)
+				return client.BalancerV1alpha1().Balancers(namespace).Watch(context.Background(), options)
 			},
 		},
 		&balancerxk8siov1alpha1.Balancer{},
