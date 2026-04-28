@@ -89,7 +89,7 @@ func (c *instancePoolCache) rebuild(staticInstancePools map[string]*InstancePool
 			InstancePoolId: common.String(id),
 		})
 		if err != nil {
-			klog.Errorf("get instance pool %s failed: %v", id, err)
+			klog.Errorf("get instance-pool %s failed: %v", id, err)
 			return err
 		}
 		klog.V(6).Infof("GetInstancePool() response %v", getInstancePoolResp.InstancePool)
@@ -106,6 +106,7 @@ func (c *instancePoolCache) rebuild(staticInstancePools map[string]*InstancePool
 				Page:           page,
 			})
 			if err != nil {
+				klog.V(4).Infof("ListInstancePoolInstances for %s failed: %v", id, err)
 				return err
 			}
 
@@ -119,7 +120,7 @@ func (c *instancePoolCache) rebuild(staticInstancePools map[string]*InstancePool
 		// Compare instance pool's size with the latest number of InstanceSummaries. If found, look for unrecoverable
 		// errors such as quota or capacity issues in scaling pool.
 		if len(*c.instanceSummaryCache[id]) < *c.poolCache[id].Size {
-			klog.V(4).Infof("Instance pool %s has only %d instances created while requested count is %d. ",
+			klog.V(4).Infof("instance-pool %s has only %d instances created while requested count is %d. ",
 				*getInstancePoolResp.InstancePool.DisplayName, len(*c.instanceSummaryCache[id]), *c.poolCache[id].Size)
 
 			if getInstancePoolResp.LifecycleState != core.InstancePoolLifecycleStateRunning {
@@ -167,6 +168,7 @@ func (c *instancePoolCache) removeInstance(instancePool InstancePoolNodeGroup, i
 		klog.Warning("instanceID is not set - skipping removal.")
 		return false
 	}
+	klog.V(4).Infof("detaching instance %s from instance-pool: %v", instanceID, instancePool.Id())
 
 	var err error
 	if strings.Contains(instanceID, consts.InstanceIDUnfulfilled) {
@@ -214,7 +216,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) 
 
 	if c.unownedInstances[ociInstance] {
 		// We already know this instance is not part of a configured pool. Return early and avoid additional API calls.
-		klog.V(4).Info("Node " + ociInstance.Name + " is known to not be a member of any of the specified instance pool(s)")
+		klog.V(4).Info("Node " + ociInstance.Name + " is known to not be a member of any of the specified instance-pool(s)")
 		return nil, errInstanceInstancePoolNotFound
 	}
 
@@ -222,7 +224,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) 
 	for _, nextInstancePool := range c.poolCache {
 		// Skip searching instance pool if we happen tp know (prior labels) the pool ID and this is not it
 		if (ociInstance.InstancePoolID != "") && (ociInstance.InstancePoolID != *nextInstancePool.Id) {
-			klog.V(5).Infof("skipping over instance pool %s since it is not the one we are looking for", *nextInstancePool.Id)
+			klog.V(5).Infof("skipping over instance-pool %s since it is not the one we are looking for (%s)", *nextInstancePool.Id, ociInstance.InstancePoolID)
 			continue
 		}
 
@@ -237,6 +239,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) 
 
 			listInstancePoolInstances, err := c.computeManagementClient.ListInstancePoolInstances(context.Background(), listInstancePoolInstancesReq)
 			if err != nil {
+				klog.V(4).Infof("ListInstancePoolInstances for %s failed: %v", *nextInstancePool.Id, err)
 				return nil, err
 			}
 
@@ -255,7 +258,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) 
 			}
 			// Skip this instance if we happen to know (prior labels) the instance ID and this is not it
 			if (ociInstance.InstanceID != "") && (ociInstance.InstanceID != *poolMember.Id) {
-				klog.V(5).Infof("skipping over instance %s since it is not the one we are looking for", *poolMember.Id)
+				klog.V(5).Infof("skipping over instance %s since it is not the one we are looking for (%s)", *poolMember.Id, ociInstance.InstanceID)
 				continue
 			}
 
@@ -286,7 +289,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) 
 				if *poolMember.Id == ociInstance.InstanceID ||
 					(getVnicResp.Vnic.PrivateIp != nil && *getVnicResp.Vnic.PrivateIp == ociInstance.PrivateIPAddress) ||
 					(getVnicResp.Vnic.PublicIp != nil && *getVnicResp.Vnic.PublicIp == ociInstance.PublicIPAddress) {
-					klog.V(4).Info(*poolMember.DisplayName, " is a member of "+*nextInstancePool.Id)
+					klog.V(4).Infof("findInstanceByDetails: %s belongs to instance-pool %s", *poolMember.DisplayName, *nextInstancePool.Id)
 					// Return a complete instance details.
 					if ociInstance.Name == "" {
 						ociInstance.Name = *poolMember.DisplayName
@@ -308,7 +311,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) 
 	}
 
 	c.unownedInstances[ociInstance] = true
-	klog.V(4).Info(ociInstance.Name + " is not a member of any of the specified instance pool(s)")
+	klog.V(4).Info("findInstanceByDetails node " + ociInstance.Name + " is not a member of any of the specified instance-pool(s)")
 	return nil, errInstanceInstancePoolNotFound
 }
 
@@ -322,7 +325,7 @@ func (c *instancePoolCache) getInstancePool(id string) (*core.InstancePool, erro
 func (c *instancePoolCache) getInstancePoolWithoutLock(id string) (*core.InstancePool, error) {
 	instancePool := c.poolCache[id]
 	if instancePool == nil {
-		return nil, errors.New("instance pool was not found in the cache")
+		return nil, errors.New("instance-pool was not found in the cache")
 	}
 
 	return instancePool, nil
@@ -346,7 +349,7 @@ func (c *instancePoolCache) getInstanceSummaries(poolID string) (*[]core.Instanc
 func (c *instancePoolCache) getInstanceSummariesWithoutLock(poolID string) (*[]core.InstanceSummary, error) {
 	instanceSummaries := c.instanceSummaryCache[poolID]
 	if instanceSummaries == nil {
-		return nil, errors.New("instance summaries for instance pool id " + poolID + " were not found in cache")
+		return nil, errors.New("instance summaries for instance-pool id " + poolID + " were not found in cache")
 	}
 
 	return instanceSummaries, nil
@@ -364,11 +367,13 @@ func (c *instancePoolCache) setSize(instancePoolID string, size int) error {
 	if instancePoolID == "" {
 		return errors.New("instance-pool is required")
 	}
+	klog.V(4).Infof("adjusting size of instance-pool %s to: %d", instancePoolID, size)
 
 	getInstancePoolResp, err := c.computeManagementClient.GetInstancePool(context.Background(), core.GetInstancePoolRequest{
 		InstancePoolId: common.String(instancePoolID),
 	})
 	if err != nil {
+		klog.V(4).Infof("GetInstancePool for %s failed: %v", common.String(instancePoolID), err)
 		return err
 	}
 
@@ -385,6 +390,7 @@ func (c *instancePoolCache) setSize(instancePoolID string, size int) error {
 		UpdateInstancePoolDetails: updateDetails,
 	})
 	if err != nil {
+		klog.V(4).Infof("UpdateInstancePool for %s failed: %v", common.String(instancePoolID), err)
 		return err
 	}
 
@@ -426,7 +432,7 @@ func (c *instancePoolCache) waitForState(ctx context.Context, instancePoolID str
 				InstancePoolId: common.String(instancePoolID),
 			})
 			if err != nil {
-				klog.Errorf("getInstancePool failed. Retrying: %+v", err)
+				klog.Errorf("getInstancePool failed for %s. Retrying: %+v", instancePoolID, err)
 				return false, err
 			} else if getInstancePoolResp.LifecycleState != desiredState {
 				deadline, _ := ctx.Deadline()
@@ -434,7 +440,7 @@ func (c *instancePoolCache) waitForState(ctx context.Context, instancePoolID str
 					instancePoolID, desiredState, getInstancePoolResp.LifecycleState, deadline.Sub(time.Now()).Round(time.Second))
 				return false, nil
 			}
-			klog.V(3).Infof("instance pool %s is in desired state: %s", instancePoolID, desiredState)
+			klog.V(3).Infof("instance-pool %s is in desired state: %s", instancePoolID, desiredState)
 
 			return true, nil
 		}, ctx.Done()) // context timeout
@@ -523,7 +529,7 @@ func (c *instancePoolCache) monitorScalingProgress(ctx context.Context, target i
 					Page:           page,
 				})
 				if err != nil {
-					klog.Errorf("list instance pool instances for pool %s failed: %v", instancePoolID, err)
+					klog.Errorf("list instance-pool instances for %s failed: %v", instancePoolID, err)
 					errCh <- err
 					return
 				}
@@ -573,6 +579,7 @@ func (c *instancePoolCache) getSize(id string) (int, error) {
 		return -1, errors.New("target size not found")
 	}
 
+	klog.V(4).Infof("instance-pool %s size is %d", id, *pool.Size)
 	return *pool.Size, nil
 }
 
