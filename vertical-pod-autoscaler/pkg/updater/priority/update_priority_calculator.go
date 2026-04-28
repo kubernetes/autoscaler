@@ -158,7 +158,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmissi
 
 // GetProcessedRecommendationTargets takes a RecommendedPodResources object and returns a formatted string
 // with the recommended pod resources. Specifically, it formats the target and uncapped target CPU and memory.
-func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_types.RecommendedPodResources) string {
+func (*UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_types.RecommendedPodResources) string {
 	sb := &strings.Builder{}
 	for _, cr := range r.ContainerRecommendations {
 		sb.WriteString(cr.ContainerName)
