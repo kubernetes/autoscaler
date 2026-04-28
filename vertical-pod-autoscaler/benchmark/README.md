@@ -2,8 +2,6 @@
 
 Measures VPA component latencies using KWOK (Kubernetes WithOut Kubelet) to simulate pods without real resource consumption.
 
-> **Note:** Currently only updater metrics are collected. Recommender metrics are planned for the future.
-
 <!-- toc -->
 - [Prerequisites](#prerequisites)
 - [Quick Start (Local)](#quick-start-local)
@@ -12,7 +10,9 @@ Measures VPA component latencies using KWOK (Kubernetes WithOut Kubelet) to simu
 - [Profiles](#profiles)
 - [Flags](#flags)
 - [Metrics Collected](#metrics-collected)
+  - [Recommender Metrics](#recommender-metrics)
   - [Updater Metrics](#updater-metrics)
+  - [Admission Controller Metrics](#admission-controller-metrics)
 - [Scripts](#scripts)
 - [Cleanup](#cleanup)
 - [Notes](#notes)
@@ -22,7 +22,7 @@ Measures VPA component latencies using KWOK (Kubernetes WithOut Kubelet) to simu
 
 ## Prerequisites
 
-- Go 1.21+
+- Go 1.25+
 - kubectl
 - Kind
 - Helm
@@ -68,30 +68,58 @@ go build -C benchmark -o ../bin/vpa-benchmark .
 The benchmark program (`main.go`) assumes the cluster is already set up with VPA, KWOK, and the fake node. It then:
 
 1. For each profile run:
-   - Scales down VPA components
-   - Cleans up previous benchmark resources
+   - Scales down all VPA components and cleans up previous benchmark resources
    - Creates ReplicaSets with fake pods assigned directly to KWOK node (bypasses scheduler)
-   - Creates noise ReplicaSets (if `--noise-ratio` > 0) — these are not managed by any VPA
+   - Creates noise ReplicaSets (if `--noise-percentage` > 0) — these are not managed by any VPA
    - Creates VPAs targeting managed ReplicaSets only
-   - Scales up recommender, waits for recommendations
+   - Scales up recommender and admission controller, waits for recommendations
+   - Scrapes recommender execution latency metrics
    - Scales up updater, waits for its loop to complete
-   - Scrapes `vpa_updater_execution_latency_seconds_sum` metrics
-2. Outputs results to stdout and/or a CSV file if specified
+   - Scrapes updater and admission controller execution latency metrics
+2. Outputs per-run tables (with Avg column when multiple runs) and cross-profile summary tables to stdout and/or a CSV file
+
+> [!NOTE]
+> Recommender and updater latencies are cumulative sums from a single loop. Admission controller latencies are per-request averages (sum divided by request count), since it handles many requests per benchmark run.
 
 e.g., of output using this command: `bin/vpa-benchmark --profile=small,large,xxlarge`
 
-```bash
-========== Results ==========
+```
+========== Results [Recommender] ==========
+┌─────────────────────┬───────────────┬────────────────┬───────────────────┐
+│        STEP         │ SMALL  ( 25 ) │ LARGE  ( 250 ) │ XXLARGE  ( 1000 ) │
+├─────────────────────┼───────────────┼────────────────┼───────────────────┤
+│ LoadVPAs            │ 0.0005s       │ 0.0022s        │ 0.0099s           │
+│ LoadPods            │ 0.0007s       │ 0.0138s        │ 0.1869s           │
+│ LoadMetrics         │ 0.0031s       │ 0.0055s        │ 0.0036s           │
+│ UpdateVPAs          │ 0.0142s       │ 0.5050s        │ 8.0046s           │
+│ MaintainCheckpoints │ 0.0174s       │ 3.0046s        │ 18.0054s          │
+│ GarbageCollect      │ 0.0001s       │ 0.0055s        │ 0.0426s           │
+│ total               │ 0.0361s       │ 3.5367s        │ 26.2529s          │
+└─────────────────────┴───────────────┴────────────────┴───────────────────┘
+
+========== Results [Updater] ==========
 ┌───────────────┬───────────────┬────────────────┬───────────────────┐
 │     STEP      │ SMALL  ( 25 ) │ LARGE  ( 250 ) │ XXLARGE  ( 1000 ) │
 ├───────────────┼───────────────┼────────────────┼───────────────────┤
-│ AdmissionInit │ 0.0000s       │ 0.0001s        │ 0.0004s           │
-│ EvictPods     │ 2.4239s       │ 24.5535s       │ 98.6963s          │
-│ FilterPods    │ 0.0002s       │ 0.0020s        │ 0.0925s           │
-│ ListPods      │ 0.0001s       │ 0.0006s        │ 0.0025s           │
-│ ListVPAs      │ 0.0024s       │ 0.0030s        │ 0.0027s           │
-│ total         │ 2.4267s       │ 24.5592s       │ 98.7945s          │
+│ ListVPAs      │ 0.0021s       │ 0.0020s        │ 0.0023s           │
+│ ListPods      │ 0.0001s       │ 0.0004s        │ 0.0022s           │
+│ FilterPods    │ 0.0001s       │ 0.0016s        │ 0.0242s           │
+│ AdmissionInit │ 0.0000s       │ 0.0001s        │ 0.0003s           │
+│ EvictPods     │ 2.3205s       │ 24.5523s       │ 98.5502s          │
+│ total         │ 2.3229s       │ 24.5565s       │ 98.5792s          │
 └───────────────┴───────────────┴────────────────┴───────────────────┘
+
+========== Results [Admission Controller] ==========
+┌────────────────┬───────────────┬────────────────┬───────────────────┐
+│      STEP      │ SMALL  ( 25 ) │ LARGE  ( 250 ) │ XXLARGE  ( 1000 ) │
+├────────────────┼───────────────┼────────────────┼───────────────────┤
+│ read_request   │ 0.0000s       │ 0.0000s        │ 0.0000s           │
+│ admit          │ 0.0004s       │ 0.0005s        │ 0.0007s           │
+│ build_response │ 0.0000s       │ 0.0000s        │ 0.0000s           │
+│ write_response │ 0.0000s       │ 0.0000s        │ 0.0000s           │
+│ request_count  │ 26            │ 251            │ 1001              │
+│ total          │ 0.0005s       │ 0.0005s        │ 0.0007s           │
+└────────────────┴───────────────┴────────────────┴───────────────────┘
 ```
 
 We can then compare the results of a code change with the results of the main branch.
@@ -121,16 +149,43 @@ When `--noise-percentage=P` is set, each profile also creates `P%` additional no
 
 ## Metrics Collected
 
+All metrics are scraped from each component's `/metrics` endpoint via port-forwarding. Values are parsed from `vpa_<component>_execution_latency_seconds` histograms. Admission controller values are per-request averages.
+
+### Recommender Metrics
+
+Steps are listed in execution order.
+
+| Step | Description |
+| ---- | ----------- |
+| `LoadVPAs` | Load VPA objects |
+| `LoadPods` | Load pods matching VPA targets |
+| `LoadMetrics` | Load metrics from metrics-server |
+| `UpdateVPAs` | Compute and write recommendations |
+| `MaintainCheckpoints` | Create/update VPA checkpoints |
+| `GarbageCollect` | Clean up stale data |
+| `total` | Total loop time |
+
 ### Updater Metrics
 
-| Metric | Description |
-| ------ | ----------- |
+| Step | Description |
+| ---- | ----------- |
 | `ListVPAs` | List VPA objects |
 | `ListPods` | List pods matching VPA targets |
 | `FilterPods` | Filter evictable pods |
 | `AdmissionInit` | Verify admission controller status |
 | `EvictPods` | Evict pods needing updates |
 | `total` | Total loop time |
+
+### Admission Controller Metrics
+
+| Step | Description |
+| ---- | ----------- |
+| `read_request` | Parse incoming admission request |
+| `admit` | Compute resource recommendations for the pod |
+| `build_response` | Build admission response |
+| `write_response` | Write response back to API server |
+| `request_count` | Total number of admission requests handled |
+| `total` | Total per-request time |
 
 ## Scripts
 
@@ -147,7 +202,6 @@ Environment variables accepted by the scripts:
 | `KWOK_VERSION` | `v0.7.0` | `install-kwok.sh` |
 | `KWOK_NAMESPACE` | `kube-system` | `install-kwok.sh` |
 | `KWOK_NODE_NAME` | `kwok-node` | `install-kwok.sh` |
-| `VPA_NAMESPACE` | `kube-system` | `configure-vpa.sh` |
 | `KIND_CLUSTER_NAME` | `kind` | `full-benchmark.sh` |
 
 ## Cleanup
@@ -172,6 +226,6 @@ The benchmark includes several performance optimizations:
 
 ### Caveats
 
-- The updater uses `time.Tick` which waits the full interval before the first tick, so the benchmark sleeps 2 minutes before polling for metrics
+- The updater uses `time.Tick` which waits the full interval before the first tick, so the benchmark polls for up to 5 minutes waiting for the updater's `total` metric to appear.
 - The benchmark uses Recreate update mode. In-place scaling is not supported on KWOK pods.
 - The benchmark scales down all VPA components at the start of each run, so that any caching is not a factor.
