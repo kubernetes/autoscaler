@@ -203,7 +203,7 @@ func BuildAzure(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupD
 	} else {
 		klog.Info("Creating Azure Manager with default configuration.")
 	}
-	manager, err := CreateAzureManager(config, do)
+	manager, err := CreateAzureManager(config, do, opts.KubeClient)
 	if err != nil {
 		klog.Fatalf("Failed to create Azure Manager: %v", err)
 	}
