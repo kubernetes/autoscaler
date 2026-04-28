@@ -51,7 +51,7 @@ function update_deps() {
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
     # cd to e2e tests
-    cd ${DIR}/../e2e
+    cd ${DIR}/../test/e2e
 
     echo "Updating VPA e2e dependencies to k8s ${K8S_TAG}"
     update_deps
