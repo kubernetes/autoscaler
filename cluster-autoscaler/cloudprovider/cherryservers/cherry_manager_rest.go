@@ -355,7 +355,7 @@ func (mgr *cherryManagerRest) NodeGroupForNode(labels map[string]string, nodeId 
 
 	trimmedNodeId := strings.TrimPrefix(nodeId, cherryPrefix)
 
-	server, err := mgr.getCherryServer(context.TODO(), trimmedNodeId)
+	server, err := mgr.getCherryServer(context.Background(), trimmedNodeId)
 	if err != nil {
 		return "", fmt.Errorf("Could not find group for node: %s %s", nodeId, err)
 	}
@@ -369,7 +369,7 @@ func (mgr *cherryManagerRest) NodeGroupForNode(labels map[string]string, nodeId 
 
 // nodeGroupSize gets the current size of the nodegroup as reported by Cherry Servers tags.
 func (mgr *cherryManagerRest) nodeGroupSize(nodegroup string) (int, error) {
-	servers, err := mgr.listCherryServers(context.TODO())
+	servers, err := mgr.listCherryServers(context.Background())
 	if err != nil {
 		return 0, fmt.Errorf("failed to list servers: %w", err)
 	}
@@ -459,7 +459,7 @@ func (mgr *cherryManagerRest) createNodes(nodegroup string, nodes int) error {
 
 	errList := make([]error, 0, nodes)
 	for i := 0; i < nodes; i++ {
-		errList = append(errList, mgr.createNode(context.TODO(), string(cloudinit), nodegroup))
+		errList = append(errList, mgr.createNode(context.Background(), string(cloudinit), nodegroup))
 	}
 
 	return utilerrors.NewAggregate(errList)
@@ -485,7 +485,7 @@ func (mgr *cherryManagerRest) createServerRequest(ctx context.Context, cr *Creat
 // used to find any nodes which are unregistered in kubernetes.
 func (mgr *cherryManagerRest) getNodes(nodegroup string) ([]string, error) {
 	// Get node ProviderIDs by getting server IDs from Cherry Servers
-	servers, err := mgr.listCherryServers(context.TODO())
+	servers, err := mgr.listCherryServers(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list servers: %w", err)
 	}
@@ -510,7 +510,7 @@ func (mgr *cherryManagerRest) getNodes(nodegroup string) ([]string, error) {
 // getNodeNames should return Names for all nodes in the node group,
 // used to find any nodes which are unregistered in kubernetes.
 func (mgr *cherryManagerRest) getNodeNames(nodegroup string) ([]string, error) {
-	servers, err := mgr.listCherryServers(context.TODO())
+	servers, err := mgr.listCherryServers(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list servers: %w", err)
 	}
@@ -535,7 +535,7 @@ func (mgr *cherryManagerRest) getNodeNames(nodegroup string) ([]string, error) {
 func (mgr *cherryManagerRest) deleteServer(ctx context.Context, nodegroup string, id int) error {
 	req := path.Join("servers", fmt.Sprintf("%d", id))
 
-	result, err := mgr.request(context.TODO(), "DELETE", req, []byte(""))
+	result, err := mgr.request(context.Background(), "DELETE", req, []byte(""))
 	if err != nil {
 		return err
 	}
@@ -550,7 +550,7 @@ func (mgr *cherryManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 	klog.Infof("Deleting %d nodes from nodegroup %s", len(nodes), nodegroup)
 	klog.V(2).Infof("Deleting nodes %v", nodes)
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	errList := make([]error, 0, len(nodes))
 
@@ -632,7 +632,7 @@ func (mgr *cherryManagerRest) templateNodeInfo(nodegroup string) (*framework.Nod
 
 	// check if we need to update our plans
 	if time.Since(mgr.planUpdate) > time.Hour*1 {
-		plans, err := mgr.listCherryPlans(context.TODO())
+		plans, err := mgr.listCherryPlans(context.Background())
 		if err != nil {
 			return nil, fmt.Errorf("unable to update cherry plans: %v", err)
 		}
