@@ -681,6 +681,11 @@ func TestUpcomingNodes(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+
+	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 6, now)
+	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng2"), 1, now)
+	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng3"), 2, now)
+
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, ng3_1, ng4_1, ng5_1, ng5_2}, nil, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
@@ -727,13 +732,14 @@ func TestTaintBasedNodeDeletion(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
 
 	upcomingNodes, upcomingRegistered := clusterstate.GetUpcomingNodes()
-	assert.Equal(t, 1, upcomingNodes["ng1"])
-	assert.Empty(t, upcomingRegistered["ng1"]) // Only unregistered.
+	assert.Equal(t, 0, upcomingNodes["ng1"])
+	assert.Empty(t, upcomingRegistered["ng1"])
 }
 
 func TestIncorrectSize(t *testing.T) {
@@ -784,6 +790,8 @@ func TestUnregisteredNodes(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 10 * time.Second}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+
+	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 1, time.Now().Add(-time.Minute))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, time.Now().Add(-time.Minute))
 
 	assert.NoError(t, err)
@@ -1586,6 +1594,7 @@ func TestUpcomingNodesFromUpcomingNodeGroups(t *testing.T) {
 		nodeGroups                        map[string]int
 		expectedGroupsUpcomingNodesNumber map[string]int
 		updateNodes                       bool
+		scaleUpGroups                     map[string]int
 	}{
 		{
 			isUpcomingMockMap:                 map[string]bool{"ng": true},
@@ -1604,12 +1613,14 @@ func TestUpcomingNodesFromUpcomingNodeGroups(t *testing.T) {
 			nodeGroups:                        map[string]int{"ng": 2},
 			expectedGroupsUpcomingNodesNumber: map[string]int{"ng": 2},
 			updateNodes:                       true,
+			scaleUpGroups:                     map[string]int{"ng": 2},
 		},
 		{
 			isUpcomingMockMap:                 map[string]bool{"ng": true},
 			nodeGroups:                        map[string]int{"ng": 2, "ng2": 1},
 			expectedGroupsUpcomingNodesNumber: map[string]int{"ng": 2, "ng2": 1},
 			updateNodes:                       true,
+			scaleUpGroups:                     map[string]int{"ng2": 1},
 		},
 		{
 			isUpcomingMockMap:                 map[string]bool{"ng": true},
@@ -1639,6 +1650,9 @@ func TestUpcomingNodesFromUpcomingNodeGroups(t *testing.T) {
 			nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}),
 			&asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: tc.isUpcomingMockMap},
 		)
+		for groupName, delta := range tc.scaleUpGroups {
+			clusterstate.RegisterScaleUp(provider.GetNodeGroup(groupName), delta, now)
+		}
 		if tc.updateNodes {
 			err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
 			assert.NoError(t, err)

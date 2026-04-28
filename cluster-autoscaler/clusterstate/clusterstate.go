@@ -1056,6 +1056,20 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 			// Negative value is unlikely but theoretically possible.
 			continue
 		}
+		// Don't count upcoming nodes for node groups that have upcoming nodes but no
+		// active scale-up request (the request was removed after instance creation
+		// failure or timeout) or are backed off. Otherwise, fake upcoming nodes
+		// injected into the cluster snapshot will make unschedulable pods appear
+		// schedulable, preventing ScaleUp from ever being called and considering
+		// alternative node groups.
+		if _, hasScaleUpRequest := csr.scaleUpRequests[id]; !hasScaleUpRequest {
+			klog.V(4).Infof("Skipping %d upcoming nodes for node group %s: no active scale-up request", newNodes, id)
+			continue
+		}
+		if backoffStatus := csr.backoff.BackoffStatus(nodeGroup, csr.nodeInfosForGroups[id], time.Now()); backoffStatus.IsBackedOff {
+			klog.V(4).Infof("Skipping %d upcoming nodes for backed-off node group %s: %s", newNodes, id, backoffStatus.ErrorInfo.ErrorMessage)
+			continue
+		}
 		upcomingCounts[id] = newNodes
 		// newNodes should include instances that have registered with k8s but aren't ready yet, instances that came up on the cloud provider side
 		// but haven't registered with k8s yet, and instances that haven't even come up on the cloud provider side yet (but are reflected in the target
