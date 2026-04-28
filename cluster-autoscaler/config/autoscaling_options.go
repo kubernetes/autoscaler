@@ -336,6 +336,8 @@ type AutoscalingOptions struct {
 	MaxInactivityTime time.Duration
 	// MaxFailingTime is the maximum duration without a successful autoscaler run before it is considered unhealthy.
 	MaxFailingTime time.Duration
+	// MaxStartupTime is the maximum duration until the first successful autoscaler run before it is considered unhealthy.
+	MaxStartupTime time.Duration
 	// DebuggingSnapshotEnabled is used to enable/disable debugging snapshot creation.
 	DebuggingSnapshotEnabled bool
 	// EnableProfiling is debug/pprof endpoint enabled.
