@@ -241,6 +241,18 @@ func TestErrors(t *testing.T) {
 			expectedErrorCode:  ErrorUnsupportedTpuConfiguration,
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "There is no automatic reservation matching the instance in your project, or shared with it. To create an instance, create a new automatic reservation or share an existing one from another project.",
+			expectedErrorCode:  ErrorAutomaticReservationsNotAvailable,
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "All automatic reservations in your project, or shared with your project, are fully consumed. To create an instance, create a new automatic reservation or increase the size of an existing one.",
+			expectedErrorCode:  ErrorAutomaticReservationsNoCapacity,
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
 	}
 	for _, tc := range testCases {
 		for _, errorCode := range tc.errorCodes {
