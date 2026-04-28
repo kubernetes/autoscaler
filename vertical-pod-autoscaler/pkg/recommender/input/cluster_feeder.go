@@ -471,7 +471,8 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 func (feeder *clusterStateFeeder) LoadPods() {
 	podSpecs, err := feeder.specClient.GetPodSpecs()
 	if err != nil {
-		klog.ErrorS(err, "Cannot get SimplePodSpecs")
+		klog.ErrorS(err, "Cannot get SimplePodSpecs, skipping LoadPods cycle")
+		return
 	}
 	pods := make(map[model.PodID]*spec.BasicPodSpec)
 	for _, spec := range podSpecs {
@@ -493,9 +494,12 @@ func (feeder *clusterStateFeeder) LoadPods() {
 				klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
 			}
 		}
-		for _, initContainer := range pod.InitContainers {
-			podInitContainers := feeder.clusterState.Pods()[pod.ID].InitContainers
-			feeder.clusterState.Pods()[pod.ID].InitContainers = append(podInitContainers, initContainer.ID.ContainerName)
+		if podState := feeder.clusterState.Pods()[pod.ID]; podState != nil {
+			initContainerNames := make([]string, 0, len(pod.InitContainers))
+			for _, initContainer := range pod.InitContainers {
+				initContainerNames = append(initContainerNames, initContainer.ID.ContainerName)
+			}
+			podState.InitContainers = initContainerNames
 		}
 	}
 }
