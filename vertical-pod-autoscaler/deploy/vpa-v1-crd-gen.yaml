@@ -362,6 +362,25 @@ spec:
                             Specifies the maximum amount of resources that will be recommended
                             for the container. The default is no maximum.
                           type: object
+                        memoryAggregationIntervalCount:
+                          description: |-
+                            memoryAggregationIntervalCount is the number of consecutive
+                            MemoryAggregationIntervals which make up the memory aggregation window.
+                            The total window length is:
+                            MemoryAggregationIntervalSeconds * MemoryAggregationIntervalCount.
+                          format: int64
+                          minimum: 1
+                          type: integer
+                        memoryAggregationIntervalSeconds:
+                          description: |-
+                            memoryAggregationIntervalSeconds is the length of a single interval
+                            (in seconds) for which the peak memory usage is computed.
+                            Memory usage peaks are aggregated in multiples of this interval.
+                            In other words, there is one memory usage sample per interval
+                            (the maximum usage over that interval).
+                          format: int32
+                          minimum: 1
+                          type: integer
                         minAllowed:
                           additionalProperties:
                             anyOf:
