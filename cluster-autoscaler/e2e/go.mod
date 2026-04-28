@@ -1,6 +1,6 @@
 module k8s.io/autoscaler/cluster-autoscaler/e2e
 
-go 1.25.3
+go 1.26.0
 
 require (
 	github.com/onsi/ginkgo/v2 v2.27.2
