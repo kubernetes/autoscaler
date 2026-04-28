@@ -22,8 +22,8 @@ The VPA project consists of 3 components:
 - [Recommender](#recommender) - monitors the current and past resource consumption and, based on it,
   provides recommended values for the containers' cpu and memory requests.
 
-- [Updater](#updater) - checks which of the managed pods have correct resources set and, if not,
-  kills them so that they can be recreated by their controllers with the updated requests.
+- [Updater](#updater) - checks whether managed pods require resource updates based on recommendations
+  and may trigger pod eviction, in-place updates or take no action depending on the configured update mode.
 
 - [Admission Controller](#admission-controller) - sets the correct resource requests on new pods (either just created
   or recreated by their controller due to Updater's activity).
@@ -71,9 +71,10 @@ It then runs in a loop and at each step performs the following actions:
 
 Updater component for Vertical Pod Autoscaler described in the [Vertical Pod Autoscaler - design proposal](https://github.com/kubernetes/community/pull/338)
 
-Updater runs in Kubernetes cluster and decides which pods should be restarted
-based on resources allocation recommendation calculated by Recommender.
-If a pod should be updated, Updater will try to evict the pod.
+Updater runs in Kubernetes cluster and decides which pods require resource
+updates based on resources allocation recommendation calculated by Recommender.
+Depending on the configured update mode, the update may be applied in place,
+by evicting the pod or no action may be taken (in `Initial` mode).
 It respects the pod disruption budget, by using Eviction API to evict pods.
 Updater does not perform the actual resources update, but relies on Vertical Pod Autoscaler admission plugin
 to update pod resources when the pod is recreated after eviction.
