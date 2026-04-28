@@ -95,6 +95,8 @@ type scenario struct {
 	verify func(*integration.FakeSet) error
 	// config allows overriding default autoscaling options for this scenario.
 	config func(*config.AutoscalingOptions)
+	// createCloudProvider allows creating a custom cloud provider implementation per iteration.
+	createCloudProvider func(*integration.FakeSet) cloudprovider.CloudProvider
 }
 
 // run executes the benchmark for a given scenario. It handles environment stabilization,
@@ -193,8 +195,17 @@ func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet) 
 	kubeClients := ca_context.NewAutoscalingKubeClients(context.Background(), opts, clusterFakes.KubeClient, clusterFakes.InformerFactory)
 	kubeClients.Recorder = &noOpRecorder{}
 
-	wrappedCloudProvider := &fastScaleUpCloudProvider{
-		CloudProvider: clusterFakes.CloudProvider,
+	var cp cloudprovider.CloudProvider
+	if s.createCloudProvider != nil {
+		cp = s.createCloudProvider(clusterFakes)
+	} else {
+		cp = clusterFakes.CloudProvider
+	}
+	var wrappedCloudProvider cloudprovider.CloudProvider = cp
+	if tcp, ok := cp.(*testprovider.CloudProvider); ok {
+		wrappedCloudProvider = &fastScaleUpCloudProvider{
+			CloudProvider: tcp,
+		}
 	}
 
 	a, _, err := builder.New(opts).
