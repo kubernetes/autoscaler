@@ -85,8 +85,10 @@ func TestSngCapacityThreshold(t *testing.T) {
 			context := estimationContext{similarNodeGroups: provider.NodeGroups()}
 			provider.AddNodeGroup(tt.currentNodeGroup.name, 0, tt.currentNodeGroup.maxNodes, tt.currentNodeGroup.nodesCount)
 			currentNodeGroup := provider.GetNodeGroup(tt.currentNodeGroup.name)
-			assert.Equalf(t, tt.wantThreshold, NewSngCapacityThreshold().NodeLimit(currentNodeGroup, &context), "NewSngCapacityThreshold()")
-			assert.True(t, NewClusterCapacityThreshold().DurationLimit(currentNodeGroup, &context) == 0)
+			gotNodeLimit, _ := NewSngCapacityThreshold().NodeLimit(currentNodeGroup, &context)
+			assert.Equalf(t, tt.wantThreshold, gotNodeLimit, "NewSngCapacityThreshold()")
+			gotDurationLimit, _ := NewClusterCapacityThreshold().DurationLimit(currentNodeGroup, &context)
+			assert.True(t, gotDurationLimit == 0)
 		})
 	}
 }

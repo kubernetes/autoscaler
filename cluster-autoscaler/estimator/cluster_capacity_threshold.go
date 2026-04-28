@@ -23,30 +23,39 @@ import (
 )
 
 type clusterCapacityThreshold struct {
+	name string
 }
 
 // NodeLimit returns maximum number of new nodes that can be added to the cluster
-// based on its capacity. Possible return values are:
+// based on its capacity and optional debug string.
+// Possible return values for node limit are:
 //   - -1 when cluster has no available capacity
 //   - 0 when estimationContext or cluster-wide node limit is not set. Return value of 0 means that there is no limit.
 //   - Any positive number representing maximum possible number of new nodes
-func (l *clusterCapacityThreshold) NodeLimit(_ cloudprovider.NodeGroup, estimationContext EstimationContext) int {
+func (l *clusterCapacityThreshold) NodeLimit(_ cloudprovider.NodeGroup, estimationContext EstimationContext) (int, string) {
 	if estimationContext == nil || estimationContext.ClusterMaxNodeLimit() == 0 {
-		return 0
+		return 0, ""
 	}
 	if (estimationContext.ClusterMaxNodeLimit() < 0) || (estimationContext.ClusterMaxNodeLimit() <= estimationContext.CurrentNodeCount()) {
-		return -1
+		return -1, ""
 	}
-	return estimationContext.ClusterMaxNodeLimit() - estimationContext.CurrentNodeCount()
+	return estimationContext.ClusterMaxNodeLimit() - estimationContext.CurrentNodeCount(), ""
 }
 
 // DurationLimit always returns 0 for this threshold, meaning that no limit is set.
-func (l *clusterCapacityThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) time.Duration {
-	return 0
+func (l *clusterCapacityThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) (time.Duration, string) {
+	return 0, ""
+}
+
+// Name returns the Threshold name
+func (l *clusterCapacityThreshold) Name() string {
+	return l.name
 }
 
 // NewClusterCapacityThreshold returns a Threshold that can be used to limit binpacking
 // by available cluster capacity
 func NewClusterCapacityThreshold() Threshold {
-	return &clusterCapacityThreshold{}
+	return &clusterCapacityThreshold{
+		name: "cluster-capacity-threshold",
+	}
 }
