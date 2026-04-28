@@ -46,16 +46,6 @@ const (
 	// CPUStartupBoost enables the CPU startup boost feature.
 	CPUStartupBoost featuregate.Feature = "CPUStartupBoost"
 
-	// alpha: v1.4.0
-	// beta: v1.5.0
-	// ga: v1.6.0
-
-	// components: admission-controller, updater
-
-	// InPlaceOrRecreate enables the InPlaceOrRecreate update mode to be used.
-	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
-	InPlaceOrRecreate featuregate.Feature = "InPlaceOrRecreate"
-
 	// alpha: v1.5.0
 	// components: admission-controller, recommender, updater
 

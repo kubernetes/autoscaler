@@ -58,7 +58,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		waitForVpaWebhookRegistration(f)
 	})
 
-	f.It("starts pods with new recommended request with InPlaceOrRecreate mode", framework.WithFeatureGate(features.InPlaceOrRecreate), func() {
+	f.It("starts pods with new recommended request with InPlaceOrRecreate mode", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
 		ginkgo.By("Setting up a VPA CRD")
