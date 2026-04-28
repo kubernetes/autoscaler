@@ -26,6 +26,10 @@ import (
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 
+var (
+	errorGettingPodGroupState = errors.New("PodGroupState is not integrated with CA simulator")
+)
+
 // DeltaSnapshotStore is an implementation of ClusterSnapshotStore optimized for typical Cluster Autoscaler usage - (fork, add stuff, revert), repeated many times per loop.
 //
 // Complexity of some notable operations:
@@ -48,11 +52,6 @@ import (
 // * DRA objects are tracked in the separate snapshot and while they don't exactly share
 // memory and time complexities of DeltaSnapshotStore - they are optimized for
 // cluster autoscaler operations
-
-var (
-	errorGettingPodGroupState = errors.New("PodGroupState is not integrated with CA simulator")
-)
-
 type DeltaSnapshotStore struct {
 	data        *internalDeltaSnapshotData
 	parallelism int
