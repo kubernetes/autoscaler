@@ -163,6 +163,7 @@ var (
 	expendablePodsPriorityCutoff  = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
 	regional                      = flag.Bool("regional", false, "Cluster is regional.")
 	newPodScaleUpDelay            = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up. Can be increased for individual pods through annotation 'cluster-autoscaler.kubernetes.io/pod-scale-up-delay'.")
+	unschedulableGpuPodTimeBuffer = flag.Duration("unschedulable-gpu-pod-scale-up-delay", 30*time.Second, "How old the oldest unschedulable pod with GPU should be before considering scale-up. GPU nodes are expensive, so we wait longer to make more informed scale-up decisions.")
 
 	startupTaintsFlag         = multiStringFlag("startup-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint)")
 	startupTaintPrefixesFlag  = multiStringFlag("startup-taint-prefix", "Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times.")
@@ -359,6 +360,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,
 		NewPodScaleUpDelay:               *newPodScaleUpDelay,
+		UnschedulableGpuPodTimeBuffer:    *unschedulableGpuPodTimeBuffer,
 		StartupTaints:                    append(*ignoreTaintsFlag, *startupTaintsFlag...),
 		StartupTaintPrefixes:             *startupTaintPrefixesFlag,
 		StatusTaints:                     *statusTaintsFlag,

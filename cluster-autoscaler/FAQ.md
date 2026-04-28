@@ -1106,7 +1106,6 @@ The following startup parameters are supported for cluster autoscaler:
 | `scale-down-delay-after-delete` | How long after node deletion that scale down evaluation resumes | 0s |
 | `scale-down-delay-after-failure` | How long after scale down failure that scale down evaluation resumes | 3m0s |
 | `scale-down-delay-type-local` | Should --scale-down-delay-after-* flags be applied locally per nodegroup or globally across all nodegroups |  |
-| `scale-down-enabled` | [Deprecated] Should CA scale down the cluster | true |
 | `scale-down-gpu-utilization-threshold` | Sum of gpu requests of all pods running on the node divided by node's allocatable resource, below which a node can be considered for scale down.Utilization calculation only cares about gpu resource for accelerator node. cpu and memory utilization will be ignored. | 0.5 |
 | `scale-down-non-empty-candidates-count` | Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain.Lower value means better CA responsiveness but possible slower scale down latency.Higher value can affect CA performance with big clusters (hundreds of nodes).Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers. | 30 |
 | `scale-down-simulation-timeout` | How long should we run scale down simulation. | 30s |
@@ -1129,6 +1128,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `status-taint` | Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready | [] |
 | `stderrthreshold` | logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true) | 2 |
 | `unremovable-node-recheck-timeout` | The timeout before we check again a node that couldn't be removed before | 5m0s |
+| `unschedulable-gpu-pod-scale-up-delay` | How old the oldest unschedulable pod with GPU should be before considering scale-up. GPU nodes are expensive, so we wait longer to make more informed scale-up decisions. | 30s |
 | `user-agent` | User agent used for HTTP calls. | "cluster-autoscaler" |
 | `v` | number for the log level verbosity |  |
 | `vmodule` | comma-separated list of pattern=N settings for file-filtered logging (only works for text log format) |  |
