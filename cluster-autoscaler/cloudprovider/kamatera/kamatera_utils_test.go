@@ -18,9 +18,10 @@ package kamatera
 
 import (
 	"context"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
-	"strings"
 )
 
 func mockKamateraServerName() string {
@@ -56,17 +57,32 @@ func (c *kamateraClientMock) SetBaseURL(baseURL string) {
 	c.Called(baseURL)
 }
 
-func (c *kamateraClientMock) ListServers(ctx context.Context, instances map[string]*Instance, namePrefix string) ([]Server, error) {
-	args := c.Called(ctx, instances, namePrefix)
+func (c *kamateraClientMock) ListServers(ctx context.Context, instances map[string]*Instance, namePrefix string, providerIDPrefix string) ([]Server, error) {
+	args := c.Called(ctx, instances, namePrefix, providerIDPrefix)
 	return args.Get(0).([]Server), args.Error(1)
 }
 
-func (c *kamateraClientMock) CreateServers(ctx context.Context, count int, config ServerConfig) ([]Server, error) {
+func (c *kamateraClientMock) StartServerTerminate(ctx context.Context, name string, force bool) (string, error) {
+	args := c.Called(ctx, name, force)
+	return args.String(0), args.Error(1)
+}
+
+func (c *kamateraClientMock) StartServerRequest(ctx context.Context, requestType ServerRequestType, name string) (string, error) {
+	args := c.Called(ctx, requestType, name)
+	return args.String(0), args.Error(1)
+}
+
+func (c *kamateraClientMock) StartCreateServers(ctx context.Context, count int, config ServerConfig) (map[string]string, error) {
 	args := c.Called(ctx, count, config)
-	return args.Get(0).([]Server), args.Error(1)
+	return args.Get(0).(map[string]string), args.Error(1)
 }
 
-func (c *kamateraClientMock) DeleteServer(ctx context.Context, id string) error {
-	args := c.Called(ctx, id)
-	return args.Error(0)
+func (c *kamateraClientMock) getServerTags(ctx context.Context, serverName string, instances map[string]*Instance, providerIDPrefix string) ([]string, error) {
+	args := c.Called(ctx, serverName, instances, providerIDPrefix)
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func (c *kamateraClientMock) getCommandStatus(ctx context.Context, commandID string) (CommandStatus, error) {
+	args := c.Called(ctx, commandID)
+	return args.Get(0).(CommandStatus), args.Error(1)
 }
