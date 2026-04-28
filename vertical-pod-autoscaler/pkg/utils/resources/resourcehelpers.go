@@ -20,6 +20,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	metrics_resources "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/resources"
 )
 
@@ -107,4 +108,35 @@ func initContainerStatusFor(initContainerName string, pod *corev1.Pod) *corev1.C
 		}
 	}
 	return nil
+}
+
+// RecommendationHasLowerResource returns true if recommendation b has at least one
+// resource target lower than a for any matching container. This is used for infeasible
+// retry logic: we don't know which resource causes infeasibility, so any reduction
+// is worth retrying.
+func RecommendationHasLowerResource(a, b *vpa_types.RecommendedPodResources) bool {
+	if a == nil || b == nil {
+		return false
+	}
+	for _, aRec := range a.ContainerRecommendations {
+		for _, bRec := range b.ContainerRecommendations {
+			if aRec.ContainerName == bRec.ContainerName {
+				if HasLowerResource(aRec.Target, bRec.Target) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// HasLowerResource returns true if any resource in b is lower than the
+// corresponding resource in a.
+func HasLowerResource(a, b corev1.ResourceList) bool {
+	for key, aVal := range a {
+		if bVal, exists := b[key]; exists && bVal.Cmp(aVal) < 0 {
+			return true
+		}
+	}
+	return false
 }

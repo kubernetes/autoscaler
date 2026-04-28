@@ -73,6 +73,7 @@ type VPAValidationOptions struct {
 	AllowCPUStartupBoost   bool
 	AllowInPlaceOrRecreate bool
 	AllowPerVPAConfig      bool
+	AllowInPlace           bool
 }
 
 // GetValidationOptionsForVPA generates VPAValidationOptions for VPA
@@ -82,6 +83,7 @@ func GetValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAVali
 		AllowCPUStartupBoost:   allowCPUBoost(oldObj),
 		AllowInPlaceOrRecreate: features.Enabled(features.InPlaceOrRecreate),
 		AllowPerVPAConfig:      allowPerVPAConfig(oldObj),
+		AllowInPlace:           allowInPlace(oldObj),
 	}
 
 	return opts
@@ -112,6 +114,17 @@ func allowCPUBoost(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	}
 
 	if oldObj != nil && oldObj.Spec.StartupBoost != nil && oldObj.Spec.StartupBoost.CPU != nil {
+		return true
+	}
+	return false
+}
+
+func allowInPlace(oldObj *vpa_types.VerticalPodAutoscaler) bool {
+	if features.Enabled(features.InPlace) {
+		return true
+	}
+
+	if oldObj != nil && oldObj.Spec.UpdatePolicy != nil && oldObj.Spec.UpdatePolicy.UpdateMode != nil && *oldObj.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeInPlace {
 		return true
 	}
 	return false
@@ -186,6 +199,9 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions
 		}
 		if *mode == vpa_types.UpdateModeInPlaceOrRecreate && !opts.AllowInPlaceOrRecreate {
 			return fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate)
+		}
+		if *mode == vpa_types.UpdateModeInPlace && !opts.AllowInPlace {
+			return fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller and updater args", vpa_types.UpdateModeInPlace, features.InPlace)
 		}
 		if minReplicas := vpa.Spec.UpdatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
 			return fmt.Errorf("minReplicas has to be positive, got %v", *minReplicas)
