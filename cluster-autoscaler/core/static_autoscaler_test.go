@@ -86,8 +86,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/version"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	ndf "k8s.io/component-helpers/nodedeclaredfeatures"
-	ndffeatures "k8s.io/component-helpers/nodedeclaredfeatures/features"
 	"k8s.io/kubernetes/pkg/features"
 )
 
@@ -3387,15 +3387,16 @@ func (f *mockFeature) MaxVersion() *version.Version {
 	return f.maxVersion
 }
 
+func (f *mockFeature) Requirements() *ndf.FeatureRequirements {
+	return &ndf.FeatureRequirements{}
+}
+
 func createMockFeature(name string, maxVersionStr string) ndf.Feature {
 	var v *version.Version
 	if maxVersionStr != "" {
 		v = version.MustParseSemantic(maxVersionStr)
 	}
-	return &mockFeature{
-		name:       name,
-		maxVersion: v,
-	}
+	return &mockFeature{name: name, maxVersion: v}
 }
 
 func setupMockDeclaredFeatures(features ...string) func() {
@@ -3403,10 +3404,11 @@ func setupMockDeclaredFeatures(features ...string) func() {
 	for _, feature := range features {
 		nodeFeatures = append(nodeFeatures, createMockFeature(feature, ""))
 	}
-	originalAllFeatures := ndffeatures.AllFeatures
-	ndffeatures.AllFeatures = nodeFeatures
+
+	oldFrameWork := ndf.DefaultFramework
+	ndf.DefaultFramework = ndf.New(nodeFeatures)
 	return func() {
-		ndffeatures.AllFeatures = originalAllFeatures
+		ndf.DefaultFramework = oldFrameWork
 	}
 }
 
@@ -3521,9 +3523,12 @@ func TestStaticAutoscalerWithNodeDeclaredFeatures(t *testing.T) {
 			onScaleDownMock := &onScaleDownMock{}
 
 			// Feature gate setup
-			utilfeature.DefaultMutableFeatureGate.Set(fmt.Sprintf("%s=%v", features.NodeDeclaredFeatures, tc.nodeDeclaredFeaturesEnabled))
-			cleanup := setupMockDeclaredFeatures(tc.declaredFeatures...)
-			defer cleanup()
+			featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.NodeDeclaredFeatures, tc.nodeDeclaredFeaturesEnabled)
+
+			if tc.nodeDeclaredFeaturesEnabled {
+				cleanup := setupMockDeclaredFeatures(tc.declaredFeatures...)
+				defer cleanup()
+			}
 
 			readyNodeLister := kubernetes.NewTestNodeLister(tc.initialNodes)
 			allNodeLister := kubernetes.NewTestNodeLister(tc.initialNodes)
