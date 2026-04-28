@@ -29,7 +29,7 @@ func signRpcRequest(request requests.AcsRequest, signer Signer, regionId string)
 	if err != nil {
 		return
 	}
-	// remove while retry
+	// Remove while retry
 	if _, containsSign := request.GetQueryParams()["Signature"]; containsSign {
 		delete(request.GetQueryParams(), "Signature")
 	}
@@ -82,7 +82,7 @@ func buildRpcStringToSign(request requests.AcsRequest) (stringToSign string) {
 		signParams[key] = value
 	}
 
-	// sort params by key
+	// Sort params by key
 	var paramKeySlice []string
 	for key := range signParams {
 		paramKeySlice = append(paramKeySlice, key)
