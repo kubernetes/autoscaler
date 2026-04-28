@@ -19,6 +19,7 @@ package flags
 import (
 	"flag"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -28,6 +29,7 @@ import (
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/diagnostics"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
@@ -109,6 +111,12 @@ var (
 	schedulerConfigFile         = flag.String(config.SchedulerConfigFileFlag, "", "scheduler-config allows changing configuration of in-tree scheduler plugins acting on PreFilter and Filter extension points")
 	nodeDeletionDelayTimeout    = flag.Duration("node-deletion-delay-timeout", 2*time.Minute, "Maximum time CA waits for removing delay-deletion.cluster-autoscaler.kubernetes.io/ annotations before deleting the node.")
 	nodeDeletionBatcherInterval = flag.Duration("node-deletion-batcher-interval", 0*time.Second, "How long CA ScaleDown gather nodes to delete them in batch.")
+	diagnosticDirectory         = flag.String("diagnostic-directory", "", "Directory to store diagnostic reports. Empty string disables the diagnostic system.")
+	diagnosticProfiles          = flag.String("diagnostic-profiles", "cpu", "Comma-separated list of profiles to collect (cpu, trace, heap, alloc).")
+	diagnosticMaxLoopTime       = flag.Duration("diagnostic-max-loop-time", 1*time.Minute, "Threshold for a single loop duration to trigger diagnostics.")
+	diagnosticMaxCollectionTime = flag.Duration("diagnostic-max-collection-time", 1*time.Minute, "Duration to collect diagnostic profiles.")
+	diagnosticCooldownPeriod    = flag.Duration("diagnostic-cooldown-period", 1*time.Hour, "Minimum time between two diagnostic collections.")
+	diagnosticTraceMaxMB        = flag.Uint64("diagnostic-trace-max-mb", 128, "Maximum size of the trace flight recorder window in megabytes.")
 	scanInterval                = flag.Duration("scan-interval", config.DefaultScanInterval, "How often cluster is reevaluated for scale up or down")
 	maxNodesTotal               = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
 	coresTotal                  = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
@@ -302,11 +310,38 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("Invalid value for --predicate-parallelism flag: %d", *predicateParallelism)
 	}
 
+	profiles := []string{}
+	if *diagnosticProfiles == "" && *diagnosticDirectory != "" {
+		klog.Warning("Diagnostic directory is set but diagnostic-profiles is empty. No profiles will be collected.")
+	} else if *diagnosticProfiles != "" {
+		for _, part := range strings.Split(*diagnosticProfiles, ",") {
+			part = strings.TrimSpace(part)
+			if part != "" {
+				profiles = append(profiles, strings.ToLower(part))
+			}
+		}
+	}
+
+	validProfiles := []string{"cpu", "trace", "heap", "alloc"}
+	for _, p := range profiles {
+		if !slices.Contains(validProfiles, p) {
+			klog.Fatalf("Unknown diagnostic profile: %s. Valid options are: cpu, trace, heap, alloc", p)
+		}
+	}
+
 	if !ptr.Deref(enableDynamicResourceAllocation, false) {
 		klog.Fatalf("--enable-dynamic-resource-allocation flag must be true: %t", ptr.Deref(enableDynamicResourceAllocation, false))
 	}
 
 	return config.AutoscalingOptions{
+		DiagnosticConfig: diagnostics.Config{
+			Directory:         *diagnosticDirectory,
+			MaxLoopTime:       *diagnosticMaxLoopTime,
+			MaxCollectionTime: *diagnosticMaxCollectionTime,
+			CooldownPeriod:    *diagnosticCooldownPeriod,
+			EnabledProfiles:   profiles,
+			TraceMaxMB:        *diagnosticTraceMaxMB,
+		},
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
 			ScaleDownGpuUtilizationThreshold: *scaleDownGpuUtilizationThreshold,
