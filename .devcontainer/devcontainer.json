@@ -1,0 +1,32 @@
+{
+  "name": "Kubernetes Autoscaler Development",
+  "image": "mcr.microsoft.com/devcontainers/go:1.25",
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "dockerDashComposeVersion": "v2",
+      "moby": "false"
+    },
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      "minikube": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "onCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends libseccomp-dev",
+
+  "postCreateCommand": "cd cluster-autoscaler && go mod download && cd .. && cd vertical-pod-autoscaler && go mod download && cd .. && hack/install-verify-tools.sh && go install sigs.k8s.io/kind@latest",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go"
+      ],
+      "settings": {
+        "go.testFlags": ["-race", "-count=1"],
+        "go.lintTool": "golangci-lint",
+        "go.lintOnSave": "workspace"
+      }
+    }
+  }
+}
