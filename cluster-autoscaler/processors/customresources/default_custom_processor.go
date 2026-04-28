@@ -35,7 +35,7 @@ type DefaultCustomResourcesProcessor struct {
 func NewDefaultCustomResourcesProcessor(draEnabled bool, csiEnabled bool) CustomResourcesProcessor {
 	customProcessors := []CustomResourcesProcessor{&GpuCustomResourcesProcessor{}}
 	if draEnabled {
-		customProcessors = append(customProcessors, &DraCustomResourcesProcessor{})
+		customProcessors = append(customProcessors, NewDraCustomResourcesProcessor())
 	}
 	if csiEnabled {
 		customProcessors = append(customProcessors, &CSICustomResourcesProcessor{})
