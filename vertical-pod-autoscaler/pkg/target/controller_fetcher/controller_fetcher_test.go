@@ -59,7 +59,10 @@ func simpleControllerFetcher() *controllerFetcher {
 	f.informersMap = make(map[wellKnownController]cache.SharedIndexInformer)
 	f.scaleSubresourceCacheStorage = newControllerCacheStorage(time.Second, time.Minute, 0.1)
 	versioned := map[string][]metav1.APIResource{
-		"Foo": {{Kind: "Foo", Name: "bah", Group: "foo"}, {Kind: "Scale", Name: "iCanScale", Group: "foo"}},
+		"Foo": {
+			{Kind: "NotScalingResource", Name: "iCanNotScale", Group: "foo"},
+			{Kind: "ScalingResource", Name: "iCanScale", Group: "foo"},
+		},
 	}
 	fakeMapper := []*restmapper.APIGroupResources{
 		{
@@ -76,8 +79,8 @@ func simpleControllerFetcher() *controllerFetcher {
 	scaleNamespacer := &scalefake.FakeScaleClient{}
 	f.scaleNamespacer = scaleNamespacer
 
-	// return not found if if tries to find the scale subresource on bah
-	scaleNamespacer.AddReactor("get", "bah", func(action core.Action) (handled bool, ret runtime.Object, err error) {
+	// return not found if it tries to find the scale subresource on iCanNotScale
+	scaleNamespacer.AddReactor("get", "iCanNotScale", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		groupResource := schema.GroupResource{}
 		err = apierrors.NewNotFound(groupResource, "Foo")
 		return true, nil, err
@@ -330,14 +333,14 @@ func TestControllerFetcher(t *testing.T) {
 						{
 							APIVersion: "Foo/Foo",
 							Controller: &trueVar,
-							Kind:       "Foo",
-							Name:       "bah",
+							Kind:       "NotScalingResource",
+							Name:       "iCanNotScale",
 						},
 					},
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}}, // Parent does not support scale subresource so should return itself"
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}}, // Parent does not support scale subresource so should return itself
 			expectedError: nil,
 		},
 		{
@@ -356,14 +359,14 @@ func TestControllerFetcher(t *testing.T) {
 						{
 							APIVersion: "Foo/Foo",
 							Controller: &trueVar,
-							Kind:       "Scale",
+							Kind:       "ScalingResource",
 							Name:       "iCanScale",
 						},
 					},
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "iCanScale", Kind: "Scale", Namespace: testNamespace}, ApiVersion: "Foo/Foo"}, // Parent supports scale subresource"
+				Name: "iCanScale", Kind: "ScalingResource", Namespace: testNamespace}, ApiVersion: "Foo/Foo"}, // Parent supports scale subresource so it is returned
 			expectedError: nil,
 		},
 		{
@@ -395,7 +398,7 @@ func TestControllerFetcher(t *testing.T) {
 			name: "custom resource with no scale subresource",
 			key: &ControllerKeyWithAPIVersion{
 				ApiVersion: "Foo/Foo", ControllerKey: ControllerKey{
-					Name: "bah", Kind: "Foo", Namespace: testNamespace},
+					Name: "iCanNotScale", Kind: "NotScalingResource", Namespace: testNamespace},
 			},
 			objects:       []runtime.Object{},
 			expectedKey:   nil, // Pod owner does not support scale subresource so should return nil"
