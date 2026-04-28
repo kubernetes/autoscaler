@@ -57,6 +57,7 @@ type ContainerState struct {
 	WindowEnd time.Time
 	// Start of the latest memory usage sample that was aggregated.
 	lastMemorySampleStart time.Time
+	MaxMemory             ResourceAmount
 	// Aggregation to add usage samples to.
 	aggregator ContainerStateAggregator
 }
@@ -207,9 +208,14 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	// Get max of the request and the recent usage-based memory peak.
 	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
 	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
+	if container.MaxMemory > 0 && memoryUsed > container.MaxMemory {
+		memoryUsed = container.MaxMemory
+	}
 	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(container.GetOOMMinBumpUp()),
 		ScaleResource(memoryUsed, container.GetOOMBumpUpRatio()))
-
+	if container.MaxMemory > 0 && memoryNeeded > container.MaxMemory {
+		memoryNeeded = container.MaxMemory
+	}
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
 		Usage:        memoryNeeded,

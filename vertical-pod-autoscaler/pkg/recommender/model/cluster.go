@@ -229,7 +229,47 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	}
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
 		cluster.findOrCreateAggregateContainerState(containerID)
-		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
+		// Initialize container state with aggregation logic
+		container := NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
+		// Resolve VPA controlling this pod via label selector
+		vpa := cluster.GetControllingVPA(pod)
+		// Default: no maxAllowed constraint
+		var maxAllowedMemory ResourceAmount = 0
+		// Apply VPA resource policy if present
+		if vpa != nil && vpa.ResourcePolicy != nil {
+			// Prefer exact container policy over wildcard
+			foundExact := false
+			for _, cp := range vpa.ResourcePolicy.ContainerPolicies {
+				if cp.ContainerName == containerID.ContainerName {
+					foundExact = true
+
+					// Extract maxAllowed.memory if specified
+					if cp.MaxAllowed != nil {
+						if mem, ok := cp.MaxAllowed[corev1.ResourceMemory]; ok {
+							maxAllowedMemory = ResourceAmount(mem.Value())
+						}
+					}
+					break
+				}
+			}
+			// Fallback to wildcard policy if no exact match exists
+			if !foundExact {
+				for _, cp := range vpa.ResourcePolicy.ContainerPolicies {
+					if cp.ContainerName == "*" {
+						if cp.MaxAllowed != nil {
+							if mem, ok := cp.MaxAllowed[corev1.ResourceMemory]; ok {
+								maxAllowedMemory = ResourceAmount(mem.Value())
+							}
+						}
+						break
+					}
+				}
+			}
+		}
+		// Store maxAllowed memory for OOM-based recommendation capping
+		container.MaxMemory = maxAllowedMemory
+		// Register container in cluster state
+		pod.Containers[containerID.ContainerName] = container
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request

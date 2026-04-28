@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
@@ -195,4 +196,30 @@ func TestRecordOOMInNewWindow(t *testing.T) {
 	memoryAggregationWindowEnd = memoryAggregationWindowEnd.Add(2 * memoryAggregationInterval)
 	test.mockMemoryHistogram.On("AddSample", 2400.0*mb, 1.0, memoryAggregationWindowEnd)
 	assert.NoError(t, test.container.RecordOOM(testTimestamp.Add(2*memoryAggregationInterval), ResourceAmount(1000*mb)))
+}
+
+func TestRecordOOMCapsAtMaxMemory(t *testing.T) {
+	test := newContainerTest()
+
+	test.aggregateContainerState.OOMBumpUpRatio = 2.0
+	test.aggregateContainerState.OOMMinBumpUp = 0.0
+
+	test.container.MaxMemory = ResourceAmount(1000 * mb)
+
+	test.mockMemoryHistogram.On("AddSample",
+		mock.AnythingOfType("float64"),
+		1.0,
+		mock.Anything,
+	).Return()
+
+	err := test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb))
+	assert.NoError(t, err)
+
+	test.mockMemoryHistogram.AssertCalled(t, "AddSample",
+		mock.MatchedBy(func(val float64) bool {
+			return val == float64(1000*mb)
+		}),
+		1.0,
+		mock.Anything,
+	)
 }
