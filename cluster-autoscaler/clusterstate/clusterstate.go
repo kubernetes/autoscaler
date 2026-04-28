@@ -660,7 +660,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 				maxNodeStartupTime = startupTime
 			}
 		}
-		klog.V(1).Infof("Node %s: using maxNodeStartupTime = %v", node.Name, maxNodeStartupTime)
+		klog.V(4).Infof("Node %s: using maxNodeStartupTime = %v", node.Name, maxNodeStartupTime)
 		current.Registered = append(current.Registered, node.Name)
 		if _, isDeleted := csr.deletedNodes[node.Name]; isDeleted {
 			current.Deleted = append(current.Deleted, node.Name)
