@@ -297,6 +297,23 @@ type ContainerResourcePolicy struct {
 	// +optional
 	OOMMinBumpUp *resource.Quantity `json:"oomMinBumpUp,omitempty" protobuf:"bytes,8,opt,name=oomMinBumpUp"`
 
+	// memoryAggregationIntervalSeconds is the length of a single interval
+	// (in seconds) for which the peak memory usage is computed.
+	// Memory usage peaks are aggregated in multiples of this interval.
+	// In other words, there is one memory usage sample per interval
+	// (the maximum usage over that interval).
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	MemoryAggregationIntervalSeconds *int32 `json:"memoryAggregationIntervalSeconds,omitempty" protobuf:"varint,9,opt,name=memoryAggregationInterval"`
+
+	// memoryAggregationIntervalCount is the number of consecutive
+	// MemoryAggregationIntervals which make up the memory aggregation window.
+	// The total window length is:
+	// MemoryAggregationIntervalSeconds * MemoryAggregationIntervalCount.
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	MemoryAggregationIntervalCount *int64 `json:"memoryAggregationIntervalCount,omitempty" protobuf:"varint,10,opt,name=memoryAggregationIntervalCount"`
+
 	// startupBoost specifies the startup boost policy for the container.
 	// This overrides any pod-level startup boost policy.
 	// The startup boost policy takes precedence over the rest of the fields in

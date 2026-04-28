@@ -214,6 +214,16 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions
 				}
 			}
 
+			// Validate MemoryAggregationIntervalSeconds
+			if policy.MemoryAggregationIntervalSeconds != nil && *policy.MemoryAggregationIntervalSeconds < 1 {
+				return fmt.Errorf("memoryAggregationIntervalSeconds must be at least 1, got %v", *policy.MemoryAggregationIntervalSeconds)
+			}
+
+			// Validate MemoryAggregationIntervalCount
+			if policy.MemoryAggregationIntervalCount != nil && *policy.MemoryAggregationIntervalCount < 1 {
+				return fmt.Errorf("memoryAggregationIntervalCount must be at least 1, got %v", *policy.MemoryAggregationIntervalCount)
+			}
+
 			mode := policy.Mode
 			if mode != nil {
 				if _, found := possibleScalingModes[*mode]; !found {
@@ -333,9 +343,13 @@ func validatePerVPAFeatureFlag(vpa *vpa_types.VerticalPodAutoscaler, opts VPAVal
 
 	if vpa.Spec.ResourcePolicy != nil {
 		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
-			perVPA := policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil
-			if !opts.AllowPerVPAConfig && perVPA {
+			perVPAOOM := policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil
+			if !opts.AllowPerVPAConfig && perVPAOOM {
 				return fmt.Errorf("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag %s is disabled", features.PerVPAConfig)
+			}
+			perVPAMemoryAgg := policy.MemoryAggregationIntervalSeconds != nil || policy.MemoryAggregationIntervalCount != nil
+			if !opts.AllowPerVPAConfig && perVPAMemoryAgg {
+				return fmt.Errorf("MemoryAggregationIntervalSeconds and MemoryAggregationIntervalCount are not supported when feature flag %s is disabled", features.PerVPAConfig)
 			}
 		}
 	}
