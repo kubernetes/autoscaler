@@ -491,10 +491,16 @@ func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armc
 	defer scaleSet.sizeMutex.Unlock()
 
 	// Compose a new VMSS for updating.
+	// Copy the SKU rather than sharing the pointer so the cached
+	// vmssInfo.SKU.Capacity is not mutated before the API call completes.
 	op := armcompute.VirtualMachineScaleSet{
 		Name:     vmssInfo.Name,
-		SKU:      vmssInfo.SKU,
 		Location: vmssInfo.Location,
+		SKU: &armcompute.SKU{
+			Name:     vmssInfo.SKU.Name,
+			Tier:     vmssInfo.SKU.Tier,
+			Capacity: ptr.To[int64](newSize),
+		},
 	}
 
 	if vmssInfo.ExtendedLocation != nil {

@@ -388,9 +388,15 @@ func TestScaleSetAtomicIncreaseSize(t *testing.T) {
 	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
-	// BeginCreateOrUpdate returns nil poller — simulates immediate success
+	// BeginCreateOrUpdate returns nil poller — simulates immediate success.
+	// Verify the request payload contains the expected new capacity (3 + 2 = 5).
 	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
-	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Cond(func(x any) bool {
+			vmss, ok := x.(armcompute.VirtualMachineScaleSet)
+			return ok && vmss.SKU != nil && vmss.SKU.Capacity != nil && *vmss.SKU.Capacity == 5
+		}),
+		gomock.Any()).Return(nil, nil)
 	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
 
 	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
@@ -457,10 +463,16 @@ func TestScaleSetAtomicIncreaseSizeFailure(t *testing.T) {
 	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
-	// BeginCreateOrUpdate returns an error — simulates Azure rejecting the request
+	// BeginCreateOrUpdate returns an error — simulates Azure rejecting the request.
+	// Verify the request payload contains the expected new capacity (3 + 2 = 5).
 	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
-	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(nil, fmt.Errorf("azure capacity unavailable")).AnyTimes()
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Cond(func(x any) bool {
+			vmss, ok := x.(armcompute.VirtualMachineScaleSet)
+			return ok && vmss.SKU != nil && vmss.SKU.Capacity != nil && *vmss.SKU.Capacity == 5
+		}),
+		gomock.Any()).
+		Return(nil, fmt.Errorf("azure capacity unavailable"))
 	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
 
 	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
@@ -531,10 +543,16 @@ func TestScaleSetAtomicIncreaseSizePollerFailure(t *testing.T) {
 		})
 	assert.NoError(t, pollerErr)
 
-	// BeginCreateOrUpdate succeeds (returns a poller), but PollUntilDone will fail
+	// BeginCreateOrUpdate succeeds (returns a poller), but PollUntilDone will fail.
+	// Verify the request payload contains the expected new capacity (3 + 2 = 5).
 	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
-	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(failingPoller, nil).AnyTimes()
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Cond(func(x any) bool {
+			vmss, ok := x.(armcompute.VirtualMachineScaleSet)
+			return ok && vmss.SKU != nil && vmss.SKU.Capacity != nil && *vmss.SKU.Capacity == 5
+		}),
+		gomock.Any()).
+		Return(failingPoller, nil)
 	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
 
 	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
