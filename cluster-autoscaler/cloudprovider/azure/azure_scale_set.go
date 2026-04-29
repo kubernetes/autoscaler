@@ -250,13 +250,19 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	curSize := *set.SKU.Capacity
 	vmssSizeMutex.Unlock()
 
+	if curSize == 0 && scaleSet.curSize > 0 {
+		klog.Warningf("getCurSize: VMSS %q API returned capacity=0 but in-memory size is %d. "+
+			"Suspected transient API anomaly, retaining in-memory size to prevent catastrophic scale-down.",
+			scaleSet.Name, scaleSet.curSize)
+		scaleSet.lastSizeRefresh = time.Now()
+		return scaleSet.curSize, nil
+	}
+
 	if scaleSet.curSize != curSize {
-		// Invalidate the instance cache if the capacity has changed.
 		klog.V(5).Infof("VMSS %q size changed from: %d to %d, invalidating instance cache", scaleSet.Name, scaleSet.curSize, curSize)
 		scaleSet.invalidateInstanceCache()
 	}
 	klog.V(3).Infof("VMSS: %s, in-memory size: %d, new size: %d", scaleSet.Name, scaleSet.curSize, curSize)
-
 	scaleSet.curSize = curSize
 	scaleSet.lastSizeRefresh = time.Now()
 	return scaleSet.curSize, nil
