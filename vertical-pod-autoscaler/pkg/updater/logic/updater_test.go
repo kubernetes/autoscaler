@@ -42,6 +42,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -295,7 +296,7 @@ func testRunOnceBase(
 		pods[i].Labels = labels
 		if isCPUBoostTest {
 			pods[i].Annotations = map[string]string{
-				"startup-cpu-boost": "",
+				annotations.GetStartupCPUBoostAnnotationKey(containerName): "",
 			}
 			pods[i].Status.Conditions = []corev1.PodCondition{
 				{
@@ -702,7 +703,7 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 
 	// Cycle 1: Unboost the cpu
 	for i := range pods {
-		pods[i].Annotations = map[string]string{"startup-cpu-boost": ""}
+		pods[i].Annotations = map[string]string{annotations.GetStartupCPUBoostAnnotationKey(containerName): ""}
 		pods[i].Status.Conditions = []corev1.PodCondition{
 			{
 				Type:   corev1.PodReady,
@@ -801,7 +802,7 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 
 	// Cycle 1: Unboost the cpu
 	for i := range pods {
-		pods[i].Annotations = map[string]string{"startup-cpu-boost": ""}
+		pods[i].Annotations = map[string]string{annotations.GetStartupCPUBoostAnnotationKey(containerName): ""}
 		pods[i].Status.Conditions = []corev1.PodCondition{
 			{
 				Type:   corev1.PodReady,

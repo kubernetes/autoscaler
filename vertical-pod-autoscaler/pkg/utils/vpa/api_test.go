@@ -400,7 +400,7 @@ func TestFindParentControllerForPod(t *testing.T) {
 	}
 }
 
-func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
+func TestGetExpiredStartupCPUBoostAnnotations(t *testing.T) {
 	now := metav1.Now()
 	past := metav1.Time{Time: now.Add(-2 * time.Minute)}
 	duration60 := int32(60)
@@ -410,26 +410,26 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 		name     string
 		pod      *corev1.Pod
 		vpa      *vpa_types.VerticalPodAutoscaler
-		expected bool
+		expected []string
 	}{
 		{
 			name:     "No StartupBoost config",
 			pod:      &corev1.Pod{},
 			vpa:      &vpa_types.VerticalPodAutoscaler{},
-			expected: false,
+			expected: nil,
 		},
 		{
 			name:     "No duration in StartupBoost, no annotation",
 			pod:      &corev1.Pod{},
 			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 0).Get(),
-			expected: false,
+			expected: nil,
 		},
 		{
 			name: "No duration in StartupBoost, with annotation and pod ready",
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"startup-cpu-boost": "",
+						"c1/cpu-startup-boost": "",
 					},
 				},
 				Status: corev1.PodStatus{
@@ -442,14 +442,14 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 				},
 			},
 			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 0).Get(),
-			expected: true,
+			expected: []string{"c1/cpu-startup-boost"},
 		},
 		{
 			name: "Pod not ready",
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"startup-cpu-boost": "",
+						"c1/cpu-startup-boost": "",
 					},
 				},
 				Status: corev1.PodStatus{
@@ -462,14 +462,14 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 				},
 			},
 			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).Get(),
-			expected: false,
+			expected: nil,
 		},
 		{
 			name: "Duration passed",
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"startup-cpu-boost": "",
+						"c1/cpu-startup-boost": "",
 					},
 				},
 				Status: corev1.PodStatus{
@@ -483,14 +483,14 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 				},
 			},
 			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).Get(),
-			expected: true,
+			expected: []string{"c1/cpu-startup-boost"},
 		},
 		{
 			name: "Duration not passed",
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"startup-cpu-boost": "",
+						"c1/cpu-startup-boost": "",
 					},
 				},
 				Status: corev1.PodStatus{
@@ -504,14 +504,15 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 				},
 			},
 			vpa:      test.VerticalPodAutoscaler().WithContainer(containerName).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).Get(),
-			expected: false,
+			expected: nil,
 		},
 		{
 			name: "Container-level boost duration",
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"startup-cpu-boost": "",
+						"c1/cpu-startup-boost": "",
+						"c2/cpu-startup-boost": "",
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -554,14 +555,15 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 					},
 				},
 			},
-			expected: false,
+			expected: []string{"c2/cpu-startup-boost"},
 		},
 		{
 			name: "Container-level boost duration passed",
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"startup-cpu-boost": "",
+						"c1/cpu-startup-boost": "",
+						"c2/cpu-startup-boost": "",
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -604,14 +606,14 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 					},
 				},
 			},
-			expected: true,
+			expected: []string{"c1/cpu-startup-boost", "c2/cpu-startup-boost"},
 		},
 		{
 			name: "Pod-level boost duration is higher",
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"startup-cpu-boost": "",
+						"c1/cpu-startup-boost": "",
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -659,12 +661,13 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 					},
 				},
 			},
-			expected: false,
+			expected: []string{"c1/cpu-startup-boost"},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.expected, IsPodReadyAndStartupBoostDurationPassed(tc.pod, tc.vpa))
+			actual := GetExpiredStartupCPUBoostAnnotations(tc.pod, tc.vpa)
+			assert.ElementsMatch(t, tc.expected, actual)
 		})
 	}
 }
@@ -685,7 +688,7 @@ func TestPodHasCPUBoostInProgressAnnotation(t *testing.T) {
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"startup-cpu-boost": "",
+						"c1/cpu-startup-boost": "",
 					},
 				},
 			},

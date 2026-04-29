@@ -18,6 +18,7 @@ package inplace
 
 import (
 	"fmt"
+	"slices"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -50,30 +51,44 @@ func (*resourcesInplaceUpdatesPatchCalculator) PatchResourceTarget() patch.Patch
 func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	result := []resource_admission.PatchRecord{}
 
-	var containersResources []vpa_api_util.ContainerResources
-	if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeOff {
-		// If update mode is "Off", we don't want to apply any recommendations,
-		// but we still want to unboost.
-		original, err := annotations.GetOriginalResourcesFromAnnotation(pod)
-		if err != nil {
-			return nil, err
-		}
-		containersResources = []vpa_api_util.ContainerResources{
-			{
-				Requests: original.Requests,
-				Limits:   original.Limits,
-			},
-		}
-	} else {
+	expiredAnnotations := vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)
+
+	updateMode := vpa_api_util.GetUpdateMode(vpa)
+	var recommendedResources []vpa_api_util.ContainerResources
+	if updateMode != vpa_types.UpdateModeOff {
 		var err error
-		containersResources, _, err = c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
+		recommendedResources, _, err = c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
 		if err != nil {
 			return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
 		}
+	} else {
+		// If update mode is "Off", we don't want to apply any recommendations,
+		// but we still want to unboost.
+		recommendedResources = make([]vpa_api_util.ContainerResources, len(pod.Spec.Containers))
 	}
 
-	for i, containerResources := range containersResources {
-		newPatches := getContainerPatch(pod, i, containerResources)
+	for i, c := range pod.Spec.Containers {
+		var targetResources vpa_api_util.ContainerResources
+		annotationKey := annotations.GetStartupCPUBoostAnnotationKey(c.Name)
+		_, boosted := pod.Annotations[annotationKey]
+		expired := slices.Contains(expiredAnnotations, annotationKey)
+
+		switch {
+		case expired:
+			var err error
+			targetResources, err = getContainerResourcesForUnboost(pod, c, recommendedResources[i])
+			if err != nil {
+				return []resource_admission.PatchRecord{}, err
+			}
+		case boosted:
+			continue // currently boosted pod so we skip creating patches
+		case updateMode == vpa_types.UpdateModeOff:
+			continue // Nothing to do for pods when VPA is Off.
+		default:
+			targetResources = recommendedResources[i]
+		}
+
+		newPatches := getContainerPatch(pod, i, targetResources)
 		result = append(result, newPatches...)
 	}
 
@@ -103,4 +118,22 @@ func appendPatches(patches []resource_admission.PatchRecord, current corev1.Reso
 		patches = append(patches, patch.GetAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request))
 	}
 	return patches
+}
+
+func getContainerResourcesForUnboost(pod *corev1.Pod, c corev1.Container, recommendedResources vpa_api_util.ContainerResources) (vpa_api_util.ContainerResources, error) {
+	original, err := annotations.GetOriginalResourcesFromAnnotation(pod, c.Name)
+	if err != nil {
+		return vpa_api_util.ContainerResources{}, err
+	}
+	if areResourcesEmpty(recommendedResources) && original != nil {
+		return vpa_api_util.ContainerResources{
+			Requests: original.Requests,
+			Limits:   original.Limits,
+		}, nil
+	}
+	return recommendedResources, nil
+}
+
+func areResourcesEmpty(resources vpa_api_util.ContainerResources) bool {
+	return len(resources.Requests) == 0 && len(resources.Limits) == 0
 }

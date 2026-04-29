@@ -405,7 +405,7 @@ func setupPodsForCPUBoost(f *framework.Framework, hamsterCPU, hamsterMemory stri
 	for _, pod := range podList.Items {
 		original, err := annotations.GetOriginalResourcesAnnotationValue(&pod.Spec.Containers[0])
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		AnnotatePod(f, pod.Name, annotations.StartupCPUBoostAnnotation, original)
+		AnnotatePod(f, pod.Name, annotations.GetStartupCPUBoostAnnotationKey(pod.Spec.Containers[0].Name), original)
 	}
 	return podList
 }

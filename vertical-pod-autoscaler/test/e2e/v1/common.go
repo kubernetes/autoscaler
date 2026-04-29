@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -263,7 +264,7 @@ func AnnotatePod(f *framework.Framework, podName, annotationName, annotationValu
 
 	patches = append(patches, utils.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/metadata/annotations/%s", annotationName),
+		Path:  fmt.Sprintf("/metadata/annotations/%s", strings.ReplaceAll(annotationName, "/", "~1")),
 		Value: annotationValue,
 	})
 

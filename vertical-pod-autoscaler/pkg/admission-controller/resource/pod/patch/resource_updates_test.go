@@ -417,7 +417,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
 				addResourceRequestPatch(0, cpu, "200m"),
 				addResourceLimitPatch(0, cpu, "200m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
@@ -456,7 +456,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
 				addResourceRequestPatch(0, cpu, "200m"),
 				addResourceLimitPatch(0, cpu, "200m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
@@ -495,7 +495,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
 				addResourceRequestPatch(0, cpu, "600m"),
 				addResourceLimitPatch(0, cpu, "600m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
@@ -593,7 +593,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"400m\"},\"limits\":{\"cpu\":\"400m\"}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"400m\"},\"limits\":{\"cpu\":\"400m\"}}"),
 				addResourceRequestPatch(0, cpu, "700m"),
 				addResourceLimitPatch(0, cpu, "700m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
@@ -632,7 +632,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{Quantity: resource.MustParse("40m")},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
 				addResourceRequestPatch(0, cpu, "40m"),
 				addResourceLimitPatch(0, cpu, "40m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
@@ -690,7 +690,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"100m\"}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"100m\"}}"),
 				addResourceRequestPatch(0, cpu, "200m"),
 				addResourceLimitPatch(0, cpu, "200m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
@@ -726,7 +726,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"300m\"}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"300m\"}}"),
 				addResourceRequestPatch(0, cpu, "200m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
 			},
@@ -761,7 +761,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"150m\"}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"150m\"}}"),
 				addResourceRequestPatch(0, cpu, "149m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
 			},
@@ -796,7 +796,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"300m\"}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{\"cpu\":\"300m\"}}"),
 				addResourceRequestPatch(0, cpu, "300m"),
 				addResourceLimitPatch(0, cpu, "900m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
@@ -829,7 +829,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"100m\"},\"limits\":{}}"),
 				addResourceRequestPatch(0, cpu, "300m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
 			},
@@ -897,7 +897,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			maxAllowedCpu:      resource.QuantityValue{},
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
-				GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{\"cpu\":\"1m\"},\"limits\":{\"cpu\":\"1m\"}}"),
 				addResourceRequestPatch(0, cpu, "300m"),
 				addResourceLimitPatch(0, cpu, "300m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request, cpu limit"),
