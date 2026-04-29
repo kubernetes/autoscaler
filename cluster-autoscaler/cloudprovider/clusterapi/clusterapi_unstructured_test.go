@@ -145,6 +145,69 @@ func TestSetSize(t *testing.T) {
 			Build()
 		test(t, testConfig)
 	})
+
+	// Simulates the scenario where a user lowers the maxSize annotation
+	// below the current replica count. SetSize must allow decreasing
+	// replicas even though the target is still above maxSize.
+	scaleDownAboveMaxTest := func(t *testing.T, testConfig *TestConfig) {
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
+
+		testResource := testConfig.machineSet
+		if testConfig.machineDeployment != nil {
+			testResource = testConfig.machineDeployment
+		}
+
+		sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Lower maxSize below current replicas
+		sr.maxSize = 2
+
+		// Scale down by 1: desired (3) is still above maxSize (2) but
+		// below current (4), so this must succeed.
+		err = sr.SetSize(3)
+		if err != nil {
+			t.Fatalf("expected SetSize to succeed when scaling down toward maxSize, got: %v", err)
+		}
+
+		// Scale down to maxSize must also succeed.
+		err = sr.SetSize(2)
+		if err != nil {
+			t.Fatalf("expected SetSize to succeed when scaling down to maxSize, got: %v", err)
+		}
+
+		// Scale up above maxSize must still fail.
+		err = sr.SetSize(3)
+		if err == nil {
+			t.Fatal("expected SetSize to fail when scaling up above maxSize")
+		}
+	}
+
+	scaleDownAboveMaxAnnotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "0",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+	t.Run("ScaleDownWhenAboveMax/MachineSet", func(t *testing.T) {
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(4).
+			WithAnnotations(scaleDownAboveMaxAnnotations).
+			Build()
+		scaleDownAboveMaxTest(t, testConfig)
+	})
+
+	t.Run("ScaleDownWhenAboveMax/MachineDeployment", func(t *testing.T) {
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(4).
+			WithAnnotations(scaleDownAboveMaxAnnotations).
+			Build()
+		scaleDownAboveMaxTest(t, testConfig)
+	})
 }
 
 func TestReplicas(t *testing.T) {
