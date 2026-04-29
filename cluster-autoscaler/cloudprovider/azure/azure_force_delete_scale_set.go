@@ -97,3 +97,16 @@ func isOperationNotAllowed(err error) bool {
 	}
 	return strings.Contains(err.Error(), azerrors.OperationNotAllowed)
 }
+
+const operationPreemptedErrorCode = "OperationPreempted"
+
+// isOperationPreempted checks if `error` is an OperationPreempted error.
+func isOperationPreempted(err error) bool {
+	if err == nil {
+		return false
+	}
+	if azerr := azerrors.IsResponseError(err); azerr != nil {
+		return azerr.ErrorCode == operationPreemptedErrorCode
+	}
+	return strings.Contains(err.Error(), operationPreemptedErrorCode)
+}
