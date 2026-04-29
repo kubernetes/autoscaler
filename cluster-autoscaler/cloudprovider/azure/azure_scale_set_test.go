@@ -477,6 +477,85 @@ func TestScaleSetAtomicIncreaseSizeFailure(t *testing.T) {
 	assert.Equal(t, 3, targetSize)
 }
 
+// fakeErrorPollerHandler simulates a poller that fails during Poll.
+type fakeErrorPollerHandler[T any] struct {
+	pollErr error
+}
+
+func (f *fakeErrorPollerHandler[T]) Done() bool {
+	return false
+}
+
+func (f *fakeErrorPollerHandler[T]) Poll(ctx context.Context) (*http.Response, error) {
+	return nil, f.pollErr
+}
+
+func (f *fakeErrorPollerHandler[T]) Result(ctx context.Context, out *T) error {
+	return nil
+}
+
+func TestScaleSetAtomicIncreaseSizePollerFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedScaleSets := newTestVMSSList(3, testASG, "eastus", armcompute.OrchestrationModeUniform)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	provider := newTestProvider(t)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	// Create a poller that will fail during PollUntilDone
+	pollerResp := &http.Response{
+		Header: http.Header{},
+	}
+	failingPoller, pollerErr := runtime.NewPoller(pollerResp, runtime.Pipeline{},
+		&runtime.NewPollerOptions[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse]{
+			Handler: &fakeErrorPollerHandler[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse]{
+				pollErr: fmt.Errorf("long running operation failed"),
+			},
+		})
+	assert.NoError(t, pollerErr)
+
+	// BeginCreateOrUpdate succeeds (returns a poller), but PollUntilDone will fail
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(failingPoller, nil).AnyTimes()
+	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
+
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), provider.azureManager.config.ResourceGroup, testASG).Return(expectedVMSSVMs, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	err := provider.azureManager.forceRefresh()
+	assert.NoError(t, err)
+
+	registered := provider.azureManager.RegisterNodeGroup(
+		newTestScaleSet(provider.azureManager, testASG))
+	assert.True(t, registered)
+
+	// Current target size is 3.
+	targetSize, err := provider.NodeGroups()[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+
+	// PollUntilDone fails — size should NOT be updated.
+	err = provider.NodeGroups()[0].AtomicIncreaseSize(2)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "long running operation failed")
+
+	// Target size should remain 3 (not updated on poller failure).
+	targetSize, err = provider.NodeGroups()[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+}
+
 // TestIncreaseSizeOnVMProvisioningFailed has been tweeked only for Uniform Orchestration mode.
 // If ProvisioningState == failed and power state is not running, Status.State == InstanceCreating with errorInfo populated.
 func TestScaleSetIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
