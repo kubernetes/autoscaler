@@ -42,6 +42,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	ndf "k8s.io/component-helpers/nodedeclaredfeatures"
 	"k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/kubernetes/pkg/features"
@@ -165,7 +166,7 @@ func TestSanitizedTemplateNodeInfoFromNodeGroup(t *testing.T) {
 			// Pass empty string as nameSuffix so that it's auto-determined from the sanitized templateNodeInfo, because
 			// TemplateNodeInfoFromNodeGroupTemplate randomizes the suffix.
 			// Pass non-empty expectedPods to verify that the set of pods is changed as expected (e.g. DS pods added, non-DS/deleted pods removed).
-			if err := verifyNodeInfoSanitization(tc.nodeGroup.templateNodeInfoResult, templateNodeInfo, tc.wantPods, "template-node-for-"+tc.nodeGroup.id, "", true, nil, false, false /*wantsCSINode*/); err != nil {
+			if err := verifyNodeInfoSanitization(tc.nodeGroup.templateNodeInfoResult, templateNodeInfo, tc.wantPods, "template-node-for-"+tc.nodeGroup.id, "", true, nil, true, false /*wantsCSINode*/); err != nil {
 				t.Fatalf("TemplateNodeInfoFromExampleNodeInfo(): NodeInfo wasn't properly sanitized: %v", err)
 			}
 		})
@@ -182,7 +183,7 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 		apiv1.LabelInstanceTypeStable: "some-instance",
 		apiv1.LabelTopologyRegion:     "some-region",
 	}
-	exampleNode.Status.DeclaredFeatures = []string{"test-feature=true"}
+	exampleNode.Status.DeclaredFeatures = []string{"RestartAllContainersOnContainerExits"}
 
 	testCases := []struct {
 		name       string
@@ -384,7 +385,7 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 			// Pass empty string as nameSuffix so that it's auto-determined from the sanitized templateNodeInfo, because
 			// TemplateNodeInfoFromExampleNodeInfo randomizes the suffix.
 			// Pass non-empty expectedPods to verify that the set of pods is changed as expected (e.g. DS pods added, non-DS/deleted pods removed).
-			if err := verifyNodeInfoSanitization(exampleNodeInfo, templateNodeInfo, tc.wantPods, "template-node-for-"+nodeGroupId, "", false, nil, false, tc.wantCSINode); err != nil {
+			if err := verifyNodeInfoSanitization(exampleNodeInfo, templateNodeInfo, tc.wantPods, "template-node-for-"+nodeGroupId, "", false, nil, true, tc.wantCSINode); err != nil {
 				t.Fatalf("TemplateNodeInfoFromExampleNodeInfo(): NodeInfo wasn't properly sanitized: %v", err)
 			}
 		})
@@ -449,7 +450,7 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 	taintsLabelsNode.Spec.Taints = taintsNode.Spec.Taints
 
 	nodeWithDeclaredFeatures := basicNode.DeepCopy()
-	nodeWithDeclaredFeatures.Status.DeclaredFeatures = []string{"FeatureA,FeatureB"}
+	nodeWithDeclaredFeatures.Status.DeclaredFeatures = []string{"RestartAllContainersOnContainerExits", "UserNamespacesHostNetworkSupport"}
 
 	resourceSlices := []*resourceapi.ResourceSlice{
 		{
@@ -518,10 +519,10 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 	tests := []struct {
 		testName string
 
-		nodeInfo                    *framework.NodeInfo
-		taintConfig                 *taints.TaintConfig
-		nodeDeclaredFeaturesEnabled bool
-		wantTaints                  []apiv1.Taint
+		nodeInfo                     *framework.NodeInfo
+		taintConfig                  *taints.TaintConfig
+		nodeDeclaredFeaturesDisabled bool
+		wantTaints                   []apiv1.Taint
 	}{
 		{
 			testName: "sanitize node",
@@ -562,26 +563,26 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 			wantTaints:  []apiv1.Taint{{Key: "a", Value: "b", Effect: apiv1.TaintEffectNoSchedule}},
 		},
 		{
-			testName:                    "sanitize node with NodeDeclaredFeatures enabled",
-			nodeInfo:                    framework.NewNodeInfo(nodeWithDeclaredFeatures, resourceSlices, framework.NewPodInfo(pod1WithClaims, pod1ResourceClaims), framework.NewPodInfo(pod2WithClaims, pod2ResourceClaims)),
-			nodeDeclaredFeaturesEnabled: true,
+			testName: "sanitize node with NodeDeclaredFeatures",
+			nodeInfo: framework.NewNodeInfo(nodeWithDeclaredFeatures, resourceSlices, framework.NewPodInfo(pod1WithClaims, pod1ResourceClaims), framework.NewPodInfo(pod2WithClaims, pod2ResourceClaims)),
 		},
 		{
-			testName:                    "sanitize node with NodeDeclaredFeatures disabled",
-			nodeInfo:                    framework.NewNodeInfo(nodeWithDeclaredFeatures, resourceSlices, framework.NewPodInfo(pod1WithClaims, pod1ResourceClaims), framework.NewPodInfo(pod2WithClaims, pod2ResourceClaims)),
-			nodeDeclaredFeaturesEnabled: false,
+			testName:                     "sanitize node with NodeDeclaredFeatures disabled",
+			nodeInfo:                     framework.NewNodeInfo(nodeWithDeclaredFeatures, resourceSlices, framework.NewPodInfo(pod1WithClaims, pod1ResourceClaims), framework.NewPodInfo(pod2WithClaims, pod2ResourceClaims)),
+			nodeDeclaredFeaturesDisabled: true,
 		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.testName, func(t *testing.T) {
-			utilfeature.DefaultMutableFeatureGate.Set(fmt.Sprintf("%s=%v", features.NodeDeclaredFeatures, tc.nodeDeclaredFeaturesEnabled))
+			featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.NodeDeclaredFeatures, !tc.nodeDeclaredFeaturesDisabled)
+
 			newNameBase := "node"
 			suffix := "abc"
 			nodeInfo, err := createSanitizedNodeInfo(tc.nodeInfo, newNameBase, suffix, tc.taintConfig)
 			if err != nil {
 				t.Fatalf("sanitizeNodeInfo(): want nil error, got %v", err)
 			}
-			if err := verifyNodeInfoSanitization(tc.nodeInfo, nodeInfo, nil, newNameBase, suffix, false, tc.wantTaints, tc.nodeDeclaredFeaturesEnabled, false /*wantCSINode*/); err != nil {
+			if err := verifyNodeInfoSanitization(tc.nodeInfo, nodeInfo, nil, newNameBase, suffix, false, tc.wantTaints, !tc.nodeDeclaredFeaturesDisabled, false /*wantCSINode*/); err != nil {
 				t.Fatalf("sanitizeNodeInfo(): NodeInfo wasn't properly sanitized: %v", err)
 			}
 		})
@@ -633,12 +634,12 @@ func verifyNodeInfoSanitization(initialNodeInfo, sanitizedNodeInfo *framework.No
 	gotDeclaredFeatures := sanitizedNodeInfo.GetNodeDeclaredFeatures()
 	// Verify DeclaredFeatures on the NodeInfo struct
 	if nodeDeclaredFeaturesEnabled {
-		wantDeclaredFeatures := ndf.NewFeatureSet(initialNodeInfo.Node().Status.DeclaredFeatures...)
+		wantDeclaredFeatures := ndf.DefaultFramework.MustMapSorted(initialNodeInfo.Node().Status.DeclaredFeatures)
 		if diff := cmp.Diff(wantDeclaredFeatures, gotDeclaredFeatures); diff != "" {
 			return fmt.Errorf("sanitized NodeInfo.DeclaredFeatures unexpected, diff (-want +got): %s", diff)
 		}
-	} else if gotDeclaredFeatures.Len() != 0 {
-		return fmt.Errorf("sanitized NodeInfo.DeclaredFeatures unexpected: got %v, want empty when feature gate is disabled", sanitizedNodeInfo.GetNodeDeclaredFeatures())
+	} else if !gotDeclaredFeatures.IsEmpty() {
+		return fmt.Errorf("sanitized NodeInfo.DeclaredFeatures unexpected: got %v, want empty when feature gate is disabled", gotDeclaredFeatures)
 	}
 
 	if wantsCSINode {
@@ -762,9 +763,11 @@ func verifySanitizedPodResourceClaims(initialPod, sanitizedPod *framework.PodInf
 
 	for i, sanitizedClaim := range sanitizedClaims {
 		initialClaim := initialClaims[i]
-
+		// TODO(autoscaler/issues/9570): KEP-5729 changed IsForPod to be able to work
+		// with pod groups, re-evaluate whether they need to be considered here.
+		//
 		// Pod-owned claims should be sanitized, other claims shouldn't.
-		err := resourceclaim.IsForPod(owningPod, initialClaim)
+		err := resourceclaim.IsForPod(owningPod, initialClaim, false)
 		isPodOwned := err == nil
 		if isPodOwned {
 			// Pod-owned claim, verify that it was sanitized.

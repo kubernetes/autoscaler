@@ -103,22 +103,22 @@ func (ct snapshotClaimTracker) SignalClaimPendingAllocation(claimUid types.UID, 
 	return nil
 }
 
-func (ct snapshotClaimTracker) ClaimHasPendingAllocation(claimUid types.UID) bool {
+func (ct snapshotClaimTracker) GetPendingAllocation(claimUid types.UID) *resourceapi.AllocationResult {
 	// The DRA scheduler plugin calls this at the beginning of Filter, and fails the filter if true is returned to handle race conditions.
 	//
-	// In the scheduler implementation, ClaimHasPendingAllocation() starts answering true after SignalClaimPendingAllocation()
+	// In the scheduler implementation, GetPendingAllocation() starts returning the allocation result after SignalClaimPendingAllocation()
 	// is called at the end of the scheduling phase, until RemoveClaimPendingAllocation() is called after the allocation API call
 	// is made in the asynchronous bind phase.
 	//
 	// In Cluster Autoscaler only the scheduling phase is run, and SignalClaimPendingAllocation() synchronously persists the allocation
-	// in-memory. So the race conditions don't apply, and this should always return false not to block the filter.
-	return false
+	// in-memory. So the race conditions don't apply, and this should always return nil not to block the filter.
+	return nil
 }
 
-func (ct snapshotClaimTracker) RemoveClaimPendingAllocation(claimUid types.UID) (deleted bool) {
+func (ct snapshotClaimTracker) MaybeRemoveClaimPendingAllocation(claimUID types.UID, forceRemove bool) (deleted bool) {
 	// This method is only called during the Bind phase of scheduler framework, which is never run by CA. We need to implement
 	// it to satisfy the interface, but it should never be called.
-	panic("snapshotClaimTracker.RemoveClaimPendingAllocation() was called - this should never happen")
+	panic("snapshotClaimTracker.MaybeRemoveClaimPendingAllocation() was called - this should never happen")
 }
 
 func (ct snapshotClaimTracker) AssumeClaimAfterAPICall(claim *resourceapi.ResourceClaim) error {
