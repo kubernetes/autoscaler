@@ -105,11 +105,14 @@ func (c *SSHKeyClient) List(ctx context.Context, opts SSHKeyListOpts) ([]*SSHKey
 
 // All returns all SSH keys.
 func (c *SSHKeyClient) All(ctx context.Context) ([]*SSHKey, error) {
-	return c.AllWithOpts(ctx, SSHKeyListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, SSHKeyListOpts{})
 }
 
 // AllWithOpts returns all SSH keys with the given options.
 func (c *SSHKeyClient) AllWithOpts(ctx context.Context, opts SSHKeyListOpts) ([]*SSHKey, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*SSHKey, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

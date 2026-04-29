@@ -54,3 +54,18 @@ func TestEnabledPerNodeGroupMetrics(t *testing.T) {
 	assert.Equal(t, 2, int(testutil.ToFloat64(m.nodesGroupMinNodes.GaugeVec.WithLabelValues("foo"))))
 	assert.Equal(t, 100, int(testutil.ToFloat64(m.nodesGroupMaxNodes.GaugeVec.WithLabelValues("foo"))))
 }
+
+func TestUpdateNodesCount(t *testing.T) {
+	reg := metrics.NewKubeRegistry()
+	m := newCaMetricsWithRegistry(reg)
+	m.RegisterAll(false)
+
+	m.UpdateNodesCount(1, 2, 3, 4, 5, 6)
+
+	assert.Equal(t, 1, int(testutil.ToFloat64(m.nodesCount.GaugeVec.WithLabelValues(readyLabel))))
+	assert.Equal(t, 2, int(testutil.ToFloat64(m.nodesCount.GaugeVec.WithLabelValues(unreadyLabel))))
+	assert.Equal(t, 3, int(testutil.ToFloat64(m.nodesCount.GaugeVec.WithLabelValues(startingLabel))))
+	assert.Equal(t, 4, int(testutil.ToFloat64(m.nodesCount.GaugeVec.WithLabelValues(suspendedLabel))))
+	assert.Equal(t, 5, int(testutil.ToFloat64(m.nodesCount.GaugeVec.WithLabelValues(longUnregisteredLabel))))
+	assert.Equal(t, 6, int(testutil.ToFloat64(m.nodesCount.GaugeVec.WithLabelValues(unregisteredLabel))))
+}

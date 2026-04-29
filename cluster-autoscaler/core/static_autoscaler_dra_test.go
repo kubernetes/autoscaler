@@ -409,7 +409,6 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 					ScaleDownSimulationTimeout:       1 * time.Hour,
 					OkTotalUnreadyCount:              9999999,
 					MaxTotalUnreadyPercentage:        1.0,
-					ScaleDownEnabled:                 true,
 					MaxScaleDownParallelism:          10,
 					MaxDrainParallelism:              10,
 					NodeDeletionBatcherInterval:      0 * time.Second,

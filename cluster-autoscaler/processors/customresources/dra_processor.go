@@ -18,10 +18,9 @@ package customresources
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1"
+	v1 "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
@@ -59,7 +58,7 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 			continue
 		}
 
-		nodeInfo, err := getNodeInfo(autoscalingCtx, ng)
+		templateNodeInfo, err := getNodeInfo(autoscalingCtx, ng)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
 			klog.Warningf("Failed to get template node info for node group %s with error: %v", ng.Id(), err)
@@ -67,7 +66,7 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		}
 
 		nodeResourcesSlices, _ := draSnapshot.NodeResourceSlices(node.Name)
-		if isEqualResourceSlices(nodeResourcesSlices, nodeInfo.LocalResourceSlices) {
+		if areResourcePoolsReady(nodeResourcesSlices, templateNodeInfo.LocalResourceSlices) {
 			newReadyNodes = append(newReadyNodes, node)
 		} else {
 			nodesWithUnreadyDraResources[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)
@@ -94,52 +93,6 @@ func getNodeInfo(autoscalingCtx *ca_context.AutoscalingContext, ng cloudprovider
 	return ng.TemplateNodeInfo()
 }
 
-type resourceSliceSpecs struct {
-	driver string
-	pool   string
-}
-
-func isEqualResourceSlices(nodeResourcesSlices []*resourceapi.ResourceSlice, templateResourcesSlices []*resourceapi.ResourceSlice) bool {
-	tempSlicesByPools := getDevicesBySpecs(templateResourcesSlices)
-	nodeSlicesByPools := getDevicesBySpecs(nodeResourcesSlices)
-
-	for templSpecs, tempDevicesSet := range tempSlicesByPools {
-		matched := false
-		for nodeSpecs, nodeDevicesSet := range nodeSlicesByPools {
-			if templSpecs.driver == nodeSpecs.driver && nodeDevicesSet.Equal(tempDevicesSet) {
-				delete(nodeSlicesByPools, nodeSpecs)
-				matched = true
-				break
-			}
-		}
-		if !matched {
-			return false
-		}
-	}
-
-	return true
-}
-
-func getDevicesBySpecs(resourcesSlices []*resourceapi.ResourceSlice) map[resourceSliceSpecs]sets.Set[string] {
-	slicesGroupedByPoolAndDriver := make(map[resourceSliceSpecs]sets.Set[string])
-	for _, rs := range resourcesSlices {
-		rsSpecs := resourceSliceSpecs{
-			pool:   rs.Spec.Pool.Name,
-			driver: rs.Spec.Driver,
-		}
-		slicesGroupedByPoolAndDriver[rsSpecs] = getResourceSliceDevicesSet(rs)
-	}
-	return slicesGroupedByPoolAndDriver
-}
-
-func getResourceSliceDevicesSet(resourcesSlice *resourceapi.ResourceSlice) sets.Set[string] {
-	devices := sets.New[string]()
-	for _, device := range resourcesSlice.Spec.Devices {
-		devices.Insert(device.Name)
-	}
-	return devices
-}
-
 // GetNodeResourceTargets returns the resource targets for DRA resource slices, not implemented.
 func (p *DraCustomResourcesProcessor) GetNodeResourceTargets(_ *ca_context.AutoscalingContext, _ *apiv1.Node, _ cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
 	// TODO(DRA): Figure out resource limits for DRA here.
@@ -148,4 +101,66 @@ func (p *DraCustomResourcesProcessor) GetNodeResourceTargets(_ *ca_context.Autos
 
 // CleanUp cleans up processor's internal structures.
 func (p *DraCustomResourcesProcessor) CleanUp() {
+}
+
+type poolState struct {
+	count      int64
+	generation int64
+	size       int64
+}
+
+type poolSpec struct {
+	name   string
+	driver string
+}
+
+// areResourcePoolsReady returns boolean indicating whether resource slices from a real node
+// contain a minimal amount of ready resource pools as declared in the template.
+func areResourcePoolsReady(resourceSlices []*v1.ResourceSlice, templateNodeResourcesSlices []*v1.ResourceSlice) bool {
+	templatePools := getCompleteResourcePools(templateNodeResourcesSlices)
+	realPools := getCompleteResourcePools(resourceSlices)
+
+	for driver, count := range templatePools {
+		if realPools[driver] < count {
+			return false
+		}
+	}
+
+	return true
+}
+
+// getCompleteResourcePools returns a map of drivers and count of ready resource pools mapped to it.
+func getCompleteResourcePools(resourceSlices []*v1.ResourceSlice) map[string]int {
+	poolStates := make(map[poolSpec]poolState, len(resourceSlices))
+
+	for _, rs := range resourceSlices {
+		spec := poolSpec{name: rs.Spec.Pool.Name, driver: rs.Spec.Driver}
+		state, found := poolStates[spec]
+
+		// If the pool is new, or if we found a newer generation, overwrite/reset the state.
+		if !found || rs.Spec.Pool.Generation > state.generation {
+			state = poolState{
+				count:      0,
+				generation: rs.Spec.Pool.Generation,
+				size:       rs.Spec.Pool.ResourceSliceCount,
+			}
+		} else if rs.Spec.Pool.Generation < state.generation {
+			// Ignore slices from older generations
+			continue
+		}
+
+		state.count++
+		poolStates[spec] = state
+	}
+
+	// Pre-allocate map to avoid dynamic resize overhead during the loop.
+	readyPoolsByDriver := make(map[string]int, len(poolStates))
+	for spec, state := range poolStates {
+		// A pool is ready if we have seen strictly the expected number of resource slices.
+		if state.count == state.size {
+			readyPoolsByDriver[spec.driver]++
+		}
+	}
+
+	return readyPoolsByDriver
 }

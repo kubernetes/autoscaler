@@ -173,6 +173,15 @@ func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 	p.addUnremovableNodes(unremovableNodes)
 
 	for _, nodeToRemove := range nodesToRemove {
+		if len(nodeToRemove.OnCompletionPods) > 0 {
+			klog.V(2).Infof("Node %s has active on-completion pods, delaying scale down", nodeToRemove.Node.Name)
+			p.addUnremovableNodes([]simulator.UnremovableNode{{
+				Node:   nodeToRemove.Node,
+				Reason: simulator.BlockedByOnCompletionPod,
+			}})
+			continue
+		}
+
 		if len(nodeToRemove.PodsToReschedule) > 0 {
 			needDrain = append(needDrain, nodeToRemove.Node)
 		} else {
@@ -261,7 +270,7 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 	pods = pod_util.ClearPodNodeNames(pods)
 	// Note: We're using ScheduleAnywhere, but the pods won't schedule back
 	// on the drained nodes due to taints.
-	statuses, _, err := p.actuationInjector.TrySchedulePods(p.autoscalingCtx.ClusterSnapshot, pods, scheduling.ScheduleAnywhere, true)
+	statuses, _, err := p.actuationInjector.TrySchedulePods(p.autoscalingCtx.ClusterSnapshot, pods, true, clustersnapshot.SchedulingOptions{IsNodeAcceptable: scheduling.ScheduleAnywhere})
 	if err != nil {
 		return fmt.Errorf("cannot scale down, an unexpected error occurred: %v", err)
 	}

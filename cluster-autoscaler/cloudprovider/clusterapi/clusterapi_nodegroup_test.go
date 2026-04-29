@@ -1502,6 +1502,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 		expectedErr           error
 		expectedCapacity      map[corev1.ResourceName]int64
 		expectedNodeLabels    map[string]string
+		expectedTaints        []corev1.Taint
 		expectedResourceSlice testResourceSlice
 		expectedCSINode       *storagev1.CSINode
 	}
@@ -1509,6 +1510,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 	testCases := []struct {
 		name                 string
 		nodeGroupAnnotations map[string]string
+		specTaints           []map[string]interface{}
 		config               testCaseConfig
 	}{
 		{
@@ -1697,6 +1699,57 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "When the NodeGroup can scale from zero and spec taints are defined, they appear in the node template",
+			nodeGroupAnnotations: map[string]string{
+				memoryKey: "2048Mi",
+				cpuKey:    "2",
+			},
+			specTaints: []map[string]interface{}{
+				{"key": "dedicated", "value": "gpu", "effect": "NoSchedule"},
+			},
+			config: testCaseConfig{
+				expectedCapacity: map[corev1.ResourceName]int64{
+					corev1.ResourceCPU:    2,
+					corev1.ResourceMemory: 2048 * 1024 * 1024,
+					corev1.ResourcePods:   110,
+				},
+				expectedNodeLabels: map[string]string{
+					"kubernetes.io/os":       "linux",
+					"kubernetes.io/arch":     "amd64",
+					"kubernetes.io/hostname": "random value",
+				},
+				expectedTaints: []corev1.Taint{
+					{Key: "dedicated", Value: "gpu", Effect: corev1.TaintEffectNoSchedule},
+				},
+			},
+		},
+		{
+			name: "When the NodeGroup can scale from zero and both spec and annotation taints are defined, annotation takes precedence",
+			nodeGroupAnnotations: map[string]string{
+				memoryKey: "2048Mi",
+				cpuKey:    "2",
+				taintsKey: "dedicated=override:NoSchedule",
+			},
+			specTaints: []map[string]interface{}{
+				{"key": "dedicated", "value": "gpu", "effect": "NoSchedule"},
+			},
+			config: testCaseConfig{
+				expectedCapacity: map[corev1.ResourceName]int64{
+					corev1.ResourceCPU:    2,
+					corev1.ResourceMemory: 2048 * 1024 * 1024,
+					corev1.ResourcePods:   110,
+				},
+				expectedNodeLabels: map[string]string{
+					"kubernetes.io/os":       "linux",
+					"kubernetes.io/arch":     "amd64",
+					"kubernetes.io/hostname": "random value",
+				},
+				expectedTaints: []corev1.Taint{
+					{Key: "dedicated", Value: "override", Effect: corev1.TaintEffectNoSchedule},
+				},
+			},
+		},
 	}
 
 	test := func(t *testing.T, testConfig *TestConfig, config testCaseConfig) {
@@ -1794,6 +1847,10 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 				validateCSIDrivers(t, expectedDrivers, gotDrivers)
 			}
 		}
+
+		if !reflect.DeepEqual(config.expectedTaints, nodeInfo.Node().Spec.Taints) {
+			t.Errorf("Expected node taints %+v, but got %+v", config.expectedTaints, nodeInfo.Node().Spec.Taints)
+		}
 	}
 
 	for _, tc := range testCases {
@@ -1805,6 +1862,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					WithNodeCount(10).
 					WithAnnotations(cloudprovider.JoinStringMaps(enableScaleAnnotations, tc.nodeGroupAnnotations)).
 					WithManagedLabels(tc.config.managedLabels).
+					WithSpecTaints(tc.specTaints).
 					Build()
 				test(t, testConfig, tc.config)
 			})
@@ -1816,6 +1874,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					WithNodeCount(10).
 					WithAnnotations(cloudprovider.JoinStringMaps(enableScaleAnnotations, tc.nodeGroupAnnotations)).
 					WithManagedLabels(tc.config.managedLabels).
+					WithSpecTaints(tc.specTaints).
 					Build()
 				test(t, testConfig, tc.config)
 			})

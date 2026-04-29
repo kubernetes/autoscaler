@@ -51,7 +51,7 @@ func SetBufferAsReadyForProvisioning(buffer *v1.CapacityBuffer, PodTemplateRef *
 func SetBufferAsNotReadyForProvisioning(buffer *v1.CapacityBuffer, PodTemplateRef *v1.LocalObjectRef, podTemplateGeneration *int64, replicas *int32, provStrategy *string, err error) {
 	errorMessage := "Buffer not ready for provisioning"
 	if err != nil {
-		errorMessage = err.Error()
+		errorMessage = fmt.Sprintf("%s: %s", errorMessage, err.Error())
 	}
 
 	buffer.Status.PodTemplateRef = PodTemplateRef

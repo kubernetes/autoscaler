@@ -156,8 +156,6 @@ type AutoscalingOptions struct {
 	NodeGroups []string
 	// EnforceNodeGroupMinSize is used to allow CA to scale up the node group to the configured min size if needed.
 	EnforceNodeGroupMinSize bool
-	// ScaleDownEnabled is used to allow CA to scale down the cluster
-	ScaleDownEnabled bool
 	// ScaleDownUnreadyEnabled is used to allow CA to scale down unready nodes of the cluster
 	ScaleDownUnreadyEnabled bool
 	// ScaleDownDelayAfterAdd sets the duration from the last scale up to the time when CA starts to check scale down options
@@ -220,6 +218,9 @@ type AutoscalingOptions struct {
 	// status that should be removed when creating a node template for scheduling.
 	// startup taints are expected to appear during node startup.
 	StartupTaints []string
+	// StartupTaintPrefixes is a list of taint key prefixes. Any taint whose key starts
+	// with one of these prefixes will be treated as a startup taint.
+	StartupTaintPrefixes []string
 	// StatusTaints is a list of taints CA considers to reflect transient node
 	// status that should be removed when creating a node template for scheduling.
 	// The status taints are expected to appear during node lifetime, after startup.
@@ -362,11 +363,15 @@ type AutoscalingOptions struct {
 	CapacitybufferControllerEnabled bool
 	// CapacitybufferPodInjectionEnabled tells if CA should injects fake pods for capacity buffers that are ready for provisioning
 	CapacitybufferPodInjectionEnabled bool
+	// CapacityBufferPodDryRunEnabled tells if CA should use server dry run to build managed pod templates for the buffers
+	CapacityBufferPodDryRunEnabled bool
 	// MaxNodeSkipEvalTimeTrackerEnabled is used to enabled/disable the tracking of maximum evaluation time of a node being skipped during ScaleDown.
 	MaxNodeSkipEvalTimeTrackerEnabled bool
 	// NodeRemovalLatencyTrackingEnabled is used to enable/disable node removal latency tracking.
 	NodeRemovalLatencyTrackingEnabled bool
 	CapacityQuotasEnabled             bool
+	// ScaleUpSimulationForSkippedNodeGroupsEnabled is used to enable/disable the scaleUpSimulation for the skipped node groups
+	ScaleUpSimulationForSkippedNodeGroupsEnabled bool
 }
 
 // KubeClientOptions specify options for kube client

@@ -27,8 +27,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	kubeletapis "k8s.io/kubelet/pkg/apis"
 	"k8s.io/utils/ptr"
 )
+
+// realGetInstanceTypeStatically captures the real implementation before any test can override it.
+var realGetInstanceTypeStatically = GetInstanceTypeStatically
 
 func TestExtractLabelsFromTags(t *testing.T) {
 	expectedNodeLabelKey := "zip"
@@ -277,6 +281,73 @@ func TestBuildNodeTemplateFromVMPool(t *testing.T) {
 		{Key: "boo", Value: "fizz", Effect: apiv1.TaintEffectPreferNoSchedule},
 	}
 	assert.Equal(t, makeTaintSet(expectedTaints), taintSet)
+}
+
+func TestBuildGenericLabelsArch(t *testing.T) {
+	tests := []struct {
+		arch string
+	}{
+		{"arm64"},
+		{"amd64"},
+	}
+	for _, tc := range tests {
+		template := NodeTemplate{
+			SkuName:      "Standard_DS2_v2",
+			Architecture: tc.arch,
+			InstanceOS:   "linux",
+			Location:     "eastus",
+		}
+		labels := buildGenericLabels(template, "test-node")
+		assert.Equal(t, tc.arch, labels[kubeletapis.LabelArch])
+		assert.Equal(t, tc.arch, labels[apiv1.LabelArchStable])
+	}
+}
+
+func TestBuildNodeFromTemplateDynamicArch(t *testing.T) {
+	origGetInstanceTypeDynamically := GetInstanceTypeDynamically
+	defer func() { GetInstanceTypeDynamically = origGetInstanceTypeDynamically }()
+
+	GetInstanceTypeDynamically = func(template NodeTemplate, azCache *azureCache) (InstanceType, error) {
+		return InstanceType{VCPU: 32, GPU: 0, MemoryMb: 131072, Architecture: "arm64"}, nil
+	}
+
+	template := NodeTemplate{
+		SkuName:          "Standard_D32ps_v5",
+		Location:         "eastus",
+		InstanceOS:       "linux",
+		VMSSNodeTemplate: &VMSSNodeTemplate{},
+	}
+
+	node, err := buildNodeFromTemplate("test-node", template, &AzureManager{}, true, false)
+	assert.NoError(t, err)
+	assert.Equal(t, "arm64", node.Labels[kubeletapis.LabelArch])
+	assert.Equal(t, "arm64", node.Labels[apiv1.LabelArchStable])
+}
+
+func TestBuildNodeFromTemplateDynamicArchFallbackToStatic(t *testing.T) {
+	origGetInstanceTypeDynamically := GetInstanceTypeDynamically
+	defer func() {
+		GetInstanceTypeDynamically = origGetInstanceTypeDynamically
+		GetInstanceTypeStatically = realGetInstanceTypeStatically
+	}()
+
+	GetInstanceTypeDynamically = func(template NodeTemplate, azCache *azureCache) (InstanceType, error) {
+		return InstanceType{}, fmt.Errorf("dynamic lookup failed")
+	}
+	GetInstanceTypeStatically = realGetInstanceTypeStatically
+
+	// Standard_D32ps_v5 is an ARM64 SKU in the static list
+	template := NodeTemplate{
+		SkuName:          "Standard_D32ps_v5",
+		Location:         "eastus",
+		InstanceOS:       "linux",
+		VMSSNodeTemplate: &VMSSNodeTemplate{},
+	}
+
+	node, err := buildNodeFromTemplate("test-node", template, &AzureManager{}, true, false)
+	assert.NoError(t, err)
+	assert.Equal(t, "arm64", node.Labels[kubeletapis.LabelArch])
+	assert.Equal(t, "arm64", node.Labels[apiv1.LabelArchStable])
 }
 
 func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {

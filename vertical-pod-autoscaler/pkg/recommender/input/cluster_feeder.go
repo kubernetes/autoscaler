@@ -138,7 +138,11 @@ func WatchEvictionEventsWithRetries(ctx context.Context, kubeClient kube_client.
 				// Wait between attempts, retrying too often breaks API server.
 				waitTime := wait.Jitter(evictionWatchRetryWait, evictionWatchJitterFactor)
 				klog.V(1).InfoS("An attempt to watch eviction events finished", "waitTime", waitTime)
-				time.Sleep(waitTime)
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(waitTime):
+				}
 			}
 		}
 	}()

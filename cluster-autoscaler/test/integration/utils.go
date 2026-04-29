@@ -17,6 +17,9 @@ limitations under the License.
 package integration
 
 import (
+	"testing"
+
+	provreqfake "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/builder"
 	fakecloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -28,7 +31,6 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
-	"testing"
 )
 
 // TestInfrastructure holds the dependencies for a test.
@@ -62,6 +64,8 @@ type FakeSet struct {
 	K8s *fakek8s.Kubernetes
 	// CloudProvider is the fake cloud provider implementation.
 	CloudProvider *fakecloudprovider.CloudProvider
+	// PRClient is the fake ProvisioningRequest clientset.
+	PRClient *provreqfake.Clientset
 	// PodObserver tracks unschedulable pods; it is defaulted by the builder.
 	PodObserver *loop.UnschedulablePodObserver
 }
@@ -73,18 +77,20 @@ func NewFakeSet() *FakeSet {
 	fK8s := fakek8s.NewKubernetes(kubeClient, informerFactory)
 	fCloud := fakecloudprovider.NewCloudProvider(fK8s)
 	po := &loop.UnschedulablePodObserver{}
+	prClient := provreqfake.NewSimpleClientset()
 
 	return &FakeSet{
 		KubeClient:      kubeClient,
 		InformerFactory: informerFactory,
 		K8s:             fK8s,
 		CloudProvider:   fCloud,
+		PRClient:        prClient,
 		PodObserver:     po,
 	}
 }
 
 // MustCreateControllerRuntimeMgr creates a controller-runtime manager with metrics and health probes disabled.
-func MustCreateControllerRuntimeMgr(t *testing.T) manager.Manager {
+func MustCreateControllerRuntimeMgr(t testing.TB) manager.Manager {
 	t.Helper()
 
 	mgr, err := manager.New(&rest.Config{}, manager.Options{
@@ -111,5 +117,6 @@ func DefaultAutoscalingBuilder(
 		WithKubeClient(infra.Fakes.KubeClient).
 		WithInformerFactory(infra.Fakes.InformerFactory).
 		WithCloudProvider(infra.Fakes.CloudProvider).
+		WithProvisioningRequestClient(infra.Fakes.PRClient).
 		WithPodObserver(infra.Fakes.PodObserver)
 }

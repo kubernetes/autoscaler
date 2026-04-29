@@ -93,7 +93,10 @@ func TestScaleUp_ResourceLimits(t *testing.T) {
 
 		n := test.BuildTestNode("ng-node-0", 1000, 1000, test.IsReady(true))
 		fakes.CloudProvider.AddNodeGroup("ng", fakecloudprovider.WithNode(n))
-		fakes.K8s.AddPod(test.BuildTestPod("pod", 600, 100, test.MarkUnschedulable()))
+		// The first pod can fit on the existing node
+		fakes.K8s.AddPod(test.BuildTestPod("pod1", 600, 100, test.MarkUnschedulable()))
+		// The second pod should trigger the scaleup, if a resource request allows it
+		fakes.K8s.AddPod(test.BuildTestPod("pod2", 600, 100, test.MarkUnschedulable()))
 
 		// Scale-up should be blocked.
 		fakes.CloudProvider.SetResourceLimit(cloudprovider.ResourceNameCores, 0, 1)

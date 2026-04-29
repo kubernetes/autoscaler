@@ -103,11 +103,14 @@ func (c *DatacenterClient) List(ctx context.Context, opts DatacenterListOpts) ([
 
 // All returns all datacenters.
 func (c *DatacenterClient) All(ctx context.Context) ([]*Datacenter, error) {
-	return c.AllWithOpts(ctx, DatacenterListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, DatacenterListOpts{})
 }
 
 // AllWithOpts returns all datacenters for the given options.
 func (c *DatacenterClient) AllWithOpts(ctx context.Context, opts DatacenterListOpts) ([]*Datacenter, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Datacenter, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

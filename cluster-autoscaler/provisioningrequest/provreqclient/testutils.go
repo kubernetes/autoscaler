@@ -24,14 +24,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/fake"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/informers/externalversions"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/client-go/informers"
-	"k8s.io/client-go/kubernetes"
 	fake_kubernetes "k8s.io/client-go/kubernetes/fake"
-	corev1 "k8s.io/client-go/listers/core/v1"
-	klog "k8s.io/klog/v2"
 )
 
 // NewFakeProvisioningRequestClient mock ProvisioningRequestClient for tests.
@@ -52,35 +50,33 @@ func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...
 			}
 		}
 	}
-	provReqLister, err := newPRsLister(provReqClient, make(chan struct{}))
-	if err != nil {
-		t.Fatalf("Failed to create Provisioning Request lister. Error was: %v", err)
-	}
-	podTemplLister, err := newFakePodTemplatesLister(t, podTemplClient, make(chan struct{}))
-	if err != nil {
-		t.Fatalf("Failed to create Provisioning Request lister. Error was: %v", err)
-	}
-	return &ProvisioningRequestClient{
-		client:         provReqClient,
-		provReqLister:  provReqLister,
-		podTemplLister: podTemplLister,
-	}
-}
+	prFactory := externalversions.NewSharedInformerFactory(provReqClient, 1*time.Hour)
+	provReqLister := prFactory.Autoscaling().V1().ProvisioningRequests().Lister()
+	prFactory.Start(ctx.Done())
 
-// newFakePodTemplatesLister creates a fake lister for the Pod Templates in the cluster.
-func newFakePodTemplatesLister(t *testing.T, client kubernetes.Interface, channel <-chan struct{}) (corev1.PodTemplateLister, error) {
-	t.Helper()
-	factory := informers.NewSharedInformerFactory(client, 1*time.Hour)
-	podTemplLister := factory.Core().V1().PodTemplates().Lister()
-	factory.Start(channel)
-	informersSynced := factory.WaitForCacheSync(channel)
+	podFactory := informers.NewSharedInformerFactory(podTemplClient, 1*time.Hour)
+	podTemplLister := podFactory.Core().V1().PodTemplates().Lister()
+	podFactory.Start(ctx.Done())
+
+	informersSynced := prFactory.WaitForCacheSync(ctx.Done())
 	for _, synced := range informersSynced {
 		if !synced {
-			return nil, fmt.Errorf("can't create Pod Template lister")
+			t.Fatalf("Failed to sync Provisioning Request informers")
 		}
 	}
-	klog.V(2).Info("Successful initial Pod Template sync")
-	return podTemplLister, nil
+
+	podInformersSynced := podFactory.WaitForCacheSync(ctx.Done())
+	for _, synced := range podInformersSynced {
+		if !synced {
+			t.Fatalf("Failed to sync Pod Template informers")
+		}
+	}
+
+	return NewProvisioningRequestClient(
+		provReqClient,
+		provReqLister,
+		podTemplLister,
+	)
 }
 
 // ProvisioningRequestWrapperForTesting mock ProvisioningRequest for tests.

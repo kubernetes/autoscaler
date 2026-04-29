@@ -13,6 +13,8 @@ commonLabels: {}
 rbac:
   # If `true`, create `ClusterRole` & `ClusterRoleBinding` resources to enable access to the Kubernetes API.
   create: true
+  # extraRules -- Additional rules to add to the ClusterRole
+  extraRules: []
 
 podSecurityContext:
   runAsNonRoot: true
@@ -22,6 +24,10 @@ containerSecurityContext: {}
 
 admissionController:
   enabled: true
+
+  # Annotations to add to the Admission Controller deployment.
+  annotations: {}
+
   image:
     # Image repository for the Admission Controller default container.
     repository: registry.k8s.io/autoscaling/vpa-admission-controller
@@ -49,6 +55,9 @@ admissionController:
 
   # Number of Admission Controller replicas to create.
   replicas: 2
+
+  # The number of old history revisions to retain to allow rollback.
+  revisionHistoryLimit: 10
 
   # Labels to add to the Admission Controller pod.
   podLabels: {}
@@ -183,6 +192,10 @@ admissionController:
 
 recommender:
   enabled: true
+
+  # Annotations to add to the Recommender deployment.
+  annotations: {}
+
   image:
     # Image repository for the Recommender default container.
     repository: registry.k8s.io/autoscaling/vpa-recommender
@@ -201,6 +214,9 @@ recommender:
 
   # Number of Recommender replicas to create.
   replicas: 2
+
+  # The number of old history revisions to retain to allow rollback.
+  revisionHistoryLimit: 10
 
   # Labels to add to the Recommender pod.
   podLabels: {}
@@ -277,6 +293,9 @@ recommender:
 updater:
   enabled: true
 
+  # Annotations to add to the Updater deployment.
+  annotations: {}
+
   # Additional args for the updater
   extraArgs: []
 
@@ -290,6 +309,9 @@ updater:
 
   # Number of Updater replicas to create.
   replicas: 2
+
+  # The number of old history revisions to retain to allow rollback.
+  revisionHistoryLimit: 10
 
   # Labels to add to the Updater pod.
   podLabels: {}

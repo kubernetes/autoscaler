@@ -34,4 +34,7 @@ func (sr *RejectedReasons) Reasons() []string {
 var (
 	// AllOrNothingReason means the node group was rejected because not all pods would fit it when using all-or-nothing strategy.
 	AllOrNothingReason = NewRejectedReasons("not all pods would fit and scale-up is using all-or-nothing strategy")
+	// ExpansionOptionsFilteredOutReason means the node groups were considered as a scale-up candidates but got filtered
+	// out by the expander strategy.
+	ExpansionOptionsFilteredOutReason = NewRejectedReasons("expansion options filtered out and no longer considered")
 )

@@ -32,7 +32,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 )
 
@@ -155,7 +154,7 @@ func TestRefresh(t *testing.T) {
 		additionalPr.CreationTimestamp = metav1.NewTime(weekAgo)
 		additionalPr.Spec.ProvisioningClassName = v1.ProvisioningClassCheckCapacity
 
-		processor := provReqProcessor{func() time.Time { return now }, 1, provreqclient.NewFakeProvisioningRequestClient(nil, t, pr, additionalPr), nil, ""}
+		processor := provReqProcessor{func() time.Time { return now }, 1, provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, pr, additionalPr), nil, ""}
 		processor.refresh([]*provreqwrapper.ProvisioningRequest{pr, additionalPr})
 
 		assert.ElementsMatch(t, test.wantConditions, pr.Status.Conditions)
@@ -213,7 +212,7 @@ func TestDeleteOldProvReqs(t *testing.T) {
 	}
 	oldExpiredPr.Spec.ProvisioningClassName = v1.ProvisioningClassCheckCapacity
 
-	client := provreqclient.NewFakeProvisioningRequestClient(nil, t, pr, additionalPr, oldFailedPr, oldExpiredPr)
+	client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, pr, additionalPr, oldFailedPr, oldExpiredPr)
 
 	processor := provReqProcessor{func() time.Time { return now }, 1, client, nil, ""}
 	processor.refresh([]*provreqwrapper.ProvisioningRequest{pr, additionalPr, oldFailedPr, oldExpiredPr})
@@ -232,7 +231,7 @@ type fakeInjector struct {
 	pods []*apiv1.Pod
 }
 
-func (f *fakeInjector) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure bool) ([]scheduling.Status, int, error) {
+func (f *fakeInjector) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]scheduling.Status, int, error) {
 	f.pods = pods
 	return nil, 0, nil
 }

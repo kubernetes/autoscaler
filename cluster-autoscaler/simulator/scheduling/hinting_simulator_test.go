@@ -163,7 +163,7 @@ func TestTrySchedulePods(t *testing.T) {
 				s.hints.Set(HintKeyFromPod(pod), nodeName)
 			}
 
-			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, tc.acceptableNodes, false)
+			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: tc.acceptableNodes})
 			if tc.wantErr {
 				assert.Error(t, err)
 				return
@@ -250,7 +250,7 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 				s.hints.Set(HintKeyFromPod(pod), n)
 				expectedStatuses = append(expectedStatuses, Status{Pod: pod, NodeName: n})
 			}
-			statuses, _, err := s.TrySchedulePods(clusterSnapshot, pods, ScheduleAnywhere, false)
+			statuses, _, err := s.TrySchedulePods(clusterSnapshot, pods, false, clustersnapshot.SchedulingOptions{})
 			assert.NoError(t, err)
 			assert.Equal(t, expectedStatuses, statuses)
 

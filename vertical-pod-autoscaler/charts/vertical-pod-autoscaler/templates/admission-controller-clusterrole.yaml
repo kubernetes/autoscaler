@@ -47,6 +47,7 @@ rules:
       - list
       - get
       - create
+      - patch
       - delete
   {{- end }}
   - apiGroups:
@@ -66,5 +67,13 @@ rules:
       - update
       - get
       - list
+      - watch
+  # Allow access to scale subresources for resolving target selectors
+  - apiGroups:
+      - "*"
+    resources:
+      - "*/scale"
+    verbs:
+      - get
       - watch
 {{- end -}}

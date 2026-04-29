@@ -44,6 +44,7 @@ const (
 	csiDriverKey                        = "capacity.cluster-autoscaler.kubernetes.io/csi-driver"
 	machineDeploymentRevisionAnnotation = "machinedeployment.clusters.x-k8s.io/revision"
 	machineDeploymentNameLabel          = "cluster.x-k8s.io/deployment-name"
+	resourcePausedAnnotation            = "cluster.x-k8s.io/paused"
 	// UnknownArch is used if the Architecture is Unknown
 	UnknownArch SystemArchitecture = ""
 	// Amd64 is used if the Architecture is x86_64
@@ -410,7 +411,7 @@ func GetDefaultScaleFromZeroArchitecture() SystemArchitecture {
 		if arch == UnknownArch {
 			arch = DefaultArch
 			klog.Errorf("Unrecognized architecture '%s', falling back to %s",
-				scaleUpFromZeroDefaultArchEnvVar, DefaultArch.Name())
+				archStr, DefaultArch.Name())
 		}
 		systemArchitecture = &arch
 	})

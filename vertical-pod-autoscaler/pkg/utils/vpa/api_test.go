@@ -425,11 +425,19 @@ func TestIsPodReadyAndStartupBoostDurationPassed(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "No duration in StartupBoost, with annotation",
+			name: "No duration in StartupBoost, with annotation and pod ready",
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"startup-cpu-boost": "",
+					},
+				},
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
+						{
+							Type:   corev1.PodReady,
+							Status: corev1.ConditionTrue,
+						},
 					},
 				},
 			},

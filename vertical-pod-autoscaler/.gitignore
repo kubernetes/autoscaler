@@ -1,6 +1,7 @@
 # vendor directories
 vendor/
-e2e/vendor/
-e2e/v1/v1.test
+test/e2e/vendor/
+test/e2e/v1/v1.test
+test/e2e/v1*/workspace/
 # created from deploy-for-e2e-locally.sh
 hack/e2e/vpa-rbac.yaml

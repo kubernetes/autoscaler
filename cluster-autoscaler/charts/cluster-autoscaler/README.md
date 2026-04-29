@@ -76,6 +76,7 @@ To create a valid configuration, follow instructions for your cloud provider:
 - [Exoscale](#exoscale)
 - [Hetzner Cloud](#hetzner-cloud)
 - [Civo](#civo)
+- [Vultr](#vultr)
 
 ### Templating the autoDiscovery.clusterName
 
@@ -301,6 +302,25 @@ Otherwise specify the following parameters:
 - `civoRegion=...`
 
 Read [cluster-autoscaler/cloudprovider/civo/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/civo/README.md) for further information on the setup without helm.
+
+### Vultr
+
+The following parameters are required:
+
+- `cloudProvider=vultr`
+- `cloudConfigPath=/etc/kubernetes/cloud-config`
+
+A Vultr cloud configuration file must be provided as a valid JSON file. It contains the Vultr API token and the VKE cluster ID.
+
+The JSON configuration file supports the following fields:
+
+```JSON
+{
+  "cluster_id": "<VKE_CLUSTER_ID>",
+  "token": "<VULTR_API_KEY>"
+}
+```
+Read [cluster-autoscaler/cloudprovider/vultr/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/vultr/README.md) for further information on the setup without helm.
 
 ## Uninstalling the Chart
 

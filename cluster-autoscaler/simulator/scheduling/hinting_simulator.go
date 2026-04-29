@@ -50,20 +50,20 @@ func NewHintingSimulator() *HintingSimulator {
 // after the first scheduling attempt that fails. This is useful if all provided
 // pods need to be scheduled.
 // Note: this function does not fork clusterSnapshot: this has to be done by the caller.
-func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure bool) ([]Status, int, error) {
+func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]Status, int, error) {
 	similarPods := NewSimilarPodsScheduling()
 
 	var statuses []Status
 	loggingQuota := klogx.PodsLoggingQuota()
 	for _, pod := range pods {
 		klogx.V(5).UpTo(loggingQuota).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
-		nodeName, err := s.tryScheduleUsingHints(clusterSnapshot, pod, isNodeAcceptable)
+		nodeName, err := s.tryScheduleUsingHints(clusterSnapshot, pod, opts.IsNodeAcceptable)
 		if err != nil {
 			return nil, 0, err
 		}
 
 		if nodeName == "" {
-			nodeName, err = s.trySchedule(similarPods, clusterSnapshot, pod, loggingQuota, isNodeAcceptable)
+			nodeName, err = s.trySchedule(similarPods, clusterSnapshot, pod, loggingQuota, opts)
 			if err != nil {
 				return nil, 0, err
 			}
@@ -94,7 +94,7 @@ func (s *HintingSimulator) tryScheduleUsingHints(clusterSnapshot clustersnapshot
 		// The hinted Node is no longer in the cluster. No need to error out, we can just look for another one.
 		return "", nil
 	}
-	if !isNodeAcceptable(nodeInfo) {
+	if isNodeAcceptable != nil && !isNodeAcceptable(nodeInfo) {
 		return "", nil
 	}
 
@@ -112,13 +112,13 @@ func (s *HintingSimulator) tryScheduleUsingHints(clusterSnapshot clustersnapshot
 
 // trySchedule tries to schedule the provided Pod in the provided clusterSnapshot on any Node passing isNodeAcceptable. If the pod is scheduled, the name of its Node is returned. If no Node
 // with passing scheduling predicates could be found, an empty string and nil error is returned. Error is only returned for unexpected errors.
-func (s *HintingSimulator) trySchedule(similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, loggingQuota *klogx.Quota, isNodeAcceptable func(*framework.NodeInfo) bool) (string, error) {
+func (s *HintingSimulator) trySchedule(similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, loggingQuota *klogx.Quota, opts clustersnapshot.SchedulingOptions) (string, error) {
 	if similarPods.IsSimilarUnschedulable(pod) {
 		klogx.V(4).UpTo(loggingQuota).Infof("failed to find place for %s/%s based on similar pods scheduling", pod.Namespace, pod.Name)
 		return "", nil
 	}
 
-	newNodeName, err := clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, isNodeAcceptable)
+	newNodeName, err := clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, opts)
 	if err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
 		// Unexpected error.
 		return "", err

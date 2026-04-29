@@ -39,14 +39,11 @@ func (c *ActionClient) WaitForFunc(ctx context.Context, handleUpdate func(update
 	}
 
 	retries := 0
-	for {
-		if len(running) == 0 {
-			break
-		}
+	for len(running) != 0 {
 
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("%w: remaining running actions: %v", ctx.Err(), slices.Collect(maps.Keys(running)))
 		case <-time.After(c.action.client.pollBackoffFunc(retries)):
 			retries++
 		}

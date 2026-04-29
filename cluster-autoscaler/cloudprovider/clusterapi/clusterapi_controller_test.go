@@ -1151,6 +1151,86 @@ func TestGetAPIGroupPreferredVersion(t *testing.T) {
 	}
 }
 
+func TestGetKindPreferredVersion(t *testing.T) {
+	const infraGroup = "infrastructure.cluster.x-k8s.io"
+	const nutanixKind = "NutanixMachineTemplate"
+	const awsKind = "AWSMachineTemplate"
+
+	testCases := []struct {
+		description     string
+		apiGroup        string
+		kind            string
+		expectedVersion string
+		error           bool
+	}{
+		{
+			description:     "kind exists only in v1beta1",
+			apiGroup:        infraGroup,
+			kind:            nutanixKind,
+			expectedVersion: "v1beta1",
+			error:           false,
+		},
+		{
+			description:     "kind exists in both versions, returns highest priority",
+			apiGroup:        infraGroup,
+			kind:            awsKind,
+			expectedVersion: "v1beta2",
+			error:           false,
+		},
+		{
+			description:     "kind does not exist in any version",
+			apiGroup:        infraGroup,
+			kind:            "NonExistentTemplate",
+			expectedVersion: "",
+			error:           true,
+		},
+		{
+			description:     "group does not exist",
+			apiGroup:        "does.not.exist",
+			kind:            nutanixKind,
+			expectedVersion: "",
+			error:           true,
+		},
+	}
+
+	// v1beta2 only has AWSMachineTemplate; v1beta1 has both.
+	// FakeDiscovery.ServerGroups() builds group.Versions by appending in Resources
+	// slice order, so listing v1beta2 first makes it the higher-priority version
+	// for infraGroup. getKindPreferredVersion iterates group.Versions in order,
+	// so it returns v1beta2 for kinds available in both versions.
+	discoveryClient := &fakediscovery.FakeDiscovery{
+		Fake: &clientgotesting.Fake{
+			Resources: []*metav1.APIResourceList{
+				{
+					GroupVersion: fmt.Sprintf("%s/v1beta2", infraGroup),
+					APIResources: []metav1.APIResource{
+						{Kind: awsKind},
+					},
+				},
+				{
+					GroupVersion: fmt.Sprintf("%s/v1beta1", infraGroup),
+					APIResources: []metav1.APIResource{
+						{Kind: nutanixKind},
+						{Kind: awsKind},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			version, err := getKindPreferredVersion(discoveryClient, tc.apiGroup, tc.kind)
+			if (err != nil) != tc.error {
+				t.Errorf("expected to have error: %t. Had an error: %t", tc.error, err != nil)
+			}
+			if version != tc.expectedVersion {
+				t.Errorf("expected %v, got: %v", tc.expectedVersion, version)
+			}
+		})
+	}
+}
+
 func TestGroupVersionHasResource(t *testing.T) {
 	testCases := []struct {
 		description  string

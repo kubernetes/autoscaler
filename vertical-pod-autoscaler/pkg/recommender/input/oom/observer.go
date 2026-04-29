@@ -123,15 +123,6 @@ func findStatus(name string, containerStatuses []corev1.ContainerStatus) *corev1
 	return nil
 }
 
-func findSpec(name string, containers []corev1.Container) *corev1.Container {
-	for _, containerSpec := range containers {
-		if containerSpec.Name == name {
-			return &containerSpec
-		}
-	}
-	return nil
-}
-
 // OnAdd is Noop
 func (o *observer) OnAdd(obj any, isInInitialList bool) {}
 
@@ -148,33 +139,71 @@ func (o *observer) OnUpdate(oldObj, newObj any) {
 	}
 
 	for _, containerStatus := range newPod.Status.ContainerStatuses {
-		if containerStatus.RestartCount > 0 &&
-			containerStatus.LastTerminationState.Terminated != nil &&
-			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled" {
-			oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
-			if oldStatus != nil && containerStatus.RestartCount > oldStatus.RestartCount {
-				oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
-				if oldSpec != nil {
-					requests, _ := resourcehelpers.ContainerRequestsAndLimits(containerStatus.Name, oldPod)
-					var memory resource.Quantity
-					if requests != nil {
-						memory = requests[corev1.ResourceMemory]
-					}
-					oomInfo := OomInfo{
-						Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.UTC(),
-						Memory:    model.ResourceAmount(memory.Value()),
-						ContainerID: model.ContainerID{
-							PodID: model.PodID{
-								Namespace: newPod.Namespace,
-								PodName:   newPod.Name,
-							},
-							ContainerName: containerStatus.Name,
-						},
-					}
-					o.observedOomsChannel <- oomInfo
-				}
-			}
+		oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
+		if oldStatus == nil {
+			continue
 		}
+
+		restartCountIncreased := containerStatus.RestartCount > oldStatus.RestartCount
+
+		// Check if container changes state from non-Terminated to Terminated
+		// with OOMKilled reason. Also if container fails too fast, it may
+		// skip Running state and change state directly to Terminated
+		// (from Terminated or Waiting) with increased RestartCount.
+		// We check for this case as well.
+		isNewOOM := containerStatus.State.Terminated != nil &&
+			containerStatus.State.Terminated.Reason == "OOMKilled" &&
+			(oldStatus.State.Terminated == nil || restartCountIncreased)
+
+		// If controller restarts container, it may skip
+		// Terminated state and change directly from Running
+		// to Running with increased RestartCount. In this
+		// case we check LastTerminationState. We require the
+		// old state to be Running, not just non-Terminated,
+		// to avoid double-counting on a Waiting -> Running
+		// transition after CrashLoopBackOff.
+		isPreviousOOM := containerStatus.State.Running != nil &&
+			oldStatus.State.Running != nil &&
+			restartCountIncreased &&
+			containerStatus.LastTerminationState.Terminated != nil &&
+			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled"
+
+		if !isNewOOM && !isPreviousOOM {
+			continue
+		}
+
+		var oomState *corev1.ContainerStateTerminated
+		// For isNewOOM the OOM happened during the transition to the current
+		// terminated state, so the resources in effect are those of newPod.
+		// For isPreviousOOM the OOM happened in the previous container instance
+		// (before the restart observed in this update), whose resources are
+		// reflected in oldPod.
+		var oomPod *corev1.Pod
+		if isNewOOM {
+			oomState = containerStatus.State.Terminated
+			oomPod = newPod
+		} else {
+			oomState = containerStatus.LastTerminationState.Terminated
+			oomPod = oldPod
+		}
+
+		var memory resource.Quantity
+		requests, _ := resourcehelpers.ContainerRequestsAndLimits(containerStatus.Name, oomPod)
+		if requests != nil {
+			memory = requests[corev1.ResourceMemory]
+		}
+		oomInfo := OomInfo{
+			Timestamp: oomState.FinishedAt.UTC(),
+			Memory:    model.ResourceAmount(memory.Value()),
+			ContainerID: model.ContainerID{
+				PodID: model.PodID{
+					Namespace: newPod.Namespace,
+					PodName:   newPod.Name,
+				},
+				ContainerName: containerStatus.Name,
+			},
+		}
+		o.observedOomsChannel <- oomInfo
 	}
 }
 

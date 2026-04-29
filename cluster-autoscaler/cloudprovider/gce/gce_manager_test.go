@@ -335,6 +335,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		instances:               make(map[GceRef][]GceInstance),
 		instancesUpdateTime:     make(map[GceRef]time.Time),
 		instancesToMig:          make(map[GceRef]GceRef),
+		migIsStableCache:        make(map[GceRef]bool),
 		instancesFromUnknownMig: make(map[GceRef]bool),
 		autoscalingOptionsCache: map[GceRef]map[string]string{},
 		machinesCache: map[MachineTypeKey]MachineType{
@@ -686,13 +687,15 @@ func TestGetMigForInstance(t *testing.T) {
 
 	setupTestDefaultPool(g, false)
 	g.cache.InvalidateAllMigBasenames()
+	g.cache.InvalidateAllInstancesToMig()
+	g.cache.InvalidateAllMigInstances()
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers").Return(
 		buildListInstanceGroupManagersResponse(
 			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
 			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 8),
 		)).Once()
-	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Twice()
+	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
 	gceRef1 := GceRef{
 		Project: projectId,
 		Zone:    zoneB,
@@ -1515,6 +1518,46 @@ func TestAppendInstances(t *testing.T) {
 	err := g.CreateInstances(defaultPoolMig, 2)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestCreateInstancesWithMultipleRequests(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+	g := newTestGceManager(t, server.URL, false)
+	mig := setupTestDefaultPool(g, true)
+	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildListInstanceGroupManagersResponse(
+		buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 3),
+	)).Once()
+
+	tests := []struct {
+		delta        int
+		wantRequests int
+	}{
+		{
+			delta:        100,
+			wantRequests: 1,
+		},
+		{
+			delta:        1000,
+			wantRequests: 1,
+		},
+		{
+			delta:        1001,
+			wantRequests: 2,
+		},
+		{
+			delta:        3000,
+			wantRequests: 3,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("delta=%v", tt.delta), func(t *testing.T) {
+			server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%v/createInstances", mig.gceRef.Name)).Return(createInstancesResponse).Times(tt.wantRequests)
+			server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32/wait").Return(createInstancesOperationResponse).Times(tt.wantRequests)
+			err := g.CreateInstances(mig, int64(tt.delta))
+			assert.NoError(t, err)
+		})
+	}
 }
 
 func TestGetMigOptions(t *testing.T) {

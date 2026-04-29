@@ -58,7 +58,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			testName: "single slice, single pool, 6/10 devices used",
 			nodeInfo: framework.NewNodeInfo(node,
 				testResourceSlices(fooDriver, "pool1", "node", 0, 10, 1),
-				testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, false)...,
+				testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, false, 0)...,
 			),
 			wantUtilization: map[string]map[string]float64{
 				fooDriver: {
@@ -77,9 +77,9 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					testResourceSlices(barDriver, "pool1", "node", 0, 8, 2),
 				),
 				mergeLists(
-					testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false),
-					testPodsWithClaims(fooDriver, "pool2", "node", 18, 3, false),
-					testPodsWithClaims(barDriver, "pool1", "node", 2, 1, false),
+					testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false, 0),
+					testPodsWithClaims(fooDriver, "pool2", "node", 18, 3, false, 0),
+					testPodsWithClaims(barDriver, "pool1", "node", 2, 1, false, 0),
 				)...,
 			),
 			wantUtilization: map[string]map[string]float64{
@@ -102,7 +102,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					testResourceSlices(fooDriver, "pool1", "node", 1, 20, 2),
 					testResourceSlices(fooDriver, "pool1", "node", 2, 30, 2),
 				),
-				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false)...,
+				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false, 0)...,
 			),
 			wantUtilization: map[string]map[string]float64{
 				fooDriver: {
@@ -120,7 +120,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					testResourceSlices(fooDriver, "pool1", "node", 1, 20, 2),
 					testResourceSlices(fooDriver, "pool1", "node", 2, 30, 2)[:14],
 				),
-				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false)...,
+				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false, 0)...,
 			),
 			wantErr: cmpopts.AnyError,
 		},
@@ -132,7 +132,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 					testResourceSlices(fooDriver, "pool1", "node", 1, 20, 2)[:7],
 					testResourceSlices(fooDriver, "pool1", "node", 2, 30, 2),
 				),
-				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false)...,
+				testPodsWithClaims(fooDriver, "pool1", "node", 6, 2, false, 0)...,
 			),
 			wantUtilization: map[string]map[string]float64{
 				fooDriver: {
@@ -146,7 +146,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			testName: "Single Pod with AdminAccess ResourceClaim doesn't count for utilization",
 			nodeInfo: framework.NewNodeInfo(node,
 				testResourceSlices(fooDriver, "pool1", "node", 0, 10, 1),
-				testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, true)...,
+				testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, true, 0)...,
 			),
 			wantUtilization: map[string]map[string]float64{
 				fooDriver: {
@@ -161,8 +161,8 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			nodeInfo: framework.NewNodeInfo(node,
 				testResourceSlices(fooDriver, "pool1", "node", 0, 10, 1),
 				mergeLists(
-					testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, true),
-					testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, false),
+					testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, true, 0),
+					testPodsWithClaims(fooDriver, "pool1", "node", 6, 1, false, 6),
 				)...,
 			),
 			wantUtilization: map[string]map[string]float64{
@@ -177,7 +177,7 @@ func TestDynamicResourceUtilization(t *testing.T) {
 			testName: "Pod with mixed AdminAccess requests counts only non-admin",
 			nodeInfo: framework.NewNodeInfo(node,
 				testResourceSlices(fooDriver, "pool1", "node", 0, 10, 1),
-				testPodsWithMixedAdminAccessClaims(fooDriver, "pool1", "node", 6, []bool{true, true, false, false, false, false})...,
+				testPodsWithMixedAdminAccessClaims(fooDriver, "pool1", "node", 6, []bool{true, true, false, false, false, false}, 0)...,
 			),
 			wantUtilization: map[string]map[string]float64{
 				fooDriver: {
@@ -236,13 +236,13 @@ func testResourceSlices(driverName, poolName, nodeName string, poolGen, deviceCo
 	return result
 }
 
-func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devicesPerPod int64, adminAccess bool) []*framework.PodInfo {
+func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devicesPerPod int64, adminAccess bool, podIndexOffset int) []*framework.PodInfo {
 	podCount := deviceCount / devicesPerPod
 
 	deviceIndex := 0
 	var result []*framework.PodInfo
 	for podIndex := range podCount {
-		pod := test.BuildTestPod(fmt.Sprintf("%s-%s-pod-%d", driverName, poolName, podIndex), 1, 1)
+		pod := test.BuildTestPod(fmt.Sprintf("%s-%s-pod-%d", driverName, poolName, podIndex+int64(podIndexOffset)), 1, 1)
 		var claims []*resourceapi.ResourceClaim
 		for podDevIndex := range devicesPerPod {
 			claimName := fmt.Sprintf("%s-claim-%d", pod.Name, podDevIndex)
@@ -279,8 +279,8 @@ func testPodsWithClaims(driverName, poolName, nodeName string, deviceCount, devi
 }
 
 // testPodsWithMixedAdminAccessClaims creates Pods with ResourceClaims that have mixed AdminAccess settings.
-func testPodsWithMixedAdminAccessClaims(driverName, poolName, nodeName string, deviceCount int64, adminAccessPattern []bool) []*framework.PodInfo {
-	pis := testPodsWithClaims(driverName, poolName, nodeName, deviceCount, int64(len(adminAccessPattern)), true)
+func testPodsWithMixedAdminAccessClaims(driverName, poolName, nodeName string, deviceCount int64, adminAccessPattern []bool, podIndexOffset int) []*framework.PodInfo {
+	pis := testPodsWithClaims(driverName, poolName, nodeName, deviceCount, int64(len(adminAccessPattern)), true, podIndexOffset)
 	for i, podInfo := range pis {
 		claims := podInfo.NeededResourceClaims
 		for claimsIndex, claim := range claims {

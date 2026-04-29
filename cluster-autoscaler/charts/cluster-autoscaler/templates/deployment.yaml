@@ -79,7 +79,7 @@ spec:
             {{- end }}
             {{- end }}
           {{- end }}
-          {{- if eq .Values.cloudProvider "rancher" }}
+          {{- if or (eq .Values.cloudProvider "rancher") (eq .Values.cloudProvider "vultr") }}
             {{- if .Values.cloudConfigPath }}
             - --cloud-config={{ .Values.cloudConfigPath }}
             {{- end }}

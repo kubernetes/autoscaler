@@ -87,7 +87,7 @@ func TestGetProportionalResourceLimitCPU(t *testing.T) {
 			originalLimit:      mustParseToPointer("2"),
 			originalRequest:    mustParseToPointer("1.50"),
 			recommendedRequest: mustParseToPointer("1"),
-			expectLimit:        mustParseToPointer("1.333"),
+			expectLimit:        mustParseToPointer("1.333"), // (2000*1000)/1500 = 1333,3m -> 1.333
 		},
 		{
 			name:               "go over milli cap",
@@ -192,6 +192,34 @@ func TestGetProportionalResourceLimitMem(t *testing.T) {
 				}
 			}
 			assert.Equal(t, gotAnnotation != "", tc.expectAnnotation)
+		})
+	}
+}
+
+func TestScaleQuantityProportionallyCPU(t *testing.T) {
+	tests := []struct {
+		name             string
+		scaledQuantity   *resource.Quantity
+		scaleBase        *resource.Quantity
+		scaleResult      *resource.Quantity
+		rounding         roundingMode
+		expectResultType scalingResultType
+		expectResult     *resource.Quantity
+	}{
+		{
+			name:             "scaleBase is zero should return scaledQuantity",
+			scaledQuantity:   mustParseToPointer("1"),
+			scaleBase:        mustParseToPointer("0"),
+			scaleResult:      mustParseToPointer("20"),
+			expectResultType: divisionByZero,
+			expectResult:     mustParseToPointer("1"),
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result, resultType := scaleQuantityProportionallyCPU(tc.scaledQuantity, tc.scaleBase, tc.scaleResult, roundUpToFullUnit)
+			assert.Equal(t, resultType, tc.expectResultType)
+			assert.Equal(t, result, tc.expectResult)
 		})
 	}
 }
