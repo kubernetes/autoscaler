@@ -235,7 +235,8 @@ type PodPriority struct {
 	OutsideRecommendedRange bool
 	// Does any container want to grow.
 	ScaleUp bool
-	// Relative difference between the total requested and total recommended resources.
+	// Difference between requested and recommended resources, expressed as the
+	// maximum relative diff over all container-resource pairs.
 	ResourceDiff float64
 }
 
