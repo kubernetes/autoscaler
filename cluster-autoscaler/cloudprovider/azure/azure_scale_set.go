@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -304,23 +305,34 @@ func (scaleSet *ScaleSet) TargetSize() (int, error) {
 	return int(size), err
 }
 
-// IncreaseSize increases Scale Set size
-func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
+// CanIncreaseSize checks if the size increase is possible.
+// It returns the current size of the scale set if the increase is possible, otherwise returns an error.
+func (scaleSet *ScaleSet) CanIncreaseSize(delta int) (int64, error) {
 	if delta <= 0 {
-		return fmt.Errorf("size increase must be positive")
+		return -1, fmt.Errorf("size increase must be positive")
 	}
 
 	size, err := scaleSet.getScaleSetSize()
 	if err != nil {
-		return err
+		return size, err
 	}
 
 	if size == -1 {
-		return fmt.Errorf("the scale set %s is under initialization, skipping IncreaseSize", scaleSet.Name)
+		return size, fmt.Errorf("the scale set %s is under initialization, skipping IncreaseSize", scaleSet.Name)
 	}
 
 	if int(size)+delta > scaleSet.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
+		return size, fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
+	}
+
+	return size, nil
+}
+
+// IncreaseSize increases Scale Set size
+func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
+	size, err := scaleSet.CanIncreaseSize(delta)
+	if err != nil {
+		return err
 	}
 
 	return scaleSet.setScaleSetSize(size+int64(delta), delta)
@@ -339,47 +351,17 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 // for atomic-scale-up ProvisioningRequest support to provide a capacity guarantee
 // before workloads are admitted.
 func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
-	if delta <= 0 {
-		return fmt.Errorf("size increase must be positive")
-	}
-
-	size, err := scaleSet.getScaleSetSize()
+	size, err := scaleSet.CanIncreaseSize(delta)
 	if err != nil {
 		return err
-	}
-
-	if size == -1 {
-		return fmt.Errorf("the scale set %s is under initialization, skipping AtomicIncreaseSize", scaleSet.Name)
-	}
-
-	if int(size)+delta > scaleSet.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
 	}
 
 	newSize := size + int64(delta)
 
 	vmssInfo, err := scaleSet.getVMSSFromCache()
 	if err != nil {
+		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
 		return err
-	}
-
-	// Build the update request from copied values, not the cached object,
-	// to avoid other readers observing the new capacity before it's confirmed.
-	op := armcompute.VirtualMachineScaleSet{
-		Name:     vmssInfo.Name,
-		Location: vmssInfo.Location,
-		SKU: &armcompute.SKU{
-			Name:     vmssInfo.SKU.Name,
-			Tier:     vmssInfo.SKU.Tier,
-			Capacity: &newSize,
-		},
-	}
-
-	if vmssInfo.ExtendedLocation != nil {
-		op.ExtendedLocation = &armcompute.ExtendedLocation{
-			Name: vmssInfo.ExtendedLocation.Name,
-			Type: vmssInfo.ExtendedLocation.Type,
-		}
 	}
 
 	klog.V(3).Infof("AtomicIncreaseSize: requesting atomic scale-up of %d instances for scale set %q (current size: %d, new size: %d)",
@@ -388,8 +370,7 @@ func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
 	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
 	defer cancel()
 
-	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginCreateOrUpdate(
-		ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op, nil)
+	poller, err := scaleSet.initCreateOrUpdate(ctx, vmssInfo, newSize)
 	if err != nil {
 		klog.Errorf("AtomicIncreaseSize: BeginCreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
 		return err
@@ -501,18 +482,13 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 	return true, nil
 }
 
-func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) error {
+func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
 	if vmssInfo == nil {
-		return fmt.Errorf("vmssInfo cannot be nil while increating scaleSet capacity")
+		return nil, fmt.Errorf("vmssInfo cannot be nil while increating scaleSet capacity")
 	}
 
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
-
-	// Update the new capacity to cache.
-	vmssSizeMutex.Lock()
-	vmssInfo.SKU.Capacity = &newSize
-	vmssSizeMutex.Unlock()
 
 	// Compose a new VMSS for updating.
 	op := armcompute.VirtualMachineScaleSet{
@@ -530,12 +506,25 @@ func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMa
 		klog.V(3).Infof("Passing ExtendedLocation information if it is not nil, with Edge Zone name:(%s)", *op.ExtendedLocation.Name)
 	}
 
-	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
-	defer cancel()
 	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.BeginCreateOrUpdate(%s)", scaleSet.Name)
 	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginCreateOrUpdate(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op, nil)
 	if err != nil {
 		klog.Errorf("virtualMachineScaleSetsClient.BeginCreateOrUpdate for scale set %q failed: %+v", scaleSet.Name, err)
+		return nil, err
+	}
+	return poller, nil
+
+}
+
+func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) error {
+	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
+	defer cancel()
+	// Update the new capacity to cache.
+	vmssSizeMutex.Lock()
+	vmssInfo.SKU.Capacity = &newSize
+	vmssSizeMutex.Unlock()
+	poller, err := scaleSet.initCreateOrUpdate(ctx, vmssInfo, newSize)
+	if err != nil {
 		return err
 	}
 
