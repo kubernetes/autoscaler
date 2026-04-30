@@ -11,17 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM --platform=$BUILDPLATFORM golang:1.25 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.26 AS builder
 
 WORKDIR /workspace
 
+# Copy go.mod and go.sum files first to cache dependencies
+COPY go.mod go.sum ./
+COPY apis/go.mod apis/go.sum ./apis/
+
+# Download dependencies
+RUN go mod download
+
+# Copy the rest of the source code
 COPY . .
 
 ARG GOARCH
 ARG LDFLAGS_FLAG
 ARG TAGS_FLAG
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-$GOARCH $LDFLAGS_FLAG $TAGS_FLAG
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-$GOARCH $LDFLAGS_FLAG $TAGS_FLAG
+
 FROM gcr.io/distroless/static:nonroot
 ARG GOARCH
 COPY --from=builder /workspace/cluster-autoscaler-$GOARCH /cluster-autoscaler

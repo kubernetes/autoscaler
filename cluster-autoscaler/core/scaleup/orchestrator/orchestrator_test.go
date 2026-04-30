@@ -2043,7 +2043,188 @@ func TestAuthErrorHandling(t *testing.T) {
 	results := runSimpleScaleUpTest(t, config)
 	assert.Equal(t, errors.AutoscalerErrorType("authError"), results.ScaleUpError.Type())
 	assert.Equal(t, "failed to increase node group size: auth error", results.ScaleUpError.Error())
-	assertLegacyRegistryEntry(t, "cluster_autoscaler_failed_scale_ups_total{reason=\"authError\"} 1")
+	assertLegacyRegistryEntry(t, "cluster_autoscaler_failed_scale_ups_total{dra_drivers=\"\",gpu_name=\"\",gpu_resource_name=\"\",reason=\"authError\"} 1")
+}
+
+func TestScaleUpSimulationForSkippedNodeGroups(t *testing.T) {
+	node1 := BuildTestNode("n1", 2000, 2000)
+	SetNodeReadyState(node1, true, time.Time{})
+	nodeInfo1 := framework.NewTestNodeInfo(node1)
+
+	node2 := BuildTestNode("n2", 1000, 1000)
+	SetNodeReadyState(node2, true, time.Time{})
+	nodeInfo2 := framework.NewTestNodeInfo(node2)
+
+	node3 := BuildTestNode("n3", 1000, 1000)
+	SetNodeReadyState(node3, true, time.Time{})
+	nodeInfo3 := framework.NewTestNodeInfo(node3)
+
+	// p1 needs 1500 cpu. It fits n1 but not n2 or n3.
+	p1 := BuildTestPod("p1", 1500, 1500)
+	// p2 asks for 3000 cpu, so it will fail to schedule on n1, n2, and n3.
+	p2 := BuildTestPod("p2", 3000, 3000)
+	// p3 asks for 500 cpu, which fits n2.
+	p3 := BuildTestPod("p3", 500, 500)
+
+	provider := testprovider.NewTestCloudProviderBuilder().
+		WithMachineTypes([]string{"ng1", "ng2", "ng3"}).
+		WithMachineTemplates(map[string]*framework.NodeInfo{"ng1": nodeInfo1, "ng2": nodeInfo2, "ng3": nodeInfo3}).
+		WithOnScaleUp(func(string, int) error { return nil }).Build()
+
+	// ng1 will be skipped due to MaxLimitReached (MaxSize=1, current size=1)
+	provider.AddNodeGroup("ng1", 0, 1, 1)
+	// ng2 will not be skipped (MaxSize=2, current size=1)
+	provider.AddNodeGroup("ng2", 0, 2, 1)
+	// ng3 will be skipped due to MaxLimitReached (MaxSize=1, current size=1)
+	provider.AddNodeGroup("ng3", 0, 1, 1)
+	provider.AddNode("ng1", node1)
+	provider.AddNode("ng2", node2)
+	provider.AddNode("ng3", node3)
+
+	testCases := []struct {
+		name                                         string
+		pods                                         []*apiv1.Pod
+		scaleUpSimulationForSkippedNodeGroupsEnabled bool
+		expectedResult                               status.ScaleUpResult
+		expectedNoScaleUpInfo                        map[string]status.NoScaleUpInfo
+	}{
+		{
+			name:           "feature flag is disabled: ng2 is rejected and ng1 and ng3 are skipped for both p1 and p2",
+			pods:           []*apiv1.Pod{p1, p2},
+			expectedResult: status.ScaleUpNoOptionsAvailable,
+			expectedNoScaleUpInfo: map[string]status.NoScaleUpInfo{
+				p1.Name: {
+					Pod: p1,
+					RejectedNodeGroups: map[string]status.Reasons{
+						"ng2": NewRejectedReasons(""),
+					},
+					SkippedNodeGroups: map[string]status.Reasons{
+						"ng1": NotReadyReason,
+						"ng3": NotReadyReason,
+					},
+				},
+				p2.Name: {
+					Pod: p2,
+					RejectedNodeGroups: map[string]status.Reasons{
+						"ng2": NewRejectedReasons(""),
+					},
+					SkippedNodeGroups: map[string]status.Reasons{
+						"ng1": NotReadyReason,
+						"ng3": NotReadyReason,
+					},
+				},
+			},
+		},
+		{
+			name: "feature flag is enabled: ng3 moves to rejected for p1 and ng1 and ng3 move to rejected for p2",
+			// ng1 satisfies the predicates of p1, so it remains skipped for p1, but it does not for p2, so it is moved to rejected for p2.
+			pods: []*apiv1.Pod{p1, p2},
+			scaleUpSimulationForSkippedNodeGroupsEnabled: true,
+			expectedResult: status.ScaleUpNoOptionsAvailable,
+			expectedNoScaleUpInfo: map[string]status.NoScaleUpInfo{
+				p1.Name: {
+					Pod: p1,
+					RejectedNodeGroups: map[string]status.Reasons{
+						"ng2": NewRejectedReasons(""),
+						"ng3": NewRejectedReasons(""),
+					},
+					SkippedNodeGroups: map[string]status.Reasons{
+						"ng1": NotReadyReason,
+					},
+				},
+				p2.Name: {
+					Pod: p2,
+					RejectedNodeGroups: map[string]status.Reasons{
+						"ng2": NewRejectedReasons(""),
+						"ng1": NewRejectedReasons(""),
+						"ng3": NewRejectedReasons(""),
+					},
+				},
+			},
+		},
+		{
+			name: "feature flag is enabled: partial scale-up successful - p3 triggers scale up, p1 and p2 behave the same as in the previous test case",
+			pods: []*apiv1.Pod{p1, p2, p3},
+			scaleUpSimulationForSkippedNodeGroupsEnabled: true,
+			expectedResult: status.ScaleUpSuccessful,
+			expectedNoScaleUpInfo: map[string]status.NoScaleUpInfo{
+				p1.Name: {
+					Pod: p1,
+					RejectedNodeGroups: map[string]status.Reasons{
+						"ng2": NewRejectedReasons(""),
+						"ng3": NewRejectedReasons(""),
+					},
+					SkippedNodeGroups: map[string]status.Reasons{
+						"ng1": NotReadyReason,
+					},
+				},
+				p2.Name: {
+					Pod: p2,
+					RejectedNodeGroups: map[string]status.Reasons{
+						"ng2": NewRejectedReasons(""),
+						"ng1": NewRejectedReasons(""),
+						"ng3": NewRejectedReasons(""),
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			options := config.AutoscalingOptions{
+				// enable this flag to test the simulation run for the skipped node groups
+				ScaleUpSimulationForSkippedNodeGroupsEnabled: tc.scaleUpSimulationForSkippedNodeGroupsEnabled,
+				EstimatorName: estimator.BinpackingEstimatorName,
+			}
+
+			podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+			listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+			fakeClient := &fake.Clientset{}
+
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil, templateNodeInfoRegistry)
+			assert.NoError(t, err)
+
+			nodes := []*apiv1.Node{node1, node2, node3}
+			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
+			assert.NoError(t, err)
+			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
+
+			registryConfig := clusterstate.ClusterStateRegistryConfig{}
+			clusterState := clusterstate.NewClusterStateRegistry(provider, registryConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+			clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+
+			quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
+			trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+				QuotaProvider:            quotasProvider,
+				CustomResourcesProcessor: processors.CustomResourcesProcessor,
+			})
+
+			suOrchestrator := New()
+			suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, trackerFactory)
+
+			scaleUpStatus, err := suOrchestrator.ScaleUp(tc.pods, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedResult, scaleUpStatus.Result)
+
+			remaining := scaleUpStatus.PodsRemainUnschedulable
+			assert.Equal(t, len(tc.expectedNoScaleUpInfo), len(remaining))
+			for _, actualInfo := range remaining {
+				expectedInfo, expectedInfoFound := tc.expectedNoScaleUpInfo[actualInfo.Pod.Name]
+				assert.True(t, expectedInfoFound, "Unexpected pod found in remaining pods: "+actualInfo.Pod.Name)
+				assert.Equal(t, len(expectedInfo.SkippedNodeGroups), len(actualInfo.SkippedNodeGroups))
+				assert.Equal(t, len(expectedInfo.RejectedNodeGroups), len(actualInfo.RejectedNodeGroups))
+				for ng := range expectedInfo.SkippedNodeGroups {
+					assert.Contains(t, actualInfo.SkippedNodeGroups, ng)
+				}
+				for ng := range expectedInfo.RejectedNodeGroups {
+					assert.Contains(t, actualInfo.RejectedNodeGroups, ng)
+				}
+			}
+		})
+	}
 }
 
 func assertLegacyRegistryEntry(t *testing.T, entry string) {
@@ -2082,6 +2263,7 @@ func newEstimatorBuilder() estimator.EstimatorBuilder {
 		estimator.NewThresholdBasedEstimationLimiter(nil),
 		estimator.NewDecreasingPodOrderer(),
 		nil,
+		false,
 	)
 
 	return estimatorBuilder

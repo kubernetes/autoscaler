@@ -22,6 +22,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -553,7 +554,8 @@ func TestExpiredScaleUp(t *testing.T) {
 
 	fakeClient := &fake.Clientset{}
 	mockMetrics := &mockMetrics{}
-	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
+	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
@@ -562,7 +564,8 @@ func TestExpiredScaleUp(t *testing.T) {
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 4, now.Add(-3*time.Minute))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
 	assert.NoError(t, err)
-	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "")
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "", "")
+	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.Timeout, 4)
 	assert.True(t, clusterstate.IsClusterHealthy())
 	assert.False(t, clusterstate.IsNodeGroupHealthy("ng1"))
 	assert.Equal(t, clusterstate.GetScaleUpFailures(), map[string][]ScaleUpFailure{
@@ -922,7 +925,8 @@ func TestScaleUpBackoff(t *testing.T) {
 
 	fakeClient := &fake.Clientset{}
 	mockMetrics := &mockMetrics{}
-	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
+	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 	clusterstate := newClusterStateRegistry(
 		provider, ClusterStateRegistryConfig{
@@ -935,7 +939,8 @@ func TestScaleUpBackoff(t *testing.T) {
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 1, now.Add(-180*time.Second))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2, ng1_3}, nil, now)
 	assert.NoError(t, err)
-	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "")
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "", "")
+	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.Timeout, 1)
 	assert.True(t, clusterstate.IsClusterHealthy())
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
 	assert.Equal(t, NodeGroupScalingSafety{
@@ -1144,15 +1149,19 @@ func TestScaleUpFailures(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 	mockMetrics := &mockMetrics{}
-	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
+	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
 	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
 
-	clusterstate.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), string(metrics.Timeout), "", "", "", now)
-	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "")
-	clusterstate.RegisterFailedScaleUp(provider.GetNodeGroup("ng2"), string(metrics.Timeout), "", "", "", now)
-	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "")
-	clusterstate.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), string(metrics.APIError), "", "", "", now.Add(time.Minute))
-	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.APIError, "", "")
+	clusterstate.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), 3, string(metrics.Timeout), "", "", "", "", now)
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "", "")
+	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.Timeout, 3)
+	clusterstate.RegisterFailedScaleUp(provider.GetNodeGroup("ng2"), 2, string(metrics.Timeout), "", "", "", "", now)
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "", "")
+	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.Timeout, 2)
+	clusterstate.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), 1, string(metrics.APIError), "", "", "", "", now.Add(time.Minute))
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.APIError, "", "", "")
+	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.APIError, 1)
 
 	failures := clusterstate.GetScaleUpFailures()
 	assert.Equal(t, map[string][]ScaleUpFailure{
@@ -1664,6 +1673,17 @@ func TestHandleInstanceCreationErrors(t *testing.T) {
 				},
 			},
 		},
+		{
+			Id: "instance2",
+			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:    "RESOURCE_POOL_EXHAUSTED",
+					ErrorMessage: "",
+				},
+			},
+		},
 	}, nil)
 	mockedNodeGroup.On("Autoprovisioned").Return(false)
 	mockedNodeGroup.On("TargetSize").Return(1, nil)
@@ -1675,20 +1695,259 @@ func TestHandleInstanceCreationErrors(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 	mockMetrics := &mockMetrics{}
-	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything).Return()
+	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
 	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
 	clusterstate.RegisterScaleUp(mockedNodeGroup, 1, now)
 
 	// UpdateNodes will trigger handleInstanceCreationErrors
 	err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
 	assert.NoError(t, err)
-	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "", "")
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "", "", "")
+	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), 2)
+}
+
+func TestFailedScaleUpWithDra(t *testing.T) {
+	now := time.Now()
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	mockedNodeGroup := &mockprovider.NodeGroup{}
+	mockedNodeGroup.On("Id").Return("ng1")
+	mockedNodeGroup.On("Nodes").Return([]cloudprovider.Instance{
+		{
+			Id: "instance1",
+			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:    "RESOURCE_POOL_EXHAUSTED",
+					ErrorMessage: "",
+				},
+			},
+		},
+	}, nil)
+	mockedNodeGroup.On("Autoprovisioned").Return(false)
+	mockedNodeGroup.On("TargetSize").Return(1, nil)
+	node := BuildTestNode("ng1_1", 1000, 1000)
+	nodeInfo := framework.NewTestNodeInfo(node)
+	nodeInfo.LocalResourceSlices = []*v1.ResourceSlice{
+		{
+			Spec: v1.ResourceSliceSpec{
+				Driver: "dra.net",
+			},
+		},
+		{
+			Spec: v1.ResourceSliceSpec{
+				Driver: "driver2",
+			},
+		},
+	}
+	mockedNodeGroup.On("TemplateNodeInfo").Return(nodeInfo, nil)
+	mockedNodeGroup.On("GetOptions", mock.Anything).Return(&config.NodeGroupAutoscalingOptions{}, nil)
+	provider.InsertNodeGroup(mockedNodeGroup)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	mockMetrics := &mockMetrics{}
+	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+	clusterstate.RegisterScaleUp(mockedNodeGroup, 1, now)
+
+	// UpdateNodes will trigger handleInstanceCreationErrors
+	err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
+	assert.NoError(t, err)
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "", "", "custom.driver,dra.net")
+	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), 1)
+}
+
+func TestFailedScaleUpWithDraAndGpu(t *testing.T) {
+	now := time.Now()
+
+	builder := testprovider.NewTestCloudProviderBuilder()
+	provider := builder.WithNodeGpuConfig(func(node *apiv1.Node) *cloudprovider.GpuConfig {
+		return &cloudprovider.GpuConfig{
+			Type:          "gpu-type",
+			Label:         "gpu-resource-label",
+			DraDriverName: "gpu-driver",
+		}
+	}).Build()
+	mockedNodeGroup := &mockprovider.NodeGroup{}
+	mockedNodeGroup.On("Id").Return("ng1")
+	mockedNodeGroup.On("Nodes").Return([]cloudprovider.Instance{
+		{
+			Id: "instance1",
+			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:    "RESOURCE_POOL_EXHAUSTED",
+					ErrorMessage: "",
+				},
+			},
+		},
+	}, nil)
+	mockedNodeGroup.On("Autoprovisioned").Return(false)
+	mockedNodeGroup.On("TargetSize").Return(1, nil)
+	node := BuildTestNode("ng1_1", 1000, 1000)
+	nodeInfo := framework.NewTestNodeInfo(node)
+	nodeInfo.LocalResourceSlices = []*v1.ResourceSlice{
+		{
+			Spec: v1.ResourceSliceSpec{
+				Driver: "dra.net",
+			},
+		},
+		{
+			Spec: v1.ResourceSliceSpec{
+				Driver: "driver2",
+			},
+		},
+	}
+	mockedNodeGroup.On("TemplateNodeInfo").Return(nodeInfo, nil)
+	mockedNodeGroup.On("GetOptions", mock.Anything).Return(&config.NodeGroupAutoscalingOptions{}, nil)
+	provider.InsertNodeGroup(mockedNodeGroup)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	mockMetrics := &mockMetrics{}
+	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+	clusterstate.RegisterScaleUp(mockedNodeGroup, 1, now)
+
+	// UpdateNodes will trigger handleInstanceCreationErrors
+	err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
+	assert.NoError(t, err)
+	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "dra_gpu-driver", "not-listed", "custom.driver,dra.net")
+	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), 1)
 }
 
 type mockMetrics struct {
 	mock.Mock
 }
 
-func (m *mockMetrics) RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType string) {
-	m.Called(reason, gpuResourceName, gpuType)
+func (m *mockMetrics) RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType, draDrivers string) {
+	m.Called(reason, gpuResourceName, gpuType, draDrivers)
+}
+
+func (m *mockMetrics) RegisterFailedNodeCreations(reason metrics.FailedScaleUpReason, nodesCount int) {
+	m.Called(reason, nodesCount)
+}
+
+func TestSuspendedNodes(t *testing.T) {
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
+
+	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	// Suspended node
+	ng1_2.Status.Conditions = append(ng1_2.Status.Conditions, apiv1.NodeCondition{
+		Type:   apiv1.NodeConditionType(suspendedNodeCondition),
+		Status: apiv1.ConditionTrue,
+	})
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", ng1_1)
+	provider.AddNode("ng1", ng1_2)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, nil, now)
+	assert.NoError(t, err)
+
+	// Check readiness stats
+	readiness := clusterstate.GetClusterReadiness()
+	expectedReadiness := Readiness{
+		Registered: []string{"ng1-1", "ng1-2"},
+		Ready:      []string{"ng1-1"},
+		Suspended:  []string{"ng1-2"},
+		Time:       now,
+	}
+	assert.Equal(t, expectedReadiness, readiness)
+
+	// Check node group health - Suspended nodes should count towards health
+	// Target is 2, 1 Ready + 1 Suspended = 2. Should be healthy.
+	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
+
+	// Check upcoming nodes
+	// Target is 2, 1 Ready + 1 Suspended = 2. Upcoming should be 0.
+	upcomingNodes, _ := clusterstate.GetUpcomingNodes()
+	assert.Equal(t, 0, upcomingNodes["ng1"])
+
+	// Check status
+	status := clusterstate.GetStatus(now)
+	assert.Equal(t, 1, status.ClusterWide.Health.NodeCounts.Registered.Suspended)
+}
+
+func TestIsSuspendedNode(t *testing.T) {
+	testCases := []struct {
+		name     string
+		node     *apiv1.Node
+		expected bool
+	}{
+		{
+			name: "Node with Suspended=True condition",
+			node: &apiv1.Node{
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{
+						{
+							Type:   apiv1.NodeConditionType(suspendedNodeCondition),
+							Status: apiv1.ConditionTrue,
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Node with Suspended=False condition",
+			node: &apiv1.Node{
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{
+						{
+							Type:   apiv1.NodeConditionType(suspendedNodeCondition),
+							Status: apiv1.ConditionFalse,
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Node with other conditions",
+			node: &apiv1.Node{
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{
+						{
+							Type:   apiv1.NodeReady,
+							Status: apiv1.ConditionTrue,
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Node with no conditions",
+			node: &apiv1.Node{
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{},
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, isSuspendedNode(tc.node))
+		})
+	}
 }

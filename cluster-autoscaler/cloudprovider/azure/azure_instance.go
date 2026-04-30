@@ -22,6 +22,7 @@ import (
 	"regexp"
 	"strings"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog/v2"
 )
 
@@ -95,6 +96,17 @@ var GetInstanceTypeDynamically = func(template NodeTemplate, azCache *azureCache
 		return instanceType, err
 	}
 	instanceType.MemoryMb = int64(memoryGb) * 1024
+
+	arch, err := sku.GetCPUArchitectureType()
+	if err != nil {
+		klog.V(1).Infof("Failed to get CPU architecture type from sku %q %v", template.SkuName, err)
+		return instanceType, err
+	}
+	if strings.ToLower(arch) == "arm64" {
+		instanceType.Architecture = "arm64"
+	} else {
+		instanceType.Architecture = cloudprovider.DefaultArch
+	}
 
 	return instanceType, nil
 }

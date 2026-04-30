@@ -17,17 +17,29 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - description: The strategy used for provisioning buffer capacity.
+    - description: The strategy to be used.
       jsonPath: .spec.provisioningStrategy
       name: Strategy
       type: string
-    - description: The desired number of buffer chunks, if specified.
-      jsonPath: .spec.replicas
+    - description: The name of the PodTemplate used.
+      jsonPath: .status.podTemplateRef.name
+      name: PodTemplate
+      type: string
+    - description: The actual number of buffer chunks.
+      jsonPath: .status.replicas
       name: Replicas
       type: integer
-    - description: The readiness status of the CapacityBuffer.
-      jsonPath: .status.conditions[?(@.type=='Ready')].reason
-      name: Status
+    - description: List of all condition types.
+      jsonPath: .status.conditions[*].type
+      name: ConditionsType
+      type: string
+    - description: List of all condition statuses.
+      jsonPath: .status.conditions[*].status
+      name: ConditionsStatus
+      type: string
+    - description: List of all condition reasons.
+      jsonPath: .status.conditions[*].reason
+      name: ConditionsReason
       type: string
     - description: The age of the CapacityBuffer.
       jsonPath: .metadata.creationTimestamp
@@ -249,17 +261,29 @@ spec:
     subresources:
       status: {}
   - additionalPrinterColumns:
-    - description: The strategy used for provisioning buffer capacity.
+    - description: The strategy to be used.
       jsonPath: .spec.provisioningStrategy
       name: Strategy
       type: string
-    - description: The desired number of buffer chunks, if specified.
-      jsonPath: .spec.replicas
+    - description: The name of the PodTemplate used.
+      jsonPath: .status.podTemplateRef.name
+      name: PodTemplate
+      type: string
+    - description: The actual number of buffer chunks.
+      jsonPath: .status.replicas
       name: Replicas
       type: integer
-    - description: The readiness status of the CapacityBuffer.
-      jsonPath: .status.conditions[?(@.type=='Ready')].reason
-      name: Status
+    - description: List of all condition types.
+      jsonPath: .status.conditions[*].type
+      name: ConditionsType
+      type: string
+    - description: List of all condition statuses.
+      jsonPath: .status.conditions[*].status
+      name: ConditionsStatus
+      type: string
+    - description: List of all condition reasons.
+      jsonPath: .status.conditions[*].reason
+      name: ConditionsReason
       type: string
     - description: The age of the CapacityBuffer.
       jsonPath: .metadata.creationTimestamp
@@ -373,7 +397,8 @@ spec:
             x-kubernetes-validations:
             - message: If X is set, replicas or limits must also be set
               rule: '!has(self.podTemplateRef) || has(self.replicas) || has(self.limits)'
-            - message: You must define both PodTemplateRef and ScalableRef
+            - message: You must define either PodTemplateRef or ScalableRef, but not
+                both
               rule: '!(has(self.podTemplateRef) && has(self.scalableRef))'
           status:
             description: Status represents the current state of the buffer and its

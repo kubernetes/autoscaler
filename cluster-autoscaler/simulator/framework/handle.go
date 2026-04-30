@@ -21,10 +21,11 @@ import (
 	"fmt"
 	"sync"
 
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources"
 	"k8s.io/client-go/informers"
 	schedulerconfig "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	schedulerconfiglatest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulerplugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodevolumelimits"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
@@ -37,12 +38,12 @@ var (
 
 // Handle is meant for interacting with the scheduler framework.
 type Handle struct {
-	Framework        schedulerframework.Framework
+	Framework        schedulerimpl.Framework
 	DelegatingLister *DelegatingSchedulerSharedLister
 }
 
 // NewHandle builds a framework Handle based on the provided informers and scheduler config.
-func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool, csiEnabled bool) (*Handle, error) {
+func NewHandle(ctx context.Context, informerFactory informers.SharedInformerFactory, schedConfig *schedulerconfig.KubeSchedulerConfiguration, draEnabled bool, csiEnabled bool) (*Handle, error) {
 	if schedConfig == nil {
 		var err error
 		schedConfig, err = schedulerconfiglatest.Default()
@@ -56,14 +57,19 @@ func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *sch
 
 	sharedLister := NewDelegatingSchedulerSharedLister()
 	sharedCSIManager := nodevolumelimits.NewCSIManager(informerFactory.Storage().V1().CSINodes().Lister())
+
 	opts := []schedulerframeworkruntime.Option{
 		schedulerframeworkruntime.WithInformerFactory(informerFactory),
 		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
 		schedulerframeworkruntime.WithSharedCSIManager(sharedCSIManager),
 	}
+
 	if draEnabled {
 		opts = append(opts, schedulerframeworkruntime.WithSharedDRAManager(sharedLister))
+	} else {
+		opts = append(opts, schedulerframeworkruntime.WithSharedDRAManager(dynamicresources.NewNoOpDRAManager()))
 	}
+
 	// TODO: We should always use sharedLister once this CSINode aware changes in CAS are
 	// enabled by default.
 	if csiEnabled {
@@ -76,7 +82,7 @@ func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *sch
 		schedulermetrics.InitMetrics()
 	})
 	framework, err := schedulerframeworkruntime.NewFramework(
-		context.TODO(),
+		ctx,
 		schedulerplugins.NewInTreeRegistry(),
 		&schedConfig.Profiles[0],
 		opts...,

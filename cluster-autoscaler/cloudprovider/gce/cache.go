@@ -72,6 +72,7 @@ type GceCache struct {
 	autoscalingOptionsCache          map[GceRef]map[string]string
 	machinesCache                    map[MachineTypeKey]MachineType
 	migTargetSizeCache               map[GceRef]int64
+	migIsStableCache                 map[GceRef]bool
 	migBaseNameCache                 map[GceRef]string
 	migInstancesStateCountCache      map[GceRef]map[cloudprovider.InstanceState]int64
 	listManagedInstancesResultsCache map[GceRef]string
@@ -91,6 +92,7 @@ func NewGceCache() *GceCache {
 		autoscalingOptionsCache:          map[GceRef]map[string]string{},
 		machinesCache:                    map[MachineTypeKey]MachineType{},
 		migTargetSizeCache:               map[GceRef]int64{},
+		migIsStableCache:                 map[GceRef]bool{},
 		migBaseNameCache:                 map[GceRef]string{},
 		migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
 		listManagedInstancesResultsCache: map[GceRef]string{},
@@ -179,6 +181,15 @@ func (gc *GceCache) GetMigInstancesUpdateTime(migRef GceRef) (time.Time, bool) {
 		klog.V(5).Infof("Instances update time cache hit for %s", migRef)
 	}
 	return timestamp, found
+}
+
+// IsMigInstancesCacheEmpty returns true if instances cache for the given MIG is empty.
+func (gc *GceCache) IsMigInstancesCacheEmpty(migRef GceRef) bool {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	_, found := gc.instances[migRef]
+	return !found
 }
 
 // GetMigForInstance returns the cached MIG for instance GceRef
@@ -350,6 +361,35 @@ func (gc *GceCache) InvalidateAllMigTargetSizes() {
 
 	klog.V(5).Infof("Target size cache invalidated")
 	gc.migTargetSizeCache = map[GceRef]int64{}
+}
+
+// GetMigIsStable returns the cached isStable for a GceRef
+func (gc *GceCache) GetMigIsStable(ref GceRef) (bool, bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	isStable, found := gc.migIsStableCache[ref]
+	if found {
+		klog.V(5).Infof("IsStable cache hit for %s", ref)
+	}
+	return isStable, found
+}
+
+// SetMigIsStable sets isStable for a GceRef
+func (gc *GceCache) SetMigIsStable(ref GceRef, isStable bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	gc.migIsStableCache[ref] = isStable
+}
+
+// InvalidateAllMigIsStable clears the isStable cache
+func (gc *GceCache) InvalidateAllMigIsStable() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	klog.V(5).Infof("IsStable cache invalidated")
+	gc.migIsStableCache = map[GceRef]bool{}
 }
 
 // GetMigInstanceTemplateName returns the cached instance template ref for a mig GceRef

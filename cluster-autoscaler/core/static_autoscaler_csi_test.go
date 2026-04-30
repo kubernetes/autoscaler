@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -222,7 +223,7 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 			// Create a framework handle with informer-backed listers for StorageClass/PVC/CSIDriver.
 			client := clientsetfake.NewSimpleClientset(k8sObjects...)
 			informerFactory := informers.NewSharedInformerFactory(client, 0)
-			fwHandle, err := framework.NewHandle(informerFactory, nil, false, true)
+			fwHandle, err := framework.NewHandle(context.Background(), informerFactory, nil, false, true)
 			require.NoError(t, err)
 			stopCh := make(chan struct{})
 			t.Cleanup(func() { close(stopCh) })
@@ -256,7 +257,6 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 						ScaleDownUtilizationThreshold: 0.7,
 						MaxNodeProvisionTime:          time.Hour,
 					},
-					ScaleDownEnabled:               true,
 					MaxNodesTotal:                  1000,
 					MaxCoresTotal:                  1000,
 					MaxMemoryTotal:                 100000000,

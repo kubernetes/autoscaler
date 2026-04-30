@@ -22,10 +22,8 @@ import (
 	"fmt"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	corev1 "k8s.io/api/core/v1"
-
+	"k8s.io/apimachinery/pkg/api/equality"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/informers/externalversions"
@@ -41,7 +39,9 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingapi "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery/cached/memory"
@@ -54,6 +54,9 @@ import (
 
 // PodTemplateRefIndex is the name of the index for buffers referencing a pod template
 const PodTemplateRefIndex = "podTemplateRef"
+
+// ScalableRefIndex is the name of the index for buffers referencing a scalable object
+const ScalableRefIndex = "scalableRef"
 
 // CapacityBufferClient represents client for v1 capacitybuffer CRD.
 type CapacityBufferClient struct {
@@ -71,9 +74,14 @@ type CapacityBufferClient struct {
 	rqLister              corev1listers.ResourceQuotaLister
 
 	// Informers
-	bufferInformer        cache.SharedIndexInformer
-	podTemplateInformer   cache.SharedIndexInformer
-	resourceQuotaInformer cache.SharedIndexInformer
+	bufferInformer                cache.SharedIndexInformer
+	podTemplateInformer           cache.SharedIndexInformer
+	resourceQuotaInformer         cache.SharedIndexInformer
+	deploymentInformer            cache.SharedIndexInformer
+	replicaSetInformer            cache.SharedIndexInformer
+	statefulSetInformer           cache.SharedIndexInformer
+	jobInformer                   cache.SharedIndexInformer
+	replicationControllerInformer cache.SharedIndexInformer
 }
 
 // NewCapacityBufferClient returns a capacityBufferClient.
@@ -152,6 +160,16 @@ func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, 
 			}
 			return []string{}, nil
 		},
+		ScalableRefIndex: func(obj interface{}) ([]string, error) {
+			buffer, ok := obj.(*v1.CapacityBuffer)
+			if !ok {
+				return []string{}, nil
+			}
+			if buffer.Spec.ScalableRef != nil {
+				return []string{buffer.Spec.ScalableRef.Name}, nil
+			}
+			return []string{}, nil
+		},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to add indexers: %v", err)
@@ -168,21 +186,26 @@ func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, 
 
 	factory := informers.NewSharedInformerFactory(kubernetesClient, defaultResyncPeriod)
 	bufferClient := &CapacityBufferClient{
-		buffersClient:         buffersClient,
-		kubernetesClient:      kubernetesClient,
-		scaleGetter:           scaleGetter,
-		scaleMapper:           scaleMapper,
-		buffersLister:         buffersLister,
-		podTemplateLister:     factory.Core().V1().PodTemplates().Lister(),
-		replicaSetsLister:     factory.Apps().V1().ReplicaSets().Lister(),
-		statefulSetsLister:    factory.Apps().V1().StatefulSets().Lister(),
-		jobsLister:            factory.Batch().V1().Jobs().Lister(),
-		deploymentLister:      factory.Apps().V1().Deployments().Lister(),
-		replicationContLister: factory.Core().V1().ReplicationControllers().Lister(),
-		rqLister:              factory.Core().V1().ResourceQuotas().Lister(),
-		bufferInformer:        bufferInformer,
-		podTemplateInformer:   factory.Core().V1().PodTemplates().Informer(),
-		resourceQuotaInformer: factory.Core().V1().ResourceQuotas().Informer(),
+		buffersClient:                 buffersClient,
+		kubernetesClient:              kubernetesClient,
+		scaleGetter:                   scaleGetter,
+		scaleMapper:                   scaleMapper,
+		buffersLister:                 buffersLister,
+		podTemplateLister:             factory.Core().V1().PodTemplates().Lister(),
+		replicaSetsLister:             factory.Apps().V1().ReplicaSets().Lister(),
+		statefulSetsLister:            factory.Apps().V1().StatefulSets().Lister(),
+		jobsLister:                    factory.Batch().V1().Jobs().Lister(),
+		deploymentLister:              factory.Apps().V1().Deployments().Lister(),
+		replicationContLister:         factory.Core().V1().ReplicationControllers().Lister(),
+		rqLister:                      factory.Core().V1().ResourceQuotas().Lister(),
+		bufferInformer:                bufferInformer,
+		podTemplateInformer:           factory.Core().V1().PodTemplates().Informer(),
+		resourceQuotaInformer:         factory.Core().V1().ResourceQuotas().Informer(),
+		deploymentInformer:            factory.Apps().V1().Deployments().Informer(),
+		replicaSetInformer:            factory.Apps().V1().ReplicaSets().Informer(),
+		statefulSetInformer:           factory.Apps().V1().StatefulSets().Informer(),
+		jobInformer:                   factory.Batch().V1().Jobs().Informer(),
+		replicationControllerInformer: factory.Core().V1().ReplicationControllers().Informer(),
 	}
 	factory.Start(stopChannel)
 	informersSynced = factory.WaitForCacheSync(stopChannel)
@@ -207,6 +230,31 @@ func (c *CapacityBufferClient) GetPodTemplateInformer() cache.SharedIndexInforme
 // GetResourceQuotaInformer returns the informer for ResourceQuota resource.
 func (c *CapacityBufferClient) GetResourceQuotaInformer() cache.SharedIndexInformer {
 	return c.resourceQuotaInformer
+}
+
+// GetDeploymentInformer returns the informer for Deployment resource.
+func (c *CapacityBufferClient) GetDeploymentInformer() cache.SharedIndexInformer {
+	return c.deploymentInformer
+}
+
+// GetReplicaSetInformer returns the informer for ReplicaSet resource.
+func (c *CapacityBufferClient) GetReplicaSetInformer() cache.SharedIndexInformer {
+	return c.replicaSetInformer
+}
+
+// GetStatefulSetInformer returns the informer for StatefulSet resource.
+func (c *CapacityBufferClient) GetStatefulSetInformer() cache.SharedIndexInformer {
+	return c.statefulSetInformer
+}
+
+// GetJobInformer returns the informer for Job resource.
+func (c *CapacityBufferClient) GetJobInformer() cache.SharedIndexInformer {
+	return c.jobInformer
+}
+
+// GetReplicationControllerInformer returns the informer for ReplicationController resource.
+func (c *CapacityBufferClient) GetReplicationControllerInformer() cache.SharedIndexInformer {
+	return c.replicationControllerInformer
 }
 
 // ListCapacityBuffers lists all Capacity buffer.
@@ -265,7 +313,7 @@ func (c *CapacityBufferClient) GetPodTemplate(namespace, name string) (*corev1.P
 	}
 	template, err := c.kubernetesClient.CoreV1().PodTemplates(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("Capacity buffer client can't get pod template, error %v", err.Error())
+		return nil, fmt.Errorf("capacity buffer client can't get pod template: %w", err)
 	}
 	return template.DeepCopy(), nil
 }
@@ -305,6 +353,28 @@ func (c *CapacityBufferClient) UpdatePodTemplate(podTemplate *corev1.PodTemplate
 		return template.DeepCopy(), nil
 	}
 	return nil, err
+}
+
+// EnsurePodTemplate upserts a pod template.
+func (c *CapacityBufferClient) EnsurePodTemplate(ctx context.Context, podTemplate *corev1.PodTemplate) (*corev1.PodTemplate, error) {
+	if c.kubernetesClient == nil {
+		return nil, fmt.Errorf("capacity buffer client is not configured for applying pod template")
+	}
+
+	// Try to use the lister first to avoid unnecessary API calls.
+	existing, err := c.GetPodTemplate(podTemplate.Namespace, podTemplate.Name)
+	if err != nil {
+		if k8serrors.IsNotFound(err) {
+			return c.kubernetesClient.CoreV1().PodTemplates(podTemplate.Namespace).Create(ctx, podTemplate, metav1.CreateOptions{})
+		}
+		return nil, err
+	}
+	if equality.Semantic.DeepEqual(existing.Template, podTemplate.Template) {
+		return existing, nil
+	}
+	existing.OwnerReferences = podTemplate.OwnerReferences
+	existing.Template = podTemplate.Template
+	return c.kubernetesClient.CoreV1().PodTemplates(podTemplate.Namespace).Update(ctx, existing, metav1.UpdateOptions{})
 }
 
 // GetDeployment fetches the cached object using a lister object in the client

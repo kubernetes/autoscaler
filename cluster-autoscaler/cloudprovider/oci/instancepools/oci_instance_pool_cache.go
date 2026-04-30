@@ -29,6 +29,7 @@ type ComputeMgmtClient interface {
 	GetInstancePoolInstance(context.Context, core.GetInstancePoolInstanceRequest) (core.GetInstancePoolInstanceResponse, error)
 	ListInstancePoolInstances(context.Context, core.ListInstancePoolInstancesRequest) (core.ListInstancePoolInstancesResponse, error)
 	DetachInstancePoolInstance(context.Context, core.DetachInstancePoolInstanceRequest) (core.DetachInstancePoolInstanceResponse, error)
+	ListInstancePools(context.Context, core.ListInstancePoolsRequest) (core.ListInstancePoolsResponse, error)
 }
 
 // ComputeClient wraps core.ComputeClient exposing the functions we actually require.
@@ -213,7 +214,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) 
 
 	if c.unownedInstances[ociInstance] {
 		// We already know this instance is not part of a configured pool. Return early and avoid additional API calls.
-		klog.V(4).Infof("Node " + ociInstance.Name + " is known to not be a member of any of the specified instance pool(s)")
+		klog.V(4).Info("Node " + ociInstance.Name + " is known to not be a member of any of the specified instance pool(s)")
 		return nil, errInstanceInstancePoolNotFound
 	}
 
@@ -307,7 +308,7 @@ func (c *instancePoolCache) findInstanceByDetails(ociInstance ocicommon.OciRef) 
 	}
 
 	c.unownedInstances[ociInstance] = true
-	klog.V(4).Infof(ociInstance.Name + " is not a member of any of the specified instance pool(s)")
+	klog.V(4).Info(ociInstance.Name + " is not a member of any of the specified instance pool(s)")
 	return nil, errInstanceInstancePoolNotFound
 }
 

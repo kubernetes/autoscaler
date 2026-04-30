@@ -288,7 +288,7 @@ func TestCleanAllToBeDeleted(t *testing.T) {
 	n2.Spec.Taints = []apiv1.Taint{{Key: ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
 
 	fakeClient := buildFakeClient(t, n1, n2)
-	fakeRecorder := kube_util.CreateEventRecorder(fakeClient, false)
+	fakeRecorder := kube_util.CreateEventRecorder(context.TODO(), fakeClient, false)
 
 	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
 
@@ -304,7 +304,7 @@ func TestCleanAllDeletionCandidates(t *testing.T) {
 	n2.Spec.Taints = []apiv1.Taint{{Key: DeletionCandidateTaintKey, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
 
 	fakeClient := buildFakeClient(t, n1, n2)
-	fakeRecorder := kube_util.CreateEventRecorder(fakeClient, false)
+	fakeRecorder := kube_util.CreateEventRecorder(context.TODO(), fakeClient, false)
 
 	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
 
@@ -925,7 +925,7 @@ func TestCleanStaleDeletionCandidates(t *testing.T) {
 			CleanStaleDeletionCandidates(
 				tc.allNodes,
 				fakeClient,
-				kube_util.CreateEventRecorder(fakeClient, false),
+				kube_util.CreateEventRecorder(context.TODO(), fakeClient, false),
 				tc.nodeDeletionCandidateTTL,
 			)
 
@@ -950,6 +950,52 @@ func TestCleanStaleDeletionCandidates(t *testing.T) {
 				}
 			}
 
+		})
+	}
+}
+
+func TestNewTaintConfigWithCustomPrefixes(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		startupTaintPrefixes []string
+		taintKeyToTest       string
+		expectIsStartupTaint bool
+	}{
+		{
+			name:                 "empty custom prefixes - non-matching taint",
+			startupTaintPrefixes: []string{},
+			taintKeyToTest:       "readiness.k8s.io/not-ready",
+			expectIsStartupTaint: false,
+		},
+		{
+			name:                 "custom prefix - matching taint",
+			startupTaintPrefixes: []string{"readiness.k8s.io/"},
+			taintKeyToTest:       "readiness.k8s.io/not-ready",
+			expectIsStartupTaint: true,
+		},
+		{
+			name:                 "custom prefix - non-matching taint",
+			startupTaintPrefixes: []string{"readiness.k8s.io/"},
+			taintKeyToTest:       "other.io/my-taint",
+			expectIsStartupTaint: false,
+		},
+		{
+			name:                 "built-in prefixes still work with custom prefix",
+			startupTaintPrefixes: []string{"readiness.k8s.io/"},
+			taintKeyToTest:       StartupTaintPrefix + "some-taint",
+			expectIsStartupTaint: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			opts := config.AutoscalingOptions{
+				StartupTaintPrefixes: tc.startupTaintPrefixes,
+			}
+			taintConfig := NewTaintConfig(opts)
+
+			result := taintConfig.IsStartupTaint(tc.taintKeyToTest)
+			assert.Equal(t, tc.expectIsStartupTaint, result, "IsStartupTaint(%q) = %v, want %v", tc.taintKeyToTest, result, tc.expectIsStartupTaint)
 		})
 	}
 }

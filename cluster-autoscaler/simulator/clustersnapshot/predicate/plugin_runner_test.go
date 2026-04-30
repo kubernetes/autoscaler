@@ -17,6 +17,7 @@ limitations under the License.
 package predicate
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -25,6 +26,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
 	clientsetfake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
@@ -36,8 +38,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-
-	apiv1 "k8s.io/api/core/v1"
 )
 
 func TestRunFiltersOnNode(t *testing.T) {
@@ -279,7 +279,7 @@ func TestRunFilterUntilPassingNode(t *testing.T) {
 			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(n2000))
 			assert.NoError(t, err)
 
-			node, state, err := pluginRunner.RunFiltersUntilPassingNode(tc.pod, func(info *framework.NodeInfo) bool { return true })
+			node, state, err := pluginRunner.RunFiltersUntilPassingNode(tc.pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(info *framework.NodeInfo) bool { return true }})
 			if tc.expectError {
 				assert.Nil(t, node)
 				assert.Nil(t, state)
@@ -291,6 +291,151 @@ func TestRunFilterUntilPassingNode(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRunFilterUntilPassingNode_NodeOrdering(t *testing.T) {
+	p100 := BuildTestPod("p100", 100, 1000)
+
+	n1 := BuildTestNode("n1", 1000, 2000000)
+	n2 := BuildTestNode("n2", 1000, 2000000)
+	n3 := BuildTestNode("n3", 1000, 2000000)
+	n4 := BuildTestNode("n4", 1000, 2000000)
+
+	reverseOrderedIterator := clustersnapshot.NewPriorityNodeOrderMapping(func(a, b *framework.NodeInfo) bool {
+		return a.Node().Name > b.Node().Name
+	})
+
+	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil)
+	pluginRunner.parallelism = 1 // Parallelism being 1 is essential in this test to make sure we go through nodes in order.
+	assert.NoError(t, err)
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n1)))
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n2)))
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n3)))
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n4)))
+
+	var visitOrder []string
+
+	_, _, err = pluginRunner.RunFiltersUntilPassingNode(p100, clustersnapshot.SchedulingOptions{
+		NodeOrdering: reverseOrderedIterator,
+		IsNodeAcceptable: func(info *framework.NodeInfo) bool {
+			visitOrder = append(visitOrder, info.Node().Name)
+			return info.Node().Name == "n1" // This is the last node, we want to go through all the nodes.
+		},
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"n4", "n3", "n2", "n1"}, visitOrder)
+}
+
+// earlyExitNodeOrderMapping is a NodeOrderMapping that iterates in the ascending order of node names
+// but stops iterating after a certain number of nodes by returning nil.
+type earlyExitNodeOrderMapping struct {
+	sortedNodesOrdering clustersnapshot.NodeOrderMapping
+	limit               int
+}
+
+func newEarlyExitNodeOrderMapping(limit int) *earlyExitNodeOrderMapping {
+	return &earlyExitNodeOrderMapping{
+		sortedNodesOrdering: clustersnapshot.NewPriorityNodeOrderMapping(func(a, b *framework.NodeInfo) bool {
+			return a.Node().Name < b.Node().Name
+		}),
+		limit: limit,
+	}
+}
+func (m *earlyExitNodeOrderMapping) Reset(nodeInfos []*framework.NodeInfo) {
+	m.sortedNodesOrdering.Reset(nodeInfos)
+}
+func (m *earlyExitNodeOrderMapping) At(i int) int {
+	if i >= m.limit {
+		return -1
+	}
+	return m.sortedNodesOrdering.At(i)
+}
+func (m *earlyExitNodeOrderMapping) MarkMatch(index int) {
+	m.sortedNodesOrdering.MarkMatch(index)
+}
+
+func TestRunFilterUntilPassingNode_ExitEarlyWhenOrderingReturnNegativeOne(t *testing.T) {
+	p100 := BuildTestPod("p100", 100, 1000)
+	n1 := BuildTestNode("n1", 1000, 2000000)
+	n2 := BuildTestNode("n2", 1000, 2000000)
+	n3 := BuildTestNode("n3", 1000, 2000000)
+
+	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil)
+	pluginRunner.parallelism = 1
+	assert.NoError(t, err)
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n1)))
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n2)))
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n3)))
+
+	iter := newEarlyExitNodeOrderMapping(1) // Only allow visiting index 0 (node n1).
+	var nodesVisited []string
+
+	_, _, err = pluginRunner.RunFiltersUntilPassingNode(p100, clustersnapshot.SchedulingOptions{
+		NodeOrdering: iter,
+		IsNodeAcceptable: func(info *framework.NodeInfo) bool {
+			nodesVisited = append(nodesVisited, info.Node().Name)
+			return false
+		},
+	})
+
+	assert.Error(t, err) // Should not find node.
+	assert.Equal(t, []string{"n1"}, nodesVisited)
+}
+
+func TestRunFilterUntilPassingNode_PreferSmallestSteps(t *testing.T) {
+	p100 := BuildTestPod("p100", 100, 1000)
+
+	n1 := BuildTestNode("n1", 1000, 2000000)
+	n2 := BuildTestNode("n2", 1000, 2000000)
+	n3 := BuildTestNode("n3", 1000, 2000000)
+	n4 := BuildTestNode("n4", 1000, 2000000)
+
+	orderedIterator := clustersnapshot.NewPriorityNodeOrderMapping(func(a, b *framework.NodeInfo) bool {
+		return a.Node().Name < b.Node().Name
+	})
+
+	pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(nil)
+	pluginRunner.parallelism = 16
+	assert.NoError(t, err)
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n1)))
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n2)))
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n3)))
+	assert.NoError(t, snapshot.AddNodeInfo(framework.NewTestNodeInfo(n4)))
+
+	// We want to ensure that even if n2 is checked faster, n1 is preferred if it also passes.
+	// We use channels to block n1's evaluation until n2 has been visited, ensuring n2
+	// would finish first if not for the the logic that prefers smallest steps.
+	delayFirstNode := make(chan struct{})
+	secondNodeVisited := make(chan struct{})
+	schedulingFinished := make(chan struct{})
+
+	chosenNodeName := ""
+
+	go func() {
+		node, _, err := pluginRunner.RunFiltersUntilPassingNode(p100, clustersnapshot.SchedulingOptions{
+			NodeOrdering: orderedIterator, // Needed to make the test deterministic.
+			IsNodeAcceptable: func(info *framework.NodeInfo) bool {
+				if info.Node().Name == "n1" {
+					<-delayFirstNode
+				}
+				if info.Node().Name == "n2" {
+					close(secondNodeVisited)
+				}
+				return true // all nodes pass
+			},
+		})
+		assert.NoError(t, err)
+		chosenNodeName = node.Name
+		close(schedulingFinished)
+	}()
+
+	<-secondNodeVisited
+	assert.Empty(t, chosenNodeName)
+
+	close(delayFirstNode)
+	<-schedulingFinished
+	assert.Equal(t, "n1", chosenNodeName)
 }
 
 func TestDebugInfo(t *testing.T) {
@@ -361,7 +506,7 @@ func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfigurati
 		schedConfig = defaultConfig
 	}
 
-	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true, false)
+	fwHandle, err := framework.NewHandle(context.Background(), informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -370,7 +515,7 @@ func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfigurati
 }
 
 func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
-	pod := BuildTestPod("p", 100, 1000)
+	pod := BuildTestPod("p", 100, 1000, WithPodHostnameAntiAffinity(map[string]string{"app": "p"}), WithLabels(map[string]string{"app": "p"}))
 	nodes := make([]*apiv1.Node, 0, 5001)
 	podsOnNodes := make(map[string][]*apiv1.Pod)
 
@@ -381,7 +526,7 @@ func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
 		// Add 10 small pods to each node
 		pods := make([]*apiv1.Pod, 0, 10)
 		for j := 0; j < 10; j++ {
-			pods = append(pods, BuildTestPod(fmt.Sprintf("p-%d-%d", i, j), 1, 1))
+			pods = append(pods, BuildTestPod(fmt.Sprintf("p-%d-%d", i, j), 1, 1, WithLabels(map[string]string{"app": "p"})))
 		}
 		podsOnNodes[nodeName] = pods
 	}
@@ -413,8 +558,9 @@ func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
 			pluginRunner.parallelism = tc.parallelism
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				pluginRunner.lastIndex = 0 // Reset state for each run
-				_, _, err := pluginRunner.RunFiltersUntilPassingNode(pod, func(info *framework.NodeInfo) bool { return true })
+				_, _, err := pluginRunner.RunFiltersUntilPassingNode(pod, clustersnapshot.SchedulingOptions{
+					NodeOrdering: clustersnapshot.NewLastIndexOrderMapping(1),
+				})
 				assert.NoError(b, err)
 			}
 		})

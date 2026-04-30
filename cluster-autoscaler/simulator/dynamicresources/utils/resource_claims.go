@@ -83,7 +83,9 @@ func ClearPodReservationInPlace(claim *resourceapi.ResourceClaim, pod *apiv1.Pod
 // AddPodReservationInPlace adds a reservation for the provided pod to the provided Claim. It is a no-op
 // if the claim is already reserved for the Pod.
 func AddPodReservationInPlace(claim *resourceapi.ResourceClaim, pod *apiv1.Pod) {
-	if !resourceclaim.IsReservedForPod(pod, claim) {
+	// TODO(autoscaler/issues/9570): KEP-5729 changed IsReservedForPod to be able to work
+	// with pod groups, re-evaluate whether they need to be considered here.
+	if !resourceclaim.IsReservedForPod(pod, claim, false) {
 		claim.Status.ReservedFor = append(claim.Status.ReservedFor, PodClaimConsumerReference(pod))
 	}
 }

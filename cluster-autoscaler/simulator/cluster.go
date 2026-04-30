@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	"k8s.io/klog/v2"
@@ -45,6 +46,8 @@ type NodeToBeRemoved struct {
 	// PodsToReschedule contains pods on the node that should be rescheduled elsewhere.
 	PodsToReschedule []*apiv1.Pod
 	DaemonSetPods    []*apiv1.Pod
+	// OnCompletionPods contains pods on the node that have safe-to-evict=on-completion annotation
+	OnCompletionPods []*apiv1.Pod
 }
 
 // UnremovableNode represents a node that can't be removed by CA.
@@ -95,6 +98,8 @@ const (
 	UnexpectedError
 	// NoNodeInfo - node can't be removed because it doesn't have any node info in the cluster snapshot.
 	NoNodeInfo
+	// BlockedByOnCompletionPod - node can't be removed because it has a pod with safe-to-evict=on-completion annotation
+	BlockedByOnCompletionPod
 )
 
 // RemovalSimulator is a helper object for simulating node removal scenarios.
@@ -141,17 +146,17 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	}
 	klog.V(2).Infof("Simulating node %s removal", nodeName)
 
-	podsToRemove, daemonSetPods, blockingPod, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, r.listers, remainingPdbTracker, timestamp)
+	podMoveInfo, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, r.listers, remainingPdbTracker, timestamp)
 	if err != nil {
 		klog.V(2).Infof("Node %s cannot be removed: %v", nodeName, err)
-		if blockingPod != nil {
-			return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: BlockedByPod, BlockingPod: blockingPod}
+		if podMoveInfo.BlockingPod != nil {
+			return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: BlockedByPod, BlockingPod: podMoveInfo.BlockingPod}
 		}
 		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError}
 	}
 
 	err = r.withForkedSnapshot(func() error {
-		return r.findPlaceFor(nodeName, podsToRemove, destinationMap, timestamp)
+		return r.findPlaceFor(nodeName, podMoveInfo.Pods, destinationMap, timestamp)
 	})
 	if err != nil {
 		klog.V(2).Infof("Node %s is not suitable for removal: %v", nodeName, err)
@@ -160,8 +165,9 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	klog.V(2).Infof("Node %s may be removed", nodeName)
 	return &NodeToBeRemoved{
 		Node:             nodeInfo.Node(),
-		PodsToReschedule: podsToRemove,
-		DaemonSetPods:    daemonSetPods,
+		PodsToReschedule: podMoveInfo.Pods,
+		DaemonSetPods:    podMoveInfo.DaemonSetPods,
+		OnCompletionPods: podMoveInfo.OnCompletionPods,
 	}, nil
 }
 
@@ -195,8 +201,10 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
 		}
 	}
-	// Remove the node from the snapshot, so that it doesn't interfere with topology spread constraint scheduling.
-	r.clusterSnapshot.RemoveNodeInfo(removedNode)
+
+	if err := r.replaceWithTaintedGhostNode(removedNode, timestamp); err != nil {
+		return err
+	}
 
 	newpods := make([]*apiv1.Pod, 0, len(pods))
 	for _, podptr := range pods {
@@ -205,12 +213,49 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 		newpods = append(newpods, &newpod)
 	}
 
-	statuses, _, err := r.schedulingSimulator.TrySchedulePods(r.clusterSnapshot, newpods, isCandidateNode, true)
+	statuses, _, err := r.schedulingSimulator.TrySchedulePods(r.clusterSnapshot, newpods, true, clustersnapshot.SchedulingOptions{IsNodeAcceptable: isCandidateNode})
 	if err != nil {
 		return err
 	}
 	if len(statuses) != len(newpods) {
 		return fmt.Errorf("can reschedule only %d out of %d pods", len(statuses), len(newpods))
+	}
+
+	// After successful scheduling simulation, remove the tainted ghost node so that
+	// persisted snapshot state (used by subsequent simulations when canPersist=true)
+	// correctly reflects the node being gone.
+	return r.clusterSnapshot.RemoveNodeInfo(removedNode)
+}
+
+// replaceWithTaintedGhostNode replaces the given node in the snapshot with a
+// pod-less copy carrying the ToBeDeletedByClusterAutoscaler NoSchedule taint.
+// This mirrors what happens in reality during drain: the node is tainted but
+// stays in the cluster. Keeping it in the snapshot is critical for
+// PodTopologySpread constraints with the default nodeTaintsPolicy=Ignore,
+// where the scheduler still counts tainted nodes as topology domains even
+// though pods can't schedule on them. Removing the node entirely would
+// eliminate its domain from topology calculations, making the simulation
+// overly optimistic and causing scale-down/scale-up oscillation.
+func (r *RemovalSimulator) replaceWithTaintedGhostNode(nodeName string, timestamp time.Time) error {
+	nodeInfo, err := r.clusterSnapshot.GetNodeInfo(nodeName)
+	if err != nil {
+		return fmt.Errorf("couldn't get NodeInfo for removed node %s: %v", nodeName, err)
+	}
+	if err = r.clusterSnapshot.RemoveNodeInfo(nodeName); err != nil {
+		return fmt.Errorf("couldn't remove NodeInfo for %s: %v", nodeName, err)
+	}
+	taintedNode := nodeInfo.Node().DeepCopy()
+	taintedNode.Spec.Taints = append(taintedNode.Spec.Taints, apiv1.Taint{
+		Key:    taints.ToBeDeletedTaint,
+		Value:  fmt.Sprint(timestamp.Unix()),
+		Effect: apiv1.TaintEffectNoSchedule,
+	})
+	ghostNodeInfo := framework.NewNodeInfo(taintedNode, nodeInfo.LocalResourceSlices)
+	if nodeInfo.CSINode != nil {
+		ghostNodeInfo.SetCSINode(nodeInfo.CSINode)
+	}
+	if err = r.clusterSnapshot.AddNodeInfo(ghostNodeInfo); err != nil {
+		return fmt.Errorf("couldn't add tainted ghost node for %s: %v", nodeName, err)
 	}
 	return nil
 }

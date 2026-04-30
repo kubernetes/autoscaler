@@ -17,6 +17,7 @@ limitations under the License.
 package options
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -37,28 +38,33 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // AutoscalerOptions is the whole set of options for configuring an autoscaler
 type AutoscalerOptions struct {
 	config.AutoscalingOptions
-	KubeClient             kube_client.Interface
-	InformerFactory        informers.SharedInformerFactory
-	AutoscalingKubeClients *context.AutoscalingKubeClients
-	CloudProvider          cloudprovider.CloudProvider
-	FrameworkHandle        *framework.Handle
-	ClusterSnapshot        clustersnapshot.ClusterSnapshot
-	ExpanderStrategy       expander.Strategy
-	EstimatorBuilder       estimator.EstimatorBuilder
-	Processors             *ca_processors.AutoscalingProcessors
-	LoopStartNotifier      *loopstart.ObserversList
-	Backoff                backoff.Backoff
-	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
-	RemainingPdbTracker    pdb.RemainingPdbTracker
-	ScaleUpOrchestrator    scaleup.Orchestrator
-	DeleteOptions          options.NodeDeleteOptions
-	DrainabilityRules      rules.Rules
-	DraProvider            *draprovider.Provider
-	QuotasTrackerOptions   resourcequotas.TrackerOptions
-	CSIProvider            *csinodeprovider.Provider
+	KubeClient                 kube_client.Interface
+	InformerFactory            informers.SharedInformerFactory
+	AutoscalingKubeClients     *context.AutoscalingKubeClients
+	CloudProvider              cloudprovider.CloudProvider
+	FrameworkHandle            *framework.Handle
+	ClusterSnapshot            clustersnapshot.ClusterSnapshot
+	ExpanderStrategy           expander.Strategy
+	EstimatorBuilder           estimator.EstimatorBuilder
+	Processors                 *ca_processors.AutoscalingProcessors
+	LoopStartNotifier          *loopstart.ObserversList
+	Backoff                    backoff.Backoff
+	DebuggingSnapshotter       debuggingsnapshot.DebuggingSnapshotter
+	RemainingPdbTracker        pdb.RemainingPdbTracker
+	ScaleUpOrchestrator        scaleup.Orchestrator
+	DeleteOptions              options.NodeDeleteOptions
+	DrainabilityRules          rules.Rules
+	DraProvider                *draprovider.Provider
+	QuotasTrackerOptions       resourcequotas.TrackerOptions
+	CSIProvider                *csinodeprovider.Provider
+	KubeClientNew              client.Client
+	KubeCache                  cache.Cache
+	CapacityBufferPodsRegistry *fakepods.Registry
 }

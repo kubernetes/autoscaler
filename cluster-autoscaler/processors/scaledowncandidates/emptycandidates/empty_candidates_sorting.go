@@ -49,6 +49,7 @@ type EmptySorting struct {
 	nodeInfoGetter
 	deleteOptions     options.NodeDeleteOptions
 	drainabilityRules rules.Rules
+	isEmptyCache      map[string]emptyInfo
 }
 
 // NewEmptySortingProcessor return EmptySorting struct.
@@ -57,25 +58,51 @@ func NewEmptySortingProcessor(n nodeInfoGetter, deleteOptions options.NodeDelete
 		nodeInfoGetter:    n,
 		deleteOptions:     deleteOptions,
 		drainabilityRules: drainabilityRules,
+		isEmptyCache:      make(map[string]emptyInfo),
 	}
 }
 
-// ScaleDownEarlierThan return true if node1 is empty and node2 isn't.
+// ScaleDownEarlierThan return true if node1 is empty and node2 isn't, and differentiates by on-completion pods.
 func (p *EmptySorting) ScaleDownEarlierThan(node1, node2 *apiv1.Node) bool {
-	if p.isNodeEmpty(node1) && !p.isNodeEmpty(node2) {
-		return true
+	n1EmptyInfo := p.getNodeEmptyInfo(node1)
+	n2EmptyInfo := p.getNodeEmptyInfo(node2)
+
+	if n1EmptyInfo.IsEmpty != n2EmptyInfo.IsEmpty {
+		return n1EmptyInfo.IsEmpty
 	}
-	return false
+	return !n1EmptyInfo.HasOnCompletionPods && n2EmptyInfo.HasOnCompletionPods
 }
 
-func (p *EmptySorting) isNodeEmpty(node *apiv1.Node) bool {
+type emptyInfo struct {
+	IsEmpty             bool
+	HasOnCompletionPods bool
+}
+
+// ResetState resets internal state before every sorting.
+func (p *EmptySorting) ResetState() {
+	p.isEmptyCache = make(map[string]emptyInfo)
+}
+
+func (p *EmptySorting) getNodeEmptyInfo(node *apiv1.Node) emptyInfo {
+	if val, ok := p.isEmptyCache[node.Name]; ok {
+		return val
+	}
+	val := p.isNodeEmptyNoCache(node)
+	p.isEmptyCache[node.Name] = val
+	return val
+}
+
+func (p *EmptySorting) isNodeEmptyNoCache(node *apiv1.Node) emptyInfo {
 	nodeInfo, err := p.nodeInfoGetter.GetNodeInfo(node.Name)
 	if err != nil {
-		return false
+		return emptyInfo{IsEmpty: false}
 	}
-	podsToRemove, _, _, err := simulator.GetPodsToMove(nodeInfo, p.deleteOptions, p.drainabilityRules, nil, nil, time.Now())
-	if err == nil && len(podsToRemove) == 0 {
-		return true
+	podMoveInfo, err := simulator.GetPodsToMove(nodeInfo, p.deleteOptions, p.drainabilityRules, nil, nil, time.Now())
+	if err == nil && len(podMoveInfo.Pods) == 0 {
+		return emptyInfo{
+			IsEmpty:             true,
+			HasOnCompletionPods: len(podMoveInfo.OnCompletionPods) > 0,
+		}
 	}
-	return false
+	return emptyInfo{IsEmpty: false}
 }

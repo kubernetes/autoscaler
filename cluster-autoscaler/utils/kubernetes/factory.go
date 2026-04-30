@@ -17,6 +17,7 @@ limitations under the License.
 package kubernetes
 
 import (
+	"context"
 	"strings"
 
 	clientv1 "k8s.io/api/core/v1"
@@ -39,13 +40,17 @@ const (
 )
 
 // CreateEventRecorder creates an event recorder to send custom events to Kubernetes to be recorded for targeted Kubernetes objects
-func CreateEventRecorder(kubeClient clientset.Interface, recordDuplicatedEvents bool) kube_record.EventRecorder {
+func CreateEventRecorder(ctx context.Context, kubeClient clientset.Interface, recordDuplicatedEvents bool) kube_record.EventRecorder {
 	var eventBroadcaster kube_record.EventBroadcaster
 	if recordDuplicatedEvents {
 		eventBroadcaster = kube_record.NewBroadcaster()
 	} else {
 		eventBroadcaster = kube_record.NewBroadcasterWithCorrelatorOptions(getCorrelationOptions())
 	}
+	go func() {
+		<-ctx.Done()
+		eventBroadcaster.Shutdown()
+	}()
 	if _, isfake := kubeClient.(*fake.Clientset); !isfake {
 		actualSink := &v1core.EventSinkImpl{Interface: v1core.New(kubeClient.CoreV1().RESTClient()).Events("")}
 		// EventBroadcaster has a StartLogging() method but the throttling options from getCorrelationOptions() get applied only to

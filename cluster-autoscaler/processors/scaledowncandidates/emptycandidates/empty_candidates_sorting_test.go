@@ -23,6 +23,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
@@ -53,19 +54,22 @@ func TestScaleDownEarlierThan(t *testing.T) {
 	pod := BuildTestPod("p1", 0, 100)
 	niNonEmpty := framework.NewTestNodeInfo(nodeNonEmpty, pod)
 
+	nodeWithOnCompletionName := "nodeWithOnCompletionPods"
+	nodeWithOnCompletion := BuildTestNode(nodeWithOnCompletionName, 0, 100)
+	onCompPod := BuildTestPod("p2", 0, 100)
+	onCompPod.Annotations = map[string]string{drain.PodSafeToEvictKey: drain.PodSafeToEvictOnCompletionValue}
+	niWithOnCompletion := framework.NewTestNodeInfo(nodeWithOnCompletion, onCompPod)
+
 	noNodeInfoNode := BuildTestNode("n1", 0, 100)
 
-	niGetter := testNodeInfoGetter{map[string]*framework.NodeInfo{nodeEmptyName: niEmpty, nodeNonEmptyName: niNonEmpty, nodeEmptyName2: niEmpty2}}
+	niGetter := testNodeInfoGetter{map[string]*framework.NodeInfo{nodeEmptyName: niEmpty, nodeNonEmptyName: niNonEmpty, nodeEmptyName2: niEmpty2, nodeWithOnCompletionName: niWithOnCompletion}}
 
 	deleteOptions := options.NodeDeleteOptions{
 		SkipNodesWithSystemPods:           true,
 		SkipNodesWithLocalStorage:         true,
 		SkipNodesWithCustomControllerPods: true,
 	}
-	p := EmptySorting{
-		nodeInfoGetter: &niGetter,
-		deleteOptions:  deleteOptions,
-	}
+	p := NewEmptySortingProcessor(&niGetter, deleteOptions, nil)
 
 	tests := []struct {
 		name        string
@@ -105,6 +109,24 @@ func TestScaleDownEarlierThan(t *testing.T) {
 			name:  "Empty node is not earlier that another empty node",
 			node1: nodeEmpty,
 			node2: nodeEmpty2,
+		},
+		{
+			name:        "Empty node earlier that node with on-completion pod",
+			node1:       nodeEmpty,
+			node2:       nodeWithOnCompletion,
+			wantEarlier: true,
+		},
+		{
+			name:        "Node with on-completion pod is not earlier that empty node",
+			node1:       nodeWithOnCompletion,
+			node2:       nodeEmpty,
+			wantEarlier: false,
+		},
+		{
+			name:        "Node with on-completion pod earlier that non-empty node",
+			node1:       nodeWithOnCompletion,
+			node2:       nodeNonEmpty,
+			wantEarlier: true,
 		},
 	}
 	for _, test := range tests {

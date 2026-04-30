@@ -171,6 +171,17 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_Name() {
 
 func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_InstancePool() {
 	ts.p.manager.client.(*exoscaleClientMock).
+		On("GetQuota", ts.p.manager.ctx, ts.p.manager.zone, "instance").
+		Return(
+			&egoscale.Quota{
+				Resource: &testComputeInstanceQuotaName,
+				Usage:    &testComputeInstanceQuotaUsage,
+				Limit:    &testComputeInstanceQuotaLimit,
+			},
+			nil,
+		)
+
+	ts.p.manager.client.(*exoscaleClientMock).
 		On("GetInstancePool", ts.p.manager.ctx, ts.p.manager.zone, testInstancePoolID).
 		Return(
 			&egoscale.InstancePool{

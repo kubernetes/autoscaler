@@ -36,7 +36,7 @@ type NodeGroupChangeObserver interface {
 	// RegisterFailedScaleUp records failed scale-up for a nodegroup.
 	// reason denotes optional reason for failed scale-up
 	// errMsg denotes the actual error message
-	RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, reason string, errMsg string, gpuResourceName, gpuType string, currentTime time.Time)
+	RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, reason string, errMsg string, gpuResourceName, gpuType string, draDriverNames string, currentTime time.Time)
 	// RegisterFailedScaleDown records failed scale-down for a nodegroup.
 	RegisterFailedScaleDown(nodeGroup cloudprovider.NodeGroup, reason string, currentTime time.Time)
 }
@@ -75,12 +75,11 @@ func (l *NodeGroupChangeObserversList) RegisterScaleDown(nodeGroup cloudprovider
 }
 
 // RegisterFailedScaleUp calls RegisterFailedScaleUp for each observer.
-func (l *NodeGroupChangeObserversList) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup,
-	reason string, errMsg, gpuResourceName, gpuType string, currentTime time.Time) {
+func (l *NodeGroupChangeObserversList) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, reason string, errMsg, gpuResourceName, gpuType, draDriverNames string, currentTime time.Time) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	for _, observer := range l.observers {
-		observer.RegisterFailedScaleUp(nodeGroup, reason, errMsg, gpuResourceName, gpuType, currentTime)
+		observer.RegisterFailedScaleUp(nodeGroup, delta, reason, errMsg, gpuResourceName, gpuType, draDriverNames, currentTime)
 	}
 }
 

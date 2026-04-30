@@ -26,6 +26,8 @@ import (
 type CandidatesComparer interface {
 	// ScaleDownEarlierThan return true if node1 should be scaled down earlier than node2.
 	ScaleDownEarlierThan(node1, node2 *apiv1.Node) bool
+	// ResetState resets internal state before every sorting.
+	ResetState()
 }
 
 // NodeSorter struct contain the list of nodes and the list of processors that should be applied for sorting.
@@ -38,6 +40,9 @@ type NodeSorter struct {
 func (n *NodeSorter) Sort() []*apiv1.Node {
 	if len(n.processors) == 0 {
 		return n.nodes
+	}
+	for _, p := range n.processors {
+		p.ResetState()
 	}
 	sort.Sort(n)
 	return n.nodes

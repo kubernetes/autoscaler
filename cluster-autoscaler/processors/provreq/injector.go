@@ -29,7 +29,6 @@ import (
 	provreqpods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
-	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
 	"k8s.io/utils/lru"
@@ -197,11 +196,7 @@ func (p *ProvisioningRequestPodsInjector) Process(
 func (p *ProvisioningRequestPodsInjector) CleanUp() {}
 
 // NewProvisioningRequestPodsInjector creates a ProvisioningRequest filter processor.
-func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int, checkCapacityBatchProcessing bool, checkCapacityProcessorInstance string) (*ProvisioningRequestPodsInjector, error) {
-	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
-	if err != nil {
-		return nil, err
-	}
+func NewProvisioningRequestPodsInjector(client *provreqclient.ProvisioningRequestClient, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int, checkCapacityBatchProcessing bool, checkCapacityProcessorInstance string) *ProvisioningRequestPodsInjector {
 	return &ProvisioningRequestPodsInjector{
 		initialRetryTime:                   initialBackoffTime,
 		maxBackoffTime:                     maxBackoffTime,
@@ -211,7 +206,7 @@ func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffT
 		lastProvisioningRequestProcessTime: time.Now(),
 		checkCapacityBatchProcessing:       checkCapacityBatchProcessing,
 		checkCapacityProcessorInstance:     checkCapacityProcessorInstance,
-	}, nil
+	}
 }
 
 func key(pr *provreqwrapper.ProvisioningRequest) string {

@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dra-example-driver-service-account
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dra-example-driver-role
+  namespace: kube-system
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "nodes" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "resource.k8s.io" ]
+    resources: [ "resourceslices", "resourceclaims", "resourceclaimtemplates", "deviceclasses" ]
+    verbs: [ "get", "list", "watch", "create", "update", "patch", "delete" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dra-example-driver-role-binding
+  namespace: kube-system
+subjects:
+  - kind: ServiceAccount
+    name: dra-example-driver-service-account
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: dra-example-driver-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: resource.k8s.io/v1
+kind: DeviceClass
+metadata:
+  name: gpu
+spec:
+  selectors:
+    - cel:
+        expression: "device.driver == 'gpu.example.com'"
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dra-example-driver-kubeletplugin
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: dra-example-driver
+    app.kubernetes.io/instance: dra-example-driver
+    app.kubernetes.io/component: kubeletplugin
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dra-example-driver
+      app.kubernetes.io/instance: dra-example-driver
+      app.kubernetes.io/component: kubeletplugin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dra-example-driver
+        app.kubernetes.io/instance: dra-example-driver
+        app.kubernetes.io/component: kubeletplugin
+    spec:
+      serviceAccountName: dra-example-driver-service-account
+      containers:
+        - name: plugin
+          securityContext:
+            privileged: true
+          image: registry.k8s.io/dra-example-driver/dra-example-driver:v0.2.1
+          imagePullPolicy: IfNotPresent
+          command: [ "dra-example-kubeletplugin" ]
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          env:
+            - name: DRIVER_NAME
+              value: "gpu.example.com"
+            - name: DEVICE_PROFILE
+              value: "gpu"
+            - name: CDI_ROOT
+              value: /var/run/cdi
+            - name: KUBELET_REGISTRAR_DIRECTORY_PATH
+              value: "/var/lib/kubelet/plugins_registry"
+            - name: KUBELET_PLUGINS_DIRECTORY_PATH
+              value: "/var/lib/kubelet/plugins"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NUM_DEVICES
+              value: "4"
+          volumeMounts:
+            - name: plugins-registry
+              mountPath: "/var/lib/kubelet/plugins_registry"
+            - name: plugins
+              mountPath: "/var/lib/kubelet/plugins"
+            - name: cdi
+              mountPath: /var/run/cdi
+      volumes:
+        - name: plugins-registry
+          hostPath:
+            path: "/var/lib/kubelet/plugins_registry"
+        - name: plugins
+          hostPath:
+            path: "/var/lib/kubelet/plugins"
+        - name: cdi
+          hostPath:
+            path: /var/run/cdi

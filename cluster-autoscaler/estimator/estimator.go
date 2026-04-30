@@ -62,13 +62,13 @@ type EstimatorBuilder func(clustersnapshot.ClusterSnapshot, EstimationContext) E
 type EstimationAnalyserFunc func(clustersnapshot.ClusterSnapshot, cloudprovider.NodeGroup, map[string]bool)
 
 // NewEstimatorBuilder creates a new estimator object from flag.
-func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer EstimationPodOrderer, estimationAnalyserFunc EstimationAnalyserFunc) (EstimatorBuilder, error) {
+func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer EstimationPodOrderer, estimationAnalyserFunc EstimationAnalyserFunc, fastpathBinpackingEnabled bool) (EstimatorBuilder, error) {
 	switch name {
 	case BinpackingEstimatorName:
 		return func(
 			clusterSnapshot clustersnapshot.ClusterSnapshot,
 			context EstimationContext) Estimator {
-			return NewBinpackingNodeEstimator(clusterSnapshot, limiter, orderer, context, estimationAnalyserFunc)
+			return NewBinpackingNodeEstimator(clusterSnapshot, limiter, orderer, context, estimationAnalyserFunc, fastpathBinpackingEnabled)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)

@@ -50,6 +50,9 @@ func (p *PreviousCandidates) ScaleDownEarlierThan(node1, node2 *apiv1.Node) bool
 	return false
 }
 
+// ResetState resets internal state before every sorting.
+func (p *PreviousCandidates) ResetState() {}
+
 func (p *PreviousCandidates) isPreviousCandidate(node *apiv1.Node) bool {
 	return p.candidates[node.Name]
 }

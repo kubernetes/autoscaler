@@ -305,7 +305,7 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		}
 	}
 
-	nodeInfo := framework.NewNodeInfo(&node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(n.id)})
+	nodeInfo := framework.NewNodeInfo(&node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(n.id), nil))
 	return nodeInfo, nil
 }
 
@@ -476,6 +476,13 @@ func createServer(n *hetznerNodeGroup) error {
 
 	// dont start the server if we need to attach the server to a private subnet network
 	StartAfterCreate := n.manager.network != nil && n.subnetIPRange == nil
+
+	serverLabels := make(map[string]string)
+	if n.manager.clusterConfig.IsUsingNewFormat {
+		maps.Copy(serverLabels, n.manager.clusterConfig.NodeConfigs[n.id].ServerLabels)
+	}
+	serverLabels[nodeGroupLabel] = n.id
+
 	opts := hcloud.ServerCreateOpts{
 		Name:             newNodeName(n),
 		UserData:         cloudInit,
@@ -483,9 +490,7 @@ func createServer(n *hetznerNodeGroup) error {
 		ServerType:       serverType,
 		Image:            image,
 		StartAfterCreate: &StartAfterCreate,
-		Labels: map[string]string{
-			nodeGroupLabel: n.id,
-		},
+		Labels:           serverLabels,
 		PublicNet: &hcloud.ServerCreatePublicNet{
 			EnableIPv4: n.manager.publicIPv4,
 			EnableIPv6: n.manager.publicIPv6,

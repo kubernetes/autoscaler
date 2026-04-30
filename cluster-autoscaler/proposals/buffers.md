@@ -9,9 +9,9 @@
 - [x] Implement the API definition
 - [x] Implement the buffer controller and fake pod processing logic in the cluster autoscaler
 
-## Beta graduation criteria (planned for 1.35)
+## Beta graduation criteria (1.35)
 
-- [ ] Implement integration with k8s resource quotas
+- [x] Implement integration with k8s resource quotas
 
 ## V1 graduation criteria (planned for TBD)
 
@@ -338,8 +338,14 @@ type CapacityBufferStatus struct {
   //provide details about the error state.
   // +optional  
   PodTemplateRef *PodTemplateRef
+  // Number of replicas calculated by the buffer controller that autoscaler
+  // should act on.
   // +optional
   Replicas *int
+  // Number of replicas from this buffer that have provisioned capacity in the
+  // cluster that is ready to be used.
+  // +optional 
+  ReadyReplicas *int
   // +optional
   PodTemplateGeneration  *int
   Conditions             []metav1.Condition

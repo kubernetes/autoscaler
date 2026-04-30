@@ -25,6 +25,10 @@ import (
 // CloneTestSnapshot creates a deep copy of the provided Snapshot.
 // This function is intended for testing purposes only.
 func CloneTestSnapshot(snapshot *Snapshot) *Snapshot {
+	if snapshot == nil {
+		return nil
+	}
+
 	cloneString := func(s string) string { return s }
 	cloneResourceClaimId := func(rc ResourceClaimId) ResourceClaimId { return rc }
 	cloneDeviceClass := func(dc *resourceapi.DeviceClass) *resourceapi.DeviceClass { return dc.DeepCopy() }

@@ -93,7 +93,7 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 			},
 		},
 		{
-			name: "Node becomes needed again (reported unremovable)",
+			name: "Node remains tracked even if reported unremovable",
 			steps: []step{
 				{
 					unneededList:     []string{"node1"},
@@ -102,6 +102,10 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 				{
 					unneededList:     []string{"node1"},
 					unremovableList:  []string{"node1"},
+					wantTrackedNodes: []string{"node1"},
+				},
+				{
+					unneededList:     []string{},
 					wantTrackedNodes: []string{},
 				},
 			},

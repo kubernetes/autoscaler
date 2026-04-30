@@ -20,12 +20,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 )
 
 // To use their pointers in creating testing capacity buffer objects
 var (
-	ProvisioningStrategy      = common.ActiveProvisioningStrategy
+	ProvisioningStrategy      = capacitybuffer.ActiveProvisioningStrategy
 	SomeNumberOfReplicas      = int32(3)
 	AnotherNumberOfReplicas   = int32(5)
 	SomePodTemplateRefName    = "some-pod-template"
@@ -96,11 +96,16 @@ func GetBufferStatus(podTempRef *v1.LocalObjectRef, replicas *int32, podTemplate
 
 // GetConditionReady returns a list of conditions with a condition ready and empty message, should be used for testing purposes only
 func GetConditionReady() []metav1.Condition {
+	return GetConditionReadyWithMessage("ready")
+}
+
+// GetConditionReadyWithMessage returns a list of conditions with a condition ready and the specified message
+func GetConditionReadyWithMessage(message string) []metav1.Condition {
 	readyCondition := metav1.Condition{
-		Type:               common.ReadyForProvisioningCondition,
-		Status:             common.ConditionTrue,
-		Message:            "",
-		Reason:             "atrtibutesSetSuccessfully",
+		Type:               capacitybuffer.ReadyForProvisioningCondition,
+		Status:             metav1.ConditionTrue,
+		Message:            message,
+		Reason:             capacitybuffer.AttributesSetSuccessfullyReason,
 		LastTransitionTime: metav1.Time{},
 	}
 	return []metav1.Condition{readyCondition}
@@ -108,10 +113,15 @@ func GetConditionReady() []metav1.Condition {
 
 // GetConditionNotReady returns a list of conditions with a condition not ready and empty message, should be used for testing purposes only
 func GetConditionNotReady() []metav1.Condition {
+	return GetConditionNotReadyWithMessage("")
+}
+
+// GetConditionNotReadyWithMessage returns a list of condition with a condition not ready and specified message.
+func GetConditionNotReadyWithMessage(message string) []metav1.Condition {
 	notReadyCondition := metav1.Condition{
-		Type:               common.ReadyForProvisioningCondition,
-		Status:             common.ConditionFalse,
-		Message:            "",
+		Type:               capacitybuffer.ReadyForProvisioningCondition,
+		Status:             metav1.ConditionFalse,
+		Message:            message,
 		Reason:             "error",
 		LastTransitionTime: metav1.Time{},
 	}
@@ -148,10 +158,35 @@ func WithPodTemplateRef(name string) BufferOption {
 	}
 }
 
+// WithScalableRef sets the Spec.ScalableRef
+func WithScalableRef(apiGroup, kind, name string) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Spec.ScalableRef = &v1.ScalableRef{
+			APIGroup: apiGroup,
+			Kind:     kind,
+			Name:     name,
+		}
+	}
+}
+
 // WithReplicas sets the Spec.Replicas
 func WithReplicas(replicas int32) BufferOption {
 	return func(b *v1.CapacityBuffer) {
 		b.Spec.Replicas = &replicas
+	}
+}
+
+// WithPercentage sets the Spec.Percentage
+func WithPercentage(percentage int32) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Spec.Percentage = &percentage
+	}
+}
+
+// WithLimits sets the Spec.Limits
+func WithLimits(limits v1.ResourceList) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Spec.Limits = &limits
 	}
 }
 
@@ -169,10 +204,17 @@ func WithStatusReplicas(replicas int32) BufferOption {
 	}
 }
 
+// WithStatusPodTemplateGeneration sets the Status.PodTemplateGeneration
+func WithStatusPodTemplateGeneration(generation int64) BufferOption {
+	return func(b *v1.CapacityBuffer) {
+		b.Status.PodTemplateGeneration = &generation
+	}
+}
+
 // WithActiveProvisioningStrategy sets the ProvisioningStrategy to ActiveProvisioningStrategy
 func WithActiveProvisioningStrategy() BufferOption {
 	return func(b *v1.CapacityBuffer) {
-		strategy := common.ActiveProvisioningStrategy
+		strategy := capacitybuffer.ActiveProvisioningStrategy
 		b.Spec.ProvisioningStrategy = &strategy
 	}
 }

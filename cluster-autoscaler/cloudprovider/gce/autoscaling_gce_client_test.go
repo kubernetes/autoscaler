@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -34,6 +35,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	gce_api "google.golang.org/api/compute/v1"
 )
 
@@ -239,6 +241,18 @@ func TestErrors(t *testing.T) {
 			expectedErrorCode:  ErrorUnsupportedTpuConfiguration,
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "There is no automatic reservation matching the instance in your project, or shared with it. To create an instance, create a new automatic reservation or share an existing one from another project.",
+			expectedErrorCode:  ErrorAutomaticReservationsNotAvailable,
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "All automatic reservations in your project, or shared with your project, are fully consumed. To create an instance, create a new automatic reservation or increase the size of an existing one.",
+			expectedErrorCode:  ErrorAutomaticReservationsNoCapacity,
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
 	}
 	for _, tc := range testCases {
 		for _, errorCode := range tc.errorCodes {
@@ -303,6 +317,7 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						Version: &gce_api.ManagedInstanceVersion{
 							InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 2),
 						},
+						InstanceStatus: "PROVISIONING",
 					},
 					{
 						Id:            42,
@@ -314,6 +329,7 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						Version: &gce_api.ManagedInstanceVersion{
 							InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 42),
 						},
+						InstanceStatus: "PROVISIONING",
 					},
 				},
 			},
@@ -325,6 +341,7 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 					},
 					NumericId:            2,
 					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 2),
+					GCEStatus:            "PROVISIONING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -333,6 +350,7 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 					},
 					NumericId:            42,
 					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 42),
+					GCEStatus:            "PROVISIONING",
 				},
 			},
 		},
@@ -693,7 +711,8 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 	}{
 		"CreateInstances_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.CreateInstances(GceRef{}, "", 0, nil)
+				_, err := client.CreateInstances(GceRef{}, "", 0, nil)
+				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
@@ -760,7 +779,8 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 		},
 		"CreateInstances_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.CreateInstances(GceRef{}, "", 0, nil)
+				_, err := client.CreateInstances(GceRef{}, "", 0, nil)
+				return err
 			},
 			httpTimeout: instantTimeout,
 		},
@@ -892,6 +912,27 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 	}
 }
 
+func TestCreateInstances(t *testing.T) {
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	b, err := json.Marshal(gce_api.Operation{
+		Name: "operation-2505728466148-216f5197",
+	})
+	assert.NoError(t, err)
+	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/igm1/createInstances").Return(string(b)).Times(1)
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-2505728466148-216f5197/wait").Return(operationDoneResponse).Once()
+	client := newTestAutoscalingGceClientWithTimeout(t, "project", server.URL, "", time.Second)
+	migRef := GceRef{Project: "project1", Zone: "us-central1-b", Name: "igm1"}
+	createdIds, err := client.CreateInstances(migRef, migRef.Name, 10, nil)
+	assert.NoError(t, err)
+	assert.Len(t, createdIds, 10, "Expected 10 instance names in result")
+	for _, id := range createdIds {
+		createdRef, _ := GceRefFromProviderId(id)
+		prefixed := strings.HasPrefix(createdRef.Name, migRef.Name+"-")
+		require.Truef(t, prefixed, "Expected node name \"%v\" to be prefixed with \"%v\"", createdRef.Name, migRef.Name)
+	}
+}
+
 func TestFetchAllInstances(t *testing.T) {
 	igm1 := "projects/893226960234/zones/zones/instanceGroupManagers/test-igm1-grp"
 	igm2 := "projects/893226960234/zones/zones/instanceGroupManagers/test-igm2-grp"
@@ -943,6 +984,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 10,
 					Igm:       GceRef{},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -951,6 +993,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 11,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "PROVISIONING",
 				},
 			},
 		},
@@ -976,6 +1019,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 10,
 					Igm:       GceRef{},
+					GCEStatus: "STOPPING",
 				},
 			},
 		},
@@ -1013,6 +1057,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 10,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1021,6 +1066,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 11,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 			},
 		},
@@ -1110,6 +1156,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 10,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1118,6 +1165,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 11,
 					Igm:       GceRef{"myprojid", "zones", "test-igm2-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1126,6 +1174,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 12,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1134,6 +1183,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 13,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1142,6 +1192,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 14,
 					Igm:       GceRef{"myprojid", "zones", "test-igm2-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1150,6 +1201,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 15,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 			},
 		},
@@ -1206,6 +1258,7 @@ func TestExternalToInternalInstance(t *testing.T) {
 				},
 				NumericId: 10,
 				Igm:       GceRef{},
+				GCEStatus: "RUNNING",
 			},
 		},
 		{
@@ -1254,6 +1307,29 @@ func TestExternalToInternalInstance(t *testing.T) {
 				},
 				NumericId: 10,
 				Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+				GCEStatus: "RUNNING",
+			},
+		},
+		{
+			name: "suspended instance",
+			instance: &gce_api.Instance{
+				Id: 10,
+				Metadata: &gce_api.Metadata{
+					Items: []*gce_api.MetadataItems{
+						{Key: "created-by", Value: &igm1},
+					},
+				},
+				SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-1",
+				Status:   "SUSPENDED",
+			},
+			want: GceInstance{
+				Instance: cloudprovider.Instance{
+					Id:     "gce://myprojid/myzone/test-instance-1",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+				},
+				NumericId: 10,
+				Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+				GCEStatus: "SUSPENDED",
 			},
 		},
 	}
@@ -1266,6 +1342,51 @@ func TestExternalToInternalInstance(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestFetchMigTargetSize(t *testing.T) {
+	mig := GceRef{
+		Project: "project1",
+		Zone:    "us-central1-b",
+		Name:    "mig-1",
+	}
+
+	testCases := []struct {
+		name     string
+		response gce_api.InstanceGroupManager
+		wantSize int64
+	}{
+		{
+			name: "MIG returns correct target size",
+			response: gce_api.InstanceGroupManager{
+				Name:       "mig-1",
+				TargetSize: 42,
+			},
+			wantSize: 42,
+		},
+		{
+			name: "MIG returns correct target size with suspended instances",
+			response: gce_api.InstanceGroupManager{
+				Name:                "mig-1",
+				TargetSize:          42,
+				TargetSuspendedSize: 3,
+			},
+			wantSize: 45,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			server := test_util.NewHttpServerMock()
+			defer server.Close()
+			gceClient := newTestAutoscalingGceClient(t, "project1", server.URL, "")
+			b, _ := json.Marshal(tc.response)
+			server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/mig-1").Return(string(b)).Once()
+			size, err := gceClient.FetchMigTargetSize(mig)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.wantSize, size)
+			mock.AssertExpectationsForObjects(t, server)
 		})
 	}
 }

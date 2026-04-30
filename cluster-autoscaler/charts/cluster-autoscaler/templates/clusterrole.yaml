@@ -2,6 +2,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+{{- with .Values.rbac.annotations }}
+  annotations:
+  {{- range $k, $v := . }}
+    {{- printf "%s: %s" (tpl $k $) (tpl $v $) | nindent 4 }}
+  {{- end }}
+{{- end }}
   labels:
 {{ include "cluster-autoscaler.labels" . | indent 4 }}
   name: {{ template "cluster-autoscaler.fullname" . }}
@@ -53,14 +59,22 @@ rules:
     verbs:
     - watch
     - list
+    - get
+    - update
 {{- if (eq .Values.cloudProvider "kwok") }}
     - create
 {{- end }}
 {{- if or (eq .Values.cloudProvider "kwok") (eq .Values.cloudProvider "huaweicloud") }}
     - delete
 {{- end }}
+  - apiGroups:
+      - ""
+    resources:
+      - podtemplates
+    verbs:
     - get
-    - update
+    - list
+    - watch
   - apiGroups:
     - resource.k8s.io
     resources:
@@ -198,6 +212,17 @@ rules:
     - patch
     - update
 {{- end }}
+  - apiGroups:
+    - autoscaling.x-k8s.io
+    resources:
+    - provisioningrequests
+    - provisioningrequests/status
+    verbs:
+    - get
+    - list
+    - watch
+    - update
+    - patch
 {{- if .Values.rbac.additionalRules }}
 {{ toYaml .Values.rbac.additionalRules | indent 2 }}
 {{- end }}

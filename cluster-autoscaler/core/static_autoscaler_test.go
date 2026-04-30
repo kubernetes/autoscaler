@@ -31,6 +31,8 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	cbv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -39,6 +41,7 @@ import (
 	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	mockprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mocks"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -83,8 +86,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/version"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	ndf "k8s.io/component-helpers/nodedeclaredfeatures"
-	ndffeatures "k8s.io/component-helpers/nodedeclaredfeatures/features"
 	"k8s.io/kubernetes/pkg/features"
 )
 
@@ -397,9 +400,9 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 			ScaleDownUtilizationThreshold: 0.5,
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
-		EstimatorName:                  estimator.BinpackingEstimatorName,
-		EnforceNodeGroupMinSize:        true,
-		ScaleDownEnabled:               true,
+		EstimatorName:           estimator.BinpackingEstimatorName,
+		EnforceNodeGroupMinSize: true,
+
 		MaxNodesTotal:                  1,
 		MaxCoresTotal:                  10,
 		MaxMemoryTotal:                 100000,
@@ -654,9 +657,9 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 					ScaleDownUtilizationThreshold: 0.5,
 					MaxNodeProvisionTime:          10 * time.Second,
 				},
-				EstimatorName:                  estimator.BinpackingEstimatorName,
-				EnforceNodeGroupMinSize:        true,
-				ScaleDownEnabled:               true,
+				EstimatorName:           estimator.BinpackingEstimatorName,
+				EnforceNodeGroupMinSize: true,
+
 				MaxNodesTotal:                  1,
 				MaxCoresTotal:                  10,
 				MaxMemoryTotal:                 100000,
@@ -809,8 +812,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 			ScaleDownUtilizationThreshold: 0.5,
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
-		EstimatorName:                  estimator.BinpackingEstimatorName,
-		ScaleDownEnabled:               true,
+		EstimatorName: estimator.BinpackingEstimatorName,
+
 		MaxNodesTotal:                  100,
 		MaxCoresTotal:                  100,
 		MaxMemoryTotal:                 100000,
@@ -957,8 +960,8 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 					ScaleDownUtilizationThreshold: 0.5,
 					MaxNodeProvisionTime:          10 * time.Second,
 				},
-				EstimatorName:                    estimator.BinpackingEstimatorName,
-				ScaleDownEnabled:                 true,
+				EstimatorName: estimator.BinpackingEstimatorName,
+
 				MaxNodesTotal:                    10,
 				MaxCoresTotal:                    10,
 				MaxMemoryTotal:                   100000,
@@ -1122,8 +1125,8 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 			ScaleDownUnreadyTime:          time.Minute,
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
-		EstimatorName:                  estimator.BinpackingEstimatorName,
-		ScaleDownEnabled:               true,
+		EstimatorName: estimator.BinpackingEstimatorName,
+
 		MaxNodesTotal:                  10,
 		MaxCoresTotal:                  10,
 		MaxMemoryTotal:                 100000,
@@ -1256,7 +1259,6 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
 		EstimatorName:                  estimator.BinpackingEstimatorName,
-		ScaleDownEnabled:               false,
 		MaxNodesTotal:                  10,
 		MaxCoresTotal:                  10,
 		MaxMemoryTotal:                 100000,
@@ -1354,7 +1356,6 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
 		EstimatorName:                  estimator.BinpackingEstimatorName,
-		ScaleDownEnabled:               false,
 		MaxNodesTotal:                  10,
 		MaxCoresTotal:                  10,
 		MaxMemoryTotal:                 100000,
@@ -1480,12 +1481,11 @@ func TestStaticAutoscalerRunOnceWithBypassedSchedulers(t *testing.T) {
 			ScaleDownUtilizationThreshold: 0.5,
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
-		EstimatorName:    estimator.BinpackingEstimatorName,
-		ScaleDownEnabled: true,
-		MaxNodesTotal:    10,
-		MaxCoresTotal:    10,
-		MaxMemoryTotal:   100000,
-		BypassedSchedulers: scheduler.GetBypassedSchedulersMap([]string{
+		EstimatorName:  estimator.BinpackingEstimatorName,
+		MaxNodesTotal:  10,
+		MaxCoresTotal:  10,
+		MaxMemoryTotal: 100000,
+		BypassedSchedulers: scheduler.SchedulersMap([]string{
 			apiv1.DefaultSchedulerName,
 			bypassedScheduler,
 		}),
@@ -1690,9 +1690,9 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 					ScaleDownUtilizationThreshold: 0.5,
 					MaxNodeProvisionTime:          10 * time.Second,
 				},
-				EstimatorName:                  estimator.BinpackingEstimatorName,
-				EnforceNodeGroupMinSize:        true,
-				ScaleDownEnabled:               true,
+				EstimatorName:           estimator.BinpackingEstimatorName,
+				EnforceNodeGroupMinSize: true,
+
 				MaxNodesTotal:                  100,
 				MaxCoresTotal:                  100,
 				MaxMemoryTotal:                 100000,
@@ -1813,8 +1813,8 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 					ScaleDownUtilizationThreshold: 0.5,
 					MaxNodeProvisionTime:          10 * time.Second,
 				},
-				EstimatorName:                  estimator.BinpackingEstimatorName,
-				ScaleDownEnabled:               true,
+				EstimatorName: estimator.BinpackingEstimatorName,
+
 				MaxNodesTotal:                  10,
 				MaxCoresTotal:                  10,
 				MaxMemoryTotal:                 100000,
@@ -2189,8 +2189,8 @@ func setupTestStaticAutoscalerInstanceCreationErrorsForZeroOrMaxScaling(t *testi
 			ScaleDownUtilizationThreshold: 0.5,
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
-		EstimatorName:                estimator.BinpackingEstimatorName,
-		ScaleDownEnabled:             true,
+		EstimatorName: estimator.BinpackingEstimatorName,
+
 		MaxNodesTotal:                10,
 		MaxCoresTotal:                10,
 		MaxMemoryTotal:               100000,
@@ -2481,7 +2481,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 
 	// Create context with minimal autoscalingOptions that guarantee we reach the tested logic.
 	// We're only testing the input to UpdateClusterState which should be called whenever scale-down is enabled, other autoscalingOptions shouldn't matter.
-	autoscalingOptions := config.AutoscalingOptions{ScaleDownEnabled: true}
+	autoscalingOptions := config.AutoscalingOptions{}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOptions)
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOptions, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil, templateNodeInfoRegistry)
@@ -2921,11 +2921,10 @@ func TestStaticAutoscalerRunOnceInvokesScaleDownStatusProcessor(t *testing.T) {
 			ScaleDownUtilizationThreshold: 0.5,
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
-		EstimatorName:    estimator.BinpackingEstimatorName,
-		ScaleDownEnabled: true,
-		MaxNodesTotal:    10,
-		MaxCoresTotal:    10,
-		MaxMemoryTotal:   100000,
+		EstimatorName:  estimator.BinpackingEstimatorName,
+		MaxNodesTotal:  10,
+		MaxCoresTotal:  10,
+		MaxMemoryTotal: 100000,
 	}
 	now := time.Now()
 	n1 := BuildTestNode("n1", 1000, 1000)
@@ -3179,6 +3178,7 @@ func newEstimatorBuilder() estimator.EstimatorBuilder {
 		estimator.NewThresholdBasedEstimationLimiter(nil),
 		estimator.NewDecreasingPodOrderer(),
 		nil,
+		false,
 	)
 
 	return estimatorBuilder
@@ -3267,7 +3267,6 @@ func buildStaticAutoscaler(t *testing.T, provider cloudprovider.CloudProvider, a
 		},
 		MaxScaleDownParallelism:    10,
 		MaxDrainParallelism:        1,
-		ScaleDownEnabled:           true,
 		MaxBulkSoftTaintCount:      20,
 		MaxBulkSoftTaintTime:       5 * time.Second,
 		NodeDeleteDelayAfterTaint:  5 * time.Minute,
@@ -3388,15 +3387,16 @@ func (f *mockFeature) MaxVersion() *version.Version {
 	return f.maxVersion
 }
 
+func (f *mockFeature) Requirements() *ndf.FeatureRequirements {
+	return &ndf.FeatureRequirements{}
+}
+
 func createMockFeature(name string, maxVersionStr string) ndf.Feature {
 	var v *version.Version
 	if maxVersionStr != "" {
 		v = version.MustParseSemantic(maxVersionStr)
 	}
-	return &mockFeature{
-		name:       name,
-		maxVersion: v,
-	}
+	return &mockFeature{name: name, maxVersion: v}
 }
 
 func setupMockDeclaredFeatures(features ...string) func() {
@@ -3404,10 +3404,11 @@ func setupMockDeclaredFeatures(features ...string) func() {
 	for _, feature := range features {
 		nodeFeatures = append(nodeFeatures, createMockFeature(feature, ""))
 	}
-	originalAllFeatures := ndffeatures.AllFeatures
-	ndffeatures.AllFeatures = nodeFeatures
+
+	oldFrameWork := ndf.DefaultFramework
+	ndf.DefaultFramework = ndf.New(nodeFeatures)
 	return func() {
-		ndffeatures.AllFeatures = originalAllFeatures
+		ndf.DefaultFramework = oldFrameWork
 	}
 }
 
@@ -3448,7 +3449,6 @@ func TestStaticAutoscalerWithNodeDeclaredFeatures(t *testing.T) {
 		},
 		EstimatorName:                  estimator.BinpackingEstimatorName,
 		EnforceNodeGroupMinSize:        true,
-		ScaleDownEnabled:               false,
 		MaxNodesTotal:                  10,
 		MaxCoresTotal:                  10,
 		MaxMemoryTotal:                 1000,
@@ -3523,9 +3523,12 @@ func TestStaticAutoscalerWithNodeDeclaredFeatures(t *testing.T) {
 			onScaleDownMock := &onScaleDownMock{}
 
 			// Feature gate setup
-			utilfeature.DefaultMutableFeatureGate.Set(fmt.Sprintf("%s=%v", features.NodeDeclaredFeatures, tc.nodeDeclaredFeaturesEnabled))
-			cleanup := setupMockDeclaredFeatures(tc.declaredFeatures...)
-			defer cleanup()
+			featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.NodeDeclaredFeatures, tc.nodeDeclaredFeaturesEnabled)
+
+			if tc.nodeDeclaredFeaturesEnabled {
+				cleanup := setupMockDeclaredFeatures(tc.declaredFeatures...)
+				defer cleanup()
+			}
 
 			readyNodeLister := kubernetes.NewTestNodeLister(tc.initialNodes)
 			allNodeLister := kubernetes.NewTestNodeLister(tc.initialNodes)
@@ -3613,4 +3616,61 @@ func TestStaticAutoscalerWithNodeDeclaredFeatures(t *testing.T) {
 			mock.AssertExpectationsForObjects(t, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 		})
 	}
+}
+
+func TestStaticAutoscalerRunOnceClearsRegistry(t *testing.T) {
+	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	allNodeLister := kubernetes.NewTestNodeLister(nil)
+	allPodListerMock := &podListerMock{}
+	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
+	daemonSetListerMock := &daemonSetListerMock{}
+
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, time.Now())
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNode("ng1", n1)
+
+	options := config.AutoscalingOptions{}
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, _ := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock, nil, nil, nil, nil)
+	autoscalingCtx.ListerRegistry = listerRegistry
+
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&autoscalingCtx, processors, clusterState, nil)
+	autoscalingCtx.ScaleDownActuator = sdActuator
+	quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
+	suOrchestrator := orchestrator.New()
+	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, quotasTrackerFactory)
+
+	registry := fakepods.NewRegistry(nil)
+	fakePodUID := types.UID("fake-pod-uid")
+	registry.SetCapacityBuffer(fakePodUID, &cbv1beta1.CapacityBuffer{})
+	assert.NotNil(t, registry.GetCapacityBuffer(fakePodUID))
+
+	autoscaler := &StaticAutoscaler{
+		AutoscalingContext:         &autoscalingCtx,
+		clusterStateRegistry:       clusterState,
+		scaleDownPlanner:           sdPlanner,
+		scaleDownActuator:          sdActuator,
+		scaleUpOrchestrator:        suOrchestrator,
+		processors:                 processors,
+		loopStartNotifier:          loopstart.NewObserversList(nil),
+		processorCallbacks:         processorCallbacks,
+		capacityBufferPodsRegistry: registry,
+		initialized:                true,
+	}
+
+	readyNodeLister.SetNodes([]*apiv1.Node{n1})
+	allNodeLister.SetNodes([]*apiv1.Node{n1})
+	allPodListerMock.On("List").Return([]*apiv1.Pod{}, nil).Once()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
+
+	err := autoscaler.RunOnce(time.Now())
+	assert.NoError(t, err)
+	assert.Nil(t, registry.GetCapacityBuffer(fakePodUID))
 }
