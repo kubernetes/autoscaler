@@ -447,6 +447,11 @@ func (s *PredicateSnapshot) DeviceClassResolver() schedulerinterface.DeviceClass
 	return s.draSnapshot.DeviceClassResolver()
 }
 
+// PodGroups returns the snapshot as PodGroupLister.
+func (s *PredicateSnapshot) PodGroups() schedulerinterface.PodGroupLister {
+	return s.draSnapshot.PodGroups()
+}
+
 // CSINodes returns the CSI nodes snapshot.
 func (s *PredicateSnapshot) CSINodes() schedulerinterface.CSINodeLister {
 	return s.csiSnapshot.CSINodes()
@@ -500,7 +505,9 @@ func (s *PredicateSnapshot) modifyResourceClaimsForNewPod(podInfo *framework.Pod
 	// so we don't add them. The claims should already be allocated in the provided PodInfo.
 	var podOwnedClaims []*resourceapi.ResourceClaim
 	for _, claim := range podInfo.NeededResourceClaims {
-		if err := resourceclaim.IsForPod(podInfo.Pod, claim); err == nil {
+		// TODO(autoscaler/issues/9570): KEP-5729 changed IsForPod to be able to work
+		// with pod groups, re-evaluate whether they need to be considered here.
+		if err := resourceclaim.IsForPod(podInfo.Pod, claim, false); err == nil {
 			podOwnedClaims = append(podOwnedClaims, claim)
 		}
 	}

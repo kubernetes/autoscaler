@@ -30,8 +30,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BENCHMARK_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-VPA_DIR="$(cd "${BENCHMARK_DIR}/.." && pwd)"
-REPO_ROOT="$(cd "${VPA_DIR}/.." && pwd)"
+VPA_DIR="$(cd "${BENCHMARK_DIR}/../.." && pwd)"
+REPO_ROOT="$(cd "${VPA_DIR}/../" && pwd)"
 
 KIND_CLUSTER_NAME="${KIND_CLUSTER_NAME:-kind}"
 
