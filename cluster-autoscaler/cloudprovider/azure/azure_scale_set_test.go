@@ -1737,17 +1737,17 @@ type testPollingHandler[T any] struct {
 	polled bool
 }
 
-func (h *testPollingHandler[T]) Done() bool {
-	return h.polled && h.err == nil
+func (f *testPollingHandler[T]) Done() bool {
+	return f.polled && f.err == nil
 }
 
-func (h *testPollingHandler[T]) Poll(_ context.Context) (*http.Response, error) {
-	h.polled = true
-	return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, h.err
+func (f *testPollingHandler[T]) Poll(_ context.Context) (*http.Response, error) {
+	f.polled = true
+	return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, f.err
 }
 
-func (h *testPollingHandler[T]) Result(_ context.Context, _ *T) error {
-	return h.err
+func (f *testPollingHandler[T]) Result(_ context.Context, _ *T) error {
+	return f.err
 }
 
 // newTestPollerWithError creates a runtime.Poller that returns the given error on PollUntilDone.
