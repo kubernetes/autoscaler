@@ -61,6 +61,8 @@ const (
 	rcCreationRetryDelay   = 20 * time.Second
 	makeSchedulableTimeout = 10 * time.Minute
 	makeSchedulableDelay   = 20 * time.Second
+	nodeCountStableFor     = 20 * time.Second
+	nodeCountPollInterval  = 5 * time.Second
 	freshStatusLimit       = 20 * time.Second
 
 	disabledTaint           = "DisabledForAutoscalingTest"
@@ -110,15 +112,21 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 
 		framework.ExpectNoError(addKubeSystemPdbs(ctx, f))
 
-		nodes, err := e2enode.GetReadySchedulableNodes(ctx, c)
-		framework.ExpectNoError(err)
+		var nodes *v1.NodeList
 
 		if !nodeCountSet {
+			nodes, err = e2enode.GetReadySchedulableNodes(ctx, c)
+			framework.ExpectNoError(err)
+
 			// Guard the same number of schedulable nodes in every test case.
 			nodeCount = len(nodes.Items)
 			gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty(), "Initial cluster must have at least one schedulable node")
 			nodeCountSet = true
 			ginkgo.By(fmt.Sprintf("Captured initial cluster size: %v", nodeCount))
+		} else {
+			ginkgo.By(fmt.Sprintf("Waiting for initial cluster size to be stable at %v ready schedulable nodes", nodeCount))
+			nodes, err = waitForStableReadySchedulableNodeCount(ctx, c, nodeCount, scaleDownTimeout)
+			framework.ExpectNoError(err)
 		}
 
 		gomega.Expect(nodes.Items).To(gomega.HaveLen(nodeCount), "Cluster size should match the initial baseline size (test isolation failure)")
@@ -338,9 +346,9 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 			defer func() {
 				framework.ExpectNoError(cleanupFunc())
 			}()
-			// Verify that cluster size is not changed
+			// Verify that the cluster size increased.
 			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, f.ClientSet,
-				func(size int) bool { return size > nodeCount }, time.Second))
+				func(size int) bool { return size > nodeCount }, scaleUpTimeout))
 		})
 
 		f.It("shouldn't scale up when expendable pod is preempted", feature.ClusterSizeAutoscalingScaleUp, func(ctx context.Context) {
@@ -658,6 +666,44 @@ func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interfac
 		klog.Infof("Waiting for cluster with func, current size %d, not ready nodes %d", numNodes, numNodes-numReady)
 	}
 	return fmt.Errorf("timeout waiting %v for appropriate cluster size", timeout)
+}
+
+func waitForStableReadySchedulableNodeCount(ctx context.Context, c clientset.Interface, expected int, timeout time.Duration) (*v1.NodeList, error) {
+	var nodes *v1.NodeList
+	var stableSince time.Time
+
+	err := wait.PollUntilContextTimeout(ctx, nodeCountPollInterval, timeout, true, func(ctx context.Context) (bool, error) {
+		currentNodes, err := e2enode.GetReadySchedulableNodes(ctx, c)
+		if err != nil {
+			stableSince = time.Time{}
+			klog.Warningf("Failed to list ready schedulable nodes: %v", err)
+			return false, nil
+		}
+
+		nodes = currentNodes
+		current := len(currentNodes.Items)
+		if current != expected {
+			stableSince = time.Time{}
+			klog.Infof("Waiting for %d ready schedulable nodes, current size %d", expected, current)
+			return false, nil
+		}
+
+		if stableSince.IsZero() {
+			stableSince = time.Now()
+			klog.Infof("Cluster has %d ready schedulable nodes, waiting %s for stability", expected, nodeCountStableFor)
+			return false, nil
+		}
+
+		if time.Since(stableSince) >= nodeCountStableFor {
+			klog.Infof("Cluster stayed at %d ready schedulable nodes for %s", expected, nodeCountStableFor)
+			return true, nil
+		}
+		return false, nil
+	})
+	if err != nil {
+		return nodes, fmt.Errorf("timeout waiting %v for %d stable ready schedulable nodes", timeout, expected)
+	}
+	return nodes, nil
 }
 
 func waitForCaPodsReadyInNamespace(ctx context.Context, f *framework.Framework, c clientset.Interface, tolerateUnreadyCount int) error {
