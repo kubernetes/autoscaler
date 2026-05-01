@@ -954,40 +954,124 @@ func TestFilterContainerRecommendations(t *testing.T) {
 }
 
 func TestIsPodLevelScalingModeEnabled(t *testing.T) {
+	scalingModeOff := vpa_types.PodScalingModeOff
+	scalingModeAuto := vpa_types.PodScalingModeAuto
+
 	tests := []struct {
 		name     string
-		vpa      *vpa_types.VerticalPodAutoscaler
+		policy   *vpa_types.PodResourcePolicy
 		expected bool
 	}{
 		{
-			name:     "nil VPA object",
-			vpa:      nil,
-			expected: false,
-		},
-		{
-			name: "VPA object with nil PodPolicies",
-			vpa: test.VerticalPodAutoscaler().
-				Get(),
+			name:     "nil PodResourcePolicy",
+			policy:   nil,
 			expected: false,
 		},
 		{
 			name: "Pod level scaling mode is set to Off",
-			vpa: test.VerticalPodAutoscaler().
-				WithPodLevelScalingMode(vpa_types.PodScalingModeOff).
-				Get(),
+			policy: &vpa_types.PodResourcePolicy{
+				PodPolicies: &vpa_types.PodResourcePolicies{
+					Mode: &scalingModeOff,
+				},
+			},
 			expected: false,
 		},
 		{
 			name: "Pod level scaling mode is set to Auto",
-			vpa: test.VerticalPodAutoscaler().
-				WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
-				Get(),
+			policy: &vpa_types.PodResourcePolicy{
+				PodPolicies: &vpa_types.PodResourcePolicies{
+					Mode: &scalingModeAuto,
+				},
+			},
 			expected: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := IsPodLevelScalingModeEnabled(tt.vpa)
+			actual := IsPodLevelScalingModeEnabled(tt.policy)
+			assert.Equal(t, tt.expected, actual, "doesn't match")
+		})
+	}
+}
+
+func TestIsContainerScalingModeRecsOnly(t *testing.T) {
+	scalingModeOff := vpa_types.ContainerScalingModeOff
+	scalingModeAuto := vpa_types.ContainerScalingModeAuto
+	scalingModeRecsOnly := vpa_types.ContainerScalingModeRecsOnly
+
+	tests := []struct {
+		name          string
+		containerName string
+		policy        *vpa_types.PodResourcePolicy
+		expected      bool
+	}{
+		{
+			name:     "nil PodResourcePolicy",
+			policy:   nil,
+			expected: false,
+		},
+		{
+			name: "nil ContainerPolicies",
+			policy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: nil,
+			},
+			expected: false,
+		},
+		{
+			name:          "Container level scaling mode is set to Off",
+			containerName: "c1",
+			policy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "c1",
+						Mode:          &scalingModeOff,
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name:          "Container level scaling mode is set to Auto",
+			containerName: "c1",
+			policy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "c1",
+						Mode:          &scalingModeAuto,
+					},
+				},
+			},
+			expected: false,
+		}, {
+			name:          "Container does not have a policy",
+			containerName: "c1",
+			policy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "c99",
+						Mode:          &scalingModeRecsOnly,
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name:          "Container level scaling mode is set to RecommendationOnly",
+			containerName: "c1",
+			policy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "c1",
+						Mode:          &scalingModeRecsOnly,
+					},
+				},
+			},
+			expected: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := IsContainerScalingModeRecsOnly(tt.containerName, tt.policy)
 			assert.Equal(t, tt.expected, actual, "doesn't match")
 		})
 	}

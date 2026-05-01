@@ -25,8 +25,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/version"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -387,10 +390,12 @@ func TestQuickOOM_VpaOvservedContainers(t *testing.T) {
 func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 	scalingModeAuto := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff
+	scalingModeRecsOnly := vpa_types.ContainerScalingModeRecsOnly
 	tests := []struct {
-		name           string
-		resourcePolicy vpa_types.ContainerResourcePolicy
-		want           bool
+		name                        string
+		resourcePolicy              vpa_types.ContainerResourcePolicy
+		want                        bool
+		VPAPodLevelResourcesEnabled bool
 	}{
 		{
 			name: "ContainerScalingModeAuto",
@@ -428,9 +433,58 @@ func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			// Containers with RecommendationOnly
+			// shouldn trigger the quick OOM.
+			name: "RecommendationOnly",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: containerName,
+				Mode:          &scalingModeRecsOnly,
+			},
+			want:                        true,
+			VPAPodLevelResourcesEnabled: true,
+		},
+		{
+			// When RecommendationOnly is default
+			// container should trigger the quick OOM.
+			name: "RecommendationOnly as default",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: vpa_types.DefaultContainerResourcePolicy,
+				Mode:          &scalingModeRecsOnly,
+			},
+			want:                        true,
+			VPAPodLevelResourcesEnabled: true,
+		},
+		{
+			// Containers with RecommendationOnly mode should fall back to Auto when the VPAPodLevelResources feature flag is turned off.
+			// In other words, they should trigger a quick OOM.
+			name: "RecommendationOnly",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: containerName,
+				Mode:          &scalingModeRecsOnly,
+			},
+			want:                        true,
+			VPAPodLevelResourcesEnabled: false,
+		},
+		{
+			// Containers with RecommendationOnly mode should fall back to Auto when the VPAPodLevelResources feature flag is turned off.
+			// In other words, they should trigger a quick OOM.
+			name: "RecommendationOnly",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: vpa_types.DefaultContainerResourcePolicy,
+				Mode:          &scalingModeRecsOnly,
+			},
+			want:                        true,
+			VPAPodLevelResourcesEnabled: false,
+		},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			if !tc.VPAPodLevelResourcesEnabled {
+				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.6"))
+			}
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAPodLevelResources, tc.VPAPodLevelResourcesEnabled)
+
 			pod := test.Pod().WithAnnotations(map[string]string{annotations.VpaObservedContainersLabel: containerName}).
 				WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).Get()
 

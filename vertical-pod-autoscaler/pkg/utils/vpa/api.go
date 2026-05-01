@@ -295,8 +295,6 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 }
 
 // FilterContainerRecommendations returns container-level recommendations whose Mode is "Auto" (the default value).
-// This behavior allows the existing code to process only containers that the user wants to manage.
-// It can be used regardless of whether pod-level scaling mode is enabled.
 func FilterContainerRecommendations(vpa *vpa_types.VerticalPodAutoscaler) []vpa_types.RecommendedContainerResources {
 	if vpa == nil || vpa.Status.Recommendation == nil || vpa.Status.Recommendation.ContainerRecommendations == nil {
 		return nil
@@ -343,15 +341,34 @@ func isContainerScalingModeAuto(containerName string, resourcePolicy *vpa_types.
 	return policy.Mode == nil || *policy.Mode == vpa_types.ContainerScalingModeAuto
 }
 
-// IsPodLevelScalingModeEnabled checks whether scaling at the Pod level is enabled.
-func IsPodLevelScalingModeEnabled(vpa *vpa_types.VerticalPodAutoscaler) bool {
-	if vpa == nil ||
-		vpa.Spec.ResourcePolicy == nil ||
-		vpa.Spec.ResourcePolicy.PodPolicies == nil ||
-		vpa.Spec.ResourcePolicy.PodPolicies.Mode == nil {
+// IsContainerScalingModeRecsOnly function determines whether a container is in RecommendationOnly mode.
+func IsContainerScalingModeRecsOnly(containerName string, resourcePolicy *vpa_types.PodResourcePolicy) bool {
+	policy := GetContainerResourcePolicy(containerName, resourcePolicy)
+	if policy == nil || policy.Mode == nil {
+		// no per-container policy container's mode is auto
 		return false
 	}
-	return *vpa.Spec.ResourcePolicy.PodPolicies.Mode == vpa_types.PodScalingModeAuto
+	return *policy.Mode == vpa_types.ContainerScalingModeRecsOnly
+}
+
+// IsContainerScalingModeOff function determines whether a container is in Off mode.
+func IsContainerScalingModeOff(containerName string, resourcePolicy *vpa_types.PodResourcePolicy) bool {
+	policy := GetContainerResourcePolicy(containerName, resourcePolicy)
+	if policy == nil || policy.Mode == nil {
+		// no per-container policy container's mode is auto
+		return false
+	}
+	return *policy.Mode == vpa_types.ContainerScalingModeOff
+}
+
+// IsPodLevelScalingModeEnabled checks whether scaling at the Pod level is enabled.
+func IsPodLevelScalingModeEnabled(policy *vpa_types.PodResourcePolicy) bool {
+	if policy == nil ||
+		policy.PodPolicies == nil ||
+		policy.PodPolicies.Mode == nil {
+		return false
+	}
+	return *policy.PodPolicies.Mode == vpa_types.PodScalingModeAuto
 }
 
 // GetPodControlledValues returns controlled resource values from the podPolicies stanza.

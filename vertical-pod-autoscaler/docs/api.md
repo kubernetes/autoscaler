@@ -44,7 +44,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `containerName` _string_ | Name of the container or DefaultContainerResourcePolicy, in which<br />case the policy is used by the containers that don't have their own<br />policy specified. |  |  |
-| `mode` _[ContainerScalingMode](#containerscalingmode)_ | Whether autoscaler is enabled for the container. The default is "Auto". |  | Enum: [Auto Off] <br />Optional: \{\} <br /> |
+| `mode` _[ContainerScalingMode](#containerscalingmode)_ | Whether autoscaler is enabled for the container. The default is "Auto". |  | Enum: [Auto Off RecommendationOnly] <br />Optional: \{\} <br /> |
 | `minAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Specifies the minimal amount of resources that will be recommended<br />for the container. The default is no minimum. |  | Optional: \{\} <br /> |
 | `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that will be recommended<br />for the container. The default is no maximum. |  | Optional: \{\} <br /> |
 | `controlledResources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcename-v1-core)_ | Specifies the type of recommendations that will be computed<br />(and possibly applied) by VPA.<br />If not specified, the default of [ResourceCPU, ResourceMemory] will be used. |  |  |
@@ -145,10 +145,10 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `target` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Pod-level recommended amount of resources,<br />computed by aggregating container-level targets. |  | Optional: \{\} <br /> |
-| `lowerBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Pod-level minimum recommended amount of resources,<br />computed by aggregating container-level lower bounds. |  | Optional: \{\} <br /> |
-| `upperBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Pod-level maximum recommended amount of resources,<br />computed by aggregating container-level upper bounds. |  | Optional: \{\} <br /> |
-| `uncappedTarget` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Pod-level UncappedTarget, computed by aggregating container-level uncapped targets. |  | Optional: \{\} <br /> |
+| `target` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Pod-level recommended amount of resources,<br />computed by aggregating container-level targets. |  | Optional: \{\} <br /> |
+| `lowerBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Pod-level minimum recommended amount of resources,<br />computed by aggregating container-level lower bounds. |  | Optional: \{\} <br /> |
+| `upperBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Pod-level maximum recommended amount of resources,<br />computed by aggregating container-level upper bounds. |  | Optional: \{\} <br /> |
+| `uncappedTarget` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Pod-level UncappedTarget, computed by aggregating container-level uncapped targets. |  | Optional: \{\} <br /> |
 
 
 #### PodResourcePolicies
@@ -165,9 +165,9 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `mode` _[PodScalingMode](#podscalingmode)_ | Indicates whether the autoscaler is enabled at the pod level.<br />The default is "Off", so the autoscaler does not compute recommendations at the pod level. |  | Enum: [Auto Off] <br />Optional: \{\} <br /> |
-| `minAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Specifies the minimum amount of resources that the autoscaler recommends at the pod level.<br />The default is no minimum. |  | Optional: \{\} <br /> |
-| `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that the autoscaler recommends at the pod level.<br />The default is no maximum. |  | Optional: \{\} <br /> |
-| `controlledResources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcename-v1-core)_ | Specifies the resource types (CPU, memory, or both) that VPA computes at the pod level and may apply.<br />If not specified, the default of [ResourceCPU, ResourceMemory] will be used. |  |  |
+| `minAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Specifies the minimum amount of resources that the autoscaler recommends at the pod level.<br />The default is no minimum. |  | Optional: \{\} <br /> |
+| `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that the autoscaler recommends at the pod level.<br />The default is no maximum. |  | Optional: \{\} <br /> |
+| `controlledResources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcename-v1-core)_ | Specifies the resource types (CPU, memory, or both) that VPA computes at the pod level and may apply.<br />If not specified, the default of [ResourceCPU, ResourceMemory] will be used. |  |  |
 | `controlledValues` _[ContainerControlledValues](#containercontrolledvalues)_ | Specifies which resource values VPA controls at the pod level.<br />The default is "RequestsAndLimits". |  | Enum: [RequestsAndLimits RequestsOnly] <br />Optional: \{\} <br /> |
 
 

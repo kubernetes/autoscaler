@@ -27,10 +27,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
 
@@ -1301,11 +1301,18 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelRes
 		InstallLimitRangeWithMax(f, "80m", "80Mi", apiv1.LimitTypePod)
 
 		ginkgo.By("Setting up a VPA CRD")
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(utils.HamsterTargetRef).
-			WithPodLevelTarget("55m", "55Mi").
+			WithContainer(containerName1).
+			WithScalingMode(containerName1, vpa_types.ContainerScalingModeRecsOnly).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName1).
+					WithTarget("55m", "55Mi").
+					GetContainerResources()).
 			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 			Get()
 
@@ -1336,11 +1343,18 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelRes
 		InstallLimitRangeWithMin(f, "80m", "80Mi", apiv1.LimitTypePod)
 
 		ginkgo.By("Setting up a VPA CRD")
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(utils.HamsterTargetRef).
-			WithPodLevelTarget("55m", "55Mi").
+			WithContainer(containerName1).
+			WithScalingMode(containerName1, vpa_types.ContainerScalingModeRecsOnly).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName1).
+					WithTarget("55m", "55Mi").
+					GetContainerResources()).
 			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 			Get()
 
@@ -1370,12 +1384,18 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelRes
 		InstallLimitRangeWithMin(f, "80m", "80Mi", apiv1.LimitTypePod)
 
 		ginkgo.By("Setting up a VPA CRD")
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(utils.HamsterTargetRef).
-			WithPodLevelTarget("55m", "55Mi").
-			WithPodLevelUncappedTarget("55m", "55Mi").
+			WithContainer(containerName1).
+			WithScalingMode(containerName1, vpa_types.ContainerScalingModeRecsOnly).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName1).
+					WithTarget("55m", "55Mi").
+					GetContainerResources()).
 			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 			Get()
 
@@ -1403,11 +1423,18 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelRes
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
 
 		ginkgo.By("Setting up a VPA CRD")
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(utils.HamsterTargetRef).
-			WithPodLevelTarget("55m", "55Mi").
+			WithContainer(containerName1).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName1).
+					WithTarget("55m", "55Mi").
+					GetContainerResources()).
+			WithScalingMode(containerName1, vpa_types.ContainerScalingModeRecsOnly).
 			WithPodLevelMinAllowed("90m", "90Mi").
 			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 			Get()
@@ -1437,13 +1464,20 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelRes
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
 
 		ginkgo.By("Setting up a VPA CRD")
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(utils.HamsterTargetRef).
-			WithPodLevelTarget("110m", "110Mi").
-			WithPodLevelMaxAllowed("80m", "80Mi").
+			WithContainer(containerName1).
+			WithScalingMode(containerName1, vpa_types.ContainerScalingModeRecsOnly).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName1).
+					WithTarget("110m", "110Mi").
+					GetContainerResources()).
 			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			WithPodLevelMaxAllowed("80m", "80Mi").
 			Get()
 
 		utils.InstallVPA(f, vpaCRD)
@@ -1483,16 +1517,15 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelRes
 					WithContainer(containerName1).
 					WithTarget("33m", "33Mi").
 					GetContainerResources()).
+			// Even though c2 has a recommendation, the admission controller
+			// should not manage its resource stanza because the container uses RecommendationOnly mode.
 			WithContainer(containerName2).
 			WithScalingMode(containerName2, vpa_types.ContainerScalingModeRecsOnly).
-			// Even though c2 contains a recommendation, the admission controller
-			// should not manage its resource stanza because of its scaling mode.
 			AppendRecommendation(
 				test.Recommendation().
 					WithContainer(containerName2).
 					WithTarget("44m", "44Mi").
 					GetContainerResources()).
-			WithPodLevelTarget("110m", "110Mi").
 			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 			Get()
 
@@ -1505,10 +1538,10 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelRes
 		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
 		for _, pod := range podList.Items {
 			// check pod level resources stanza, should maintain 1:2 request-to-limit ratio
-			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("110m")))
-			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("110Mi")))
-			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("220m")))
-			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("220Mi")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("77m")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("77Mi")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("154m")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("154Mi")))
 			// check container level resources stanza
 			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("33m")))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("33Mi")))
@@ -1546,16 +1579,15 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelRes
 					WithContainer(containerName1).
 					WithTarget("33m", "33Mi").
 					GetContainerResources()).
-			WithContainer(containerName2).
-			WithScalingMode(containerName2, vpa_types.ContainerScalingModeRecsOnly).
 			// Even though c2 contains a recommendation, the admission controller
 			// should not manage its resource stanza because of its scaling mode.
+			WithContainer(containerName2).
+			WithScalingMode(containerName2, vpa_types.ContainerScalingModeRecsOnly).
 			AppendRecommendation(
 				test.Recommendation().
 					WithContainer(containerName2).
 					WithTarget("88m", "88Mi").
 					GetContainerResources()).
-			WithPodLevelTarget("110m", "110Mi").
 			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 			Get()
 
@@ -1568,16 +1600,17 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller with VPAPodLevelRes
 		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
 		for _, pod := range podList.Items {
 			// check pod level resources stanza, should maintain 1:2 request-to-limit ratio
-			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("110m")))
-			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("110Mi")))
-			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("220m")))
-			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("220Mi")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("121m")))
+			gomega.Expect(pod.Spec.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("121Mi")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("242m")))
+			gomega.Expect(pod.Spec.Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("242Mi")))
 			// check container level resources stanza for c1, should maintain 1:3 request-to-limit ratio
 			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("33m")))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("33Mi")))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("99m")))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Limits[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("99Mi")))
-			// check container level resources stanza for c2, admission controller should not change the resource stanza
+			// Check the container-level resources stanza for c2.
+			// The admission controller should not modify its resource stanza, since c2 is in RecommendationOnly mode.
 			gomega.Expect(pod.Spec.Containers[1].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("11m")))
 			gomega.Expect(pod.Spec.Containers[1].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("11Mi")))
 			gomega.Expect(pod.Spec.Containers[1].Resources.Limits[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("44m")))

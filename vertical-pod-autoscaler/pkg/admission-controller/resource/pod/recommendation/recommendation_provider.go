@@ -23,6 +23,7 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
@@ -50,10 +51,18 @@ func NewProvider(calculator limitrange.LimitRangeCalculator,
 // GetContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
 // If addAll is set to true, containers w/o a recommendation are also added to the list (and their non-recommended requests and limits will always be preserved if present),
 // otherwise they're skipped (default behaviour).
+// Note: In the future, this function could be improved to return nil when all containers use RecommendationOnly mode. However, making this change now would break some of the e2e tests on the main branch.
 func GetContainersResources(pod *corev1.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources, limitRange *corev1.LimitRangeItem,
 	addAll bool, annotations utils.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
 	resources := make([]vpa_api_util.ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
+		// We skip containers with RecommendationOnly mode, as their resource stanzas are not managed,
+		// only when the VPAPodLevelResources feature gate is enabled.
+		// Otherwise, we fall back from RecommendationOnly container mode to Auto.
+		if features.Enabled(features.VPAPodLevelResources) && vpa_api_util.IsContainerScalingModeRecsOnly(container.Name, vpaResourcePolicy) {
+			continue
+		}
+
 		containerRequests, containerLimits := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
 		recommendation := vpa_api_util.GetRecommendationForContainer(container.Name, &podRecommendation)
 		if recommendation == nil {
@@ -111,8 +120,9 @@ func GetContainersResources(pod *corev1.Pod, vpaResourcePolicy *vpa_types.PodRes
 	return resources
 }
 
-// GetContainersResourcesForPod returns recommended request for a given pod and associated annotations.
-// The returned slice corresponds 1-1 to containers in the Pod.
+// GetContainersResourcesForPod returns container-level recommended resource requests and limits,
+// along with corresponding annotations. Additionally, the function returns pod-level requests and limits.
+// The first returned slice corresponds 1-1 to containers in the Pod.
 func (p *recommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, *utils.Annotations, *vpa_api_util.ContainerResources, error) {
 	if vpa == nil || pod == nil {
 		klog.V(2).InfoS("Can't calculate recommendations, one of VPA or Pod is nil", "vpa", vpa, "pod", pod)
@@ -181,13 +191,13 @@ func GetPodResources(pod *corev1.Pod,
 	}
 	resources.Requests = recommendation.PodRecommendations.Target
 
-	containerControlledValues := vpa_api_util.GetPodControlledValues(vpaResourcePolicy)
-	if containerControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
+	controlledValues := vpa_api_util.GetPodControlledValues(vpaResourcePolicy)
+	if controlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
 		proportionalLimits, _ := vpa_api_util.GetProportionalLimit(podLimits, podRequests, resources.Requests, corev1.ResourceList{})
 		if proportionalLimits != nil {
 			resources.Limits = proportionalLimits
 		}
-	} else if containerControlledValues == vpa_types.ContainerControlledValuesRequestsOnly {
+	} else if controlledValues == vpa_types.ContainerControlledValuesRequestsOnly {
 		if podLimits != nil {
 			resources.Limits = podLimits
 			// Ensure requests are not greater than limits for CPU and memory.

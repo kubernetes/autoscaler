@@ -25,6 +25,7 @@ import (
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
@@ -84,11 +85,8 @@ func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *vpaautoscalin
 
 	for _, postProcessor := range r.recommendationPostProcessor {
 		podLevel := false
-		if vpa.ResourcePolicy != nil &&
-			vpa.ResourcePolicy.PodPolicies != nil &&
-			vpa.ResourcePolicy.PodPolicies.Mode != nil &&
-			*vpa.ResourcePolicy.PodPolicies.Mode == vpaautoscalingv1.PodScalingModeAuto {
-			podLevel = true
+		if features.Enabled(features.VPAPodLevelResources) {
+			podLevel = vpa_utils.IsPodLevelScalingModeEnabled(vpa.ResourcePolicy)
 		}
 		listOfResourceRecommendation = postProcessor.Process(podLevel, observedVpa, listOfResourceRecommendation)
 		if podLevel {

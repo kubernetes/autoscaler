@@ -25,12 +25,12 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
 
@@ -244,15 +244,22 @@ var _ = UpdaterE2eDescribe("Updater with VPAPodLevelResources", func() {
 			nil /*pod level cpu and memory limits*/)
 
 		ginkgo.By("Setting up a VPA CRD")
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
+		// Pod-level requests are outside the recommended range.
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName1).
+			WithScalingMode(containerName1, vpa_types.ContainerScalingModeRecsOnly).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName1).
+					WithLowerBound("120m", "120Mi").
+					WithTarget("130m", "130Mi").
+					WithUpperBound("140m", "140Mi").
+					GetContainerResources()).
 			WithUpdateMode(vpa_types.UpdateModeRecreate).
-			// Pod-level requests are outside the recommended range.
-			WithPodLevelLowerBound("120m", "120Mi").
-			WithPodLevelTarget("130m", "130Mi").
-			WithPodLevelUpperBound("140m", "140Mi").
 			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 			Get()
 
@@ -289,7 +296,7 @@ var _ = UpdaterE2eDescribe("Updater with VPAPodLevelResources", func() {
 		}()
 		statusUpdater.Run(stopCh)
 
-		d := NewHamsterDeploymentWithPodLevelResources(f, 3,
+		d := NewHamsterDeploymentWithPodLevelResources(f, 2,
 			[]containerResources{
 				{
 					Requests: apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("10m"), apiv1.ResourceMemory: resource.MustParse("10Mi")}, /*cpu and memory requests for the first container*/
@@ -300,7 +307,9 @@ var _ = UpdaterE2eDescribe("Updater with VPAPodLevelResources", func() {
 			nil /*pod level cpu and memory limits*/)
 
 		ginkgo.By("Setting up a VPA CRD")
-		containerName1 := "hamster1"
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
+		containerName2 := utils.GetHamsterContainerNameByIndexV2(1)
+		// Pod-level requests are within the recommended range
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
@@ -315,12 +324,16 @@ var _ = UpdaterE2eDescribe("Updater with VPAPodLevelResources", func() {
 					WithLowerBound("40m", "40Mi").
 					WithTarget("50m", "50Mi").
 					WithUpperBound("60m", "60Mi").
-					WithUncappedTarget("60m", "60Mi").
 					GetContainerResources()).
-			// Pod-level requests are within the recommended range
-			WithPodLevelLowerBound("90m", "90Mi").
-			WithPodLevelTarget("100m", "100Mi").
-			WithPodLevelUpperBound("110m", "110Mi").
+			WithContainer(containerName2).
+			WithScalingMode(containerName2, vpa_types.ContainerScalingModeRecsOnly).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName2).
+					WithLowerBound("50m", "50Mi").
+					WithTarget("50m", "50Mi").
+					WithUpperBound("50m", "50Mi").
+					GetContainerResources()).
 			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 			Get()
 
@@ -357,21 +370,28 @@ var _ = UpdaterE2eDescribe("Updater with VPAPodLevelResources", func() {
 		}()
 		statusUpdater.Run(stopCh)
 
-		d := NewHamsterDeploymentWithPodLevelResources(f, 2,
+		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
 			nil,
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
 			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
 
 		ginkgo.By("Setting up a VPA CRD")
+		containerName := utils.GetHamsterContainerNameByIndexV2(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithScalingMode(containerName, vpa_types.ContainerScalingModeRecsOnly).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithLowerBound("110m", "110Mi").
+					WithTarget("120m", "120Mi").
+					WithUpperBound("130m", "130Mi").
+					GetContainerResources()).
 			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 			// Pod-level requests are outside the recommended range.
-			WithPodLevelLowerBound("110m", "110Mi").
-			WithPodLevelTarget("120m", "120Mi").
-			WithPodLevelUpperBound("130m", "130Mi").
 			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
 			Get()
 

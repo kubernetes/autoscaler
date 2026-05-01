@@ -147,7 +147,7 @@ func SumContainerLevelRecommendations(containerRecommendations []vpa_types.Recom
 }
 
 // PodRequestsAndLimits returns a copy of the actual Pod-level resource
-// requests and limits:
+// requests and limits from the Pod template:
 //
 //   - If the "In-Place Pod Resize" (IPPR) feature at the Pod-level [1] is enabled, the actual
 //     resource requests are stored in PodStatus.

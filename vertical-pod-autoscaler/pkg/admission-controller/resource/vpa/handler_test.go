@@ -912,6 +912,56 @@ func TestValidateVPAPodLevel(t *testing.T) {
 			expectError:                 errors.New("sum of container-level memory MinAllowed values (60Mi) must be equal to or greater than the Pod-level MinAllowed value (61Mi)"),
 		},
 		{
+			name: "Pod-level memory minAllowed is set, and the container-level value is omitted",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "c1",
+								MinAllowed:    nil,
+							},
+						},
+						PodPolicies: &vpa_types.PodResourcePolicies{
+							MinAllowed: corev1.ResourceList{
+								memory: resource.MustParse("60Mi"),
+							},
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: true,
+			expectError:                 nil,
+		},
+		{
+			name: "Pod-level memory maxAllowed is set, and the container-level value is omitted",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "c1",
+								MaxAllowed:    nil,
+							},
+						},
+						PodPolicies: &vpa_types.PodResourcePolicies{
+							MaxAllowed: corev1.ResourceList{
+								memory: resource.MustParse("60Mi"),
+							},
+						},
+					},
+				},
+			},
+			VPAPodLevelResourcesEnabled: true,
+			expectError:                 nil,
+		},
+		{
 			name: "Pod-level and container-level memory maxAllowed values are set and violation occurs",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{

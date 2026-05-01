@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limits"
@@ -48,6 +49,8 @@ var (
 	// pod level annotations
 	cappedToPodLevelMinAllowed cappingAction = "capped to pod level minAllowed"
 	cappedToPodLevelMaxAllowed cappingAction = "capped to pod level maxAllowed"
+	cappedToPodLimitRangeMax   cappingAction = "capped to fit Max in Pod LimitRange"
+	cappedToPodLimitRangeMin   cappingAction = "capped to fit Min in Pod LimitRange"
 )
 
 func toCappingAnnotation(isPodLevel bool, resourceName corev1.ResourceName, action cappingAction) string {
@@ -91,32 +94,13 @@ func (c *cappingRecommendationProcessor) Apply(
 		klog.V(0).InfoS("Failed to fetch LimitRange for namespace", "namespace", pod.Namespace)
 	}
 
-	var updatedPodRecommendation *vpa_types.PodRecommendations
-	podAnnotations := []string{}
-	if podRecommendation.PodRecommendations != nil && IsPodLevelScalingModeEnabled(vpa) {
-		// Note: As with container recommendations, we do not generate annotations when a Pod LimitRange field is violated.
-		// We may implement this capability in the future.
-		updatedPodRecommendation, err = c.capProportionallyToPodLimitRangeAtPodLevel(*podRecommendation.PodRecommendations, pod)
-		if err != nil {
-			return nil, nil, err
-		}
-		if policy.PodPolicies != nil {
-			updatedPodRecommendation, podAnnotations = getCappedRecommendationForPod(updatedPodRecommendation, policy.PodPolicies)
-		}
-		if containerLimitRange != nil {
-			klog.V(0).InfoS(
-				"Container LimitRange object exists while VPA is configured with Pod-level scaling enabled. It is recommended to remove it from the namespace as described in KEP-2837.",
-				"namespace", pod.Namespace,
-			)
-		}
-	}
-
 	updatedRecommendations := []vpa_types.RecommendedContainerResources{}
 	containerToAnnotationsMap := utils.ContainerToAnnotationsMap{}
 	limitAdjustedRecommendation, err := c.capProportionallyToPodLimitRange(podRecommendation.ContainerRecommendations, pod)
 	if err != nil {
 		return nil, nil, err
 	}
+
 	for _, containerRecommendation := range limitAdjustedRecommendation {
 		container := getContainer(containerRecommendation.ContainerName, pod)
 
@@ -124,6 +108,7 @@ func (c *cappingRecommendationProcessor) Apply(
 			klog.V(2).InfoS("No matching Container found for recommendation", "containerName", containerRecommendation.ContainerName, "vpa", klog.KObj(vpa))
 			continue
 		}
+
 		updatedContainerResources, containerAnnotations, err := getCappedRecommendationForContainer(
 			pod, *container, &containerRecommendation, policy, containerLimitRange)
 
@@ -137,17 +122,81 @@ func (c *cappingRecommendationProcessor) Apply(
 		updatedRecommendations = append(updatedRecommendations, *updatedContainerResources)
 	}
 
+	var updatedPodRecommendation *vpa_types.PodRecommendations
 	annotations := utils.Annotations{
 		Container: containerToAnnotationsMap,
-		Pod:       podAnnotations,
+		Pod:       nil,
 	}
 
+	if features.Enabled(features.VPAPodLevelResources) && IsPodLevelScalingModeEnabled(vpa.Spec.ResourcePolicy) {
+		var podPolicyAnnotations []string
+		updatedRecommendations, podPolicyAnnotations = capRecommendationByPodConstraints(updatedRecommendations, policy.PodPolicies)
+		annotations.Pod = append(annotations.Pod, podPolicyAnnotations...)
+		if containerLimitRange != nil {
+			klog.V(0).InfoS(
+				"Container LimitRange object exists while VPA is configured with Pod-level scaling enabled. It is recommended to remove it from the namespace as described in KEP-2837.",
+				"namespace", pod.Namespace,
+			)
+		}
+		updatedPodRecommendation = resourcehelpers.SumContainerLevelRecommendations(updatedRecommendations)
+		var podLimitRangeAnnotations []string
+		updatedPodRecommendation, podLimitRangeAnnotations, _ = c.capPodLevelRecommendationToPodLimitRange(updatedPodRecommendation, pod)
+		annotations.Pod = append(annotations.Pod, podLimitRangeAnnotations...)
+	}
 	return &vpa_types.RecommendedPodResources{
 		ContainerRecommendations: updatedRecommendations,
 		PodRecommendations:       updatedPodRecommendation}, &annotations, nil
 }
 
-// getCappedRecommendationForContainer returns a recommendation for the given container, adjusted to obey policy and limits.
+// capPodLevelRecommendationToPodLimitRange processes pod-level recommendations
+// and ensures they comply with the Min and Max constraints defined in the LimitRange object for Pod type.
+// It also returns annotations that describe any modifications applied to the pod-level recommendations.
+func (c *cappingRecommendationProcessor) capPodLevelRecommendationToPodLimitRange(
+	podRecommendations *vpa_types.PodRecommendations,
+	pod *corev1.Pod,
+) (*vpa_types.PodRecommendations, []string, error) {
+	podLimitRange, err := c.limitsRangeCalculator.GetPodLimitRangeItem(pod.Namespace)
+	if err != nil {
+		return nil, nil, err
+	}
+	if podLimitRange == nil {
+		return podRecommendations, nil, nil
+	}
+	return capPodLevelRecommendationToPodLimitRange(podRecommendations, pod, podLimitRange)
+}
+
+func capPodLevelRecommendationToPodLimitRange(
+	podRecommendations *vpa_types.PodRecommendations, pod *corev1.Pod, podLimitRange *corev1.LimitRangeItem) (*vpa_types.PodRecommendations, []string, error) {
+	if podRecommendations == nil {
+		return nil, nil, errors.New("error obtaining pod level recommendations")
+	}
+	if podLimitRange == nil {
+		return podRecommendations, nil, nil
+	}
+
+	requests, limits := resourcehelpers.PodRequestsAndLimits(pod)
+	cappingAnnotations := make([]string, 0)
+
+	process := func(recommendation corev1.ResourceList, genAnnotations bool) {
+		annotations := applyContainerLimitRange(true, recommendation, requests, limits, podLimitRange)
+		if genAnnotations {
+			cappingAnnotations = append(cappingAnnotations, annotations...)
+		}
+	}
+
+	process(podRecommendations.LowerBound, false)
+	process(podRecommendations.Target, true)
+	process(podRecommendations.UpperBound, false)
+
+	return podRecommendations, cappingAnnotations, nil
+}
+
+// getCappedRecommendationForContainer returns a recommendation for the given container,
+// adjusted to obey the following:
+//
+// - container-level policies defined in the VPA object (minAllowed and maxAllowed)
+//
+// - limits specified in a LimitRange object of type Container
 func getCappedRecommendationForContainer(
 	pod *corev1.Pod,
 	container corev1.Container,
@@ -156,6 +205,13 @@ func getCappedRecommendationForContainer(
 	if containerRecommendation == nil {
 		return nil, nil, fmt.Errorf("no recommendation available for container name %v", container.Name)
 	}
+	// We skip containers with RecommendationOnly mode, as their resource stanzas are not managed,
+	// only when the VPAPodLevelResources feature gate is enabled.
+	// Otherwise, we fall back from RecommendationOnly container mode to Auto.
+	// if features.Enabled(features.VPAPodLevelResources) && IsContainerScalingModeRecsOnly(container.Name, policy) {
+	// 	return containerRecommendation, nil, nil
+	// }
+
 	// containerPolicy can be nil (user does not have to configure it).
 	containerPolicy := GetContainerResourcePolicy(container.Name, policy)
 	containerControlledValues := GetContainerControlledValues(container.Name, policy)
@@ -166,7 +222,7 @@ func getCappedRecommendationForContainer(
 
 	process := func(recommendation corev1.ResourceList, genAnnotations bool) {
 		containerRequests, containerLimits := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
-		limitAnnotations := applyContainerLimitRange(recommendation, containerRequests, containerLimits, limitRange)
+		limitAnnotations := applyContainerLimitRange(false, recommendation, containerRequests, containerLimits, limitRange)
 		annotations := applyVPAPolicy(recommendation, containerPolicy)
 		if genAnnotations {
 			cappingAnnotations = append(cappingAnnotations, limitAnnotations...)
@@ -188,39 +244,44 @@ func getCappedRecommendationForContainer(
 	return cappedRecommendations, cappingAnnotations, nil
 }
 
-// getCappedRecommendationForPod operates on Pod-level recommendations.
-// It updates recommendations when they fall outside the limits defined
-// in the podPolicies stanza. It also returns annotations when a violation occurs.
-func getCappedRecommendationForPod(podRecommendations *vpa_types.PodRecommendations,
-	podPolicy *vpa_types.PodResourcePolicies) (*vpa_types.PodRecommendations, []string) {
-	cappingAnnotations := make([]string, 0)
-	process := func(recommendation corev1.ResourceList, genAnnotations bool) {
-		annotations := applyPodLevelVPAPolicy(recommendation, podPolicy)
-		if genAnnotations {
-			cappingAnnotations = append(cappingAnnotations, annotations...)
-		}
+// capRecommendationByPodConstraints operates on container-level recommendations.
+// It returns updated container-level recommendations that comply with the
+// pod-level minAllowed and maxAllowed. It also returns annotations when
+// violations occur.
+func capRecommendationByPodConstraints(containerRecommendations []vpa_types.RecommendedContainerResources,
+	podPolicy *vpa_types.PodResourcePolicies) ([]vpa_types.RecommendedContainerResources, []string) {
+	// Due to no constraints, return the unmodified container-level recommendations
+	if podPolicy == nil || (podPolicy.MinAllowed == nil && podPolicy.MaxAllowed == nil) {
+		return containerRecommendations, nil
 	}
 
-	process(podRecommendations.LowerBound, false)
-	process(podRecommendations.Target, true)
-	process(podRecommendations.UpperBound, false)
+	podRecommendations := resourcehelpers.SumContainerLevelRecommendations(containerRecommendations)
+	updatedContainerRecommendations := applyPodLevelBoundsToContainers(
+		*podRecommendations,
+		containerRecommendations,
+		podPolicy.MinAllowed,
+		podPolicy.MaxAllowed,
+	)
+	updatedContainerRecommendations = ensureBoundsAreValid(updatedContainerRecommendations)
+	annotations := getPodLevelVPAPolicyAnnotations(podRecommendations.Target, podPolicy)
 
-	return podRecommendations, cappingAnnotations
+	return updatedContainerRecommendations, annotations
 }
 
-func applyPodLevelVPAPolicy(recommendation corev1.ResourceList, policy *vpa_types.PodResourcePolicies) []string {
+// getPodLevelVPAPolicyAnnotations returns annotations based on the
+// pod-level VPA policies. This function should only run on target-level
+// recommendations, as they are equivalent to resource requests.
+func getPodLevelVPAPolicyAnnotations(recommendation corev1.ResourceList, policy *vpa_types.PodResourcePolicies) []string {
 	if policy == nil {
 		return nil
 	}
 	annotations := make([]string, 0)
 	for resourceName, recommended := range recommendation {
-		cappedToMin, isCapped := maybeCapToPodLevelPolicyMin(recommended, resourceName, policy)
-		recommendation[resourceName] = cappedToMin
+		_, isCapped := maybeCapToPodLevelPolicyMin(recommended, resourceName, policy)
 		if isCapped {
 			annotations = append(annotations, toCappingAnnotation(true, resourceName, cappedToPodLevelMinAllowed))
 		}
-		cappedToMax, isCapped := maybeCapToPodLevelPolicyMax(cappedToMin, resourceName, policy)
-		recommendation[resourceName] = cappedToMax
+		_, isCapped = maybeCapToPodLevelPolicyMax(recommended, resourceName, policy)
 		if isCapped {
 			annotations = append(annotations, toCappingAnnotation(true, resourceName, cappedToPodLevelMaxAllowed))
 		}
@@ -446,7 +507,7 @@ func processContainerLevelRecs(
 	maxs corev1.ResourceList,
 	fieldGetter func(vpa_types.RecommendedContainerResources) *corev1.ResourceList,
 ) []vpa_types.RecommendedContainerResources {
-	scaleAll := func(resourceName corev1.ResourceName, podRec, target resource.Quantity) {
+	scaleAll := func(resourceName corev1.ResourceName, roundingMode roundingMode, podRec, target resource.Quantity) {
 		for i := range containerLevelRecs {
 			current := (*fieldGetter(containerLevelRecs[i]))[resourceName]
 
@@ -458,29 +519,29 @@ func processContainerLevelRecs(
 			if resourceName == corev1.ResourceMemory {
 				scaled, _ = scaleQuantityProportionallyMem(&current, &podRec, &target, roundUpToFullUnit)
 			} else {
-				scaled, _ = scaleQuantityProportionallyCPU(&current, &podRec, &target, noRounding)
+				scaled, _ = scaleQuantityProportionallyCPU(&current, &podRec, &target, roundingMode)
 			}
 			(*fieldGetter(containerLevelRecs[i]))[resourceName] = *scaled
 		}
 	}
 
-	applyBound := func(bounds corev1.ResourceList, shouldScale func(bound, podRec resource.Quantity) bool) {
+	applyBound := func(bounds corev1.ResourceList, roundingMode roundingMode, shouldScale func(bound, podRec resource.Quantity) bool) {
 		for resourceName, bound := range bounds {
 			podRec, ok := podLevelRec[resourceName]
 			if !ok {
 				continue
 			}
 			if shouldScale(bound, podRec) {
-				scaleAll(resourceName, podRec, bound)
+				scaleAll(resourceName, roundingMode, podRec, bound)
 			}
 		}
 	}
 
 	// If the Pod-level recommendation is below min, scale up container-level recommendations to satisfy the minimum.
-	applyBound(mins, func(bound, podRec resource.Quantity) bool { return podRec.Cmp(bound) < 0 })
+	applyBound(mins, roundUpToFullUnit, func(bound, podRec resource.Quantity) bool { return podRec.Cmp(bound) < 0 })
 
 	// If the Pod-level recommendation is above max, scale down container-level recommendations to satisfy the max.
-	applyBound(maxs, func(bound, podRec resource.Quantity) bool { return podRec.Cmp(bound) > 0 })
+	applyBound(maxs, roundDownToFullUnit, func(bound, podRec resource.Quantity) bool { return podRec.Cmp(bound) > 0 })
 
 	return containerLevelRecs
 }
@@ -598,25 +659,34 @@ func getContainer(containerName string, pod *corev1.Pod) *corev1.Container {
 }
 
 // applyContainerLimitRange updates recommendation if recommended resources are outside of limits defined in VPA resources policy
-func applyContainerLimitRange(recommendation corev1.ResourceList,
+func applyContainerLimitRange(isPodLevel bool, recommendation corev1.ResourceList,
 	containerRequests corev1.ResourceList, containerLimits corev1.ResourceList,
 	limitRange *corev1.LimitRangeItem) []string {
 	annotations := make([]string, 0)
 	if limitRange == nil {
 		return annotations
 	}
+	podlevel := false
+	cappedMinAction := cappedProportionallyToMinLimit
+	cappedMaxAction := cappedProportionallyToMaxLimit
+	if isPodLevel {
+		podlevel = true
+		cappedMinAction = cappedToPodLimitRangeMin
+		cappedMaxAction = cappedToPodLimitRangeMax
+	}
+
 	maxAllowedRecommendation := getMaxAllowedRecommendation(recommendation, containerRequests, containerLimits, limitRange)
 	minAllowedRecommendation := getMinAllowedRecommendation(recommendation, containerRequests, containerLimits, limitRange)
 	for resourceName, recommended := range recommendation {
 		cappedToMin, isCapped := maybeCapToMin(recommended, resourceName, minAllowedRecommendation)
 		recommendation[resourceName] = cappedToMin
 		if isCapped {
-			annotations = append(annotations, toCappingAnnotation(false, resourceName, cappedProportionallyToMinLimit))
+			annotations = append(annotations, toCappingAnnotation(podlevel, resourceName, cappedMinAction))
 		}
 		cappedToMax, isCapped := maybeCapToMax(cappedToMin, resourceName, maxAllowedRecommendation)
 		recommendation[resourceName] = cappedToMax
 		if isCapped {
-			annotations = append(annotations, toCappingAnnotation(false, resourceName, cappedProportionallyToMaxLimit))
+			annotations = append(annotations, toCappingAnnotation(podlevel, resourceName, cappedMaxAction))
 		}
 	}
 	return annotations
@@ -710,11 +780,16 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 		sumRecommendation.Add(recommendation)
 	}
 
+	if sumRecommendation.IsZero() {
+		return resources
+	}
+
 	if minLimit.Cmp(sumLimit) <= 0 && minLimit.Cmp(sumRecommendation) <= 0 && (maxLimit.IsZero() || maxLimit.Cmp(sumLimit) >= 0) {
 		return resources
 	}
 
-	if minLimit.Cmp(sumRecommendation) > 0 && !sumLimit.IsZero() {
+	// if minLimit.Cmp(sumRecommendation) > 0 && !sumLimit.IsZero() {
+	if minLimit.Cmp(sumRecommendation) > 0 {
 		for _, containerWithRecommendation := range containersWithRecommendations {
 			if containerWithRecommendation.recommendation == nil {
 				continue
@@ -731,9 +806,9 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 		return resources
 	}
 
-	if sumLimit.IsZero() {
-		return resources
-	}
+	// if sumLimit.IsZero() {
+	// 	return resources
+	// }
 
 	var targetTotalLimit resource.Quantity
 	if minLimit.Cmp(sumLimit) > 0 {
@@ -793,6 +868,8 @@ func insertRequestsForMissingRecommendations(containerRecommendations []vpa_type
 	return result
 }
 
+// capProportionallyToPodLimitRange adjusts container-level recommendations to comply with
+// constraints set by LimitRange objects of type Pod.
 func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRange(
 	containerRecommendations []vpa_types.RecommendedContainerResources, pod *corev1.Pod) ([]vpa_types.RecommendedContainerResources, error) {
 	podLimitRange, err := c.limitsRangeCalculator.GetPodLimitRangeItem(pod.Namespace)
@@ -814,107 +891,6 @@ func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRange(
 	return containerRecommendations, nil
 }
 
-func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRangeAtPodLevel(
-	podRecommendations vpa_types.PodRecommendations, pod *corev1.Pod) (*vpa_types.PodRecommendations, error) {
-	podLimitRange, err := c.limitsRangeCalculator.GetPodLimitRangeItem(pod.Namespace)
-	if err != nil {
-		return nil, fmt.Errorf("error obtaining limit range: %s", err)
-	}
-	if podLimitRange == nil {
-		return &podRecommendations, nil
-	}
-
-	podRecommendations = applyPodLimitRangeAtPodLevel(podRecommendations, podLimitRange, pod, getPodLevelLower)
-	podRecommendations = applyPodLimitRangeAtPodLevel(podRecommendations, podLimitRange, pod, getPodLevelTarget)
-	podRecommendations = applyPodLimitRangeAtPodLevel(podRecommendations, podLimitRange, pod, getPodLevelUpper)
-
-	return &podRecommendations, nil
-}
-
-// applyPodLimitRangeAtPodLevel adjusts a single type of Pod-level
-// recommendation, such as LowerBound, based on constraints defined
-// by a Pod LimitRange object.
-// It returns the proportionally updated Pod-level recommendation to
-// satisfy the constraint.
-//
-// Note: When the user sets very tight min and max values, it may happen
-// that even after capping the recommendation to the min, the final result
-// may fall below the min again if the max is also violated. This can
-// result in the Pod becoming unschedulable.
-func applyPodLimitRangeAtPodLevel(
-	podRecommendations vpa_types.PodRecommendations,
-	podLimitRange *corev1.LimitRangeItem,
-	pod *corev1.Pod,
-	fieldGetter func(vpa_types.PodRecommendations) *corev1.ResourceList,
-) vpa_types.PodRecommendations {
-	if podLimitRange == nil {
-		return podRecommendations
-	}
-
-	podRequests, podLimits := resourcehelpers.PodRequestsAndLimits(pod)
-	recRL := fieldGetter(podRecommendations)
-	if recRL == nil {
-		return podRecommendations
-	}
-
-	scale := func(resourceName corev1.ResourceName, scaledQuantity, scaleBase, scaleResult resource.Quantity) resource.Quantity {
-		var scaled *resource.Quantity
-		if resourceName == corev1.ResourceMemory {
-			scaled, _ = scaleQuantityProportionallyMem(&scaledQuantity, &scaleBase, &scaleResult, roundUpToFullUnit)
-		} else {
-			scaled, _ = scaleQuantityProportionallyCPU(&scaledQuantity, &scaleBase, &scaleResult, noRounding)
-		}
-		return *scaled
-	}
-
-	apply := func(resourceName corev1.ResourceName) {
-		recommendation, ok := (*recRL)[resourceName]
-		if !ok {
-			return
-		}
-
-		// Enforce min
-		if minValue, ok := podLimitRange.Min[resourceName]; ok && minValue.Cmp(recommendation) > 0 {
-			(*recRL)[resourceName] = minValue
-			recommendation = minValue
-		}
-
-		maxValue, hasMax := podLimitRange.Max[resourceName]
-		if !hasMax {
-			return
-		}
-
-		// Without a pod limit we can't reason about staying under pod-level max
-		podLimit := podLimits[resourceName]
-		if podLimit.IsZero() {
-			return
-		}
-
-		// If request is missing, treat it like request==limit
-		podRequest := podRequests[resourceName]
-		if podRequest.IsZero() {
-			podRequest = podLimit
-		}
-
-		// Compute the pod limit using the ratio found in the pod spec
-		scaledLimit := scale(resourceName, podLimit, podRequest, recommendation)
-
-		// If the scaled limit would exceed the LimitRange max, reduce the recommendation proportionally
-		if maxValue.Cmp(scaledLimit) < 0 {
-			newRecommendation := scale(resourceName, maxValue, scaledLimit, recommendation)
-			(*recRL)[resourceName] = newRecommendation
-		}
-	}
-	apply(corev1.ResourceCPU)
-	apply(corev1.ResourceMemory)
-
-	return podRecommendations
-}
-
 func getLower(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList  { return &rl.LowerBound }
 func getTarget(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList { return &rl.Target }
 func getUpper(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList  { return &rl.UpperBound }
-
-func getPodLevelLower(rl vpa_types.PodRecommendations) *corev1.ResourceList  { return &rl.LowerBound }
-func getPodLevelTarget(rl vpa_types.PodRecommendations) *corev1.ResourceList { return &rl.Target }
-func getPodLevelUpper(rl vpa_types.PodRecommendations) *corev1.ResourceList  { return &rl.UpperBound }

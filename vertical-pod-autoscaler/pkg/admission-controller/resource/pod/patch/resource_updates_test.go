@@ -94,6 +94,22 @@ func addResourceLimitPatch(index int, res, amount string) resource_admission.Pat
 	}
 }
 
+func addPodLevelResourceRequestPatch(res, amount string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/resources/requests/%s", res),
+		Value: resource.MustParse(amount),
+	}
+}
+
+func addPodLevelResourceLimitPatch(res, amount string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/resources/limits/%s", res),
+		Value: resource.MustParse(amount),
+	}
+}
+
 func addAnnotationRequest(updateResources [][]string, kind string) resource_admission.PatchRecord {
 	requests := make([]string, 0)
 	for idx, podResources := range updateResources {
@@ -912,6 +928,218 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 
 			frp := fakeRecommendationProvider{tc.recommendResources, &tc.recommendAnnotations, nil, tc.recommendError}
 			c := NewResourceUpdatesCalculator(&frp, tc.maxAllowedCpu)
+			patches, err := c.CalculatePatches(tc.pod, tc.vpa)
+			if tc.expectError == nil {
+				assert.NoError(t, err)
+			} else {
+				if assert.Error(t, err) {
+					assert.Equal(t, tc.expectError.Error(), err.Error())
+				}
+			}
+			if assert.Len(t, patches, len(tc.expectPatches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
+				for i, gotPatch := range patches {
+					if !EqPatch(gotPatch, tc.expectPatches[i]) {
+						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
+					}
+				}
+			}
+		})
+	}
+}
+
+// The intent of these unit tests is just to test that the function generates the correct pod-level resource patches
+func TestCalculatePatches_PodLevel(t *testing.T) {
+	containerName1 := "container1"
+	tests := []struct {
+		name                  string
+		pod                   *corev1.Pod
+		vpa                   *vpa_types.VerticalPodAutoscaler
+		podRecommendResources *vpa_api_util.ContainerResources
+		recommendAnnotations  utils.Annotations
+		recommendError        error
+		expectPatches         []resource_admission.PatchRecord
+		expectError           error
+	}{
+		{
+			name: "pod-level recommendation is nil",
+			pod: test.Pod().
+				AddContainer(
+					test.Container().
+						WithName(containerName1).
+						Get()).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName1).
+				AppendRecommendation(
+					test.Recommendation().
+						GetContainerResources()).
+				Get(),
+			podRecommendResources: nil,
+			expectPatches:         nil,
+		},
+		{
+			name: "pod-level recommendation is nil",
+			pod: test.Pod().
+				AddContainer(
+					test.Container().
+						WithName(containerName1).
+						Get()).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName1).
+				AppendRecommendation(
+					test.Recommendation().
+						GetContainerResources()).
+				Get(),
+			podRecommendResources: &vpa_api_util.ContainerResources{
+				Requests: nil,
+				Limits:   nil,
+			},
+			expectPatches: nil,
+		},
+		{
+			name: "pod-level recommendations are present, but the pod-level resources stanza is missing from the pod spec",
+			pod: test.Pod().
+				AddContainer(
+					test.Container().
+						WithName(containerName1).
+						Get()).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName1).
+				AppendRecommendation(
+					test.Recommendation().
+						GetContainerResources()).
+				Get(),
+			podRecommendResources: &vpa_api_util.ContainerResources{
+				Requests: corev1.ResourceList{
+					cpu: resource.MustParse("100m"),
+				},
+				Limits: corev1.ResourceList{
+					cpu: resource.MustParse("200m"),
+				},
+			},
+			expectPatches: []resource_admission.PatchRecord{
+				GetPatchInitializingEmptyResourcesAtPodLevel(),
+				GetPatchInitializingEmptyResourcesSubfieldAtPodLevel("requests"),
+				GetPatchInitializingEmptyResourcesSubfieldAtPodLevel("limits"),
+				addPodLevelResourceRequestPatch(cpu, "100m"),
+				addPodLevelResourceLimitPatch(cpu, "200m"),
+			},
+		},
+		{
+			name: "pod-level recommendations are present, and the pod-level requests resources stanza is included in the pod spec",
+			pod: test.Pod().
+				AddContainer(
+					test.Container().
+						WithName(containerName1).
+						Get()).
+				WithCPURequest(resource.MustParse("2")).
+				WithMemRequest(resource.MustParse("2")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName1).
+				AppendRecommendation(
+					test.Recommendation().
+						GetContainerResources()).
+				Get(),
+			podRecommendResources: &vpa_api_util.ContainerResources{
+				Requests: corev1.ResourceList{
+					cpu: resource.MustParse("100m"),
+				},
+				Limits: corev1.ResourceList{
+					cpu: resource.MustParse("200m"),
+				},
+			},
+			expectPatches: []resource_admission.PatchRecord{
+				GetPatchInitializingEmptyResourcesSubfieldAtPodLevel("limits"),
+				addPodLevelResourceRequestPatch(cpu, "100m"),
+				addPodLevelResourceLimitPatch(cpu, "200m"),
+			},
+		},
+		{
+			name: "pod-level recommendations are present, and the pod-level limits resources stanza is included in the pod spec",
+			pod: test.Pod().
+				AddContainer(
+					test.Container().
+						WithName(containerName1).
+						Get()).
+				WithCPULimit(resource.MustParse("2")).
+				WithMemLimit(resource.MustParse("2")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName1).
+				AppendRecommendation(
+					test.Recommendation().
+						GetContainerResources()).
+				Get(),
+			podRecommendResources: &vpa_api_util.ContainerResources{
+				Requests: corev1.ResourceList{
+					cpu: resource.MustParse("100m"),
+				},
+				Limits: corev1.ResourceList{
+					cpu: resource.MustParse("200m"),
+				},
+			},
+			expectPatches: []resource_admission.PatchRecord{
+				GetPatchInitializingEmptyResourcesSubfieldAtPodLevel("requests"),
+				addPodLevelResourceRequestPatch(cpu, "100m"),
+				addPodLevelResourceLimitPatch(cpu, "200m"),
+			},
+		},
+		{
+			name: "pod-level request recommendation is present, and the pod-level resources request stanza is included in the pod spec.",
+			pod: test.Pod().
+				AddContainer(
+					test.Container().
+						WithName(containerName1).
+						Get()).
+				WithCPURequest(resource.MustParse("2")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName1).
+				AppendRecommendation(
+					test.Recommendation().
+						GetContainerResources()).
+				Get(),
+			podRecommendResources: &vpa_api_util.ContainerResources{
+				Requests: corev1.ResourceList{
+					cpu: resource.MustParse("100m"),
+				},
+			},
+			expectPatches: []resource_admission.PatchRecord{
+				addPodLevelResourceRequestPatch(cpu, "100m"),
+			},
+		},
+		{
+			name: "pod-level limit recommendation is present, and the pod-level resources limit stanza is included in the pod spec.",
+			pod: test.Pod().
+				AddContainer(
+					test.Container().
+						WithName(containerName1).
+						Get()).
+				WithCPULimit(resource.MustParse("2")).
+				Get(),
+			vpa: test.VerticalPodAutoscaler().
+				WithContainer(containerName1).
+				AppendRecommendation(
+					test.Recommendation().
+						GetContainerResources()).
+				Get(),
+			podRecommendResources: &vpa_api_util.ContainerResources{
+				Limits: corev1.ResourceList{
+					cpu: resource.MustParse("100m"),
+				},
+			},
+			expectPatches: []resource_admission.PatchRecord{
+				addPodLevelResourceLimitPatch(cpu, "100m"),
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			frp := fakeRecommendationProvider{nil, &tc.recommendAnnotations, tc.podRecommendResources, tc.recommendError}
+			c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
 			patches, err := c.CalculatePatches(tc.pod, tc.vpa)
 			if tc.expectError == nil {
 				assert.NoError(t, err)

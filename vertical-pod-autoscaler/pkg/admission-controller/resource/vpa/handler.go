@@ -324,6 +324,10 @@ func isValidPodLevelConstraint(resource corev1.ResourceName, boundary apires.Qua
 			sum.Add(qt)
 		}
 	}
+	if sum.IsZero() {
+		return true, nil
+	}
+
 	return boundValid(boundary, sum), &sum
 }
 

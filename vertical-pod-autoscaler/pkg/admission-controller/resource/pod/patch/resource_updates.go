@@ -61,12 +61,23 @@ func (*resourcesUpdatesPatchCalculator) PatchResourceTarget() PatchResourceTarge
 func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	result := []resource_admission.PatchRecord{}
 
+	// With the VPAPodLevelResources feature enabled, the containersResources slice should not include containers in RecommendationOnly mode
 	containersResources, annotations, podResources, err := c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
 	if err != nil {
 		return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
 	}
 
-	if podResources != nil {
+	if hasPodLevelRecommendations(podResources) {
+		currPodLevelRequests, currPodLevelLimits := resourcehelpers.PodRequestsAndLimits(pod)
+		if isNilOrEmpty(currPodLevelRequests) && isNilOrEmpty(currPodLevelLimits) {
+			result = append(result, GetPatchInitializingEmptyResourcesAtPodLevel())
+		}
+		if isNilOrEmpty(currPodLevelRequests) && !isNilOrEmpty(podResources.Requests) {
+			result = append(result, GetPatchInitializingEmptyResourcesSubfieldAtPodLevel("requests"))
+		}
+		if isNilOrEmpty(currPodLevelLimits) && !isNilOrEmpty(podResources.Limits) {
+			result = append(result, GetPatchInitializingEmptyResourcesSubfieldAtPodLevel("limits"))
+		}
 		result = AppendPodLevelResourcePatches(result, "requests", podResources.Requests)
 		result = AppendPodLevelResourcePatches(result, "limits", podResources.Limits)
 	}
@@ -290,3 +301,9 @@ func (c *resourcesUpdatesPatchCalculator) applyControlledCPUResources(container 
 	}
 	return nil
 }
+
+func hasPodLevelRecommendations(podResources *vpa_api_util.ContainerResources) bool {
+	return podResources != nil && (!isNilOrEmpty(podResources.Requests) || !isNilOrEmpty(podResources.Limits))
+}
+
+func isNilOrEmpty(rl corev1.ResourceList) bool { return len(rl) == 0 }

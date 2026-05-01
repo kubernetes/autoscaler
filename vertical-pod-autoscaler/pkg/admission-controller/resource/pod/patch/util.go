@@ -78,6 +78,25 @@ func GetPatchInitializingEmptyResourcesSubfield(i int, kind string) resource_adm
 	}
 }
 
+// GetPatchInitializingEmptyResourcesAtPodLevel returns a patch record that initializes an empty resources object at the pod level.
+func GetPatchInitializingEmptyResourcesAtPodLevel() resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  "/spec/resources",
+		Value: corev1.ResourceRequirements{},
+	}
+}
+
+// GetPatchInitializingEmptyResourcesSubfieldAtPodLevel returns a patch record that initializes an empty subfield
+// (e.g., "requests" or "limits") within the resources object at the pod level.
+func GetPatchInitializingEmptyResourcesSubfieldAtPodLevel(kind string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/resources/%s", kind),
+		Value: corev1.ResourceList{},
+	}
+}
+
 // GetAddResourceRequirementValuePatchAtPodLevel returns a patch record at the Pod level.
 func GetAddResourceRequirementValuePatchAtPodLevel(kind string, resource corev1.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{

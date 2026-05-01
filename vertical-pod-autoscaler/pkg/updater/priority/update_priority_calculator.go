@@ -83,6 +83,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time) {
 	updatePriority := calc.priorityProcessor.GetUpdatePriority(pod, calc.vpa, processedRecommendation)
 
 	quickOOM := false
+	// Note: Even containers in RecommendationOnly mode should be included in quick OOM calculations, as OOM kills in these containers should trigger an increase in the pod-level recommendation.
 	for i := range pod.Status.ContainerStatuses {
 		cs := &pod.Status.ContainerStatuses[i]
 		if hasObservedContainers && !vpaContainerSet.Has(cs.Name) {
@@ -91,8 +92,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time) {
 			klog.V(4).InfoS("Not listed in VPA observed containers label. Skipping container quick OOM calculations", "label", annotations.VpaObservedContainersLabel, "observedContainers", pod.GetAnnotations()[annotations.VpaObservedContainersLabel], "containerName", cs.Name, "vpa", klog.KObj(calc.vpa))
 			continue
 		}
-		crp := vpa_api_util.GetContainerResourcePolicy(cs.Name, calc.vpa.Spec.ResourcePolicy)
-		if crp != nil && crp.Mode != nil && *crp.Mode == vpa_types.ContainerScalingModeOff {
+		if vpa_api_util.IsContainerScalingModeOff(cs.Name, calc.vpa.Spec.ResourcePolicy) {
 			// Containers with ContainerScalingModeOff are not considered
 			// during the quick OOM calculation.
 			klog.V(4).InfoS("Container with ContainerScalingModeOff. Skipping container quick OOM calculations", "containerName", cs.Name)
