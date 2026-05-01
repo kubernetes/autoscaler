@@ -17,6 +17,7 @@ limitations under the License.
 package store
 
 import (
+	"errors"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -24,6 +25,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
+)
+
+var (
+	errorGettingPodGroupState = errors.New("PodGroupState is not integrated with CA simulator")
 )
 
 // DeltaSnapshotStore is an implementation of ClusterSnapshotStore optimized for typical Cluster Autoscaler usage - (fork, add stuff, revert), repeated many times per loop.
@@ -55,6 +60,7 @@ type DeltaSnapshotStore struct {
 
 type deltaSnapshotStoreNodeLister DeltaSnapshotStore
 type deltaSnapshotStoreStorageLister DeltaSnapshotStore
+type deltaSnapshotPodGroupStateLister DeltaSnapshotStore
 
 type internalDeltaSnapshotData struct {
 	baseData *internalDeltaSnapshotData
@@ -440,6 +446,14 @@ func (snapshot *deltaSnapshotStoreStorageLister) IsPVCUsedByPods(key string) boo
 	return (*DeltaSnapshotStore)(snapshot).IsPVCUsedByPods(key)
 }
 
+// Get returns pod group state by namespace and pod group name.
+//
+// This method is never supposed to be called in the cluster autoscaler simulations
+// as pod group states are not integrated with cluster autoscaler.
+func (snapshot *deltaSnapshotPodGroupStateLister) Get(namespace string, podGroupName string) (schedulerinterface.PodGroupState, error) {
+	return nil, errorGettingPodGroupState
+}
+
 func (snapshot *DeltaSnapshotStore) getNodeInfo(nodeName string) (schedulerinterface.NodeInfo, error) {
 	data := snapshot.data
 	node, found := data.getNodeInfo(nodeName)
@@ -457,6 +471,11 @@ func (snapshot *DeltaSnapshotStore) NodeInfos() schedulerinterface.NodeInfoListe
 // StorageInfos returns storage lister
 func (snapshot *DeltaSnapshotStore) StorageInfos() schedulerinterface.StorageInfoLister {
 	return (*deltaSnapshotStoreStorageLister)(snapshot)
+}
+
+// PodGroupStates returns pod group state lister.
+func (snapshot *DeltaSnapshotStore) PodGroupStates() schedulerinterface.PodGroupStateLister {
+	return (*deltaSnapshotPodGroupStateLister)(snapshot)
 }
 
 // NewDeltaSnapshotStore creates instances of DeltaSnapshotStore.

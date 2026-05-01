@@ -135,9 +135,39 @@ func (e *exoscaleCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 		debugf("found node %s belonging to SKS Nodepool %s", toNodeID(node.Spec.ProviderID), *sksNodepool.ID)
 	} else {
 		// Standalone Instance Pool
+
+		var nodeGroupSpec *dynamic.NodeGroupSpec
+
+		for _, spec := range e.manager.discoveryOpts.NodeGroupSpecs {
+			s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
+
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse node group spec: %v", err)
+			}
+
+			if s.Name == *instancePool.Name {
+				nodeGroupSpec = s
+				break
+			}
+		}
+
+		var minSize, maxSize int
+		if nodeGroupSpec != nil {
+			minSize = nodeGroupSpec.MinSize
+			maxSize = nodeGroupSpec.MaxSize
+		} else {
+			minSize = 1
+			maxSize, err = e.manager.computeInstanceQuota()
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		nodeGroup = &instancePoolNodeGroup{
 			instancePool: instancePool,
 			m:            e.manager,
+			minSize:      minSize,
+			maxSize:      maxSize,
 		}
 		debugf("found node %s belonging to Instance Pool %s", toNodeID(node.Spec.ProviderID), *instancePool.ID)
 	}

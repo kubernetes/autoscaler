@@ -173,6 +173,15 @@ func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
 	p.addUnremovableNodes(unremovableNodes)
 
 	for _, nodeToRemove := range nodesToRemove {
+		if len(nodeToRemove.OnCompletionPods) > 0 {
+			klog.V(2).Infof("Node %s has active on-completion pods, delaying scale down", nodeToRemove.Node.Name)
+			p.addUnremovableNodes([]simulator.UnremovableNode{{
+				Node:   nodeToRemove.Node,
+				Reason: simulator.BlockedByOnCompletionPod,
+			}})
+			continue
+		}
+
 		if len(nodeToRemove.PodsToReschedule) > 0 {
 			needDrain = append(needDrain, nodeToRemove.Node)
 		} else {

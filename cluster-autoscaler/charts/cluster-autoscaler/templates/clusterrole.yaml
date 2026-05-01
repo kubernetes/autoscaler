@@ -59,14 +59,22 @@ rules:
     verbs:
     - watch
     - list
+    - get
+    - update
 {{- if (eq .Values.cloudProvider "kwok") }}
     - create
 {{- end }}
 {{- if or (eq .Values.cloudProvider "kwok") (eq .Values.cloudProvider "huaweicloud") }}
     - delete
 {{- end }}
+  - apiGroups:
+      - ""
+    resources:
+      - podtemplates
+    verbs:
     - get
-    - update
+    - list
+    - watch
   - apiGroups:
     - resource.k8s.io
     resources:
@@ -204,6 +212,17 @@ rules:
     - patch
     - update
 {{- end }}
+  - apiGroups:
+    - autoscaling.x-k8s.io
+    resources:
+    - provisioningrequests
+    - provisioningrequests/status
+    verbs:
+    - get
+    - list
+    - watch
+    - update
+    - patch
 {{- if .Values.rbac.additionalRules }}
 {{ toYaml .Values.rbac.additionalRules | indent 2 }}
 {{- end }}

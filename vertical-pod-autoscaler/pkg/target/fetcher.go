@@ -68,7 +68,7 @@ const (
 )
 
 // NewVpaTargetSelectorFetcher returns new instance of VpaTargetSelectorFetcher
-func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory) VpaTargetSelectorFetcher {
+func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory, stopCh <-chan struct{}) VpaTargetSelectorFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.ErrorS(err, "Could not create discoveryClient")
@@ -80,7 +80,7 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 	mapper := restmapper.NewDeferredDiscoveryRESTMapper(cachedDiscoveryClient)
 	go wait.Until(func() {
 		mapper.Reset()
-	}, discoveryResetPeriod, make(chan struct{}))
+	}, discoveryResetPeriod, stopCh)
 
 	informersMap := map[wellKnownController]cache.SharedIndexInformer{
 		daemonSet:             factory.Apps().V1().DaemonSets().Informer(),

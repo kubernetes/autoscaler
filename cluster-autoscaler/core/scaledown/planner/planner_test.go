@@ -860,6 +860,26 @@ func TestNodesToDelete(t *testing.T) {
 			wantDrain:      []*apiv1.Node{},
 		},
 		{
+			name: "single empty with on-completion pods delayed",
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("test-ng", 3, false): {
+					buildRemovableNodeWithOnCompletionPods("test-node", 0, 1),
+				},
+			},
+			wantEmpty: []*apiv1.Node{},
+			wantDrain: []*apiv1.Node{},
+		},
+		{
+			name: "single drain with on-completion pods delayed",
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("test-ng", 3, false): {
+					buildRemovableNodeWithOnCompletionPods("test-node", 1, 1),
+				},
+			},
+			wantEmpty: []*apiv1.Node{},
+			wantDrain: []*apiv1.Node{},
+		},
+		{
 			name: "single empty",
 			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
 				sizedNodeGroup("test-ng", 3, false): {
@@ -1059,6 +1079,23 @@ func buildRemovableNode(name string, podCount int) simulator.NodeToBeRemoved {
 		Node:             BuildTestNode(name, 1000, 10),
 		PodsToReschedule: podsToReschedule,
 	}
+}
+
+func buildRemovableNodeWithOnCompletionPods(name string, regularPodCount, onCompletionPodCount int) simulator.NodeToBeRemoved {
+	node := buildRemovableNode(name, regularPodCount)
+	for i := 0; i < onCompletionPodCount; i++ {
+		pod := &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-on-completion-pod-%d", name, i),
+				Namespace: "default",
+				Annotations: map[string]string{
+					drain.PodSafeToEvictKey: drain.PodSafeToEvictOnCompletionValue,
+				},
+			},
+		}
+		node.OnCompletionPods = append(node.OnCompletionPods, pod)
+	}
+	return node
 }
 
 func generateReplicaSets(name string, replicas int32) []*appsv1.ReplicaSet {

@@ -27,7 +27,12 @@ type ServerType struct {
 	// Use [ServerType.Pricings] instead to get the included traffic for each location.
 	IncludedTraffic int64
 	Pricings        []ServerTypeLocationPricing
+
+	// Deprecated: [ServerType.DeprecatableResource] is deprecated and will gradually be phased out starting 2025-09-24.
+	// To learn about deprecations affecting individual locations you can use [ServerType.Locations] instead.
 	DeprecatableResource
+
+	Locations []ServerTypeLocation
 }
 
 // StorageType specifies the type of storage.
@@ -51,6 +56,11 @@ const (
 	// CPUTypeDedicated is the type for dedicated CPU.
 	CPUTypeDedicated CPUType = "dedicated"
 )
+
+type ServerTypeLocation struct {
+	Location *Location
+	DeprecatableResource
+}
 
 // ServerTypeClient is a client for the server types API.
 type ServerTypeClient struct {
@@ -129,11 +139,14 @@ func (c *ServerTypeClient) List(ctx context.Context, opts ServerTypeListOpts) ([
 
 // All returns all server types.
 func (c *ServerTypeClient) All(ctx context.Context) ([]*ServerType, error) {
-	return c.AllWithOpts(ctx, ServerTypeListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, ServerTypeListOpts{})
 }
 
 // AllWithOpts returns all server types for the given options.
 func (c *ServerTypeClient) AllWithOpts(ctx context.Context, opts ServerTypeListOpts) ([]*ServerType, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*ServerType, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

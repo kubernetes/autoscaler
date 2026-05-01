@@ -9,9 +9,9 @@
 - [x] Implement the API definition
 - [x] Implement the buffer controller and fake pod processing logic in the cluster autoscaler
 
-## Beta graduation criteria (planned for 1.35)
+## Beta graduation criteria (1.35)
 
-- [ ] Implement integration with k8s resource quotas
+- [x] Implement integration with k8s resource quotas
 
 ## V1 graduation criteria (planned for TBD)
 

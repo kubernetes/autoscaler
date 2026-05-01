@@ -19,6 +19,7 @@ package predicate
 import (
 	"context"
 	"fmt"
+	"math"
 	"strings"
 	"sync"
 
@@ -131,7 +132,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 		// Filter didn't pass for some plugin, so this Node won't work - move on to the next one.
 	}
 
-	workqueue.ParallelizeUntil(ctx, p.parallelism, len(nodeInfosList), checkNode)
+	workqueue.ParallelizeUntil(ctx, p.parallelism, len(nodeInfosList), checkNode, workqueue.WithChunkSize(chunkSizeFor(len(nodeInfosList), p.parallelism)))
 
 	if foundNode != nil {
 		nodeOrdering.MarkMatch(foundIndex)
@@ -200,4 +201,19 @@ func (p *SchedulerPluginRunner) failingFilterDebugInfo(filterName string, nodeIn
 	}
 
 	return strings.Join(infoParts, ", ")
+}
+
+// chunkSizeFor returns a chunk size for the given number of items to use for
+// parallel work. The size aims to produce good CPU utilization.
+// returns max(1, min(sqrt(n), n/Parallelism))
+// mimics k8s.io/kubernetes/pkg/scheduler/framework/parallelize/parallelism.go
+func chunkSizeFor(n, parallelism int) int {
+	s := int(math.Sqrt(float64(n)))
+
+	if r := n/parallelism + 1; s > r {
+		s = r
+	} else if s < 1 {
+		s = 1
+	}
+	return s
 }

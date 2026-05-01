@@ -19,7 +19,6 @@ package predicate
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
@@ -145,38 +144,35 @@ func (s *PredicateSnapshot) setClusterStatePodsSequential(nodeInfos []*framework
 }
 
 func (s *PredicateSnapshot) setClusterStatePodsParallelized(nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
-	podsForNode := make([][]*apiv1.Pod, len(nodeInfos))
+	podInfosForNode := make([][]*framework.PodInfo, len(nodeInfos))
 	for _, pod := range scheduledPods {
-		if nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]; ok {
-			podsForNode[nodeIdx] = append(podsForNode[nodeIdx], pod)
+		nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]
+		if !ok {
+			continue
 		}
-	}
 
-	var (
-		firstErr error
-		errOnce  sync.Once
-	)
+		var claims []*resourceapi.ResourceClaim
+		if s.draEnabled && s.draSnapshot != nil {
+			var err error
+			claims, err = s.draSnapshot.PodClaims(pod)
+			if err != nil {
+				return fmt.Errorf("couldn't obtain pod %s/%s claims: %v", pod.Namespace, pod.Name, err)
+			}
+		}
+
+		podInfo := framework.NewPodInfo(pod, claims)
+		podInfosForNode[nodeIdx] = append(podInfosForNode[nodeIdx], podInfo)
+	}
 
 	ctx := context.Background()
 	workqueue.ParallelizeUntil(ctx, s.parallelism, len(nodeInfos), func(nodeIdx int) {
 		nodeInfo := nodeInfos[nodeIdx]
-		for _, pod := range podsForNode[nodeIdx] {
-			var claims []*resourceapi.ResourceClaim
-			if s.draEnabled && s.draSnapshot != nil {
-				var err error
-				claims, err = s.draSnapshot.PodClaims(pod)
-				if err != nil {
-					errOnce.Do(func() {
-						firstErr = fmt.Errorf("couldn't obtain pod %s/%s claims: %v", pod.Namespace, pod.Name, err)
-					})
-					return
-				}
-			}
-			podInfo := framework.NewPodInfo(pod, claims)
-			nodeInfo.AddPodInfo(podInfo)
+		for _, pi := range podInfosForNode[nodeIdx] {
+			nodeInfo.AddPodInfo(pi)
 		}
 	})
-	return firstErr
+
+	return nil
 }
 
 // GetNodeInfo returns an internal NodeInfo wrapping the relevant schedulerimpl.NodeInfo.
@@ -451,6 +447,11 @@ func (s *PredicateSnapshot) DeviceClassResolver() schedulerinterface.DeviceClass
 	return s.draSnapshot.DeviceClassResolver()
 }
 
+// PodGroups returns the snapshot as PodGroupLister.
+func (s *PredicateSnapshot) PodGroups() schedulerinterface.PodGroupLister {
+	return s.draSnapshot.PodGroups()
+}
+
 // CSINodes returns the CSI nodes snapshot.
 func (s *PredicateSnapshot) CSINodes() schedulerinterface.CSINodeLister {
 	return s.csiSnapshot.CSINodes()
@@ -504,7 +505,9 @@ func (s *PredicateSnapshot) modifyResourceClaimsForNewPod(podInfo *framework.Pod
 	// so we don't add them. The claims should already be allocated in the provided PodInfo.
 	var podOwnedClaims []*resourceapi.ResourceClaim
 	for _, claim := range podInfo.NeededResourceClaims {
-		if err := resourceclaim.IsForPod(podInfo.Pod, claim); err == nil {
+		// TODO(autoscaler/issues/9570): KEP-5729 changed IsForPod to be able to work
+		// with pod groups, re-evaluate whether they need to be considered here.
+		if err := resourceclaim.IsForPod(podInfo.Pod, claim, false); err == nil {
 			podOwnedClaims = append(podOwnedClaims, claim)
 		}
 	}

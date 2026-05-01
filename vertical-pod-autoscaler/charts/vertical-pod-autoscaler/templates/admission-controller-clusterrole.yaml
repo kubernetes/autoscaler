@@ -68,4 +68,12 @@ rules:
       - get
       - list
       - watch
+  # Allow access to scale subresources for resolving target selectors
+  - apiGroups:
+      - "*"
+    resources:
+      - "*/scale"
+    verbs:
+      - get
+      - watch
 {{- end -}}

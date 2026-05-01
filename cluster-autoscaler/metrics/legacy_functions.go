@@ -136,18 +136,18 @@ func RegisterError(err errors.AutoscalerError) {
 }
 
 // RegisterScaleUp records number of nodes added by scale up
-func RegisterScaleUp(nodesCount int, gpuResourceName, gpuType string) {
-	DefaultMetrics.RegisterScaleUp(nodesCount, gpuResourceName, gpuType)
+func RegisterScaleUp(nodesCount int, gpuResourceName, gpuType, draDrivers string) {
+	DefaultMetrics.RegisterScaleUp(nodesCount, gpuResourceName, gpuType, draDrivers)
 }
 
 // RegisterFailedScaleUp records a failed scale-up operation
-func RegisterFailedScaleUp(reason FailedScaleUpReason, gpuResourceName, gpuType string) {
-	DefaultMetrics.RegisterFailedScaleUp(reason, gpuResourceName, gpuType)
+func RegisterFailedScaleUp(reason FailedScaleUpReason, gpuResourceName, gpuType, draDrivers string) {
+	DefaultMetrics.RegisterFailedScaleUp(reason, gpuResourceName, gpuType, draDrivers)
 }
 
 // RegisterScaleDown records number of nodes removed by scale down
-func RegisterScaleDown(nodesCount int, gpuResourceName, gpuType string, reason NodeScaleDownReason) {
-	DefaultMetrics.RegisterScaleDown(nodesCount, gpuResourceName, gpuType, reason)
+func RegisterScaleDown(nodesCount int, gpuResourceName, gpuType string, reason NodeScaleDownReason, draDrivers string) {
+	DefaultMetrics.RegisterScaleDown(nodesCount, gpuResourceName, gpuType, reason, draDrivers)
 }
 
 // RegisterEvictions records number of evicted pods succeed or failed
