@@ -267,6 +267,7 @@ func (snapshot *BasicSnapshotStore) Clear() {
 
 type basicSnapshotStoreNodeLister BasicSnapshotStore
 type basicSnapshotStoreStorageLister BasicSnapshotStore
+type basicSnapshotStorePodGroupStateLister BasicSnapshotStore
 
 // NodeInfos exposes snapshot as NodeInfoLister.
 func (snapshot *BasicSnapshotStore) NodeInfos() schedulerinterface.NodeInfoLister {
@@ -276,6 +277,11 @@ func (snapshot *BasicSnapshotStore) NodeInfos() schedulerinterface.NodeInfoListe
 // StorageInfos exposes snapshot as StorageInfoLister.
 func (snapshot *BasicSnapshotStore) StorageInfos() schedulerinterface.StorageInfoLister {
 	return (*basicSnapshotStoreStorageLister)(snapshot)
+}
+
+// PodGroupStates exposes snapshot as PodGroupStateLister.
+func (snapshot *BasicSnapshotStore) PodGroupStates() schedulerinterface.PodGroupStateLister {
+	return (*basicSnapshotStorePodGroupStateLister)(snapshot)
 }
 
 // List returns the list of nodes in the snapshot.
@@ -301,4 +307,12 @@ func (snapshot *basicSnapshotStoreNodeLister) Get(nodeName string) (schedulerint
 // Returns the IsPVCUsedByPods in a given key.
 func (snapshot *basicSnapshotStoreStorageLister) IsPVCUsedByPods(key string) bool {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().isPVCUsedByPods(key)
+}
+
+// Get returns pod group state by namespace and pod group name.
+//
+// This method is never supposed to be called in the cluster autoscaler simulations
+// as pod group states are not integrated with cluster autoscaler.
+func (snapshot *basicSnapshotStorePodGroupStateLister) Get(namespace string, podGroupName string) (schedulerinterface.PodGroupState, error) {
+	return nil, errorGettingPodGroupState
 }

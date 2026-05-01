@@ -18,21 +18,36 @@ package customresources
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/resource/v1"
+	resourceapi "k8s.io/api/resource/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/comparator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/klog/v2"
 )
 
+// resourceDiscrepancyReporter defines the interface for reporting DRA discrepancies.
+type resourceDiscrepancyReporter interface {
+	ReportResourceDiscrepancies(nodeNames []string, templateSlices [][]*resourceapi.ResourceSlice, nodeSlices [][]*resourceapi.ResourceSlice)
+}
+
 // DraCustomResourcesProcessor handles DRA custom resource. It assumes,
 // that the DRA resources may not become allocatable immediately after the node creation.
 type DraCustomResourcesProcessor struct {
+	resourcesComparator resourceDiscrepancyReporter
+}
+
+// NewDraCustomResourcesProcessor returns an instance of DraCustomResourcesProcessor properly initialized.
+func NewDraCustomResourcesProcessor() *DraCustomResourcesProcessor {
+	return &DraCustomResourcesProcessor{
+		resourcesComparator: comparator.NewNodeResourcesComparator(metrics.DefaultMetrics),
+	}
 }
 
 // FilterOutNodesWithUnreadyResources removes nodes that should have DRA resource, but don't have
@@ -45,6 +60,10 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		klog.Warningf("Cannot filter out nodes with unready DRA resources. The DRA snapshot is nil. Processing will be skipped.")
 		return allNodes, readyNodes
 	}
+
+	readyNodeNames := make([]string, 0, len(readyNodes))
+	readyTemplateSlices := make([][]*resourceapi.ResourceSlice, 0, len(readyNodes))
+	readyNodeSlices := make([][]*resourceapi.ResourceSlice, 0, len(readyNodes))
 
 	for _, node := range readyNodes {
 		ng, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
@@ -68,10 +87,15 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		nodeResourcesSlices, _ := draSnapshot.NodeResourceSlices(node.Name)
 		if areResourcePoolsReady(nodeResourcesSlices, templateNodeInfo.LocalResourceSlices) {
 			newReadyNodes = append(newReadyNodes, node)
+			readyNodeNames = append(readyNodeNames, node.Name)
+			readyTemplateSlices = append(readyTemplateSlices, templateNodeInfo.LocalResourceSlices)
+			readyNodeSlices = append(readyNodeSlices, nodeResourcesSlices)
 		} else {
 			nodesWithUnreadyDraResources[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)
 		}
 	}
+
+	p.resourcesComparator.ReportResourceDiscrepancies(readyNodeNames, readyTemplateSlices, readyNodeSlices)
 
 	// Override any node with unready DRA resources with its "unready" copy
 	for _, node := range allNodes {
@@ -116,7 +140,7 @@ type poolSpec struct {
 
 // areResourcePoolsReady returns boolean indicating whether resource slices from a real node
 // contain a minimal amount of ready resource pools as declared in the template.
-func areResourcePoolsReady(resourceSlices []*v1.ResourceSlice, templateNodeResourcesSlices []*v1.ResourceSlice) bool {
+func areResourcePoolsReady(resourceSlices []*resourceapi.ResourceSlice, templateNodeResourcesSlices []*resourceapi.ResourceSlice) bool {
 	templatePools := getCompleteResourcePools(templateNodeResourcesSlices)
 	realPools := getCompleteResourcePools(resourceSlices)
 
@@ -130,7 +154,7 @@ func areResourcePoolsReady(resourceSlices []*v1.ResourceSlice, templateNodeResou
 }
 
 // getCompleteResourcePools returns a map of drivers and count of ready resource pools mapped to it.
-func getCompleteResourcePools(resourceSlices []*v1.ResourceSlice) map[string]int {
+func getCompleteResourcePools(resourceSlices []*resourceapi.ResourceSlice) map[string]int {
 	poolStates := make(map[poolSpec]poolState, len(resourceSlices))
 
 	for _, rs := range resourceSlices {

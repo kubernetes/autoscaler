@@ -124,18 +124,20 @@ done
 # Add feature gates if specified
 RECOM_ARGS_IDX=0
 if [ -n "${FEATURE_GATES:-}" ]; then
+  # Escape commas so Helm --set treats the value as a single assignment
+  ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
   # Add feature gates to each enabled component
   for COMPONENT in ${COMPONENTS}; do
     case ${COMPONENT} in
       recommender)
-        HELM_SET_ARGS+=("--set" "recommender.extraArgs[${RECOM_ARGS_IDX}]=--feature-gates=${FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "recommender.extraArgs[${RECOM_ARGS_IDX}]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         RECOM_ARGS_IDX=$((RECOM_ARGS_IDX + 1))
         ;;
       updater)
-        HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         ;;
       admission-controller)
-        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         ;;
     esac
   done
@@ -143,6 +145,12 @@ fi
 
 # Uninstall any existing VPA Helm release
 helm uninstall ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE} 2>/dev/null || true
+
+# Helm does not delete or upgrade CRDs under crds/, so remove them here to make
+# sure the next install picks up the current version from the chart.
+# https://helm.sh/docs/topics/charts/#limitations-on-crds
+kubectl delete crd verticalpodautoscalers.autoscaling.k8s.io --ignore-not-found=true
+kubectl delete crd verticalpodautoscalercheckpoints.autoscaling.k8s.io --ignore-not-found=true
 
 # Handle external metrics special case
 if [[ "${SUITE}" == "recommender-externalmetrics" ]]; then

@@ -453,12 +453,6 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 			Get()
 		utils.InstallVPA(f, vpaCRD)
 
-		ginkgo.By("Waiting for recommendation to be filled")
-		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
-
-		currentMemory := vpa.Status.Recommendation.ContainerRecommendations[0].Target.Memory().Value()
 		oomReplicationControllerRequestLimit := int64(1024 * 1024 * 1024)                          // from runOomingReplicationController
 		defaultBumpMemory := float64(oomReplicationControllerRequestLimit) * defaultOOMBumpUpRatio // DefaultOOMBumpUpRatio
 		customBumpMemory := float64(oomReplicationControllerRequestLimit) * oomBumpUpRatio         // Custom ratio from VPA config
@@ -467,8 +461,16 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		gomega.Expect(customBumpMemory).Should(gomega.BeNumerically(">", defaultBumpMemory),
 			fmt.Sprintf("Custom OOM bump ratio (%fx) should be greater than default (%fx)", float64(oomBumpUpRatio), defaultOOMBumpUpRatio))
 
-		// Verify that the actual recommendation is at least the custom bump ratio
-		gomega.Expect(currentMemory).Should(gomega.BeNumerically(">=", int64(customBumpMemory)),
+		ginkgo.By("Waiting for recommendation to reflect the OOM bump")
+		var currentMemory int64
+		_, err := utils.WaitForVPAMatch(vpaClientSet, vpaCRD, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
+			if vpa.Status.Recommendation == nil || len(vpa.Status.Recommendation.ContainerRecommendations) != 1 {
+				return false
+			}
+			currentMemory = vpa.Status.Recommendation.ContainerRecommendations[0].Target.Memory().Value()
+			return currentMemory >= int64(customBumpMemory)
+		})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred(),
 			fmt.Sprintf("Memory recommendation should be at least custom bump up ratio (%dx). Got: %d bytes (%.2fx), Expected: >= %d bytes (%dx)",
 				oomBumpUpRatio,
 				currentMemory,
