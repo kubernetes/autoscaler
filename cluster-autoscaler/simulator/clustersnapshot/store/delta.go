@@ -19,6 +19,7 @@ package store
 import (
 	"fmt"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
@@ -173,8 +174,77 @@ func (data *internalDeltaSnapshotData) clearCaches() {
 func (data *internalDeltaSnapshotData) clearPodCaches() {
 	data.havePodsWithAffinity = nil
 	data.havePodsWithRequiredAntiAffinity = nil
-	// TODO: update the cache when adding/removing pods instead of invalidating the whole cache
 	data.pvcNamespaceMap = nil
+}
+
+func (data *internalDeltaSnapshotData) addToPodCaches(ni schedulerinterface.NodeInfo, pod *apiv1.Pod) {
+	affinity := pod.Spec.Affinity
+	if affinity == nil {
+		return
+	}
+
+	if data.havePodsWithAffinity != nil && (affinity.PodAffinity != nil || affinity.PodAntiAffinity != nil) {
+		if !nodeInSlice(data.havePodsWithAffinity, ni) {
+			data.havePodsWithAffinity = append(data.havePodsWithAffinity, ni)
+		}
+	}
+
+	if data.havePodsWithRequiredAntiAffinity != nil && affinity.PodAntiAffinity != nil &&
+		len(affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution) > 0 {
+		if !nodeInSlice(data.havePodsWithRequiredAntiAffinity, ni) {
+			data.havePodsWithRequiredAntiAffinity = append(data.havePodsWithRequiredAntiAffinity, ni)
+		}
+	}
+}
+
+func (data *internalDeltaSnapshotData) removeFromPodCaches(ni schedulerinterface.NodeInfo) {
+	if data.havePodsWithAffinity != nil && len(ni.GetPodsWithAffinity()) == 0 {
+		data.havePodsWithAffinity = removeNodeFromSlice(data.havePodsWithAffinity, ni)
+	}
+
+	if data.havePodsWithRequiredAntiAffinity != nil && len(ni.GetPodsWithRequiredAntiAffinity()) == 0 {
+		data.havePodsWithRequiredAntiAffinity = removeNodeFromSlice(data.havePodsWithRequiredAntiAffinity, ni)
+	}
+}
+
+func (data *internalDeltaSnapshotData) replaceNodeInPodCaches(old, new schedulerinterface.NodeInfo) {
+	oldName := old.Node().Name
+	if data.havePodsWithAffinity != nil {
+		for i, ni := range data.havePodsWithAffinity {
+			if ni.Node().Name == oldName {
+				data.havePodsWithAffinity[i] = new
+				break
+			}
+		}
+	}
+	if data.havePodsWithRequiredAntiAffinity != nil {
+		for i, ni := range data.havePodsWithRequiredAntiAffinity {
+			if ni.Node().Name == oldName {
+				data.havePodsWithRequiredAntiAffinity[i] = new
+				break
+			}
+		}
+	}
+}
+
+func nodeInSlice(slice []schedulerinterface.NodeInfo, target schedulerinterface.NodeInfo) bool {
+	targetName := target.Node().Name
+	for _, ni := range slice {
+		if ni.Node().Name == targetName {
+			return true
+		}
+	}
+	return false
+}
+
+func removeNodeFromSlice(slice []schedulerinterface.NodeInfo, target schedulerinterface.NodeInfo) []schedulerinterface.NodeInfo {
+	targetName := target.Node().Name
+	for i, ni := range slice {
+		if ni.Node().Name == targetName {
+			return append(slice[:i], slice[i+1:]...)
+		}
+	}
+	return slice
 }
 
 func (data *internalDeltaSnapshotData) removeNodeInfo(nodeName string) error {
@@ -222,7 +292,8 @@ func (data *internalDeltaSnapshotData) nodeInfoToModify(nodeName string) (schedu
 		}
 		dni = bni.Snapshot()
 		data.modifiedNodeInfoMap[nodeName] = dni
-		data.clearCaches()
+		data.nodeInfoList = nil
+		data.replaceNodeInPodCaches(bni, dni)
 	}
 	return dni, true
 }
@@ -235,8 +306,8 @@ func (data *internalDeltaSnapshotData) addPodInfo(podInfo schedulerinterface.Pod
 
 	ni.AddPodInfo(podInfo)
 
-	// Maybe consider deleting from the list in the future. Maybe not.
-	data.clearCaches()
+	data.addToPodCaches(ni, podInfo.GetPod())
+	data.pvcNamespaceMap = nil
 	return nil
 }
 
@@ -264,8 +335,9 @@ func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName strin
 		return fmt.Errorf("pod %s/%s not in snapshot", namespace, name)
 	}
 
-	// Maybe consider deleting from the list in the future. Maybe not.
-	data.clearCaches()
+	data.removeFromPodCaches(ni)
+	data.nodeInfoList = nil
+	data.pvcNamespaceMap = nil
 	return nil
 }
 
