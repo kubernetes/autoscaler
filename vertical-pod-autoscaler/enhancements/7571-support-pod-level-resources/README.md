@@ -24,6 +24,10 @@
     - [Upgrade](#upgrade)
     - [Downgrade](#downgrade)
   - [Kubernetes Version Compatibility](#kubernetes-version-compatibility)
+  - [VPAPodLevelResources Feature Gate](#vpapodlevelresources-feature-gate)
+    - [Recommender](#recommender-1)
+    - [Updater](#updater-1)
+    - [Admission controller](#admission-controller-1)
   - [Examples](#examples)
     - [Example 1](#example-1)
     - [Example 2](#example-2)
@@ -146,6 +150,8 @@ Today, the updater makes decisions based solely on container-level resource stan
 
   3. Add a new `status.recommendation.podRecommendations` stanza. The field is populated by the VPA Recommender and stores Pod-level recommendations, including Pod-level `Target`, `LowerBound`, `UpperBound` and `UncappedTarget` for CPU and memory. For more details about how VPA calculates pod-level recommendations, see the [recommender](#recommender) section.
 
+The AEP proposes that pod-level recommendations are calculated by all VPA components (the recommender, updater, and admission controller) to handle situations where a user adds or removes a container from the Pod spec. The `status.recommendation.podRecommendations` stanza should serve as observational data for end users, but controllers SHOULD NOT depend on its content, as it may contain outdated information when the list of containers in the Pod spec changes and the recommender has not yet processed those changes.
+
 #### Recommender
 
 This section and its subsections describe the proposed modifications to the recommender:
@@ -247,6 +253,27 @@ This new feature, proposed by this AEP, relies on two feature gates:
 * `InPlacePodLevelResourcesVerticalScaling` – implements in-place scaling at the pod level.
 
 Therefore, it is recommended to use a Kubernetes version that includes both of these feature gates (use [this page](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates) to verify this information). The alpha version of `InPlacePodLevelResourcesVerticalScaling` was released in v1.35, so at least this Kubernetes version should be used.
+
+### VPAPodLevelResources Feature Gate
+
+This section describes the behavior of the VPA components when the proposed feature gate is disabled. The following common rules apply to all components:
+
+* All VPA components MUST ignore the new pod-level constraints introduced by this AEP (pod-level `minAllowed` and `maxAllowed`).
+* Containers configured with `RecommendationOnly` mode MUST behave as if they are in `Auto` mode.
+
+#### Recommender
+
+* The recommender MUST NOT calculate or store pod-level recommendations in the VPA status stanza. If the feature gate is turned off, any existing pod-level recommendations MUST be removed from the status stanza during the next recommender cycle.
+* The recommender MUST ignore the new pod-level constraints introduced by this AEP (including the global pod maximum flags).
+
+#### Updater
+
+* The updater MUST NOT calculate pod-level recommendations. It MUST NOT make eviction decisions based on them, nor apply in-place updates using them. It MUST also leave any existing pod-level resource stanzas unchanged.
+
+#### Admission Controller
+
+* The admission controller MUST reject new VPA objects that specify container-level `RecommendationOnly` mode. It MUST also reject VPA objects that include the `podPolicies` stanza.
+* The admission controller MUST NOT calculate pod-level recommendations. In other words, it MUST NOT add or modify pod-level resource stanzas. It MUST also leave any existing pod-level resource stanzas unchanged.
 
 ### Examples
 
