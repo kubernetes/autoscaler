@@ -573,11 +573,10 @@ func TestExpiredScaleUp(t *testing.T) {
 	assert.Equal(t, map[string][]ScaleUpFailure{
 		"ng1": {
 			{
-				NodeGroup:      provider.GetNodeGroup("ng1"),
-				ErrorInfo:      cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout), ErrorClass: cloudprovider.OtherErrorClass, ErrorMessage: fmt.Sprintf("Scale-up timed out for node group %v after %v", "ng1", now.Sub(now.Add(-3*time.Minute)))},
-				Time:           now,
-				Delta:          4,
-				DraDriverNames: "",
+				NodeGroup: provider.GetNodeGroup("ng1"),
+				ErrorInfo: cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout), ErrorClass: cloudprovider.OtherErrorClass, ErrorMessage: fmt.Sprintf("Scale-up timed out for node group %v after %v", "ng1", now.Sub(now.Add(-3*time.Minute)))},
+				Time:      now,
+				Delta:     4,
 			},
 		},
 	}, clusterstate.GetScaleUpFailures())
@@ -1161,24 +1160,24 @@ func TestScaleUpFailures(t *testing.T) {
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
 	clusterstate := newClusterStateRegistryWithMetrics(provider, ClusterStateRegistryConfig{}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
 
-	clusterstate.scaleStateNotifier.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), 3, cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout)}, "", now)
+	clusterstate.scaleStateNotifier.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), 3, cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout)}, now)
 	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "", "")
 	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.Timeout, 3)
-	clusterstate.scaleStateNotifier.RegisterFailedScaleUp(provider.GetNodeGroup("ng2"), 2, cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout)}, "", now)
+	clusterstate.scaleStateNotifier.RegisterFailedScaleUp(provider.GetNodeGroup("ng2"), 2, cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout)}, now)
 	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "", "")
 	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.Timeout, 2)
-	clusterstate.scaleStateNotifier.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), 1, cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.APIError)}, "", now.Add(time.Minute))
+	clusterstate.scaleStateNotifier.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), 1, cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.APIError)}, now.Add(time.Minute))
 	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.APIError, "", "", "")
 	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.APIError, 1)
 
 	failures := clusterstate.GetScaleUpFailures()
 	assert.Equal(t, map[string][]ScaleUpFailure{
 		"ng1": {
-			{NodeGroup: provider.GetNodeGroup("ng1"), ErrorInfo: cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout)}, Time: now, Delta: 3, DraDriverNames: ""},
-			{NodeGroup: provider.GetNodeGroup("ng1"), ErrorInfo: cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.APIError)}, Time: now.Add(time.Minute), Delta: 1, DraDriverNames: ""},
+			{NodeGroup: provider.GetNodeGroup("ng1"), ErrorInfo: cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout)}, Time: now, Delta: 3},
+			{NodeGroup: provider.GetNodeGroup("ng1"), ErrorInfo: cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.APIError)}, Time: now.Add(time.Minute), Delta: 1},
 		},
 		"ng2": {
-			{NodeGroup: provider.GetNodeGroup("ng2"), ErrorInfo: cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout)}, Time: now, Delta: 2, DraDriverNames: ""},
+			{NodeGroup: provider.GetNodeGroup("ng2"), ErrorInfo: cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout)}, Time: now, Delta: 2},
 		},
 	}, failures)
 
