@@ -36,7 +36,6 @@ func (n nodeExcludeFn) ExcludeFromTracking(node *apiv1.Node) bool {
 	return n(node)
 }
 
-
 func TestNewMaxQuotasTracker(t *testing.T) {
 	testCases := []struct {
 		name       string
