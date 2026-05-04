@@ -34,7 +34,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/dynamicresources"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
@@ -116,11 +115,10 @@ type UnregisteredNode struct {
 
 // ScaleUpFailure contains information about a failure of a scale-up.
 type ScaleUpFailure struct {
-	NodeGroup      cloudprovider.NodeGroup
-	ErrorInfo      cloudprovider.InstanceErrorInfo
-	Time           time.Time
-	Delta          int
-	DraDriverNames string
+	NodeGroup cloudprovider.NodeGroup
+	ErrorInfo cloudprovider.InstanceErrorInfo
+	Time      time.Time
+	Delta     int
 }
 
 type metricObserver interface {
@@ -321,13 +319,6 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) []Sc
 			csr.logRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpTimedOut",
 				"Nodes added to group %s failed to register within %v",
 				scaleUpRequest.NodeGroup.Id(), currentTime.Sub(scaleUpRequest.Time))
-			draDriverNames := ""
-			nodeInfo, err := scaleUpRequest.NodeGroup.TemplateNodeInfo()
-			if err != nil {
-				klog.Warningf("Failed to get template node info for a node group: %s", err)
-			} else {
-				draDriverNames = dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
-			}
 			failedScaleUps = append(failedScaleUps, ScaleUpFailure{
 				NodeGroup: scaleUpRequest.NodeGroup,
 				ErrorInfo: cloudprovider.InstanceErrorInfo{
@@ -335,9 +326,8 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) []Sc
 					ErrorCode:    string(metrics.Timeout),
 					ErrorMessage: fmt.Sprintf("Scale-up timed out for node group %v after %v", nodeGroupName, currentTime.Sub(scaleUpRequest.Time)),
 				},
-				Time:           currentTime,
-				Delta:          scaleUpRequest.Increase,
-				DraDriverNames: draDriverNames,
+				Time:  currentTime,
+				Delta: scaleUpRequest.Increase,
 			})
 			delete(csr.scaleUpRequests, nodeGroupName)
 		}
@@ -363,15 +353,14 @@ func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGr
 // RegisterFailedScaleUp should be called after getting error from cloudprovider
 // when trying to scale-up node group. It will mark this group as not safe to autoscale
 // for some time.
-func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, draDriverNames string, currentTime time.Time) {
+func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
 	csr.Lock()
 	defer csr.Unlock()
 	csr.scaleUpFailures[nodeGroup.Id()] = append(csr.scaleUpFailures[nodeGroup.Id()], ScaleUpFailure{
-		NodeGroup:      nodeGroup,
-		ErrorInfo:      errorInfo,
-		Time:           currentTime,
-		Delta:          delta,
-		DraDriverNames: draDriverNames,
+		NodeGroup: nodeGroup,
+		ErrorInfo: errorInfo,
+		Time:      currentTime,
+		Delta:     delta,
 	})
 	csr.backoffNodeGroup(nodeGroup, errorInfo, currentTime)
 }
@@ -402,7 +391,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 		targetSizes,
 	)
 	for _, failure := range scaleUpFailures {
-		csr.scaleStateNotifier.RegisterFailedScaleUp(failure.NodeGroup, failure.Delta, failure.ErrorInfo, failure.DraDriverNames, failure.Time)
+		csr.scaleStateNotifier.RegisterFailedScaleUp(failure.NodeGroup, failure.Delta, failure.ErrorInfo, failure.Time)
 	}
 	return nil
 }
@@ -1235,14 +1224,6 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 				nodeGroup.Id(),
 				errorCode,
 				csr.buildErrorMessageEventString(currentUniqueErrorMessagesForErrorCode[errorCode]))
-
-			draDriverNames := ""
-			nodeInfo, err := nodeGroup.TemplateNodeInfo()
-			if err != nil {
-				klog.Warningf("Failed to get template node info for a node group: %s", err)
-			} else {
-				draDriverNames = dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
-			}
 			// Decrease the scale up request by the number of deleted nodes
 			csr.registerOrUpdateScaleUpNoLock(nodeGroup, -len(unseenInstanceIds), currentTime)
 			failedScaleUps = append(failedScaleUps, ScaleUpFailure{
@@ -1252,9 +1233,8 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 					ErrorCode:    errorCode.code,
 					ErrorMessage: csr.buildErrorMessageEventString(currentUniqueErrorMessagesForErrorCode[errorCode]),
 				},
-				Time:           currentTime,
-				Delta:          len(unseenInstanceIds),
-				DraDriverNames: draDriverNames,
+				Time:  currentTime,
+				Delta: len(unseenInstanceIds),
 			})
 		}
 	}

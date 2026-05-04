@@ -174,7 +174,7 @@ func (e *scaleUpExecutor) executeScaleUp(
 			ErrorClass:   cloudprovider.OtherErrorClass,
 			ErrorCode:    string(aerr.Type()),
 			ErrorMessage: aerr.Error(),
-		}, draDriverNames, now)
+		}, now)
 		return aerr
 	}
 	if increase < 0 {

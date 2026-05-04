@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 )
@@ -38,7 +39,7 @@ type NodeGroupChangeObserver interface {
 	RegisterScaleDown(nodeGroup cloudprovider.NodeGroup, nodeName string, currentTime time.Time, expectedDeleteTime time.Time)
 	// RegisterFailedScaleUp records failed scale-up for a nodegroup.
 	// errorInfo is a wrapper containing the reason for failed scale-up and the actual error message
-	RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, draDriverNames string, currentTime time.Time)
+	RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time)
 	// RegisterFailedScaleDown records failed scale-down for a nodegroup.
 	RegisterFailedScaleDown(nodeGroup cloudprovider.NodeGroup, reason string, currentTime time.Time)
 }
@@ -77,11 +78,11 @@ func (l *NodeGroupChangeObserversList) RegisterScaleDown(nodeGroup cloudprovider
 }
 
 // RegisterFailedScaleUp calls RegisterFailedScaleUp for each observer.
-func (l *NodeGroupChangeObserversList) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, draDriverNames string, currentTime time.Time) {
+func (l *NodeGroupChangeObserversList) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	for _, observer := range l.observers {
-		observer.RegisterFailedScaleUp(nodeGroup, delta, errorInfo, draDriverNames, currentTime)
+		observer.RegisterFailedScaleUp(nodeGroup, delta, errorInfo, currentTime)
 	}
 }
 
@@ -123,9 +124,9 @@ func (p *NodeGroupChangeMetricsProducer) RegisterScaleDown(nodeGroup cloudprovid
 }
 
 // RegisterFailedScaleUp emits the failed scale up metric.
-func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, draDriverNames string, currentTime time.Time) {
+func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
 	availableGPUTypes := p.cloudProvider.GetAvailableGPUTypes()
-	gpuResourceName, gpuType := "", ""
+	gpuResourceName, gpuType, draDriverNames := "", "", ""
 	nodeInfo, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
 		klog.Warningf("Failed to get template node info for a node group: %s", err)
@@ -133,6 +134,7 @@ func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleUp(nodeGroup cloudpr
 		klog.Warningf("Template node info is nil for node group: %s", nodeGroup.Id())
 	} else {
 		gpuResourceName, gpuType = gpu.GetGpuInfoForMetrics(p.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), nodeGroup)
+		draDriverNames = dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
 	}
 	reason := metrics.FailedScaleUpReason(errorInfo.ErrorCode)
 	p.metrics.RegisterFailedScaleUp(reason, gpuResourceName, gpuType, draDriverNames)
