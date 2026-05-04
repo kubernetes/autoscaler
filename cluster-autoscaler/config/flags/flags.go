@@ -243,6 +243,7 @@ var (
 	maxNodeSkipEvalTimeTrackerEnabled            = flag.Bool("max-node-skip-eval-time-tracker-enabled", false, "Whether to enable the tracking of the maximum time of node being skipped during ScaleDown")
 	capacityQuotasEnabled                        = flag.Bool("capacity-quotas-enabled", false, "Whether to enable CapacityQuota CRD support.")
 	scaleUpSimulationForSkippedNodeGroupsEnabled = flag.Bool("scaleup-simulation-for-skipped-node-groups-enabled", false, "Whether to enable the scale up simulation for skipped node groups.")
+	relevanceFilterEnabled                       = flag.Bool("relevance-filter-enabled", false, "[Experimental] Whether to prune irrelevant nodes from simulation snapshot.")
 
 	// Deprecated flags
 	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
@@ -446,6 +447,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxNodeSkipEvalTimeTrackerEnabled:            *maxNodeSkipEvalTimeTrackerEnabled,
 		CapacityQuotasEnabled:                        *capacityQuotasEnabled,
 		ScaleUpSimulationForSkippedNodeGroupsEnabled: *scaleUpSimulationForSkippedNodeGroupsEnabled,
+		RelevanceFilterEnabled:                       *relevanceFilterEnabled,
 	}
 }
 

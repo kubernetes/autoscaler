@@ -129,6 +129,11 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	now := time.Now()
 
+	if o.autoscalingCtx.RelevanceFilterEnabled {
+		cleanup := ApplyRelevanceFilter(o.autoscalingCtx.ClusterSnapshot, unschedulablePods)
+		defer cleanup()
+	}
+
 	// Filter out invalid node groups
 	validNodeGroups, skippedNodeGroups := o.filterValidScaleUpNodeGroups(nodeGroups, nodeInfos, tracker, len(nodes), now)
 
@@ -141,7 +146,6 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	schedulablePodGroups := map[string][]estimator.PodEquivalenceGroup{}
 	var options []expander.Option
 
-	// This code here runs a simulation to see which pods can be scheduled on which node groups.
 	for _, nodeGroup := range validNodeGroups {
 		schedulablePodGroups[nodeGroup.Id()] = o.SchedulablePodGroups(podEquivalenceGroups, nodeGroup, nodeInfos[nodeGroup.Id()])
 	}

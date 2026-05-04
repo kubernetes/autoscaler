@@ -182,6 +182,20 @@ func WithMaxSkew(maxSkew int32, topologySpreadingKey string, minDomains int32) f
 	}
 }
 
+// WithHardTopologySpreadConstraint sets a hard topology spread constraint to the pod.
+func WithHardTopologySpreadConstraint(maxSkew int32, topologyKey string, matchLabels map[string]string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.TopologySpreadConstraints = append(pod.Spec.TopologySpreadConstraints, apiv1.TopologySpreadConstraint{
+			MaxSkew:           maxSkew,
+			TopologyKey:       topologyKey,
+			WhenUnsatisfiable: apiv1.DoNotSchedule,
+			LabelSelector: &metav1.LabelSelector{
+				MatchLabels: matchLabels,
+			},
+		})
+	}
+}
+
 // WithCreationTimestamp sets creation timestamp to the pod.
 func WithCreationTimestamp(timestamp time.Time) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
@@ -219,8 +233,27 @@ func WithNodeNamesAffinity(nodeNames ...string) func(*apiv1.Pod) {
 	}
 }
 
-// WithPodHostnameAntiAffinity sets pod's anti-affinity for pods matching the given labels at hostname topology level.
-func WithPodHostnameAntiAffinity(labels map[string]string) func(*apiv1.Pod) {
+// WithPodAffinity sets pod's affinity for pods matching the given labels at the provided topology level.
+func WithPodAffinity(labels map[string]string, topologyKey string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		if pod.Spec.Affinity == nil {
+			pod.Spec.Affinity = &apiv1.Affinity{}
+		}
+		pod.Spec.Affinity.PodAffinity = &apiv1.PodAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
+				{
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: labels,
+					},
+					TopologyKey: topologyKey,
+				},
+			},
+		}
+	}
+}
+
+// WithPodAntiAffinity sets pod's anti-affinity for pods matching the given labels at the provided topology level.
+func WithPodAntiAffinity(labels map[string]string, topologyKey string) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
 		if pod.Spec.Affinity == nil {
 			pod.Spec.Affinity = &apiv1.Affinity{}
@@ -231,11 +264,16 @@ func WithPodHostnameAntiAffinity(labels map[string]string) func(*apiv1.Pod) {
 					LabelSelector: &metav1.LabelSelector{
 						MatchLabels: labels,
 					},
-					TopologyKey: "kubernetes.io/hostname",
+					TopologyKey: topologyKey,
 				},
 			},
 		}
 	}
+}
+
+// WithPodHostnameAntiAffinity sets pod's anti-affinity for pods matching the given labels at hostname topology level.
+func WithPodHostnameAntiAffinity(labels map[string]string) func(*apiv1.Pod) {
+	return WithPodAntiAffinity(labels, apiv1.LabelHostname)
 }
 
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
@@ -353,6 +391,16 @@ type NodeOption func(*apiv1.Node)
 func IsReady(ready bool) NodeOption {
 	return func(node *apiv1.Node) {
 		SetNodeReadyState(node, ready, time.Now())
+	}
+}
+
+// WithNodeLabel adds a label to the node.
+func WithNodeLabel(key, value string) NodeOption {
+	return func(node *apiv1.Node) {
+		if node.Labels == nil {
+			node.Labels = make(map[string]string)
+		}
+		node.Labels[key] = value
 	}
 }
 

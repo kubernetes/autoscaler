@@ -372,6 +372,8 @@ type AutoscalingOptions struct {
 	CapacityQuotasEnabled             bool
 	// ScaleUpSimulationForSkippedNodeGroupsEnabled is used to enable/disable the scaleUpSimulation for the skipped node groups
 	ScaleUpSimulationForSkippedNodeGroupsEnabled bool
+	// RelevanceFilterEnabled tells if to prune irrelevant nodes from simulation snapshot.
+	RelevanceFilterEnabled bool
 }
 
 // KubeClientOptions specify options for kube client
