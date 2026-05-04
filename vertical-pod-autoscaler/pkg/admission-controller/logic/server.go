@@ -24,7 +24,10 @@ import (
 	"net/http"
 
 	admissionv1 "k8s.io/api/admission/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
@@ -113,23 +116,32 @@ func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.
 
 	var patches []resource.PatchRecord
 	var err error
+	var allErrs field.ErrorList
 	resource := metrics_admission.Unknown
 
 	admittedGroupResource := metav1.GroupResource{
 		Group:    ar.Request.Resource.Group,
 		Resource: ar.Request.Resource.Resource,
 	}
+	kind := ar.Request.RequestKind.Kind
+	name := ar.Request.Name
 
 	handler, ok := s.resourceHandlers[admittedGroupResource]
 	if ok {
-		patches, err = handler.GetPatches(ctx, ar.Request)
+		patches, allErrs = handler.GetPatches(ctx, ar.Request)
 		resource = handler.AdmissionResource()
 
-		if handler.DisallowIncorrectObjects() && err != nil {
+		if handler.DisallowIncorrectObjects() && len(allErrs) > 0 {
 			// we don't let in problematic objects - late validation
-			status := metav1.Status{}
-			status.Status = "Failure"
-			status.Message = err.Error()
+			err := apierrors.NewInvalid(
+				schema.GroupKind{
+					Group: admittedGroupResource.Group,
+					Kind:  kind,
+				},
+				name,
+				allErrs,
+			)
+			status := err.ErrStatus
 			response.Result = &status
 			response.Allowed = false
 		}

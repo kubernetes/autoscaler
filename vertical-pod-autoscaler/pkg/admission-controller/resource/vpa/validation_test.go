@@ -38,6 +38,213 @@ const (
 	memory = corev1.ResourceMemory
 )
 
+func TestAllowCPUBoost(t *testing.T) {
+	tests := []struct {
+		name        string
+		oldObj      *vpa_types.VerticalPodAutoscaler
+		featureFlag bool
+		expected    bool
+	}{
+		{
+			name:        "feature enabled returns true",
+			oldObj:      nil,
+			featureFlag: true,
+			expected:    true,
+		},
+		{
+			name:        "feature disabled and oldObj nil returns false",
+			oldObj:      nil,
+			featureFlag: false,
+			expected:    false,
+		},
+		{
+			name: "feature disabled but top-level StartupBoost.CPU set returns true",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{
+						CPU: &vpa_types.GenericStartupBoost{
+							Factor: ptr.To(int32(2)),
+						},
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    true,
+		},
+		{
+			name: "feature disabled but container StartupBoost set returns true",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "app",
+								StartupBoost: &vpa_types.StartupBoost{
+									CPU: &vpa_types.GenericStartupBoost{
+										Factor: ptr.To(int32(2)),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    true,
+		},
+		{
+			name: "feature disabled and no startup boost configured returns false",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "app",
+							},
+						},
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    false,
+		},
+		{
+			name: "feature disabled with empty container policies returns false",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{},
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    false,
+		},
+		{
+			name: "feature disabled with ResourcePolicy nil returns false",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					StartupBoost: &vpa_types.StartupBoost{},
+				},
+			},
+			featureFlag: false,
+			expected:    false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, tc.featureFlag)
+			result := allowCPUBoost(tc.oldObj)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestAllowPerVPAConfig(t *testing.T) {
+	tests := []struct {
+		name        string
+		oldObj      *vpa_types.VerticalPodAutoscaler
+		featureFlag bool
+		expected    bool
+	}{
+		{
+			name:        "feature enabled returns true",
+			oldObj:      nil,
+			featureFlag: true,
+			expected:    true,
+		},
+		{
+			name:        "feature disabled and oldObj nil returns false",
+			oldObj:      nil,
+			featureFlag: false,
+			expected:    false,
+		},
+		{
+			name: "feature disabled but EvictAfterOOMSeconds set returns true",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						EvictAfterOOMSeconds: ptr.To(int32(600)),
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    true,
+		},
+		{
+			name: "feature disabled but OOMBumpUpRatio set returns true",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:  "app",
+								OOMBumpUpRatio: resource.NewQuantity(2, resource.DecimalSI),
+							},
+						},
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    true,
+		},
+		{
+			name: "feature disabled but OOMMinBumpUp set returns true",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "app",
+								OOMMinBumpUp:  resource.NewQuantity(100, resource.BinarySI),
+							},
+						},
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    true,
+		},
+		{
+			name: "feature disabled and no per-vpa config returns false",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "app",
+							},
+						},
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    false,
+		},
+		{
+			name: "feature disabled with empty container policies returns false",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{},
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, tc.featureFlag)
+			result := allowPerVPAConfig(tc.oldObj)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestValidateVPA(t *testing.T) {
 	badUpdateMode := vpa_types.UpdateMode("bad")
 	validUpdateMode := vpa_types.UpdateModeOff
@@ -71,39 +278,51 @@ func TestValidateVPA(t *testing.T) {
 			name:        "empty create",
 			vpa:         vpa_types.VerticalPodAutoscaler{},
 			opts:        VPAValidationOptions{IsVPACreate: true},
-			expectError: errors.New("targetRef is required. If you're using v1beta1 version of the API, please migrate to v1"),
+			expectError: errors.New("spec.targetRef: Required value: If you're using v1beta1 version of the API, please migrate to v1"),
 		},
 		{
 			name: "no update mode",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{},
 				},
 			},
-			expectError: errors.New("updateMode is required if UpdatePolicy is used"),
+			expectError: errors.New("spec.updatePolicy.updateMode: Required value: updateMode is required if UpdatePolicy is used"),
 		},
 		{
 			name: "bad update mode",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode: &badUpdateMode,
 					},
 				},
 			},
-			expectError: errors.New("unexpected UpdateMode value bad"),
+			expectError: errors.New("spec.updatePolicy.updateMode: Unsupported value: \"bad\": supported values: \"InPlaceOrRecreate\", \"Initial\", \"Off\", \"Recreate\""),
 		},
 		{
 			name: "creating VPA with InPlaceOrRecreate update mode not allowed by disabled feature gate",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode: &inPlaceOrRecreateUpdateMode,
 					},
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowInPlaceOrRecreate: false},
-			expectError: fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate),
+			expectError: fmt.Errorf("spec.updatePolicy.updateMode: Forbidden: in order to use UpdateMode %s, you must enable feature gate InPlaceOrRecreate in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate),
 		},
 		{
 			name: "InPlaceOrRecreate update mode enabled by feature gate",
@@ -124,29 +343,41 @@ func TestValidateVPA(t *testing.T) {
 			name: "zero minReplicas",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						MinReplicas: &badMinReplicas,
 						UpdateMode:  &validUpdateMode,
 					},
 				},
 			},
-			expectError: errors.New("minReplicas has to be positive, got 0"),
+			expectError: errors.New("spec.updatePolicy.minReplicas: Invalid value: 0: minReplicas has to be positive"),
 		},
 		{
 			name: "no policy name",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{{}},
 					},
 				},
 			},
-			expectError: errors.New("containerPolicies.ContainerName is required"),
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].containerName: Required value"),
 		},
 		{
 			name: "invalid scaling mode",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -157,12 +388,16 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: errors.New("unexpected Mode value bad"),
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].mode: Unsupported value: \"bad\": supported values: \"Auto\", \"Off\""),
 		},
 		{
 			name: "more than one recommender",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode: &validUpdateMode,
 					},
@@ -172,12 +407,16 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: errors.New("the current version of VPA object shouldn't specify more than one recommenders"),
+			expectError: errors.New("spec.recommenders: Too many: 2: must have at most 1 item"),
 		},
 		{
 			name: "bad limits",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -193,12 +432,16 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: errors.New("max resource for cpu is lower than min"),
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].maxAllowed[cpu]: Invalid value: \"10\": max resource for cpu is lower than min of \"100\""),
 		},
 		{
 			name: "bad minAllowed cpu value",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -214,12 +457,16 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("minAllowed: CPU [%v] must be a whole number of milli CPUs", badCPUResource.String()),
+			expectError: fmt.Errorf("spec.resourcePolicy.containerPolicies[0].minAllowed[cpu]: Invalid value: \"%v\": must be a whole number of milli CPUs", badCPUResource.String()),
 		},
 		{
 			name: "bad minAllowed memory value",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -237,12 +484,16 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("minAllowed: memory [%v] must be a whole number of bytes", resource.MustParse("100m")),
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].minAllowed[memory]: Invalid value: \"100m\": must be a whole number of bytes"),
 		},
 		{
 			name: "bad maxAllowed cpu value",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -256,12 +507,16 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("maxAllowed: CPU [%s] must be a whole number of milli CPUs", badCPUResource.String()),
+			expectError: fmt.Errorf("spec.resourcePolicy.containerPolicies[0].maxAllowed[cpu]: Invalid value: \"%s\": must be a whole number of milli CPUs", badCPUResource.String()),
 		},
 		{
 			name: "bad maxAllowed memory value",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -277,12 +532,16 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: fmt.Errorf("maxAllowed: memory [%v] must be a whole number of bytes", resource.MustParse("500m")),
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].maxAllowed[memory]: Invalid value: \"500m\": must be a whole number of bytes"),
 		},
 		{
 			name: "scaling off with controlled values requests and limits",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -294,12 +553,16 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: errors.New("controlledValues shouldn't be specified if container scaling mode is off"),
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].controlledValues: Forbidden: controlledValues shouldn't be specified if container scaling mode is off"),
 		},
 		{
 			name: "all valid",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -326,6 +589,10 @@ func TestValidateVPA(t *testing.T) {
 			name: "top-level startupBoost with feature gate disabled",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					StartupBoost: &vpa_types.StartupBoost{
 						CPU: &vpa_types.GenericStartupBoost{
 							Factor: &validCPUBoostFactor,
@@ -334,12 +601,16 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: false},
-			expectError: fmt.Errorf("invalid startupBoost: in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost),
+			expectError: fmt.Errorf("spec.startupBoost: Forbidden: in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost),
 		},
 		{
 			name: "container startupBoost with feature gate disabled",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -355,12 +626,16 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: false},
-			expectError: fmt.Errorf("invalid startupBoost in container loot box: in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost),
+			expectError: fmt.Errorf("spec.resourcePolicy.containerPolicies[0].startupBoost: Forbidden: in order to use startupBoost, you must enable feature gate %s in the admission-controller args", features.CPUStartupBoost),
 		},
 		{
 			name: "top-level startupBoost with bad factor",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					StartupBoost: &vpa_types.StartupBoost{
 						CPU: &vpa_types.GenericStartupBoost{
 							Type:   vpa_types.FactorStartupBoostType,
@@ -370,12 +645,16 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
-			expectError: errors.New("invalid startupBoost: invalid startupBoost.cpu.factor: must be >= 1 for type Factor"),
+			expectError: errors.New("spec.startupBoost.cpu.factor: Invalid value: 0: must be >= 1 for type Factor"),
 		},
 		{
 			name: "container startupBoost with bad factor",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -392,7 +671,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
-			expectError: errors.New("invalid startupBoost in container loot box: invalid startupBoost.cpu.factor: must be >= 1 for type Factor"),
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].startupBoost.cpu.factor: Invalid value: 0: must be >= 1 for type Factor"),
 		},
 		{
 			name: "top-level startupBoost with bad quantity",
@@ -411,7 +690,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
-			expectError: fmt.Errorf("invalid startupBoost: invalid startupBoost.cpu.quantity: CPU [%v] must be a whole number of milli CPUs", &badCPUBoostQuantity),
+			expectError: fmt.Errorf("spec.startupBoost.cpu.quantity: Invalid value: \"%v\": must be a whole number of milli CPUs", &badCPUBoostQuantity),
 		},
 		{
 			name: "container startupBoost with bad quantity",
@@ -437,12 +716,16 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
-			expectError: fmt.Errorf("invalid startupBoost in container loot box: invalid startupBoost.cpu.quantity: CPU [%v] must be a whole number of milli CPUs", &badCPUBoostQuantity),
+			expectError: fmt.Errorf("spec.resourcePolicy.containerPolicies[0].startupBoost.cpu.quantity: Invalid value: \"%v\": must be a whole number of milli CPUs", &badCPUBoostQuantity),
 		},
 		{
 			name: "top-level startupBoost with bad type",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					StartupBoost: &vpa_types.StartupBoost{
 						CPU: &vpa_types.GenericStartupBoost{
 							Type: badCPUBoostType,
@@ -451,12 +734,17 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
-			expectError: fmt.Errorf("invalid startupBoost: startupBoost.cpu.type field is required and must be either %s or %s, got %v", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType, badCPUBoostType),
+			expectError: fmt.Errorf("spec.startupBoost.cpu.type: Unsupported value: \"%v\": supported values: \"%s\", \"%s\"", badCPUBoostType, vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType),
 		},
 		{
 			name: "container startupBoost with bad type",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -472,24 +760,32 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
-			expectError: fmt.Errorf("invalid startupBoost in container loot box: startupBoost.cpu.type field is required and must be either %s or %s, got %v", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType, badCPUBoostType),
+			expectError: fmt.Errorf("spec.resourcePolicy.containerPolicies[0].startupBoost.cpu.type: Unsupported value: \"%v\": supported values: \"%s\", \"%s\"", badCPUBoostType, vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType),
 		},
 		{
 			name: "top-level startupBoost with empty type",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					StartupBoost: &vpa_types.StartupBoost{
 						CPU: &vpa_types.GenericStartupBoost{},
 					},
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
-			expectError: fmt.Errorf("invalid startupBoost: startupBoost.cpu.type field is required and must be either %s or %s", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType),
+			expectError: fmt.Errorf("spec.startupBoost.cpu.type: Required value: must be either %s or %s", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType),
 		},
 		{
 			name: "container startupBoost with empty type",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
@@ -503,7 +799,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
-			expectError: fmt.Errorf("invalid startupBoost in container loot box: startupBoost.cpu.type field is required and must be either %s or %s", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType),
+			expectError: fmt.Errorf("spec.resourcePolicy.containerPolicies[0].startupBoost.cpu.type: Required value: must be either %s or %s", vpa_types.FactorStartupBoostType, vpa_types.QuantityStartupBoostType),
 		},
 		{
 			name: "top-level startupBoost with valid factor",
@@ -684,11 +980,93 @@ func TestValidateVPA(t *testing.T) {
 			opts: VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
 		},
 		{
+			name: "Invalid oomBumpUpRatio (negative value)",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:  "*",
+								Mode:           &validScalingMode,
+								OOMBumpUpRatio: ptr.To(resource.MustParse("-1")),
+								OOMMinBumpUp:   ptr.To(resource.MustParse("104857600")),
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].oomBumpUpRatio: Invalid value: -1: must be greater than or equal to 1.0"),
+		},
+		{
+			name: "Invalid oomBumpUpRatio (less than 1)",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:  "*",
+								Mode:           &validScalingMode,
+								OOMBumpUpRatio: ptr.To(resource.MustParse("0.5")),
+								OOMMinBumpUp:   ptr.To(resource.MustParse("104857600")),
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].oomBumpUpRatio: Invalid value: 0.5: must be greater than or equal to 1.0"),
+		},
+		{
+			name: "Invalid oomMinBumpUp (negative value)",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:  "*",
+								Mode:           &validScalingMode,
+								OOMBumpUpRatio: ptr.To(resource.MustParse("2")),
+								OOMMinBumpUp:   ptr.To(resource.MustParse("-1")),
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].oomMinBumpUp: Invalid value: -1: must be greater than or equal to 0"),
+		},
+		{
 			name: "per-vpa config disabled and used",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
 						UpdateMode: &validUpdateMode,
+					},
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
 					},
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
@@ -708,7 +1086,7 @@ func TestValidateVPA(t *testing.T) {
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: false},
-			expectError: errors.New("OOMBumpUpRatio and OOMMinBumpUp are not supported when feature flag PerVPAConfig is disabled"),
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].oomMinBumpUp: Forbidden: not supported when feature flag PerVPAConfig is disabled"),
 		},
 	}
 	for _, tc := range tests {
@@ -720,14 +1098,58 @@ func TestValidateVPA(t *testing.T) {
 				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, tc.opts.AllowCPUStartupBoost)
 			}
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, tc.opts.AllowPerVPAConfig)
-			err := ValidateVPA(&tc.vpa, tc.opts)
+			errs := validateVPA(&tc.vpa, tc.opts)
 			if tc.expectError == nil {
-				assert.NoError(t, err)
+				assert.Empty(t, errs)
 			} else {
-				if assert.Error(t, err) {
-					assert.Equal(t, tc.expectError.Error(), err.Error())
-				}
+				assert.NotEmpty(t, errs)
+				assert.Len(t, errs, 1)
+				assert.Equal(t, tc.expectError.Error(), errs[0].Error())
 			}
 		})
+	}
+}
+
+func TestVeryInvalidateVPA(t *testing.T) {
+	vpa := vpa_types.VerticalPodAutoscaler{
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "loot box",
+						StartupBoost: &vpa_types.StartupBoost{
+							CPU: &vpa_types.GenericStartupBoost{},
+						},
+						ControlledResources: &[]corev1.ResourceName{"cpu", "memory", "broken"},
+					},
+				},
+			},
+			StartupBoost: &vpa_types.StartupBoost{},
+			UpdatePolicy: &vpa_types.PodUpdatePolicy{
+				MinReplicas:          ptr.To(int32(-1)),
+				UpdateMode:           ptr.To(vpa_types.UpdateMode("bad")),
+				EvictAfterOOMSeconds: ptr.To(int32(-1)),
+			},
+			Recommenders: []*vpa_types.VerticalPodAutoscalerRecommenderSelector{
+				{Name: "test1"},
+				{Name: "test2"},
+			},
+		},
+	}
+	expectFieldErrors := []string{
+		"spec.targetRef",
+		"spec.updatePolicy.updateMode",
+		"spec.updatePolicy.minReplicas",
+		"spec.updatePolicy.evictAfterOOMSeconds",
+		"spec.recommenders",
+		"spec.startupBoost",
+		"spec.resourcePolicy.containerPolicies[0].startupBoost",
+	}
+
+	errs := validateVPA(&vpa, VPAValidationOptions{IsVPACreate: true})
+
+	assert.Len(t, errs, 7)
+	for _, err := range errs {
+		assert.Contains(t, expectFieldErrors, err.Field)
 	}
 }

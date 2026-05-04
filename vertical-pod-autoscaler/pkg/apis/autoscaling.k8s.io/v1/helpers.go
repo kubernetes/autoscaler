@@ -16,6 +16,8 @@ limitations under the License.
 
 package v1
 
+import "sort"
+
 // GetUpdateModes returns all supported UpdateModes
 func GetUpdateModes() map[UpdateMode]any {
 	return map[UpdateMode]any{
@@ -25,4 +27,17 @@ func GetUpdateModes() map[UpdateMode]any {
 		UpdateModeAuto:              nil,
 		UpdateModeInPlaceOrRecreate: nil,
 	}
+}
+
+// GetUpdateModesList returns all supported UpdateModes as a slice of strings
+func GetUpdateModesList() []string {
+	modes := GetUpdateModes()
+	result := make([]string, 0, len(modes))
+	for mode := range modes {
+		if mode != UpdateModeAuto { // Skip the deprecated one
+			result = append(result, string(mode))
+		}
+	}
+	sort.Strings(result)
+	return result
 }

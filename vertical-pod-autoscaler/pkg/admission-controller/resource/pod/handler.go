@@ -19,11 +19,11 @@ package pod
 import (
 	"context"
 	"encoding/json"
-	"errors"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
@@ -65,14 +65,14 @@ func (h *resourceHandler) DisallowIncorrectObjects() bool {
 }
 
 // GetPatches builds patches for Pod in given admission request.
-func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.AdmissionRequest) ([]resource_admission.PatchRecord, error) {
+func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.AdmissionRequest) ([]resource_admission.PatchRecord, field.ErrorList) {
 	if ar.Resource.Version != "v1" {
-		return nil, errors.New("only v1 Pods are supported")
+		return nil, field.ErrorList{field.Invalid(field.NewPath("."), ar.Resource.Version, "only v1 Pods are supported")}
 	}
 	raw, namespace := ar.Object.Raw, ar.Namespace
 	pod := corev1.Pod{}
 	if err := json.Unmarshal(raw, &pod); err != nil {
-		return nil, err
+		return nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 	}
 	if len(pod.Name) == 0 {
 		pod.Name = pod.GenerateName + "%"
@@ -86,7 +86,7 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 	}
 	pod, err := h.preProcessor.Process(pod)
 	if err != nil {
-		return nil, err
+		return nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 	}
 
 	patches := []resource_admission.PatchRecord{}
@@ -96,7 +96,7 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 	for _, c := range h.patchCalculators {
 		partialPatches, err := c.CalculatePatches(&pod, controllingVpa)
 		if err != nil {
-			return []resource_admission.PatchRecord{}, err
+			return []resource_admission.PatchRecord{}, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 		}
 		patches = append(patches, partialPatches...)
 	}
