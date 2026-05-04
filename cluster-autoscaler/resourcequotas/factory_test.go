@@ -36,6 +36,7 @@ func (n nodeExcludeFn) ExcludeFromTracking(node *apiv1.Node) bool {
 	return n(node)
 }
 
+
 func TestNewMaxQuotasTracker(t *testing.T) {
 	testCases := []struct {
 		name       string
@@ -229,6 +230,207 @@ func TestNewMaxQuotasTracker(t *testing.T) {
 				NodeFilter:               tc.nodeFilter,
 			})
 			tracker, err := factory.NewMaxQuotasTracker(ctx, tc.nodes)
+			if err != nil {
+				t.Errorf("failed to create tracker: %v", err)
+			}
+			var ng cloudprovider.NodeGroup
+			result, err := tracker.CheckDelta(ctx, ng, tc.newNode, tc.nodeDelta)
+			if err != nil {
+				t.Errorf("failed to check delta: %v", err)
+			}
+			opts := []cmp.Option{
+				cmpopts.SortSlices(func(a, b string) bool { return a < b }),
+				cmpopts.EquateEmpty(),
+			}
+			if diff := cmp.Diff(tc.wantResult, result, opts...); diff != "" {
+				t.Errorf("CheckDelta() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestNewMinQuotasTracker(t *testing.T) {
+	testCases := []struct {
+		name       string
+		crp        customresources.CustomResourcesProcessor
+		nodeFilter NodeFilter
+		nodes      []*apiv1.Node
+		quota      Quota
+		newNode    *apiv1.Node
+		nodeDelta  int
+		wantResult *CheckDeltaResult
+	}{
+		{
+			name: "min enforcement allowed operation",
+			nodes: []*apiv1.Node{
+				test.BuildTestNode("n1", 1000, 2*units.GiB),
+				test.BuildTestNode("n2", 2000, 4*units.GiB),
+			},
+			quota: &FakeQuota{
+				Name:        "min-quota",
+				AppliesToFn: MatchEveryNode,
+				LimitsVal: map[string]int64{
+					"cpu":    1,
+					"memory": 2 * units.GiB,
+				},
+			},
+			newNode:   test.BuildTestNode("n3", 1000, 2*units.GiB),
+			nodeDelta: -1,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: -1,
+			},
+		},
+		{
+			name: "min enforcement exceeded operation",
+			nodes: []*apiv1.Node{
+				test.BuildTestNode("n1", 1000, 2*units.GiB),
+				test.BuildTestNode("n2", 2000, 4*units.GiB),
+			},
+			quota: &FakeQuota{
+				Name:        "min-quota",
+				AppliesToFn: MatchEveryNode,
+				LimitsVal: map[string]int64{
+					"cpu":    3,
+					"memory": 6 * units.GiB,
+				},
+			},
+			newNode:   test.BuildTestNode("n3", 1000, 2*units.GiB),
+			nodeDelta: -1,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: 0,
+				ExceededQuotas: []ExceededQuota{
+					{ID: "min-quota", ExceededResources: []string{"cpu", "memory"}},
+				},
+			},
+		},
+		{
+			name: "min enforcement partially allowed operation",
+			nodes: []*apiv1.Node{
+				test.BuildTestNode("n1", 1000, 2*units.GiB),
+				test.BuildTestNode("n2", 1000, 2*units.GiB),
+				test.BuildTestNode("n3", 1000, 2*units.GiB),
+				test.BuildTestNode("n4", 1000, 2*units.GiB),
+			},
+			quota: &FakeQuota{
+				Name:        "min-quota",
+				AppliesToFn: MatchEveryNode,
+				LimitsVal: map[string]int64{
+					"cpu": 2,
+				},
+			},
+			newNode:   test.BuildTestNode("n5", 1000, 2*units.GiB),
+			nodeDelta: -3,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: -2,
+				ExceededQuotas: []ExceededQuota{
+					{ID: "min-quota", ExceededResources: []string{"cpu"}},
+				},
+			},
+		},
+		{
+			name: "custom resource config allowed operation",
+			crp: &fakeCustomResourcesProcessor{
+				NodeResourceTargets: func(n *apiv1.Node) []customresources.CustomResourceTarget {
+					if n.Name == "n1" || n.Name == "n2" {
+						return []customresources.CustomResourceTarget{
+							{
+								ResourceType:  "gpu",
+								ResourceCount: 1,
+							},
+						}
+					}
+					return nil
+				},
+			},
+			nodes: []*apiv1.Node{
+				test.BuildTestNode("n1", 1000, 2*units.GiB),
+				test.BuildTestNode("n2", 2000, 4*units.GiB),
+			},
+			quota: &FakeQuota{
+				Name:        "min-quota",
+				AppliesToFn: MatchEveryNode,
+				LimitsVal: map[string]int64{
+					"gpu": 1,
+				},
+			},
+			newNode:   test.BuildTestNode("n3", 1000, 2*units.GiB),
+			nodeDelta: -1,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: -1,
+			},
+		},
+		{
+			name: "custom resource config exceeded operation",
+			crp: &fakeCustomResourcesProcessor{
+				NodeResourceTargets: func(n *apiv1.Node) []customresources.CustomResourceTarget {
+					if n.Name == "n1" || n.Name == "n2" {
+						return []customresources.CustomResourceTarget{
+							{
+								ResourceType:  "gpu",
+								ResourceCount: 1,
+							},
+						}
+					}
+					return nil
+				},
+			},
+			nodes: []*apiv1.Node{
+				test.BuildTestNode("n1", 1000, 2*units.GiB),
+				test.BuildTestNode("n2", 2000, 4*units.GiB),
+			},
+			quota: &FakeQuota{
+				Name:        "min-quota",
+				AppliesToFn: MatchEveryNode,
+				LimitsVal: map[string]int64{
+					"gpu": 2,
+				},
+			},
+			newNode:   test.BuildTestNode("n1", 1000, 2*units.GiB),
+			nodeDelta: -1,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: 0,
+				ExceededQuotas: []ExceededQuota{
+					{ID: "min-quota", ExceededResources: []string{"gpu"}},
+				},
+			},
+		},
+		{
+			name: "node filter config allowed operation",
+			nodeFilter: nodeExcludeFn(func(node *apiv1.Node) bool {
+				return node.Name == "n2"
+			}),
+			nodes: []*apiv1.Node{
+				test.BuildTestNode("n1", 2000, 4*units.GiB),
+				test.BuildTestNode("n2", 2000, 4*units.GiB),
+			},
+			quota: &FakeQuota{
+				Name:        "min-quota",
+				AppliesToFn: MatchEveryNode,
+				LimitsVal: map[string]int64{
+					"cpu": 1,
+				},
+			},
+			newNode:   test.BuildTestNode("n3", 1000, 2*units.GiB),
+			nodeDelta: -1,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: -1,
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cloudProvider := cptest.NewTestCloudProviderBuilder().Build()
+			ctx := &context.AutoscalingContext{CloudProvider: cloudProvider}
+			crp := tc.crp
+			if crp == nil {
+				crp = &fakeCustomResourcesProcessor{}
+			}
+			factory := NewTrackerFactory(TrackerOptions{
+				CustomResourcesProcessor: crp,
+				QuotaProvider:            NewFakeProvider([]Quota{tc.quota}),
+				NodeFilter:               tc.nodeFilter,
+			})
+			tracker, err := factory.NewMinQuotasTracker(ctx, tc.nodes)
 			if err != nil {
 				t.Errorf("failed to create tracker: %v", err)
 			}
