@@ -237,7 +237,7 @@ func main() {
 	}
 	ctrl.SetLogger(klog.NewKlogr())
 
-	healthCheck := metrics.NewHealthCheck(autoscalingOpts.MaxInactivityTime, autoscalingOpts.MaxFailingTime)
+	healthCheck := metrics.NewHealthCheck(autoscalingOpts.MaxInactivityTime, autoscalingOpts.MaxFailingTime, autoscalingOpts.MaxStartupTime)
 
 	klog.V(1).Infof("Cluster Autoscaler %s", version.ClusterAutoscalerVersion)
 

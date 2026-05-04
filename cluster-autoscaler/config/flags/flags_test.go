@@ -19,6 +19,7 @@ package flags
 import (
 	"flag"
 	"testing"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
@@ -177,6 +178,15 @@ func TestCreateAutoscalingOptions(t *testing.T) {
 				}
 				if diff := cmp.Diff(wantConfig, gotOptions.DrainPriorityConfig); diff != "" {
 					t.Errorf("createAutoscalingOptions(): unexpected DrainPriorityConfig field (-want +got): %s", diff)
+				}
+			},
+		},
+		{
+			testName: "max startup time is overridden to the highest value if it is smaller than max-inactivity or max-failing-time",
+			flags:    []string{"--max-inactivity=10m", "--max-failing-time=15m", "--max-startup-time=5m"},
+			wantOptionsAsserter: func(t *testing.T, gotOptions config.AutoscalingOptions) {
+				if gotOptions.MaxStartupTime != 15*time.Minute {
+					t.Errorf("got max startup time: %v, want %v", gotOptions.MaxStartupTime, 15*time.Minute)
 				}
 			},
 		},
