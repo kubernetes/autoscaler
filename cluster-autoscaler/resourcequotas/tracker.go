@@ -93,6 +93,46 @@ func (t *Tracker) CheckDelta(
 	return t.CheckQuota(autoscalingCtx, nodeGroup, node, nodeDelta)
 }
 
+
+
+
+
+func (t *Tracker) checkQuota(delta resourceList, matchingQuotas []*quotaStatus, nodeDelta int) *CheckDeltaResult {
+	result := &CheckDeltaResult{
+		AllowedDelta: nodeDelta,
+	}
+
+	for _, qs := range matchingQuotas {
+		var exceededResources []string
+		for resource, resourceDelta := range delta {
+			if resourceDelta == 0 {
+				continue
+			}
+
+			limitsLeft, ok := qs.limitsLeft[resource]
+			if !ok {
+				continue
+			}
+
+			headroomDelta := int64(nodeDelta) * resourceDelta
+			if limitsLeft < headroomDelta {
+				allowedNodes := limitsLeft / resourceDelta
+				if allowedNodes < int64(result.AllowedDelta) {
+					result.AllowedDelta = int(allowedNodes)
+				}
+				exceededResources = append(exceededResources, resource)
+			}
+		}
+		if len(exceededResources) > 0 {
+			result.ExceededQuotas = append(result.ExceededQuotas, ExceededQuota{
+				ID: qs.quota.ID(), ExceededResources: exceededResources,
+			})
+		}
+	}
+
+	return result
+}
+
 // CheckQuota checks if a delta is within limits and returns a struct containing information
 // about exceeded quotas, if any, and how many nodes could be added without violating the quotas.
 // nodeDelta must be positive.
@@ -134,44 +174,6 @@ func (t *Tracker) ConsumeQuota(
 	}
 
 	return result, nil
-}
-
-
-
-func (t *Tracker) checkQuota(delta resourceList, matchingQuotas []*quotaStatus, nodeDelta int) *CheckDeltaResult {
-	result := &CheckDeltaResult{
-		AllowedDelta: nodeDelta,
-	}
-
-	for _, qs := range matchingQuotas {
-		var exceededResources []string
-		for resource, resourceDelta := range delta {
-			if resourceDelta == 0 {
-				continue
-			}
-
-			limitsLeft, ok := qs.limitsLeft[resource]
-			if !ok {
-				continue
-			}
-
-			headroomDelta := int64(nodeDelta) * resourceDelta
-			if limitsLeft < headroomDelta {
-				allowedNodes := limitsLeft / resourceDelta
-				if allowedNodes < int64(result.AllowedDelta) {
-					result.AllowedDelta = int(allowedNodes)
-				}
-				exceededResources = append(exceededResources, resource)
-			}
-		}
-		if len(exceededResources) > 0 {
-			result.ExceededQuotas = append(result.ExceededQuotas, ExceededQuota{
-				ID: qs.quota.ID(), ExceededResources: exceededResources,
-			})
-		}
-	}
-
-	return result
 }
 
 func (t *Tracker) matchingQuotaStatuses(node *corev1.Node) []*quotaStatus {
