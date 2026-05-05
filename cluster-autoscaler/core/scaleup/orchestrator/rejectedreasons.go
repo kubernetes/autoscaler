@@ -37,4 +37,7 @@ var (
 	// ExpansionOptionsFilteredOutReason means the node groups were considered as a scale-up candidates but got filtered
 	// out by the expander strategy.
 	ExpansionOptionsFilteredOutReason = NewRejectedReasons("expansion options filtered out and no longer considered")
+	// ScaleUpExecutionErrorReason means the node groups were considered as a scale-up candidates but the scale-up
+	// execution failed.
+	ScaleUpExecutionErrorReason = NewRejectedReasons("scale-up execution failed")
 )
