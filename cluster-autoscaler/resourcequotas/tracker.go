@@ -68,6 +68,36 @@ func newTracker(quotaStatuses []*quotaStatus, nodeCache *nodeResourcesCache) *Tr
 	}
 }
 
+// ConsumeQuota checks if a delta is within limits and applies it. Delta is applied only if it can be applied entirely.
+// See CheckQuota documentation for more information.
+// nodeDelta must be positive.
+func (t *Tracker) ConsumeQuota(
+	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
+) (*CheckDeltaResult, error) {
+	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
+	if err != nil {
+		return nil, err
+	}
+	matchingQuotas := t.matchingQuotaStatuses(node)
+
+	result := t.checkQuota(delta, matchingQuotas, nodeDelta)
+
+	if result.AllowedDelta != nodeDelta {
+		return result, nil
+	}
+
+	for _, qs := range matchingQuotas {
+		for resource, resourceDelta := range delta {
+			if limit, ok := qs.limitsLeft[resource]; ok {
+				headroomDelta := int64(result.AllowedDelta) * resourceDelta
+				qs.limitsLeft[resource] = max(limit-headroomDelta, 0)
+			}
+		}
+	}
+
+	return result, nil
+}
+
 // ApplyDelta checks if a delta is within limits and applies it. Delta is applied only if it can be applied entirely.
 // See CheckDelta documentation for more information.
 //
@@ -76,6 +106,24 @@ func (t *Tracker) ApplyDelta(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
 	return t.ConsumeQuota(autoscalingCtx, nodeGroup, node, nodeDelta)
+}
+
+// CheckQuota checks if a delta is within limits and returns a struct containing information
+// about exceeded quotas, if any, and how many nodes could be added/removed without violating the quotas,
+// which is less than or equal to nodeDelta.
+//
+// nodeDelta is the number of nodes that we try to add/remove to the cluster. Resources used by each node
+// are taken from the template node passed via the node parameter. nodeGroup is required to fetch
+// the custom resources, such as GPU.
+func (t *Tracker) CheckQuota(
+	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
+) (*CheckDeltaResult, error) {
+	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
+	if err != nil {
+		return nil, err
+	}
+	matchingQuotas := t.matchingQuotaStatuses(node)
+	return t.checkQuota(delta, matchingQuotas, nodeDelta), nil
 }
 
 // CheckDelta checks if a delta is within limits and returns a struct containing information
@@ -92,10 +140,6 @@ func (t *Tracker) CheckDelta(
 ) (*CheckDeltaResult, error) {
 	return t.CheckQuota(autoscalingCtx, nodeGroup, node, nodeDelta)
 }
-
-
-
-
 
 func (t *Tracker) checkQuota(delta resourceList, matchingQuotas []*quotaStatus, nodeDelta int) *CheckDeltaResult {
 	result := &CheckDeltaResult{
@@ -131,49 +175,6 @@ func (t *Tracker) checkQuota(delta resourceList, matchingQuotas []*quotaStatus, 
 	}
 
 	return result
-}
-
-// CheckQuota checks if a delta is within limits and returns a struct containing information
-// about exceeded quotas, if any, and how many nodes could be added without violating the quotas.
-// nodeDelta must be positive.
-func (t *Tracker) CheckQuota(
-	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
-) (*CheckDeltaResult, error) {
-	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
-	if err != nil {
-		return nil, err
-	}
-	matchingQuotas := t.matchingQuotaStatuses(node)
-	return t.checkQuota(delta, matchingQuotas, nodeDelta), nil
-}
-
-// ConsumeQuota checks if a delta is within limits and applies it. Delta is applied only if it can be applied entirely.
-// nodeDelta must be positive.
-func (t *Tracker) ConsumeQuota(
-	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
-) (*CheckDeltaResult, error) {
-	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
-	if err != nil {
-		return nil, err
-	}
-	matchingQuotas := t.matchingQuotaStatuses(node)
-
-	result := t.checkQuota(delta, matchingQuotas, nodeDelta)
-
-	if result.AllowedDelta != nodeDelta {
-		return result, nil
-	}
-
-	for _, qs := range matchingQuotas {
-		for resource, resourceDelta := range delta {
-			if limit, ok := qs.limitsLeft[resource]; ok {
-				headroomDelta := int64(result.AllowedDelta) * resourceDelta
-				qs.limitsLeft[resource] = max(limit-headroomDelta, 0)
-			}
-		}
-	}
-
-	return result, nil
 }
 
 func (t *Tracker) matchingQuotaStatuses(node *corev1.Node) []*quotaStatus {
