@@ -35,6 +35,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/equivalence"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -724,8 +725,8 @@ func TestCloudProviderFailingToScaleUpGroups(t *testing.T) {
 			{Name: "p2", Cpu: 1400, Node: "ng2-n1"},
 		},
 		ExtraPods: []PodConfig{
-			{Name: "p3", Cpu: 1400},
-			{Name: "p4", Cpu: 1400},
+			{Name: "p3", Cpu: 1400, Node: "group:ng1"},
+			{Name: "p4", Cpu: 1400, Node: "group:ng2"},
 		},
 		Options: &options,
 	}
@@ -742,39 +743,44 @@ func TestCloudProviderFailingToScaleUpGroups(t *testing.T) {
 		}
 	}
 	testCases := []struct {
-		desc                     string
-		parallel                 bool
-		onScaleUp                testprovider.OnScaleUpFunc
-		expectConcurrentErrors   bool
-		expectedTotalTargetSizes int
+		desc                            string
+		parallel                        bool
+		onScaleUp                       testprovider.OnScaleUpFunc
+		expectConcurrentErrors          bool
+		expectedTotalTargetSizes        int
+		expectedPodsRemainUnschedulable int
 	}{
 		{
-			desc:                     "synchronous scale up - two failures",
-			parallel:                 false,
-			onScaleUp:                failAlwaysScaleUp,
-			expectConcurrentErrors:   false,
-			expectedTotalTargetSizes: 3, // first error stops scale up process
+			desc:                            "synchronous scale up - two failures",
+			parallel:                        false,
+			onScaleUp:                       failAlwaysScaleUp,
+			expectConcurrentErrors:          false,
+			expectedTotalTargetSizes:        3, // first error stops scale up process
+			expectedPodsRemainUnschedulable: 1,
 		},
 		{
-			desc:                     "parallel scale up - two failures",
-			parallel:                 true,
-			onScaleUp:                failAlwaysScaleUp,
-			expectConcurrentErrors:   true,
-			expectedTotalTargetSizes: 4,
+			desc:                            "parallel scale up - two failures",
+			parallel:                        true,
+			onScaleUp:                       failAlwaysScaleUp,
+			expectConcurrentErrors:          false, // Only 1 group tried, so no concurrent errors
+			expectedTotalTargetSizes:        3,
+			expectedPodsRemainUnschedulable: 1,
 		},
 		{
-			desc:                     "synchronous scale up - one failure",
-			parallel:                 false,
-			onScaleUp:                failOnceScaleUp(),
-			expectConcurrentErrors:   false,
-			expectedTotalTargetSizes: 3,
+			desc:                            "synchronous scale up - one failure",
+			parallel:                        false,
+			onScaleUp:                       failOnceScaleUp(),
+			expectConcurrentErrors:          false,
+			expectedTotalTargetSizes:        3,
+			expectedPodsRemainUnschedulable: 1,
 		},
 		{
-			desc:                     "parallel scale up - one failure",
-			parallel:                 true,
-			onScaleUp:                failOnceScaleUp(),
-			expectConcurrentErrors:   false,
-			expectedTotalTargetSizes: 4,
+			desc:                            "parallel scale up - one failure",
+			parallel:                        true,
+			onScaleUp:                       failOnceScaleUp(),
+			expectConcurrentErrors:          false,
+			expectedTotalTargetSizes:        3,
+			expectedPodsRemainUnschedulable: 1,
 		},
 	}
 	for _, tc := range testCases {
@@ -786,6 +792,7 @@ func TestCloudProviderFailingToScaleUpGroups(t *testing.T) {
 			assert.Equal(t, errors.CloudProviderError, result.ScaleUpError.Type())
 			assert.Equal(t, tc.expectedTotalTargetSizes, result.GroupTargetSizes["ng1"]+result.GroupTargetSizes["ng2"])
 			assert.Equal(t, tc.expectConcurrentErrors, strings.Contains(result.ScaleUpError.Error(), "...and other errors"))
+			assert.Len(t, result.ScaleUpStatus.PodsRemainUnschedulable, tc.expectedPodsRemainUnschedulable)
 		})
 	}
 }
@@ -1283,7 +1290,12 @@ func buildTestPod(p PodConfig) *apiv1.Pod {
 		TolerateGpuForPod(pod)
 	}
 	if p.Node != "" {
-		pod.Spec.NodeName = p.Node
+		if strings.HasPrefix(p.Node, "group:") {
+			groupName := strings.TrimPrefix(p.Node, "group:")
+			pod.Spec.NodeSelector = map[string]string{nodeGroupLabel: groupName}
+		} else {
+			pod.Spec.NodeName = p.Node
+		}
 	}
 	return pod
 }
@@ -2273,4 +2285,121 @@ func matchNodeGroups(nodeGroups []string) func(*apiv1.Node) bool {
 	return func(n *apiv1.Node) bool {
 		return slices.Contains(nodeGroups, n.Labels[nodeGroupLabel])
 	}
+}
+
+func TestMarkFailedGroupsAsUnschedulable(t *testing.T) {
+	reason := NewRejectedReasons("stockout")
+
+	p1 := BuildTestPod("p1", 100, 100)
+	p2 := BuildTestPod("p2", 100, 100)
+	p3 := BuildTestPod("p3", 100, 100)
+
+	eg1 := &equivalence.PodGroup{
+		Pods:              []*apiv1.Pod{p1},
+		SchedulableGroups: []string{"ng1"},
+		Schedulable:       true,
+	}
+	eg2 := &equivalence.PodGroup{
+		Pods:              []*apiv1.Pod{p2},
+		SchedulableGroups: []string{"ng2"},
+		Schedulable:       true,
+	}
+	eg3 := &equivalence.PodGroup{
+		Pods:              []*apiv1.Pod{p3},
+		SchedulableGroups: []string{"ng1", "ng2"},
+		Schedulable:       true,
+	}
+
+	podEquivalenceGroups := []*equivalence.PodGroup{eg1, eg2, eg3}
+	failedGroups := map[string]bool{"ng2": true}
+
+	markFailedGroupsAsUnschedulable(podEquivalenceGroups, failedGroups, reason)
+
+	assert.True(t, eg1.Schedulable)
+	assert.False(t, eg2.Schedulable)
+	assert.True(t, eg3.Schedulable)
+
+	assert.Equal(t, reason, eg2.SchedulingErrors["ng2"])
+	assert.Equal(t, reason, eg3.SchedulingErrors["ng2"])
+	assert.NotContains(t, eg1.SchedulingErrors, "ng2")
+}
+
+func TestScaleUpPartialSuccessPopulatesPodsRemainUnschedulableParallel(t *testing.T) {
+	options := defaultOptions
+	options.ParallelScaleUp = true
+	options.BalanceSimilarNodeGroups = true
+	config := &ScaleUpTestConfig{
+		Groups: []NodeGroupConfig{
+			{Name: "ng1", MaxSize: 2},
+			{Name: "ng2", MaxSize: 2},
+		},
+		Nodes: []NodeConfig{
+			{Name: "ng1-n1", Cpu: 1000, Memory: 1000, Ready: true, Group: "ng1"},
+			{Name: "ng2-n1", Cpu: 1000, Memory: 1000, Ready: true, Group: "ng2"},
+		},
+		Pods: []PodConfig{
+			{Name: "fill-ng1", Cpu: 1000, Node: "ng1-n1"},
+			{Name: "fill-ng2", Cpu: 1000, Node: "ng2-n1"},
+		},
+		ExtraPods: []PodConfig{
+			{Name: "p1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng1"},
+			{Name: "p2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng2"},
+		},
+		OnScaleUp: func(group string, i int) error {
+			if group == "ng2" {
+				return fmt.Errorf("provider error for ng2")
+			}
+			return nil
+		},
+		ExpansionOptionToChoose: &GroupSizeChange{GroupName: "ng2", SizeChange: 1},
+		Options:                 &options,
+	}
+
+	result := runSimpleScaleUpTest(t, config)
+
+	assert.Equal(t, status.ScaleUpError, result.ScaleUpStatus.Result)
+	assert.Contains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p2")
+	assert.NotContains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p1")
+}
+
+func TestScaleUpPartialSuccessPopulatesPodsRemainUnschedulableSync(t *testing.T) {
+	options := defaultOptions
+	options.ParallelScaleUp = false
+	options.BalanceSimilarNodeGroups = true
+	config := &ScaleUpTestConfig{
+		Groups: []NodeGroupConfig{
+			{Name: "ng1", MaxSize: 2},
+			{Name: "ng2", MaxSize: 2},
+		},
+		Nodes: []NodeConfig{
+			{Name: "ng1-n1", Cpu: 1000, Memory: 1000, Ready: true, Group: "ng1"},
+			{Name: "ng2-n1", Cpu: 1000, Memory: 1000, Ready: true, Group: "ng2"},
+		},
+		Pods: []PodConfig{
+			{Name: "fill-ng1", Cpu: 1000, Node: "ng1-n1"},
+			{Name: "fill-ng2", Cpu: 1000, Node: "ng2-n1"},
+		},
+		ExtraPods: []PodConfig{
+			{Name: "p1_1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng1"},
+			{Name: "p1_2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng1"},
+			{Name: "p2_1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng2"},
+			{Name: "p2_2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng2"},
+		},
+		OnScaleUp: func(group string, i int) error {
+			if group == "ng2" {
+				return fmt.Errorf("provider error for ng2")
+			}
+			return nil
+		},
+		ExpansionOptionToChoose: &GroupSizeChange{GroupName: "ng2", SizeChange: 2},
+		Options:                 &options,
+	}
+
+	result := runSimpleScaleUpTest(t, config)
+
+	assert.Equal(t, status.ScaleUpError, result.ScaleUpStatus.Result)
+	assert.Contains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p2_1")
+	assert.Contains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p2_2")
+	assert.NotContains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p1_1")
+	assert.NotContains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p1_2")
 }
