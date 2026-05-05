@@ -100,6 +100,6 @@ func (f *TrackerFactory) newQuotasTrackerWithDirection(autoscalingCtx *context.A
 			limitsLeft: limitsLeft,
 		})
 	}
-	tracker := newTracker(quotaStatuses, nc, direction)
+	tracker := newTracker(quotaStatuses, nc)
 	return tracker, nil
 }

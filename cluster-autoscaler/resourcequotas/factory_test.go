@@ -274,9 +274,9 @@ func TestNewMinQuotasTracker(t *testing.T) {
 				},
 			},
 			newNode:   test.BuildTestNode("n3", 1000, 2*units.GiB),
-			nodeDelta: -1,
+			nodeDelta: 1,
 			wantResult: &CheckDeltaResult{
-				AllowedDelta: -1,
+				AllowedDelta: 1,
 			},
 		},
 		{
@@ -294,7 +294,7 @@ func TestNewMinQuotasTracker(t *testing.T) {
 				},
 			},
 			newNode:   test.BuildTestNode("n3", 1000, 2*units.GiB),
-			nodeDelta: -1,
+			nodeDelta: 1,
 			wantResult: &CheckDeltaResult{
 				AllowedDelta: 0,
 				ExceededQuotas: []ExceededQuota{
@@ -318,9 +318,9 @@ func TestNewMinQuotasTracker(t *testing.T) {
 				},
 			},
 			newNode:   test.BuildTestNode("n5", 1000, 2*units.GiB),
-			nodeDelta: -3,
+			nodeDelta: 3,
 			wantResult: &CheckDeltaResult{
-				AllowedDelta: -2,
+				AllowedDelta: 2,
 				ExceededQuotas: []ExceededQuota{
 					{ID: "min-quota", ExceededResources: []string{"cpu"}},
 				},
@@ -353,9 +353,9 @@ func TestNewMinQuotasTracker(t *testing.T) {
 				},
 			},
 			newNode:   test.BuildTestNode("n3", 1000, 2*units.GiB),
-			nodeDelta: -1,
+			nodeDelta: 1,
 			wantResult: &CheckDeltaResult{
-				AllowedDelta: -1,
+				AllowedDelta: 1,
 			},
 		},
 		{
@@ -385,7 +385,7 @@ func TestNewMinQuotasTracker(t *testing.T) {
 				},
 			},
 			newNode:   test.BuildTestNode("n1", 1000, 2*units.GiB),
-			nodeDelta: -1,
+			nodeDelta: 1,
 			wantResult: &CheckDeltaResult{
 				AllowedDelta: 0,
 				ExceededQuotas: []ExceededQuota{
@@ -410,9 +410,9 @@ func TestNewMinQuotasTracker(t *testing.T) {
 				},
 			},
 			newNode:   test.BuildTestNode("n3", 1000, 2*units.GiB),
-			nodeDelta: -1,
+			nodeDelta: 1,
 			wantResult: &CheckDeltaResult{
-				AllowedDelta: -1,
+				AllowedDelta: 1,
 			},
 		},
 	}
@@ -434,16 +434,16 @@ func TestNewMinQuotasTracker(t *testing.T) {
 				t.Errorf("failed to create tracker: %v", err)
 			}
 			var ng cloudprovider.NodeGroup
-			result, err := tracker.CheckDelta(ctx, ng, tc.newNode, tc.nodeDelta)
+			result, err := tracker.CheckQuota(ctx, ng, tc.newNode, tc.nodeDelta)
 			if err != nil {
-				t.Errorf("failed to check delta: %v", err)
+				t.Errorf("failed to check quota: %v", err)
 			}
 			opts := []cmp.Option{
 				cmpopts.SortSlices(func(a, b string) bool { return a < b }),
 				cmpopts.EquateEmpty(),
 			}
 			if diff := cmp.Diff(tc.wantResult, result, opts...); diff != "" {
-				t.Errorf("CheckDelta() mismatch (-want +got):\n%s", diff)
+				t.Errorf("CheckQuota() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}
