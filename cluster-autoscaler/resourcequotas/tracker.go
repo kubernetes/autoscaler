@@ -17,7 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
-	"fmt"
+	"errors"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -27,6 +27,11 @@ import (
 const (
 	// ResourceNodes is a resource name for number of nodes.
 	ResourceNodes = "nodes"
+)
+
+var (
+	// ErrNegativeDelta is returned when a negative nodeDelta is received.
+	ErrNegativeDelta = errors.New("negative nodeDelta received")
 )
 
 // Quota is an interface for a single quota.
@@ -63,12 +68,12 @@ func newTracker(quotaStatuses []*quotaStatus, nodeCache *nodeResourcesCache) *Tr
 // ConsumeQuota checks if a delta is within limits and applies it. Delta is applied only if it can be applied entirely.
 // See CheckQuota documentation for more information.
 //
-// WARNING: nodeDelta must be non-negative.
+// WARNING: nodeDelta must be non-negative. It is a magnitude/absolute value, so when removing a node, nodeDelta would be 1, not -1.
 func (t *Tracker) ConsumeQuota(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
 	if nodeDelta < 0 {
-		return nil, fmt.Errorf("nodeDelta must be non-negative, got %d", nodeDelta)
+		return nil, ErrNegativeDelta
 	}
 	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
 	if err != nil {
@@ -108,7 +113,7 @@ func (t *Tracker) ApplyDelta(
 // about exceeded quotas, if any, and how many nodes could be added/removed without violating the quotas,
 // which is less than or equal to nodeDelta.
 //
-// WARNING: nodeDelta must be non-negative.
+// WARNING: nodeDelta must be non-negative. It is a magnitude/absolute value, so when removing a node, nodeDelta would be 1, not -1.
 //
 // nodeDelta is the number of nodes that we try to add/remove to the cluster. Resources used by each node
 // are taken from the template node passed via the node parameter. nodeGroup is required to fetch
@@ -117,7 +122,7 @@ func (t *Tracker) CheckQuota(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
 	if nodeDelta < 0 {
-		return nil, fmt.Errorf("nodeDelta must be non-negative, got %d", nodeDelta)
+		return nil, ErrNegativeDelta
 	}
 	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
 	if err != nil {
