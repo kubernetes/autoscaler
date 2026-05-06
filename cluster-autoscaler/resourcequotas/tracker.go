@@ -139,7 +139,7 @@ func (t *Tracker) checkQuota(delta resourceList, matchingQuotas []*quotaStatus, 
 	for _, qs := range matchingQuotas {
 		var exceededResources []string
 		for resource, resourceDelta := range delta {
-			if resourceDelta == 0 {
+			if resourceDelta <= 0 {
 				continue
 			}
 
