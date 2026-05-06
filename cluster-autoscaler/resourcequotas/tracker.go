@@ -39,16 +39,6 @@ type Quota interface {
 // resourceList is a map of resource names to their quantities.
 type resourceList map[string]int64
 
-// EnforcementDirection defines the direction of quota enforcement.
-type EnforcementDirection int
-
-const (
-	// MaxEnforcement enforces maximum limits (e.g. for scale-up).
-	MaxEnforcement EnforcementDirection = iota
-	// MinEnforcement enforces minimum limits (e.g. for scale-down).
-	MinEnforcement EnforcementDirection = iota
-)
-
 // Tracker tracks resource quotas.
 type Tracker struct {
 	quotaStatuses []*quotaStatus
@@ -89,8 +79,8 @@ func (t *Tracker) ConsumeQuota(
 	for _, qs := range matchingQuotas {
 		for resource, resourceDelta := range delta {
 			if limit, ok := qs.limitsLeft[resource]; ok {
-				headroomDelta := int64(result.AllowedDelta) * resourceDelta
-				qs.limitsLeft[resource] = max(limit-headroomDelta, 0)
+				totalResourceDelta := int64(result.AllowedDelta) * resourceDelta
+				qs.limitsLeft[resource] = max(limit-totalResourceDelta, 0)
 			}
 		}
 	}
@@ -158,12 +148,11 @@ func (t *Tracker) checkQuota(delta resourceList, matchingQuotas []*quotaStatus, 
 				continue
 			}
 
-			headroomDelta := int64(nodeDelta) * resourceDelta
-			if limitsLeft < headroomDelta {
+			// Check if the total resource change (resourceDelta * nodeDelta) fits within limitsLeft.
+			// Note: limitsLeft represents headroom to the max limit for scale-up, and allowed reduction for scale-down.
+			if totalResourceDelta := resourceDelta * int64(nodeDelta); limitsLeft < totalResourceDelta {
 				allowedNodes := limitsLeft / resourceDelta
-				if allowedNodes < int64(result.AllowedDelta) {
-					result.AllowedDelta = int(allowedNodes)
-				}
+				result.AllowedDelta = int(min(int64(result.AllowedDelta), allowedNodes))
 				exceededResources = append(exceededResources, resource)
 			}
 		}
@@ -191,7 +180,7 @@ func (t *Tracker) matchingQuotaStatuses(node *corev1.Node) []*quotaStatus {
 type CheckDeltaResult struct {
 	// ExceededQuotas contains information about quotas that were exceeded.
 	ExceededQuotas []ExceededQuota
-	// AllowedDelta specifies how many nodes could be added without violating the quotas.
+	// AllowedDelta specifies the number of nodes (always non-negative) that could be added/removed without violating the quotas.
 	AllowedDelta int
 }
 

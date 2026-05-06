@@ -52,7 +52,7 @@ func NewTrackerFactory(opts TrackerOptions) *TrackerFactory {
 // quota returned by the Provider. Then, based on usages and limits it calculates
 // how many resources can be still added to the cluster. Returns a Tracker object.
 func (f *TrackerFactory) NewMaxQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node) (*Tracker, error) {
-	return f.newQuotasTrackerWithDirection(autoscalingCtx, nodes, MaxEnforcement)
+	return f.newQuotasTracker(autoscalingCtx, nodes, false /* isMinEnforcement */)
 }
 
 // NewQuotasTracker builds a new Tracker for maximum limits enforcement.
@@ -66,12 +66,15 @@ func (f *TrackerFactory) NewQuotasTracker(autoscalingCtx *context.AutoscalingCon
 //
 // NewMinQuotasTracker calculates resources used by the nodes for every
 // quota returned by the Provider. Then, based on usages and limits it calculates
-// how many resources can be still added to the cluster. Returns a Tracker object.
+// how many resources can be still removed from the cluster. Returns a Tracker object.
 func (f *TrackerFactory) NewMinQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node) (*Tracker, error) {
-	return f.newQuotasTrackerWithDirection(autoscalingCtx, nodes, MinEnforcement)
+	return f.newQuotasTracker(autoscalingCtx, nodes, true /* isMinEnforcement */)
 }
 
-func (f *TrackerFactory) newQuotasTrackerWithDirection(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node, direction EnforcementDirection) (*Tracker, error) {
+// newQuotasTracker builds a new Tracker for either minimum or maximum limits enforcement.
+// If isMinEnforcement is true, it calculates headroom to the minimum limit (for scale-down).
+// Otherwise, it calculates headroom to the maximum limit (for scale-up).
+func (f *TrackerFactory) newQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node, isMinEnforcement bool) (*Tracker, error) {
 	quotas, err := f.quotasProvider.Quotas()
 	if err != nil {
 		return nil, err
@@ -89,10 +92,10 @@ func (f *TrackerFactory) newQuotasTrackerWithDirection(autoscalingCtx *context.A
 		limits := rq.Limits()
 		for resourceType, limit := range limits {
 			usage := usages[rq.ID()][resourceType]
-			if direction == MaxEnforcement {
-				limitsLeft[resourceType] = max(0, limit-usage)
-			} else {
+			if isMinEnforcement {
 				limitsLeft[resourceType] = max(0, usage-limit)
+			} else {
+				limitsLeft[resourceType] = max(0, limit-usage)
 			}
 		}
 		quotaStatuses = append(quotaStatuses, &quotaStatus{

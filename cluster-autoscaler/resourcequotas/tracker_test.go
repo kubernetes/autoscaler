@@ -313,8 +313,6 @@ func TestApplyDelta(t *testing.T) {
 	}
 }
 
-
-
 func TestCheckQuota(t *testing.T) {
 	testCases := []struct {
 		name         string
