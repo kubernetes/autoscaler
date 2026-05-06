@@ -122,7 +122,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	// Initialise binpacking limiter.
 	o.processors.BinpackingLimiter.InitBinpacking(o.autoscalingCtx, nodeGroups)
 
-	tracker, err := o.quotasTrackerFactory.NewMaxQuotasTracker(o.autoscalingCtx, nodes)
+	tracker, err := o.quotasTrackerFactory.NewQuotasTracker(o.autoscalingCtx, nodes)
 	if err != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err).AddPrefix("could not create quotas tracker: "))
 	}
@@ -294,7 +294,7 @@ func (o *ScaleUpOrchestrator) applyLimits(newNodes int, tracker *resourcequotas.
 		klog.Errorf("No node info for: %s", nodeGroup.Id())
 		return 0, errors.NewAutoscalerError(errors.CloudProviderError, "No node info for best expansion option!")
 	}
-	checkResult, err := tracker.CheckQuota(o.autoscalingCtx, nodeGroup, nodeInfo.Node(), newNodes)
+	checkResult, err := tracker.CheckDelta(o.autoscalingCtx, nodeGroup, nodeInfo.Node(), newNodes)
 	if err != nil {
 		return 0, errors.ToAutoscalerError(errors.InternalError, err).AddPrefix("failed to check resource quotas: ")
 	}
@@ -317,7 +317,7 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 	nodeGroups := o.autoscalingCtx.CloudProvider.NodeGroups()
 	scaleUpInfos := make([]nodegroupset.ScaleUpInfo, 0)
 
-	tracker, err := o.quotasTrackerFactory.NewMaxQuotasTracker(o.autoscalingCtx, nodes)
+	tracker, err := o.quotasTrackerFactory.NewQuotasTracker(o.autoscalingCtx, nodes)
 	if err != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err).AddPrefix("could not create quotas tracker: "))
 	}
@@ -356,7 +356,7 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 		}
 
 		newNodeCount := ng.MinSize() - targetSize
-		checkResult, err := tracker.CheckQuota(o.autoscalingCtx, ng, nodeInfo.Node(), newNodeCount)
+		checkResult, err := tracker.CheckDelta(o.autoscalingCtx, ng, nodeInfo.Node(), newNodeCount)
 		if err != nil {
 			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to check resource quotas: %v", err)
 			continue
@@ -674,7 +674,7 @@ func (o *ScaleUpOrchestrator) IsNodeGroupReadyToScaleUp(nodeGroup cloudprovider.
 
 // IsNodeGroupResourceExceeded returns nil if node group resource limits are not exceeded, otherwise a reason is provided.
 func (o *ScaleUpOrchestrator) IsNodeGroupResourceExceeded(tracker *resourcequotas.Tracker, nodeGroup cloudprovider.NodeGroup, nodeInfo *framework.NodeInfo, numNodes int) status.Reasons {
-	checkResult, err := tracker.CheckQuota(o.autoscalingCtx, nodeGroup, nodeInfo.Node(), numNodes)
+	checkResult, err := tracker.CheckDelta(o.autoscalingCtx, nodeGroup, nodeInfo.Node(), numNodes)
 	if err != nil {
 		klog.Errorf("Skipping node group %s; error checking resource quotas: %v", nodeGroup.Id(), err)
 		return NotReadyReason
