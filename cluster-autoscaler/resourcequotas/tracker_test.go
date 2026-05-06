@@ -29,7 +29,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
-
 func TestCheckQuota(t *testing.T) {
 	testCases := []struct {
 		name         string
