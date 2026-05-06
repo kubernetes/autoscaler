@@ -17,6 +17,8 @@ limitations under the License.
 package resourcequotas
 
 import (
+	"errors"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -25,6 +27,11 @@ import (
 const (
 	// ResourceNodes is a resource name for number of nodes.
 	ResourceNodes = "nodes"
+)
+
+var (
+	// ErrNegativeDelta is returned when a negative nodeDelta is received.
+	ErrNegativeDelta = errors.New("negative nodeDelta received")
 )
 
 // Quota is an interface for a single quota.
@@ -58,18 +65,23 @@ func newTracker(quotaStatuses []*quotaStatus, nodeCache *nodeResourcesCache) *Tr
 	}
 }
 
-// ApplyDelta checks if a delta is within limits and applies it. Delta is applied only if it can be applied entirely.
-// See CheckDelta documentation for more information.
-func (t *Tracker) ApplyDelta(
+// ConsumeQuota checks if a delta is within limits and applies it. Delta is applied only if it can be applied entirely.
+// See CheckQuota documentation for more information.
+//
+// WARNING: nodeDelta must be non-negative. It is a magnitude/absolute value, so when removing a node, nodeDelta would be 1, not -1.
+func (t *Tracker) ConsumeQuota(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
+	if nodeDelta < 0 {
+		return nil, ErrNegativeDelta
+	}
 	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
 	if err != nil {
 		return nil, err
 	}
 	matchingQuotas := t.matchingQuotaStatuses(node)
 
-	result := t.checkDelta(delta, matchingQuotas, nodeDelta)
+	result := t.checkQuota(delta, matchingQuotas, nodeDelta)
 
 	if result.AllowedDelta != nodeDelta {
 		return result, nil
@@ -78,12 +90,46 @@ func (t *Tracker) ApplyDelta(
 	for _, qs := range matchingQuotas {
 		for resource, resourceDelta := range delta {
 			if limit, ok := qs.limitsLeft[resource]; ok {
-				qs.limitsLeft[resource] = max(limit-resourceDelta*int64(result.AllowedDelta), 0)
+				totalResourceDelta := int64(result.AllowedDelta) * resourceDelta
+				qs.limitsLeft[resource] = max(limit-totalResourceDelta, 0)
 			}
 		}
 	}
 
 	return result, nil
+}
+
+// ApplyDelta checks if a delta is within limits and applies it. Delta is applied only if it can be applied entirely.
+// See CheckDelta documentation for more information.
+//
+// Deprecated: Use ConsumeQuota instead.
+func (t *Tracker) ApplyDelta(
+	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
+) (*CheckDeltaResult, error) {
+	return t.ConsumeQuota(autoscalingCtx, nodeGroup, node, nodeDelta)
+}
+
+// CheckQuota checks if a delta is within limits and returns a struct containing information
+// about exceeded quotas, if any, and how many nodes could be added/removed without violating the quotas,
+// which is less than or equal to nodeDelta.
+//
+// WARNING: nodeDelta must be non-negative. It is a magnitude/absolute value, so when removing a node, nodeDelta would be 1, not -1.
+//
+// nodeDelta is the number of nodes that we try to add/remove to the cluster. Resources used by each node
+// are taken from the template node passed via the node parameter. nodeGroup is required to fetch
+// the custom resources, such as GPU.
+func (t *Tracker) CheckQuota(
+	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
+) (*CheckDeltaResult, error) {
+	if nodeDelta < 0 {
+		return nil, ErrNegativeDelta
+	}
+	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
+	if err != nil {
+		return nil, err
+	}
+	matchingQuotas := t.matchingQuotaStatuses(node)
+	return t.checkQuota(delta, matchingQuotas, nodeDelta), nil
 }
 
 // CheckDelta checks if a delta is within limits and returns a struct containing information
@@ -93,18 +139,15 @@ func (t *Tracker) ApplyDelta(
 // nodeDelta is the number of nodes that we try to add to the cluster. Resources used by each node
 // are taken from the template node passed via the node parameter. nodeGroup is required to fetch
 // the custom resources, such as GPU.
+//
+// Deprecated: Use CheckQuota instead.
 func (t *Tracker) CheckDelta(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
-	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
-	if err != nil {
-		return nil, err
-	}
-	matchingQuotas := t.matchingQuotaStatuses(node)
-	return t.checkDelta(delta, matchingQuotas, nodeDelta), nil
+	return t.CheckQuota(autoscalingCtx, nodeGroup, node, nodeDelta)
 }
 
-func (t *Tracker) checkDelta(delta resourceList, matchingQuotas []*quotaStatus, nodeDelta int) *CheckDeltaResult {
+func (t *Tracker) checkQuota(delta resourceList, matchingQuotas []*quotaStatus, nodeDelta int) *CheckDeltaResult {
 	result := &CheckDeltaResult{
 		AllowedDelta: nodeDelta,
 	}
@@ -121,13 +164,11 @@ func (t *Tracker) checkDelta(delta resourceList, matchingQuotas []*quotaStatus, 
 				continue
 			}
 
-			// node has resourceDelta units of resource, and we try to add nodeDelta nodes.
-			// Therefore, we need to check if resourceDelta*nodeDelta is within the limitsLeft.
-			if resourcesNeeded := resourceDelta * int64(nodeDelta); limitsLeft < resourcesNeeded {
+			// Check if the total resource change (resourceDelta * nodeDelta) fits within limitsLeft.
+			// Note: limitsLeft represents headroom to the max limit for scale-up, and allowed reduction for scale-down.
+			if totalResourceDelta := resourceDelta * int64(nodeDelta); limitsLeft < totalResourceDelta {
 				allowedNodes := limitsLeft / resourceDelta
-				if allowedNodes < int64(result.AllowedDelta) {
-					result.AllowedDelta = int(allowedNodes)
-				}
+				result.AllowedDelta = int(min(int64(result.AllowedDelta), allowedNodes))
 				exceededResources = append(exceededResources, resource)
 			}
 		}
@@ -155,7 +196,7 @@ func (t *Tracker) matchingQuotaStatuses(node *corev1.Node) []*quotaStatus {
 type CheckDeltaResult struct {
 	// ExceededQuotas contains information about quotas that were exceeded.
 	ExceededQuotas []ExceededQuota
-	// AllowedDelta specifies how many nodes could be added without violating the quotas.
+	// AllowedDelta specifies the number of nodes (always non-negative) that could be added/removed without violating the quotas.
 	AllowedDelta int
 }
 

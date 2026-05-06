@@ -29,7 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
-func TestCheckDelta(t *testing.T) {
+func TestCheckQuota(t *testing.T) {
 	testCases := []struct {
 		name         string
 		tracker      *Tracker
@@ -37,6 +37,7 @@ func TestCheckDelta(t *testing.T) {
 		nodeDelta    int
 		wantResult   *CheckDeltaResult
 		wantExceeded bool
+		wantErr      bool
 	}{
 		{
 			name: "delta fits within limits",
@@ -182,19 +183,61 @@ func TestCheckDelta(t *testing.T) {
 				AllowedDelta: 2,
 			},
 		},
+		{
+			name: "min enforcement: scale-down fits within limits",
+			tracker: newTracker([]*quotaStatus{
+				{
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
+					limitsLeft: resourceList{"cpu": 10, "memory": 1000, "nodes": 5},
+				},
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: 2,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: 2,
+			},
+		},
+		{
+			name: "min enforcement: scale-down exceeds limits",
+			tracker: newTracker([]*quotaStatus{
+				{
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
+					limitsLeft: resourceList{"cpu": 1, "memory": 1000, "nodes": 5},
+				},
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: 2,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: 1,
+				ExceededQuotas: []ExceededQuota{
+					{ID: "limiter1", ExceededResources: []string{"cpu"}},
+				},
+			},
+			wantExceeded: true,
+		},
+		{
+			name:      "negative nodeDelta returns error",
+			tracker:   newTracker([]*quotaStatus{}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: -1,
+			wantErr:   true,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := cptest.NewTestCloudProviderBuilder().Build()
 			ctx := &context.AutoscalingContext{CloudProvider: provider}
-			gotResult, err := tc.tracker.CheckDelta(ctx, nil, tc.node, tc.nodeDelta)
-			if err != nil {
-				t.Fatalf("CheckDelta() returned an unexpected error: %v", err)
+			gotResult, err := tc.tracker.CheckQuota(ctx, nil, tc.node, tc.nodeDelta)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("CheckQuota() error = %v, wantErr %v", err, tc.wantErr)
+			}
+			if tc.wantErr {
+				return
 			}
 
 			if diff := cmp.Diff(tc.wantResult, gotResult, cmpopts.EquateEmpty(), cmpopts.SortSlices(func(a, b string) bool { return a < b })); diff != "" {
-				t.Errorf("CheckDelta() mismatch (-want +got):\n%s", diff)
+				t.Errorf("CheckQuota() mismatch (-want +got):\n%s", diff)
 			}
 			if gotResult.Exceeded() != tc.wantExceeded {
 				t.Errorf("Exceeded() mismatch, want: %v, got: %v", tc.wantExceeded, gotResult.Exceeded())
@@ -203,7 +246,7 @@ func TestCheckDelta(t *testing.T) {
 	}
 }
 
-func TestApplyDelta(t *testing.T) {
+func TestConsumeQuota(t *testing.T) {
 	testCases := []struct {
 		name           string
 		tracker        *Tracker
@@ -211,6 +254,7 @@ func TestApplyDelta(t *testing.T) {
 		nodeDelta      int
 		wantResult     *CheckDeltaResult
 		wantLimitsLeft map[string]resourceList
+		wantErr        bool
 	}{
 		{
 			name: "delta applied successfully",
@@ -286,19 +330,46 @@ func TestApplyDelta(t *testing.T) {
 				"limiter1": {"cpu": 0, "memory": 100, "nodes": 8},
 			},
 		},
+		{
+			name: "min enforcement: scale-down applied successfully",
+			tracker: newTracker([]*quotaStatus{
+				{
+					quota:      &FakeQuota{Name: "limiter1", AppliesToFn: func(*apiv1.Node) bool { return true }},
+					limitsLeft: resourceList{"cpu": 10, "memory": 1000, "nodes": 5},
+				},
+			}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: 2,
+			wantResult: &CheckDeltaResult{
+				AllowedDelta: 2,
+			},
+			wantLimitsLeft: map[string]resourceList{
+				"limiter1": {"cpu": 8, "memory": 600, "nodes": 3},
+			},
+		},
+		{
+			name:      "negative nodeDelta returns error",
+			tracker:   newTracker([]*quotaStatus{}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: -1,
+			wantErr:   true,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := cptest.NewTestCloudProviderBuilder().Build()
 			ctx := &context.AutoscalingContext{CloudProvider: provider}
-			gotResult, err := tc.tracker.ApplyDelta(ctx, nil, tc.node, tc.nodeDelta)
-			if err != nil {
-				t.Fatalf("ApplyDelta() returned an unexpected error: %v", err)
+			gotResult, err := tc.tracker.ConsumeQuota(ctx, nil, tc.node, tc.nodeDelta)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("ConsumeQuota() error = %v, wantErr %v", err, tc.wantErr)
+			}
+			if tc.wantErr {
+				return
 			}
 
 			if diff := cmp.Diff(tc.wantResult, gotResult, cmpopts.EquateEmpty(), cmpopts.SortSlices(func(a, b string) bool { return a < b })); diff != "" {
-				t.Errorf("ApplyDelta() result mismatch (-want +got):\n%s", diff)
+				t.Errorf("ConsumeQuota() result mismatch (-want +got):\n%s", diff)
 			}
 
 			gotLimitsLeft := make(map[string]resourceList)
@@ -306,9 +377,8 @@ func TestApplyDelta(t *testing.T) {
 				gotLimitsLeft[ls.quota.ID()] = ls.limitsLeft
 			}
 			if diff := cmp.Diff(tc.wantLimitsLeft, gotLimitsLeft, cmpopts.EquateEmpty()); diff != "" {
-				t.Errorf("ApplyDelta() limitsLeft mismatch (-want +got):\n%s", diff)
+				t.Errorf("ConsumeQuota() limitsLeft mismatch (-want +got):\n%s", diff)
 			}
-
 		})
 	}
 }

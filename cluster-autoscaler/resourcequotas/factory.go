@@ -46,12 +46,35 @@ func NewTrackerFactory(opts TrackerOptions) *TrackerFactory {
 	}
 }
 
-// NewQuotasTracker builds a new Tracker.
+// NewMaxQuotasTracker builds a new Tracker for maximum limits enforcement.
 //
-// NewQuotasTracker calculates resources used by the nodes for every
+// NewMaxQuotasTracker calculates resources used by the nodes for every
 // quota returned by the Provider. Then, based on usages and limits it calculates
 // how many resources can be still added to the cluster. Returns a Tracker object.
+func (f *TrackerFactory) NewMaxQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node) (*Tracker, error) {
+	return f.newQuotasTracker(autoscalingCtx, nodes, false /* isMinEnforcement */)
+}
+
+// NewQuotasTracker builds a new Tracker for maximum limits enforcement.
+//
+// Deprecated: Use NewMaxQuotasTracker instead.
 func (f *TrackerFactory) NewQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node) (*Tracker, error) {
+	return f.NewMaxQuotasTracker(autoscalingCtx, nodes)
+}
+
+// NewMinQuotasTracker builds a new Tracker for minimum limits enforcement.
+//
+// NewMinQuotasTracker calculates resources used by the nodes for every
+// quota returned by the Provider. Then, based on usages and limits it calculates
+// how many resources can be still removed from the cluster. Returns a Tracker object.
+func (f *TrackerFactory) NewMinQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node) (*Tracker, error) {
+	return f.newQuotasTracker(autoscalingCtx, nodes, true /* isMinEnforcement */)
+}
+
+// newQuotasTracker builds a new Tracker for either minimum or maximum limits enforcement.
+// If isMinEnforcement is true, it calculates headroom to the minimum limit (for scale-down).
+// Otherwise, it calculates headroom to the maximum limit (for scale-up).
+func (f *TrackerFactory) newQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node, isMinEnforcement bool) (*Tracker, error) {
 	quotas, err := f.quotasProvider.Quotas()
 	if err != nil {
 		return nil, err
@@ -69,7 +92,11 @@ func (f *TrackerFactory) NewQuotasTracker(autoscalingCtx *context.AutoscalingCon
 		limits := rq.Limits()
 		for resourceType, limit := range limits {
 			usage := usages[rq.ID()][resourceType]
-			limitsLeft[resourceType] = max(0, limit-usage)
+			if isMinEnforcement {
+				limitsLeft[resourceType] = max(0, usage-limit)
+			} else {
+				limitsLeft[resourceType] = max(0, limit-usage)
+			}
 		}
 		quotaStatuses = append(quotaStatuses, &quotaStatus{
 			quota:      rq,
