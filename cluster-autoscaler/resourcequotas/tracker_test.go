@@ -321,6 +321,7 @@ func TestCheckQuota(t *testing.T) {
 		nodeDelta    int
 		wantResult   *CheckDeltaResult
 		wantExceeded bool
+		wantErr      bool
 	}{
 		{
 			name: "delta fits within limits",
@@ -498,6 +499,13 @@ func TestCheckQuota(t *testing.T) {
 			},
 			wantExceeded: true,
 		},
+		{
+			name:      "negative nodeDelta returns error",
+			tracker:   newTracker([]*quotaStatus{}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: -1,
+			wantErr:   true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -505,8 +513,11 @@ func TestCheckQuota(t *testing.T) {
 			provider := cptest.NewTestCloudProviderBuilder().Build()
 			ctx := &context.AutoscalingContext{CloudProvider: provider}
 			gotResult, err := tc.tracker.CheckQuota(ctx, nil, tc.node, tc.nodeDelta)
-			if err != nil {
-				t.Fatalf("CheckQuota() returned an unexpected error: %v", err)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("CheckQuota() error = %v, wantErr %v", err, tc.wantErr)
+			}
+			if tc.wantErr {
+				return
 			}
 
 			if diff := cmp.Diff(tc.wantResult, gotResult, cmpopts.EquateEmpty(), cmpopts.SortSlices(func(a, b string) bool { return a < b })); diff != "" {
@@ -527,6 +538,7 @@ func TestConsumeQuota(t *testing.T) {
 		nodeDelta      int
 		wantResult     *CheckDeltaResult
 		wantLimitsLeft map[string]resourceList
+		wantErr        bool
 	}{
 		{
 			name: "delta applied successfully",
@@ -619,6 +631,13 @@ func TestConsumeQuota(t *testing.T) {
 				"limiter1": {"cpu": 8, "memory": 600, "nodes": 3},
 			},
 		},
+		{
+			name:      "negative nodeDelta returns error",
+			tracker:   newTracker([]*quotaStatus{}, newNodeResourcesCache(&fakeCustomResourcesProcessor{})),
+			node:      test.BuildTestNode("n1", 1000, 200),
+			nodeDelta: -1,
+			wantErr:   true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -626,8 +645,11 @@ func TestConsumeQuota(t *testing.T) {
 			provider := cptest.NewTestCloudProviderBuilder().Build()
 			ctx := &context.AutoscalingContext{CloudProvider: provider}
 			gotResult, err := tc.tracker.ConsumeQuota(ctx, nil, tc.node, tc.nodeDelta)
-			if err != nil {
-				t.Fatalf("ConsumeQuota() returned an unexpected error: %v", err)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("ConsumeQuota() error = %v, wantErr %v", err, tc.wantErr)
+			}
+			if tc.wantErr {
+				return
 			}
 
 			if diff := cmp.Diff(tc.wantResult, gotResult, cmpopts.EquateEmpty(), cmpopts.SortSlices(func(a, b string) bool { return a < b })); diff != "" {

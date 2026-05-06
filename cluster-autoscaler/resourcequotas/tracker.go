@@ -17,6 +17,8 @@ limitations under the License.
 package resourcequotas
 
 import (
+	"fmt"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -60,10 +62,14 @@ func newTracker(quotaStatuses []*quotaStatus, nodeCache *nodeResourcesCache) *Tr
 
 // ConsumeQuota checks if a delta is within limits and applies it. Delta is applied only if it can be applied entirely.
 // See CheckQuota documentation for more information.
-// nodeDelta must be positive.
+//
+// WARNING: nodeDelta must be non-negative.
 func (t *Tracker) ConsumeQuota(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
+	if nodeDelta < 0 {
+		return nil, fmt.Errorf("nodeDelta must be non-negative, got %d", nodeDelta)
+	}
 	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
 	if err != nil {
 		return nil, err
@@ -102,12 +108,17 @@ func (t *Tracker) ApplyDelta(
 // about exceeded quotas, if any, and how many nodes could be added/removed without violating the quotas,
 // which is less than or equal to nodeDelta.
 //
+// WARNING: nodeDelta must be non-negative.
+//
 // nodeDelta is the number of nodes that we try to add/remove to the cluster. Resources used by each node
 // are taken from the template node passed via the node parameter. nodeGroup is required to fetch
 // the custom resources, such as GPU.
 func (t *Tracker) CheckQuota(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
+	if nodeDelta < 0 {
+		return nil, fmt.Errorf("nodeDelta must be non-negative, got %d", nodeDelta)
+	}
 	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
 	if err != nil {
 		return nil, err
