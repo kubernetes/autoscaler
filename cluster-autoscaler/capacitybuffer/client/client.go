@@ -106,7 +106,12 @@ func NewCapacityBufferClient(buffersClient capacitybuffer.Interface, kubernetesC
 
 // NewCapacityBufferClientFromConfig configures and returns a CapacityBufferClient.
 func NewCapacityBufferClientFromConfig(kubeConfig *rest.Config) (*CapacityBufferClient, error) {
-	buffersClient, err := capacitybuffer.NewForConfig(kubeConfig)
+	// Use a static JSON content type config for CapacityBuffer CRD data exchange
+	// to adhere to CRD requirements. The kubernetes and scale clients below continue
+	// to use the caller-provided content type since they use built-in types.
+	buffersConfig := rest.CopyConfig(kubeConfig)
+	buffersConfig.ContentType = "application/json"
+	buffersClient, err := capacitybuffer.NewForConfig(buffersConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create capacity buffer client for capacity buffer: %v", err)
 	}
