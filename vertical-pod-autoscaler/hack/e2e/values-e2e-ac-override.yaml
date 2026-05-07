@@ -1,6 +1,5 @@
-# Admission controller overrides for local e2e testing.
-# Used by deploy-for-e2e-locally.sh to enable manual cert management
-# for the cert rotation test.
+# Admission controller overrides for e2e cert rotation testing.
+# Used to enable application-managed webhook and manual cert management.
 admissionController:
   certGen:
     enabled: false

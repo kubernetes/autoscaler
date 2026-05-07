@@ -110,22 +110,26 @@ for COMPONENT in ${COMPONENTS}; do
       HELM_SET_ARGS+=("--set" "admissionController.enabled=true")
       HELM_SET_ARGS+=("--set" "admissionController.image.repository=${REGISTRY}/vpa-admission-controller")
       HELM_SET_ARGS+=("--set" "admissionController.image.tag=${TAG}")
+      # The admission-controller e2e suite tests application-managed cert reload.
+      HELM_SET_ARGS+=("--values" "${SCRIPT_ROOT}/hack/e2e/values-e2e-ac-override.yaml")
       ;;
   esac
 done
 
 # Add feature gates if specified
+ESCAPED_FEATURE_GATES="${FEATURE_GATES:-}"
 if [ -n "${FEATURE_GATES:-}" ]; then
+  ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
   for COMPONENT in ${COMPONENTS}; do
     case ${COMPONENT} in
       recommender)
-        HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         ;;
       updater)
-        HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         ;;
       admission-controller)
-        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[0]=--feature-gates=${FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[1]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         ;;
     esac
   done
@@ -133,6 +137,17 @@ fi
 
 # Uninstall any existing VPA Helm release
 helm uninstall ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE} 2>/dev/null || true
+
+# Generate TLS certificates for admission-controller before Helm install.
+for COMPONENT in ${COMPONENTS}; do
+  if [[ "${COMPONENT}" == "admission-controller" ]]; then
+    echo " ** Generating TLS certificates for admission-controller"
+    kubectl delete secret -n ${HELM_NAMESPACE} vpa-tls-certs --ignore-not-found=true
+    kubectl delete secret -n ${HELM_NAMESPACE} vpa-e2e-certs --ignore-not-found=true
+    (cd ${SCRIPT_ROOT}/pkg/admission-controller && bash ./gencerts.sh e2e || true)
+    break
+  fi
+done
 
 # Install/Upgrade VPA using Helm chart
 echo " ** Installing/Upgrading VPA via Helm chart"
