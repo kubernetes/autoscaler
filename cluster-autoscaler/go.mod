@@ -24,7 +24,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/eks v1.76.1
 	github.com/aws/smithy-go v1.24.0
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/digitalocean/godo v1.169.0
+	github.com/digitalocean/godo v1.188.0
 	github.com/golang/protobuf v1.5.4
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-querystring v1.1.0
