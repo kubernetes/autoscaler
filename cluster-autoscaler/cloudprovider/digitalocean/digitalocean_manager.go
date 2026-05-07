@@ -151,7 +151,6 @@ func (m *Manager) Refresh() error {
 			continue
 		}
 		nodePoolTemplateResponse, _, err := m.client.GetNodePoolTemplate(ctx, m.clusterID, nodePool.Name)
-		klog.V(4).Infof("fetched template response - %+v", nodePoolTemplateResponse)
 		if err != nil {
 			return err
 		}
