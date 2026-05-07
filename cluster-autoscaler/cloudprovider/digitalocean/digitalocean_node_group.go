@@ -315,11 +315,11 @@ func toInstanceStatus(nodeState *godo.KubernetesNodeStatus) *cloudprovider.Insta
 }
 
 func toNodeInfoTemplate(resp *godo.KubernetesNodePoolTemplate) (*framework.NodeInfo, error) {
-	allocatable, err := parseToQuanitity(resp.Template.Allocatable.CPU, resp.Template.Allocatable.Pods, resp.Template.Allocatable.Memory)
+	allocatable, err := parseToQuantity(resp.Template.Allocatable.CpuMilliCores, resp.Template.Allocatable.Pods, resp.Template.Allocatable.Memory)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create allocatable resources - %s", err)
 	}
-	capacity, err := parseToQuanitity(resp.Template.Capacity.CPU, resp.Template.Capacity.Pods, resp.Template.Capacity.Memory)
+	capacity, err := parseToQuantity(resp.Template.Capacity.CpuMilliCores, resp.Template.Capacity.Pods, resp.Template.Capacity.Memory)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create capacity resources - %s", err)
 	}
@@ -330,6 +330,18 @@ func toNodeInfoTemplate(resp *godo.KubernetesNodePoolTemplate) (*framework.NodeI
 	l := map[string]string{
 		apiv1.LabelOSStable:   cloudprovider.DefaultOS,
 		apiv1.LabelArchStable: cloudprovider.DefaultArch,
+	}
+
+	if resp.Template.Gpu != nil {
+		resourceName := fmt.Sprintf("%s.com/gpu", resp.Template.Gpu.Vendor)
+		gpuResourceName := apiv1.ResourceName(resourceName)
+		gpuResourceQuantity, err := resource.ParseQuantity(fmt.Sprintf("%d", resp.Template.Gpu.Count))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse gpu quantity - %s", err)
+		}
+
+		allocatable[gpuResourceName] = gpuResourceQuantity
+		capacity[gpuResourceName] = gpuResourceQuantity
 	}
 
 	l = cloudprovider.JoinStringMaps(l, resp.Template.Labels)
@@ -351,8 +363,8 @@ func toNodeInfoTemplate(resp *godo.KubernetesNodePoolTemplate) (*framework.NodeI
 	return framework.NewNodeInfo(node, nil), nil
 }
 
-func parseToQuanitity(cpu int64, pods int64, memory string) (apiv1.ResourceList, error) {
-	c := resource.NewQuantity(cpu, resource.DecimalSI)
+func parseToQuantity(cpuMilliCores int64, pods int64, memory string) (apiv1.ResourceList, error) {
+	c := resource.NewMilliQuantity(cpuMilliCores, resource.DecimalSI)
 	p := resource.NewQuantity(pods, resource.DecimalSI)
 	m, err := resource.ParseQuantity(memory)
 	if err != nil {
