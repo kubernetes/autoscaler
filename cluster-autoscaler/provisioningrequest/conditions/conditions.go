@@ -64,6 +64,10 @@ const (
 	// SchedulablePodSetsDetailKey is the ProvisioningClassDetails key indicating
 	// which PodSets CA found capacity for.
 	SchedulablePodSetsDetailKey = "schedulablePodSets"
+	// SchedulablePodCountsDetailKey is the ProvisioningClassDetails key indicating
+	// the number of scheduled pods per PodSet. Each PodSet is evaluated independently;
+	// counts are not additive across PodSets that did not fully fit.
+	SchedulablePodCountsDetailKey = "schedulablePodCounts"
 )
 
 // ShouldCapacityBeBooked returns whether capacity should be booked.

@@ -18,6 +18,7 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -39,6 +40,7 @@ import (
 	processorstest "k8s.io/autoscaler/cluster-autoscaler/processors/test"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
@@ -292,6 +294,7 @@ func TestScaleUp(t *testing.T) {
 		numProvisionedTrue  int
 		numProvisionedFalse int
 		numFailedTrue       int
+		wantPodCounts       map[string]int
 	}{
 		{
 			name:          "no ProvisioningRequests",
@@ -589,6 +592,7 @@ func TestScaleUp(t *testing.T) {
 			provReqToScaleUp:    multiPodSetProvReq,
 			scaleUpResult:       status.ScaleUpSuccessful,
 			numProvisionedFalse: 1, // checkOnly: partial capacity found but not booked
+			wantPodCounts:       map[string]int{"small-template": 10, "large-template": 0},
 		},
 		{
 			name: "bookPartial mode, multi-PodSet, partial capacity reports Provisioned=true",
@@ -600,6 +604,7 @@ func TestScaleUp(t *testing.T) {
 			provReqToScaleUp:   multiPodSetProvReq,
 			scaleUpResult:      status.ScaleUpSuccessful,
 			numProvisionedTrue: 1, // bookPartial: partial capacity found and booked
+			wantPodCounts:      map[string]int{"small-template": 10, "large-template": 0},
 		},
 	}
 	for _, tc := range testCases {
@@ -649,6 +654,13 @@ func TestScaleUp(t *testing.T) {
 				if tc.batchProcessing || tc.numProvisionedTrue > 0 || tc.numProvisionedFalse > 0 {
 					assert.Equal(t, tc.numProvisionedTrue, NumProvisioningRequestsWithCondition(provReqsAfterScaleUp, v1.Provisioned, metav1.ConditionTrue))
 					assert.Equal(t, tc.numProvisionedFalse, NumProvisioningRequestsWithCondition(provReqsAfterScaleUp, v1.Provisioned, metav1.ConditionFalse))
+				}
+				if tc.wantPodCounts != nil {
+					detail, ok := provReqsAfterScaleUp[0].Status.ProvisioningClassDetails[conditions.SchedulablePodCountsDetailKey]
+					assert.True(t, ok, "expected schedulablePodCounts detail to be set")
+					var gotPodCounts map[string]int
+					assert.NoError(t, json.Unmarshal([]byte(detail), &gotPodCounts))
+					assert.Equal(t, tc.wantPodCounts, gotPodCounts)
 				}
 			} else {
 				assert.Error(t, err)
