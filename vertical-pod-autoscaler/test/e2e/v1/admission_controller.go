@@ -1131,14 +1131,14 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
                 }
             }
         }`,
-				expectedErr: "admission webhook \"vpa.k8s.io\" denied the request: VerticalPodAutoscaler.autoscaling.k8s.io \"oom-test-vpa\" is invalid: .: Internal error: quantities must match the regular expression '^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$'",
+				expectedErr: `admission webhook "vpa.k8s.io" denied the request: VerticalPodAutoscaler.autoscaling.k8s.io "oom-test-vpa" is invalid: .: Internal error: quantities must match the regular expression '^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$'`,
 			},
 		}
 		for _, tc := range testCases {
 			ginkgo.By(fmt.Sprintf("Testing %s", tc.name))
 			err := InstallRawVPA(f, []byte(tc.vpaJSON))
 			gomega.Expect(err).To(gomega.HaveOccurred(), fmt.Sprintf("Invalid VPA object accepted, name: \"%s\"", tc.name))
-			gomega.Expect(err.Error()).To(gomega.MatchRegexp(tc.expectedErr))
+			gomega.Expect(err.Error()).To(gomega.Equal(tc.expectedErr))
 		}
 	})
 
