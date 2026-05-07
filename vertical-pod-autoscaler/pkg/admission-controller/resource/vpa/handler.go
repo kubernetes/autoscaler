@@ -19,7 +19,6 @@ package vpa
 import (
 	"context"
 	"encoding/json"
-	"sort"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,22 +29,6 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 )
-
-var (
-	possibleScalingModes = map[vpa_types.ContainerScalingMode]any{
-		vpa_types.ContainerScalingModeAuto: struct{}{},
-		vpa_types.ContainerScalingModeOff:  struct{}{},
-	}
-)
-
-func getPossibleScalingModes() []string {
-	modes := []string{}
-	for mode := range possibleScalingModes {
-		modes = append(modes, string(mode))
-	}
-	sort.Strings(modes)
-	return modes
-}
 
 // resourceHandler builds patches for VPAs.
 type resourceHandler struct {

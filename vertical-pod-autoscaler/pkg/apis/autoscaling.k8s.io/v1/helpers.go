@@ -18,7 +18,7 @@ package v1
 
 import "sort"
 
-// GetUpdateModes returns all supported UpdateModes
+// GetUpdateModes returns all UpdateModes
 func GetUpdateModes() map[UpdateMode]any {
 	return map[UpdateMode]any{
 		UpdateModeOff:               nil,
@@ -30,6 +30,7 @@ func GetUpdateModes() map[UpdateMode]any {
 }
 
 // GetUpdateModesList returns all supported UpdateModes as a slice of strings
+// Note: This list will not return deprecated modes.
 func GetUpdateModesList() []string {
 	modes := GetUpdateModes()
 	result := make([]string, 0, len(modes))
@@ -37,6 +38,25 @@ func GetUpdateModesList() []string {
 		if mode != UpdateModeAuto { // Skip the deprecated one
 			result = append(result, string(mode))
 		}
+	}
+	sort.Strings(result)
+	return result
+}
+
+// GetScalingModes returns all supported ScalingModes
+func GetScalingModes() map[ContainerScalingMode]any {
+	return map[ContainerScalingMode]any{
+		ContainerScalingModeAuto: nil,
+		ContainerScalingModeOff:  nil,
+	}
+}
+
+// GetPossibleScalingModes returns all supported ScalingModes as a slice of strings
+func GetPossibleScalingModes() []string {
+	modes := GetScalingModes()
+	result := make([]string, 0, len(modes))
+	for mode := range modes {
+		result = append(result, string(mode))
 	}
 	sort.Strings(result)
 	return result

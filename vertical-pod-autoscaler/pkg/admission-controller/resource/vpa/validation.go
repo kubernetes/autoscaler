@@ -168,8 +168,8 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 		}
 
 		if policy.Mode != nil {
-			if _, found := possibleScalingModes[*policy.Mode]; !found {
-				allErrs = append(allErrs, field.NotSupported(policyPath.Child("mode"), *policy.Mode, getPossibleScalingModes()))
+			if _, found := vpa_types.GetScalingModes()[*policy.Mode]; !found {
+				allErrs = append(allErrs, field.NotSupported(policyPath.Child("mode"), *policy.Mode, vpa_types.GetPossibleScalingModes()))
 			}
 		}
 
