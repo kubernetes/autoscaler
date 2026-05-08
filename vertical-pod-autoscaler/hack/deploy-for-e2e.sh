@@ -59,6 +59,7 @@ case ${SUITE} in
     ;;
 esac
 
+# CI-specific registry logic
 export REGISTRY=gcr.io/`gcloud config get-value core/project`
 export TAG=latest
 
@@ -69,15 +70,49 @@ gcloud auth configure-docker -q
 for i in ${COMPONENTS}; do
   if [ $i == admission-controller ] ; then
     (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh e2e || true)
-    kubectl apply -f ${SCRIPT_ROOT}/deploy/admission-controller-service.yaml
   fi
   ALL_ARCHITECTURES=amd64 make --directory ${SCRIPT_ROOT}/pkg/${i} release
 done
 
-kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-v1-crd-gen.yaml
-kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml
+echo "Deploying VPA components via Helm for E2E CI..."
 
-for i in ${COMPONENTS}; do
-  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh  ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | kubectl create -f -
+HELM_CHART_PATH="${SCRIPT_ROOT}/charts/vertical-pod-autoscaler"
+VALUES_FILE="${SCRIPT_ROOT}/hack/e2e/values-e2e.yaml"
+HELM_RELEASE_NAME="vpa"
+HELM_NAMESPACE="kube-system"
+
+# Build dynamic Helm set arguments based on components to isolate test suites
+HELM_SET_ARGS=()
+HELM_SET_ARGS+=("--set" "recommender.enabled=false")
+HELM_SET_ARGS+=("--set" "updater.enabled=false")
+HELM_SET_ARGS+=("--set" "admissionController.enabled=false")
+
+for COMPONENT in ${COMPONENTS}; do
+  case ${COMPONENT} in
+    recommender)
+      HELM_SET_ARGS+=("--set" "recommender.enabled=true")
+      HELM_SET_ARGS+=("--set" "recommender.image.repository=${REGISTRY}/vpa-recommender")
+      HELM_SET_ARGS+=("--set" "recommender.image.tag=${TAG}")
+      ;;
+    updater)
+      HELM_SET_ARGS+=("--set" "updater.enabled=true")
+      HELM_SET_ARGS+=("--set" "updater.image.repository=${REGISTRY}/vpa-updater")
+      HELM_SET_ARGS+=("--set" "updater.image.tag=${TAG}")
+      ;;
+    admission-controller)
+      HELM_SET_ARGS+=("--set" "admissionController.enabled=true")
+      HELM_SET_ARGS+=("--set" "admissionController.image.repository=${REGISTRY}/vpa-admission-controller")
+      HELM_SET_ARGS+=("--set" "admissionController.image.tag=${TAG}")
+      ;;
+  esac
 done
 
+# Helm does not delete or upgrade CRDs under crds/, so remove them here
+kubectl delete crd verticalpodautoscalers.autoscaling.k8s.io --ignore-not-found=true
+kubectl delete crd verticalpodautoscalercheckpoints.autoscaling.k8s.io --ignore-not-found=true
+
+helm upgrade --install ${HELM_RELEASE_NAME} "${HELM_CHART_PATH}" \
+  --namespace ${HELM_NAMESPACE} \
+  --values "${VALUES_FILE}" \
+  "${HELM_SET_ARGS[@]}" \
+  --wait
