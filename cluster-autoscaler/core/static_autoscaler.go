@@ -17,9 +17,13 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"reflect"
+	"slices"
+	"strings"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
@@ -63,8 +67,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/utils/integer"
 
+	v1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 )
 
@@ -397,7 +403,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	metrics.UpdateDurationFromStart(metrics.UpdateState, stateUpdateStart)
 
 	scaleUpStatus := &status.ScaleUpStatus{Result: status.ScaleUpNotTried}
-	scaleUpStatusProcessorAlreadyCalled := false
+	scaleUpTriggered := false
 	scaleDownStatus := &scaledownstatus.ScaleDownStatus{Result: scaledownstatus.ScaleDownNotTried}
 
 	defer func() {
@@ -410,10 +416,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		// This deferred processor execution allows the processors to handle a situation when a scale-(up|down)
 		// wasn't even attempted because e.g. the iteration exited earlier.
-		if !scaleUpStatusProcessorAlreadyCalled && a.processors != nil && a.processors.ScaleUpStatusProcessor != nil {
+		if !scaleUpTriggered && a.processors.ScaleUpStatusProcessor != nil {
 			a.processors.ScaleUpStatusProcessor.Process(a.AutoscalingContext, scaleUpStatus)
 		}
-		if a.processors != nil && a.processors.ScaleDownStatusProcessor != nil {
+		if a.processors.ScaleDownStatusProcessor != nil {
 			// Gather status before scaledown status processor invocation
 			nodeDeletionResults, nodeDeletionResultsAsOf := a.scaleDownActuator.DeletionResults()
 			scaleDownStatus.NodeDeleteResults = nodeDeletionResults
@@ -424,7 +430,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 			a.processors.ScaleDownStatusProcessor.Process(a.AutoscalingContext, scaleDownStatus)
 		}
 
-		if a.processors != nil && a.processors.AutoscalingStatusProcessor != nil {
+		if a.processors.AutoscalingStatusProcessor != nil {
 			err := a.processors.AutoscalingStatusProcessor.Process(a.AutoscalingContext, a.clusterStateRegistry, currentTime)
 			if err != nil {
 				klog.Errorf("AutoscalingStatusProcessor error: %v.", err)
@@ -482,8 +488,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	// them and not trigger another scale-up.
 	// The fake nodes are intentionally not added to the all nodes list, so that they are not considered as candidates for scale-down (which
 	// doesn't make sense as they're not real).
-	err = a.addUpcomingNodesToClusterSnapshot(upcomingCounts)
-	if err != nil {
+	templateNodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
+	if _, err := a.addUpcomingNodesToClusterSnapshot(upcomingCounts, templateNodeInfos, "upcoming-%d"); err != nil {
 		klog.Errorf("Failed adding upcoming nodes to cluster snapshot: %v", err)
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err)
 	}
@@ -522,30 +528,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
-	preScaleUp := func() time.Time {
-		scaleUpStart := time.Now()
-		metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
-		return scaleUpStart
-	}
-
-	postScaleUp := func(scaleUpStart time.Time) {
-		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
-
-		if a.processors != nil && a.processors.ScaleUpStatusProcessor != nil {
-			a.processors.ScaleUpStatusProcessor.Process(autoscalingCtx, scaleUpStatus)
-			scaleUpStatusProcessorAlreadyCalled = true
-		}
-
-		if typedErr != nil {
-			klog.Errorf("Failed to scale up: %v", typedErr)
-			return
-		}
-		if scaleUpStatus.Result == status.ScaleUpSuccessful {
-			a.lastScaleUpTime = currentTime
-			// No scale down in this iteration.
-			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
-		}
-	}
 
 	shouldScaleUp := true
 
@@ -582,14 +564,34 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	}
 
 	if shouldScaleUp || a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp) {
-		scaleUpStart := preScaleUp()
+		scaleUpTriggered = true
 		nodes := make([]*apiv1.Node, len(allNodeInfos))
 		for i, nodeInfo := range allNodeInfos {
 			nodes[i] = nodeInfo.Node()
 		}
-		nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, nodes, daemonsets, nodeInfos, false)
-		postScaleUp(scaleUpStart)
+
+		if a.AutoscalingContext.AutoscalingOptions.SalvoScaleUp {
+			scaleUpStatus, typedErr = a.runScaleUpSalvo(
+				currentTime,
+				unschedulablePodsToHelp,
+				daemonsets,
+				nodes,
+				templateNodeInfos,
+			)
+		} else {
+			_, scaleUpStatus, typedErr = a.runSingleScaleUp(
+				currentTime,
+				unschedulablePodsToHelp,
+				daemonsets,
+				nodes,
+				templateNodeInfos,
+			)
+		}
+
+		if scaleUpStatus.Result == status.ScaleUpSuccessful {
+			// No scale down in this iteration.
+			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
+		}
 	}
 
 	if typedErr = a.scaleDown(currentTime, allNodes, scaleDownActuationStatus, scaleDownStatus); typedErr != nil {
@@ -597,17 +599,127 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	}
 
 	if a.EnforceNodeGroupMinSize {
-		scaleUpStart := preScaleUp()
+		scaleUpTriggered = true
 		nodes := make([]*apiv1.Node, len(allNodeInfos))
 		for i, nodeInfo := range allNodeInfos {
 			nodes[i] = nodeInfo.Node()
 		}
-		nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
-		postScaleUp(scaleUpStart)
+
+		scaleUpFn := func() (*status.ScaleUpStatus, caerrors.AutoscalerError) {
+			return a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(nodes, templateNodeInfos)
+		}
+		_, scaleUpStatus, typedErr = a.instrumentedScaleUp(currentTime, scaleUpFn)
 	}
 
 	return nil
+}
+
+// instrumentedScaleUp handles a single ScaleUp orchestrator call with metrics and status reporting.
+// It accepts a generic scaleUpFn closure, allowing it to handle regular scale-ups or scaling up to node group min size.
+func (a *StaticAutoscaler) instrumentedScaleUp(
+	currentTime time.Time,
+	scaleUpFn func() (*status.ScaleUpStatus, caerrors.AutoscalerError),
+) ([]*apiv1.Pod, *status.ScaleUpStatus, caerrors.AutoscalerError) {
+	scaleUpStart := time.Now()
+	metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
+
+	scaleUpStatus, typedErr := scaleUpFn()
+	// Reference copy is sufficient since processors are not expected to modify the slice elements.
+	unfilteredPodsTriggeredScaleUp := scaleUpStatus.PodsTriggeredScaleUp
+
+	metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
+
+	if a.processors.ScaleUpStatusProcessor != nil {
+		a.processors.ScaleUpStatusProcessor.Process(a.AutoscalingContext, scaleUpStatus)
+	}
+
+	if typedErr != nil {
+		klog.Errorf("Failed to scale up: %v", typedErr)
+		return unfilteredPodsTriggeredScaleUp, scaleUpStatus, typedErr
+	}
+	if scaleUpStatus.Result == status.ScaleUpSuccessful {
+		a.lastScaleUpTime = currentTime
+	}
+
+	return unfilteredPodsTriggeredScaleUp, scaleUpStatus, typedErr
+}
+
+func (a *StaticAutoscaler) runSingleScaleUp(
+	currentTime time.Time,
+	unschedulablePodsToHelp []*apiv1.Pod,
+	daemonsets []*v1.DaemonSet,
+	nodes []*apiv1.Node,
+	templateNodeInfos map[string]*framework.NodeInfo,
+) ([]*apiv1.Pod, *status.ScaleUpStatus, caerrors.AutoscalerError) {
+	scaleUpFn := func() (*status.ScaleUpStatus, caerrors.AutoscalerError) {
+		return a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, nodes, daemonsets, templateNodeInfos, false)
+	}
+	return a.instrumentedScaleUp(currentTime, scaleUpFn)
+}
+
+func (a *StaticAutoscaler) runScaleUpSalvo(
+	currentTime time.Time,
+	unschedulablePodsToHelp []*apiv1.Pod,
+	daemonsets []*v1.DaemonSet,
+	nodes []*apiv1.Node,
+	templateNodeInfos map[string]*framework.NodeInfo,
+) (*status.ScaleUpStatus, caerrors.AutoscalerError) {
+	var scaleUpStatus *status.ScaleUpStatus
+	var typedErr caerrors.AutoscalerError
+	var handledPods []*apiv1.Pod
+
+	podsMap := make(map[types.UID]*apiv1.Pod)
+	for _, pod := range unschedulablePodsToHelp {
+		podsMap[pod.UID] = pod
+	}
+
+	budget := a.AutoscalingContext.AutoscalingOptions.SalvoScaleUpBudget
+	salvoCtx, cancel := context.WithTimeout(context.Background(), budget)
+	defer cancel()
+
+	klog.Infof("Starting scale up salvo: %d pods to help, budget: %v", len(podsMap), budget)
+	i := 0
+	for ; ; i++ {
+		klog.V(4).Infof("Scale up salvo: iteration %d, pods left: %d", i, len(podsMap))
+		unschedulablePods := slices.Collect(maps.Values(podsMap))
+
+		handledPods, scaleUpStatus, typedErr = a.runSingleScaleUp(currentTime, unschedulablePods, daemonsets, nodes, templateNodeInfos)
+		if typedErr != nil {
+			klog.Infof("Scale up failed, finishing the scale up salvo: %v", typedErr)
+			break
+		}
+		if !scaleUpStatus.WasSuccessful() {
+			klog.Infof("Scale up not successful: %v, finishing the scale up salvo", scaleUpStatus.Result)
+			break
+		}
+		if len(handledPods) == 0 {
+			klog.Infof("Empty unfilteredPodsTriggeredScaleUp list - cannot update cluster snapshot, finishing the scale up salvo")
+			break
+		}
+
+		for _, pod := range handledPods {
+			delete(podsMap, pod.UID)
+		}
+
+		if len(podsMap) == 0 {
+			klog.Infof("All unschedulable pods have been helped, finishing the scale up salvo")
+			break
+		}
+
+		if err := salvoCtx.Err(); err != nil {
+			klog.Infof("Scale up budget of %v exhausted, finishing the scale up salvo", budget)
+			break
+		}
+
+		newNodes, err := a.addLatestScaleUpResultsToClusterSnapshot(i, scaleUpStatus, handledPods, templateNodeInfos)
+		if err != nil {
+			klog.Warningf("Failed to update cluster snapshot after scale up, finishing the scale up salvo: %v", err)
+			break
+		}
+		nodes = append(nodes, newNodes...)
+	}
+	klog.Infof("Finished scale up salvo after %d iterations, unschedulable pods left: %d", i, len(podsMap))
+	return scaleUpStatus, typedErr
 }
 
 func (a *StaticAutoscaler) updateSoftDeletionTaints(allNodes []*apiv1.Node) {
@@ -725,36 +837,86 @@ func (a *StaticAutoscaler) scaleDown(currentTime time.Time, allNodes []*apiv1.No
 	return nil
 }
 
-func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[string]int) error {
+// addUpcomingNodesToClusterSnapshot generates upcoming node infos based on upcomingCounts and adds them to the ClusterSnapshot.
+func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(
+	upcomingCounts map[string]int,
+	templateNodeInfos map[string]*framework.NodeInfo,
+	suffixFmt string,
+) ([]*apiv1.Node, error) {
+	upcomingNodeInfosPerNg, err := getUpcomingNodeInfos(upcomingCounts, templateNodeInfos, suffixFmt)
+	if err != nil {
+		return nil, err
+	}
+
 	nodeGroups := a.nodeGroupsById()
 	upcomingNodeGroups := make(map[string]int)
 	upcomingNodesFromUpcomingNodeGroups := 0
-	nodeInfos := a.AutoscalingContext.TemplateNodeInfoRegistry.GetNodeInfos()
-	upcomingNodeInfosPerNg, err := getUpcomingNodeInfos(upcomingCounts, nodeInfos)
-	if err != nil {
-		return err
-	}
+	var newNodes []*apiv1.Node
+
 	for nodeGroupName, upcomingNodeInfos := range upcomingNodeInfosPerNg {
 		nodeGroup := nodeGroups[nodeGroupName]
 		if nodeGroup == nil {
-			return fmt.Errorf("failed to find node group: %s", nodeGroupName)
+			return nil, fmt.Errorf("failed to find node group: %s", nodeGroupName)
 		}
-		isUpcomingNodeGroup := a.processors.AsyncNodeGroupStateChecker.IsUpcoming(nodeGroup)
-		for _, upcomingNodeInfo := range upcomingNodeInfos {
-			err := a.ClusterSnapshot.AddNodeInfo(upcomingNodeInfo)
-			if err != nil {
-				return fmt.Errorf("failed to add upcoming node %s to cluster snapshot: %w", upcomingNodeInfo.Node().Name, err)
+		for i, upcomingNodeInfo := range upcomingNodeInfos {
+			if err := a.ClusterSnapshot.AddNodeInfo(upcomingNodeInfo); err != nil {
+				return nil, fmt.Errorf("Failed to add upcoming %d/%d node %q from node group %q to cluster snapshot: %w", i+1, len(upcomingNodeInfos), upcomingNodeInfo.Node().Name, nodeGroupName, err)
 			}
-			if isUpcomingNodeGroup {
-				upcomingNodesFromUpcomingNodeGroups++
-				upcomingNodeGroups[nodeGroup.Id()] += 1
-			}
+			newNodes = append(newNodes, upcomingNodeInfo.Node())
+		}
+		if a.processors.AsyncNodeGroupStateChecker.IsUpcoming(nodeGroup) {
+			upcomingNodesFromUpcomingNodeGroups += len(upcomingNodeInfos)
+			upcomingNodeGroups[nodeGroup.Id()] += len(upcomingNodeInfos)
 		}
 	}
 	if len(upcomingNodeGroups) > 0 {
 		klog.Infof("Injecting %d upcoming node groups with %d upcoming nodes: %v", len(upcomingNodeGroups), upcomingNodesFromUpcomingNodeGroups, upcomingNodeGroups)
 	}
-	return nil
+	return newNodes, nil
+}
+
+// addLatestScaleUpResultsToClusterSnapshot updates the ClusterSnapshot with upcoming nodes created in the latest scale up to prepare the state for the next scale up:
+//   - adds upcoming nodeInfos from the latest scale up to ClusterSnapshot
+//   - schedules the Pods that triggered the scale up on the latest nodeInfos
+//   - returns the new nodes
+func (a *StaticAutoscaler) addLatestScaleUpResultsToClusterSnapshot(idx int, scaleUpStatus *status.ScaleUpStatus, handledPods []*apiv1.Pod, templateNodeInfos map[string]*framework.NodeInfo) ([]*apiv1.Node, error) {
+	salvoSuffix := fmt.Sprintf("salvo-%d", idx)
+	upcomingCounts := make(map[string]int)
+
+	for _, suInfo := range scaleUpStatus.ScaleUpInfos {
+		nodesToInject := suInfo.NewSize - suInfo.CurrentSize
+		if nodesToInject <= 0 {
+			return nil, fmt.Errorf("Scale up salvo %d contains scale up info for node group %q with non-positive number of nodes to inject: %d. Current size: %d, new size: %d", idx, suInfo.Group.Id(), nodesToInject, suInfo.CurrentSize, suInfo.NewSize)
+		}
+
+		if _, ok := templateNodeInfos[suInfo.Group.Id()]; !ok {
+			return nil, fmt.Errorf("Failed to find template node info for node group %q", suInfo.Group.Id())
+		}
+		upcomingCounts[suInfo.Group.Id()] += nodesToInject
+	}
+
+	newNodes, err := a.addUpcomingNodesToClusterSnapshot(upcomingCounts, templateNodeInfos, "%d-"+salvoSuffix)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get upcoming node infos for salvo %d: %v", idx, err)
+	}
+
+	for _, pod := range handledPods {
+		nodeName, err := a.ClusterSnapshot.SchedulePodOnAnyNodeMatching(pod, clustersnapshot.SchedulingOptions{
+			IsNodeAcceptable: func(nodeInfo *framework.NodeInfo) bool {
+				return strings.HasSuffix(nodeInfo.Node().Name, salvoSuffix)
+			},
+		})
+		if err != nil {
+			nodeGroupIds := []string{}
+			for _, suInfo := range scaleUpStatus.ScaleUpInfos {
+				nodeGroupIds = append(nodeGroupIds, suInfo.Group.Id())
+			}
+			return nil, fmt.Errorf("Failed cluster snapshot update: couldn't schedule triggering pod %s on any of the nodes from scaled up node group(s) %v: %v", pod.Name, nodeGroupIds, err)
+		}
+		klog.V(5).Infof("Updated cluster snapshot: scheduled pod %s on node %s", pod.Name, nodeName)
+	}
+
+	return newNodes, nil
 }
 
 func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time) bool {
@@ -1103,7 +1265,7 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
 }
 
-func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*framework.NodeInfo) (map[string][]*framework.NodeInfo, error) {
+func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*framework.NodeInfo, suffixFmt string) (map[string][]*framework.NodeInfo, error) {
 	upcomingNodes := make(map[string][]*framework.NodeInfo)
 	for nodeGroup, numberOfNodes := range upcomingCounts {
 		nodeTemplate, found := nodeInfos[nodeGroup]
@@ -1112,20 +1274,20 @@ func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*f
 			continue
 		}
 
-		if nodeTemplate.Node().Annotations == nil {
-			nodeTemplate.Node().Annotations = make(map[string]string)
-		}
-		nodeTemplate.Node().Annotations[annotations.NodeUpcomingAnnotation] = "true"
-
 		var nodes []*framework.NodeInfo
 		for i := 0; i < numberOfNodes; i++ {
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
 			// any pods added by cloud provider on template).
-			freshNodeInfo, err := simulator.SanitizedNodeInfo(nodeTemplate, fmt.Sprintf("upcoming-%d", i))
+			freshNodeInfo, err := simulator.SanitizedNodeInfo(nodeTemplate, fmt.Sprintf(suffixFmt, i))
 			if err != nil {
 				return nil, err
 			}
+			if freshNodeInfo.Node().Annotations == nil {
+				freshNodeInfo.Node().Annotations = make(map[string]string)
+			}
+			freshNodeInfo.Node().Annotations[annotations.NodeUpcomingAnnotation] = "true"
+
 			nodes = append(nodes, freshNodeInfo)
 		}
 		upcomingNodes[nodeGroup] = nodes

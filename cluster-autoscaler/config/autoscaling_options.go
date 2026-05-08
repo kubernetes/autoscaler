@@ -148,6 +148,10 @@ type AutoscalingOptions struct {
 	ScaleUpFromZero bool
 	// ParallelScaleUp defines whether CA can scale up node groups in parallel.
 	ParallelScaleUp bool
+	// SalvoScaleUp defines whether CA can scale up multiple node groups in a single CA loop.
+	SalvoScaleUp bool
+	// SalvoScaleUpBudget defines the maximum time CA spends on scale ups in a single CA loop.
+	SalvoScaleUpBudget time.Duration
 	// CloudConfig is the path to the cloud provider configuration file. Empty string for no configuration file.
 	CloudConfig string
 	// CloudProviderName sets the type of the cloud provider CA is about to run in. Allowed values: gce, aws
