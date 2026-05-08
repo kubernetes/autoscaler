@@ -5,7 +5,7 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "dockerDashComposeVersion": "v2",
-      "moby": "false"
+      "moby": false
     },
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
       "minikube": "latest"
