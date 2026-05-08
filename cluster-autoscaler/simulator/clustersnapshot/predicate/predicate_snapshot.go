@@ -27,6 +27,7 @@ import (
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/dynamic-resource-allocation/resourceclaim"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
@@ -47,6 +48,7 @@ type PredicateSnapshot struct {
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
 func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle, draEnabled bool, parallelism int, enableCSINodeAwareScheduling bool) *PredicateSnapshot {
+	parallelism = max(parallelism, 1)
 	snapshot := &PredicateSnapshot{
 		ClusterSnapshotStore:         snapshotStore,
 		draEnabled:                   draEnabled,
@@ -64,7 +66,7 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 }
 
 // SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
-// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
+// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName or status.NominatedNodeName.
 // The provided draSnapshot and csiSnapshot are treated as the source of truth and are eagerly
 // loaded into the created NodeInfo/PodInfo objects.
 func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
@@ -101,16 +103,8 @@ func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods [
 		nodeNameToIdx[node.Name] = i
 	}
 
-	if s.parallelism > 1 {
-		if err := s.setClusterStatePodsParallelized(nodeInfos, nodeNameToIdx, scheduledPods); err != nil {
-			return err
-		}
-	} else {
-		// TODO(macsko): Migrate to setClusterStatePodsParallelized for parallelism == 1
-		// after making sure the implementation is always correct in CA 1.33.
-		if err := s.setClusterStatePodsSequential(nodeInfos, nodeNameToIdx, scheduledPods); err != nil {
-			return err
-		}
+	if err := s.setClusterStatePods(nodeInfos, nodeNameToIdx, scheduledPods); err != nil {
+		return err
 	}
 
 	// We build NodeInfo objects with all their pods before adding them to the store.
@@ -125,29 +119,17 @@ func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods [
 	return nil
 }
 
-func (s *PredicateSnapshot) setClusterStatePodsSequential(nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
-	for _, pod := range scheduledPods {
-		if nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]; ok {
-			var claims []*resourceapi.ResourceClaim
-			if s.draEnabled && s.draSnapshot != nil {
-				var err error
-				claims, err = s.draSnapshot.PodClaims(pod)
-				if err != nil {
-					return fmt.Errorf("couldn't obtain pod %s/%s claims: %v", pod.Namespace, pod.Name, err)
-				}
-			}
-			podInfo := framework.NewPodInfo(pod, claims)
-			nodeInfos[nodeIdx].AddPodInfo(podInfo)
-		}
-	}
-	return nil
-}
-
-func (s *PredicateSnapshot) setClusterStatePodsParallelized(nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
+func (s *PredicateSnapshot) setClusterStatePods(nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
+	loggingQuota := klogx.PodsLoggingQuota()
 	podInfosForNode := make([][]*framework.PodInfo, len(nodeInfos))
 	for _, pod := range scheduledPods {
-		nodeIdx, ok := nodeNameToIdx[pod.Spec.NodeName]
+		nodeName := pod.Spec.NodeName
+		if nodeName == "" {
+			nodeName = pod.Status.NominatedNodeName
+		}
+		nodeIdx, ok := nodeNameToIdx[nodeName]
 		if !ok {
+			klogx.V(1).UpTo(loggingQuota).Warningf("SetClusterState: node %q bound or nominated by pod \"%s/%s\" does not exist in the snapshot", nodeName, pod.Namespace, pod.Name)
 			continue
 		}
 
@@ -164,6 +146,7 @@ func (s *PredicateSnapshot) setClusterStatePodsParallelized(nodeInfos []*framewo
 		podInfosForNode[nodeIdx] = append(podInfosForNode[nodeIdx], podInfo)
 	}
 
+	klogx.V(1).Over(loggingQuota).Warningf("Other %d pods were bound to or nominated non-existing node", -loggingQuota.Left())
 	ctx := context.Background()
 	workqueue.ParallelizeUntil(ctx, s.parallelism, len(nodeInfos), func(nodeIdx int) {
 		nodeInfo := nodeInfos[nodeIdx]
