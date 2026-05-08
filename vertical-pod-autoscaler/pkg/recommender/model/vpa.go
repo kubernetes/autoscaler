@@ -40,14 +40,12 @@ type vpaConditionsMap map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types
 
 func (conditionsMap *vpaConditionsMap) Set(
 	conditionType vpa_types.VerticalPodAutoscalerConditionType,
-	observedGeneration int64,
 	status bool, reason string, message string) *vpaConditionsMap {
 	oldCondition, alreadyPresent := (*conditionsMap)[conditionType]
 	condition := vpa_types.VerticalPodAutoscalerCondition{
-		Type:               conditionType,
-		Reason:             reason,
-		Message:            message,
-		ObservedGeneration: observedGeneration,
+		Type:    conditionType,
+		Reason:  reason,
+		Message: message,
 	}
 	if status {
 		condition.Status = corev1.ConditionTrue
@@ -95,7 +93,7 @@ func (vpa *Vpa) ConditionActive(conditionType vpa_types.VerticalPodAutoscalerCon
 func (vpa *Vpa) SetCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType, status bool, reason string, message string) {
 	vpa.mutex.Lock()
 	defer vpa.mutex.Unlock()
-	vpa.conditions.Set(conditionType, vpa.Generation, status, reason, message)
+	vpa.conditions.Set(conditionType, status, reason, message)
 }
 
 // DeleteCondition deletes a condition in a thread-safe manner.
@@ -144,14 +142,14 @@ func (vpa *Vpa) updateConditionsLocked(podsMatched bool) {
 	} else {
 		reason = "NoPodsMatched"
 		msg = "No pods match this VPA object"
-		vpa.conditions.Set(vpa_types.NoPodsMatched, vpa.Generation, true, reason, msg)
+		vpa.conditions.Set(vpa_types.NoPodsMatched, true, reason, msg)
 	}
 
 	// Can safely call hasRecommendationLocked() - no deadlock risk
 	if vpa.hasRecommendationLocked() {
-		vpa.conditions.Set(vpa_types.RecommendationProvided, vpa.Generation, true, "", "")
+		vpa.conditions.Set(vpa_types.RecommendationProvided, true, "", "")
 	} else {
-		vpa.conditions.Set(vpa_types.RecommendationProvided, vpa.Generation, false, reason, msg)
+		vpa.conditions.Set(vpa_types.RecommendationProvided, false, reason, msg)
 	}
 }
 

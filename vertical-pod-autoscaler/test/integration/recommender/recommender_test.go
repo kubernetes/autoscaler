@@ -139,17 +139,7 @@ func TestObservedGeneration(t *testing.T) {
 		}
 		lastVPA = vpa
 
-		if len(vpa.Status.Conditions) == 0 || vpa.Status.ObservedGeneration == nil {
-			// Neither Status.Conditions nor Status.ObservedGeneration have been updated yet - keep waiting
-			return false, nil
-		}
-
-		for _, condition := range vpa.Status.Conditions {
-			if condition.ObservedGeneration != vpa.Generation {
-				return false, nil
-			}
-		}
-		if *vpa.Status.ObservedGeneration != vpa.Generation {
+		if vpa.Status.ObservedGeneration == nil || *vpa.Status.ObservedGeneration != vpa.Generation {
 			return false, nil
 		}
 
@@ -158,7 +148,7 @@ func TestObservedGeneration(t *testing.T) {
 
 	if err != nil {
 		if lastVPA != nil {
-			t.Fatalf("Timed out. Last status: conditions=%v, observedGeneration=%v, generation=%d: %v", lastVPA.Status.Conditions, lastVPA.Status.ObservedGeneration, lastVPA.Generation, err)
+			t.Fatalf("Timed out. Last status: observedGeneration=%v, generation=%d: %v", lastVPA.Status.ObservedGeneration, lastVPA.Generation, err)
 		} else {
 			t.Fatalf("Timed out waiting for VPA status to update, but never successfully fetched the VPA: %v", err)
 		}
