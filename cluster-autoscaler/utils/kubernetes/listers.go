@@ -63,6 +63,7 @@ type PodsBySchedulability struct {
 	Scheduled     []*apiv1.Pod
 	Unschedulable []*apiv1.Pod
 	Unprocessed   []*apiv1.Pod
+	NominatedNode []*apiv1.Pod
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
@@ -176,7 +177,7 @@ func ScheduledPods(allPods []*apiv1.Pod) []*apiv1.Pod {
 }
 
 // ArrangePodsBySchedulability is a helper method that arranges pods by schedulability:
-// scheduled, unschedulable, and unprocessed by any any bypassed schedulers.
+// scheduled, with nominated node, unschedulable, and unprocessed by any bypassed schedulers.
 func ArrangePodsBySchedulability(allPods []*apiv1.Pod, bypassedSchedulers map[string]bool) (podsBySchedulability PodsBySchedulability) {
 	for _, pod := range allPods {
 		if isScheduled(pod) {
@@ -184,6 +185,8 @@ func ArrangePodsBySchedulability(allPods []*apiv1.Pod, bypassedSchedulers map[st
 			continue
 		} else if isDeleted(pod) {
 			continue
+		} else if pod.Status.NominatedNodeName != "" {
+			podsBySchedulability.NominatedNode = append(podsBySchedulability.NominatedNode, pod)
 		} else {
 			_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
 			if condition != nil && condition.Status == apiv1.ConditionFalse && condition.Reason == apiv1.PodReasonUnschedulable {

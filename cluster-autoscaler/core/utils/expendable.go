@@ -18,38 +18,7 @@ package utils
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	klog "k8s.io/klog/v2"
 )
-
-// FilterOutExpendableAndSplit filters out expendable pods and splits into:
-//   - waiting for lower priority pods preemption
-//   - other pods.
-func FilterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, expendablePodsPriorityCutoff int) ([]*apiv1.Pod, []*apiv1.Pod) {
-	var unschedulableNonExpendable []*apiv1.Pod
-	var waitingForLowerPriorityPreemption []*apiv1.Pod
-
-	nodeNames := make(map[string]bool)
-	for _, node := range nodes {
-		nodeNames[node.Name] = true
-	}
-
-	for _, pod := range unschedulableCandidates {
-		if IsExpendablePod(pod, expendablePodsPriorityCutoff) {
-			klog.V(4).Infof("Pod %s has priority below %d (%d) and will scheduled when enough resources is free. Ignoring in scale up.", pod.Name, expendablePodsPriorityCutoff, *pod.Spec.Priority)
-		} else if nominatedNodeName := pod.Status.NominatedNodeName; nominatedNodeName != "" {
-			if nodeNames[nominatedNodeName] {
-				klog.V(4).Infof("Pod %s will be scheduled after low priority pods are preempted on %s. Ignoring in scale up.", pod.Name, nominatedNodeName)
-				waitingForLowerPriorityPreemption = append(waitingForLowerPriorityPreemption, pod)
-			} else {
-				klog.V(4).Infof("Pod %s has nominatedNodeName set to %s but node is gone", pod.Name, nominatedNodeName)
-				unschedulableNonExpendable = append(unschedulableNonExpendable, pod)
-			}
-		} else {
-			unschedulableNonExpendable = append(unschedulableNonExpendable, pod)
-		}
-	}
-	return unschedulableNonExpendable, waitingForLowerPriorityPreemption
-}
 
 // FilterOutExpendablePods filters out expendable pods.
 func FilterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int) []*apiv1.Pod {

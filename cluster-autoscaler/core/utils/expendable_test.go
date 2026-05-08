@@ -25,48 +25,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 )
 
-func TestFilterOutExpendableAndSplit(t *testing.T) {
-	var priority1 int32 = 1
-	var priority100 int32 = 100
-
-	p1 := BuildTestPod("p1", 1000, 200000)
-	p1.Spec.Priority = &priority1
-	p2 := BuildTestPod("p2", 1000, 200000)
-	p2.Spec.Priority = &priority100
-	n1 := BuildTestNode("node1", 10, 10)
-	n2 := BuildTestNode("node2", 10, 10)
-
-	podWaitingForPreemption1 := BuildTestPod("w1", 1000, 200000)
-	podWaitingForPreemption1.Spec.Priority = &priority1
-	podWaitingForPreemption1.Status.NominatedNodeName = "node1"
-	podWaitingForPreemption2 := BuildTestPod("w2", 1000, 200000)
-	podWaitingForPreemption2.Spec.Priority = &priority100
-	podWaitingForPreemption2.Status.NominatedNodeName = "node2"
-
-	res1, res2 := FilterOutExpendableAndSplit([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, []*apiv1.Node{n1, n2}, 0)
-	assert.Equal(t, 2, len(res1))
-	assert.Equal(t, p1, res1[0])
-	assert.Equal(t, p2, res1[1])
-	assert.Equal(t, 2, len(res2))
-	assert.Equal(t, podWaitingForPreemption1, res2[0])
-	assert.Equal(t, podWaitingForPreemption2, res2[1])
-
-	res1, res2 = FilterOutExpendableAndSplit([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, []*apiv1.Node{n1, n2}, 10)
-	assert.Equal(t, 1, len(res1))
-	assert.Equal(t, p2, res1[0])
-	assert.Equal(t, 1, len(res2))
-	assert.Equal(t, podWaitingForPreemption2, res2[0])
-
-	// if node2 is missing podWaitingForPreemption2 should be treated as standard pod not one waiting for preemption
-	res1, res2 = FilterOutExpendableAndSplit([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, []*apiv1.Node{n1}, 0)
-	assert.Equal(t, 3, len(res1))
-	assert.Equal(t, p1, res1[0])
-	assert.Equal(t, p2, res1[1])
-	assert.Equal(t, podWaitingForPreemption2, res1[2])
-	assert.Equal(t, 1, len(res2))
-	assert.Equal(t, podWaitingForPreemption1, res2[0])
-}
-
 func TestFilterOutExpendablePods(t *testing.T) {
 	p1 := BuildTestPod("p1", 1500, 200000)
 	p2 := BuildTestPod("p2", 3000, 200000)
