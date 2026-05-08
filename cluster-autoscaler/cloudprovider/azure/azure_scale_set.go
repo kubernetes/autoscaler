@@ -305,9 +305,9 @@ func (scaleSet *ScaleSet) TargetSize() (int, error) {
 	return int(size), err
 }
 
-// CanIncreaseSize checks if the size increase is possible.
+// canIncreaseSize checks if the size increase is possible.
 // It returns the current size of the scale set if the increase is possible, otherwise returns an error.
-func (scaleSet *ScaleSet) CanIncreaseSize(delta int) (int64, error) {
+func (scaleSet *ScaleSet) canIncreaseSize(delta int) (int64, error) {
 	if delta <= 0 {
 		return -1, fmt.Errorf("size increase must be positive")
 	}
@@ -330,7 +330,7 @@ func (scaleSet *ScaleSet) CanIncreaseSize(delta int) (int64, error) {
 
 // IncreaseSize increases Scale Set size
 func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
-	size, err := scaleSet.CanIncreaseSize(delta)
+	size, err := scaleSet.canIncreaseSize(delta)
 	if err != nil {
 		return err
 	}
@@ -351,7 +351,7 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 // for atomic-scale-up ProvisioningRequest support to provide a capacity guarantee
 // before workloads are admitted.
 func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
-	size, err := scaleSet.CanIncreaseSize(delta)
+	size, err := scaleSet.canIncreaseSize(delta)
 	if err != nil {
 		return err
 	}
@@ -525,7 +525,9 @@ func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armc
 func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) error {
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
-	// Update the new capacity to cache.
+	// For non-atomic scale up, we eagerly update the VMSS size in the cache
+	// to avoid overshooting the max size if multiple scale up requests are made concurrently.
+	// This preserves the existing behavior (before atomic scale up was added).
 	vmssSizeMutex.Lock()
 	vmssInfo.SKU.Capacity = &newSize
 	vmssSizeMutex.Unlock()
