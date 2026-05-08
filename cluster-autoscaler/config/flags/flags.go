@@ -124,6 +124,8 @@ var (
 	okTotalUnreadyCount       = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
 	scaleUpFromZero           = flag.Bool("scale-up-from-zero", true, "Should CA scale up when there are 0 ready nodes.")
 	parallelScaleUp           = flag.Bool("parallel-scale-up", false, "Whether to allow parallel node groups scale up. Experimental: may not work on some cloud providers, enable at your own risk.")
+	salvoScaleUp              = flag.Bool("salvo-scale-up", false, "Whether to allow multiple scale-ups in a single CA loop.")
+	salvoScaleUpBudget        = flag.Duration("salvo-scale-up-budget", 1*time.Minute, "Maximum time CA spends on subsequent scale ups in a single CA loop. Requires salvo-scale-up flag to be enabled.")
 	maxNodeProvisionTime      = flag.Duration("max-node-provision-time", 15*time.Minute, "The default maximum time CA waits for node to be provisioned - the value can be overridden per node group")
 	maxNodeStartupTime        = flag.Duration("max-node-startup-time", 15*time.Minute, "The maximum time from the moment the node is registered to the time the node is ready - the value can be overridden per node group")
 	maxPodEvictionTime        = flag.Duration("max-pod-eviction-time", 2*time.Minute, "Maximum time CA tries to evict a pod before giving up")
@@ -331,6 +333,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		OkTotalUnreadyCount:              *okTotalUnreadyCount,
 		ScaleUpFromZero:                  *scaleUpFromZero,
 		ParallelScaleUp:                  *parallelScaleUp,
+		SalvoScaleUp:                     *salvoScaleUp,
+		SalvoScaleUpBudget:               *salvoScaleUpBudget,
 		EstimatorName:                    *estimatorFlag,
 		ExpanderNames:                    *expanderFlag,
 		GRPCExpanderCert:                 *grpcExpanderCert,

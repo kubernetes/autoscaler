@@ -17,6 +17,8 @@ limitations under the License.
 package status
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -29,6 +31,7 @@ import (
 // ScaleUpStatus is the status of a scale-up attempt. This includes information
 // on if scale-up happened, description of scale-up operation performed and
 // status of pods that took part in the scale-up evaluation.
+// Objects referenced in ScaleUpStatus are meant to be read-only.
 type ScaleUpStatus struct {
 	Result                   ScaleUpResult
 	ScaleUpError             *errors.AutoscalerError
@@ -69,6 +72,27 @@ const (
 	// ScaleUpLimitedByMaxNodesTotal - the scale up wasn't attempted, because the cluster reached max nodes total
 	ScaleUpLimitedByMaxNodesTotal
 )
+
+func (r ScaleUpResult) String() string {
+	switch r {
+	case ScaleUpSuccessful:
+		return "ScaleUpSuccessful"
+	case ScaleUpError:
+		return "ScaleUpError"
+	case ScaleUpNoOptionsAvailable:
+		return "ScaleUpNoOptionsAvailable"
+	case ScaleUpNotNeeded:
+		return "ScaleUpNotNeeded"
+	case ScaleUpNotTried:
+		return "ScaleUpNotTried"
+	case ScaleUpInCooldown:
+		return "ScaleUpInCooldown"
+	case ScaleUpLimitedByMaxNodesTotal:
+		return "ScaleUpLimitedByMaxNodesTotal"
+	default:
+		return fmt.Sprintf("ScaleUpResultUnknown=%d", r)
+	}
+}
 
 // WasSuccessful returns true if the scale-up was successful.
 func (s *ScaleUpStatus) WasSuccessful() bool {
