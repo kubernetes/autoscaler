@@ -75,7 +75,6 @@ done
 
 echo "Deploying VPA components via Helm for E2E CI..."
 
-# Generate TLS certificates natively, perfectly matching local E2E logic
 for COMPONENT in ${COMPONENTS}; do
   if [[ "${COMPONENT}" == "admission-controller" ]]; then
     echo " ** Generating TLS certificates for admission-controller"
@@ -94,13 +93,16 @@ extendedKeyUsage = clientAuth, serverAuth
 subjectAltName = DNS:vpa-webhook.${HELM_NAMESPACE}.svc
 EOF
 
+    # FIX: Removed the unsupported '-addext' flag from CA generation. 
+    # This caused a silent fatal crash in Prow CI's older OpenSSL environment.
     openssl genrsa -out "${TMP_DIR}/caKey.pem" 2048
     openssl req -x509 -new -nodes -key "${TMP_DIR}/caKey.pem" -days 100000 \
-      -out "${TMP_DIR}/caCert.pem" -subj "/CN=${CN_BASE}_ca" \
-      -addext "subjectAltName = DNS:${CN_BASE}_ca"
+      -out "${TMP_DIR}/caCert.pem" -subj "/CN=${CN_BASE}_ca"
+      
     openssl genrsa -out "${TMP_DIR}/serverKey.pem" 2048
     openssl req -new -key "${TMP_DIR}/serverKey.pem" -out "${TMP_DIR}/server.csr" \
       -subj "/CN=vpa-webhook.${HELM_NAMESPACE}.svc" -config "${TMP_DIR}/server.conf"
+      
     openssl x509 -req -in "${TMP_DIR}/server.csr" -CA "${TMP_DIR}/caCert.pem" \
       -CAkey "${TMP_DIR}/caKey.pem" -CAcreateserial -out "${TMP_DIR}/serverCert.pem" \
       -days 100000 -extensions SAN -extensions v3_req -extfile "${TMP_DIR}/server.conf"
@@ -113,13 +115,16 @@ EOF
       --from-file="${TMP_DIR}/serverCert.pem"
 
     echo " ** Generating E2E rotation test certificates"
+    
+    # FIX: Removed the unsupported '-addext' flag here as well.
     openssl genrsa -out "${TMP_DIR}/e2eCaKey.pem" 2048
     openssl req -x509 -new -nodes -key "${TMP_DIR}/e2eCaKey.pem" -days 100000 \
-      -out "${TMP_DIR}/e2eCaCert.pem" -subj "/CN=${CN_BASE}_e2e_ca" \
-      -addext "subjectAltName = DNS:${CN_BASE}_e2e_ca"
+      -out "${TMP_DIR}/e2eCaCert.pem" -subj "/CN=${CN_BASE}_e2e_ca"
+      
     openssl genrsa -out "${TMP_DIR}/e2eKey.pem" 2048
     openssl req -new -key "${TMP_DIR}/e2eKey.pem" -out "${TMP_DIR}/e2e.csr" \
       -subj "/CN=vpa-webhook.${HELM_NAMESPACE}.svc" -config "${TMP_DIR}/server.conf"
+      
     openssl x509 -req -in "${TMP_DIR}/e2e.csr" -CA "${TMP_DIR}/e2eCaCert.pem" \
       -CAkey "${TMP_DIR}/e2eCaKey.pem" -CAcreateserial -out "${TMP_DIR}/e2eCert.pem" \
       -days 100000 -extensions SAN -extensions v3_req -extfile "${TMP_DIR}/server.conf"
@@ -161,13 +166,15 @@ for COMPONENT in ${COMPONENTS}; do
   esac
 done
 
-# Idempotency block: Ensure a pristine environment so Helm's native installation lifecycle executes cleanly
 helm uninstall ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE} --wait 2>/dev/null || true
 
-# Purge leftover cluster-scoped resources to prevent stale state across E2E test suites
 kubectl delete crd verticalpodautoscalers.autoscaling.k8s.io --ignore-not-found=true
 kubectl delete crd verticalpodautoscalercheckpoints.autoscaling.k8s.io --ignore-not-found=true
 kubectl delete mutatingwebhookconfiguration vpa-webhook-config --ignore-not-found=true
+
+if [ -d "${HELM_CHART_PATH}/crds" ]; then
+  kubectl apply -f "${HELM_CHART_PATH}/crds/"
+fi
 
 helm upgrade --install ${HELM_RELEASE_NAME} "${HELM_CHART_PATH}" \
   --namespace ${HELM_NAMESPACE} \
