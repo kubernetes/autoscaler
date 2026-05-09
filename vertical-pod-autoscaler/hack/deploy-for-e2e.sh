@@ -170,9 +170,7 @@ echo "===> Applying CRDs from ${HELM_CHART_PATH}/crds/"
 kubectl apply -f "${HELM_CHART_PATH}/crds/"
 
 # Generate TLS certs AFTER cleanup but BEFORE helm install so the admission
-# controller pod can mount the secret on first start. The official gencerts.sh
-# uses kubectl create which fails if the secret already exists; explicitly
-# delete first to make this idempotent on re-runs.
+# controller pod can mount the secret on first start.
 for COMPONENT in ${COMPONENTS}; do
   if [[ "${COMPONENT}" == "admission-controller" ]]; then
     echo "===> Generating TLS certificates for admission-controller"
@@ -218,6 +216,38 @@ for COMPONENT in ${COMPONENTS}; do
       ;;
   esac
 done
+
+# Propagate FEATURE_GATES to component args. The alpha/beta CI lanes set
+# FEATURE_GATES=AllAlpha=true,AllBeta=true so the admission webhook accepts
+# alpha/beta fields like spec.startupBoost (CPUStartupBoost feature gate).
+#
+# Helm --set replaces an entire list. values-e2e.yaml sets
+# admissionController.extraArgs=[--reload-cert] for the cert-rotation e2e test;
+# when we add --feature-gates=... we must re-add --reload-cert in the same
+# --set block, or the rotation test will silently break.
+#
+# Commas in FEATURE_GATES must be escaped (\,) so Helm --set does not split
+# the value at "AllAlpha=true,AllBeta=true".
+if [[ -n "${FEATURE_GATES:-}" ]]; then
+  ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
+  echo "===> Enabling feature gates on components: ${FEATURE_GATES}"
+  for COMPONENT in ${COMPONENTS}; do
+    case ${COMPONENT} in
+      recommender)
+        HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
+        ;;
+      updater)
+        HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
+        ;;
+      admission-controller)
+        HELM_SET_ARGS+=(
+          "--set" "admissionController.extraArgs[0]=--reload-cert"
+          "--set" "admissionController.extraArgs[1]=--feature-gates=${ESCAPED_FEATURE_GATES}"
+        )
+        ;;
+    esac
+  done
+fi
 
 echo "===> Installing VPA via Helm (suite: ${SUITE})"
 # --atomic   : roll back on failure so we never leave a half-installed release
