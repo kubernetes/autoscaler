@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	listersv1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 
@@ -134,7 +135,7 @@ func (m *PodsInPlaceRestrictionMock) InPlaceUpdate(pod *corev1.Pod, vpa *vpa_typ
 }
 
 // CanInPlaceUpdate is a mock implementation of PodsInPlaceRestriction.CanInPlaceUpdate
-func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *corev1.Pod) utils.InPlaceDecision {
+func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision {
 	args := m.Called(pod)
 	return args.Get(0).(utils.InPlaceDecision)
 }
