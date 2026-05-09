@@ -16,6 +16,7 @@
       - [Container LimitRange Objects](#container-limitrange-objects)
     - [Pod Annotations](#pod-annotations)
     - [Updater](#updater)
+    - [Handling Container Addition and Removal](#handling-container-addition-and-removal)
     - [Validation](#validation)
       - [Static Validation](#static-validation)
       - [Dynamic Validation](#dynamic-validation)
@@ -27,7 +28,7 @@
   - [VPAPodLevelResources Feature Gate](#vpapodlevelresources-feature-gate)
     - [Recommender](#recommender-1)
     - [Updater](#updater-1)
-    - [Admission controller](#admission-controller-1)
+    - [Admission Controller](#admission-controller-1)
   - [Examples](#examples)
     - [Example 1](#example-1)
     - [Example 2](#example-2)
@@ -90,7 +91,7 @@ The benefits and implementation details of pod-level `resources` are described i
 
 Furthermore, the In-Place Pod Resize (IPPR) functionality has been extended to support pod-level resources, as defined in [KEP-5419](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/5419-pod-level-resources-in-place-resize/README.md).
 
-Prior to this AEP, VPA computes recommendations only at the container level, and those recommendations are applied exclusively at the container level. With the new pod-level resource specifications, VPA should be capable of reading the pod-level resources stanza, calculating pod-level recommendations, and managing pod-level resource stanzas using any of the available VPA modes, including `InPlaceOrRecreate, InPlace etc`.
+Prior to this AEP, VPA computes recommendations only at the container level, and those recommendations are applied exclusively at the container level. With the new pod-level resource specifications, VPA should be capable of reading the pod-level resources stanza, calculating pod-level recommendations, and managing pod-level resource stanzas using any of the available VPA modes, including `InPlaceOrRecreate, InPlace`.
 
 ### Goals
 
@@ -134,7 +135,7 @@ Today, the updater makes decisions based solely on container-level resource stan
 
 - Extend the VPA object:
 
-  1. Add a new enum to the container resource policy's `mode` field with the value `RecommendationOnly`. This enum allows users to indicate that the container-level recommendation should be calculated by the recommender, while the updater and admission controller ignore it. For example, the updater will not evict the pod based on this container-level recommendation. The primary purpose of this enum is to give users finer control compared to the `Auto` mode, which instructs VPA to calculate the container-level recommendation and manage the corresponding resource stanza. The AEP includes example VPA objects and behaviors in the [Examples](#examples) section.
+  1. Add a new enum to the container resource policy's `mode` field with the value `RecommendationOnly`. This enum allows users to indicate that the recommender calculates the container-level recommendation, while the updater and admission controller do not manage the container's resource stanza. The primary purpose of this enum is to give users finer control compared to the `Auto` mode, which instructs VPA to calculate the container-level recommendation and manage the corresponding resource stanza.
 
   2. Add a new `spec.resourcePolicy.podPolicies` stanza. This stanza allows setting constraints for pod-level recommendations:
 
@@ -148,15 +149,24 @@ Today, the updater makes decisions based solely on container-level resource stan
 
      - `maxAllowed`: Specifies the maximum amount of resources that the autoscaler recommends at the pod level. The default is no maximum.
 
-  3. Add a new `status.recommendation.podRecommendations` stanza. The field is populated by the VPA Recommender and stores Pod-level recommendations, including Pod-level `Target`, `LowerBound`, `UpperBound` and `UncappedTarget` for CPU and memory. For more details about how VPA calculates pod-level recommendations, see the [recommender](#recommender) section.
+  3. Add a new `status.recommendation.podRecommendations` stanza. The field is populated by the VPA Recommender and stores Pod-level recommendations, including Pod-level `Target`, `LowerBound`, `UpperBound` and `UncappedTarget` for CPU and memory. For more details about how the recommender calculates pod-level recommendations, see the [recommender](#recommender) section.
 
-The AEP proposes that pod-level recommendations are calculated by all VPA components (the recommender, updater, and admission controller) to handle situations where a user adds or removes a container from the Pod spec. The `status.recommendation.podRecommendations` stanza should serve as observational data for end users, but controllers SHOULD NOT depend on its content, as it may contain outdated information when the list of containers in the Pod spec changes and the recommender has not yet processed those changes.
+The AEP proposes that pod-level recommendations are calculated by all VPA components (the recommender, updater, and admission controller) to handle situations where a user adds or removes a container from the Pod spec. The `status.recommendation.podRecommendations` stanza should serve as observational data for end users, but controllers should not depend on its content, as it may contain outdated information when the list of containers in the Pod spec changes and the recommender has not yet processed those changes.
+
+The AEP proposes that the **updater** and the **admission controller** calculate Pod-level recommendations dynamically in the following way, removing the dependency on values in `status.recommendation.podRecommendations`:
+
+For each running container in `Auto` or `RecommendationOnly` mode, perform the following:
+1. If no recommendation exists for the container, use the resource requests specified in the container spec.
+2. If no recommendation exists for the container and the container does not define resources, do not modify the Pod-level recommendation. 
+3. If a recommendation exists for the container, use it in the Pod-level recommendation calculation.
+
+In all three cases, a LimitRange object with type `Pod` may trigger an update to the Pod-level recommendations to comply with its minimum or maximum constraints. The same applies to the container-level and Pod-level `minAllowed` and `maxAllowed` values.
 
 #### Recommender
 
 This section and its subsections describe the proposed modifications to the recommender:
 
-- Implement a new function that calculates pod-level recommendations when the `mode` field is set to `Auto` by the user in the `spec.resourcePolicy.podPolicies` stanza. The calculation loops through all container-level recommendations and sums values of the same type. For example, summing all container-level targets produces the pod-level target.
+- Implement a new function that calculates pod-level recommendations when the `mode` field is set to `Auto` by the user in the `spec.resourcePolicy.podPolicies` stanza. The calculation loops through all container-level recommendations (produced by containers in `Auto` and the new `RecommendationOnly` mode) and sums values of the same type. For example, summing all container-level targets produces the Pod-level target.
 
 - Update the `ApplyVPAPolicy` function to enforce the new recommender-level constraints, such as the `pod-recommendation-max-allowed-cpu` and `pod-recommendation-max-allowed-memory` flags, as well as the pod-level `minAllowed` and `maxAllowed` values for both **pod-level and container-level recommendations**. To enforce pod-level constraints on container-level recommendations, this document proposes using the formula introduced by @omerap12 here: [see discussion](https://github.com/kubernetes/autoscaler/issues/7147#issuecomment-2515296024).
 
@@ -174,11 +184,11 @@ The admission controller must be extended to generate pod-level resource patches
 
 1. Calculate only container-level patches for containers whose `mode` is set to `Auto`. Ignore containers with `Off` mode, as well as containers whose `mode` is set to `RecommendationOnly`.
 
-2. Calculate pod-level patches based on pod-level recommendations.
+2. Calculate Pod-level patches dynamically as defined in section [Proposal](#proposal).
 
 #### capping.go
 
-The `capping.go` logic must be updated so that the admission controller and the updater can adjust pod-level recommendations based on Pod LimitRange objects in the cluster.
+The `capping.go` logic must be updated so that the admission controller and the updater can adjust Pod-level recommendations based on Pod LimitRange objects, as well as container-level and Pod-level `minAllowed` and `maxAllowed` values in the cluster.
 
 ##### Container LimitRange Objects
 
@@ -200,6 +210,11 @@ Define new pod-level annotations that the admission controller and the updater a
 With the introduction of pod-level recommendations and pod-level resources, the updater must make eviction and in-place update decisions for these Pods. Achieve this by making the following updates to its source code:
 
 1. Extend the [GetUpdatePriority](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/updater/priority/priority_processor.go#L45) method to evaluate pod-level recommendations as well. The updated method verifies whether pod-level recommendations fall outside the recommended range, calculates the pod-level `resourceDiff`, and checks whether a scale-up occurs. The function should still return a single `PodPriority` struct. For example, if a multi-container Pod requires resource management for only one container and at the pod level, run `GetUpdatePriority` for that container and for the pod level.
+2. Calculate Pod-level patches and recommendations dynamically as defined in section [Proposal](#proposal).
+
+#### Handling Container Addition and Removal
+
+The proposed dynamic Pod-level recommendation calculation for the updater and the admission controller handles cases where a user adds or removes a container from a running Pod. For the rules proposed by this AEP, see section [Proposal](#proposal).
 
 #### Validation
 
@@ -222,7 +237,7 @@ This AEP proposes comprehensive unit test coverage for all new code paths and ad
 
 - Updater: Process a Kubernetes Deployment whose Pod template defines multiple containers, includes pod-level resources, has pod-level scaling set to `Auto`, and sets the container-level scaling mode to `RecommendationOnly`. Validate behavior in at least the `Recreate` and `InPlaceOrRecreate` modes.
 
-- Admission Controller: Process a Kubernetes Deployment whose Pod template defines multiple containers, includes pod-level resources, has pod-level scaling set to `Auto`, and sets the container-level scaling mode to `RecommendationOnly` for all containers. Test at least the `Recreate` VPA mode, ensuring that pod-level recommendations are applied.
+- Admission Controller: Process a Kubernetes Deployment whose Pod template defines multiple containers, includes pod-level resources, has pod-level scaling set to `Auto`, and sets the container-level scaling mode to `RecommendationOnly` for all containers. Test at least the `Recreate` VPA mode, ensuring that pod-level recommendations are applied. Add additional tests to verify the behavior when a LimitRange object with type `Pod` is present in the cluster.
 
 - Add a full e2e test in which all VPA components are used in these scenarios:
   - Multi-container Pod with pod-level scaling enabled, where at least one container's scaling mode is set to `Auto` and others are set to `RecommendationOnly`. In this case, pod-level resources and the `Auto` container-level resources should be managed.
@@ -264,7 +279,7 @@ This section describes the behavior of the VPA components when the proposed feat
 #### Recommender
 
 * The recommender MUST NOT calculate or store pod-level recommendations in the VPA status stanza. If the feature gate is turned off, any existing pod-level recommendations MUST be removed from the status stanza during the next recommender cycle.
-* The recommender MUST ignore the new pod-level constraints introduced by this AEP (including the global pod maximum flags).
+* The recommender MUST ignore the new pod-level constraints introduced by this AEP (including the [New Global Pod maximums](#new-global-pod-maximums)).
 
 #### Updater
 
@@ -279,11 +294,15 @@ This section describes the behavior of the VPA components when the proposed feat
 
 #### Example 1
 
-Based on the manifest below, the user directs the recommender to calculate container-level recommendations for all containers. Summing these recommendations produces the pod-level recommendation. Recommendations at any level are stored under the VPA object's `status` stanza.
+Based on the manifest below, the user directs the **recommender** to calculate container-level recommendations for all containers. Summing these recommendations produces the pod-level recommendation. Recommendations at any level are stored under the VPA object's status stanza.
 
-The updater makes eviction decisions based only on the pod-level `resources` stanza and the pod-level recommendation. When the pod is recreated, the admission controller updates only the pod-level resources.
+The **updater** makes eviction decisions based only on the pod-level resources stanza and the pod-level recommendation. When the pod is recreated, the **admission controller** updates only the pod-level resources.
 
-The recommended approach for creating the higher-level controller (for example, a Kubernetes Deployment) is to avoid specifying container-level resources, as these are not managed by VPA. This allows VPA to provide pod-level recommendations without conflicting with pre-set container-level resource stanzas. The pod-level resources can be set by the user to ensure that VPA can calculate the pod-level request-to-limit ratio, update the pod-level requests accordingly, and set the corresponding limits.
+The recommended approach for creating the higher-level controller (for example, a Kubernetes Deployment) is to avoid specifying container-level resources, as these are not managed by VPA. This allows VPA to provide pod-level recommendations without conflicting with pre-set container-level resource stanzas. When a user defines container-level resources initially, the expected behavior is:
+* The **admission controller** removes the container-level resource stanzas during admission.
+* During in-place updates, the **updater** cannot change the Pod QoS. In this case, the updater fails to remove the container-level resources.
+
+The pod-level resources can be set by the user to ensure that VPA can calculate the pod-level request-to-limit ratio, update the pod-level requests accordingly, and set the corresponding limits.
 
 ```yaml
 apiVersion: autoscaling.k8s.io/v1
@@ -308,13 +327,13 @@ spec:
 
 #### Example 2
 
-Using the manifest below, the user directs the recommender to calculate container-level recommendations for all containers and the pod-level recommendation as well. The results, as before, are stored under the `status` stanza.
+Using the manifest below, the user directs the **recommender** to calculate container-level recommendations for all containers and the pod-level recommendation as well. The results, as before, are stored under the status stanza.
 
-The updater may now make eviction decisions based on the resource stanza and recommendation for the container named `main`, or based on the pod-level `resources` stanza and the pod-level recommendation.
+The **updater** may now make eviction decisions based on the resource stanza and recommendation for the container named `main`, or based on the pod-level resources stanza and the pod-level recommendation.
 
-The admission controller sets the container-level `resources` stanza for the `main` container. If the request-to-limit ratio can be determined for the container, it adjusts the request according to the ratio and sets the container limit as well. Additionally, it sets the pod-level resources including the limits if possible.
+The **admission** controller sets the container-level resources stanza for the `main` container. Additionally, it sets the pod-level resources including the limits if possible.
 
-The recommended approach, if the user wants to maintain a specific request-to-limit ratio for the `main` container and at the pod level, is to set both `resources` stanzas initially when the workload is created.
+The recommended approach, if the user wants to maintain a specific request-to-limit ratio for the `main` container and at the pod level, is to set both resources stanzas initially when the workload is created.
 
 ```yaml
 apiVersion: autoscaling.k8s.io/v1
@@ -341,7 +360,7 @@ spec:
 
 #### Example 3
 
-The manifest below is an example of incorrect usage of this new feature, as the user directs the updater and admission controller to continue managing container-level `resources` stanzas for all containers (because the container-level scaling mode defaults to `Auto`), preventing any benefit from the pod-level `resources` stanza.
+The manifest below is an example of incorrect usage of this new feature, as the user directs the **updater** and **admission controller** to continue managing container-level resources stanzas for all containers (because the container-level scaling mode defaults to `Auto`), preventing any benefit from the pod-level resources stanza.
 
 ```yaml
 apiVersion: autoscaling.k8s.io/v1
