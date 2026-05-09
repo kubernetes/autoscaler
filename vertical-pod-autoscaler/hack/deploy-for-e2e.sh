@@ -66,7 +66,7 @@ echo "Configuring registry authentication"
 mkdir -p "${HOME}/.docker"
 gcloud auth configure-docker -q
 
-# Standardize configuration across environments (Addresses Review #1)
+# Standardize configuration across environments
 source "${SCRIPT_ROOT}/hack/e2e/helm-settings.sh"
 
 for i in ${COMPONENTS}; do
@@ -75,7 +75,7 @@ done
 
 echo "Deploying VPA components via Helm for E2E CI..."
 
-# Generate TLS certificates natively to prevent webhook conflicts in CI
+# Generate TLS certificates natively, perfectly matching local E2E logic
 for COMPONENT in ${COMPONENTS}; do
   if [[ "${COMPONENT}" == "admission-controller" ]]; then
     echo " ** Generating TLS certificates for admission-controller"
@@ -95,7 +95,7 @@ subjectAltName = DNS:vpa-webhook.${HELM_NAMESPACE}.svc
 EOF
 
     openssl genrsa -out "${TMP_DIR}/caKey.pem" 2048
-    openssl req -x509 -new -nodes -key "${TMP_DIR}/caKey.pem" -days 10000 \
+    openssl req -x509 -new -nodes -key "${TMP_DIR}/caKey.pem" -days 100000 \
       -out "${TMP_DIR}/caCert.pem" -subj "/CN=${CN_BASE}_ca" \
       -addext "subjectAltName = DNS:${CN_BASE}_ca"
     openssl genrsa -out "${TMP_DIR}/serverKey.pem" 2048
@@ -103,7 +103,7 @@ EOF
       -subj "/CN=vpa-webhook.${HELM_NAMESPACE}.svc" -config "${TMP_DIR}/server.conf"
     openssl x509 -req -in "${TMP_DIR}/server.csr" -CA "${TMP_DIR}/caCert.pem" \
       -CAkey "${TMP_DIR}/caKey.pem" -CAcreateserial -out "${TMP_DIR}/serverCert.pem" \
-      -days 10000 -extensions SAN -extensions v3_req -extfile "${TMP_DIR}/server.conf"
+      -days 100000 -extensions SAN -extensions v3_req -extfile "${TMP_DIR}/server.conf"
 
     kubectl delete secret -n ${HELM_NAMESPACE} vpa-tls-certs --ignore-not-found=true
     kubectl create secret -n ${HELM_NAMESPACE} generic vpa-tls-certs \
@@ -114,9 +114,63 @@ EOF
 
     echo " ** Generating E2E rotation test certificates"
     openssl genrsa -out "${TMP_DIR}/e2eCaKey.pem" 2048
-    openssl req -x509 -new -nodes -key "${TMP_DIR}/e2eCaKey.pem" -days 10000 \
+    openssl req -x509 -new -nodes -key "${TMP_DIR}/e2eCaKey.pem" -days 100000 \
       -out "${TMP_DIR}/e2eCaCert.pem" -subj "/CN=${CN_BASE}_e2e_ca" \
       -addext "subjectAltName = DNS:${CN_BASE}_e2e_ca"
     openssl genrsa -out "${TMP_DIR}/e2eKey.pem" 2048
     openssl req -new -key "${TMP_DIR}/e2eKey.pem" -out "${TMP_DIR}/e2e.csr" \
-      -subj "/CN=vpa-webhook.${HELM_NAMESPACE}.svc" -config "${TMP
+      -subj "/CN=vpa-webhook.${HELM_NAMESPACE}.svc" -config "${TMP_DIR}/server.conf"
+    openssl x509 -req -in "${TMP_DIR}/e2e.csr" -CA "${TMP_DIR}/e2eCaCert.pem" \
+      -CAkey "${TMP_DIR}/e2eCaKey.pem" -CAcreateserial -out "${TMP_DIR}/e2eCert.pem" \
+      -days 100000 -extensions SAN -extensions v3_req -extfile "${TMP_DIR}/server.conf"
+
+    kubectl delete secret -n ${HELM_NAMESPACE} vpa-e2e-certs --ignore-not-found=true
+    kubectl create secret -n ${HELM_NAMESPACE} generic vpa-e2e-certs \
+      --from-file="${TMP_DIR}/e2eCaKey.pem" \
+      --from-file="${TMP_DIR}/e2eCaCert.pem" \
+      --from-file="${TMP_DIR}/e2eKey.pem" \
+      --from-file="${TMP_DIR}/e2eCert.pem"
+
+    rm -rf "${TMP_DIR}"
+    break
+  fi
+done
+
+HELM_SET_ARGS=()
+
+for COMPONENT in ${COMPONENTS}; do
+  case ${COMPONENT} in
+    recommender)
+      HELM_SET_ARGS+=("--set" "recommender.enabled=true")
+      HELM_SET_ARGS+=("--set" "recommender.image.repository=${REGISTRY}/vpa-recommender")
+      HELM_SET_ARGS+=("--set" "recommender.image.tag=${TAG}")
+      HELM_SET_ARGS+=("--set" "recommender.image.pullPolicy=Always")
+      ;;
+    updater)
+      HELM_SET_ARGS+=("--set" "updater.enabled=true")
+      HELM_SET_ARGS+=("--set" "updater.image.repository=${REGISTRY}/vpa-updater")
+      HELM_SET_ARGS+=("--set" "updater.image.tag=${TAG}")
+      HELM_SET_ARGS+=("--set" "updater.image.pullPolicy=Always")
+      ;;
+    admission-controller)
+      HELM_SET_ARGS+=("--set" "admissionController.enabled=true")
+      HELM_SET_ARGS+=("--set" "admissionController.image.repository=${REGISTRY}/vpa-admission-controller")
+      HELM_SET_ARGS+=("--set" "admissionController.image.tag=${TAG}")
+      HELM_SET_ARGS+=("--set" "admissionController.image.pullPolicy=Always")
+      ;;
+  esac
+done
+
+# Idempotency block: Ensure a pristine environment so Helm's native installation lifecycle executes cleanly
+helm uninstall ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE} --wait 2>/dev/null || true
+
+# Purge leftover cluster-scoped resources to prevent stale state across E2E test suites
+kubectl delete crd verticalpodautoscalers.autoscaling.k8s.io --ignore-not-found=true
+kubectl delete crd verticalpodautoscalercheckpoints.autoscaling.k8s.io --ignore-not-found=true
+kubectl delete mutatingwebhookconfiguration vpa-webhook-config --ignore-not-found=true
+
+helm upgrade --install ${HELM_RELEASE_NAME} "${HELM_CHART_PATH}" \
+  --namespace ${HELM_NAMESPACE} \
+  --values "${VALUES_FILE}" \
+  "${HELM_SET_ARGS[@]}" \
+  --wait
