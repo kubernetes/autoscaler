@@ -20,6 +20,10 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 
+# Pinned Helm version. The kubekins-e2e CI image does not ship Helm, so
+# deploy-for-e2e.sh installs it on demand. Bump deliberately when needed.
+HELM_VERSION="${HELM_VERSION:-v3.16.3}"
+
 function print_help {
   echo "ERROR! Usage: deploy-for-e2e.sh [suite]*"
   echo "<suite> should be one of:"
@@ -64,10 +68,14 @@ function dump_diagnostics() {
     echo "============================================================"
     echo "deploy-for-e2e.sh FAILED (exit ${rc}) - diagnostic dump"
     echo "============================================================"
-    echo "--- Helm releases in ${HELM_NAMESPACE:-kube-system} ---"
-    helm list --namespace "${HELM_NAMESPACE:-kube-system}" --all 2>&1 || true
-    echo "--- Helm release status ---"
-    helm status "${HELM_RELEASE_NAME:-vpa}" --namespace "${HELM_NAMESPACE:-kube-system}" 2>&1 || true
+    if command -v helm >/dev/null 2>&1; then
+      echo "--- Helm releases in ${HELM_NAMESPACE:-kube-system} ---"
+      helm list --namespace "${HELM_NAMESPACE:-kube-system}" --all 2>&1 || true
+      echo "--- Helm release status ---"
+      helm status "${HELM_RELEASE_NAME:-vpa}" --namespace "${HELM_NAMESPACE:-kube-system}" 2>&1 || true
+    else
+      echo "--- helm binary is not installed (skip helm diagnostics) ---"
+    fi
     echo "--- VPA-related CRDs ---"
     kubectl get crd 2>&1 | grep -E 'autoscaling\.k8s\.io' || echo "(no VPA CRDs found)"
     echo "--- Pods in ${HELM_NAMESPACE:-kube-system} ---"
@@ -85,6 +93,36 @@ function dump_diagnostics() {
   fi
 }
 trap dump_diagnostics EXIT
+
+# The kubekins-e2e prow image (gcr.io/k8s-staging-test-infra/kubekins-e2e)
+# ships kubectl, gcloud, docker, etc. but does NOT include helm. Install a
+# pinned version on demand. Local environments that already have helm on PATH
+# are left alone.
+function ensure_helm_installed() {
+  if command -v helm >/dev/null 2>&1; then
+    echo "===> helm already installed: $(helm version --short)"
+    return 0
+  fi
+  echo "===> Helm not found on PATH; installing ${HELM_VERSION}"
+  local tmp
+  tmp="$(mktemp -d)"
+  local arch
+  arch="$(uname -m)"
+  case "${arch}" in
+    x86_64)  arch="amd64" ;;
+    aarch64|arm64) arch="arm64" ;;
+    *)
+      echo "ERROR: unsupported architecture for helm install: ${arch}"
+      return 1
+      ;;
+  esac
+  local url="https://get.helm.sh/helm-${HELM_VERSION}-linux-${arch}.tar.gz"
+  curl -fsSL "${url}" -o "${tmp}/helm.tgz"
+  tar -xzf "${tmp}/helm.tgz" -C "${tmp}"
+  install -m 0755 "${tmp}/linux-${arch}/helm" /usr/local/bin/helm
+  rm -rf "${tmp}"
+  echo "===> Installed: $(helm version --short)"
+}
 
 # helm-settings.sh defines HELM_CHART_PATH, VALUES_FILE, HELM_RELEASE_NAME,
 # HELM_NAMESPACE.
@@ -104,6 +142,8 @@ if [[ ! -f "${HELM_CHART_PATH}/crds/vpa-v1-crd-gen.yaml" ]]; then
   exit 1
 fi
 
+ensure_helm_installed
+
 export REGISTRY="gcr.io/$(gcloud config get-value core/project)"
 export TAG=latest
 
@@ -117,13 +157,12 @@ for COMPONENT in ${COMPONENTS}; do
 done
 
 echo "===> Cleaning up any previous VPA installation in ${HELM_NAMESPACE}"
-# Drop --wait on uninstall: not needed for fresh prow clusters and adds flakes.
 helm uninstall "${HELM_RELEASE_NAME}" --namespace "${HELM_NAMESPACE}" 2>/dev/null || true
 kubectl delete crd verticalpodautoscalers.autoscaling.k8s.io --ignore-not-found=true
 kubectl delete crd verticalpodautoscalercheckpoints.autoscaling.k8s.io --ignore-not-found=true
 kubectl delete mutatingwebhookconfiguration vpa-webhook-config --ignore-not-found=true
 
-# Apply CRDs BEFORE helm install. Helm 3 only installs CRDs from crds/ on the
+# Apply CRDs before helm install. Helm 3 only installs CRDs from crds/ on the
 # very first install of a release; pre-applying with kubectl apply guarantees
 # they exist regardless of helm release history. apply (not create) is
 # idempotent.
@@ -137,7 +176,6 @@ kubectl apply -f "${HELM_CHART_PATH}/crds/"
 for COMPONENT in ${COMPONENTS}; do
   if [[ "${COMPONENT}" == "admission-controller" ]]; then
     echo "===> Generating TLS certificates for admission-controller"
-    # gencerts.sh hard-codes --namespace=kube-system. HELM_NAMESPACE must match.
     if [[ "${HELM_NAMESPACE}" != "kube-system" ]]; then
       echo "ERROR: gencerts.sh hard-codes kube-system but HELM_NAMESPACE=${HELM_NAMESPACE}"
       exit 1
