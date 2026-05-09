@@ -14,7 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Shared Helm configuration for E2E deployments
+# Shared Helm configuration for E2E deployments. Sourced by both
+# deploy-for-e2e.sh (CI) and deploy-for-e2e-locally.sh.
+#
+# The caller MUST have set SCRIPT_ROOT to the repo's vertical-pod-autoscaler/
+# directory before sourcing this file.
+
+if [[ -z "${SCRIPT_ROOT:-}" ]]; then
+  echo "ERROR: helm-settings.sh expects SCRIPT_ROOT to be set by the caller" >&2
+  return 1 2>/dev/null || exit 1
+fi
+
 HELM_CHART_PATH="${SCRIPT_ROOT}/charts/vertical-pod-autoscaler"
 VALUES_FILE="${SCRIPT_ROOT}/hack/e2e/values-e2e.yaml"
 HELM_RELEASE_NAME="vpa"
