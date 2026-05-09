@@ -75,68 +75,12 @@ done
 
 echo "Deploying VPA components via Helm for E2E CI..."
 
+# RESTORED: Generate TLS certificates using the official, battle-tested VPA script
 for COMPONENT in ${COMPONENTS}; do
   if [[ "${COMPONENT}" == "admission-controller" ]]; then
-    echo " ** Generating TLS certificates for admission-controller"
-    TMP_DIR=$(mktemp -d)
-    CN_BASE="vpa_webhook"
-
-    cat > "${TMP_DIR}/server.conf" << EOF
-[req]
-req_extensions = v3_req
-distinguished_name = req_distinguished_name
-[req_distinguished_name]
-[ v3_req ]
-basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-extendedKeyUsage = clientAuth, serverAuth
-subjectAltName = DNS:vpa-webhook.${HELM_NAMESPACE}.svc
-EOF
-
-    # FIX: Removed the unsupported '-addext' flag from CA generation. 
-    # This caused a silent fatal crash in Prow CI's older OpenSSL environment.
-    openssl genrsa -out "${TMP_DIR}/caKey.pem" 2048
-    openssl req -x509 -new -nodes -key "${TMP_DIR}/caKey.pem" -days 100000 \
-      -out "${TMP_DIR}/caCert.pem" -subj "/CN=${CN_BASE}_ca"
-      
-    openssl genrsa -out "${TMP_DIR}/serverKey.pem" 2048
-    openssl req -new -key "${TMP_DIR}/serverKey.pem" -out "${TMP_DIR}/server.csr" \
-      -subj "/CN=vpa-webhook.${HELM_NAMESPACE}.svc" -config "${TMP_DIR}/server.conf"
-      
-    openssl x509 -req -in "${TMP_DIR}/server.csr" -CA "${TMP_DIR}/caCert.pem" \
-      -CAkey "${TMP_DIR}/caKey.pem" -CAcreateserial -out "${TMP_DIR}/serverCert.pem" \
-      -days 100000 -extensions SAN -extensions v3_req -extfile "${TMP_DIR}/server.conf"
-
-    kubectl delete secret -n ${HELM_NAMESPACE} vpa-tls-certs --ignore-not-found=true
-    kubectl create secret -n ${HELM_NAMESPACE} generic vpa-tls-certs \
-      --from-file="${TMP_DIR}/caKey.pem" \
-      --from-file="${TMP_DIR}/caCert.pem" \
-      --from-file="${TMP_DIR}/serverKey.pem" \
-      --from-file="${TMP_DIR}/serverCert.pem"
-
-    echo " ** Generating E2E rotation test certificates"
-    
-    # FIX: Removed the unsupported '-addext' flag here as well.
-    openssl genrsa -out "${TMP_DIR}/e2eCaKey.pem" 2048
-    openssl req -x509 -new -nodes -key "${TMP_DIR}/e2eCaKey.pem" -days 100000 \
-      -out "${TMP_DIR}/e2eCaCert.pem" -subj "/CN=${CN_BASE}_e2e_ca"
-      
-    openssl genrsa -out "${TMP_DIR}/e2eKey.pem" 2048
-    openssl req -new -key "${TMP_DIR}/e2eKey.pem" -out "${TMP_DIR}/e2e.csr" \
-      -subj "/CN=vpa-webhook.${HELM_NAMESPACE}.svc" -config "${TMP_DIR}/server.conf"
-      
-    openssl x509 -req -in "${TMP_DIR}/e2e.csr" -CA "${TMP_DIR}/e2eCaCert.pem" \
-      -CAkey "${TMP_DIR}/e2eCaKey.pem" -CAcreateserial -out "${TMP_DIR}/e2eCert.pem" \
-      -days 100000 -extensions SAN -extensions v3_req -extfile "${TMP_DIR}/server.conf"
-
-    kubectl delete secret -n ${HELM_NAMESPACE} vpa-e2e-certs --ignore-not-found=true
-    kubectl create secret -n ${HELM_NAMESPACE} generic vpa-e2e-certs \
-      --from-file="${TMP_DIR}/e2eCaKey.pem" \
-      --from-file="${TMP_DIR}/e2eCaCert.pem" \
-      --from-file="${TMP_DIR}/e2eKey.pem" \
-      --from-file="${TMP_DIR}/e2eCert.pem"
-
-    rm -rf "${TMP_DIR}"
+    echo " ** Generating TLS certificates using native gencerts.sh"
+    export NAMESPACE="${HELM_NAMESPACE}"
+    (cd "${SCRIPT_ROOT}/pkg/${COMPONENT}" && bash ./gencerts.sh e2e || true)
     break
   fi
 done
@@ -172,9 +116,8 @@ kubectl delete crd verticalpodautoscalers.autoscaling.k8s.io --ignore-not-found=
 kubectl delete crd verticalpodautoscalercheckpoints.autoscaling.k8s.io --ignore-not-found=true
 kubectl delete mutatingwebhookconfiguration vpa-webhook-config --ignore-not-found=true
 
-if [ -d "${HELM_CHART_PATH}/crds" ]; then
-  kubectl apply -f "${HELM_CHART_PATH}/crds/"
-fi
+# CRITICAL FIX FOR 404 ERRORS: Helm 3 skips CRD installation during upgrades.
+kubectl apply -f "${HELM_CHART_PATH}/crds/"
 
 helm upgrade --install ${HELM_RELEASE_NAME} "${HELM_CHART_PATH}" \
   --namespace ${HELM_NAMESPACE} \
