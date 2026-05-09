@@ -36,8 +36,9 @@ import (
 
 var (
 	possibleScalingModes = map[vpa_types.ContainerScalingMode]any{
-		vpa_types.ContainerScalingModeAuto: struct{}{},
-		vpa_types.ContainerScalingModeOff:  struct{}{},
+		vpa_types.ContainerScalingModeAuto:     struct{}{},
+		vpa_types.ContainerScalingModeOff:      struct{}{},
+		vpa_types.ContainerScalingModeRecsOnly: struct{}{},
 	}
 )
 
@@ -219,13 +220,17 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions
 				if _, found := possibleScalingModes[*mode]; !found {
 					return fmt.Errorf("unexpected Mode value %s", *mode)
 				}
+				if *mode == vpa_types.ContainerScalingModeRecsOnly && !features.Enabled(features.VPAPodLevelResources) {
+					return fmt.Errorf("enable the %s feature gate in the admission controller arguments to use the %s container policy mode", features.VPAPodLevelResources, vpa_types.ContainerScalingModeRecsOnly)
+				}
 			}
-			for resource, minAllowed := range policy.MinAllowed {
-				if err := validateResourceResolution(resource, minAllowed); err != nil {
+
+			for resource, min := range policy.MinAllowed {
+				if err := validateResourceResolution(resource, min); err != nil {
 					return fmt.Errorf("minAllowed: %v", err)
 				}
 				maxAllowed, found := policy.MaxAllowed[resource]
-				if found && maxAllowed.Cmp(minAllowed) < 0 {
+				if found && maxAllowed.Cmp(min) < 0 {
 					return fmt.Errorf("max resource for %v is lower than min", resource)
 				}
 			}
@@ -244,6 +249,39 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions
 				return fmt.Errorf("invalid startupBoost in container %s: %v", policy.ContainerName, err)
 			}
 		}
+
+		if podPolicies := vpa.Spec.ResourcePolicy.PodPolicies; podPolicies != nil {
+			if !features.Enabled(features.VPAPodLevelResources) {
+				return fmt.Errorf("enable the %s feature gate in the admission controller arguments to use any field in the PodPolicies stanza", features.VPAPodLevelResources)
+			}
+
+			for resource, podLevelMin := range podPolicies.MinAllowed {
+				if err := validateResourceResolution(resource, podLevelMin); err != nil {
+					return fmt.Errorf("minAllowed: %v", err)
+				}
+				if ok, qt := isValidPodLevelConstraint(resource, podLevelMin, func(podLevelMin, sum apires.Quantity) bool {
+					return podLevelMin.Cmp(sum) <= 0
+				}, vpa.Spec.ResourcePolicy, getContainerLevelMinAllowed); !ok {
+					return fmt.Errorf("sum of container-level %v MinAllowed values (%v) must be equal to or greater than the Pod-level MinAllowed value (%v)", resource, qt, podLevelMin.String())
+				}
+
+				podLevelMax, found := podPolicies.MaxAllowed[resource]
+				if found && podLevelMax.Cmp(podLevelMin) < 0 {
+					return fmt.Errorf("max resource for %v is lower than min", resource)
+				}
+			}
+
+			for resource, podLevelMax := range podPolicies.MaxAllowed {
+				if err := validateResourceResolution(resource, podLevelMax); err != nil {
+					return fmt.Errorf("maxAllowed: %v", err)
+				}
+				if ok, qt := isValidPodLevelConstraint(resource, podLevelMax, func(podLevelMax, sum apires.Quantity) bool {
+					return podLevelMax.Cmp(sum) >= 0
+				}, vpa.Spec.ResourcePolicy, getContainerLevelMaxAllowed); !ok {
+					return fmt.Errorf("sum of container-level %v maxAllowed values (%v) must be equal to or lower than the Pod-level maxAllowed value (%v)", resource, qt, podLevelMax.String())
+				}
+			}
+		}
 	}
 
 	if err := validateStartupBoost(vpa.Spec.StartupBoost, opts); err != nil {
@@ -259,6 +297,45 @@ func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions
 	}
 
 	return nil
+}
+
+// isValidPodLevelConstraint validates Pod-level MinAllowed and MaxAllowed against container-level fields:
+//
+// - The sum of container-level MinAllowed values must be equal to or greater than the Pod-level constraint.
+//
+// - The sum of container-level MaxAllowed values must be equal to or less than the Pod-level constraint.
+func isValidPodLevelConstraint(resource corev1.ResourceName, boundary apires.Quantity,
+	boundValid func(bound, floor apires.Quantity) bool,
+	policies *vpa_types.PodResourcePolicy,
+	fieldGetter func(vpa_types.ContainerResourcePolicy) corev1.ResourceList) (bool, *apires.Quantity) {
+	// Cannot determine container-level constraint, therefore the Pod-level constraint is not violated
+	if policies == nil || policies.ContainerPolicies == nil || len(policies.ContainerPolicies) == 0 {
+		return true, nil
+	}
+
+	var sum apires.Quantity
+
+	for _, policy := range policies.ContainerPolicies {
+		rl := fieldGetter(policy)
+		if rl == nil {
+			continue
+		}
+		if qt, ok := rl[resource]; ok {
+			sum.Add(qt)
+		}
+	}
+	if sum.IsZero() {
+		return true, nil
+	}
+
+	return boundValid(boundary, sum), &sum
+}
+
+func getContainerLevelMaxAllowed(rl vpa_types.ContainerResourcePolicy) corev1.ResourceList {
+	return rl.MaxAllowed
+}
+func getContainerLevelMinAllowed(rl vpa_types.ContainerResourcePolicy) corev1.ResourceList {
+	return rl.MinAllowed
 }
 
 func validateStartupBoost(startupBoost *vpa_types.StartupBoost, opts VPAValidationOptions) error {

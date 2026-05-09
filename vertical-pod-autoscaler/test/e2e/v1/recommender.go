@@ -30,12 +30,12 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/wait"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	klog "k8s.io/klog/v2"
@@ -477,6 +477,63 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 				float64(currentMemory)/float64(oomReplicationControllerRequestLimit),
 				int64(customBumpMemory),
 				oomBumpUpRatio))
+	})
+})
+
+// E2E tests for Pod-level resource stanzas and recommendation support introduced in AEP-7571.
+var _ = utils.RecommenderE2eDescribe("VPA CRD object with VPAPodLevelResources", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
+
+	var vpaClientSet vpa_clientset.Interface
+
+	ginkgo.BeforeEach(func() {
+		vpaClientSet = utils.GetVpaClientSet(f)
+	})
+
+	f.It("calculate pod-level recommendations when one container is opted out", framework.WithFeatureGate(features.VPAPodLevelResources), func() {
+		ginkgo.By("Setting up a hamster deployment")
+		d := utils.NewNHamstersDeployment(f, 2 /*number of containers*/)
+		_ = utils.StartDeploymentPods(f, d)
+
+		ginkgo.By("Setting up VPA CRD")
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(container1Name).
+			WithScalingMode(container1Name, vpa_types.ContainerScalingModeOff).
+			WithContainer(container2Name).
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled for just one container")
+		vpa, err := utils.WaitForPodLevelRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		errMsg1 := fmt.Sprintf("%s container has recommendations turned off. We expect expect only recommendations for %s",
+			utils.GetHamsterContainerNameByIndex(0),
+			utils.GetHamsterContainerNameByIndex(1))
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1), errMsg1)
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(utils.GetHamsterContainerNameByIndex(1)), errMsg1)
+
+		// Verify Pod-level recommendations
+		errMsg2 := fmt.Sprintf("We expect expect only recommendations for %s, therefore the Pod-level recommendation should equal it",
+			utils.GetHamsterContainerNameByIndex(1))
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].LowerBound.Cpu()).To(gomega.Equal(vpa.Status.Recommendation.PodRecommendations.LowerBound.Cpu()), errMsg2)
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].LowerBound.Memory()).To(gomega.Equal(vpa.Status.Recommendation.PodRecommendations.LowerBound.Memory()), errMsg2)
+
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].Target.Cpu()).To(gomega.Equal(vpa.Status.Recommendation.PodRecommendations.Target.Cpu()), errMsg2)
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].Target.Memory()).To(gomega.Equal(vpa.Status.Recommendation.PodRecommendations.Target.Memory()), errMsg2)
+
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].UpperBound.Cpu()).To(gomega.Equal(vpa.Status.Recommendation.PodRecommendations.UpperBound.Cpu()), errMsg2)
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].UpperBound.Memory()).To(gomega.Equal(vpa.Status.Recommendation.PodRecommendations.UpperBound.Memory()), errMsg2)
+
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].UncappedTarget.Cpu()).To(gomega.Equal(vpa.Status.Recommendation.PodRecommendations.UncappedTarget.Cpu()), errMsg2)
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].UncappedTarget.Memory()).To(gomega.Equal(vpa.Status.Recommendation.PodRecommendations.UncappedTarget.Memory()), errMsg2)
 	})
 })
 

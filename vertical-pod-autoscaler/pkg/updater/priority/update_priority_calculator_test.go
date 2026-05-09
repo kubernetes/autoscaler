@@ -25,8 +25,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/version"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -387,10 +390,12 @@ func TestQuickOOM_VpaOvservedContainers(t *testing.T) {
 func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 	scalingModeAuto := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff
+	scalingModeRecsOnly := vpa_types.ContainerScalingModeRecsOnly
 	tests := []struct {
-		name           string
-		resourcePolicy vpa_types.ContainerResourcePolicy
-		want           bool
+		name                        string
+		resourcePolicy              vpa_types.ContainerResourcePolicy
+		want                        bool
+		VPAPodLevelResourcesEnabled bool
 	}{
 		{
 			name: "ContainerScalingModeAuto",
@@ -428,9 +433,58 @@ func TestQuickOOM_ContainerResourcePolicy(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			// Containers with RecommendationOnly
+			// shouldn trigger the quick OOM.
+			name: "RecommendationOnly",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: containerName,
+				Mode:          &scalingModeRecsOnly,
+			},
+			want:                        true,
+			VPAPodLevelResourcesEnabled: true,
+		},
+		{
+			// When RecommendationOnly is default
+			// container should trigger the quick OOM.
+			name: "RecommendationOnly as default",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: vpa_types.DefaultContainerResourcePolicy,
+				Mode:          &scalingModeRecsOnly,
+			},
+			want:                        true,
+			VPAPodLevelResourcesEnabled: true,
+		},
+		{
+			// Containers with RecommendationOnly mode should fall back to Auto when the VPAPodLevelResources feature flag is turned off.
+			// In other words, they should trigger a quick OOM.
+			name: "RecommendationOnly",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: containerName,
+				Mode:          &scalingModeRecsOnly,
+			},
+			want:                        true,
+			VPAPodLevelResourcesEnabled: false,
+		},
+		{
+			// Containers with RecommendationOnly mode should fall back to Auto when the VPAPodLevelResources feature flag is turned off.
+			// In other words, they should trigger a quick OOM.
+			name: "RecommendationOnly",
+			resourcePolicy: vpa_types.ContainerResourcePolicy{
+				ContainerName: vpa_types.DefaultContainerResourcePolicy,
+				Mode:          &scalingModeRecsOnly,
+			},
+			want:                        true,
+			VPAPodLevelResourcesEnabled: false,
+		},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			if !tc.VPAPodLevelResourcesEnabled {
+				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.6"))
+			}
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAPodLevelResources, tc.VPAPodLevelResourcesEnabled)
+
 			pod := test.Pod().WithAnnotations(map[string]string{annotations.VpaObservedContainersLabel: containerName}).
 				WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).Get()
 
@@ -634,6 +688,81 @@ func TestAddPodLogs(t *testing.T) {
 				},
 			},
 			expectedLog: "container-1: target: 10000k 4000m; uncappedTarget: 10000k 4000m;container-2: target: 8000m; uncappedTarget: 8000m;container-3: target: 1k uncappedTarget: 1k ",
+		},
+		{
+			name: "pod level recommendation with uncappedTarget and one container with uncappedTarget",
+			givenRec: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					{
+						ContainerName:  "container-1",
+						Target:         test.Resources("22m", "22Mi"),
+						UncappedTarget: test.Resources("24m", "24Mi"),
+					},
+				},
+				PodRecommendations: &vpa_types.PodRecommendations{
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("55m"),
+						corev1.ResourceMemory: resource.MustParse("55Mi"),
+					},
+					UncappedTarget: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("56m"),
+						corev1.ResourceMemory: resource.MustParse("56Mi"),
+					},
+				},
+			},
+			expectedLog: "container-1: target: 23069k 22m; uncappedTarget: 25166k 24m;pod-level recommendation: target: 57672k 55m; uncappedTarget: 58721k 56m;",
+		},
+		{
+			name: "pod level recommendation with uncappedTarget",
+			givenRec: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.PodRecommendations{
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("55m"),
+						corev1.ResourceMemory: resource.MustParse("55Mi"),
+					},
+					UncappedTarget: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("56m"),
+						corev1.ResourceMemory: resource.MustParse("56Mi"),
+					},
+				},
+			},
+			expectedLog: "pod-level recommendation: target: 57672k 55m; uncappedTarget: 58721k 56m;",
+		},
+		{
+			name: "pod level with cpu only recommendation with uncappedTarget",
+			givenRec: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.PodRecommendations{
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU: resource.MustParse("55m"),
+					},
+					UncappedTarget: corev1.ResourceList{
+						corev1.ResourceCPU: resource.MustParse("56m"),
+					},
+				},
+			},
+			expectedLog: "pod-level recommendation: target: 55m; uncappedTarget: 56m;",
+		},
+		{
+			name: "pod level with cpu only recommendation",
+			givenRec: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.PodRecommendations{
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU: resource.MustParse("55m"),
+					},
+				},
+			},
+			expectedLog: "pod-level recommendation: target: 55m;",
+		},
+		{
+			name: "pod level with memory only recommendation",
+			givenRec: &vpa_types.RecommendedPodResources{
+				PodRecommendations: &vpa_types.PodRecommendations{
+					Target: corev1.ResourceList{
+						corev1.ResourceMemory: resource.MustParse("55Mi"),
+					},
+				},
+			},
+			expectedLog: "pod-level recommendation: target: 57672k;",
 		},
 	}
 	for _, tc := range testCases {

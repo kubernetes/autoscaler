@@ -25,12 +25,12 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
 
@@ -207,6 +207,260 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		ginkgo.By("Waiting for pods to be in-place downscaled")
 		err := WaitForPodsUpdatedWithoutEviction(f, initialPods)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+})
+
+// E2E tests for Pod-level resource stanzas and recommendation support introduced in AEP-7571.
+var _ = UpdaterE2eDescribe("Updater with VPAPodLevelResources", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
+
+	f.It("evict pods with pod-level resources stanza", framework.WithSerial(), framework.WithFeatureGate(features.VPAPodLevelResources), func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			utils.VpaNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
+			nil,
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
+			nil /*pod level cpu and memory limits*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
+		// Pod-level requests are outside the recommended range.
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName1).
+			WithScalingMode(containerName1, vpa_types.ContainerScalingModeRecsOnly).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName1).
+					WithLowerBound("120m", "120Mi").
+					WithTarget("130m", "130Mi").
+					WithUpperBound("140m", "140Mi").
+					GetContainerResources()).
+			WithUpdateMode(vpa_types.UpdateModeRecreate).
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		ginkgo.By("Waiting for Pods to be evicted due to pod-level recommendations")
+		err := WaitForPodsEvicted(f, podList)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	f.It("evict pods with pod-level and container-level resource stanzas", framework.WithSerial(), framework.WithFeatureGate(features.VPAPodLevelResources), func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			utils.VpaNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		d := NewHamsterDeploymentWithPodLevelResources(f, 2,
+			[]containerResources{
+				{
+					Requests: apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("10m"), apiv1.ResourceMemory: resource.MustParse("10Mi")}, /*cpu and memory requests for the first container*/
+					Limits:   nil,                                                                                                                /*cpu and memory limits for the first container*/
+				},
+			},
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
+			nil /*pod level cpu and memory limits*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName1 := utils.GetHamsterContainerNameByIndexV2(0)
+		containerName2 := utils.GetHamsterContainerNameByIndexV2(1)
+		// Pod-level requests are within the recommended range
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithUpdateMode(vpa_types.UpdateModeRecreate).
+			// Container-level scaling defaults to Auto.
+			WithContainer(containerName1).
+			// Container-level requests are outside the recommended range.
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName1).
+					WithLowerBound("40m", "40Mi").
+					WithTarget("50m", "50Mi").
+					WithUpperBound("60m", "60Mi").
+					GetContainerResources()).
+			WithContainer(containerName2).
+			WithScalingMode(containerName2, vpa_types.ContainerScalingModeRecsOnly).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName2).
+					WithLowerBound("50m", "50Mi").
+					WithTarget("50m", "50Mi").
+					WithUpperBound("50m", "50Mi").
+					GetContainerResources()).
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		ginkgo.By("Waiting for Pods to be evicted due to container-level recommendations")
+		err := WaitForPodsEvicted(f, podList)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	f.It("In-place update pods with pod-level resources stanza", framework.WithSerial(), framework.WithFeatureGate(features.VPAPodLevelResources), func(ctx ginkgo.SpecContext) {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			utils.VpaNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		d := NewHamsterDeploymentWithPodLevelResources(f, 1,
+			nil,
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("100m"), apiv1.ResourceMemory: resource.MustParse("100Mi")}, /*pod level cpu and memory requests*/
+			apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("200m"), apiv1.ResourceMemory: resource.MustParse("200Mi")} /*pod level cpu and memory limits*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		containerName := utils.GetHamsterContainerNameByIndexV2(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithScalingMode(containerName, vpa_types.ContainerScalingModeRecsOnly).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithLowerBound("110m", "110Mi").
+					WithTarget("120m", "120Mi").
+					WithUpperBound("130m", "130Mi").
+					GetContainerResources()).
+			WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+			// Pod-level requests are outside the recommended range.
+			WithPodLevelScalingMode(vpa_types.PodScalingModeAuto).
+			Get()
+
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		podNames := make(map[string]struct{}, len(podList.Items))
+		for _, pod := range podList.Items {
+			podNames[pod.Name] = struct{}{}
+		}
+		ginkgo.By("Waiting for all Pods to be updated in place")
+		gomega.Eventually(ctx, func() error {
+			events, err := f.ClientSet.CoreV1().Events(f.Namespace.Name).List(ctx, metav1.ListOptions{})
+			if err != nil {
+				return fmt.Errorf("failed to list events: %w", err)
+			}
+			for _, e := range events.Items {
+				if e.InvolvedObject.Kind == "Pod" && e.Reason == "InPlaceResizedByVPA" && e.Message == "Pod was resized in place by VPA Updater." {
+					if _, ok := podNames[e.InvolvedObject.Name]; ok {
+						delete(podNames, e.InvolvedObject.Name)
+						framework.Logf("Pod %q is resized by VPA through in-place update", e.InvolvedObject.Name)
+					}
+				}
+			}
+			if len(podNames) == 0 {
+				return nil
+			}
+			return fmt.Errorf("the following Pods did not resize through in-place update: %v", podNames)
+		}).WithTimeout(VpaInPlaceTimeout*3).WithPolling(10*time.Second).Should(gomega.Succeed(), "all Pods must be updated in place")
+
+		// verify pod and container level stanzas after in-place update
+		// TODO: After https://github.com/kubernetes/kubernetes/issues/137628 is fixed and backported to Kubernetes versions,
+		// check the Pod status stanza for the actual allocated resources, the spec shows the desired state.
+		ginkgo.By("Verifying pod and container-level stanzas after an in-place update")
+		gomega.Eventually(func() error {
+			updatedPodList, err := GetHamsterPods(f)
+			if err != nil {
+				return err
+			}
+			for _, pod := range updatedPodList.Items {
+				// Pod-level resources requests should reflect the VPA target (120m/120Mi),
+				// with limits scaled proportionally maintaining the 1:2 request-to-limit ratio.
+				if got, want := pod.Spec.Resources.Requests[apiv1.ResourceCPU], ParseQuantityOrDie("120m"); got.Cmp(want) != 0 {
+					return fmt.Errorf("pod %s: expected pod-level CPU request %s, got %s", pod.Name, &want, &got)
+				}
+				if got, want := pod.Spec.Resources.Requests[apiv1.ResourceMemory], ParseQuantityOrDie("120Mi"); got.Cmp(want) != 0 {
+					return fmt.Errorf("pod %s: expected pod-level memory request %s, got %s", pod.Name, &want, &got)
+				}
+				if got, want := pod.Spec.Resources.Limits[apiv1.ResourceCPU], ParseQuantityOrDie("240m"); got.Cmp(want) != 0 {
+					return fmt.Errorf("pod %s: expected pod-level CPU limit %s, got %s", pod.Name, &want, &got)
+				}
+				if got, want := pod.Spec.Resources.Limits[apiv1.ResourceMemory], ParseQuantityOrDie("240Mi"); got.Cmp(want) != 0 {
+					return fmt.Errorf("pod %s: expected pod-level memory limit %s, got %s", pod.Name, &want, &got)
+				}
+
+				// Container-level resources should be unset
+				for _, c := range pod.Spec.Containers {
+					if c.Resources.Requests != nil {
+						return fmt.Errorf("pod %s, container %s, requests to be nil, got %v", pod.Name, c.Name, c.Resources.Requests)
+					}
+					if c.Resources.Limits != nil {
+						return fmt.Errorf("pod %s, container %s, limits to be nil, got %v", pod.Name, c.Name, c.Resources.Limits)
+					}
+				}
+			}
+			return nil
+		}, VpaInPlaceTimeout*3, 15*time.Second).Should(gomega.Succeed())
 	})
 })
 

@@ -38,6 +38,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limits"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -197,13 +198,19 @@ func (c *RecommenderController) Run(ctx context.Context) error {
 	}
 }
 
-func initGlobalMaxAllowed(config *recommender_config.RecommenderConfig) corev1.ResourceList {
-	result := make(corev1.ResourceList)
-	if !config.MaxAllowedCPU.IsZero() {
-		result[corev1.ResourceCPU] = config.MaxAllowedCPU.Quantity
+func initGlobalMaxAllowed(config *recommender_config.RecommenderConfig) limits.GlobalMaxAllowed {
+	result := limits.GlobalMaxAllowed{}
+
+	if !config.ContainerMaxAllowedCPU.IsZero() || !config.ContainerMaxAllowedMemory.IsZero() {
+		result.Container = corev1.ResourceList{}
+		result.Container[corev1.ResourceCPU] = config.ContainerMaxAllowedCPU.Quantity
+		result.Container[corev1.ResourceMemory] = config.ContainerMaxAllowedMemory.Quantity
 	}
-	if !config.MaxAllowedMemory.IsZero() {
-		result[corev1.ResourceMemory] = config.MaxAllowedMemory.Quantity
+
+	if !config.PodMaxAllowedCPU.IsZero() || !config.PodMaxAllowedMemory.IsZero() {
+		result.Pod = corev1.ResourceList{}
+		result.Pod[corev1.ResourceCPU] = config.PodMaxAllowedCPU.Quantity
+		result.Pod[corev1.ResourceMemory] = config.PodMaxAllowedMemory.Quantity
 	}
 	return result
 }

@@ -64,6 +64,14 @@ const (
 	// optimization strategies to be applied to different workloads within the
 	// same cluster.
 	PerVPAConfig featuregate.Feature = "PerVPAConfig"
+
+	// alpha: v1.6.0
+	// components: admission-controller, recommender, updater
+
+	// VPAPodLevelResources enables support for Pods that use pod-level resource stanzas.
+	// Requires KEP-2837 PodLevelResources feature-gate to be enabled on the cluster.
+	// Requires KEP-5419 InPlacePodLevelResourcesVerticalScaling feature-gate to be enabled on the cluster.
+	VPAPodLevelResources featuregate.Feature = "VPAPodLevelResources"
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.

@@ -25,12 +25,14 @@ import (
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -82,7 +84,15 @@ func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *vpaautoscalin
 	listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources, r.recommendationFormat)
 
 	for _, postProcessor := range r.recommendationPostProcessor {
-		listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)
+		podLevel := false
+		if features.Enabled(features.VPAPodLevelResources) {
+			podLevel = vpa_utils.IsPodLevelScalingModeEnabled(vpa.ResourcePolicy)
+		}
+		listOfResourceRecommendation = postProcessor.Process(podLevel, observedVpa, listOfResourceRecommendation)
+		if podLevel {
+			podRecommendations := resourcehelpers.SumContainerLevelRecommendations(listOfResourceRecommendation.ContainerRecommendations)
+			listOfResourceRecommendation.PodRecommendations = podRecommendations
+		}
 	}
 
 	vpa.UpdateRecommendation(listOfResourceRecommendation)

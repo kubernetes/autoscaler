@@ -27,6 +27,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -54,6 +55,11 @@ const (
 	// pod, if there are no mechanisms blocking it.
 	VpaInPlaceTimeout = 2 * time.Minute
 )
+
+type containerResources struct {
+	Limits   apiv1.ResourceList
+	Requests apiv1.ResourceList
+}
 
 // UpdaterE2eDescribe describes a VPA updater e2e test.
 func UpdaterE2eDescribe(name string, args ...any) bool {
@@ -128,6 +134,83 @@ func NewHamsterDeploymentWithResourcesAndLimits(f *framework.Framework, cpuQuant
 		apiv1.ResourceMemory: memoryQuantityLimit,
 	}
 	return d
+}
+
+// NewHamsterDeploymentWithPodLevelResources can create a Deployment with resource stanzas at both the Pod and container levels.
+func NewHamsterDeploymentWithPodLevelResources(f *framework.Framework, n int, containerResources []containerResources, podLevelRequests, podLevelLimits apiv1.ResourceList) *appsv1.Deployment {
+	if n < 1 {
+		panic("container count should be greater than 0")
+	}
+	if len(containerResources) > n {
+		panic("the number of container-level stanzas should be less or equal to the number of containers")
+	}
+
+	d := newDeploymentWithPodLevelResources(
+		"hamster-deployment",                       /*deploymentName*/
+		utils.DefaultHamsterReplicas,               /*replicas*/
+		utils.HamsterLabels,                        /*podLabels*/
+		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
+	)
+	d.ObjectMeta.Namespace = f.Namespace.Name
+
+	for i := range n {
+		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, apiv1.Container{
+			Name:            fmt.Sprintf("hamster%d", i+1),
+			Image:           "ubuntu:latest",
+			Command:         []string{"/bin/sh"},
+			Args:            []string{"-c", "/usr/bin/yes >/dev/null"},
+			SecurityContext: &apiv1.SecurityContext{},
+		})
+	}
+
+	for i, cr := range containerResources {
+		d.Spec.Template.Spec.Containers[i].Resources = apiv1.ResourceRequirements{
+			Requests: nonNilResourceList(cr.Requests),
+			Limits:   nonNilResourceList(cr.Limits),
+		}
+	}
+
+	if podLevelRequests != nil {
+		d.Spec.Template.Spec.Resources.Requests = podLevelRequests
+	}
+	if podLevelLimits != nil {
+		d.Spec.Template.Spec.Resources.Limits = podLevelLimits
+	}
+	return d
+}
+
+func nonNilResourceList(rl apiv1.ResourceList) apiv1.ResourceList {
+	if rl == nil {
+		return apiv1.ResourceList{}
+	}
+	return rl
+}
+
+func newDeploymentWithPodLevelResources(deploymentName string, replicas int32, podLabels map[string]string, strategyType appsv1.DeploymentStrategyType) *appsv1.Deployment {
+	zero := int64(0)
+	return &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   deploymentName,
+			Labels: podLabels,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			Selector: &metav1.LabelSelector{MatchLabels: podLabels},
+			Strategy: appsv1.DeploymentStrategy{
+				Type: strategyType,
+			},
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: podLabels,
+				},
+				Spec: apiv1.PodSpec{
+					TerminationGracePeriodSeconds: &zero,
+					Containers:                    []v1.Container{},
+					Resources:                     &apiv1.ResourceRequirements{},
+				},
+			},
+		},
+	}
 }
 
 func getPodSelectorExcludingDonePodsOrDie() string {
@@ -447,7 +530,7 @@ func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxC
 
 // InstallLimitRangeWithMax installs a LimitRange with a maximum limit for CPU and memory.
 func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimit string, lrType apiv1.LimitType) {
-	ginkgo.By(fmt.Sprintf("Setting up LimitRange with max limits - CPU: %v, memory: %v", maxCpuLimit, maxMemoryLimit))
+	ginkgo.By(fmt.Sprintf("Setting up %v LimitRange with max limits - CPU: %v, memory: %v", lrType, maxCpuLimit, maxMemoryLimit))
 	maxCpuLimitQuantity := ParseQuantityOrDie(maxCpuLimit)
 	maxMemoryLimitQuantity := ParseQuantityOrDie(maxMemoryLimit)
 	installLimitRange(f, nil, nil, &maxCpuLimitQuantity, &maxMemoryLimitQuantity, lrType)
@@ -455,7 +538,7 @@ func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimi
 
 // InstallLimitRangeWithMin installs a LimitRange with a minimum limit for CPU and memory.
 func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimit string, lrType apiv1.LimitType) {
-	ginkgo.By(fmt.Sprintf("Setting up LimitRange with min limits - CPU: %v, memory: %v", minCpuLimit, minMemoryLimit))
+	ginkgo.By(fmt.Sprintf("Setting up %v LimitRange with min limits - CPU: %v, memory: %v", lrType, minCpuLimit, minMemoryLimit))
 	minCpuLimitQuantity := ParseQuantityOrDie(minCpuLimit)
 	minMemoryLimitQuantity := ParseQuantityOrDie(minMemoryLimit)
 	installLimitRange(f, &minCpuLimitQuantity, &minMemoryLimitQuantity, nil, nil, lrType)

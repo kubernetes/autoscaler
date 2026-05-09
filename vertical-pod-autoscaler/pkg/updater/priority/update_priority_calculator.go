@@ -83,6 +83,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time) {
 	updatePriority := calc.priorityProcessor.GetUpdatePriority(pod, calc.vpa, processedRecommendation)
 
 	quickOOM := false
+	// Note: Even containers in RecommendationOnly mode should be included in quick OOM calculations, as OOM kills in these containers should trigger an increase in the pod-level recommendation.
 	for i := range pod.Status.ContainerStatuses {
 		cs := &pod.Status.ContainerStatuses[i]
 		if hasObservedContainers && !vpaContainerSet.Has(cs.Name) {
@@ -91,8 +92,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time) {
 			klog.V(4).InfoS("Not listed in VPA observed containers label. Skipping container quick OOM calculations", "label", annotations.VpaObservedContainersLabel, "observedContainers", pod.GetAnnotations()[annotations.VpaObservedContainersLabel], "containerName", cs.Name, "vpa", klog.KObj(calc.vpa))
 			continue
 		}
-		crp := vpa_api_util.GetContainerResourcePolicy(cs.Name, calc.vpa.Spec.ResourcePolicy)
-		if crp != nil && crp.Mode != nil && *crp.Mode == vpa_types.ContainerScalingModeOff {
+		if vpa_api_util.IsContainerScalingModeOff(cs.Name, calc.vpa.Spec.ResourcePolicy) {
 			// Containers with ContainerScalingModeOff are not considered
 			// during the quick OOM calculation.
 			klog.V(4).InfoS("Container with ContainerScalingModeOff. Skipping container quick OOM calculations", "containerName", cs.Name)
@@ -177,14 +177,59 @@ func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_t
 		if cr.UncappedTarget != nil {
 			sb.WriteString("uncappedTarget: ")
 			if !cr.UncappedTarget.Memory().IsZero() {
-				sb.WriteString(strconv.FormatInt(cr.Target.Memory().ScaledValue(resource.Kilo), 10))
+				sb.WriteString(strconv.FormatInt(cr.UncappedTarget.Memory().ScaledValue(resource.Kilo), 10))
 				sb.WriteString("k ")
 			}
 			if !cr.UncappedTarget.Cpu().IsZero() {
-				sb.WriteString(strconv.FormatInt(cr.Target.Cpu().MilliValue(), 10))
+				sb.WriteString(strconv.FormatInt(cr.UncappedTarget.Cpu().MilliValue(), 10))
 				sb.WriteString("m;")
 			}
 		}
+	}
+	sbp := &strings.Builder{}
+	if r.PodRecommendations != nil {
+		addDelimiter := false
+		sbp.WriteString("pod-level recommendation:")
+		if r.PodRecommendations.Target != nil {
+			sbp.WriteString("target:")
+			if !r.PodRecommendations.Target.Memory().IsZero() {
+				sbp.WriteString(strconv.FormatInt(r.PodRecommendations.Target.Memory().ScaledValue(resource.Kilo), 10))
+				sbp.WriteString("k")
+				addDelimiter = true
+			}
+			if !r.PodRecommendations.Target.Cpu().IsZero() {
+				if addDelimiter {
+					sbp.WriteString(" ")
+				}
+				sbp.WriteString(strconv.FormatInt(r.PodRecommendations.Target.Cpu().MilliValue(), 10))
+				sbp.WriteString("m")
+				addDelimiter = true
+			}
+			if addDelimiter {
+				sbp.WriteString(";")
+			}
+		}
+		addDelimiter = false
+		if r.PodRecommendations.UncappedTarget != nil {
+			sbp.WriteString("uncappedTarget:")
+			if !r.PodRecommendations.UncappedTarget.Memory().IsZero() {
+				sbp.WriteString(strconv.FormatInt(r.PodRecommendations.UncappedTarget.Memory().ScaledValue(resource.Kilo), 10))
+				sbp.WriteString("k")
+				addDelimiter = true
+			}
+			if !r.PodRecommendations.UncappedTarget.Cpu().IsZero() {
+				if addDelimiter {
+					sbp.WriteString(" ")
+				}
+				sbp.WriteString(strconv.FormatInt(r.PodRecommendations.UncappedTarget.Cpu().MilliValue(), 10))
+				sbp.WriteString("m")
+				addDelimiter = true
+			}
+			if addDelimiter {
+				sbp.WriteString(";")
+			}
+		}
+		sb.WriteString(strings.TrimSpace(strings.NewReplacer(":", ": ", ";", "; ").Replace(sbp.String())))
 	}
 	return sb.String()
 }

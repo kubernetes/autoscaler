@@ -86,12 +86,12 @@ func getProportionalResourceLimit(resourceName corev1.ResourceName, originalLimi
 		}
 		return result, ""
 	}
-	result, capped := scaleQuantityProportionallyMem( /* scaledQuantity= */ originalLimit /* scaleBase= */, originalRequest /* scaleResult= */, recommendedRequest, noRounding)
-	if !capped {
-		return result, ""
+	result, isCapped := scaleQuantityProportionallyMem( /* scaledQuantity= */ originalLimit /* scaleBase= */, originalRequest /* scaleResult= */, recommendedRequest, noRounding)
+	if isCapped == capped {
+		return result, fmt.Sprintf(
+			"%v: failed to keep limit to request ratio; capping limit to int64", resourceName)
 	}
-	return result, fmt.Sprintf(
-		"%v: failed to keep limit to request ratio; capping limit to int64", resourceName)
+	return result, ""
 }
 
 // GetBoundaryRequest returns the boundary (min/max) request that can be specified with
@@ -170,7 +170,11 @@ func scaleQuantityProportionallyCPU(scaledQuantity, scaleBase, scaleResult *reso
 
 // scaleQuantityProportionallyMem returns a value in whole units which has the same proportion to scaledQuantity as scaleResult has to scaleBase.
 // It also returns a bool indicating if it had to cap result to MaxInt64 units.
-func scaleQuantityProportionallyMem(scaledQuantity, scaleBase, scaleResult *resource.Quantity, rounding roundingMode) (*resource.Quantity, bool) {
+func scaleQuantityProportionallyMem(scaledQuantity, scaleBase, scaleResult *resource.Quantity, rounding roundingMode) (*resource.Quantity, scalingResultType) {
+	if scaleBase.IsZero() {
+		return scaledQuantity, divisionByZero
+	}
+
 	originalValue := big.NewInt(scaledQuantity.Value())
 	scaleBaseValue := big.NewInt(scaleBase.Value())
 	scaleResultValue := big.NewInt(scaleResult.Value())
@@ -186,9 +190,9 @@ func scaleQuantityProportionallyMem(scaledQuantity, scaleBase, scaleResult *reso
 			result.Sub(*resource.NewMilliQuantity(999, result.Format))
 			result.RoundUp(resource.Scale(0))
 		}
-		return result, false
+		return result, success
 	}
-	return resource.NewQuantity(math.MaxInt64, scaledQuantity.Format), true
+	return resource.NewQuantity(math.MaxInt64, scaledQuantity.Format), capped
 }
 
 // RemoveEmptyResourceKeyIfAny ensure that we are not pushing a resource with an empty key. Return true if an empty key was eliminated

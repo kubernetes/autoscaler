@@ -23,6 +23,8 @@ import (
 )
 
 // GetContainerNameToAggregateStateMap returns ContainerNameToAggregateStateMap for pods.
+// Note: When the VPAPodLevelResources feature gate is turned off and the "RecommendationOnly" container level mode is used,
+// it should behave like the "Auto" mode. This function complies with this behavior.
 func GetContainerNameToAggregateStateMap(vpa *model.Vpa) model.ContainerNameToAggregateStateMap {
 	containerNameToAggregateStateMap := vpa.AggregateStateByContainerName()
 	filteredContainerNameToAggregateStateMap := make(model.ContainerNameToAggregateStateMap)

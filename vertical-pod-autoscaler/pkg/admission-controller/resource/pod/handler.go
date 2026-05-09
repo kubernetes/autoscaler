@@ -93,6 +93,7 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 	if pod.Annotations == nil {
 		patches = append(patches, patch.GetAddEmptyAnnotationsPatch())
 	}
+
 	for _, c := range h.patchCalculators {
 		partialPatches, err := c.CalculatePatches(&pod, controllingVpa)
 		if err != nil {
