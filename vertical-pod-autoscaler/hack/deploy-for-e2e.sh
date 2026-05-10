@@ -19,9 +19,6 @@ set -o nounset
 set -o pipefail
 
 SCRIPT_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
-
-# Pinned Helm version. The kubekins-e2e CI image does not ship Helm, so
-# deploy-for-e2e.sh installs it on demand. Bump deliberately when needed.
 HELM_VERSION="${HELM_VERSION:-v3.16.3}"
 
 function print_help {
@@ -58,126 +55,48 @@ case ${SUITE} in
     ;;
 esac
 
-# Diagnostic dump on any failure. run-e2e.sh does NOT use errexit, so a silent
-# failure here would let ginkgo run against an empty cluster and fail with
-# misleading 404 errors. Loud structured output makes the real cause visible
-# in the prow build log.
-function dump_diagnostics() {
-  local rc=$?
-  if [[ ${rc} -ne 0 ]]; then
-    echo "============================================================"
-    echo "deploy-for-e2e.sh FAILED (exit ${rc}) - diagnostic dump"
-    echo "============================================================"
-    if command -v helm >/dev/null 2>&1; then
-      echo "--- Helm releases in ${HELM_NAMESPACE:-kube-system} ---"
-      helm list --namespace "${HELM_NAMESPACE:-kube-system}" --all 2>&1 || true
-      echo "--- Helm release status ---"
-      helm status "${HELM_RELEASE_NAME:-vpa}" --namespace "${HELM_NAMESPACE:-kube-system}" 2>&1 || true
-    else
-      echo "--- helm binary is not installed (skip helm diagnostics) ---"
-    fi
-    echo "--- VPA-related CRDs ---"
-    kubectl get crd 2>&1 | grep -E 'autoscaling\.k8s\.io' || echo "(no VPA CRDs found)"
-    echo "--- Pods in ${HELM_NAMESPACE:-kube-system} ---"
-    kubectl get pods --namespace "${HELM_NAMESPACE:-kube-system}" -o wide 2>&1 | grep -E 'NAME|vpa-' || true
-    echo "--- Recent events in ${HELM_NAMESPACE:-kube-system} ---"
-    kubectl get events --namespace "${HELM_NAMESPACE:-kube-system}" --sort-by='.lastTimestamp' 2>&1 | tail -30 || true
-    echo "--- MutatingWebhookConfiguration vpa-webhook-config ---"
-    kubectl get mutatingwebhookconfiguration vpa-webhook-config -o yaml 2>&1 | head -40 || echo "(not found)"
-    echo "--- Pod logs (vpa-*) ---"
-    for pod in $(kubectl get pods --namespace "${HELM_NAMESPACE:-kube-system}" -o name 2>/dev/null | grep -E 'vpa-' || true); do
-      echo "--- ${pod} ---"
-      kubectl logs --namespace "${HELM_NAMESPACE:-kube-system}" "${pod}" --all-containers --tail=80 2>&1 || true
-    done
-    echo "============================================================"
-  fi
-}
-trap dump_diagnostics EXIT
-
-# The kubekins-e2e prow image (gcr.io/k8s-staging-test-infra/kubekins-e2e)
-# ships kubectl, gcloud, docker, etc. but does NOT include helm. Install a
-# pinned version on demand. Local environments that already have helm on PATH
-# are left alone.
+# The kubekins-e2e prow image does not ship Helm; install on demand.
 function ensure_helm_installed() {
   if command -v helm >/dev/null 2>&1; then
-    echo "===> helm already installed: $(helm version --short)"
     return 0
   fi
-  echo "===> Helm not found on PATH; installing ${HELM_VERSION}"
-  local tmp
-  tmp="$(mktemp -d)"
-  local arch
-  arch="$(uname -m)"
-  case "${arch}" in
-    x86_64)  arch="amd64" ;;
-    aarch64|arm64) arch="arm64" ;;
-    *)
-      echo "ERROR: unsupported architecture for helm install: ${arch}"
-      return 1
-      ;;
-  esac
-  local url="https://get.helm.sh/helm-${HELM_VERSION}-linux-${arch}.tar.gz"
-  curl -fsSL "${url}" -o "${tmp}/helm.tgz"
+  echo "Installing Helm ${HELM_VERSION}"
+  local tmp; tmp=$(mktemp -d)
+  curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -o "${tmp}/helm.tgz"
   tar -xzf "${tmp}/helm.tgz" -C "${tmp}"
-  install -m 0755 "${tmp}/linux-${arch}/helm" /usr/local/bin/helm
+  install -m 0755 "${tmp}/linux-amd64/helm" /usr/local/bin/helm
   rm -rf "${tmp}"
-  echo "===> Installed: $(helm version --short)"
 }
-
-# helm-settings.sh defines HELM_CHART_PATH, VALUES_FILE, HELM_RELEASE_NAME,
-# HELM_NAMESPACE.
-source "${SCRIPT_ROOT}/hack/e2e/helm-settings.sh"
-
-# Sanity: chart and values must exist before we touch the cluster.
-if [[ ! -d "${HELM_CHART_PATH}" ]]; then
-  echo "ERROR: Helm chart not found at ${HELM_CHART_PATH}"
-  exit 1
-fi
-if [[ ! -f "${VALUES_FILE}" ]]; then
-  echo "ERROR: Values file not found at ${VALUES_FILE}"
-  exit 1
-fi
-if [[ ! -f "${HELM_CHART_PATH}/crds/vpa-v1-crd-gen.yaml" ]]; then
-  echo "ERROR: CRDs not found at ${HELM_CHART_PATH}/crds/"
-  exit 1
-fi
-
 ensure_helm_installed
+
+source "${SCRIPT_ROOT}/hack/e2e/helm-settings.sh"
 
 export REGISTRY="gcr.io/$(gcloud config get-value core/project)"
 export TAG=latest
 
-echo "===> Configuring registry authentication"
 mkdir -p "${HOME}/.docker"
 gcloud auth configure-docker -q
 
-echo "===> Building and pushing component images: ${COMPONENTS}"
 for COMPONENT in ${COMPONENTS}; do
   ALL_ARCHITECTURES=amd64 make --directory "${SCRIPT_ROOT}/pkg/${COMPONENT}" release
 done
 
-echo "===> Cleaning up any previous VPA installation in ${HELM_NAMESPACE}"
+# Clean up any previous VPA installation.
 helm uninstall "${HELM_RELEASE_NAME}" --namespace "${HELM_NAMESPACE}" 2>/dev/null || true
 kubectl delete crd verticalpodautoscalers.autoscaling.k8s.io --ignore-not-found=true
 kubectl delete crd verticalpodautoscalercheckpoints.autoscaling.k8s.io --ignore-not-found=true
 kubectl delete mutatingwebhookconfiguration vpa-webhook-config --ignore-not-found=true
 
-# Apply CRDs before helm install. Helm 3 only installs CRDs from crds/ on the
-# very first install of a release; pre-applying with kubectl apply guarantees
-# they exist regardless of helm release history. apply (not create) is
-# idempotent.
-echo "===> Applying CRDs from ${HELM_CHART_PATH}/crds/"
+# Helm 3 only installs CRDs from crds/ on first install of a release;
+# pre-applying via kubectl apply guarantees they exist regardless of release
+# history. apply (not create) is idempotent on re-runs.
 kubectl apply -f "${HELM_CHART_PATH}/crds/"
 
-# Generate TLS certs AFTER cleanup but BEFORE helm install so the admission
-# controller pod can mount the secret on first start.
+# Generate TLS certs for admission-controller. gencerts.sh uses kubectl create
+# which fails if the secret already exists; explicit deletes first make this
+# idempotent on re-runs.
 for COMPONENT in ${COMPONENTS}; do
   if [[ "${COMPONENT}" == "admission-controller" ]]; then
-    echo "===> Generating TLS certificates for admission-controller"
-    if [[ "${HELM_NAMESPACE}" != "kube-system" ]]; then
-      echo "ERROR: gencerts.sh hard-codes kube-system but HELM_NAMESPACE=${HELM_NAMESPACE}"
-      exit 1
-    fi
     kubectl delete secret -n "${HELM_NAMESPACE}" vpa-tls-certs --ignore-not-found=true
     kubectl delete secret -n "${HELM_NAMESPACE}" vpa-e2e-certs  --ignore-not-found=true
     (cd "${SCRIPT_ROOT}/pkg/${COMPONENT}" && bash ./gencerts.sh e2e)
@@ -185,8 +104,9 @@ for COMPONENT in ${COMPONENTS}; do
   fi
 done
 
-# Build per-suite Helm value overrides. values-e2e.yaml already disables every
-# component by default; we enable only the ones this suite needs.
+# Build per-suite Helm value overrides. values-e2e.yaml disables every
+# component by default; we enable only the ones the suite needs and point
+# them at the PR-built images in our project's GCR.
 HELM_SET_ARGS=()
 for COMPONENT in ${COMPONENTS}; do
   case ${COMPONENT} in
@@ -217,20 +137,12 @@ for COMPONENT in ${COMPONENTS}; do
   esac
 done
 
-# Propagate FEATURE_GATES to component args. The alpha/beta CI lanes set
-# FEATURE_GATES=AllAlpha=true,AllBeta=true so the admission webhook accepts
-# alpha/beta fields like spec.startupBoost (CPUStartupBoost feature gate).
-#
-# Helm --set replaces an entire list. values-e2e.yaml sets
-# admissionController.extraArgs=[--reload-cert] for the cert-rotation e2e test;
-# when we add --feature-gates=... we must re-add --reload-cert in the same
-# --set block, or the rotation test will silently break.
-#
-# Commas in FEATURE_GATES must be escaped (\,) so Helm --set does not split
-# the value at "AllAlpha=true,AllBeta=true".
+# Propagate FEATURE_GATES (set on alpha/beta CI lanes) to component args.
+# Helm --set replaces lists; for admissionController we re-add --reload-cert
+# (set in values-e2e.yaml for the cert-rotation test). Commas in the value
+# are escaped so Helm --set treats it as one assignment.
 if [[ -n "${FEATURE_GATES:-}" ]]; then
   ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
-  echo "===> Enabling feature gates on components: ${FEATURE_GATES}"
   for COMPONENT in ${COMPONENTS}; do
     case ${COMPONENT} in
       recommender)
@@ -249,50 +161,9 @@ if [[ -n "${FEATURE_GATES:-}" ]]; then
   done
 fi
 
-echo "===> Installing VPA via Helm (suite: ${SUITE})"
-# --atomic   : roll back on failure so we never leave a half-installed release
-#              for the next prow job to trip over.
-# --timeout  : explicit > default 5m, in case GCR pulls are slow on first
-#              install of the day.
 helm upgrade --install "${HELM_RELEASE_NAME}" "${HELM_CHART_PATH}" \
   --namespace "${HELM_NAMESPACE}" \
   --values "${VALUES_FILE}" \
   "${HELM_SET_ARGS[@]}" \
-  --atomic \
   --wait \
   --timeout 10m
-
-# Post-install verification. We want to fail fast HERE if something required
-# by the e2e tests is missing, rather than have ginkgo report misleading 404s.
-echo "===> Verifying VPA install"
-kubectl get crd verticalpodautoscalers.autoscaling.k8s.io >/dev/null
-kubectl get crd verticalpodautoscalercheckpoints.autoscaling.k8s.io >/dev/null
-
-for COMPONENT in ${COMPONENTS}; do
-  case ${COMPONENT} in
-    recommender|updater)
-      kubectl rollout status -n "${HELM_NAMESPACE}" "deployment/vpa-${COMPONENT}" --timeout=5m
-      ;;
-    admission-controller)
-      kubectl rollout status -n "${HELM_NAMESPACE}" "deployment/vpa-admission-controller" --timeout=5m
-      # The admission controller registers vpa-webhook-config itself when
-      # registerWebhook=true. Wait for it explicitly so we either succeed here
-      # or fail with a clear message instead of a silent 180s timeout in
-      # ginkgo's BeforeEach.
-      echo "===> Waiting for admission controller to register vpa-webhook-config"
-      for i in $(seq 1 30); do
-        if kubectl get mutatingwebhookconfiguration vpa-webhook-config >/dev/null 2>&1; then
-          echo "vpa-webhook-config registered"
-          break
-        fi
-        if [[ ${i} -eq 30 ]]; then
-          echo "ERROR: vpa-webhook-config was not registered within 5 minutes"
-          exit 1
-        fi
-        sleep 10
-      done
-      ;;
-  esac
-done
-
-echo "===> Deploy complete for suite '${SUITE}'"
