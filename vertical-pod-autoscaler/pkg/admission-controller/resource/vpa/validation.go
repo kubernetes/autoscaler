@@ -29,18 +29,16 @@ import (
 
 // VPAValidationOptions contains the different settings for VPA validation
 type VPAValidationOptions struct {
-	IsVPACreate            bool
-	AllowCPUStartupBoost   bool
-	AllowInPlaceOrRecreate bool
-	AllowPerVPAConfig      bool
+	IsVPACreate          bool
+	AllowCPUStartupBoost bool
+	AllowPerVPAConfig    bool
 }
 
 func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAValidationOptions {
 	opts := VPAValidationOptions{
-		IsVPACreate:            oldObj == nil,
-		AllowCPUStartupBoost:   allowCPUBoost(oldObj),
-		AllowInPlaceOrRecreate: features.Enabled(features.InPlaceOrRecreate),
-		AllowPerVPAConfig:      allowPerVPAConfig(oldObj),
+		IsVPACreate:          oldObj == nil,
+		AllowCPUStartupBoost: allowCPUBoost(oldObj),
+		AllowPerVPAConfig:    allowPerVPAConfig(oldObj),
 	}
 
 	return opts
@@ -135,10 +133,6 @@ func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPat
 	} else {
 		if _, found := vpa_types.GetUpdateModes()[*mode]; !found {
 			allErrs = append(allErrs, field.NotSupported(fldPath.Child("updateMode"), *mode, vpa_types.GetUpdateModesList()))
-		}
-
-		if *mode == vpa_types.UpdateModeInPlaceOrRecreate && !opts.AllowInPlaceOrRecreate {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("updateMode"), fmt.Sprintf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate)))
 		}
 	}
 	if minReplicas := updatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
