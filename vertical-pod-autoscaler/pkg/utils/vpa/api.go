@@ -40,6 +40,7 @@ import (
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/client"
 )
 
 // VpaWithSelector is a pair of VPA and its selector.
@@ -90,6 +91,7 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 		Handler:       &cache.ResourceEventHandlerFuncs{},
 		ResyncPeriod:  1 * time.Hour,
 		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		Transform:     client.StripManagedFields,
 	}
 
 	store, controller := cache.NewInformerWithOptions(informerOptions)
@@ -120,6 +122,7 @@ func NewVpaCheckpointLister(vpaClient *vpa_clientset.Clientset, stopChannel <-ch
 		Handler:       &cache.ResourceEventHandlerFuncs{},
 		ResyncPeriod:  1 * time.Hour,
 		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		Transform:     client.StripManagedFields,
 	}
 
 	store, controller := cache.NewInformerWithOptions(informerOptions)
