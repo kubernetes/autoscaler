@@ -91,11 +91,8 @@ done
 
 
 
-# Prepare Helm values
-HELM_CHART_PATH="${SCRIPT_ROOT}/charts/vertical-pod-autoscaler"
-VALUES_FILE="${SCRIPT_ROOT}/hack/e2e/values-e2e-local.yaml"
-HELM_RELEASE_NAME="vpa"
-HELM_NAMESPACE="kube-system"
+# Prepare Helm values (shared with deploy-for-e2e.sh via helm-settings.sh)
+source "${SCRIPT_ROOT}/hack/e2e/helm-settings.sh"
 
 # Build dynamic Helm set arguments based on components
 HELM_SET_ARGS=()
