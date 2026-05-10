@@ -4,8 +4,8 @@ go 1.26.0
 
 require (
 	github.com/olekukonko/tablewriter v1.1.4
-	github.com/onsi/ginkgo/v2 v2.28.1
-	github.com/onsi/gomega v1.39.1
+	github.com/onsi/ginkgo/v2 v2.28.3
+	github.com/onsi/gomega v1.40.0
 	golang.org/x/sync v0.20.0
 	k8s.io/api v0.36.0
 	k8s.io/apiextensions-apiserver v0.36.0

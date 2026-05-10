@@ -25,16 +25,18 @@ import (
 
 // HealthCheck contains information about last time of autoscaler activity and timeout
 type HealthCheck struct {
-	lastActivity      time.Time
-	lastSuccessfulRun time.Time
-	mutex             *sync.Mutex
-	activityTimeout   time.Duration
-	successTimeout    time.Duration
-	checkTimeout      bool
+	lastActivity           time.Time
+	lastSuccessfulRun      time.Time
+	mutex                  *sync.Mutex
+	activityTimeout        time.Duration
+	successTimeout         time.Duration
+	startupTimeout         time.Duration
+	checkTimeout           bool
+	initializationComplete bool
 }
 
 // NewHealthCheck builds new HealthCheck object with given timeout
-func NewHealthCheck(activityTimeout, successTimeout time.Duration) *HealthCheck {
+func NewHealthCheck(activityTimeout, successTimeout, startupTimeout time.Duration) *HealthCheck {
 	now := time.Now()
 	return &HealthCheck{
 		lastActivity:      now,
@@ -42,6 +44,7 @@ func NewHealthCheck(activityTimeout, successTimeout time.Duration) *HealthCheck 
 		mutex:             &sync.Mutex{},
 		activityTimeout:   activityTimeout,
 		successTimeout:    successTimeout,
+		startupTimeout:    startupTimeout,
 		checkTimeout:      false,
 	}
 }
@@ -66,9 +69,16 @@ func (hc *HealthCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	lastActivity := hc.lastActivity
 	lastSuccessfulRun := hc.lastSuccessfulRun
+	activityTimeout := hc.activityTimeout
+	successTimeout := hc.successTimeout
+	// Allow for separate timeout in the first loop, to account for cold caches etc.
+	if !hc.initializationComplete {
+		activityTimeout = hc.startupTimeout
+		successTimeout = hc.startupTimeout
+	}
 	now := time.Now()
-	activityTimedOut := now.After(lastActivity.Add(hc.activityTimeout))
-	successTimedOut := now.After(lastSuccessfulRun.Add(hc.successTimeout))
+	activityTimedOut := now.After(lastActivity.Add(activityTimeout))
+	successTimedOut := now.After(lastSuccessfulRun.Add(successTimeout))
 	timedOut := hc.checkTimeout && (activityTimedOut || successTimedOut)
 
 	hc.mutex.Unlock()
@@ -102,4 +112,5 @@ func (hc *HealthCheck) UpdateLastSuccessfulRun(timestamp time.Time) {
 	if timestamp.After(hc.lastActivity) {
 		hc.lastActivity = timestamp
 	}
+	hc.initializationComplete = true
 }

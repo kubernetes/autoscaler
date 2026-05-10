@@ -45,6 +45,7 @@ const (
 type ClusterState interface {
 	StateMapSize() int
 	AddOrUpdatePod(podID PodID, newLabels labels.Set, phase corev1.PodPhase)
+	SetInitContainers(podID PodID, initContainers []string) error
 	GetContainer(containerID ContainerID) *ContainerState
 	DeletePod(podID PodID)
 	AddOrUpdateContainer(containerID ContainerID, request Resources) error
@@ -175,6 +176,18 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 		cluster.addPodToItsVpa(pod)
 	}
 	pod.Phase = phase
+}
+
+// SetInitContainers sets the names of init containers that belong to the pod.
+// Requires the pod to be added to the clusterState first. Otherwise an error is
+// returned.
+func (cluster *clusterState) SetInitContainers(podID PodID, initContainers []string) error {
+	pod, podExists := cluster.pods[podID]
+	if !podExists || pod == nil {
+		return NewKeyError(podID)
+	}
+	pod.InitContainers = initContainers
+	return nil
 }
 
 // addPodToItsVpa increases the count of Pods associated with a VPA object.

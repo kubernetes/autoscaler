@@ -81,7 +81,7 @@ func (s *scalingDirectionPodEvictionAdmission) checkEvictionRequirementsForConta
 			recommendedValue := recommendedResources[resource]
 			resultsForResources = append(resultsForResources, s.checkChangeRequirement(currentlyRequestedValue.MilliValue(), recommendedValue.MilliValue(), requirement.ChangeRequirement))
 		}
-		// *All* EvictionRequirements need to be evaluated to `true`, so if there's a single one which evaluates to `false`, we can exit here and don't admit the Container
+		// *All* EvictionRequirements need to be evaluated to `true`. Each requirement passes if *at least one* of its resources satisfies changeRequirement. So if there's a single EvictionRequirement which evaluates to `false` because none of its resources satisfies changeRequirement, we can exit here and don't admit the Container
 		if !slices.Contains(resultsForResources, true) {
 			return false
 		}

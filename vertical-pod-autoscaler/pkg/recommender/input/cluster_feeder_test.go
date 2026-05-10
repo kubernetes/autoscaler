@@ -108,6 +108,24 @@ func (cs *fakeClusterState) AddSample(sample *model.ContainerUsageSampleWithKey)
 
 func (cs *fakeClusterState) AddOrUpdatePod(podID model.PodID, _ labels.Set, _ corev1.PodPhase) {
 	cs.addedPods = append(cs.addedPods, podID)
+	if cs.stubbedPods == nil {
+		cs.stubbedPods = make(map[model.PodID]*model.PodState)
+	}
+	if cs.stubbedPods[podID] == nil {
+		cs.stubbedPods[podID] = &model.PodState{
+			ID:         podID,
+			Containers: make(map[string]*model.ContainerState),
+		}
+	}
+}
+
+func (cs *fakeClusterState) SetInitContainers(podID model.PodID, initContainers []string) error {
+	pod, podExists := cs.stubbedPods[podID]
+	if !podExists || pod == nil {
+		return model.NewKeyError(podID)
+	}
+	pod.InitContainers = append([]string(nil), initContainers...)
+	return nil
 }
 
 func (cs *fakeClusterState) Pods() map[model.PodID]*model.PodState {
@@ -482,6 +500,20 @@ func TestClusterStateFeeder_LoadPods_ContainerTracking(t *testing.T) {
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].Containers), 1)
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].InitContainers), 2)
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].Containers), 2)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].InitContainers), 0)
+
+	// Re-loading the same pods must not cause the init container list to grow.
+	// This guards against a regression where LoadPods appended to the existing
+	// slice on every invocation, leading to unbounded growth over time.
+	feeder.LoadPods()
+	feeder.LoadPods()
+
+	assert.Equal(t, len(feeder.clusterState.Pods()), 2)
+	assert.Equal(t, len(feeder.clusterState.Pods()[podWithInitContainersID].InitContainers), 2)
+	assert.ElementsMatch(t,
+		[]string{"init1", "init2"},
+		feeder.clusterState.Pods()[podWithInitContainersID].InitContainers,
+	)
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].InitContainers), 0)
 }
 

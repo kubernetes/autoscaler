@@ -146,6 +146,12 @@ fi
 # Uninstall any existing VPA Helm release
 helm uninstall ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE} 2>/dev/null || true
 
+# Helm does not delete or upgrade CRDs under crds/, so remove them here to make
+# sure the next install picks up the current version from the chart.
+# https://helm.sh/docs/topics/charts/#limitations-on-crds
+kubectl delete crd verticalpodautoscalers.autoscaling.k8s.io --ignore-not-found=true
+kubectl delete crd verticalpodautoscalercheckpoints.autoscaling.k8s.io --ignore-not-found=true
+
 # Handle external metrics special case
 if [[ "${SUITE}" == "recommender-externalmetrics" ]]; then
   echo " ** Setting up external metrics infrastructure"

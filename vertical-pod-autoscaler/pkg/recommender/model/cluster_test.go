@@ -339,6 +339,25 @@ func TestMissingKeys(t *testing.T) {
 
 	err = cluster.AddOrUpdateContainer(testContainerID, testRequest)
 	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
+
+	err = cluster.SetInitContainers(testPodID, []string{"init-container-1"})
+	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
+
+	cluster.pods[testPodID] = nil
+	err = cluster.SetInitContainers(testPodID, []string{"init-container-1"})
+	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
+}
+
+func TestSetInitContainers(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	cluster.AddOrUpdatePod(testPodID, testLabels, corev1.PodRunning)
+
+	initContainers := []string{"init-container-1", "init-container-2"}
+	assert.NoError(t, cluster.SetInitContainers(testPodID, initContainers))
+	assert.Equal(t, []string{"init-container-1", "init-container-2"}, cluster.Pods()[testPodID].InitContainers)
+
+	assert.NoError(t, cluster.SetInitContainers(testPodID, []string{"init-container-3"}))
+	assert.Equal(t, []string{"init-container-3"}, cluster.Pods()[testPodID].InitContainers)
 }
 
 func addVpa(cluster ClusterState, id VpaID, annotations vpaAnnotationsMap, selector string, targetRef *autoscalingv1.CrossVersionObjectReference) *Vpa {

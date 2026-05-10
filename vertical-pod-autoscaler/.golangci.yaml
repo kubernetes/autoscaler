@@ -2,6 +2,7 @@ version: "2"
 linters:
   enable:
     - forbidigo
+    - gomodguard_v2
     - modernize
     - importas
     - revive
@@ -11,6 +12,11 @@ linters:
         # Forbid use of archived package "github.com/pkg/errors". Context: https://github.com/kubernetes/autoscaler/pull/7845
         - pkg: github.com/pkg/errors
       analyze-types: true
+    gomodguard_v2:
+      blocked:
+        - module: github.com/fsnotify/fsnotify
+          version: "> 1.9.0"
+          reason: "There's some confusion around github.com/fsnotify/fsnotify library - copying kubernetes for now - https://github.com/kubernetes/kubernetes/pull/138865"
     modernize:
       disable:
         # Disabling omitzero linter as it catches issues with API types, which would be best if kube-api-lint can handle
