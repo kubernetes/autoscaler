@@ -51,6 +51,7 @@ aliases:
     - raywainman
     - adrianmoisey
     - omerap12
+    - maxcao13
   # emeritus:
   # - jbartosik 2025-08-09
   sig-autoscaling-vpa-helm-chart-approvers:
