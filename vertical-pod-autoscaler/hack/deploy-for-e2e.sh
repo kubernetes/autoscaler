@@ -152,5 +152,6 @@ helm upgrade --install "${HELM_RELEASE_NAME}" "${HELM_CHART_PATH}" \
   --namespace "${HELM_NAMESPACE}" \
   --values "${VALUES_FILE}" \
   "${HELM_SET_ARGS[@]}" \
+  --debug \
   --wait \
   --timeout 10m
