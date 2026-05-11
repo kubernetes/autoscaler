@@ -38,7 +38,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
-	volumeutil "k8s.io/kubernetes/pkg/volume/util"
 )
 
 func generateCerts(t *testing.T, org string, caCert *x509.Certificate, caKey *rsa.PrivateKey) ([]byte, []byte) {
@@ -181,24 +180,18 @@ func TestChangedCAReloader(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	caPEM := pem.EncodeToMemory(&pem.Block{
+	caPath := path.Join(tempDir, "ca.crt")
+	caFile, err := os.Create(caPath)
+	if err != nil {
+		t.Error(err)
+	}
+	err = pem.Encode(caFile, &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: caBytes,
 	})
-	caDir := path.Join(tempDir, "ca-volume")
-	if err := os.MkdirAll(caDir, 0755); err != nil {
-		t.Fatal(err)
-	}
-	caWriter, err := volumeutil.NewAtomicWriter(caDir, "test-ca")
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
-	if err := caWriter.Write(map[string]volumeutil.FileProjection{
-		"ca.crt": {Data: caPEM, Mode: 0644},
-	}, nil); err != nil {
-		t.Fatal(err)
-	}
-	caPath := path.Join(caDir, "ca.crt")
 
 	testClientSet := fake.NewClientset()
 
@@ -255,14 +248,14 @@ func TestChangedCAReloader(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	newCaPEM := pem.EncodeToMemory(&pem.Block{
+	pemEncoded := pem.EncodeToMemory(&pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: newCaBytes,
 	})
-	if err := caWriter.Write(map[string]volumeutil.FileProjection{
-		"ca.crt": {Data: newCaPEM, Mode: 0644},
-	}, nil); err != nil {
-		t.Fatal(err)
+
+	err = os.WriteFile(caPath, pemEncoded, 0666)
+	if err != nil {
+		t.Error(err)
 	}
 
 	oldCAEncodedString := base64.StdEncoding.EncodeToString(oldWebhookCABundle)
@@ -301,24 +294,18 @@ func TestUnchangedCAReloader(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	caPEM := pem.EncodeToMemory(&pem.Block{
+	caPath := path.Join(tempDir, "ca.crt")
+	caFile, err := os.Create(caPath)
+	if err != nil {
+		t.Error(err)
+	}
+	err = pem.Encode(caFile, &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: caBytes,
 	})
-	caDir := path.Join(tempDir, "ca-volume")
-	if err := os.MkdirAll(caDir, 0755); err != nil {
-		t.Fatal(err)
-	}
-	caWriter, err := volumeutil.NewAtomicWriter(caDir, "test-ca")
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
-	if err := caWriter.Write(map[string]volumeutil.FileProjection{
-		"ca.crt": {Data: caPEM, Mode: 0644},
-	}, nil); err != nil {
-		t.Fatal(err)
-	}
-	caPath := path.Join(caDir, "ca.crt")
 
 	testClientSet := fake.NewClientset()
 
@@ -369,19 +356,29 @@ func TestUnchangedCAReloader(t *testing.T) {
 		t.Error(err)
 	}
 
-	// Write the same content again — AtomicWriter detects no change and skips the symlink swap
-	if err := caWriter.Write(map[string]volumeutil.FileProjection{
-		"ca.crt": {Data: caPEM, Mode: 0644},
-	}, nil); err != nil {
-		t.Fatal(err)
+	originalCaFile, err := os.ReadFile(caPath)
+	if err != nil {
+		t.Error(err)
+	}
+	err = os.WriteFile(caPath, originalCaFile, 0666)
+	if err != nil {
+		t.Error(err)
 	}
 
-	// AtomicWriter short-circuits when content is unchanged, so no fsnotify events fire
-	time.Sleep(3 * time.Second)
-	assert.False(t, reloadWebhookCACalled.Load(), "expected reloadWebhookCA to not be called")
+	oldCAEncodedString := base64.StdEncoding.EncodeToString(oldWebhookCABundle)
+
+	for range 10 {
+		if reloadWebhookCACalled.Load() {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+	if !reloadWebhookCACalled.Load() {
+		t.Error("expected reloadWebhookCA to be called")
+	}
+
 	assert.False(t, patchCalled.Load(), "expected patch to not be called")
 
-	oldCAEncodedString := base64.StdEncoding.EncodeToString(oldWebhookCABundle)
 	newWebhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
 	assert.Nil(t, err, "expected no error")
 	assert.NotNil(t, newWebhookConfig, "expected webhook configuration")
