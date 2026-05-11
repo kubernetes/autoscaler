@@ -157,7 +157,7 @@ func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerO
 
 		if opts.CapacityQuotasEnabled {
 			// register informer here to disable lazy initialization
-			if _, err := opts.KubeCache.GetInformer(context.TODO(), &cqv1alpha1.CapacityQuota{}); err != nil {
+			if _, err := opts.KubeCache.GetInformer(ctx, &cqv1alpha1.CapacityQuota{}); err != nil {
 				return err
 			}
 			providers = append(providers, capacityquota.NewCapacityQuotasProvider(opts.KubeClientNew))
