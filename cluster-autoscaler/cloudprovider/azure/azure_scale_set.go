@@ -484,7 +484,7 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 
 func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
 	if vmssInfo == nil {
-		return nil, fmt.Errorf("vmssInfo cannot be nil while increating scaleSet capacity")
+		return nil, fmt.Errorf("vmssInfo cannot be nil while increasing scaleSet capacity")
 	}
 
 	scaleSet.sizeMutex.Lock()
@@ -519,7 +519,6 @@ func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armc
 		return nil, err
 	}
 	return poller, nil
-
 }
 
 func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) error {
@@ -537,8 +536,13 @@ func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMa
 	}
 
 	// Proactively set the VMSS size so autoscaler makes better decisions.
+	// initCreateOrUpdate releases sizeMutex before returning, so reacquire it
+	// here to keep curSize / lastSizeRefresh updates serialized with readers
+	// (e.g. getCurSize).
+	scaleSet.sizeMutex.Lock()
 	scaleSet.curSize = newSize
 	scaleSet.lastSizeRefresh = time.Now()
+	scaleSet.sizeMutex.Unlock()
 
 	// Poll for completion asynchronously to avoid blocking the autoscaler
 	if poller != nil {

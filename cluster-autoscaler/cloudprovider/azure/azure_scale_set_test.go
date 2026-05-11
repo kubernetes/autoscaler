@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"testing"
 	"time"
 
@@ -373,6 +374,104 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 2, targetSizeForEdgeZoneMinZero)
 	}
+}
+
+// TestScaleSetIncreaseSizeRaceCondition reproduces a data race between the
+// non-atomic createOrUpdateInstances code path and concurrent readers.
+//
+// This test must be run with `-race` to detect the race. Without -race it is
+// a no-op smoke test. `make test-unit` runs the suite with -race.
+func TestScaleSetIncreaseSizeRaceCondition(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedScaleSets := newTestVMSSList(3, testASG, testLocation, armcompute.OrchestrationModeUniform)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	provider := newTestProvider(t)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	// BeginCreateOrUpdate signals that the writer is parked inside the call
+	// (sizeMutex still held by initCreateOrUpdate's deferred Unlock), then
+	// blocks until the test releases it. This lets us start reader goroutines
+	// while the lock is held so they will be racing against the unprotected
+	// writes that follow once initCreateOrUpdate returns.
+	started := make(chan struct{})
+	release := make(chan struct{})
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+	).DoAndReturn(func(_ context.Context, _, _ string, _ armcompute.VirtualMachineScaleSet, _ *armcompute.VirtualMachineScaleSetsClientBeginCreateOrUpdateOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
+		close(started)
+		<-release
+		return nil, nil
+	})
+	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
+
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), provider.azureManager.config.ResourceGroup, testASG).Return(expectedVMSSVMs, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	err := provider.azureManager.forceRefresh()
+	assert.NoError(t, err)
+
+	registered := provider.azureManager.RegisterNodeGroup(
+		newTestScaleSet(provider.azureManager, testASG))
+	assert.True(t, registered)
+
+	ng := provider.NodeGroups()[0]
+
+	// Kick off the writer (non-atomic IncreaseSize -> createOrUpdateInstances).
+	increaseDone := make(chan error, 1)
+	go func() {
+		increaseDone <- ng.IncreaseSize(2)
+	}()
+
+	// Wait until createOrUpdateInstances is parked inside BeginCreateOrUpdate
+	// with sizeMutex held.
+	<-started
+
+	// Spin concurrent readers that touch curSize / lastSizeRefresh under
+	// sizeMutex. Once we release the writer, it will exit BeginCreateOrUpdate,
+	// drop sizeMutex, and perform the (unprotected) writes to curSize /
+	// lastSizeRefresh. The race detector will flag the unsynchronized access.
+	var wg sync.WaitGroup
+	stop := make(chan struct{})
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-stop:
+					return
+				default:
+					_, _ = ng.TargetSize()
+				}
+			}
+		}()
+	}
+
+	// Give readers a moment to start contending for sizeMutex, then release
+	// the writer so the unprotected writes execute concurrently with reads.
+	time.Sleep(10 * time.Millisecond)
+	close(release)
+
+	err = <-increaseDone
+	assert.NoError(t, err)
+
+	// Let the readers run a bit longer past the unprotected writes to widen
+	// the race window, then stop them.
+	time.Sleep(10 * time.Millisecond)
+	close(stop)
+	wg.Wait()
 }
 
 func TestScaleSetAtomicIncreaseSize(t *testing.T) {
