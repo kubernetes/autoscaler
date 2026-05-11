@@ -252,3 +252,4 @@ helm upgrade --install ${HELM_RELEASE_NAME} "${HELM_CHART_PATH}" \
   "${HELM_SET_ARGS[@]}" \
   --wait \
   --timeout 15m
+  
