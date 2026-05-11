@@ -42,8 +42,8 @@ type NodeGroupSpec struct {
 	Autoscaling    *NodeGroupAutoscalingSpec
 
 	// Opaque fields preserved for round-trip during updates.
-	templateRaw  []byte
-	strategyRaw  []byte
+	templateRaw   []byte
+	strategyRaw   []byte
 	autoRepairRaw []byte
 }
 

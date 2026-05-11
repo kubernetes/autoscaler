@@ -36,8 +36,8 @@ const (
 	mk8sNodeGroupList   = "/nebius.mk8s.v1.NodeGroupService/List"
 	mk8sNodeGroupGet    = "/nebius.mk8s.v1.NodeGroupService/Get"
 	mk8sNodeGroupUpdate = "/nebius.mk8s.v1.NodeGroupService/Update"
-	computeInstanceList  = "/nebius.compute.v1.InstanceService/List"
-	computeInstanceDel   = "/nebius.compute.v1.InstanceService/Delete"
+	computeInstanceList = "/nebius.compute.v1.InstanceService/List"
+	computeInstanceDel  = "/nebius.compute.v1.InstanceService/Delete"
 )
 
 // Client provides access to the Nebius MK8S and Compute gRPC APIs.
