@@ -511,7 +511,7 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 
 func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *compute.VirtualMachineScaleSet, newSize int64) (*azure.Future, error) {
 	if vmssInfo == nil {
-		return nil, fmt.Errorf("vmssInfo cannot be nil while increating scaleSet capacity")
+		return nil, fmt.Errorf("vmssInfo cannot be nil while increasing scaleSet capacity")
 	}
 
 	scaleSet.sizeMutex.Lock()
@@ -544,7 +544,7 @@ func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *comp
 		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %+v", scaleSet.Name, rerr)
 		return nil, rerr.Error()
 	}
-	return &future, nil
+	return future, nil
 }
 
 func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *compute.VirtualMachineScaleSet, newSize int64) error {
