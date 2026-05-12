@@ -348,3 +348,32 @@ spec:
       cpu: 64
       memory: 128Gi
 ```
+
+## Graduation Criteria
+
+### Alpha (released in 1.35)
+
+- [x] Implement the API definition
+- [x] Refactor resource limits logic to support multiple sources of limits
+- [x] Integrate CapacityQuota API with the refactored resource limits logic
+
+### Beta
+
+- [ ] Add status subresource showing the current utilization of the limits
+- [ ] Implement the controller reconciling the CapacityQuota status
+- [ ] Implement E2E tests
+- [ ] Fix all major issues found during the alpha stage (if any)
+
+### GA (v1)
+
+- [ ] In beta for at least 1 minor k8s version
+- [ ] Waiting up to k8s 1.39 (inclusive) in beta for the Karpenter implementation.
+  In case of no implementation in order to avoid permanent beta (following the spirit
+  of [guidance for k8s REST APIs](https://kubernetes.io/blog/2020/08/21/moving-forward-from-beta/#avoiding-permanent-beta)) we will reevaluate the graduation criteria
+  with sig-autoscaling leads based on:
+    - existing adoption and feedback
+    - reasons for no implementation and immediate future plans
+- [ ] Graduation plan announced 1 month in advance on sig-autoscaling meeting to
+  allow time for feedback
+  - [ ] Reviewed and summarized all open issues about capacity quotas in
+    the https://github.com/kubernetes/autoscaler/ and https://github.com/kubernetes-sigs/karpenter repositories
