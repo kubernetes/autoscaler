@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 HELM_VERSION="${HELM_VERSION:-v3.16.3}"
 
 function print_help {
@@ -71,22 +71,19 @@ ensure_helm_installed
 
 source "${SCRIPT_ROOT}/hack/e2e/helm-settings.sh"
 
-export REGISTRY="gcr.io/$(gcloud config get-value core/project)"
+export REGISTRY=gcr.io/`gcloud config get-value core/project`
 export TAG=latest
 
+echo "Configuring registry authentication"
 mkdir -p "${HOME}/.docker"
 gcloud auth configure-docker -q
 
-for COMPONENT in ${COMPONENTS}; do
-  ALL_ARCHITECTURES=amd64 make --directory "${SCRIPT_ROOT}/pkg/${COMPONENT}" release
-done
-
-# Generate TLS certs for admission-controller before Helm install.
+# Build images and (for admission-controller) generate TLS certs before Helm install.
 for COMPONENT in ${COMPONENTS}; do
   if [[ "${COMPONENT}" == "admission-controller" ]]; then
     (cd "${SCRIPT_ROOT}/pkg/${COMPONENT}" && bash ./gencerts.sh e2e)
-    break
   fi
+  ALL_ARCHITECTURES=amd64 make --directory "${SCRIPT_ROOT}/pkg/${COMPONENT}" release
 done
 
 # Build per-suite Helm value overrides. values-e2e.yaml disables every
@@ -124,8 +121,8 @@ done
 
 # Propagate FEATURE_GATES (set on alpha/beta CI lanes) to component args.
 # Helm --set replaces lists; for admissionController we re-add --reload-cert
-# (set in values-e2e.yaml for the cert-rotation test). Commas in the value
-# are escaped so Helm --set treats it as one assignment.
+# (set in values-e2e.yaml for the cert-rotation test) so it isn't dropped.
+# Commas in the value are escaped so Helm --set treats it as one assignment.
 if [[ -n "${FEATURE_GATES:-}" ]]; then
   ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
   for COMPONENT in ${COMPONENTS}; do
@@ -146,7 +143,7 @@ if [[ -n "${FEATURE_GATES:-}" ]]; then
   done
 fi
 
-# Helm 3 installs CRDs from chart's crds/ directory on first install of a
+# Helm 3+ installs CRDs from chart's crds/ directory on first install of a
 # release. CI runs on fresh VMs, so this is always a first install.
 helm upgrade --install "${HELM_RELEASE_NAME}" "${HELM_CHART_PATH}" \
   --namespace "${HELM_NAMESPACE}" \

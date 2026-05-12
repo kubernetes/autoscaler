@@ -1,39 +1,30 @@
 # Helm values for E2E testing — used by both deploy-for-e2e.sh (CI) and
 # deploy-for-e2e-locally.sh. Image repository, tag, and pullPolicy are
-# overridden via --set flags by the calling script (Always for CI, Never for
-# local KIND).
+# overridden via --set flags by the calling script.
 fullnameOverride: vpa
 
-# Pod security context — matches the original deploy/admission-controller-deployment.yaml.
+# Pod security context for VPA components
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 65534
 
-# Component configurations. All three components are disabled by default;
-# the calling script enables only the ones the suite needs via --set.
+# Components are disabled by default; the calling script enables only the
+# ones the suite needs via --set.
 admissionController:
   enabled: false
   replicas: 1
-  # Disable pod anti-affinity for single-node clusters (Prow GCE + local KIND).
+  # Disable pod anti-affinity for single-node clusters
   affinity: {}
   podDisruptionBudget:
     enabled: false
-  # Use application-managed webhook for e2e testing. The admission controller
-  # itself creates the MutatingWebhookConfiguration named vpa-webhook-config
-  # on startup. The cert rotation e2e test requires this mode (it modifies
-  # vpa-tls-certs and expects the controller to hot-reload).
+  # Use application-managed webhook for e2e testing (cert rotation test requires this)
   registerWebhook: true
   certGen:
     enabled: false
-  # Hot-reload the leaf and CA certs from disk — required by the e2e cert
-  # rotation test in test/e2e/v1/admission_controller.go.
+  # Enable certificate reload for e2e rotation test
   extraArgs:
     - --reload-cert
-  # Mount the secret created by gencerts.sh / openssl. The keys are written
-  # at the secret's top level (caCert.pem, serverCert.pem, serverKey.pem,
-  # caKey.pem) so we omit `items:` and the secret keys map directly to file
-  # names. The e2e test admission_controller.go:1152 supports both the
-  # gencerts.sh (*.pem) and Helm certgen (key/cert/ca) formats.
+  # Mount certificates with legacy key names (matching gencerts.sh format)
   volumes:
     - name: tls-certs
       secret:
@@ -49,7 +40,6 @@ recommender:
   affinity: {}
   podDisruptionBudget:
     enabled: false
-  # Single replica → no leader election needed; avoids 15s lease wait at startup.
   leaderElection:
     enabled: false
 
@@ -61,4 +51,3 @@ updater:
     enabled: false
   leaderElection:
     enabled: false
-    
