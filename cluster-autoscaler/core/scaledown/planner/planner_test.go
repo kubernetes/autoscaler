@@ -18,6 +18,8 @@ package planner
 
 import (
 	"fmt"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
+
 	"testing"
 	"time"
 
@@ -505,7 +507,8 @@ func TestUpdateClusterState(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processors, deleteOptions, nil)
+			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
+			p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			if tc.isSimulationTimeout {
 				autoscalingCtx.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
@@ -526,6 +529,8 @@ func TestUpdateClusterState(t *testing.T) {
 		})
 	}
 }
+
+
 
 func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 	testCases := []struct {
@@ -703,7 +708,8 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processors, deleteOptions, nil)
+			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
+			p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
 			p.unneededNodes.Update(&autoscalingCtx, previouslyUnneeded, time.Now())
@@ -838,7 +844,8 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 			assert.NoError(t, err)
 
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processors, deleteOptions, nil)
+			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
+			p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
 
 			p.unneededNodes.AsList()
 		})
@@ -847,11 +854,13 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 
 func TestNodesToDelete(t *testing.T) {
 	testCases := []struct {
-		name           string
-		nodes          map[string][]*apiv1.Node
-		removableNodes map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved
-		wantEmpty      []*apiv1.Node
-		wantDrain      []*apiv1.Node
+		name            string
+		nodes           map[string][]*apiv1.Node
+		removableNodes  map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved
+		wantEmpty       []*apiv1.Node
+		wantDrain       []*apiv1.Node
+		minLimits       map[string]int64
+		wantUnremovable map[string]simulator.UnremovableReason
 	}{
 		{
 			name:           "empty",
@@ -1016,6 +1025,56 @@ func TestNodesToDelete(t *testing.T) {
 				buildRemovableNode("atomic-partial-ng-partially-registered-1", 0).Node,
 			},
 		},
+		{
+			name: "min limits race condition protection",
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("node-3", 1000, 10),
+				},
+			},
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("ng1", 3, false): {
+					buildRemovableNode("node-1", 0),
+					buildRemovableNode("node-2", 1),
+				},
+			},
+			wantEmpty: []*apiv1.Node{
+				buildRemovableNode("node-1", 0).Node,
+			},
+			wantDrain: []*apiv1.Node{},
+			minLimits: map[string]int64{
+				cloudprovider.ResourceNameCores:  2,
+				cloudprovider.ResourceNameMemory: 20,
+				"nodes":                          2,
+			},
+			wantUnremovable: map[string]simulator.UnremovableReason{
+				"node-2": simulator.MinimalResourceLimitExceeded,
+			},
+		},
+		{
+			name: "two nodes removable, quota allows both",
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("node-3", 1000, 10),
+				},
+			},
+			removableNodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("ng1", 3, false): {
+					buildRemovableNode("node-1", 0),
+					buildRemovableNode("node-2", 0),
+				},
+			},
+			wantEmpty: []*apiv1.Node{
+				buildRemovableNode("node-1", 0).Node,
+				buildRemovableNode("node-2", 0).Node,
+			},
+			wantDrain: []*apiv1.Node{},
+			minLimits: map[string]int64{
+				cloudprovider.ResourceNameCores:  1,
+				cloudprovider.ResourceNameMemory: 10,
+				"nodes":                          1,
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -1044,20 +1103,41 @@ func TestNodesToDelete(t *testing.T) {
 					ScaleDownUnneededTime: 10 * time.Minute,
 					ScaleDownUnreadyTime:  0 * time.Minute,
 				},
+				ScaleDownSimulationTimeout: 5 * time.Minute,
 			}
 			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOpts)
 			autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOpts, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, allNodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&autoscalingCtx, processors, deleteOptions, nil)
+			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
+			p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
 			p.latestUpdate = time.Now()
+
+			if tc.minLimits != nil {
+				resourceLimiter := cloudprovider.NewResourceLimiter(tc.minLimits, nil)
+				provider.SetResourceLimiter(resourceLimiter)
+			}
+
 			p.scaleDownContext.ActuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 			p.unneededNodes.Update(&autoscalingCtx, allRemovables, time.Now().Add(-1*time.Hour))
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(allNodes))}
 			empty, drain := p.NodesToDelete(time.Now())
 			assert.ElementsMatch(t, tc.wantEmpty, empty)
 			assert.ElementsMatch(t, tc.wantDrain, drain)
+
+			if tc.wantUnremovable != nil {
+				unremovable := p.unremovableNodes.AsList()
+				unremovableMap := make(map[string]simulator.UnremovableReason)
+				for _, u := range unremovable {
+					unremovableMap[u.Node.Name] = u.Reason
+				}
+				for nodeName, expectedReason := range tc.wantUnremovable {
+					reason, found := unremovableMap[nodeName]
+					assert.True(t, found, "Node %s not found in unremovable list", nodeName)
+					assert.Equal(t, expectedReason, reason, "Reason mismatch for node %s", nodeName)
+				}
+			}
 		})
 	}
 }

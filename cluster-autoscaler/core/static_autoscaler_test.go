@@ -336,7 +336,7 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
 	autoscalingCtx.ScaleDownActuator = actuation.NewActuator(&autoscalingCtx, clusterState, nodeDeletionTracker, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
-	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules)
+	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules, quotasTrackerFactory)
 
 	processorCallbacks.scaleDownPlanner = sdPlanner
 
@@ -3167,7 +3167,8 @@ func newScaleDownPlannerAndActuator(autoscalingCtx *ca_context.AutoscalingContex
 	if nodeDeletionTracker == nil {
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
-	planner := planner.New(autoscalingCtx, p, deleteOptions, nil)
+	quotasTrackerFactory := newQuotasTrackerFactory(autoscalingCtx, p)
+	planner := planner.New(autoscalingCtx, p, deleteOptions, nil, quotasTrackerFactory)
 	actuator := actuation.NewActuator(autoscalingCtx, cs, nodeDeletionTracker, deleteOptions, nil, p.NodeGroupConfigProcessor)
 	return planner, actuator
 }
@@ -3299,7 +3300,8 @@ func buildStaticAutoscaler(t *testing.T, provider cloudprovider.CloudProvider, a
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingCtx.AutoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
 
-	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules)
+	quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
+	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules, quotasTrackerFactory)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:   &autoscalingCtx,
