@@ -10,6 +10,7 @@ updates:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
     - "ok-to-test"
+    - "triage/accepted"
     groups:
       kubernetes:
         patterns:
