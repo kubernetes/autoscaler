@@ -26,9 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 )
 
-const (
-	userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
-)
+var userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 
 // linodeAPIClient is the interface used to call linode API
 type linodeAPIClient interface {

@@ -45,11 +45,12 @@ import (
 )
 
 const (
-	userAgent                    = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 	expectedAPIContentTypePrefix = "application/json"
 	prefix                       = "equinixmetal://"
 	metalAuthTokenEnv            = "METAL_AUTH_TOKEN"
 )
+
+var userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 
 type instanceType struct {
 	InstanceName string

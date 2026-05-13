@@ -19,15 +19,14 @@ package kamatera
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/klog/v2"
-	"strings"
 )
 
-const (
-	userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
-)
+var userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 
 // NewKamateraApiClientRest factory to create new Rest API Client struct
 func NewKamateraApiClientRest(clientId string, secret string, url string) (client KamateraApiClientRest) {
