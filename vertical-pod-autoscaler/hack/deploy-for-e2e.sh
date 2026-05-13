@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
-HELM_VERSION="${HELM_VERSION:-v3.16.3}"
+HELM_VERSION="${HELM_VERSION:-v4.1.4}"
 
 function print_help {
   echo "ERROR! Usage: deploy-for-e2e.sh [suite]*"
