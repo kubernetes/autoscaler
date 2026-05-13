@@ -15,10 +15,12 @@ updates:
     kubernetes:
       patterns:
         - "k8s.io/*"
+        - "k8s.io/**"
     default:
       group-by: dependency-name
       exclude-patterns:
         - "k8s.io/*"
+        - "k8s.io/**"
 - package-ecosystem: docker
   directories:
     - "/vertical-pod-autoscaler/pkg/admission-controller"
