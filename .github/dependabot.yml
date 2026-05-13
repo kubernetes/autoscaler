@@ -12,15 +12,16 @@ updates:
     - "ok-to-test"
     - "triage/accepted"
   groups:
+    non-kubernetes:
+      patterns:
+        - "*"
+      exclude-patterns:
+        - "k8s.io/*"
+        - "sigs.k8s.io/*"
     kubernetes:
       patterns:
         - "k8s.io/*"
-        - "k8s.io/**"
-    default:
-      group-by: dependency-name
-      exclude-patterns:
-        - "k8s.io/*"
-        - "k8s.io/**"
+        - "sigs.k8s.io/*"
 - package-ecosystem: docker
   directories:
     - "/vertical-pod-autoscaler/pkg/admission-controller"
