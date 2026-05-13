@@ -16,5 +16,8 @@ limitations under the License.
 
 package version
 
-// ClusterAutoscalerVersion contains version of CA.
-const ClusterAutoscalerVersion = "1.35.0-rc.0"
+// ClusterAutoscalerVersion contains the version of Cluster Autoscaler. The
+// default placeholder value is overridden at build time via -ldflags by the
+// Makefile, which derives the value from the current git tag (or commit SHA
+// when HEAD is not tagged).
+var ClusterAutoscalerVersion = "dev"
