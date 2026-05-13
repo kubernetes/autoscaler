@@ -233,7 +233,8 @@ func NewPodTemplate(opts ...PodTemplateOption) *corev1.PodTemplate {
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
 					{
-						Name: "container",
+						Name:  "container",
+						Image: "image",
 					},
 				},
 			},
@@ -256,7 +257,7 @@ func WithPodTemplateName(name string) PodTemplateOption {
 func WithPodTemplateResources(requests, limits corev1.ResourceList) PodTemplateOption {
 	return func(pt *corev1.PodTemplate) {
 		if len(pt.Template.Spec.Containers) == 0 {
-			pt.Template.Spec.Containers = append(pt.Template.Spec.Containers, corev1.Container{Name: "container"})
+			pt.Template.Spec.Containers = append(pt.Template.Spec.Containers, corev1.Container{Name: "container", Image: "image"})
 		}
 		pt.Template.Spec.Containers[0].Resources.Requests = requests
 		pt.Template.Spec.Containers[0].Resources.Limits = limits
@@ -327,5 +328,12 @@ func WithResourceQuotaScopes(scopes []corev1.ResourceQuotaScope) ResourceQuotaOp
 func WithResourceQuotaScopeSelector(selector *corev1.ScopeSelector) ResourceQuotaOption {
 	return func(rq *corev1.ResourceQuota) {
 		rq.Spec.ScopeSelector = selector
+	}
+}
+
+// WithNamespace is a generic functional option that sets the namespace for any kubernetes resource.
+func WithNamespace[T metav1.Object](namespace string) func(T) {
+	return func(obj T) {
+		obj.SetNamespace(namespace)
 	}
 }
