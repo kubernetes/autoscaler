@@ -530,8 +530,6 @@ func TestUpdateClusterState(t *testing.T) {
 	}
 }
 
-
-
 func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 	testCases := []struct {
 		name               string

@@ -421,9 +421,9 @@ func TestRemovableAt_UnremovableReasons(t *testing.T) {
 			expectedReason: simulator.NodeGroupMinSizeReached,
 		},
 		{
-			name:       "MinimalResourceLimitExceeded",
-			nodeConfig: baseCase.nodeConfig,
-			thresholds: baseCase.thresholds,
+			name:        "MinimalResourceLimitExceeded",
+			nodeConfig:  baseCase.nodeConfig,
+			thresholds:  baseCase.thresholds,
 			groupConfig: baseCase.groupConfig,
 			quotas: []resourcequotas.Quota{
 				&resourcequotas.FakeQuota{
