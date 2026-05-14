@@ -256,6 +256,7 @@ func TestValidateVPA(t *testing.T) {
 	scalingModeOff := vpa_types.ContainerScalingModeOff
 	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
 	inPlaceOrRecreateUpdateMode := vpa_types.UpdateModeInPlaceOrRecreate
+	inPlaceUpdateMode := vpa_types.UpdateModeInPlace
 	badCPUBoostFactor := int32(0)
 	validCPUBoostFactor := int32(2)
 	badCPUBoostQuantity := resource.MustParse("187500u")
@@ -306,7 +307,7 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			expectError: errors.New("spec.updatePolicy.updateMode: Unsupported value: \"bad\": supported values: \"InPlaceOrRecreate\", \"Initial\", \"Off\", \"Recreate\""),
+			expectError: errors.New("spec.updatePolicy.updateMode: Unsupported value: \"bad\": supported values: \"InPlace\", \"InPlaceOrRecreate\", \"Initial\", \"Off\", \"Recreate\""),
 		},
 		{
 			name: "creating VPA with InPlaceOrRecreate update mode not allowed by disabled feature gate",
@@ -1087,6 +1088,70 @@ func TestValidateVPA(t *testing.T) {
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: false},
 			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].oomMinBumpUp: Forbidden: not supported when feature flag PerVPAConfig is disabled"),
+		},
+		{
+			name: "creating VPA with InPlace update mode not allowed by disabled feature gate",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &inPlaceUpdateMode,
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowInPlace: false},
+			expectError: fmt.Errorf("spec.updatePolicy.updateMode: Forbidden: in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlace, features.InPlace),
+		},
+		{
+			name: "InPlace update mode with minReplicas",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode:  &inPlaceUpdateMode,
+						MinReplicas: &validMinReplicas,
+					},
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+				},
+			},
+			opts: VPAValidationOptions{IsVPACreate: true, AllowInPlace: true},
+		},
+		{
+			name: "InPlace update mode with complete resource policy",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode:  &inPlaceUpdateMode,
+						MinReplicas: &validMinReplicas,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "test-container",
+								Mode:          &validScalingMode,
+								MinAllowed: corev1.ResourceList{
+									cpu:    resource.MustParse("10m"),
+									memory: resource.MustParse("100Mi"),
+								},
+								MaxAllowed: corev1.ResourceList{
+									cpu:    resource.MustParse("1000m"),
+									memory: resource.MustParse("1Gi"),
+								},
+							},
+						},
+					},
+				},
+			},
+			opts: VPAValidationOptions{IsVPACreate: true, AllowInPlace: true},
 		},
 	}
 	for _, tc := range tests {

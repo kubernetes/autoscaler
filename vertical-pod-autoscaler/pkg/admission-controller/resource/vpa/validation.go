@@ -33,6 +33,7 @@ type VPAValidationOptions struct {
 	AllowCPUStartupBoost   bool
 	AllowInPlaceOrRecreate bool
 	AllowPerVPAConfig      bool
+	AllowInPlace           bool
 }
 
 func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAValidationOptions {
@@ -41,6 +42,7 @@ func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAVali
 		AllowCPUStartupBoost:   allowCPUBoost(oldObj),
 		AllowInPlaceOrRecreate: features.Enabled(features.InPlaceOrRecreate),
 		AllowPerVPAConfig:      allowPerVPAConfig(oldObj),
+		AllowInPlace:           allowInPlace(oldObj),
 	}
 
 	return opts
@@ -93,6 +95,22 @@ func allowPerVPAConfig(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	return false
 }
 
+func allowInPlace(oldObj *vpa_types.VerticalPodAutoscaler) bool {
+	if features.Enabled(features.InPlace) {
+		return true
+	}
+
+	if oldObj == nil {
+		return false
+	}
+
+	if oldObj.Spec.UpdatePolicy != nil && oldObj.Spec.UpdatePolicy.UpdateMode != nil && *oldObj.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeInPlace {
+		return true
+	}
+
+	return false
+}
+
 func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions) field.ErrorList {
 	allErrs := field.ErrorList{}
 	allErrs = append(allErrs, validateVPASpec(&vpa.Spec, field.NewPath("spec"), opts)...)
@@ -139,6 +157,10 @@ func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPat
 
 		if *mode == vpa_types.UpdateModeInPlaceOrRecreate && !opts.AllowInPlaceOrRecreate {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("updateMode"), fmt.Sprintf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate)))
+		}
+
+		if *mode == vpa_types.UpdateModeInPlace && !opts.AllowInPlace {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("updateMode"), fmt.Sprintf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlace, features.InPlace)))
 		}
 	}
 	if minReplicas := updatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {

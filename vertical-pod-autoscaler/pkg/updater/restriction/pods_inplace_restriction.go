@@ -36,6 +36,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -51,14 +52,24 @@ const (
 )
 
 // PodsInPlaceRestriction controls pods in-place updates. It ensures that we will not update too
-// many pods from one replica set. For replica set will allow to update one pod or more if
+// many pods from one replica set. For a replica set, it will allow updating one pod or more if
 // inPlaceToleranceFraction is configured.
 type PodsInPlaceRestriction interface {
-	// InPlaceUpdate attempts to actuate the in-place resize.
-	// Returns error if client returned error.
+	// InPlaceUpdate attempts to actuate the in-place resize for the given pod.
+	// Returns error if the client operation fails.
 	InPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error
-	// CanInPlaceUpdate checks if pod can be safely updated in-place. If not, it will return a decision to potentially evict the pod.
-	CanInPlaceUpdate(pod *corev1.Pod) utils.InPlaceDecision
+
+	// CanInPlaceUpdate checks if a pod can be safely updated in-place.
+	// Returns:
+	//   - InPlaceApproved: The pod can be updated in-place immediately.
+	//   - InPlaceDeferred: The update should be deferred (e.g., pod is pending, already updating, or group is not disruptable).
+	//   - InPlaceEvict: The pod should be evicted instead of updated in-place.
+	//   - InPlaceInfeasible: The in-place update is infeasible (node can't accommodate it or error occurred). Will only retry when recommendation changes.
+	//
+	// The updateMode parameter affects the decision:
+	//   - UpdateModeInPlace: Waits indefinitely for in-progress updates.
+	//   - UpdateModeInPlaceOrRecreate: May return InPlaceEvict if the pod update exceeds the timeout threshold.
+	CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[k8stypes.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision
 	// CanUnboost checks if a pod can be safely unboosted.
 	CanUnboost(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool
 }
@@ -75,37 +86,111 @@ type PodsInPlaceRestrictionImpl struct {
 }
 
 // CanInPlaceUpdate checks if pod can be safely updated
-func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod) utils.InPlaceDecision {
-	if !features.Enabled(features.InPlaceOrRecreate) {
+func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[k8stypes.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision {
+	// Use default mode when update mode is nil
+	updateMode := vpa_types.UpdateModeRecreate
+	if (vpa.Spec.UpdatePolicy != nil) && (vpa.Spec.UpdatePolicy.UpdateMode != nil) {
+		updateMode = *vpa.Spec.UpdatePolicy.UpdateMode
+	}
+
+	switch updateMode {
+	case vpa_types.UpdateModeInPlaceOrRecreate:
+		if !features.Enabled(features.InPlaceOrRecreate) {
+			return utils.InPlaceEvict
+		}
+	case vpa_types.UpdateModeInPlace:
+		if !features.Enabled(features.InPlace) {
+			return utils.InPlaceDeferred
+		}
+	default:
 		return utils.InPlaceEvict
 	}
 
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
-	if present {
-		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
-		if pod.Status.Phase == corev1.PodPending {
-			return utils.InPlaceDeferred
-		}
-		if present {
-			if isInPlaceUpdating(pod) {
-				canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
-				if canEvict {
-					return utils.InPlaceEvict
-				}
-				return utils.InPlaceDeferred
-			}
-			if ip.inPlaceSkipDisruptionBudget {
-				if utils.IsNonDisruptiveResize(pod) {
-					klog.V(4).InfoS("in-place-skip-disruption-budget enabled, skipping disruption budget check for in-place update")
-					return utils.InPlaceApproved
-				}
-				klog.V(4).InfoS("in-place-skip-disruption-budget enabled, but pod has RestartContainer resize policy", "pod", klog.KObj(pod))
-			}
-			if singleGroupStats.isPodDisruptable() {
-				return utils.InPlaceApproved
-			}
+	if !present {
+		klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
+		return utils.InPlaceDeferred
+	}
+
+	if pod.Status.Phase == corev1.PodPending {
+		return utils.InPlaceDeferred
+	}
+
+	singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
+	if !present {
+		klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
+		return utils.InPlaceDeferred
+	}
+
+	if vpa.Status.Recommendation == nil {
+		klog.V(4).InfoS("Can't in-place update pod, no recommendation available yet. Waiting for next loop", "pod", klog.KObj(pod))
+		return utils.InPlaceDeferred
+	}
+
+	recommendation := vpa.Status.Recommendation
+
+	// if the update mode is inPlace we want to check the map for previous Infeasible attempts
+	if updateMode == vpa_types.UpdateModeInPlace && infeasibleAttempts != nil {
+		lastAttempt, exist := infeasibleAttempts[pod.UID]
+		if exist && !resourcehelpers.RecommendationHasLowerResource(lastAttempt, recommendation) {
+			klog.V(2).InfoS("In-place update infeasible, no resource is lower in new recommendation, skipping pod", "pod", klog.KObj(pod))
+			return utils.InPlaceInfeasibleCached
 		}
 	}
+
+	resizeStatus := getResizeStatus(pod)
+
+	// pod is in place updaing
+	// utils.ResizeStatusNone means that  there is no container that is inPodResizePending or PodResizeInProgress state
+	if resizeStatus != utils.ResizeStatusNone {
+		// For InPlace mode: wait for all non-terminal statuses, never evict.
+		// Infeasible attempts are tracked and only retried when recommendation changes.
+		if updateMode == vpa_types.UpdateModeInPlace {
+			switch resizeStatus {
+			case utils.ResizeStatusInfeasible:
+				// Infeasible means node can't accommodate the resize.
+				// Store spec.resources and wait for recommendation to change before retrying.
+				klog.V(4).InfoS("In-place update infeasible", "pod", klog.KObj(pod))
+				return utils.InPlaceInfeasible
+			case utils.ResizeStatusDeferred:
+				// Deferred means kubelet is waiting to apply the resize.
+				// Do nothing, wait for kubelet to proceed.
+				klog.V(4).InfoS("In-place update deferred by kubelet, waiting", "pod", klog.KObj(pod))
+				return utils.InPlaceDeferred
+			case utils.ResizeStatusInProgress:
+				// Resize is actively being applied, wait for completion.
+				klog.V(4).InfoS("In-place update in progress, waiting for completion", "pod", klog.KObj(pod))
+				return utils.InPlaceDeferred
+			case utils.ResizeStatusError:
+				// Error during resize, will retry if recommendation changes.
+				klog.V(4).ErrorS(nil, "In-place update error, will retry if recommendation changes", "pod", klog.KObj(pod))
+				return utils.InPlaceInfeasible
+			default:
+				klog.V(4).InfoS("In-place update status unknown, waiting", "pod", klog.KObj(pod), "status", resizeStatus)
+				return utils.InPlaceDeferred
+			}
+		}
+
+		// For InPlaceOrRecreate mode, check timeout
+		canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
+		if canEvict {
+			return utils.InPlaceEvict
+		}
+		return utils.InPlaceDeferred
+	}
+
+	if ip.inPlaceSkipDisruptionBudget {
+		if utils.IsNonDisruptiveResize(pod) {
+			klog.V(4).InfoS("in-place-skip-disruption-budget enabled, skipping disruption budget check for in-place update")
+			return utils.InPlaceApproved
+		}
+		klog.V(4).InfoS("in-place-skip-disruption-budget enabled, but pod has RestartContainer resize policy", "pod", klog.KObj(pod))
+	}
+
+	if singleGroupStats.isPodDisruptable() {
+		return utils.InPlaceApproved
+	}
+
 	klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
 	return utils.InPlaceDeferred
 }
@@ -113,6 +198,9 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod) utils.In
 // CanUnboost checks if a pod can be safely unboosted.
 func (ip *PodsInPlaceRestrictionImpl) CanUnboost(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
 	if !features.Enabled(features.CPUStartupBoost) {
+		return false
+	}
+	if pod.Status.Phase == corev1.PodPending {
 		return false
 	}
 	durationPassed := vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa)
@@ -125,9 +213,6 @@ func (ip *PodsInPlaceRestrictionImpl) CanUnboost(pod *corev1.Pod, vpa *vpa_types
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
 		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
-		if pod.Status.Phase == corev1.PodPending {
-			return false
-		}
 		if present {
 			if isInPlaceUpdating(pod) {
 				return false
