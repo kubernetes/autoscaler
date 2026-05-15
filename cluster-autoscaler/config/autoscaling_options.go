@@ -323,8 +323,6 @@ type AutoscalingOptions struct {
 	DynamicResourceAllocationEnabled bool
 	// CSINodeAwareSchedulingEnabled configures whether logic for handling CSINode objects is enabled.
 	CSINodeAwareSchedulingEnabled bool
-	// ClusterSnapshotParallelism is the maximum parallelism of cluster snapshot creation.
-	ClusterSnapshotParallelism int
 	// PredicateParallelism is the number of goroutines to use for running scheduler predicates.
 	PredicateParallelism int
 	// CheckCapacityProcessorInstance is the name of the processor instance.
