@@ -15,7 +15,7 @@ require (
 	k8s.io/autoscaler/vertical-pod-autoscaler/e2e v0.0.0-20260426105446-de084e9a720e
 	k8s.io/client-go v0.36.0
 	k8s.io/klog/v2 v2.140.0
-	k8s.io/kubernetes v1.36.0
+	k8s.io/kubernetes v1.36.1
 	k8s.io/pod-security-admission v0.36.0
 	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5
 )
@@ -99,6 +99,7 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
+	github.com/mistifyio/go-zfs v2.1.2-0.20190413222219-f784269be439+incompatible // indirect
 	github.com/moby/spdystream v0.5.1 // indirect
 	github.com/moby/sys/mountinfo v0.7.2 // indirect
 	github.com/moby/sys/userns v0.1.0 // indirect
