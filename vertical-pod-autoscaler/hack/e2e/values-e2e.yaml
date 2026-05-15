@@ -1,21 +1,18 @@
-# Helm values for local E2E testing
-# Used by deploy-for-e2e-locally.sh
+# Helm values for E2E testing — used by both deploy-for-e2e.sh (CI) and
+# deploy-for-e2e-locally.sh. Image repository, tag, and pullPolicy are
+# overridden via --set flags by the calling script.
 fullnameOverride: vpa
 
-# Image settings - will be overridden via --set at install time
-# admissionController.image.repository, admissionController.image.tag, etc.
-
-# Pod security context
+# Pod security context for VPA components
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 65534
 
-# Component configurations optimized for local KIND cluster
+# Components are disabled by default; the calling script enables only the
+# ones the suite needs via --set.
 admissionController:
-  enabled: false  # Enabled dynamically based on suite
+  enabled: false
   replicas: 1
-  image:
-    pullPolicy: Never
   # Disable pod anti-affinity for single-node clusters
   affinity: {}
   podDisruptionBudget:
@@ -38,27 +35,19 @@ admissionController:
       readOnly: true
 
 recommender:
-  enabled: false  # Enabled dynamically based on suite
+  enabled: false
   replicas: 1
-  image:
-    pullPolicy: Never
-  # Disable pod anti-affinity for single-node clusters
   affinity: {}
   podDisruptionBudget:
     enabled: false
-  # Disable leader election for single replica
   leaderElection:
     enabled: false
 
 updater:
-  enabled: false  # Enabled dynamically based on suite
+  enabled: false
   replicas: 1
-  image:
-    pullPolicy: Never
-  # Disable pod anti-affinity for single-node clusters
   affinity: {}
   podDisruptionBudget:
     enabled: false
-  # Disable leader election for single replica
   leaderElection:
     enabled: false
