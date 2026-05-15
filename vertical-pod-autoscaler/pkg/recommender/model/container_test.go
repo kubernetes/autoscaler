@@ -59,10 +59,11 @@ func newContainerTest() ContainerTest {
 	mockCPUHistogram := new(util.MockHistogram)
 	mockMemoryHistogram := new(util.MockHistogram)
 	aggregateContainerState := &AggregateContainerState{
-		AggregateCPUUsage:    mockCPUHistogram,
-		AggregateMemoryPeaks: mockMemoryHistogram,
-		OOMBumpUpRatio:       1.2,          // Default value, can be adjusted as needed
-		OOMMinBumpUp:         1.048576e+08, // Default value (100Mi), can be adjusted as needed
+		AggregateCPUUsage:                 mockCPUHistogram,
+		AggregateMemoryPeaks:              mockMemoryHistogram,
+		OOMBumpUpRatio:                    1.2,                                                       // Default value, can be adjusted as needed
+		OOMMinBumpUp:                      1.048576e+08,                                              // Default value (100Mi), can be adjusted as needed
+		MemoryAggregationIntervalDuration: GetAggregationsConfig().MemoryAggregationIntervalDuration, // Default value, can be adjusted as needed
 	}
 	container := &ContainerState{
 		Request:    TestRequest,
@@ -76,6 +77,18 @@ func newContainerTest() ContainerTest {
 	}
 }
 
+func newContainerTestWithCustomMemoryInterval(interval time.Duration) ContainerTest {
+	test := newContainerTest()
+	test.aggregateContainerState.MemoryAggregationIntervalDuration = interval
+	return test
+}
+
+func newContainerTestWithCustomMemoryIntervalCount(count int64) ContainerTest {
+	test := newContainerTest()
+	test.aggregateContainerState.MemoryAggregationIntervalCount = count
+	return test
+}
+
 // Add 6 usage samples (3 valid, 3 invalid) to a container. Verifies that for
 // valid samples the CPU measures are aggregated in the CPU histogram and
 // the memory measures are aggregated in the memory peaks sliding window.
@@ -83,7 +96,7 @@ func newContainerTest() ContainerTest {
 func TestAggregateContainerUsageSamples(t *testing.T) {
 	test := newContainerTest()
 	c := test.container
-	memoryAggregationInterval := GetAggregationsConfig().MemoryAggregationInterval
+	memoryAggregationInterval := GetAggregationsConfig().MemoryAggregationIntervalDuration
 	// Verify that CPU measures are added to the CPU histogram.
 	// The weight should be equal to the current request.
 	timeStep := memoryAggregationInterval / 2
@@ -125,7 +138,7 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 
 func TestRecordOOMIncreasedByBumpUp(t *testing.T) {
 	test := newContainerTest()
-	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationInterval)
+	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationIntervalDuration)
 	// Bump Up factor is 20%.
 	test.mockMemoryHistogram.On("AddSample", 1200.0*mb, 1.0, memoryAggregationWindowEnd)
 
@@ -134,7 +147,7 @@ func TestRecordOOMIncreasedByBumpUp(t *testing.T) {
 
 func TestRecordOOMDontRunAway(t *testing.T) {
 	test := newContainerTest()
-	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationInterval)
+	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationIntervalDuration)
 
 	// Bump Up factor is 20%.
 	test.mockMemoryHistogram.On("AddSample", 1200.0*mb, 1.0, memoryAggregationWindowEnd)
@@ -152,7 +165,7 @@ func TestRecordOOMDontRunAway(t *testing.T) {
 
 func TestRecordOOMIncreasedByMin(t *testing.T) {
 	test := newContainerTest()
-	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationInterval)
+	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationIntervalDuration)
 	// Min grow by 100Mb.
 	test.mockMemoryHistogram.On("AddSample", 101.0*mb, 1.0, memoryAggregationWindowEnd)
 
@@ -161,7 +174,7 @@ func TestRecordOOMIncreasedByMin(t *testing.T) {
 
 func TestRecordOOMMaxedWithKnownSample(t *testing.T) {
 	test := newContainerTest()
-	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationInterval)
+	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationIntervalDuration)
 
 	test.mockMemoryHistogram.On("AddSample", 3000.0*mb, 1.0, memoryAggregationWindowEnd)
 	assert.True(t, test.container.AddSample(newUsageSample(testTimestamp, 3000*mb, ResourceMemory)))
@@ -175,7 +188,7 @@ func TestRecordOOMMaxedWithKnownSample(t *testing.T) {
 
 func TestRecordOOMDiscardsOldSample(t *testing.T) {
 	test := newContainerTest()
-	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationInterval)
+	memoryAggregationWindowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationIntervalDuration)
 
 	test.mockMemoryHistogram.On("AddSample", 1000.0*mb, 1.0, memoryAggregationWindowEnd)
 	assert.True(t, test.container.AddSample(newUsageSample(testTimestamp, 1000*mb, ResourceMemory)))
@@ -186,7 +199,7 @@ func TestRecordOOMDiscardsOldSample(t *testing.T) {
 
 func TestRecordOOMInNewWindow(t *testing.T) {
 	test := newContainerTest()
-	memoryAggregationInterval := GetAggregationsConfig().MemoryAggregationInterval
+	memoryAggregationInterval := GetAggregationsConfig().MemoryAggregationIntervalDuration
 	memoryAggregationWindowEnd := testTimestamp.Add(memoryAggregationInterval)
 
 	test.mockMemoryHistogram.On("AddSample", 2000.0*mb, 1.0, memoryAggregationWindowEnd)
@@ -195,4 +208,133 @@ func TestRecordOOMInNewWindow(t *testing.T) {
 	memoryAggregationWindowEnd = memoryAggregationWindowEnd.Add(2 * memoryAggregationInterval)
 	test.mockMemoryHistogram.On("AddSample", 2400.0*mb, 1.0, memoryAggregationWindowEnd)
 	assert.NoError(t, test.container.RecordOOM(testTimestamp.Add(2*memoryAggregationInterval), ResourceAmount(1000*mb)))
+}
+
+// Tests with custom MemoryAggregationInterval to verify the per-VPA
+// MemoryAggregationIntervalSeconds setting affects container behavior.
+
+// Verifies that with a custom 1h interval, memory samples 2h apart land in
+// different aggregation windows (each gets its own peak), unlike the default
+// 24h interval where they would share the same window.
+func TestMemorySamplesWithCustomAggregationInterval(t *testing.T) {
+	customInterval := 1 * time.Hour
+	test := newContainerTestWithCustomMemoryInterval(customInterval)
+	c := test.container
+
+	windowEnd1 := testTimestamp.Add(customInterval)
+	// First sample opens the first window.
+	test.mockMemoryHistogram.On("AddSample", 5.0, 1.0, windowEnd1)
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp, 5, ResourceMemory)))
+
+	// Second sample 2h later falls outside the 1h window, opening a new one.
+	windowEnd2 := windowEnd1.Add(2 * customInterval)
+	test.mockMemoryHistogram.On("AddSample", 10.0, 1.0, windowEnd2)
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp.Add(2*customInterval), 10, ResourceMemory)))
+
+	test.mockCPUHistogram.AssertExpectations(t)
+	test.mockMemoryHistogram.AssertExpectations(t)
+}
+
+// Verifies that with a custom 1h interval, a memory sample at half-interval
+// (30min) stays within the same window and updates the peak via subtract+add.
+func TestMemoryPeakUpdateWithinCustomInterval(t *testing.T) {
+	customInterval := 1 * time.Hour
+	test := newContainerTestWithCustomMemoryInterval(customInterval)
+	c := test.container
+
+	windowEnd := testTimestamp.Add(customInterval)
+
+	// First sample sets the initial peak.
+	test.mockMemoryHistogram.On("AddSample", 5.0, 1.0, windowEnd)
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp, 5, ResourceMemory)))
+
+	// Second sample 30min later is still within the 1h window and has a higher
+	// value, so the old peak is subtracted and the new one is added.
+	test.mockMemoryHistogram.On("SubtractSample", 5.0, 1.0, windowEnd)
+	test.mockMemoryHistogram.On("AddSample", 10.0, 1.0, windowEnd)
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp.Add(30*time.Minute), 10, ResourceMemory)))
+
+	test.mockMemoryHistogram.AssertExpectations(t)
+}
+
+// Verifies that with a custom 1h interval, an OOM event 2h in the past is
+// discarded as stale. With the default 24h interval the same OOM would be accepted.
+func TestRecordOOMDiscardsOldSampleWithCustomInterval(t *testing.T) {
+	customInterval := 1 * time.Hour
+	test := newContainerTestWithCustomMemoryInterval(customInterval)
+	c := test.container
+
+	windowEnd := testTimestamp.Add(customInterval)
+	test.mockMemoryHistogram.On("AddSample", 1000.0*mb, 1.0, windowEnd)
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp, 1000*mb, ResourceMemory)))
+
+	// OOM 2h before testTimestamp is older than the 1h interval, so it should be discarded.
+	assert.Error(t, c.RecordOOM(testTimestamp.Add(-2*time.Hour), ResourceAmount(1000*mb)))
+
+	test.mockMemoryHistogram.AssertExpectations(t)
+}
+
+// Verifies that with a custom 1h interval, an OOM in a new window shifts
+// WindowEnd by the custom interval rather than the default 24h.
+func TestRecordOOMInNewWindowWithCustomInterval(t *testing.T) {
+	customInterval := 1 * time.Hour
+	test := newContainerTestWithCustomMemoryInterval(customInterval)
+	c := test.container
+
+	windowEnd := testTimestamp.Add(customInterval)
+	test.mockMemoryHistogram.On("AddSample", 2000.0*mb, 1.0, windowEnd)
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp, 2000*mb, ResourceMemory)))
+
+	// OOM 2 intervals later triggers a window shift by the custom interval.
+	newWindowEnd := windowEnd.Add(2 * customInterval)
+	test.mockMemoryHistogram.On("AddSample", 2400.0*mb, 1.0, newWindowEnd)
+	assert.NoError(t, c.RecordOOM(testTimestamp.Add(2*customInterval), ResourceAmount(1000*mb)))
+
+	test.mockMemoryHistogram.AssertExpectations(t)
+}
+
+// Tests with custom MemoryAggregationIntervalCount to verify the per-VPA
+// MemoryAggregationIntervalCount setting affects container behavior.
+
+// Verifies that with a custom count of 2 (instead of default 8), the OOM
+// staleness window shrinks. An OOM event at 3 intervals ago is discarded
+// with count=2 (window=2*interval) but would be accepted with default count=8.
+func TestRecordOOMDiscardsOldSampleWithCustomIntervalCount(t *testing.T) {
+	test := newContainerTestWithCustomMemoryIntervalCount(2)
+	c := test.container
+
+	interval := GetAggregationsConfig().MemoryAggregationIntervalDuration
+	windowEnd := testTimestamp.Add(interval)
+	test.mockMemoryHistogram.On("AddSample", 1000.0*mb, 1.0, windowEnd)
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp, 1000*mb, ResourceMemory)))
+
+	// OOM 3 intervals before testTimestamp: with count=2 the staleness check
+	// (WindowEnd - interval) is only 1 interval before WindowEnd, so the OOM
+	// at 3 intervals ago is stale and discarded.
+	assert.Error(t, c.RecordOOM(testTimestamp.Add(-3*interval), ResourceAmount(1000*mb)))
+
+	test.mockMemoryHistogram.AssertExpectations(t)
+}
+
+// Verifies that with a large custom count, memory samples spread across many
+// intervals still produce separate peaks. This confirms the count doesn't
+// interfere with per-interval windowing behavior.
+func TestMemorySamplesWithCustomAggregationIntervalCount(t *testing.T) {
+	test := newContainerTestWithCustomMemoryIntervalCount(16)
+	c := test.container
+
+	interval := GetAggregationsConfig().MemoryAggregationIntervalDuration
+
+	windowEnd1 := testTimestamp.Add(interval)
+	// First sample opens the first window.
+	test.mockMemoryHistogram.On("AddSample", 5.0, 1.0, windowEnd1)
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp, 5, ResourceMemory)))
+
+	// Second sample 2 intervals later falls outside the current window.
+	windowEnd2 := windowEnd1.Add(2 * interval)
+	test.mockMemoryHistogram.On("AddSample", 10.0, 1.0, windowEnd2)
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp.Add(2*interval), 10, ResourceMemory)))
+
+	test.mockCPUHistogram.AssertExpectations(t)
+	test.mockMemoryHistogram.AssertExpectations(t)
 }
