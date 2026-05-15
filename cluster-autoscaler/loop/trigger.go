@@ -20,6 +20,8 @@ import (
 	"context"
 	"time"
 
+	"reflect"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -27,7 +29,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	podv1 "k8s.io/kubernetes/pkg/api/v1/pod"
-	"reflect"
 )
 
 const maxPodChangeAge = 10 * time.Second
@@ -58,22 +59,24 @@ type LoopTrigger struct {
 	scanInterval                         time.Duration
 	scalingTimesGetter                   scalingTimesGetter
 	provisioningRequestProcessTimeGetter provisioningRequestProcessingTimesGetter
+	metricsRegistry                      metrics.CAMetricsRegistry
 }
 
 // NewLoopTrigger creates a LoopTrigger object
-func NewLoopTrigger(scalingTimesGetter scalingTimesGetter, provisioningRequestProcessTimeGetter provisioningRequestProcessingTimesGetter, podObserver *UnschedulablePodObserver, scanInterval time.Duration) *LoopTrigger {
+func NewLoopTrigger(scalingTimesGetter scalingTimesGetter, provisioningRequestProcessTimeGetter provisioningRequestProcessingTimesGetter, podObserver *UnschedulablePodObserver, scanInterval time.Duration, metricsRegistry metrics.CAMetricsRegistry) *LoopTrigger {
 	return &LoopTrigger{
 		podObserver:                          podObserver,
 		scanInterval:                         scanInterval,
 		scalingTimesGetter:                   scalingTimesGetter,
 		provisioningRequestProcessTimeGetter: provisioningRequestProcessTimeGetter,
+		metricsRegistry:                      metricsRegistry,
 	}
 }
 
 // Wait waits for the next autoscaling iteration
 func (t *LoopTrigger) Wait(lastRun time.Time) {
 	sleepStart := time.Now()
-	defer metrics.UpdateDurationFromStart(metrics.LoopWait, sleepStart)
+	defer t.metricsRegistry.UpdateDurationFromStart(metrics.LoopWait, sleepStart)
 
 	// To improve scale-up throughput, Cluster Autoscaler starts new iteration
 	// immediately if the previous one was productive.

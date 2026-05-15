@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	csinodeprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/provider"
@@ -77,6 +78,8 @@ type AutoscalingContext struct {
 	TemplateNodeInfoRegistry TemplateNodeInfoRegistry
 	// CsiProvider is the provider for CSI node aware scheduling.
 	CsiProvider *csinodeprovider.Provider
+	// MetricsRegistry is the registry for all Prometheus metrics produced by CA.
+	MetricsRegistry metrics.CAMetricsRegistry
 }
 
 // TemplateNodeInfoRegistry is the interface for getting template node infos.
@@ -143,6 +146,7 @@ func NewAutoscalingContext(
 	draProvider *draprovider.Provider,
 	templateNodeInfoRegistry TemplateNodeInfoRegistry,
 	csiProvider *csinodeprovider.Provider,
+	metricsRegistry metrics.CAMetricsRegistry,
 ) *AutoscalingContext {
 	return &AutoscalingContext{
 		AutoscalingOptions:       options,
@@ -158,6 +162,7 @@ func NewAutoscalingContext(
 		DraProvider:              draProvider,
 		TemplateNodeInfoRegistry: templateNodeInfoRegistry,
 		CsiProvider:              csiProvider,
+		MetricsRegistry:          metricsRegistry,
 	}
 }
 

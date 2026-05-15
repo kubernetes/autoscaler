@@ -95,7 +95,7 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 
 	var maxNodeSkipEvalTime *nodeevaltracker.MaxNodeSkipEvalTime
 	if autoscalingCtx.AutoscalingOptions.MaxNodeSkipEvalTimeTrackerEnabled {
-		maxNodeSkipEvalTime = nodeevaltracker.NewMaxNodeSkipEvalTime(time.Now())
+		maxNodeSkipEvalTime = nodeevaltracker.NewMaxNodeSkipEvalTime(time.Now(), autoscalingCtx.MetricsRegistry)
 	}
 
 	return &Planner{

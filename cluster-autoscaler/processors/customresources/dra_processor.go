@@ -19,7 +19,6 @@ package customresources
 import (
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -34,7 +33,7 @@ import (
 
 // resourceDiscrepancyReporter defines the interface for reporting DRA discrepancies.
 type resourceDiscrepancyReporter interface {
-	ReportResourceDiscrepancies(nodeNames []string, templateSlices [][]*resourceapi.ResourceSlice, nodeSlices [][]*resourceapi.ResourceSlice)
+	ReportResourceDiscrepancies(autoscalingCtx *ca_context.AutoscalingContext, nodeNames []string, templateSlices [][]*resourceapi.ResourceSlice, nodeSlices [][]*resourceapi.ResourceSlice)
 }
 
 // DraCustomResourcesProcessor handles DRA custom resource. It assumes,
@@ -46,7 +45,7 @@ type DraCustomResourcesProcessor struct {
 // NewDraCustomResourcesProcessor returns an instance of DraCustomResourcesProcessor properly initialized.
 func NewDraCustomResourcesProcessor() *DraCustomResourcesProcessor {
 	return &DraCustomResourcesProcessor{
-		resourcesComparator: comparator.NewNodeResourcesComparator(metrics.DefaultMetrics),
+		resourcesComparator: comparator.NewNodeResourcesComparator(),
 	}
 }
 
@@ -95,7 +94,7 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		}
 	}
 
-	p.resourcesComparator.ReportResourceDiscrepancies(readyNodeNames, readyTemplateSlices, readyNodeSlices)
+	p.resourcesComparator.ReportResourceDiscrepancies(autoscalingCtx, readyNodeNames, readyTemplateSlices, readyNodeSlices)
 
 	// Override any node with unready DRA resources with its "unready" copy
 	for _, node := range allNodes {

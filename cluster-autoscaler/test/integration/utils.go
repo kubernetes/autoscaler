@@ -25,10 +25,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/loop"
+	ca_metrics "k8s.io/autoscaler/cluster-autoscaler/metrics"
 	fakek8s "k8s.io/autoscaler/cluster-autoscaler/utils/fake"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
+	"k8s.io/component-base/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
@@ -41,15 +43,18 @@ type TestInfrastructure struct {
 	Manager manager.Manager
 	// Snapshotter represents the debugging snapshotter.
 	Snapshotter debuggingsnapshot.DebuggingSnapshotter
+	// MetricsRegistry represents the metrics registry.
+	MetricsRegistry ca_metrics.CAMetricsRegistry
 }
 
 // SetupInfrastructure initializes the standard set of test dependencies.
 func SetupInfrastructure(t *testing.T) *TestInfrastructure {
 	t.Helper()
 	return &TestInfrastructure{
-		Fakes:       NewFakeSet(),
-		Manager:     MustCreateControllerRuntimeMgr(t),
-		Snapshotter: debuggingsnapshot.NewDebuggingSnapshotter(false),
+		Fakes:           NewFakeSet(),
+		Manager:         MustCreateControllerRuntimeMgr(t),
+		Snapshotter:     debuggingsnapshot.NewDebuggingSnapshotter(false),
+		MetricsRegistry: ca_metrics.NewCaMetricsWithRegistry(metrics.NewKubeRegistry()),
 	}
 }
 
@@ -118,5 +123,6 @@ func DefaultAutoscalingBuilder(
 		WithInformerFactory(infra.Fakes.InformerFactory).
 		WithCloudProvider(infra.Fakes.CloudProvider).
 		WithProvisioningRequestClient(infra.Fakes.PRClient).
-		WithPodObserver(infra.Fakes.PodObserver)
+		WithPodObserver(infra.Fakes.PodObserver).
+		WithMetricsRegistry(infra.MetricsRegistry)
 }

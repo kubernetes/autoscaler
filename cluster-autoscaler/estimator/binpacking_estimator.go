@@ -103,8 +103,9 @@ func (e *BinpackingNodeEstimator) Estimate(
 	podsEquivalenceGroups []PodEquivalenceGroup,
 	nodeTemplate *framework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup,
+	metricsRegistry metrics.CAMetricsRegistry,
 ) (int, []*apiv1.Pod) {
-	observeBinpackingHeterogeneity(podsEquivalenceGroups, nodeTemplate)
+	observeBinpackingHeterogeneity(podsEquivalenceGroups, nodeTemplate, metricsRegistry)
 
 	e.limiter.StartEstimation(podsEquivalenceGroups, nodeGroup, e.context)
 	defer e.limiter.EndEstimation()
@@ -368,7 +369,7 @@ func isPodUsingHostNameTopologyKey(pod *apiv1.Pod) bool {
 	return false
 }
 
-func observeBinpackingHeterogeneity(podsEquivalenceGroups []PodEquivalenceGroup, nodeTemplate *framework.NodeInfo) {
+func observeBinpackingHeterogeneity(podsEquivalenceGroups []PodEquivalenceGroup, nodeTemplate *framework.NodeInfo, metricsRegistry metrics.CAMetricsRegistry) {
 	node := nodeTemplate.Node()
 	var instanceType, cpuCount string
 	if node != nil {
@@ -393,7 +394,7 @@ func observeBinpackingHeterogeneity(podsEquivalenceGroups []PodEquivalenceGroup,
 	} else {
 		nsCountBucket = "11+"
 	}
-	metrics.ObserveBinpackingHeterogeneity(instanceType, cpuCount, nsCountBucket, len(podsEquivalenceGroups))
+	metricsRegistry.ObserveBinpackingHeterogeneity(instanceType, cpuCount, nsCountBucket, len(podsEquivalenceGroups))
 }
 
 func hasNonHostnamePodAntiAffinity(pod *apiv1.Pod) bool {

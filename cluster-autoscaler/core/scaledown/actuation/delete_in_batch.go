@@ -226,7 +226,7 @@ func RegisterAndRecordSuccessfulScaleDownEvent(autoscalingCtx *ca_context.Autosc
 	} else {
 		draDriverNames = dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
 	}
-	metrics.RegisterScaleDown(1, metricResourceName, metricGpuType, nodeScaleDownReason(node, drain), draDriverNames)
+	autoscalingCtx.MetricsRegistry.RegisterScaleDown(1, metricResourceName, metricGpuType, nodeScaleDownReason(node, drain), draDriverNames)
 	if drain {
 		autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDown", "Scale-down: node %s removed with drain", node.Name)
 	} else {

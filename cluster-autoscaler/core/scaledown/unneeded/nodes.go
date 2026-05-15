@@ -26,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
@@ -302,9 +301,9 @@ func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext,
 		for _, resource := range checkResult.ExceededResources {
 			switch resource {
 			case cloudprovider.ResourceNameCores:
-				metrics.RegisterSkippedScaleDownCPU()
+				autoscalingCtx.MetricsRegistry.RegisterSkippedScaleDownCPU()
 			case cloudprovider.ResourceNameMemory:
-				metrics.RegisterSkippedScaleDownMemory()
+				autoscalingCtx.MetricsRegistry.RegisterSkippedScaleDownMemory()
 			default:
 				continue
 			}
