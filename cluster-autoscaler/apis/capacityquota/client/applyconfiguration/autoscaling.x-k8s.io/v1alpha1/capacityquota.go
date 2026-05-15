@@ -21,7 +21,6 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
-	autoscalingxk8siov1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
@@ -45,7 +44,7 @@ type CapacityQuotaApplyConfiguration struct {
 	// spec defines the desired state of CapacityQuota
 	Spec *CapacityQuotaSpecApplyConfiguration `json:"spec,omitempty"`
 	// status defines the observed state of CapacityQuota
-	Status *autoscalingxk8siov1alpha1.CapacityQuotaStatus `json:"status,omitempty"`
+	Status *CapacityQuotaStatusApplyConfiguration `json:"status,omitempty"`
 }
 
 // CapacityQuota constructs a declarative configuration of the CapacityQuota type for use with
@@ -230,8 +229,8 @@ func (b *CapacityQuotaApplyConfiguration) WithSpec(value *CapacityQuotaSpecApply
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *CapacityQuotaApplyConfiguration) WithStatus(value autoscalingxk8siov1alpha1.CapacityQuotaStatus) *CapacityQuotaApplyConfiguration {
-	b.Status = &value
+func (b *CapacityQuotaApplyConfiguration) WithStatus(value *CapacityQuotaStatusApplyConfiguration) *CapacityQuotaApplyConfiguration {
+	b.Status = value
 	return b
 }
 

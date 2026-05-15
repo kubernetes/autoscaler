@@ -39,23 +39,6 @@ const (
 // ResourceList is a set of (resource name, quantity) pairs.
 type ResourceList map[ResourceName]resource.Quantity
 
-// CapacityQuotaSpec defines the desired state of CapacityQuota
-type CapacityQuotaSpec struct {
-	// Selector is a label selector selecting the nodes to which the quota applies.
-	// Empty or nil selector matches all nodes.
-	// +optional
-	Selector *metav1.LabelSelector `json:"selector,omitempty"`
-
-	// Limits define quota limits.
-	// +required
-	Limits CapacityQuotaLimits `json:"limits"`
-}
-
-// CapacityQuotaStatus defines the observed state of CapacityQuota.
-type CapacityQuotaStatus struct {
-	// TODO: status should report resources currently in use
-}
-
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,shortName=cq
@@ -87,6 +70,18 @@ type CapacityQuota struct {
 	Status CapacityQuotaStatus `json:"status,omitempty,omitzero"`
 }
 
+// CapacityQuotaSpec defines the desired state of CapacityQuota
+type CapacityQuotaSpec struct {
+	// Selector is a label selector selecting the nodes to which the quota applies.
+	// Empty or nil selector matches all nodes.
+	// +optional
+	Selector *metav1.LabelSelector `json:"selector,omitempty"`
+
+	// Limits define quota limits.
+	// +required
+	Limits CapacityQuotaLimits `json:"limits"`
+}
+
 // CapacityQuotaLimits define quota limits.
 type CapacityQuotaLimits struct {
 	// Resources define resource limits of this quota.
@@ -96,6 +91,27 @@ type CapacityQuotaLimits struct {
 	// Node autoscaler implementations and cloud providers can support custom
 	// resources, such as GPU.
 	// +required
+	Resources ResourceList `json:"resources"`
+}
+
+// CapacityQuotaStatus defines the observed state of CapacityQuota.
+type CapacityQuotaStatus struct {
+	// Used shows the current usage of the quota.
+	// +optional
+	Used *CapacityQuotaUsage `json:"used,omitempty"`
+
+	// Conditions provide a standard mechanism for reporting the quota's state.
+	// +listType=map
+	// +listMapKey=type
+	// +patchStrategy=merge
+	// +patchMergeKey=type
+	// +optional
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+}
+
+// CapacityQuotaUsage shows the current usage of the quota.
+type CapacityQuotaUsage struct {
+	// Resources shows the current usage of the resources defined in the quota limits.
 	Resources ResourceList `json:"resources"`
 }
 

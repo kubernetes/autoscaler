@@ -38,6 +38,10 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &autoscalingxk8siov1alpha1.CapacityQuotaLimitsApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("CapacityQuotaSpec"):
 		return &autoscalingxk8siov1alpha1.CapacityQuotaSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("CapacityQuotaStatus"):
+		return &autoscalingxk8siov1alpha1.CapacityQuotaStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("CapacityQuotaUsage"):
+		return &autoscalingxk8siov1alpha1.CapacityQuotaUsageApplyConfiguration{}
 
 	}
 	return nil
