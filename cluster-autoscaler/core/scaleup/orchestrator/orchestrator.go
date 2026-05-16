@@ -950,29 +950,28 @@ func markAllGroupsAsUnschedulable(egs []*equivalence.PodGroup, reason status.Rea
 
 func markFailedGroupsAsUnschedulable(egs []*equivalence.PodGroup, failedGroups map[string]bool, reason status.Reasons) []*equivalence.PodGroup {
 	for _, eg := range egs {
-		if eg.Schedulable {
-			allFailed := true
-			hasFailedGroup := false
-			for _, sg := range eg.SchedulableGroups {
-				if failedGroups[sg] {
-					hasFailedGroup = true
-				} else {
-					allFailed = false
-				}
+		if !eg.Schedulable {
+			continue
+		}
+
+		allFailed := true
+		hasFailedGroup := false
+
+		for _, sg := range eg.SchedulableGroups {
+			if !failedGroups[sg] {
+				allFailed = false
+				continue
 			}
-			if hasFailedGroup {
-				if eg.SchedulingErrors == nil {
-					eg.SchedulingErrors = map[string]status.Reasons{}
-				}
-				for _, sg := range eg.SchedulableGroups {
-					if failedGroups[sg] {
-						eg.SchedulingErrors[sg] = reason
-					}
-				}
-				if allFailed {
-					eg.Schedulable = false
-				}
+
+			hasFailedGroup = true
+			if eg.SchedulingErrors == nil {
+				eg.SchedulingErrors = map[string]status.Reasons{}
 			}
+			eg.SchedulingErrors[sg] = reason
+		}
+
+		if hasFailedGroup && allFailed {
+			eg.Schedulable = false
 		}
 	}
 	return egs
