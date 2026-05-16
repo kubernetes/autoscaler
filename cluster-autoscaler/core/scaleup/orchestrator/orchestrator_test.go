@@ -725,8 +725,8 @@ func TestCloudProviderFailingToScaleUpGroups(t *testing.T) {
 			{Name: "p2", Cpu: 1400, Node: "ng2-n1"},
 		},
 		ExtraPods: []PodConfig{
-			{Name: "p3", Cpu: 1400, Node: "group:ng1"},
-			{Name: "p4", Cpu: 1400, Node: "group:ng2"},
+			{Name: "p3", Cpu: 1400},
+			{Name: "p4", Cpu: 1400},
 		},
 		Options: &options,
 	}
@@ -756,15 +756,15 @@ func TestCloudProviderFailingToScaleUpGroups(t *testing.T) {
 			onScaleUp:                       failAlwaysScaleUp,
 			expectConcurrentErrors:          false,
 			expectedTotalTargetSizes:        3, // first error stops scale up process
-			expectedPodsRemainUnschedulable: 1,
+			expectedPodsRemainUnschedulable: 2,
 		},
 		{
 			desc:                            "parallel scale up - two failures",
 			parallel:                        true,
 			onScaleUp:                       failAlwaysScaleUp,
-			expectConcurrentErrors:          false, // Only 1 group tried, so no concurrent errors
-			expectedTotalTargetSizes:        3,
-			expectedPodsRemainUnschedulable: 1,
+			expectConcurrentErrors:          true,
+			expectedTotalTargetSizes:        4,
+			expectedPodsRemainUnschedulable: 2,
 		},
 		{
 			desc:                            "synchronous scale up - one failure",
@@ -772,15 +772,15 @@ func TestCloudProviderFailingToScaleUpGroups(t *testing.T) {
 			onScaleUp:                       failOnceScaleUp(),
 			expectConcurrentErrors:          false,
 			expectedTotalTargetSizes:        3,
-			expectedPodsRemainUnschedulable: 1,
+			expectedPodsRemainUnschedulable: 2,
 		},
 		{
 			desc:                            "parallel scale up - one failure",
 			parallel:                        true,
 			onScaleUp:                       failOnceScaleUp(),
 			expectConcurrentErrors:          false,
-			expectedTotalTargetSizes:        3,
-			expectedPodsRemainUnschedulable: 1,
+			expectedTotalTargetSizes:        4,
+			expectedPodsRemainUnschedulable: 0,
 		},
 	}
 	for _, tc := range testCases {
