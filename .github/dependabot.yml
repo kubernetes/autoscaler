@@ -11,6 +11,8 @@ updates:
     - "release-note-none"
     - "ok-to-test"
     - "triage/accepted"
+  allow:
+    - dependency-type: "all"
   groups:
     non-kubernetes:
       patterns:
