@@ -73,6 +73,16 @@ func (in *ContainerResourcePolicy) DeepCopyInto(out *ContainerResourcePolicy) {
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.MemoryAggregationIntervalSeconds != nil {
+		in, out := &in.MemoryAggregationIntervalSeconds, &out.MemoryAggregationIntervalSeconds
+		*out = new(int32)
+		**out = **in
+	}
+	if in.MemoryAggregationIntervalCount != nil {
+		in, out := &in.MemoryAggregationIntervalCount, &out.MemoryAggregationIntervalCount
+		*out = new(int64)
+		**out = **in
+	}
 	if in.StartupBoost != nil {
 		in, out := &in.StartupBoost, &out.StartupBoost
 		*out = new(StartupBoost)

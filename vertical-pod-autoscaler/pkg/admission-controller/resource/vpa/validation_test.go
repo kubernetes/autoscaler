@@ -1090,6 +1090,228 @@ func TestValidateVPA(t *testing.T) {
 			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].oomMinBumpUp: Forbidden: not supported when feature flag PerVPAConfig is disabled"),
 		},
 		{
+			name: "per-vpa config active with MemoryAggregationIntervalSeconds",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								Mode:          &validScalingMode,
+								MinAllowed: corev1.ResourceList{
+									cpu: resource.MustParse("10"),
+								},
+								MaxAllowed: corev1.ResourceList{
+									cpu: resource.MustParse("100"),
+								},
+								MemoryAggregationIntervalSeconds: ptr.To(int32(3600)),
+							},
+						},
+					},
+				},
+			},
+			opts: VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+		},
+		{
+			name: "per-vpa config disabled with MemoryAggregationIntervalSeconds",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								Mode:          &validScalingMode,
+								MinAllowed: corev1.ResourceList{
+									cpu: resource.MustParse("10"),
+								},
+								MaxAllowed: corev1.ResourceList{
+									cpu: resource.MustParse("100"),
+								},
+								MemoryAggregationIntervalSeconds: ptr.To(int32(3600)),
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: false},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].memoryAggregationIntervalSeconds: Forbidden: not supported when feature flag PerVPAConfig is disabled"),
+		},
+		{
+			name: "per-vpa config active with MemoryAggregationIntervalCount",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								Mode:          &validScalingMode,
+								MinAllowed: corev1.ResourceList{
+									cpu: resource.MustParse("10"),
+								},
+								MaxAllowed: corev1.ResourceList{
+									cpu: resource.MustParse("100"),
+								},
+								MemoryAggregationIntervalCount: ptr.To(int64(10)),
+							},
+						},
+					},
+				},
+			},
+			opts: VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+		},
+		{
+			name: "per-vpa config disabled with MemoryAggregationIntervalCount",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								Mode:          &validScalingMode,
+								MinAllowed: corev1.ResourceList{
+									cpu: resource.MustParse("10"),
+								},
+								MaxAllowed: corev1.ResourceList{
+									cpu: resource.MustParse("100"),
+								},
+								MemoryAggregationIntervalCount: ptr.To(int64(10)),
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: false},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].memoryAggregationIntervalCount: Forbidden: not supported when feature flag PerVPAConfig is disabled"),
+		},
+		{
+			name: "invalid MemoryAggregationIntervalSeconds zero",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:                    "loot box",
+								Mode:                             &validScalingMode,
+								MemoryAggregationIntervalSeconds: ptr.To(int32(0)),
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].memoryAggregationIntervalSeconds: Invalid value: 0: must be greater than or equal to 1"),
+		},
+		{
+			name: "invalid MemoryAggregationIntervalSeconds negative",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:                    "loot box",
+								Mode:                             &validScalingMode,
+								MemoryAggregationIntervalSeconds: ptr.To(int32(-5)),
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].memoryAggregationIntervalSeconds: Invalid value: -5: must be greater than or equal to 1"),
+		},
+		{
+			name: "invalid MemoryAggregationIntervalCount zero",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:                  "loot box",
+								Mode:                           &validScalingMode,
+								MemoryAggregationIntervalCount: ptr.To(int64(0)),
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].memoryAggregationIntervalCount: Invalid value: 0: must be greater than or equal to 1"),
+		},
+		{
+			name: "invalid MemoryAggregationIntervalCount negative",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:                  "loot box",
+								Mode:                           &validScalingMode,
+								MemoryAggregationIntervalCount: ptr.To(int64(-3)),
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].memoryAggregationIntervalCount: Invalid value: -3: must be greater than or equal to 1"),
+		},
+		{
 			name: "creating VPA with InPlace update mode not allowed by disabled feature gate",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
@@ -1209,6 +1431,8 @@ func TestVeryInvalidateVPA(t *testing.T) {
 		"spec.recommenders",
 		"spec.startupBoost",
 		"spec.resourcePolicy.containerPolicies[0].startupBoost",
+		"spec.resourcePolicy.containerPolicies[0].memoryAggregationIntervalCount",
+		"spec.resourcePolicy.containerPolicies[0].memoryAggregationIntervalSeconds",
 	}
 
 	errs := validateVPA(&vpa, VPAValidationOptions{IsVPACreate: true})

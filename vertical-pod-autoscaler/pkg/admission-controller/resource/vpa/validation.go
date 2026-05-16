@@ -86,7 +86,7 @@ func allowPerVPAConfig(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	}
 	if oldObj.Spec.ResourcePolicy != nil && oldObj.Spec.ResourcePolicy.ContainerPolicies != nil {
 		for _, policy := range oldObj.Spec.ResourcePolicy.ContainerPolicies {
-			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil {
+			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil || policy.MemoryAggregationIntervalCount != nil || policy.MemoryAggregationIntervalSeconds != nil {
 				return true
 			}
 		}
@@ -233,6 +233,28 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 				}
 			} else {
 				allErrs = append(allErrs, field.Forbidden(policyPath.Child("oomMinBumpUp"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+			}
+		}
+
+		if policy.MemoryAggregationIntervalSeconds != nil {
+			if opts.AllowPerVPAConfig {
+				seconds := *policy.MemoryAggregationIntervalSeconds
+				if seconds < 1 {
+					allErrs = append(allErrs, field.Invalid(policyPath.Child("memoryAggregationIntervalSeconds"), seconds, "must be greater than or equal to 1"))
+				}
+			} else {
+				allErrs = append(allErrs, field.Forbidden(policyPath.Child("memoryAggregationIntervalSeconds"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+			}
+		}
+
+		if policy.MemoryAggregationIntervalCount != nil {
+			if opts.AllowPerVPAConfig {
+				count := *policy.MemoryAggregationIntervalCount
+				if count < 1 {
+					allErrs = append(allErrs, field.Invalid(policyPath.Child("memoryAggregationIntervalCount"), count, "must be greater than or equal to 1"))
+				}
+			} else {
+				allErrs = append(allErrs, field.Forbidden(policyPath.Child("memoryAggregationIntervalCount"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
 			}
 		}
 
