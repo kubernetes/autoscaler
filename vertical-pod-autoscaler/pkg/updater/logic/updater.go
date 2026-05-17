@@ -342,7 +342,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlace, "updateMode", updateMode)
 				continue
 			}
-			// We may evict the pod when the mode is Recreate, InPlaceOrRecreate or Auto (deprecated)
+			// We evict the pod when the mode is set to Recreate or Auto. The latter mode is deprecated.
 			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(podsAvailableForUpdate, evictionLimiter), vpa)
 			evictablePodsCounter.Add(vpaSize, updateMode, len(podsForEviction))
 			if len(podsForEviction) > 0 {
