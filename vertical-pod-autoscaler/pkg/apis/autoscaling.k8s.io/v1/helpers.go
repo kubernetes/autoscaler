@@ -26,6 +26,7 @@ func GetUpdateModes() map[UpdateMode]any {
 		UpdateModeRecreate:          nil,
 		UpdateModeAuto:              nil,
 		UpdateModeInPlaceOrRecreate: nil,
+		UpdateModeInPlace:           nil,
 	}
 }
 

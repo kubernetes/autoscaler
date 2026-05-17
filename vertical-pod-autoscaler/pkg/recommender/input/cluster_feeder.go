@@ -44,6 +44,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/client"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 )
 
@@ -182,6 +183,7 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 		Handler:       resourceEventHandler,
 		ResyncPeriod:  time.Hour,
 		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		Transform:     client.StripManagedFields,
 	}
 
 	store, controller := cache.NewInformerWithOptions(informerOptions)

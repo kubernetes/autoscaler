@@ -26,10 +26,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
 

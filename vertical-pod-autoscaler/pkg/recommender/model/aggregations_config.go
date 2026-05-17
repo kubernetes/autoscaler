@@ -24,13 +24,13 @@ import (
 
 // AggregationsConfig is used to configure aggregation behaviour.
 type AggregationsConfig struct {
-	// MemoryAggregationInterval is the length of a single interval, for
+	// MemoryAggregationIntervalDuration is the length of a single interval, for
 	// which the peak memory usage is computed.
 	// Memory usage peaks are aggregated in multiples of this interval. In other words
 	// there is one memory usage sample per interval (the maximum usage over that
 	// interval).
-	MemoryAggregationInterval time.Duration
-	// MemoryAggregationWindowIntervalCount is the number of consecutive MemoryAggregationIntervals
+	MemoryAggregationIntervalDuration time.Duration
+	// MemoryAggregationWindowIntervalCount is the number of consecutive MemoryAggregationIntervalDurations
 	// which make up the MemoryAggregationWindowLength which in turn is the period for memory
 	// usage aggregation by VPA.
 	MemoryAggregationIntervalCount int64
@@ -83,7 +83,7 @@ const (
 
 // GetMemoryAggregationWindowLength returns the total length of the memory usage history aggregated by VPA.
 func (a *AggregationsConfig) GetMemoryAggregationWindowLength() time.Duration {
-	return a.MemoryAggregationInterval * time.Duration(a.MemoryAggregationIntervalCount)
+	return a.MemoryAggregationIntervalDuration * time.Duration(a.MemoryAggregationIntervalCount)
 }
 
 func (a *AggregationsConfig) cpuHistogramOptions() util.HistogramOptions {
@@ -111,15 +111,15 @@ func (a *AggregationsConfig) memoryHistogramOptions() util.HistogramOptions {
 }
 
 // NewAggregationsConfig creates a new AggregationsConfig based on the supplied parameters and default values.
-func NewAggregationsConfig(memoryAggregationInterval time.Duration, memoryAggregationIntervalCount int64, memoryHistogramDecayHalfLife, cpuHistogramDecayHalfLife time.Duration, oomBumpUpRatio float64, oomMinBumpUp float64) *AggregationsConfig {
+func NewAggregationsConfig(memoryAggregationIntervalDuration time.Duration, memoryAggregationIntervalCount int64, memoryHistogramDecayHalfLife, cpuHistogramDecayHalfLife time.Duration, oomBumpUpRatio float64, oomMinBumpUp float64) *AggregationsConfig {
 	a := &AggregationsConfig{
-		MemoryAggregationInterval:      memoryAggregationInterval,
-		MemoryAggregationIntervalCount: memoryAggregationIntervalCount,
-		HistogramBucketSizeGrowth:      DefaultHistogramBucketSizeGrowth,
-		MemoryHistogramDecayHalfLife:   memoryHistogramDecayHalfLife,
-		CPUHistogramDecayHalfLife:      cpuHistogramDecayHalfLife,
-		OOMBumpUpRatio:                 oomBumpUpRatio,
-		OOMMinBumpUp:                   oomMinBumpUp,
+		MemoryAggregationIntervalDuration: memoryAggregationIntervalDuration,
+		MemoryAggregationIntervalCount:    memoryAggregationIntervalCount,
+		HistogramBucketSizeGrowth:         DefaultHistogramBucketSizeGrowth,
+		MemoryHistogramDecayHalfLife:      memoryHistogramDecayHalfLife,
+		CPUHistogramDecayHalfLife:         cpuHistogramDecayHalfLife,
+		OOMBumpUpRatio:                    oomBumpUpRatio,
+		OOMMinBumpUp:                      oomMinBumpUp,
 	}
 	a.CPUHistogramOptions = a.cpuHistogramOptions()
 	a.MemoryHistogramOptions = a.memoryHistogramOptions()

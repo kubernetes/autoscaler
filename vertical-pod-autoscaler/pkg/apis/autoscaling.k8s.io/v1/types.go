@@ -214,7 +214,7 @@ type PodUpdatePolicy struct {
 }
 
 // UpdateMode controls when autoscaler applies changes to the pod resources.
-// +kubebuilder:validation:Enum=Off;Initial;Recreate;InPlaceOrRecreate;Auto
+// +kubebuilder:validation:Enum=Off;Initial;Recreate;InPlaceOrRecreate;InPlace;Auto
 type UpdateMode string
 
 const (
@@ -243,6 +243,13 @@ const (
 	// "Recreate" update mode.
 	// Requires cluster feature gate "InPlacePodVerticalScaling" to be enabled.
 	UpdateModeInPlaceOrRecreate UpdateMode = "InPlaceOrRecreate"
+	// UpdateModeInPlace means that autoscaler will only attempt to update pods in-place
+	// and will never evict them. If in-place update fails, autoscaler will rely on
+	// Kubelet's automatic retry mechanism.
+	// Requires VPA level feature gate "InPlace" to be enabled
+	// on the admission and updater pods
+	// Requires cluster feature gate "InPlacePodVerticalScaling" to be enabled.
+	UpdateModeInPlace UpdateMode = "InPlace"
 )
 
 // PodResourcePolicy controls how autoscaler computes the recommended resources
@@ -295,6 +302,23 @@ type ContainerResourcePolicy struct {
 	// +optional
 	OOMMinBumpUp *resource.Quantity `json:"oomMinBumpUp,omitempty" protobuf:"bytes,8,opt,name=oomMinBumpUp"`
 
+	// memoryAggregationIntervalSeconds is the length of a single interval
+	// (in seconds) for which the peak memory usage is computed.
+	// Memory usage peaks are aggregated in multiples of this interval.
+	// In other words, there is one memory usage sample per interval
+	// (the maximum usage over that interval).
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	MemoryAggregationIntervalSeconds *int32 `json:"memoryAggregationIntervalSeconds,omitempty" protobuf:"varint,9,opt,name=memoryAggregationIntervalSeconds"`
+
+	// memoryAggregationIntervalCount is the number of consecutive
+	// memoryAggregationIntervals which make up the memory aggregation window.
+	// The total window length is:
+	// MemoryAggregationIntervalSeconds * MemoryAggregationIntervalCount.
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	MemoryAggregationIntervalCount *int64 `json:"memoryAggregationIntervalCount,omitempty" protobuf:"varint,10,opt,name=memoryAggregationIntervalCount"`
+
 	// startupBoost specifies the startup boost policy for the container.
 	// This overrides any pod-level startup boost policy.
 	// The startup boost policy takes precedence over the rest of the fields in
@@ -339,13 +363,17 @@ type VerticalPodAutoscalerStatus struct {
 	// autoscaler for the controlled pods.
 	// +optional
 	Recommendation *RecommendedPodResources `json:"recommendation,omitempty" protobuf:"bytes,1,opt,name=recommendation"`
-
 	// Conditions is the set of conditions required for this autoscaler to scale its target,
 	// and indicates whether or not those conditions are met.
 	// +optional
 	// +patchMergeKey=type
 	// +patchStrategy=merge
 	Conditions []VerticalPodAutoscalerCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,2,rep,name=conditions"`
+
+	// observedGeneration is the most recent generation observed by this autoscaler.
+	// +optional
+	// +kubebuilder:validation:Minimum=0
+	ObservedGeneration *int64 `json:"observedGeneration,omitempty" protobuf:"varint,3,opt,name=observedGeneration"`
 }
 
 // RecommendedPodResources is the recommendation of resources computed by
@@ -427,6 +455,13 @@ type VerticalPodAutoscalerCondition struct {
 	// the transition
 	// +optional
 	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
+
+	// observedGeneration represents the .metadata.generation that the condition was set based upon.
+	// For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+	// with respect to the current state of the instance.
+	// +optional
+	// +kubebuilder:validation:Minimum=0
+	ObservedGeneration int64 `json:"observedGeneration,omitempty" protobuf:"bytes,6,opt,name=observedGeneration"`
 }
 
 // +genclient

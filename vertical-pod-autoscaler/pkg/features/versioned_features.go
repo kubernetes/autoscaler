@@ -30,6 +30,9 @@ var defaultVersionedFeatureGates = map[featuregate.Feature]featuregate.Versioned
 	CPUStartupBoost: {
 		{Version: version.MustParse("1.6"), Default: false, PreRelease: featuregate.Alpha},
 	},
+	InPlace: {
+		{Version: version.MustParse("1.7"), Default: false, PreRelease: featuregate.Alpha},
+	},
 	PerVPAConfig: {
 		{Version: version.MustParse("1.5"), Default: false, PreRelease: featuregate.Alpha},
 	},

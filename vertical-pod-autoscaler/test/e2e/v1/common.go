@@ -33,9 +33,9 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -473,11 +473,16 @@ func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv
 		}
 		resourcesHaveDiffered := false
 		podMissing := false
+		podEvicted := false
 		for _, initialPod := range initialPods.Items {
 			found := false
 			for _, pod := range podList.Items {
 				if initialPod.Name == pod.Name {
 					found = true
+					if initialPod.UID != pod.UID {
+						framework.Logf("%s: UID changed from %v to %v, pod was evicted and recreated", pod.Name, initialPod.UID, pod.UID)
+						podEvicted = true
+					}
 					for num, container := range pod.Status.ContainerStatuses {
 						for resourceName, resourceLimit := range container.Resources.Limits {
 							initialResourceLimit := initialPod.Status.ContainerStatuses[num].Resources.Limits[resourceName]
@@ -500,7 +505,7 @@ func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv
 				podMissing = true
 			}
 		}
-		if podMissing {
+		if podMissing || podEvicted {
 			return true, fmt.Errorf("a pod was erroneously evicted")
 		}
 		if resourcesHaveDiffered {

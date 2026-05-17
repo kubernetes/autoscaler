@@ -33,9 +33,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 
 	updaterutils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"

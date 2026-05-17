@@ -32,6 +32,7 @@ type VPAValidationOptions struct {
 	IsVPACreate          bool
 	AllowCPUStartupBoost bool
 	AllowPerVPAConfig    bool
+	AllowInPlace         bool
 }
 
 func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAValidationOptions {
@@ -39,6 +40,7 @@ func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAVali
 		IsVPACreate:          oldObj == nil,
 		AllowCPUStartupBoost: allowCPUBoost(oldObj),
 		AllowPerVPAConfig:    allowPerVPAConfig(oldObj),
+		AllowInPlace:         allowInPlace(oldObj),
 	}
 
 	return opts
@@ -82,10 +84,26 @@ func allowPerVPAConfig(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	}
 	if oldObj.Spec.ResourcePolicy != nil && oldObj.Spec.ResourcePolicy.ContainerPolicies != nil {
 		for _, policy := range oldObj.Spec.ResourcePolicy.ContainerPolicies {
-			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil {
+			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil || policy.MemoryAggregationIntervalCount != nil || policy.MemoryAggregationIntervalSeconds != nil {
 				return true
 			}
 		}
+	}
+
+	return false
+}
+
+func allowInPlace(oldObj *vpa_types.VerticalPodAutoscaler) bool {
+	if features.Enabled(features.InPlace) {
+		return true
+	}
+
+	if oldObj == nil {
+		return false
+	}
+
+	if oldObj.Spec.UpdatePolicy != nil && oldObj.Spec.UpdatePolicy.UpdateMode != nil && *oldObj.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeInPlace {
+		return true
 	}
 
 	return false
@@ -133,6 +151,10 @@ func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPat
 	} else {
 		if _, found := vpa_types.GetUpdateModes()[*mode]; !found {
 			allErrs = append(allErrs, field.NotSupported(fldPath.Child("updateMode"), *mode, vpa_types.GetUpdateModesList()))
+		}
+
+		if *mode == vpa_types.UpdateModeInPlace && !opts.AllowInPlace {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("updateMode"), fmt.Sprintf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlace, features.InPlace)))
 		}
 	}
 	if minReplicas := updatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
@@ -205,6 +227,28 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 				}
 			} else {
 				allErrs = append(allErrs, field.Forbidden(policyPath.Child("oomMinBumpUp"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+			}
+		}
+
+		if policy.MemoryAggregationIntervalSeconds != nil {
+			if opts.AllowPerVPAConfig {
+				seconds := *policy.MemoryAggregationIntervalSeconds
+				if seconds < 1 {
+					allErrs = append(allErrs, field.Invalid(policyPath.Child("memoryAggregationIntervalSeconds"), seconds, "must be greater than or equal to 1"))
+				}
+			} else {
+				allErrs = append(allErrs, field.Forbidden(policyPath.Child("memoryAggregationIntervalSeconds"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+			}
+		}
+
+		if policy.MemoryAggregationIntervalCount != nil {
+			if opts.AllowPerVPAConfig {
+				count := *policy.MemoryAggregationIntervalCount
+				if count < 1 {
+					allErrs = append(allErrs, field.Invalid(policyPath.Child("memoryAggregationIntervalCount"), count, "must be greater than or equal to 1"))
+				}
+			} else {
+				allErrs = append(allErrs, field.Forbidden(policyPath.Child("memoryAggregationIntervalCount"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
 			}
 		}
 

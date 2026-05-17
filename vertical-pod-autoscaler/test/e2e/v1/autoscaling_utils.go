@@ -31,7 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2edebug "k8s.io/kubernetes/test/e2e/framework/debug"
