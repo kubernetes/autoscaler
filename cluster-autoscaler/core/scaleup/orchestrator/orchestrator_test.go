@@ -2625,17 +2625,19 @@ func TestScaleUpMetricsEmission(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterScaleUp", 2, "nvidia.com/gpu", "nvidia-tesla-k80", "dra.net").Return()
 
-	executor := newScaleUpExecutorWithMetrics(&autoscalingCtx, processors.ScaleStateNotifier, processors.AsyncNodeGroupStateChecker, mockMetrics)
+	producer := nodegroupchange.NewNodeGroupChangeMetricsProducer(provider, mockMetrics)
+	processors.ScaleStateNotifier.Register(producer)
+
+	executor := newScaleUpExecutor(&autoscalingCtx, processors.ScaleStateNotifier, processors.AsyncNodeGroupStateChecker)
 
 	nodeGroup := provider.GetNodeGroup("ng1")
-	nodeInfo := framework.NewNodeInfo(gpuNode, slices)
 
 	err = executor.executeScaleUp(nodegroupset.ScaleUpInfo{
 		Group:       nodeGroup,
 		CurrentSize: 0,
 		NewSize:     2,
 		MaxSize:     10,
-	}, nodeInfo, autoscalingCtx.CloudProvider.GetAvailableGPUTypes(), now, false)
+	}, now, false)
 	assert.NoError(t, err)
 
 	mockMetrics.AssertCalled(t, "RegisterScaleUp", 2, "nvidia.com/gpu", "nvidia-tesla-k80", "dra.net")
@@ -2643,6 +2645,14 @@ func TestScaleUpMetricsEmission(t *testing.T) {
 
 type mockMetrics struct {
 	mock.Mock
+}
+
+func (m *mockMetrics) RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName string, gpuType string, draDriverNames string) {
+	m.Called(reason, gpuResourceName, gpuType, draDriverNames)
+}
+
+func (m *mockMetrics) RegisterFailedNodeCreations(reason metrics.FailedScaleUpReason, nodesCount int) {
+	m.Called(reason, nodesCount)
 }
 
 func (m *mockMetrics) RegisterScaleUp(nodesCount int, gpuResourceName string, gpuType string, draDriverNames string) {
