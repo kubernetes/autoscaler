@@ -155,160 +155,35 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		o.processors.BinpackingLimiter.MarkProcessed(o.autoscalingCtx, nodegroupID)
 	}
 
-	// Calculate expansion options
-	schedulablePodGroups := map[string][]estimator.PodEquivalenceGroup{}
-	var options []expander.Option
-
-	// This code here runs a simulation to see which pods can be scheduled on which node groups.
-	for _, nodeGroup := range validNodeGroups {
-		schedulablePodGroups[nodeGroup.Id()] = o.SchedulablePodGroups(podEquivalenceGroups, nodeGroup, nodeInfos[nodeGroup.Id()])
-	}
-
-	for _, nodeGroup := range validNodeGroups {
-		option := o.ComputeExpansionOption(nodeGroup, schedulablePodGroups, nodeInfos, len(nodes), now, allOrNothing)
-		o.processors.BinpackingLimiter.MarkProcessed(o.autoscalingCtx, nodeGroup.Id())
-
-		if len(option.Pods) == 0 || option.NodeCount == 0 {
-			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
-		} else if allOrNothing && len(option.Pods) < len(unschedulablePods) {
-			klog.V(4).Infof("Some pods can't fit to %s, giving up due to all-or-nothing scale-up strategy", nodeGroup.Id())
-		} else {
-			options = append(options, option)
-		}
-
-		if o.processors.BinpackingLimiter.StopBinpacking(o.autoscalingCtx, options) {
-			break
-		}
-	}
-
-	// Finalize binpacking limiter.
-	o.processors.BinpackingLimiter.FinalizeBinpacking(o.autoscalingCtx, options)
-
-	if len(options) == 0 {
-		klog.V(1).Info("No expansion options")
-		return &status.ScaleUpStatus{
-			Result:                  status.ScaleUpNoOptionsAvailable,
-			PodsRemainUnschedulable: o.GetRemainingPods(podEquivalenceGroups, nodeGroups, skippedNodeGroups, nodeInfos),
-			ConsideredNodeGroups:    nodeGroups,
-		}, nil
-	}
-
-	// Pick some expansion option.
-	bestOption := o.autoscalingCtx.ExpanderStrategy.BestOption(options, nodeInfos)
-	if bestOption == nil || bestOption.NodeCount <= 0 {
-		klog.Infof("Expander filtered out all options, valid options: %d", len(options))
-		podEquivalenceGroups = markAllGroupsAsUnschedulable(podEquivalenceGroups, ExpansionOptionsFilteredOutReason)
-		return &status.ScaleUpStatus{
-			Result:                  status.ScaleUpNoOptionsAvailable,
-			PodsRemainUnschedulable: o.GetRemainingPods(podEquivalenceGroups, nodeGroups, skippedNodeGroups, nodeInfos),
-			ConsideredNodeGroups:    nodeGroups,
-		}, nil
-	}
-	klog.V(1).Infof("Best option to resize: %s", bestOption.NodeGroup.Id())
-	if len(bestOption.Debug) > 0 {
-		klog.V(1).Info(bestOption.Debug)
-	}
-	klog.V(1).Infof("Estimated %d nodes needed in %s", bestOption.NodeCount, bestOption.NodeGroup.Id())
-
-	// Cap new nodes to supported number of nodes in the cluster.
-	newNodes, aErr := o.GetCappedNewNodeCount(bestOption.NodeCount, len(nodes))
-	if aErr != nil {
-		markedEquivalenceGroups := markAllGroupsAsUnschedulable(podEquivalenceGroups, ScaleUpExecutionErrorReason)
-		return status.UpdateScaleUpError(
-			&status.ScaleUpStatus{
-				PodsTriggeredScaleUp:    bestOption.Pods,
-				PodsRemainUnschedulable: o.GetRemainingPods(markedEquivalenceGroups, nodeGroups, skippedNodeGroups, nodeInfos),
-			},
-			aErr,
-		)
-	}
-
-	newNodes, aErr = o.applyLimits(newNodes, tracker, bestOption.NodeGroup, nodeInfos)
-	if aErr != nil {
-		markedEquivalenceGroups := markAllGroupsAsUnschedulable(podEquivalenceGroups, ScaleUpExecutionErrorReason)
-		return status.UpdateScaleUpError(
-			&status.ScaleUpStatus{
-				PodsTriggeredScaleUp:    bestOption.Pods,
-				PodsRemainUnschedulable: o.GetRemainingPods(markedEquivalenceGroups, nodeGroups, skippedNodeGroups, nodeInfos),
-			},
-			aErr,
-		)
-	}
-
-	if newNodes < bestOption.NodeCount {
-		klog.V(1).Infof("Only %d nodes can be added to %s due to resource quotas", newNodes, bestOption.NodeGroup.Id())
-		if allOrNothing {
-			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
-			klog.V(1).Info("Not attempting scale-up due to all-or-nothing strategy: not all pods would be accommodated")
-			markedEquivalenceGroups := markAllGroupsAsUnschedulable(podEquivalenceGroups, AllOrNothingReason)
-			return o.buildNoOptionsAvailableStatus(markedEquivalenceGroups, skippedNodeGroups, nodeGroups, nodeInfos), nil
-		}
-	}
-
-	// If necessary, create the node group. This is no longer simulation, an empty node group will be created by cloud provider if supported.
-	createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
-	if !bestOption.NodeGroup.Exist() && !o.processors.AsyncNodeGroupStateChecker.IsUpcoming(bestOption.NodeGroup) {
-		if allOrNothing && bestOption.NodeGroup.MaxSize() < newNodes {
-			klog.V(1).Infof("Can only create a new node group with max %d nodes, need %d nodes", bestOption.NodeGroup.MaxSize(), newNodes)
-			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
-			klog.V(1).Info("Not attempting scale-up due to all-or-nothing strategy: not all pods would be accommodated")
-			markedEquivalenceGroups := markAllGroupsAsUnschedulable(podEquivalenceGroups, AllOrNothingReason)
-			return o.buildNoOptionsAvailableStatus(markedEquivalenceGroups, skippedNodeGroups, nodeGroups, nodeInfos), nil
-		}
-		var scaleUpStatus *status.ScaleUpStatus
-		oldId := bestOption.NodeGroup.Id()
-		if o.autoscalingCtx.AsyncNodeGroupsEnabled {
-			initializer := NewAsyncNodeGroupInitializer(bestOption, nodeInfos[oldId], o.scaleUpExecutor, o.taintConfig, daemonSets, o.processors.ScaleUpStatusProcessor, o.autoscalingCtx, allOrNothing)
-			createNodeGroupResults, scaleUpStatus, aErr = o.CreateNodeGroupAsync(bestOption, nodeInfos, schedulablePodGroups, podEquivalenceGroups, daemonSets, initializer)
-		} else {
-			createNodeGroupResults, scaleUpStatus, aErr = o.CreateNodeGroup(bestOption, nodeInfos, schedulablePodGroups, podEquivalenceGroups, daemonSets)
-		}
-		if aErr != nil {
-			return scaleUpStatus, aErr
-		}
-		nodeGroups = appendCreatedNodeGroups(nodeGroups, oldId, createNodeGroupResults)
-	}
-
-	scaleUpInfos, aErr := o.balanceScaleUps(now, bestOption.NodeGroup, newNodes, nodeInfos, schedulablePodGroups, tracker)
-	if aErr != nil {
-		markedEquivalenceGroups := markAllGroupsAsUnschedulable(podEquivalenceGroups, ScaleUpExecutionErrorReason)
-		return status.UpdateScaleUpError(
-			&status.ScaleUpStatus{
-				CreateNodeGroupResults:  createNodeGroupResults,
-				PodsTriggeredScaleUp:    bestOption.Pods,
-				PodsRemainUnschedulable: o.GetRemainingPods(markedEquivalenceGroups, nodeGroups, skippedNodeGroups, nodeInfos),
-			},
-			aErr,
-		)
-	}
-
-	// Last check before scale-up. Node group capacity (both due to max size limits & current size) is only checked when balancing.
-	totalCapacity := 0
-	for _, sui := range scaleUpInfos {
-		totalCapacity += sui.NewSize - sui.CurrentSize
-	}
-	if totalCapacity < newNodes {
-		klog.V(1).Infof("Can only add %d nodes due to node group limits, need %d nodes", totalCapacity, newNodes)
-		if allOrNothing {
-			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
-			klog.V(1).Info("Not attempting scale-up due to all-or-nothing strategy: not all pods would be accommodated")
-			markedEquivalenceGroups := markAllGroupsAsUnschedulable(podEquivalenceGroups, AllOrNothingReason)
-			return o.buildNoOptionsAvailableStatus(markedEquivalenceGroups, skippedNodeGroups, nodeGroups, nodeInfos), nil
-		}
+	plan, st, aErr := o.prepareScaleUp(scaleUpCtx{
+		validNodeGroups:      validNodeGroups,
+		podEquivalenceGroups: podEquivalenceGroups,
+		nodeInfos:            nodeInfos,
+		nodes:                nodes,
+		unschedulablePods:    unschedulablePods,
+		allOrNothing:         allOrNothing,
+		now:                  now,
+		nodeGroups:           nodeGroups,
+		skippedNodeGroups:    skippedNodeGroups,
+		tracker:              tracker,
+		daemonSets:           daemonSets,
+	})
+	if st != nil || aErr != nil {
+		return st, aErr
 	}
 
 	// Execute scale up.
-	klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
-	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, now, allOrNothing)
+	klog.V(1).Infof("Final scale-up plan: %v", plan.scaleUpInfos)
+	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(plan.scaleUpInfos, nodeInfos, now, allOrNothing)
 	if aErr != nil {
-		failedGroupsMap := o.buildFailedGroupsMap(failedNodeGroups, scaleUpInfos)
+		failedGroupsMap := o.buildFailedGroupsMap(failedNodeGroups, plan.scaleUpInfos)
 		markedEquivalenceGroups := markFailedGroupsAsUnschedulable(podEquivalenceGroups, failedGroupsMap, ScaleUpExecutionErrorReason)
 		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{
-				CreateNodeGroupResults:  createNodeGroupResults,
+				CreateNodeGroupResults:  plan.createNodeGroupResults,
 				FailedResizeNodeGroups:  failedNodeGroups,
-				PodsTriggeredScaleUp:    bestOption.Pods,
-				PodsRemainUnschedulable: o.GetRemainingPods(markedEquivalenceGroups, nodeGroups, skippedNodeGroups, nodeInfos),
+				PodsTriggeredScaleUp:    plan.bestOption.Pods,
+				PodsRemainUnschedulable: o.GetRemainingPods(markedEquivalenceGroups, plan.nodeGroups, skippedNodeGroups, nodeInfos),
 			},
 			aErr,
 		)
@@ -317,12 +192,12 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	o.clusterStateRegistry.Recalculate()
 	return &status.ScaleUpStatus{
 		Result:                  status.ScaleUpSuccessful,
-		ScaleUpInfos:            scaleUpInfos,
-		PodsRemainUnschedulable: o.GetRemainingPods(podEquivalenceGroups, nodeGroups, skippedNodeGroups, nodeInfos),
-		ConsideredNodeGroups:    nodeGroups,
-		CreateNodeGroupResults:  createNodeGroupResults,
-		PodsTriggeredScaleUp:    bestOption.Pods,
-		PodsAwaitEvaluation:     GetPodsAwaitingEvaluation(podEquivalenceGroups, bestOption.NodeGroup.Id()),
+		ScaleUpInfos:            plan.scaleUpInfos,
+		PodsRemainUnschedulable: o.GetRemainingPods(podEquivalenceGroups, plan.nodeGroups, skippedNodeGroups, nodeInfos),
+		ConsideredNodeGroups:    plan.nodeGroups,
+		CreateNodeGroupResults:  plan.createNodeGroupResults,
+		PodsTriggeredScaleUp:    plan.bestOption.Pods,
+		PodsAwaitEvaluation:     GetPodsAwaitingEvaluation(podEquivalenceGroups, plan.bestOption.NodeGroup.Id()),
 	}, nil
 }
 
@@ -1095,4 +970,179 @@ func appendCreatedNodeGroups(nodeGroups []cloudprovider.NodeGroup, bestOptionNod
 		}
 	}
 	return nodeGroups
+}
+
+type scaleUpCtx struct {
+	validNodeGroups      []cloudprovider.NodeGroup
+	podEquivalenceGroups []*equivalence.PodGroup
+	nodeInfos            map[string]*framework.NodeInfo
+	nodes                []*apiv1.Node
+	unschedulablePods    []*apiv1.Pod
+	allOrNothing         bool
+	now                  time.Time
+	nodeGroups           []cloudprovider.NodeGroup
+	skippedNodeGroups    map[string]status.Reasons
+	tracker              *resourcequotas.Tracker
+	daemonSets           []*appsv1.DaemonSet
+}
+
+type scaleUpPlan struct {
+	scaleUpInfos           []nodegroupset.ScaleUpInfo
+	createNodeGroupResults []nodegroups.CreateNodeGroupResult
+	bestOption             *expander.Option
+	nodeGroups             []cloudprovider.NodeGroup
+}
+
+func (o *ScaleUpOrchestrator) prepareScaleUp(args scaleUpCtx) (scaleUpPlan, *status.ScaleUpStatus, errors.AutoscalerError) {
+	// Calculate expansion options
+	schedulablePodGroups := map[string][]estimator.PodEquivalenceGroup{}
+	var options []expander.Option
+
+	// This code here runs a simulation to see which pods can be scheduled on which node groups.
+	for _, nodeGroup := range args.validNodeGroups {
+		schedulablePodGroups[nodeGroup.Id()] = o.SchedulablePodGroups(args.podEquivalenceGroups, nodeGroup, args.nodeInfos[nodeGroup.Id()])
+	}
+
+	for _, nodeGroup := range args.validNodeGroups {
+		option := o.ComputeExpansionOption(nodeGroup, schedulablePodGroups, args.nodeInfos, len(args.nodes), args.now, args.allOrNothing)
+		o.processors.BinpackingLimiter.MarkProcessed(o.autoscalingCtx, nodeGroup.Id())
+
+		if len(option.Pods) == 0 || option.NodeCount == 0 {
+			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
+		} else if args.allOrNothing && len(option.Pods) < len(args.unschedulablePods) {
+			klog.V(4).Infof("Some pods can't fit to %s, giving up due to all-or-nothing scale-up strategy", nodeGroup.Id())
+		} else {
+			options = append(options, option)
+		}
+
+		if o.processors.BinpackingLimiter.StopBinpacking(o.autoscalingCtx, options) {
+			break
+		}
+	}
+
+	// Finalize binpacking limiter.
+	o.processors.BinpackingLimiter.FinalizeBinpacking(o.autoscalingCtx, options)
+
+	if len(options) == 0 {
+		klog.V(1).Info("No expansion options")
+		return scaleUpPlan{}, &status.ScaleUpStatus{
+			Result:                  status.ScaleUpNoOptionsAvailable,
+			PodsRemainUnschedulable: o.GetRemainingPods(args.podEquivalenceGroups, args.nodeGroups, args.skippedNodeGroups, args.nodeInfos),
+			ConsideredNodeGroups:    args.nodeGroups,
+		}, nil
+	}
+
+	// Pick some expansion option.
+	bestOption := o.autoscalingCtx.ExpanderStrategy.BestOption(options, args.nodeInfos)
+	if bestOption == nil || bestOption.NodeCount <= 0 {
+		klog.Infof("Expander filtered out all options, valid options: %d", len(options))
+		args.podEquivalenceGroups = markAllGroupsAsUnschedulable(args.podEquivalenceGroups, ExpansionOptionsFilteredOutReason)
+		return scaleUpPlan{}, &status.ScaleUpStatus{
+			Result:                  status.ScaleUpNoOptionsAvailable,
+			PodsRemainUnschedulable: o.GetRemainingPods(args.podEquivalenceGroups, args.nodeGroups, args.skippedNodeGroups, args.nodeInfos),
+			ConsideredNodeGroups:    args.nodeGroups,
+		}, nil
+	}
+	klog.V(1).Infof("Best option to resize: %s", bestOption.NodeGroup.Id())
+	if len(bestOption.Debug) > 0 {
+		klog.V(1).Info(bestOption.Debug)
+	}
+	klog.V(1).Infof("Estimated %d nodes needed in %s", bestOption.NodeCount, bestOption.NodeGroup.Id())
+
+	// Cap new nodes to supported number of nodes in the cluster.
+	newNodes, aErr := o.GetCappedNewNodeCount(bestOption.NodeCount, len(args.nodes))
+	if aErr != nil {
+		markedEquivalenceGroups := markAllGroupsAsUnschedulable(args.podEquivalenceGroups, ScaleUpExecutionErrorReason)
+		st, err := status.UpdateScaleUpError(
+			&status.ScaleUpStatus{
+				PodsTriggeredScaleUp:    bestOption.Pods,
+				PodsRemainUnschedulable: o.GetRemainingPods(markedEquivalenceGroups, args.nodeGroups, args.skippedNodeGroups, args.nodeInfos),
+			},
+			aErr,
+		)
+		return scaleUpPlan{}, st, err
+	}
+
+	newNodes, aErr = o.applyLimits(newNodes, args.tracker, bestOption.NodeGroup, args.nodeInfos)
+	if aErr != nil {
+		markedEquivalenceGroups := markAllGroupsAsUnschedulable(args.podEquivalenceGroups, ScaleUpExecutionErrorReason)
+		st, err := status.UpdateScaleUpError(
+			&status.ScaleUpStatus{
+				PodsTriggeredScaleUp:    bestOption.Pods,
+				PodsRemainUnschedulable: o.GetRemainingPods(markedEquivalenceGroups, args.nodeGroups, args.skippedNodeGroups, args.nodeInfos),
+			},
+			aErr,
+		)
+		return scaleUpPlan{}, st, err
+	}
+
+	if newNodes < bestOption.NodeCount {
+		klog.V(1).Infof("Only %d nodes can be added to %s due to resource quotas", newNodes, bestOption.NodeGroup.Id())
+		if args.allOrNothing {
+			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
+			klog.V(1).Info("Not attempting scale-up due to all-or-nothing strategy: not all pods would be accommodated")
+			markedEquivalenceGroups := markAllGroupsAsUnschedulable(args.podEquivalenceGroups, AllOrNothingReason)
+			return scaleUpPlan{}, o.buildNoOptionsAvailableStatus(markedEquivalenceGroups, args.skippedNodeGroups, args.nodeGroups, args.nodeInfos), nil
+		}
+	}
+
+	// If necessary, create the node group. This is no longer simulation, an empty node group will be created by cloud provider if supported.
+	createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
+	if !bestOption.NodeGroup.Exist() && !o.processors.AsyncNodeGroupStateChecker.IsUpcoming(bestOption.NodeGroup) {
+		if args.allOrNothing && bestOption.NodeGroup.MaxSize() < newNodes {
+			klog.V(1).Infof("Can only create a new node group with max %d nodes, need %d nodes", bestOption.NodeGroup.MaxSize(), newNodes)
+			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
+			klog.V(1).Info("Not attempting scale-up due to all-or-nothing strategy: not all pods would be accommodated")
+			markedEquivalenceGroups := markAllGroupsAsUnschedulable(args.podEquivalenceGroups, AllOrNothingReason)
+			return scaleUpPlan{}, o.buildNoOptionsAvailableStatus(markedEquivalenceGroups, args.skippedNodeGroups, args.nodeGroups, args.nodeInfos), nil
+		}
+		var scaleUpStatus *status.ScaleUpStatus
+		oldId := bestOption.NodeGroup.Id()
+		if o.autoscalingCtx.AsyncNodeGroupsEnabled {
+			initializer := NewAsyncNodeGroupInitializer(bestOption, args.nodeInfos[oldId], o.scaleUpExecutor, o.taintConfig, args.daemonSets, o.processors.ScaleUpStatusProcessor, o.autoscalingCtx, args.allOrNothing)
+			createNodeGroupResults, scaleUpStatus, aErr = o.CreateNodeGroupAsync(bestOption, args.nodeInfos, schedulablePodGroups, args.podEquivalenceGroups, args.daemonSets, initializer)
+		} else {
+			createNodeGroupResults, scaleUpStatus, aErr = o.CreateNodeGroup(bestOption, args.nodeInfos, schedulablePodGroups, args.podEquivalenceGroups, args.daemonSets)
+		}
+		if aErr != nil {
+			return scaleUpPlan{}, scaleUpStatus, aErr
+		}
+		args.nodeGroups = appendCreatedNodeGroups(args.nodeGroups, oldId, createNodeGroupResults)
+	}
+
+	scaleUpInfos, aErr := o.balanceScaleUps(args.now, bestOption.NodeGroup, newNodes, args.nodeInfos, schedulablePodGroups, args.tracker)
+	if aErr != nil {
+		markedEquivalenceGroups := markAllGroupsAsUnschedulable(args.podEquivalenceGroups, ScaleUpExecutionErrorReason)
+		st, err := status.UpdateScaleUpError(
+			&status.ScaleUpStatus{
+				CreateNodeGroupResults:  createNodeGroupResults,
+				PodsTriggeredScaleUp:    bestOption.Pods,
+				PodsRemainUnschedulable: o.GetRemainingPods(markedEquivalenceGroups, args.nodeGroups, args.skippedNodeGroups, args.nodeInfos),
+			},
+			aErr,
+		)
+		return scaleUpPlan{}, st, err
+	}
+
+	// Last check before scale-up. Node group capacity (both due to max size limits & current size) is only checked when balancing.
+	totalCapacity := 0
+	for _, sui := range scaleUpInfos {
+		totalCapacity += sui.NewSize - sui.CurrentSize
+	}
+	if totalCapacity < newNodes {
+		klog.V(1).Infof("Can only add %d nodes due to node group limits, need %d nodes", totalCapacity, newNodes)
+		if args.allOrNothing {
+			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
+			klog.V(1).Info("Not attempting scale-up due to all-or-nothing strategy: not all pods would be accommodated")
+			markedEquivalenceGroups := markAllGroupsAsUnschedulable(args.podEquivalenceGroups, AllOrNothingReason)
+			return scaleUpPlan{}, o.buildNoOptionsAvailableStatus(markedEquivalenceGroups, args.skippedNodeGroups, args.nodeGroups, args.nodeInfos), nil
+		}
+	}
+
+	return scaleUpPlan{
+		scaleUpInfos:           scaleUpInfos,
+		createNodeGroupResults: createNodeGroupResults,
+		bestOption:             bestOption,
+		nodeGroups:             args.nodeGroups,
+	}, nil, nil
 }
