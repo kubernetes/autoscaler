@@ -1233,7 +1233,8 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 	if err != nil {
 		t.Fatalf("Couldn't set up autoscaling context: %v", err)
 	}
-	csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	scaleStateNotifier := nodegroupchange.NewNodeGroupChangeObserversList()
+	_ = clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), scaleStateNotifier)
 	for _, bucket := range emptyNodeGroupViews {
 		for _, node := range bucket.Nodes {
 			err := autoscalingCtx.ClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.pods[node.Name]...))
@@ -1265,9 +1266,6 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 		}
 		wantScaleDownNodes = append(wantScaleDownNodes, statusScaledDownNode)
 	}
-
-	scaleStateNotifier := nodegroupchange.NewNodeGroupChangeObserversList()
-	scaleStateNotifier.Register(csr)
 
 	// Create Actuator, run StartDeletion, and verify the error.
 	ndt := deletiontracker.NewNodeDeletionTracker(0)
@@ -1546,9 +1544,8 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
-			csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 			scaleStateNotifier := nodegroupchange.NewNodeGroupChangeObserversList()
-			scaleStateNotifier.Register(csr)
+			_ = clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), scaleStateNotifier)
 			ndt := deletiontracker.NewNodeDeletionTracker(0)
 			ndb := NewNodeDeletionBatcher(&autoscalingCtx, scaleStateNotifier, ndt, deleteInterval)
 			legacyFlagDrainConfig := SingleRuleDrainConfig(autoscalingCtx.MaxGracefulTerminationSec)
