@@ -129,3 +129,92 @@ func (f *fakeScaleUpStatusProcessor) Process(_ *ca_context.AutoscalingContext, s
 
 func (f *fakeScaleUpStatusProcessor) CleanUp() {
 }
+
+func TestPrepareScaleUps(t *testing.T) {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(nodeGroup string, increase int) error {
+		return nil
+	}).Build()
+	upcomingNodeGroup := provider.BuildNodeGroup("upcoming-ng", 0, 100, 0, false, true, "T1", nil)
+	createdNodeGroup := provider.BuildNodeGroup("created-ng", 0, 100, 0, false, true, "T1", nil)
+	nodeInfo := framework.NewTestNodeInfo(BuildTestNode("t1", 100, 0))
+
+	testCases := []struct {
+		name              string
+		targetSize        int64
+		processedSize     int64
+		wantScaleUpInfos  []nodegroupset.ScaleUpInfo
+		wantProcessedSize int64
+	}{
+		{
+			name:          "first scale up",
+			targetSize:    3,
+			processedSize: 0,
+			wantScaleUpInfos: []nodegroupset.ScaleUpInfo{
+				{
+					Group:       createdNodeGroup,
+					CurrentSize: 0,
+					NewSize:     3,
+					MaxSize:     createdNodeGroup.MaxSize(),
+				},
+			},
+			wantProcessedSize: 3,
+		},
+		{
+			name:          "additional scale up",
+			targetSize:    5,
+			processedSize: 3,
+			wantScaleUpInfos: []nodegroupset.ScaleUpInfo{
+				{
+					Group:       createdNodeGroup,
+					CurrentSize: 3,
+					NewSize:     5,
+					MaxSize:     createdNodeGroup.MaxSize(),
+				},
+			},
+			wantProcessedSize: 5,
+		},
+		{
+			name:              "no new scale up",
+			targetSize:        3,
+			processedSize:     3,
+			wantScaleUpInfos:  nil,
+			wantProcessedSize: 3,
+		},
+	}
+
+	listers := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	options := config.AutoscalingOptions{AsyncNodeGroupsEnabled: true}
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
+	assert.NoError(t, err)
+	processors.AsyncNodeGroupStateChecker = &asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: map[string]bool{upcomingNodeGroup.Id(): true}}
+	executor := newScaleUpExecutor(&context, processors.ScaleStateNotifier, processors.AsyncNodeGroupStateChecker)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			option := expander.Option{NodeGroup: upcomingNodeGroup, Pods: []*apiv1.Pod{}}
+			scaleUpStatusProcessor := &fakeScaleUpStatusProcessor{}
+			initializer := NewAsyncNodeGroupInitializer(&option, nodeInfo, executor, taints.TaintConfig{}, nil, scaleUpStatusProcessor, &context, false)
+			initializer.SetTargetSize(upcomingNodeGroup.Id(), tc.targetSize)
+			initializer.processedTargetSizes[upcomingNodeGroup.Id()] = tc.processedSize
+
+			asyncResult := nodegroups.AsyncNodeGroupCreationResult{
+				CreationResult: nodegroups.CreateNodeGroupResult{MainCreatedNodeGroup: createdNodeGroup},
+				CreatedToUpcomingMapping: map[string]string{
+					createdNodeGroup.Id(): upcomingNodeGroup.Id(),
+				},
+			}
+
+			initializer.InitializeNodeGroup(asyncResult)
+
+			if len(tc.wantScaleUpInfos) > 0 {
+				assert.NotNil(t, scaleUpStatusProcessor.lastStatus)
+				assert.Equal(t, status.ScaleUpSuccessful, scaleUpStatusProcessor.lastStatus.Result)
+				assert.Equal(t, tc.wantScaleUpInfos, scaleUpStatusProcessor.lastStatus.ScaleUpInfos)
+			} else {
+				assert.Nil(t, scaleUpStatusProcessor.lastStatus)
+			}
+			assert.Equal(t, tc.wantProcessedSize, initializer.processedTargetSizes[upcomingNodeGroup.Id()])
+		})
+	}
+}
