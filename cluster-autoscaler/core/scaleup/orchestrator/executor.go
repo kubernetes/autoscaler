@@ -41,6 +41,7 @@ type scaleUpExecutor struct {
 	autoscalingCtx             *ca_context.AutoscalingContext
 	scaleStateNotifier         nodegroupchange.NodeGroupChangeObserver
 	asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker
+	metrics                    metricsObserver
 }
 
 // New returns new instance of scale up executor.
@@ -53,7 +54,27 @@ func newScaleUpExecutor(
 		autoscalingCtx:             autoscalingCtx,
 		scaleStateNotifier:         scaleStateNotifier,
 		asyncNodeGroupStateChecker: asyncNodeGroupStateChecker,
+		metrics:                    metrics.DefaultMetrics,
 	}
+}
+
+// newScaleUpExecutorWithMetrics returns new instance of scale up executor with provided metrics.
+func newScaleUpExecutorWithMetrics(
+	autoscalingCtx *ca_context.AutoscalingContext,
+	scaleStateNotifier nodegroupchange.NodeGroupChangeObserver,
+	asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker,
+	metrics metricsObserver,
+) *scaleUpExecutor {
+	return &scaleUpExecutor{
+		autoscalingCtx:             autoscalingCtx,
+		scaleStateNotifier:         scaleStateNotifier,
+		asyncNodeGroupStateChecker: asyncNodeGroupStateChecker,
+		metrics:                    metrics,
+	}
+}
+
+type metricsObserver interface {
+	RegisterScaleUp(nodesCount int, gpuResourceName string, gpuType string, draDriverNames string)
 }
 
 // ExecuteScaleUps executes the scale ups, based on the provided scale up infos and options.
@@ -186,7 +207,7 @@ func (e *scaleUpExecutor) executeScaleUp(
 		return nil
 	}
 	e.scaleStateNotifier.RegisterScaleUp(info.Group, increase, time.Now())
-	metrics.RegisterScaleUp(increase, gpuResourceName, gpuType, draDriverNames)
+	e.metrics.RegisterScaleUp(increase, gpuResourceName, gpuType, draDriverNames)
 	e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: group %s size set to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	return nil
