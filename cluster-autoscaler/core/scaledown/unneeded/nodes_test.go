@@ -28,10 +28,11 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	nodeprocessors "k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -150,7 +151,7 @@ func TestUpdate(t *testing.T) {
 				unreadyTime:  defaultUnreadyTime,
 			}
 
-			nodes := NewNodes(fakeTimeGetter, nil)
+			nodes := NewNodes(fakeTimeGetter)
 			ctx := &ca_context.AutoscalingContext{CloudProvider: provider}
 
 			nodes.Update(ctx, tc.initialNodes, initialTimestamp)
@@ -266,14 +267,23 @@ func TestRemovableAt(t *testing.T) {
 				unneededTime: 0,
 				unreadyTime:  expectedThreshold,
 			}
-			n := NewNodes(fakeTimeGetter, &resource.LimitsFinder{})
+			n := NewNodes(fakeTimeGetter)
 
 			n.Update(&autoscalingCtx, removableNodes, time.Now().Add(-10*time.Minute)) //add -10 min to work correctly with unneeded time threshold
 
+			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+				QuotaProvider:            resourcequotas.NewFakeProvider([]resourcequotas.Quota{}),
+				CustomResourcesProcessor: customresources.NewDefaultCustomResourcesProcessor(false, false),
+			})
+			var nodes []*apiv1.Node
+			for _, n := range removableNodes {
+				nodes = append(nodes, n.Node)
+			}
+			tracker, _ := factory.NewMinQuotasTracker(&autoscalingCtx, nodes)
+
 			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&autoscalingCtx, nodeprocessors.ScaleDownContext{
-				ActuationStatus:     as,
-				ResourcesLeft:       resource.Limits{},
-				ResourcesWithLimits: []string{},
+				ActuationStatus: as,
+				Tracker:         tracker,
 			}, time.Now())
 			if len(gotDrainToRemove) != tc.numDrainToRemove || len(gotEmptyToRemove) != tc.numEmptyToRemove {
 				t.Errorf("%s: getNodesToRemove() return %d, %d, want %d, %d", tc.name, len(gotEmptyToRemove), len(gotDrainToRemove), tc.numEmptyToRemove, tc.numDrainToRemove)
@@ -321,6 +331,7 @@ type unremovableTestCase struct {
 	thresholds            thresholdConfig
 	groupConfig           nodeGroupConfigTest
 	shouldTimeGetterError bool
+	quotas                []resourcequotas.Quota
 	expectedReason        simulator.UnremovableReason
 }
 
@@ -409,6 +420,22 @@ func TestRemovableAt_UnremovableReasons(t *testing.T) {
 			},
 			expectedReason: simulator.NodeGroupMinSizeReached,
 		},
+		{
+			name:        "MinimalResourceLimitExceeded",
+			nodeConfig:  baseCase.nodeConfig,
+			thresholds:  baseCase.thresholds,
+			groupConfig: baseCase.groupConfig,
+			quotas: []resourcequotas.Quota{
+				&resourcequotas.FakeQuota{
+					Name:        "quota1",
+					AppliesToFn: func(*apiv1.Node) bool { return true },
+					LimitsVal: map[string]int64{
+						resourcequotas.ResourceNodes: 1,
+					},
+				},
+			},
+			expectedReason: simulator.MinimalResourceLimitExceeded,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -439,16 +466,21 @@ func TestRemovableAt_UnremovableReasons(t *testing.T) {
 					unreadyTime:  tc.thresholds.unready,
 				}
 			}
-			n := NewNodes(timeGetter, &resource.LimitsFinder{})
+			n := NewNodes(timeGetter)
 
 			n.Update(&autoscalingCtx, nodesToProcess, now.Add(tc.nodeConfig.sinceOffset))
 
 			sdCtx := nodeprocessors.ScaleDownContext{
-				ActuationStatus:     &fakeActuationStatus{deletionCount: map[string]int{}},
-				ResourcesLeft:       nil,
-				ResourcesWithLimits: []string{},
+				ActuationStatus: &fakeActuationStatus{deletionCount: map[string]int{}},
 			}
 
+			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+				QuotaProvider:            resourcequotas.NewFakeProvider(tc.quotas),
+				CustomResourcesProcessor: customresources.NewDefaultCustomResourcesProcessor(false, false),
+			})
+			tracker, _ := factory.NewMinQuotasTracker(&autoscalingCtx, []*apiv1.Node{node})
+
+			sdCtx.Tracker = tracker
 			gotEmptyToRemove, gotDrainToRemove, gotUnremovable := n.RemovableAt(&autoscalingCtx, sdCtx, now)
 
 			assert.Empty(t, gotEmptyToRemove, "Expected no empty nodes to be removable")
@@ -533,7 +565,7 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			nodes := NewNodes(nil, nil)
+			nodes := NewNodes(nil)
 
 			allNodeLister := kube_util.NewTestNodeLister(nil)
 			allNodeLister.SetNodes(tc.allNodes)

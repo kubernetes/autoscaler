@@ -198,14 +198,19 @@ func NewStaticAutoscaler(
 		processors.ScaleDownCandidatesNotifier.Register(ndlt)
 		processors.ScaleDownStatusProcessor = ndlt
 	}
-	scaleDownPlanner := planner.New(autoscalingCtx, processors, deleteOptions, drainabilityRules)
+	quotasTrackerFactory := resourcequotas.NewTrackerFactory(quotasTrackerOptions)
+	minQuotasTrackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+		CustomResourcesProcessor: processors.CustomResourcesProcessor,
+		QuotaProvider:            resourcequotas.NewCloudMinProvider(cloudProvider),
+		NodeFilter:               quotasTrackerOptions.NodeFilter,
+	})
+
+	scaleDownPlanner := planner.New(autoscalingCtx, processors, deleteOptions, drainabilityRules, minQuotasTrackerFactory)
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	scaleDownActuator := actuation.NewActuator(autoscalingCtx, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 	autoscalingCtx.ScaleDownActuator = scaleDownActuator
-
-	quotasTrackerFactory := resourcequotas.NewTrackerFactory(quotasTrackerOptions)
 	if scaleUpOrchestrator == nil {
 		scaleUpOrchestrator = orchestrator.New()
 	}
