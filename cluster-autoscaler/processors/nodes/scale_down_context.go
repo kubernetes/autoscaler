@@ -18,14 +18,13 @@ package nodes
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 )
 
 // ScaleDownContext keeps an updated version actuationStatus and resourcesLeft for the scaling down process
 type ScaleDownContext struct {
-	ActuationStatus     scaledown.ActuationStatus
-	ResourcesLeft       resource.Limits
-	ResourcesWithLimits []string
+	ActuationStatus scaledown.ActuationStatus
+	Tracker         *resourcequotas.Tracker
 }
 
 // NewDefaultScaleDownContext returns ScaleDownContext with passed MaxNodeCountToBeRemoved

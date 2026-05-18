@@ -17,6 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
@@ -72,4 +73,72 @@ func (p *CombinedQuotasProvider) Quotas() ([]Quota, error) {
 		allQuotas = append(allQuotas, quotas...)
 	}
 	return allQuotas, nil
+}
+
+// minQuotaAdapter wraps cloudprovider.ResourceLimiter and returns GetMin values.
+type minQuotaAdapter struct {
+	limiter *cloudprovider.ResourceLimiter
+}
+
+func (a *minQuotaAdapter) ID() string                       { return a.limiter.ID() }
+func (a *minQuotaAdapter) AppliesTo(node *corev1.Node) bool { return a.limiter.AppliesTo(node) }
+func (a *minQuotaAdapter) Limits() map[string]int64 {
+	limits := make(map[string]int64)
+	for _, r := range a.limiter.GetResources() {
+		limits[r] = a.limiter.GetMin(r)
+	}
+	return limits
+}
+
+// maxQuotaAdapter wraps cloudprovider.ResourceLimiter and returns GetMax values.
+type maxQuotaAdapter struct {
+	limiter *cloudprovider.ResourceLimiter
+}
+
+func (a *maxQuotaAdapter) ID() string                       { return a.limiter.ID() }
+func (a *maxQuotaAdapter) AppliesTo(node *corev1.Node) bool { return a.limiter.AppliesTo(node) }
+func (a *maxQuotaAdapter) Limits() map[string]int64 {
+	limits := make(map[string]int64)
+	for _, r := range a.limiter.GetResources() {
+		limits[r] = a.limiter.GetMax(r)
+	}
+	return limits
+}
+
+// CloudMinProvider provides minimum quotas from cloud provider.
+type CloudMinProvider struct {
+	cloudProvider cloudprovider.CloudProvider
+}
+
+// Quotas returns the minimum quotas from the cloud provider.
+func (p *CloudMinProvider) Quotas() ([]Quota, error) {
+	rl, err := p.cloudProvider.GetResourceLimiter()
+	if err != nil {
+		return nil, err
+	}
+	return []Quota{&minQuotaAdapter{limiter: rl}}, nil
+}
+
+// NewCloudMinProvider returns a new CloudMinProvider.
+func NewCloudMinProvider(cloudProvider cloudprovider.CloudProvider) *CloudMinProvider {
+	return &CloudMinProvider{cloudProvider: cloudProvider}
+}
+
+// CloudMaxProvider provides maximum quotas from cloud provider.
+type CloudMaxProvider struct {
+	cloudProvider cloudprovider.CloudProvider
+}
+
+// Quotas returns the maximum quotas from the cloud provider.
+func (p *CloudMaxProvider) Quotas() ([]Quota, error) {
+	rl, err := p.cloudProvider.GetResourceLimiter()
+	if err != nil {
+		return nil, err
+	}
+	return []Quota{&maxQuotaAdapter{limiter: rl}}, nil
+}
+
+// NewCloudMaxProvider returns a new CloudMaxProvider.
+func NewCloudMaxProvider(cloudProvider cloudprovider.CloudProvider) *CloudMaxProvider {
+	return &CloudMaxProvider{cloudProvider: cloudProvider}
 }
