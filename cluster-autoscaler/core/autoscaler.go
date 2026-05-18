@@ -153,7 +153,7 @@ func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerO
 		opts.ExpanderStrategy = expanderStrategy
 	}
 	if opts.QuotasTrackerOptions.QuotaProvider == nil {
-		providers := []resourcequotas.Provider{resourcequotas.NewCloudQuotasProvider(opts.CloudProvider)}
+		providers := []resourcequotas.Provider{resourcequotas.NewCloudMaxProvider(opts.CloudProvider)}
 
 		if opts.CapacityQuotasEnabled {
 			// register informer here to disable lazy initialization
