@@ -25,6 +25,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"runtime/pprof"
+	"runtime/trace"
 	"sync"
 	"testing"
 	"time"
@@ -85,6 +86,7 @@ const (
 
 var (
 	runOnceCpuProfile = flag.String("profile-cpu", "", "If set, the benchmark writes a CPU profile to this file, covering the RunOnce execution during the first iteration.")
+	runOnceTrace      = flag.String("trace", "", "If set, the benchmark writes an execution trace to this file, covering the RunOnce execution during the first iteration.")
 	withGC            = flag.Bool("gc", false, "If set to false, the benchmark disables garbage collection to stabilize the runtime.")
 )
 
@@ -122,22 +124,30 @@ func (s scenario) run(b *testing.B) {
 		defer debug.SetGCPercent(oldGC)
 	}
 
-	var f *os.File
+	var fProf, fTrace *os.File
 	if *runOnceCpuProfile != "" {
 		var err error
-		f, err = os.Create(*runOnceCpuProfile)
+		fProf, err = os.Create(*runOnceCpuProfile)
 		if err != nil {
 			b.Fatalf("Failed to create cpu profile file: %v", err)
 		}
-		defer f.Close()
+		defer fProf.Close()
+	}
+	if *runOnceTrace != "" {
+		var err error
+		fTrace, err = os.Create(*runOnceTrace)
+		if err != nil {
+			b.Fatalf("Failed to create trace file: %v", err)
+		}
+		defer fTrace.Close()
 	}
 
 	for i := 0; i < b.N; i++ {
-		s.runIteration(b, i, f)
+		s.runIteration(b, i, fProf, fTrace)
 	}
 }
 
-func (s scenario) runIteration(b *testing.B, i int, f *os.File) {
+func (s scenario) runIteration(b *testing.B, i int, fProf, fTrace *os.File) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -151,9 +161,16 @@ func (s scenario) runIteration(b *testing.B, i int, f *os.File) {
 	// for each iteration.
 	runtime.GC()
 
-	if f != nil && i == 0 {
-		if err := pprof.StartCPUProfile(f); err != nil {
-			b.Fatalf("Failed to start cpu profile: %v", err)
+	if i == 0 {
+		if fProf != nil {
+			if err := pprof.StartCPUProfile(fProf); err != nil {
+				b.Fatalf("Failed to start cpu profile: %v", err)
+			}
+		}
+		if fTrace != nil {
+			if err := trace.Start(fTrace); err != nil {
+				b.Fatalf("Failed to start trace: %v", err)
+			}
 		}
 	}
 
@@ -161,8 +178,13 @@ func (s scenario) runIteration(b *testing.B, i int, f *os.File) {
 	err := autoscaler.RunOnce(time.Now().Add(10 * time.Second))
 	b.StopTimer()
 
-	if f != nil && i == 0 {
-		pprof.StopCPUProfile()
+	if i == 0 {
+		if fProf != nil {
+			pprof.StopCPUProfile()
+		}
+		if fTrace != nil {
+			trace.Stop()
+		}
 	}
 
 	if err != nil {
