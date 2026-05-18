@@ -95,3 +95,11 @@ func (v Verbose) Info(args ...interface{}) {
 		v.v.Info(args...)
 	}
 }
+
+// Warningf is a wrapper for klog.Warningf that logs if the Quota allows for it.
+func (v Verbose) Warningf(format string, args ...interface{}) {
+	if v.enabled {
+		// klog.Verbose does not implement Warningf
+		klog.Warningf(format, args...)
+	}
+}
