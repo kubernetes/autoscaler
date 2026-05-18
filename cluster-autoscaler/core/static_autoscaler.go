@@ -379,9 +379,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	} else {
 		metrics.UpdateMaxNodesCount(maxNodesCount)
 	}
-	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(podsBySchedulability.Scheduled, a.ExpendablePodsPriorityCutoff)
+	allocatedPods := slices.Concat(podsBySchedulability.Scheduled, podsBySchedulability.NominatedNode)
+	nonExpendableAllocatedPods := core_utils.FilterOutExpendablePods(allocatedPods, a.ExpendablePodsPriorityCutoff)
 
-	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableScheduledPods, draSnapshot, csiSnapshot); err != nil {
+	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableAllocatedPods, draSnapshot, csiSnapshot); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err).AddPrefix("failed to initialize ClusterSnapshot: ")
 	}
 	// Initialize Pod Disruption Budget tracking
@@ -1391,9 +1392,9 @@ func listPods(podLister kube_util.PodLister, bypassedSchedulers, allowedSchedule
 	// Skip logging in case of the boring scenario, when all pods are scheduled.
 	if len(pods) != len(podsBySchedulability.Scheduled) {
 		ignoredDueToDisallowed := initialPodCount - len(pods)
-		ignored := len(pods) - len(podsBySchedulability.Scheduled) - len(podsBySchedulability.Unschedulable) - len(podsBySchedulability.Unprocessed)
-		klog.Infof("Found %d pods in the cluster: %d scheduled, %d unschedulable, %d unprocessed by scheduler, %d ignored by allowed schedulers (most likely using custom scheduler), %d ignored due to dissallowed schedulers",
-			initialPodCount, len(podsBySchedulability.Scheduled), len(podsBySchedulability.Unschedulable), len(podsBySchedulability.Unprocessed), ignored, ignoredDueToDisallowed)
+		ignored := len(pods) - len(podsBySchedulability.Scheduled) - len(podsBySchedulability.NominatedNode) - len(podsBySchedulability.Unschedulable) - len(podsBySchedulability.Unprocessed)
+		klog.Infof("Found %d pods in the cluster: %d scheduled, %d with nominated node, %d unschedulable, %d unprocessed by scheduler, %d ignored by allowed schedulers (most likely using custom scheduler), %d ignored due to dissallowed schedulers",
+			initialPodCount, len(podsBySchedulability.Scheduled), len(podsBySchedulability.NominatedNode), len(podsBySchedulability.Unschedulable), len(podsBySchedulability.Unprocessed), ignored, ignoredDueToDisallowed)
 	}
 	return
 }

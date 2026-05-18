@@ -3674,3 +3674,92 @@ func TestStaticAutoscalerRunOnceClearsRegistry(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Nil(t, registry.GetCapacityBuffer(fakePodUID))
 }
+
+func TestStaticAutoscalerRunOnceWithNominatedNodeName(t *testing.T) {
+	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	allNodeLister := kubernetes.NewTestNodeLister(nil)
+	allPodListerMock := &podListerMock{}
+	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
+	daemonSetListerMock := &daemonSetListerMock{}
+	onScaleUpMock := &onScaleUpMock{}
+	onScaleDownMock := &onScaleDownMock{}
+
+	n1 := BuildTestNode("n1", 2000, 1000)
+	SetNodeReadyState(n1, true, time.Now())
+
+	p1 := BuildTestPod("p1", 1400, 0, WithNodeName("n1"))
+
+	p2 := BuildTestPod("p2", 1400, 0, MarkUnschedulable())
+	// p2 has NominatedNodeName set, so it should not trigger a scale up
+	p2.Status.NominatedNodeName = "n1"
+
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error {
+		return onScaleUpMock.ScaleUp(id, delta)
+	}).WithOnScaleDown(func(id string, name string) error {
+		return onScaleDownMock.ScaleDown(id, name)
+	}).Build()
+	provider.AddNodeGroup("ng1", 0, 10, 1)
+	provider.AddNode("ng1", n1)
+
+	assert.NotNil(t, provider)
+
+	// Create context with mocked lister registry.
+	options := config.AutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+			ScaleDownUtilizationThreshold: 0.5,
+			MaxNodeProvisionTime:          10 * time.Second,
+		},
+		EstimatorName:                  estimator.BinpackingEstimatorName,
+		MaxNodesTotal:                  10,
+		MaxCoresTotal:                  10,
+		MaxMemoryTotal:                 100000,
+		MaxNodeGroupBinpackingDuration: 1 * time.Second,
+	}
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	assert.NoError(t, err)
+
+	setUpScaleDownActuator(&autoscalingCtx, options)
+
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+		podDisruptionBudgetListerMock, daemonSetListerMock,
+		nil, nil, nil, nil)
+	autoscalingCtx.ListerRegistry = listerRegistry
+
+	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
+		OkTotalUnreadyCount: 1,
+	}
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(&autoscalingCtx, processors, clusterState, nil)
+	quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
+	suOrchestrator := orchestrator.New()
+	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, quotasTrackerFactory)
+
+	autoscaler := &StaticAutoscaler{
+		AutoscalingContext:    &autoscalingCtx,
+		clusterStateRegistry:  clusterState,
+		lastScaleUpTime:       time.Now(),
+		lastScaleDownFailTime: time.Now(),
+		scaleDownPlanner:      sdPlanner,
+		scaleDownActuator:     sdActuator,
+		scaleUpOrchestrator:   suOrchestrator,
+		processors:            processors,
+		loopStartNotifier:     loopstart.NewObserversList(nil),
+		processorCallbacks:    processorCallbacks,
+	}
+
+	// Scale up
+	readyNodeLister.SetNodes([]*apiv1.Node{n1})
+	allNodeLister.SetNodes([]*apiv1.Node{n1})
+	allPodListerMock.On("List").Return([]*apiv1.Pod{p1, p2}, nil).Once()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
+
+	err = autoscaler.RunOnce(time.Now())
+	assert.NoError(t, err)
+
+	mock.AssertExpectationsForObjects(t, allPodListerMock,
+		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
+}
