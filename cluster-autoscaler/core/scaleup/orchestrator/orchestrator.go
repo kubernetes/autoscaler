@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	"slices"
 	"strings"
 	"time"
 
@@ -480,23 +481,38 @@ func (o *ScaleUpOrchestrator) processCreateNodeGroupResult(
 	}
 
 	initialOption.NodeGroup = result.MainCreatedNodeGroup
+	newId := result.MainCreatedNodeGroup.Id()
 
-	// If possible replace candidate node-info with node info based on crated node group. The latter
-	// one should be more in line with nodes which will be created by node group.
+	// Use candidate template and scheduling results as a fallback
+	nodeInfos[newId] = nodeInfos[initialOptionId]
+	schedulablePodGroups[newId] = schedulablePodGroups[initialOptionId]
+
+	// If possible, replace candidate node-info with node info based on created node group.
+	// The latter should be more in line with nodes which will be created by node group.
 	mainCreatedNodeInfo, aErr := simulator.SanitizedTemplateNodeInfoFromNodeGroup(result.MainCreatedNodeGroup, daemonSets, o.taintConfig)
 	if aErr == nil {
-		nodeInfos[result.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
-		schedulablePodGroups[result.MainCreatedNodeGroup.Id()] = o.SchedulablePodGroups(podEquivalenceGroups, result.MainCreatedNodeGroup, mainCreatedNodeInfo)
+		nodeInfos[newId] = mainCreatedNodeInfo
 	} else {
-		klog.Warningf("Cannot build node info for newly created main node group %v; balancing similar node groups may not work; err=%v", result.MainCreatedNodeGroup.Id(), aErr)
-		// Use node info based on expansion candidate but update Id which likely changed when node group was created.
-		nodeInfos[result.MainCreatedNodeGroup.Id()] = nodeInfos[initialOptionId]
-		schedulablePodGroups[result.MainCreatedNodeGroup.Id()] = schedulablePodGroups[initialOptionId]
+		klog.Warningf("Cannot build node info for newly created main node group %v; balancing similar node groups may not work; err=%v", newId, aErr)
 	}
-	if initialOptionId != result.MainCreatedNodeGroup.Id() {
+
+	// schedulablePodGroups entry will only be used for balancing similar node groups.
+	// If there are no extra node groups created, balancing won't happen anyway,
+	// so we can just patch the node group id for reporting correctness
+	// and skip expensive SchedulablePodGroups computation.
+	if aErr == nil && len(result.ExtraCreatedNodeGroups) > 0 {
+		// Remove reference to initial id to prevent stale/duplicate entries in scheduling error reports
+		deletePodEquivalenceGroupsId(podEquivalenceGroups, initialOptionId)
+		schedulablePodGroups[newId] = o.SchedulablePodGroups(podEquivalenceGroups, result.MainCreatedNodeGroup, mainCreatedNodeInfo)
+	} else {
+		patchPodEquivalenceGroupsId(podEquivalenceGroups, initialOptionId, newId)
+	}
+
+	if initialOptionId != newId {
 		delete(nodeInfos, initialOptionId)
 		delete(schedulablePodGroups, initialOptionId)
 	}
+
 	for _, nodeGroup := range result.ExtraCreatedNodeGroups {
 		nodeInfo, aErr := simulator.SanitizedTemplateNodeInfoFromNodeGroup(nodeGroup, daemonSets, o.taintConfig)
 		if aErr != nil {
@@ -842,6 +858,30 @@ func (o *ScaleUpOrchestrator) getRemainingPodsConsideringSkippedNodeGroups(egs [
 		}
 	}
 	return remaining
+}
+
+func patchPodEquivalenceGroupsId(podEquivalenceGroups []*equivalence.PodGroup, oldId, newId string) {
+	if oldId == newId {
+		return
+	}
+	for _, eg := range podEquivalenceGroups {
+		if i := slices.Index(eg.SchedulableGroups, oldId); i != -1 {
+			eg.SchedulableGroups[i] = newId
+		}
+		if err, found := eg.SchedulingErrors[oldId]; found {
+			eg.SchedulingErrors[newId] = err
+			delete(eg.SchedulingErrors, oldId)
+		}
+	}
+}
+
+func deletePodEquivalenceGroupsId(podEquivalenceGroups []*equivalence.PodGroup, id string) {
+	for _, eg := range podEquivalenceGroups {
+		if i := slices.Index(eg.SchedulableGroups, id); i != -1 {
+			eg.SchedulableGroups = slices.Delete(eg.SchedulableGroups, i, i+1)
+		}
+		delete(eg.SchedulingErrors, id)
+	}
 }
 
 func (o *ScaleUpOrchestrator) noOptionsAvailableStatus(args scaleUpCtx) *status.ScaleUpStatus {

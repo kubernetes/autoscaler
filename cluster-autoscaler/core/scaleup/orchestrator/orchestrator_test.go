@@ -1901,6 +1901,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	expandedGroups := make(chan string, 10)
 
 	p1 := BuildTestPod("p1", 80, 0)
+	p2 := BuildTestPod("p2", 99999, 0) // unschedulable pod
 
 	fakeClient := &fake.Clientset{}
 
@@ -1944,11 +1945,22 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	})
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, trackerFactory)
-	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
+	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1, p2}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
 	assert.Equal(t, "autoprovisioned-T1-1", utils.GetStringFromChan(expandedGroups))
+
+	// Verify stale node group ID cleanup
+	foundP2 := false
+	for _, remainUnschedulable := range scaleUpStatus.PodsRemainUnschedulable {
+		if remainUnschedulable.Pod.Name == "p2" {
+			foundP2 = true
+			assert.NotContains(t, remainUnschedulable.RejectedNodeGroups, "T1")
+			assert.Contains(t, remainUnschedulable.RejectedNodeGroups, "autoprovisioned-T1")
+		}
+	}
+	assert.True(t, foundP2, "p2 was not found in PodsRemainUnschedulable")
 }
 
 func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
@@ -1958,6 +1970,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	p1 := BuildTestPod("p1", 80, 0)
 	p2 := BuildTestPod("p2", 80, 0)
 	p3 := BuildTestPod("p3", 80, 0)
+	p4 := BuildTestPod("p4", 99999, 0) // unschedulable pod
 
 	fakeClient := &fake.Clientset{}
 
@@ -2002,7 +2015,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	})
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, trackerFactory)
-	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1, p2, p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
+	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1, p2, p3, p4}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
@@ -2013,6 +2026,17 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	assert.True(t, expandedGroupMap["autoprovisioned-T1-1"])
 	assert.True(t, expandedGroupMap["autoprovisioned-T1-1-1"])
 	assert.True(t, expandedGroupMap["autoprovisioned-T1-2-1"])
+
+	// Verify stale node group ID cleanup
+	foundP4 := false
+	for _, remainUnschedulable := range scaleUpStatus.PodsRemainUnschedulable {
+		if remainUnschedulable.Pod.Name == "p4" {
+			foundP4 = true
+			assert.NotContains(t, remainUnschedulable.RejectedNodeGroups, "T1")
+			assert.Contains(t, remainUnschedulable.RejectedNodeGroups, "autoprovisioned-T1")
+		}
+	}
+	assert.True(t, foundP4, "p4 was not found in PodsRemainUnschedulable")
 }
 
 func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
