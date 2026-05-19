@@ -218,12 +218,46 @@ Periodically, VPA removes entries from the infeasibleAttempts map for pods that 
 
 **Key Difference from `InPlaceOrRecreate`**: In `InPlace` mode, `Deferred`, `Infeasible`, and `InProgress` statuses all result in waiting—VPA never falls back to eviction. In contrast, `InPlaceOrRecreate` mode may fall back to eviction after a timeout. This ensures that `InPlace` mode pods are never evicted, regardless of how long they remain in a non-updatable state.
 
+The following decision and status constants are used by the `CanInPlaceUpdate` function:
+
+```golang
+const (
+	// InPlaceApproved means we can in-place update the pod.
+	InPlaceApproved InPlaceDecision = "InPlaceApproved"
+	// InPlaceDeferred means we can't in-place update the pod right now, but we will wait for the next loop to check for in-placeability again
+	InPlaceDeferred InPlaceDecision = "InPlaceDeferred"
+	// InPlaceEvict means we will attempt to evict the pod.
+	InPlaceEvict InPlaceDecision = "InPlaceEvict"
+	// InPlaceInfeasible means we can't in-place update the pod right now but we want to retry
+	InPlaceInfeasible InPlaceDecision = "InPlaceInfeasible"
+	// InPlaceInfeasibleCached indicates a cached infeasibility status, avoiding repeated feasibility checks
+	InPlaceInfeasibleCached InPlaceDecision = "InPlaceInfeasibleCached"
+	// ResizeStatusDeferred indicates the resize is deferred by kubelet
+	ResizeStatusDeferred ResizeStatus = "ResizeDeferred"
+	// ResizeStatusInfeasible indicates the resize cannot be performed (e.g., insufficient node resources)
+	ResizeStatusInfeasible ResizeStatus = "ResizeInfeasible"
+	// ResizeStatusInProgress indicates the resize is currently being applied
+	ResizeStatusInProgress ResizeStatus = "ResizeInProgress"
+	// ResizeStatusError indicates an error occurred during resize
+	ResizeStatusError ResizeStatus = "ResizeError"
+	// ResizeStatusUnknown indicates an unknown resize status
+	ResizeStatusUnknown ResizeStatus = "ResizeUnknown"
+	// ResizeStatusNone indicates no resize operation is pending
+	ResizeStatusNone ResizeStatus = "ResizeNone"
+)
+```
+
 Modify the `CanInPlaceUpdate` to accommodate the new update mode:
 
 ```golang
 // CanInPlaceUpdate checks if pod can be safely updated
-func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMode vpa_types.UpdateMode) utils.InPlaceDecision {
-	// Feature gate checks based on update mode
+func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[k8stypes.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision {
+	// Use default mode when update mode is nil
+	updateMode := vpa_types.UpdateModeRecreate
+	if (vpa.Spec.UpdatePolicy != nil) && (vpa.Spec.UpdatePolicy.UpdateMode != nil) {
+		updateMode = *vpa.Spec.UpdatePolicy.UpdateMode
+	}
+
 	switch updateMode {
 	case vpa_types.UpdateModeInPlaceOrRecreate:
 		if !features.Enabled(features.InPlaceOrRecreate) {
@@ -233,14 +267,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 		if !features.Enabled(features.InPlace) {
 			return utils.InPlaceDeferred
 		}
-	case vpa_types.UpdateModeAuto:
-		// Auto mode is deprecated but still supports in-place updates
-		// when the feature gate is enabled
-		if !features.Enabled(features.InPlaceOrRecreate) {
-			return utils.InPlaceEvict
-		}
 	default:
-		// UpdateModeOff, UpdateModeInitial, UpdateModeRecreate, etc.
 		return utils.InPlaceEvict
 	}
 
@@ -250,7 +277,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 		return utils.InPlaceDeferred
 	}
 
-	if pod.Status.Phase == apiv1.PodPending {
+	if pod.Status.Phase == corev1.PodPending {
 		return utils.InPlaceDeferred
 	}
 
@@ -260,16 +287,35 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 		return utils.InPlaceDeferred
 	}
 
-	if isInPlaceUpdating(pod) {
+	if vpa.Status.Recommendation == nil {
+		klog.V(4).InfoS("Can't in-place update pod, no recommendation available yet. Waiting for next loop", "pod", klog.KObj(pod))
+		return utils.InPlaceDeferred
+	}
+
+	recommendation := vpa.Status.Recommendation
+
+	// if the update mode is inPlace we want to check the map for previous Infeasible attempts
+	if updateMode == vpa_types.UpdateModeInPlace && infeasibleAttempts != nil {
+		lastAttempt, exist := infeasibleAttempts[pod.UID]
+		if exist && !resourcehelpers.RecommendationHasLowerResource(lastAttempt, recommendation) {
+			klog.V(2).InfoS("In-place update infeasible, no resource is lower in new recommendation, skipping pod", "pod", klog.KObj(pod))
+			return utils.InPlaceInfeasibleCached
+		}
+	}
+
+	resizeStatus := getResizeStatus(pod)
+
+	// pod is in-place updating
+	// utils.ResizeStatusNone means that there is no container that is in InPodResizePending or PodResizeInProgress state
+	if resizeStatus != utils.ResizeStatusNone {
 		// For InPlace mode: wait for all non-terminal statuses, never evict.
 		// Infeasible attempts are tracked and only retried when recommendation changes.
 		if updateMode == vpa_types.UpdateModeInPlace {
-			resizeStatus := getResizeStatus(pod)
 			switch resizeStatus {
 			case utils.ResizeStatusInfeasible:
 				// Infeasible means node can't accommodate the resize.
 				// Store spec.resources and wait for recommendation to change before retrying.
-				klog.V(4).InfoS("In-place update infeasible, will retry", "pod", klog.KObj(pod))
+				klog.V(4).InfoS("In-place update infeasible", "pod", klog.KObj(pod))
 				return utils.InPlaceInfeasible
 			case utils.ResizeStatusDeferred:
 				// Deferred means kubelet is waiting to apply the resize.
@@ -281,8 +327,8 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 				klog.V(4).InfoS("In-place update in progress, waiting for completion", "pod", klog.KObj(pod))
 				return utils.InPlaceDeferred
 			case utils.ResizeStatusError:
-				// Error during resize, retry
-				klog.V(4).InfoS("In-place update error, will retry", "pod", klog.KObj(pod))
+				// Error during resize, will retry if recommendation changes.
+				klog.V(4).ErrorS(nil, "In-place update error, will retry if recommendation changes", "pod", klog.KObj(pod))
 				return utils.InPlaceInfeasible
 			default:
 				klog.V(4).InfoS("In-place update status unknown, waiting", "pod", klog.KObj(pod), "status", resizeStatus)
@@ -290,7 +336,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 			}
 		}
 
-		// For InPlaceOrRecreate/Auto modes, check timeout and potentially evict
+		// For InPlaceOrRecreate mode, check timeout
 		canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
 		if canEvict {
 			return utils.InPlaceEvict
@@ -298,12 +344,11 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *apiv1.Pod, updateMod
 		return utils.InPlaceDeferred
 	}
 
-	if ip.inPlaceSkipDisruptionBudget && utils.IsNonDisruptiveResize(pod) {
-		klog.V(4).InfoS("in-place-skip-disruption-budget enabled, skipping disruption budget check for in-place update")
-		return utils.InPlaceApproved
-	}
-
 	if ip.inPlaceSkipDisruptionBudget {
+		if utils.IsNonDisruptiveResize(pod) {
+			klog.V(4).InfoS("in-place-skip-disruption-budget enabled, skipping disruption budget check for in-place update")
+			return utils.InPlaceApproved
+		}
 		klog.V(4).InfoS("in-place-skip-disruption-budget enabled, but pod has RestartContainer resize policy", "pod", klog.KObj(pod))
 	}
 
@@ -362,12 +407,16 @@ Infeasible Attempt Tracking Tests:
 
 ### Upgrade
 
-On upgrade to VPA 1.6.0 (tentative release version), users can opt into the new `InPlace` mode by enabling the alpha Feature Gate (which defaults to disabled) by passing `--feature-gates=InPlace=true` to the updater and admission-controller components and setting their VPA UpdateMode to use `InPlace`.
+On upgrade to VPA 1.7.0, users can opt into the new `InPlace` mode by enabling the alpha Feature Gate (which defaults to disabled) by passing `--feature-gates=InPlace=true` to the updater and admission-controller components and setting their VPA UpdateMode to use `InPlace`.
 Existing VPAs will continue to work as before.
 
 ### Downgrade
 
-On downgrade of VPA from 1.6.0 (tentative release version), nothing will change. VPAs will continue to work as previously, unless, the user had enabled the feature gate. In which case downgrade could break their VPA that uses `InPlace`.
+On downgrade of VPA from 1.7.0, VPAs using standard update modes will continue to work as before. However, if the user had enabled the `InPlace` feature gate and configured VPAs to use `InPlace` mode, downgrading will affect behavior since the feature gate will no longer be recognized.
+
+When the `InPlace` feature gate is not enabled but a VPA is configured with `UpdateMode: InPlace`, the updater will skip that VPA entirely — no in-place updates and no evictions are performed. A warning is logged indicating that the feature gate is not enabled for the configured update mode. Running pods retain their current resources until the user reconfigures the VPA to a supported update mode.
+
+This design ensures that the `InPlace` mode's guarantee of never evicting pods is preserved even during a downgrade scenario — the updater will not silently switch to eviction-based updates for VPAs that were configured to be eviction-free.
 
 ## Graduation Criteria
 
