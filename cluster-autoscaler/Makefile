@@ -58,12 +58,12 @@ test-build-tags:
 	done
 
 test-unit: clean build
-	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+	go test -short -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 test-controllers: setup-envtest clean build
 	ginkgo --race --vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG} ./test/integration/controllers/...
 
-test-ci: setup-envtest
+test-all: setup-envtest
 	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 benchmark:
@@ -143,7 +143,7 @@ container: container-arch-$(GOARCH)
 container-arch-%: build-in-docker-arch-% make-image-arch-%
 	@echo "Full in-docker image ${TAG}${FOR_PROVIDER}-$* completed"
 
-test-in-docker: clean docker-builder
+test-in-docker: setup-envtest clean docker-builder
 	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
 
 ## Location to install dependencies to
