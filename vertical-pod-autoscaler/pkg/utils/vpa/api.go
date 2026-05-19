@@ -32,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
-	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
@@ -305,7 +304,7 @@ func IsPodReadyAndStartupBoostDurationPassed(pod *corev1.Pod, vpa *vpa_types.Ver
 		return false
 	}
 
-	if !podutil.IsPodReady(pod) {
+	if !IsPodReady(pod) {
 		return false
 	}
 
@@ -349,4 +348,27 @@ func PodHasCPUBoostInProgressAnnotation(pod *corev1.Pod) bool {
 	}
 	_, found := pod.Annotations[annotations.StartupCPUBoostAnnotation]
 	return found
+}
+
+// IsPodReady returns true if a pod is ready; false otherwise.
+func IsPodReady(pod *corev1.Pod) bool {
+	_, condition := GetPodCondition(&pod.Status, corev1.PodReady)
+	return condition != nil && condition.Status == corev1.ConditionTrue
+}
+
+// GetPodCondition extracts the provided condition from the given status and returns that.
+// Returns nil and -1 if the condition is not present, and the index of the located condition.
+func GetPodCondition(status *corev1.PodStatus, conditionType corev1.PodConditionType) (int, *corev1.PodCondition) {
+	if status == nil {
+		return -1, nil
+	}
+	if status.Conditions == nil {
+		return -1, nil
+	}
+	for i := range status.Conditions {
+		if status.Conditions[i].Type == conditionType {
+			return i, &status.Conditions[i]
+		}
+	}
+	return -1, nil
 }
