@@ -133,11 +133,13 @@ func (s scenario) run(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
+		ctx, cancel := context.WithCancel(context.Background())
 		clusterFakes := newClusterFakes()
 		if err := s.setup(clusterFakes); err != nil {
+			cancel()
 			b.Fatalf("setup failed: %v", err)
 		}
-		autoscaler := newAutoscaler(b, s, clusterFakes)
+		autoscaler := newAutoscaler(b, s, clusterFakes, ctx)
 
 		// Manually trigger GC before the timed section to ensure a clean state
 		// for each iteration.
@@ -145,6 +147,7 @@ func (s scenario) run(b *testing.B) {
 
 		if f != nil && i == 0 {
 			if err := pprof.StartCPUProfile(f); err != nil {
+				cancel()
 				b.Fatalf("Failed to start cpu profile: %v", err)
 			}
 		}
@@ -158,14 +161,17 @@ func (s scenario) run(b *testing.B) {
 		}
 
 		if err != nil {
+			cancel()
 			b.Fatalf("RunOnce failed: %v", err)
 		}
 
 		if s.verify != nil {
 			if err := s.verify(clusterFakes); err != nil {
+				cancel()
 				b.Fatalf("verify failed: %v", err)
 			}
 		}
+		cancel()
 	}
 }
 
@@ -178,7 +184,7 @@ func newClusterFakes() *integration.FakeSet {
 }
 
 // newAutoscaler constructs a core.Autoscaler instance configured for the given scenario.
-func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet) core.Autoscaler {
+func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet, ctx context.Context) core.Autoscaler {
 	opts := defaultCAOptions()
 	if s.config != nil {
 		s.config(&opts)
@@ -190,7 +196,7 @@ func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet) 
 	ftkc := &fastTaintingKubeClient{taintedNodes: make(map[string]bool)}
 	ftkc.registerReactors(clusterFakes.KubeClient)
 
-	kubeClients := ca_context.NewAutoscalingKubeClients(context.Background(), opts, clusterFakes.KubeClient, clusterFakes.InformerFactory)
+	kubeClients := ca_context.NewAutoscalingKubeClients(ctx, opts, clusterFakes.KubeClient, clusterFakes.InformerFactory)
 	kubeClients.Recorder = &noOpRecorder{}
 
 	wrappedCloudProvider := &fastScaleUpCloudProvider{
@@ -204,7 +210,7 @@ func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet) 
 		WithAutoscalingKubeClients(kubeClients).
 		WithInformerFactory(clusterFakes.InformerFactory).
 		WithCloudProvider(wrappedCloudProvider).
-		WithPodObserver(clusterFakes.PodObserver).Build(context.Background())
+		WithPodObserver(clusterFakes.PodObserver).Build(ctx)
 	if err != nil {
 		b.Fatalf("Failed to build: %v", err)
 	}
@@ -381,7 +387,7 @@ func setupScaleUp(nodes int) func(*integration.FakeSet) error {
 			cpu := int64(nodeCPU / podsPerNode)
 			mem := int64(nodeMem / podsPerNode)
 			pod := BuildTestPod(podName, cpu, mem, MarkUnschedulable())
-			clusterFakes.K8s.AddPod(pod)
+			clusterFakes.K8s.AddPodDirect(pod)
 		}
 		return nil
 	}
@@ -401,8 +407,8 @@ func setupScaleDown60Percent(nodesCount int) func(*integration.FakeSet) error {
 			testprovider.WithNGSize(0, maxNGSize),
 		)
 
-		ng := clusterFakes.CloudProvider.GetNodeGroup(ngName)
-		if err := ng.IncreaseSize(nodesCount); err != nil {
+		ng := clusterFakes.CloudProvider.GetNodeGroup(ngName).(*testprovider.NodeGroup)
+		if err := ng.IncreaseSizeDirect(nodesCount); err != nil {
 			return err
 		}
 
@@ -420,7 +426,7 @@ func setupScaleDown60Percent(nodesCount int) func(*integration.FakeSet) error {
 				pod.Annotations = make(map[string]string)
 			}
 			pod.Annotations["cluster-autoscaler.kubernetes.io/safe-to-evict"] = "true"
-			clusterFakes.K8s.AddPod(pod)
+			clusterFakes.K8s.AddPodDirect(pod)
 		}
 
 		return nil

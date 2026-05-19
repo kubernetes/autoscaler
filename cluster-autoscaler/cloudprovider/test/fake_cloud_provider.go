@@ -346,6 +346,9 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 	if n.targetSize+delta > n.maxSize {
 		return fmt.Errorf("size too large")
 	}
+	if n.template == nil || n.template.Node() == nil {
+		return fmt.Errorf("node group %s has no template to create new nodes", n.id)
+	}
 
 	n.provider.Lock()
 	defer n.provider.Unlock()
@@ -354,9 +357,6 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		instanceNum := n.targetSize + i
 		instanceId := fmt.Sprintf("%s-node-%d", n.id, instanceNum)
 
-		if n.template == nil || n.template.Node() == nil {
-			return fmt.Errorf("node group %s has no template to create new nodes", n.id)
-		}
 		newNode := n.template.Node().DeepCopy()
 		newNode.Name = instanceId
 
@@ -364,6 +364,39 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		n.provider.nodeToGroup[instanceId] = n.id
 		if n.provider.k8s != nil {
 			n.provider.k8s.AddNode(newNode)
+		}
+	}
+	n.targetSize += delta
+	return nil
+}
+
+// IncreaseSizeDirect is a performance-optimized version of IncreaseSize that adds nodes
+// directly to the fake client's object tracker to bypass API serialization and watch event overhead.
+// Only safe to call before Informer Factory starts.
+func (n *NodeGroup) IncreaseSizeDirect(delta int) error {
+	n.Lock()
+	defer n.Unlock()
+	if n.targetSize+delta > n.maxSize {
+		return fmt.Errorf("size too large")
+	}
+	if n.template == nil || n.template.Node() == nil {
+		return fmt.Errorf("node group %s has no template to create new nodes", n.id)
+	}
+
+	n.provider.Lock()
+	defer n.provider.Unlock()
+
+	for i := 0; i < delta; i++ {
+		instanceNum := n.targetSize + i
+		instanceId := fmt.Sprintf("%s-node-%d", n.id, instanceNum)
+
+		newNode := n.template.Node().DeepCopy()
+		newNode.Name = instanceId
+
+		n.instances[instanceId] = cloudprovider.InstanceRunning
+		n.provider.nodeToGroup[instanceId] = n.id
+		if n.provider.k8s != nil {
+			n.provider.k8s.AddNodeDirect(newNode)
 		}
 	}
 	n.targetSize += delta

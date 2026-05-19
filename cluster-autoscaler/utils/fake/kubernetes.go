@@ -45,6 +45,19 @@ func (k *Kubernetes) AddNode(node *apiv1.Node) {
 	_, _ = k.Client.CoreV1().Nodes().Create(context.TODO(), node, metav1.CreateOptions{})
 }
 
+// AddNodeDirect adds a node directly to the fake client's underlying object tracker
+// via Tracker().Add(node) instead of going through CoreV1().Nodes().Create().
+// This completely bypasses the fake clientset's serialization, deep-copy, and reactor overhead,
+// reducing setup times for large-scale simulations (like benchmarks) by orders of magnitude.
+//
+// WARNING: Because Tracker().Add() does NOT trigger active watch events in client-go,
+// this method MUST ONLY be used for pre-populating the cluster state during the initial
+// setup phase BEFORE the Informer Factory is started.
+// To dynamically add a node AFTER informers are running, use the standard AddNode method instead.
+func (k *Kubernetes) AddNodeDirect(node *apiv1.Node) {
+	_ = k.Client.Tracker().Add(node)
+}
+
 // UpdateNode updates a node.
 func (k *Kubernetes) UpdateNode(node *apiv1.Node) {
 	_, _ = k.Client.CoreV1().Nodes().Update(context.TODO(), node, metav1.UpdateOptions{})
@@ -64,6 +77,19 @@ func (k *Kubernetes) Nodes() *corev1.NodeList {
 // AddPod adds a pod to the fake client.
 func (k *Kubernetes) AddPod(pod *apiv1.Pod) {
 	_, _ = k.Client.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
+}
+
+// AddPodDirect adds a pod directly to the fake client's underlying object tracker
+// via Tracker().Add(pod) instead of going through CoreV1().Pods().Create().
+// This completely bypasses the fake clientset's serialization, deep-copy, and reactor overhead,
+// reducing setup times for large-scale simulations (like benchmarks) by orders of magnitude.
+//
+// WARNING: Because Tracker().Add() does NOT trigger active watch events in client-go,
+// this method MUST ONLY be used for pre-populating the cluster state during the initial
+// setup phase BEFORE the Informer Factory is started.
+// To dynamically add a pod AFTER informers are running, use the standard AddPod method instead.
+func (k *Kubernetes) AddPodDirect(pod *apiv1.Pod) {
+	_ = k.Client.Tracker().Add(pod)
 }
 
 // DeletePod deletes a pod.
