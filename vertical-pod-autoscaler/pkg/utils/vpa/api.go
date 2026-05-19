@@ -304,7 +304,7 @@ func IsPodReadyAndStartupBoostDurationPassed(pod *corev1.Pod, vpa *vpa_types.Ver
 		return false
 	}
 
-	if IsPodReady(pod) {
+	if !IsPodReady(pod) {
 		return false
 	}
 
