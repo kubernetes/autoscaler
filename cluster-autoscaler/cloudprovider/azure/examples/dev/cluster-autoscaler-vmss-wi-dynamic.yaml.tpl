@@ -158,6 +158,11 @@ spec:
             - --logtostderr=true
             - --cloud-provider=azure
             - --skip-nodes-with-local-storage=false
+            - --skip-nodes-with-system-pods=false
+            - --scale-down-delay-after-add=10s
+            - --scale-down-unneeded-time=10s
+            - --scale-down-candidates-pool-ratio=1.0
+            - --unremovable-node-recheck-timeout=10s
             - --nodes=1:10:${VMSS_NAME}
           env:
             - name: ARM_SUBSCRIPTION_ID
@@ -193,6 +198,9 @@ spec:
             - mountPath: /etc/ssl/certs/ca-certificates.crt
               name: ssl-certs
               readOnly: true
+            - mountPath: /opt/conf/autoscaler
+              name: autoscaler-settings
+              readOnly: true
       # use system nodepool only
       affinity:
         nodeAffinity:
@@ -208,3 +216,6 @@ spec:
             path: /etc/ssl/certs/ca-certificates.crt
             type: ""
           name: ssl-certs
+        - configMap:
+            name: autoscaler-settings
+          name: autoscaler-settings

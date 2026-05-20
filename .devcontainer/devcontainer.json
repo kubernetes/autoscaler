@@ -1,0 +1,52 @@
+{
+	"name": "Azure CAS Dev",
+	"image": "mcr.microsoft.com/devcontainers/go:1.25",
+	"runArgs": ["--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined"],
+
+	"features": {
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+		"ghcr.io/devcontainers/features/azure-cli:1": {},
+		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+			"helm": "latest",
+			"minikube": "none"
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/rio/features/skaffold:2": {}
+	},
+
+	"onCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends libseccomp-dev",
+
+	"postCreateCommand": {
+		"download cluster-autoscaler modules": "cd cluster-autoscaler && go mod download",
+		"download vertical-pod-autoscaler modules": "cd vertical-pod-autoscaler && go mod download",
+		"install verify tools": "hack/install-verify-tools.sh",
+		"install kind": "go install sigs.k8s.io/kind@latest",
+		"install ko": "go install github.com/google/ko@latest",
+		"install yq": "go install github.com/mikefarah/yq/v4@latest",
+		"disable skaffold metrics": "skaffold config set --global collect-metrics false"
+	},
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"golang.go",
+				"ms-kubernetes-tools.vscode-kubernetes-tools",
+				"ms-kubernetes-tools.vscode-aks-tools",
+				"ms-azuretools.vscode-bicep",
+				"GitHub.vscode-pull-request-github",
+				"GitHub.copilot-chat"
+			],
+			"settings": {
+				"go.toolsManagement.checkForUpdates": "local",
+				"go.useLanguageServer": true,
+				"go.gopath": "/go",
+				"go.testFlags": ["-race", "-count=1"],
+				"go.lintTool": "golangci-lint",
+				"go.lintOnSave": "workspace",
+				"chat.useAgentSkills": true
+			}
+		}
+	},
+
+	"remoteUser": "vscode"
+}

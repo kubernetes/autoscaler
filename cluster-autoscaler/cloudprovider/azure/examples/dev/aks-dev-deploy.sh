@@ -25,8 +25,13 @@ set -euo pipefail
 
 # assumed logged in (az login) and subscription set (az account set --subscription ...)
 
-# set resource group and ACR name (preferably unique)
-RG=${CODESPACE_NAME:-cluster-autoscaler-test}
+# Require AZURE_RESOURCE_GROUP or derive from CODESPACE_NAME (devcontainer).
+: "${AZURE_RESOURCE_GROUP:=${CODESPACE_NAME:-}}"
+if [[ -z "${AZURE_RESOURCE_GROUP}" ]]; then
+    echo "ERROR: AZURE_RESOURCE_GROUP must be set (or run inside a Codespace/devcontainer where CODESPACE_NAME is set)." >&2
+    exit 1
+fi
+RG="${AZURE_RESOURCE_GROUP}"
 ACR_NAME=$(echo "$RG" | tr -d -) # remove hyphens
 az group create --name "${RG}" --location westus3 --output none
 
@@ -68,6 +73,27 @@ export TENANT_ID_B64 RESOURCE_GROUP_MC_B64 VMSS_NAME CAS_UAI_CLIENTID SUBSCRIPTI
 yq '(.. | select(tag == "!!str")) |= envsubst(nu)' \
     cluster-autoscaler-vmss-wi-dynamic.yaml.tpl > \
     cluster-autoscaler-vmss-wi-dynamic.yaml
+
+# create the dynamic node group config (required by the AKS fork)
+kubectl apply -f - <<SETTINGS
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: autoscaler-settings
+  namespace: kube-system
+data:
+  settings.json: |
+    {
+      "nodeGroups": [
+        {
+          "name": "${VMSS_NAME}",
+          "minSize": 1,
+          "maxSize": 10,
+          "scaleDownPolicy": "Delete"
+        }
+      ]
+    }
+SETTINGS
 
 # skaffold dev/run/debug
 
