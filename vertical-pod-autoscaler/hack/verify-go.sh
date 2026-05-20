@@ -25,11 +25,11 @@ verify_go_mod() {
 
   if [[ ! -f "${module_dir}/go.mod" ]]; then
     echo "Error: ${module_dir}/go.mod does not exist"
-    exit 1
+    return 1
   fi
   if [[ ! -f "${module_dir}/go.sum" ]]; then
     echo "Error: ${module_dir}/go.sum does not exist"
-    exit 1
+    return 1
   fi
 
   echo "Verifying ${module_dir}/go.mod and ${module_dir}/go.sum"
@@ -39,7 +39,15 @@ verify_go_mod() {
   )
 }
 
-verify_go_mod "${SCRIPT_ROOT}"
-verify_go_mod "${SCRIPT_ROOT}/test"
+ret=0
 
-echo "go.mod and go.sum are up to date."
+verify_go_mod "${SCRIPT_ROOT}" || ret=$?
+verify_go_mod "${SCRIPT_ROOT}/test" || ret=$?
+
+if [[ $ret -eq 0 ]]
+then
+  echo "go.mod and go.sum are up to date."
+else
+  echo "go.mod and go.sum are out of date. Please run 'go mod tidy' in the affected directories"
+  exit 1
+fi
