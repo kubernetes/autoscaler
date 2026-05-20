@@ -1290,12 +1290,10 @@ func buildTestPod(p PodConfig) *apiv1.Pod {
 		TolerateGpuForPod(pod)
 	}
 	if p.Node != "" {
-		if strings.HasPrefix(p.Node, "group:") {
-			groupName := strings.TrimPrefix(p.Node, "group:")
-			pod.Spec.NodeSelector = map[string]string{nodeGroupLabel: groupName}
-		} else {
-			pod.Spec.NodeName = p.Node
-		}
+		pod.Spec.NodeName = p.Node
+	}
+	if p.NodeGroup != "" {
+		pod.Spec.NodeSelector = map[string]string{nodeGroupLabel: p.NodeGroup}
 	}
 	return pod
 }
@@ -2342,8 +2340,8 @@ func TestScaleUpPartialSuccessPopulatesPodsRemainUnschedulableParallel(t *testin
 			{Name: "fill-ng2", Cpu: 1000, Node: "ng2-n1"},
 		},
 		ExtraPods: []PodConfig{
-			{Name: "p1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng1"},
-			{Name: "p2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng2"},
+			{Name: "p1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng1"},
+			{Name: "p2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng2"},
 		},
 		OnScaleUp: func(group string, i int) error {
 			if group == "ng2" {
@@ -2380,10 +2378,10 @@ func TestScaleUpPartialSuccessPopulatesPodsRemainUnschedulableSync(t *testing.T)
 			{Name: "fill-ng2", Cpu: 1000, Node: "ng2-n1"},
 		},
 		ExtraPods: []PodConfig{
-			{Name: "p1_1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng1"},
-			{Name: "p1_2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng1"},
-			{Name: "p2_1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng2"},
-			{Name: "p2_2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, Node: "group:ng2"},
+			{Name: "p1_1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng1"},
+			{Name: "p1_2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng1"},
+			{Name: "p2_1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng2"},
+			{Name: "p2_2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng2"},
 		},
 		OnScaleUp: func(group string, i int) error {
 			if group == "ng2" {
