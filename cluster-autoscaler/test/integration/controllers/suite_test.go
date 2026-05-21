@@ -25,19 +25,26 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	clockutil "k8s.io/utils/clock"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned"
+	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
 	cbapi "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	cbctrl "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	cbmetrics "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	cqctrl "k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota"
 )
 
 func TestControllers(t *testing.T) {
@@ -52,6 +59,7 @@ var cfg *rest.Config
 var testEnv *envtest.Environment
 var k8sClient *kubernetes.Clientset
 var buffersClient *capacitybuffer.Clientset
+var crClient client.Client
 var ctx context.Context
 var cancel context.CancelFunc
 var reconciliationCache *cbmetrics.ReconciliationCache
@@ -76,6 +84,12 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
 
+	scheme := runtime.NewScheme()
+	err = clientgoscheme.AddToScheme(scheme)
+	Expect(err).NotTo(HaveOccurred())
+	err = cqv1alpha1.AddToScheme(scheme)
+	Expect(err).NotTo(HaveOccurred())
+
 	k8sClient, err = kubernetes.NewForConfig(cfg)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(k8sClient).NotTo(BeNil())
@@ -83,6 +97,24 @@ var _ = BeforeSuite(func() {
 	buffersClient, err = capacitybuffer.NewForConfig(cfg)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(buffersClient).NotTo(BeNil())
+
+	crClient, err = client.New(cfg, client.Options{Scheme: scheme})
+	Expect(err).NotTo(HaveOccurred())
+	Expect(crClient).NotTo(BeNil())
+
+	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+		Scheme: scheme,
+	})
+	Expect(err).ToNot(HaveOccurred())
+
+	err = cqctrl.NewCapacityQuotaReconciler(mgr.GetClient(), utils.VirtualKubeletNodeFilter{}).SetupWithManager(mgr)
+	Expect(err).ToNot(HaveOccurred())
+
+	go func() {
+		defer GinkgoRecover()
+		err = mgr.Start(ctx)
+		Expect(err).ToNot(HaveOccurred(), "failed to run manager")
+	}()
 
 	client, err := cbclient.NewCapacityBufferClientFromConfig(cfg)
 	Expect(err).NotTo(HaveOccurred())

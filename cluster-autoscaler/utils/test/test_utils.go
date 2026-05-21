@@ -356,6 +356,13 @@ func IsReady(ready bool) NodeOption {
 	}
 }
 
+// WithNodeLabels sets labels for a Node.
+func WithNodeLabels(labels map[string]string) NodeOption {
+	return func(node *apiv1.Node) {
+		node.Labels = labels
+	}
+}
+
 // BuildTestNode creates a node with specified capacity.
 func BuildTestNode(name string, millicpuCapacity int64, memCapacity int64, opts ...NodeOption) *apiv1.Node {
 	node := &apiv1.Node{
