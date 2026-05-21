@@ -1931,6 +1931,9 @@ func (gc *GceCache) WithMigIsStable(m map[GceRef]bool) *GceCache {
 
 func (gc *GceCache) WithMigBaseName(m map[GceRef]string) *GceCache {
 	gc.migBaseNameCache = m
+	for migRef, basename := range m {
+		gc.migBasenamePrefixMap[basename] = append(gc.migBasenamePrefixMap[basename], migRef)
+	}
 	return gc
 }
 
@@ -1991,4 +1994,96 @@ func fetchAllInstancesInZone(allInstances map[string][]GceInstance) func(string,
 		}
 		return instances, nil
 	}
+}
+
+func TestMigInfoProviderFallbackGate(t *testing.T) {
+	mig1Ref := GceRef{Project: "project", Zone: "us-test1", Name: "mig1"}
+	mig2Ref := GceRef{Project: "project", Zone: "us-test1", Name: "mig2"}
+
+	mig1 := &gceMig{gceRef: mig1Ref}
+	mig2 := &gceMig{gceRef: mig2Ref}
+
+	instance1 := GceInstance{
+		Instance:  cloudprovider.Instance{Id: "gce://project/us-test1/mig1-basename-abcd"},
+		Igm:       mig1Ref,
+		NumericId: 1,
+	}
+	instance2 := GceInstance{
+		Instance:  cloudprovider.Instance{Id: "gce://project/us-test1/mig2-basename-efgh"},
+		Igm:       mig2Ref,
+		NumericId: 2,
+	}
+
+	instance1Ref, err := GceRefFromProviderId(instance1.Id)
+	assert.Nil(t, err)
+	instance2Ref, err := GceRefFromProviderId(instance2.Id)
+	assert.Nil(t, err)
+
+	cache := NewGceCache().WithMigs(map[GceRef]Mig{
+		mig1Ref: mig1,
+		mig2Ref: mig2,
+	})
+
+	fetchMigCalls := make(map[GceRef]int)
+
+	client := &mockAutoscalingGceClient{
+		fetchMigs: fetchMigsConst(nil),
+		fetchMig: func(ref GceRef) (*gce.InstanceGroupManager, error) {
+			fetchMigCalls[ref]++
+			if ref == mig1Ref {
+				return &gce.InstanceGroupManager{
+					BaseInstanceName: "mig1-basename",
+					Name:             mig1Ref.Name,
+				}, nil
+			}
+			if ref == mig2Ref {
+				return nil, fmt.Errorf("simulated fetch error for mig2")
+			}
+			return nil, fmt.Errorf("unknown mig")
+		},
+		fetchMigInstances: func(ref GceRef) ([]GceInstance, error) {
+			if ref == mig1Ref {
+				return []GceInstance{instance1}, nil
+			}
+			if ref == mig2Ref {
+				return []GceInstance{}, nil
+			}
+			return nil, nil
+		},
+	}
+
+	migLister := NewMigLister(cache)
+	provider := NewCachingMigInfoProvider(cache, migLister, client, "project", 1, 0*time.Second, false, false)
+
+	// 1. First lookup for instance1.
+	// This should trigger fallback because mig1-basename is not in cache.
+	gotMig1, err := provider.GetMigForInstance(instance1Ref)
+	assert.NoError(t, err)
+	assert.Equal(t, mig1, gotMig1)
+
+	// Verify fetchMig was called for both MIGs during fallback scan
+	assert.Equal(t, 1, fetchMigCalls[mig1Ref])
+	assert.Equal(t, 1, fetchMigCalls[mig2Ref])
+
+	// 2. Second lookup for instance2.
+	// Fast path should fail because mig2's basename is not in cache.
+	// Fallback should NOT be executed again because migBasenameFallbackExecuted is true.
+	gotMig2, err := provider.GetMigForInstance(instance2Ref)
+	assert.NoError(t, err)
+	assert.Nil(t, gotMig2)
+
+	// Verify fetchMig was NOT called again for mig2
+	assert.Equal(t, 1, fetchMigCalls[mig2Ref])
+
+	// 3. Regenerate cache. This should reset the fallback executed flag.
+	err = provider.RegenerateMigInstancesCache()
+	assert.NoError(t, err)
+
+	// 4. Third lookup for instance2.
+	// Fallback should be executed again because the flag was reset.
+	gotMig2Again, err := provider.GetMigForInstance(instance2Ref)
+	assert.Nil(t, gotMig2Again)
+
+	// Verify fetchMig WAS called again for mig2 (total calls should be 2 now)
+	assert.Equal(t, 2, fetchMigCalls[mig2Ref])
 }

@@ -148,3 +148,93 @@ func TestMigInstancesCache(t *testing.T) {
 	assert.False(t, found, "Expected MIG instances cache to be empty after InvalidateAllMigInstances was called")
 	assert.True(t, c.IsMigInstancesCacheEmpty(migRef))
 }
+
+func TestMigBasenameCache(t *testing.T) {
+	c := NewGceCache()
+	mig1 := &gceMig{
+		gceRef: GceRef{
+			Project: "project1",
+			Zone:    "us-central1-a",
+			Name:    "mig-1",
+		},
+	}
+	mig2 := &gceMig{
+		gceRef: GceRef{
+			Project: "project1",
+			Zone:    "us-central1-b",
+			Name:    "mig-2",
+		},
+	}
+
+	c.RegisterMig(mig1)
+	c.RegisterMig(mig2)
+
+	// Test SetMigBasename and GetMigBasename
+	c.SetMigBasename(mig1.GceRef(), "base-mig-1")
+	c.SetMigBasename(mig2.GceRef(), "base-mig-2")
+
+	basename, found := c.GetMigBasename(mig1.GceRef())
+	assert.True(t, found)
+	assert.Equal(t, "base-mig-1", basename)
+
+	// Test GetMigByBasename
+	gotMigRef, found := c.GetMigByBasename("base-mig-1", "project1", "us-central1-a")
+	assert.True(t, found)
+	assert.Equal(t, mig1.GceRef(), gotMigRef)
+
+	// Test GetMigByBasename with wrong zone / not found
+	_, found = c.GetMigByBasename("base-mig-1", "project1", "us-central1-b")
+	assert.False(t, found)
+
+	_, found = c.GetMigByBasename("unknown", "project1", "us-central1-a")
+	assert.False(t, found)
+
+	// Test InvalidateMigBasename
+	c.InvalidateMigBasename(mig1.GceRef())
+	_, found = c.GetMigBasename(mig1.GceRef())
+	assert.False(t, found)
+
+	_, found = c.GetMigByBasename("base-mig-1", "project1", "us-central1-a")
+	assert.False(t, found)
+
+	// Verify mig2 is still present
+	_, found = c.GetMigByBasename("base-mig-2", "project1", "us-central1-b")
+	assert.True(t, found)
+
+	// Test InvalidateAllMigBasenames
+	c.InvalidateAllMigBasenames()
+	_, found = c.GetMigByBasename("base-mig-2", "project1", "us-central1-b")
+	assert.False(t, found)
+}
+
+func TestUnregisterMigInvalidatesBasename(t *testing.T) {
+	c := NewGceCache()
+	mig := &gceMig{
+		gceRef: GceRef{
+			Project: "project1",
+			Zone:    "us-central1-a",
+			Name:    "mig-1",
+		},
+	}
+	c.RegisterMig(mig)
+	c.SetMigBasename(mig.GceRef(), "base-mig-1")
+
+	// Verify it is in cache
+	basename, found := c.GetMigBasename(mig.GceRef())
+	assert.True(t, found)
+	assert.Equal(t, "base-mig-1", basename)
+
+	gotMigRef, found := c.GetMigByBasename("base-mig-1", "project1", "us-central1-a")
+	assert.True(t, found)
+	assert.Equal(t, mig.GceRef(), gotMigRef)
+
+	// Unregister MIG
+	c.UnregisterMig(mig)
+
+	// Verify basename is invalidated
+	_, found = c.GetMigBasename(mig.GceRef())
+	assert.False(t, found)
+
+	_, found = c.GetMigByBasename("base-mig-1", "project1", "us-central1-a")
+	assert.False(t, found)
+}

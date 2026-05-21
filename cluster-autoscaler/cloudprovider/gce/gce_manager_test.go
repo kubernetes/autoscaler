@@ -420,7 +420,7 @@ func setupTestDefaultPool(manager *gceManagerImpl, setupBaseName bool) *gceMig {
 	}
 	manager.cache.migs[mig.GceRef()] = mig
 	if setupBaseName {
-		manager.cache.migBaseNameCache[mig.GceRef()] = defaultPoolMigName
+		manager.cache.SetMigBasename(mig.GceRef(), defaultPoolMigName)
 	}
 	return mig
 }
@@ -438,7 +438,7 @@ func setupTestExtraPool(manager *gceManagerImpl, setupBaseName bool) *gceMig {
 	}
 	manager.cache.migs[mig.GceRef()] = mig
 	if setupBaseName {
-		manager.cache.migBaseNameCache[mig.GceRef()] = extraPoolMigName
+		manager.cache.SetMigBasename(mig.GceRef(), extraPoolMigName)
 	}
 	return mig
 }
@@ -456,7 +456,7 @@ func setupTestExtraPool2(manager *gceManagerImpl, setupBaseName bool) *gceMig {
 	}
 	manager.cache.migs[mig.GceRef()] = mig
 	if setupBaseName {
-		manager.cache.migBaseNameCache[mig.GceRef()] = extraPool2MigName
+		manager.cache.SetMigBasename(mig.GceRef(), extraPool2MigName)
 	}
 	return mig
 }

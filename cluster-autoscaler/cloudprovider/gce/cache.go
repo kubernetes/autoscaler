@@ -79,6 +79,9 @@ type GceCache struct {
 	instanceTemplateNameCache        map[GceRef]InstanceTemplateName
 	instanceTemplatesCache           map[GceRef]*gce.InstanceTemplate
 	kubeEnvCache                     map[GceRef]KubeEnv
+	// migPrefixMap is a map of MIG basename to MIG refs.
+	// It is used to find MIG by basename of an instance.
+	migBasenamePrefixMap map[string][]GceRef
 }
 
 // NewGceCache creates empty GceCache.
@@ -99,6 +102,7 @@ func NewGceCache() *GceCache {
 		instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
 		instanceTemplatesCache:           map[GceRef]*gce.InstanceTemplate{},
 		kubeEnvCache:                     map[GceRef]KubeEnv{},
+		migBasenamePrefixMap:             map[string][]GceRef{},
 	}
 }
 
@@ -132,6 +136,7 @@ func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 		klog.V(1).Infof("Unregistered Mig %s", toBeRemoved.GceRef().String())
 		delete(gc.migs, toBeRemoved.GceRef())
 		gc.removeMigInstances(toBeRemoved.GceRef())
+		gc.invalidateMigBasename(toBeRemoved.GceRef())
 		return true
 	}
 	return false
@@ -191,6 +196,29 @@ func (gc *GceCache) IsMigInstancesCacheEmpty(migRef GceRef) bool {
 	_, found := gc.instances[migRef]
 	return !found
 }
+
+// GetMigByBasename returns a MIG GceRef for a given basename, projectId, and zone.
+func (gc *GceCache) GetMigByBasename(basename string, projectId string, zone string) (GceRef, bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	migRefs, found := gc.migBasenamePrefixMap[basename]
+	if !found {
+		return GceRef{}, false
+	}
+	for _, migRef := range migRefs {
+
+		if migRef.Project == projectId && migRef.Zone == zone {
+			if _, found := gc.migs[migRef]; found {
+				return migRef, true
+			}
+		}
+	}
+
+	return GceRef{}, false
+}
+
+//instanceRef GceRef
 
 // GetMigForInstance returns the cached MIG for instance GceRef
 func (gc *GceCache) GetMigForInstance(instanceRef GceRef) (GceRef, bool) {
@@ -253,6 +281,13 @@ func (gc *GceCache) InvalidateAllMigInstances() {
 	klog.V(5).Infof("Mig instances cache invalidated")
 	gc.instances = make(map[GceRef][]GceInstance)
 	gc.instancesUpdateTime = make(map[GceRef]time.Time)
+}
+
+// IsAllInstancesCacheEmpty returns true if the instances cache is empty.
+func (gc *GceCache) IsAllInstancesCacheEmpty() bool {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	return len(gc.instances) == 0
 }
 
 // InvalidateMigInstances clears the mig instances cache for a given Mig
@@ -571,7 +606,23 @@ func (gc *GceCache) InvalidateAllMachines() {
 func (gc *GceCache) SetMigBasename(migRef GceRef, basename string) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
+	if gc.migBaseNameCache == nil {
+		gc.migBaseNameCache = make(map[GceRef]string)
+	}
+	if gc.migBasenamePrefixMap == nil {
+		gc.migBasenamePrefixMap = make(map[string][]GceRef)
+	}
 	gc.migBaseNameCache[migRef] = basename
+
+	migs, found := gc.migBasenamePrefixMap[basename]
+	if found {
+		for i := range migs {
+			if migs[i] == migRef {
+				return
+			}
+		}
+	}
+	gc.migBasenamePrefixMap[basename] = append(migs, migRef)
 }
 
 // GetMigBasename get basename for given mig from cache.
@@ -586,14 +637,42 @@ func (gc *GceCache) GetMigBasename(migRef GceRef) (basename string, found bool) 
 func (gc *GceCache) InvalidateMigBasename(migRef GceRef) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
+	gc.invalidateMigBasename(migRef)
+}
+
+func (gc *GceCache) invalidateMigBasename(migRef GceRef) {
+	basename, found := gc.migBaseNameCache[migRef]
+	if !found {
+		return
+	}
 	delete(gc.migBaseNameCache, migRef)
+
+	migs, found := gc.migBasenamePrefixMap[basename]
+	if found {
+		filteredMigs := make([]GceRef, 0, len(migs))
+		for i := range migs {
+			if migs[i] != migRef {
+				filteredMigs = append(filteredMigs, migs[i])
+			}
+		}
+		if len(filteredMigs) == 0 {
+			delete(gc.migBasenamePrefixMap, basename)
+		} else {
+			gc.migBasenamePrefixMap[basename] = filteredMigs
+		}
+	}
 }
 
 // InvalidateAllMigBasenames invalidates all basename entries.
 func (gc *GceCache) InvalidateAllMigBasenames() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
-	gc.migBaseNameCache = make(map[GceRef]string)
+	numMigs := len(gc.migs)
+	if numMigs < 16 {
+		numMigs = 16
+	}
+	gc.migBaseNameCache = make(map[GceRef]string, numMigs)
+	gc.migBasenamePrefixMap = make(map[string][]GceRef, numMigs)
 }
 
 // SetListManagedInstancesResults sets listManagedInstancesResults for a given mig in cache
