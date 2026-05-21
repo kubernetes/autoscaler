@@ -114,8 +114,22 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(autoscalingCtx *ca_contex
 		klog.Errorf("Failed to build template for getting GPU estimation for node %v: %v", node.Name, err)
 		return CustomResourceTarget{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
-	for _, gpuVendorResourceName := range gpu.GPUVendorResourceNames {
-		if gpuCapacity, found := template.Node().Status.Capacity[gpuVendorResourceName]; found {
+
+	// Keep backward compatibility by checking cloud provider GPU config first
+	// and then common legacy GPU resources.
+	gpuConfig := autoscalingCtx.CloudProvider.GetNodeGpuConfig(node)
+	if gpuConfig != nil && gpuConfig.ExtendedResourceName != "" {
+		if gpuCapacity, found := template.Node().Status.Capacity[gpuConfig.ExtendedResourceName]; found {
+			return CustomResourceTarget{gpuLabel, gpuCapacity.Value()}, nil
+		}
+	}
+	for _, legacyGpuResourceName := range []apiv1.ResourceName{gpu.ResourceNvidiaGPU, gpu.ResourceDirectX} {
+		if gpuCapacity, found := template.Node().Status.Capacity[legacyGpuResourceName]; found {
+			return CustomResourceTarget{gpuLabel, gpuCapacity.Value()}, nil
+		}
+	}
+	for resourceName, gpuCapacity := range template.Node().Status.Capacity {
+		if gpu.IsGPUResource(resourceName) {
 			return CustomResourceTarget{gpuLabel, gpuCapacity.Value()}, nil
 		}
 	}
