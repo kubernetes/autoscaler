@@ -7,6 +7,8 @@
 - [Proposal](#proposal)
 - [Design Details](#design-details)
   - [Recommendations](#recommendations)
+    - [Startup Ordering](#startup-ordering)
+    - [Pod Resource Calculations](#pod-resource-calculations)
   - [Update / Admission](#update--admission)
   - [Test Plan](#test-plan)
   - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
@@ -21,7 +23,7 @@
 
 This proposal adds support for native sidecar containers (init containers with `restartPolicy: Always`) in Vertical Pod Autoscaler.
 
-Kubernetes 1.28 introduced native sidecar containers. These are init containers that start before the main containers and continue running during the lifecycle of the Pod. VPA currently supports standard containers, but it should also support recommending resources for these new native sidecar containers to ensure they are right-sized. Standard init containers will continue to be ignored.
+Native sidecar containers (introduced via the `SidecarContainers` feature gate) are init containers that start before the main containers and continue running during the lifecycle of the Pod. VPA currently supports standard containers, but it should also support recommending resources for these new native sidecar containers to ensure they are right-sized. Standard init containers will continue to be ignored.
 Addresses [issue #7229](https://github.com/kubernetes/autoscaler/issues/7229)
 
 ### Goals
@@ -31,7 +33,7 @@ Addresses [issue #7229](https://github.com/kubernetes/autoscaler/issues/7229)
 
 ### Non-Goals
 
-- Support for sidecar containers in Kubernetes versions older than 1.28.
+- Support for clusters where the `SidecarContainers` feature gate is not available or enabled.
 - Support for regular init containers.
 
 ## Proposal
@@ -44,7 +46,7 @@ This functionality will be guarded by a new feature gate `NativeSidecar` to allo
 
 ### Recommendations
 
-The Recommender component identifies native sidecar containers by examining init containers with `restartPolicy: Always` in the [`SpecClient`](https://github.com/kubernetes/autoscaler/blob/d9d867a15e96dc50573c59e071f84df5491c03db/vertical-pod-autoscaler/pkg/recommender/input/spec/spec_client.go#L53-L56). These containers are assigned the `ContainerTypeInitSidecar` type.
+The Recommender component identifies native sidecar containers by examining init containers with `restartPolicy: Always` in the [`SpecClient`](https://github.com/kubernetes/autoscaler/blob/d9d867a15e96dc50573c59e071f84df5491c03db/vertical-pod-autoscaler/pkg/recommender/input/spec/spec_client.go#L53-L56). These containers are assigned the `ContainerTypeNativeSidecar` type.
 
 When the `NativeSidecar` feature gate is enabled, the `ClusterFeeder` processes native sidecars similarly to standard containers:
 - Resource usage samples are collected and aggregated for recommendations
@@ -56,7 +58,7 @@ for _, container := range pod.Containers {
   }
 }
 for _, initContainer := range pod.InitContainers {
-  if features.Enabled(features.NativeSidecar) && initContainer.ContainerType == model.ContainerTypeInitSidecar {
+  if features.Enabled(features.NativeSidecar) && initContainer.ContainerType == model.ContainerTypeNativeSidecar {
     if err := feeder.clusterState.AddOrUpdateContainer(initContainer.ID, initContainer.Request, initContainer.ContainerType); err != nil {
       klog.V(4).ErrorS(err, "Failed to add initContainer", "container", initContainer.ID)
     }
@@ -66,7 +68,18 @@ for _, initContainer := range pod.InitContainers {
 }
 ```
 
-The VPA custom resource definition remains unchanged. Native sidecar recommendations treated exactly like standard container recommendations, the unique container names allow us to identify them.
+The VPA custom resource definition remains unchanged. Native sidecar recommendations are treated exactly like standard container recommendations; the unique container names allow us to identify them.
+
+#### Startup Ordering
+
+Native sidecars are defined in `initContainers` and start before regular containers. This startup ordering does not affect VPA's recommendation logic because VPA collects ongoing resource usage samples over the container's lifetime regardless of when it started. The only difference is the JSON patch path used when applying recommendations (`/spec/initContainers` vs `/spec/containers`), which is handled in the patch generation logic described below.
+
+#### Pod Resource Calculations
+
+With native sidecars, the effective pod resource request is calculated as:
+`max(max(init containers), sum(regular containers) + sum(native sidecars))`
+
+VPA generates per-container recommendations independently and does not need to account for this aggregate calculation since the scheduler handles pod-level resource accounting. However, users should be aware that increasing a native sidecar's resource request increases the pod's overall resource footprint additively (unlike regular init containers, which only matter if they exceed the sum of running containers).
 
 ### Update / Admission
 
