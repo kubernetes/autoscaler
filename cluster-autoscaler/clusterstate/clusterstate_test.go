@@ -688,6 +688,11 @@ func TestUpcomingNodes(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
+
+	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 6, now)
+	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng2"), 1, now)
+	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng3"), 2, now)
+
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, ng3_1, ng4_1, ng5_1, ng5_2}, nil, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
@@ -739,8 +744,8 @@ func TestTaintBasedNodeDeletion(t *testing.T) {
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
 
 	upcomingNodes, upcomingRegistered := clusterstate.GetUpcomingNodes()
-	assert.Equal(t, 1, upcomingNodes["ng1"])
-	assert.Empty(t, upcomingRegistered["ng1"]) // Only unregistered.
+	assert.Equal(t, 0, upcomingNodes["ng1"])
+	assert.Empty(t, upcomingRegistered["ng1"])
 }
 
 func TestIncorrectSize(t *testing.T) {
@@ -756,6 +761,7 @@ func TestIncorrectSize(t *testing.T) {
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
 	now := time.Now()
+
 	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-5*time.Minute))
 	incorrect := clusterstate.incorrectNodeGroupSizes["ng1"]
 	assert.Equal(t, 5, incorrect.ExpectedSize)
@@ -791,6 +797,8 @@ func TestUnregisteredNodes(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 10 * time.Second}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), nodegroupchange.NewNodeGroupChangeObserversList())
+
+	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 1, time.Now().Add(-time.Minute))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, time.Now().Add(-time.Minute))
 
 	assert.NoError(t, err)
@@ -1594,6 +1602,7 @@ func TestUpcomingNodesFromUpcomingNodeGroups(t *testing.T) {
 		nodeGroups                        map[string]int
 		expectedGroupsUpcomingNodesNumber map[string]int
 		updateNodes                       bool
+		scaleUpGroups                     map[string]int
 	}{
 		{
 			isUpcomingMockMap:                 map[string]bool{"ng": true},
@@ -1612,12 +1621,14 @@ func TestUpcomingNodesFromUpcomingNodeGroups(t *testing.T) {
 			nodeGroups:                        map[string]int{"ng": 2},
 			expectedGroupsUpcomingNodesNumber: map[string]int{"ng": 2},
 			updateNodes:                       true,
+			scaleUpGroups:                     map[string]int{"ng": 2},
 		},
 		{
 			isUpcomingMockMap:                 map[string]bool{"ng": true},
 			nodeGroups:                        map[string]int{"ng": 2, "ng2": 1},
 			expectedGroupsUpcomingNodesNumber: map[string]int{"ng": 2, "ng2": 1},
 			updateNodes:                       true,
+			scaleUpGroups:                     map[string]int{"ng2": 1},
 		},
 		{
 			isUpcomingMockMap:                 map[string]bool{"ng": true},
@@ -1648,6 +1659,10 @@ func TestUpcomingNodesFromUpcomingNodeGroups(t *testing.T) {
 			&asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: tc.isUpcomingMockMap},
 			nodegroupchange.NewNodeGroupChangeObserversList(),
 		)
+
+		for groupName, delta := range tc.scaleUpGroups {
+			clusterstate.RegisterScaleUp(provider.GetNodeGroup(groupName), delta, now)
+		}
 		if tc.updateNodes {
 			err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
 			assert.NoError(t, err)
@@ -1829,6 +1844,89 @@ func TestFailedScaleUpWithDraAndGpu(t *testing.T) {
 	assert.NoError(t, err)
 	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), "dra_gpu-driver", "not-listed", "custom.driver,dra.net")
 	mockMetrics.AssertCalled(t, "RegisterFailedNodeCreations", metrics.FailedScaleUpReason("RESOURCE_POOL_EXHAUSTED"), 1)
+}
+
+func TestGetUpcomingNodesSkipsWithoutScaleUpRequestOrBackoff(t *testing.T) {
+	now := time.Now()
+
+	// Setup: node group "ng1" with target=3 but only 1 ready node.
+	// This means newNodes = 2 in the upcoming calculation.
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 3)
+	provider.AddNode("ng1", ng1_1)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system",
+		kube_record.NewFakeRecorder(5), false, "configmap-1")
+
+	t.Run("no scale-up request means no upcoming nodes", func(t *testing.T) {
+		clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+			MaxTotalUnreadyPercentage: 10,
+			OkTotalUnreadyCount:       1,
+		}, fakeLogRecorder, newBackoff(),
+			nodegroupconfig.NewDefaultNodeGroupConfigProcessor(
+				config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}),
+			asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
+			nodegroupchange.NewNodeGroupChangeObserversList())
+
+		// NO RegisterScaleUp — simulates expired/removed request
+		err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+		assert.NoError(t, err)
+
+		upcomingNodes, _ := clusterstate.GetUpcomingNodes()
+		// Bug fix: without a scale-up request, upcoming should be 0
+		// even though target (3) > ready nodes (1).
+		assert.Equal(t, 0, upcomingNodes["ng1"])
+	})
+
+	t.Run("with active scale-up request upcoming nodes are counted", func(t *testing.T) {
+		clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+			MaxTotalUnreadyPercentage: 10,
+			OkTotalUnreadyCount:       1,
+		}, fakeLogRecorder, newBackoff(),
+			nodegroupconfig.NewDefaultNodeGroupConfigProcessor(
+				config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}),
+			asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
+			nodegroupchange.NewNodeGroupChangeObserversList())
+
+		clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 2, now)
+		err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+		assert.NoError(t, err)
+
+		upcomingNodes, _ := clusterstate.GetUpcomingNodes()
+		assert.Equal(t, 2, upcomingNodes["ng1"])
+	})
+
+	t.Run("backed-off node group means no upcoming nodes", func(t *testing.T) {
+		// Use short MaxNodeProvisionTime so the scale-up times out
+		// and puts the group in backoff.
+		mockMetrics := &mockMetrics{}
+		mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+		mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+
+		clusterstate := newClusterStateRegistryWithMetrics(provider, ClusterStateRegistryConfig{
+			MaxTotalUnreadyPercentage: 10,
+			OkTotalUnreadyCount:       1,
+		}, fakeLogRecorder, newBackoff(),
+			nodegroupconfig.NewDefaultNodeGroupConfigProcessor(
+				config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 2 * time.Minute}),
+			asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+
+		// Register scale-up 3 minutes ago with 2-minute provision time → will timeout
+		clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 2, now.Add(-3*time.Minute))
+		err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+		assert.NoError(t, err)
+
+		// After timeout, group is in backoff. Register a new scale-up request.
+		clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 2, now)
+
+		upcomingNodes, _ := clusterstate.GetUpcomingNodes()
+		// Bug fix: backed-off group should not report upcoming nodes.
+		assert.Equal(t, 0, upcomingNodes["ng1"])
+	})
 }
 
 type mockMetrics struct {
