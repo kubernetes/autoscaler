@@ -97,6 +97,11 @@ admissionController:
               - admission-controller
           topologyKey: kubernetes.io/hostname
 
+  # Whether to use user namespace or not
+  # Kubernetes version 1.30 for feature beta (1.33 for GA) or higher is required with support from OS and OCI runtime
+  # ref: https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+  hostUsers: null
+
   # List of node taints to tolerate.
   tolerations: []
 
@@ -135,6 +140,11 @@ admissionController:
     nodeSelector: {}
     tolerations: []
     affinity: {}
+
+    # Whether to use user namespace or not
+    # Kubernetes version 1.30 for feature beta (1.33 for GA) or higher is required with support from OS and OCI runtime
+    # ref: https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+    hostUsers: null
 
   mutatingWebhookConfiguration:
     # admissionController.mutatingWebhookConfiguration.annotations -- Additional annotations for the MutatingWebhookConfiguration
@@ -256,6 +266,11 @@ recommender:
               - recommender
           topologyKey: kubernetes.io/hostname
 
+  # Whether to use user namespace or not
+  # Kubernetes version 1.30 for feature beta (1.33 for GA) or higher is required with support from OS and OCI runtime
+  # ref: https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+  hostUsers: null
+
   # Tolerations for scheduling the Recommender.
   tolerations: []
 
@@ -339,6 +354,11 @@ updater:
               values:
               - updater
           topologyKey: kubernetes.io/hostname
+
+  # Whether to use user namespace or not
+  # Kubernetes version 1.30 for feature beta (1.33 for GA) or higher is required with support from OS and OCI runtime
+  # ref: https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+  hostUsers: null
 
   # Node selector labels for scheduling the Updater.
   nodeSelector: {}
