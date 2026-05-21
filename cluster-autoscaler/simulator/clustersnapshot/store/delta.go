@@ -53,8 +53,7 @@ var (
 // memory and time complexities of DeltaSnapshotStore - they are optimized for
 // cluster autoscaler operations
 type DeltaSnapshotStore struct {
-	data        *internalDeltaSnapshotData
-	parallelism int
+	data *internalDeltaSnapshotData
 }
 
 type deltaSnapshotStoreNodeLister DeltaSnapshotStore
@@ -407,10 +406,8 @@ func (snapshot *DeltaSnapshotStore) PodGroupStates() schedulerinterface.PodGroup
 }
 
 // NewDeltaSnapshotStore creates instances of DeltaSnapshotStore.
-func NewDeltaSnapshotStore(parallelism int) *DeltaSnapshotStore {
-	snapshot := &DeltaSnapshotStore{
-		parallelism: parallelism,
-	}
+func NewDeltaSnapshotStore() *DeltaSnapshotStore {
+	snapshot := &DeltaSnapshotStore{}
 	snapshot.Clear()
 	return snapshot
 }
