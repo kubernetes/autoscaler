@@ -177,7 +177,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			inPlaceSkipDisruptionBudget: true,
 		},
 		{
-			name: "CanInPlaceUpdate=InPlaceDeferred(InPlaceOrRecreate) - with inPlaceSkipDisruptionBudget flag",
+			name: "CanInPlaceUpdate=InPlaceDeferred(InPlaceOrRecreate) - without inPlaceSkipDisruptionBudget flag",
 			pods: []*corev1.Pod{
 				generatePod().Get(),
 			},
@@ -188,7 +188,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			vpa:                     getIPORVpa(),
 		},
 		{
-			name: "CanInPlaceUpdate=InPlaceDeferred(InPlace) - with inPlaceSkipDisruptionBudget flag",
+			name: "CanInPlaceUpdate=InPlaceDeferred(InPlace) - without inPlaceSkipDisruptionBudget flag",
 			pods: []*corev1.Pod{
 				generatePod().Get(),
 			},
