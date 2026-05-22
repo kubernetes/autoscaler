@@ -29,6 +29,16 @@ Webhook Configuration:
    Mode: Helm-managed (recommended)
    - Webhook registered by: Helm (MutatingWebhookConfiguration)
    - Certificates managed by: certgen job
+{{- else if .Values.admissionController.certManager.enabled }}
+   Mode: cert-manager
+   - Webhook registered by: Helm (MutatingWebhookConfiguration)
+   - Certificates managed by: cert-manager (automatic renewal)
+   - CA injected by: cert-manager cainjector
+{{- if or .Values.admissionController.volumes .Values.admissionController.volumeMounts }}
+
+   ⚠️  NOTE: admissionController.volumes and admissionController.volumeMounts are
+   managed by the chart in cert-manager mode. Any custom values set there have no effect.
+{{- end }}
 {{- else if .Values.admissionController.tls.create }}
    Mode: Helm-managed with Helm-generated certificates
    - Webhook registered by: Helm (MutatingWebhookConfiguration)
@@ -45,6 +55,7 @@ Webhook Configuration:
    - admissionController.certGen.enabled: true (recommended)
    - admissionController.tls.create: true
    - admissionController.registerWebhook: true (application-managed)
+   - admissionController.certManager.enabled: true 
 {{- end }}
 {{- end }}
 

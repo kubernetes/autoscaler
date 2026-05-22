@@ -1,0 +1,24 @@
+{{- if .Values.admissionController.enabled }}
+{{- if and .Values.admissionController.registerWebhook .Values.admissionController.certGen.enabled }}
+{{- fail "admissionController.registerWebhook and admissionController.certGen.enabled cannot both be true. Choose either application-managed webhook (registerWebhook: true) or Helm-managed webhook with certGen (certGen.enabled: true)." }}
+{{- end }}
+{{- if and .Values.admissionController.certManager.enabled .Values.admissionController.certGen.enabled }}
+{{- fail "admissionController.certManager.enabled and admissionController.certGen.enabled cannot both be true. Set admissionController.certGen.enabled: false to use cert-manager." }}
+{{- end }}
+{{- if and .Values.admissionController.certManager.enabled .Values.admissionController.registerWebhook }}
+{{- fail "admissionController.certManager.enabled and admissionController.registerWebhook cannot both be true. Set admissionController.registerWebhook: false when using cert-manager." }}
+{{- end }}
+{{- if and .Values.admissionController.certManager.enabled .Values.admissionController.tls.create }}
+{{- fail "admissionController.certManager.enabled and admissionController.tls.create cannot both be true. Set admissionController.tls.create: false when using cert-manager." }}
+{{- end }}
+{{- if .Values.admissionController.certManager.enabled }}
+{{- range .Values.admissionController.extraArgs }}
+{{- if eq . "--reload-cert=false" }}
+{{- fail "admissionController.extraArgs contains --reload-cert=false which conflicts with certManager.enabled. cert-manager requires cert reloading to pick up renewed certificates." }}
+{{- end }}
+{{- end }}
+{{- if and (not .Values.admissionController.certManager.createSelfSignedIssuer.enabled) (empty .Values.admissionController.certManager.issuerRef.name) }}
+{{- fail "admissionController.certManager.issuerRef.name is required when admissionController.certManager.createSelfSignedIssuer.enabled is false. Set issuerRef.name to an existing Issuer/ClusterIssuer or enable createSelfSignedIssuer." }}
+{{- end }}
+{{- end }}
+{{- end }}

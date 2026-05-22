@@ -1,19 +1,26 @@
-{{- if and .Values.admissionController.enabled .Values.admissionController.certGen.enabled }}
+{{- if and .Values.admissionController.enabled (or .Values.admissionController.certGen.enabled .Values.admissionController.certManager.enabled) }}
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.webhook.configName" . }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+  {{- $annotations := dict }}
+  {{- if .Values.admissionController.certManager.enabled }}
+    {{- $_ := set $annotations "cert-manager.io/inject-ca-from" (printf "%s/%s" .Release.Namespace (include "vertical-pod-autoscaler.admissionController.certManager.certName" .)) }}
+  {{- end }}
   {{- with .Values.admissionController.mutatingWebhookConfiguration.annotations }}
+    {{- $annotations = merge $annotations . }}
+  {{- end }}
+  {{- if $annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{- toYaml $annotations | nindent 4 }}
   {{- end }}
 webhooks:
 - admissionReviewVersions:
   - v1
   clientConfig:
-    # caBundle will be injected by the certgen patch job (post-install/post-upgrade hook)
+    # caBundle is injected by the certgen patch job (certGen mode) or by cert-manager cainjector (certManager mode)
     service:
       name: {{ .Values.admissionController.service.name }}
       namespace: {{ .Release.Namespace }}

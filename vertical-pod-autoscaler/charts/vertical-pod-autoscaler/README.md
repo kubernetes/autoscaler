@@ -26,7 +26,7 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 | omerap12 | <kubernetes-sig-autoscaling@googlegroups.com> |  |
 
 ## Webhook Management
-The admission controller requires a `MutatingWebhookConfiguration` and TLS certificates. This chart supports two mutually exclusive modes:
+The admission controller requires a `MutatingWebhookConfiguration` and TLS certificates. This chart supports three mutually exclusive modes:
 
 ### Helm-managed (default)
 ```yaml
@@ -51,6 +51,22 @@ In this mode:
 - The VPA admission controller creates and manages the webhook itself
 Important: You are responsible for creating the TLS secret before or after installing the chart. The admission controller will only create the `MutatingWebhookConfiguration` once the secret exists.
 If the secret is created after the Helm install, you must restart the admission controller pod to trigger webhook registration.
+
+### cert-manager managed
+```yaml
+admissionController:
+  registerWebhook: false
+  certGen:
+    enabled: false
+  certManager:
+    enabled: true
+```
+In this mode:
+- Helm creates the MutatingWebhookConfiguration
+- cert-manager issues and renews TLS certificates automatically
+- cert-manager's cainjector injects the CA into the webhook configuration
+
+By default, you must provide an existing `Issuer` or `ClusterIssuer` via `admissionController.certManager.issuerRef`. Alternatively, enable `admissionController.certManager.createSelfSignedIssuer.enabled: true` to let the chart create a namespaced self-signed issuer automatically.
 
 ## Custom Resource Definitions
 
@@ -107,6 +123,19 @@ helm upgrade <release-name> <chart> \
 | admissionController.certGen.resources | object | `{}` | The resources block for the certgen pod |
 | admissionController.certGen.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | The securityContext block for the certgen container(s) |
 | admissionController.certGen.tolerations | list | `[]` |  |
+| admissionController.certManager.annotations | object | `{}` | Annotations to add to all cert-manager resources created by Chart. |
+| admissionController.certManager.createSelfSignedIssuer | object | `{"duration":"8760h","enabled":false,"renewBefore":"720h"}` | Optionally create a SelfSigned Issuer for CA generation. When enabled, a namespaced SelfSigned Issuer is created in the VPA namespace to issue the intermediate CA certificate, which in turn signs the webhook TLS certificate. |
+| admissionController.certManager.createSelfSignedIssuer.duration | string | `"8760h"` | Lifetime of the intermediate CA certificate. |
+| admissionController.certManager.createSelfSignedIssuer.renewBefore | string | `"720h"` | Time before expiry to renew the CA certificate. |
+| admissionController.certManager.duration | string | `"168h"` | Lifetime of the webhook TLS certificate. |
+| admissionController.certManager.enabled | bool | `false` | If true, cert-manager manages the webhook certificate lifecycle. cert-manager must be installed in the cluster, see https://cert-manager.io/docs/installation. Mutually exclusive with certGen.enabled, registerWebhook, and tls.create. |
+| admissionController.certManager.issuerRef | object | `{"group":"cert-manager.io","kind":"ClusterIssuer","name":""}` | Reference to an existing issuer for signing the webhook TLS certificate. Required when createSelfSignedIssuer.enabled is false. |
+| admissionController.certManager.issuerRef.group | string | `"cert-manager.io"` | API group of the issuer. |
+| admissionController.certManager.issuerRef.kind | string | `"ClusterIssuer"` | Kind of the issuer (ClusterIssuer or Issuer). |
+| admissionController.certManager.issuerRef.name | string | `""` | Name of the issuer. |
+| admissionController.certManager.privateKey.algorithm | string | `"RSA"` | Key algorithm for certificates (RSA, ECDSA, Ed25519). |
+| admissionController.certManager.privateKey.size | int | `2048` | Key size for RSA or ECDSA. Ignored for Ed25519. |
+| admissionController.certManager.renewBefore | string | `"24h"` | Time before expiry to renew the TLS certificate. |
 | admissionController.enabled | bool | `true` |  |
 | admissionController.extraArgs | list | `[]` |  |
 | admissionController.extraEnv | list | `[]` |  |
