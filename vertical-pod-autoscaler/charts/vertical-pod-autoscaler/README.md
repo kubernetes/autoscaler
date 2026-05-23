@@ -204,7 +204,7 @@ helm upgrade <release-name> <chart> \
 | updater.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight | int | `100` |  |
 | updater.annotations | object | `{}` |  |
 | updater.enabled | bool | `true` |  |
-| updater.extraArgs | list | `[]` |  |
+| updater.extraArgs[0] | string | `"--in-place-skip-disruption-budget=true"` |  |
 | updater.image.pullPolicy | string | `"IfNotPresent"` |  |
 | updater.image.repository | string | `"registry.k8s.io/autoscaling/vpa-updater"` |  |
 | updater.image.tag | string | `nil` |  |

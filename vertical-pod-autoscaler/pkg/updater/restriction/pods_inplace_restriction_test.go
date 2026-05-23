@@ -39,18 +39,19 @@ import (
 )
 
 type CanInPlaceUpdateTestParams struct {
-	name                    string
-	pods                    []*corev1.Pod
-	replicas                int32
-	evictionTolerance       float64
-	lastInPlaceAttempt      time.Time
-	expectedInPlaceDecision utils.InPlaceDecision
-	vpa                     *vpa_types.VerticalPodAutoscaler
-	clockTime               *time.Time
-	minReplicas             int
-	infeasibleAttempts      map[types.UID]*vpa_types.RecommendedPodResources
-	vpaForCreatorMaps       *vpa_types.VerticalPodAutoscaler
-	alsoTestInPlaceUpdate   bool
+	name                        string
+	pods                        []*corev1.Pod
+	replicas                    int32
+	evictionTolerance           float64
+	lastInPlaceAttempt          time.Time
+	expectedInPlaceDecision     utils.InPlaceDecision
+	vpa                         *vpa_types.VerticalPodAutoscaler
+	clockTime                   *time.Time
+	minReplicas                 int
+	infeasibleAttempts          map[types.UID]*vpa_types.RecommendedPodResources
+	vpaForCreatorMaps           *vpa_types.VerticalPodAutoscaler
+	alsoTestInPlaceUpdate       bool
+	inPlaceSkipDisruptionBudget bool
 }
 
 func TestCanInPlaceUpdate(t *testing.T) {
@@ -150,6 +151,52 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			lastInPlaceAttempt:      time.Time{},
 			expectedInPlaceDecision: utils.InPlaceApproved,
 			vpa:                     getIPORVpa(),
+		},
+		{
+			name: "CanInPlaceUpdate=InPlaceApproved(InPlaceOrRecreate mode) - with inPlaceSkipDisruptionBudget flag",
+			pods: []*corev1.Pod{
+				generatePod().Get(),
+			},
+			replicas:                    1,
+			evictionTolerance:           0.5,
+			lastInPlaceAttempt:          time.Time{},
+			expectedInPlaceDecision:     utils.InPlaceApproved,
+			vpa:                         getIPORVpa(),
+			inPlaceSkipDisruptionBudget: true,
+		},
+		{
+			name: "CanInPlaceUpdate=InPlaceApproved(InPlace mode) - with inPlaceSkipDisruptionBudget flag",
+			pods: []*corev1.Pod{
+				generatePod().Get(),
+			},
+			replicas:                    1,
+			evictionTolerance:           0.5,
+			lastInPlaceAttempt:          time.Time{},
+			expectedInPlaceDecision:     utils.InPlaceApproved,
+			vpa:                         getIPVpa(),
+			inPlaceSkipDisruptionBudget: true,
+		},
+		{
+			name: "CanInPlaceUpdate=InPlaceDeferred(InPlaceOrRecreate) - without inPlaceSkipDisruptionBudget flag",
+			pods: []*corev1.Pod{
+				generatePod().Get(),
+			},
+			replicas:                1,
+			evictionTolerance:       0.5,
+			lastInPlaceAttempt:      time.Time{},
+			expectedInPlaceDecision: utils.InPlaceDeferred,
+			vpa:                     getIPORVpa(),
+		},
+		{
+			name: "CanInPlaceUpdate=InPlaceDeferred(InPlace) - without inPlaceSkipDisruptionBudget flag",
+			pods: []*corev1.Pod{
+				generatePod().Get(),
+			},
+			replicas:                1,
+			evictionTolerance:       0.5,
+			lastInPlaceAttempt:      time.Time{},
+			expectedInPlaceDecision: utils.InPlaceDeferred,
+			vpa:                     getIPVpa(),
 		},
 		{
 			name: "CanInPlaceUpdate=InPlaceDeferred - no pods can be in-placed, one missing",
@@ -489,7 +536,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 				minReplicas = tc.minReplicas
 			}
 
-			factory, err := getRestrictionFactory(&rc, nil, nil, nil, minReplicas, tc.evictionTolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false)
+			factory, err := getRestrictionFactory(&rc, nil, nil, nil, minReplicas, tc.evictionTolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), tc.inPlaceSkipDisruptionBudget)
 			assert.NoError(t, err)
 
 			vpaForCreatorMaps := getIPORVpa()

@@ -297,7 +297,8 @@ updater:
   annotations: {}
 
   # Additional args for the updater
-  extraArgs: []
+  extraArgs:
+    - --in-place-skip-disruption-budget=true
 
   image:
     # Image repository for the Updater default container.

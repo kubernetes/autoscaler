@@ -185,9 +185,9 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*corev1.Pod, vpa *vpa
 	}
 
 	// if the VPA is using InPlaceOrRecreate update mode and user has opted into skipping disruption, we can skip the replica count check
-	// TODO: Add InPlace mode here when it's implemented
 	usingInPlaceOrRecreate := vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeInPlaceOrRecreate
-	skipReplicaCheck := usingInPlaceOrRecreate && f.inPlaceSkipDisruptionBudget
+	usingInPlace := vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeInPlace
+	skipReplicaCheck := (usingInPlaceOrRecreate || usingInPlace) && f.inPlaceSkipDisruptionBudget
 
 	for creator, replicas := range livePods {
 		actual := len(replicas)
