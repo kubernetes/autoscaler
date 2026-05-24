@@ -82,6 +82,9 @@ type cachingMigInfoProvider struct {
 	timeProvider                      timeProvider
 	bulkGceMigInstancesListingEnabled bool
 	multiProjectCachingEnabled        bool
+	// migBasenameFallbackExecuted tracks if the fallback GCE API scan was already executed
+	// during the current simulation loop to prevent repetitive API queries.
+	migBasenameFallbackExecuted bool
 }
 
 type realTime struct{}
@@ -131,19 +134,20 @@ func (c *cachingMigInfoProvider) GetMigForInstance(instanceRef GceRef) (Mig, err
 		return mig, err
 	}
 
-	mig = c.findMigWithMatchingBasename(instanceRef)
-	if mig == nil {
+	migRef, found := c.findMigWithMatchingBasename(instanceRef)
+	if !found {
 		return nil, nil
 	}
 
 	// Cache is cleared every loop.
 	// If it's not empty, it's been refreshed this loop, and we don't want to refresh it again.
-	if !c.cache.IsMigInstancesCacheEmpty(mig.GceRef()) {
+	// If the instance is not in cache, it has been deleted from the mig.
+	if !c.cache.IsMigInstancesCacheEmpty(migRef) {
 		c.cache.MarkInstanceMigUnknown(instanceRef)
 		return nil, nil
 	}
 
-	err = c.fillMigInstances(mig.GceRef())
+	err = c.fillMigInstances(migRef)
 	if err != nil {
 		return nil, err
 	}
@@ -173,12 +177,14 @@ func (c *cachingMigInfoProvider) getCachedMigForInstance(instanceRef GceRef) (Mi
 func (c *cachingMigInfoProvider) RegenerateMigInstancesCache() error {
 	c.cache.InvalidateAllMigInstances()
 	c.cache.InvalidateAllInstancesToMig()
-
+	c.migInstanceMutex.Lock()
+	c.migBasenameFallbackExecuted = false
+	c.migInstanceMutex.Unlock()
 	if c.bulkGceMigInstancesListingEnabled {
 		return c.bulkListMigInstances()
 	}
-
 	migs := c.migLister.GetMigs()
+
 	errors := make([]error, len(migs))
 	workqueue.ParallelizeUntil(context.Background(), c.concurrentGceRefreshes, len(migs), func(piece int) {
 		errors[piece] = c.fillMigInstances(migs[piece].GceRef())
@@ -313,15 +319,34 @@ func (c *cachingMigInfoProvider) updateMigInstancesCache(migToInstances map[GceR
 	return nil
 }
 
-func (c *cachingMigInfoProvider) findMigWithMatchingBasename(instanceRef GceRef) Mig {
+func (c *cachingMigInfoProvider) findMigWithMatchingBasename(instanceRef GceRef) (GceRef, bool) {
+	instanceName := instanceRef.Name
+	// Split by hyphen and try prefixes from longest to shortest
+	for i := len(instanceName) - 1; i > 0; i-- {
+		if instanceName[i] != '-' {
+			continue
+		}
+		prefix := instanceName[:i]
+		if migRef, found := c.cache.GetMigByBasename(prefix, instanceRef.Project, instanceRef.Zone); found {
+			return migRef, true
+		}
+	}
+
+	if c.migBasenameFallbackExecuted {
+		return GceRef{}, false
+	}
+	c.migBasenameFallbackExecuted = true
+
+	var matchingMigRef GceRef
 	for _, mig := range c.migLister.GetMigs() {
 		migRef := mig.GceRef()
 		basename, err := c.GetMigBasename(migRef)
-		if err == nil && migRef.Project == instanceRef.Project && migRef.Zone == instanceRef.Zone && strings.HasPrefix(instanceRef.Name, basename) {
-			return mig
+		if matchingMigRef.Name == "" && err == nil && migRef.Project == instanceRef.Project && migRef.Zone == instanceRef.Zone && strings.HasPrefix(instanceRef.Name, basename) {
+			matchingMigRef = migRef
 		}
 	}
-	return nil
+
+	return matchingMigRef, matchingMigRef.Name != ""
 }
 
 func (c *cachingMigInfoProvider) fillMigInstances(migRef GceRef) error {
