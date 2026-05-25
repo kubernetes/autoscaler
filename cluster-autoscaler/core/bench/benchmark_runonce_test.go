@@ -25,6 +25,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"runtime/pprof"
+	"runtime/trace"
 	"sync"
 	"testing"
 	"time"
@@ -85,6 +86,7 @@ const (
 
 var (
 	runOnceCpuProfile = flag.String("profile-cpu", "", "If set, the benchmark writes a CPU profile to this file, covering the RunOnce execution during the first iteration.")
+	runOnceTrace      = flag.String("trace", "", "If set, the benchmark writes an execution trace to this file, covering the RunOnce execution during the first iteration.")
 	withGC            = flag.Bool("gc", false, "If set to false, the benchmark disables garbage collection to stabilize the runtime.")
 )
 
@@ -122,49 +124,76 @@ func (s scenario) run(b *testing.B) {
 		defer debug.SetGCPercent(oldGC)
 	}
 
-	var f *os.File
+	var fProf, fTrace *os.File
 	if *runOnceCpuProfile != "" {
 		var err error
-		f, err = os.Create(*runOnceCpuProfile)
+		fProf, err = os.Create(*runOnceCpuProfile)
 		if err != nil {
 			b.Fatalf("Failed to create cpu profile file: %v", err)
 		}
-		defer f.Close()
+		defer fProf.Close()
+	}
+	if *runOnceTrace != "" {
+		var err error
+		fTrace, err = os.Create(*runOnceTrace)
+		if err != nil {
+			b.Fatalf("Failed to create trace file: %v", err)
+		}
+		defer fTrace.Close()
 	}
 
 	for i := 0; i < b.N; i++ {
-		clusterFakes := newClusterFakes()
-		if err := s.setup(clusterFakes); err != nil {
-			b.Fatalf("setup failed: %v", err)
-		}
-		autoscaler := newAutoscaler(b, s, clusterFakes)
+		s.runIteration(b, i, fProf, fTrace)
+	}
+}
 
-		// Manually trigger GC before the timed section to ensure a clean state
-		// for each iteration.
-		runtime.GC()
+func (s scenario) runIteration(b *testing.B, i int, fProf, fTrace *os.File) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-		if f != nil && i == 0 {
-			if err := pprof.StartCPUProfile(f); err != nil {
+	clusterFakes := newClusterFakes()
+	if err := s.setup(clusterFakes); err != nil {
+		b.Fatalf("setup failed: %v", err)
+	}
+	autoscaler := newAutoscaler(ctx, b, s, clusterFakes)
+
+	// Manually trigger GC before the timed section to ensure a clean state
+	// for each iteration.
+	runtime.GC()
+
+	if i == 0 {
+		if fProf != nil {
+			if err := pprof.StartCPUProfile(fProf); err != nil {
 				b.Fatalf("Failed to start cpu profile: %v", err)
 			}
 		}
+		if fTrace != nil {
+			if err := trace.Start(fTrace); err != nil {
+				b.Fatalf("Failed to start trace: %v", err)
+			}
+		}
+	}
 
-		b.StartTimer()
-		err := autoscaler.RunOnce(time.Now().Add(10 * time.Second))
-		b.StopTimer()
+	b.StartTimer()
+	err := autoscaler.RunOnce(time.Now().Add(10 * time.Second))
+	b.StopTimer()
 
-		if f != nil && i == 0 {
+	if i == 0 {
+		if fProf != nil {
 			pprof.StopCPUProfile()
 		}
-
-		if err != nil {
-			b.Fatalf("RunOnce failed: %v", err)
+		if fTrace != nil {
+			trace.Stop()
 		}
+	}
 
-		if s.verify != nil {
-			if err := s.verify(clusterFakes); err != nil {
-				b.Fatalf("verify failed: %v", err)
-			}
+	if err != nil {
+		b.Fatalf("RunOnce failed: %v", err)
+	}
+
+	if s.verify != nil {
+		if err := s.verify(clusterFakes); err != nil {
+			b.Fatalf("verify failed: %v", err)
 		}
 	}
 }
@@ -178,7 +207,7 @@ func newClusterFakes() *integration.FakeSet {
 }
 
 // newAutoscaler constructs a core.Autoscaler instance configured for the given scenario.
-func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet) core.Autoscaler {
+func newAutoscaler(ctx context.Context, b *testing.B, s scenario, clusterFakes *integration.FakeSet) core.Autoscaler {
 	opts := defaultCAOptions()
 	if s.config != nil {
 		s.config(&opts)
@@ -190,7 +219,7 @@ func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet) 
 	ftkc := &fastTaintingKubeClient{taintedNodes: make(map[string]bool)}
 	ftkc.registerReactors(clusterFakes.KubeClient)
 
-	kubeClients := ca_context.NewAutoscalingKubeClients(context.Background(), opts, clusterFakes.KubeClient, clusterFakes.InformerFactory)
+	kubeClients := ca_context.NewAutoscalingKubeClients(ctx, opts, clusterFakes.KubeClient, clusterFakes.InformerFactory)
 	kubeClients.Recorder = &noOpRecorder{}
 
 	wrappedCloudProvider := &fastScaleUpCloudProvider{
@@ -204,7 +233,7 @@ func newAutoscaler(b *testing.B, s scenario, clusterFakes *integration.FakeSet) 
 		WithAutoscalingKubeClients(kubeClients).
 		WithInformerFactory(clusterFakes.InformerFactory).
 		WithCloudProvider(wrappedCloudProvider).
-		WithPodObserver(clusterFakes.PodObserver).Build(context.Background())
+		WithPodObserver(clusterFakes.PodObserver).Build(ctx)
 	if err != nil {
 		b.Fatalf("Failed to build: %v", err)
 	}
