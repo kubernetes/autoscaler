@@ -42,9 +42,11 @@ type ProviderConfig struct {
 }
 
 func request(ctx context.Context, provider ProviderConfig, method string, path string, body interface{}, numRetries int, secondsBetweenRetries int) (interface{}, error) {
-	buf := new(bytes.Buffer)
+	var bodyBytes []byte
 	if body != nil {
-		if err := json.NewEncoder(buf).Encode(body); err != nil {
+		var err error
+		bodyBytes, err = json.Marshal(body)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -53,12 +55,12 @@ func request(ctx context.Context, provider ProviderConfig, method string, path s
 	var result interface{}
 	var err error
 	for attempt := 0; attempt < numRetries; attempt++ {
-		klog.V(2).Infof("kamatera request: %s %s %s", method, url, buf.String())
+		klog.V(2).Infof("kamatera request: %s %s %s", method, url, string(bodyBytes))
 		if attempt > 0 {
 			klog.V(2).Infof("kamatera request retry %d", attempt)
 			time.Sleep(time.Duration(secondsBetweenRetries<<attempt) * time.Second)
 		}
-		req, e := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s/%s", provider.ApiUrl, path), buf)
+		req, e := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s/%s", provider.ApiUrl, path), bytes.NewReader(bodyBytes))
 		if e != nil {
 			err = e
 			continue
@@ -72,18 +74,23 @@ func request(ctx context.Context, provider ProviderConfig, method string, path s
 			err = e
 			continue
 		}
-		defer res.Body.Close()
-		e = json.NewDecoder(res.Body).Decode(&result)
-		if e != nil {
-			if res.StatusCode != 200 {
-				err = fmt.Errorf("bad status code from Kamatera API: %d", res.StatusCode)
-			} else {
-				err = fmt.Errorf("invalid response from Kamatera API: %+v", result)
+
+		err = func() error {
+			defer res.Body.Close()
+
+			e = json.NewDecoder(res.Body).Decode(&result)
+			if e != nil {
+				if res.StatusCode != 200 {
+					return fmt.Errorf("bad status code from Kamatera API: %d", res.StatusCode)
+				}
+				return fmt.Errorf("invalid response from Kamatera API: %+v", result)
 			}
-			continue
-		}
-		if res.StatusCode != 200 {
-			err = fmt.Errorf("error response from Kamatera API (%d): %+v", res.StatusCode, result)
+			if res.StatusCode != 200 {
+				return fmt.Errorf("error response from Kamatera API (%d): %+v", res.StatusCode, result)
+			}
+			return nil
+		}()
+		if err != nil {
 			continue
 		}
 		break
