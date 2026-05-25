@@ -43,9 +43,8 @@ func NewCloudProvider(opts *coreoptions.AutoscalerOptions, informerFactory infor
 		return nil
 	}
 
-	provider := buildCloudProvider(opts, do, rl, informerFactory)
-	if provider != nil {
-		return provider
+	if builder, ok := GetCloudProviderBuilder(opts.CloudProviderName); ok {
+		return builder(opts, do, rl, informerFactory)
 	}
 
 	klog.Fatalf("Unknown cloud provider: %s", opts.CloudProviderName)
