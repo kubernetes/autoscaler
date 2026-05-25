@@ -196,6 +196,23 @@ func waitForActiveJobs(c clientset.Interface, ns, cronJobName string, active int
 	})
 }
 
+func waitForCronJobPodsRunning(f *framework.Framework, replicas int32) error {
+	return wait.PollUntilContextTimeout(context.Background(), utils.PollInterval, utils.PollTimeout, true, func(ctx context.Context) (done bool, err error) {
+		podList, err := GetHamsterPods(f)
+		if err != nil {
+			framework.Logf("Error listing pods, retrying: %v", err)
+			return false, nil
+		}
+		podsRunning := int32(0)
+		for _, pod := range podList.Items {
+			if pod.Status.Phase == apiv1.PodRunning {
+				podsRunning++
+			}
+		}
+		return podsRunning >= replicas, nil
+	})
+}
+
 func createCronJob(c clientset.Interface, ns string, cronJob *batchv1.CronJob) (*batchv1.CronJob, error) {
 	return c.BatchV1().CronJobs(ns).Create(context.TODO(), cronJob, metav1.CreateOptions{})
 }
@@ -214,6 +231,8 @@ func SetupHamsterCronJob(f *framework.Framework, schedule, cpu, memory string, r
 	cronJob, err := createCronJob(f.ClientSet, f.Namespace.Name, cronJob)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	err = waitForActiveJobs(f.ClientSet, f.Namespace.Name, cronJob.Name, 1)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	err = waitForCronJobPodsRunning(f, replicas)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
