@@ -13,7 +13,7 @@ GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
 REGISTRY?=gcr.io/k8s-staging-autoscaling
 DOCKER_NETWORK?=default
-SUPPORTED_BUILD_TAGS=$(shell ls cloudprovider/builder/ | grep -e '^builder_.*\.go' | sed 's/builder_\(.*\)\.go/\1/')
+SUPPORTED_BUILD_TAGS=$(shell ls cloudprovider/router/ | grep -e '^router_.*\.go' | sed 's/router_\(.*\)\.go/\1/')
 ifdef BUILD_TAGS
   TAGS_FLAG=--tags ${BUILD_TAGS}
   PROVIDER=-${BUILD_TAGS}

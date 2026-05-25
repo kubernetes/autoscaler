@@ -11,6 +11,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -26,6 +28,13 @@ import (
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
+
+func init() {
+	builder.RegisterCloudProvider(cloudprovider.OracleCloudProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildOCI(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(cloudprovider.OracleCloudProviderName)
+}
 
 // OciCloudProvider implements the CloudProvider interface for OCI. It contains an
 // instance pool manager to interact with OCI instance pools.
