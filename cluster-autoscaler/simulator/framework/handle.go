@@ -23,6 +23,8 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources"
 	"k8s.io/client-go/informers"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
+	"k8s.io/kubernetes/pkg/scheduler"
 	schedulerconfig "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	schedulerconfiglatest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -40,6 +42,7 @@ var (
 type Handle struct {
 	Framework        schedulerimpl.Framework
 	DelegatingLister *DelegatingSchedulerSharedLister
+	Extenders        []schedulerinterface.Extender
 }
 
 // NewHandle builds a framework Handle based on the provided informers and scheduler config.
@@ -92,8 +95,18 @@ func NewHandle(ctx context.Context, informerFactory informers.SharedInformerFact
 		return nil, fmt.Errorf("couldn't create scheduler framework; %v", err)
 	}
 
+	var extenders []schedulerinterface.Extender
+	for i := range schedConfig.Extenders {
+		extender, err := scheduler.NewHTTPExtender(&schedConfig.Extenders[i])
+		if err != nil {
+			return nil, fmt.Errorf("couldn't create HTTP extender for %q: %v", schedConfig.Extenders[i].URLPrefix, err)
+		}
+		extenders = append(extenders, extender)
+	}
+
 	return &Handle{
 		Framework:        framework,
 		DelegatingLister: sharedLister,
+		Extenders:        extenders,
 	}, nil
 }
