@@ -321,7 +321,7 @@ func GetExpiredStartupCPUBoostAnnotations(pod *corev1.Pod, vpa *vpa_types.Vertic
 	readyTime := readyCond.LastTransitionTime.Time
 
 	for k := range pod.Annotations {
-		if containerName, found := strings.CutSuffix(k, annotations.StartupCPUBoostAnnotationSuffix); found {
+		if containerName, found := strings.CutPrefix(k, annotations.StartupCPUBoostAnnotationPrefix); found {
 			boostDuration := getContainerCPUStartupBoostDuration(containerName, vpa)
 			if boostDuration == 0 || time.Since(readyTime) > time.Duration(boostDuration)*time.Second {
 				expiredAnnotations = append(expiredAnnotations, k)
@@ -353,7 +353,7 @@ func PodHasCPUBoostInProgressAnnotation(pod *corev1.Pod) bool {
 		return false
 	}
 	for k := range pod.Annotations {
-		if strings.HasSuffix(k, annotations.StartupCPUBoostAnnotationSuffix) {
+		if strings.HasPrefix(k, annotations.StartupCPUBoostAnnotationPrefix) {
 			return true
 		}
 	}

@@ -23,9 +23,9 @@ import (
 )
 
 const (
-	// StartupCPUBoostAnnotationSuffix is the suffix for the annotation set on a pod when a CPU boost is applied.
+	// StartupCPUBoostAnnotationPrefix is the prefix for the annotation set on a pod when a CPU boost is applied.
 	// The value of the annotation is the original resource specification of the container.
-	StartupCPUBoostAnnotationSuffix = "/cpu-startup-boost"
+	StartupCPUBoostAnnotationPrefix = "vpaCpuStartupBoost/"
 )
 
 // OriginalResources contains the original resources of a container.
@@ -58,7 +58,7 @@ func GetOriginalResourcesAnnotationValue(container *corev1.Container) (string, e
 
 // GetStartupCPUBoostAnnotationKey returns the annotation key for a given container.
 func GetStartupCPUBoostAnnotationKey(containerName string) string {
-	return containerName + StartupCPUBoostAnnotationSuffix
+	return StartupCPUBoostAnnotationPrefix + containerName
 }
 
 // GetOriginalResourcesFromAnnotation returns the original resources from the annotation for a specific container.

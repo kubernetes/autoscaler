@@ -392,7 +392,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				WithTargetRef(targetRef).
 				WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 				WithContainer(containerName).
-				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 10).
+				WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 65).
 				Get()
 			utils.InstallVPA(f, vpaCRD)
 
@@ -439,7 +439,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				WithTargetRef(targetRef).
 				WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
 				WithContainer(containerName).
-				WithContainerCPUStartupBoost(containerName, vpa_types.FactorStartupBoostType, &factor, nil, 10).
+				WithContainerCPUStartupBoost(containerName, vpa_types.FactorStartupBoostType, &factor, nil, 65).
 				Get()
 
 			utils.InstallVPA(f, vpaCRD)

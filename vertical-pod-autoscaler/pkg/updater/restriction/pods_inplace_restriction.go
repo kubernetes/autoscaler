@@ -204,11 +204,10 @@ func (ip *PodsInPlaceRestrictionImpl) CanUnboost(pod *corev1.Pod, vpa *vpa_types
 		return false
 	}
 	expiredAnnotations := vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)
-	klog.V(2).InfoS("Pod ready, checking if containers can be unboosted", "pod", klog.KObj(pod))
-
 	if len(expiredAnnotations) == 0 {
 		return false
 	}
+	klog.V(2).InfoS("Pod ready, checking if containers can be unboosted", "pod", klog.KObj(pod))
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
 		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
