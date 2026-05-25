@@ -41,6 +41,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	apiv1 "k8s.io/api/core/v1"
+	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	"k8s.io/client-go/informers"
 )
 
@@ -89,6 +92,18 @@ func NewAutoscaler(ctx context.Context, opts coreoptions.AutoscalerOptions, info
 }
 
 // Initialize default options if not provided.
+func registerExtenderManagedResources(schedConfig *scheduler_config.KubeSchedulerConfiguration) {
+	if schedConfig == nil {
+		return
+	}
+	for _, extender := range schedConfig.Extenders {
+		for _, mr := range extender.ManagedResources {
+			gpu.RegisterGPUResourceNames(apiv1.ResourceName(mr.Name))
+		}
+	}
+}
+
+// Initialize default options if not provided.
 func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerOptions, informerFactory informers.SharedInformerFactory) error {
 	if opts.Processors == nil {
 		opts.Processors = ca_processors.DefaultProcessors(opts.AutoscalingOptions)
@@ -100,6 +115,7 @@ func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerO
 		opts.AutoscalingKubeClients = ca_context.NewAutoscalingKubeClients(ctx, opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
 	if opts.FrameworkHandle == nil {
+		registerExtenderManagedResources(opts.SchedulerConfig)
 		fwHandle, err := framework.NewHandle(ctx, opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled)
 		if err != nil {
 			return err

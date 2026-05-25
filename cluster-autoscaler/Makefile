@@ -1,4 +1,4 @@
-ALL_ARCH = amd64 arm64 s390x
+ALL_ARCH = amd64 # arm64 s390x
 all: $(addprefix build-arch-,$(ALL_ARCH))
 
 # TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
