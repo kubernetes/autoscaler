@@ -195,7 +195,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			updateMode != vpa_types.UpdateModeAuto && //nolint:staticcheck
 			updateMode != vpa_types.UpdateModeInPlaceOrRecreate &&
 			updateMode != vpa_types.UpdateModeInPlace &&
-			vpa.Spec.StartupBoost == nil {
+			!vpa_api_util.HasStartupBoost(vpa) {
 			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"InPlace\", \"Recreate\" or \"Auto\" and it doesn't have startupBoost configured", "vpa", klog.KObj(vpa))
 			continue
 		}
@@ -283,14 +283,13 @@ func (u *updater) RunOnce(ctx context.Context) {
 		podsToUnboost := make([]*corev1.Pod, 0)
 		withInPlaceUpdated := false
 
-		if cpuStartupBoostFeatureEnabled && vpa.Spec.StartupBoost != nil {
+		if cpuStartupBoostFeatureEnabled && vpa_api_util.HasStartupBoost(vpa) {
 			// First, handle unboosting for pods that have finished their startup period.
 			for _, pod := range livePods {
-				if vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
-					if vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa) {
-						podsToUnboost = append(podsToUnboost, pod)
-					}
-				} else {
+				if len(vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)) > 0 {
+					podsToUnboost = append(podsToUnboost, pod)
+				}
+				if !vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
 					podsAvailableForUpdate = append(podsAvailableForUpdate, pod)
 				}
 			}

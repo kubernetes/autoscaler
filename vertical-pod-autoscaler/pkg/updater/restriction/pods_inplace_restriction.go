@@ -203,13 +203,11 @@ func (ip *PodsInPlaceRestrictionImpl) CanUnboost(pod *corev1.Pod, vpa *vpa_types
 	if pod.Status.Phase == corev1.PodPending {
 		return false
 	}
-	durationPassed := vpa_api_util.IsPodReadyAndStartupBoostDurationPassed(pod, vpa)
-
-	klog.V(2).InfoS("Checking if pod can be unboosted", "pod", klog.KObj(pod), "durationPassed", durationPassed)
-
-	if !durationPassed {
+	expiredAnnotations := vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)
+	if len(expiredAnnotations) == 0 {
 		return false
 	}
+	klog.V(2).InfoS("Pod ready, checking if containers can be unboosted", "pod", klog.KObj(pod))
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
 		singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
