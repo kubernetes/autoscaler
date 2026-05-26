@@ -30,13 +30,14 @@ aliases:
     - cici37
   sig-autoscaling-leads:
     - adrianmoisey
-    - gjtempleton
     - jackfrancis
+    - omerap12
     - towca
   # emeritus:
   # - maciekpytel
   # - mwielgus
   # - raywainman 2025-09-29
+  # - gjtempleton
   sig-autoscaling-vpa-approvers:
     - kwiesmueller
     - voelzmo
