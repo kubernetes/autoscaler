@@ -13,7 +13,7 @@ resource requests for your pods.
 In order to use it, you need to insert a *Vertical Pod Autoscaler* resource for
 each controller that you want to have automatically computed resource requirements.
 This will be most commonly a **Deployment**.
-There are five modes in which *VPAs* operate:
+There are six modes in which *VPAs* operate:
 
 - `"Auto"` [__deprecated__]: VPA assigns resource requests on pod creation as well as updates
   them on existing pods using the preferred update mechanism. Currently, this is
@@ -28,6 +28,11 @@ There are five modes in which *VPAs* operate:
   them on existing pods by leveraging [Kubernetes `in-place` update](https://kubernetes.io/blog/2025/05/16/kubernetes-v1-33-in-place-pod-resize-beta/) capability.
   If `in-place` update fails, it falls back to evicting the pods, performing a _recreation_.
   For more details, see the [In-Place Updates documentation](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/features.md#in-place-updates-inplaceorrecreate).
+- `"InPlace"`: VPA assigns resource requests on pod creation as well as updates
+  them on existing pods using only Kubernetes `in-place` pod resize capability.
+  Unlike `"InPlaceOrRecreate"`, this mode never evicts pods. If an `in-place`
+  resize cannot be performed, VPA retries the update later when cluster conditions
+  change. This mode is recommended for workloads where any disruption is unacceptable.
 - `"Initial"`: VPA only assigns resource requests on pod creation and never changes them
   later.
 - `"Off"`: VPA does not automatically change the resource requirements of the pods.
