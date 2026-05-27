@@ -38,7 +38,7 @@ There are five modes in which *VPAs* operate:
 A simple way to check if Vertical Pod Autoscaler is fully operational in your
 cluster is to create a sample deployment and a corresponding VPA config:
 
-```bash
+```console
 kubectl apply -f - <<EOF
 apiVersion: "autoscaling.k8s.io/v1"
 kind: VerticalPodAutoscaler
