@@ -70,6 +70,7 @@ type PodConfig struct {
 	Memory       int64
 	Gpu          int64
 	Node         string
+	NodeGroup    string
 	ToleratesGpu bool
 }
 
