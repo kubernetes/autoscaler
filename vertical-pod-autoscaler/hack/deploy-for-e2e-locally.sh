@@ -20,9 +20,46 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname "${BASH_SOURCE}")/..
 BASE_NAME=$(basename "$0")
-source "${SCRIPT_ROOT}/hack/lib/util.sh"
 
-ARCH=$(kube::util::host_arch)
+get_host_arch() {
+  local host_arch
+  case "$(uname -m)" in
+    x86_64*)
+      host_arch=amd64
+      ;;
+    i?86_64*)
+      host_arch=amd64
+      ;;
+    amd64*)
+      host_arch=amd64
+      ;;
+    aarch64*)
+      host_arch=arm64
+      ;;
+    arm64*)
+      host_arch=arm64
+      ;;
+    arm*)
+      host_arch=arm
+      ;;
+    i?86*)
+      host_arch=x86
+      ;;
+    s390x*)
+      host_arch=s390x
+      ;;
+    ppc64le*)
+      host_arch=ppc64le
+      ;;
+    *)
+      echo "Unsupported host arch. Must be x86_64, 386, arm, arm64, s390x or ppc64le."
+      exit 1
+      ;;
+  esac
+  echo "${host_arch}"
+}
+
+ARCH=$(get_host_arch)
 
 function print_help {
   echo "ERROR! Usage: $BASE_NAME [suite]*"
