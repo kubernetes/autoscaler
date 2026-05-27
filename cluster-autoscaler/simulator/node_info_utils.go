@@ -80,6 +80,9 @@ func SanitizedTemplateNodeInfoFromNodeInfo(example *framework.NodeInfo, nodeGrou
 	// TODO: refactor this code to use update `NewNodeInfo` signature, so as this is no longer necessary.
 	templateNodeInfo.CSINode = sanitizedExample.CSINode
 
+	// Allow this node to be recognized as a template node, so scale up issues like https://github.com/kubernetes/autoscaler/issues/9700 can be mitigated.
+	templateNodeInfo.Node().Labels["cluster-autoscaler.kubernetes.io/template-node"] = "true"
+
 	// No need to sanitize the expected pods again - they either come from sanitizedExample and were sanitized above,
 	// or were added by podsExpectedOnFreshNode and sanitized there.
 	return templateNodeInfo, nil

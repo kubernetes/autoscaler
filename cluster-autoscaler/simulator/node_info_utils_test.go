@@ -668,6 +668,9 @@ func verifySanitizedNode(initialNode, sanitizedNode *apiv1.Node, wantNodeName st
 		wantLabels[k] = v
 	}
 	wantLabels[apiv1.LabelHostname] = wantNodeName
+	if strings.HasPrefix(wantNodeName, "template-node-for-") {
+		wantLabels["cluster-autoscaler.kubernetes.io/template-node"] = "true"
+	}
 	if wantDeprecatedLabels {
 		labels.UpdateDeprecatedLabels(wantLabels)
 	}
