@@ -3,5 +3,4 @@
 ./charts/README.md
 ./docs/api.md
 ./enhancements/README.md
-./hack/local-cluster.md
 ./RELEASE.md

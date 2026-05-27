@@ -104,7 +104,7 @@ kubectl describe vpa
 ```
 
 *Note: if your cluster has little free capacity these pods may be unable to schedule.
-You may need to add more nodes or adjust examples/hamster.yaml to use less CPU.*
+You may need to add more nodes or adjust the above deploylment to use less CPU.*
 
 ## Example VPA configuration
 
