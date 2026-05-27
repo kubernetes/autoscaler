@@ -38,8 +38,57 @@ There are five modes in which *VPAs* operate:
 A simple way to check if Vertical Pod Autoscaler is fully operational in your
 cluster is to create a sample deployment and a corresponding VPA config:
 
-```console
-kubectl create -f examples/hamster.yaml
+```bash
+kubectl apply -f - <<EOF
+apiVersion: "autoscaling.k8s.io/v1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: hamster-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: hamster
+  resourcePolicy:
+    containerPolicies:
+      - containerName: '*'
+        minAllowed:
+          cpu: 100m
+          memory: 50Mi
+        maxAllowed:
+          cpu: 1
+          memory: 500Mi
+        controlledResources: ["cpu", "memory"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hamster
+spec:
+  selector:
+    matchLabels:
+      app: hamster
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: hamster
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+      containers:
+        - name: hamster
+          image: registry.k8s.io/ubuntu-slim:0.14
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - "while true; do timeout 0.5s yes >/dev/null; sleep 0.5s; done"
+EOF
 ```
 
 The above command creates a deployment with two pods, each running a single container
