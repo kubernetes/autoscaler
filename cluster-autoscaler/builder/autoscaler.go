@@ -27,6 +27,7 @@ import (
 	cbctrl "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/scaleupfailures"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	cacontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -178,13 +179,17 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(&autoscalingOptions.NodeInfoCacheExpireTime, autoscalingOptions.ForceDaemonSets)
 	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere)
 
+	opts.ScaleUpFailuresRegistry = scaleupfailures.NewRegistry()
+	opts.LoopStartObservers = append(opts.LoopStartObservers, opts.ScaleUpFailuresRegistry)
+
 	var provisioningRequestInjector *provreq.ProvisioningRequestPodsInjector
 	if autoscalingOptions.ProvisioningRequestEnabled {
-		injector, err := b.buildProvisioningRequest(ctx, autoscalingOptions, &opts, podListProcessor)
+		injector, provreqProcessor, err := b.buildProvisioningRequest(ctx, autoscalingOptions, &opts, podListProcessor)
 		if err != nil {
 			return nil, nil, err
 		}
 		provisioningRequestInjector = injector
+		opts.LoopStartObservers = append(opts.LoopStartObservers, provreqProcessor)
 	}
 
 	var capacitybufferClient *capacityclient.CapacityBufferClient
