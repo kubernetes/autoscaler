@@ -310,23 +310,7 @@ func TestValidateVPA(t *testing.T) {
 			expectError: errors.New("spec.updatePolicy.updateMode: Unsupported value: \"bad\": supported values: \"InPlace\", \"InPlaceOrRecreate\", \"Initial\", \"Off\", \"Recreate\""),
 		},
 		{
-			name: "creating VPA with InPlaceOrRecreate update mode not allowed by disabled feature gate",
-			vpa: vpa_types.VerticalPodAutoscaler{
-				Spec: vpa_types.VerticalPodAutoscalerSpec{
-					TargetRef: &autoscalingv1.CrossVersionObjectReference{
-						Kind: "Deployment",
-						Name: "my-app",
-					},
-					UpdatePolicy: &vpa_types.PodUpdatePolicy{
-						UpdateMode: &inPlaceOrRecreateUpdateMode,
-					},
-				},
-			},
-			opts:        VPAValidationOptions{IsVPACreate: true, AllowInPlaceOrRecreate: false},
-			expectError: fmt.Errorf("spec.updatePolicy.updateMode: Forbidden: in order to use UpdateMode %s, you must enable feature gate InPlaceOrRecreate in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate),
-		},
-		{
-			name: "InPlaceOrRecreate update mode enabled by feature gate",
+			name: "InPlaceOrRecreate update mode set",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
 					UpdatePolicy: &vpa_types.PodUpdatePolicy{
@@ -338,7 +322,6 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
-			opts: VPAValidationOptions{IsVPACreate: true, AllowInPlaceOrRecreate: true},
 		},
 		{
 			name: "zero minReplicas",
@@ -1378,9 +1361,8 @@ func TestValidateVPA(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			if !tc.opts.AllowInPlaceOrRecreate || !tc.opts.AllowCPUStartupBoost {
+			if !tc.opts.AllowCPUStartupBoost {
 				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.5"))
-				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, tc.opts.AllowInPlaceOrRecreate)
 			} else {
 				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, tc.opts.AllowCPUStartupBoost)
 			}

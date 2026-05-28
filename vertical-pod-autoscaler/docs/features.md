@@ -154,7 +154,7 @@ Even with this flag enabled, disruption budgets are enforced when:
 ### Requirements:
 
 * Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
-* VPA version 1.4.0+ with `InPlaceOrRecreate` feature gate enabled
+* VPA version 1.4.0 requires the `InPlaceOrRecreate` feature gate to be enabled. Starting from VPA version 1.5.0, the feature gate is enabled by default, and in VPA version 1.7.0, the feature gate was removed.
 
 ### Limitations
 

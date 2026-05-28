@@ -93,17 +93,8 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 		updateMode = *vpa.Spec.UpdatePolicy.UpdateMode
 	}
 
-	switch updateMode {
-	case vpa_types.UpdateModeInPlaceOrRecreate:
-		if !features.Enabled(features.InPlaceOrRecreate) {
-			return utils.InPlaceEvict
-		}
-	case vpa_types.UpdateModeInPlace:
-		if !features.Enabled(features.InPlace) {
-			return utils.InPlaceDeferred
-		}
-	default:
-		return utils.InPlaceEvict
+	if updateMode == vpa_types.UpdateModeInPlace && !features.Enabled(features.InPlace) {
+		return utils.InPlaceDeferred
 	}
 
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]

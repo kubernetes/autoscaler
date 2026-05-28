@@ -241,8 +241,6 @@ const (
 	// UpdateModeInPlaceOrRecreate means that autoscaler tries to assign resources in-place.
 	// If this is not possible (e.g., resizing takes too long or is infeasible), it falls back to the
 	// "Recreate" update mode.
-	// Requires VPA level feature gate "InPlaceOrRecreate" to be enabled
-	// on the admission and updater pods.
 	// Requires cluster feature gate "InPlacePodVerticalScaling" to be enabled.
 	UpdateModeInPlaceOrRecreate UpdateMode = "InPlaceOrRecreate"
 	// UpdateModeInPlace means that autoscaler will only attempt to update pods in-place

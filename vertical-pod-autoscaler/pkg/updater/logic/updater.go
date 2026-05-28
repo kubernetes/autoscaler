@@ -179,7 +179,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
-	inPlaceOrRecreateFeatureEnabled := features.Enabled(features.InPlaceOrRecreate)
 	inPlaceFeatureEnabled := features.Enabled(features.InPlace)
 	cpuStartupBoostFeatureEnabled := features.Enabled(features.CPUStartupBoost)
 	for _, vpa := range vpaList {
@@ -330,21 +329,19 @@ func (u *updater) RunOnce(ctx context.Context) {
 		withInPlaceUpdatable := false
 		withEvictable := false
 
-		if (updateMode == vpa_types.UpdateModeInPlaceOrRecreate && inPlaceOrRecreateFeatureEnabled) || (updateMode == vpa_types.UpdateModeInPlace && inPlaceFeatureEnabled) {
+		if (updateMode == vpa_types.UpdateModeInPlaceOrRecreate) || (updateMode == vpa_types.UpdateModeInPlace && inPlaceFeatureEnabled) {
 			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter, vpa, u.infeasibleAttempts), vpa)
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
 			if len(podsForInPlace) > 0 {
 				withInPlaceUpdatable = true
 			}
 		} else {
-			// If the feature gate is not enabled but update mode is InPlaceOrRecreate, updater will always fallback to eviction.
-			if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
-				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlaceOrRecreate, "updateMode", updateMode)
-				// If the feature gate is not enabled but update mode is InPlace, updater will do nothing.
-			} else if updateMode == vpa_types.UpdateModeInPlace {
+			// If the feature gate is not enabled but update mode is InPlace, updater will do nothing.
+			if updateMode == vpa_types.UpdateModeInPlace {
 				klog.InfoS("Warning: feature gate is not enabled for this updateMode", "featuregate", features.InPlace, "updateMode", updateMode)
 				continue
 			}
+			// We evict the pod when the mode is set to Recreate or Auto. The latter mode is deprecated.
 			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(podsAvailableForUpdate, evictionLimiter), vpa)
 			evictablePodsCounter.Add(vpaSize, updateMode, len(podsForEviction))
 			if len(podsForEviction) > 0 {

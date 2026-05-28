@@ -250,7 +250,6 @@ func testRunOnceBase(
 	canInPlaceUpdate utils.InPlaceDecision,
 	isCPUBoostTest bool,
 ) {
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, true)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -682,8 +681,6 @@ func TestInfeasibleAttempts(t *testing.T) {
 }
 
 func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
-
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, true)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -780,8 +777,6 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 }
 
 func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
-
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, true)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

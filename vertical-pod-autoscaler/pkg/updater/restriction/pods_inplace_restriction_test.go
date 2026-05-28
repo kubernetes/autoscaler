@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/version"
 	"k8s.io/client-go/tools/record"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	baseclocktest "k8s.io/utils/clock/testing"
@@ -55,7 +54,6 @@ type CanInPlaceUpdateTestParams struct {
 }
 
 func TestCanInPlaceUpdate(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
 
 	rc := corev1.ReplicationController{
@@ -559,47 +557,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 	}
 }
 
-func TestInPlaceDisabledFeatureGate(t *testing.T) {
-	featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, features.MutableFeatureGate, version.MustParse("1.5"))
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, false)
-
-	replicas := int32(5)
-	livePods := 5
-	tolerance := 1.0
-
-	rc := corev1.ReplicationController{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "rc",
-			Namespace: "default",
-		},
-		TypeMeta: metav1.TypeMeta{
-			Kind: "ReplicationController",
-		},
-		Spec: corev1.ReplicationControllerSpec{
-			Replicas: &replicas,
-		},
-	}
-
-	pods := make([]*corev1.Pod, livePods)
-	for i := range pods {
-		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
-	}
-
-	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false)
-	assert.NoError(t, err)
-	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
-	assert.NoError(t, err)
-	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
-
-	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceEvict, inplace.CanInPlaceUpdate(pod, basicVpa, nil))
-	}
-}
-
 func TestInPlaceTooFewReplicas(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
-
 	replicas := int32(5)
 	livePods := 5
 	tolerance := 0.5
@@ -643,8 +601,6 @@ func TestInPlaceTooFewReplicas(t *testing.T) {
 }
 
 func TestEvictionToleranceForInPlace(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
-
 	replicas := int32(5)
 	livePods := 5
 	tolerance := 0.8
@@ -688,13 +644,6 @@ func TestEvictionToleranceForInPlace(t *testing.T) {
 }
 
 func TestEvictionToleranceForInPlaceWithSkipDisruptionBudget(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(
-		t,
-		features.MutableFeatureGate,
-		features.InPlaceOrRecreate,
-		true,
-	)
-
 	replicas := int32(5)
 	livePods := 5
 	tolerance := 0.8
@@ -745,13 +694,6 @@ func TestEvictionToleranceForInPlaceWithSkipDisruptionBudget(t *testing.T) {
 }
 
 func TestEvictionToleranceForInPlaceWithSkipDisruptionBudgetWithLessThanMinimumPods(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(
-		t,
-		features.MutableFeatureGate,
-		features.InPlaceOrRecreate,
-		true,
-	)
-
 	replicas := int32(5)
 	livePods := 1
 	tolerance := 0.8
@@ -812,8 +754,6 @@ func TestEvictionToleranceForInPlaceWithSkipDisruptionBudgetWithLessThanMinimumP
 }
 
 func TestInPlaceSkipDisruptionBudgetWithResizePolicy(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
-
 	replicas := int32(5)
 	livePods := 5
 	tolerance := 0.1 // Very low tolerance - would normally block most updates
@@ -958,8 +898,6 @@ func TestInPlaceSkipDisruptionBudgetWithResizePolicy(t *testing.T) {
 }
 
 func TestInPlaceAtLeastOne(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
-
 	replicas := int32(5)
 	livePods := 5
 	tolerance := 0.1
@@ -1002,8 +940,6 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 }
 
 func TestInPlaceUpdate_EventEmission(t *testing.T) {
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
-
 	replicas := int32(5)
 	livePods := 5
 	tolerance := 0.1
@@ -1128,7 +1064,6 @@ func TestInPlaceModeAtLeastOne(t *testing.T) {
 
 func TestInPlaceModeResizeStatuses(t *testing.T) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
-	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceOrRecreate, true)
 
 	replicas := int32(3)
 	tolerance := 0.5
