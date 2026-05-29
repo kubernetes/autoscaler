@@ -13,28 +13,30 @@
 - [Tear down](#tear-down)
 <!-- /toc -->
 
-The current default version is Vertical Pod Autoscaler 1.3.1
+The current default version is Vertical Pod Autoscaler 1.7.0
 
 ## Compatibility
 
-| VPA version     | Kubernetes version                                              |
-|-----------------|-----------------------------------------------------------------|
-| 1.6.x           | 1.28+ (1.33+ when using `InPlaceOrRecreate` )                   |
-| 1.5.x           | 1.28+ (1.33+ when using `InPlaceOrRecreate` )                   |
-| 1.4.x           | 1.28+ (1.33+ when using `InPlaceOrRecreate` Alpha Feature Gate) |
-| 1.3.x           | 1.28+                                                           |
-| 1.2.x           | 1.27+                                                           |
-| 1.1.x           | 1.25+                                                           |
-| 1.0             | 1.25+                                                           |
-| 0.14            | 1.25+                                                           |
-| 0.13            | 1.25+                                                           |
-| 0.12            | 1.25+                                                           |
-| 0.11            | 1.22 - 1.24                                                     |
-| 0.10            | 1.22+                                                           |
-| 0.9             | 1.16+                                                           |
-| 0.8             | 1.13+                                                           |
-| 0.4 to 0.7      | 1.11+                                                           |
-| 0.3.X and lower | 1.7+                                                            |
+| VPA version     | Kubernetes version                                                          |
+| --------------- | --------------------------------------------------------------------------- |
+| 1.7.x           | 1.28+ (`InPlace`, `InPlaceOrRecreate`, and `CPUStartupBoost` require 1.33+) |
+| 1.6.x           | 1.28+ (`InPlaceOrRecreate` requires 1.33+)                                  |
+| 1.5.x           | 1.28+ (`InPlaceOrRecreate` requires 1.33+)                                  |
+| 1.4.x           | 1.28+ (`InPlaceOrRecreate` alpha feature gate requires 1.33+)               |
+| 1.3.x           | 1.28+                                                                       |
+| 1.2.x           | 1.27+                                                                       |
+| 1.1.x           | 1.25+                                                                       |
+| 1.0             | 1.25+                                                                       |
+| 0.14            | 1.25+                                                                       |
+| 0.13            | 1.25+                                                                       |
+| 0.12            | 1.25+                                                                       |
+| 0.11            | 1.22–1.24                                                                   |
+| 0.10            | 1.22+                                                                       |
+| 0.9             | 1.16+                                                                       |
+| 0.8             | 1.13+                                                                       |
+| 0.4–0.7         | 1.11+                                                                       |
+| 0.3.x and lower | 1.7+                                                                        |
+
 
 ## Notice on CRD update (>=1.0.0)
 
