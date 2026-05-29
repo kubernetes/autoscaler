@@ -28,7 +28,7 @@ picks up the configuration from the API and adjusts the behavior accordingly.
 # Development
 
 Make sure you're inside the root path of the [autoscaler
-repository](https://github.com/kubernetes/autoscaler/cluster-autoscaler)
+repository](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler)
 
 1.) Build the `cluster-autoscaler` binary:
 
