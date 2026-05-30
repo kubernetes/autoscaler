@@ -23,7 +23,7 @@ The VPA project consists of 3 components:
   provides recommended values for the containers' cpu and memory requests.
 
 - [Updater](#updater) - checks whether managed pods have the correct resources configured and, if not,
-   either updates them in place or kills them so they can be recreated by their controllers with the updated requests.
+  either updates them in place or evicts them so they can be recreated by their controllers with the updated requests.
 
 - [Admission Controller](#admission-controller) - sets the correct resource requests on new pods (either just created
   or recreated by their controller due to Updater's activity).
