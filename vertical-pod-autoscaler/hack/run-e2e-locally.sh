@@ -121,6 +121,8 @@ case ${SUITE} in
     "${SCRIPT_ROOT}"/hack/deploy-for-e2e-locally.sh "${SUITE}"
 
     echo " ** Running E2E tests..."
+    # Use a lower concurrency for local runs (the default in run-e2e-tests.sh is 8).
+    export NUMPROC=${NUMPROC:-4}
     if [ "${SUITE}" == recommender-externalmetrics ]; then
        ARTIFACTS="${ARTIFACTS}" "${SCRIPT_ROOT}"/hack/run-e2e-tests.sh recommender
     else 
