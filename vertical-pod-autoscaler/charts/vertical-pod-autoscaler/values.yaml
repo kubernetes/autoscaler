@@ -136,6 +136,43 @@ admissionController:
     tolerations: []
     affinity: {}
 
+  certManager:
+    # admissionController.certManager.enabled -- If true, cert-manager manages the webhook certificate lifecycle.
+    # cert-manager must be installed in the cluster, see https://cert-manager.io/docs/installation.
+    # Mutually exclusive with certGen.enabled, registerWebhook, and tls.create.
+    enabled: false
+    # admissionController.certManager.createSelfSignedIssuer -- Optionally create a SelfSigned Issuer for CA generation.
+    # When enabled, a namespaced SelfSigned Issuer is created in the VPA namespace to issue the intermediate CA certificate,
+    # which in turn signs the webhook TLS certificate.
+    createSelfSignedIssuer:
+      enabled: false
+      # admissionController.certManager.createSelfSignedIssuer.duration -- Lifetime of the intermediate CA certificate.
+      duration: 8760h
+      # admissionController.certManager.createSelfSignedIssuer.renewBefore -- Time before expiry to renew the CA certificate.
+      renewBefore: 720h
+    # admissionController.certManager.issuerRef -- Reference to an existing issuer for signing the webhook TLS certificate.
+    # Required when createSelfSignedIssuer.enabled is false.
+    issuerRef:
+      # admissionController.certManager.issuerRef.name -- Name of the issuer.
+      name: ""
+      # admissionController.certManager.issuerRef.kind -- Kind of the issuer (ClusterIssuer or Issuer).
+      kind: ClusterIssuer
+      # admissionController.certManager.issuerRef.group -- API group of the issuer.
+      group: cert-manager.io
+
+    # admissionController.certManager.duration -- Lifetime of the webhook TLS certificate.
+    duration: 168h
+    # admissionController.certManager.renewBefore -- Time before expiry to renew the TLS certificate.
+    renewBefore: 24h
+
+    privateKey:
+      # admissionController.certManager.privateKey.algorithm -- Key algorithm for certificates (RSA, ECDSA, Ed25519).
+      algorithm: RSA
+      # admissionController.certManager.privateKey.size -- Key size for RSA or ECDSA. Ignored for Ed25519.
+      size: 2048
+    # admissionController.certManager.annotations -- Annotations to add to all cert-manager resources created by Chart.
+    annotations: {}
+
   mutatingWebhookConfiguration:
     # admissionController.mutatingWebhookConfiguration.annotations -- Additional annotations for the MutatingWebhookConfiguration
     annotations: {}
