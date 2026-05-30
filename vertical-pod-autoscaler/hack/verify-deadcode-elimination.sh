@@ -70,7 +70,10 @@ for binary in "${COMPONENTS[@]}"; do
 done
 
 # Generate JUnit XML report
-JUNIT_OUTPUT_DIR="${SCRIPT_ROOT}/_output"
+if [[ -z "${ARTIFACTS:-}" ]]; then
+  ARTIFACTS=$(mktemp -d)
+fi
+JUNIT_OUTPUT_DIR="${ARTIFACTS}"
 JUNIT_OUTPUT_FILE="${JUNIT_OUTPUT_DIR}/junit_deadcode.xml"
 mkdir -p "${JUNIT_OUTPUT_DIR}"
 
