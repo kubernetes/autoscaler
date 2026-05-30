@@ -75,7 +75,6 @@ Updater runs in Kubernetes cluster and decides which pods should be restarted
 based on resources allocation recommendation calculated by Recommender.
 If a pod should be updated, Updater may either evict it or perform an in-place update
 It respects the pod disruption budget, by using Eviction API to evict pods.
-The Updater itself does not directly modify pod resource specifications.
 It either relies on the Vertical Pod Autoscaler admission plugin to apply updated resource requests when a pod is recreated after eviction,
 or performs in-place resource updates on running pods when in-place updates are supported and enabled.
 
