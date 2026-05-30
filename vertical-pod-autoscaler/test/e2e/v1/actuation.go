@@ -925,7 +925,7 @@ func setupHamsterController(f *framework.Framework, controllerKind, cpu, memory 
 	case "Job":
 		setupHamsterJob(f, cpu, memory, replicas)
 	case "CronJob":
-		SetupHamsterCronJob(f, "*/2 * * * *", cpu, memory, replicas)
+		SetupHamsterCronJob(f, "*/1 * * * *", cpu, memory, replicas)
 	case "ReplicaSet":
 		setupHamsterRS(f, cpu, memory, replicas)
 	case "StatefulSet":

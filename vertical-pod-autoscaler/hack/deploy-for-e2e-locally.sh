@@ -141,11 +141,13 @@ for COMPONENT in ${COMPONENTS}; do
       HELM_SET_ARGS+=("--set" "recommender.enabled=true")
       HELM_SET_ARGS+=("--set" "recommender.image.repository=${REGISTRY}/vpa-recommender")
       HELM_SET_ARGS+=("--set" "recommender.image.tag=${TAG}")
+      HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--recommender-interval=10s")
       ;;
     updater)
       HELM_SET_ARGS+=("--set" "updater.enabled=true")
       HELM_SET_ARGS+=("--set" "updater.image.repository=${REGISTRY}/vpa-updater")
       HELM_SET_ARGS+=("--set" "updater.image.tag=${TAG}")
+      HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--updater-interval=10s")
       ;;
     admission-controller)
       HELM_SET_ARGS+=("--set" "admissionController.enabled=true")
@@ -155,8 +157,9 @@ for COMPONENT in ${COMPONENTS}; do
   esac
 done
 
-# Add feature gates if specified
-RECOM_ARGS_IDX=0
+# Add feature gates if specified. Index 0 of extraArgs already holds the loop
+# interval set when enabling the component above, so feature gates go after it.
+RECOM_ARGS_IDX=1
 if [ -n "${FEATURE_GATES:-}" ]; then
   # Escape commas so Helm --set treats the value as a single assignment
   ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
@@ -168,7 +171,7 @@ if [ -n "${FEATURE_GATES:-}" ]; then
         RECOM_ARGS_IDX=$((RECOM_ARGS_IDX + 1))
         ;;
       updater)
-        HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "updater.extraArgs[1]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         ;;
       admission-controller)
         HELM_SET_ARGS+=("--set" "admissionController.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")

@@ -46,7 +46,7 @@ const (
 	// RecommenderDeploymentName is VPA recommender deployment name
 	RecommenderDeploymentName = "vpa-recommender"
 	// PollInterval is interval for polling
-	PollInterval = 10 * time.Second
+	PollInterval = 5 * time.Second
 	// PollTimeout is timeout for polling
 	PollTimeout = 15 * time.Minute
 

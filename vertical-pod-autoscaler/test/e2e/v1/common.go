@@ -49,11 +49,13 @@ const (
 	actuationSuite               = "actuation"
 	cronJobsWaitTimeout          = 15 * time.Minute
 	// VpaEvictionTimeout is a timeout for VPA to restart a pod if there are no
-	// mechanisms blocking it (for example PDB).
-	VpaEvictionTimeout = 3 * time.Minute
+	// mechanisms blocking it (for example PDB). The e2e deployment runs the
+	// updater with a 10s loop interval, so this window covers several loops.
+	VpaEvictionTimeout = 45 * time.Second
 	// VpaInPlaceTimeout is a timeout for the VPA to finish in-place resizing a
-	// pod, if there are no mechanisms blocking it.
-	VpaInPlaceTimeout = 2 * time.Minute
+	// pod, if there are no mechanisms blocking it. The e2e deployment runs the
+	// updater with a 10s loop interval, so this window covers several loops.
+	VpaInPlaceTimeout = 45 * time.Second
 )
 
 // UpdaterE2eDescribe describes a VPA updater e2e test.
