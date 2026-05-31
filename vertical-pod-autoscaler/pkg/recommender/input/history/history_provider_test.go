@@ -468,7 +468,7 @@ func TestGetBasePodSelectorQuery(t *testing.T) {
 				config: config,
 			}
 
-			actualQuery := GetBasePodSelectorQuery(provider)
+			actualQuery := getBasePodSelectorQuery(provider)
 
 			assert.Equal(t, tt.expectedQuery, actualQuery)
 		})

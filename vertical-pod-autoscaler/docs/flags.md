@@ -113,6 +113,8 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `password` | string |  | The password used in the prometheus server basic auth. Can also be set via the PROMETHEUS_PASSWORD environment variable |
 | `pod-label-prefix` | string |  "pod_label_" | Which prefix to look for pod labels in metrics  |
 | `pod-name-label` | string |  "kubernetes_pod_name" | Label name to look for pod names  |
+| `cluster-name-label` | string |  "" | Label name to look for cluster name  |
+| `cluster-name` | string |  "" | Name of cluster  |
 | `pod-namespace-label` | string |  "kubernetes_namespace" | Label name to look for pod namespaces  |
 | `pod-recommendation-min-cpu-millicores` | float |  25 | Minimum CPU recommendation for a pod  |
 | `pod-recommendation-min-memory-mb` | float |  250 | Minimum memory recommendation for a pod  |

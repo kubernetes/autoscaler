@@ -17,11 +17,10 @@ limitations under the License.
 package config
 
 import (
+	"flag"
 	"os"
 	"path/filepath"
 	"testing"
-
-	"flag"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/pflag"
@@ -132,7 +131,6 @@ func TestValidateRecommenderConfig(t *testing.T) {
 			expectError: true,
 		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 

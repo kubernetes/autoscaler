@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -286,17 +287,18 @@ func ValidateRecommenderConfig(config *RecommenderConfig) error {
 	clusterNameButNotClusterNameLabel := config.ClusterNameLabel == "" && config.ClusterName != ""
 
 	if clusterNameButNotClusterNameLabel || clusterNameLabelButNotClusterName {
-		return fmt.Errorf("either one of --cluster-name-label or --cluster-name is not set")
+		return errors.New("either one of --cluster-name-label or --cluster-name is not set")
 	}
 
 	if config.PrometheusBearerToken != "" && config.PrometheusBearerTokenFile != "" && config.Username != "" {
-		return fmt.Errorf("--bearer-token, --bearer-token-file and --username are mutually exclusive")
+		return errors.New("--bearer-token, --bearer-token-file and --username are mutually exclusive")
 	}
 
 	if config.PrometheusBearerTokenFile != "" {
 		fileContent, err := os.ReadFile(config.PrometheusBearerTokenFile)
 		if err != nil {
-			return fmt.Errorf("unable to read bearer token file: %w", err)
+			errMsg := fmt.Sprintf("unable to read bearer token file: %v", err)
+			return errors.New(errMsg)
 		}
 		config.PrometheusBearerToken = strings.TrimSpace(string(fileContent))
 	}

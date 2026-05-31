@@ -358,7 +358,7 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 	return nil
 }
 
-func GetBasePodSelectorQuery(p *prometheusHistoryProvider) string {
+func getBasePodSelectorQuery(p *prometheusHistoryProvider) string {
 	var podSelector string
 	if p.config.CadvisorMetricsJobName != "" {
 		podSelector = fmt.Sprintf("job=\"%s\", ", p.config.CadvisorMetricsJobName)
@@ -379,7 +379,7 @@ func GetBasePodSelectorQuery(p *prometheusHistoryProvider) string {
 func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHistory, error) {
 	res := make(map[model.PodID]*PodHistory)
 
-	podSelector := GetBasePodSelectorQuery(p)
+	podSelector := getBasePodSelectorQuery(p)
 
 	historicalCpuQuery := fmt.Sprintf("rate(%s{%s}[%s])", p.config.CPUMetricName, podSelector, p.config.HistoryResolution)
 	klog.V(4).InfoS("Historical CPU usage query", "query", historicalCpuQuery)
