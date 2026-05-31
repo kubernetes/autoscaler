@@ -57,13 +57,17 @@ for binary in "${COMPONENTS[@]}"; do
     BINARY_OUTPUTS+=("")
   fi
 
-  # Find the binary and print its size
-  echo "Finding ${binary} binary and checking its size:"
-    ls -altrh "${binary}"
+  # Build a stripped binary (-s) to measure the size we actually ship.
+  # The dead code build above uses -dumpdep which produces a non-stripped
+  # binary, so we rebuild here with -s to report a representative size.
+  echo "Building stripped ${binary} binary and checking its size:"
+  go build -ldflags=-s -o "${binary}"
 
   # Capture size in bytes (wc -c is portable across macOS and Linux)
   size_bytes=$(wc -c < "${binary}" | tr -d ' ')
   BINARY_SIZES+=("$size_bytes")
+
+  echo "$size_bytes $binary"
 
   echo ""
   popd
