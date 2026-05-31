@@ -67,6 +67,8 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `alsologtostderrthreshold` | severity |  | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |
 | `checkpoints-gc-interval` |  |  10m0s | duration                       How often orphaned checkpoints should be garbage collected  |
 | `checkpoints-timeout` |  |  1m0s | duration                           Timeout for writing checkpoints since the start of the recommender's main loop  |
+| `cluster-name` | string |  | Name of cluster |
+| `cluster-name-label` | string |  | Label name to look for cluster name |
 | `confidence-interval-cpu` |  |  24h0m0s | duration                       The time interval used for computing the confidence multiplier for the CPU lower and upper bound. Default: 24h  |
 | `confidence-interval-memory` |  |  24h0m0s | duration                    The time interval used for computing the confidence multiplier for the memory lower and upper bound. Default: 24h  |
 | `container-name-label` | string |  "name" | Label name to look for container names  |
@@ -113,8 +115,6 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `password` | string |  | The password used in the prometheus server basic auth. Can also be set via the PROMETHEUS_PASSWORD environment variable |
 | `pod-label-prefix` | string |  "pod_label_" | Which prefix to look for pod labels in metrics  |
 | `pod-name-label` | string |  "kubernetes_pod_name" | Label name to look for pod names  |
-| `cluster-name-label` | string |  "" | Label name to look for cluster name  |
-| `cluster-name` | string |  "" | Name of cluster  |
 | `pod-namespace-label` | string |  "kubernetes_namespace" | Label name to look for pod namespaces  |
 | `pod-recommendation-min-cpu-millicores` | float |  25 | Minimum CPU recommendation for a pod  |
 | `pod-recommendation-min-memory-mb` | float |  250 | Minimum memory recommendation for a pod  |
