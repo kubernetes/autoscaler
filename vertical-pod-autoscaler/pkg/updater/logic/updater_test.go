@@ -28,6 +28,7 @@ import (
 	"golang.org/x/time/rate"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -871,4 +872,56 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 10)
 	inplace.AssertNumberOfCalls(t, "CanUnboost", 5) // all 5 from previous run only
 	eviction.AssertNumberOfCalls(t, "Evict", 0)
+}
+
+func TestIsInfeasibleError(t *testing.T) {
+	makeStatusErr := func(reason metav1.StatusReason, causeType metav1.CauseType) error {
+		return &apierrors.StatusError{
+			ErrStatus: metav1.Status{
+				Reason: reason,
+				Details: &metav1.StatusDetails{
+					Causes: []metav1.StatusCause{
+						{Type: causeType},
+					},
+				},
+			},
+		}
+	}
+
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{
+			name: "NodeCapacity cause returns true",
+			err:  makeStatusErr(metav1.StatusReasonForbidden, "NodeCapacity"),
+			want: true,
+		},
+		{
+			name: "Forbidden with unknown cause returns false",
+			err:  makeStatusErr(metav1.StatusReasonForbidden, "SomethingElse"),
+			want: false,
+		},
+		{
+			name: "Non-Forbidden status error returns false",
+			err:  makeStatusErr(metav1.StatusReasonNotFound, "NodeCapacity"),
+			want: false,
+		},
+		{
+			name: "Plain error returns false",
+			err:  errors.New("plain error"),
+			want: false,
+		},
+		{
+			name: "Nil error returns false",
+			err:  nil,
+			want: false,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, isInfeasibleError(tc.err))
+		})
+	}
 }
