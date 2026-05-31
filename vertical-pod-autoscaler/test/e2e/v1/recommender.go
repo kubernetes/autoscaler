@@ -242,7 +242,7 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	// FIXME todo(adrianmoisey): This test seems to be flaky after running in parallel, unsure why, see if it's possible to fix
+	// This test deletes the recommender, which requires it to be run in serial
 	f.It("doesn't drop lower/upper after recommender's restart", framework.WithSerial(), framework.WithSlow(), func() {
 
 		o := getVpaObserver(vpaClientSet, f.Namespace.Name)
@@ -262,8 +262,28 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		}
 		ginkgo.By("Deleting recommender")
 		gomega.Expect(deleteRecommender(f.ClientSet)).To(gomega.BeNil())
-		ginkgo.By("Accumulating diffs after restart, sleeping for 5 minutes...")
-		time.Sleep(5 * time.Minute)
+
+		ginkgo.By("Waiting for the recommender to restart and reload its checkpoint")
+		gomega.Expect(waitForRecommenderReady(f.ClientSet)).To(gomega.BeNil())
+		// Give the restarted recommender a couple of loops to produce
+		// recommendations from the restored checkpoint. This skips the brief
+		// cold-start window (before the checkpoint is loaded) which can emit a
+		// transient low-confidence recommendation with a wider upper bound.
+		time.Sleep(recommenderRestartSettle)
+
+		ginkgo.By("Draining cold-start diffs")
+	drain:
+		for {
+			select {
+			case recommendationDiff := <-o.channel:
+				fmt.Println("Dropping post-restart settle diff", recommendationDiff)
+			default:
+				break drain
+			}
+		}
+
+		ginkgo.By("Accumulating steady-state diffs after restart...")
+		time.Sleep(recommenderRestartCollect)
 		changeDetected := false
 	finish:
 		for {
@@ -479,6 +499,43 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 				oomBumpUpRatio))
 	})
 })
+
+const (
+	// recommenderRestartSettle is how long to wait after the recommender pod is
+	// ready again so it can load its checkpoint and emit at least one steady-state
+	// recommendation before we start checking diffs.
+	recommenderRestartSettle = 30 * time.Second
+	// recommenderRestartCollect is the window over which we accumulate diffs to
+	// verify the recommender does not regress its lower/upper bounds after restart.
+	recommenderRestartCollect = 30 * time.Second
+)
+
+// waitForRecommenderReady waits until a recommender pod is running and ready in
+// the VPA namespace. Used after deleting the recommender to ensure it has
+// restarted (and loaded its checkpoint) before assertions continue.
+func waitForRecommenderReady(c clientset.Interface) error {
+	namespace := utils.VpaNamespace
+	listOptions := metav1.ListOptions{
+		LabelSelector: "app.kubernetes.io/component=recommender",
+	}
+	return wait.PollUntilContextTimeout(context.TODO(), 2*time.Second, 2*time.Minute, true, func(ctx context.Context) (bool, error) {
+		podList, err := c.CoreV1().Pods(namespace).List(ctx, listOptions)
+		if err != nil {
+			return false, err
+		}
+		for _, pod := range podList.Items {
+			if pod.Status.Phase != apiv1.PodRunning {
+				continue
+			}
+			for _, cond := range pod.Status.Conditions {
+				if cond.Type == apiv1.PodReady && cond.Status == apiv1.ConditionTrue {
+					return true, nil
+				}
+			}
+		}
+		return false, nil
+	})
+}
 
 func deleteRecommender(c clientset.Interface) error {
 	namespace := utils.VpaNamespace

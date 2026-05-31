@@ -48,6 +48,11 @@ const (
 	initialCPU     = int64(10) // mCPU
 	initialMemory  = int64(10) // MB
 	oomTestTimeout = 8 * time.Minute
+	// noActuationTimeout is how long we wait to confirm that a non-recognized
+	// recommender does NOT scale the pods. The default recommender never emits a
+	// recommendation for such a VPA, so the pod requests stay put; this window
+	// only needs to cover a few updater loops and at least one recommender loop.
+	noActuationTimeout = 90 * time.Second
 )
 
 func init() {
@@ -351,7 +356,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 		// consume more CPU to get a higher recommendation
 		rc.ConsumeCPU(600 * replicas)
 		err = waitForResourceRequestInRangeInPods(
-			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+			f, noActuationTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 			ParseQuantityOrDie("500m"), ParseQuantityOrDie("1000m"))
 		gomega.Expect(err).To(gomega.HaveOccurred())
 	})

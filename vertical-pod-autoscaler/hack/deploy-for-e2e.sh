@@ -98,6 +98,8 @@ for COMPONENT in ${COMPONENTS}; do
         "--set" "recommender.image.repository=${REGISTRY}/vpa-recommender"
         "--set" "recommender.image.tag=${TAG}"
         "--set" "recommender.image.pullPolicy=Always"
+        "--set" "recommender.extraArgs[0]=--checkpoints-gc-interval=20s"
+        "--set" "recommender.extraArgs[1]=--recommender-interval=10s"
       )
       ;;
     updater)
@@ -121,18 +123,18 @@ for COMPONENT in ${COMPONENTS}; do
 done
 
 # Propagate FEATURE_GATES (set on alpha/beta CI lanes) to component args.
-# Helm --set merges by index. The updater has --updater-interval at index 0,
-# so its feature-gates go at index 1. The recommender has no preset args, so its
-# feature-gates go at index 0. For admissionController we also re-add
-# --reload-cert (set in values-e2e.yaml for the cert-rotation test) so it isn't
-# dropped. Commas in the value are escaped so Helm --set treats it as one
-# assignment.
+# Helm --set merges by index. The recommender has --checkpoints-gc-interval at
+# index 0 and --recommender-interval at index 1, so its feature-gates go at
+# index 2. The updater has --updater-interval at index 0, so its feature-gates
+# go at index 1. For admissionController we also re-add --reload-cert (set in
+# values-e2e.yaml for the cert-rotation test) so it isn't dropped. Commas in the
+# value are escaped so Helm --set treats it as one assignment.
 if [[ -n "${FEATURE_GATES:-}" ]]; then
   ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
   for COMPONENT in ${COMPONENTS}; do
     case ${COMPONENT} in
       recommender)
-        HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "recommender.extraArgs[2]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         ;;
       updater)
         HELM_SET_ARGS+=("--set" "updater.extraArgs[1]=--feature-gates=${ESCAPED_FEATURE_GATES}")

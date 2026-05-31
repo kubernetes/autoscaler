@@ -141,6 +141,8 @@ for COMPONENT in ${COMPONENTS}; do
       HELM_SET_ARGS+=("--set" "recommender.enabled=true")
       HELM_SET_ARGS+=("--set" "recommender.image.repository=${REGISTRY}/vpa-recommender")
       HELM_SET_ARGS+=("--set" "recommender.image.tag=${TAG}")
+      HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--checkpoints-gc-interval=20s")
+      HELM_SET_ARGS+=("--set" "recommender.extraArgs[1]=--recommender-interval=10s")
       ;;
     updater)
       HELM_SET_ARGS+=("--set" "updater.enabled=true")
@@ -156,10 +158,11 @@ for COMPONENT in ${COMPONENTS}; do
   esac
 done
 
-# Add feature gates if specified. The recommender has no preset args, so its
-# extra args start at index 0. RECOM_ARGS_IDX tracks the next free recommender
-# index so feature gates and external-metrics flags don't collide.
-RECOM_ARGS_IDX=0
+# Add feature gates if specified. The recommender has --checkpoints-gc-interval
+# at index 0 and --recommender-interval at index 1, so its extra args start at
+# index 2. RECOM_ARGS_IDX tracks the next free recommender index so feature gates
+# and external-metrics flags don't collide.
+RECOM_ARGS_IDX=2
 if [ -n "${FEATURE_GATES:-}" ]; then
   # Escape commas so Helm --set treats the value as a single assignment
   ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
