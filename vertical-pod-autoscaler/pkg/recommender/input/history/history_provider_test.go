@@ -457,7 +457,6 @@ func TestGetBasePodSelectorQuery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			config := getDefaultPrometheusHistoryProviderConfigForTest()
 
 			if tt.setupInput != nil {

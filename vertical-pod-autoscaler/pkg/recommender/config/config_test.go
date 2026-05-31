@@ -24,6 +24,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/pflag"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 )
 
@@ -133,7 +134,6 @@ func TestValidateRecommenderConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			inputConfig := DefaultRecommenderConfig()
 			inputConfig.CommonFlags = common.DefaultCommonConfig()
 
@@ -162,7 +162,7 @@ func TestValidateRecommenderConfigLoadsBearerTokenFromFile(t *testing.T) {
 	}
 	config.PrometheusBearerTokenFile = tokenFilePath
 
-	ValidateRecommenderConfig(config)
+	_ = ValidateRecommenderConfig(config)
 
 	if got, want := config.PrometheusBearerToken, "my-secret-token"; got != want {
 		t.Fatalf("PrometheusBearerToken = %q, want %q", got, want)
