@@ -230,6 +230,8 @@ func initHistoryProvider(ctx context.Context, rec Recommender, config *recommend
 			CtrNamespaceLabel:      config.CtrNamespaceLabel,
 			CtrPodNameLabel:        config.CtrPodNameLabel,
 			CtrNameLabel:           config.CtrNameLabel,
+			ClusterNameLabel:       config.ClusterNameLabel,
+			ClusterName:            config.ClusterName,
 			CadvisorMetricsJobName: config.PrometheusJobName,
 			Namespace:              config.CommonFlags.VpaObjectNamespace,
 			Authentication: history.PrometheusCredentials{

@@ -414,3 +414,63 @@ func TestPrometheusAuth(t *testing.T) {
 		assert.Equal(t, capturedRequest.Header.Get("Authorization"), "Basic cHJvbV91c2VyOnByb21fcGFzc3dvcmQ=") // "prom_user:prom_password"
 	})
 }
+
+func TestGetBasePodSelectorQuery(t *testing.T) {
+	tests := []struct {
+		name          string
+		setupInput    func(*PrometheusHistoryProviderConfig)
+		expectedQuery string
+	}{
+		{
+			name: "base scenario without cluster details",
+			setupInput: func(c *PrometheusHistoryProviderConfig) {
+				c.ClusterName = ""
+				c.ClusterNameLabel = ""
+			},
+			expectedQuery: "job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"",
+		},
+		{
+			name: "cluster details are fully injected into selector query",
+			setupInput: func(c *PrometheusHistoryProviderConfig) {
+				c.ClusterName = "production-us-east"
+				c.ClusterNameLabel = "k8s_cluster_id"
+			},
+			expectedQuery: "job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\", k8s_cluster_id=\"production-us-east\"",
+		},
+		{
+			name: "partially missing configuration: label empty ignored",
+			setupInput: func(c *PrometheusHistoryProviderConfig) {
+				c.ClusterName = "production-us-east"
+				c.ClusterNameLabel = ""
+			},
+			expectedQuery: "job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"",
+		},
+		{
+			name: "partially missing configuration: name empty ignored",
+			setupInput: func(c *PrometheusHistoryProviderConfig) {
+				c.ClusterName = ""
+				c.ClusterNameLabel = "k8s_cluster_id"
+			},
+			expectedQuery: "job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			config := getDefaultPrometheusHistoryProviderConfigForTest()
+
+			if tt.setupInput != nil {
+				tt.setupInput(&config)
+			}
+
+			provider := &prometheusHistoryProvider{
+				config: config,
+			}
+
+			actualQuery := GetBasePodSelectorQuery(provider)
+
+			assert.Equal(t, tt.expectedQuery, actualQuery)
+		})
+	}
+}

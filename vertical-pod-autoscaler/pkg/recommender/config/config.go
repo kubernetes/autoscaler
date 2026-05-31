@@ -18,6 +18,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -81,6 +82,8 @@ type RecommenderConfig struct {
 	CtrNamespaceLabel         string
 	CtrPodNameLabel           string
 	CtrNameLabel              string
+	ClusterNameLabel          string
+	ClusterName               string
 	Username                  string
 	Password                  string
 	PrometheusBearerToken     string
@@ -153,6 +156,8 @@ func DefaultRecommenderConfig() *RecommenderConfig {
 		CtrNamespaceLabel:         "namespace",
 		CtrPodNameLabel:           "pod_name",
 		CtrNameLabel:              "name",
+		ClusterNameLabel:          "",
+		ClusterName:               "",
 		Username:                  "",
 		Password:                  "",
 		PrometheusBearerToken:     "",
@@ -226,6 +231,8 @@ func InitRecommenderFlags() *RecommenderConfig {
 	flag.StringVar(&config.CtrNamespaceLabel, "container-namespace-label", config.CtrNamespaceLabel, `Label name to look for container namespaces`)
 	flag.StringVar(&config.CtrPodNameLabel, "container-pod-name-label", config.CtrPodNameLabel, `Label name to look for container pod names`)
 	flag.StringVar(&config.CtrNameLabel, "container-name-label", config.CtrNameLabel, `Label name to look for container names`)
+	flag.StringVar(&config.ClusterNameLabel, "cluster-name-label", config.ClusterNameLabel, `Label name to look for cluster name`)
+	flag.StringVar(&config.ClusterName, "cluster-name", config.ClusterName, `Name of cluster`)
 	flag.StringVar(&config.Username, "username", config.Username, "The username used in the prometheus server basic auth. Can also be set via the PROMETHEUS_USERNAME environment variable")
 	flag.StringVar(&config.Password, "password", config.Password, "The password used in the prometheus server basic auth. Can also be set via the PROMETHEUS_PASSWORD environment variable")
 	flag.StringVar(&config.PrometheusBearerToken, "prometheus-bearer-token", config.PrometheusBearerToken, "The bearer token used in the Prometheus server bearer token auth")
@@ -258,30 +265,41 @@ func InitRecommenderFlags() *RecommenderConfig {
 	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
 
-	ValidateRecommenderConfig(config)
+	if err := ValidateRecommenderConfig(config); err != nil {
+		klog.ErrorS(err, "Configuration validation failed")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 
 	return config
 }
 
 // ValidateRecommenderConfig performs validation of the recommender flags
-func ValidateRecommenderConfig(config *RecommenderConfig) {
+func ValidateRecommenderConfig(config *RecommenderConfig) error {
 	common.ValidateCommonConfig(config.CommonFlags)
 
 	if config.MinCheckpointsPerRun != 10 { // Default value is 10
 		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
 	}
 
+	// Cluster Name Label or Cluster Name, if one of those is not set
+	clusterNameLabelButNotClusterName := config.ClusterNameLabel != "" && config.ClusterName == ""
+	clusterNameButNotClusterNameLabel := config.ClusterNameLabel == "" && config.ClusterName != ""
+
+	if clusterNameButNotClusterNameLabel || clusterNameLabelButNotClusterName {
+		return fmt.Errorf("either one of --cluster-name-label or --cluster-name is not set")
+	}
+
 	if config.PrometheusBearerToken != "" && config.PrometheusBearerTokenFile != "" && config.Username != "" {
-		klog.ErrorS(nil, "--bearer-token, --bearer-token-file and --username are mutually exclusive and can't be set together.")
-		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		return fmt.Errorf("--bearer-token, --bearer-token-file and --username are mutually exclusive")
 	}
 
 	if config.PrometheusBearerTokenFile != "" {
 		fileContent, err := os.ReadFile(config.PrometheusBearerTokenFile)
 		if err != nil {
-			klog.ErrorS(err, "Unable to read bearer token file", "filename", config.PrometheusBearerTokenFile)
-			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+			return fmt.Errorf("unable to read bearer token file: %w", err)
 		}
 		config.PrometheusBearerToken = strings.TrimSpace(string(fileContent))
 	}
+
+	return nil
 }

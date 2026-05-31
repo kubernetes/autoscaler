@@ -89,6 +89,8 @@ type PrometheusHistoryProviderConfig struct {
 	PodLabelPrefix, PodLabelsMetricName              string
 	PodNamespaceLabel, PodNameLabel                  string
 	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel string
+	ClusterNameLabel                                 string
+	ClusterName                                      string
 	CadvisorMetricsJobName                           string
 	Namespace                                        string
 	CPUMetricName, MemoryMetricName                  string
@@ -356,8 +358,7 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 	return nil
 }
 
-func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHistory, error) {
-	res := make(map[model.PodID]*PodHistory)
+func GetBasePodSelectorQuery(p *prometheusHistoryProvider) string {
 	var podSelector string
 	if p.config.CadvisorMetricsJobName != "" {
 		podSelector = fmt.Sprintf("job=\"%s\", ", p.config.CadvisorMetricsJobName)
@@ -368,6 +369,18 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 	if p.config.Namespace != "" {
 		podSelector = fmt.Sprintf("%s, %s=\"%s\"", podSelector, p.config.CtrNamespaceLabel, p.config.Namespace)
 	}
+
+	if p.config.ClusterNameLabel != "" && p.config.ClusterName != "" {
+		podSelector = fmt.Sprintf("%s, %s=\"%s\"", podSelector, p.config.ClusterNameLabel, p.config.ClusterName)
+	}
+	return podSelector
+}
+
+func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHistory, error) {
+	res := make(map[model.PodID]*PodHistory)
+
+	podSelector := GetBasePodSelectorQuery(p)
+
 	historicalCpuQuery := fmt.Sprintf("rate(%s{%s}[%s])", p.config.CPUMetricName, podSelector, p.config.HistoryResolution)
 	klog.V(4).InfoS("Historical CPU usage query", "query", historicalCpuQuery)
 	err := p.readResourceHistory(res, historicalCpuQuery, model.ResourceCPU)
