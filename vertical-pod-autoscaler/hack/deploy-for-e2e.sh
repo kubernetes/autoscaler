@@ -98,7 +98,6 @@ for COMPONENT in ${COMPONENTS}; do
         "--set" "recommender.image.repository=${REGISTRY}/vpa-recommender"
         "--set" "recommender.image.tag=${TAG}"
         "--set" "recommender.image.pullPolicy=Always"
-        "--set" "recommender.extraArgs[0]=--recommender-interval=10s"
       )
       ;;
     updater)
@@ -122,8 +121,9 @@ for COMPONENT in ${COMPONENTS}; do
 done
 
 # Propagate FEATURE_GATES (set on alpha/beta CI lanes) to component args.
-# Helm --set merges by index, so we append --feature-gates after the loop
-# interval already set at index 0 above. For admissionController we also re-add
+# Helm --set merges by index. The updater has --updater-interval at index 0,
+# so its feature-gates go at index 1. The recommender has no preset args, so its
+# feature-gates go at index 0. For admissionController we also re-add
 # --reload-cert (set in values-e2e.yaml for the cert-rotation test) so it isn't
 # dropped. Commas in the value are escaped so Helm --set treats it as one
 # assignment.
@@ -132,7 +132,7 @@ if [[ -n "${FEATURE_GATES:-}" ]]; then
   for COMPONENT in ${COMPONENTS}; do
     case ${COMPONENT} in
       recommender)
-        HELM_SET_ARGS+=("--set" "recommender.extraArgs[1]=--feature-gates=${ESCAPED_FEATURE_GATES}")
+        HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         ;;
       updater)
         HELM_SET_ARGS+=("--set" "updater.extraArgs[1]=--feature-gates=${ESCAPED_FEATURE_GATES}")
