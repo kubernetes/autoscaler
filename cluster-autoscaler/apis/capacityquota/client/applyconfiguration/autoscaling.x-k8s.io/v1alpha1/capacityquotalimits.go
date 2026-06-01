@@ -31,6 +31,8 @@ type CapacityQuotaLimitsApplyConfiguration struct {
 	//
 	// Currently supported built-in resources: cpu, memory. Additionally,
 	// nodes key can be used to limit the number of existing nodes.
+	// All resource quantities must be non-negative integers. Binary SI is allowed as long as it represents
+	// an integer. For example: "32Gi" is allowed, whereas "3.67Gi" is not.
 	// Node autoscaler implementations and cloud providers can support custom
 	// resources, such as GPU.
 	Resources *autoscalingxk8siov1alpha1.ResourceList `json:"resources,omitempty"`
