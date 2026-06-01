@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	processor "k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 )
 
 const testStepDuration = 1 * time.Minute
@@ -235,4 +236,36 @@ func (m *mockStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingCont
 
 func (m *mockStatusProcessor) CleanUp() {
 	m.cleanUpCalled = true
+}
+
+func TestNodeLatencyTracker_ProcessReasons(t *testing.T) {
+	tracker := NewNodeLatencyTracker(processor.NewDefaultScaleDownStatusProcessor())
+	now := time.Now()
+
+	// Start tracking node1, node2 as unneeded
+	tracker.UpdateScaleDownCandidates([]*scaledown.UnneededNode{
+		{Node: &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node1"}}, RemovalThreshold: 0},
+		{Node: &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node2"}}, RemovalThreshold: 0},
+	}, now)
+
+	// In next iteration:
+	// - node1 became needed again (not in candidates, not in unremovable)
+	// - node2 was unremovable (not in candidates, is in status.UnremovableNodes with BlockedByPod)
+	tracker.UpdateScaleDownCandidates([]*scaledown.UnneededNode{}, now.Add(testStepDuration))
+
+	sd := &status.ScaleDownStatus{
+		UnremovableNodes: []*status.UnremovableNode{
+			{
+				Node:   &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node2"}},
+				Reason: simulator.BlockedByPod,
+			},
+		},
+	}
+
+	// We process. This should trigger recordWithState and clear t.removedUnneededNodes.
+	tracker.Process(&ca_context.AutoscalingContext{}, sd)
+
+	if len(tracker.removedUnneededNodes) != 0 {
+		t.Errorf("Expected removedUnneededNodes to be empty, got %v", tracker.removedUnneededNodes)
+	}
 }
