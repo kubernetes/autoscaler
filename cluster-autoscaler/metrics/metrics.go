@@ -502,7 +502,7 @@ func newCaMetrics() *caMetrics {
 				Name:      "node_removal_latency_seconds",
 				Help:      "Latency from when an unneeded node is eligible for scale down until it is removed (deleted=true) or it became needed again (deleted=false).",
 				Buckets:   k8smetrics.ExponentialBuckets(1, 1.5, 19), // ~1s → ~24min
-			}, []string{"deleted"},
+			}, []string{"deleted", "reason"},
 		),
 	}
 }
@@ -848,8 +848,8 @@ func (m *caMetrics) ObserveBinpackingHeterogeneity(instanceType, cpuCount, names
 
 // UpdateScaleDownNodeRemovalLatency records the time after which node was deleted/needed
 // again after being marked unneded
-func (m *caMetrics) UpdateScaleDownNodeRemovalLatency(deleted bool, duration time.Duration) {
-	m.scaleDownNodeRemovalLatency.WithLabelValues(strconv.FormatBool(deleted)).Observe(duration.Seconds())
+func (m *caMetrics) UpdateScaleDownNodeRemovalLatency(deleted bool, reason string, duration time.Duration) {
+	m.scaleDownNodeRemovalLatency.WithLabelValues(strconv.FormatBool(deleted), reason).Observe(duration.Seconds())
 }
 
 // ObserveMaxNodeSkipEvalDurationSeconds records the longest time during which node was skipped during ScaleDown.

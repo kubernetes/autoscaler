@@ -59,6 +59,52 @@ type UnremovableNode struct {
 // UnremovableReason represents a reason why a node can't be removed by CA.
 type UnremovableReason int
 
+// String returns the string representation of UnremovableReason.
+func (r UnremovableReason) String() string {
+	switch r {
+	case NoReason:
+		return "NoReason"
+	case ScaleDownDisabledAnnotation:
+		return "ScaleDownDisabledAnnotation"
+	case ScaleDownUnreadyDisabled:
+		return "ScaleDownUnreadyDisabled"
+	case NotAutoscaled:
+		return "NotAutoscaled"
+	case NotUnneededLongEnough:
+		return "NotUnneededLongEnough"
+	case NotUnreadyLongEnough:
+		return "NotUnreadyLongEnough"
+	case NodeGroupMinSizeReached:
+		return "NodeGroupMinSizeReached"
+	case NodeGroupMaxDeletionCountReached:
+		return "NodeGroupMaxDeletionCountReached"
+	case AtomicScaleDownFailed:
+		return "AtomicScaleDownFailed"
+	case MinimalResourceLimitExceeded:
+		return "MinimalResourceLimitExceeded"
+	case CurrentlyBeingDeleted:
+		return "CurrentlyBeingDeleted"
+	case NotUnderutilized:
+		return "NotUnderutilized"
+	case NotUnneededOtherReason:
+		return "NotUnneededOtherReason"
+	case RecentlyUnremovable:
+		return "RecentlyUnremovable"
+	case NoPlaceToMovePods:
+		return "NoPlaceToMovePods"
+	case BlockedByPod:
+		return "BlockedByPod"
+	case UnexpectedError:
+		return "UnexpectedError"
+	case NoNodeInfo:
+		return "NoNodeInfo"
+	case BlockedByOnCompletionPod:
+		return "BlockedByOnCompletionPod"
+	default:
+		return "Unknown"
+	}
+}
+
 const (
 	// NoReason - sanity check, this should never be set explicitly. If this is found in the wild, it means that it was
 	// implicitly initialized and might indicate a bug.
