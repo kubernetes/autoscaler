@@ -27,9 +27,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
+const (
+	APIGroup   = "autoscaling.x-k8s.io"
+	APIVersion = "v1alpha1"
+)
+
 var (
 	// GroupVersion is group version used to register these objects.
-	GroupVersion = schema.GroupVersion{Group: "autoscaling.x-k8s.io", Version: "v1alpha1"}
+	GroupVersion = schema.GroupVersion{Group: APIGroup, Version: APIVersion}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme.
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
