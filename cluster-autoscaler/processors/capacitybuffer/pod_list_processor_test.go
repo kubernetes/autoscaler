@@ -191,8 +191,9 @@ func TestPodListProcessor(t *testing.T) {
 			fakeKubernetesClient := fakeclient.NewSimpleClientset(test.objectsInKubernetesClient...)
 			fakeBuffersClient := buffersfake.NewSimpleClientset(test.objectsInBuffersClient...)
 			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
+			capacityBuffersRegistry := fakepods.NewRegistry(nil)
 
-			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, fakepods.NewRegistry(nil), test.forceSafeToEvict)
+			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, capacityBuffersRegistry, test.forceSafeToEvict)
 			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
 			assert.Equal(t, err != nil, test.expectError)
 
@@ -205,6 +206,20 @@ func TestPodListProcessor(t *testing.T) {
 					safeToEvict, err := strconv.ParseBool(pod.Annotations[drain.PodSafeToEvictKey])
 					assert.Equal(t, err == nil && safeToEvict, test.forceSafeToEvict)
 					fakePodsNames[pod.Name] = true
+
+					// Verify owner reference
+					cb := capacityBuffersRegistry.GetCapacityBuffer(pod.UID)
+					if assert.NotNil(t, cb) {
+						assert.Equal(t, []metav1.OwnerReference{
+							{
+								APIVersion: capacitybuffer.CapacityBufferApiVersion,
+								Kind:       capacitybuffer.CapacityBufferKind,
+								Name:       cb.Name,
+								UID:        cb.UID,
+								Controller: new(true),
+							},
+						}, pod.OwnerReferences)
+					}
 				}
 			}
 			assert.Equal(t, test.expectedUnschedFakePodsCount, numberOfFakePods)
