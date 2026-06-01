@@ -107,7 +107,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).ToNot(HaveOccurred())
 
-	err = cqctrl.NewCapacityQuotaReconciler(mgr.GetClient(), utils.VirtualKubeletNodeFilter{}).SetupWithManager(mgr)
+	err = cqctrl.NewCapacityQuotaReconciler(mgr.GetClient(), cqctrl.ReconcilerOptions{NodeFilter: utils.VirtualKubeletNodeFilter{}}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	go func() {
