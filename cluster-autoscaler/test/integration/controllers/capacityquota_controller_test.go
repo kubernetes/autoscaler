@@ -281,12 +281,13 @@ var _ = Describe("CapacityQuota Controller", func() {
 			var fetchedCQ cqv1alpha1.CapacityQuota
 			g.Expect(crClient.Get(ctx, cqKey, &fetchedCQ)).To(Succeed())
 
-			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, capacityquota.ReconciledCondition)).To(BeTrue())
-
-			cond := meta.FindStatusCondition(fetchedCQ.Status.Conditions, capacityquota.ReconciledCondition)
+			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, capacityquota.ValidCondition)).To(BeTrue())
+			cond := meta.FindStatusCondition(fetchedCQ.Status.Conditions, capacityquota.ValidCondition)
 			g.Expect(cond).NotTo(BeNil())
-			g.Expect(cond.Reason).To(Equal(capacityquota.ReconciliationFailed))
-			g.Expect(cond.Message).To(ContainSubstring("failed to parse selector"))
+			g.Expect(cond.Reason).To(Equal("ValidationFailed"))
+			g.Expect(cond.Message).To(ContainSubstring("is not a valid label selector operator"))
+
+			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, capacityquota.ReconciledCondition)).To(BeTrue())
 		}).Should(Succeed())
 	})
 })
@@ -295,6 +296,7 @@ func assertQuotaReconciled(ctx context.Context, g Gomega, cqKey types.Namespaced
 	var fetchedCQ cqv1alpha1.CapacityQuota
 	g.Expect(crClient.Get(ctx, cqKey, &fetchedCQ)).To(Succeed())
 
+	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, capacityquota.ValidCondition)).To(BeTrue())
 	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, capacityquota.ReconciledCondition)).To(BeTrue())
 	g.Expect(fetchedCQ.Status.Used).ToNot(BeNil())
 	g.Expect(apiequality.Semantic.DeepEqual(fetchedCQ.Status.Used.Resources, wantResources)).To(BeTrue())

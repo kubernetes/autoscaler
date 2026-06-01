@@ -18,9 +18,9 @@ package capacityquota
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"maps"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
@@ -43,6 +43,12 @@ import (
 )
 
 const (
+	// ValidCondition is the condition specifying whethere the CapacityQuota is valid
+	ValidCondition = "Valid"
+	// ValidationSucceeded specifies that the CapacityQuota is valid
+	ValidationSucceeded = "ValidationSucceeded"
+	// ValidationFailed specifies that the CapacityQuota is invalid
+	ValidationFailed = "ValidationFailed"
 	// ReconciledCondition is the condition specifying whether the CapacityQuota status has been reconciled.
 	ReconciledCondition = "Reconciled"
 	// ReconciliationSucceeded specifies that the CapacityQuota status has been reconciled successfully.
@@ -55,26 +61,24 @@ const (
 type Reconciler struct {
 	client     client.Client
 	nodeFilter resourcequotas.NodeFilter
+	validators []Validator
+}
+
+// ReconcilerOptions are configuration options for CapacityQuota reconciler.
+type ReconcilerOptions struct {
+	NodeFilter       resourcequotas.NodeFilter
+	CustomValidators []Validator
 }
 
 // NewCapacityQuotaReconciler returns a new CapacityQuotaReconciler
-func NewCapacityQuotaReconciler(client client.Client, nodeFilter resourcequotas.NodeFilter) *Reconciler {
+func NewCapacityQuotaReconciler(client client.Client, opts ReconcilerOptions) *Reconciler {
+	validators := []Validator{&labelSelectorValidator{}}
+	validators = append(validators, opts.CustomValidators...)
 	return &Reconciler{
 		client:     client,
-		nodeFilter: nodeFilter,
+		nodeFilter: opts.NodeFilter,
+		validators: validators,
 	}
-}
-
-type invalidSelectorError struct {
-	err error
-}
-
-func (e *invalidSelectorError) Error() string {
-	return fmt.Sprintf("failed to parse selector: %s", e.err.Error())
-}
-
-func (e *invalidSelectorError) Unwrap() error {
-	return e.err
 }
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -87,24 +91,64 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 	originalCQ := cq.DeepCopy()
 
+	validationErrs := r.validateCapacityQuota(ctx, &cq)
+	if len(validationErrs) > 0 {
+		errMsg := formatValidationErrors(validationErrs)
+		setCondition(&cq, ValidCondition, metav1.ConditionFalse, ValidationFailed, errMsg)
+		setCondition(&cq, ReconciledCondition, metav1.ConditionFalse, ReconciliationFailed, "Validation failed")
+
+		if patchErr := r.patchStatus(ctx, originalCQ, &cq); patchErr != nil {
+			return ctrl.Result{}, patchErr
+		}
+		return ctrl.Result{}, nil
+	}
+	setCondition(&cq, ValidCondition, metav1.ConditionTrue, ValidationSucceeded, "CapacityQuota is valid")
+
 	result, err := r.reconcileCapacityQuota(ctx, &cq)
 
 	if err != nil {
-		setReconciledCondition(&cq, metav1.ConditionFalse, ReconciliationFailed, err.Error())
-		if _, ok := errors.AsType[*invalidSelectorError](err); ok {
-			err = nil // Do not retry when the selector is invalid
-		}
+		setCondition(&cq, ReconciledCondition, metav1.ConditionFalse, ReconciliationFailed, err.Error())
 	} else {
-		setReconciledCondition(&cq, metav1.ConditionTrue, ReconciliationSucceeded, "CapacityQuota successfully reconciled")
+		setCondition(&cq, ReconciledCondition, metav1.ConditionTrue, ReconciliationSucceeded, "CapacityQuota successfully reconciled")
 	}
 
-	if !apiequality.Semantic.DeepEqual(originalCQ.Status, cq.Status) {
-		if patchErr := r.client.Status().Patch(ctx, &cq, client.MergeFrom(originalCQ)); patchErr != nil {
-			return ctrl.Result{}, fmt.Errorf("failed to patch status: %w", patchErr)
-		}
+	if patchErr := r.patchStatus(ctx, originalCQ, &cq); patchErr != nil {
+		return ctrl.Result{}, patchErr
 	}
 
 	return result, err
+}
+
+func formatValidationErrors(errs []error) string {
+	errStrings := make([]string, len(errs))
+	for i, err := range errs {
+		errStrings[i] = err.Error()
+	}
+	return strings.Join(errStrings, "; ")
+}
+
+func (r *Reconciler) patchStatus(ctx context.Context, originalCQ, currentCQ *v1alpha1.CapacityQuota) error {
+	if !apiequality.Semantic.DeepEqual(originalCQ.Status, currentCQ.Status) {
+		if patchErr := r.client.Status().Patch(ctx, currentCQ, client.MergeFrom(originalCQ)); patchErr != nil {
+			return fmt.Errorf("failed to patch status: %w", patchErr)
+		}
+	}
+	return nil
+}
+
+func (r *Reconciler) validateCapacityQuota(ctx context.Context, cq *v1alpha1.CapacityQuota) []error {
+	var allErrs []error
+	for _, v := range r.validators {
+		if err := v.Validate(ctx, cq); err != nil {
+			allErrs = append(allErrs, err)
+		}
+	}
+
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return allErrs
 }
 
 func (r *Reconciler) reconcileCapacityQuota(ctx context.Context, cq *v1alpha1.CapacityQuota) (ctrl.Result, error) {
@@ -127,7 +171,7 @@ func (r *Reconciler) getMatchingNodes(ctx context.Context, cq *v1alpha1.Capacity
 	if cq.Spec.Selector != nil {
 		selector, err := metav1.LabelSelectorAsSelector(cq.Spec.Selector)
 		if err != nil {
-			return nil, &invalidSelectorError{err: err}
+			return nil, err
 		}
 		listOpts = append(listOpts, client.MatchingLabelsSelector{Selector: selector})
 	}
@@ -164,9 +208,9 @@ func calculateResourceUsage(cq *v1alpha1.CapacityQuota, matchingNodes []*corev1.
 	return used
 }
 
-func setReconciledCondition(cq *v1alpha1.CapacityQuota, status metav1.ConditionStatus, reason, message string) {
+func setCondition(cq *v1alpha1.CapacityQuota, condType string, status metav1.ConditionStatus, reason, message string) {
 	newCondition := metav1.Condition{
-		Type:               ReconciledCondition,
+		Type:               condType,
 		Status:             status,
 		Reason:             reason,
 		Message:            message,
