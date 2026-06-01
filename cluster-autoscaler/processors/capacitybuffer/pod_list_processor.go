@@ -184,6 +184,7 @@ func (p *CapacityBufferPodListProcessor) updateBufferStatus(buffer *v1beta1.Capa
 func makeFakePods(buffer *v1beta1.CapacityBuffer, samplePodTemplate *apiv1.PodTemplateSpec, podCount int, forceSafeToEvictFakePods bool) ([]*apiv1.Pod, error) {
 	var fakePods []*apiv1.Pod
 	samplePod := pod.GetPodFromTemplate(samplePodTemplate)
+	withOwnerReference(samplePod, buffer)
 	samplePod.Spec.NodeName = ""
 	samplePod = withCapacityBufferFakePodAnnotation(samplePod)
 	if forceSafeToEvictFakePods {
@@ -197,6 +198,16 @@ func makeFakePods(buffer *v1beta1.CapacityBuffer, samplePodTemplate *apiv1.PodTe
 		fakePods = append(fakePods, fakePod)
 	}
 	return fakePods, nil
+}
+
+func withOwnerReference(pod *apiv1.Pod, buffer *v1beta1.CapacityBuffer) {
+	pod.OwnerReferences = append(pod.OwnerReferences, metav1.OwnerReference{
+		APIVersion: capacitybuffer.CapacityBufferApiVersion,
+		Kind:       capacitybuffer.CapacityBufferKind,
+		Name:       buffer.Name,
+		UID:        buffer.UID,
+		Controller: new(true),
+	})
 }
 
 func withCapacityBufferFakePodAnnotation(pod *apiv1.Pod) *apiv1.Pod {
