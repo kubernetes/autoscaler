@@ -159,6 +159,7 @@ func NewStaticAutoscaler(
 	drainabilityRules rules.Rules,
 	draProvider *draprovider.Provider,
 	quotasTrackerOptions resourcequotas.TrackerOptions,
+	minQuotasTrackerOptions resourcequotas.TrackerOptions,
 	csiProvider *csinodeprovider.Provider,
 	capacityBufferPodsRegistry *fakepods.Registry) *StaticAutoscaler {
 
@@ -204,11 +205,7 @@ func NewStaticAutoscaler(
 		processors.ScaleDownStatusProcessor = ndlt
 	}
 	quotasTrackerFactory := resourcequotas.NewTrackerFactory(quotasTrackerOptions)
-	minQuotasTrackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
-		CustomResourcesProcessor: processors.CustomResourcesProcessor,
-		QuotaProvider:            resourcequotas.NewCloudMinProvider(cloudProvider),
-		NodeFilter:               quotasTrackerOptions.NodeFilter,
-	})
+	minQuotasTrackerFactory := resourcequotas.NewTrackerFactory(minQuotasTrackerOptions)
 
 	scaleDownPlanner := planner.New(autoscalingCtx, processors, deleteOptions, drainabilityRules, minQuotasTrackerFactory)
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner

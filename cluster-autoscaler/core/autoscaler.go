@@ -83,6 +83,7 @@ func NewAutoscaler(ctx context.Context, opts coreoptions.AutoscalerOptions, info
 		opts.DrainabilityRules,
 		opts.DraProvider,
 		opts.QuotasTrackerOptions,
+		opts.MinQuotasTrackerOptions,
 		opts.CSIProvider,
 		opts.CapacityBufferPodsRegistry,
 	), nil
@@ -167,6 +168,21 @@ func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerO
 	if opts.QuotasTrackerOptions.NodeFilter == nil {
 		virtualKubeletNodeFilter := utils.VirtualKubeletNodeFilter{}
 		opts.QuotasTrackerOptions.NodeFilter = resourcequotas.NewCombinedNodeFilter([]resourcequotas.NodeFilter{virtualKubeletNodeFilter})
+	}
+
+	if opts.MinQuotasTrackerOptions.QuotaProvider == nil {
+		opts.MinQuotasTrackerOptions.QuotaProvider = resourcequotas.NewCloudMinProvider(opts.CloudProvider)
+	} else {
+		opts.MinQuotasTrackerOptions.QuotaProvider = resourcequotas.NewCombinedQuotasProvider([]resourcequotas.Provider{
+			resourcequotas.NewCloudMinProvider(opts.CloudProvider),
+			opts.MinQuotasTrackerOptions.QuotaProvider,
+		})
+	}
+	if opts.MinQuotasTrackerOptions.CustomResourcesProcessor == nil {
+		opts.MinQuotasTrackerOptions.CustomResourcesProcessor = opts.Processors.CustomResourcesProcessor
+	}
+	if opts.MinQuotasTrackerOptions.NodeFilter == nil {
+		opts.MinQuotasTrackerOptions.NodeFilter = opts.QuotasTrackerOptions.NodeFilter
 	}
 
 	if opts.CSINodeAwareSchedulingEnabled {
