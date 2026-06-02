@@ -104,7 +104,7 @@ func TestInitCountersAreZero(t *testing.T) {
 
 			inPlaceVal := testutil.ToFloat64(inPlaceUpdatedCount.WithLabelValues(tc.log2, tc.vpaName, tc.vpaNamespace))
 			if inPlaceVal != 0 {
-				t.Errorf("Expected inPlaceUpdatedCount to be 0 after init got %v", evictedVal)
+				t.Errorf("Expected inPlaceUpdatedCount to be 0 after init got %v", inPlaceVal)
 			}
 		})
 	}
