@@ -272,6 +272,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		updateMode := vpa_api_util.GetUpdateMode(vpa)
 		controlledPodsCounter.Add(vpaSize, updateMode, vpaSize)
 		creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := u.restrictionFactory.GetCreatorMaps(livePods, vpa)
+		metrics_updater.InitCounters(vpaSize, vpa.Name, vpa.Namespace, updateMode)
 		if err != nil {
 			klog.ErrorS(err, "Failed to get creator maps")
 			continue

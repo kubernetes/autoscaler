@@ -209,6 +209,13 @@ func AddEvictedPod(vpaSize int, vpaName string, vpaNamespace string, mode vpa_ty
 	evictedCount.WithLabelValues(strconv.Itoa(log2), string(mode), vpaName, vpaNamespace).Inc()
 }
 
+// InitCounters initializes counters to 0 for a given VPA so they are visible before any events occur
+func InitCounters(vpaSize int, vpaName string, vpaNamespace string, mode vpa_types.UpdateMode) {
+	log2 := strconv.Itoa(metrics.GetVpaSizeLog2(vpaSize))
+	evictedCount.WithLabelValues(log2, string(mode), vpaName, vpaNamespace).Add(0)
+	inPlaceUpdatedCount.WithLabelValues(log2, vpaName, vpaNamespace).Add(0)
+}
+
 // RecordFailedEviction increases the counter of failed eviction attempts by given VPA size, name, namespace, update mode and reason
 func RecordFailedEviction(vpaSize int, vpaName string, vpaNamespace string, mode vpa_types.UpdateMode, reason string) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
