@@ -210,6 +210,42 @@ func TestRecordOOMInNewWindow(t *testing.T) {
 	assert.NoError(t, test.container.RecordOOM(testTimestamp.Add(2*memoryAggregationInterval), ResourceAmount(1000*mb)))
 }
 
+// TestRecordOOMFreshOOMNearWindowBoundaryIsNotDiscarded reproduces
+// https://github.com/kubernetes/autoscaler/issues/8548.
+//
+// The OOM "too old" check in RecordOOM compares the OOM timestamp against
+// WindowEnd, not against wall-clock now. WindowEnd is driven forward by memory
+// usage samples and can sit up to one full aggregation interval (default 24h)
+// ahead of the most recent sample. When a usage sample crosses an aggregation
+// window boundary, an OOM that happened only seconds earlier - but on the older
+// side of that boundary - is rejected as "too old", even though it is fresh in
+// wall-clock terms.
+func TestRecordOOMFreshOOMNearWindowBoundaryIsNotDiscarded(t *testing.T) {
+	test := newContainerTest()
+	c := test.container
+	interval := GetAggregationsConfig().MemoryAggregationIntervalDuration
+
+	// First usage sample. This shifts WindowEnd to testTimestamp + interval.
+	test.mockMemoryHistogram.On("AddSample", 100.0*mb, 1.0, testTimestamp.Add(interval))
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp, 100*mb, ResourceMemory)))
+
+	// A second usage sample lands exactly on the next aggregation boundary,
+	// shifting WindowEnd a further interval ahead (to testTimestamp + 2*interval).
+	boundary := testTimestamp.Add(interval)
+	windowEnd := testTimestamp.Add(2 * interval)
+	test.mockMemoryHistogram.On("AddSample", 2000.0*mb, 1.0, windowEnd)
+	assert.True(t, c.AddSample(newUsageSample(boundary, 2000*mb, ResourceMemory)))
+
+	// An OOM occurs just 1 second before that last usage sample. In wall-clock
+	// terms it is fresh, well within the aggregation interval, so it must be
+	// recorded rather than discarded as "too old". Recording it bumps the peak
+	// from 2000Mi to 2000Mi*1.2 = 2400Mi.
+	test.mockMemoryHistogram.On("SubtractSample", 2000.0*mb, 1.0, windowEnd)
+	test.mockMemoryHistogram.On("AddSample", 2400.0*mb, 1.0, windowEnd)
+	freshOOM := boundary.Add(-1 * time.Second)
+	assert.NoError(t, c.RecordOOM(freshOOM, ResourceAmount(1000*mb)))
+}
+
 // Tests with custom MemoryAggregationInterval to verify the per-VPA
 // MemoryAggregationIntervalSeconds setting affects container behavior.
 
