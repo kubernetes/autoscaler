@@ -248,10 +248,111 @@ func TestTemplateNodeInfo(t *testing.T) {
 }
 
 func TestAtomicIncreaseSize(t *testing.T) {
-	agentPool := &VMPool{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	manager := newTestAzureManager(t)
 
-	err := agentPool.AtomicIncreaseSize(1)
-	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+	ap := newTestVMsPool(manager)
+	expectedVMs := newTestVMsPoolVMList(3)
+
+	mockVMClient := NewMockInterface(ctrl)
+	ap.manager.azClient.virtualMachinesClient = mockVMClient
+	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+
+	ap.manager.config.EnableVMsAgentPool = true
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
+	agentpool := getTestVMsAgentPool(false)
+	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
+		Return(fakeAPListPager)
+
+	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
+	assert.NoError(t, err)
+	ap.manager.azureCache = ac
+
+	resp := &http.Response{
+		Header: map[string][]string{
+			"Fake-Poller-Status": {"Done"},
+		},
+	}
+	fakePoller, pollerErr := runtime.NewPoller(resp, runtime.Pipeline{},
+		&runtime.NewPollerOptions[armcontainerservice.AgentPoolsClientCreateOrUpdateResponse]{
+			Handler: &fakehandler[armcontainerservice.AgentPoolsClientCreateOrUpdateResponse]{},
+		})
+	assert.NoError(t, pollerErr)
+
+	mockAgentpoolclient.EXPECT().BeginCreateOrUpdate(
+		gomock.Any(), manager.config.ClusterResourceGroup,
+		manager.config.ClusterName,
+		vmsAgentPoolName,
+		gomock.Any(), gomock.Any()).Return(fakePoller, nil)
+
+	// Before scale-up, target size matches the initial VM count.
+	targetSize, err := ap.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+
+	err = ap.AtomicIncreaseSize(1)
+	assert.NoError(t, err)
+
+	// Simulate Azure having created the new VM by seeding the cache with the
+	// post-scale VM list, then assert the pool reports the new target size.
+	ap.manager.azureCache.virtualMachines[vmsAgentPoolName] = newTestVMsPoolVMList(4)
+	targetSize, err = ap.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 4, targetSize)
+}
+
+func TestAtomicIncreaseSizeNegativeDelta(t *testing.T) {
+	ap := newTestVMsPool(newTestAzureManager(t))
+
+	err := ap.AtomicIncreaseSize(-1)
+	assert.Equal(t, fmt.Errorf("size increase must be positive, current delta: -1"), err)
+}
+
+func TestAtomicIncreaseSizePollerFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	manager := newTestAzureManager(t)
+
+	ap := newTestVMsPool(manager)
+	expectedVMs := newTestVMsPoolVMList(3)
+
+	mockVMClient := NewMockInterface(ctrl)
+	ap.manager.azClient.virtualMachinesClient = mockVMClient
+	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+
+	ap.manager.config.EnableVMsAgentPool = true
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
+	agentpool := getTestVMsAgentPool(false)
+	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
+		Return(fakeAPListPager)
+
+	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
+	assert.NoError(t, err)
+	ap.manager.azureCache = ac
+
+	// Poller that returns an error from PollUntilDone.
+	failingPoller, pollerErr := runtime.NewPoller(&http.Response{Header: http.Header{}}, runtime.Pipeline{},
+		&runtime.NewPollerOptions[armcontainerservice.AgentPoolsClientCreateOrUpdateResponse]{
+			Handler: &fakeErrorPollerHandler[armcontainerservice.AgentPoolsClientCreateOrUpdateResponse]{
+				pollErr: fmt.Errorf("long running operation failed"),
+			},
+		})
+	assert.NoError(t, pollerErr)
+
+	mockAgentpoolclient.EXPECT().BeginCreateOrUpdate(
+		gomock.Any(), manager.config.ClusterResourceGroup,
+		manager.config.ClusterName,
+		vmsAgentPoolName,
+		gomock.Any(), gomock.Any()).Return(failingPoller, nil)
+
+	err = ap.AtomicIncreaseSize(1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "long running operation failed")
 }
 
 func TestGetVMsFromCache(t *testing.T) {
