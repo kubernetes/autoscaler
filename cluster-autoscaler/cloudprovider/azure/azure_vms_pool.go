@@ -511,7 +511,13 @@ func (vmPool *VMPool) getAgentpoolFromAzure() (armcontainerservice.AgentPool, er
 	return resp.AgentPool, nil
 }
 
-// AtomicIncreaseSize is not implemented.
+// AtomicIncreaseSize increases the VMPool size by delta and blocks until the
+// underlying agent pool PUT operation completes. IncreaseSize already issues a
+// synchronous PUT that waits via PollUntilDone, so it satisfies the atomic
+// contract: on success the capacity change has been fully applied by Azure
+// before returning. This blocking behavior is required for atomic-scale-up
+// ProvisioningRequest support to provide a capacity guarantee before workloads
+// are admitted.
 func (vmPool *VMPool) AtomicIncreaseSize(delta int) error {
-	return cloudprovider.ErrNotImplemented
+	return vmPool.IncreaseSize(delta)
 }
