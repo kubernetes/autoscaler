@@ -74,7 +74,7 @@ func TestInitCountersAreZero(t *testing.T) {
 		vpaNamespace string
 	}{
 		{
-			desc:         "VPA size 5, mode Auto",
+			desc:         "VPA size 5, mode Recreate",
 			vpaSize:      5,
 			mode:         vpa_types.UpdateModeRecreate,
 			log2:         "2",
@@ -94,7 +94,7 @@ func TestInitCountersAreZero(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Cleanup(evictedCount.Reset)
-			t.Cleanup(inPlaceUpdatableCount.Reset)
+			t.Cleanup(inPlaceUpdatedCount.Reset)
 			InitCounters(tc.vpaSize, tc.vpaName, tc.vpaNamespace, tc.mode)
 
 			evictedVal := testutil.ToFloat64(evictedCount.WithLabelValues(tc.log2, string(tc.mode), tc.vpaName, tc.vpaNamespace))

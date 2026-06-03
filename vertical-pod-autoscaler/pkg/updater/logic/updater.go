@@ -272,7 +272,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 		updateMode := vpa_api_util.GetUpdateMode(vpa)
 		controlledPodsCounter.Add(vpaSize, updateMode, vpaSize)
 		creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := u.restrictionFactory.GetCreatorMaps(livePods, vpa)
-		metrics_updater.InitCounters(vpaSize, vpa.Name, vpa.Namespace, updateMode)
 		if err != nil {
 			klog.ErrorS(err, "Failed to get creator maps")
 			continue
@@ -323,6 +322,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial {
 			continue
 		}
+		metrics_updater.InitCounters(vpaSize, vpa.Name, vpa.Namespace, updateMode)
 
 		evictionLimiter := u.restrictionFactory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 		podsForEviction := make([]*corev1.Pod, 0)
