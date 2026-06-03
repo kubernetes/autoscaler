@@ -76,7 +76,7 @@ func TestInitCountersAreZero(t *testing.T) {
 		{
 			desc:         "VPA size 5, mode Auto",
 			vpaSize:      5,
-			mode:         vpa_types.UpdateModeAuto, //nolint:staticcheck
+			mode:         vpa_types.UpdateModeRecreate,
 			log2:         "2",
 			vpaName:      "vpa-5",
 			vpaNamespace: "vpa-ns-5",
