@@ -337,13 +337,15 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 	}
 	autoscalingCtx.ScaleDownActuator = actuation.NewActuator(&autoscalingCtx, clusterState, nodeDeletionTracker, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 
-	minQuotasProviders := []resourcequotas.Provider{resourcequotas.NewCloudMinProvider(provider)}
+	var minQuotaProvider resourcequotas.Provider
 	if config.quotaProvider != nil {
-		minQuotasProviders = append(minQuotasProviders, config.quotaProvider)
+		minQuotaProvider = config.quotaProvider
+	} else {
+		minQuotaProvider = resourcequotas.NewCloudMinProvider(provider)
 	}
 	minQuotasTrackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
 		CustomResourcesProcessor: processors.CustomResourcesProcessor,
-		QuotaProvider:            resourcequotas.NewCombinedQuotasProvider(minQuotasProviders),
+		QuotaProvider:            minQuotaProvider,
 	})
 
 	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules, minQuotasTrackerFactory)

@@ -172,11 +172,6 @@ func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerO
 
 	if opts.MinQuotasTrackerOptions.QuotaProvider == nil {
 		opts.MinQuotasTrackerOptions.QuotaProvider = resourcequotas.NewCloudMinProvider(opts.CloudProvider)
-	} else {
-		opts.MinQuotasTrackerOptions.QuotaProvider = resourcequotas.NewCombinedQuotasProvider([]resourcequotas.Provider{
-			resourcequotas.NewCloudMinProvider(opts.CloudProvider),
-			opts.MinQuotasTrackerOptions.QuotaProvider,
-		})
 	}
 	if opts.MinQuotasTrackerOptions.CustomResourcesProcessor == nil {
 		opts.MinQuotasTrackerOptions.CustomResourcesProcessor = opts.Processors.CustomResourcesProcessor
