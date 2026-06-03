@@ -1,13 +1,29 @@
 version: 2
 updates:
 - package-ecosystem: gomod
-  directory: "/vertical-pod-autoscaler"
+  directories:
+    - "/vertical-pod-autoscaler"
+    - "/vertical-pod-autoscaler/test/"
   schedule:
     interval: daily
   labels:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
     - "ok-to-test"
+    - "triage/accepted"
+  allow:
+    - dependency-type: "all"
+  groups:
+    non-kubernetes:
+      patterns:
+        - "*"
+      exclude-patterns:
+        - "k8s.io/*"
+        - "sigs.k8s.io/*"
+    kubernetes:
+      patterns:
+        - "k8s.io/*"
+        - "sigs.k8s.io/*"
 - package-ecosystem: docker
   directories:
     - "/vertical-pod-autoscaler/pkg/admission-controller"

@@ -1,0 +1,101 @@
+{{- if and .Values.admissionController.enabled .Values.admissionController.certManager.enabled -}}
+{{- $algorithm := .Values.admissionController.certManager.privateKey.algorithm | default "RSA" }}
+{{- $size := int (.Values.admissionController.certManager.privateKey.size | default 2048) }}
+{{- if .Values.admissionController.certManager.createSelfSignedIssuer.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.certManager.issuerName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+  {{- with .Values.admissionController.certManager.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.certManager.caName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+  {{- with .Values.admissionController.certManager.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  isCA: true
+  secretName: {{ include "vertical-pod-autoscaler.admissionController.certManager.caName" . }}
+  commonName: {{ include "vertical-pod-autoscaler.admissionController.certManager.caName" . }}
+  privateKey:
+    algorithm: {{ $algorithm }}
+    {{- if ne $algorithm "Ed25519" }}
+    size: {{ $size }}
+    {{- end }}
+  issuerRef:
+    name: {{ include "vertical-pod-autoscaler.admissionController.certManager.issuerName" . }}
+    kind: Issuer
+    group: cert-manager.io
+  duration: {{ .Values.admissionController.certManager.createSelfSignedIssuer.duration }}
+  renewBefore: {{ .Values.admissionController.certManager.createSelfSignedIssuer.renewBefore }}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.certManager.caIssuerName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+  {{- with .Values.admissionController.certManager.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ca:
+    secretName: {{ include "vertical-pod-autoscaler.admissionController.certManager.caName" . }}
+---
+{{- end }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.certManager.certName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+  {{- with .Values.admissionController.certManager.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  secretName: {{ include "vertical-pod-autoscaler.admissionController.tls.secretName" . }}
+  dnsNames:
+    - {{ .Values.admissionController.service.name }}
+    - {{ .Values.admissionController.service.name }}.{{ .Release.Namespace }}
+    - {{ .Values.admissionController.service.name }}.{{ .Release.Namespace }}.svc
+    - {{ .Values.admissionController.service.name }}.{{ .Release.Namespace }}.svc.cluster.local
+  privateKey:
+    algorithm: {{ $algorithm }}
+    {{- if ne $algorithm "Ed25519" }}
+    size: {{ $size }}
+    {{- end }}
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+  issuerRef:
+    {{- if .Values.admissionController.certManager.createSelfSignedIssuer.enabled }}
+    name: {{ include "vertical-pod-autoscaler.admissionController.certManager.caIssuerName" . }}
+    kind: Issuer
+    group: cert-manager.io
+    {{- else }}
+    name: {{ .Values.admissionController.certManager.issuerRef.name }}
+    kind: {{ .Values.admissionController.certManager.issuerRef.kind }}
+    group: {{ .Values.admissionController.certManager.issuerRef.group }}
+    {{- end }}
+  duration: {{ .Values.admissionController.certManager.duration }}
+  renewBefore: {{ .Values.admissionController.certManager.renewBefore }}
+{{- end }}

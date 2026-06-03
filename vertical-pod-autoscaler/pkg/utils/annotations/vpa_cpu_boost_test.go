@@ -123,7 +123,7 @@ func TestGetOriginalResourcesFromAnnotation(t *testing.T) {
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						StartupCPUBoostAnnotation: `{"requests":{"cpu":"1","memory":"1Gi"},"limits":{"cpu":"2","memory":"2Gi"}}`,
+						GetStartupCPUBoostAnnotationKey("container1"): `{"requests":{"cpu":"1","memory":"1Gi"},"limits":{"cpu":"2","memory":"2Gi"}}`,
 					},
 				},
 			},
@@ -154,7 +154,7 @@ func TestGetOriginalResourcesFromAnnotation(t *testing.T) {
 			pod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						StartupCPUBoostAnnotation: "invalid-json",
+						GetStartupCPUBoostAnnotationKey("container1"): "invalid-json",
 					},
 				},
 			},
@@ -165,7 +165,7 @@ func TestGetOriginalResourcesFromAnnotation(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := GetOriginalResourcesFromAnnotation(tc.pod)
+			got, err := GetOriginalResourcesFromAnnotation(tc.pod, "container1")
 			if tc.expectErr {
 				assert.Error(t, err)
 				return

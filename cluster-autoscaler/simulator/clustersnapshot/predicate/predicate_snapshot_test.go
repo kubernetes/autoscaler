@@ -58,7 +58,7 @@ var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(16), fwHandle, true, 1, true), nil
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(), fwHandle, true, 1, true), nil
 	},
 }
 
@@ -1482,6 +1482,29 @@ func TestSetClusterState(t *testing.T) {
 
 				newNodes, newPods := clustersnapshot.CreateTestNodes(13), clustersnapshot.CreateTestPods(37)
 				newPodsByNode := clustersnapshot.AssignTestPodsToNodes(newPods, newNodes)
+
+				// Create CSI nodes for new nodes
+				newCSINodeMap := map[string]*storagev1.CSINode{}
+				for _, node := range newNodes {
+					newCSINodeMap[node.Name] = BuildCSINode(node)
+				}
+
+				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, csisnapshot.NewSnapshot(newCSINodeMap)))
+
+				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewSnapshot(newCSINodeMap)}, getSnapshotState(t, snapshot))
+			})
+		t.Run(fmt.Sprintf("%s: clear base %d nodes %d pods and set a new state with nominated nodes", name, nodeCount, podCount),
+			func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, state)
+				compareStates(t, state, getSnapshotState(t, snapshot))
+
+				newNodes, newPods := clustersnapshot.CreateTestNodes(13), clustersnapshot.CreateTestPods(37)
+				newPodsByNode := clustersnapshot.AssignTestPodsToNodes(newPods, newNodes)
+
+				for _, pod := range newPods {
+					pod.Status.NominatedNodeName = pod.Spec.NodeName
+					pod.Spec.NodeName = ""
+				}
 
 				// Create CSI nodes for new nodes
 				newCSINodeMap := map[string]*storagev1.CSINode{}

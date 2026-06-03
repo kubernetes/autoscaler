@@ -11,6 +11,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -26,6 +28,13 @@ import (
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
+
+func init() {
+	builder.RegisterCloudProvider(cloudprovider.OracleCloudProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildOCI(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(cloudprovider.OracleCloudProviderName)
+}
 
 // OciCloudProvider implements the CloudProvider interface for OCI. It contains an
 // instance pool manager to interact with OCI instance pools.
@@ -56,6 +65,7 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 
 	ociRef, err := ocicommon.NodeToOciRef(n)
 	if err != nil {
+		klog.V(4).Infof("NodeGroupForNode: ref conversion for node %s failed: %v", n.Name, err)
 		return nil, err
 	}
 
@@ -64,9 +74,11 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 	// this instance may not be a part of an instance pool, or it may be part of a instance pool that the autoscaler does not manage
 	if errors.Cause(err) == errInstanceInstancePoolNotFound {
 		// should not be processed by cluster autoscaler
+		klog.V(4).Infof("NodeGroupForNode: node %s is not a member of any of the specified instance-pool(s)", n.Name)
 		return nil, nil
 	}
 
+	klog.V(4).Infof("NodeGroupForNode: %s belongs to instance-pool %s", n.Name, ng.Id())
 	return ng, err
 }
 
@@ -74,24 +86,21 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 func (ocp *OciCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	instance, err := ocicommon.NodeToOciRef(node)
 	if err != nil {
+		klog.V(4).Infof("HasInstance: ref conversion for node %s failed: %v", node.Name, err)
 		return false, err
 	}
 	instancePool, err := ocp.poolManager.GetInstancePoolForInstance(instance)
 	if err != nil {
+		klog.V(4).Infof("HasInstance: instance-pool check for node %s failed: %v", node.Name, err)
 		return false, err
 	}
-	instances, err := ocp.poolManager.GetInstancePoolNodes(*instancePool)
-	if err != nil {
-		return false, err
+	if instancePool == nil || instancePool.Id() == "" {
+		klog.V(4).Infof("HasInstance: node %s is not a member of any of the specified instance-pool(s)", node.Name)
+		return false, nil
 	}
-	for _, i := range instances {
-		if i.Id == instance.InstanceID {
-			klog.V(4).Infof("[%s] Instance %s found in instance pool %s", node.Name, instance.InstanceID, instancePool.Id())
-			return true, nil
-		}
-	}
-	klog.V(4).Infof("[%s] Instance %s not found in instance pool %s", node.Name, instance.InstanceID, instancePool.Id())
-	return false, nil
+
+	klog.V(4).Infof("HasInstance: node %s belongs to instance-pool %s", node.Name, instancePool.Id())
+	return true, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.

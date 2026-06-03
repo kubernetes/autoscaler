@@ -92,7 +92,7 @@ func TestGetPatches(t *testing.T) {
 			namespace:            "default",
 			vpa:                  testVpa,
 			podPreProcessorError: nil,
-			expectError:          errors.New("unexpected end of JSON input"),
+			expectError:          errors.New(".: Internal error: unexpected end of JSON input"),
 		},
 		{
 			name:                 "invalid pod",
@@ -100,7 +100,7 @@ func TestGetPatches(t *testing.T) {
 			namespace:            "default",
 			vpa:                  testVpa,
 			podPreProcessorError: errors.New("bad pod"),
-			expectError:          errors.New("bad pod"),
+			expectError:          errors.New(".: Internal error: bad pod"),
 		},
 		{
 			name:                 "no vpa found",
@@ -120,7 +120,7 @@ func TestGetPatches(t *testing.T) {
 				[]resource_admission.PatchRecord{}, errors.New("Can't calculate this"),
 			}},
 			podPreProcessorError: nil,
-			expectError:          errors.New("Can't calculate this"),
+			expectError:          errors.New(".: Internal error: Can't calculate this"),
 			expectPatches:        []resource_admission.PatchRecord{},
 		},
 		{
@@ -136,7 +136,7 @@ func TestGetPatches(t *testing.T) {
 					[]resource_admission.PatchRecord{}, errors.New("Can't calculate this"),
 				}},
 			podPreProcessorError: nil,
-			expectError:          errors.New("Can't calculate this"),
+			expectError:          errors.New(".: Internal error: Can't calculate this"),
 			expectPatches:        []resource_admission.PatchRecord{},
 		},
 		{
@@ -183,7 +183,7 @@ func TestGetPatches(t *testing.T) {
 			fppp := &fakePodPreProcessor{tc.podPreProcessorError}
 			fvm := &fakeVpaMatcher{vpa: tc.vpa}
 			h := NewResourceHandler(fppp, fvm, tc.calculators)
-			patches, err := h.GetPatches(context.Background(), &admissionv1.AdmissionRequest{
+			patches, errs := h.GetPatches(context.Background(), &admissionv1.AdmissionRequest{
 				Resource: metav1.GroupVersionResource{
 					Version: "v1",
 				},
@@ -193,11 +193,10 @@ func TestGetPatches(t *testing.T) {
 				},
 			})
 			if tc.expectError == nil {
-				assert.NoError(t, err)
+				assert.Empty(t, errs)
 			} else {
-				if assert.Error(t, err) {
-					assert.Equal(t, tc.expectError.Error(), err.Error())
-				}
+				assert.NotEmpty(t, errs)
+				assert.Equal(t, tc.expectError.Error(), errs[0].Error())
 			}
 			if assert.Equal(t, len(tc.expectPatches), len(patches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
 				for i, gotPatch := range patches {

@@ -23,7 +23,7 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 {{ template "chart.requirementsSection" . }}
 
 ## Webhook Management
-The admission controller requires a `MutatingWebhookConfiguration` and TLS certificates. This chart supports two mutually exclusive modes:
+The admission controller requires a `MutatingWebhookConfiguration` and TLS certificates. This chart supports three mutually exclusive modes:
 
 ### Helm-managed (default)
 ```yaml
@@ -48,6 +48,35 @@ In this mode:
 - The VPA admission controller creates and manages the webhook itself
 Important: You are responsible for creating the TLS secret before or after installing the chart. The admission controller will only create the `MutatingWebhookConfiguration` once the secret exists.
 If the secret is created after the Helm install, you must restart the admission controller pod to trigger webhook registration.
+
+### cert-manager managed
+```yaml
+admissionController:
+  registerWebhook: false
+  certGen:
+    enabled: false
+  certManager:
+    enabled: true
+```
+In this mode:
+- Helm creates the MutatingWebhookConfiguration
+- cert-manager issues and renews TLS certificates automatically
+- cert-manager's cainjector injects the CA into the webhook configuration
+
+By default, you must provide an existing `Issuer` or `ClusterIssuer` via `admissionController.certManager.issuerRef`. Alternatively, enable `admissionController.certManager.createSelfSignedIssuer.enabled: true` to let the chart create a namespaced self-signed issuer automatically.
+
+## Custom Resource Definitions
+
+Helm cannot upgrade CustomResourceDefinitions in the `<chart>/crds` folder [by design](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/#some-caveats-and-explanations). When upgrading the chart, the VPA CRDs will not be updated automatically.
+
+If you need to update the CRDs to a newer version, please use `kubectl` to upgrade them manually from the upstream project repo:
+
+```bash
+kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-<appVersion>/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
+
+# Eg. version v1.7.0
+kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-1.7.0/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
+```
 
 ## Migration Guides
 

@@ -20,9 +20,46 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname "${BASH_SOURCE}")/..
 BASE_NAME=$(basename "$0")
-source "${SCRIPT_ROOT}/hack/lib/util.sh"
 
-ARCH=$(kube::util::host_arch)
+get_host_arch() {
+  local host_arch
+  case "$(uname -m)" in
+    x86_64*)
+      host_arch=amd64
+      ;;
+    i?86_64*)
+      host_arch=amd64
+      ;;
+    amd64*)
+      host_arch=amd64
+      ;;
+    aarch64*)
+      host_arch=arm64
+      ;;
+    arm64*)
+      host_arch=arm64
+      ;;
+    arm*)
+      host_arch=arm
+      ;;
+    i?86*)
+      host_arch=x86
+      ;;
+    s390x*)
+      host_arch=s390x
+      ;;
+    ppc64le*)
+      host_arch=ppc64le
+      ;;
+    *)
+      echo "Unsupported host arch. Must be x86_64, 386, arm, arm64, s390x or ppc64le."
+      exit 1
+      ;;
+  esac
+  echo "${host_arch}"
+}
+
+ARCH=$(get_host_arch)
 
 function print_help {
   echo "ERROR! Usage: $BASE_NAME [suite]*"
@@ -91,11 +128,8 @@ done
 
 
 
-# Prepare Helm values
-HELM_CHART_PATH="${SCRIPT_ROOT}/charts/vertical-pod-autoscaler"
-VALUES_FILE="${SCRIPT_ROOT}/hack/e2e/values-e2e-local.yaml"
-HELM_RELEASE_NAME="vpa"
-HELM_NAMESPACE="kube-system"
+# Prepare Helm values (shared with deploy-for-e2e.sh via helm-settings.sh)
+source "${SCRIPT_ROOT}/hack/e2e/helm-settings.sh"
 
 # Build dynamic Helm set arguments based on components
 HELM_SET_ARGS=()
@@ -145,6 +179,12 @@ fi
 
 # Uninstall any existing VPA Helm release
 helm uninstall ${HELM_RELEASE_NAME} --namespace ${HELM_NAMESPACE} 2>/dev/null || true
+
+# Helm does not delete or upgrade CRDs under crds/, so remove them here to make
+# sure the next install picks up the current version from the chart.
+# https://helm.sh/docs/topics/charts/#limitations-on-crds
+kubectl delete crd verticalpodautoscalers.autoscaling.k8s.io --ignore-not-found=true
+kubectl delete crd verticalpodautoscalercheckpoints.autoscaling.k8s.io --ignore-not-found=true
 
 # Handle external metrics special case
 if [[ "${SUITE}" == "recommender-externalmetrics" ]]; then
@@ -247,5 +287,6 @@ helm upgrade --install ${HELM_RELEASE_NAME} "${HELM_CHART_PATH}" \
   --namespace ${HELM_NAMESPACE} \
   --values "${VALUES_FILE}" \
   "${HELM_SET_ARGS[@]}" \
+  --debug \
   --wait \
   --timeout 15m

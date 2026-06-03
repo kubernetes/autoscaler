@@ -32,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
-	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
@@ -40,6 +39,7 @@ import (
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/client"
 )
 
 // VpaWithSelector is a pair of VPA and its selector.
@@ -90,6 +90,7 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 		Handler:       &cache.ResourceEventHandlerFuncs{},
 		ResyncPeriod:  1 * time.Hour,
 		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		Transform:     client.StripManagedFields,
 	}
 
 	store, controller := cache.NewInformerWithOptions(informerOptions)
@@ -120,6 +121,7 @@ func NewVpaCheckpointLister(vpaClient *vpa_clientset.Clientset, stopChannel <-ch
 		Handler:       &cache.ResourceEventHandlerFuncs{},
 		ResyncPeriod:  1 * time.Hour,
 		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		Transform:     client.StripManagedFields,
 	}
 
 	store, controller := cache.NewInformerWithOptions(informerOptions)
@@ -243,6 +245,21 @@ func GetUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
 	return *vpa.Spec.UpdatePolicy.UpdateMode
 }
 
+// HasStartupBoost returns true if VPA has StartupBoost defined either globally or at container level.
+func HasStartupBoost(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if vpa.Spec.StartupBoost != nil {
+		return true
+	}
+	if vpa.Spec.ResourcePolicy != nil {
+		for _, containerPolicy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
+			if containerPolicy.StartupBoost != nil {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // GetContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
 // and container name. It returns nil if there is no policy specified for the container.
 func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
@@ -293,57 +310,75 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 	return nil
 }
 
-// IsPodReadyAndStartupBoostDurationPassed returns true if the pod is ready and all container startup boost durations have passed.
-// TODO(kamarabbas99): Instead of allowing the pod to be unboosted only after all containers have passed their boost duration, we
-// can allow unboosting as soon as any container has passed its boost duration. This will require changes in the
-// way we track unboost and unboosting logic in the updater.
-func IsPodReadyAndStartupBoostDurationPassed(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
-	if !PodHasCPUBoostInProgressAnnotation(pod) {
-		return false
+// GetExpiredStartupCPUBoostAnnotations returns the names of the containers that have passed their startup boost duration.
+func GetExpiredStartupCPUBoostAnnotations(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []string {
+	var expiredAnnotations []string
+
+	_, readyCond := GetPodCondition(&pod.Status, corev1.PodReady)
+	if readyCond == nil || readyCond.Status != corev1.ConditionTrue {
+		return expiredAnnotations
+	}
+	readyTime := readyCond.LastTransitionTime.Time
+
+	for k := range pod.Annotations {
+		if containerName, found := strings.CutPrefix(k, annotations.StartupCPUBoostAnnotationPrefix); found {
+			boostDuration := getContainerCPUStartupBoostDuration(containerName, vpa)
+			if boostDuration == 0 || time.Since(readyTime) > time.Duration(boostDuration)*time.Second {
+				expiredAnnotations = append(expiredAnnotations, k)
+			}
+		}
 	}
 
-	if !podutil.IsPodReady(pod) {
-		return false
-	}
+	return expiredAnnotations
+}
 
-	var maxBoostDuration int32
+func getContainerCPUStartupBoostDuration(containerName string, vpa *vpa_types.VerticalPodAutoscaler) int32 {
+	var boostDuration int32
 	if vpa.Spec.StartupBoost != nil && vpa.Spec.StartupBoost.CPU != nil && vpa.Spec.StartupBoost.CPU.DurationSeconds != nil {
-		maxBoostDuration = *vpa.Spec.StartupBoost.CPU.DurationSeconds // Default to pod-level
+		boostDuration = *vpa.Spec.StartupBoost.CPU.DurationSeconds // Default to pod-level
 	}
 
 	if vpa.Spec.ResourcePolicy != nil {
-		for _, container := range pod.Spec.Containers {
-			crp := GetContainerResourcePolicy(container.Name, vpa.Spec.ResourcePolicy)
-
-			if crp == nil || crp.StartupBoost == nil || crp.StartupBoost.CPU == nil || crp.StartupBoost.CPU.DurationSeconds == nil {
-				continue
-			}
-
-			if *crp.StartupBoost.CPU.DurationSeconds > maxBoostDuration {
-				maxBoostDuration = *crp.StartupBoost.CPU.DurationSeconds
-			}
+		crp := GetContainerResourcePolicy(containerName, vpa.Spec.ResourcePolicy)
+		if crp != nil && crp.StartupBoost != nil && crp.StartupBoost.CPU != nil && crp.StartupBoost.CPU.DurationSeconds != nil {
+			boostDuration = *crp.StartupBoost.CPU.DurationSeconds
 		}
 	}
-
-	if maxBoostDuration == 0 {
-		return true
-	}
-
-	readyTime := time.Time{}
-	for _, cond := range pod.Status.Conditions {
-		if cond.Type == corev1.PodReady && cond.Status == corev1.ConditionTrue {
-			readyTime = cond.LastTransitionTime.Time
-			break
-		}
-	}
-	return time.Since(readyTime) > time.Duration(maxBoostDuration)*time.Second
+	return boostDuration
 }
 
-// PodHasCPUBoostInProgressAnnotation returns true if the pod has the CPU boost annotation.
+// PodHasCPUBoostInProgressAnnotation returns true if the pod has any CPU boost in progress annotation.
 func PodHasCPUBoostInProgressAnnotation(pod *corev1.Pod) bool {
 	if pod.Annotations == nil {
 		return false
 	}
-	_, found := pod.Annotations[annotations.StartupCPUBoostAnnotation]
-	return found
+	for k := range pod.Annotations {
+		if strings.HasPrefix(k, annotations.StartupCPUBoostAnnotationPrefix) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsPodReady returns true if a pod is ready; false otherwise.
+func IsPodReady(pod *corev1.Pod) bool {
+	_, condition := GetPodCondition(&pod.Status, corev1.PodReady)
+	return condition != nil && condition.Status == corev1.ConditionTrue
+}
+
+// GetPodCondition extracts the provided condition from the given status and returns that.
+// Returns nil and -1 if the condition is not present, and the index of the located condition.
+func GetPodCondition(status *corev1.PodStatus, conditionType corev1.PodConditionType) (int, *corev1.PodCondition) {
+	if status == nil {
+		return -1, nil
+	}
+	if status.Conditions == nil {
+		return -1, nil
+	}
+	for i := range status.Conditions {
+		if status.Conditions[i].Type == conditionType {
+			return i, &status.Conditions[i]
+		}
+	}
+	return -1, nil
 }

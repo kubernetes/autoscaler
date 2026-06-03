@@ -114,8 +114,8 @@ var (
 	coresTotal                  = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	memoryTotal                 = flag.String("memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	gpuTotal                    = multiStringFlag("gpu-total", "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
-	cloudProviderFlag           = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
-		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
+	cloudProviderFlag           = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider(),
+		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders(), ",")+"]")
 	maxBulkSoftTaintCount      = flag.Int("max-bulk-soft-taint-count", 10, "Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting.")
 	maxBulkSoftTaintTime       = flag.Duration("max-bulk-soft-taint-time", 3*time.Second, "Maximum duration of tainting/untainting nodes as PreferNoSchedule at the same time.")
 	maxGracefulTerminationFlag = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node. "+
@@ -124,6 +124,8 @@ var (
 	okTotalUnreadyCount       = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
 	scaleUpFromZero           = flag.Bool("scale-up-from-zero", true, "Should CA scale up when there are 0 ready nodes.")
 	parallelScaleUp           = flag.Bool("parallel-scale-up", false, "Whether to allow parallel node groups scale up. Experimental: may not work on some cloud providers, enable at your own risk.")
+	salvoScaleUp              = flag.Bool("salvo-scale-up", false, "Whether to allow multiple scale-ups in a single CA loop.")
+	salvoScaleUpBudget        = flag.Duration("salvo-scale-up-budget", 1*time.Minute, "Maximum time CA spends on subsequent scale ups in a single CA loop. Requires salvo-scale-up flag to be enabled.")
 	maxNodeProvisionTime      = flag.Duration("max-node-provision-time", 15*time.Minute, "The default maximum time CA waits for node to be provisioned - the value can be overridden per node group")
 	maxNodeStartupTime        = flag.Duration("max-node-startup-time", 15*time.Minute, "The maximum time from the moment the node is registered to the time the node is ready - the value can be overridden per node group")
 	maxPodEvictionTime        = flag.Duration("max-pod-eviction-time", 2*time.Minute, "Maximum time CA tries to evict a pod before giving up")
@@ -157,6 +159,7 @@ var (
 	maxInactivityTimeFlag        = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 	maxBinpackingTimeFlag        = flag.Duration("max-binpacking-time", 5*time.Minute, "Maximum time spend on binpacking for a single scale-up. If binpacking is limited by this, scale-up will continue with the already calculated scale-up options.")
 	maxFailingTimeFlag           = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
+	maxStartupTimeFlag           = flag.Duration("max-startup-time", 20*time.Minute, "Maximum time until first recorded successful autoscaler run before automatic restart")
 	balanceSimilarNodeGroupsFlag = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
 
 	unremovableNodeRecheckTimeout = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
@@ -232,7 +235,6 @@ var (
 	forceDeleteFailedNodes                       = flag.Bool("force-delete-failed-nodes", false, "Whether to enable force deletion of failed nodes, regardless of the min size of the node group the belong to.")
 	enableDynamicResourceAllocation              = flag.Bool("enable-dynamic-resource-allocation", true, "Handle DRA (Dynamic Resource Allocation) objects, locked to true.")
 	enableCSINodeAwareScheduling                 = flag.Bool("enable-csi-node-aware-scheduling", false, "Whether logic for handling CSINode objects is enabled.")
-	clusterSnapshotParallelism                   = flag.Int("cluster-snapshot-parallelism", 16, "Maximum parallelism of cluster snapshot creation.")
 	predicateParallelism                         = flag.Int("predicate-parallelism", 4, "Maximum parallelism of scheduler predicate checking.")
 	checkCapacityProcessorInstance               = flag.String("check-capacity-processor-instance", "", "Name of the processor instance. Only ProvisioningRequests that define this name in their parameters with the key \"processorInstance\" will be processed by this CA instance. It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance. Not recommended: Until CA 1.35, ProvisioningRequests with this name as prefix in their class will be also processed.")
 	nodeDeletionCandidateTTL                     = flag.Duration("node-deletion-candidate-ttl", time.Duration(0), "Maximum time a node can be marked as removable before the marking becomes stale. This sets the TTL of Cluster-Autoscaler's state if the Cluste-Autoscaler deployment becomes inactive")
@@ -245,7 +247,8 @@ var (
 	scaleUpSimulationForSkippedNodeGroupsEnabled = flag.Bool("scaleup-simulation-for-skipped-node-groups-enabled", false, "Whether to enable the scale up simulation for skipped node groups.")
 
 	// Deprecated flags
-	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
+	ignoreTaintsFlag           = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
+	clusterSnapshotParallelism = flag.Int("cluster-snapshot-parallelism", 16, "Maximum parallelism of cluster snapshot creation (Deprecated, use predicate-parallelism instead)")
 )
 
 var autoscalingOptions *config.AutoscalingOptions
@@ -306,6 +309,13 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("--enable-dynamic-resource-allocation flag must be true: %t", ptr.Deref(enableDynamicResourceAllocation, false))
 	}
 
+	maxStartupTime := *maxStartupTimeFlag
+	maxHealthCheckTimeout := max(*maxInactivityTimeFlag, *maxFailingTimeFlag, maxStartupTime)
+	if maxStartupTime < maxHealthCheckTimeout {
+		klog.Warningf("--max-startup-time needs to be at least as high as --max-failing-time and --max-inactivity, overriding it to the highest value out of them: %v", maxHealthCheckTimeout)
+		maxStartupTime = maxHealthCheckTimeout
+	}
+
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
@@ -323,6 +333,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		OkTotalUnreadyCount:              *okTotalUnreadyCount,
 		ScaleUpFromZero:                  *scaleUpFromZero,
 		ParallelScaleUp:                  *parallelScaleUp,
+		SalvoScaleUp:                     *salvoScaleUp,
+		SalvoScaleUpBudget:               *salvoScaleUpBudget,
 		EstimatorName:                    *estimatorFlag,
 		ExpanderNames:                    *expanderFlag,
 		GRPCExpanderCert:                 *grpcExpanderCert,
@@ -423,11 +435,11 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ForceDeleteFailedNodes:                       *forceDeleteFailedNodes,
 		DynamicResourceAllocationEnabled:             *enableDynamicResourceAllocation,
 		CSINodeAwareSchedulingEnabled:                *enableCSINodeAwareScheduling,
-		ClusterSnapshotParallelism:                   *clusterSnapshotParallelism,
 		PredicateParallelism:                         *predicateParallelism,
 		CheckCapacityProcessorInstance:               *checkCapacityProcessorInstance,
 		MaxInactivityTime:                            *maxInactivityTimeFlag,
 		MaxFailingTime:                               *maxFailingTimeFlag,
+		MaxStartupTime:                               maxStartupTime,
 		DebuggingSnapshotEnabled:                     *debuggingSnapshotEnabled,
 		EnableProfiling:                              *enableProfiling,
 		Address:                                      *address,

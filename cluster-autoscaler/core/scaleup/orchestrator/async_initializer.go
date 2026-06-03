@@ -39,9 +39,10 @@ import (
 // AsyncNodeGroupInitializer is a component of the Orchestrator responsible for initial
 // scale up of asynchronously created node groups.
 type AsyncNodeGroupInitializer struct {
-	// guards allTragetSizes
+	// guards allTragetSizes and processedTargetSizes
 	mutex                  sync.Mutex
 	allTargetSizes         map[string]int64
+	processedTargetSizes   map[string]int64
 	nodeGroup              cloudprovider.NodeGroup
 	triggeringPods         []*apiv1.Pod
 	nodeInfo               *framework.NodeInfo
@@ -66,6 +67,7 @@ func NewAsyncNodeGroupInitializer(
 ) *AsyncNodeGroupInitializer {
 	return &AsyncNodeGroupInitializer{
 		allTargetSizes:         map[string]int64{},
+		processedTargetSizes:   map[string]int64{},
 		nodeGroup:              option.NodeGroup,
 		triggeringPods:         option.Pods,
 		nodeInfo:               nodeInfo,
@@ -120,26 +122,14 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 		nodeInfo = s.nodeInfo
 	}
 
-	nodeInfos := make(map[string]*framework.NodeInfo)
-	var scaleUpInfos []nodegroupset.ScaleUpInfo
-	for _, nodeGroup := range result.CreationResult.AllCreatedNodeGroups() {
-		upcomingId, ok := result.CreatedToUpcomingMapping[nodeGroup.Id()]
-		if !ok {
-			klog.Errorf("Couldn't retrieve initialization data for new node group %v. It won't get initialized. Available created to upcoming node group mapping: %v", nodeGroup.Id(), result.CreatedToUpcomingMapping)
-			continue
-		}
-		if targetSize := s.GetTargetSize(upcomingId); targetSize > 0 {
-			nodeInfos[nodeGroup.Id()] = nodeInfo
-			scaleUpInfo := nodegroupset.ScaleUpInfo{
-				Group:       nodeGroup,
-				CurrentSize: 0,
-				NewSize:     int(targetSize),
-				MaxSize:     nodeGroup.MaxSize(),
-			}
-			scaleUpInfos = append(scaleUpInfos, scaleUpInfo)
-		}
+	scaleUpInfos, nodeInfos := s.prepareScaleUps(result, nodeInfo)
+
+	if len(scaleUpInfos) == 0 {
+		klog.Infof("Scale-up for node group %s is already finished or no new scale-ups are needed.", s.nodeGroup.Id())
+		return
 	}
-	klog.Infof("Starting initial scale-up for async created node groups. Scale ups: %v", scaleUpInfos)
+
+	klog.Infof("Starting scale-up for async created node groups. Scale ups: %v", scaleUpInfos)
 	err, failedNodeGroups := s.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, time.Now(), s.atomicScaleUp)
 	if err != nil {
 		var failedNodeGroupIds []string
@@ -161,6 +151,37 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 		CreateNodeGroupResults: []nodegroups.CreateNodeGroupResult{result.CreationResult},
 		PodsTriggeredScaleUp:   s.triggeringPods,
 	}, nil)
+}
+
+func (s *AsyncNodeGroupInitializer) prepareScaleUps(result nodegroups.AsyncNodeGroupCreationResult, nodeInfo *framework.NodeInfo) ([]nodegroupset.ScaleUpInfo, map[string]*framework.NodeInfo) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	nodeInfos := make(map[string]*framework.NodeInfo)
+	var scaleUpInfos []nodegroupset.ScaleUpInfo
+
+	for _, nodeGroup := range result.CreationResult.AllCreatedNodeGroups() {
+		upcomingId, ok := result.CreatedToUpcomingMapping[nodeGroup.Id()]
+		if !ok {
+			klog.Errorf("Couldn't retrieve initialization data for new node group %v. It won't get initialized. Available created to upcoming node group mapping: %v", nodeGroup.Id(), result.CreatedToUpcomingMapping)
+			continue
+		}
+		targetSize := s.allTargetSizes[upcomingId]
+		currentSize := s.processedTargetSizes[upcomingId]
+
+		if delta := targetSize - currentSize; delta > 0 {
+			nodeInfos[nodeGroup.Id()] = nodeInfo
+			scaleUpInfo := nodegroupset.ScaleUpInfo{
+				Group:       nodeGroup,
+				CurrentSize: int(currentSize),
+				NewSize:     int(targetSize),
+				MaxSize:     nodeGroup.MaxSize(),
+			}
+			scaleUpInfos = append(scaleUpInfos, scaleUpInfo)
+			s.processedTargetSizes[upcomingId] = targetSize
+		}
+	}
+	return scaleUpInfos, nodeInfos
 }
 
 func (s *AsyncNodeGroupInitializer) emitScaleUpStatus(scaleUpStatus *status.ScaleUpStatus, err errors.AutoscalerError) {

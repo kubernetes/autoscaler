@@ -20,7 +20,7 @@ jobs:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/autoscaler
 
@@ -35,8 +35,8 @@ jobs:
         run: sudo apt-get install libseccomp-dev -qq
 
       - name: Test
-        working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler
-        run: hack/go-unit-tests-ca.sh
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler/cluster-autoscaler
+        run: make test-ci
         env:
           GO111MODULE: auto
           PROJECT_NAMES: ""

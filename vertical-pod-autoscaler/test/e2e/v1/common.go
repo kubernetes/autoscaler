@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -33,9 +34,9 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/e2e/utils"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -196,6 +197,23 @@ func waitForActiveJobs(c clientset.Interface, ns, cronJobName string, active int
 	})
 }
 
+func waitForCronJobPodsRunning(f *framework.Framework, replicas int32) error {
+	return wait.PollUntilContextTimeout(context.Background(), utils.PollInterval, utils.PollTimeout, true, func(ctx context.Context) (done bool, err error) {
+		podList, err := GetHamsterPods(f)
+		if err != nil {
+			framework.Logf("Error listing pods, retrying: %v", err)
+			return false, nil
+		}
+		podsRunning := int32(0)
+		for _, pod := range podList.Items {
+			if pod.Status.Phase == apiv1.PodRunning {
+				podsRunning++
+			}
+		}
+		return podsRunning >= replicas, nil
+	})
+}
+
 func createCronJob(c clientset.Interface, ns string, cronJob *batchv1.CronJob) (*batchv1.CronJob, error) {
 	return c.BatchV1().CronJobs(ns).Create(context.TODO(), cronJob, metav1.CreateOptions{})
 }
@@ -214,6 +232,8 @@ func SetupHamsterCronJob(f *framework.Framework, schedule, cpu, memory string, r
 	cronJob, err := createCronJob(f.ClientSet, f.Namespace.Name, cronJob)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	err = waitForActiveJobs(f.ClientSet, f.Namespace.Name, cronJob.Name, 1)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	err = waitForCronJobPodsRunning(f, replicas)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
@@ -263,7 +283,7 @@ func AnnotatePod(f *framework.Framework, podName, annotationName, annotationValu
 
 	patches = append(patches, utils.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/metadata/annotations/%s", annotationName),
+		Path:  fmt.Sprintf("/metadata/annotations/%s", strings.ReplaceAll(annotationName, "/", "~1")),
 		Value: annotationValue,
 	})
 
@@ -473,11 +493,16 @@ func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv
 		}
 		resourcesHaveDiffered := false
 		podMissing := false
+		podEvicted := false
 		for _, initialPod := range initialPods.Items {
 			found := false
 			for _, pod := range podList.Items {
 				if initialPod.Name == pod.Name {
 					found = true
+					if initialPod.UID != pod.UID {
+						framework.Logf("%s: UID changed from %v to %v, pod was evicted and recreated", pod.Name, initialPod.UID, pod.UID)
+						podEvicted = true
+					}
 					for num, container := range pod.Status.ContainerStatuses {
 						for resourceName, resourceLimit := range container.Resources.Limits {
 							initialResourceLimit := initialPod.Status.ContainerStatuses[num].Resources.Limits[resourceName]
@@ -500,7 +525,7 @@ func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv
 				podMissing = true
 			}
 		}
-		if podMissing {
+		if podMissing || podEvicted {
 			return true, fmt.Errorf("a pod was erroneously evicted")
 		}
 		if resourcesHaveDiffered {

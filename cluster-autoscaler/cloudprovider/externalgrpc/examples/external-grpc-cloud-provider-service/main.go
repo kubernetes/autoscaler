@@ -34,6 +34,9 @@ import (
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	kube_flag "k8s.io/component-base/cli/flag"
 	klog "k8s.io/klog/v2"
+
+	// Cloud providers must be explicitly imported to be registered in the builder.
+	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/router"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -64,8 +67,8 @@ var (
 	cacert  = flag.String("ca-cert", "", "The path to the ca certificate file. Empty string for insecure communication.")
 
 	// flags needed by the specific cloud provider
-	cloudProviderFlag = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
-		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
+	cloudProviderFlag = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider(),
+		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders(), ",")+"]")
 	cloudConfig    = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	clusterName    = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	nodeGroupsFlag = multiStringFlag(

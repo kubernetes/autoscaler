@@ -18,6 +18,7 @@ package patch
 
 import (
 	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -38,7 +39,7 @@ func GetAddEmptyAnnotationsPatch() resource_admission.PatchRecord {
 func GetAddAnnotationPatch(annotationName, annotationValue string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/metadata/annotations/%s", annotationName),
+		Path:  fmt.Sprintf("/metadata/annotations/%s", strings.ReplaceAll(annotationName, "/", "~1")),
 		Value: annotationValue,
 	}
 }
@@ -47,7 +48,7 @@ func GetAddAnnotationPatch(annotationName, annotationValue string) resource_admi
 func GetRemoveAnnotationPatch(annotationName string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:   "remove",
-		Path: fmt.Sprintf("/metadata/annotations/%s", annotationName),
+		Path: fmt.Sprintf("/metadata/annotations/%s", strings.ReplaceAll(annotationName, "/", "~1")),
 	}
 }
 

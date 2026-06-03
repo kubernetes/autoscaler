@@ -101,3 +101,81 @@ func TestCombinedQuotasProvider(t *testing.T) {
 		})
 	}
 }
+
+func TestMinQuotaAdapter(t *testing.T) {
+	maxLimits := map[string]int64{"cpu": 4, "memory": 16 * units.GiB}
+	minLimits := map[string]int64{"cpu": 1, "memory": 4 * units.GiB}
+	resourceLimiter := cloudprovider.NewResourceLimiter(minLimits, maxLimits)
+
+	adapter := &minQuotaAdapter{limiter: resourceLimiter}
+
+	if adapter.ID() != "cluster-wide" {
+		t.Errorf("got ID %q, want %q", adapter.ID(), "cluster-wide")
+	}
+	if !adapter.AppliesTo(nil) {
+		t.Error("AppliesTo(nil) returned false, want true")
+	}
+
+	if diff := cmp.Diff(minLimits, adapter.Limits()); diff != "" {
+		t.Errorf("Limits() mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestMaxQuotaAdapter(t *testing.T) {
+	maxLimits := map[string]int64{"cpu": 4, "memory": 16 * units.GiB}
+	minLimits := map[string]int64{"cpu": 1, "memory": 4 * units.GiB}
+	resourceLimiter := cloudprovider.NewResourceLimiter(minLimits, maxLimits)
+
+	adapter := &maxQuotaAdapter{limiter: resourceLimiter}
+
+	if adapter.ID() != "cluster-wide" {
+		t.Errorf("got ID %q, want %q", adapter.ID(), "cluster-wide")
+	}
+	if !adapter.AppliesTo(nil) {
+		t.Error("AppliesTo(nil) returned false, want true")
+	}
+
+	if diff := cmp.Diff(maxLimits, adapter.Limits()); diff != "" {
+		t.Errorf("Limits() mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestCloudMinProvider(t *testing.T) {
+	cloudProvider := test.NewTestCloudProviderBuilder().Build()
+	minLimits := map[string]int64{"cpu": 1, "memory": 4 * units.GiB}
+	resourceLimiter := cloudprovider.NewResourceLimiter(minLimits, nil)
+	cloudProvider.SetResourceLimiter(resourceLimiter)
+
+	quotasProvider := NewCloudMinProvider(cloudProvider)
+	quotas, err := quotasProvider.Quotas()
+	if err != nil {
+		t.Errorf("failed to get quotas: %v", err)
+	}
+	if len(quotas) != 1 {
+		t.Errorf("got %d quotas, expected 1", len(quotas))
+	}
+	quota := quotas[0]
+	if diff := cmp.Diff(minLimits, quota.Limits()); diff != "" {
+		t.Errorf("Limits() mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestCloudMaxProvider(t *testing.T) {
+	cloudProvider := test.NewTestCloudProviderBuilder().Build()
+	maxLimits := map[string]int64{"cpu": 4, "memory": 16 * units.GiB}
+	resourceLimiter := cloudprovider.NewResourceLimiter(nil, maxLimits)
+	cloudProvider.SetResourceLimiter(resourceLimiter)
+
+	quotasProvider := NewCloudMaxProvider(cloudProvider)
+	quotas, err := quotasProvider.Quotas()
+	if err != nil {
+		t.Errorf("failed to get quotas: %v", err)
+	}
+	if len(quotas) != 1 {
+		t.Errorf("got %d quotas, expected 1", len(quotas))
+	}
+	quota := quotas[0]
+	if diff := cmp.Diff(maxLimits, quota.Limits()); diff != "" {
+		t.Errorf("Limits() mismatch (-want +got):\n%s", diff)
+	}
+}

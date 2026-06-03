@@ -159,7 +159,8 @@ func (c *resourcesUpdatesPatchCalculator) applyCPUStartupBoost(container *corev1
 	if err != nil {
 		return nil, err
 	}
-	patches = append(patches, GetAddAnnotationPatch(annotations.StartupCPUBoostAnnotation, originalResources))
+	annotationKey := annotations.GetStartupCPUBoostAnnotationKey(container.Name)
+	patches = append(patches, GetAddAnnotationPatch(annotationKey, originalResources))
 
 	return patches, nil
 }

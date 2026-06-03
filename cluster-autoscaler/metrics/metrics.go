@@ -123,6 +123,24 @@ const (
 	BulkListMigInstances       FunctionLabel = "bulkListInstances:listMigInstances"
 )
 
+// ResourceMismatchType mismatch type discovered when comparing DRA resources
+type ResourceMismatchType string
+
+const (
+	// ResourceMismatchTypeMissing mismatch type reported when resource pool is
+	// present on the template node, but missing on the real node
+	ResourceMismatchTypeMissing ResourceMismatchType = "missing"
+	// ResourceMismatchTypeExtra mismatch type reported when resource pool is
+	// present on the real node, but missing on the template one
+	ResourceMismatchTypeExtra ResourceMismatchType = "extra"
+	// ResourceMismatchTypeMismatch mismatch type reported when matching resource
+	// pool was found, but they have certain differences
+	ResourceMismatchTypeMismatch ResourceMismatchType = "mismatch"
+	// ResourceMismatchTypeUnknown mismatch type which we are not able to categorize,
+	// usually would indicate metric implementation level errors
+	ResourceMismatchTypeUnknown ResourceMismatchType = "unknown"
+)
+
 type caMetrics struct {
 	registry metrics.KubeRegistry
 
@@ -170,6 +188,9 @@ type caMetrics struct {
 	binpackingHeterogeneity          *k8smetrics.HistogramVec
 	maxNodeSkipEvalDurationSeconds   *k8smetrics.Gauge
 	scaleDownNodeRemovalLatency      *k8smetrics.HistogramVec
+
+	// Metrics related to autoscaler prediction correctness
+	nodeTemplateResourcesMismatch *k8smetrics.GaugeVec
 }
 
 func newCaMetrics() *caMetrics {
@@ -509,6 +530,14 @@ func newCaMetrics() *caMetrics {
 				Buckets:   k8smetrics.ExponentialBuckets(1, 1.5, 19), // ~1s → ~24min
 			}, []string{"deleted"},
 		),
+
+		nodeTemplateResourcesMismatch: k8smetrics.NewGaugeVec(
+			&k8smetrics.GaugeOpts{
+				Namespace: caNamespace,
+				Name:      "dra_node_template_resources_mismatch",
+				Help:      "Count of resource mismatches between ready nodes and node templates",
+			}, []string{"driver", "mismatch_type"},
+		),
 	}
 }
 
@@ -557,6 +586,7 @@ func (m *caMetrics) RegisterAll(emitPerNodeGroupMetrics bool) {
 	m.mustRegister(m.binpackingHeterogeneity)
 	m.mustRegister(m.maxNodeSkipEvalDurationSeconds)
 	m.mustRegister(m.scaleDownNodeRemovalLatency)
+	m.mustRegister(m.nodeTemplateResourcesMismatch)
 
 	if emitPerNodeGroupMetrics {
 		m.mustRegister(m.nodesGroupMinNodes)
@@ -691,6 +721,15 @@ func (m *caMetrics) UpdateNodeGroupTargetSize(targetSizes map[string]int) {
 	for nodeGroup, targetSize := range targetSizes {
 		m.nodesGroupTargetSize.WithLabelValues(nodeGroup).Set(float64(targetSize))
 	}
+}
+
+// SetNodeTemplateResourcesMismatch records the number of resource mismatches between
+// predicted and real nodes in DRA-enabled node groups.
+func (m *caMetrics) SetNodeTemplateResourcesMismatch(driver string, mismatchType ResourceMismatchType, value uint32) {
+	m.nodeTemplateResourcesMismatch.With(map[string]string{
+		"driver":        driver,
+		"mismatch_type": string(mismatchType),
+	}).Set(float64(value))
 }
 
 // UpdateNodeGroupHealthStatus records if node group is healthy to autoscaling

@@ -24,8 +24,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
 
@@ -292,4 +294,122 @@ func TestUpdateFromPolicyControlledResources(t *testing.T) {
 			assert.Equal(t, tc.expected, cs.GetControlledResources())
 		})
 	}
+}
+
+func TestUpdateFromPolicyMemoryAggregationInterval(t *testing.T) {
+	defaultInterval := GetAggregationsConfig().MemoryAggregationIntervalDuration
+	customSeconds := int32(3600)
+	testCases := []struct {
+		name             string
+		policy           *vpa_types.ContainerResourcePolicy
+		featureEnabled   bool
+		expectedInterval time.Duration
+	}{
+		{
+			name: "Custom interval with feature enabled",
+			policy: &vpa_types.ContainerResourcePolicy{
+				MemoryAggregationIntervalSeconds: &customSeconds,
+			},
+			featureEnabled:   true,
+			expectedInterval: time.Second * time.Duration(customSeconds),
+		},
+		{
+			name: "Custom interval with feature disabled - falls back to default",
+			policy: &vpa_types.ContainerResourcePolicy{
+				MemoryAggregationIntervalSeconds: &customSeconds,
+			},
+			featureEnabled:   false,
+			expectedInterval: defaultInterval,
+		},
+		{
+			name:             "Nil MemoryAggregationIntervalSeconds - uses default",
+			policy:           &vpa_types.ContainerResourcePolicy{},
+			featureEnabled:   true,
+			expectedInterval: defaultInterval,
+		},
+		{
+			name:             "Nil policy - uses default",
+			policy:           nil,
+			featureEnabled:   true,
+			expectedInterval: defaultInterval,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, tc.featureEnabled)
+			cs := NewAggregateContainerState()
+			cs.UpdateFromPolicy(tc.policy)
+			assert.Equal(t, tc.expectedInterval, cs.GetMemoryAggregationIntervalDuration())
+		})
+	}
+}
+
+func TestUpdateFromPolicyMemoryAggregationIntervalCount(t *testing.T) {
+	defaultCount := GetAggregationsConfig().MemoryAggregationIntervalCount
+	customCount := int64(4)
+	testCases := []struct {
+		name           string
+		policy         *vpa_types.ContainerResourcePolicy
+		featureEnabled bool
+		expectedCount  int64
+	}{
+		{
+			name: "Custom count with feature enabled",
+			policy: &vpa_types.ContainerResourcePolicy{
+				MemoryAggregationIntervalCount: &customCount,
+			},
+			featureEnabled: true,
+			expectedCount:  customCount,
+		},
+		{
+			name: "Custom count with feature disabled - falls back to default",
+			policy: &vpa_types.ContainerResourcePolicy{
+				MemoryAggregationIntervalCount: &customCount,
+			},
+			featureEnabled: false,
+			expectedCount:  defaultCount,
+		},
+		{
+			name:           "Nil MemoryAggregationIntervalCount - uses default",
+			policy:         &vpa_types.ContainerResourcePolicy{},
+			featureEnabled: true,
+			expectedCount:  defaultCount,
+		},
+		{
+			name:           "Nil policy - uses default",
+			policy:         nil,
+			featureEnabled: true,
+			expectedCount:  defaultCount,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, tc.featureEnabled)
+			cs := NewAggregateContainerState()
+			cs.UpdateFromPolicy(tc.policy)
+			assert.Equal(t, tc.expectedCount, cs.MemoryAggregationIntervalCount)
+		})
+	}
+}
+
+func TestAggregateContainerStateIsExpiredWithCustomIntervalCount(t *testing.T) {
+	defaultInterval := GetAggregationsConfig().MemoryAggregationIntervalDuration
+	customCount := int64(4)
+
+	// With count=4 and default 24h interval, window = 4*24h = 96h.
+	cs := NewAggregateContainerState()
+	cs.LastSampleStart = testTimestamp
+	cs.TotalSamplesCount = 1
+	cs.MemoryAggregationIntervalCount = customCount
+	windowLength := defaultInterval * time.Duration(customCount)
+	assert.False(t, cs.isExpired(testTimestamp.Add(windowLength-time.Hour)))
+	assert.True(t, cs.isExpired(testTimestamp.Add(windowLength)))
+
+	// Empty container with custom count.
+	csEmpty := NewAggregateContainerState()
+	csEmpty.TotalSamplesCount = 0
+	csEmpty.CreationTime = testTimestamp
+	csEmpty.MemoryAggregationIntervalCount = customCount
+	assert.False(t, csEmpty.isExpired(testTimestamp.Add(windowLength-time.Hour)))
+	assert.True(t, csEmpty.isExpired(testTimestamp.Add(windowLength)))
 }

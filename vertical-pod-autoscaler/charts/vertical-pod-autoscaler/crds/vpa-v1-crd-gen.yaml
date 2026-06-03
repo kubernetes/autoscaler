@@ -362,6 +362,25 @@ spec:
                             Specifies the maximum amount of resources that will be recommended
                             for the container. The default is no maximum.
                           type: object
+                        memoryAggregationIntervalCount:
+                          description: |-
+                            memoryAggregationIntervalCount is the number of consecutive
+                            memoryAggregationIntervals which make up the memory aggregation window.
+                            The total window length is:
+                            MemoryAggregationIntervalSeconds * MemoryAggregationIntervalCount.
+                          format: int64
+                          minimum: 1
+                          type: integer
+                        memoryAggregationIntervalSeconds:
+                          description: |-
+                            memoryAggregationIntervalSeconds is the length of a single interval
+                            (in seconds) for which the peak memory usage is computed.
+                            Memory usage peaks are aggregated in multiples of this interval.
+                            In other words, there is one memory usage sample per interval
+                            (the maximum usage over that interval).
+                          format: int32
+                          minimum: 1
+                          type: integer
                         minAllowed:
                           additionalProperties:
                             anyOf:
@@ -596,6 +615,7 @@ spec:
                     - Initial
                     - Recreate
                     - InPlaceOrRecreate
+                    - InPlace
                     - Auto
                     type: string
                 type: object
@@ -625,6 +645,14 @@ spec:
                         message is a human-readable explanation containing details about
                         the transition
                       type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
                     reason:
                       description: reason is the reason for the condition's last transition.
                       type: string
@@ -640,6 +668,12 @@ spec:
                   - type
                   type: object
                 type: array
+              observedGeneration:
+                description: observedGeneration is the most recent generation observed
+                  by this autoscaler.
+                format: int64
+                minimum: 0
+                type: integer
               recommendation:
                 description: |-
                   The most recently computed amount of resources recommended by the

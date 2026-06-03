@@ -1,0 +1,53 @@
+# Helm values for E2E testing — used by both deploy-for-e2e.sh (CI) and
+# deploy-for-e2e-locally.sh. Image repository, tag, and pullPolicy are
+# overridden via --set flags by the calling script.
+fullnameOverride: vpa
+
+# Pod security context for VPA components
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+
+# Components are disabled by default; the calling script enables only the
+# ones the suite needs via --set.
+admissionController:
+  enabled: false
+  replicas: 1
+  # Disable pod anti-affinity for single-node clusters
+  affinity: {}
+  podDisruptionBudget:
+    enabled: false
+  # Use application-managed webhook for e2e testing (cert rotation test requires this)
+  registerWebhook: true
+  certGen:
+    enabled: false
+  # Enable certificate reload for e2e rotation test
+  extraArgs:
+    - --reload-cert
+  # Mount certificates with legacy key names (matching gencerts.sh format)
+  volumes:
+    - name: tls-certs
+      secret:
+        secretName: vpa-tls-certs
+  volumeMounts:
+    - name: tls-certs
+      mountPath: /etc/tls-certs
+      readOnly: true
+
+recommender:
+  enabled: false
+  replicas: 1
+  affinity: {}
+  podDisruptionBudget:
+    enabled: false
+  leaderElection:
+    enabled: false
+
+updater:
+  enabled: false
+  replicas: 1
+  affinity: {}
+  podDisruptionBudget:
+    enabled: false
+  leaderElection:
+    enabled: false

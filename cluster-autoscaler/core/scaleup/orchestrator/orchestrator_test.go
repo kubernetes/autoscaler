@@ -35,10 +35,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/equivalence"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
@@ -742,39 +744,44 @@ func TestCloudProviderFailingToScaleUpGroups(t *testing.T) {
 		}
 	}
 	testCases := []struct {
-		desc                     string
-		parallel                 bool
-		onScaleUp                testprovider.OnScaleUpFunc
-		expectConcurrentErrors   bool
-		expectedTotalTargetSizes int
+		desc                            string
+		parallel                        bool
+		onScaleUp                       testprovider.OnScaleUpFunc
+		expectConcurrentErrors          bool
+		expectedTotalTargetSizes        int
+		expectedPodsRemainUnschedulable int
 	}{
 		{
-			desc:                     "synchronous scale up - two failures",
-			parallel:                 false,
-			onScaleUp:                failAlwaysScaleUp,
-			expectConcurrentErrors:   false,
-			expectedTotalTargetSizes: 3, // first error stops scale up process
+			desc:                            "synchronous scale up - two failures",
+			parallel:                        false,
+			onScaleUp:                       failAlwaysScaleUp,
+			expectConcurrentErrors:          false,
+			expectedTotalTargetSizes:        3, // first error stops scale up process
+			expectedPodsRemainUnschedulable: 2,
 		},
 		{
-			desc:                     "parallel scale up - two failures",
-			parallel:                 true,
-			onScaleUp:                failAlwaysScaleUp,
-			expectConcurrentErrors:   true,
-			expectedTotalTargetSizes: 4,
+			desc:                            "parallel scale up - two failures",
+			parallel:                        true,
+			onScaleUp:                       failAlwaysScaleUp,
+			expectConcurrentErrors:          true,
+			expectedTotalTargetSizes:        4,
+			expectedPodsRemainUnschedulable: 2,
 		},
 		{
-			desc:                     "synchronous scale up - one failure",
-			parallel:                 false,
-			onScaleUp:                failOnceScaleUp(),
-			expectConcurrentErrors:   false,
-			expectedTotalTargetSizes: 3,
+			desc:                            "synchronous scale up - one failure",
+			parallel:                        false,
+			onScaleUp:                       failOnceScaleUp(),
+			expectConcurrentErrors:          false,
+			expectedTotalTargetSizes:        3,
+			expectedPodsRemainUnschedulable: 2,
 		},
 		{
-			desc:                     "parallel scale up - one failure",
-			parallel:                 true,
-			onScaleUp:                failOnceScaleUp(),
-			expectConcurrentErrors:   false,
-			expectedTotalTargetSizes: 4,
+			desc:                            "parallel scale up - one failure",
+			parallel:                        true,
+			onScaleUp:                       failOnceScaleUp(),
+			expectConcurrentErrors:          false,
+			expectedTotalTargetSizes:        4,
+			expectedPodsRemainUnschedulable: 0,
 		},
 	}
 	for _, tc := range testCases {
@@ -786,6 +793,7 @@ func TestCloudProviderFailingToScaleUpGroups(t *testing.T) {
 			assert.Equal(t, errors.CloudProviderError, result.ScaleUpError.Type())
 			assert.Equal(t, tc.expectedTotalTargetSizes, result.GroupTargetSizes["ng1"]+result.GroupTargetSizes["ng2"])
 			assert.Equal(t, tc.expectConcurrentErrors, strings.Contains(result.ScaleUpError.Error(), "...and other errors"))
+			assert.Len(t, result.ScaleUpStatus.PodsRemainUnschedulable, tc.expectedPodsRemainUnschedulable)
 		})
 	}
 }
@@ -1211,9 +1219,9 @@ func runSimpleScaleUpTest(t *testing.T, testConfig *ScaleUpTestConfig) *ScaleUpT
 	err = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
-	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
-	processors.ScaleStateNotifier.Register(clusterState)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
+	processors.ScaleStateNotifier.Register(nodegroupchange.NewNodeGroupChangeMetricsProducer(provider, metrics.DefaultMetrics))
+	clusterState.UpdateNodes(nodes, time.Now())
 	processors.NodeGroupSetProcessor = nodegroupset.NewDefaultNodeGroupSetProcessor([]string{nodeGroupLabel}, config.NodeGroupDifferenceRatios{})
 	if testConfig.EnableAutoprovisioning {
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
@@ -1285,6 +1293,9 @@ func buildTestPod(p PodConfig) *apiv1.Pod {
 	if p.Node != "" {
 		pod.Spec.NodeName = p.Node
 	}
+	if p.NodeGroup != "" {
+		pod.Spec.NodeSelector = map[string]string{nodeGroupLabel: p.NodeGroup}
+	}
 	return pod
 }
 
@@ -1328,8 +1339,8 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	assert.NoError(t, err)
 	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
-	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
+	clusterState.UpdateNodes(nodes, time.Now())
 	p3 := BuildTestPod("p-new", 550, 0)
 
 	quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
@@ -1379,8 +1390,8 @@ func TestBinpackingLimiter(t *testing.T) {
 	assert.NoError(t, err)
 	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
-	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
+	clusterState.UpdateNodes(nodes, time.Now())
 
 	extraPod := BuildTestPod("p-new", 500, 0)
 
@@ -1442,8 +1453,8 @@ func TestScaleUpNoHelp(t *testing.T) {
 	assert.NoError(t, err)
 	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
-	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
+	clusterState.UpdateNodes(nodes, time.Now())
 	p3 := BuildTestPod("p-new", 500, 0)
 
 	quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
@@ -1603,8 +1614,8 @@ func TestComputeSimilarNodeGroups(t *testing.T) {
 			assert.NoError(t, err)
 			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
-			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
-			assert.NoError(t, clusterState.UpdateNodes(nodes, nodeInfos, time.Now()))
+			clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(nodegroupchange.NewNodeGroupChangeObserversList()))
+			assert.NoError(t, clusterState.UpdateNodes(nodes, time.Now()))
 
 			suOrchestrator := &ScaleUpOrchestrator{}
 			suOrchestrator.Initialize(&autoscalingCtx, &processors.AutoscalingProcessors{NodeGroupSetProcessor: nodeGroupSetProcessor}, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, nil)
@@ -1690,8 +1701,8 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 			assert.NoError(t, err)
 			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
-			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
-			clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+			clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
+			clusterState.UpdateNodes(nodes, time.Now())
 
 			pods := make([]*apiv1.Pod, 0)
 			for i := 0; i < 2; i++ {
@@ -1727,11 +1738,170 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	}
 }
 
+func TestScaleUpBalanceGroupsRespectsQuota(t *testing.T) {
+	tests := []struct {
+		name          string
+		initialSizes  map[string]int
+		maxSize       int
+		quotas        []resourcequotas.Quota
+		expectedSizes map[string]int
+	}{
+		{
+			name:         "per-group quota caps one group",
+			initialSizes: map[string]int{"ng1": 1, "ng2": 1, "ng3": 1},
+			maxSize:      5,
+			quotas: []resourcequotas.Quota{
+				&resourcequotas.FakeQuota{
+					Name:        "quota-ng2",
+					AppliesToFn: matchNodeGroups([]string{"ng2"}),
+					LimitsVal:   map[string]int64{"cpu": 2},
+				},
+			},
+			// ng2 has 1 node (1 core), quota allows 2 cores → room for 1 more.
+			// Balance tries 2 each, ng2 capped to 1. ng1: 1→3, ng2: 1→2, ng3: 1→3.
+			expectedSizes: map[string]int{"ng1": 3, "ng2": 2, "ng3": 3},
+		},
+		{
+			name:         "shared quota including bestOption caps total before balancing",
+			initialSizes: map[string]int{"ng1": 1, "ng2": 2, "ng3": 2},
+			maxSize:      10,
+			quotas: []resourcequotas.Quota{
+				&resourcequotas.FakeQuota{
+					Name:        "shared-quota",
+					AppliesToFn: matchNodeGroups([]string{"ng1", "ng2", "ng3"}),
+					LimitsVal:   map[string]int64{"nodes": 6},
+				},
+			},
+			// 5 existing nodes, shared quota of 6 → room for 1. applyLimits caps total to 1.
+			// ng1 (size 1) is smallest, so balance assigns it the 1 node.
+			expectedSizes: map[string]int{"ng1": 2, "ng2": 2, "ng3": 2},
+		},
+		{
+			name:         "shared quota on similar groups only",
+			initialSizes: map[string]int{"ng1": 1, "ng2": 1, "ng3": 2},
+			maxSize:      10,
+			quotas: []resourcequotas.Quota{
+				&resourcequotas.FakeQuota{
+					Name:        "shared-quota-ng2-ng3",
+					AppliesToFn: matchNodeGroups([]string{"ng2", "ng3"}),
+					LimitsVal:   map[string]int64{"nodes": 4},
+				},
+			},
+			// Shared quota on ng2+ng3 (3 existing, limit 4, room for 1). ng1 uncapped.
+			// ng2 (size 1) is smaller than ng3 (size 2), so balance sorts ng2 first.
+			// ng2 gets the 1 quota slot via ApplyDelta; ng3 sees 0 remaining, capped.
+			expectedSizes: map[string]int{"ng1": 4, "ng2": 2, "ng3": 2},
+		},
+		{
+			name:         "pre-filter excludes group already at quota limit",
+			initialSizes: map[string]int{"ng1": 1, "ng2": 1, "ng3": 1},
+			maxSize:      5,
+			quotas: []resourcequotas.Quota{
+				&resourcequotas.FakeQuota{
+					Name:        "quota-ng2",
+					AppliesToFn: matchNodeGroups([]string{"ng2"}),
+					LimitsVal:   map[string]int64{"cpu": 1},
+				},
+			},
+			// ng2 has 1 node (1 core), quota allows 1 core → no room.
+			// Pre-filter excludes ng2 from balancing entirely. Only ng1 and ng3 participate.
+			expectedSizes: map[string]int{"ng1": 4, "ng2": 1, "ng3": 4},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(string, int) error {
+				return nil
+			}).Build()
+
+			type ngInfo struct {
+				min, max, size int
+			}
+			testCfg := map[string]ngInfo{
+				"ng1": {min: 1, max: tt.maxSize, size: tt.initialSizes["ng1"]},
+				"ng2": {min: 1, max: tt.maxSize, size: tt.initialSizes["ng2"]},
+				"ng3": {min: 1, max: tt.maxSize, size: tt.initialSizes["ng3"]},
+			}
+			podList := make([]*apiv1.Pod, 0)
+			nodes := make([]*apiv1.Node, 0)
+
+			now := time.Now()
+
+			for gid, gconf := range testCfg {
+				provider.AddNodeGroup(gid, gconf.min, gconf.max, gconf.size)
+				for i := 0; i < gconf.size; i++ {
+					nodeName := fmt.Sprintf("%v-node-%v", gid, i)
+					node := BuildTestNode(nodeName, 100, 1000)
+					node.Labels[nodeGroupLabel] = gid
+					SetNodeReadyState(node, true, now.Add(-2*time.Minute))
+					nodes = append(nodes, node)
+
+					pod := BuildTestPod(fmt.Sprintf("%v-pod-%v", gid, i), 80, 0)
+					pod.Spec.NodeName = nodeName
+					podList = append(podList, pod)
+
+					provider.AddNode(gid, node)
+				}
+			}
+
+			podLister := kube_util.NewTestPodLister(podList)
+			listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+
+			options := config.AutoscalingOptions{
+				EstimatorName:                  estimator.BinpackingEstimatorName,
+				BalanceSimilarNodeGroups:       true,
+				MaxCoresTotal:                  config.DefaultMaxClusterCores,
+				MaxMemoryTotal:                 config.DefaultMaxClusterMemory,
+				MaxNodeGroupBinpackingDuration: 1 * time.Second,
+			}
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+			// Override NodeGroupSetProcessor to ignore nodeGroupLabel so ng1/ng2/ng3 are recognized as similar.
+			processors.NodeGroupSetProcessor = nodegroupset.NewDefaultNodeGroupSetProcessor([]string{nodeGroupLabel}, config.NodeGroupDifferenceRatios{})
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
+			assert.NoError(t, err)
+			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, podList, nil, nil)
+			assert.NoError(t, err)
+			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
+			clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
+			clusterState.UpdateNodes(nodes, time.Now())
+
+			pods := make([]*apiv1.Pod, 0)
+			for i := 0; i < 6; i++ {
+				pods = append(pods, BuildTestPod(fmt.Sprintf("test-pod-%v", i), 80, 0))
+			}
+
+			autoscalingCtx.ExpanderStrategy = NewMockReportingStrategy(t, &GroupSizeChange{GroupName: "ng1", SizeChange: 6}, nil)
+
+			cloudQuotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
+			fakeQuotasProvider := resourcequotas.NewFakeProvider(tt.quotas)
+			trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+				QuotaProvider:            resourcequotas.NewCombinedQuotasProvider([]resourcequotas.Provider{cloudQuotasProvider, fakeQuotasProvider}),
+				CustomResourcesProcessor: processors.CustomResourcesProcessor,
+			})
+			suOrchestrator := New()
+			suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, trackerFactory)
+			scaleUpStatus, typedErr := suOrchestrator.ScaleUp(pods, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
+
+			assert.NoError(t, typedErr)
+			assert.True(t, scaleUpStatus.WasSuccessful())
+
+			for _, group := range provider.NodeGroups() {
+				size, err := group.TargetSize()
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedSizes[group.Id()], size, "unexpected size for %s", group.Id())
+			}
+		})
+	}
+}
+
 func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	createdGroups := make(chan string, 10)
 	expandedGroups := make(chan string, 10)
 
 	p1 := BuildTestPod("p1", 80, 0)
+	p2 := BuildTestPod("p2", 99999, 0) // unschedulable pod
 
 	fakeClient := &fake.Clientset{}
 
@@ -1759,7 +1929,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
 
 	processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 	processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 0}
@@ -1775,11 +1945,22 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	})
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, trackerFactory)
-	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
+	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1, p2}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
 	assert.Equal(t, "autoprovisioned-T1-1", utils.GetStringFromChan(expandedGroups))
+
+	// Verify stale node group ID cleanup
+	foundP2 := false
+	for _, remainUnschedulable := range scaleUpStatus.PodsRemainUnschedulable {
+		if remainUnschedulable.Pod.Name == "p2" {
+			foundP2 = true
+			assert.NotContains(t, remainUnschedulable.RejectedNodeGroups, "T1")
+			assert.Contains(t, remainUnschedulable.RejectedNodeGroups, "autoprovisioned-T1")
+		}
+	}
+	assert.True(t, foundP2, "p2 was not found in PodsRemainUnschedulable")
 }
 
 func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
@@ -1789,6 +1970,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	p1 := BuildTestPod("p1", 80, 0)
 	p2 := BuildTestPod("p2", 80, 0)
 	p3 := BuildTestPod("p3", 80, 0)
+	p4 := BuildTestPod("p4", 99999, 0) // unschedulable pod
 
 	fakeClient := &fake.Clientset{}
 
@@ -1817,7 +1999,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
 
 	processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 	processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 2}
@@ -1833,7 +2015,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	})
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, trackerFactory)
-	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1, p2, p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
+	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1, p2, p3, p4}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
@@ -1844,6 +2026,17 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	assert.True(t, expandedGroupMap["autoprovisioned-T1-1"])
 	assert.True(t, expandedGroupMap["autoprovisioned-T1-1-1"])
 	assert.True(t, expandedGroupMap["autoprovisioned-T1-2-1"])
+
+	// Verify stale node group ID cleanup
+	foundP4 := false
+	for _, remainUnschedulable := range scaleUpStatus.PodsRemainUnschedulable {
+		if remainUnschedulable.Pod.Name == "p4" {
+			foundP4 = true
+			assert.NotContains(t, remainUnschedulable.RejectedNodeGroups, "T1")
+			assert.Contains(t, remainUnschedulable.RejectedNodeGroups, "autoprovisioned-T1")
+		}
+	}
+	assert.True(t, foundP4, "p4 was not found in PodsRemainUnschedulable")
 }
 
 func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
@@ -1887,8 +2080,8 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	assert.NoError(t, err)
 	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
-	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
+	clusterState.UpdateNodes(nodes, time.Now())
 
 	quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
 	trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
@@ -1979,7 +2172,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 		autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil, nil, templateNodeInfoRegistry)
 		assert.NoError(t, err)
 
-		clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
+		clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
 
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 1}
@@ -2192,9 +2385,8 @@ func TestScaleUpSimulationForSkippedNodeGroups(t *testing.T) {
 			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 
-			registryConfig := clusterstate.ClusterStateRegistryConfig{}
-			clusterState := clusterstate.NewClusterStateRegistry(provider, registryConfig, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
-			clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+			clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
+			clusterState.UpdateNodes(nodes, time.Now())
 
 			quotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
 			trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
@@ -2273,4 +2465,121 @@ func matchNodeGroups(nodeGroups []string) func(*apiv1.Node) bool {
 	return func(n *apiv1.Node) bool {
 		return slices.Contains(nodeGroups, n.Labels[nodeGroupLabel])
 	}
+}
+
+func TestMarkFailedGroupsAsUnschedulable(t *testing.T) {
+	reason := NewRejectedReasons("stockout")
+
+	p1 := BuildTestPod("p1", 100, 100)
+	p2 := BuildTestPod("p2", 100, 100)
+	p3 := BuildTestPod("p3", 100, 100)
+
+	eg1 := &equivalence.PodGroup{
+		Pods:              []*apiv1.Pod{p1},
+		SchedulableGroups: []string{"ng1"},
+		Schedulable:       true,
+	}
+	eg2 := &equivalence.PodGroup{
+		Pods:              []*apiv1.Pod{p2},
+		SchedulableGroups: []string{"ng2"},
+		Schedulable:       true,
+	}
+	eg3 := &equivalence.PodGroup{
+		Pods:              []*apiv1.Pod{p3},
+		SchedulableGroups: []string{"ng1", "ng2"},
+		Schedulable:       true,
+	}
+
+	podEquivalenceGroups := []*equivalence.PodGroup{eg1, eg2, eg3}
+	failedGroups := map[string]bool{"ng2": true}
+
+	markFailedGroupsAsUnschedulable(podEquivalenceGroups, failedGroups, reason)
+
+	assert.True(t, eg1.Schedulable)
+	assert.False(t, eg2.Schedulable)
+	assert.True(t, eg3.Schedulable)
+
+	assert.Equal(t, reason, eg2.SchedulingErrors["ng2"])
+	assert.Equal(t, reason, eg3.SchedulingErrors["ng2"])
+	assert.NotContains(t, eg1.SchedulingErrors, "ng2")
+}
+
+func TestScaleUpPartialSuccessPopulatesPodsRemainUnschedulableParallel(t *testing.T) {
+	options := defaultOptions
+	options.ParallelScaleUp = true
+	options.BalanceSimilarNodeGroups = true
+	config := &ScaleUpTestConfig{
+		Groups: []NodeGroupConfig{
+			{Name: "ng1", MaxSize: 2},
+			{Name: "ng2", MaxSize: 2},
+		},
+		Nodes: []NodeConfig{
+			{Name: "ng1-n1", Cpu: 1000, Memory: 1000, Ready: true, Group: "ng1"},
+			{Name: "ng2-n1", Cpu: 1000, Memory: 1000, Ready: true, Group: "ng2"},
+		},
+		Pods: []PodConfig{
+			{Name: "fill-ng1", Cpu: 1000, Node: "ng1-n1"},
+			{Name: "fill-ng2", Cpu: 1000, Node: "ng2-n1"},
+		},
+		ExtraPods: []PodConfig{
+			{Name: "p1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng1"},
+			{Name: "p2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng2"},
+		},
+		OnScaleUp: func(group string, i int) error {
+			if group == "ng2" {
+				return fmt.Errorf("provider error for ng2")
+			}
+			return nil
+		},
+		ExpansionOptionToChoose: &GroupSizeChange{GroupName: "ng2", SizeChange: 1},
+		Options:                 &options,
+	}
+
+	result := runSimpleScaleUpTest(t, config)
+
+	assert.Equal(t, status.ScaleUpError, result.ScaleUpStatus.Result)
+	assert.Contains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p2")
+	assert.NotContains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p1")
+}
+
+func TestScaleUpPartialSuccessPopulatesPodsRemainUnschedulableSync(t *testing.T) {
+	options := defaultOptions
+	options.ParallelScaleUp = false
+	options.BalanceSimilarNodeGroups = true
+	config := &ScaleUpTestConfig{
+		Groups: []NodeGroupConfig{
+			{Name: "ng1", MaxSize: 2},
+			{Name: "ng2", MaxSize: 2},
+		},
+		Nodes: []NodeConfig{
+			{Name: "ng1-n1", Cpu: 1000, Memory: 1000, Ready: true, Group: "ng1"},
+			{Name: "ng2-n1", Cpu: 1000, Memory: 1000, Ready: true, Group: "ng2"},
+		},
+		Pods: []PodConfig{
+			{Name: "fill-ng1", Cpu: 1000, Node: "ng1-n1"},
+			{Name: "fill-ng2", Cpu: 1000, Node: "ng2-n1"},
+		},
+		ExtraPods: []PodConfig{
+			{Name: "p1_1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng1"},
+			{Name: "p1_2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng1"},
+			{Name: "p2_1", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng2"},
+			{Name: "p2_2", Cpu: 900, Memory: 0, Gpu: 0, ToleratesGpu: false, NodeGroup: "ng2"},
+		},
+		OnScaleUp: func(group string, i int) error {
+			if group == "ng2" {
+				return fmt.Errorf("provider error for ng2")
+			}
+			return nil
+		},
+		ExpansionOptionToChoose: &GroupSizeChange{GroupName: "ng2", SizeChange: 2},
+		Options:                 &options,
+	}
+
+	result := runSimpleScaleUpTest(t, config)
+
+	assert.Equal(t, status.ScaleUpError, result.ScaleUpStatus.Result)
+	assert.Contains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p2_1")
+	assert.Contains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p2_2")
+	assert.NotContains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p1_1")
+	assert.NotContains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p1_2")
 }

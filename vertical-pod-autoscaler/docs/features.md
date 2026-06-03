@@ -16,10 +16,17 @@
   - [Limitations](#limitations)
   - [Fallback Behavior](#fallback-behavior)
   - [Monitoring](#monitoring)
-- [CPU Startup Boost](#cpu-startup-boost)
+- [Eviction-Free In-Place Updates (<code>InPlace</code>)](#eviction-free-in-place-updates-inplace)
   - [Usage](#usage-1)
   - [Behavior](#behavior-1)
+  - [Infeasible Attempt Tracking](#infeasible-attempt-tracking)
   - [Requirements](#requirements-1)
+  - [Limitations](#limitations-1)
+  - [Monitoring](#monitoring-1)
+- [CPU Startup Boost](#cpu-startup-boost)
+  - [Usage](#usage-2)
+  - [Behavior](#behavior-2)
+  - [Requirements](#requirements-2)
   - [Configuration](#configuration)
 <!-- /toc -->
 
@@ -147,7 +154,7 @@ Even with this flag enabled, disruption budgets are enforced when:
 ### Requirements:
 
 * Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
-* VPA version 1.4.0+ with `InPlaceOrRecreate` feature gate enabled
+* VPA version 1.4.0 requires the `InPlaceOrRecreate` feature gate to be enabled. Starting from VPA version 1.5.0, the feature gate is enabled by default, and in VPA version 1.7.0, the feature gate was removed.
 
 ### Limitations
 
@@ -175,6 +182,80 @@ VPA provides metrics to track in-place update operations:
 * `vpa_updater_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
 * `vpa_updater_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
 * `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place.
+
+## Eviction-Free In-Place Updates (`InPlace`)
+
+> [!WARNING]
+> FEATURE STATE: VPA v1.7.0 [alpha]
+
+VPA supports an eviction-free in-place update mode for workloads where any disruption is unacceptable. Unlike `InPlaceOrRecreate`, this mode will never evict pods — it only attempts in-place updates and retries when cluster conditions change.
+For more information, see [AEP-8818: Eviction-Free In-Place Updates in VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/8818-in-place-only)
+
+### Usage
+
+To use eviction-free in-place updates, enable the `InPlace` feature gate and set the VPA's `updateMode` to `InPlace`:
+
+```bash
+--feature-gates=InPlace=true
+```
+
+```yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: my-vpa
+spec:
+  updatePolicy:
+    updateMode: "InPlace"
+```
+
+### Behavior
+
+When using `InPlace` mode, VPA will attempt to apply resource updates in-place and never fall back to pod eviction. If an update cannot be applied, VPA defers and retries in subsequent reconciliation loops.
+
+The updater evaluates each pod through the `CanInPlaceUpdate` function, which returns one of the following decisions:
+
+| Decision | Meaning |
+|---|---|
+| `InPlaceApproved` | Pod can be in-place updated |
+| `InPlaceDeferred` | Pod cannot be updated right now; will retry next loop |
+| `InPlaceInfeasible` | Update is infeasible; stores the attempt for tracking |
+| `InPlaceInfeasibleCached` | Previously cached infeasibility; skips without re-checking |
+
+When a pod is currently undergoing a resize, VPA checks the resize status reported by kubelet:
+
+| Resize Status | Action |
+|---|---|
+| `ResizeDeferred` | Wait for kubelet to proceed |
+| `ResizeInProgress` | Wait for completion |
+| `ResizeInfeasible` | Store as infeasible, skip pod |
+| `ResizeError` | Treat as infeasible, retry when recommendation changes |
+| `ResizeNone` | No resize pending, proceed with update evaluation |
+
+### Infeasible Attempt Tracking
+
+VPA tracks infeasible resize attempts to prevent infinite retry loops. When an update is determined to be infeasible (either via kubelet resize status or API server patch rejection), VPA stores the attempted resource values. The pod is only retried when the recommendation changes to have at least one resource value lower than the stored infeasible attempt.
+
+### Requirements
+
+* Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
+* VPA version 1.7.0+ with `InPlace` feature gate enabled
+
+### Limitations
+
+* Resizes are never guaranteed to succeed — node capacity constraints may prevent in-place resizes indefinitely
+* Memory limit downsizing carries a risk of OOMKill if current usage exceeds the new limit (this is inherent to in-place updates, not VPA-specific)
+* The infeasible attempts map is stored in-memory; updater restarts will cause one retry of previously-infeasible attempts
+
+### Monitoring
+
+The same in-place update metrics used for `InPlaceOrRecreate` apply to `InPlace` mode:
+
+* `vpa_updater_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
+* `vpa_updater_in_place_updated_pods_total`: Number of pods successfully updated in-place
+* `vpa_updater_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
+* `vpa_updater_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
+* `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place
 
 ## CPU Startup Boost
 

@@ -28,15 +28,16 @@ import (
 
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	recommender_config "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/config"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 )
 
 /*
 Tests in this file are for illustrative purposes only.
-Once we start writing integreation tests, we can build out the nessesary scaffolding to support them, possibly even reusing the e2e scaffolding
+Once we start writing integration tests, we can build out the necessary scaffolding to support them, possibly even reusing the e2e scaffolding
 */
 
 func TestRemovingGC(t *testing.T) {
-	t.Parallel()
 	recommenderConfig := recommender_config.DefaultRecommenderConfig()
 	recommenderConfig.CheckpointsGCInterval = 1 * time.Second // Short interval for testing
 
@@ -80,7 +81,7 @@ func TestRemovingGC(t *testing.T) {
 	}
 	t.Logf("Verified VPA Checkpoint exists: %s", fetched.Name)
 
-	// // Wait for deletion
+	// Wait for deletion
 	err = wait.PollUntilContextTimeout(tCtx, 1*time.Second, 30*time.Second, true, func(ctx context.Context) (done bool, err error) {
 		cp, err := vpaClient.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns.Name).Get(ctx, checkpointName, metav1.GetOptions{})
 		if err != nil {
@@ -105,5 +106,51 @@ func TestRemovingGC(t *testing.T) {
 
 	if len(list.Items) > 0 {
 		t.Fatalf("Expected no remaining VPA Checkpoints, but found %d", len(list.Items))
+	}
+}
+
+func TestObservedGeneration(t *testing.T) {
+	recommenderConfig := recommender_config.DefaultRecommenderConfig()
+
+	tCtx, closeFn, rm, informers, c, vpaClient := recommenderSetup(t, recommenderConfig)
+	defer closeFn()
+	ns := framework.CreateNamespaceOrDie(c, "observed-generation", t)
+	defer framework.DeleteNamespaceOrDie(c, ns, t)
+	stopControllers := runControllerAndInformers(tCtx, rm, informers)
+	defer stopControllers()
+
+	vpaCRD := test.VerticalPodAutoscaler().
+		WithName("hamster-vpa").
+		WithNamespace(ns.Name).
+		WithTargetRef(utils.HamsterTargetRef). // Fake targetRef to satisfy validation
+		WithContainer("fake-container").
+		Get()
+
+	_, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers(ns.Name).Create(tCtx, vpaCRD, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("Failed to create VPA: %v", err)
+	}
+
+	var lastVPA *vpav1.VerticalPodAutoscaler
+	err = wait.PollUntilContextTimeout(tCtx, 1*time.Second, 30*time.Second, true, func(ctx context.Context) (done bool, err error) {
+		vpa, err := vpaClient.AutoscalingV1().VerticalPodAutoscalers(ns.Name).Get(ctx, vpaCRD.Name, metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+		lastVPA = vpa
+
+		if vpa.Status.ObservedGeneration == nil || *vpa.Status.ObservedGeneration != vpa.Generation {
+			return false, nil
+		}
+
+		return true, nil
+	})
+
+	if err != nil {
+		if lastVPA != nil {
+			t.Fatalf("Timed out. Last status: observedGeneration=%v, generation=%d: %v", lastVPA.Status.ObservedGeneration, lastVPA.Generation, err)
+		} else {
+			t.Fatalf("Timed out waiting for VPA status to update, but never successfully fetched the VPA: %v", err)
+		}
 	}
 }

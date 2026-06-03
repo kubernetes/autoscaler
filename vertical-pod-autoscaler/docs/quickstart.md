@@ -13,7 +13,7 @@ resource requests for your pods.
 In order to use it, you need to insert a *Vertical Pod Autoscaler* resource for
 each controller that you want to have automatically computed resource requirements.
 This will be most commonly a **Deployment**.
-There are five modes in which *VPAs* operate:
+There are several modes in which *VPAs* operate:
 
 - `"Auto"` [__deprecated__]: VPA assigns resource requests on pod creation as well as updates
   them on existing pods using the preferred update mechanism. Currently, this is
@@ -28,6 +28,11 @@ There are five modes in which *VPAs* operate:
   them on existing pods by leveraging [Kubernetes `in-place` update](https://kubernetes.io/blog/2025/05/16/kubernetes-v1-33-in-place-pod-resize-beta/) capability.
   If `in-place` update fails, it falls back to evicting the pods, performing a _recreation_.
   For more details, see the [In-Place Updates documentation](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/features.md#in-place-updates-inplaceorrecreate).
+- `"InPlace"`: VPA assigns resource requests on pod creation as well as updates
+  them on existing pods using only Kubernetes `in-place` pod resize capability.
+  Unlike `"InPlaceOrRecreate"`, this mode never evicts pods. If an `in-place`
+  resize cannot be performed, VPA retries the update later when cluster conditions
+  change. This mode is recommended for workloads where any disruption is unacceptable.
 - `"Initial"`: VPA only assigns resource requests on pod creation and never changes them
   later.
 - `"Off"`: VPA does not automatically change the resource requirements of the pods.
@@ -39,7 +44,56 @@ A simple way to check if Vertical Pod Autoscaler is fully operational in your
 cluster is to create a sample deployment and a corresponding VPA config:
 
 ```console
-kubectl create -f examples/hamster.yaml
+kubectl apply -f - <<EOF
+apiVersion: "autoscaling.k8s.io/v1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: hamster-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: hamster
+  resourcePolicy:
+    containerPolicies:
+      - containerName: '*'
+        minAllowed:
+          cpu: 100m
+          memory: 50Mi
+        maxAllowed:
+          cpu: 1
+          memory: 500Mi
+        controlledResources: ["cpu", "memory"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hamster
+spec:
+  selector:
+    matchLabels:
+      app: hamster
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: hamster
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+      containers:
+        - name: hamster
+          image: registry.k8s.io/ubuntu-slim:0.14
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - "while true; do timeout 0.5s yes >/dev/null; sleep 0.5s; done"
+EOF
 ```
 
 The above command creates a deployment with two pods, each running a single container
@@ -55,7 +109,7 @@ kubectl describe vpa
 ```
 
 *Note: if your cluster has little free capacity these pods may be unable to schedule.
-You may need to add more nodes or adjust examples/hamster.yaml to use less CPU.*
+You may need to add more nodes or adjust the above deployment to use less CPU.*
 
 ## Example VPA configuration
 

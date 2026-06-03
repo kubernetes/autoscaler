@@ -29,7 +29,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
-	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota"
@@ -71,11 +70,12 @@ func NewAutoscaler(ctx context.Context, opts coreoptions.AutoscalerOptions, info
 		opts.ClusterSnapshot,
 		opts.AutoscalingKubeClients,
 		opts.Processors,
-		opts.LoopStartNotifier,
+		opts.LoopStartObservers,
 		opts.CloudProvider,
 		opts.ExpanderStrategy,
 		opts.EstimatorBuilder,
 		opts.Backoff,
+		opts.ScaleUpFailuresRegistry,
 		opts.DebuggingSnapshotter,
 		opts.RemainingPdbTracker,
 		opts.ScaleUpOrchestrator,
@@ -92,9 +92,6 @@ func NewAutoscaler(ctx context.Context, opts coreoptions.AutoscalerOptions, info
 func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerOptions, informerFactory informers.SharedInformerFactory) error {
 	if opts.Processors == nil {
 		opts.Processors = ca_processors.DefaultProcessors(opts.AutoscalingOptions)
-	}
-	if opts.LoopStartNotifier == nil {
-		opts.LoopStartNotifier = loopstart.NewObserversList(nil)
 	}
 	if opts.AutoscalingKubeClients == nil {
 		opts.AutoscalingKubeClients = ca_context.NewAutoscalingKubeClients(ctx, opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
@@ -157,7 +154,7 @@ func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerO
 
 		if opts.CapacityQuotasEnabled {
 			// register informer here to disable lazy initialization
-			if _, err := opts.KubeCache.GetInformer(context.TODO(), &cqv1alpha1.CapacityQuota{}); err != nil {
+			if _, err := opts.KubeCache.GetInformer(ctx, &cqv1alpha1.CapacityQuota{}); err != nil {
 				return err
 			}
 			providers = append(providers, capacityquota.NewCapacityQuotasProvider(opts.KubeClientNew))

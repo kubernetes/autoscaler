@@ -148,6 +148,10 @@ type AutoscalingOptions struct {
 	ScaleUpFromZero bool
 	// ParallelScaleUp defines whether CA can scale up node groups in parallel.
 	ParallelScaleUp bool
+	// SalvoScaleUp defines whether CA can scale up multiple node groups in a single CA loop.
+	SalvoScaleUp bool
+	// SalvoScaleUpBudget defines the maximum time CA spends on scale ups in a single CA loop.
+	SalvoScaleUpBudget time.Duration
 	// CloudConfig is the path to the cloud provider configuration file. Empty string for no configuration file.
 	CloudConfig string
 	// CloudProviderName sets the type of the cloud provider CA is about to run in. Allowed values: gce, aws
@@ -323,8 +327,6 @@ type AutoscalingOptions struct {
 	DynamicResourceAllocationEnabled bool
 	// CSINodeAwareSchedulingEnabled configures whether logic for handling CSINode objects is enabled.
 	CSINodeAwareSchedulingEnabled bool
-	// ClusterSnapshotParallelism is the maximum parallelism of cluster snapshot creation.
-	ClusterSnapshotParallelism int
 	// PredicateParallelism is the number of goroutines to use for running scheduler predicates.
 	PredicateParallelism int
 	// CheckCapacityProcessorInstance is the name of the processor instance.
@@ -336,6 +338,8 @@ type AutoscalingOptions struct {
 	MaxInactivityTime time.Duration
 	// MaxFailingTime is the maximum duration without a successful autoscaler run before it is considered unhealthy.
 	MaxFailingTime time.Duration
+	// MaxStartupTime is the maximum duration until the first successful autoscaler run before it is considered unhealthy.
+	MaxStartupTime time.Duration
 	// DebuggingSnapshotEnabled is used to enable/disable debugging snapshot creation.
 	DebuggingSnapshotEnabled bool
 	// EnableProfiling is debug/pprof endpoint enabled.

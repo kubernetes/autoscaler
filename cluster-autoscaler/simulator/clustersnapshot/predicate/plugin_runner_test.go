@@ -407,6 +407,7 @@ func TestRunFilterUntilPassingNode_PreferSmallestSteps(t *testing.T) {
 	// We use channels to block n1's evaluation until n2 has been visited, ensuring n2
 	// would finish first if not for the the logic that prefers smallest steps.
 	delayFirstNode := make(chan struct{})
+	firstNodeReached := make(chan struct{})
 	secondNodeVisited := make(chan struct{})
 	schedulingFinished := make(chan struct{})
 
@@ -417,10 +418,16 @@ func TestRunFilterUntilPassingNode_PreferSmallestSteps(t *testing.T) {
 			NodeOrdering: orderedIterator, // Needed to make the test deterministic.
 			IsNodeAcceptable: func(info *framework.NodeInfo) bool {
 				if info.Node().Name == "n1" {
+					close(firstNodeReached)
 					<-delayFirstNode
-				}
-				if info.Node().Name == "n2" {
-					close(secondNodeVisited)
+				} else {
+					// Block other nodes until n1's callback is in flight. Otherwise
+					// a passing node could call cancel() before the workqueue dispatches
+					// n1's chunk, causing n1 to be silently skipped and the test to flake
+					<-firstNodeReached
+					if info.Node().Name == "n2" {
+						close(secondNodeVisited)
+					}
 				}
 				return true // all nodes pass
 			},
