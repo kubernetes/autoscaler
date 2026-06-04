@@ -1,5 +1,6 @@
 version: 2
 updates:
+### VPA master branch
 - package-ecosystem: gomod
   directories:
     - "/vertical-pod-autoscaler"
@@ -41,6 +42,45 @@ updates:
       update-types:
         - "minor"
         - "patch"
+### VPA release 1.7 branch
+- package-ecosystem: gomod
+  target-branch: vpa-release-1.7
+  directories:
+    - "/vertical-pod-autoscaler"
+    - "/vertical-pod-autoscaler/test/"
+  schedule:
+    interval: weekly
+  labels:
+    - "area/vertical-pod-autoscaler"
+    - "release-note-none"
+    - "ok-to-test"
+    - "triage/accepted"
+  allow:
+    - dependency-type: "all"
+  ignore:
+    - dependency-name: "*"
+      update-types:
+        - "version-update:semver-major"
+        - "version-update:semver-minor"
+- package-ecosystem: docker
+  target-branch: vpa-release-1.7
+  directories:
+    - "/vertical-pod-autoscaler/pkg/admission-controller"
+    - "/vertical-pod-autoscaler/pkg/recommender"
+    - "/vertical-pod-autoscaler/pkg/updater"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 3
+  labels:
+    - "area/vertical-pod-autoscaler"
+    - "release-note-none"
+    - "ok-to-test"
+  groups:
+    actions:
+      update-types:
+        - "minor"
+        - "patch"
+### Addon-resizer
 - package-ecosystem: gomod
   directory: "/addon-resizer"
   schedule:
