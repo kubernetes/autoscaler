@@ -38,6 +38,7 @@ var DefaultAutoscalingOptions = config.AutoscalingOptions{
 	ScaleDownDelayAfterDelete:  0,
 	ScaleDownDelayAfterFailure: 0,
 	ScaleDownDelayTypeLocal:    true,
+	ScaleDownEnabled:           true,
 	MaxNodesTotal:              10,
 	MaxCoresTotal:              10,
 	MaxMemoryTotal:             100000,

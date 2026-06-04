@@ -18,6 +18,7 @@ package planner
 
 import (
 	"fmt"
+
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 
 	"testing"
@@ -813,6 +814,7 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 				},
 				EstimatorName:            estimator.BinpackingEstimatorName,
 				EnforceNodeGroupMinSize:  true,
+				ScaleDownEnabled:         true,
 				MaxNodesTotal:            100,
 				MaxCoresTotal:            100,
 				MaxMemoryTotal:           100000,

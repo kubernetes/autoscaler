@@ -516,6 +516,7 @@ func BenchmarkRunOnceScaleDown(b *testing.B) {
 			opts.MaxScaleDownParallelism = 1000
 			opts.MaxDrainParallelism = 1000
 			opts.ScaleDownDelayAfterAdd = 0
+			opts.ScaleDownEnabled = true
 			opts.ScaleDownNonEmptyCandidatesCount = 1000
 			opts.ScaleDownUnreadyEnabled = true
 			opts.ScaleDownSimulationTimeout = 60 * time.Second
