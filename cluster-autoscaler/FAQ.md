@@ -55,6 +55,7 @@ this document:
   * [What are Expanders?](#what-are-expanders)
   * [Does CA respect node affinity when selecting node groups to scale up?](#does-ca-respect-node-affinity-when-selecting-node-groups-to-scale-up)
   * [What are the parameters to CA?](#what-are-the-parameters-to-ca)
+  * [How does PDB eviction work?](#how-does-pdb-eviction-work)
 * [Troubleshooting](#troubleshooting)
   * [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
   * [How to set PDBs to enable CA to move kube-system pods?](#how-to-set-pdbs-to-enable-ca-to-move-kube-system-pods)
@@ -1133,6 +1134,14 @@ The following startup parameters are supported for cluster autoscaler:
 | `v` | number for the log level verbosity |  |
 | `vmodule` | comma-separated list of pattern=N settings for file-filtered logging (only works for text log format) |  |
 | `write-status-configmap` | Should CA write status information to a configmap | true |
+
+****************
+
+### How does PDB eviction work?
+
+When Cluster Autoscaler is simulating or performing a scale-down, pods that match the label selector of a PodDisruptionBudget (PDB) are evaluated differently.
+
+For pods covered by a PDB, the `status.disruptionsAllowed` field must be greater than 0. If this field equals 0, the node drain is blocked and the scale-down for that node will not proceed. For more information, check [pod disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/) and [how to configure a PDB](https://kubernetes.io/docs/tasks/run-application/configure-pdb/).
 
 # Troubleshooting
 
