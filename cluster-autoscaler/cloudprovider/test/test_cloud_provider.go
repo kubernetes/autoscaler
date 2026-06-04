@@ -154,10 +154,14 @@ func (b *TestCloudProviderBuilder) WithNodeProcessingError(nodeNames []string) *
 // Build returns a built test cloud provider
 func (b *TestCloudProviderBuilder) Build() *TestCloudProvider {
 	p := &TestCloudProvider{
-		nodes:           make(map[string]string),
-		errNodes:        make(map[string]bool),
-		groups:          make(map[string]cloudprovider.NodeGroup),
-		resourceLimiter: cloudprovider.NewResourceLimiter(make(map[string]int64), make(map[string]int64)),
+		nodes:             make(map[string]string),
+		errNodes:          make(map[string]bool),
+		groups:            make(map[string]cloudprovider.NodeGroup),
+		onScaleUp:         func(string, int) error { return nil },
+		onScaleDown:       func(string, string) error { return nil },
+		onNodeGroupCreate: func(string) error { return nil },
+		onNodeGroupDelete: func(string) error { return nil },
+		resourceLimiter:   cloudprovider.NewResourceLimiter(make(map[string]int64), make(map[string]int64)),
 	}
 
 	for _, builder := range b.builders {

@@ -2123,16 +2123,21 @@ func TestExpiredScaleUpRevertsTargetSize(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
-	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{
-		MaxTotalUnreadyPercentage: 10,
-		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 2 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+	clusterstate := newTestClusterStateRegistry(
+		provider,
+		fakeLogRecorder,
+		withMetrics(mockMetrics, provider),
+		WithConfig(ClusterStateRegistryConfig{
+			MaxTotalUnreadyPercentage: 10,
+			OkTotalUnreadyCount:       1,
+		}),
+	)
 
 	// Register scale up that started 3 minutes ago (exceeded 2 min max provision time)
 	clusterstate.RegisterScaleUp(mockedNodeGroup, 4, now.Add(-3*time.Minute))
 
 	// UpdateNodes should detect the timeout and call DecreaseTargetSize
-	err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
+	err := clusterstate.UpdateNodes([]*apiv1.Node{}, now)
 	assert.NoError(t, err)
 
 	// Verify DecreaseTargetSize was called with negative delta equal to the increase
@@ -2168,16 +2173,21 @@ func TestExpiredScaleUpRevertsTargetSizeHandlesError(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
-	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{
-		MaxTotalUnreadyPercentage: 10,
-		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 2 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+	clusterstate := newTestClusterStateRegistry(
+		provider,
+		fakeLogRecorder,
+		withMetrics(mockMetrics, provider),
+		WithConfig(ClusterStateRegistryConfig{
+			MaxTotalUnreadyPercentage: 10,
+			OkTotalUnreadyCount:       1,
+		}),
+	)
 
 	// Register scale up that started 3 minutes ago (exceeded 2 min max provision time)
 	clusterstate.RegisterScaleUp(mockedNodeGroup, 4, now.Add(-3*time.Minute))
 
 	// UpdateNodes should detect the timeout and attempt to call DecreaseTargetSize
-	err = clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
+	err = clusterstate.UpdateNodes([]*apiv1.Node{}, now)
 	assert.NoError(t, err)
 
 	// Verify DecreaseTargetSize was called even though it returned an error
@@ -2237,16 +2247,21 @@ func TestExpiredScaleUpRevertsPartialIncrease(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
-	clusterstate := newClusterStateRegistry(provider, ClusterStateRegistryConfig{
-		MaxTotalUnreadyPercentage: 10,
-		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 2 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(), mockMetrics)
+	clusterstate := newTestClusterStateRegistry(
+		provider,
+		fakeLogRecorder,
+		withMetrics(mockMetrics, provider),
+		WithConfig(ClusterStateRegistryConfig{
+			MaxTotalUnreadyPercentage: 10,
+			OkTotalUnreadyCount:       1,
+		}),
+	)
 
 	// Register scale up requesting 4 nodes that started 3 minutes ago
 	clusterstate.RegisterScaleUp(mockedNodeGroup, 4, now.Add(-3*time.Minute))
 
 	// UpdateNodes should detect the timeout and revert the _entire_ recorded increase
-	err := clusterstate.UpdateNodes([]*apiv1.Node{node, node2}, nil, now)
+	err := clusterstate.UpdateNodes([]*apiv1.Node{node, node2}, now)
 	assert.NoError(t, err)
 
 	// Verify DecreaseTargetSize was called with the full original increase,
