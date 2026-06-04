@@ -4,11 +4,9 @@ on:
   push:
     paths:
       - 'vertical-pod-autoscaler/**'
-      - '!vertical-pod-autoscaler/**/*.md'
   pull_request:
     paths:
       - 'vertical-pod-autoscaler/**'
-      - '!vertical-pod-autoscaler/**/*.md'
 
 env:
   GOPATH: ${{ github.workspace }}/go
