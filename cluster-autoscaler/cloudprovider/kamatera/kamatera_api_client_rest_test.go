@@ -18,12 +18,16 @@ package kamatera
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"maps"
+	"strings"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"testing"
 )
 
 const (
@@ -51,7 +55,7 @@ func TestApiClientRest_ListServers_NoServers(t *testing.T) {
 		"application/json",
 		`[]`,
 	).Once()
-	servers, err := client.ListServers(ctx, map[string]*Instance{}, "")
+	servers, err := client.ListServers(ctx, map[string]*Instance{}, "", "rke2://")
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(servers))
 	mock.AssertExpectationsForObjects(t, server)
@@ -64,8 +68,11 @@ func TestApiClientRest_ListServers(t *testing.T) {
 	client := NewMockKamateraApiClientRest(server.URL, 5, 0)
 	newServerName1 := mockKamateraServerName()
 	cachedServerName2 := mockKamateraServerName()
+	cachedServerProviderID2 := formatKamateraProviderID("rke2://", cachedServerName2)
 	cachedServerName3 := mockKamateraServerName()
+	cachedServerProviderID3 := formatKamateraProviderID("rke2://", cachedServerName3)
 	cachedServerName4 := mockKamateraServerName()
+	cachedServerProviderID4 := formatKamateraProviderID("rke2://", cachedServerName4)
 	server.On("handle", "/service/servers").Return(
 		"application/json",
 		fmt.Sprintf(`[
@@ -79,25 +86,25 @@ func TestApiClientRest_ListServers(t *testing.T) {
 		`[{"tagName": "test-tag"}, {"tagName": "other-test-tag"}]`,
 	)
 	servers, err := client.ListServers(ctx, map[string]*Instance{
-		cachedServerName2: {
-			Id:      cachedServerName2,
+		cachedServerProviderID2: {
+			Id:      cachedServerProviderID2,
 			Status:  &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			PowerOn: true,
 			Tags:    []string{"my-tag", "my-other-tag"},
 		},
-		cachedServerName3: {
-			Id:      cachedServerName3,
+		cachedServerProviderID3: {
+			Id:      cachedServerProviderID3,
 			Status:  &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			PowerOn: true,
 			Tags:    []string{"another-tag", "my-other-tag"},
 		},
-		cachedServerName4: {
-			Id:      cachedServerName4,
+		cachedServerProviderID4: {
+			Id:      cachedServerProviderID4,
 			Status:  &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 			PowerOn: true,
 			Tags:    []string{},
 		},
-	}, "")
+	}, "", "rke2://")
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(servers))
 	assert.Equal(t, servers, []Server{
@@ -142,7 +149,7 @@ func TestApiClientRest_ListServersNamePrefix(t *testing.T) {
 		"application/json",
 		`[{"tagName": "test-tag"}, {"tagName": "other-test-tag"}]`,
 	)
-	servers, err := client.ListServers(ctx, map[string]*Instance{}, "prefixb")
+	servers, err := client.ListServers(ctx, map[string]*Instance{}, "prefixb", "rke2://")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(servers))
 	assert.Equal(t, servers, []Server{
@@ -166,7 +173,7 @@ func TestApiClientRest_ListServersNoTags(t *testing.T) {
 	).On("handle", "/server/tags").Return(
 		"application/json", `[]`,
 	)
-	servers, err := client.ListServers(ctx, map[string]*Instance{}, "")
+	servers, err := client.ListServers(ctx, map[string]*Instance{}, "", "rke2://")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(servers))
 	assert.Equal(t, servers, []Server{
@@ -190,7 +197,7 @@ func TestApiClientRest_ListServersTagsError(t *testing.T) {
 	).On("handle", "/server/tags").Return(
 		"application/json", `{"message":"Failed to run command method (serverTags)"}`, 500,
 	)
-	servers, err := client.ListServers(ctx, map[string]*Instance{}, "")
+	servers, err := client.ListServers(ctx, map[string]*Instance{}, "", "rke2://")
 	assert.Error(t, err)
 	assert.Nil(t, servers)
 }
@@ -201,19 +208,25 @@ func TestApiClientRest_DeleteServer(t *testing.T) {
 	ctx := context.Background()
 	client := NewMockKamateraApiClientRest(server.URL, 5, 0)
 	serverName := mockKamateraServerName()
-	commandId := "mock-command-id"
 	server.On("handle", "/service/server/poweroff").Return(
 		"application/json",
-		fmt.Sprintf(`["%s"]`, commandId),
+		fmt.Sprintf(`["%s"]`, "poweroff-command-id"),
 	).Once().On("handle", "/service/queue").Return(
 		"application/json",
 		`[{"status": "complete"}]`,
 	).Once().On("handle", "/service/server/terminate").Return(
 		"application/json",
-		"{}",
+		fmt.Sprintf(`["%s"]`, "terminate-command-id"),
 	).Once()
-	err := client.DeleteServer(ctx, serverName)
+	commandId, err := client.StartServerRequest(ctx, ServerRequestPoweroff, serverName)
 	assert.NoError(t, err)
+	assert.Equal(t, "poweroff-command-id", commandId)
+	commandStatus, err := client.getCommandStatus(ctx, commandId)
+	assert.NoError(t, err)
+	assert.Equal(t, CommandStatusComplete, commandStatus)
+	commandId, err = client.StartServerTerminate(ctx, serverName, false)
+	assert.NoError(t, err)
+	assert.Equal(t, "terminate-command-id", commandId)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -223,9 +236,8 @@ func TestApiClientRest_DeleteServer_TerminateError(t *testing.T) {
 	ctx := context.Background()
 	client := NewMockKamateraApiClientRest(server.URL, 5, 0)
 	serverName := mockKamateraServerName()
-	commandId := "mock-command-id"
 	server.On("handle", "/service/server/poweroff").Return(
-		"application/json", fmt.Sprintf(`["%s"]`, commandId), 200,
+		"application/json", fmt.Sprintf(`["%s"]`, "poweroff-command-id"), 200,
 	).Once().On("handle", "/service/queue").Return(
 		"application/json", `[{"status": "complete"}]`, 200,
 	).Once().On("handle", "/service/server/terminate").Return(
@@ -233,8 +245,16 @@ func TestApiClientRest_DeleteServer_TerminateError(t *testing.T) {
 		"Gateway Timeout",
 		504,
 	).Times(5)
-	err := client.DeleteServer(ctx, serverName)
+	commandId, err := client.StartServerRequest(ctx, ServerRequestPoweroff, serverName)
+	assert.NoError(t, err)
+	assert.Equal(t, "poweroff-command-id", commandId)
+	commandStatus, err := client.getCommandStatus(ctx, commandId)
+	assert.NoError(t, err)
+	assert.Equal(t, CommandStatusComplete, commandStatus)
+	commandId, err = client.StartServerTerminate(ctx, serverName, false)
 	assert.Error(t, err)
+	assert.Equal(t, "", commandId)
+	server.AssertExpectations(t)
 }
 
 func TestApiClientRest_CreateServers(t *testing.T) {
@@ -246,16 +266,139 @@ func TestApiClientRest_CreateServers(t *testing.T) {
 	server.On("handle", "/service/server").Return(
 		"application/json",
 		fmt.Sprintf(`["%s"]`, commandId),
-	).Twice().On("handle", "/service/queue").Return(
-		"application/json",
-		`[{"status": "complete"}]`,
 	).Twice()
-	servers, err := client.CreateServers(ctx, 2, mockServerConfig("test", []string{"foo", "bar"}))
+	serverCommandIds, err := client.StartCreateServers(ctx, 2, mockServerConfig("test", []string{"foo", "bar"}))
+	var serverNames []string
+	for name := range maps.Keys(serverCommandIds) {
+		serverNames = append(serverNames, name)
+	}
 	assert.NoError(t, err)
-	assert.Equal(t, 2, len(servers))
-	assert.Less(t, 10, len(servers[0].Name))
-	assert.Less(t, 10, len(servers[1].Name))
-	assert.Equal(t, servers[0].Tags, []string{"foo", "bar"})
-	assert.Equal(t, servers[1].Tags, []string{"foo", "bar"})
-	mock.AssertExpectationsForObjects(t, server)
+	assert.Equal(t, 2, len(serverCommandIds))
+	assert.Equal(t, 2, len(serverNames))
+	assert.Less(t, 10, len(serverNames[0]))
+	assert.Less(t, 10, len(serverNames[1]))
+	server.AssertExpectations(t)
+}
+
+func TestApiClientRest_InvalidResponses(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		endpoint             string
+		mockResponses        []string
+		call                 func(ctx context.Context, c *KamateraApiClientRest) (any, error)
+		assertExpectedRes    func(t *testing.T, res any)
+		expectedErrMsgPrefix string
+	}{
+		{
+			name:     "ListServers",
+			endpoint: "/service/servers",
+			mockResponses: []string{
+				`{"invalid":"response"}`,
+				`[1,2]`,
+				`[{"foo": "bar"}]`,
+				`[{"name": 123}]`,
+				`[{"name": "foo", "power": 123}]`,
+			},
+			call: func(ctx context.Context, c *KamateraApiClientRest) (any, error) {
+				return c.ListServers(ctx, map[string]*Instance{}, "", "rke2://")
+			},
+			assertExpectedRes: func(t *testing.T, res any) {
+				assert.Nil(t, res)
+			},
+			expectedErrMsgPrefix: "invalid response from Kamatera servers API: ",
+		},
+		{
+			name:     "StartServerTerminate",
+			endpoint: "/service/server/terminate",
+			mockResponses: []string{
+				`{"invalid":"response"}`,
+				`[1,2]`,
+				`[]`,
+				`[null]`,
+				`[1]`,
+				`[""]`,
+			},
+			call: func(ctx context.Context, c *KamateraApiClientRest) (any, error) {
+				return c.StartServerTerminate(ctx, "server-name", true)
+			},
+			assertExpectedRes: func(t *testing.T, res any) {
+				assert.Equal(t, "", res)
+			},
+			expectedErrMsgPrefix: "invalid response from Kamatera server terminate API: ",
+		},
+		{
+			name:     "StartServerRequest",
+			endpoint: "/service/server/poweron",
+			mockResponses: []string{
+				`{"invalid":"response"}`,
+				`[1,2]`,
+				`[]`,
+				`[null]`,
+				`[1]`,
+				`[""]`,
+			},
+			call: func(ctx context.Context, c *KamateraApiClientRest) (any, error) {
+				return c.StartServerRequest(ctx, ServerRequestPoweron, "server-name")
+			},
+			assertExpectedRes: func(t *testing.T, res any) {
+				assert.Equal(t, "", res)
+			},
+			expectedErrMsgPrefix: "invalid response from Kamatera server poweron API: ",
+		},
+		{
+			name:     "getServerTags",
+			endpoint: "/server/tags",
+			mockResponses: []string{
+				`{"invalid":"response"}`,
+				`[1,2]`,
+				`[{"foo": 1}]`,
+				`[{"foo": "bar"}]`,
+			},
+			call: func(ctx context.Context, c *KamateraApiClientRest) (any, error) {
+				return c.getServerTags(ctx, "server-name", map[string]*Instance{}, "rke2://")
+			},
+			assertExpectedRes: func(t *testing.T, res any) {
+				assert.Nil(t, res)
+			},
+			expectedErrMsgPrefix: "invalid response from Kamatera server tags API: ",
+		},
+		{
+			name:     "getCommandStatus",
+			endpoint: "/service/queue",
+			mockResponses: []string{
+				`{"invalid":"response"}`,
+				`[]`,
+				`[1,2]`,
+				`[{"status": 123}]`,
+			},
+			call: func(ctx context.Context, c *KamateraApiClientRest) (any, error) {
+				return c.getCommandStatus(ctx, "command-id")
+			},
+			assertExpectedRes: func(t *testing.T, res any) {
+				assert.Equal(t, CommandStatusError, res.(CommandStatus))
+			},
+			expectedErrMsgPrefix: "invalid response from Kamatera command status API: ",
+		},
+	}
+	for _, tc := range testCases {
+		for _, mockResponse := range tc.mockResponses {
+			t.Run(fmt.Sprintf("%s: %s", tc.name, mockResponse), func(t *testing.T) {
+				server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
+				defer server.Close()
+				ctx := context.Background()
+				client := NewMockKamateraApiClientRest(server.URL, 5, 0)
+				server.On("handle", tc.endpoint).Return(
+					"application/json",
+					mockResponse,
+				).Once()
+				res, err := tc.call(ctx, &client)
+				mock.AssertExpectationsForObjects(t, server)
+				assert.Error(t, err)
+				var mockServerResponse interface{}
+				assert.NoError(t, json.NewDecoder(strings.NewReader(mockResponse)).Decode(&mockServerResponse))
+				assert.Equal(t, fmt.Sprintf("%s%v", tc.expectedErrMsgPrefix, mockServerResponse), err.Error())
+				tc.assertExpectedRes(t, res)
+			})
+		}
+	}
 }
