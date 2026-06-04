@@ -211,6 +211,10 @@ sure nothing we care about will break if we do.
 
     IMPORTANT: Make sure the tags created above exist before merging into the main branch!
 
+## Update dependabot
+
+Update dependabot to include the latest 3 minor releases
+
 ## Permissions
 
 * Permissions to access `gcr.io/k8s-staging-autoscaling` are governed by list
