@@ -119,7 +119,8 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	for _, node := range nodes {
 		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node)
 		if err != nil {
-			return err
+			klog.Warningf("Failed to find node group for node %q, skipping verification: %v", node.Spec.ProviderID, err)
+			continue
 		}
 
 		if actualNodeGroup == nil {
@@ -149,7 +150,8 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	for _, node := range nodes {
 		nodeGroup, err := ng.machineController.nodeGroupForNode(node)
 		if err != nil {
-			return err
+			klog.Warningf("Failed to find node group for node %q, skipping deletion: %v", node.Spec.ProviderID, err)
+			continue
 		}
 
 		machine, err := ng.machineController.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
