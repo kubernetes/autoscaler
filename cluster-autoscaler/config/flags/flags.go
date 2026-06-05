@@ -249,6 +249,7 @@ var (
 	// Deprecated flags
 	ignoreTaintsFlag           = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
 	clusterSnapshotParallelism = flag.Int("cluster-snapshot-parallelism", 16, "Maximum parallelism of cluster snapshot creation (Deprecated, use predicate-parallelism instead)")
+	scaleDownEnabled           = flag.Bool("scale-down-enabled", true, "[Deprecated] Should CA scale down the cluster")
 )
 
 var autoscalingOptions *config.AutoscalingOptions
@@ -309,6 +310,10 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("--enable-dynamic-resource-allocation flag must be true: %t", ptr.Deref(enableDynamicResourceAllocation, false))
 	}
 
+	if *scaleDownEnabled == false {
+		klog.Warningf("--scale-down-enabled flag is deprecated and will be removed in a future release")
+	}
+
 	maxStartupTime := *maxStartupTimeFlag
 	maxHealthCheckTimeout := max(*maxInactivityTimeFlag, *maxFailingTimeFlag, maxStartupTime)
 	if maxStartupTime < maxHealthCheckTimeout {
@@ -356,6 +361,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownDelayTypeLocal:          *scaleDownDelayTypeLocal,
 		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
+		ScaleDownEnabled:                 *scaleDownEnabled,
 		ScaleDownUnreadyEnabled:          *scaleDownUnreadyEnabled,
 		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
 		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
