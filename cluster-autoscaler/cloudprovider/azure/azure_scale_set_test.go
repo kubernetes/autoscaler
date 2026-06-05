@@ -17,10 +17,14 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -368,6 +372,315 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 2, targetSizeForEdgeZoneMinZero)
 	}
+}
+
+// TestScaleSetIncreaseSizeRaceCondition reproduces a data race between the
+// non-atomic createOrUpdateInstances code path and concurrent readers.
+//
+// This test must be run with `-race` to detect the race. Without -race it is
+// a no-op smoke test. `make test-unit` runs the suite with -race.
+func TestScaleSetIncreaseSizeRaceCondition(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedScaleSets := newTestVMSSList(3, testASG, testLocation, armcompute.OrchestrationModeUniform)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	provider := newTestProvider(t)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	// BeginCreateOrUpdate signals that the writer is parked inside the call
+	// (sizeMutex still held by initCreateOrUpdate's deferred Unlock), then
+	// blocks until the test releases it. This lets us start reader goroutines
+	// while the lock is held so they will be racing against the unprotected
+	// writes that follow once initCreateOrUpdate returns.
+	started := make(chan struct{})
+	release := make(chan struct{})
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+	).DoAndReturn(func(_ context.Context, _, _ string, _ armcompute.VirtualMachineScaleSet, _ *armcompute.VirtualMachineScaleSetsClientBeginCreateOrUpdateOptions) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
+		close(started)
+		<-release
+		return nil, nil
+	})
+	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
+
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), provider.azureManager.config.ResourceGroup, testASG).Return(expectedVMSSVMs, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	err := provider.azureManager.forceRefresh()
+	assert.NoError(t, err)
+
+	registered := provider.azureManager.RegisterNodeGroup(
+		newTestScaleSet(provider.azureManager, testASG))
+	assert.True(t, registered)
+
+	ng := provider.NodeGroups()[0]
+
+	// Kick off the writer (non-atomic IncreaseSize -> createOrUpdateInstances).
+	increaseDone := make(chan error, 1)
+	go func() {
+		increaseDone <- ng.IncreaseSize(2)
+	}()
+
+	// Wait until createOrUpdateInstances is parked inside BeginCreateOrUpdate
+	// with sizeMutex held.
+	<-started
+
+	// Spin concurrent readers that touch curSize / lastSizeRefresh under
+	// sizeMutex. Once we release the writer, it will exit BeginCreateOrUpdate,
+	// drop sizeMutex, and perform the (unprotected) writes to curSize /
+	// lastSizeRefresh. The race detector will flag the unsynchronized access.
+	var wg sync.WaitGroup
+	stop := make(chan struct{})
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-stop:
+					return
+				default:
+					_, _ = ng.TargetSize()
+				}
+			}
+		}()
+	}
+
+	// Give readers a moment to start contending for sizeMutex, then release
+	// the writer so the unprotected writes execute concurrently with reads.
+	time.Sleep(10 * time.Millisecond)
+	close(release)
+
+	err = <-increaseDone
+	assert.NoError(t, err)
+
+	// Let the readers run a bit longer past the unprotected writes to widen
+	// the race window, then stop them.
+	time.Sleep(10 * time.Millisecond)
+	close(stop)
+	wg.Wait()
+}
+
+func TestScaleSetAtomicIncreaseSize(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedScaleSets := newTestVMSSList(3, testASG, "eastus", armcompute.OrchestrationModeUniform)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	provider := newTestProvider(t)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	// BeginCreateOrUpdate returns nil poller — simulates immediate success.
+	// Verify the request payload contains the expected new capacity (3 + 2 = 5).
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Cond(func(x any) bool {
+			vmss, ok := x.(armcompute.VirtualMachineScaleSet)
+			return ok && vmss.SKU != nil && vmss.SKU.Capacity != nil && *vmss.SKU.Capacity == 5
+		}),
+		gomock.Any()).Return(nil, nil)
+	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
+
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), provider.azureManager.config.ResourceGroup, testASG).Return(expectedVMSSVMs, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	err := provider.azureManager.forceRefresh()
+	assert.NoError(t, err)
+
+	// Error: non-existent scale set
+	ss := newTestScaleSet(provider.azureManager, "test-asg-doesnt-exist")
+	err = ss.AtomicIncreaseSize(1)
+	expectedErr := fmt.Errorf("could not find vmss: test-asg-doesnt-exist")
+	assert.Equal(t, expectedErr, err)
+
+	registered := provider.azureManager.RegisterNodeGroup(
+		newTestScaleSet(provider.azureManager, testASG))
+	assert.True(t, registered)
+
+	// Error: negative delta
+	err = provider.NodeGroups()[0].AtomicIncreaseSize(-1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "size increase must be positive")
+
+	// Error: zero delta
+	err = provider.NodeGroups()[0].AtomicIncreaseSize(0)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "size increase must be positive")
+
+	// Error: exceeds max size (max is 5, current is 3, delta 3 = 6 > 5)
+	err = provider.NodeGroups()[0].AtomicIncreaseSize(3)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "size increase too large")
+
+	// Current target size is 3.
+	targetSize, err := provider.NodeGroups()[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+
+	// Success: atomic increase by 2 (blocks until complete, nil poller = immediate).
+	err = provider.NodeGroups()[0].AtomicIncreaseSize(2)
+	assert.NoError(t, err)
+
+	// New target size should be 5.
+	targetSize, err = provider.NodeGroups()[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 5, targetSize)
+}
+
+func TestScaleSetAtomicIncreaseSizeFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedScaleSets := newTestVMSSList(3, testASG, "eastus", armcompute.OrchestrationModeUniform)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	provider := newTestProvider(t)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	// BeginCreateOrUpdate returns an error — simulates Azure rejecting the request.
+	// Verify the request payload contains the expected new capacity (3 + 2 = 5).
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Cond(func(x any) bool {
+			vmss, ok := x.(armcompute.VirtualMachineScaleSet)
+			return ok && vmss.SKU != nil && vmss.SKU.Capacity != nil && *vmss.SKU.Capacity == 5
+		}),
+		gomock.Any()).
+		Return(nil, fmt.Errorf("azure capacity unavailable"))
+	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
+
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), provider.azureManager.config.ResourceGroup, testASG).Return(expectedVMSSVMs, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	err := provider.azureManager.forceRefresh()
+	assert.NoError(t, err)
+
+	registered := provider.azureManager.RegisterNodeGroup(
+		newTestScaleSet(provider.azureManager, testASG))
+	assert.True(t, registered)
+
+	// BeginCreateOrUpdate fails — size should NOT be updated.
+	err = provider.NodeGroups()[0].AtomicIncreaseSize(2)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "azure capacity unavailable")
+
+	// Target size should remain 3 (not updated on failure).
+	targetSize, err := provider.NodeGroups()[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+}
+
+// fakeErrorPollerHandler simulates a poller that fails during Poll.
+type fakeErrorPollerHandler[T any] struct {
+	pollErr error
+}
+
+func (f *fakeErrorPollerHandler[T]) Done() bool {
+	return false
+}
+
+func (f *fakeErrorPollerHandler[T]) Poll(ctx context.Context) (*http.Response, error) {
+	return nil, f.pollErr
+}
+
+func (f *fakeErrorPollerHandler[T]) Result(ctx context.Context, out *T) error {
+	return nil
+}
+
+func TestScaleSetAtomicIncreaseSizePollerFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	expectedScaleSets := newTestVMSSList(3, testASG, "eastus", armcompute.OrchestrationModeUniform)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	provider := newTestProvider(t)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	// Create a poller that will fail during PollUntilDone
+	pollerResp := &http.Response{
+		Header: http.Header{},
+	}
+	failingPoller, pollerErr := runtime.NewPoller(pollerResp, runtime.Pipeline{},
+		&runtime.NewPollerOptions[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse]{
+			Handler: &fakeErrorPollerHandler[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse]{
+				pollErr: fmt.Errorf("long running operation failed"),
+			},
+		})
+	assert.NoError(t, pollerErr)
+
+	// BeginCreateOrUpdate succeeds (returns a poller), but PollUntilDone will fail.
+	// Verify the request payload contains the expected new capacity (3 + 2 = 5).
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Cond(func(x any) bool {
+			vmss, ok := x.(armcompute.VirtualMachineScaleSet)
+			return ok && vmss.SKU != nil && vmss.SKU.Capacity != nil && *vmss.SKU.Capacity == 5
+		}),
+		gomock.Any()).
+		Return(failingPoller, nil)
+	provider.azureManager.azClient.vmssClientForDelete = mockDeleteClient
+
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), provider.azureManager.config.ResourceGroup, testASG).Return(expectedVMSSVMs, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	err := provider.azureManager.forceRefresh()
+	assert.NoError(t, err)
+
+	registered := provider.azureManager.RegisterNodeGroup(
+		newTestScaleSet(provider.azureManager, testASG))
+	assert.True(t, registered)
+
+	// Current target size is 3.
+	targetSize, err := provider.NodeGroups()[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+
+	// PollUntilDone fails — size should NOT be updated.
+	err = provider.NodeGroups()[0].AtomicIncreaseSize(2)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "long running operation failed")
+
+	// Target size should remain 3 (not updated on poller failure).
+	targetSize, err = provider.NodeGroups()[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
 }
 
 // TestIncreaseSizeOnVMProvisioningFailed has been tweeked only for Uniform Orchestration mode.
