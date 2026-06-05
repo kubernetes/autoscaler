@@ -79,22 +79,78 @@ of nodes itself as a limitable resource, as shown in one of the examples below.
 
 ### CapacityQuota Status
 
-For better observability, the CapacityQuota resource could be
-enhanced with a status field. This field, updated by a controller, would display
-the current resource usage for the selected nodes, allowing users to quickly
-check usage against the defined limits via kubectl describe. The controller can
-run in a separate thread as a part of the node autoscaler component.
+For better observability and resilience against invalid configurations, the
+`CapacityQuota` resource is enhanced with a status field. This field, updated by
+a controller, displays the current resource usage for the selected nodes and
+tracks the "effective state" of the quota. The backend enforcing the limits
+reads exclusively from the `status` rather than the `spec`. Note that
+`status.used` is purely informational for the user and is not used by the
+backend for enforcement decisions.
 
 An example of the status field:
 
 ```yaml
 status:
+  observedGeneration: 1
+  observedSelector:
+    matchLabels:
+      example.cloud.com/machine-family: e2
+  observedLimits:
+    resources:
+      cpu: 64
+      memory: 256Gi
   used:
     resources:
       cpu: 32
       memory: 128Gi
       nodes: 50
+  conditions:
+  - type: Valid
+    status: "True"
+    reason: ValidationSucceeded
+    message: "CapacityQuota is valid"
 ```
+
+#### Validation
+
+The backend that enforces quotas runs continuously in the Cluster Autoscaler's
+main
+loop. If a user updates a `CapacityQuota` with an invalid specification (e.g., a
+malformed label selector), the backend must not crash or enforce a quota that is
+invalid. The reconciler should apply a `Valid` condition on the CapacityQuota,
+and the backend should consider the quota if and only if it has a `Valid`
+condition with `True` state.
+However, that introduces a race where an invalid spec is applied, but the
+reconciler hasn't transitioned the `Valid` condition to false.
+In such case, the backend will try to enforce a quota with an invalid spec.
+Therefore, we propose introducing `observedLimits` and `observedSelector` status
+fields containing the last configuration observed by the controller. Backend
+will use these fields instead of `spec.limits` and `spec.selector`
+By default, the controller will simply validate if the label selector is valid,
+but we will expose a Validator interface
+for cloud providers to implement their custom validations.
+
+The controller acts as a gatekeeper:
+
+1. It validates the user's requested `spec`.
+2. It updates `observedGeneration`, `observedLimits` and `observedSelector`
+   status fields to reflect the current spec.
+3. It validates the spec with the provided validators. Based on the result of
+   the validation, it sets the `Valid` condition
+   to either True or False. In case of validation errors, they should be exposed
+   to the user via the condition's message.
+
+The simplest validations, such as checking for negative limits, will be
+implemented as CEL rules directly on the CRD for
+immediate rejection. However, for more complex validations (like verifying label
+selector semantics), the asynchronous "effective state" pattern serves as the
+primary line of defense. While a Validating Admission Webhook could
+synchronously reject all invalid updates, managing webhook infrastructure (TLS
+certificates, high availability) introduces operational overhead for the Cluster
+Autoscaler deployment. A Validating Admission Webhook may be introduced in the
+future to improve UX by providing immediate feedback on all malformed requests,
+but the controller will remain the ultimate source of truth for the backend to
+ensure resilience.
 
 ## Alternatives considered
 
