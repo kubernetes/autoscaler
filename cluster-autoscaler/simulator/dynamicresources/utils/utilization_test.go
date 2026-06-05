@@ -25,6 +25,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -208,6 +209,91 @@ func TestDynamicResourceUtilization(t *testing.T) {
 				t.Errorf("HighestDynamicResourceUtilization(): unexpected utilization: want %v, got %v", tc.wantHighestUtilization, highestUtil)
 			}
 		})
+	}
+}
+
+func TestDynamicResourceUtilizationMixedAtomicAndPartitionablePool(t *testing.T) {
+	driver := "driver.foo.com"
+	pool := "pool1"
+	nodeName := "node"
+	node := test.BuildTestNode(nodeName, 1000, 1000)
+	counterSet := "gpu-0-counters"
+
+	resourceSlices := []*resourceapi.ResourceSlice{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "devices", UID: types.UID("devices")},
+			Spec: resourceapi.ResourceSliceSpec{
+				Driver:   driver,
+				NodeName: &nodeName,
+				Pool:     resourceapi.ResourcePool{Name: pool, Generation: 0, ResourceSliceCount: 2},
+				Devices: []resourceapi.Device{
+					{Name: "atomic-allocated"},
+					{Name: "atomic-free"},
+					{
+						Name: "gpu-0-partition-0",
+						ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+							{
+								CounterSet: counterSet,
+								Counters: map[string]resourceapi.Counter{
+									"memory": {Value: resource.MustParse("5Gi")},
+								},
+							},
+						},
+					},
+					{
+						Name: "gpu-0-partition-1",
+						ConsumesCounters: []resourceapi.DeviceCounterConsumption{
+							{
+								CounterSet: counterSet,
+								Counters: map[string]resourceapi.Counter{
+									"memory": {Value: resource.MustParse("5Gi")},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "counters", UID: types.UID("counters")},
+			Spec: resourceapi.ResourceSliceSpec{
+				Driver:   driver,
+				NodeName: &nodeName,
+				Pool:     resourceapi.ResourcePool{Name: pool, Generation: 0, ResourceSliceCount: 2},
+				SharedCounters: []resourceapi.CounterSet{
+					{
+						Name: counterSet,
+						Counters: map[string]resourceapi.Counter{
+							"memory": {Value: resource.MustParse("10Gi")},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	pod := test.BuildTestPod("pod", 1, 1, test.WithNodeName(nodeName))
+	claim := &resourceapi.ResourceClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: "claim", UID: types.UID("claim")},
+		Status: resourceapi.ResourceClaimStatus{
+			Allocation: &resourceapi.AllocationResult{
+				Devices: resourceapi.DeviceAllocationResult{
+					Results: []resourceapi.DeviceRequestAllocationResult{
+						{Request: "request", Driver: driver, Pool: pool, Device: "atomic-allocated"},
+					},
+				},
+			},
+		},
+	}
+
+	utilization, err := CalculateDynamicResourceUtilization(framework.NewNodeInfo(node, resourceSlices, framework.NewPodInfo(pod, []*resourceapi.ResourceClaim{claim})))
+	if err != nil {
+		t.Fatalf("CalculateDynamicResourceUtilization(): unexpected error: %v", err)
+	}
+
+	want := 0.25
+	if got := utilization[driver][pool]; got != want {
+		t.Fatalf("CalculateDynamicResourceUtilization() mixed pool utilization = %v, want %v", got, want)
 	}
 }
 
