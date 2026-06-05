@@ -33,6 +33,9 @@ var defaultVersionedFeatureGates = map[featuregate.Feature]featuregate.Versioned
 	InPlace: {
 		{Version: version.MustParse("1.7"), Default: false, PreRelease: featuregate.Alpha},
 	},
+	InPlaceCapacityAware: {
+		{Version: version.MustParse("1.8"), Default: false, PreRelease: featuregate.Alpha},
+	},
 	PerVPAConfig: {
 		{Version: version.MustParse("1.5"), Default: false, PreRelease: featuregate.Alpha},
 	},

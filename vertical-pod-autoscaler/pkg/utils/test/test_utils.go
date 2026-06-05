@@ -118,7 +118,7 @@ func (m *PodsEvictionRestrictionMock) Evict(pod *corev1.Pod, vpa *vpa_types.Vert
 }
 
 // CanEvict is a mock implementation of PodsEvictionRestriction.CanEvict
-func (m *PodsEvictionRestrictionMock) CanEvict(pod *corev1.Pod) bool {
+func (m *PodsEvictionRestrictionMock) CanEvict(pod *corev1.Pod, _ *corev1.Node) bool {
 	args := m.Called(pod)
 	return args.Bool(0)
 }
@@ -135,7 +135,7 @@ func (m *PodsInPlaceRestrictionMock) InPlaceUpdate(pod *corev1.Pod, vpa *vpa_typ
 }
 
 // CanInPlaceUpdate is a mock implementation of PodsInPlaceRestriction.CanInPlaceUpdate
-func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision {
+func (m *PodsInPlaceRestrictionMock) CanInPlaceUpdate(pod *corev1.Pod, node *corev1.Node, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision {
 	args := m.Called(pod)
 	return args.Get(0).(utils.InPlaceDecision)
 }
@@ -173,6 +173,25 @@ func (m *PodListerMock) List(selector labels.Selector) (ret []*corev1.Pod, err e
 
 // Get is not implemented for this mock
 func (m *PodListerMock) Get(name string) (*corev1.Pod, error) {
+	return nil, errors.New("unimplemented")
+}
+
+type NodeListerMock struct {
+	mock.Mock
+}
+
+// List is a mock implementation of NodeLister.List
+func (m *NodeListerMock) List(selector labels.Selector) (ret []*corev1.Node, err error) {
+	args := m.Called()
+	var returnArg []*corev1.Node
+	if args.Get(0) != nil {
+		returnArg = args.Get(0).([]*corev1.Node)
+	}
+	return returnArg, args.Error(1)
+}
+
+// Get is not implemented for this mock
+func (m *NodeListerMock) Get(name string) (*corev1.Node, error) {
 	return nil, errors.New("unimplemented")
 }
 

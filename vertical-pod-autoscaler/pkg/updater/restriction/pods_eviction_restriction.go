@@ -40,7 +40,7 @@ type PodsEvictionRestriction interface {
 	// Returns error if pod cannot be evicted or if client returned error.
 	Evict(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error
 	// CanEvict checks if pod can be safely evicted
-	CanEvict(pod *corev1.Pod) bool
+	CanEvict(pod *corev1.Pod, _ *corev1.Node) bool
 }
 
 // PodsEvictionRestrictionImpl is the implementation of the PodsEvictionRestriction interface.
@@ -53,7 +53,7 @@ type PodsEvictionRestrictionImpl struct {
 }
 
 // CanEvict checks if pod can be safely evicted
-func (e *PodsEvictionRestrictionImpl) CanEvict(pod *corev1.Pod) bool {
+func (e *PodsEvictionRestrictionImpl) CanEvict(pod *corev1.Pod, _ *corev1.Node) bool {
 	cr, present := e.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
@@ -82,7 +82,7 @@ func (e *PodsEvictionRestrictionImpl) Evict(podToEvict *corev1.Pod, vpa *vpa_typ
 		return fmt.Errorf("pod not suitable for eviction %s/%s: not in replicated pods map", podToEvict.Namespace, podToEvict.Name)
 	}
 
-	if !e.CanEvict(podToEvict) {
+	if !e.CanEvict(podToEvict, nil) {
 		return fmt.Errorf("cannot evict pod %s/%s: eviction budget exceeded", podToEvict.Namespace, podToEvict.Name)
 	}
 

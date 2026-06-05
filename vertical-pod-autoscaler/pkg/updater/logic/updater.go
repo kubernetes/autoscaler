@@ -23,16 +23,14 @@ import (
 
 	"golang.org/x/time/rate"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/informers"
+	informers "k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	corescheme "k8s.io/client-go/kubernetes/scheme"
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	listersv1 "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/set"
@@ -72,6 +70,7 @@ type Updater interface {
 type updater struct {
 	vpaLister                    vpa_lister.VerticalPodAutoscalerLister
 	podLister                    listersv1.PodLister
+	nodeLister                   listersv1.NodeLister
 	eventRecorder                record.EventRecorder
 	restrictionFactory           restriction.PodsRestrictionFactory
 	recommendationProcessor      vpa_api_util.RecommendationProcessor
@@ -96,6 +95,7 @@ func NewUpdater(
 	vpaClient *vpa_clientset.Clientset,
 	kubeInformerFactory informers.SharedInformerFactory,
 	podLister listersv1.PodLister,
+	nodeLister listersv1.NodeLister,
 	minReplicasForEviction int,
 	evictionRateLimit float64,
 	evictionRateBurst int,
@@ -330,7 +330,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		withEvictable := false
 
 		if (updateMode == vpa_types.UpdateModeInPlaceOrRecreate) || (updateMode == vpa_types.UpdateModeInPlace && inPlaceFeatureEnabled) {
-			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter, vpa, u.infeasibleAttempts), vpa)
+			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, u.nodeLister, inPlaceLimiter, vpa, u.infeasibleAttempts), vpa)
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
 			if len(podsForInPlace) > 0 {
 				withInPlaceUpdatable = true
@@ -352,7 +352,11 @@ func (u *updater) RunOnce(ctx context.Context) {
 		withEvicted := false
 
 		for _, pod := range podsForInPlace {
-			decision := inPlaceLimiter.CanInPlaceUpdate(pod, vpa, u.infeasibleAttempts)
+			node, err := u.nodeLister.Get(pod.Spec.NodeName)
+			if err != nil {
+				klog.ErrorS(err, "failed to get node", "Node", pod.Spec.NodeName)
+			}
+			decision := inPlaceLimiter.CanInPlaceUpdate(pod, node, vpa, u.infeasibleAttempts)
 
 			switch decision {
 			case utils.InPlaceDeferred:
@@ -397,7 +401,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateRateLimiterWaitFailed")
 				return
 			}
-			err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
+			err = inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
 			if err != nil {
 				reason := "InPlaceUpdateError"
 				// For InPlace mode, don't evict pods even if we get an error
@@ -429,7 +433,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		}
 
 		for _, pod := range podsForEviction {
-			if !evictionLimiter.CanEvict(pod) {
+			if !evictionLimiter.CanEvict(pod, nil) {
 				continue
 			}
 			err = u.evictionRateLimiter.Wait(ctx)
@@ -512,20 +516,24 @@ func (u *updater) getPodsUpdateOrder(pods []*corev1.Pod, vpa *vpa_types.Vertical
 	return priorityCalculator.GetSortedPods(u.evictionAdmission)
 }
 
-func filterPods(pods []*corev1.Pod, predicate func(*corev1.Pod) bool) []*corev1.Pod {
+func filterPods(pods []*corev1.Pod, nodeLister listersv1.NodeLister, predicate func(*corev1.Pod, *corev1.Node) bool) []*corev1.Pod {
 	result := make([]*corev1.Pod, 0)
 	for _, pod := range pods {
-		if predicate(pod) {
+		var node *corev1.Node
+		if nodeLister != nil {
+			node, _ = nodeLister.Get(pod.Spec.NodeName)
+		}
+		if predicate(pod, node) {
 			result = append(result, pod)
 		}
 	}
 	return result
 }
 
-func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources) []*corev1.Pod {
-	return filterPods(pods, func(pod *corev1.Pod) bool {
+func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, nodeLister listersv1.NodeLister, inplaceRestriction restriction.PodsInPlaceRestriction, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources) []*corev1.Pod {
+	return filterPods(pods, nodeLister, func(pod *corev1.Pod, node *corev1.Node) bool {
 		updateMode := *vpa.Spec.UpdatePolicy.UpdateMode
-		decision := inplaceRestriction.CanInPlaceUpdate(pod, vpa, infeasibleAttempts)
+		decision := inplaceRestriction.CanInPlaceUpdate(pod, node, vpa, infeasibleAttempts)
 		switch decision {
 		case utils.InPlaceApproved:
 			return true
@@ -550,27 +558,13 @@ func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restri
 }
 
 func filterNonEvictablePods(pods []*corev1.Pod, evictionRestriction restriction.PodsEvictionRestriction) []*corev1.Pod {
-	return filterPods(pods, evictionRestriction.CanEvict)
+	return filterPods(pods, nil, evictionRestriction.CanEvict)
 }
 
 func filterDeletedPods(pods []*corev1.Pod) []*corev1.Pod {
-	return filterPods(pods, func(pod *corev1.Pod) bool {
+	return filterPods(pods, nil, func(pod *corev1.Pod, _ *corev1.Node) bool {
 		return pod.DeletionTimestamp == nil
 	})
-}
-
-// NewPodLister creates a new PodLister that lists pods based on the provided kubeClient and namespace.
-// It filters out pods that are not scheduled (spec.nodeName is empty) and pods that are in Succeeded or Failed phase, as these pods are not relevant for eviction or in-place updates.
-func NewPodLister(kubeClient kube_client.Interface, namespace string, stopCh <-chan struct{}) listersv1.PodLister {
-	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
-		string(corev1.PodSucceeded) + ",status.phase!=" + string(corev1.PodFailed))
-	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
-	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	podLister := listersv1.NewPodLister(store)
-	podReflector := cache.NewReflector(podListWatch, &corev1.Pod{}, store, time.Hour)
-	go podReflector.Run(stopCh)
-
-	return podLister
 }
 
 func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {

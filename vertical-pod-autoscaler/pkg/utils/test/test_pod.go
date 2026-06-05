@@ -36,6 +36,7 @@ type PodBuilder interface {
 	WithPhase(phase corev1.PodPhase) PodBuilder
 	WithQOSClass(class corev1.PodQOSClass) PodBuilder
 	WithPodConditions(conditions []corev1.PodCondition) PodBuilder
+	WithNodeName(nodeName string) PodBuilder
 	Get() *corev1.Pod
 }
 
@@ -61,6 +62,7 @@ type podBuilderImpl struct {
 	initContainerStatuses []corev1.ContainerStatus
 	qosClass              corev1.PodQOSClass
 	conditions            []corev1.PodCondition
+	nodeName              string
 }
 
 func (pb *podBuilderImpl) WithLabels(labels map[string]string) PodBuilder {
@@ -136,6 +138,12 @@ func (pb *podBuilderImpl) WithPodConditions(conditions []corev1.PodCondition) Po
 	return &r
 }
 
+func (pb *podBuilderImpl) WithNodeName(nodeName string) PodBuilder {
+	r := *pb
+	r.nodeName = nodeName
+	return &r
+}
+
 func (pb *podBuilderImpl) Get() *corev1.Pod {
 	startTime := metav1.Time{
 		Time: testTimestamp,
@@ -190,6 +198,9 @@ func (pb *podBuilderImpl) Get() *corev1.Pod {
 	}
 	if pb.initContainerStatuses != nil {
 		pod.Status.InitContainerStatuses = pb.initContainerStatuses
+	}
+	if pb.nodeName != "" {
+		pod.Spec.NodeName = pb.nodeName
 	}
 
 	return pod

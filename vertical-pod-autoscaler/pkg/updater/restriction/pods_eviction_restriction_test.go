@@ -61,7 +61,7 @@ func TestEvictTooFewReplicas(t *testing.T) {
 	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.False(t, eviction.CanEvict(pod))
+		assert.False(t, eviction.CanEvict(pod, nil))
 	}
 
 	for _, pod := range pods {
@@ -101,7 +101,7 @@ func TestEvictionTolerance(t *testing.T) {
 	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.True(t, eviction.CanEvict(pod))
+		assert.True(t, eviction.CanEvict(pod, nil))
 	}
 
 	for _, pod := range pods[:4] {
@@ -145,7 +145,7 @@ func TestEvictAtLeastOne(t *testing.T) {
 	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.True(t, eviction.CanEvict(pod))
+		assert.True(t, eviction.CanEvict(pod, nil))
 	}
 
 	for _, pod := range pods[:1] {
@@ -290,7 +290,7 @@ func TestEvictTooFewReplicasWithInPlaceSkipDisruptionBudget(t *testing.T) {
 	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.False(t, eviction.CanEvict(pod))
+		assert.False(t, eviction.CanEvict(pod, nil))
 	}
 
 	for _, pod := range pods {
