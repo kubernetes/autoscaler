@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	buffersfake "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
+	"k8s.io/client-go/dynamic/fake"
 	fakeclient "k8s.io/client-go/kubernetes/fake"
 )
 
@@ -69,7 +70,8 @@ func TestClientGetPodTemplate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			fakeKubernetesClient := fakeclient.NewSimpleClientset(test.objectsInKubernetesClient...)
 			fakeBuffersClient := buffersfake.NewSimpleClientset()
-			fakeCapacityBuffersClient, _ := NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
+			fakeDynamicClient := fake.NewSimpleDynamicClient(runtime.NewScheme())
+			fakeCapacityBuffersClient, _ := NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, fakeDynamicClient, nil, nil)
 			pt, err := fakeCapacityBuffersClient.GetPodTemplate("default", test.objectName)
 			assert.Equal(t, err != nil, test.expectError)
 			assert.Equal(t, pt, test.expectedValue)
