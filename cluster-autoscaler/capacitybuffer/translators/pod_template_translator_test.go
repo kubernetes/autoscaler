@@ -67,7 +67,7 @@ func TestPodTemplateBufferTranslator(t *testing.T) {
 	})
 	zero := int64(0)
 	fakeClient := fakeClient.NewSimpleClientset(registeredPodTemplate, anotherRegisteredPodTemplate, podTemp4mem100cpu, podTemp8mem200cpu, podTemp4gpu)
-	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(nil, fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(nil, fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 	noReplicasMsg := "Buffer not ready for provisioning: couldn't get number of replicas for buffer: replicas, percentage and limits are not defined"
 	podTemplateNotFoundMsg := "Buffer not ready for provisioning: capacity buffer client can't get pod template: podtemplates %q not found"
 	resourcesNotFoundMsg := "Buffer not ready for provisioning: couldn't get number of replicas for buffer: resources in configured limits not found in the pod template"
@@ -284,7 +284,7 @@ func TestPodTemplateBufferTranslator_ManagedPodTemplate(t *testing.T) {
 	)
 
 	fakeClient := fakeClient.NewSimpleClientset(bufferPodTemplate)
-	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(nil, fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(nil, fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 	resolver := fakepods.NewDefaultingResolver()
 	podTemplateBufferTranslator := NewPodTemplateBufferTranslator(fakeCapacityBuffersClient, resolver)
 	buffers := []*v1.CapacityBuffer{buffer}

@@ -44,7 +44,7 @@ func TestPodTemplateGenerationFilter(t *testing.T) {
 		},
 	}
 	fakeClient := fakeclient.NewSimpleClientset(podTempGen3, podTempGen4)
-	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(nil, fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(nil, fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	tests := []struct {
 		name                       string

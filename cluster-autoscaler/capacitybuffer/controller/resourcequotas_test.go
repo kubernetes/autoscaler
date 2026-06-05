@@ -495,7 +495,7 @@ func TestResourceQuotaAllocator(t *testing.T) {
 			}
 
 			fakeK8s := fakeClient.NewSimpleClientset(objs...)
-			client, _ := cbclient.NewCapacityBufferClient(nil, fakeK8s, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			client, _ := cbclient.NewCapacityBufferClient(nil, fakeK8s, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			allocator := newResourceQuotaAllocator(client)
 
 			// Assign namespace and names to buffers
