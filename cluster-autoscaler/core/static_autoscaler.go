@@ -605,8 +605,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		}
 	}
 
-	if typedErr = a.scaleDown(currentTime, allNodes, scaleDownActuationStatus, scaleDownStatus); typedErr != nil {
-		return typedErr
+	if a.ScaleDownEnabled {
+		if typedErr = a.scaleDown(currentTime, allNodes, scaleDownActuationStatus, scaleDownStatus); typedErr != nil {
+			return typedErr
+		}
 	}
 
 	if a.EnforceNodeGroupMinSize {

@@ -258,6 +258,7 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 						ScaleDownUtilizationThreshold: 0.7,
 						MaxNodeProvisionTime:          time.Hour,
 					},
+					ScaleDownEnabled:               true,
 					MaxNodesTotal:                  1000,
 					MaxCoresTotal:                  1000,
 					MaxMemoryTotal:                 100000000,
