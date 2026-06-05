@@ -100,10 +100,6 @@ cluster_autoscaler:update_deps() {
     go mod tidy
   fi
 
-  if [ "${pkg}" = "./cluster-autoscaler" ]; then
-    "${SED}" -i 's/const ClusterAutoscalerVersion = "[0-9.]+"/const ClusterAutoscalerVersion = "'${k8s_version}'"/g' version/version.go
-  fi
-
   git rm -r --force --ignore-unmatch kubernetes
   popd
 }

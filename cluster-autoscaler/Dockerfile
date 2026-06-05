@@ -26,12 +26,16 @@ RUN go mod download
 COPY . .
 
 ARG GOARCH
-ARG LDFLAGS_FLAG
-ARG TAGS_FLAG
+ARG LDFLAGS
+ARG BUILD_TAGS
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
-    CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-$GOARCH $LDFLAGS_FLAG $TAGS_FLAG
+    if [ -n "$BUILD_TAGS" ]; then \
+        CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-$GOARCH -ldflags="$LDFLAGS" -tags="$BUILD_TAGS"; \
+    else \
+        CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-$GOARCH -ldflags="$LDFLAGS"; \
+    fi
 
 FROM gcr.io/distroless/static:nonroot
 ARG GOARCH
