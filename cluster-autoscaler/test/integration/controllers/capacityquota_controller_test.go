@@ -73,6 +73,24 @@ var _ = Describe("CapacityQuota Controller", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
+	It("should correctly sum capacities of all nodes with nil selector", func() {
+		By("creating a CapacityQuota without label selector")
+		cq := cqtest.NewCapacityQuota("test-quota-all",
+			cqtest.WithLimits(cqv1alpha1.ResourceList{
+				cqv1alpha1.ResourceCPU: resource.MustParse("20"),
+			}),
+		)
+		Expect(crClient.Create(ctx, cq)).To(Succeed())
+
+		By("waiting for the CapacityQuota to be reconciled with correct usage")
+		cqKey := types.NamespacedName{Name: "test-quota-all"}
+		Eventually(func(g Gomega) {
+			assertQuotaReconciled(ctx, g, cqKey, cqv1alpha1.ResourceList{
+				cqv1alpha1.ResourceCPU: resource.MustParse("14"),
+			})
+		}).Should(Succeed())
+	})
+
 	It("should correctly sum capacities of matching nodes", func() {
 		By("creating a CapacityQuota")
 		cq := cqtest.NewCapacityQuota("test-quota-pool",
