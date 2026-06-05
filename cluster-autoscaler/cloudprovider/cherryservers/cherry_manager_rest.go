@@ -49,11 +49,12 @@ import (
 )
 
 const (
-	userAgent                    = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 	expectedAPIContentTypePrefix = "application/json"
 	cherryPrefix                 = "cherryservers://"
 	baseURL                      = "https://api.cherryservers.com/v1/"
 )
+
+var userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 
 type instanceType struct {
 	InstanceName string
