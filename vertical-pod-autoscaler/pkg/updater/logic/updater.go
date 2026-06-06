@@ -18,11 +18,14 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"slices"
 	"time"
 
 	"golang.org/x/time/rate"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -403,16 +406,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				reason := "InPlaceUpdateError"
 				// For InPlace mode, don't evict pods even if we get an error
 				if updateMode == vpa_types.UpdateModeInPlace {
-					// TODO: check for an admission plugin error because of OS and node capacity checks
-					// Check if it's an infeasibility error
-					// infeasible patches are rejected at API server level (soon),
-					// so spec.resources remains unchanged. We must track the attempted
-					// recommendation to prevent infinite retry loops.
-					// This work is still in progress (https://github.com/kubernetes/kubernetes/pull/136043)
-					// Currently isInfeasibleError return false
 					if isInfeasibleError(err) {
-						// TODO: this will be changed when we know how errors shoule be look like
-						// depends on https://github.com/kubernetes/kubernetes/pull/136043
 						reason = "InPlaceUpdateInfeasible"
 						u.recordInfeasibleAttempt(pod, vpa)
 					}
@@ -592,10 +586,25 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	return eventBroadcaster.NewRecorder(vpascheme, corev1.EventSource{Component: "vpa-updater"})
 }
 
-// isInfeasibleError checks if an error indicates the resize is infeasible.
-// Infeasible error detection at the admission controller level is still in progress
-// (https://github.com/kubernetes/kubernetes/pull/136043).
-// This is just a placeholder until that work lands and we know the exact error format.
+// isInfeasibleError checks if an error indicates the resize is infeasible
+// due to insufficient node capacity, as reported by the PodResizeValidator
+// admission plugin (available from Kubernetes 1.36).
+// See https://issues.k8s.io/136043
 func isInfeasibleError(err error) bool {
+	var statusErr *apierrors.StatusError
+	if !errors.As(err, &statusErr) {
+		return false
+	}
+	if statusErr.ErrStatus.Reason != metav1.StatusReasonForbidden {
+		return false
+	}
+	if statusErr.ErrStatus.Details == nil {
+		return false
+	}
+	for _, cause := range statusErr.ErrStatus.Details.Causes {
+		if cause.Type == metav1.CauseType(utils.InfeasibleCauseNodeCapacity) {
+			return true
+		}
+	}
 	return false
 }
