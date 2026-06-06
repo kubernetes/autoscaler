@@ -62,6 +62,10 @@ updates:
       update-types:
         - "version-update:semver-major"
         - "version-update:semver-minor"
+  groups:
+    patch-updates:
+      patterns:
+        - "*"
 - package-ecosystem: docker
   target-branch: vpa-release-1.7
   directories:
