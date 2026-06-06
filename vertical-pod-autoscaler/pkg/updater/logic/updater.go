@@ -276,6 +276,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.ErrorS(err, "Failed to get creator maps")
 			continue
 		}
+		metrics_updater.InitCounters(vpaSize, vpa.Name, vpa.Namespace, updateMode)
 
 		inPlaceLimiter := u.restrictionFactory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 		podsAvailableForUpdate := make([]*corev1.Pod, 0)
