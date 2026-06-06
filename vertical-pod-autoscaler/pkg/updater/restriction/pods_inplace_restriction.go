@@ -24,6 +24,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -69,7 +70,7 @@ type PodsInPlaceRestriction interface {
 	// The updateMode parameter affects the decision:
 	//   - UpdateModeInPlace: Waits indefinitely for in-progress updates.
 	//   - UpdateModeInPlaceOrRecreate: May return InPlaceEvict if the pod update exceeds the timeout threshold.
-	CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[k8stypes.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision
+	CanInPlaceUpdate(pod *corev1.Pod, node *corev1.Node, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[k8stypes.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision
 	// CanUnboost checks if a pod can be safely unboosted.
 	CanUnboost(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool
 }
@@ -86,7 +87,7 @@ type PodsInPlaceRestrictionImpl struct {
 }
 
 // CanInPlaceUpdate checks if pod can be safely updated
-func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[k8stypes.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision {
+func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, node *corev1.Node, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[k8stypes.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision {
 	// Use default mode when update mode is nil
 	updateMode := vpa_types.UpdateModeRecreate
 	if (vpa.Spec.UpdatePolicy != nil) && (vpa.Spec.UpdatePolicy.UpdateMode != nil) {
@@ -127,6 +128,10 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 			klog.V(2).InfoS("In-place update infeasible, no resource is lower in new recommendation, skipping pod", "pod", klog.KObj(pod))
 			return utils.InPlaceInfeasibleCached
 		}
+	}
+
+	if updateMode == vpa_types.UpdateModeInPlace && node != nil && features.Enabled(features.InPlaceCapacityAware) && !checkAllocatableNodeForInPlace(pod, recommendation, node.Status.Allocatable) {
+		return utils.InPlaceInfeasible
 	}
 
 	resizeStatus := getResizeStatus(pod)
@@ -334,4 +339,48 @@ func CanEvictInPlacingPod(pod *corev1.Pod, singleGroupStats singleGroupStats, la
 	}
 	klog.V(4).InfoS("Would be able to evict, but already resizing", "pod", klog.KObj(pod))
 	return false
+}
+
+// function that checks if the node has enough allocatable resources for InPlace.
+// 1. sum all containers usage
+// 2. sum all container recommendations
+// 3. if the diff <= 0 just return ok (we are saving compute)
+// 4. if diff < allocatable (we need more resources - the diff) else false
+func checkAllocatableNodeForInPlace(pod *corev1.Pod, recommendation *vpa_types.RecommendedPodResources, allocatable corev1.ResourceList) bool {
+	// 1. Sum all containers' current allocated resources.
+	sumPodUsage := make(corev1.ResourceList)
+	for _, containerStatus := range pod.Status.ContainerStatuses {
+		for _, resourceName := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory} {
+			val := sumPodUsage[resourceName]
+			val.Add(containerStatus.AllocatedResources[resourceName])
+			sumPodUsage[resourceName] = val
+		}
+	}
+
+	// 2. Sum all container recommendations.
+	sumRecommendation := make(corev1.ResourceList)
+	for _, containerRec := range recommendation.ContainerRecommendations {
+		for _, resourceName := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory} {
+			if target, ok := containerRec.Target[resourceName]; ok {
+				val := sumRecommendation[resourceName]
+				val.Add(target)
+				sumRecommendation[resourceName] = val
+			}
+		}
+	}
+
+	// 3. If diff <= 0 we are reducing resources, so the resize is safe.
+	// 4. Otherwise check that the additional resources needed fit within allocatable.
+	for _, resourceName := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory} {
+		diff := sumRecommendation[resourceName].DeepCopy()
+		diff.Sub(sumPodUsage[resourceName])
+		if diff.Cmp(resource.MustParse("0")) <= 0 {
+			continue
+		}
+		allocatableQty := allocatable[resourceName]
+		if diff.Cmp(allocatableQty) > 0 {
+			return false
+		}
+	}
+	return true
 }

@@ -61,6 +61,15 @@ const (
 	// InPlace enables the InPlace update mode to be used.
 	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
 	InPlace featuregate.Feature = "InPlace"
+
+	// alpha: v1.8.0
+	// components: updater
+
+	// InPlaceCapacityAware enables the updater to trim recommendations for pods using the VPA
+	// InPlace update mode, ensuring only recommendations that fit within the node's available
+	// capacity are considered. This avoids infeasible resize attempts that waste CPU cycles and
+	// generate unnecessary load on the API server.
+	InPlaceCapacityAware featuregate.Feature = "InPlaceCapacityAware"
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.

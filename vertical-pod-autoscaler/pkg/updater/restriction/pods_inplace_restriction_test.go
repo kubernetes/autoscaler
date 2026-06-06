@@ -40,6 +40,8 @@ import (
 type CanInPlaceUpdateTestParams struct {
 	name                        string
 	pods                        []*corev1.Pod
+	node                        *corev1.Node
+	inPlaceCapacityAware        bool
 	replicas                    int32
 	evictionTolerance           float64
 	lastInPlaceAttempt          time.Time
@@ -393,6 +395,111 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			vpaForCreatorMaps:       getIPVpa(),
 		},
 		{
+			name: "CanInPlaceUpdate with InPlace mode - infeasible returns InPlaceInfeasible NodeAllocatable has no capacity",
+			pods: []*corev1.Pod{
+				test.Pod().WithName("infeasible-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+				test.Pod().WithName("infeasible-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+				test.Pod().WithName("infeasible-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+			},
+			replicas:                3,
+			evictionTolerance:       0.5,
+			lastInPlaceAttempt:      time.Time{},
+			expectedInPlaceDecision: utils.InPlaceInfeasible,
+			vpa:                     ipVpaWithRec(rec1000m1Gi),
+			node: &corev1.Node{
+				Status: corev1.NodeStatus{
+					Allocatable: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("100m"),
+						corev1.ResourceMemory: resource.MustParse("128Mi"),
+					},
+				},
+			},
+			inPlaceCapacityAware: true,
+		},
+		{
+			name: "CanInPlaceUpdate with InPlace mode - InPlaceApproved when pod already has most resources allocated",
+			pods: []*corev1.Pod{
+				test.Pod().WithName("partial-fit-1").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+					AddContainerStatus(corev1.ContainerStatus{
+						Name: "test-container",
+						AllocatedResources: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("800m"),
+							corev1.ResourceMemory: resource.MustParse("900Mi"),
+						},
+					}).Get(),
+				test.Pod().WithName("partial-fit-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+				test.Pod().WithName("partial-fit-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+			},
+			replicas:                3,
+			evictionTolerance:       0.5,
+			lastInPlaceAttempt:      time.Time{},
+			expectedInPlaceDecision: utils.InPlaceApproved,
+			vpa:                     ipVpaWithRec(rec1000m1Gi),
+			node: &corev1.Node{
+				Status: corev1.NodeStatus{
+					Allocatable: corev1.ResourceList{
+						// Fits the 200m/124Mi diff for pod[0], but not a full 1000m/1Gi resize.
+						corev1.ResourceCPU:    resource.MustParse("300m"),
+						corev1.ResourceMemory: resource.MustParse("256Mi"),
+					},
+				},
+			},
+			inPlaceCapacityAware: true,
+		},
+		{
+			name: "CanInPlaceUpdate with InPlace mode - InPlaceApproved when feature flag is off despite insufficient capacity",
+			pods: []*corev1.Pod{
+				test.Pod().WithName("flag-off-1").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+				test.Pod().WithName("flag-off-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+				test.Pod().WithName("flag-off-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+			},
+			replicas:                3,
+			evictionTolerance:       0.5,
+			lastInPlaceAttempt:      time.Time{},
+			expectedInPlaceDecision: utils.InPlaceApproved,
+			vpa:                     ipVpaWithRec(rec1000m1Gi),
+			node: &corev1.Node{
+				Status: corev1.NodeStatus{
+					Allocatable: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("100m"),
+						corev1.ResourceMemory: resource.MustParse("128Mi"),
+					},
+				},
+			},
+			inPlaceCapacityAware: false,
+		},
+		{
+			name: "CanInPlaceUpdate with InPlace mode - InPlaceApproved when feature flag is off even with insufficient partial-fit capacity",
+			pods: []*corev1.Pod{
+				test.Pod().WithName("flag-off-partial-1").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+					AddContainerStatus(corev1.ContainerStatus{
+						Name: "test-container",
+						AllocatedResources: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("800m"),
+							corev1.ResourceMemory: resource.MustParse("900Mi"),
+						},
+					}).Get(),
+				test.Pod().WithName("flag-off-partial-2").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+				test.Pod().WithName("flag-off-partial-3").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get(),
+			},
+			replicas:                3,
+			evictionTolerance:       0.5,
+			lastInPlaceAttempt:      time.Time{},
+			expectedInPlaceDecision: utils.InPlaceApproved,
+			vpa:                     ipVpaWithRec(rec1000m1Gi),
+			node: &corev1.Node{
+				Status: corev1.NodeStatus{
+					Allocatable: corev1.ResourceList{
+						// Diff needed is 200m/124Mi for pod[0]; node has less than that,
+						// so with the flag ON this would be InPlaceInfeasible.
+						corev1.ResourceCPU:    resource.MustParse("50m"),
+						corev1.ResourceMemory: resource.MustParse("64Mi"),
+					},
+				},
+			},
+			inPlaceCapacityAware: false,
+		},
+		{
 			name: "InPlace mode - deferred pod with changed recommendations retries",
 			pods: []*corev1.Pod{
 				test.Pod().WithName("deferred-retry-1").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
@@ -516,6 +623,9 @@ func TestCanInPlaceUpdate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.inPlaceCapacityAware {
+				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlaceCapacityAware, true)
+			}
 			rc.Spec = corev1.ReplicationControllerSpec{
 				Replicas: &tc.replicas,
 			}
@@ -546,7 +656,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			assert.NoError(t, err)
 			inPlace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
-			result := inPlace.CanInPlaceUpdate(selectedPod, tc.vpa, tc.infeasibleAttempts)
+			result := inPlace.CanInPlaceUpdate(selectedPod, tc.node, tc.vpa, tc.infeasibleAttempts)
 			assert.Equal(t, tc.expectedInPlaceDecision, result)
 
 			if tc.alsoTestInPlaceUpdate {
@@ -591,7 +701,7 @@ func TestInPlaceTooFewReplicas(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod, basicVpa, nil))
+		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod, nil, basicVpa, nil))
 	}
 
 	for _, pod := range pods {
@@ -634,7 +744,7 @@ func TestEvictionToleranceForInPlace(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, basicVpa, nil))
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, nil, basicVpa, nil))
 	}
 
 	for _, pod := range pods[:4] {
@@ -683,7 +793,7 @@ func TestEvictionToleranceForInPlaceWithSkipDisruptionBudget(t *testing.T) {
 
 	// All in-place updates should be approved
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, basicVpa, nil))
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, nil, basicVpa, nil))
 	}
 
 	// And all updates should succeed without being blocked by eviction tolerance
@@ -736,7 +846,7 @@ func TestEvictionToleranceForInPlaceWithSkipDisruptionBudgetWithLessThanMinimumP
 
 	// All in-place updates should be approved
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, basicVpa, nil))
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, nil, basicVpa, nil))
 	}
 
 	// And all in-place updates should succeed without being blocked by eviction tolerance, but eviction
@@ -745,7 +855,7 @@ func TestEvictionToleranceForInPlaceWithSkipDisruptionBudgetWithLessThanMinimumP
 		err := inplace.InPlaceUpdate(pod, basicVpa, test.FakeEventRecorder())
 		assert.NoError(t, err)
 
-		eviction := evict.CanEvict(pod)
+		eviction := evict.CanEvict(pod, nil)
 		assert.False(t, eviction, "Pod should not be evictable when below minimum replicas, even with inPlaceSkipDisruptionBudget=true")
 
 		err = evict.Evict(pod, basicVpa, test.FakeEventRecorder())
@@ -882,7 +992,7 @@ func TestInPlaceSkipDisruptionBudgetWithResizePolicy(t *testing.T) {
 
 			successCount := 0
 			for _, pod := range pods {
-				decision := inplace.CanInPlaceUpdate(pod, basicVpa, nil)
+				decision := inplace.CanInPlaceUpdate(pod, nil, basicVpa, nil)
 				if decision != utils.InPlaceApproved {
 					continue
 				}
@@ -928,12 +1038,12 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods[:1] {
-		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, inPlaceOrRecreateVPA, nil))
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, nil, inPlaceOrRecreateVPA, nil))
 		err := inplace.InPlaceUpdate(pod, inPlaceOrRecreateVPA, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should in-place update with no error")
 	}
 	for _, pod := range pods[1:] {
-		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod, inPlaceOrRecreateVPA, nil))
+		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod, nil, inPlaceOrRecreateVPA, nil))
 		err := inplace.InPlaceUpdate(pod, inPlaceOrRecreateVPA, test.FakeEventRecorder())
 		assert.Nil(t, err, "Error should not be expected")
 	}
@@ -1015,7 +1125,7 @@ func TestInPlaceModeDisabledFeatureGate(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod, inPlaceVpa, nil),
+		assert.Equal(t, utils.InPlaceDeferred, inplace.CanInPlaceUpdate(pod, nil, inPlaceVpa, nil),
 			"InPlace mode should return InPlaceDeferred when feature gate is disabled")
 	}
 }
@@ -1053,7 +1163,7 @@ func TestInPlaceModeAtLeastOne(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, inPlaceVpa, nil))
+		assert.Equal(t, utils.InPlaceApproved, inplace.CanInPlaceUpdate(pod, nil, inPlaceVpa, nil))
 	}
 
 	for _, pod := range pods {
@@ -1243,7 +1353,7 @@ func TestInPlaceModeResizeStatuses(t *testing.T) {
 			assert.NoError(t, err)
 			inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
-			result := inplace.CanInPlaceUpdate(pod, vpa, nil)
+			result := inplace.CanInPlaceUpdate(pod, nil, vpa, nil)
 			assert.Equal(t, tc.expectedDecision, result)
 		})
 	}
@@ -1294,7 +1404,7 @@ func TestInPlaceModeAllowsRetryForInfeasible(t *testing.T) {
 	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	// CanInPlaceUpdate should return InPlaceInfeasible
-	decision := inplace.CanInPlaceUpdate(pod, vpa, nil)
+	decision := inplace.CanInPlaceUpdate(pod, nil, vpa, nil)
 	assert.Equal(t, utils.InPlaceInfeasible, decision,
 		"InPlace mode should return InPlaceInfeasible for infeasible pods")
 

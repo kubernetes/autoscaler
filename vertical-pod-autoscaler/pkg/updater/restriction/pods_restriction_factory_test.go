@@ -528,9 +528,9 @@ func TestDisruptReplicatedByController(t *testing.T) {
 			updateMode := vpa_api_util.GetUpdateMode(testCase.vpa)
 			for i, p := range testCase.pods {
 				if updateMode == vpa_types.UpdateModeInPlaceOrRecreate {
-					assert.Equalf(t, p.canInPlaceUpdate, inplace.CanInPlaceUpdate(p.pod, testCase.vpa, nil), "unexpected CanInPlaceUpdate result for pod-%v %#v", testCase.name, i, p.pod)
+					assert.Equalf(t, p.canInPlaceUpdate, inplace.CanInPlaceUpdate(p.pod, nil, testCase.vpa, nil), "unexpected CanInPlaceUpdate result for pod-%v %#v", testCase.name, i, p.pod)
 				} else {
-					assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "unexpected CanEvict result for pod-%v %#v", i, p.pod)
+					assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod, nil), "unexpected CanEvict result for pod-%v %#v", i, p.pod)
 				}
 			}
 			for i, p := range testCase.pods {
@@ -582,7 +582,7 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.True(t, eviction.CanEvict(pod))
+		assert.True(t, eviction.CanEvict(pod, nil))
 	}
 
 	for _, pod := range pods[:2] {
@@ -625,7 +625,7 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.True(t, eviction.CanEvict(pod))
+		assert.True(t, eviction.CanEvict(pod, nil))
 	}
 
 	for _, pod := range pods[:2] {
@@ -667,7 +667,7 @@ func TestEvictReplicatedByDaemonSet(t *testing.T) {
 	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.True(t, eviction.CanEvict(pod))
+		assert.True(t, eviction.CanEvict(pod, nil))
 	}
 
 	for _, pod := range pods[:2] {
@@ -706,7 +706,7 @@ func TestEvictReplicatedByJob(t *testing.T) {
 	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 
 	for _, pod := range pods {
-		assert.True(t, eviction.CanEvict(pod))
+		assert.True(t, eviction.CanEvict(pod, nil))
 	}
 
 	for _, pod := range pods[:2] {

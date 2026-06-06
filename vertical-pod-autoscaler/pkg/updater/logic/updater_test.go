@@ -329,6 +329,8 @@ func testRunOnceBase(
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 
 	podLister := &test.PodListerMock{}
+
+	nodeLister := &test.NodeListerMock{}
 	podLister.On("List").Return(pods, nil)
 
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
@@ -349,6 +351,7 @@ func testRunOnceBase(
 	updater := &updater{
 		vpaLister:                    vpaLister,
 		podLister:                    podLister,
+		nodeLister:                   nodeLister,
 		restrictionFactory:           factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
 		inPlaceRateLimiter:           rate.NewLimiter(rate.Inf, 0),
@@ -818,11 +821,13 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 	factory := &restriction.FakePodsRestrictionFactory{Eviction: eviction, InPlace: inplace}
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 	podLister := &test.PodListerMock{}
+	nodeLister := &test.NodeListerMock{}
 	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
 	updater := &updater{
 		vpaLister:                    vpaLister,
 		podLister:                    podLister,
+		nodeLister:                   nodeLister,
 		restrictionFactory:           factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
 		inPlaceRateLimiter:           rate.NewLimiter(rate.Inf, 0),

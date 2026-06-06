@@ -46,6 +46,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/client"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/listers"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/server"
@@ -151,7 +152,8 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		informers.WithNamespace(commonFlag.VpaObjectNamespace),
 		informers.WithTransform(client.StripManagedFields),
 	)
-	podLister := updater.NewPodLister(kubeClient, commonFlag.VpaObjectNamespace, stopCh)
+	podLister := listers.NewPodLister(kubeClient, commonFlag.VpaObjectNamespace, stopCh)
+	nodeLister := listers.NewNodeLister(kubeFactory.Core().V1().Nodes().Lister(), nil)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, kubeFactory, stopCh)
 	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, kubeFactory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor, stopCh)
 
@@ -178,6 +180,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		vpaClient,
 		kubeFactory,
 		podLister,
+		nodeLister,
 		config.MinReplicas,
 		config.EvictionRateLimit,
 		config.EvictionRateBurst,
