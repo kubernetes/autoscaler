@@ -241,7 +241,7 @@ sure nothing we care about will break if we do.
 1. [ ] Update `.github/dependabot.yml` to add the new release branch, keeping the latest 3 minor releases:
 
     ```sh
-    sed -i "s/vpa-release-1.${old-minor}/vpa-release-1.${next-minor}/g" ../.github/dependabot.yml
+    sed -i "s/vpa-release-1.${oldest-minor}/vpa-release-1.${next-minor}/g" ../.github/dependabot.yml
     ```
 
 ## Permissions
