@@ -42,6 +42,7 @@ this document:
   * [How can I enable/disable eviction for a specific DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset)
   * [How can I enable Cluster Autoscaler to scale up when Node's max volume count is exceeded (CSI migration enabled)?](#how-can-i-enable-cluster-autoscaler-to-scale-up-when-nodes-max-volume-count-is-exceeded-csi-migration-enabled)
   * [How can I use ProvisioningRequest to run batch workloads?](#how-can-i-use-provisioningrequest-to-run-batch-workloads)
+  * [How can I enable scale-up when a CSI driver uses node-specific CSIStorageCapacity objects?](#how-can-i-enable-scale-up-when-a-csi-driver-uses-node-specific-csistoragecapacity-objects)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale-up work?](#how-does-scale-up-work)
@@ -754,6 +755,18 @@ Autoscaler configuration:
 spend processing CheckCapacity ProvisioningRequests in a single iteration by
 setting the following flag in your Cluster Autoscaler configuration:
 `--check-capacity-provisioning-request-batch-timebox=<timebox>`. The default value is 10s.
+
+### How can I enable scale-up when a CSI driver uses node-specific CSIStorageCapacity objects?
+
+Some CSI drivers publish `CSIStorageCapacity` objects with node-specific topology keys (e.g.
+`kubernetes.io/hostname=<node-name>`). During scale-up simulation, Cluster Autoscaler creates a
+template node based on an existing node. Because no `CSIStorageCapacity` object exists for this
+template node, the scheduler's storage capacity check fails during simulation and scale-up is
+blocked (see [#9700](https://github.com/kubernetes/autoscaler/issues/9700)).
+
+To mitigate this, Cluster Autoscaler adds the label `cluster-autoscaler.kubernetes.io/template-node=true`
+to template nodes. CSI storage vendors can use this label to create a dedicated `CSIStorageCapacity`
+object that matches template nodes, allowing the scale-up simulation to succeed.
 
 ****************
 
