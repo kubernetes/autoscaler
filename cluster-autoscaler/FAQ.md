@@ -764,7 +764,7 @@ template node based on an existing node. Because no `CSIStorageCapacity` object 
 template node, the scheduler's storage capacity check fails during simulation and scale-up is
 blocked (see [#9700](https://github.com/kubernetes/autoscaler/issues/9700)).
 
-To mitigate this, Cluster Autoscaler adds the label `cluster-autoscaler.kubernetes.io/template-node=true`
+For mitigating issues like this, Cluster Autoscaler adds the label `cluster-autoscaler.kubernetes.io/template-node=true`
 to template nodes. CSI storage vendors can use this label to create a dedicated `CSIStorageCapacity`
 object that matches template nodes, allowing the scale-up simulation to succeed.
 
