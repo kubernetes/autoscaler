@@ -26,7 +26,6 @@ import (
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -276,16 +275,7 @@ var _ = Describe("CapacityQuota Controller", func() {
 	It("should report a failure condition if the selector is invalid", func() {
 		By("creating a CapacityQuota with an invalid selector")
 		cq := cqtest.NewCapacityQuota("test-quota-pool-invalid",
-			func(cq *cqv1alpha1.CapacityQuota) {
-				cq.Spec.Selector = &metav1.LabelSelector{
-					MatchExpressions: []metav1.LabelSelectorRequirement{
-						{
-							Key:      "node-pool",
-							Operator: "InvalidOperator",
-						},
-					},
-				}
-			},
+			cqtest.WithLabelSelector(map[string]string{"invalid$label": "invalid$value"}),
 			cqtest.WithLimits(cqv1alpha1.ResourceList{
 				cqv1alpha1.ResourceCPU: resource.MustParse("10"),
 			}),
@@ -303,7 +293,7 @@ var _ = Describe("CapacityQuota Controller", func() {
 			cond := meta.FindStatusCondition(fetchedCQ.Status.Conditions, capacityquota.ValidCondition)
 			g.Expect(cond).NotTo(BeNil())
 			g.Expect(cond.Reason).To(Equal("ValidationFailed"))
-			g.Expect(cond.Message).To(ContainSubstring("is not a valid label selector operator"))
+			g.Expect(cond.Message).To(ContainSubstring("Invalid value"))
 
 			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, capacityquota.ReconciledCondition)).To(BeTrue())
 		}).Should(Succeed())

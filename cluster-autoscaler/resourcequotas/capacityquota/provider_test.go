@@ -51,7 +51,7 @@ func TestProvider_Quotas(t *testing.T) {
 				&cqv1alpha1.CapacityQuota{
 					ObjectMeta: metav1.ObjectMeta{Name: "cq1"},
 					Spec: cqv1alpha1.CapacityQuotaSpec{
-						Selector: &metav1.LabelSelector{
+						Selector: &cqv1alpha1.LabelSelector{
 							MatchLabels: map[string]string{"foo": "bar"}},
 						Limits: cqv1alpha1.CapacityQuotaLimits{
 							Resources: cqv1alpha1.ResourceList{
@@ -70,7 +70,7 @@ func TestProvider_Quotas(t *testing.T) {
 				&cqv1alpha1.CapacityQuota{
 					ObjectMeta: metav1.ObjectMeta{Name: "cq1"},
 					Spec: cqv1alpha1.CapacityQuotaSpec{
-						Selector: &metav1.LabelSelector{
+						Selector: &cqv1alpha1.LabelSelector{
 							MatchLabels: map[string]string{"foo": "bar"},
 						},
 						Limits: cqv1alpha1.CapacityQuotaLimits{
@@ -83,7 +83,7 @@ func TestProvider_Quotas(t *testing.T) {
 				&cqv1alpha1.CapacityQuota{
 					ObjectMeta: metav1.ObjectMeta{Name: "cq2"},
 					Spec: cqv1alpha1.CapacityQuotaSpec{
-						Selector: &metav1.LabelSelector{
+						Selector: &cqv1alpha1.LabelSelector{
 							MatchLabels: map[string]string{"baz": "qux"},
 						},
 						Limits: cqv1alpha1.CapacityQuotaLimits{
@@ -102,11 +102,11 @@ func TestProvider_Quotas(t *testing.T) {
 				&cqv1alpha1.CapacityQuota{
 					ObjectMeta: metav1.ObjectMeta{Name: "cq_invalid"},
 					Spec: cqv1alpha1.CapacityQuotaSpec{
-						Selector: &metav1.LabelSelector{
-							MatchExpressions: []metav1.LabelSelectorRequirement{
+						Selector: &cqv1alpha1.LabelSelector{
+							MatchExpressions: []cqv1alpha1.LabelSelectorRequirement{
 								{
 									Key:      "invalidKey!!!!",
-									Operator: metav1.LabelSelectorOpExists,
+									Operator: cqv1alpha1.LabelSelectorOpExists,
 								},
 							},
 						},
@@ -120,7 +120,7 @@ func TestProvider_Quotas(t *testing.T) {
 				&cqv1alpha1.CapacityQuota{
 					ObjectMeta: metav1.ObjectMeta{Name: "cq_valid"},
 					Spec: cqv1alpha1.CapacityQuotaSpec{
-						Selector: &metav1.LabelSelector{
+						Selector: &cqv1alpha1.LabelSelector{
 							MatchLabels: map[string]string{"valid": "true"},
 						},
 						Limits: cqv1alpha1.CapacityQuotaLimits{
@@ -170,7 +170,7 @@ func TestCapacityQuota_Selector(t *testing.T) {
 			cq: cqv1alpha1.CapacityQuota{
 				ObjectMeta: metav1.ObjectMeta{Name: "cq1"},
 				Spec: cqv1alpha1.CapacityQuotaSpec{
-					Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"foo": "bar"}},
+					Selector: &cqv1alpha1.LabelSelector{MatchLabels: map[string]string{"foo": "bar"}},
 					Limits:   cqv1alpha1.CapacityQuotaLimits{Resources: cqv1alpha1.ResourceList{cqv1alpha1.ResourceCPU: resource.MustParse("1")}},
 				},
 			},
@@ -182,7 +182,7 @@ func TestCapacityQuota_Selector(t *testing.T) {
 			cq: cqv1alpha1.CapacityQuota{
 				ObjectMeta: metav1.ObjectMeta{Name: "cq1"},
 				Spec: cqv1alpha1.CapacityQuotaSpec{
-					Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"foo": "bar"}},
+					Selector: &cqv1alpha1.LabelSelector{MatchLabels: map[string]string{"foo": "bar"}},
 					Limits:   cqv1alpha1.CapacityQuotaLimits{Resources: cqv1alpha1.ResourceList{cqv1alpha1.ResourceCPU: resource.MustParse("1")}},
 				},
 			},
@@ -206,11 +206,11 @@ func TestCapacityQuota_Selector(t *testing.T) {
 			cq: cqv1alpha1.CapacityQuota{
 				ObjectMeta: metav1.ObjectMeta{Name: "cq1"},
 				Spec: cqv1alpha1.CapacityQuotaSpec{
-					Selector: &metav1.LabelSelector{
-						MatchExpressions: []metav1.LabelSelectorRequirement{
+					Selector: &cqv1alpha1.LabelSelector{
+						MatchExpressions: []cqv1alpha1.LabelSelectorRequirement{
 							{
 								Key:      "invalidKey!!!!",
-								Operator: metav1.LabelSelectorOpExists,
+								Operator: cqv1alpha1.LabelSelectorOpExists,
 							},
 						},
 					},
@@ -250,7 +250,7 @@ func TestCapacityQuota_Limits(t *testing.T) {
 			cq: cqv1alpha1.CapacityQuota{
 				ObjectMeta: metav1.ObjectMeta{Name: "cq1"},
 				Spec: cqv1alpha1.CapacityQuotaSpec{
-					Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"foo": "bar"}},
+					Selector: &cqv1alpha1.LabelSelector{MatchLabels: map[string]string{"foo": "bar"}},
 					Limits: cqv1alpha1.CapacityQuotaLimits{
 						Resources: cqv1alpha1.ResourceList{
 							cqv1alpha1.ResourceCPU:    resource.MustParse("5"),
@@ -266,7 +266,7 @@ func TestCapacityQuota_Limits(t *testing.T) {
 			cq: cqv1alpha1.CapacityQuota{
 				ObjectMeta: metav1.ObjectMeta{Name: "cq1"},
 				Spec: cqv1alpha1.CapacityQuotaSpec{
-					Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"foo": "bar"}},
+					Selector: &cqv1alpha1.LabelSelector{MatchLabels: map[string]string{"foo": "bar"}},
 					Limits: cqv1alpha1.CapacityQuotaLimits{
 						Resources: cqv1alpha1.ResourceList{},
 					},

@@ -18,10 +18,6 @@ limitations under the License.
 
 package v1alpha1
 
-import (
-	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
-)
-
 // CapacityQuotaSpecApplyConfiguration represents a declarative configuration of the CapacityQuotaSpec type for use
 // with apply.
 //
@@ -29,7 +25,7 @@ import (
 type CapacityQuotaSpecApplyConfiguration struct {
 	// Selector is a label selector selecting the nodes to which the quota applies.
 	// Empty or nil selector matches all nodes.
-	Selector *v1.LabelSelectorApplyConfiguration `json:"selector,omitempty"`
+	Selector *LabelSelectorApplyConfiguration `json:"selector,omitempty"`
 	// Limits define quota limits.
 	Limits *CapacityQuotaLimitsApplyConfiguration `json:"limits,omitempty"`
 }
@@ -43,7 +39,7 @@ func CapacityQuotaSpec() *CapacityQuotaSpecApplyConfiguration {
 // WithSelector sets the Selector field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Selector field is set to the value of the last call.
-func (b *CapacityQuotaSpecApplyConfiguration) WithSelector(value *v1.LabelSelectorApplyConfiguration) *CapacityQuotaSpecApplyConfiguration {
+func (b *CapacityQuotaSpecApplyConfiguration) WithSelector(value *LabelSelectorApplyConfiguration) *CapacityQuotaSpecApplyConfiguration {
 	b.Selector = value
 	return b
 }

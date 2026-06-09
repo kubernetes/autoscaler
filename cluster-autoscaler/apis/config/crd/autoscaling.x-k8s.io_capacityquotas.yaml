@@ -82,17 +82,26 @@ spec:
                       The requirements are ANDed.
                     items:
                       description: |-
-                        A label selector requirement is a selector that contains values, a key, and an operator that
+                        LabelSelectorRequirement is a selector that contains values, a key, and an operator that
                         relates the key and values.
                       properties:
                         key:
                           description: key is the label key that the selector applies
                             to.
+                          maxLength: 316
                           type: string
+                          x-kubernetes-validations:
+                          - message: key must be a valid qualified name
+                            rule: '!format.qualifiedName().validate(self).hasValue()'
                         operator:
                           description: |-
                             operator represents a key's relationship to a set of values.
                             Valid operators are In, NotIn, Exists and DoesNotExist.
+                          enum:
+                          - In
+                          - NotIn
+                          - Exists
+                          - DoesNotExist
                           type: string
                         values:
                           description: |-
@@ -101,25 +110,47 @@ spec:
                             the values array must be empty. This array is replaced during a strategic
                             merge patch.
                           items:
+                            maxLength: 63
                             type: string
+                          maxItems: 64
                           type: array
                           x-kubernetes-list-type: atomic
+                          x-kubernetes-validations:
+                          - message: values must be valid label values
+                            rule: self.all(v, !format.labelValue().validate(v).hasValue())
                       required:
                       - key
                       - operator
                       type: object
+                      x-kubernetes-validations:
+                      - message: values set must be non-empty when operator is In
+                          or NotIn
+                        rule: 'self.operator in [''In'', ''NotIn''] ? (has(self.values)
+                          && size(self.values) > 0) : true'
+                      - message: values set must be empty when operator is Exists
+                          or DoesNotExist
+                        rule: 'self.operator in [''Exists'', ''DoesNotExist''] ? (!has(self.values)
+                          || size(self.values) == 0) : true'
+                    maxItems: 16
                     type: array
                     x-kubernetes-list-type: atomic
                   matchLabels:
                     additionalProperties:
+                      maxLength: 63
                       type: string
+                      x-kubernetes-validations:
+                      - message: label value must be a valid label value
+                        rule: '!format.labelValue().validate(self).hasValue()'
                     description: |-
                       matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
                       map is equivalent to an element of matchExpressions, whose key field is "key", the
                       operator is "In", and the values array contains only "value". The requirements are ANDed.
+                    maxProperties: 64
                     type: object
+                    x-kubernetes-validations:
+                    - message: key must be a valid qualified name
+                      rule: self.all(x, size(x) < 317 && !format.qualifiedName().validate(x).hasValue())
                 type: object
-                x-kubernetes-map-type: atomic
             required:
             - limits
             type: object

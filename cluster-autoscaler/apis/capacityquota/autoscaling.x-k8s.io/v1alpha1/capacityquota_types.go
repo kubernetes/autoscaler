@@ -75,7 +75,7 @@ type CapacityQuotaSpec struct {
 	// Selector is a label selector selecting the nodes to which the quota applies.
 	// Empty or nil selector matches all nodes.
 	// +optional
-	Selector *metav1.LabelSelector `json:"selector,omitempty"`
+	Selector *LabelSelector `json:"selector,omitempty"`
 
 	// Limits define quota limits.
 	// +required
@@ -115,6 +115,65 @@ type CapacityQuotaUsage struct {
 	Resources ResourceList `json:"resources"`
 }
 
+// LabelSelector mirrors k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector with CRD-level validation rules.
+type LabelSelector struct {
+	// matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+	// map is equivalent to an element of matchExpressions, whose key field is "key", the
+	// operator is "In", and the values array contains only "value". The requirements are ANDed.
+	// +kubebuilder:validation:MaxProperties=64
+	// +kubebuilder:validation:XValidation:rule="self.all(x, size(x) < 317 && !format.qualifiedName().validate(x).hasValue())",message="key must be a valid qualified name"
+	// +optional
+	MatchLabels map[string]labelValue `json:"matchLabels,omitempty"`
+	// matchExpressions is a list of label selector requirements. The requirements are ANDed.
+	// +kubebuilder:validation:MaxItems=16
+	// +optional
+	// +listType=atomic
+	MatchExpressions []LabelSelectorRequirement `json:"matchExpressions,omitempty"`
+}
+
+// +kubebuilder:validation:MaxLength=63
+// +kubebuilder:validation:XValidation:rule="!format.labelValue().validate(self).hasValue()",message="label value must be a valid label value"
+type labelValue = string
+
+// LabelSelectorRequirement is a selector that contains values, a key, and an operator that
+// relates the key and values.
+// +kubebuilder:validation:XValidation:rule="self.operator in ['In', 'NotIn'] ? (has(self.values) && size(self.values) > 0) : true",message="values set must be non-empty when operator is In or NotIn"
+// +kubebuilder:validation:XValidation:rule="self.operator in ['Exists', 'DoesNotExist'] ? (!has(self.values) || size(self.values) == 0) : true",message="values set must be empty when operator is Exists or DoesNotExist"
+type LabelSelectorRequirement struct {
+	// key is the label key that the selector applies to.
+	// +kubebuilder:validation:MaxLength=316
+	// +kubebuilder:validation:XValidation:rule="!format.qualifiedName().validate(self).hasValue()",message="key must be a valid qualified name"
+	Key string `json:"key"`
+	// operator represents a key's relationship to a set of values.
+	// Valid operators are In, NotIn, Exists and DoesNotExist.
+	// +kubebuilder:validation:Enum=In;NotIn;Exists;DoesNotExist
+	Operator LabelSelectorOperator `json:"operator"`
+	// values is an array of string values. If the operator is In or NotIn,
+	// the values array must be non-empty. If the operator is Exists or DoesNotExist,
+	// the values array must be empty. This array is replaced during a strategic
+	// merge patch.
+	// +kubebuilder:validation:MaxItems=64
+	// +kubebuilder:validation:items:MaxLength=63
+	// +kubebuilder:validation:XValidation:rule="self.all(v, !format.labelValue().validate(v).hasValue())",message="values must be valid label values"
+	// +optional
+	// +listType=atomic
+	Values []string `json:"values,omitempty"`
+}
+
+// LabelSelectorOperator is the set of operators that can be used in a selector requirement.
+type LabelSelectorOperator string
+
+const (
+	// LabelSelectorOpIn checks if a label value is in a list of values.
+	LabelSelectorOpIn LabelSelectorOperator = "In"
+	// LabelSelectorOpNotIn checks if a label value is not in a list of values.
+	LabelSelectorOpNotIn LabelSelectorOperator = "NotIn"
+	// LabelSelectorOpExists checks if a label exists.
+	LabelSelectorOpExists LabelSelectorOperator = "Exists"
+	// LabelSelectorOpDoesNotExist checks if a label does not exist.
+	LabelSelectorOpDoesNotExist LabelSelectorOperator = "DoesNotExist"
+)
+
 // +kubebuilder:object:root=true
 
 // CapacityQuotaList contains a list of CapacityQuota
@@ -122,6 +181,32 @@ type CapacityQuotaList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []CapacityQuota `json:"items"`
+}
+
+// AsMetaLabelSelector converts a LabelSelector to a metav1.LabelSelector.
+func (s *LabelSelector) AsMetaLabelSelector() *metav1.LabelSelector {
+	if s == nil {
+		return nil
+	}
+	matchLabels := make(map[string]string, len(s.MatchLabels))
+	for k, v := range s.MatchLabels {
+		matchLabels[k] = v
+	}
+	matchExpressions := make([]metav1.LabelSelectorRequirement, len(s.MatchExpressions))
+	for i, expr := range s.MatchExpressions {
+		values := make([]string, len(expr.Values))
+		copy(values, expr.Values)
+		matchExpressions[i] = metav1.LabelSelectorRequirement{
+			Key:      expr.Key,
+			Operator: metav1.LabelSelectorOperator(expr.Operator),
+			Values:   values,
+		}
+	}
+
+	return &metav1.LabelSelector{
+		MatchLabels:      s.MatchLabels,
+		MatchExpressions: matchExpressions,
+	}
 }
 
 func init() {

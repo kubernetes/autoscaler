@@ -92,11 +92,11 @@ func newFromCapacityQuota(cq cqv1alpha1.CapacityQuota) (*labelSelectorQuota, err
 	}, nil
 }
 
-func labelSelectorAsSelector(ls *v1.LabelSelector) (labels.Selector, error) {
+func labelSelectorAsSelector(ls *cqv1alpha1.LabelSelector) (labels.Selector, error) {
 	if ls == nil {
 		return labels.Everything(), nil
 	}
-	selector, err := v1.LabelSelectorAsSelector(ls)
+	selector, err := v1.LabelSelectorAsSelector(ls.AsMetaLabelSelector())
 	if err != nil {
 		return nil, fmt.Errorf("invalid label selector: %w", err)
 	}

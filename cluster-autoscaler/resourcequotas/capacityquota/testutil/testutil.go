@@ -40,7 +40,7 @@ func NewCapacityQuota(name string, opts ...QuotaOption) *v1alpha1.CapacityQuota 
 // WithLabelSelector configures the CapacityQuota's LabelSelector to match the given labels.
 func WithLabelSelector(labels map[string]string) QuotaOption {
 	return func(cq *v1alpha1.CapacityQuota) {
-		cq.Spec.Selector = &metav1.LabelSelector{
+		cq.Spec.Selector = &v1alpha1.LabelSelector{
 			MatchLabels: labels,
 		}
 	}

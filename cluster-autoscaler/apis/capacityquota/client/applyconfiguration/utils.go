@@ -42,6 +42,10 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &autoscalingxk8siov1alpha1.CapacityQuotaStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("CapacityQuotaUsage"):
 		return &autoscalingxk8siov1alpha1.CapacityQuotaUsageApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("LabelSelector"):
+		return &autoscalingxk8siov1alpha1.LabelSelectorApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("LabelSelectorRequirement"):
+		return &autoscalingxk8siov1alpha1.LabelSelectorRequirementApplyConfiguration{}
 
 	}
 	return nil

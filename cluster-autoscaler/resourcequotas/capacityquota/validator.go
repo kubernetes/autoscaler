@@ -32,7 +32,7 @@ type Validator interface {
 type labelSelectorValidator struct{}
 
 func (v *labelSelectorValidator) Validate(_ context.Context, cq *cqv1alpha1.CapacityQuota) error {
-	if _, err := metav1.LabelSelectorAsSelector(cq.Spec.Selector); err != nil {
+	if _, err := metav1.LabelSelectorAsSelector(cq.Spec.Selector.AsMetaLabelSelector()); err != nil {
 		return field.Invalid(field.NewPath("spec").Child("selector"), cq.Spec.Selector, err.Error())
 	}
 	return nil

@@ -169,7 +169,7 @@ func (r *Reconciler) getMatchingNodes(ctx context.Context, cq *v1alpha1.Capacity
 	var listOpts []client.ListOption
 
 	if cq.Spec.Selector != nil {
-		selector, err := metav1.LabelSelectorAsSelector(cq.Spec.Selector)
+		selector, err := metav1.LabelSelectorAsSelector(cq.Spec.Selector.AsMetaLabelSelector())
 		if err != nil {
 			return nil, err
 		}
@@ -272,7 +272,7 @@ func (r *Reconciler) findCapacityQuotasForNode(ctx context.Context, o client.Obj
 
 	for _, cq := range cqList.Items {
 		if cq.Spec.Selector != nil {
-			selector, err := metav1.LabelSelectorAsSelector(cq.Spec.Selector)
+			selector, err := metav1.LabelSelectorAsSelector(cq.Spec.Selector.AsMetaLabelSelector())
 			if err != nil {
 				runtime.HandleError(err)
 				continue
