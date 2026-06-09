@@ -3867,6 +3867,7 @@ func TestStaticAutoscalerScaleDownCustomQuota(t *testing.T) {
 		},
 		quotaProvider: qp,
 		autoscalingOptions: config.AutoscalingOptions{
+			ScaleDownEnabled: true,
 			NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 				ScaleDownUnneededTime:         0 * time.Second,
 				ScaleDownUnreadyTime:          0 * time.Second,
