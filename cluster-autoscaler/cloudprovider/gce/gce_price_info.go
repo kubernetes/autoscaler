@@ -88,6 +88,7 @@ var (
 		"t2d": 0.027502,
 		"z3":  0.0496531,
 		"e4":  0.02181159,
+		"z4d": 0.00875,
 	}
 	predefinedMemoryPricePerHourPerGb = map[string]float64{
 		"a2":  0.004237,
@@ -109,6 +110,7 @@ var (
 		"t2d": 0.003686,
 		"z3":  0.0066553,
 		"e4":  0.00292353,
+		"z4d": 0.01,
 	}
 	predefinedPreemptibleDiscount = map[string]float64{
 		"a2":  0.009483 / 0.031611,
@@ -130,6 +132,7 @@ var (
 		"t2d": 0.006655 / 0.027502,
 		"z3":  0.0165 / 0.0496531,
 		"e4":  0.0130312 / 0.02181159,
+		"z4d": 0.4,
 	}
 	customCpuPricePerHour = map[string]float64{
 		"e2":  0.022890,
@@ -383,6 +386,17 @@ var (
 		"z3-highmem-44-standardlssd":  5.495144,
 		"z3-highmem-88-standardlssd":  10.990288,
 		"z3-highmem-176-standardlssd": 21.980576,
+		"z4d-standard-16-standardlssd":  1.156344,
+		"z4d-standard-32-standardlssd":  2.312688,
+		"z4d-standard-48-standardlssd":  3.469032,
+		"z4d-standard-64-standardlssd":  4.625376,
+		"z4d-standard-96-standardlssd":  6.938065,
+		"z4d-highmem-8-highlssd":        1.086344,
+		"z4d-highmem-16-highlssd":       2.172688,
+		"z4d-highmem-24-highlssd":       3.259032,
+		"z4d-highmem-32-highlssd":       4.345376,
+		"z4d-highmem-48-highlssd":       6.518065,
+		"z4d-highmem-96-highlssd":       13.036129,
 	}
 	preemptiblePrices = map[string]float64{
 		"a2-highgpu-1g":               1.102016,
@@ -580,6 +594,17 @@ var (
 		"z3-highmem-44-standardlssd":  1.366763,
 		"z3-highmem-88-standardlssd":  2.733527,
 		"z3-highmem-176-standardlssd": 5.467054,
+		"z4d-standard-16-standardlssd":  0.462538,
+		"z4d-standard-32-standardlssd":  0.925075,
+		"z4d-standard-48-standardlssd":  1.387613,
+		"z4d-standard-64-standardlssd":  1.850151,
+		"z4d-standard-96-standardlssd":  2.775226,
+		"z4d-highmem-8-highlssd":        0.434538,
+		"z4d-highmem-16-highlssd":       0.869075,
+		"z4d-highmem-24-highlssd":       1.303613,
+		"z4d-highmem-32-highlssd":       1.738151,
+		"z4d-highmem-48-highlssd":       2.607226,
+		"z4d-highmem-96-highlssd":       5.214452,
 	}
 	gpuPrices = map[string]float64{
 		"nvidia-tesla-t4":   0.35,
