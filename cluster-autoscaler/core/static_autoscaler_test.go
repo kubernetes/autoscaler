@@ -254,6 +254,7 @@ type autoscalerSetupConfig struct {
 	clusterStateConfig     clusterstate.ClusterStateRegistryConfig
 	mocks                  *commonMocks
 	nodesDeleted           chan bool
+	quotaProvider          resourcequotas.Provider
 }
 
 func setupCloudProvider(config *autoscalerSetupConfig) (*testprovider.TestCloudProvider, error) {
@@ -335,7 +336,19 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
 	autoscalingCtx.ScaleDownActuator = actuation.NewActuator(&autoscalingCtx, clusterState, nodeDeletionTracker, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
-	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules, quotasTrackerFactory)
+
+	var minQuotaProvider resourcequotas.Provider
+	if config.quotaProvider != nil {
+		minQuotaProvider = config.quotaProvider
+	} else {
+		minQuotaProvider = resourcequotas.NewCloudMinProvider(provider)
+	}
+	minQuotasTrackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+		CustomResourcesProcessor: processors.CustomResourcesProcessor,
+		QuotaProvider:            minQuotaProvider,
+	})
+
+	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules, minQuotasTrackerFactory)
 
 	processorCallbacks.scaleDownPlanner = sdPlanner
 
@@ -3768,4 +3781,120 @@ func TestStaticAutoscalerRunOnceWithNominatedNodeName(t *testing.T) {
 
 	mock.AssertExpectationsForObjects(t, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
+}
+
+type customQuota struct {
+	id     string
+	label  string
+	minCpu int64
+}
+
+func (q *customQuota) ID() string { return q.id }
+func (q *customQuota) AppliesTo(node *apiv1.Node) bool {
+	if node.Labels == nil {
+		return false
+	}
+	_, hasLabel := node.Labels[q.label]
+	return hasLabel
+}
+func (q *customQuota) Limits() map[string]int64 {
+	return map[string]int64{
+		apiv1.ResourceCPU.String(): q.minCpu,
+	}
+}
+
+type customQuotaProvider struct {
+	quotas []resourcequotas.Quota
+}
+
+func (p *customQuotaProvider) Quotas() ([]resourcequotas.Quota, error) {
+	return p.quotas, nil
+}
+
+func TestStaticAutoscalerScaleDownCustomQuota(t *testing.T) {
+	label := "custom-quota-label"
+	quotaId := "custom-quota"
+	minCpu := int64(3) // Minimum 3 CPUs required for nodes with this label
+
+	cq := &customQuota{
+		id:     quotaId,
+		label:  label,
+		minCpu: minCpu,
+	}
+	qp := &customQuotaProvider{
+		quotas: []resourcequotas.Quota{cq},
+	}
+
+	n1 := BuildTestNode("n1", 2000, 1000) // 2 CPUs
+	n1.Labels = map[string]string{label: "true"}
+	SetNodeReadyState(n1, true, time.Now())
+
+	n2 := BuildTestNode("n2", 2000, 1000) // 2 CPUs
+	n2.Labels = map[string]string{label: "true"}
+	SetNodeReadyState(n2, true, time.Now())
+
+	allNodes := []*apiv1.Node{n1, n2}
+
+	readyNodeLister := kubernetes.NewTestNodeLister(allNodes)
+	allNodeLister := kubernetes.NewTestNodeLister(allNodes)
+	allPodListerMock := &podListerMock{}
+	allPodListerMock.On("List").Return([]*apiv1.Pod{}, nil)
+
+	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil)
+	daemonSetListerMock := &daemonSetListerMock{}
+	daemonSetListerMock.On("List", mock.Anything).Return([]*appsv1.DaemonSet{}, nil)
+	daemonSetListerMock.On("GetPodDaemonSets", mock.Anything).Return([]*appsv1.DaemonSet{}, nil)
+
+	onScaleDownMock := &onScaleDownMock{}
+
+	setupConfig := &autoscalerSetupConfig{
+		nodeGroups: []*nodeGroup{
+			{
+				name:  "ng1",
+				nodes: allNodes,
+				min:   1,
+				max:   10,
+			},
+		},
+		mocks: &commonMocks{
+			allNodeLister:             allNodeLister,
+			readyNodeLister:           readyNodeLister,
+			allPodLister:              allPodListerMock,
+			podDisruptionBudgetLister: podDisruptionBudgetListerMock,
+			daemonSetLister:           daemonSetListerMock,
+			onScaleDown:               onScaleDownMock,
+		},
+		quotaProvider: qp,
+		autoscalingOptions: config.AutoscalingOptions{
+			NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+				ScaleDownUnneededTime:         0 * time.Second,
+				ScaleDownUnreadyTime:          0 * time.Second,
+				ScaleDownUtilizationThreshold: 0.5,
+			},
+			ScaleDownSimulationTimeout: 10 * time.Second,
+			MaxScaleDownParallelism:    10,
+		},
+	}
+
+	autoscaler, err := setupAutoscaler(setupConfig)
+	assert.NoError(t, err)
+
+	statusProcessor := &scaleDownStatusProcessorMock{}
+	autoscaler.processors.ScaleDownStatusProcessor = statusProcessor
+
+	now := time.Now()
+	err = autoscaler.RunOnce(now)
+	assert.NoError(t, err)
+
+	now = now.Add(2 * time.Second)
+	err = autoscaler.RunOnce(now)
+	assert.NoError(t, err)
+
+	onScaleDownMock.AssertNotCalled(t, "ScaleDown", mock.Anything, mock.Anything)
+
+	assert.Equal(t, 2, len(statusProcessor.scaleDownStatus.UnremovableNodes))
+	for _, unremovableNode := range statusProcessor.scaleDownStatus.UnremovableNodes {
+		assert.Equal(t, simulator.MinimalResourceLimitExceeded, unremovableNode.Reason)
+	}
 }

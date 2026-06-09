@@ -65,6 +65,7 @@ type AutoscalerOptions struct {
 	DrainabilityRules          rules.Rules
 	DraProvider                *draprovider.Provider
 	QuotasTrackerOptions       resourcequotas.TrackerOptions
+	MinQuotasTrackerOptions    resourcequotas.TrackerOptions
 	CSIProvider                *csinodeprovider.Provider
 	KubeClientNew              client.Client
 	KubeCache                  cache.Cache
