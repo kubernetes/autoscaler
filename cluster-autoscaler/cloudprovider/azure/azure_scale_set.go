@@ -711,10 +711,8 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredI
 		klog.Errorf("WaitForDeleteInstancesResult(%v) for %s retry failed", requiredIds.InstanceIds, scaleSet.Name)
 	}
 
-	if !scaleSet.manager.config.StrictCacheUpdates {
-		// On failure, invalidate the instanceCache - cannot have instances in deletingState
-		scaleSet.invalidateInstanceCache()
-	}
+	scaleSet.invalidateInstanceCache()
+	scaleSet.invalidateLastSizeRefreshWithLock()
 	klog.Errorf("WaitForDeleteInstancesResult(%v) for %s failed with error: %v", requiredIds.InstanceIds, scaleSet.Name, err)
 }
 
