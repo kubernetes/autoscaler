@@ -724,6 +724,9 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 		return err
 	}
 
+	// This only catches callers already at min size. A future change should also reject
+	// batches that would go below min size; create-error cleanup fallback is the only
+	// currently known path that can reach this check without regular scale-down filtering.
 	if int(size) <= scaleSet.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
