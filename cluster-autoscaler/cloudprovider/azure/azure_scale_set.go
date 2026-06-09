@@ -322,6 +322,7 @@ func (scaleSet *ScaleSet) canIncreaseSize(delta int) (int64, error) {
 		return size, err
 	}
 
+	// Defensive: getScaleSetSize already errors on size == -1, so this is unreachable today.
 	if size == -1 {
 		return size, fmt.Errorf("the scale set %s is under initialization, skipping IncreaseSize", scaleSet.Name)
 	}
