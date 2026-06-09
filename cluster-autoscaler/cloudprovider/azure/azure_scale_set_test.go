@@ -18,6 +18,7 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -2144,6 +2145,109 @@ func TestScaleSetETagPreconditionFailureRollsBackCapacity(t *testing.T) {
 	target, err := scaleSet.TargetSize()
 	assert.NoError(t, err)
 	assert.Equal(t, 3, target)
+}
+
+type testPollingHandler[T any] struct {
+	err    error
+	polled bool
+}
+
+func (f *testPollingHandler[T]) Done() bool {
+	return f.polled && f.err == nil
+}
+
+func (f *testPollingHandler[T]) Poll(_ context.Context) (*http.Response, error) {
+	f.polled = true
+	return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, f.err
+}
+
+func (f *testPollingHandler[T]) Result(_ context.Context, _ *T) error {
+	return f.err
+}
+
+func newTestPollerWithError(err error) *runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse] {
+	resp := &http.Response{
+		StatusCode: http.StatusAccepted,
+		Header:     http.Header{},
+		Body:       http.NoBody,
+	}
+	pl := runtime.NewPipeline("test", "v0.0.0", runtime.PipelineOptions{}, nil)
+	poller, pollerErr := runtime.NewPoller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse](resp, pl, &runtime.NewPollerOptions[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse]{
+		Handler: &testPollingHandler[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse]{err: err},
+	})
+	if pollerErr != nil {
+		panic(pollerErr)
+	}
+	return poller
+}
+
+func TestWaitForDeleteInstancesNoRetryOnOtherErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	manager := newTestAzureManager(t)
+
+	vmssName := "test-asg"
+	var vmssCapacity int64 = 3
+	orchMode := armcompute.OrchestrationModeUniform
+
+	expectedScaleSets := []*armcompute.VirtualMachineScaleSet{
+		{
+			Name: ptr.To(vmssName),
+			SKU:  &armcompute.SKU{Capacity: ptr.To(vmssCapacity)},
+			Properties: &armcompute.VirtualMachineScaleSetProperties{
+				OrchestrationMode: &orchMode,
+			},
+		},
+	}
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, "test-asg").Return(expectedVMSSVMs, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	manager.azClient.vmssClientForDelete = mockDeleteClient
+
+	err := manager.forceRefresh()
+	assert.NoError(t, err)
+
+	registered := manager.RegisterNodeGroup(newTestScaleSet(manager, "test-asg"))
+	manager.explicitlyConfigured["test-asg"] = true
+	assert.True(t, registered)
+	err = manager.forceRefresh()
+	assert.NoError(t, err)
+
+	requiredIds := &armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{
+		InstanceIDs: []*string{ptr.To("0")},
+	}
+
+	for _, strictCacheUpdates := range []bool{false, true} {
+		t.Run(fmt.Sprintf("strict cache updates %t", strictCacheUpdates), func(t *testing.T) {
+			manager.config.StrictCacheUpdates = strictCacheUpdates
+			scaleSet := newTestScaleSet(manager, "test-asg")
+			scaleSet.curSize = 1
+			scaleSet.lastSizeRefresh = time.Now()
+			scaleSet.sizeRefreshPeriod = time.Hour
+
+			// Create a poller that returns a non-preempted error
+			otherErrorPoller := newTestPollerWithError(errors.New("InternalServerError: something went wrong"))
+
+			// Act: PollUntilDone fails with a non-preempted error — should NOT trigger retry
+			scaleSet.waitForDeleteInstances(otherErrorPoller, requiredIds)
+
+			// Assert: BeginDeleteInstances was never called. gomock.Times(0) enforces this.
+			// Assert: caches were invalidated so TargetSize refreshes from VMSS capacity.
+			assert.False(t, scaleSet.lastInstanceRefresh.IsZero())
+			targetSize, err := scaleSet.TargetSize()
+			assert.NoError(t, err)
+			assert.Equal(t, 3, targetSize)
+		})
+	}
 }
 
 // TestScaleSetETagRetrySucceedsAfterPreconditionFailure verifies that a single 412

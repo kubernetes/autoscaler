@@ -838,9 +838,8 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompu
 		}
 		return
 	}
-	if !scaleSet.manager.config.StrictCacheUpdates {
-		scaleSet.invalidateInstanceCache()
-	}
+	scaleSet.invalidateInstanceCache()
+	scaleSet.invalidateLastSizeRefreshWithLock()
 	klog.Errorf("PollUntilDone for DeleteInstances(%v) for %s failed with error: %v", requiredIds.InstanceIDs, scaleSet.Name, err)
 }
 
