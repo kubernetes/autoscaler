@@ -1083,26 +1083,24 @@ func TestScaleSetForceDeleteNodesDoesNotPublishNegativeCachedSize(t *testing.T) 
 
 	vmssName := testASG
 	var vmssCapacity int64 = 3
-	orchMode := armcompute.OrchestrationModeUniform
+	orchMode := compute.Uniform
 	expectedScaleSets := newTestVMSSList(vmssCapacity, vmssName, "eastus", orchMode)
 	expectedVMSSVMs := newTestVMSSVMList(3)
 	expectedVMs := newTestVMList(3)
 
 	manager := newTestAzureManager(t)
 
-	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	mockVMSSClient.EXPECT().DeleteInstancesAsync(gomock.Any(), manager.config.ResourceGroup, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockVMSSClient.EXPECT().WaitForDeleteInstancesResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).Return(&http.Response{StatusCode: http.StatusOK}, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
-	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
-	mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-	manager.azClient.vmssClientForDelete = mockDeleteClient
-
-	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, testASG).Return(expectedVMSSVMs, nil).AnyTimes()
+	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, testASG, gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 
-	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
 	manager.azClient.virtualMachinesClient = mockVMClient
 
@@ -1916,15 +1914,29 @@ func TestWaitForDeleteInstancesNoRetryOnOtherErrors(t *testing.T) {
 	manager, mockVMSSClient := setupScaleSetForDeleteTest(t, ctrl)
 
 	// A non-preempted failure must NOT trigger a retry.
-	mockVMSSClient.EXPECT().WaitForDeleteInstancesResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).
-		Return(&http.Response{StatusCode: http.StatusInternalServerError}, errors.New("InternalServerError: something went wrong")).Times(1)
 	// If the retry path is accidentally taken, gomock.Times(0) fails the test.
 	mockVMSSClient.EXPECT().DeleteInstancesAsync(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	requiredIds := &compute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIds: &[]string{"0"}}
-	scaleSet := newTestScaleSet(manager, "test-asg")
+	for _, strictCacheUpdates := range []bool{false, true} {
+		t.Run(fmt.Sprintf("strict cache updates %t", strictCacheUpdates), func(t *testing.T) {
+			manager.config.StrictCacheUpdates = strictCacheUpdates
+			mockVMSSClient.EXPECT().WaitForDeleteInstancesResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).
+				Return(&http.Response{StatusCode: http.StatusInternalServerError}, errors.New("InternalServerError: something went wrong")).Times(1)
 
-	scaleSet.waitForDeleteInstances(&autorestazure.Future{}, requiredIds)
+			scaleSet := newTestScaleSet(manager, "test-asg")
+			scaleSet.curSize = 1
+			scaleSet.lastSizeRefresh = time.Now()
+			scaleSet.sizeRefreshPeriod = time.Hour
+
+			scaleSet.waitForDeleteInstances(&autorestazure.Future{}, requiredIds)
+
+			assert.False(t, scaleSet.lastInstanceRefresh.IsZero())
+			targetSize, err := scaleSet.TargetSize()
+			assert.NoError(t, err)
+			assert.Equal(t, 3, targetSize)
+		})
+	}
 }
 
 func TestWaitForDeleteInstancesRetryFailure(t *testing.T) {
