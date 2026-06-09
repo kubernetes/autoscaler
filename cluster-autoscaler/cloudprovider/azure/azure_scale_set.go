@@ -792,13 +792,21 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 
 	if !scaleSet.manager.config.StrictCacheUpdates {
 		// Proactively decrement scale set size so that we don't
-		// go below minimum node count if cache data is stale
-		// only do it for non-unregistered nodes
+		// go below minimum node count if cache data is stale.
+		// If the cached size can't represent the delete batch,
+		// mark it stale instead of publishing a negative size.
+		// Only do it for non-unregistered nodes.
 
 		if !hasUnregisteredNodes {
+			deleteCount := int64(len(instanceIDs))
 			scaleSet.sizeMutex.Lock()
-			scaleSet.curSize -= int64(len(instanceIDs))
-			scaleSet.lastSizeRefresh = time.Now()
+			if scaleSet.curSize < deleteCount {
+				klog.Warningf("VMSS: %s, cached size %d is smaller than instances to delete %d, invalidating size cache instead of decrementing", scaleSet.Name, scaleSet.curSize, deleteCount)
+				scaleSet.lastSizeRefresh = time.Time{}
+			} else {
+				scaleSet.curSize -= deleteCount
+				scaleSet.lastSizeRefresh = time.Now()
+			}
 			scaleSet.sizeMutex.Unlock()
 		}
 
