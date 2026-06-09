@@ -9,5 +9,6 @@ reviewers:
 - x13n
 - elmiko
 - mtrqq
+- norbertcyran
 labels:
 - area/cluster-autoscaler
