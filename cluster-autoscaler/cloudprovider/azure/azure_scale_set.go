@@ -274,9 +274,14 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 func (scaleSet *ScaleSet) getScaleSetSize() (int64, error) {
 	// First, get the current size of the ScaleSet
 	size, getVMSSError := scaleSet.getCurSize()
-	if size == -1 || getVMSSError != nil {
-		klog.V(3).Infof("getScaleSetSize: either size is -1 (actual: %d) or error exists (actual err:%v)", size, getVMSSError.error)
+	if getVMSSError != nil {
+		klog.V(3).Infof("getScaleSetSize: error exists (actual err:%v)", getVMSSError.error)
 		return size, getVMSSError.error
+	}
+	if size == -1 {
+		err := fmt.Errorf("failed to get scale set size for %s: cached size is -1 without provider error", scaleSet.Name)
+		klog.V(3).Infof("getScaleSetSize: size is -1 (actual err:%v)", err)
+		return size, err
 	}
 	return size, nil
 }
