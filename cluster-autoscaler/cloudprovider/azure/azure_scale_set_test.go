@@ -2072,15 +2072,28 @@ func TestWaitForDeleteInstancesNoRetryOnOtherErrors(t *testing.T) {
 		InstanceIDs: []*string{ptr.To("0")},
 	}
 
-	scaleSet := newTestScaleSet(manager, "test-asg")
+	for _, strictCacheUpdates := range []bool{false, true} {
+		t.Run(fmt.Sprintf("strict cache updates %t", strictCacheUpdates), func(t *testing.T) {
+			manager.config.StrictCacheUpdates = strictCacheUpdates
+			scaleSet := newTestScaleSet(manager, "test-asg")
+			scaleSet.curSize = 1
+			scaleSet.lastSizeRefresh = time.Now()
+			scaleSet.sizeRefreshPeriod = time.Hour
 
-	// Create a poller that returns a non-preempted error
-	otherErrorPoller := newTestPollerWithError(errors.New("InternalServerError: something went wrong"))
+			// Create a poller that returns a non-preempted error
+			otherErrorPoller := newTestPollerWithError(errors.New("InternalServerError: something went wrong"))
 
-	// Act: PollUntilDone fails with a non-preempted error — should NOT trigger retry
-	scaleSet.waitForDeleteInstances(otherErrorPoller, requiredIds)
+			// Act: PollUntilDone fails with a non-preempted error — should NOT trigger retry
+			scaleSet.waitForDeleteInstances(otherErrorPoller, requiredIds)
 
-	// Assert: BeginDeleteInstances was never called. gomock.Times(0) enforces this.
+			// Assert: BeginDeleteInstances was never called. gomock.Times(0) enforces this.
+			// Assert: caches were invalidated so TargetSize refreshes from VMSS capacity.
+			assert.False(t, scaleSet.lastInstanceRefresh.IsZero())
+			targetSize, err := scaleSet.TargetSize()
+			assert.NoError(t, err)
+			assert.Equal(t, 3, targetSize)
+		})
+	}
 }
 
 func TestWaitForDeleteInstancesRetryFailure(t *testing.T) {
