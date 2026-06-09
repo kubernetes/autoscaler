@@ -255,6 +255,22 @@ func TestScaleSetTargetSize(t *testing.T) {
 	}
 }
 
+func TestScaleSetTargetSizeReturnsErrorForCachedNegativeSize(t *testing.T) {
+	provider := newTestProvider(t)
+	err := provider.azureManager.forceRefresh()
+	assert.NoError(t, err)
+
+	scaleSet := newTestScaleSet(provider.azureManager, testASG)
+	scaleSet.curSize = -1
+	scaleSet.lastSizeRefresh = time.Now()
+	scaleSet.sizeRefreshPeriod = time.Hour
+
+	size, err := scaleSet.TargetSize()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cached size is -1 without provider error")
+	assert.Equal(t, -1, size)
+}
+
 func TestScaleSetIncreaseSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
