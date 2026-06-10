@@ -274,7 +274,6 @@ func (r *Reconciler) findCapacityQuotasForNode(ctx context.Context, o client.Obj
 		if cq.Spec.Selector != nil {
 			selector, err := metav1.LabelSelectorAsSelector(cq.Spec.Selector)
 			if err != nil {
-				runtime.HandleError(err)
 				continue
 			}
 			// note: this works correctly for node updates both when a label is added and removed from a node.
