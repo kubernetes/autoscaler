@@ -64,6 +64,7 @@ const (
 	nodeCountStableFor     = 20 * time.Second
 	nodeCountPollInterval  = 5 * time.Second
 	freshStatusLimit       = 20 * time.Second
+	cacheRefreshTimeout    = 30 * time.Second
 
 	disabledTaint           = "DisabledForAutoscalingTest"
 	criticalAddonsOnlyTaint = "CriticalAddonsOnly"
@@ -490,7 +491,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 
 			// Verify that cluster size is not changed.
 			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, f.ClientSet,
-				func(size int) bool { return size == nodeCount }, time.Second))
+				func(size int) bool { return size == nodeCount }, cacheRefreshTimeout))
 		})
 
 		f.It("should correctly scale down with DRA node draining", feature.ClusterSizeAutoscalingScaleDown, func(ctx context.Context) {
