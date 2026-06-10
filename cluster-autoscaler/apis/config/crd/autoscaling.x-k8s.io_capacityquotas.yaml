@@ -127,8 +127,9 @@ spec:
             description: status defines the observed state of CapacityQuota
             properties:
               conditions:
-                description: Conditions provide a standard mechanism for reporting
-                  the quota's state.
+                description: |-
+                  Conditions provide a standard mechanism for reporting the quota's state.
+                  CapacityQuota will be enforced only if it has a Valid=True condition.
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.

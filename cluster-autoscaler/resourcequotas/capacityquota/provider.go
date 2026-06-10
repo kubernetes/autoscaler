@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
@@ -48,6 +49,10 @@ func (p *Provider) Quotas() ([]resourcequotas.Quota, error) {
 	}
 	var quotas []resourcequotas.Quota
 	for _, cq := range capacityQuotas.Items {
+		if !meta.IsStatusConditionTrue(cq.Status.Conditions, cqv1alpha1.ValidCondition) {
+			klog.V(5).Infof("CapacityQuota %q is not valid, skipping", cq.Name)
+			continue
+		}
 		quota, err := newFromCapacityQuota(cq)
 		if err != nil {
 			klog.Errorf("Skipping CapacityQuota %q, err: %v", cq.Name, err)
