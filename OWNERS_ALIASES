@@ -39,22 +39,22 @@ aliases:
   # - raywainman 2025-09-29
   # - gjtempleton
   sig-autoscaling-vpa-approvers:
-    - kwiesmueller
-    - voelzmo
     - raywainman
     - adrianmoisey
     - omerap12
   # emeritus:
   # - jbartosik 2025-08-09
+  # - kwiesmueller
+  # - voelzmo
   sig-autoscaling-vpa-reviewers:
-    - kwiesmueller
-    - voelzmo
     - raywainman
     - adrianmoisey
     - omerap12
     - maxcao13
   # emeritus:
   # - jbartosik 2025-08-09
+  # - kwiesmueller
+  # - voelzmo
   sig-autoscaling-vpa-helm-chart-approvers:
     - adrianmoisey
     - omerap12
