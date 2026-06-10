@@ -122,6 +122,9 @@ func (e *externalGrpcCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpro
 	// lookup cache
 	if ng, ok := e.nodeGroupForNodeCache[nodeID]; ok {
 		klog.V(5).Infof("Returning cached information for NodeGroupForNode for node %v - %v", node.Name, node.Spec.ProviderID)
+		if ng == nil {
+			return nil, nil
+		}
 		return ng, nil
 	}
 	// perform grpc call

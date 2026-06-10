@@ -84,6 +84,9 @@ func (v *vultrCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 
 		for _, node := range nodes {
 			if node.Id == providerID {
+				if group == nil {
+					return nil, nil
+				}
 				return group, nil
 			}
 		}

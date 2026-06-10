@@ -194,7 +194,13 @@ func (baiducloud *baiducloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (c
 		return nil, fmt.Errorf("parse ProviderID failed: %v", node.Spec.ProviderID)
 	}
 	asg, err := baiducloud.baiducloudManager.GetAsgForInstance(splitted[1])
-	return asg, err
+	if err != nil {
+		return nil, err
+	}
+	if asg == nil {
+		return nil, nil
+	}
+	return asg, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider

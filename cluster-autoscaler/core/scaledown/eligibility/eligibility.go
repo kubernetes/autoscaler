@@ -17,7 +17,6 @@ limitations under the License.
 package eligibility
 
 import (
-	"reflect"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -125,7 +124,7 @@ func (c *Checker) unremovableReasonAndNodeUtilization(autoscalingCtx *ca_context
 		klog.Warningf("Node group not found for node %v: %v", node.Name, err)
 		return simulator.UnexpectedError, nil
 	}
-	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+	if nodeGroup == nil {
 		// We should never get here as non-autoscaled nodes should not be included in scaleDownCandidates list
 		// (and the default PreFilteringScaleDownNodeProcessor would indeed filter them out).
 		klog.Warningf("Skipped %s from delete consideration - the node is not autoscaled", node.Name)

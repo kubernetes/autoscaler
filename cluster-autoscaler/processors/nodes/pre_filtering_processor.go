@@ -17,8 +17,6 @@ limitations under the License.
 package nodes
 
 import (
-	"reflect"
-
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 
@@ -53,7 +51,7 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(autoscalingC
 			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
 			continue
 		}
-		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		if nodeGroup == nil {
 			klog.V(5).Infof("Node %s should not be processed by cluster autoscaler (no node group config)", node.Name)
 			continue
 		}
