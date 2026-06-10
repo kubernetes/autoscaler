@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -331,31 +332,101 @@ func (scaleSet *ScaleSet) TargetSize() (int, error) {
 	return int(size), err
 }
 
-// IncreaseSize increases Scale Set size
-func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
+// canIncreaseSize checks if the size increase is possible.
+// It returns the current size of the scale set if the increase is possible, otherwise returns an error.
+func (scaleSet *ScaleSet) canIncreaseSize(delta int) (int64, error) {
 	if delta <= 0 {
-		return fmt.Errorf("size increase must be positive")
+		return -1, fmt.Errorf("size increase must be positive")
 	}
 
 	size, err := scaleSet.getScaleSetSize()
 	if err != nil {
-		return err
+		return size, err
 	}
 
 	if size == -1 {
-		return fmt.Errorf("the scale set %s is under initialization, skipping IncreaseSize", scaleSet.Name)
+		return size, fmt.Errorf("the scale set %s is under initialization, skipping IncreaseSize", scaleSet.Name)
 	}
 
 	if int(size)+delta > scaleSet.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
+		return size, fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
+	}
+
+	return size, nil
+}
+
+// IncreaseSize increases Scale Set size
+func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
+	size, err := scaleSet.canIncreaseSize(delta)
+	if err != nil {
+		return err
 	}
 
 	return scaleSet.setScaleSetSize(size+int64(delta), delta)
 }
 
-// AtomicIncreaseSize is not implemented.
+// AtomicIncreaseSize increases the VMSS capacity by delta and blocks until the
+// VMSS update operation completes. This ensures that the capacity change has been
+// fully applied by Azure before returning.
+//
+// On success, the VMSS capacity has been updated and new VM instances have been
+// created (though they may still be booting/joining the cluster). On failure, all
+// caches are invalidated so CA fetches fresh state from Azure.
+//
+// Note: this intentionally deviates from the NodeGroup interface comment that says
+// "doesn't wait until the new instances appear" — the blocking behavior is required
+// for atomic-scale-up ProvisioningRequest support to provide a capacity guarantee
+// before workloads are admitted.
 func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
-	return cloudprovider.ErrNotImplemented
+	size, err := scaleSet.canIncreaseSize(delta)
+	if err != nil {
+		return err
+	}
+
+	newSize := size + int64(delta)
+
+	vmssInfo, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
+		return err
+	}
+
+	klog.V(3).Infof("AtomicIncreaseSize: requesting atomic scale-up of %d instances for scale set %q (current size: %d, new size: %d)",
+		delta, scaleSet.Name, size, newSize)
+
+	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
+	defer cancel()
+
+	future, err := scaleSet.initCreateOrUpdate(ctx, &vmssInfo, newSize)
+	if err != nil {
+		klog.Errorf("AtomicIncreaseSize: CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
+		return err
+	}
+
+	if future != nil {
+		klog.V(3).Infof("AtomicIncreaseSize: waiting for VMSS %q capacity update to complete", scaleSet.Name)
+		httpResponse, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForCreateOrUpdateResult(ctx, future, scaleSet.manager.config.ResourceGroup)
+		isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
+		scaleSet.invalidateInstanceCache()
+		if !isSuccess {
+			klog.Errorf("AtomicIncreaseSize: VMSS %q capacity update failed during polling: %v", scaleSet.Name, err)
+			scaleSet.invalidateLastSizeRefreshWithLock()
+			scaleSet.manager.invalidateCache()
+			return fmt.Errorf("AtomicIncreaseSize: VMSS %q capacity update failed: %w", scaleSet.Name, err)
+		}
+	}
+
+	// Only update the size cache after the operation has successfully completed.
+	scaleSet.sizeMutex.Lock()
+	vmssSizeMutex.Lock()
+	vmssInfo.Sku.Capacity = &newSize
+	vmssSizeMutex.Unlock()
+	scaleSet.curSize = newSize
+	scaleSet.lastSizeRefresh = time.Now()
+	scaleSet.sizeMutex.Unlock()
+
+	klog.V(3).Infof("AtomicIncreaseSize: VMSS %q capacity update completed successfully (new size: %d)", scaleSet.Name, newSize)
+	return nil
 }
 
 // GetScaleSetVms returns list of nodes for the given scale set.
@@ -438,23 +509,24 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 	return true, nil
 }
 
-func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *compute.VirtualMachineScaleSet, newSize int64) error {
+func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *compute.VirtualMachineScaleSet, newSize int64) (*azure.Future, error) {
 	if vmssInfo == nil {
-		return fmt.Errorf("vmssInfo cannot be nil while increating scaleSet capacity")
+		return nil, fmt.Errorf("vmssInfo cannot be nil while increasing scaleSet capacity")
 	}
 
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
 
-	// Update the new capacity to cache.
-	vmssSizeMutex.Lock()
-	vmssInfo.Sku.Capacity = &newSize
-	vmssSizeMutex.Unlock()
-
 	// Compose a new VMSS for updating.
+	// Copy the SKU rather than sharing the pointer so the cached
+	// vmssInfo.Sku.Capacity is not mutated before the API call completes.
 	op := compute.VirtualMachineScaleSet{
-		Name:     vmssInfo.Name,
-		Sku:      vmssInfo.Sku,
+		Name: vmssInfo.Name,
+		Sku: &compute.Sku{
+			Name:     vmssInfo.Sku.Name,
+			Tier:     vmssInfo.Sku.Tier,
+			Capacity: ptr.To[int64](newSize),
+		},
 		Location: vmssInfo.Location,
 	}
 
@@ -466,21 +538,42 @@ func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *compute.VirtualMachi
 
 		klog.V(3).Infof("Passing ExtendedLocation information if it is not nil, with Edge Zone name:(%s)", *op.ExtendedLocation.Name)
 	}
-
-	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
-	defer cancel()
-	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", scaleSet.Name)
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", scaleSet.Name)
 	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdateAsync(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op)
 	if rerr != nil {
 		klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %+v", scaleSet.Name, rerr)
-		return rerr.Error()
+		return nil, rerr.Error()
+	}
+	return future, nil
+}
+
+func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *compute.VirtualMachineScaleSet, newSize int64) error {
+	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
+	defer cancel()
+	// For non-atomic scale up, we eagerly update the VMSS size in the cache
+	// to avoid overshooting the max size if multiple scale up requests are made concurrently.
+	// This preserves the existing behavior (before atomic scale up was added).
+	vmssSizeMutex.Lock()
+	vmssInfo.Sku.Capacity = &newSize
+	vmssSizeMutex.Unlock()
+	future, err := scaleSet.initCreateOrUpdate(ctx, vmssInfo, newSize)
+	if err != nil {
+		return err
 	}
 
 	// Proactively set the VMSS size so autoscaler makes better decisions.
+	// initCreateOrUpdate releases sizeMutex before returning, so reacquire it
+	// here to keep curSize / lastSizeRefresh updates serialized with readers
+	// (e.g. getCurSize).
+	scaleSet.sizeMutex.Lock()
 	scaleSet.curSize = newSize
 	scaleSet.lastSizeRefresh = time.Now()
+	scaleSet.sizeMutex.Unlock()
 
-	go scaleSet.waitForCreateOrUpdateInstances(future)
+	// Poll for completion asynchronously to avoid blocking the autoscaler
+	if future != nil {
+		go scaleSet.waitForCreateOrUpdateInstances(future)
+	}
 	return nil
 }
 
