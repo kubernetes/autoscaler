@@ -76,6 +76,9 @@ func (k *kamateraCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 			return nil, err
 		}
 		if instance != nil {
+			if ng == nil {
+				return nil, nil
+			}
 			return ng, nil
 		}
 	}

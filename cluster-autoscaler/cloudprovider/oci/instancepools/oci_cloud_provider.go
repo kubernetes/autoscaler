@@ -77,9 +77,14 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 		klog.V(4).Infof("NodeGroupForNode: node %s is not a member of any of the specified instance-pool(s)", n.Name)
 		return nil, nil
 	}
-
 	klog.V(4).Infof("NodeGroupForNode: %s belongs to instance-pool %s", n.Name, ng.Id())
-	return ng, err
+	if err != nil {
+		return nil, err
+	}
+	if ng == nil {
+		return nil, nil
+	}
+	return ng, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider

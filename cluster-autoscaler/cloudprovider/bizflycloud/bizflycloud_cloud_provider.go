@@ -106,6 +106,9 @@ func (d *bizflycloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 				continue
 			}
 
+			if group == nil {
+				return nil, nil
+			}
 			return group, nil
 		}
 	}

@@ -115,6 +115,9 @@ func (tencentcloud *tencentCloudProvider) NodeGroupForNode(node *apiv1.Node) (cl
 	if err != nil {
 		return nil, err
 	}
+	if asg == nil {
+		return nil, nil
+	}
 
 	return asg, nil
 }

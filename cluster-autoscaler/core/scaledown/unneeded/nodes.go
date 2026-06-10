@@ -18,7 +18,6 @@ package unneeded
 
 import (
 	"fmt"
-	"reflect"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -235,8 +234,8 @@ func (n *Nodes) lookupAndSetRemovalThreshold(v *node, cp cloudprovider.CloudProv
 		klog.Warningf("Error determining node group for %s: %v", v.ntbr.Node.Name, err)
 		return
 	}
-	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-		klog.V(4).Infof("Node %s has no node group config", v.ntbr.Node.Name)
+	if nodeGroup == nil {
+		klog.V(4).Infof("Skipping %s - no node group config", v.ntbr.Node.Name)
 		return
 	}
 
@@ -279,7 +278,7 @@ func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext,
 	}
 
 	nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
-	if err != nil || nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+	if err != nil || nodeGroup == nil {
 		klog.V(4).Infof("Skipping %s - no node group config", node.Name)
 		return simulator.NotAutoscaled
 	}

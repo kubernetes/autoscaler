@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"maps"
-	"reflect"
 	"slices"
 	"strings"
 	"time"
@@ -1052,7 +1051,7 @@ func (a *StaticAutoscaler) oldUnregisteredNodes(allUnregisteredNodes []clusterst
 			klog.Warningf("Failed to get node group for %s: %v", unregisteredNode.Node.Name, err)
 			continue
 		}
-		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		if nodeGroup == nil {
 			klog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
 			continue
 		}
