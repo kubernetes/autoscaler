@@ -201,19 +201,48 @@ sure nothing we care about will break if we do.
     git push git@github.com:kubernetes/autoscaler.git vertical-pod-autoscaler/v[*vpa-version*]
     ```
 
-8.  [ ] Create and publish a github release from pushed tag go to
+8.  [ ] Generate release notes using the
+    [release-notes](https://github.com/kubernetes/release/tree/master/cmd/release-notes) tool.
+    The `--start-sha` should be the last commit of the previous VPA release and `--end-sha` should
+    be the last commit included in the current release.
+
+    ```sh
+    release-notes --org kubernetes \
+      --repo autoscaler \
+      --branch master \
+      --repo-path $PWD/autoscaler/ \
+      --start-sha [*start-sha*] \
+      --end-sha [*end-sha*] \
+      --markdown-links \
+      --output notes.md \
+      --dependencies=false
+    ```
+
+    After generating, remove entries unrelated to VPA from `notes.md`.
+
+9.  [ ] Create and publish a github release from pushed tag go to
     https://github.com/kubernetes/autoscaler/releases/tag/vertical-pod-autoscaler-[*vpa-version*],
     press `Create release from tag`, complete release title and release notes and press `Publish release`.
 
-9.  Repeat steps 2-5 above in the **main branch**.
+10. Repeat steps 2-5 above in the **master branch**.
 
     After submitting, users who use `vpa-up.sh` will now start using the latest version.
 
-    IMPORTANT: Make sure the tags created above exist before merging into the main branch!
+    IMPORTANT: Make sure the tags created above exist before merging into the master branch!
+
+11. [ ] Send a release announcement to the
+    [kubernetes-sig-autoscaling mailing list](https://groups.google.com/g/kubernetes-sig-autoscaling).
+
+12. [ ] Update the [VPA documentation in kubernetes/website](https://github.com/kubernetes/website/blob/main/content/en/docs/concepts/workloads/autoscaling/vertical-pod-autoscale.md)
+    if any user-facing changes were made in this release.
 
 ## Update dependabot
 
-Update dependabot to include the latest 3 minor releases
+1. [ ] Update `.github/dependabot.yml` to add the new release branch, keeping the latest 3 minor releases:
+
+    ```sh
+    sed -i "s/vpa-release-1.${oldest-minor}/vpa-release-1.${next-minor}/g" ../.github/dependabot.yml
+    ```
 
 ## Permissions
 
