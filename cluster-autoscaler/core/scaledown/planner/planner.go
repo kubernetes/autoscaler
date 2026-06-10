@@ -342,6 +342,10 @@ func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
 		klog.Errorf("failed to get node info for %v: %s", node.Node.Name, err)
 		return false
 	}
+	if nodeGroup == nil {
+		klog.Errorf("Node group for node %s not found", node.Node.Name)
+		return false
+	}
 	autoscalingOptions, err := nodeGroup.GetOptions(p.autoscalingCtx.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
