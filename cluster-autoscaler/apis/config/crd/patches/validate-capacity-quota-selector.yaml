@@ -1,0 +1,56 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: capacityquotas.autoscaling.x-k8s.io
+spec:
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              selector:
+                properties:
+                  matchLabels:
+                    maxProperties: 64
+                    # We can bound map values, just not keys!
+                    additionalProperties:
+                      maxLength: 63
+                      x-kubernetes-validations:
+                      - message: label value must be a valid label value
+                        rule: '!format.labelValue().validate(self).hasValue()'
+                    x-kubernetes-validations:
+                    - message: key must be a valid qualified name
+                      rule: self.all(x, !format.qualifiedName().validate(x).hasValue())
+                  matchExpressions:
+                    maxItems: 16
+                    items:
+                      properties:
+                        key:
+                          maxLength: 316
+                          x-kubernetes-validations:
+                          - message: key must be a valid qualified name
+                            rule: '!format.qualifiedName().validate(self).hasValue()'
+                        operator:
+                          enum:
+                          - In
+                          - NotIn
+                          - Exists
+                          - DoesNotExist
+                        values:
+                          maxItems: 64
+                          items:
+                            maxLength: 63
+                            x-kubernetes-validations:
+                            - message: label value must be a valid label value
+                              rule: '!format.labelValue().validate(self).hasValue()'
+                      x-kubernetes-validations:
+                      - message: values set must be non-empty when operator is In
+                          or NotIn
+                        rule: 'self.operator in [''In'', ''NotIn''] ? (has(self.values)
+                          && size(self.values) > 0) : true'
+                      - message: values set must be empty when operator is Exists
+                          or DoesNotExist
+                        rule: 'self.operator in [''Exists'', ''DoesNotExist''] ? (!has(self.values)
+                          || size(self.values) == 0) : true'

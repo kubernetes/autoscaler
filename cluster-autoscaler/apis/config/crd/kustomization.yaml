@@ -1,0 +1,5 @@
+resources:
+- bases/autoscaling.x-k8s.io_capacityquotas.yaml
+
+patches:
+- path: patches/validate-capacity-quota-selector.yaml
