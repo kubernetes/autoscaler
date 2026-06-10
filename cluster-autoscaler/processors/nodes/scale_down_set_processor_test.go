@@ -320,6 +320,23 @@ func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Node without node group",
+			removableCandidates: []struct {
+				candidate simulator.NodeToBeRemoved
+				nodeGroup string
+			}{
+				{
+					candidate: buildRemovableNode("no-ng-node"),
+					nodeGroup: "",
+				},
+			},
+			scaleDownContext:    NewDefaultScaleDownContext(),
+			expectedToBeRemoved: []simulator.NodeToBeRemoved{},
+			expectedUnremovable: []simulator.UnremovableNode{
+				buildUnremovableNode("no-ng-node", simulator.NotAutoscaled),
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

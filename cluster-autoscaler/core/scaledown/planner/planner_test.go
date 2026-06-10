@@ -1278,3 +1278,25 @@ func (r *fakeRemovalSimulator) SimulateNodeRemoval(name string, _ map[string]boo
 	}
 	return &simulator.NodeToBeRemoved{Node: node}, nil
 }
+
+func TestAtomicScaleDownNodeNilGroup(t *testing.T) {
+	n1 := BuildTestNode("n1", 1000, 1000)
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	// n1 is not added to any node group in the provider
+
+	autoscalingOptions := config.AutoscalingOptions{}
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOptions)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOptions, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
+	assert.NoError(t, err)
+
+	deleteOptions := options.NodeDeleteOptions{}
+	factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
+	p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
+
+	node := &simulator.NodeToBeRemoved{
+		Node: n1,
+	}
+
+	result := p.atomicScaleDownNode(node)
+	assert.False(t, result)
+}
