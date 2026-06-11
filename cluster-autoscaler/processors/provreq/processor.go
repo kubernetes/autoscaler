@@ -142,9 +142,30 @@ func (p *provReqProcessor) bookCapacity(autoscalingCtx *ca_context.AutoscalingCo
 	if err != nil {
 		return fmt.Errorf("couldn't fetch ProvisioningRequests in the cluster: %v", err)
 	}
+	nodeInfos, err := autoscalingCtx.ClusterSnapshot.ListNodeInfos()
+	if err != nil {
+		return fmt.Errorf("couldn't list nodes: %v", err)
+	}
+	// Count pods already scheduled per ProvisioningRequest to exclude consumed PRs from booking.
+	scheduledPods := map[string]int{}
+	for _, nodeInfo := range nodeInfos {
+		for _, podInfo := range nodeInfo.Pods() {
+			if name, ok := provisioningRequestName(podInfo.Pod); ok {
+				scheduledPods[podInfo.Pod.Namespace+"/"+name]++
+			}
+		}
+	}
 	podsToCreate := []*apiv1.Pod{}
 	for _, provReq := range provReqs {
 		if !conditions.ShouldCapacityBeBooked(provReq, p.checkCapacityProcessorInstance) {
+			continue
+		}
+		// All pods already scheduled
+		if scheduledPods[provReq.Namespace+"/"+provReq.Name] >= provReq.PodCount() {
+			conditions.AddOrUpdateCondition(provReq, v1.BookingExpired, metav1.ConditionTrue, conditions.CapacityBookingConsumedReason, conditions.CapacityBookingConsumedMsg, metav1.NewTime(p.now()))
+			if _, err := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest); err != nil {
+				klog.Errorf("failed to add BookingExpired condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, err)
+			}
 			continue
 		}
 		pods, err := provreq_pods.PodsForProvisioningRequest(provReq)

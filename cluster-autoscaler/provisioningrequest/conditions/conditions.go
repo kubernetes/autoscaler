@@ -52,6 +52,10 @@ const (
 	CapacityReservationTimeExpiredReason = "CapacityReservationTimeExpired"
 	// CapacityReservationTimeExpiredMsg is added if capacity reservation time is expired.
 	CapacityReservationTimeExpiredMsg = "Capacity reservation time is expired"
+	// CapacityBookingConsumedReason is added when all of a ProvisioningRequest's pods are scheduled.
+	CapacityBookingConsumedReason = "CapacityBookingConsumed"
+	// CapacityBookingConsumedMsg is added when all of a ProvisioningRequest's pods are scheduled.
+	CapacityBookingConsumedMsg = "Capacity booking consumed: all pods scheduled"
 	// ExpiredReason is added if ProvisioningRequest is expired.
 	ExpiredReason = "Expired"
 	// ExpiredMsg is added if ProvisioningRequest is expired.

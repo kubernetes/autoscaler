@@ -67,6 +67,15 @@ func (pr *ProvisioningRequest) PodSets() ([]PodSet, error) {
 	return podSets, nil
 }
 
+// PodCount returns the total number of pods the Provisioning Request provisions for.
+func (pr *ProvisioningRequest) PodCount() int {
+	count := 0
+	for _, podSet := range pr.Spec.PodSets {
+		count += int(podSet.Count)
+	}
+	return count
+}
+
 // errMissingPodTemplates creates error that is passed when there are missing pod templates.
 func errMissingPodTemplates(podSets []v1.PodSet, podTemplates []*apiv1.PodTemplate) error {
 	foundPodTemplates := map[string]struct{}{}
