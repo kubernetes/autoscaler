@@ -46,6 +46,7 @@ func (p *ScaleDownCandidatesDelayProcessor) GetPodDestinationCandidates(autoscal
 func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := []*apiv1.Node{}
+	alreadyLoggedGroups := make(map[string]bool)
 
 	for _, node := range nodes {
 		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
@@ -62,8 +63,11 @@ func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(autoscalingCt
 
 		recent := func(m map[string]time.Time, d time.Duration, msg string) bool {
 			if !m[nodeGroup.Id()].IsZero() && m[nodeGroup.Id()].Add(d).After(currentTime) {
-				klog.V(4).Infof("Skipping scale down on node group %s because it %s recently at %v",
-					nodeGroup.Id(), msg, m[nodeGroup.Id()])
+				if !alreadyLoggedGroups[nodeGroup.Id()] {
+					klog.V(4).Infof("Skipping scale down on node group %s because it %s recently at %v",
+						nodeGroup.Id(), msg, m[nodeGroup.Id()])
+					alreadyLoggedGroups[nodeGroup.Id()] = true
+				}
 				return true
 			}
 
