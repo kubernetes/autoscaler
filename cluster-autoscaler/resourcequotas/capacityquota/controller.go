@@ -42,21 +42,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
 )
 
-const (
-	// ValidCondition is the condition specifying whethere the CapacityQuota is valid
-	ValidCondition = "Valid"
-	// ValidationSucceeded specifies that the CapacityQuota is valid
-	ValidationSucceeded = "ValidationSucceeded"
-	// ValidationFailed specifies that the CapacityQuota is invalid
-	ValidationFailed = "ValidationFailed"
-	// ReconciledCondition is the condition specifying whether the CapacityQuota status has been reconciled.
-	ReconciledCondition = "Reconciled"
-	// ReconciliationSucceeded specifies that the CapacityQuota status has been reconciled successfully.
-	ReconciliationSucceeded = "ReconciliationSucceeded"
-	// ReconciliationFailed specifies that the CapacityQuota status has failed to reconcile.
-	ReconciliationFailed = "ReconciliationFailed"
-)
-
 // Reconciler reconciles a CapacityQuota object
 type Reconciler struct {
 	client     client.Client
@@ -94,22 +79,22 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	validationErrs := r.validateCapacityQuota(ctx, &cq)
 	if len(validationErrs) > 0 {
 		errMsg := formatValidationErrors(validationErrs)
-		setCondition(&cq, ValidCondition, metav1.ConditionFalse, ValidationFailed, errMsg)
-		setCondition(&cq, ReconciledCondition, metav1.ConditionFalse, ReconciliationFailed, "Validation failed")
+		setCondition(&cq, v1alpha1.ValidCondition, metav1.ConditionFalse, v1alpha1.ValidationFailed, errMsg)
+		setCondition(&cq, v1alpha1.ReconciledCondition, metav1.ConditionFalse, v1alpha1.ReconciliationFailed, "Validation failed")
 
 		if patchErr := r.patchStatus(ctx, originalCQ, &cq); patchErr != nil {
 			return ctrl.Result{}, patchErr
 		}
 		return ctrl.Result{}, nil
 	}
-	setCondition(&cq, ValidCondition, metav1.ConditionTrue, ValidationSucceeded, "CapacityQuota is valid")
+	setCondition(&cq, v1alpha1.ValidCondition, metav1.ConditionTrue, v1alpha1.ValidationSucceeded, "CapacityQuota is valid")
 
 	result, err := r.reconcileCapacityQuota(ctx, &cq)
 
 	if err != nil {
-		setCondition(&cq, ReconciledCondition, metav1.ConditionFalse, ReconciliationFailed, err.Error())
+		setCondition(&cq, v1alpha1.ReconciledCondition, metav1.ConditionFalse, v1alpha1.ReconciliationFailed, err.Error())
 	} else {
-		setCondition(&cq, ReconciledCondition, metav1.ConditionTrue, ReconciliationSucceeded, "CapacityQuota successfully reconciled")
+		setCondition(&cq, v1alpha1.ReconciledCondition, metav1.ConditionTrue, v1alpha1.ReconciliationSucceeded, "CapacityQuota successfully reconciled")
 	}
 
 	if patchErr := r.patchStatus(ctx, originalCQ, &cq); patchErr != nil {

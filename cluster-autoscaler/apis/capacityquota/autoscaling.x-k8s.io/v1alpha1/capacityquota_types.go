@@ -34,6 +34,18 @@ const (
 	ResourceMemory ResourceName = "memory"
 	// ResourceNodes - number of nodes, in units.
 	ResourceNodes ResourceName = "nodes"
+	// ValidCondition is the condition specifying whether the CapacityQuota is valid
+	ValidCondition = "Valid"
+	// ValidationSucceeded specifies that the CapacityQuota is valid
+	ValidationSucceeded = "ValidationSucceeded"
+	// ValidationFailed specifies that the CapacityQuota is invalid
+	ValidationFailed = "ValidationFailed"
+	// ReconciledCondition is the condition specifying whether the CapacityQuota status has been reconciled.
+	ReconciledCondition = "Reconciled"
+	// ReconciliationSucceeded specifies that the CapacityQuota status has been reconciled successfully.
+	ReconciliationSucceeded = "ReconciliationSucceeded"
+	// ReconciliationFailed specifies that the CapacityQuota status has failed to reconcile.
+	ReconciliationFailed = "ReconciliationFailed"
 )
 
 // ResourceList is a set of (resource name, quantity) pairs.
@@ -101,6 +113,7 @@ type CapacityQuotaStatus struct {
 	Used *CapacityQuotaUsage `json:"used,omitempty"`
 
 	// Conditions provide a standard mechanism for reporting the quota's state.
+	// CapacityQuota will be enforced only if it has a Valid=True condition.
 	// +listType=map
 	// +listMapKey=type
 	// +patchStrategy=merge

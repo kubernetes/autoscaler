@@ -32,7 +32,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
-	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota"
 	cqtest "k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota/testutil"
 	testutils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -299,13 +298,13 @@ var _ = Describe("CapacityQuota Controller", func() {
 			var fetchedCQ cqv1alpha1.CapacityQuota
 			g.Expect(crClient.Get(ctx, cqKey, &fetchedCQ)).To(Succeed())
 
-			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, capacityquota.ValidCondition)).To(BeTrue())
-			cond := meta.FindStatusCondition(fetchedCQ.Status.Conditions, capacityquota.ValidCondition)
+			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, cqv1alpha1.ValidCondition)).To(BeTrue())
+			cond := meta.FindStatusCondition(fetchedCQ.Status.Conditions, cqv1alpha1.ValidCondition)
 			g.Expect(cond).NotTo(BeNil())
 			g.Expect(cond.Reason).To(Equal("ValidationFailed"))
 			g.Expect(cond.Message).To(ContainSubstring("is not a valid label selector operator"))
 
-			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, capacityquota.ReconciledCondition)).To(BeTrue())
+			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, cqv1alpha1.ReconciledCondition)).To(BeTrue())
 		}).Should(Succeed())
 	})
 })
@@ -314,8 +313,8 @@ func assertQuotaReconciled(ctx context.Context, g Gomega, cqKey types.Namespaced
 	var fetchedCQ cqv1alpha1.CapacityQuota
 	g.Expect(crClient.Get(ctx, cqKey, &fetchedCQ)).To(Succeed())
 
-	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, capacityquota.ValidCondition)).To(BeTrue())
-	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, capacityquota.ReconciledCondition)).To(BeTrue())
+	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, cqv1alpha1.ValidCondition)).To(BeTrue())
+	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, cqv1alpha1.ReconciledCondition)).To(BeTrue())
 	g.Expect(fetchedCQ.Status.Used).ToNot(BeNil())
 	g.Expect(apiequality.Semantic.DeepEqual(fetchedCQ.Status.Used.Resources, wantResources)).To(BeTrue())
 }

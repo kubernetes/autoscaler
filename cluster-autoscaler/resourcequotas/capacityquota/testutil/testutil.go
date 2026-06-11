@@ -17,6 +17,7 @@ limitations under the License.
 package testutil
 
 import (
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
 )
@@ -52,5 +53,29 @@ func WithLimits(limits v1alpha1.ResourceList) QuotaOption {
 		cq.Spec.Limits = v1alpha1.CapacityQuotaLimits{
 			Resources: limits,
 		}
+	}
+}
+
+// WithValidCondition sets Valid condition on the CapacityQuota to true.
+func WithValidCondition() QuotaOption {
+	return func(cq *v1alpha1.CapacityQuota) {
+		c := metav1.Condition{
+			Type:   v1alpha1.ValidCondition,
+			Status: metav1.ConditionTrue,
+			Reason: v1alpha1.ValidationSucceeded,
+		}
+		meta.SetStatusCondition(&cq.Status.Conditions, c)
+	}
+}
+
+// WithInvalidCondition sets Valid condition on the CapacityQuota to false.
+func WithInvalidCondition() QuotaOption {
+	return func(cq *v1alpha1.CapacityQuota) {
+		c := metav1.Condition{
+			Type:   v1alpha1.ValidCondition,
+			Status: metav1.ConditionFalse,
+			Reason: v1alpha1.ValidationFailed,
+		}
+		meta.SetStatusCondition(&cq.Status.Conditions, c)
 	}
 }

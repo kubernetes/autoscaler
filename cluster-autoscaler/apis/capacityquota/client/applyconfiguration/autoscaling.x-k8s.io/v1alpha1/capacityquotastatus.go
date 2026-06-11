@@ -30,6 +30,7 @@ type CapacityQuotaStatusApplyConfiguration struct {
 	// Used shows the current usage of the quota.
 	Used *CapacityQuotaUsageApplyConfiguration `json:"used,omitempty"`
 	// Conditions provide a standard mechanism for reporting the quota's state.
+	// CapacityQuota will be enforced only if it has a Valid=True condition.
 	Conditions []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
 }
 
