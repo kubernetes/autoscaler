@@ -262,10 +262,10 @@ func TestNodeLatencyTracker_ProcessReasons(t *testing.T) {
 		},
 	}
 
-	// We process. This should trigger recordWithState and clear t.removedUnneededNodes.
+	// We process. This should trigger recordWithState and clear t.unneededNodesToReport.
 	tracker.Process(&ca_context.AutoscalingContext{}, sd)
 
-	if len(tracker.removedUnneededNodes) != 0 {
-		t.Errorf("Expected removedUnneededNodes to be empty, got %v", tracker.removedUnneededNodes)
+	if len(tracker.unneededNodesToReport) != 0 {
+		t.Errorf("Expected unneededNodesToReport to be empty, got %v", tracker.unneededNodesToReport)
 	}
 }
