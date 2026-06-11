@@ -247,7 +247,7 @@ func ObserveBinpackingHeterogeneity(instanceType, cpuCount, namespaceCount strin
 }
 
 // UpdateScaleDownNodeRemovalLatency records the time after which node was deleted/needed
-// again after being marked unneded
+// again after being marked unneeded
 func UpdateScaleDownNodeRemovalLatency(deleted bool, reason string, duration time.Duration) {
 	DefaultMetrics.UpdateScaleDownNodeRemovalLatency(deleted, reason, duration)
 }

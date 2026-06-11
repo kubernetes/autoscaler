@@ -372,7 +372,7 @@ func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
 // especially when they require draining, so incrementing the limit by N every
 // loop may in practice lead the limit to increase too much after a number of
 // loops. To help with that, we can put another, not incremental upper bound on
-// the limit: with max unneded time U and loop interval I, we're going to have
+// the limit: with max unneeded time U and loop interval I, we're going to have
 // up to U/I loops before a node is removed. This means that the total number
 // of unneeded nodes shouldn't really exceed N*U/I - scale down will not be
 // able to keep up with removing them anyway.
