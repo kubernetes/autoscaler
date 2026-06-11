@@ -255,6 +255,22 @@ func TestScaleSetTargetSize(t *testing.T) {
 	}
 }
 
+func TestScaleSetTargetSizeReturnsErrorForCachedNegativeSize(t *testing.T) {
+	provider := newTestProvider(t)
+	err := provider.azureManager.forceRefresh()
+	assert.NoError(t, err)
+
+	scaleSet := newTestScaleSet(provider.azureManager, testASG)
+	scaleSet.curSize = -1
+	scaleSet.lastSizeRefresh = time.Now()
+	scaleSet.sizeRefreshPeriod = time.Hour
+
+	size, err := scaleSet.TargetSize()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cached size is -1 without provider error")
+	assert.Equal(t, -1, size)
+}
+
 func TestScaleSetIncreaseSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -1123,6 +1139,80 @@ func TestScaleSetDeleteNodes(t *testing.T) {
 	}
 }
 
+func TestScaleSetForceDeleteNodesDoesNotPublishNegativeCachedSize(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	vmssName := testASG
+	var vmssCapacity int64 = 3
+	orchMode := armcompute.OrchestrationModeUniform
+	expectedScaleSets := newTestVMSSList(vmssCapacity, vmssName, "eastus", orchMode)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+	expectedVMs := newTestVMList(3)
+
+	manager := newTestAzureManager(t)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	manager.azClient.vmssClientForDelete = mockDeleteClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, testASG).Return(expectedVMSSVMs, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+	manager.azClient.virtualMachinesClient = mockVMClient
+
+	err := manager.forceRefresh()
+	assert.NoError(t, err)
+
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+	provider, err := BuildAzureCloudProvider(manager, resourceLimiter)
+	assert.NoError(t, err)
+
+	registered := manager.RegisterNodeGroup(newTestScaleSet(manager, testASG))
+	manager.explicitlyConfigured[testASG] = true
+	assert.True(t, registered)
+	err = manager.forceRefresh()
+	assert.NoError(t, err)
+
+	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+	assert.True(t, ok)
+
+	targetSize, err := scaleSet.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+
+	scaleSet.curSize = 1
+	scaleSet.lastSizeRefresh = time.Now()
+	scaleSet.sizeRefreshPeriod = time.Hour
+
+	nodesToDelete := []*apiv1.Node{
+		newApiNode(orchMode, 0),
+		newApiNode(orchMode, 2),
+	}
+	err = scaleSet.ForceDeleteNodes(nodesToDelete)
+	assert.NoError(t, err)
+
+	scaleSet.sizeMutex.Lock()
+	curSize := scaleSet.curSize
+	lastSizeRefresh := scaleSet.lastSizeRefresh
+	scaleSet.sizeMutex.Unlock()
+	assert.Equal(t, int64(1), curSize)
+	assert.True(t, lastSizeRefresh.IsZero())
+
+	targetSize, err = scaleSet.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+}
+
 func TestScaleSetDeleteNodeUnregistered(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -1982,15 +2072,28 @@ func TestWaitForDeleteInstancesNoRetryOnOtherErrors(t *testing.T) {
 		InstanceIDs: []*string{ptr.To("0")},
 	}
 
-	scaleSet := newTestScaleSet(manager, "test-asg")
+	for _, strictCacheUpdates := range []bool{false, true} {
+		t.Run(fmt.Sprintf("strict cache updates %t", strictCacheUpdates), func(t *testing.T) {
+			manager.config.StrictCacheUpdates = strictCacheUpdates
+			scaleSet := newTestScaleSet(manager, "test-asg")
+			scaleSet.curSize = 1
+			scaleSet.lastSizeRefresh = time.Now()
+			scaleSet.sizeRefreshPeriod = time.Hour
 
-	// Create a poller that returns a non-preempted error
-	otherErrorPoller := newTestPollerWithError(errors.New("InternalServerError: something went wrong"))
+			// Create a poller that returns a non-preempted error
+			otherErrorPoller := newTestPollerWithError(errors.New("InternalServerError: something went wrong"))
 
-	// Act: PollUntilDone fails with a non-preempted error — should NOT trigger retry
-	scaleSet.waitForDeleteInstances(otherErrorPoller, requiredIds)
+			// Act: PollUntilDone fails with a non-preempted error — should NOT trigger retry
+			scaleSet.waitForDeleteInstances(otherErrorPoller, requiredIds)
 
-	// Assert: BeginDeleteInstances was never called. gomock.Times(0) enforces this.
+			// Assert: BeginDeleteInstances was never called. gomock.Times(0) enforces this.
+			// Assert: caches were invalidated so TargetSize refreshes from VMSS capacity.
+			assert.False(t, scaleSet.lastInstanceRefresh.IsZero())
+			targetSize, err := scaleSet.TargetSize()
+			assert.NoError(t, err)
+			assert.Equal(t, 3, targetSize)
+		})
+	}
 }
 
 func TestWaitForDeleteInstancesRetryFailure(t *testing.T) {
