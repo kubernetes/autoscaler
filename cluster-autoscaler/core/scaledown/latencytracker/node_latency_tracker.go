@@ -47,22 +47,23 @@ type unneededNodeState struct {
 // NodeLatencyTracker keeps track of nodes that are marked as unneeded, when they became unneeded,
 // and removalThresholds to emit node removal latency metrics.
 type NodeLatencyTracker struct {
-	unneededNodes        map[string]unneededNodeState
-	removedUnneededNodes map[string]unneededNodeState
-	wrapped              processor.ScaleDownStatusProcessor
+	unneededNodes         map[string]unneededNodeState
+	unneededNodesToReport map[string]unneededNodeState
+	wrapped               processor.ScaleDownStatusProcessor
 }
 
 // NewNodeLatencyTracker creates a new tracker.
 func NewNodeLatencyTracker(wrapped processor.ScaleDownStatusProcessor) *NodeLatencyTracker {
 	return &NodeLatencyTracker{
-		unneededNodes:        make(map[string]unneededNodeState),
-		removedUnneededNodes: make(map[string]unneededNodeState),
-		wrapped:              wrapped,
+		unneededNodes:         make(map[string]unneededNodeState),
+		unneededNodesToReport: make(map[string]unneededNodeState),
+		wrapped:               wrapped,
 	}
 }
 
 // UpdateScaleDownCandidates updates tracked unneeded nodes and reports those that became needed again.
 func (t *NodeLatencyTracker) UpdateScaleDownCandidates(list []*scaledown.UnneededNode, timestamp time.Time) {
+	t.unneededNodesToReport = make(map[string]unneededNodeState)
 	currentSet := make(map[string]struct{}, len(list))
 	for _, candidate := range list {
 		nodeName := candidate.Node.Name
@@ -83,7 +84,7 @@ func (t *NodeLatencyTracker) UpdateScaleDownCandidates(list []*scaledown.Unneede
 	}
 	for nodeName, info := range t.unneededNodes {
 		if _, exists := currentSet[nodeName]; !exists {
-			t.removedUnneededNodes[nodeName] = info
+			t.unneededNodesToReport[nodeName] = info
 			delete(t.unneededNodes, nodeName)
 		}
 	}
@@ -110,8 +111,8 @@ func (t *NodeLatencyTracker) Process(autoscalingCtx *ca_context.AutoscalingConte
 func (t *NodeLatencyTracker) processScaledDownNodes(scaledDownNodes []*status.ScaleDownNode) {
 	for _, node := range scaledDownNodes {
 		nodeName := node.Node.Name
-		t.recordAndCleanup(nodeName, true, "")
-		delete(t.removedUnneededNodes, nodeName)
+		t.recordAndCleanup(nodeName, true, "deleted")
+		delete(t.unneededNodesToReport, nodeName)
 	}
 }
 
@@ -119,10 +120,10 @@ func (t *NodeLatencyTracker) processScaledDownNodes(scaledDownNodes []*status.Sc
 func (t *NodeLatencyTracker) processRemovedUnneededNodes(scaleDownStatus *status.ScaleDownStatus) {
 	unremovableMap := buildUnremovableMap(scaleDownStatus.UnremovableNodes)
 
-	for nodeName, info := range t.removedUnneededNodes {
+	for nodeName, info := range t.unneededNodesToReport {
 		reason := t.determineReason(nodeName, unremovableMap)
 		t.recordWithState(nodeName, info, false, reason)
-		delete(t.removedUnneededNodes, nodeName)
+		delete(t.unneededNodesToReport, nodeName)
 	}
 }
 
@@ -191,7 +192,7 @@ func (t *NodeLatencyTracker) getTrackedNodes() []string {
 // CleanUp cleans up internal structures.
 func (t *NodeLatencyTracker) CleanUp() {
 	t.unneededNodes = make(map[string]unneededNodeState)
-	t.removedUnneededNodes = make(map[string]unneededNodeState)
+	t.unneededNodesToReport = make(map[string]unneededNodeState)
 	if t.wrapped != nil {
 		t.wrapped.CleanUp()
 	}
