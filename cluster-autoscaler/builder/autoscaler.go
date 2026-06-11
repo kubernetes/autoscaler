@@ -233,11 +233,15 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	}
 
 	if autoscalingOptions.CapacityQuotasEnabled {
-		cqReconciler := capacityquota.NewCapacityQuotaReconciler(b.manager.GetClient(), capacityquota.ReconcilerOptions{
-			NodeFilter: utils.VirtualKubeletNodeFilter{},
-		})
+		cqReconciler := capacityquota.NewReconciler(b.manager.GetClient(), capacityquota.ReconcilerOptions{})
 		if err := cqReconciler.SetupWithManager(b.manager); err != nil {
 			return nil, nil, fmt.Errorf("failed to setup CapacityQuota reconciler: %w", err)
+		}
+		cqUsageReconciler := capacityquota.NewUsageReconciler(b.manager.GetClient(), capacityquota.UsageReconcilerOptions{
+			NodeFilter: utils.VirtualKubeletNodeFilter{},
+		})
+		if err := cqUsageReconciler.SetupWithManager(b.manager); err != nil {
+			return nil, nil, fmt.Errorf("failed to setup CapacityQuota usage reconciler: %w", err)
 		}
 	}
 
