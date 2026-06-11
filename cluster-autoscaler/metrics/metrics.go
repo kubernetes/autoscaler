@@ -847,7 +847,7 @@ func (m *caMetrics) ObserveBinpackingHeterogeneity(instanceType, cpuCount, names
 }
 
 // UpdateScaleDownNodeRemovalLatency records the time after which node was deleted/needed
-// again after being marked unneded
+// again after being marked unneeded
 func (m *caMetrics) UpdateScaleDownNodeRemovalLatency(deleted bool, reason string, duration time.Duration) {
 	m.scaleDownNodeRemovalLatency.WithLabelValues(strconv.FormatBool(deleted), reason).Observe(duration.Seconds())
 }
