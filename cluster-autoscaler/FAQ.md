@@ -1135,13 +1135,13 @@ The following startup parameters are supported for cluster autoscaler:
 | `vmodule` | comma-separated list of pattern=N settings for file-filtered logging (only works for text log format) |  |
 | `write-status-configmap` | Should CA write status information to a configmap | true |
 
-****************
-
 ### How does PDB eviction work?
 
 When Cluster Autoscaler is simulating or performing a scale-down, pods that match the label selector of a PodDisruptionBudget (PDB) are evaluated differently.
 
 For pods covered by a PDB, the `status.disruptionsAllowed` field must be greater than 0. If this field equals 0, the node drain is blocked and the scale-down for that node will not proceed. For more information, check [pod disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/) and [how to configure a PDB](https://kubernetes.io/docs/tasks/run-application/configure-pdb/).
+
+****************
 
 # Troubleshooting
 
