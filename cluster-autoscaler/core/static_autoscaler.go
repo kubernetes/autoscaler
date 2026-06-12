@@ -170,6 +170,8 @@ func NewStaticAutoscaler(
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
 	}
+	// Register the scale up failures registry before CSR so that it is updated before the node group is sent to the backoff.
+	processors.ScaleStateNotifier.Register(scaleUpFailuresRegistry)
 	clusterStateRegistry := clusterstate.NewNotifiedClusterStateRegistry(cloudProvider, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor, templateNodeInfoRegistry, clusterstate.WithScaleUpFailuresRegistry(scaleUpFailuresRegistry), clusterstate.WithConfig(clusterStateConfig), clusterstate.WithAsyncNodeGroupStateChecker(processors.AsyncNodeGroupStateChecker), clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
@@ -190,8 +192,6 @@ func NewStaticAutoscaler(
 
 	taintConfig := taints.NewTaintConfig(opts)
 
-	// TODO(autoscaler/issues/9642): Register ScaleUpFailuresRegistry to processors.ScaleStateNotifier before ClusterStateRegistry
-	// and remove manual updates from ClusterStateRegistry.RegisterFailedScaleUp method.
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
 	processors.ScaleStateNotifier.Register(nodegroupchange.NewNodeGroupChangeMetricsProducer(cloudProvider, metrics.DefaultMetrics))
 

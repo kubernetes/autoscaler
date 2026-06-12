@@ -100,11 +100,12 @@ func TestOKWithScaleUp(t *testing.T) {
 
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: time.Minute}),
 		&emptyTemplateNodeInfoRegistry{}, WithConfig(ClusterStateRegistryConfig{
 			MaxTotalUnreadyPercentage: 10,
 			OkTotalUnreadyCount:       1,
-		}))
+		}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 4, time.Now())
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, now)
 	assert.NoError(t, err)
@@ -139,11 +140,13 @@ func TestEmptyOK(t *testing.T) {
 
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
+
 	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: time.Minute}),
 		&emptyTemplateNodeInfoRegistry{}, WithConfig(ClusterStateRegistryConfig{
 			MaxTotalUnreadyPercentage: 10,
 			OkTotalUnreadyCount:       1,
-		}))
+		}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{}, now.Add(-5*time.Second))
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
@@ -294,10 +297,12 @@ func TestOKOneUnreadyNode(t *testing.T) {
 
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
+
 	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), &emptyTemplateNodeInfoRegistry{}, WithConfig(ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}))
+	}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, now)
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
@@ -329,10 +334,11 @@ func TestNodeWithoutNodeGroupDontCrash(t *testing.T) {
 
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), &emptyTemplateNodeInfoRegistry{}, WithConfig(ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}))
+	}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{noNgNode}, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
@@ -356,10 +362,11 @@ func TestOKOneUnreadyNodeWithScaleDownCandidate(t *testing.T) {
 
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), &emptyTemplateNodeInfoRegistry{}, WithConfig(ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}))
+	}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, now)
 	clusterstate.UpdateScaleDownCandidates([]*scaledown.UnneededNode{{Node: ng1_1}}, now)
 
@@ -410,10 +417,11 @@ func TestMissingNodes(t *testing.T) {
 
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), &emptyTemplateNodeInfoRegistry{}, WithConfig(ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}))
+	}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, now)
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
@@ -450,10 +458,11 @@ func TestTooManyUnready(t *testing.T) {
 	assert.NotNil(t, provider)
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 35 * time.Minute}), &emptyTemplateNodeInfoRegistry{}, WithConfig(ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}))
+	}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, now)
 	assert.NoError(t, err)
 	assert.False(t, clusterstate.IsClusterHealthy())
@@ -584,8 +593,9 @@ func TestExpiredScaleUp(t *testing.T) {
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 
-	clusterstate := newTestClusterStateRegistry(provider, fakeLogRecorder, withMetrics(mockMetrics, provider))
+	clusterstate := newTestClusterStateRegistry(provider, fakeLogRecorder, withMetrics(mockMetrics, provider), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 4, now.Add(-3*time.Minute))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, now)
@@ -615,10 +625,11 @@ func TestRegisterScaleDown(t *testing.T) {
 
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 35 * time.Minute}), &emptyTemplateNodeInfoRegistry{}, WithConfig(ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}))
+	}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	now := time.Now()
 	clusterstate.RegisterScaleDown(provider.GetNodeGroup("ng1"), "ng1-1", now.Add(time.Minute), now)
 	assert.Equal(t, 1, len(clusterstate.scaleDownRequests))
@@ -708,10 +719,11 @@ func TestUpcomingNodes(t *testing.T) {
 	assert.NotNil(t, provider)
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute, MaxNodeStartupTime: 15 * time.Minute}), &emptyTemplateNodeInfoRegistry{}, WithConfig(ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}))
+	}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 6, now)
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng2"), 1, now)
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng3"), 2, now)
@@ -758,10 +770,11 @@ func TestTaintBasedNodeDeletion(t *testing.T) {
 	assert.NotNil(t, provider)
 	fakeClient := &fake.Clientset{}
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), &emptyTemplateNodeInfoRegistry{}, WithConfig(ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}))
+	}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
@@ -1200,7 +1213,7 @@ func TestScaleUpFailures(t *testing.T) {
 
 	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 
-	clusterstate := newTestClusterStateRegistry(provider, fakeLogRecorder, WithScaleUpFailuresRegistry(scaleUpFailuresRegistry), withMetrics(mockMetrics, provider))
+	clusterstate := newTestClusterStateRegistry(provider, fakeLogRecorder, withMetrics(mockMetrics, provider), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 
 	clusterstate.scaleStateNotifier.RegisterFailedScaleUp(provider.GetNodeGroup("ng1"), 3, cloudprovider.InstanceErrorInfo{ErrorCode: string(metrics.Timeout)}, now)
 	mockMetrics.AssertCalled(t, "RegisterFailedScaleUp", metrics.Timeout, "", "", "")
@@ -2089,6 +2102,15 @@ func TestIsSuspendedNode(t *testing.T) {
 	}
 }
 
+// withNotifiedScaleUpFailuresRegistry sets ScaleUpFailures registry for the ClusterStateRegistry and registers it in the list of observers.
+// The only differtence wrt WithScaleUpFailuresRegistry() is that is autoregisters the scale up failures registry.
+func withNotifiedScaleUpFailuresRegistry(r *scaleupfailures.Registry) Option {
+	return func(o *options) {
+		o.scaleUpFailures = r
+		o.scaleStateNotifier.Register(r)
+	}
+}
+
 // withMetrics sets the metrics for the ClusterStateRegistry.
 func withMetrics(m *mockMetrics, cloudProvider cloudprovider.CloudProvider) Option {
 	return func(o *options) {
@@ -2123,6 +2145,7 @@ func TestExpiredScaleUpRevertsTargetSize(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := newTestClusterStateRegistry(
 		provider,
 		fakeLogRecorder,
@@ -2131,6 +2154,7 @@ func TestExpiredScaleUpRevertsTargetSize(t *testing.T) {
 			MaxTotalUnreadyPercentage: 10,
 			OkTotalUnreadyCount:       1,
 		}),
+		withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry),
 	)
 
 	// Register scale up that started 3 minutes ago (exceeded 2 min max provision time)
@@ -2146,6 +2170,21 @@ func TestExpiredScaleUpRevertsTargetSize(t *testing.T) {
 
 	// Verify the scale-up request was removed from the registry
 	assert.Nil(t, clusterstate.scaleUpRequests["ng1"])
+
+	failures := clusterstate.GetScaleUpFailures()
+	assert.Equal(t, map[string][]scaleupfailures.Record{
+		"ng1": {
+			{
+				ErrorInfo: cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OtherErrorClass,
+					ErrorCode:    string(metrics.Timeout),
+					ErrorMessage: "Scale-up timed out for node group ng1 after 3m0s",
+				},
+				Delta: 4,
+				Time:  now,
+			},
+		},
+	}, failures)
 }
 
 func TestExpiredScaleUpRevertsTargetSizeHandlesError(t *testing.T) {
@@ -2173,6 +2212,7 @@ func TestExpiredScaleUpRevertsTargetSizeHandlesError(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := newTestClusterStateRegistry(
 		provider,
 		fakeLogRecorder,
@@ -2181,6 +2221,7 @@ func TestExpiredScaleUpRevertsTargetSizeHandlesError(t *testing.T) {
 			MaxTotalUnreadyPercentage: 10,
 			OkTotalUnreadyCount:       1,
 		}),
+		withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry),
 	)
 
 	// Register scale up that started 3 minutes ago (exceeded 2 min max provision time)
@@ -2215,6 +2256,21 @@ func TestExpiredScaleUpRevertsTargetSizeHandlesError(t *testing.T) {
 
 	// The scale-up request should still be removed even when DecreaseTargetSize fails
 	assert.Nil(t, clusterstate.scaleUpRequests["ng1"])
+
+	failures := clusterstate.GetScaleUpFailures()
+	assert.Equal(t, map[string][]scaleupfailures.Record{
+		"ng1": {
+			{
+				ErrorInfo: cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OtherErrorClass,
+					ErrorCode:    string(metrics.Timeout),
+					ErrorMessage: "Scale-up timed out for node group ng1 after 3m0s",
+				},
+				Delta: 4,
+				Time:  now,
+			},
+		},
+	}, failures)
 }
 
 func TestExpiredScaleUpRevertsPartialIncrease(t *testing.T) {
@@ -2247,6 +2303,7 @@ func TestExpiredScaleUpRevertsPartialIncrease(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterFailedScaleUp", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 	mockMetrics.On("RegisterFailedNodeCreations", mock.Anything, mock.Anything).Return()
+	scaleUpFailuresRegistry := scaleupfailures.NewRegistry()
 	clusterstate := newTestClusterStateRegistry(
 		provider,
 		fakeLogRecorder,
@@ -2255,6 +2312,7 @@ func TestExpiredScaleUpRevertsPartialIncrease(t *testing.T) {
 			MaxTotalUnreadyPercentage: 10,
 			OkTotalUnreadyCount:       1,
 		}),
+		withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry),
 	)
 
 	// Register scale up requesting 4 nodes that started 3 minutes ago
@@ -2271,4 +2329,19 @@ func TestExpiredScaleUpRevertsPartialIncrease(t *testing.T) {
 
 	// Verify the scale-up request was removed
 	assert.Nil(t, clusterstate.scaleUpRequests["ng1"])
+
+	failures := clusterstate.GetScaleUpFailures()
+	assert.Equal(t, map[string][]scaleupfailures.Record{
+		"ng1": {
+			{
+				ErrorInfo: cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OtherErrorClass,
+					ErrorCode:    string(metrics.Timeout),
+					ErrorMessage: "Scale-up timed out for node group ng1 after 3m0s",
+				},
+				Delta: 4,
+				Time:  now,
+			},
+		},
+	}, failures)
 }
