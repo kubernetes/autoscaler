@@ -2102,29 +2102,6 @@ func TestIsSuspendedNode(t *testing.T) {
 	}
 }
 
-// withNotifiedScaleUpFailuresRegistry sets ScaleUpFailures registry for the ClusterStateRegistry and registers it in the list of observers.
-// The only differtence wrt WithScaleUpFailuresRegistry() is that is autoregisters the scale up failures registry.
-func withNotifiedScaleUpFailuresRegistry(r *scaleupfailures.Registry) Option {
-	return func(o *options) {
-		o.scaleUpFailures = r
-		o.scaleStateNotifier.Register(r)
-	}
-}
-
-// withMetrics sets the metrics for the ClusterStateRegistry.
-func withMetrics(m *mockMetrics, cloudProvider cloudprovider.CloudProvider) Option {
-	return func(o *options) {
-		metricProducer := nodegroupchange.NewNodeGroupChangeMetricsProducer(cloudProvider, m)
-		o.scaleStateNotifier.Register(metricProducer)
-	}
-}
-
-// newTestClusterStateRegistry creates new ClusterStateRegistry object and registers mock metrics observers.
-func newTestClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, logRecorder *utils.LogEventRecorder, opts ...Option) *ClusterStateRegistry {
-	nodeGroupConfigProcessor := nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 2 * time.Minute})
-	return NewNotifiedClusterStateRegistry(cloudProvider, logRecorder, newBackoff(), nodeGroupConfigProcessor, &emptyTemplateNodeInfoRegistry{}, opts...)
-}
-
 func TestExpiredScaleUpRevertsTargetSize(t *testing.T) {
 	now := time.Now()
 
@@ -2344,4 +2321,27 @@ func TestExpiredScaleUpRevertsPartialIncrease(t *testing.T) {
 			},
 		},
 	}, failures)
+}
+
+// withNotifiedScaleUpFailuresRegistry sets ScaleUpFailures registry for the ClusterStateRegistry and registers it in the list of observers.
+// The only differtence wrt WithScaleUpFailuresRegistry() is that is autoregisters the scale up failures registry.
+func withNotifiedScaleUpFailuresRegistry(r *scaleupfailures.Registry) Option {
+	return func(o *options) {
+		o.scaleUpFailures = r
+		o.scaleStateNotifier.Register(r)
+	}
+}
+
+// withMetrics sets the metrics for the ClusterStateRegistry.
+func withMetrics(m *mockMetrics, cloudProvider cloudprovider.CloudProvider) Option {
+	return func(o *options) {
+		metricProducer := nodegroupchange.NewNodeGroupChangeMetricsProducer(cloudProvider, m)
+		o.scaleStateNotifier.Register(metricProducer)
+	}
+}
+
+// newTestClusterStateRegistry creates new ClusterStateRegistry object and registers mock metrics observers.
+func newTestClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, logRecorder *utils.LogEventRecorder, opts ...Option) *ClusterStateRegistry {
+	nodeGroupConfigProcessor := nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 2 * time.Minute})
+	return NewNotifiedClusterStateRegistry(cloudProvider, logRecorder, newBackoff(), nodeGroupConfigProcessor, &emptyTemplateNodeInfoRegistry{}, opts...)
 }
