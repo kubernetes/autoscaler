@@ -67,6 +67,8 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `alsologtostderrthreshold` | severity |  | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |
 | `checkpoints-gc-interval` |  |  10m0s | duration                       How often orphaned checkpoints should be garbage collected  |
 | `checkpoints-timeout` |  |  1m0s | duration                           Timeout for writing checkpoints since the start of the recommender's main loop  |
+| `cluster-name` | string |  | Name of cluster |
+| `cluster-name-label` | string |  | Label name to look for cluster name |
 | `confidence-interval-cpu` |  |  24h0m0s | duration                       The time interval used for computing the confidence multiplier for the CPU lower and upper bound. Default: 24h  |
 | `confidence-interval-memory` |  |  24h0m0s | duration                    The time interval used for computing the confidence multiplier for the memory lower and upper bound. Default: 24h  |
 | `container-name-label` | string |  "name" | Label name to look for container names  |
