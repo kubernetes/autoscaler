@@ -110,6 +110,9 @@ func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 	if !exists {
 		return nil, nil
 	}
+	if group == nil {
+		return nil, nil
+	}
 
 	return group, nil
 }

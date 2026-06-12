@@ -19,7 +19,6 @@ package clusterapi
 import (
 	"fmt"
 	"path"
-	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -83,7 +82,7 @@ func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup,
 	if err != nil {
 		return nil, err
 	}
-	if ng == nil || reflect.ValueOf(ng).IsNil() {
+	if ng == nil {
 		return nil, nil
 	}
 	return ng, nil

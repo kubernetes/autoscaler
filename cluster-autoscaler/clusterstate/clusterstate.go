@@ -19,7 +19,6 @@ package clusterstate
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -755,7 +754,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		nr, errReady := kube_util.GetNodeReadiness(node)
 
 		// Node is most likely not autoscaled, however check the errors.
-		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		if nodeGroup == nil {
 			if errNg != nil {
 				klog.Warningf("Failed to get nodegroup for %s: %v", node.Name, errNg)
 			}
@@ -774,7 +773,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			klog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
 			continue
 		}
-		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		if nodeGroup == nil {
 			klog.Warningf("Nodegroup is nil for %s", unregistered.Node.Name)
 			continue
 		}
@@ -884,7 +883,7 @@ func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*scaledown.Un
 			klog.Warningf("Failed to get node group for %s: %v", node.Node.Name, err)
 			continue
 		}
-		if group == nil || reflect.ValueOf(group).IsNil() {
+		if group == nil {
 			continue
 		}
 		result[group.Id()] = append(result[group.Id()], node.Node.Name)

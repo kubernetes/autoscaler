@@ -144,7 +144,14 @@ func (ali *aliCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 		klog.Errorf("failed to get instance Id from provider Id:%s,because of %s", node.Spec.ProviderID, err.Error())
 		return nil, err
 	}
-	return ali.manager.GetAsgForInstance(instanceId)
+	asg, err := ali.manager.GetAsgForInstance(instanceId)
+	if err != nil {
+		return nil, err
+	}
+	if asg == nil {
+		return nil, nil
+	}
+	return asg, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider

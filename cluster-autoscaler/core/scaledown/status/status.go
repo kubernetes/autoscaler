@@ -47,6 +47,10 @@ func (s *ScaleDownStatus) SetUnremovableNodesInfo(unremovableNodes []*simulator.
 			klog.Errorf("Couldn't find node group for unremovable node in cloud provider %s", unremovableNode.Node.Name)
 			continue
 		}
+		if nodeGroup == nil {
+			klog.Errorf("Unremovable node %s has no node group", unremovableNode.Node.Name)
+			continue
+		}
 
 		var utilInfoPtr *utilization.Info
 		if utilInfo, found := nodeUtilizationMap[unremovableNode.Node.Name]; found {

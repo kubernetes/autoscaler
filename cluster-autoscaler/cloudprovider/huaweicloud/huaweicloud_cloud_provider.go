@@ -131,7 +131,14 @@ func (hcp *huaweicloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpr
 		return nil, nil
 	}
 
-	return hcp.cloudServiceManager.GetAsgForInstance(instanceID)
+	asg, err := hcp.cloudServiceManager.GetAsgForInstance(instanceID)
+	if err != nil {
+		return nil, err
+	}
+	if asg == nil {
+		return nil, nil
+	}
+	return asg, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider

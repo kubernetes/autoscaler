@@ -76,7 +76,14 @@ func (provider *cloudStackCloudProvider) NodeGroups() []cloudprovider.NodeGroup 
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred.
 func (provider *cloudStackCloudProvider) NodeGroupForNode(node *v1.Node) (cloudprovider.NodeGroup, error) {
-	return provider.manager.clusterForNode(node)
+	ng, err := provider.manager.clusterForNode(node)
+	if err != nil {
+		return nil, err
+	}
+	if ng == nil {
+		return nil, nil
+	}
+	return ng, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider

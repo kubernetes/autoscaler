@@ -75,7 +75,14 @@ func (v *volcengineCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 		klog.Warningf("Node %v has no providerId", node.Name)
 		return nil, fmt.Errorf("provider id missing from node: %s", node.Name)
 	}
-	return v.volcengineManager.GetAsgForInstance(instanceId)
+	asg, err := v.volcengineManager.GetAsgForInstance(instanceId)
+	if err != nil {
+		return nil, err
+	}
+	if asg == nil {
+		return nil, nil
+	}
+	return asg, nil
 }
 
 // HasInstance returns whether the node has corresponding instance in cloud provider,

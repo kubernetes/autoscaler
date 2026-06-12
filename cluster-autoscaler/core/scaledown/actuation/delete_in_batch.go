@@ -18,7 +18,6 @@ package actuation
 
 import (
 	"fmt"
-	"reflect"
 	"sync"
 	"time"
 
@@ -152,7 +151,7 @@ func deleteNodesFromCloudProvider(autoscalingCtx *ca_context.AutoscalingContext,
 	if err != nil {
 		return nodeGroup, errors.NewAutoscalerErrorf(errors.CloudProviderError, "failed to find node group for %s: %v", nodes[0].Name, err)
 	}
-	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+	if nodeGroup == nil {
 		return nil, errors.NewAutoscalerErrorf(errors.InternalError, "picked node that doesn't belong to a node group: %s", nodes[0].Name)
 	}
 	if err := nodeGroup.DeleteNodes(nodes); err != nil {

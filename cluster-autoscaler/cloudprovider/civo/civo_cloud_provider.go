@@ -101,6 +101,9 @@ func (d *civoCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.No
 				continue
 			}
 
+			if group == nil {
+				return nil, nil
+			}
 			return group, nil
 		}
 	}

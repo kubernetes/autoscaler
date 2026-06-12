@@ -98,6 +98,11 @@ func (p *AtomicResizeFilteringProcessor) FilterUnremovableNodes(autoscalingCtx *
 			unremovableNodes = append(unremovableNodes, simulator.UnremovableNode{Node: node.Node, Reason: simulator.UnexpectedError})
 			continue
 		}
+		if nodeGroup == nil {
+			klog.V(4).Infof("Node %v will not scale down, has no node group config.", node.Node.Name)
+			unremovableNodes = append(unremovableNodes, simulator.UnremovableNode{Node: node.Node, Reason: simulator.NotAutoscaled})
+			continue
+		}
 		autoscalingOptions, err := nodeGroup.GetOptions(autoscalingCtx.NodeGroupDefaults)
 		if err != nil && err != cloudprovider.ErrNotImplemented {
 			klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)

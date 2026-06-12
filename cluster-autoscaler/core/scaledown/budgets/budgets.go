@@ -17,7 +17,6 @@ limitations under the License.
 package budgets
 
 import (
-	"reflect"
 	"strconv"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -213,7 +212,7 @@ func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView 
 	grouped := []*NodeGroupView{}
 	for _, node := range nodes {
 		nodeGroup, err := bp.autoscalingCtx.CloudProvider.NodeGroupForNode(node)
-		if err != nil || nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		if err != nil || nodeGroup == nil {
 			klog.Errorf("Failed to find node group for %s: %v", node.Name, err)
 			continue
 		}
