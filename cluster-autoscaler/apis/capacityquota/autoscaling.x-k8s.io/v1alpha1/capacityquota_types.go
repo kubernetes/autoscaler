@@ -100,9 +100,15 @@ type CapacityQuotaLimits struct {
 	//
 	// Currently supported built-in resources: cpu, memory. Additionally,
 	// nodes key can be used to limit the number of existing nodes.
+	// All resource quantities must be non-negative integers. Binary SI is allowed as long as it represents
+	// an integer. For example: "32Gi" is allowed, whereas "3.67Gi" is not.
 	// Node autoscaler implementations and cloud providers can support custom
 	// resources, such as GPU.
 	// +required
+	// +kubebuilder:validation:Type=object
+	// +kubebuilder:validation:MaxProperties=20
+	// +kubebuilder:validation:XValidation:rule="self.all(key, size(key) <= 63)",message="Resource names must be 63 characters or less."
+	// +kubebuilder:validation:XValidation:rule="self.all(key, type(self[key]) == int ? self[key] >= 0 : (!self[key].startsWith('-') && quantity(self[key]).isInteger()))",message="All resource quantities must be non-negative integers."
 	Resources ResourceList `json:"resources"`
 }
 
