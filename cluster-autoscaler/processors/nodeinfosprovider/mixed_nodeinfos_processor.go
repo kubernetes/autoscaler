@@ -18,7 +18,6 @@ package nodeinfosprovider
 
 import (
 	"errors"
-	"reflect"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -97,7 +96,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.Autos
 			klog.Warningf("Failed to find node group for %s: %v", node.Name, err)
 			return false, "", nil
 		}
-		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		if nodeGroup == nil {
 			return false, "", nil
 		}
 		id := nodeGroup.Id()

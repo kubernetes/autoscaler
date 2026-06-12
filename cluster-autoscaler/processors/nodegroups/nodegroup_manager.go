@@ -17,8 +17,6 @@ limitations under the License.
 package nodegroups
 
 import (
-	"reflect"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -87,7 +85,7 @@ type CreateNodeGroupResult struct {
 // AllCreatedNodeGroups returns all created node groups.
 func (r CreateNodeGroupResult) AllCreatedNodeGroups() []cloudprovider.NodeGroup {
 	var result []cloudprovider.NodeGroup
-	if r.MainCreatedNodeGroup != nil && !reflect.ValueOf(r.MainCreatedNodeGroup).IsNil() {
+	if r.MainCreatedNodeGroup != nil {
 		result = append(result, r.MainCreatedNodeGroup)
 	}
 	result = append(result, r.ExtraCreatedNodeGroups...)

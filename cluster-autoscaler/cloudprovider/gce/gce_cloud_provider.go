@@ -126,7 +126,13 @@ func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 		return nil, err
 	}
 	mig, err := gce.gceManager.GetMigForInstance(ref)
-	return mig, err
+	if err != nil {
+		return nil, err
+	}
+	if mig == nil {
+		return nil, nil
+	}
+	return mig, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider

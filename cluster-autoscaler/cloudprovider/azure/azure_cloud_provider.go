@@ -129,7 +129,14 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 	}
 
 	klog.V(6).Infof("NodeGroupForNode: ref.Name %s", ref.Name)
-	return azure.azureManager.GetNodeGroupForInstance(ref)
+	ng, err := azure.azureManager.GetNodeGroupForInstance(ref)
+	if err != nil {
+		return nil, err
+	}
+	if ng == nil {
+		return nil, nil
+	}
+	return ng, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider.

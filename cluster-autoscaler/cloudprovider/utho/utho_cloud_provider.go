@@ -98,6 +98,9 @@ func (u *uthoCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.No
 			normalized := normalizeID(node.Id)
 			klog.V(5).Infof("checking node has: %q want: %q", normalized, providerID)
 			if normalized == providerID {
+				if group == nil {
+					return nil, nil
+				}
 				return group, nil
 			}
 		}

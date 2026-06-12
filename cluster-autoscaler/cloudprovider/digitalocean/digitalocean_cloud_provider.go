@@ -103,6 +103,9 @@ func (d *digitaloceanCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpro
 				continue
 			}
 
+			if group == nil {
+				return nil, nil
+			}
 			return group, nil
 		}
 	}
