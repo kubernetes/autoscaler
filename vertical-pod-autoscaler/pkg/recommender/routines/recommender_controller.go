@@ -213,32 +213,9 @@ func initHistoryProvider(ctx context.Context, rec Recommender, config *recommend
 	if useCheckpoints {
 		rec.GetClusterStateFeeder().InitFromCheckpoints(ctx)
 	} else {
-		promQueryTimeout, err := time.ParseDuration(config.QueryTimeout)
+		histConfig, err := newPrometheusHistoryProviderConfig(config)
 		if err != nil {
 			return err
-		}
-		histConfig := history.PrometheusHistoryProviderConfig{
-			Address:                config.PrometheusAddress,
-			Insecure:               config.PrometheusInsecure,
-			QueryTimeout:           promQueryTimeout,
-			HistoryLength:          config.HistoryLength,
-			HistoryResolution:      config.HistoryResolution,
-			PodLabelPrefix:         config.PodLabelPrefix,
-			PodLabelsMetricName:    config.PodLabelsMetricName,
-			PodNamespaceLabel:      config.PodNamespaceLabel,
-			PodNameLabel:           config.PodNameLabel,
-			CtrNamespaceLabel:      config.CtrNamespaceLabel,
-			CtrPodNameLabel:        config.CtrPodNameLabel,
-			CtrNameLabel:           config.CtrNameLabel,
-			CadvisorMetricsJobName: config.PrometheusJobName,
-			Namespace:              config.CommonFlags.VpaObjectNamespace,
-			CPUMetricName:          config.HistoryCPUMetric,
-			MemoryMetricName:       config.HistoryMemoryMetric,
-			Authentication: history.PrometheusCredentials{
-				BearerToken: config.PrometheusBearerToken,
-				Username:    config.Username,
-				Password:    config.Password,
-			},
 		}
 		provider, err := history.NewPrometheusHistoryProvider(histConfig)
 		if err != nil {
@@ -247,4 +224,34 @@ func initHistoryProvider(ctx context.Context, rec Recommender, config *recommend
 		rec.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}
 	return nil
+}
+
+func newPrometheusHistoryProviderConfig(config *recommender_config.RecommenderConfig) (history.PrometheusHistoryProviderConfig, error) {
+	promQueryTimeout, err := time.ParseDuration(config.QueryTimeout)
+	if err != nil {
+		return history.PrometheusHistoryProviderConfig{}, err
+	}
+	return history.PrometheusHistoryProviderConfig{
+		Address:                config.PrometheusAddress,
+		Insecure:               config.PrometheusInsecure,
+		QueryTimeout:           promQueryTimeout,
+		HistoryLength:          config.HistoryLength,
+		HistoryResolution:      config.HistoryResolution,
+		PodLabelPrefix:         config.PodLabelPrefix,
+		PodLabelsMetricName:    config.PodLabelsMetricName,
+		PodNamespaceLabel:      config.PodNamespaceLabel,
+		PodNameLabel:           config.PodNameLabel,
+		CtrNamespaceLabel:      config.CtrNamespaceLabel,
+		CtrPodNameLabel:        config.CtrPodNameLabel,
+		CtrNameLabel:           config.CtrNameLabel,
+		CadvisorMetricsJobName: config.PrometheusJobName,
+		Namespace:              config.CommonFlags.VpaObjectNamespace,
+		CPUMetricName:          config.HistoryCPUMetric,
+		MemoryMetricName:       config.HistoryMemoryMetric,
+		Authentication: history.PrometheusCredentials{
+			BearerToken: config.PrometheusBearerToken,
+			Username:    config.Username,
+			Password:    config.Password,
+		},
+	}, nil
 }
