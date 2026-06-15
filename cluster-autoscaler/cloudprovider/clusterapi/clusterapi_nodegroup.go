@@ -149,8 +149,11 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	for _, node := range nodes {
 		nodeGroup, err := ng.machineController.nodeGroupForNode(node)
 		if err != nil {
-			klog.Warningf("Failed to find node group for node %q, skipping deletion: %v", node.Spec.ProviderID, err)
-			continue
+			if k8serrors.IsNotFound(err) {
+				klog.Warningf("Node group not found for node %q, skipping deletion: %v", node.Spec.ProviderID, err)
+				continue
+			}
+			return err
 		}
 
 		machine, err := ng.machineController.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
