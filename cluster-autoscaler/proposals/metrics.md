@@ -155,15 +155,3 @@ scale down reasons are `empty`, `underutilized`, `unready`.
   why the scaling was skipped (eg `CPULimitReached`, `MemoryLimitReached`). This is
   different than failed scaling events in that the autoscaler is choosing not to perform
   a scaling action.
-
-### Node Autoprovisioning operations
-
-This metrics describe operations and state related to Node Autoprovisioning
-feature.
-
-| Metric name | Metric type | Labels | Description |
-| ----------- | ----------- | ------ | ----------- |
-| nap_enabled | Gauge | | Whether or not Node Autoprovisioning is enabled. 1 if it is, 0 otherwise. |
-| created_node_groups_total | Counter | | Number of node groups created by Node Autoprovisioning. |
-| deleted_node_groups_total | Counter | | Number of node groups deleted by Node Autoprovisioning. |
-
