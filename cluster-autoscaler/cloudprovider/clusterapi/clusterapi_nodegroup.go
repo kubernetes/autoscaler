@@ -136,7 +136,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	// < minSize, then the request to delete that many nodes is bogus
 	// and we fail fast.
 	if replicas-len(nodes) < ng.MinSize() {
-		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %d, minSize is %d ", len(nodes), ng.Id(), replicas, ng.MinSize())
+		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %d, minSize is %d", len(nodes), ng.Id(), replicas, ng.MinSize())
 	}
 
 	// Step 3: when a backing Machine exists, mark it as a deletion candidate
