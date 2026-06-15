@@ -27,6 +27,7 @@ import (
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -119,10 +120,12 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	for _, node := range nodes {
 		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node)
 		if err != nil {
-			klog.Warningf("Failed to find node group for node %q, skipping verification: %v", node.Spec.ProviderID, err)
-			continue
+			if k8serrors.IsNotFound(err) {
+				klog.Warningf("Node group not found for node %q, skipping verification: %v", node.Spec.ProviderID, err)
+				continue
+			}
+			return err
 		}
-
 		if actualNodeGroup == nil {
 			return fmt.Errorf("no node group found for node %q", node.Spec.ProviderID)
 		}
