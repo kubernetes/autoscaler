@@ -334,7 +334,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		withEvictable := false
 
 		if (updateMode == vpa_types.UpdateModeInPlaceOrRecreate) || (updateMode == vpa_types.UpdateModeInPlace && inPlaceFeatureEnabled) {
-			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter, vpa, u.infeasibleAttempts), vpa)
+			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter, vpa, len(livePods), u.infeasibleAttempts, u.eventRecorder), vpa)
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
 			if len(podsForInPlace) > 0 {
 				withInPlaceUpdatable = true
@@ -374,10 +374,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 				continue
 
 			case utils.InPlaceInfeasibleCached:
-				// this can only be happening for InPlace mode
+				// This should be unreachable — filterNonInPlaceUpdatablePods already handles InPlaceInfeasibleCached and filters those pods out.
 				klog.V(2).InfoS("In-place update infeasible, no resource is lower in new recommendation, skipping pod", "pod", klog.KObj(pod))
 				continue
-
 			case utils.InPlaceInfeasible:
 				// This should only happen for InPlace mode
 				// Status is Infeasible, but recommendation has changed
@@ -517,7 +516,7 @@ func filterPods(pods []*corev1.Pod, predicate func(*corev1.Pod) bool) []*corev1.
 	return result
 }
 
-func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources) []*corev1.Pod {
+func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction, vpa *vpa_types.VerticalPodAutoscaler, vpaSize int, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources, eventRecorder record.EventRecorder) []*corev1.Pod {
 	return filterPods(pods, func(pod *corev1.Pod) bool {
 		updateMode := *vpa.Spec.UpdatePolicy.UpdateMode
 		decision := inplaceRestriction.CanInPlaceUpdate(pod, vpa, infeasibleAttempts)
@@ -537,6 +536,8 @@ func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restri
 		case utils.InPlaceInfeasibleCached:
 			// Cached infeasibility means we've already determined this pod cannot be
 			// updated in-place and cached the result to avoid redundant checks
+			eventRecorder.Event(pod, corev1.EventTypeNormal, "InPlaceResizeSkipped", "Previously recorded in-place update was infeasible, current recommendation is not lower than previous, skipping pod")
+			metrics_updater.RecordInPlaceInfeasibleCached(vpaSize, vpa.Name, vpa.Namespace)
 			return false
 		default:
 			return false
