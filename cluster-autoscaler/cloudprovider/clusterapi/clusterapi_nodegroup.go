@@ -157,7 +157,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 		}
 
 		machine, err := ng.machineController.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
-		if err != nil {
+		if err != nil && !k8serrors.IsNotFound(err) {
 			return err
 		}
 
