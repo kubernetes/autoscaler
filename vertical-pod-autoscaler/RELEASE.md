@@ -13,7 +13,8 @@ There are the following steps of the release process:
 3. [ ] Build and stage images.
 4. [ ] Test the release.
 5. [ ] Promote image.
-6. [ ] Finalize release.
+6. [ ] Update Helm chart.
+7. [ ] Finalize release.
 
 ## Open issue to track the release
 
@@ -147,6 +148,17 @@ To verify if the promoter finished its job one can use gcloud. E.g.:
 ```sh
 gcloud container images describe registry.k8s.io/autoscaling/vpa-recommender:[*vpa-version*]
 ```
+
+## Update Helm chart
+
+1.  [ ] Update `appVersion` in
+    [charts/vertical-pod-autoscaler/Chart.yaml](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/charts/vertical-pod-autoscaler/Chart.yaml)
+    to match the new VPA version.
+
+1.  [ ] Bump the chart `version` in
+    [charts/vertical-pod-autoscaler/Chart.yaml](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/charts/vertical-pod-autoscaler/Chart.yaml).
+
+1.  [ ] Commit and merge the chart changes.
 
 ## Finalize release
 
