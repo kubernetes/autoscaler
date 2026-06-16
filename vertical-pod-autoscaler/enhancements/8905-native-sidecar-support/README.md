@@ -105,14 +105,14 @@ The following test scenarios will be added to e2e tests.
 
 #### Upgrade
 
-Upgrading to VPA 1.7.0 (tentative release version) does not change behavior by default. Existing VPAs continue to work as before.
+Upgrading to VPA 1.8.0 (tentative release version) does not change behavior by default. Existing VPAs continue to work as before.
 
 To use native sidecar support, enable the (alpha) `NativeSidecar` feature gate (disabled by default) by passing `--feature-gates=NativeSidecar=true` to all VPA components.
 When enabled, the Recommender will generate recommendations for native sidecars, and the Updater and Admission Controller will apply them.
 
 #### Downgrade
 
-If the `NativeSidecar` feature gate was never enabled, downgrading from VPA 1.7.0 (tentative release version) has no behavioral impact.
+If the `NativeSidecar` feature gate was never enabled, downgrading from VPA 1.8.0 (tentative release version) has no behavioral impact.
 
 If `NativeSidecar` was enabled before the downgrade:
 
