@@ -17,6 +17,7 @@ limitations under the License.
 package recommender
 
 import (
+	"net/http"
 	"strings"
 	"testing"
 	"time"
@@ -28,6 +29,47 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
+
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (rt roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return rt(req)
+}
+
+func TestPrometheusRoundTripperMetrics(t *testing.T) {
+	t.Cleanup(func() {
+		prometheusClientRequestsCount.Reset()
+		prometheusClientRequestsDuration.Reset()
+	})
+	prometheusClientRequestsCount.Reset()
+	prometheusClientRequestsDuration.Reset()
+
+	roundTripper := NewPrometheusRoundTripperCounter(
+		NewPrometheusRoundTripperDuration(roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusAccepted,
+				Header:     http.Header{},
+				Request:    req,
+			}, nil
+		})),
+	)
+
+	req, err := http.NewRequest(http.MethodPost, "http://prometheus.example/api/v1/query", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+	resp, err := roundTripper.RoundTrip(req)
+	if err != nil {
+		t.Fatalf("round trip failed: %v", err)
+	}
+	if resp.StatusCode != http.StatusAccepted {
+		t.Fatalf("unexpected response status: got %d, want %d", resp.StatusCode, http.StatusAccepted)
+	}
+
+	key := "code=202,method=post,"
+	collectCounterMetricsAndVerifyCount(t, prometheusClientRequestsCount, key, 1)
+	collectHistogramMetricsAndVerifySampleCount(t, prometheusClientRequestsDuration, key, 1)
+}
 
 func TestObjectCounter(t *testing.T) {
 	updateModeOff := vpa_types.UpdateModeOff
@@ -398,6 +440,52 @@ func collectMetricsAndVerifyCount(t *testing.T, key string, expectedCount float6
 			t.Errorf("failed to write metric: %v", err)
 		}
 		liveMetrics[labelsToKey(metricProto.GetLabel())] = *metricProto.GetGauge().Value
+	}
+
+	if actualCount := liveMetrics[key]; actualCount != expectedCount {
+		t.Errorf("key=%s expectedCount=%v actualCount=%v", key, expectedCount, actualCount)
+	}
+}
+
+func collectCounterMetricsAndVerifyCount(t *testing.T, collector prometheus.Collector, key string, expectedCount float64) {
+	t.Helper()
+
+	metrics := make(chan prometheus.Metric)
+	go func() {
+		collector.Collect(metrics)
+		close(metrics)
+	}()
+
+	liveMetrics := make(map[string]float64)
+	for metric := range metrics {
+		var metricProto dto.Metric
+		if err := metric.Write(&metricProto); err != nil {
+			t.Errorf("failed to write metric: %v", err)
+		}
+		liveMetrics[labelsToKey(metricProto.GetLabel())] = metricProto.GetCounter().GetValue()
+	}
+
+	if actualCount := liveMetrics[key]; actualCount != expectedCount {
+		t.Errorf("key=%s expectedCount=%v actualCount=%v", key, expectedCount, actualCount)
+	}
+}
+
+func collectHistogramMetricsAndVerifySampleCount(t *testing.T, collector prometheus.Collector, key string, expectedCount uint64) {
+	t.Helper()
+
+	metrics := make(chan prometheus.Metric)
+	go func() {
+		collector.Collect(metrics)
+		close(metrics)
+	}()
+
+	liveMetrics := make(map[string]uint64)
+	for metric := range metrics {
+		var metricProto dto.Metric
+		if err := metric.Write(&metricProto); err != nil {
+			t.Errorf("failed to write metric: %v", err)
+		}
+		liveMetrics[labelsToKey(metricProto.GetLabel())] = metricProto.GetHistogram().GetSampleCount()
 	}
 
 	if actualCount := liveMetrics[key]; actualCount != expectedCount {
