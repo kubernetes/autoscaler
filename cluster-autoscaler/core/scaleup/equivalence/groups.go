@@ -17,6 +17,7 @@ limitations under the License.
 package equivalence
 
 import (
+	"maps"
 	"reflect"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
@@ -101,4 +102,29 @@ func match(egs []equivalenceGroup, pod *apiv1.Pod) *equivalenceGroupId {
 		}
 	}
 	return nil
+}
+
+// Clone returns a copy of the PodGroup. It deep copies the mutable scheduling state
+// (SchedulingErrors, SchedulableGroups) but shares the Pods slice reference.
+// Note: We do not copy the Pods slice because it is read-only and never mutated
+// after the PodGroup is constructed in BuildPodGroups. Sharing the reference
+// avoids unnecessary allocations and pointer copying.
+func (eg *PodGroup) Clone() *PodGroup {
+	if eg == nil {
+		return nil
+	}
+	clonedErrors := make(map[string]status.Reasons, len(eg.SchedulingErrors))
+	maps.Copy(clonedErrors, eg.SchedulingErrors)
+	var clonedGroups []string
+	if eg.SchedulableGroups != nil {
+		clonedGroups = make([]string, len(eg.SchedulableGroups))
+		copy(clonedGroups, eg.SchedulableGroups)
+	}
+
+	return &PodGroup{
+		Pods:              eg.Pods,
+		SchedulingErrors:  clonedErrors,
+		SchedulableGroups: clonedGroups,
+		Schedulable:       eg.Schedulable,
+	}
 }

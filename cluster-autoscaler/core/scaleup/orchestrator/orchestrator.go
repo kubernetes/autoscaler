@@ -823,7 +823,7 @@ func (o *ScaleUpOrchestrator) GetRemainingPods(egs []*equivalence.PodGroup, node
 	for _, eg := range egs {
 		// there is no need to run the simulation for the schedulable pod groups, because for them we still do not return anything.
 		if !eg.Schedulable {
-			nonSchedulableEgs = append(nonSchedulableEgs, eg)
+			nonSchedulableEgs = append(nonSchedulableEgs, eg.Clone())
 		}
 	}
 	return o.getRemainingPodsConsideringSkippedNodeGroups(nonSchedulableEgs, nodeGroups, skipped, nodeInfos)
