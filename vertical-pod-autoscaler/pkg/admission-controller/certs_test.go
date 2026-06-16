@@ -40,7 +40,7 @@ import (
 	k8stesting "k8s.io/client-go/testing"
 )
 
-func generateCerts(t *testing.T, org string, caCert *x509.Certificate, caKey *rsa.PrivateKey) ([]byte, []byte) {
+func generateCerts(t *testing.T, org string, caCert *x509.Certificate, caKey *rsa.PrivateKey) (certPemBytes []byte, certKeyBytes []byte) {
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(0),
 		Subject: pkix.Name{
@@ -78,7 +78,9 @@ func generateCerts(t *testing.T, org string, caCert *x509.Certificate, caKey *rs
 	if err != nil {
 		t.Error(err)
 	}
-	return certPem.Bytes(), certKeyPem.Bytes()
+	certPemBytes = certPem.Bytes()
+	certKeyBytes = certKeyPem.Bytes()
+	return certPemBytes, certKeyBytes
 }
 
 func TestKeypairReloader(t *testing.T) {

@@ -89,7 +89,7 @@ func (s *scalingDirectionPodEvictionAdmission) checkEvictionRequirementsForConta
 	return true
 }
 
-func (s *scalingDirectionPodEvictionAdmission) checkChangeRequirement(currentRequests int64, recommendation int64, changeRequirement vpa_types.EvictionChangeRequirement) bool {
+func (*scalingDirectionPodEvictionAdmission) checkChangeRequirement(currentRequests int64, recommendation int64, changeRequirement vpa_types.EvictionChangeRequirement) bool {
 	if changeRequirement == vpa_types.TargetHigherThanRequests {
 		return recommendation > currentRequests
 	}

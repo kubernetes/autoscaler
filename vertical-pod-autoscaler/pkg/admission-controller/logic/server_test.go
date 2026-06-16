@@ -34,25 +34,25 @@ import (
 // InfiniteReader simulates an endless stream of bytes to trigger an oversized request error.
 type InfiniteReader struct{}
 
-func (r *InfiniteReader) Read(p []byte) (n int, err error) {
+func (*InfiniteReader) Read(p []byte) (n int, err error) {
 	for i := range p {
 		p[i] = 'a'
 	}
 	return len(p), nil
 }
 
-func (r *InfiniteReader) Close() error {
+func (*InfiniteReader) Close() error {
 	return nil
 }
 
 // FailureReader simulates a read failure that is not an oversized error.
 type FailureReader struct{}
 
-func (r *FailureReader) Read(p []byte) (n int, err error) {
+func (*FailureReader) Read(p []byte) (n int, err error) {
 	return 0, errors.New("simulated read error")
 }
 
-func (r *FailureReader) Close() error {
+func (*FailureReader) Close() error {
 	return nil
 }
 

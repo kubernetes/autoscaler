@@ -29,7 +29,7 @@ type PreProcessor interface {
 type NoopPreProcessor struct{}
 
 // Process leaves the pod unchanged
-func (p *NoopPreProcessor) Process(pod corev1.Pod) (corev1.Pod, error) {
+func (*NoopPreProcessor) Process(pod corev1.Pod) (corev1.Pod, error) {
 	return pod, nil
 }
 
