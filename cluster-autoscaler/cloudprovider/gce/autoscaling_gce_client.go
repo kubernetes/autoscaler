@@ -47,6 +47,9 @@ const (
 	// cannot be provisioned by cloud provider.
 	ErrorCodeResourcePoolExhausted = "RESOURCE_POOL_EXHAUSTED"
 
+	// ErrorCodeInsufficientCapacity is an error code used in InstanceErrorInfo if there is insufficient capacity.
+	ErrorCodeInsufficientCapacity = "INSUFFICIENT_CAPACITY"
+
 	// ErrorIPSpaceExhausted is an error code used in InstanceErrorInfo if the IP space has been
 	// exhausted.
 	ErrorIPSpaceExhausted = "IP_SPACE_EXHAUSTED"
@@ -573,6 +576,11 @@ func GetErrorInfo(errorCode, errorMessage, instanceStatus string, previousErrorI
 			ErrorClass: cloudprovider.OutOfResourcesErrorClass,
 			ErrorCode:  ErrorCodeResourcePoolExhausted,
 		}
+	} else if isInsufficientCapacityErrorCode(errorCode) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+			ErrorCode:  ErrorCodeInsufficientCapacity,
+		}
 	} else if isQuotaExceededErrorCode(errorCode) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OutOfResourcesErrorClass,
@@ -677,6 +685,10 @@ func getLastAttemptErrors(instance *gce.ManagedInstance) []*gce.ManagedInstanceL
 
 func isResourcePoolExhaustedErrorCode(errorCode string) bool {
 	return errorCode == "RESOURCE_POOL_EXHAUSTED" || errorCode == "ZONE_RESOURCE_POOL_EXHAUSTED" || errorCode == "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS"
+}
+
+func isInsufficientCapacityErrorCode(errorCode string) bool {
+	return errorCode == "INSUFFICIENT_CAPACITY"
 }
 
 func isQuotaExceededErrorCode(errorCode string) bool {

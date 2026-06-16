@@ -179,6 +179,11 @@ func TestErrors(t *testing.T) {
 			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
 		},
 		{
+			errorCodes:         []string{"INSUFFICIENT_CAPACITY"},
+			expectedErrorCode:  "INSUFFICIENT_CAPACITY",
+			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
+		},
+		{
 			errorCodes:         []string{"QUOTA"},
 			expectedErrorCode:  "QUOTA_EXCEEDED",
 			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
