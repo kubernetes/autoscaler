@@ -2415,6 +2415,14 @@ func TestScaleUpSimulationForSkippedNodeGroups(t *testing.T) {
 					assert.Contains(t, actualInfo.RejectedNodeGroups, ng)
 				}
 			}
+
+			podsAwaitEvaluation := []string{}
+			for _, pod := range scaleUpStatus.PodsAwaitEvaluation {
+				podsAwaitEvaluation = append(podsAwaitEvaluation, pod.Name)
+			}
+			// This assertion ensures that the skipped node group simulation did not mutate the Schedulable status of the original equivalence groups.
+			// Without cloning the "partial scale-up successful" case would fail as p1 would be marked as schedulable on ng1 and would be added to podsAwaitEvaluation.
+			assert.Empty(t, podsAwaitEvaluation)
 		})
 	}
 }
