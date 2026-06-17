@@ -112,6 +112,11 @@ type Config struct {
 
 	// EnableLabelPredictionsOnTemplate defines whether to enable label predictions on the template when scaling from zero
 	EnableLabelPredictionsOnTemplate bool `json:"enableLabelPredictionsOnTemplate,omitempty" yaml:"enableLabelPredictionsOnTemplate,omitempty"`
+
+	// EnableVMSSEtag sends the cached VMSS ETag as If-Match on capacity-changing
+	// VMSS PUTs so concurrent modifications are rejected with 412 instead of overwritten.
+	// Disabled by default; set to true to opt in.
+	EnableVMSSEtag bool `json:"enableVMSSEtag,omitempty" yaml:"enableVMSSEtag,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -143,6 +148,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	cfg.MaxDeploymentsCount = int64(defaultMaxDeploymentsCount)
 	cfg.StrictCacheUpdates = false
 	cfg.EnableLabelPredictionsOnTemplate = true
+	cfg.EnableVMSSEtag = false
 
 	// Config file overrides defaults
 	if configReader != nil {
@@ -281,6 +287,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		return nil, err
 	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableVMsAgentPool, "AZURE_ENABLE_VMS_AGENT_POOLS"); err != nil {
+		return nil, err
+	}
+	if _, err = assignBoolFromEnvIfExists(&cfg.EnableVMSSEtag, "AZURE_ENABLE_VMSS_ETAG"); err != nil {
 		return nil, err
 	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableDynamicInstanceList, "AZURE_ENABLE_DYNAMIC_INSTANCE_LIST"); err != nil {

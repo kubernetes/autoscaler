@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -189,6 +190,9 @@ func (scaleSet *ScaleSet) MaxSize() int {
 	return scaleSet.maxSize
 }
 
+// getVMSSFromCache returns the live cached VMSS object.
+// Callers that read or write mutable fields shared with resize paths,
+// especially SKU.Capacity and Etag, must hold vmssSizeMutex.
 func (scaleSet *ScaleSet) getVMSSFromCache() (*armcompute.VirtualMachineScaleSet, error) {
 	allVMSS := scaleSet.manager.azureCache.getScaleSets()
 
@@ -245,6 +249,9 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 			klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
 			return -1, newGetVMSSFailedError(err, azerrors.IsNotFoundErr(err))
 		}
+		// Persist the freshly-fetched VMSS (including its ETag) so subsequent
+		// capacity updates send an up-to-date If-Match.
+		scaleSet.manager.azureCache.setScaleSet(scaleSet.Name, set)
 	}
 
 	vmssSizeMutex.Lock()
@@ -376,15 +383,16 @@ func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
 	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
 	defer cancel()
 
-	poller, err := scaleSet.initCreateOrUpdate(ctx, vmssInfo, newSize)
+	effectiveVMSS, poller, err := scaleSet.initCreateOrUpdate(ctx, vmssInfo, newSize)
 	if err != nil {
 		klog.Errorf("AtomicIncreaseSize: BeginCreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
 		return err
 	}
 
+	var resp armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse
 	if poller != nil {
 		klog.V(3).Infof("AtomicIncreaseSize: waiting for VMSS %q capacity update to complete", scaleSet.Name)
-		_, err = poller.PollUntilDone(ctx, nil)
+		resp, err = poller.PollUntilDone(ctx, nil)
 		scaleSet.invalidateInstanceCache()
 		if err != nil {
 			klog.Errorf("AtomicIncreaseSize: VMSS %q capacity update failed during polling: %v", scaleSet.Name, err)
@@ -395,11 +403,25 @@ func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
 	}
 
 	// Only update the size cache after the operation has successfully completed.
+	// initCreateOrUpdate may have refreshed the cache with a different VMSS object (an
+	// ETag retry), so update that object rather than the pre-retry copy.
 	scaleSet.sizeMutex.Lock()
 	vmssSizeMutex.Lock()
-	vmssInfo.SKU.Capacity = &newSize
+	if poller == nil && effectiveVMSS != vmssInfo {
+		// An ETag retry skipped the PUT because the VMSS already met or exceeded the
+		// target; publish its actual capacity rather than a stale (possibly lower) target.
+		scaleSet.curSize = *effectiveVMSS.SKU.Capacity
+	} else {
+		effectiveVMSS.SKU.Capacity = &newSize
+		// A successful PUT changes the server-side ETag. Adopt the new one returned by
+		// the operation so any follow-up PUT before the next cache refresh still carries a
+		// valid If-Match rather than overwriting concurrent changes or hitting a 412.
+		if scaleSet.manager.config.EnableVMSSEtag && resp.Etag != nil {
+			effectiveVMSS.Etag = resp.Etag
+		}
+		scaleSet.curSize = newSize
+	}
 	vmssSizeMutex.Unlock()
-	scaleSet.curSize = newSize
 	scaleSet.lastSizeRefresh = time.Now()
 	scaleSet.sizeMutex.Unlock()
 
@@ -488,9 +510,22 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 	return true, nil
 }
 
-func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) (*runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
+// isPreconditionFailedError reports whether err is an Azure response error with
+// HTTP 412 status, i.e. an ETag If-Match precondition failure.
+func isPreconditionFailedError(err error) bool {
+	r := azerrors.IsResponseError(err)
+	return r != nil && r.StatusCode == http.StatusPreconditionFailed
+}
+
+// initCreateOrUpdate issues the capacity PUT and returns the VMSS object the caller
+// should track going forward. On a normal update that is the same vmssInfo; on an ETag
+// retry it is the freshly-fetched object that now lives in the cache, so the caller's
+// post-completion ETag/capacity updates land on the cached object rather than a stale
+// copy. A nil poller with no error means the update was satisfied without a PUT (the
+// VMSS already met the target); the caller should adopt the returned object's capacity.
+func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) (*armcompute.VirtualMachineScaleSet, *runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
 	if vmssInfo == nil {
-		return nil, fmt.Errorf("vmssInfo cannot be nil while increasing scaleSet capacity")
+		return nil, nil, fmt.Errorf("vmssInfo cannot be nil while increasing scaleSet capacity")
 	}
 
 	scaleSet.sizeMutex.Lock()
@@ -519,12 +554,75 @@ func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armc
 	}
 
 	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.BeginCreateOrUpdate(%s)", scaleSet.Name)
-	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginCreateOrUpdate(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op, nil)
+
+	opts := &armcompute.VirtualMachineScaleSetsClientBeginCreateOrUpdateOptions{}
+	if scaleSet.manager.config.EnableVMSSEtag {
+		// Read the cached ETag under vmssSizeMutex, the same lock that guards
+		// ETag writes on operation completion, so the read/write pair is
+		// race-free even though initCreateOrUpdate holds only sizeMutex.
+		vmssSizeMutex.Lock()
+		etag := vmssInfo.Etag
+		vmssSizeMutex.Unlock()
+		opts.IfMatch = etag
+	}
+	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginCreateOrUpdate(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op, opts)
 	if err != nil {
 		klog.Errorf("virtualMachineScaleSetsClient.BeginCreateOrUpdate for scale set %q failed: %+v", scaleSet.Name, err)
-		return nil, err
+		if scaleSet.manager.config.EnableVMSSEtag && isPreconditionFailedError(err) {
+			// An ETag precondition failure is an optimistic-concurrency conflict, not a
+			// real scale-up failure. Refresh the ETag from a fresh GET and retry once so
+			// a lost race does not surface as an error that would back off the node group.
+			return scaleSet.retryCreateOrUpdateWithFreshETag(ctx, op, newSize)
+		}
+		return nil, nil, err
 	}
-	return poller, nil
+	return vmssInfo, poller, nil
+}
+
+// retryCreateOrUpdateWithFreshETag handles an ETag precondition failure by fetching
+// the current VMSS, adopting its ETag, and re-issuing the capacity update once. This
+// keeps a lost optimistic-concurrency race from surfacing as a scale-up failure, which
+// would otherwise back off the node group. It returns the freshly-fetched VMSS (now in
+// the cache) so the caller tracks that object instead of the stale pre-retry copy.
+// Callers must hold sizeMutex.
+func (scaleSet *ScaleSet) retryCreateOrUpdateWithFreshETag(ctx context.Context, op armcompute.VirtualMachineScaleSet, newSize int64) (*armcompute.VirtualMachineScaleSet, *runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
+	klog.V(2).Infof("VMSS %s update hit ETag precondition; refreshing ETag and retrying once", scaleSet.Name)
+
+	fresh, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, nil)
+	if err != nil {
+		klog.Errorf("VMSS %s ETag retry: failed to GET current scale set: %v", scaleSet.Name, err)
+		scaleSet.invalidateForPreconditionFailure()
+		return nil, nil, err
+	}
+
+	// Persist the freshly-fetched VMSS (ETag and capacity) for subsequent operations.
+	scaleSet.manager.azureCache.setScaleSet(scaleSet.Name, fresh)
+
+	// If another writer already grew the VMSS to at least our target, the desired floor
+	// is already met; don't issue a PUT that would shrink it back down. Return the fresh
+	// object (nil poller) so the caller publishes its actual capacity, not a stale target.
+	if fresh.SKU != nil && fresh.SKU.Capacity != nil && *fresh.SKU.Capacity >= newSize {
+		klog.V(2).Infof("VMSS %s already at capacity %d (>= desired %d) after refresh; skipping retry", scaleSet.Name, *fresh.SKU.Capacity, newSize)
+		return fresh, nil, nil
+	}
+
+	opts := &armcompute.VirtualMachineScaleSetsClientBeginCreateOrUpdateOptions{IfMatch: fresh.Etag}
+	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginCreateOrUpdate(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op, opts)
+	if err != nil {
+		klog.Errorf("VMSS %s ETag retry: BeginCreateOrUpdate failed: %+v", scaleSet.Name, err)
+		scaleSet.invalidateForPreconditionFailure()
+		return nil, nil, err
+	}
+	return fresh, poller, nil
+}
+
+// invalidateForPreconditionFailure invalidates the instance, size, and manager caches
+// so the next loop re-plans from fresh Azure state. Callers must hold sizeMutex.
+func (scaleSet *ScaleSet) invalidateForPreconditionFailure() {
+	scaleSet.invalidateInstanceCache()
+	// Already holding sizeMutex here, so force the size refresh without re-locking.
+	scaleSet.invalidateLastSizeRefresh()
+	scaleSet.manager.invalidateCache()
 }
 
 func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) error {
@@ -534,36 +632,60 @@ func (scaleSet *ScaleSet) createOrUpdateInstances(vmssInfo *armcompute.VirtualMa
 	// to avoid overshooting the max size if multiple scale up requests are made concurrently.
 	// This preserves the existing behavior (before atomic scale up was added).
 	vmssSizeMutex.Lock()
+	previousSize := vmssInfo.SKU.Capacity
 	vmssInfo.SKU.Capacity = &newSize
 	vmssSizeMutex.Unlock()
-	poller, err := scaleSet.initCreateOrUpdate(ctx, vmssInfo, newSize)
+	effectiveVMSS, poller, err := scaleSet.initCreateOrUpdate(ctx, vmssInfo, newSize)
 	if err != nil {
+		// The update was not accepted (e.g. an ETag precondition failure), so roll
+		// back the eager capacity mutation. Otherwise the rejected desired size would
+		// remain on the cached VMSS object and become visible via getCurSize before
+		// the next full cache refresh.
+		vmssSizeMutex.Lock()
+		vmssInfo.SKU.Capacity = previousSize
+		vmssSizeMutex.Unlock()
 		return err
 	}
+
+	// initCreateOrUpdate may have refreshed the cache with a different VMSS object (an
+	// ETag retry). Track that object so the async completion below updates the cached
+	// copy, and decide the size to publish from it.
+	publishedSize := newSize
+	vmssSizeMutex.Lock()
+	if poller != nil {
+		// A PUT is in flight; carry the eager capacity mutation onto whatever object
+		// the async completion will update so the cache stays consistent meanwhile.
+		effectiveVMSS.SKU.Capacity = &newSize
+	} else if effectiveVMSS != vmssInfo {
+		// An ETag retry skipped the PUT because the VMSS already met or exceeded the
+		// target; publish its actual capacity rather than a stale (possibly lower) target.
+		publishedSize = *effectiveVMSS.SKU.Capacity
+	}
+	vmssSizeMutex.Unlock()
 
 	// Proactively set the VMSS size so autoscaler makes better decisions.
 	// initCreateOrUpdate releases sizeMutex before returning, so reacquire it
 	// here to keep curSize / lastSizeRefresh updates serialized with readers
 	// (e.g. getCurSize).
 	scaleSet.sizeMutex.Lock()
-	scaleSet.curSize = newSize
+	scaleSet.curSize = publishedSize
 	scaleSet.lastSizeRefresh = time.Now()
 	scaleSet.sizeMutex.Unlock()
 
 	// Poll for completion asynchronously to avoid blocking the autoscaler
 	if poller != nil {
-		go scaleSet.waitForCreateOrUpdateInstances(poller)
+		go scaleSet.waitForCreateOrUpdateInstances(poller, effectiveVMSS)
 	}
 	return nil
 }
 
 // waitForCreateOrUpdateInstances waits for the outcome of VMSS capacity update initiated via BeginCreateOrUpdate.
-func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse]) {
+func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], vmssInfo *armcompute.VirtualMachineScaleSet) {
 	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
 	defer cancel()
 
 	klog.V(3).Infof("Calling PollUntilDone for CreateOrUpdate(%s)", scaleSet.Name)
-	_, err := poller.PollUntilDone(ctx, nil)
+	resp, err := poller.PollUntilDone(ctx, nil)
 
 	// Invalidate instanceCache on success and failure. Failure might have created a few instances, but it is very rare.
 	scaleSet.invalidateInstanceCache()
@@ -574,6 +696,24 @@ func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(poller *runtime.Poller[
 		scaleSet.invalidateLastSizeRefreshWithLock()
 		scaleSet.manager.invalidateCache()
 		return
+	}
+
+	// A successful PUT changes the server-side ETag. Adopt the new one returned by
+	// the operation so any follow-up PUT before the next cache refresh still carries a
+	// valid If-Match rather than overwriting concurrent changes or hitting a 412.
+	if scaleSet.manager.config.EnableVMSSEtag {
+		if resp.Etag != nil {
+			vmssSizeMutex.Lock()
+			vmssInfo.Etag = resp.Etag
+			vmssSizeMutex.Unlock()
+		} else {
+			// The PUT succeeded but the response carried no ETag, so the cached one
+			// is now stale. Mark the cache for refresh so the next operation fetches
+			// a current ETag via GET instead of sending a stale If-Match (which would
+			// otherwise be rejected with a 412 and force an extra re-plan).
+			scaleSet.invalidateLastSizeRefreshWithLock()
+			scaleSet.manager.invalidateCache()
+		}
 	}
 
 	klog.V(3).Infof("PollUntilDone for CreateOrUpdate(%s) success", scaleSet.Name)
@@ -1004,8 +1144,14 @@ func isSpot(vmss *armcompute.VirtualMachineScaleSet) bool {
 
 func (scaleSet *ScaleSet) invalidateLastSizeRefreshWithLock() {
 	scaleSet.sizeMutex.Lock()
-	scaleSet.lastSizeRefresh = time.Now().Add(-1 * scaleSet.sizeRefreshPeriod)
+	scaleSet.invalidateLastSizeRefresh()
 	scaleSet.sizeMutex.Unlock()
+}
+
+// invalidateLastSizeRefresh forces the next getCurSize call to refresh curSize
+// from the VMSS. Callers must already hold sizeMutex.
+func (scaleSet *ScaleSet) invalidateLastSizeRefresh() {
+	scaleSet.lastSizeRefresh = time.Now().Add(-1 * scaleSet.sizeRefreshPeriod)
 }
 
 func (scaleSet *ScaleSet) getOrchestrationMode() (*armcompute.OrchestrationMode, error) {
