@@ -998,8 +998,8 @@ The following startup parameters are supported for cluster autoscaler:
 | `async-node-groups` | Whether clusterautoscaler creates and deletes node groups asynchronously. Experimental: requires cloud provider supporting async node group operations, enable at your own risk. |  |
 | `aws-use-static-instance-list` | Should CA fetch instance types in runtime or use a static list. AWS only |  |
 | `balance-similar-node-groups` | Detect similar node groups and balance the number of nodes between them |  |
-| `balancing-ignore-label` | Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar | [] |
-| `balancing-label` | Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label. | [] |
+| `balancing-ignore-label` | Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar |  |
+| `balancing-label` | Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label. |  |
 | `blocking-system-pod-distruption-timeout` | The timeout after which CA will evict non-pdb-assigned blocking system pods, applicable only when --skip-nodes-with-system-pods is set to true | 1h0m0s |
 | `boot-id-file` | Comma-separated list of files to check for boot-id. Use the first one that exists. | "/proc/sys/kernel/random/boot_id" |
 | `bulk-mig-instances-listing-enabled` | Fetch GCE mig instances in bulk instead of per mig |  |
@@ -1054,13 +1054,13 @@ The following startup parameters are supported for cluster autoscaler:
 | `gce-concurrent-refreshes` | Maximum number of concurrent refreshes per cloud object type. | 1 |
 | `gce-mig-instances-min-refresh-wait-time` | The minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed. | 5s |
 | `global-housekeeping-interval` | Interval between global housekeepings | 1m0s |
-| `gpu-total` | Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE. | [] |
+| `gpu-total` | Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE. |  |
 | `grpc-expander-cert` | Path to cert used by gRPC server over TLS |  |
 | `grpc-expander-url` | URL to reach gRPC expander server. |  |
 | `housekeeping-interval` | Interval between container housekeepings | 10s |
 | `ignore-daemonsets-utilization` | Should CA ignore DaemonSet pods when calculating resource utilization for scaling down |  |
 | `ignore-mirror-pods-utilization` | Should CA ignore Mirror pods when calculating resource utilization for scaling down |  |
-| `ignore-taint` | Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead) | [] |
+| `ignore-taint` | Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead) |  |
 | `initial-node-group-backoff-duration` | initialNodeGroupBackoffDuration is the duration of first backoff after a new node failed to start. | 5m0s |
 | `kube-api-content-type` | Content type of requests sent to apiserver. | "application/vnd.kubernetes.protobuf" |
 | `kube-client-burst` | Burst value for kubernetes client. | 10 |
@@ -1118,11 +1118,11 @@ The following startup parameters are supported for cluster autoscaler:
 | `node-deletion-batcher-interval` | How long CA ScaleDown gather nodes to delete them in batch. | 0s |
 | `node-deletion-candidate-ttl` | Maximum time a node can be marked as removable before the marking becomes stale. This sets the TTL of Cluster-Autoscaler's state if the Cluste-Autoscaler deployment becomes inactive | 0s |
 | `node-deletion-delay-timeout` | Maximum time CA waits for removing delay-deletion.cluster-autoscaler.kubernetes.io/ annotations before deleting the node. | 2m0s |
-| `node-group-auto-discovery` | of discoverer>:[<key>[=<value>]] One or more definition(s) of node group auto-discovery. A definition is expressed <name of discoverer>:[<key>[=<value>]]. The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` Azure matches by VMSS tags, similar to AWS. And you can optionally specify a default min and max size, e.g. `label:tag=tagKey,anotherTagKey=bar,min=0,max=600`. Can be used multiple times. | [] |
+| `node-group-auto-discovery` | of discoverer>:[<key>[=<value>]] One or more definition(s) of node group auto-discovery. A definition is expressed <name of discoverer>:[<key>[=<value>]]. The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` Azure matches by VMSS tags, similar to AWS. And you can optionally specify a default min and max size, e.g. `label:tag=tagKey,anotherTagKey=bar,min=0,max=600`. Can be used multiple times. |  |
 | `node-group-backoff-reset-timeout` | nodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset. | 3h0m0s |
 | `node-info-cache-expire-time` | Node Info cache expire time for each item. Default value is 10 years. | 87600h0m0s |
 | `node-removal-latency-tracking-enabled` | Whether to track latency from when an unneeded node is eligible for scale down until it is removed or needed again. |  |
-| `nodes` | sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...> | [] |
+| `nodes` | sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...> |  |
 | `ok-total-unready-count` | Number of allowed unready nodes, irrespective of max-total-unready-percentage | 3 |
 | `one-output` | If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true) |  |
 | `parallel-scale-up` | Whether to allow parallel node groups scale up. Experimental: may not work on some cloud providers, enable at your own risk. |  |
@@ -1143,6 +1143,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `scale-down-delay-after-delete` | How long after node deletion that scale down evaluation resumes | 0s |
 | `scale-down-delay-after-failure` | How long after scale down failure that scale down evaluation resumes | 3m0s |
 | `scale-down-delay-type-local` | Should --scale-down-delay-after-* flags be applied locally per nodegroup or globally across all nodegroups |  |
+| `scale-down-enabled` | [Deprecated] Should CA scale down the cluster | true |
 | `scale-down-gpu-utilization-threshold` | Sum of gpu requests of all pods running on the node divided by node's allocatable resource, below which a node can be considered for scale down.Utilization calculation only cares about gpu resource for accelerator node. cpu and memory utilization will be ignored. | 0.5 |
 | `scale-down-non-empty-candidates-count` | Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain.Lower value means better CA responsiveness but possible slower scale down latency.Higher value can affect CA performance with big clusters (hundreds of nodes).Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers. | 30 |
 | `scale-down-simulation-timeout` | How long should we run scale down simulation. | 30s |
@@ -1160,10 +1161,10 @@ The following startup parameters are supported for cluster autoscaler:
 | `skip-nodes-with-custom-controller-pods` | If true cluster autoscaler will never delete nodes with pods owned by custom controllers | true |
 | `skip-nodes-with-local-storage` | If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath | true |
 | `skip-nodes-with-system-pods` | If true cluster autoscaler will wait for --blocking-system-pod-distruption-timeout before deleting nodes with pods from kube-system (except for DaemonSet or mirror pods) | true |
-| `startup-taint` | Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint) | [] |
-| `startup-taint-prefix` | Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times. | [] |
+| `startup-taint` | Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint) |  |
+| `startup-taint-prefix` | Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times. |  |
 | `status-config-map-name` | Status configmap name | "cluster-autoscaler-status" |
-| `status-taint` | Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready | [] |
+| `status-taint` | Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready |  |
 | `stderrthreshold` | logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true unless -legacy_stderr_threshold_behavior=false) |  |
 | `storage-driver-buffer-duration` | Writes in the storage driver will be buffered for this duration, and committed to the non memory backends as a single transaction | 1m0s |
 | `storage-driver-db` | database name | "cadvisor" |

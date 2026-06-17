@@ -43,24 +43,6 @@ const (
 	ClusterSnapshotParallelismDefault = 16
 )
 
-// MultiStringFlag is a flag for passing multiple parameters using same flag
-type MultiStringFlag []string
-
-// String returns string representation of the node groups.
-func (flag *MultiStringFlag) String() string {
-	return "[" + strings.Join(*flag, " ") + "]"
-}
-
-// Set adds a new configuration.
-func (flag *MultiStringFlag) Set(value string) error {
-	*flag = append(*flag, value)
-	return nil
-}
-
-func (flag *MultiStringFlag) Type() string {
-	return "MultiStringFlag"
-}
-
 // AutoscalingFlags holds the command line flags for the autoscaler and responsible
 // for parsing and building the AutoscalingOptions struct from commandline flags.
 type AutoscalingFlags struct {
@@ -69,20 +51,20 @@ type AutoscalingFlags struct {
 	coresTotal                 string
 	memoryTotal                string
 	drainPriorityConfig        string
-	gpuTotal                   MultiStringFlag
-	nodeGroups                 MultiStringFlag
-	nodeGroupAutodiscovery     MultiStringFlag
-	startupTaints              MultiStringFlag
-	statusTaints               MultiStringFlag
-	ignoreTaints               MultiStringFlag
+	gpuTotal                   []string
+	nodeGroups                 []string
+	nodeGroupAutodiscovery     []string
+	startupTaints              []string
+	statusTaints               []string
+	ignoreTaints               []string
 	bypassedSchedulers         []string
 	allowedSchedulers          []string
 	maxGracefulTerminationSec  int
 	kubeClientQPS              float64
 	clusterSnapshotParallelism int
-	startupTaintPrefixes       MultiStringFlag
-	balancingIgnoreLabels      MultiStringFlag
-	balancingLabels            MultiStringFlag
+	startupTaintPrefixes       []string
+	balancingIgnoreLabels      []string
+	balancingLabels            []string
 	// The AutoscalingOptions struct that will be populated by the flags
 	// as a result of parsing the flags
 	o config.AutoscalingOptions
@@ -203,9 +185,9 @@ func (p *AutoscalingFlags) AddFlags(fs *pflag.FlagSet) {
 	fs.IntVar(&p.o.GCEOptions.ConcurrentRefreshes, "gce-concurrent-refreshes", 1, "Maximum number of concurrent refreshes per cloud object type.")
 	fs.DurationVar(&p.o.GCEOptions.MigInstancesMinRefreshWaitTime, "gce-mig-instances-min-refresh-wait-time", 5*time.Second, "The minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.")
 	fs.BoolVar(&p.o.AWSUseStaticInstanceList, "aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
-	fs.Var(&p.balancingIgnoreLabels, "balancing-ignore-label", "Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar")
-	fs.Var(&p.balancingLabels, "balancing-label", "Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label.")
-	fs.Var(&p.startupTaintPrefixes, "startup-taint-prefix", "Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times.")
+	fs.StringArrayVar(&p.balancingIgnoreLabels, "balancing-ignore-label", []string{}, "Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar")
+	fs.StringArrayVar(&p.balancingLabels, "balancing-label", []string{}, "Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label.")
+	fs.StringArrayVar(&p.startupTaintPrefixes, "startup-taint-prefix", []string{}, "Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times.")
 	fs.IntVar(&p.o.PodInjectionLimit, "pod-injection-limit", 5000, "Limits total number of pods while injecting fake pods. If unschedulable pods already exceeds the limit, pod injection is disabled but pods are not truncated.")
 	fs.BoolVar(&p.o.CheckCapacityBatchProcessing, "check-capacity-batch-processing", false, "Whether to enable batch processing for check capacity requests.")
 	fs.IntVar(&p.o.CheckCapacityProvisioningRequestMaxBatchSize, "check-capacity-provisioning-request-max-batch-size", 10, "Maximum number of provisioning requests to process in a single batch.")
@@ -224,14 +206,14 @@ func (p *AutoscalingFlags) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&p.o.CapacityQuotasEnabled, "capacity-quotas-enabled", false, "Whether to enable CapacityQuota CRD support.")
 
 	// Deprecated flags
-	fs.Var(&p.ignoreTaints, "ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
+	fs.StringArrayVar(&p.ignoreTaints, "ignore-taint", []string{}, "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
 	fs.BoolVar(&p.o.DynamicResourceAllocationEnabled, "enable-dynamic-resource-allocation", true, "Handle DRA (Dynamic Resource Allocation) objects, locked to true.")
 	fs.IntVar(&p.clusterSnapshotParallelism, "cluster-snapshot-parallelism", ClusterSnapshotParallelismDefault, "Maximum parallelism of cluster snapshot creation (Deprecated, use predicate-parallelism instead)")
 	fs.BoolVar(&p.o.ScaleDownEnabled, "scale-down-enabled", true, "[Deprecated] Should CA scale down the cluster")
 
 	// Properties specific to the cloud provider, but kept for the sake of POC
-	fs.Var(&p.nodeGroups, "nodes", "sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...>")
-	fs.Var(&p.nodeGroupAutodiscovery, "node-group-auto-discovery", "One or more definition(s) of node group auto-discovery. "+
+	fs.StringArrayVar(&p.nodeGroups, "nodes", []string{}, "sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...>")
+	fs.StringArrayVar(&p.nodeGroupAutodiscovery, "node-group-auto-discovery", []string{}, "One or more definition(s) of node group auto-discovery. "+
 		"A definition is expressed `<name of discoverer>:[<key>[=<value>]]`. "+
 		"The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. "+
 		"GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` "+
@@ -243,9 +225,9 @@ func (p *AutoscalingFlags) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&p.coresTotal, "cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	fs.StringVar(&p.memoryTotal, "memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	fs.IntVar(&p.maxGracefulTerminationSec, "max-graceful-termination-sec", MaxGracefulTerminationSecDefault, "Maximum number of seconds CA waits for pod termination when trying to scale down a node. This flag is mutually exclusion with drain-priority-config flag which allows more configuration options.")
-	fs.Var(&p.gpuTotal, "gpu-total", "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
-	fs.Var(&p.startupTaints, "startup-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint)")
-	fs.Var(&p.statusTaints, "status-taint", "Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready")
+	fs.StringArrayVar(&p.gpuTotal, "gpu-total", []string{}, "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
+	fs.StringArrayVar(&p.startupTaints, "startup-taint", []string{}, "Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint)")
+	fs.StringArrayVar(&p.statusTaints, "status-taint", []string{}, "Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready")
 	fs.StringSliceVar(&p.bypassedSchedulers, "bypassed-scheduler-names", []string{}, "Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up.")
 	fs.StringSliceVar(&p.allowedSchedulers, "allowed-scheduler-names", []string{}, "If set to non-empty value, CA will proceed only with pods targeting schedulers in the list, from the list of unschedulable and scheduler unprocessed pods")
 	fs.StringVar(&p.drainPriorityConfig, "drain-priority-config", "",
@@ -330,7 +312,6 @@ func (p *AutoscalingFlags) Options() (config.AutoscalingOptions, error) {
 
 	p.o.AllowedSchedulers = allowedSchedulers
 	p.o.BypassedSchedulers = scheduler_util.SchedulersMap(p.bypassedSchedulers)
-	p.o.DynamicResourceAllocationEnabled = p.o.DynamicResourceAllocationEnabled
 	p.o.StartupTaints = slices.Concat(p.ignoreTaints, p.startupTaints)
 	p.o.MaxGracefulTerminationSec = p.maxGracefulTerminationSec
 	p.o.NodeGroupAutoDiscovery = p.nodeGroupAutodiscovery
@@ -389,7 +370,7 @@ func parseMinMaxFlag(flag string) (int64, int64, error) {
 	return min, max, nil
 }
 
-func parseMultipleGpuLimits(flags MultiStringFlag) ([]config.GpuLimits, error) {
+func parseMultipleGpuLimits(flags []string) ([]config.GpuLimits, error) {
 	parsedFlags := make([]config.GpuLimits, 0, len(flags))
 	for _, flag := range flags {
 		parsedFlag, err := parseSingleGpuLimit(flag)
