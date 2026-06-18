@@ -462,6 +462,7 @@ vpa:
 | azureClientID | string | `""` | Service Principal ClientID with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
 | azureClientSecret | string | `""` | Service Principal ClientSecret with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
 | azureEnableForceDelete | bool | `false` | Whether to force delete VMs or VMSS instances when scaling down. |
+| azureEnableVMSSEtag | bool | `false` | Whether to send the cached VMSS ETag as an `If-Match` header on capacity updates, so concurrent modifications are rejected (HTTP 412) and retried instead of silently overwritten. |
 | azureResourceGroup | string | `""` | Azure resource group that the cluster is located. Required if `cloudProvider=azure` |
 | azureSubscriptionID | string | `""` | Azure subscription where the resources are located. Required if `cloudProvider=azure` |
 | azureTenantID | string | `""` | Azure tenant where the resources are located. Required if `cloudProvider=azure` |
