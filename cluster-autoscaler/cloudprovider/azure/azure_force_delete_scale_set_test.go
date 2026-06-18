@@ -17,11 +17,13 @@ limitations under the License.
 package azure
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/assert"
+	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
@@ -76,4 +78,32 @@ func TestIsOperationNotAllowed(t *testing.T) {
 	// It is difficult to condition the case where return error matched expected error string for forceDelete and the
 	// function should return true.
 
+}
+
+func TestIsOperationPreempted(t *testing.T) {
+	t.Run("should return false because error is nil", func(t *testing.T) {
+		assert.Equal(t, isOperationPreempted(nil), false)
+	})
+
+	t.Run("should return false for unrelated error", func(t *testing.T) {
+		err := errors.New("BadRequest: something went wrong")
+		assert.Equal(t, isOperationPreempted(err), false)
+	})
+
+	t.Run("should return true for plain error containing the preempted message", func(t *testing.T) {
+		err := errors.New(consts.OperationPreemptedErrorMessage)
+		assert.Equal(t, isOperationPreempted(err), true)
+	})
+
+	t.Run("should return true for a retry.Error wrapping the preempted message", func(t *testing.T) {
+		// This mirrors how the error surfaces in production: WaitForDeleteInstancesResult
+		// returns retry.Error.Error(), which wraps the raw error message.
+		err := retry.NewError(false, errors.New(consts.OperationPreemptedErrorMessage)).Error()
+		assert.Equal(t, isOperationPreempted(err), true)
+	})
+
+	t.Run("should be case-insensitive", func(t *testing.T) {
+		err := errors.New("operation execution has been PREEMPTED by a more recent operation")
+		assert.Equal(t, isOperationPreempted(err), true)
+	})
 }
