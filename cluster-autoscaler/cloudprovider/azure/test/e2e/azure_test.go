@@ -55,100 +55,129 @@ var _ = Describe("Azure Provider", func() {
 	})
 
 	It("scales up AKS node pools when pending Pods exist", func() {
-		ensureHelmValues(map[string]interface{}{
-			"extraArgs": map[string]interface{}{
-				"scale-down-delay-after-add":       "10s",
-				"scale-down-unneeded-time":         "10s",
-				"scale-down-candidates-pool-ratio": "1.0",
-				"unremovable-node-recheck-timeout": "10s",
-				"skip-nodes-with-system-pods":      "false",
-				"skip-nodes-with-local-storage":    "false",
-			},
-		})
+		runScaleUpDownFlow(namespace.Name, scaleUpDownHelmValues())
+	})
 
-		nodes := &corev1.NodeList{}
-		Expect(k8s.List(ctx, nodes)).To(Succeed())
-		nodeCountBefore := len(nodes.Items)
+	It("scales up and down AKS node pools with VMSS ETag concurrency enabled", func() {
+		runScaleUpDownFlow(namespace.Name, withVMSSETag(scaleUpDownHelmValues()))
+	})
+})
 
-		By("Creating 100 Pods")
-		// https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/application/php-apache.yaml
-		deploy := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "php-apache",
-				Namespace: namespace.Name,
+// scaleUpDownHelmValues returns the chart values that configure the Cluster
+// Autoscaler to scale up on demand and then scale back down quickly.
+func scaleUpDownHelmValues() map[string]interface{} {
+	return map[string]interface{}{
+		"extraArgs": map[string]interface{}{
+			"scale-down-delay-after-add":       "10s",
+			"scale-down-unneeded-time":         "10s",
+			"scale-down-candidates-pool-ratio": "1.0",
+			"unremovable-node-recheck-timeout": "10s",
+			"skip-nodes-with-system-pods":      "false",
+			"skip-nodes-with-local-storage":    "false",
+		},
+	}
+}
+
+// withVMSSETag enables the Azure VMSS ETag optimistic-concurrency feature by
+// setting AZURE_ENABLE_VMSS_ETAG on the CAS container via the chart's extraEnv.
+func withVMSSETag(values map[string]interface{}) map[string]interface{} {
+	values["extraEnv"] = map[string]interface{}{
+		"AZURE_ENABLE_VMSS_ETAG": "true",
+	}
+	return values
+}
+
+// newScaleUpDeployment returns a CPU-hungry Deployment whose pending Pods force the
+// Cluster Autoscaler to scale up node pools.
+// https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/application/php-apache.yaml
+func newScaleUpDeployment(namespace string, replicas int32) *appsv1.Deployment {
+	return &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "php-apache",
+			Namespace: namespace,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"run": "php-apache"},
 			},
-			Spec: appsv1.DeploymentSpec{
-				Selector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{
-						"run": "php-apache",
-					},
+			Replicas: ptr.To[int32](replicas),
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"run": "php-apache"},
 				},
-				Replicas: ptr.To[int32](100),
-				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels: map[string]string{
-							"run": "php-apache",
-						},
-					},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:  "php-apache",
-								Image: "registry.k8s.io/hpa-example",
-								Resources: corev1.ResourceRequirements{
-									Limits: corev1.ResourceList{
-										corev1.ResourceCPU: resource.MustParse("500m"),
-									},
-									Requests: corev1.ResourceList{
-										corev1.ResourceCPU: resource.MustParse("200m"),
-									},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  "php-apache",
+							Image: "registry.k8s.io/hpa-example",
+							Resources: corev1.ResourceRequirements{
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("500m"),
+								},
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("200m"),
 								},
 							},
 						},
 					},
 				},
 			},
-		}
-		Expect(k8s.Create(ctx, deploy)).To(Succeed())
+		},
+	}
+}
 
-		By("Waiting for more Ready Nodes to exist")
-		Eventually(func() (int, error) {
-			readyCount := 0
-			nodes := &corev1.NodeList{}
-			if err := k8s.List(ctx, nodes); err != nil {
-				return 0, err
-			}
-			for _, node := range nodes.Items {
-				for _, cond := range node.Status.Conditions {
-					if cond.Type == corev1.NodeReady && cond.Status == corev1.ConditionTrue {
-						readyCount++
-						break
-					}
+// runScaleUpDownFlow deploys CAS with the given chart values, drives a scale-up by
+// creating pending Pods, then removes the Pods to drive a scale-down back to the
+// original node count. It is shared by the default and ETag-enabled specs so both
+// exercise the same scaling behavior.
+func runScaleUpDownFlow(namespaceName string, values map[string]interface{}) {
+	ensureHelmValues(values)
+
+	nodes := &corev1.NodeList{}
+	Expect(k8s.List(ctx, nodes)).To(Succeed())
+	nodeCountBefore := len(nodes.Items)
+
+	By("Creating 100 Pods")
+	deploy := newScaleUpDeployment(namespaceName, 100)
+	Expect(k8s.Create(ctx, deploy)).To(Succeed())
+
+	By("Waiting for more Ready Nodes to exist")
+	Eventually(func() (int, error) {
+		readyCount := 0
+		nodes := &corev1.NodeList{}
+		if err := k8s.List(ctx, nodes); err != nil {
+			return 0, err
+		}
+		for _, node := range nodes.Items {
+			for _, cond := range node.Status.Conditions {
+				if cond.Type == corev1.NodeReady && cond.Status == corev1.ConditionTrue {
+					readyCount++
+					break
 				}
 			}
-			return readyCount, nil
-		}, "10m", "10s").Should(BeNumerically(">", nodeCountBefore))
+		}
+		return readyCount, nil
+	}, "10m", "10s").Should(BeNumerically(">", nodeCountBefore))
 
-		Eventually(allVMSSStable, "10m", "30s").Should(Succeed())
+	Eventually(allVMSSStable, "10m", "30s").Should(Succeed())
 
-		By("Deleting 100 Pods")
-		Expect(k8s.Delete(ctx, deploy)).To(Succeed())
+	By("Deleting 100 Pods")
+	Expect(k8s.Delete(ctx, deploy)).To(Succeed())
 
-		By("Waiting for the original number of Nodes to be Ready")
-		Eventually(func(g Gomega) {
-			nodes := &corev1.NodeList{}
-			g.Expect(k8s.List(ctx, nodes)).To(Succeed())
-			g.Expect(nodes.Items).To(SatisfyAll(
-				HaveLen(nodeCountBefore),
-				ContainElements(Satisfy(func(node corev1.Node) bool {
-					for _, cond := range node.Status.Conditions {
-						if cond.Type == corev1.NodeReady && cond.Status == corev1.ConditionTrue {
-							return true
-						}
+	By("Waiting for the original number of Nodes to be Ready")
+	Eventually(func(g Gomega) {
+		nodes := &corev1.NodeList{}
+		g.Expect(k8s.List(ctx, nodes)).To(Succeed())
+		g.Expect(nodes.Items).To(SatisfyAll(
+			HaveLen(nodeCountBefore),
+			ContainElements(Satisfy(func(node corev1.Node) bool {
+				for _, cond := range node.Status.Conditions {
+					if cond.Type == corev1.NodeReady && cond.Status == corev1.ConditionTrue {
+						return true
 					}
-					return false
-				})),
-			))
-		}, "20m", "10s").Should(Succeed())
-	})
-})
+				}
+				return false
+			})),
+		))
+	}, "20m", "10s").Should(Succeed())
+}
