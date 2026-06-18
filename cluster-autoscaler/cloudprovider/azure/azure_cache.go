@@ -19,6 +19,7 @@ package azure
 import (
 	"context"
 	"errors"
+	"maps"
 	"reflect"
 	"regexp"
 	"strings"
@@ -165,6 +166,18 @@ func (m *azureCache) getScaleSets() map[string]*armcompute.VirtualMachineScaleSe
 	return m.scaleSets
 }
 
+// setScaleSet replaces the cached entry for a single VMSS, e.g. after a fresh GET.
+// It copies the map before mutating it so readers that obtained the map via
+// getScaleSets() are not exposed to a concurrent map write.
+func (m *azureCache) setScaleSet(name string, vmss *armcompute.VirtualMachineScaleSet) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	scaleSets := maps.Clone(m.scaleSets)
+	scaleSets[name] = vmss
+	m.scaleSets = scaleSets
+}
+
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
 func (m *azureCache) Cleanup() {
 	close(m.interrupt)
@@ -194,7 +207,7 @@ func (m *azureCache) regenerate() error {
 
 	// Regenerate VMSS to autoscaling options mapping.
 	newAutoscalingOptions := make(map[azureRef]map[string]string)
-	for _, vmss := range m.scaleSets {
+	for _, vmss := range m.getScaleSets() {
 		ref := azureRef{Name: *vmss.Name}
 		options := extractAutoscalingOptionsFromScaleSetTags(vmss.Tags)
 		if !reflect.DeepEqual(m.getAutoscalingOptions(ref), options) {
@@ -512,6 +525,7 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 }
 
 // isAllScaleSetsAreUniform determines if all the scale set autoscaler is monitoring are Uniform or not.
+// Should be called with lock, as it reads m.scaleSets directly.
 func (m *azureCache) areAllScaleSetsUniform() bool {
 	for _, scaleSet := range m.scaleSets {
 		if scaleSet.Properties != nil && scaleSet.Properties.OrchestrationMode != nil &&
