@@ -28,4 +28,7 @@ const (
 
 	// EphemeralStorageSize is the freeform tag key that would be used to determine the ephemeral-storage size of the node
 	EphemeralStorageSize = "cluster-autoscaler/node-ephemeral-storage"
+
+	// OciVirtualNodeResourceIdent is the string identifier in the ocid that indicates the resource is a virtual node pool
+	OciVirtualNodeResourceIdent = "virtualnode"
 )
