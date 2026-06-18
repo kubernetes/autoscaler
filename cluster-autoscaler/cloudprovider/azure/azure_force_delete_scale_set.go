@@ -24,6 +24,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
@@ -83,4 +84,20 @@ func shouldForceDelete(skuName string, scaleSet *ScaleSet) bool {
 
 func isOperationNotAllowed(rerr *retry.Error) bool {
 	return rerr != nil && rerr.ServiceErrorCode() == retry.OperationNotAllowed
+}
+
+// isOperationPreempted reports whether err represents an Azure "OperationPreempted"
+// failure — i.e. a concurrent VMSS mutation (scale-up, update, another delete)
+// superseded our operation. The track1 long-running-operation result surfaces this
+// as consts.OperationPreemptedErrorMessage (rather than a structured service error
+// code), so we match on that message, mirroring cloud-provider-azure's own
+// vmssvmclient.updateVMSSVMs() preemption handling.
+func isOperationPreempted(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(
+		strings.ToLower(err.Error()),
+		strings.ToLower(consts.OperationPreemptedErrorMessage),
+	)
 }

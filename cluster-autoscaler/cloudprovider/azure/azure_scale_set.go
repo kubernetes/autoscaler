@@ -580,6 +580,31 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredI
 		}
 		return
 	}
+
+	// Retry once on OperationPreempted: this CRP error means a concurrent VMSS
+	// mutation (e.g., scale-up, update, another delete) superseded our delete.
+	// A single retry is statistically sufficient — two consecutive preemptions
+	// would require three operations racing on the same VMSS, which is unlikely
+	// in CAS's scale-down flow. This mirrors cloud-provider-azure's track1
+	// vmssvmclient.updateVMSSVMs() preemption handling.
+	if isOperationPreempted(err) {
+		klog.V(2).Infof("WaitForDeleteInstancesResult(%v) for %s was preempted, retrying once", requiredIds.InstanceIds, scaleSet.Name)
+		retryCtx, retryCancel := getContextWithTimeout(vmssContextTimeout)
+		retryFuture, retryRerr := scaleSet.deleteInstances(retryCtx, requiredIds, scaleSet.Name)
+		retryCancel()
+		if retryRerr == nil && retryFuture != nil {
+			waitCtx, waitCancel := getContextWithTimeout(asyncContextTimeout)
+			retryResp, retryErr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.WaitForDeleteInstancesResult(waitCtx, retryFuture, scaleSet.manager.config.ResourceGroup)
+			waitCancel()
+			if retrySuccess, _ := isSuccessHTTPResponse(retryResp, retryErr); retrySuccess {
+				klog.V(3).Infof("WaitForDeleteInstancesResult(%v) for %s retry success", requiredIds.InstanceIds, scaleSet.Name)
+				scaleSet.invalidateInstanceCache()
+				return
+			}
+		}
+		klog.Errorf("WaitForDeleteInstancesResult(%v) for %s retry failed", requiredIds.InstanceIds, scaleSet.Name)
+	}
+
 	if !scaleSet.manager.config.StrictCacheUpdates {
 		// On failure, invalidate the instanceCache - cannot have instances in deletingState
 		scaleSet.invalidateInstanceCache()
