@@ -18,6 +18,7 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -35,6 +36,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
@@ -1750,4 +1752,111 @@ func TestInstanceStatusFromProvisioningStateAndPowerState(t *testing.T) {
 			assert.NotNil(t, status.ErrorInfo)
 		})
 	})
+}
+
+// setupScaleSetForDeleteTest registers a uniform test scale set and returns a
+// fresh *ScaleSet plus its manager with the VMSS/instance caches populated, ready
+// for exercising waitForDeleteInstances directly.
+func setupScaleSetForDeleteTest(t *testing.T, ctrl *gomock.Controller) (*AzureManager, *mockvmssclient.MockInterface) {
+	manager := newTestAzureManager(t)
+
+	vmssName := "test-asg"
+	var vmssCapacity int64 = 3
+	expectedScaleSets := newTestVMSSList(vmssCapacity, vmssName, "eastus", compute.Uniform)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+	expectedVMs := newTestVMList(3)
+
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+	manager.azClient.virtualMachinesClient = mockVMClient
+
+	err := manager.forceRefresh()
+	assert.NoError(t, err)
+
+	registered := manager.RegisterNodeGroup(newTestScaleSet(manager, "test-asg"))
+	manager.explicitlyConfigured["test-asg"] = true
+	assert.True(t, registered)
+	err = manager.forceRefresh()
+	assert.NoError(t, err)
+
+	return manager, mockVMSSClient
+}
+
+func TestWaitForDeleteInstancesWithOperationPreemptedRetry(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager, mockVMSSClient := setupScaleSetForDeleteTest(t, ctrl)
+
+	// The initial WaitForDeleteInstancesResult reports OperationPreempted (surfaced
+	// as retry.Error.Error(), mirroring production); the retry then succeeds.
+	gomock.InOrder(
+		mockVMSSClient.EXPECT().WaitForDeleteInstancesResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).
+			Return(&http.Response{StatusCode: http.StatusOK}, retry.NewError(false, errors.New(consts.OperationPreemptedErrorMessage)).Error()).Times(1),
+		mockVMSSClient.EXPECT().WaitForDeleteInstancesResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).
+			Return(&http.Response{StatusCode: http.StatusOK}, nil).Times(1),
+	)
+	// The retry re-issues exactly one delete.
+	mockVMSSClient.EXPECT().DeleteInstancesAsync(gomock.Any(), manager.config.ResourceGroup, gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(&autorestazure.Future{}, nil).Times(1)
+
+	requiredIds := &compute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIds: &[]string{"0"}}
+	scaleSet := newTestScaleSet(manager, "test-asg")
+	assert.True(t, scaleSet.lastInstanceRefresh.IsZero())
+
+	scaleSet.waitForDeleteInstances(&autorestazure.Future{}, requiredIds)
+
+	// Cache invalidated on retry success (lastInstanceRefresh moves off its zero value).
+	assert.False(t, scaleSet.lastInstanceRefresh.IsZero(),
+		"expected instance cache to be invalidated after preempted retry success")
+}
+
+func TestWaitForDeleteInstancesNoRetryOnOtherErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager, mockVMSSClient := setupScaleSetForDeleteTest(t, ctrl)
+
+	// A non-preempted failure must NOT trigger a retry.
+	mockVMSSClient.EXPECT().WaitForDeleteInstancesResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).
+		Return(&http.Response{StatusCode: http.StatusInternalServerError}, errors.New("InternalServerError: something went wrong")).Times(1)
+	// If the retry path is accidentally taken, gomock.Times(0) fails the test.
+	mockVMSSClient.EXPECT().DeleteInstancesAsync(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	requiredIds := &compute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIds: &[]string{"0"}}
+	scaleSet := newTestScaleSet(manager, "test-asg")
+
+	scaleSet.waitForDeleteInstances(&autorestazure.Future{}, requiredIds)
+}
+
+func TestWaitForDeleteInstancesRetryFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager, mockVMSSClient := setupScaleSetForDeleteTest(t, ctrl)
+
+	// Initial poll is preempted; the retry's delete call itself fails.
+	mockVMSSClient.EXPECT().WaitForDeleteInstancesResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).
+		Return(&http.Response{StatusCode: http.StatusOK}, retry.NewError(false, errors.New(consts.OperationPreemptedErrorMessage)).Error()).Times(1)
+	mockVMSSClient.EXPECT().DeleteInstancesAsync(gomock.Any(), manager.config.ResourceGroup, gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, retry.NewError(false, errors.New("ResourceGroupNotFound"))).Times(1)
+
+	requiredIds := &compute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIds: &[]string{"0"}}
+	scaleSet := newTestScaleSet(manager, "test-asg")
+	assert.True(t, scaleSet.lastInstanceRefresh.IsZero())
+
+	scaleSet.waitForDeleteInstances(&autorestazure.Future{}, requiredIds)
+
+	// Even though the retry failed, the cache is still invalidated via the
+	// non-strict failure path.
+	assert.False(t, scaleSet.lastInstanceRefresh.IsZero(),
+		"expected instance cache to be invalidated after retry failure")
 }
