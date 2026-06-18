@@ -112,6 +112,16 @@ type Config struct {
 
 	// EnableLabelPredictionsOnTemplate defines whether to enable label predictions on the template when scaling from zero
 	EnableLabelPredictionsOnTemplate bool `json:"enableLabelPredictionsOnTemplate,omitempty" yaml:"enableLabelPredictionsOnTemplate,omitempty"`
+
+	// EnableZombieCleanup defines whether to enable automatic cleanup of zombie VMSS instances
+	EnableZombieCleanup bool `json:"enableZombieCleanup,omitempty" yaml:"enableZombieCleanup,omitempty"`
+
+	// ZombieCleanupDryRun defines whether zombie cleanup should run in dry-run mode (detect but don't delete)
+	// In dry-run mode, zombies are detected and logged but NOT deleted
+	ZombieCleanupDryRun bool `json:"zombieCleanupDryRun,omitempty" yaml:"zombieCleanupDryRun,omitempty"`
+
+	// ZombieMinAgeMinutes defines the minimum age (in minutes) before an instance is considered a zombie
+	ZombieMinAgeMinutes int `json:"zombieMinAgeMinutes,omitempty" yaml:"zombieMinAgeMinutes,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -143,6 +153,10 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	cfg.MaxDeploymentsCount = int64(defaultMaxDeploymentsCount)
 	cfg.StrictCacheUpdates = false
 	cfg.EnableLabelPredictionsOnTemplate = true
+	// Zombie cleanup disabled by default for safety
+	cfg.EnableZombieCleanup = false
+	cfg.ZombieCleanupDryRun = true // Default to dry-run mode for extra safety
+	cfg.ZombieMinAgeMinutes = 5    // Default 5 minutes minimum age
 
 	// Config file overrides defaults
 	if configReader != nil {
@@ -337,6 +351,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		// 0 means "use default" in this case.
 		// This means, if it is valued by the config file, but explicitly set to 0 in the env, it will retreat to default.
 		cfg.MaxDeploymentsCount = int64(defaultMaxDeploymentsCount)
+	}
+	if cfg.ZombieMinAgeMinutes < 1 {
+		cfg.ZombieMinAgeMinutes = 5
 	}
 	if cfg.SubscriptionID == "" {
 		metadataService, err := providerazure.NewInstanceMetadataService(imdsServerURL)
