@@ -39,7 +39,10 @@ import (
 )
 
 const (
-	MaxGracefulTerminationSecDefault  = 600
+	// MaxGracefulTerminationSecDefault the default max graceful termination value in seconds.
+	MaxGracefulTerminationSecDefault = 600
+
+	// ClusterSnapshotParallelismDefault the default cluster snapshot parallelism value.
 	ClusterSnapshotParallelismDefault = 16
 )
 
@@ -70,6 +73,7 @@ type AutoscalingFlags struct {
 	o config.AutoscalingOptions
 }
 
+// AddFlags injects autoscaling CLI flags for a given flagset
 func (p *AutoscalingFlags) AddFlags(fs *pflag.FlagSet) {
 	// Set of flags directly bound to internal AutoscalingOptions struct
 	fs.StringVar(&p.o.ClusterName, "cluster-name", "", "Autoscaled cluster name, if available")
@@ -237,6 +241,7 @@ func (p *AutoscalingFlags) AddFlags(fs *pflag.FlagSet) {
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
 }
 
+// Options builds AutoscalingOptions from the flags and returns them by value
 func (p *AutoscalingFlags) Options() (config.AutoscalingOptions, error) {
 	minCoresTotal, maxCoresTotal, err := parseMinMaxFlag(p.coresTotal)
 	if err != nil {

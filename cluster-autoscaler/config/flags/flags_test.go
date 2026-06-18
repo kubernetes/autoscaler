@@ -383,7 +383,7 @@ func TestAutoscalingFlagsAllPossible(t *testing.T) {
 				assert.True(t, opts.IgnoreMirrorPodsUtilization)
 				assert.False(t, opts.WriteStatusConfigMap)
 				assert.Equal(t, "custom-status", opts.StatusConfigMapName)
-				assert.Equal(t, 10*time.Minute, opts.MaxStartupTime) // Overriden by max-startup-time (10m) >= MaxInactivity (5m) and MaxFailing (5m)
+				assert.Equal(t, 10*time.Minute, opts.MaxStartupTime) // Overridden by max-startup-time (10m) >= MaxInactivity (5m) and MaxFailing (5m)
 				assert.True(t, opts.BalanceSimilarNodeGroups)
 				assert.Equal(t, 2*time.Minute, opts.UnremovableNodeRecheckTimeout)
 				assert.Equal(t, 0, opts.ExpendablePodsPriorityCutoff)
