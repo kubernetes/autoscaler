@@ -71,6 +71,97 @@ func helmValuesForFastScaleDown() map[string]interface{} {
 	}
 }
 
+// withVMSSETag enables the Azure VMSS ETag optimistic-concurrency feature via the
+// chart's azureEnableVMSSEtag value (which sets AZURE_ENABLE_VMSS_ETAG on the CAS
+// container).
+func withVMSSETag(values map[string]interface{}) map[string]interface{} {
+	values["azureEnableVMSSEtag"] = true
+	return values
+}
+
+// newScaleUpDeployment returns a CPU-hungry Deployment whose pending Pods force the
+// Cluster Autoscaler to scale up node pools.
+func newScaleUpDeployment(namespace string, replicas int32) *appsv1.Deployment {
+	return &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "php-apache",
+			Namespace: namespace,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"run": "php-apache"},
+			},
+			Replicas: ptr.To[int32](replicas),
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"run": "php-apache"},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  "php-apache",
+							Image: "registry.k8s.io/hpa-example",
+							Resources: corev1.ResourceRequirements{
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("500m"),
+								},
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("200m"),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+// runScaleUpDownFlow deploys CAS with scaleUpValues, drives a scale-up by creating
+// pending Pods, then redeploys with scaleDownValues and removes the Pods to drive a
+// scale-down back to the original node count. It is shared by the default and
+// ETag-enabled specs so both exercise the same scaling behavior.
+func runScaleUpDownFlow(namespace string, scaleUpValues, scaleDownValues map[string]interface{}) {
+	By("Deploying Cluster Autoscaler for scale up")
+	env.EnsureHelmRelease(scaleUpValues)
+
+	nodes := &corev1.NodeList{}
+	Expect(env.K8s.List(env.Ctx, nodes)).To(Succeed())
+	nodeCountBefore := len(nodes.Items)
+
+	By("Creating 100 Pods")
+	deploy := newScaleUpDeployment(namespace, 100)
+	Expect(env.K8s.Create(env.Ctx, deploy)).To(Succeed())
+
+	By("Waiting for more Ready Nodes to exist")
+	Eventually(env.ReadyNodeCount, "10m", "10s").Should(BeNumerically(">", nodeCountBefore))
+
+	Eventually(env.AllVMSSStable, "20m", "30s").Should(Succeed())
+
+	By("Reconfiguring Cluster Autoscaler for fast scale down")
+	env.EnsureHelmRelease(scaleDownValues)
+
+	By("Deleting 100 Pods")
+	Expect(env.K8s.Delete(env.Ctx, deploy)).To(Succeed())
+
+	By("Waiting for the original number of Nodes to be Ready")
+	Eventually(func(g Gomega) {
+		nodes := &corev1.NodeList{}
+		g.Expect(env.K8s.List(env.Ctx, nodes)).To(Succeed())
+		g.Expect(nodes.Items).To(SatisfyAll(
+			HaveLen(nodeCountBefore),
+			ContainElements(Satisfy(func(node corev1.Node) bool {
+				for _, cond := range node.Status.Conditions {
+					if cond.Type == corev1.NodeReady && cond.Status == corev1.ConditionTrue {
+						return true
+					}
+				}
+				return false
+			})),
+		))
+	}, "20m", "10s").Should(Succeed())
+}
+
 func init() {
 	flag.StringVar(&resourceGroup, "resource-group", "", "resource group containing cluster-autoscaler-managed resources (the MC_ node resource group)")
 	flag.StringVar(&clusterName, "cluster-name", "", "Cluster API Cluster name (CI only)")
@@ -124,91 +215,10 @@ var _ = Describe("Azure Provider", func() {
 	})
 
 	It("scales up AKS node pools when pending Pods exist", func() {
-		nodes := &corev1.NodeList{}
-		Expect(env.K8s.List(env.Ctx, nodes)).To(Succeed())
-		nodeCountBefore := len(nodes.Items)
+		runScaleUpDownFlow(namespace.Name, helmValuesForScaleUp(), helmValuesForFastScaleDown())
+	})
 
-		By("Creating 100 Pods")
-		deploy := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "php-apache",
-				Namespace: namespace.Name,
-			},
-			Spec: appsv1.DeploymentSpec{
-				Selector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{
-						"run": "php-apache",
-					},
-				},
-				Replicas: ptr.To[int32](100),
-				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels: map[string]string{
-							"run": "php-apache",
-						},
-					},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:  "php-apache",
-								Image: "registry.k8s.io/hpa-example",
-								Resources: corev1.ResourceRequirements{
-									Limits: corev1.ResourceList{
-										corev1.ResourceCPU: resource.MustParse("500m"),
-									},
-									Requests: corev1.ResourceList{
-										corev1.ResourceCPU: resource.MustParse("200m"),
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}
-		Expect(env.K8s.Create(env.Ctx, deploy)).To(Succeed())
-
-		By("Waiting for more Ready Nodes to exist")
-		Eventually(func() (int, error) {
-			readyCount := 0
-			nodes := &corev1.NodeList{}
-			if err := env.K8s.List(env.Ctx, nodes); err != nil {
-				return 0, err
-			}
-			for _, node := range nodes.Items {
-				for _, cond := range node.Status.Conditions {
-					if cond.Type == corev1.NodeReady && cond.Status == corev1.ConditionTrue {
-						readyCount++
-						break
-					}
-				}
-			}
-			return readyCount, nil
-		}, "10m", "10s").Should(BeNumerically(">", nodeCountBefore))
-
-		Eventually(env.AllVMSSStable, "20m", "30s").Should(Succeed())
-
-		By("Reconfiguring Cluster Autoscaler for fast scale down")
-		env.EnsureHelmRelease(helmValuesForFastScaleDown())
-
-		By("Deleting 100 Pods")
-		Expect(env.K8s.Delete(env.Ctx, deploy)).To(Succeed())
-
-		By("Waiting for the original number of Nodes to be Ready")
-		Eventually(func(g Gomega) {
-			nodes := &corev1.NodeList{}
-			g.Expect(env.K8s.List(env.Ctx, nodes)).To(Succeed())
-			g.Expect(nodes.Items).To(SatisfyAll(
-				HaveLen(nodeCountBefore),
-				ContainElements(Satisfy(func(node corev1.Node) bool {
-					for _, cond := range node.Status.Conditions {
-						if cond.Type == corev1.NodeReady && cond.Status == corev1.ConditionTrue {
-							return true
-						}
-					}
-					return false
-				})),
-			))
-		}, "20m", "10s").Should(Succeed())
+	It("scales up and down AKS node pools with VMSS ETag concurrency enabled", func() {
+		runScaleUpDownFlow(namespace.Name, withVMSSETag(helmValuesForScaleUp()), withVMSSETag(helmValuesForFastScaleDown()))
 	})
 })
