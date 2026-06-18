@@ -71,12 +71,11 @@ func helmValuesForFastScaleDown() map[string]interface{} {
 	}
 }
 
-// withVMSSETag enables the Azure VMSS ETag optimistic-concurrency feature by setting the
-// AZURE_ENABLE_VMSS_ETAG environment variable on the Cluster Autoscaler container.
+// withVMSSETag enables the Azure VMSS ETag optimistic-concurrency feature via the
+// chart's azureEnableVMSSEtag value (which sets AZURE_ENABLE_VMSS_ETAG on the CAS
+// container).
 func withVMSSETag(values map[string]interface{}) map[string]interface{} {
-	values["extraEnv"] = map[string]interface{}{
-		"AZURE_ENABLE_VMSS_ETAG": "true",
-	}
+	values["azureEnableVMSSEtag"] = true
 	return values
 }
 
