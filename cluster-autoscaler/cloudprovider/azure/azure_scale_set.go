@@ -517,23 +517,10 @@ func isPreconditionFailedError(err error) bool {
 	return r != nil && r.StatusCode == http.StatusPreconditionFailed
 }
 
-// initCreateOrUpdate issues the capacity PUT and returns the VMSS object the caller
-// should track going forward. On a normal update that is the same vmssInfo; on an ETag
-// retry it is the freshly-fetched object that now lives in the cache, so the caller's
-// post-completion ETag/capacity updates land on the cached object rather than a stale
-// copy. A nil poller with no error means the update was satisfied without a PUT (the
-// VMSS already met the target); the caller should adopt the returned object's capacity.
-func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) (*armcompute.VirtualMachineScaleSet, *runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
-	if vmssInfo == nil {
-		return nil, nil, fmt.Errorf("vmssInfo cannot be nil while increasing scaleSet capacity")
-	}
-
-	scaleSet.sizeMutex.Lock()
-	defer scaleSet.sizeMutex.Unlock()
-
-	// Compose a new VMSS for updating.
-	// Copy the SKU rather than sharing the pointer so the cached
-	// vmssInfo.SKU.Capacity is not mutated before the API call completes.
+// buildScaleSetCapacityUpdate composes the sparse VMSS object sent on a capacity PUT.
+// The SKU is copied (not shared) so the cached vmssInfo.SKU.Capacity is not mutated
+// before the API call completes.
+func buildScaleSetCapacityUpdate(vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) armcompute.VirtualMachineScaleSet {
 	op := armcompute.VirtualMachineScaleSet{
 		Name:     vmssInfo.Name,
 		Location: vmssInfo.Location,
@@ -552,6 +539,25 @@ func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armc
 
 		klog.V(3).Infof("Passing ExtendedLocation information if it is not nil, with Edge Zone name:(%s)", *op.ExtendedLocation.Name)
 	}
+
+	return op
+}
+
+// initCreateOrUpdate issues the capacity PUT and returns the VMSS object the caller
+// should track going forward. On a normal update that is the same vmssInfo; on an ETag
+// retry it is the freshly-fetched object that now lives in the cache, so the caller's
+// post-completion ETag/capacity updates land on the cached object rather than a stale
+// copy. A nil poller with no error means the update was satisfied without a PUT (the
+// VMSS already met the target); the caller should adopt the returned object's capacity.
+func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armcompute.VirtualMachineScaleSet, newSize int64) (*armcompute.VirtualMachineScaleSet, *runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
+	if vmssInfo == nil {
+		return nil, nil, fmt.Errorf("vmssInfo cannot be nil while increasing scaleSet capacity")
+	}
+
+	scaleSet.sizeMutex.Lock()
+	defer scaleSet.sizeMutex.Unlock()
+
+	op := buildScaleSetCapacityUpdate(vmssInfo, newSize)
 
 	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.BeginCreateOrUpdate(%s)", scaleSet.Name)
 
@@ -572,7 +578,7 @@ func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armc
 			// An ETag precondition failure is an optimistic-concurrency conflict, not a
 			// real scale-up failure. Refresh the ETag from a fresh GET and retry once so
 			// a lost race does not surface as an error that would back off the node group.
-			return scaleSet.retryCreateOrUpdateWithFreshETag(ctx, op, newSize)
+			return scaleSet.retryCreateOrUpdateWithFreshETag(ctx, newSize)
 		}
 		return nil, nil, err
 	}
@@ -585,7 +591,7 @@ func (scaleSet *ScaleSet) initCreateOrUpdate(ctx context.Context, vmssInfo *armc
 // would otherwise back off the node group. It returns the freshly-fetched VMSS (now in
 // the cache) so the caller tracks that object instead of the stale pre-retry copy.
 // Callers must hold sizeMutex.
-func (scaleSet *ScaleSet) retryCreateOrUpdateWithFreshETag(ctx context.Context, op armcompute.VirtualMachineScaleSet, newSize int64) (*armcompute.VirtualMachineScaleSet, *runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
+func (scaleSet *ScaleSet) retryCreateOrUpdateWithFreshETag(ctx context.Context, newSize int64) (*armcompute.VirtualMachineScaleSet, *runtime.Poller[armcompute.VirtualMachineScaleSetsClientCreateOrUpdateResponse], error) {
 	klog.V(2).Infof("VMSS %s update hit ETag precondition; refreshing ETag and retrying once", scaleSet.Name)
 
 	fresh, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, nil)
@@ -606,6 +612,9 @@ func (scaleSet *ScaleSet) retryCreateOrUpdateWithFreshETag(ctx context.Context, 
 		return fresh, nil, nil
 	}
 
+	// Rebuild the update request from the freshly-fetched VMSS so the retried PUT carries
+	// current SKU/location details rather than the pre-conflict snapshot.
+	op := buildScaleSetCapacityUpdate(fresh, newSize)
 	opts := &armcompute.VirtualMachineScaleSetsClientBeginCreateOrUpdateOptions{IfMatch: fresh.Etag}
 	poller, err := scaleSet.manager.azClient.vmssClientForDelete.BeginCreateOrUpdate(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, op, opts)
 	if err != nil {
