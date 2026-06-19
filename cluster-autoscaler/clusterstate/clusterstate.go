@@ -368,10 +368,22 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 
 			// Attempt to revert the failed scale-up by decreasing target size.
 			// This prevents cloud providers from indefinitely retrying failed provisioning attempts.
-			if scaleUpRequest.Increase > 0 {
+			// Only revert the part of the scale-up that did not result in a real cloud provider
+			// instance: instances that are still being created without errors are making progress
+			// and should be left to register rather than being torn down and recreated, which
+			// causes churn and can leave the cluster oscillating. Reverting only the phantom
+			// capacity from failed or never-started instance creation is enough to stop the cloud
+			// provider from indefinitely retrying it.
+			notProvisioned := scaleUpRequest.Increase
+			if acceptable, found := csr.acceptableRanges[nodeGroupName]; found {
+				if missing := acceptable.CurrentTarget - csr.expectedToRegisterInstancesNoLock(nodeGroupName); missing < notProvisioned {
+					notProvisioned = missing
+				}
+			}
+			if notProvisioned > 0 {
 				klog.Warningf("Reverting timed-out scale-up for node group %v by decreasing target size by %d",
-					nodeGroupName, scaleUpRequest.Increase)
-				err := scaleUpRequest.NodeGroup.DecreaseTargetSize(-scaleUpRequest.Increase)
+					nodeGroupName, notProvisioned)
+				err := scaleUpRequest.NodeGroup.DecreaseTargetSize(-notProvisioned)
 				if err != nil {
 					klog.Warningf("Failed to revert timed-out scale-up for node group %v: %v", nodeGroupName, err)
 					csr.logRecorder.Eventf(apiv1.EventTypeWarning, "FailedToRevertScaleUp",
@@ -1120,25 +1132,36 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 		}
 		readiness := csr.perNodeGroupReadiness[id]
 		ar := csr.acceptableRanges[id]
-		// newNodes is the number of nodes that
-		newNodes := ar.CurrentTarget - (len(readiness.Ready) + len(readiness.Unready) + len(readiness.Suspended) + len(readiness.LongUnregistered))
+		accounted := len(readiness.Ready) + len(readiness.Unready) + len(readiness.Suspended) + len(readiness.LongUnregistered)
+		// newNodes is the number of nodes that are part of the target size but are not yet
+		// accounted for as ready, unready, suspended or long-unregistered.
+		newNodes := ar.CurrentTarget - accounted
 		if newNodes <= 0 {
 			// Negative value is unlikely but theoretically possible.
 			continue
 		}
-		// Don't count upcoming nodes for node groups that have upcoming nodes but no
-		// active scale-up request (the request was removed after instance creation
-		// failure or timeout) or are backed off. Otherwise, fake upcoming nodes
-		// injected into the cluster snapshot will make unschedulable pods appear
-		// schedulable, preventing ScaleUp from ever being called and considering
-		// alternative node groups.
-		if _, hasScaleUpRequest := csr.scaleUpRequests[id]; !hasScaleUpRequest {
-			klog.V(4).Infof("Skipping %d upcoming nodes for node group %s: no active scale-up request", newNodes, id)
-			continue
-		}
-		if backoffStatus := csr.BackoffStatusForNodeGroup(nodeGroup, time.Now()); backoffStatus.IsBackedOff {
-			klog.V(4).Infof("Skipping %d upcoming nodes for backed-off node group %s: %s", newNodes, id, backoffStatus.ErrorInfo.ErrorMessage)
-			continue
+		// A node group with no active scale-up request (e.g. the request was already removed
+		// after a scale-up timeout) or that is currently backed off may still have a target
+		// size that includes "phantom" capacity from failed or never-started instance
+		// creation. Counting that capacity as upcoming injects fake schedulable nodes into the
+		// cluster snapshot, making unschedulable pods appear schedulable and preventing ScaleUp
+		// from being called to consider alternative node groups (a deadlock, see issues #5903,
+		// #9043 and #8317). The nodes may however still be genuinely coming up (just slow), in
+		// which case dropping them all triggers a redundant extra scale-up. To satisfy both, in
+		// these cases only count nodes that are actually being provisioned: registered nodes
+		// that haven't started yet plus cloud provider instances that are still expected to
+		// register. This excludes phantom capacity (failed or never-created instances) as well
+		// as instances that are being deleted or are long unregistered.
+		_, hasScaleUpRequest := csr.scaleUpRequests[id]
+		if !hasScaleUpRequest || csr.BackoffStatusForNodeGroup(nodeGroup, time.Now()).IsBackedOff {
+			provisioning := len(readiness.NotStarted) + len(readiness.Unregistered)
+			if provisioning < newNodes {
+				klog.V(4).Infof("Reducing upcoming nodes for node group %s from %d to %d: no active scale-up request or backed off, only counting nodes still being provisioned", id, newNodes, provisioning)
+				newNodes = provisioning
+			}
+			if newNodes <= 0 {
+				continue
+			}
 		}
 		upcomingCounts[id] = newNodes
 		// newNodes should include instances that have registered with k8s but aren't ready yet, instances that came up on the cloud provider side
@@ -1197,6 +1220,21 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 
 func expectedToRegister(instance cloudprovider.Instance) bool {
 	return instance.Status == nil || (instance.Status.State != cloudprovider.InstanceDeleting && instance.Status.ErrorInfo == nil)
+}
+
+// expectedToRegisterInstancesNoLock returns the number of the node group's cloud provider
+// instances that are expected to register with Kubernetes, i.e. that are being created or
+// are already running without errors and are not being deleted. It is used to tell apart
+// capacity that is genuinely still being provisioned from "phantom" capacity left behind by
+// failed or never-started instance creation. Must be called with csr.Lock held.
+func (csr *ClusterStateRegistry) expectedToRegisterInstancesNoLock(nodeGroupId string) int {
+	count := 0
+	for _, instance := range csr.cloudProviderNodeInstances[nodeGroupId] {
+		if expectedToRegister(instance) {
+			count++
+		}
+	}
+	return count
 }
 
 // Calculates which of the registered nodes in Kubernetes that do not exist in cloud provider.
