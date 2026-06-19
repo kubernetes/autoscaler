@@ -28,6 +28,7 @@ import (
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1ac "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
@@ -38,6 +39,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
+	metav1ac "k8s.io/client-go/applyconfigurations/meta/v1"
 
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 )
@@ -98,8 +100,15 @@ func (o *bestEffortAtomicProvClass) Provision(
 	// For provisioning requests, unschedulablePods are actually all injected pods. Some may even be schedulable!
 	actuallyUnschedulablePods, err := o.filterOutSchedulable(unschedulablePods)
 	if err != nil {
-		conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionFalse, conditions.FailedToCheckCapacityReason, conditions.FailedToCheckCapacityMsg, metav1.Now())
-		if _, updateErr := o.client.UpdateProvisioningRequest(pr.ProvisioningRequest); updateErr != nil {
+		prAC := v1ac.ProvisioningRequest(pr.Name, pr.Namespace)
+		condition := metav1ac.Condition().
+			WithType(v1.Provisioned).
+			WithStatus(metav1.ConditionFalse).
+			WithReason(conditions.FailedToCheckCapacityReason).
+			WithMessage(conditions.FailedToCheckCapacityMsg).
+			WithLastTransitionTime(metav1.Now())
+		prAC.WithStatus(v1ac.ProvisioningRequestStatus().WithConditions(condition))
+		if _, updateErr := o.client.ApplyProvisioningRequest(prAC, "cluster-autoscaler"); updateErr != nil {
 			klog.Errorf("failed to add Provisioned=false condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
 		}
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "error during ScaleUp: %s", err.Error()))
@@ -107,8 +116,15 @@ func (o *bestEffortAtomicProvClass) Provision(
 
 	if len(actuallyUnschedulablePods) == 0 {
 		// Nothing to do here - everything fits without scale-up.
-		conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
-		if _, updateErr := o.client.UpdateProvisioningRequest(pr.ProvisioningRequest); updateErr != nil {
+		prAC := v1ac.ProvisioningRequest(pr.Name, pr.Namespace)
+		condition := metav1ac.Condition().
+			WithType(v1.Provisioned).
+			WithStatus(metav1.ConditionTrue).
+			WithReason(conditions.CapacityIsFoundReason).
+			WithMessage(conditions.CapacityIsFoundMsg).
+			WithLastTransitionTime(metav1.Now())
+		prAC.WithStatus(v1ac.ProvisioningRequestStatus().WithConditions(condition))
+		if _, updateErr := o.client.ApplyProvisioningRequest(prAC, "cluster-autoscaler"); updateErr != nil {
 			klog.Errorf("failed to add Provisioned=true condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
 			return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "capacity available, but failed to admit workload: %s", updateErr.Error()))
 		}
@@ -118,8 +134,15 @@ func (o *bestEffortAtomicProvClass) Provision(
 	st, err := o.scaleUpOrchestrator.ScaleUp(actuallyUnschedulablePods, nodes, daemonSets, nodeInfos, true)
 	if err == nil && st.Result == status.ScaleUpSuccessful {
 		// Happy path - all is well.
-		conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsProvisionedReason, conditions.CapacityIsProvisionedMsg, metav1.Now())
-		if _, updateErr := o.client.UpdateProvisioningRequest(pr.ProvisioningRequest); updateErr != nil {
+		prAC := v1ac.ProvisioningRequest(pr.Name, pr.Namespace)
+		condition := metav1ac.Condition().
+			WithType(v1.Provisioned).
+			WithStatus(metav1.ConditionTrue).
+			WithReason(conditions.CapacityIsProvisionedReason).
+			WithMessage(conditions.CapacityIsProvisionedMsg).
+			WithLastTransitionTime(metav1.Now())
+		prAC.WithStatus(v1ac.ProvisioningRequestStatus().WithConditions(condition))
+		if _, updateErr := o.client.ApplyProvisioningRequest(prAC, "cluster-autoscaler"); updateErr != nil {
 			klog.Errorf("failed to add Provisioned=true condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
 			return st, errors.NewAutoscalerErrorf(errors.InternalError, "scale up requested, but failed to admit workload: %s", updateErr.Error())
 		}
@@ -127,8 +150,15 @@ func (o *bestEffortAtomicProvClass) Provision(
 	}
 
 	// We are not happy with the results.
-	conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
-	if _, updateErr := o.client.UpdateProvisioningRequest(pr.ProvisioningRequest); updateErr != nil {
+	prAC := v1ac.ProvisioningRequest(pr.Name, pr.Namespace)
+	condition := metav1ac.Condition().
+		WithType(v1.Provisioned).
+		WithStatus(metav1.ConditionFalse).
+		WithReason(conditions.CapacityIsNotFoundReason).
+		WithMessage("Capacity is not found, CA will try to find it later.").
+		WithLastTransitionTime(metav1.Now())
+	prAC.WithStatus(v1ac.ProvisioningRequestStatus().WithConditions(condition))
+	if _, updateErr := o.client.ApplyProvisioningRequest(prAC, "cluster-autoscaler"); updateErr != nil {
 		klog.Errorf("failed to add Provisioned=false condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
 	}
 	if err != nil {
