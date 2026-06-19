@@ -492,8 +492,8 @@ func verifyToBeDeleted(expectedDeletedSize int) func(*integration.FakeSet) error
 
 func BenchmarkRunOnceScaleUp(b *testing.B) {
 	s := scenario{
-		setup:  setupScaleUp(200),
-		verify: verifyTargetSize(200),
+		setup:  setupScaleUp(1000),
+		verify: verifyTargetSize(1000),
 		config: func(opts *config.AutoscalingOptions) {
 			opts.MaxNodesPerScaleUp = maxNGSize
 			opts.ScaleUpFromZero = true
@@ -504,15 +504,15 @@ func BenchmarkRunOnceScaleUp(b *testing.B) {
 
 func BenchmarkRunOnceScaleDown(b *testing.B) {
 	s := scenario{
-		setup:  setupScaleDown60Percent(400),
-		verify: verifyToBeDeleted(240),
+		setup:  setupScaleDown60Percent(2000),
+		verify: verifyToBeDeleted(1200),
 		config: func(opts *config.AutoscalingOptions) {
 			opts.NodeGroupDefaults.ScaleDownUnneededTime = 0
-			opts.MaxScaleDownParallelism = 1000
-			opts.MaxDrainParallelism = 1000
+			opts.MaxScaleDownParallelism = 2000
+			opts.MaxDrainParallelism = 2000
 			opts.ScaleDownDelayAfterAdd = 0
 			opts.ScaleDownEnabled = true
-			opts.ScaleDownNonEmptyCandidatesCount = 1000
+			opts.ScaleDownNonEmptyCandidatesCount = 2000
 			opts.ScaleDownUnreadyEnabled = true
 			opts.ScaleDownSimulationTimeout = 60 * time.Second
 		},
