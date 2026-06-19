@@ -201,7 +201,7 @@ func (s scenario) runIteration(b *testing.B, i int, fProf, fTrace *os.File) {
 
 // newClusterFakes initializes a fake cluster with predefined resource limits.
 func newClusterFakes() *integration.FakeSet {
-	clusterFakes := integration.NewFakeSet()
+	clusterFakes := integration.NewSimpleFakeSet()
 	clusterFakes.CloudProvider.SetResourceLimit(cloudprovider.ResourceNameCores, 0, maxCores)
 	clusterFakes.CloudProvider.SetResourceLimit(cloudprovider.ResourceNameMemory, 0, maxMem)
 	return clusterFakes
