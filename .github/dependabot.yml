@@ -6,7 +6,7 @@ updates:
     - "/vertical-pod-autoscaler"
     - "/vertical-pod-autoscaler/test/"
   schedule:
-    interval: daily
+    interval: weekly
   labels:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
