@@ -4,13 +4,7 @@ Author: YurDuiachenko
 
 ## Background
 
-Cluster Autoscaler can scale down non-empty nodes when their pods can be safely moved elsewhere. During scale-down, CA already evaluates whether a node can be removed by considering node utilization, node group limits, drainability rules, PodDisruptionBudgets, scheduling simulation, and other existing blockers.
-
-However, once multiple non-empty nodes are already removable, CA has limited workload-level information to choose which removable node would be least disruptive to remove first.
-
-The existing `cluster-autoscaler.kubernetes.io/safe-to-evict` annotation is useful for expressing whether a pod can be evicted, but it is mostly binary. It can prevent scale-down entirely for a pod, but it does not allow users to express that one removable pod is more expensive to disrupt than another.
-
-This proposal introduces a soft disruption cost signal that can influence the ordering of already-removable scale-down candidates without changing the existing removability checks.
+When scaling down the cluster it is currently not aware of the disruption "cost" action will have. Therefore it can pick node which will be more disruptive than others.
 
 ## High level proposal
 
@@ -117,19 +111,10 @@ Invalid values should not block scale-down. They should be ignored and treated a
 ### Annotation parsing
 
 
-### Node cost aggregation
-
-
 ### Candidate ordering
 
 
-## Relationship with Karpenter and related consolidation work
-
-
-## Interaction with existing scale-down blockers
-
-
-## DaemonSet behavior
+### DaemonSet behavior
 
 
 ## On-completion pod behavior
@@ -137,9 +122,7 @@ Invalid values should not block scale-down. They should be ignored and treated a
 
 ## Monitoring
 
-The initial implementation may rely on logs for invalid annotation values.
 
-Potential follow-up metric:
 
 ```text
 cluster_autoscaler_invalid_disruption_cost_annotations_total
@@ -151,13 +134,4 @@ Potential optional debug metric:
 cluster_autoscaler_selected_node_disruption_cost
 ```
 
-Metrics are not required for the first implementation unless maintainers request them.
-
-
 ## Testing
-
-
-
-## Risks and mitigations
-
-### Risk: 
