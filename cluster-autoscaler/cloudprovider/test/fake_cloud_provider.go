@@ -22,11 +22,13 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	fakek8s "k8s.io/autoscaler/cluster-autoscaler/utils/fake"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
 const (
@@ -59,8 +61,9 @@ func NewCloudProvider(k8s *fakek8s.Kubernetes) *CloudProvider {
 		},
 		maxLimits: map[string]int64{
 			// Set to a effectively infinite number for tests.
+			// TODO: The fake cloud provider shouldn't have its own limits configuration for CPU and memory, it should honor AutoscalingOptions.MaxCoresTotal/MaxMemoryTotal.
 			cloudprovider.ResourceNameCores:  1000000,
-			cloudprovider.ResourceNameMemory: 1000000,
+			cloudprovider.ResourceNameMemory: 1000000 * units.GiB,
 		},
 		k8s: k8s,
 	}
