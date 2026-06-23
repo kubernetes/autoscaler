@@ -17,8 +17,6 @@ limitations under the License.
 package estimator
 
 import (
-	"time"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
@@ -30,19 +28,19 @@ type clusterCapacityThreshold struct {
 //   - -1 when cluster has no available capacity
 //   - 0 when estimationContext or cluster-wide node limit is not set. Return value of 0 means that there is no limit.
 //   - Any positive number representing maximum possible number of new nodes
-func (l *clusterCapacityThreshold) NodeLimit(_ cloudprovider.NodeGroup, estimationContext EstimationContext) int {
+func (l *clusterCapacityThreshold) NodeLimit(_ cloudprovider.NodeGroup, estimationContext EstimationContext) NodeLimitResult {
 	if estimationContext == nil || estimationContext.ClusterMaxNodeLimit() == 0 {
-		return 0
+		return NodeLimitResult{Limit: 0}
 	}
 	if (estimationContext.ClusterMaxNodeLimit() < 0) || (estimationContext.ClusterMaxNodeLimit() <= estimationContext.CurrentNodeCount()) {
-		return -1
+		return NodeLimitResult{Limit: -1}
 	}
-	return estimationContext.ClusterMaxNodeLimit() - estimationContext.CurrentNodeCount()
+	return NodeLimitResult{Limit: estimationContext.ClusterMaxNodeLimit() - estimationContext.CurrentNodeCount()}
 }
 
 // DurationLimit always returns 0 for this threshold, meaning that no limit is set.
-func (l *clusterCapacityThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) time.Duration {
-	return 0
+func (l *clusterCapacityThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) DurationLimitResult {
+	return DurationLimitResult{Duration: 0}
 }
 
 // NewClusterCapacityThreshold returns a Threshold that can be used to limit binpacking

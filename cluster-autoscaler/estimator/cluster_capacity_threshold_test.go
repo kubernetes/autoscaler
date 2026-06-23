@@ -61,8 +61,8 @@ func TestNewClusterCapacityThreshold(t *testing.T) {
 				currentNodeCount:    tt.contextCurrentNodes,
 				clusterMaxNodeLimit: tt.contextMaxNodes,
 			}
-			assert.Equal(t, tt.wantThreshold, NewClusterCapacityThreshold().NodeLimit(nil, context))
-			assert.True(t, NewClusterCapacityThreshold().DurationLimit(nil, nil) == 0)
+			assert.Equal(t, tt.wantThreshold, NewClusterCapacityThreshold().NodeLimit(nil, context).Limit)
+			assert.True(t, NewClusterCapacityThreshold().DurationLimit(nil, nil).Duration == 0)
 		})
 	}
 }
