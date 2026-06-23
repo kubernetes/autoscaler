@@ -35,6 +35,7 @@ const (
 )
 
 func TestStaticAutoscaler_FullLifecycle(t *testing.T) {
+	stepDuration := 10 * time.Second
 	config := integration.NewTestConfig().
 		WithOverrides(
 			integration.WithCloudProviderName("gce"),
@@ -52,25 +53,28 @@ func TestStaticAutoscaler_FullLifecycle(t *testing.T) {
 		autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
 		assert.NoError(t, err)
 
+		// Configure a test NodeGroup with a single Node.
 		n := test.BuildTestNode("ng1-node-0", 1000, 1000, test.IsReady(true))
 		fakes.CloudProvider.AddNodeGroup("ng1", fakecloudprovider.WithNode(n))
 		fakes.K8s.AddPod(test.BuildScheduledTestPod("p1", 600, 100, n.Name))
 
+		// Create a pending Pod that doesn't fit on the single existing Node.
 		p := test.BuildTestPod("p2", 600, 100, test.MarkUnschedulable())
 		fakes.K8s.AddPod(p)
 
-		synctestutils.MustRunOnceAfter(t, autoscaler, unneededTime)
-
+		// Run a loop, CA should scale up a single Node for the pending Pod.
+		synctestutils.MustRunOnceAfter(t, autoscaler, stepDuration)
 		tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
 		assert.Equal(t, 2, tg1)
-
 		assert.Equal(t, 2, len(fakes.K8s.Nodes().Items))
 
+		// Delete the Pod that was pending, the second Node should be empty now.
 		fakes.K8s.DeletePod(p.Namespace, p.Name)
 
-		// Detection and deletion steps.
-		synctestutils.MustRunOnceAfter(t, autoscaler, unneededTime)
-		synctestutils.MustRunOnceAfter(t, autoscaler, unneededTime)
+		// Run CA loop once to mark the Node as unneeded.
+		synctestutils.MustRunOnceAfter(t, autoscaler, stepDuration)
+		// Run another CA loop after the unneeded time elapses, CA should delete the Node.
+		synctestutils.MustRunOnceAfter(t, autoscaler, unneededTime+time.Nanosecond)
 
 		finalSize, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
 		assert.Equal(t, 1, finalSize)

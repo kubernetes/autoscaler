@@ -22,6 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/rand"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -145,14 +146,25 @@ type NodeGroupOption func(*NodeGroup)
 
 // WithNode adds a single initial node to the group and
 // automatically sets the group's template based on that node.
-func WithNode(node *apiv1.Node) NodeGroupOption {
+func WithNode(templateNode *apiv1.Node) NodeGroupOption {
 	return func(n *NodeGroup) {
-		n.provider.nodeToGroup[node.Name] = n.id
-		n.instances[node.Name] = cloudprovider.InstanceRunning
-		n.targetSize = 1
-		n.template = framework.NewTestNodeInfo(node.DeepCopy())
+		n.setTemplateFromNodeAndPods(templateNode)
+		addedNode := n.addNodeFromTemplate(templateNode.Name)
 		if n.provider.k8s != nil {
-			n.provider.k8s.AddNode(node)
+			n.provider.k8s.AddNode(addedNode)
+		}
+	}
+}
+
+// WithNodes configures the provided Node as the template for the NodeGroup, and adds nodeCount copies of the template to the NodeGroup.
+func WithNodes(templateNode *apiv1.Node, nodeCount int) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.setTemplateFromNodeAndPods(templateNode)
+		for i := range nodeCount {
+			addedNode := n.addNodeFromTemplate(fmt.Sprintf("%s-node-%d", n.id, i))
+			if n.provider.k8s != nil {
+				n.provider.k8s.AddNode(addedNode)
+			}
 		}
 	}
 }
@@ -174,7 +186,7 @@ func WithTemplate(template *framework.NodeInfo) NodeGroupOption {
 }
 
 // AddNodeGroup is a helper for tests to add a group with its template.
-func (c *CloudProvider) AddNodeGroup(id string, opts ...NodeGroupOption) {
+func (c *CloudProvider) AddNodeGroup(id string, opts ...NodeGroupOption) *NodeGroup {
 	c.Lock()
 	defer c.Unlock()
 
@@ -191,6 +203,8 @@ func (c *CloudProvider) AddNodeGroup(id string, opts ...NodeGroupOption) {
 		opt(group)
 	}
 	c.groups[id] = group
+
+	return group
 }
 
 // GetNodeGroup is a helper for tests to get a node group.
@@ -340,41 +354,41 @@ func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*co
 }
 
 // TargetSize returns the current target size of the node group.
-func (n *NodeGroup) TargetSize() (int, error) { return n.targetSize, nil }
+func (n *NodeGroup) TargetSize() (int, error) {
+	n.Lock()
+	defer n.Unlock()
+	return n.targetSize, nil
+}
 
 // IncreaseSize adds nodes to the node group and updates internal instance mapping.
 func (n *NodeGroup) IncreaseSize(delta int) error {
 	n.Lock()
 	defer n.Unlock()
+
 	if n.targetSize+delta > n.maxSize {
 		return fmt.Errorf("size too large")
+	}
+	if n.template == nil || n.template.Node() == nil {
+		return fmt.Errorf("node group %s has no template to create new nodes", n.id)
 	}
 
 	n.provider.Lock()
 	defer n.provider.Unlock()
 
 	for i := 0; i < delta; i++ {
-		instanceNum := n.targetSize + i
-		instanceId := fmt.Sprintf("%s-node-%d", n.id, instanceNum)
-
-		if n.template == nil || n.template.Node() == nil {
-			return fmt.Errorf("node group %s has no template to create new nodes", n.id)
-		}
-		newNode := n.template.Node().DeepCopy()
-		newNode.Name = instanceId
-
-		n.instances[instanceId] = cloudprovider.InstanceRunning
-		n.provider.nodeToGroup[instanceId] = n.id
+		nodeName := fmt.Sprintf("%s-node-%s", n.id, rand.String(4))
+		newNode := n.addNodeFromTemplate(nodeName)
 		if n.provider.k8s != nil {
 			n.provider.k8s.AddNode(newNode)
 		}
 	}
-	n.targetSize += delta
 	return nil
 }
 
 // TemplateNodeInfo returns the template node information for this node group.
 func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+	n.Lock()
+	defer n.Unlock()
 	if n.template == nil {
 		return nil, cloudprovider.ErrNotImplemented
 	}
@@ -382,4 +396,34 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 }
 
 // GetTargetSize returns the target size as a raw integer (helper method).
-func (n *NodeGroup) GetTargetSize() int { return n.targetSize }
+func (n *NodeGroup) GetTargetSize() int {
+	n.Lock()
+	defer n.Unlock()
+	return n.targetSize
+}
+
+// setTemplateFromNodeAndPods configures the result of TemplateNodeInfo() based on a copy of the provided Node and the provided Pods.
+// Should be called with the NodeGroup mutex already locked, or during NodeGroup object initialization without the lock.
+func (n *NodeGroup) setTemplateFromNodeAndPods(node *apiv1.Node, pods ...*apiv1.Pod) {
+	templateNode := cloneNodeForNodeGroup(node, n.id, fmt.Sprintf("%s-template", n.id))
+	n.template = framework.NewTestNodeInfo(templateNode, pods...)
+}
+
+// addNode adds a deep-copy of the provided Node to this NodeGroup and its CloudProvider. The added Node is returned from the method.
+// Should be called with the NodeGroup mutex already locked, or during NodeGroup object initialization without the lock.
+func (n *NodeGroup) addNodeFromTemplate(nodeName string) *apiv1.Node {
+	node := cloneNodeForNodeGroup(n.template.Node(), n.id, nodeName)
+	n.instances[node.Spec.ProviderID] = cloudprovider.InstanceRunning
+	n.provider.nodeToGroup[node.Name] = n.id
+	n.targetSize += 1
+	return node
+}
+
+// cloneNodeForNodeGroup returns a deep-copy of the provided templateNode, to be tracked by the fake CloudProvider/NodeGroup.
+// Any Node used with the fake CloudProvider should go through this function.
+func cloneNodeForNodeGroup(templateNode *apiv1.Node, ngName, nodeName string) *apiv1.Node {
+	node := templateNode.DeepCopy()
+	node.Name = nodeName
+	node.Spec.ProviderID = fmt.Sprintf("fake-provider/%s/%s", ngName, node.Name)
+	return node
+}
