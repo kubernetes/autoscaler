@@ -43,13 +43,13 @@ type dynamicThreshold struct {
 	nodeLimit int
 }
 
-func (d *dynamicThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) time.Duration {
-	return 0
+func (d *dynamicThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) DurationLimitResult {
+	return DurationLimitResult{Duration: 0}
 }
 
-func (d *dynamicThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) int {
+func (d *dynamicThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) NodeLimitResult {
 	d.nodeLimit += 1
-	return d.nodeLimit
+	return NodeLimitResult{Limit: d.nodeLimit}
 }
 
 func TestThresholdBasedLimiter(t *testing.T) {

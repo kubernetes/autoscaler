@@ -27,12 +27,12 @@ type staticThreshold struct {
 	maxDuration time.Duration
 }
 
-func (l *staticThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) int {
-	return l.maxNodes
+func (l *staticThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) NodeLimitResult {
+	return NodeLimitResult{Limit: l.maxNodes}
 }
 
-func (l *staticThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) time.Duration {
-	return l.maxDuration
+func (l *staticThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationContext) DurationLimitResult {
+	return DurationLimitResult{Duration: l.maxDuration}
 }
 
 // NewStaticThreshold returns a Threshold that should be used to limit
