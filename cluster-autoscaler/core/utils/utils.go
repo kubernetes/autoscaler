@@ -115,7 +115,12 @@ func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry) {
 	}
 	metrics.UpdateClusterSafeToAutoscale(csr.IsClusterHealthy())
 	readiness := csr.GetClusterReadiness()
+
 	metrics.UpdateNodesCount(len(readiness.Ready), len(readiness.Unready), len(readiness.NotStarted), len(readiness.Suspended), len(readiness.LongUnregistered), len(readiness.Unregistered))
+
+	for nodeGroupID, readiness := range csr.GetPerNodeGroupReadiness() {
+		metrics.UpdateNodesCountPerNodeGroup(len(readiness.Ready), len(readiness.Unready), len(readiness.NotStarted), len(readiness.Suspended), len(readiness.LongUnregistered), len(readiness.Unregistered), nodeGroupID)
+	}
 }
 
 // GetOldestCreateTime returns oldest creation time out of the pods in the set
