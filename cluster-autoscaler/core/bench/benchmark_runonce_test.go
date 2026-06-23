@@ -33,6 +33,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/kubernetes/fake"
+	k8s_testing "k8s.io/client-go/testing"
+	"k8s.io/klog/v2"
+	ctrl "sigs.k8s.io/controller-runtime"
+
 	"k8s.io/autoscaler/cluster-autoscaler/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -46,10 +51,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/test/integration"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"k8s.io/client-go/kubernetes/fake"
-	k8s_testing "k8s.io/client-go/testing"
-	"k8s.io/klog/v2"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // Benchmark evaluates the performance of the Cluster Autoscaler's primary control loop (RunOnce).
@@ -425,22 +426,16 @@ func setupScaleDown60Percent(nodesCount int) func(*integration.FakeSet) error {
 		nTemplate := BuildTestNode("n-template", nodeCPU, nodeMem)
 		SetNodeReadyState(nTemplate, true, time.Now())
 
-		clusterFakes.CloudProvider.AddNodeGroup(ngName,
-			testprovider.WithTemplate(framework.NewNodeInfo(nTemplate, nil)),
+		ng := clusterFakes.CloudProvider.AddNodeGroup(ngName,
+			testprovider.WithNodes(nTemplate, nodesCount),
 			testprovider.WithNGSize(0, maxNGSize),
 		)
 
-		ng := clusterFakes.CloudProvider.GetNodeGroup(ngName)
-		if err := ng.IncreaseSize(nodesCount); err != nil {
-			return err
-		}
-
-		ngID := ng.Id()
 		// Create 40 pods per node.
 		// Each pod uses 1% of a node's resources, leading to 40% utilization.
 		for i := range nodesCount * 40 {
 			podName := fmt.Sprintf("pod-%d", i)
-			nodeName := fmt.Sprintf("%s-node-%d", ngID, i%nodesCount)
+			nodeName := fmt.Sprintf("%s-node-%d", ng.Id(), i%nodesCount) // testprovider.WithNodes() names Nodes in this format.
 			cpu := int64(nodeCPU / 100)
 			mem := int64(nodeMem / 100)
 			pod := BuildTestPod(podName, cpu, mem)
