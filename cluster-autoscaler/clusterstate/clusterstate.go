@@ -575,38 +575,36 @@ func (csr *ClusterStateRegistry) NodeGroupScaleUpSafety(nodeGroup cloudprovider.
 	return NodeGroupScalingSafety{SafeToScale: isHealthy && !backoffStatus.IsBackedOff, Healthy: isHealthy, BackoffStatus: backoffStatus}
 }
 
-func (csr *ClusterStateRegistry) getProvisionedAndTargetSizesForNodeGroup(nodeGroupName string) (provisioned, target int, ok bool) {
+func (csr *ClusterStateRegistry) getUpcomingNodesInNodeGroup(nodeGroupName string) (upcoming int, ok bool) {
 	if len(csr.acceptableRanges) == 0 {
 		klog.Warningf("AcceptableRanges have not been populated yet. Skip checking")
-		return 0, 0, false
+		return 0, false
 	}
 
 	acceptable, found := csr.acceptableRanges[nodeGroupName]
 	if !found {
 		klog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
-		return 0, 0, false
+		return 0, false
 	}
-	target = acceptable.CurrentTarget
 
 	readiness, found := csr.perNodeGroupReadiness[nodeGroupName]
 	if !found {
-		// No need to warn if node group has size 0 (was scaled to 0 before).
 		if acceptable.MinNodes != 0 {
+			// No need to warn if node group has size 0 (was scaled to 0 before).
 			klog.Warningf("Failed to find readiness information for %v", nodeGroupName)
 		}
-		return 0, target, true
+		return acceptable.CurrentTarget, true
 	}
-	provisioned = len(readiness.Registered) - len(readiness.NotStarted)
-
-	return provisioned, target, true
+	// TODO: Unify the logic determining the input to calculateUpcomingNodesInNodeGroup() with GetUpcomingNodes().
+	return calculateUpcomingNodesInNodeGroup(readiness, acceptable), true
 }
 
 func (csr *ClusterStateRegistry) areThereUpcomingNodesInNodeGroup(nodeGroupName string) bool {
-	provisioned, target, ok := csr.getProvisionedAndTargetSizesForNodeGroup(nodeGroupName)
+	upcoming, ok := csr.getUpcomingNodesInNodeGroup(nodeGroupName)
 	if !ok {
 		return false
 	}
-	return target > provisioned
+	return upcoming > 0
 }
 
 // IsNodeGroupRegistered returns true if the node group is registered in cluster state.
@@ -617,11 +615,11 @@ func (csr *ClusterStateRegistry) IsNodeGroupRegistered(nodeGroupName string) boo
 
 // IsNodeGroupAtTargetSize returns true if the number of nodes provisioned in the group is equal to the target number of nodes.
 func (csr *ClusterStateRegistry) IsNodeGroupAtTargetSize(nodeGroupName string) bool {
-	provisioned, target, ok := csr.getProvisionedAndTargetSizesForNodeGroup(nodeGroupName)
+	upcoming, ok := csr.getUpcomingNodesInNodeGroup(nodeGroupName)
 	if !ok {
 		return false
 	}
-	return target == provisioned
+	return upcoming == 0
 }
 
 // IsNodeGroupScalingUp returns true if the node group is currently scaling up.
@@ -1120,8 +1118,8 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 		}
 		readiness := csr.perNodeGroupReadiness[id]
 		ar := csr.acceptableRanges[id]
-		// newNodes is the number of nodes that
-		newNodes := ar.CurrentTarget - (len(readiness.Ready) + len(readiness.Unready) + len(readiness.Suspended) + len(readiness.LongUnregistered))
+		// TODO: Unify the logic determining the input to calculateUpcomingNodesInNodeGroup() with getUpcomingNodesInNodeGroup().
+		newNodes := calculateUpcomingNodesInNodeGroup(readiness, ar)
 		if newNodes <= 0 {
 			// Negative value is unlikely but theoretically possible.
 			continue
@@ -1148,6 +1146,12 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 		registeredNodeNames[id] = readiness.NotStarted
 	}
 	return upcomingCounts, registeredNodeNames
+}
+
+// calculateUpcomingNodesInNodeGroup calculates how many upcoming Nodes there are in a given NodeGroup, based on the provided CSR tracking
+// objects for the NodeGroup.
+func calculateUpcomingNodesInNodeGroup(ngReadiness Readiness, ngAcceptableRange AcceptableRange) int {
+	return ngAcceptableRange.CurrentTarget - (len(ngReadiness.Ready) + len(ngReadiness.Unready) + len(ngReadiness.Suspended) + len(ngReadiness.LongUnregistered))
 }
 
 // getRunningNodeGroups returns running node groups, filters out upcoming ones.
