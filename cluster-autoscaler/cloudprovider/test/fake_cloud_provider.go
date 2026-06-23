@@ -19,6 +19,7 @@ package test
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -29,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	fakek8s "k8s.io/autoscaler/cluster-autoscaler/utils/fake"
+	testutils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
@@ -45,7 +47,9 @@ type CloudProvider struct {
 	maxLimits map[string]int64
 	// nodeToGroup tracks which node name belongs to which group ID.
 	nodeToGroup map[string]string
-	k8s         *fakek8s.Kubernetes
+
+	// k8s is thread-safe, can be safely accessed without the CloudProvider mutex.
+	k8s *fakek8s.Kubernetes
 }
 
 // CloudProviderOption defines a function to configure the CloudProvider.
@@ -185,6 +189,28 @@ func WithTemplate(template *framework.NodeInfo) NodeGroupOption {
 	}
 }
 
+// WithNodeGarbageCollectionDelay can be used to simulate Node objects hanging around in the K8s API for some time after their VMs are deleted.
+func WithNodeGarbageCollectionDelay(delay time.Duration) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.nodeGarbageCollectionDelay = delay
+	}
+}
+
+// WithNodeRegistrationDelay can be used to simulate Node objects taking some time to appear in the K8s API after their VMs are created.
+func WithNodeRegistrationDelay(delay time.Duration) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.nodeRegistrationDelay = delay
+	}
+}
+
+// WithNodeReadinessDelay can be used to simulate Node objects taking some time to transition to Ready after they appear in the K8s API. If not used, the Nodes
+// will appear as Ready immediately after registration.
+func WithNodeReadinessDelay(delay time.Duration) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.nodeReadinessDelay = delay
+	}
+}
+
 // AddNodeGroup is a helper for tests to add a group with its template.
 func (c *CloudProvider) AddNodeGroup(id string, opts ...NodeGroupOption) *NodeGroup {
 	c.Lock()
@@ -240,6 +266,14 @@ type NodeGroup struct {
 	// instances maps instanceID -> state.
 	instances map[string]cloudprovider.InstanceState
 	provider  *CloudProvider
+
+	// nodeGarbageCollectionDelay can be used to simulate Node objects hanging around in the K8s API for some time after their VMs are deleted.
+	nodeGarbageCollectionDelay time.Duration
+	// nodeRegistrationDelay can be used to simulate Node objects taking some time to appear in the K8s API after their VMs are created.
+	nodeRegistrationDelay time.Duration
+	// nodeReadinessDelay can be used to simulate Node objects taking some time to transition to Ready after they appear in the K8s API. If unset,
+	// the Nodes will appear as Ready immediately after registration.
+	nodeReadinessDelay time.Duration
 }
 
 // MaxSize returns the maximum size of the node group.
@@ -269,10 +303,7 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	for _, node := range nodes {
 		if groupId, exists := n.provider.nodeToGroup[node.Name]; exists && groupId == n.id {
 			delete(n.provider.nodeToGroup, node.Name)
-			delete(n.instances, node.Name)
-			if n.provider.k8s != nil {
-				n.provider.k8s.DeleteNode(node.Name)
-			}
+			delete(n.instances, node.Spec.ProviderID)
 			deletedCount++
 		} else {
 			fmt.Printf("Warning: node %s not found in group %s or already deleted.", node.Name, n.id)
@@ -283,6 +314,21 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		n.targetSize -= deletedCount
 	} else {
 		n.targetSize = 0
+	}
+
+	// Remove the Nodes from the K8s fake if it's configured.
+	if n.provider.k8s == nil {
+		return nil
+	}
+	if n.nodeGarbageCollectionDelay == 0 {
+		// No delays configured, synchronously delete the Nodes from the K8s fake.
+		for _, node := range nodes {
+			n.provider.k8s.DeleteNode(node.Name)
+		}
+	} else {
+		// Node garbage collection delay is configured, handle deleting the Nodes from the K8s fake asynchronously.
+		// The K8s fake is thread safe, so we don't need the provider lock to access it - should be safe to use in a goroutine.
+		go simulateK8sApiNodeDeletion(n.provider.k8s, nodes, n.nodeGarbageCollectionDelay)
 	}
 
 	return nil
@@ -375,13 +421,29 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 	n.provider.Lock()
 	defer n.provider.Unlock()
 
+	var newNodes []*apiv1.Node
 	for i := 0; i < delta; i++ {
 		nodeName := fmt.Sprintf("%s-node-%s", n.id, rand.String(4))
 		newNode := n.addNodeFromTemplate(nodeName)
-		if n.provider.k8s != nil {
-			n.provider.k8s.AddNode(newNode)
-		}
+		newNodes = append(newNodes, newNode)
 	}
+
+	// Add the new Nodes to the K8s fake if it's configured.
+	if n.provider.k8s == nil {
+		return nil
+	}
+	if n.nodeRegistrationDelay == 0 && n.nodeReadinessDelay == 0 {
+		// No delays configured, synchronously add the Nodes as Ready to the K8s fake.
+		for _, node := range newNodes {
+			testutils.IsReady(true)(node)
+			n.provider.k8s.AddNode(node)
+		}
+	} else {
+		// Node registration/readiness delays are configured, handle adding the Nodes to the K8s fake asynchronously.
+		// The K8s fake is thread safe, so we don't need the provider lock to access it - should be safe to use in a goroutine.
+		go simulateK8sApiNodeRegistration(n.provider.k8s, newNodes, n.nodeRegistrationDelay, n.nodeReadinessDelay)
+	}
+
 	return nil
 }
 
@@ -426,4 +488,41 @@ func cloneNodeForNodeGroup(templateNode *apiv1.Node, ngName, nodeName string) *a
 	node.Name = nodeName
 	node.Spec.ProviderID = fmt.Sprintf("fake-provider/%s/%s", ngName, node.Name)
 	return node
+}
+
+func simulateK8sApiNodeDeletion(k8s *fakek8s.Kubernetes, nodes []*apiv1.Node, garbageCollectionDelay time.Duration) {
+	if garbageCollectionDelay > 0 {
+		// If configured, simulate a delay between the VM deletion call and the Nodes disappearing.
+		time.Sleep(garbageCollectionDelay)
+	}
+
+	for _, node := range nodes {
+		k8s.DeleteNode(node.Name)
+	}
+}
+
+func simulateK8sApiNodeRegistration(k8s *fakek8s.Kubernetes, nodes []*apiv1.Node, registrationDelay, readinessDelay time.Duration) {
+	if registrationDelay > 0 {
+		// If configured, simulate a delay between the VM creation call and the Node registering in the K8s API.
+		time.Sleep(registrationDelay)
+	}
+
+	// If no readinessDelay is configured, the Nodes just start as Ready. Otherwise, they start as not-Ready, and are updated to Ready after readinessDelay.
+	nodesInitiallyReady := readinessDelay == 0
+	for _, node := range nodes {
+		testutils.IsReady(nodesInitiallyReady)(node)
+		k8s.AddNode(node)
+	}
+
+	if readinessDelay == 0 {
+		return
+	}
+	// If configured, simulate a delay between the Node registering in the K8s API and the Node becoming Ready.
+	time.Sleep(readinessDelay)
+	for _, node := range nodes {
+		// We injected the Node object to the API earlier, so something could be reading it asynchronously - we need to deep copy before modifying the readiness.
+		nodeCopy := node.DeepCopy()
+		testutils.IsReady(true)(nodeCopy)
+		k8s.UpdateNode(nodeCopy)
+	}
 }
