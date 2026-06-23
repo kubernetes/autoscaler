@@ -257,3 +257,7 @@ func UpdateScaleDownNodeRemovalLatency(deleted bool, duration time.Duration) {
 func ObserveMaxNodeSkipEvalDurationSeconds(duration time.Duration) {
 	DefaultMetrics.ObserveMaxNodeSkipEvalDurationSeconds(duration)
 }
+
+func UpdateNodesCountPerNodeGroup(ready, unready, starting, suspended, longUnregistered, unregistered int, nodeGroupID string) {
+	DefaultMetrics.UpdateNodesCountPerNodeGroup(ready, unready, starting, suspended, longUnregistered, unregistered, nodeGroupID)
+}
