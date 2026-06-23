@@ -596,7 +596,14 @@ func (csr *ClusterStateRegistry) getProvisionedAndTargetSizesForNodeGroup(nodeGr
 		}
 		return 0, target, true
 	}
-	provisioned = len(readiness.Registered) - len(readiness.NotStarted)
+	// Nodes that are being deleted are still present in Registered (they
+	// haven't disappeared from the API yet) but they're already excluded
+	// from NodeGroup.TargetSize() once the cloud provider VM deletion call
+	// is made. If we don't exclude them here too , a stale Deleted count
+	// from a finished scale-down can make a new scale-up request look
+	// already-fulfilled (target <= provisioned) causing CA to remove the
+	// scale-up request before any new nodes actually came up. see #9813
+	provisioned = len(readiness.Registered) - len(readiness.NotStarted) - len(readiness.Deleted)
 
 	return provisioned, target, true
 }

@@ -2272,3 +2272,70 @@ func TestExpiredScaleUpRevertsPartialIncrease(t *testing.T) {
 	// Verify the scale-up request was removed
 	assert.Nil(t, clusterstate.scaleUpRequests["ng1"])
 }
+
+func TestScaleUpRequestSurvivesConcurrentScaleDown(t *testing.T) {
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	ng1_3 := BuildTestNode("ng1-3", 1000, 1000)
+	ng1_4 := BuildTestNode("ng1-4", 1000, 1000)
+	ng1_5 := BuildTestNode("ng1-5", 1000, 1000)
+	allNodes := []*apiv1.Node{ng1_1, ng1_2, ng1_3, ng1_4, ng1_5}
+	for _, n := range allNodes {
+		SetNodeReadyState(n, true, now.Add(-time.Minute))
+	}
+	ng1_1.Spec.ProviderID = "ng1-1"
+	ng1_2.Spec.ProviderID = "ng1-2"
+	ng1_3.Spec.ProviderID = "ng1-3"
+	ng1_4.Spec.ProviderID = "ng1-4"
+	ng1_5.Spec.ProviderID = "ng1-5"
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 5)
+	for _, n := range allNodes {
+		provider.AddNode("ng1", n)
+	}
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system",
+		kube_record.NewFakeRecorder(5), false, "configmap-1")
+
+	clusterstate := NewClusterStateRegistry(provider, fakeLogRecorder, newBackoff(),
+		nodegroupconfig.NewDefaultNodeGroupConfigProcessor(
+			config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}),
+		&emptyTemplateNodeInfoRegistry{},
+		WithConfig(ClusterStateRegistryConfig{
+			MaxTotalUnreadyPercentage: 10,
+			OkTotalUnreadyCount:       1,
+		}))
+
+	err := clusterstate.UpdateNodes(allNodes, now)
+	assert.NoError(t, err)
+
+	nodeGroup, err := provider.NodeGroupForNode(ng1_4)
+	assert.NoError(t, err)
+	provider.DeleteNode(ng1_4)
+	provider.DeleteNode(ng1_5)
+	nodeGroup.(*testprovider.TestNodeGroup).SetTargetSize(3)
+	clusterstate.InvalidateNodeInstancesCacheEntry(nodeGroup)
+
+	err = clusterstate.UpdateNodes(allNodes, now)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(clusterstate.GetClusterReadiness().Deleted))
+
+	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 1, now)
+	nodeGroup.(*testprovider.TestNodeGroup).SetTargetSize(4)
+
+	err = clusterstate.UpdateNodes(allNodes, now)
+	assert.NoError(t, err)
+
+	assert.True(t, clusterstate.HasNodeGroupStartedScaleUp("ng1"),
+		"scale-up request for ng1 should still be tracked; it must not be "+
+			"removed just because stale deleted nodes from a concurrent "+
+			"scale-down are still present (see #9813)")
+
+	upcomingNodes, _ := clusterstate.GetUpcomingNodes()
+	assert.Equal(t, 1, upcomingNodes["ng1"],
+		"the 1 new upcoming node from the scale-up should still be reported")
+}
