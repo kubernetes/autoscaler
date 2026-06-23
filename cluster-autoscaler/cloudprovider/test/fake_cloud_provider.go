@@ -18,6 +18,7 @@ package test
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -47,6 +48,14 @@ type CloudProvider struct {
 	maxLimits map[string]int64
 	// nodeToGroup tracks which node name belongs to which group ID.
 	nodeToGroup map[string]string
+	// nodeGroupForNodeWorksForDeletedNodes controls the behavior of CloudProvider.NodeGroupForNode(), so that different behaviors can be tested:
+	// - [default] If false, NodeGroupForNode() returns the NodeGroup based on the CloudProvider.nodeToGroup map, which means it doesn't work for deleted Nodes.
+	// - If true, NodeGroupForNode() returns the NodeGroup based on Node.ProviderID, which means it works for deleted Nodes.
+	nodeGroupForNodeWorksForDeletedNodes bool
+	// hasInstanceImplemented controls the behavior of CloudProvider.HasInstance(), so that different behaviors can be tested:
+	// - [default] If false, HasInstance() is implemented and responds true for Nodes tracked by the fake CloudProvider until they're deleted via DeleteNodes().
+	// - If true, HasInstance() always returns the ErrNotImplemented error. This is supported by CA, HasInstance() is an optional method.
+	hasInstanceNotImplemented bool // The field is negated so that the default behavior with the field being false is "HasInstance() is implemented".
 
 	// k8s is thread-safe, can be safely accessed without the CloudProvider mutex.
 	k8s *fakek8s.Kubernetes
@@ -86,9 +95,20 @@ func (c *CloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group that a given node belongs to.
+// The method behaves differently based on the CloudProvider.nodeGroupForNodeWorksForDeletedNodes field,
+// so that different behaviors can be tested (see the comment on the field for more details).
 func (c *CloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	c.Lock()
 	defer c.Unlock()
+
+	if c.nodeGroupForNodeWorksForDeletedNodes {
+		groupId, err := groupIdFromNodeProviderId(node.Spec.ProviderID)
+		if err != nil {
+			return nil, err
+		}
+		return c.groups[groupId], nil
+	}
+
 	groupId, ok := c.nodeToGroup[node.Name]
 	if !ok {
 		return nil, nil
@@ -96,10 +116,17 @@ func (c *CloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGr
 	return c.groups[groupId], nil
 }
 
-// HasInstance returns true if the given node is managed by this cloud provider.
+// HasInstance returns true if the given node is managed by this cloud provider, until the Node is deleted via DeleteNodes().
+// The method behaves differently based on the CloudProvider.nodeGroupForNodeWorksForDeletedNodes field,
+// so that different behaviors can be tested (see the comment on the field for more details).
 func (c *CloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	c.Lock()
 	defer c.Unlock()
+
+	if c.hasInstanceNotImplemented {
+		return false, cloudprovider.ErrNotImplemented
+	}
+
 	_, found := c.nodeToGroup[node.Name]
 	return found, nil
 }
@@ -253,6 +280,22 @@ func (c *CloudProvider) SetResourceLimit(resource string, min, max int64) {
 	defer c.Unlock()
 	c.minLimits[resource] = min
 	c.maxLimits[resource] = max
+}
+
+// ConfigureNodeGroupForNodeBehavior configures the behavior of CloudProvider.NodeGroupForNode(). See the comment on CloudProvider.nodeGroupForNodeWorksForDeletedNodes for more details.
+func (c *CloudProvider) ConfigureNodeGroupForNodeBehavior(worksForDeletedNodes bool) {
+	c.Lock()
+	defer c.Unlock()
+	c.nodeGroupForNodeWorksForDeletedNodes = worksForDeletedNodes
+}
+
+// ConfigureHasInstanceBehavior configures the behavior of CloudProvider.HasInstance(). See the comment on CloudProvider.hasInstanceNotImplemented for more details.
+func (c *CloudProvider) ConfigureHasInstanceBehavior(notImplemented bool) {
+	c.Lock()
+	defer c.Unlock()
+	// The field is negated so that the default behavior with the field being false is "HasInstance() is implemented". The argument to this method is also negated so that
+	// they match 1-1 and the comment on the field works for this method as well.
+	c.hasInstanceNotImplemented = notImplemented
 }
 
 // NodeGroup is a fake implementation of the cloudprovider.NodeGroup interface for testing.
@@ -488,6 +531,15 @@ func cloneNodeForNodeGroup(templateNode *apiv1.Node, ngName, nodeName string) *a
 	node.Name = nodeName
 	node.Spec.ProviderID = fmt.Sprintf("fake-provider/%s/%s", ngName, node.Name)
 	return node
+}
+
+// groupIdFromNodeProviderId parses the Spec.ProviderID set by cloneNodeForNodeGroup() and extracts the NodeGroup id from it.
+func groupIdFromNodeProviderId(nodeProviderId string) (string, error) {
+	parts := strings.Split(nodeProviderId, "/")
+	if len(parts) != 3 {
+		return "", fmt.Errorf("ngIdFromNodeProviderId(): nodeProviderId should be in the format <provider_name>/<ng_id>/<node_name>, got %s", nodeProviderId)
+	}
+	return parts[1], nil
 }
 
 func simulateK8sApiNodeDeletion(k8s *fakek8s.Kubernetes, nodes []*apiv1.Node, garbageCollectionDelay time.Duration) {
