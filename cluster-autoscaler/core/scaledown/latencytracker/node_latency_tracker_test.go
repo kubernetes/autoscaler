@@ -54,13 +54,17 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 	// 1. Planner calculates unneeded nodes (UpdateScaleDownCandidates)
 	// 2. Actuator attempts deletion and reports status (Process)
 	type step struct {
-		unneededList     []string                 // Nodes found unneeded this loop
-		thresholds       map[string]time.Duration // Specific thresholds for this loop
-		scaledDownList   []string                 // Nodes successfully deleted this loop
-		unremovableList  []string                 // Nodes failed to delete this loop
-		wantTrackedNodes []string                 // Expected internal state after this loop
-		wantThresholds   map[string]time.Duration // Expected threshold values in internal state
+		unneededList          []string                               // Nodes found unneeded this loop
+		thresholds            map[string]time.Duration               // Specific thresholds for this loop
+		scaledDownList        []string                               // Nodes successfully deleted this loop
+		unremovableList       []string                               // Nodes failed to delete this loop
+		unremovableReason     map[string]simulator.UnremovableReason // Nodes failed to delete with specific reasons
+		wantTrackedNodes      []string                               // Expected internal state after this loop
+		wantThresholds        map[string]time.Duration               // Expected threshold values in internal state
+		wantLatestDelayReason map[string]string                      // Expected latestDelayReason values in internal state
 	}
+
+	baseTime := time.Now()
 
 	tests := []struct {
 		name  string
@@ -149,21 +153,70 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Tracks latest blocker reason when node is blocked by expected reasons",
+			steps: []step{
+				{
+					// Step 0: node1 becomes unneeded
+					unneededList:          []string{"node1"},
+					wantTrackedNodes:      []string{"node1"},
+					wantLatestDelayReason: map[string]string{"node1": ""},
+				},
+				{
+					// Step 1: node1 remains unneeded (not blocked)
+					unneededList:          []string{"node1"},
+					wantTrackedNodes:      []string{"node1"},
+					wantLatestDelayReason: map[string]string{"node1": ""},
+				},
+				{
+					// Step 2: node1 is unremovable due to BlockedByPod
+					unneededList:          []string{"node1"},
+					unremovableReason:     map[string]simulator.UnremovableReason{"node1": simulator.BlockedByPod},
+					wantTrackedNodes:      []string{"node1"},
+					wantLatestDelayReason: map[string]string{"node1": "BlockedByPod"},
+				},
+				{
+					// Step 3: node1 is still unremovable due to AtomicScaleDownFailed
+					unneededList:          []string{"node1"},
+					unremovableReason:     map[string]simulator.UnremovableReason{"node1": simulator.AtomicScaleDownFailed},
+					wantTrackedNodes:      []string{"node1"},
+					wantLatestDelayReason: map[string]string{"node1": "AtomicScaleDownFailed"},
+				},
+				{
+					// Step 4: node1 is unremovable due to NotUnneededLongEnough (not a blocker)
+					// The latest blocker reason should NOT be overwritten by a non-blocker!
+					// It should remain "AtomicScaleDownFailed".
+					unneededList:          []string{"node1"},
+					unremovableReason:     map[string]simulator.UnremovableReason{"node1": simulator.NotUnneededLongEnough},
+					wantTrackedNodes:      []string{"node1"},
+					wantLatestDelayReason: map[string]string{"node1": "AtomicScaleDownFailed"},
+				},
+				{
+					// Step 5: node1 is finally deleted
+					unneededList:     []string{"node1"},
+					scaledDownList:   []string{"node1"},
+					wantTrackedNodes: []string{},
+				},
+			},
+		},
 	}
-
-	baseTime := time.Now()
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			tracker := NewNodeLatencyTracker(processor.NewDefaultScaleDownStatusProcessor())
 
 			for i, step := range tc.steps {
-				stepTime := baseTime.Add(testStepDuration)
+				stepTime := baseTime.Add(time.Duration(i+1) * testStepDuration)
 
 				candidates := candidatesFromNames(step.unneededList, step.thresholds)
 				tracker.UpdateScaleDownCandidates(candidates, stepTime)
 
-				sd := newScaleDownStatus(step.scaledDownList, step.unremovableList)
+				var sd *status.ScaleDownStatus
+				if step.unremovableReason != nil {
+					sd = newScaleDownStatusWithReasons(step.scaledDownList, step.unremovableReason)
+				} else {
+					sd = newScaleDownStatus(step.scaledDownList, step.unremovableList)
+				}
 				tracker.Process(&ca_context.AutoscalingContext{}, sd)
 
 				gotTracked := tracker.getTrackedNodes()
@@ -183,6 +236,14 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 					if actualInfo, ok := tracker.unneededNodes[nodeName]; ok {
 						if actualInfo.removalThreshold != wantThreshold {
 							t.Errorf("Step %d: node %q incorrect threshold: got %v, want %v", i, nodeName, actualInfo.removalThreshold, wantThreshold)
+						}
+
+						if step.wantLatestDelayReason != nil {
+							if wantReason, ok := step.wantLatestDelayReason[nodeName]; ok {
+								if actualInfo.latestDelayReason != wantReason {
+									t.Errorf("Step %d: node %q incorrect latestDelayReason: got %q, want %q", i, nodeName, actualInfo.latestDelayReason, wantReason)
+								}
+							}
 						}
 					} else {
 						t.Errorf("Step %d: node %q expected to be tracked but was not", i, nodeName)
@@ -238,34 +299,18 @@ func (m *mockStatusProcessor) CleanUp() {
 	m.cleanUpCalled = true
 }
 
-func TestNodeLatencyTracker_ProcessReasons(t *testing.T) {
-	tracker := NewNodeLatencyTracker(processor.NewDefaultScaleDownStatusProcessor())
-	now := time.Now()
-
-	// Start tracking node1, node2 as unneeded
-	tracker.UpdateScaleDownCandidates([]*scaledown.UnneededNode{
-		{Node: &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node1"}}, RemovalThreshold: 0},
-		{Node: &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node2"}}, RemovalThreshold: 0},
-	}, now)
-
-	// In next iteration:
-	// - node1 became needed again (not in candidates, not in unremovable)
-	// - node2 was unremovable (not in candidates, is in status.UnremovableNodes with BlockedByPod)
-	tracker.UpdateScaleDownCandidates([]*scaledown.UnneededNode{}, now.Add(testStepDuration))
-
-	sd := &status.ScaleDownStatus{
-		UnremovableNodes: []*status.UnremovableNode{
-			{
-				Node:   &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node2"}},
-				Reason: simulator.BlockedByPod,
-			},
-		},
+func newScaleDownStatusWithReasons(scaledDown []string, unremovable map[string]simulator.UnremovableReason) *status.ScaleDownStatus {
+	sd := &status.ScaleDownStatus{}
+	for _, name := range scaledDown {
+		sd.ScaledDownNodes = append(sd.ScaledDownNodes, &status.ScaleDownNode{Node: &apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{Name: name},
+		}})
 	}
-
-	// We process. This should trigger recordWithState and clear t.unneededNodesToReport.
-	tracker.Process(&ca_context.AutoscalingContext{}, sd)
-
-	if len(tracker.unneededNodesToReport) != 0 {
-		t.Errorf("Expected unneededNodesToReport to be empty, got %v", tracker.unneededNodesToReport)
+	for name, reason := range unremovable {
+		sd.UnremovableNodes = append(sd.UnremovableNodes, &status.UnremovableNode{
+			Node:   &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: name}},
+			Reason: reason,
+		})
 	}
+	return sd
 }
