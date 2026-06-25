@@ -2096,6 +2096,65 @@ func TestWaitForDeleteInstancesNoRetryOnOtherErrors(t *testing.T) {
 	}
 }
 
+func TestWaitForDeleteInstancesFailureRefreshesAzureCacheInstanceState(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager := newTestAzureManager(t)
+	manager.config.StrictCacheUpdates = false
+
+	vmssName := "test-asg"
+	var vmssCapacity int64 = 3
+	orchMode := armcompute.OrchestrationModeUniform
+
+	expectedScaleSets := []*armcompute.VirtualMachineScaleSet{
+		{
+			Name: &vmssName,
+			SKU: &armcompute.SKU{
+				Capacity: &vmssCapacity,
+			},
+			Properties: &armcompute.VirtualMachineScaleSetProperties{
+				OrchestrationMode: &orchMode,
+			},
+		},
+	}
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(expectedVMSSVMs, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	scaleSet := newTestScaleSet(manager, vmssName)
+	registered := manager.RegisterNodeGroup(scaleSet)
+	manager.explicitlyConfigured[vmssName] = true
+	assert.True(t, registered)
+	assert.NoError(t, manager.forceRefresh())
+
+	deletedNode := newApiNode(armcompute.OrchestrationModeUniform, 0)
+	manager.azureCache.setInstanceStateByProviderID(deletedNode.Spec.ProviderID, cloudprovider.InstanceDeleting)
+
+	// Simulate stale proactive deleting state before the delete operation result is known.
+	hasInstance, err := manager.azureCache.HasInstance(deletedNode.Spec.ProviderID)
+	assert.False(t, hasInstance)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+
+	requiredIds := &armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{
+		InstanceIDs: []*string{ptr.To("0")},
+	}
+	otherErrorPoller := newTestPollerWithError(errors.New("InternalServerError: something went wrong"))
+
+	// A failed waiter should trigger a refresh and reconcile stale deleting state.
+	scaleSet.waitForDeleteInstances(otherErrorPoller, requiredIds)
+
+	hasInstance, err = manager.azureCache.HasInstance(deletedNode.Spec.ProviderID)
+	assert.True(t, hasInstance)
+	assert.NoError(t, err)
+}
+
 func TestWaitForDeleteInstancesRetryFailure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

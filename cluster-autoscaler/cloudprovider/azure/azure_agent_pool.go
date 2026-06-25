@@ -435,8 +435,15 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 			return err
 		}
 
+		if !as.manager.config.StrictCacheUpdates {
+			as.manager.azureCache.setInstanceStateByProviderID(instance.Name, cloudprovider.InstanceDeleting)
+		}
+
 		err = as.deleteVirtualMachine(name)
 		if err != nil {
+			// The delete failed, so force a cache refresh on the next loop to
+			// reconcile any stale local cache state.
+			as.manager.invalidateCache()
 			klog.Errorf("Delete virtual machine %q failed: %v", name, err)
 			return err
 		}
@@ -518,7 +525,12 @@ func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
 		if err != nil {
 			return nil, err
 		}
-		nodes = append(nodes, cloudprovider.Instance{Id: resourceID})
+		var provisioningState *string
+		if instance.Properties != nil {
+			provisioningState = instance.Properties.ProvisioningState
+		}
+		status := instanceStatusFromProvisioningStateAndPowerState(resourceID, provisioningState, vmPowerStateRunning, false)
+		nodes = append(nodes, cloudprovider.Instance{Id: resourceID, Status: status})
 	}
 
 	return nodes, nil
