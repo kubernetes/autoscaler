@@ -150,27 +150,27 @@ func TestPatchSetCommit(t *testing.T) {
 	for testName, tc := range tests {
 		t.Run(testName, func(t *testing.T) {
 			ps := buildTestPatchSet(t, tc.patchLayers)
-			initialNumPatches := len(ps.patches)
+			initialNumPatches := len(ps.stack)
 
 			if currentMap := ps.AsMap(); !maps.Equal(currentMap, tc.wantMap) {
 				t.Errorf("AsMap() before any commits mismatch: got %v, want %v", currentMap, tc.wantMap)
 			}
 
 			for i := 0; i < initialNumPatches-1; i++ {
-				expectedPatchesAfterCommit := len(ps.patches) - 1
+				expectedPatchesAfterCommit := len(ps.stack) - 1
 				ps.Commit()
-				if len(ps.patches) != expectedPatchesAfterCommit {
-					t.Errorf("After commit #%d, expected %d patches, got %d", i+1, expectedPatchesAfterCommit, len(ps.patches))
+				if len(ps.stack) != expectedPatchesAfterCommit {
+					t.Errorf("After commit #%d, expected %d patches, got %d", i+1, expectedPatchesAfterCommit, len(ps.stack))
 				}
 				if currentMap := ps.AsMap(); !maps.Equal(currentMap, tc.wantMap) {
 					t.Errorf("AsMap() after commit #%d mismatch: got %v, want %v", i+1, currentMap, tc.wantMap)
 				}
 			}
 
-			if initialNumPatches > 0 && len(ps.patches) != 1 {
-				t.Errorf("Expected 1 patch after all commits, got %d", len(ps.patches))
-			} else if initialNumPatches == 0 && len(ps.patches) != 0 {
-				t.Errorf("Expected 0 patches after all commits, got %d", len(ps.patches))
+			if initialNumPatches > 0 && len(ps.stack) != 1 {
+				t.Errorf("Expected 1 patch after all commits, got %d", len(ps.stack))
+			} else if initialNumPatches == 0 && len(ps.stack) != 0 {
+				t.Errorf("Expected 0 patches after all commits, got %d", len(ps.stack))
 			}
 		})
 	}
@@ -235,17 +235,17 @@ func TestPatchSetRevert(t *testing.T) {
 	for testName, tc := range tests {
 		t.Run(testName, func(t *testing.T) {
 			ps := buildTestPatchSet(t, tc.patchLayers)
-			patchesNumber := len(ps.patches)
+			patchesNumber := len(ps.stack)
 
 			if currentMap := ps.AsMap(); !maps.Equal(currentMap, tc.wantInitialMap) {
 				t.Errorf("AsMap() before any reverts mismatch: got %v, want %v", currentMap, tc.wantInitialMap)
 			}
 
 			for i := 0; i <= patchesNumber; i++ {
-				wantPatchesAfterRevert := len(ps.patches) - 1
+				wantPatchesAfterRevert := len(ps.stack) - 1
 				ps.Revert()
-				if len(ps.patches) != wantPatchesAfterRevert && len(ps.patches) > 1 {
-					t.Errorf("After revert #%d, expected %d patches, got %d", i+1, wantPatchesAfterRevert, len(ps.patches))
+				if len(ps.stack) != wantPatchesAfterRevert && len(ps.stack) > 1 {
+					t.Errorf("After revert #%d, expected %d patches, got %d", i+1, wantPatchesAfterRevert, len(ps.stack))
 				}
 
 				currentMap := ps.AsMap()
@@ -259,10 +259,10 @@ func TestPatchSetRevert(t *testing.T) {
 				}
 			}
 
-			if patchesNumber >= 1 && len(ps.patches) != 1 {
-				t.Errorf("Expected 1 patch after all reverts, got %d", len(ps.patches))
-			} else if patchesNumber == 0 && len(ps.patches) != 0 {
-				t.Errorf("Expected 0 patches after all reverts, got %d", len(ps.patches))
+			if patchesNumber >= 1 && len(ps.stack) != 1 {
+				t.Errorf("Expected 1 patch after all reverts, got %d", len(ps.stack))
+			} else if patchesNumber == 0 && len(ps.stack) != 0 {
+				t.Errorf("Expected 0 patches after all reverts, got %d", len(ps.stack))
 			}
 		})
 	}
@@ -277,8 +277,8 @@ func TestPatchSetForkRevert(t *testing.T) {
 
 	// 2. Call Fork
 	ps.Fork()
-	if len(ps.patches) != 2 {
-		t.Fatalf("Expected 2 patches after Fork(), got %d", len(ps.patches))
+	if len(ps.stack) != 2 {
+		t.Fatalf("Expected 2 patches after Fork(), got %d", len(ps.stack))
 	}
 
 	// 3. Perform some mutation operations on the new layer
@@ -288,8 +288,8 @@ func TestPatchSetForkRevert(t *testing.T) {
 
 	// 4. Call Revert
 	ps.Revert()
-	if len(ps.patches) != 1 {
-		t.Fatalf("Expected 1 patch after Revert(), got %d", len(ps.patches))
+	if len(ps.stack) != 1 {
+		t.Fatalf("Expected 1 patch after Revert(), got %d", len(ps.stack))
 	}
 
 	// 5. Compare state to the empty map
@@ -308,8 +308,8 @@ func TestPatchSetForkCommit(t *testing.T) {
 	// 2. Call Fork two times
 	ps.Fork()
 	ps.Fork()
-	if len(ps.patches) != 3 {
-		t.Fatalf("Expected 3 patches after 2xFork(), got %d", len(ps.patches))
+	if len(ps.stack) != 3 {
+		t.Fatalf("Expected 3 patches after 2xFork(), got %d", len(ps.stack))
 	}
 
 	// 3. Perform some mutation operations on the current layer
@@ -319,14 +319,14 @@ func TestPatchSetForkCommit(t *testing.T) {
 
 	// 4. Call Commit to persist changes
 	ps.Commit()
-	if len(ps.patches) != 2 {
-		t.Fatalf("Expected 1 patch after Commit(), got %d", len(ps.patches))
+	if len(ps.stack) != 2 {
+		t.Fatalf("Expected 1 patch after Commit(), got %d", len(ps.stack))
 	}
 
 	// 5. Call Revert on the empty layer
 	ps.Revert()
-	if len(ps.patches) != 1 {
-		t.Fatalf("Expected 1 patch after Revert(), got %d", len(ps.patches))
+	if len(ps.stack) != 1 {
+		t.Fatalf("Expected 1 patch after Revert(), got %d", len(ps.stack))
 	}
 
 	// 6. Compare state to the empty map
@@ -535,154 +535,38 @@ func TestPatchSetOperations(t *testing.T) {
 	}
 }
 
-func TestPatchSetCache(t *testing.T) {
-	tests := map[string]struct {
-		patchLayers     []map[string]*int
-		mutatePatchSet  func(ps *PatchSet[string, int])
-		wantCache       map[string]*int
-		wantCacheInSync bool
-	}{
-		"Initial_EmptyPatchSet": {
-			patchLayers:     []map[string]*int{},
-			mutatePatchSet:  func(ps *PatchSet[string, int]) {},
-			wantCache:       map[string]*int{},
-			wantCacheInSync: false,
-		},
-		"Initial_WithData_NoCacheAccess": {
-			patchLayers:     []map[string]*int{{"a": ptr.To(1)}},
-			mutatePatchSet:  func(ps *PatchSet[string, int]) {},
-			wantCache:       map[string]*int{},
-			wantCacheInSync: false,
-		},
-		"FindValue_PopulatesCacheForKey": {
-			patchLayers: []map[string]*int{{"a": ptr.To(1), "b": ptr.To(2)}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.FindValue("a")
-			},
-			wantCache:       map[string]*int{"a": ptr.To(1)},
-			wantCacheInSync: false,
-		},
-		"FindValue_DeletedKey_PopulatesCacheWithNil": {
-			patchLayers: []map[string]*int{{"a": nil, "b": ptr.To(2)}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.FindValue("a")
-			},
-			wantCache:       map[string]*int{"a": nil},
-			wantCacheInSync: false,
-		},
-		"AsMap_PopulatesAndSyncsCache": {
-			patchLayers: []map[string]*int{{"a": ptr.To(1), "b": nil, "c": ptr.To(3)}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.AsMap()
-			},
-			wantCache:       map[string]*int{"a": ptr.To(1), "c": ptr.To(3)}, // Cache does not necessarily track deletions like 'b' key
-			wantCacheInSync: true,
-		},
-		"SetCurrent_UpdatesCache_NewKey": {
-			patchLayers: []map[string]*int{{}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.SetCurrent("x", 10)
-			},
-			wantCache:       map[string]*int{"x": ptr.To(10)},
-			wantCacheInSync: false,
-		},
-		"SetCurrent_UpdatesCache_OverwriteKey": {
-			patchLayers: []map[string]*int{{"x": ptr.To(5)}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.FindValue("x")
-				ps.SetCurrent("x", 10)
-			},
-			wantCache:       map[string]*int{"x": ptr.To(10)},
-			wantCacheInSync: false,
-		},
-		"DeleteCurrent_UpdatesCache": {
-			patchLayers: []map[string]*int{{"x": ptr.To(5)}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.FindValue("x")
-				ps.DeleteCurrent("x")
-			},
-			wantCache:       map[string]*int{"x": nil},
-			wantCacheInSync: false,
-		},
-		"Revert_ClearsAffectedCacheEntries_And_SetsCacheNotInSync": {
-			patchLayers: []map[string]*int{{"a": ptr.To(1)}, {"b": ptr.To(2), "a": ptr.To(11)}}, // Layer 0: a=1; Layer 1: b=2, a=11
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.FindValue("a")
-				ps.FindValue("b")
-				ps.Revert()
-			},
-			wantCache:       map[string]*int{},
-			wantCacheInSync: false,
-		},
-		"Revert_OnSyncedCache_SetsCacheNotInSync": {
-			patchLayers: []map[string]*int{{"a": ptr.To(1)}, {"b": ptr.To(2)}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.AsMap()
-				ps.Revert()
-			},
-			wantCache:       map[string]*int{"a": ptr.To(1)},
-			wantCacheInSync: false,
-		},
-		"Commit_DoesNotInvalidateCache_IfValuesConsistent": {
-			patchLayers: []map[string]*int{{"a": ptr.To(1)}, {"b": ptr.To(2)}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.FindValue("a")
-				ps.FindValue("b")
-				ps.Commit()
-			},
-			wantCache:       map[string]*int{"a": ptr.To(1), "b": ptr.To(2)},
-			wantCacheInSync: false,
-		},
-		"Commit_OnSyncedCache_KeepsCacheInSync": {
-			patchLayers: []map[string]*int{{"a": ptr.To(1)}, {"b": ptr.To(2)}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.AsMap()
-				ps.Commit()
-			},
-			wantCache:       map[string]*int{"a": ptr.To(1), "b": ptr.To(2)},
-			wantCacheInSync: true,
-		},
-		"Fork_DoesNotInvalidateCache": {
-			patchLayers: []map[string]*int{{"a": ptr.To(1)}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.FindValue("a")
-				ps.Fork()
-			},
-			wantCache:       map[string]*int{"a": ptr.To(1)},
-			wantCacheInSync: false,
-		},
-		"Fork_OnSyncedCache_KeepsCacheInSync": {
-			patchLayers: []map[string]*int{{"a": ptr.To(1)}},
-			mutatePatchSet: func(ps *PatchSet[string, int]) {
-				ps.AsMap()
-				ps.Fork()
-			},
-			wantCache:       map[string]*int{"a": ptr.To(1)},
-			wantCacheInSync: true,
-		},
+
+
+func TestNewPatchSetFromMap(t *testing.T) {
+	nativeMap := map[string]int{
+		"a": 1,
+		"b": 2,
+		"c": 3,
 	}
 
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			ps := buildTestPatchSet(t, tc.patchLayers)
-			tc.mutatePatchSet(ps)
+	ps := NewPatchSetFromMap(nativeMap)
 
-			if !maps.EqualFunc(ps.cache, tc.wantCache, func(a, b *int) bool {
-				if a == nil && b == nil {
-					return true
-				}
-				if a == nil || b == nil {
-					return false
-				}
-				return *a == *b
-			}) {
-				t.Errorf("Cache content mismatch: got %v, want %v", ps.cache, tc.wantCache)
-			}
+	if len(ps.stack) != 1 {
+		t.Fatalf("Expected 1 stack item, got %d", len(ps.stack))
+	}
 
-			if ps.cacheInSync != tc.wantCacheInSync {
-				t.Errorf("cacheInSync status mismatch: got %v, want %v", ps.cacheInSync, tc.wantCacheInSync)
-			}
-		})
+	for k, expectedVal := range nativeMap {
+		val, found := ps.FindValue(k)
+		if !found {
+			t.Errorf("Expected key %q to be found", k)
+		}
+		if val != expectedVal {
+			t.Errorf("Key %q: got value %d, want %d", k, val, expectedVal)
+		}
+	}
+
+	// Empty map case
+	psEmpty := NewPatchSetFromMap(map[string]int{})
+	if len(psEmpty.stack) != 1 {
+		t.Fatalf("Expected 1 stack item for empty map, got %d", len(psEmpty.stack))
+	}
+	if psEmpty.stack[0].Len() != 0 {
+		t.Errorf("Expected empty map state, got length %d", psEmpty.stack[0].Len())
 	}
 }
 
@@ -705,4 +589,18 @@ func buildTestPatchSet[K comparable, V any](t *testing.T, patchLayers []map[K]*V
 	}
 
 	return NewPatchSet(patches...)
+}
+
+func TestInterfaceHashStability(t *testing.T) {
+	type DummyId struct {
+		Name      string
+		Namespace string
+	}
+	id1 := DummyId{Name: "claim-1", Namespace: "default"}
+	id2 := DummyId{Name: "claim-1", Namespace: "default"}
+	h1 := hashKey(id1)
+	h2 := hashKey(id2)
+	if h1 != h2 {
+		t.Errorf("hashKey is unstable for struct keys: h1=%d, h2=%d", h1, h2)
+	}
 }
