@@ -203,6 +203,11 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: ObservedGeneration is the last generation observed by
+                  the controller.
+                format: int64
+                type: integer
               used:
                 description: Used shows the current usage of the quota.
                 properties:

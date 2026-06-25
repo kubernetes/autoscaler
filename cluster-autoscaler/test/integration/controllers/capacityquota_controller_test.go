@@ -298,6 +298,7 @@ var _ = Describe("CapacityQuota Controller", func() {
 			var fetchedCQ cqv1alpha1.CapacityQuota
 			g.Expect(crClient.Get(ctx, cqKey, &fetchedCQ)).To(Succeed())
 
+			g.Expect(fetchedCQ.Status.ObservedGeneration).To(Equal(fetchedCQ.Generation))
 			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, cqv1alpha1.ValidCondition)).To(BeTrue())
 			cond := meta.FindStatusCondition(fetchedCQ.Status.Conditions, cqv1alpha1.ValidCondition)
 			g.Expect(cond).NotTo(BeNil())
@@ -313,6 +314,7 @@ func assertQuotaReconciled(ctx context.Context, g Gomega, cqKey types.Namespaced
 	var fetchedCQ cqv1alpha1.CapacityQuota
 	g.Expect(crClient.Get(ctx, cqKey, &fetchedCQ)).To(Succeed())
 
+	g.Expect(fetchedCQ.Status.ObservedGeneration).To(Equal(fetchedCQ.Generation))
 	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, cqv1alpha1.ValidCondition)).To(BeTrue())
 	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, cqv1alpha1.ReconciledCondition)).To(BeTrue())
 	g.Expect(fetchedCQ.Status.Used).ToNot(BeNil())
