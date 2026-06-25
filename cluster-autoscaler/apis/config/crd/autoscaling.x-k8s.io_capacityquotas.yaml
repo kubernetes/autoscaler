@@ -144,7 +144,10 @@ spec:
               conditions:
                 description: |-
                   Conditions provide a standard mechanism for reporting the quota's state.
-                  CapacityQuota will be enforced only if it has a Valid=True condition.
+
+                  Cluster Autoscaler manages cluster-autoscaler.kubernetes.io/valid condition, and will enforce
+                  the quota only if the status of the condition is True. Note that this condition is not considered a part
+                  of the public API.
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.

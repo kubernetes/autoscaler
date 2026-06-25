@@ -29,6 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
@@ -299,8 +300,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 			g.Expect(crClient.Get(ctx, cqKey, &fetchedCQ)).To(Succeed())
 
 			g.Expect(fetchedCQ.Status.ObservedGeneration).To(Equal(fetchedCQ.Generation))
-			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, cqv1alpha1.ValidCondition)).To(BeTrue())
-			cond := meta.FindStatusCondition(fetchedCQ.Status.Conditions, cqv1alpha1.ValidCondition)
+			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, capacityquota.ValidCondition)).To(BeTrue())
+			cond := meta.FindStatusCondition(fetchedCQ.Status.Conditions, capacityquota.ValidCondition)
 			g.Expect(cond).NotTo(BeNil())
 			g.Expect(cond.Reason).To(Equal("ValidationFailed"))
 			g.Expect(cond.Message).To(ContainSubstring("is not a valid label selector operator"))
@@ -315,8 +316,7 @@ func assertQuotaReconciled(ctx context.Context, g Gomega, cqKey types.Namespaced
 	g.Expect(crClient.Get(ctx, cqKey, &fetchedCQ)).To(Succeed())
 
 	g.Expect(fetchedCQ.Status.ObservedGeneration).To(Equal(fetchedCQ.Generation))
-	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, cqv1alpha1.ValidCondition)).To(BeTrue())
-	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, cqv1alpha1.ReconciledCondition)).To(BeTrue())
+	g.Expect(meta.IsStatusConditionTrue(fetchedCQ.Status.Conditions, capacityquota.ValidCondition)).To(BeTrue())
 	g.Expect(fetchedCQ.Status.Used).ToNot(BeNil())
 	g.Expect(apiequality.Semantic.DeepEqual(fetchedCQ.Status.Used.Resources, wantResources)).To(BeTrue())
 }
