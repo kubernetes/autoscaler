@@ -34,12 +34,6 @@ const (
 	ResourceMemory ResourceName = "memory"
 	// ResourceNodes - number of nodes, in units.
 	ResourceNodes ResourceName = "nodes"
-	// ValidCondition is the condition specifying whether the CapacityQuota is valid
-	ValidCondition = "Valid"
-	// ValidationSucceeded specifies that the CapacityQuota is valid
-	ValidationSucceeded = "ValidationSucceeded"
-	// ValidationFailed specifies that the CapacityQuota is invalid
-	ValidationFailed = "ValidationFailed"
 	// ReconciledCondition is the condition specifying whether the CapacityQuota status has been reconciled.
 	ReconciledCondition = "Reconciled"
 	// ReconciliationSucceeded specifies that the CapacityQuota status has been reconciled successfully.
@@ -125,7 +119,11 @@ type CapacityQuotaStatus struct {
 	Used *CapacityQuotaUsage `json:"used,omitempty"`
 
 	// Conditions provide a standard mechanism for reporting the quota's state.
-	// CapacityQuota will be enforced only if it has a Valid=True condition.
+	//
+	// Cluster Autoscaler manages cluster-autoscaler.kubernetes.io/valid condition, and will enforce
+	// the quota only if the status of the condition is True. Note that this condition is not considered a part
+	// of the public API.
+	//
 	// +listType=map
 	// +listMapKey=type
 	// +patchStrategy=merge
