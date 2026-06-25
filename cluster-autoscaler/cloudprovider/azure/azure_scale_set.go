@@ -814,6 +814,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 		// Proactively set the status of the instances to be deleted in cache
 		for _, instance := range instancesToDelete {
 			scaleSet.setInstanceStatusByProviderID(instance.Name, cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting})
+			scaleSet.manager.azureCache.setInstanceStateByProviderID(instance.Name, cloudprovider.InstanceDeleting)
 		}
 	}
 
@@ -832,8 +833,9 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompu
 	if err == nil {
 		klog.V(3).Infof("PollUntilDone for DeleteInstances(%v) for %s success", requiredIds.InstanceIDs, scaleSet.Name)
 		if scaleSet.manager.config.StrictCacheUpdates {
-			if err := scaleSet.manager.forceRefresh(); err != nil {
-				klog.Errorf("forceRefresh failed with error: %v", err)
+			if refreshErr := scaleSet.manager.forceRefresh(); refreshErr != nil {
+				klog.Errorf("forceRefresh failed after successful DeleteInstances(%v) for %s: %v", requiredIds.InstanceIDs, scaleSet.Name, refreshErr)
+				scaleSet.manager.invalidateCache()
 			}
 			scaleSet.invalidateInstanceCache()
 		}
@@ -864,6 +866,10 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompu
 
 	scaleSet.invalidateInstanceCache()
 	scaleSet.invalidateLastSizeRefreshWithLock()
+	if refreshErr := scaleSet.manager.forceRefresh(); refreshErr != nil {
+		klog.Errorf("forceRefresh failed after DeleteInstances(%v) for %s returned error: %v", requiredIds.InstanceIDs, scaleSet.Name, refreshErr)
+		scaleSet.manager.invalidateCache()
+	}
 	klog.Errorf("PollUntilDone for DeleteInstances(%v) for %s failed with error: %v", requiredIds.InstanceIDs, scaleSet.Name, err)
 }
 

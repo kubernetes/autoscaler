@@ -247,6 +247,16 @@ func (vmPool *VMPool) DeleteNodes(nodes []*apiv1.Node) error {
 
 	klog.V(3).Infof("Deleting nodes from vmPool %s: %v", vmPool.Name, providerIDs)
 
+	// In non-strict mode, proactively mark instances as deleting in the cache so
+	// HasInstance reports them as gone before the next cache refresh. A failed
+	// delete is reconciled by the deferred invalidateCache() below, which forces a
+	// refresh on the next loop.
+	if !vmPool.manager.config.StrictCacheUpdates {
+		for _, providerID := range providerIDs {
+			vmPool.manager.azureCache.setInstanceStateByProviderID(providerID, cloudprovider.InstanceDeleting)
+		}
+	}
+
 	machineNames := make([]*string, len(providerIDs))
 	for i, providerID := range providerIDs {
 		// extract the machine name from the providerID by splitting the providerID by '/' and get the last element
@@ -459,7 +469,12 @@ func (vmPool *VMPool) Nodes() ([]cloudprovider.Instance, error) {
 		if err != nil {
 			return nil, err
 		}
-		nodes = append(nodes, cloudprovider.Instance{Id: resourceID})
+		// Surface the VM provisioning state so the cache (and HasInstance /
+		// ClusterStateRegistry through it) can observe VMs that are being deleted.
+		// VMs pools do not support fast-delete-on-failed-provisioning, so the power
+		// state is irrelevant here.
+		status := instanceStatusFromProvisioningStateAndPowerState(resourceID, vm.Properties.ProvisioningState, vmPowerStateRunning, false)
+		nodes = append(nodes, cloudprovider.Instance{Id: resourceID, Status: status})
 	}
 
 	return nodes, nil

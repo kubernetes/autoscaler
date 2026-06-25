@@ -28,6 +28,7 @@ import (
 	"go.uber.org/mock/gomock"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient/mock_virtualmachineclient"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
@@ -500,6 +501,9 @@ func TestAgentPoolNodes(t *testing.T) {
 		{
 			Tags: map[string]*string{"poolName": ptr.To("as")},
 			ID:   &testValidProviderID0,
+			Properties: &armcompute.VirtualMachineProperties{
+				ProvisioningState: ptr.To("Succeeded"),
+			},
 		},
 	}
 
@@ -514,6 +518,13 @@ func TestAgentPoolNodes(t *testing.T) {
 	nodes, err := as.Nodes()
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(nodes))
+	assert.Equal(t, cloudprovider.InstanceRunning, nodes[0].Status.State)
+
+	expectedVMs[1].Properties = &armcompute.VirtualMachineProperties{ProvisioningState: ptr.To(VMProvisioningStateDeleting)}
+	as.manager.azureCache.virtualMachines["as"] = expectedVMs
+	nodes, err = as.Nodes()
+	assert.NoError(t, err)
+	assert.Equal(t, cloudprovider.InstanceDeleting, nodes[0].Status.State)
 
 	expectedVMs = []*armcompute.VirtualMachine{
 		{
@@ -528,4 +539,77 @@ func TestAgentPoolNodes(t *testing.T) {
 	expectedErr := fmt.Errorf("\"azure://foo\" isn't in Azure resource ID format")
 	assert.Equal(t, expectedErr, err)
 	assert.Nil(t, nodes)
+}
+
+func TestAgentPoolDeleteInstancesProactivelyMarksDeletion(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	as := newTestAgentPool(newTestAzureManager(t), "as")
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
+
+	mockVMClient := NewMockInterface(ctrl)
+	as.manager.azClient.virtualMachinesClient = mockVMClient
+
+	vmName, err := resourceName(testValidProviderID0)
+	assert.NoError(t, err)
+	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, vmName, nil).DoAndReturn(
+		func(ctx context.Context, resourceGroupName, vmName string, expand *string) (*armcompute.VirtualMachine, error) {
+			hasInstance, hasInstanceErr := as.manager.azureCache.HasInstance(testValidProviderID0)
+			assert.False(t, hasInstance)
+			assert.Equal(t, cloudprovider.ErrNotImplemented, hasInstanceErr)
+			return &armcompute.VirtualMachine{
+				Properties: &armcompute.VirtualMachineProperties{
+					StorageProfile: &armcompute.StorageProfile{OSDisk: &armcompute.OSDisk{ManagedDisk: &armcompute.ManagedDiskParameters{}}},
+				},
+			}, nil
+		})
+	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, vmName).Return(nil)
+
+	hasInstance, err := as.manager.azureCache.HasInstance(testValidProviderID0)
+	assert.True(t, hasInstance)
+	assert.NoError(t, err)
+
+	err = as.DeleteInstances([]*azureRef{{Name: testValidProviderID0}})
+	assert.NoError(t, err)
+}
+
+func TestAgentPoolDeleteInstancesStrictCacheDoesNotProactivelyMarkDeletion(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	as := newTestAgentPool(newTestAzureManager(t), "as")
+	as.manager.config.StrictCacheUpdates = true
+	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
+
+	mockVMClient := NewMockInterface(ctrl)
+	as.manager.azClient.virtualMachinesClient = mockVMClient
+
+	vmName, err := resourceName(testValidProviderID0)
+	assert.NoError(t, err)
+	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, vmName, nil).DoAndReturn(
+		func(ctx context.Context, resourceGroupName, vmName string, expand *string) (*armcompute.VirtualMachine, error) {
+			hasInstance, hasInstanceErr := as.manager.azureCache.HasInstance(testValidProviderID0)
+			assert.True(t, hasInstance)
+			assert.NoError(t, hasInstanceErr)
+			return &armcompute.VirtualMachine{
+				Properties: &armcompute.VirtualMachineProperties{
+					StorageProfile: &armcompute.StorageProfile{OSDisk: &armcompute.OSDisk{ManagedDisk: &armcompute.ManagedDiskParameters{}}},
+				},
+			}, nil
+		})
+	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, vmName).Return(nil)
+
+	hasInstance, err := as.manager.azureCache.HasInstance(testValidProviderID0)
+	assert.True(t, hasInstance)
+	assert.NoError(t, err)
+
+	err = as.DeleteInstances([]*azureRef{{Name: testValidProviderID0}})
+	assert.NoError(t, err)
+
+	// Strict cache mode should not mutate instance state proactively; the instance
+	// remains present until the next refresh reflects Azure state.
+	hasInstance, err = as.manager.azureCache.HasInstance(testValidProviderID0)
+	assert.True(t, hasInstance)
+	assert.NoError(t, err)
 }
