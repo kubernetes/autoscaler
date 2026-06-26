@@ -1073,6 +1073,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `max-binpacking-time` | Maximum time spend on binpacking for a single scale-up. If binpacking is limited by this, scale-up will continue with the already calculated scale-up options. | 5m0s |
 | `max-bulk-soft-taint-count` | Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting. | 10 |
 | `max-bulk-soft-taint-time` | Maximum duration of tainting/untainting nodes as PreferNoSchedule at the same time. | 3s |
+| `max-concurrent-nodes-tainting` | The maximum number of nodes that can be tainted in parallel. | 5 |
 | `max-drain-parallelism` | Maximum number of nodes needing drain, that can be drained and deleted in parallel. | 1 |
 | `max-failing-time` | Maximum time from last recorded successful autoscaler run before automatic restart | 15m0s |
 | `max-free-difference-ratio` | Maximum difference in free resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's free resource. | 0.05 |

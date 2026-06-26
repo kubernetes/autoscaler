@@ -17,7 +17,6 @@ limitations under the License.
 package actuation
 
 import (
-	"context"
 	"strings"
 	"time"
 
@@ -220,7 +219,7 @@ func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) (time
 	if concurrency <= 0 {
 		concurrency = 5
 	}
-	workqueue.ParallelizeUntil(context.Background(), concurrency, len(nodesToTaint), func(piece int) {
+	workqueue.ParallelizeUntil(a.autoscalingCtx, concurrency, len(nodesToTaint), func(piece int) {
 		node := nodesToTaint[piece]
 		err := a.taintNode(node)
 		if err != nil {

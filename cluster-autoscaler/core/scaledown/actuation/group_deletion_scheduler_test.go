@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -147,7 +148,7 @@ func TestScheduleDeletion(t *testing.T) {
 				t.Fatalf("Couldn't create daemonset lister")
 			}
 			registry := kube_util.NewListerRegistry(nil, nil, podLister, pdbLister, dsLister, nil, nil, nil, nil)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), opts, fakeClient, registry, provider, nil, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}

@@ -140,6 +140,7 @@ func (callbacks *staticAutoscalerProcessorCallbacks) reset() {
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
 func NewStaticAutoscaler(
+	ctx context.Context,
 	opts config.AutoscalingOptions,
 	fwHandle *framework.Handle,
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
@@ -174,6 +175,7 @@ func NewStaticAutoscaler(
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	autoscalingCtx := ca_context.NewAutoscalingContext(
+		ctx,
 		opts,
 		fwHandle,
 		clusterSnapshot,

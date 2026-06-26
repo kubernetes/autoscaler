@@ -34,10 +34,10 @@ import (
 // across different concurrency levels.
 //
 // Concurrency levels tested:
-// - 5 (Default): Ensures standard behavior remains stable.
-// - 10 (Medium): Validates throughput improvements without overwhelming the API server.
-// - 100 (High): Tests the system's resilience under high parallel pressure, confirming that
-//   the workqueue and context management handle extreme concurrency gracefully.
+//   - 5 (Default): Ensures standard behavior remains stable.
+//   - 10 (Medium): Validates throughput improvements without overwhelming the API server.
+//   - 100 (High): Tests the system's resilience under high parallel pressure, confirming that
+//     the workqueue and context management handle extreme concurrency gracefully.
 func TestTaintingConcurrency(t *testing.T) {
 	for _, concurrency := range []int{5, 10, 100} {
 		t.Run(fmt.Sprintf("concurrency-%d", concurrency), func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestTaintingConcurrency(t *testing.T) {
 
 				// Run CA loop to mark nodes as unneeded.
 				synctestutils.MustRunOnceAfter(t, autoscaler, stepDuration)
-				
+
 				// Run another CA loop after unneededTime, nodes should be deleted.
 				synctestutils.MustRunOnceAfter(t, autoscaler, unneededTime+time.Nanosecond)
 

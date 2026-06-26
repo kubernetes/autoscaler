@@ -17,6 +17,7 @@ limitations under the License.
 package unneeded
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -260,7 +261,7 @@ func TestRemovableAt(t *testing.T) {
 			rsLister, err := kube_util.NewTestReplicaSetLister(nil)
 			assert.NoError(t, err)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{ScaleDownSimulationTimeout: 5 * time.Minute}, &fake.Clientset{}, registry, provider, nil, nil, nil)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), config.AutoscalingOptions{ScaleDownSimulationTimeout: 5 * time.Minute}, &fake.Clientset{}, registry, provider, nil, nil, nil)
 			assert.NoError(t, err)
 			expectedThreshold := 5 * time.Minute
 			fakeTimeGetter := &fakeScaleDownTimeGetter{

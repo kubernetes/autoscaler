@@ -17,6 +17,7 @@ limitations under the License.
 package test
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"slices"
@@ -168,6 +169,7 @@ func ExtractPodNames(pods []*apiv1.Pod) []string {
 
 // NewScaleTestAutoscalingContext creates a new test autoscaling context for scaling tests.
 func NewScaleTestAutoscalingContext(
+	ctx context.Context,
 	options config.AutoscalingOptions, fakeClient kube_client.Interface,
 	listers kube_util.ListerRegistry, provider cloudprovider.CloudProvider,
 	processorCallbacks processor_callbacks.ProcessorCallbacks, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter,
@@ -189,6 +191,7 @@ func NewScaleTestAutoscalingContext(
 		return ca_context.AutoscalingContext{}, err
 	}
 	return ca_context.AutoscalingContext{
+		Context:            ctx,
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
 			ClientSet:      fakeClient,

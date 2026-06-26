@@ -17,6 +17,7 @@ limitations under the License.
 package planner
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
@@ -504,7 +505,7 @@ func TestUpdateClusterState(t *testing.T) {
 				MaxScaleDownParallelism:    10,
 			}
 			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(opts)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(opts, &fake.Clientset{}, registry, provider, nil, nil, templateNodeInfoRegistry)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), opts, &fake.Clientset{}, registry, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := options.NodeDeleteOptions{}
@@ -703,7 +704,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 				MaxScaleDownParallelism:    tc.maxParallelism,
 			}
 			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOpts)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOpts, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), autoscalingOpts, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
@@ -827,7 +828,7 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 			}
 
 			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOptions)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(),
 				autoscalingOptions,
 				&fake.Clientset{},
 				kube_util.NewListerRegistry(
@@ -1106,7 +1107,7 @@ func TestNodesToDelete(t *testing.T) {
 				ScaleDownSimulationTimeout: 5 * time.Minute,
 			}
 			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOpts)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOpts, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), autoscalingOpts, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, allNodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
@@ -1286,7 +1287,7 @@ func TestAtomicScaleDownNodeNilGroup(t *testing.T) {
 
 	autoscalingOptions := config.AutoscalingOptions{}
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOptions)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOptions, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), autoscalingOptions, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	deleteOptions := options.NodeDeleteOptions{}
