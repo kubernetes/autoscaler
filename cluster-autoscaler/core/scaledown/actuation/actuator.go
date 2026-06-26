@@ -51,8 +51,7 @@ import (
 )
 
 const (
-	pastLatencyExpireDuration  = time.Hour
-	maxConcurrentNodesTainting = 5
+	pastLatencyExpireDuration = time.Hour
 )
 
 // Actuator is responsible for draining and deleting nodes.
@@ -217,7 +216,11 @@ func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) (time
 		err  error
 	}, len(nodesToTaint))
 	taintedNodes := make(chan *apiv1.Node, len(nodesToTaint))
-	workqueue.ParallelizeUntil(context.Background(), maxConcurrentNodesTainting, len(nodesToTaint), func(piece int) {
+	concurrency := a.autoscalingCtx.AutoscalingOptions.MaxConcurrentNodesTainting
+	if concurrency <= 0 {
+		concurrency = 5
+	}
+	workqueue.ParallelizeUntil(context.Background(), concurrency, len(nodesToTaint), func(piece int) {
 		node := nodesToTaint[piece]
 		err := a.taintNode(node)
 		if err != nil {
