@@ -897,6 +897,63 @@ func TestInPlaceSkipDisruptionBudgetWithResizePolicy(t *testing.T) {
 	}
 }
 
+// TestInPlaceSkipDisruptionBudgetNonDisruptiveApproves verifies that when
+// in-place-skip-disruption-budget is enabled and a pod is a non-disruptive
+// resize candidate (all containers NotRequired), the pod is approved without
+// needing to pass the disruption budget check. This is the behavior path
+// previously annotated with a redundant V(4) log line; the log was removed
+// in https://github.com/kubernetes/autoscaler/issues/9870 and this test
+// pins the behavior so the cleanup does not regress.
+func TestInPlaceSkipDisruptionBudgetNonDisruptiveApproves(t *testing.T) {
+	replicas := int32(5)
+	livePods := 5
+	tolerance := 0.1
+
+	rc := corev1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: corev1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*corev1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().
+			WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+			WithName(getTestPodName(i)).
+			AddContainer(test.Container().WithName("c1").
+				WithContainerResizePolicy([]corev1.ContainerResizePolicy{
+					{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.NotRequired},
+					{ResourceName: corev1.ResourceMemory, RestartPolicy: corev1.NotRequired},
+				}).Get()).
+			Get()
+	}
+
+	clock := baseclocktest.NewFakeClock(time.Time{})
+	lipatm := map[string]time.Time{}
+	basicVpa := getIPORVpa()
+
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), true)
+	assert.NoError(t, err)
+
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	assert.NoError(t, err)
+
+	inplace := factory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	for _, pod := range pods {
+		decision := inplace.CanInPlaceUpdate(pod, basicVpa, nil)
+		assert.Equalf(t, utils.InPlaceApproved, decision,
+			"non-disruptive pod %s should be approved via in-place-skip-disruption-budget, got %v", pod.Name, decision)
+	}
+}
+
 func TestInPlaceAtLeastOne(t *testing.T) {
 	replicas := int32(5)
 	livePods := 5
