@@ -1404,6 +1404,7 @@ func (csr *ClusterStateRegistry) GetScaleUpFailures() map[string][]scaleupfailur
 	return csr.scaleUpFailures.Get()
 }
 
+// GetPerNodeGroupReadiness returns the perNodeGroupReadiness map.
 func (csr *ClusterStateRegistry) GetPerNodeGroupReadiness() map[string]Readiness {
 	return csr.perNodeGroupReadiness
 }
