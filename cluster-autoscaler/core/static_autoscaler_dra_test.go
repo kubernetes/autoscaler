@@ -436,11 +436,11 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 			autoscaler.processors.ScaleDownStatusProcessor = scaleDownProcessor
 
 			if len(tc.expectedScaleDowns) > 0 {
-				err = autoscaler.RunOnce(now)
+				err = autoscaler.RunOnce(t.Context(), now)
 				assert.NoError(t, err)
 			}
 
-			err = autoscaler.RunOnce(now.Add(2 * time.Minute))
+			err = autoscaler.RunOnce(t.Context(), now.Add(2*time.Minute))
 			assert.NoError(t, err)
 
 			for range allExpectedScaleDowns {
@@ -453,7 +453,7 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 			}
 
 			if len(tc.expectedNoScaleUps) > 0 || len(tc.expectedNoScaleDowns) > 0 {
-				err = autoscaler.RunOnce(now.Add(4 * time.Minute))
+				err = autoscaler.RunOnce(t.Context(), now.Add(4*time.Minute))
 				assert.NoError(t, err)
 
 				for _, noScaleUp := range tc.expectedNoScaleUps {

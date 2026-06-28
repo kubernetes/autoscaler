@@ -17,6 +17,7 @@ limitations under the License.
 package loop
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -25,15 +26,15 @@ import (
 
 type autoscaler interface {
 	// RunOnce represents an iteration in the control-loop of CA.
-	RunOnce(currentTime time.Time) errors.AutoscalerError
+	RunOnce(ctx context.Context, currentTime time.Time) errors.AutoscalerError
 }
 
 // RunAutoscalerOnce triggers a single autoscaling iteration.
-func RunAutoscalerOnce(autoscaler autoscaler, healthCheck *metrics.HealthCheck, loopStart time.Time) {
+func RunAutoscalerOnce(ctx context.Context, autoscaler autoscaler, healthCheck *metrics.HealthCheck, loopStart time.Time) {
 	metrics.UpdateLastTime(metrics.Main, loopStart)
 	healthCheck.UpdateLastActivity(loopStart)
 
-	err := autoscaler.RunOnce(loopStart)
+	err := autoscaler.RunOnce(ctx, loopStart)
 	if err != nil && err.Type() != errors.TransientError {
 		metrics.RegisterError(err)
 	} else {

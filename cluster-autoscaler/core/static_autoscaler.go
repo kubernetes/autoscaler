@@ -293,7 +293,7 @@ func (a *StaticAutoscaler) initializeRemainingPdbTracker() caerrors.AutoscalerEr
 }
 
 // RunOnce iterates over node groups and scales them up/down if necessary
-func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerError {
+func (a *StaticAutoscaler) RunOnce(ctx context.Context, currentTime time.Time) caerrors.AutoscalerError {
 	a.cleanUpIfRequired()
 	a.processorCallbacks.reset()
 	a.DebuggingSnapshotter.StartDataCollection()
@@ -568,6 +568,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		scaleUpStatus.Result = status.ScaleUpInCooldown
 		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 		shouldScaleUp = false
+	}
+
+	if err := ctx.Err(); err != nil {
+		klog.V(0).Infof("Skipping scale-up/scale-down, context cancelled: %v", err)
+		return nil
 	}
 
 	if shouldScaleUp || a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp) {

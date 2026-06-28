@@ -34,7 +34,7 @@ func RunOnceAfter(t *testing.T, autoscaler core.Autoscaler, d time.Duration) err
 	synctest.Wait()
 
 	time.Sleep(d)
-	err := autoscaler.RunOnce(time.Now())
+	err := autoscaler.RunOnce(t.Context(), time.Now())
 
 	// Let side-effects of the RunOnce finish.
 	synctest.Wait()
