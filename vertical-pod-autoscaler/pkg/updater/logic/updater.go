@@ -536,7 +536,7 @@ func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restri
 		case utils.InPlaceInfeasibleCached:
 			// Cached infeasibility means we've already determined this pod cannot be
 			// updated in-place and cached the result to avoid redundant checks
-			eventRecorder.Event(pod, corev1.EventTypeNormal, "InPlaceResizeSkipped", "Previously recorded in-place update was infeasible, current recommendation is not lower than previous, skipping pod")
+			eventRecorder.Event(pod, corev1.EventTypeNormal, "InPlaceResizeSkipped", "Previously recorded in-place update was infeasible, current recommendation is not lower than previous, skipping resize")
 			metrics_updater.RecordInPlaceInfeasibleCached(vpaCount, vpa.Name, vpa.Namespace)
 			return false
 		default:
