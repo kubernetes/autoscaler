@@ -143,22 +143,24 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 			for {
 				select {
 				case <-ctx.Done():
-					// TODO: handle graceful shutdown with context
+					// Context is also passed down to RunOnce, so a long-running
+					// iteration in progress will be interrupted and cleaned up there.
 					return nil
 				default:
 					trigger.Wait(previousRun)
 					previousRun, lastRun = lastRun, time.Now()
-					loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, lastRun)
 				}
 			}
 		} else {
 			for {
 				select {
 				case <-ctx.Done():
-					// TODO: handle graceful shutdown with context
+					// Context is also passed down to RunOnce, so a long-running
+					// iteration in progress will be interrupted and cleaned up there.
 					return nil
 				case <-time.After(autoscalingOpts.ScanInterval):
-					loop.RunAutoscalerOnce(autoscaler, healthCheck, time.Now())
+					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, time.Now())
 				}
 			}
 		}

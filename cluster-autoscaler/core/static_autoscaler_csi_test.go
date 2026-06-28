@@ -302,17 +302,17 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 			autoscaler.processors.ScaleDownStatusProcessor = scaleDownProcessor
 
 			if len(tc.expectedScaleDowns) > 0 {
-				err = autoscaler.RunOnce(now)
+				err = autoscaler.RunOnce(t.Context(), now)
 				assert.NoError(t, err)
 			}
 
 			// Run one autoscaler loop.
-			require.NoError(t, autoscaler.RunOnce(now.Add(2*time.Minute)))
+			require.NoError(t, autoscaler.RunOnce(t.Context(), now.Add(2*time.Minute)))
 
 			// Scale-down is a multi-iteration process (mark unneeded -> taint -> delete after delay).
 			// Run one more loop to allow the actuator to call the cloud provider ScaleDown callbacks.
 			if len(tc.expectedScaleDowns) > 0 {
-				require.NoError(t, autoscaler.RunOnce(now.Add(4*time.Minute)))
+				require.NoError(t, autoscaler.RunOnce(t.Context(), now.Add(4*time.Minute)))
 				for range allExpectedScaleDowns {
 					select {
 					case <-setupConfig.nodesDeleted:
