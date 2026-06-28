@@ -516,7 +516,7 @@ func filterPods(pods []*corev1.Pod, predicate func(*corev1.Pod) bool) []*corev1.
 	return result
 }
 
-func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction, vpa *vpa_types.VerticalPodAutoscaler, vpaSize int, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources, eventRecorder record.EventRecorder) []*corev1.Pod {
+func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restriction.PodsInPlaceRestriction, vpa *vpa_types.VerticalPodAutoscaler, vpaCount int, infeasibleAttempts map[types.UID]*vpa_types.RecommendedPodResources, eventRecorder record.EventRecorder) []*corev1.Pod {
 	return filterPods(pods, func(pod *corev1.Pod) bool {
 		updateMode := *vpa.Spec.UpdatePolicy.UpdateMode
 		decision := inplaceRestriction.CanInPlaceUpdate(pod, vpa, infeasibleAttempts)
