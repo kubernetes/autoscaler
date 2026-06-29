@@ -75,6 +75,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	}
 
 	originalCQ := cq.DeepCopy()
+	cq.Status.ObservedGeneration = cq.Generation
 
 	validationErrs := r.validateCapacityQuota(ctx, &cq)
 	if len(validationErrs) > 0 {

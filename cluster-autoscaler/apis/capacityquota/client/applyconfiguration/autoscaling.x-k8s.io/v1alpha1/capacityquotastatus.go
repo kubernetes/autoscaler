@@ -32,6 +32,8 @@ type CapacityQuotaStatusApplyConfiguration struct {
 	// Conditions provide a standard mechanism for reporting the quota's state.
 	// CapacityQuota will be enforced only if it has a Valid=True condition.
 	Conditions []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
+	// ObservedGeneration is the last generation observed by the controller.
+	ObservedGeneration *int64 `json:"observedGeneration,omitempty"`
 }
 
 // CapacityQuotaStatusApplyConfiguration constructs a declarative configuration of the CapacityQuotaStatus type for use with
@@ -58,5 +60,13 @@ func (b *CapacityQuotaStatusApplyConfiguration) WithConditions(values ...*v1.Con
 		}
 		b.Conditions = append(b.Conditions, *values[i])
 	}
+	return b
+}
+
+// WithObservedGeneration sets the ObservedGeneration field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ObservedGeneration field is set to the value of the last call.
+func (b *CapacityQuotaStatusApplyConfiguration) WithObservedGeneration(value int64) *CapacityQuotaStatusApplyConfiguration {
+	b.ObservedGeneration = &value
 	return b
 }
