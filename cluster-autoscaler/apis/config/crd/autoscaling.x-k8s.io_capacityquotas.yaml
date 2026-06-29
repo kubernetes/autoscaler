@@ -16,7 +16,8 @@ spec:
     singular: capacityquota
   scope: Cluster
   versions:
-  - name: v1alpha1
+  - deprecated: true
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: |-

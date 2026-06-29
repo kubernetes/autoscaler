@@ -48,6 +48,7 @@ type ResourceList map[ResourceName]resource.Quantity
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,shortName=cq
+// +kubebuilder:deprecatedversion
 // +genclient
 
 // CapacityQuota limits the amount of resources that can be provisioned in the cluster
