@@ -552,12 +552,8 @@ func (c *cachingMigInfoProvider) setMigInfoCache(migRef GceRef, mig *gce.Instanc
 	templateUrl, err := url.Parse(mig.InstanceTemplate)
 	if err == nil {
 		_, templateName := path.Split(templateUrl.EscapedPath())
-		regional, err := IsInstanceTemplateRegional(templateUrl.String())
-		if err != nil {
-			klog.Errorf("Error parsing instance template url: %v; err=%v ", templateUrl.String(), err)
-		} else {
-			c.cache.SetMigInstanceTemplateName(migRef, InstanceTemplateName{templateName, regional})
-		}
+		regional := IsInstanceTemplateRegional(templateUrl.String())
+		c.cache.SetMigInstanceTemplateName(migRef, InstanceTemplateName{templateName, regional})
 	}
 }
 

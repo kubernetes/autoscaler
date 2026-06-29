@@ -29,6 +29,8 @@ const (
 	anyHttpsUrlPattern = "https://.*/"
 )
 
+var regionalInstanceTemplateRe = regexp.MustCompile("(/projects/.*[A-Za-z0-9]+.*/regions/)")
+
 // ParseMigUrl expects url in format:
 // https://.*/projects/<project-id>/zones/<zone>/instanceGroups/<name>
 func ParseMigUrl(url string) (project string, zone string, name string, err error) {
@@ -94,8 +96,8 @@ func GenerateMigUrl(domainUrl string, ref GceRef) string {
 }
 
 // IsInstanceTemplateRegional determines whether or not an instance template is regional based on the url
-func IsInstanceTemplateRegional(templateUrl string) (bool, error) {
-	return regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl)
+func IsInstanceTemplateRegional(templateUrl string) bool {
+	return regionalInstanceTemplateRe.MatchString(templateUrl)
 }
 
 // InstanceTemplateNameFromUrl retrieves name of the Instance Template from the url.
@@ -104,10 +106,7 @@ func InstanceTemplateNameFromUrl(instanceTemplateLink string) (InstanceTemplateN
 	if err != nil {
 		return InstanceTemplateName{}, err
 	}
-	regional, err := IsInstanceTemplateRegional(templateUrl.String())
-	if err != nil {
-		return InstanceTemplateName{}, err
-	}
+	regional := IsInstanceTemplateRegional(templateUrl.String())
 
 	_, templateName := path.Split(templateUrl.EscapedPath())
 	return InstanceTemplateName{templateName, regional}, nil
