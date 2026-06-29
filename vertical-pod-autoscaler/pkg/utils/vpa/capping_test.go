@@ -267,10 +267,10 @@ var podRecommendation *vpa_types.RecommendedPodResources = &vpa_types.Recommende
 	ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 		{
 			ContainerName: "ctr-name",
-			Target: corev1.ResourceList{
+			LowerBound: corev1.ResourceList{
 				corev1.ResourceCPU:    *resource.NewScaledQuantity(5, 1),
 				corev1.ResourceMemory: *resource.NewScaledQuantity(10, 1)},
-			LowerBound: corev1.ResourceList{
+			Target: corev1.ResourceList{
 				corev1.ResourceCPU:    *resource.NewScaledQuantity(50, 1),
 				corev1.ResourceMemory: *resource.NewScaledQuantity(100, 1)},
 			UpperBound: corev1.ResourceList{
@@ -1781,6 +1781,605 @@ func TestCapPodMemoryWithUnderByteSplit(t *testing.T) {
 			processedRecommendation, _, err := processor.Apply(vpa, &pod)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedRecommendation, *processedRecommendation)
+		})
+	}
+}
+
+func TestEnsureValidBounds(t *testing.T) {
+	tests := []struct {
+		name               string
+		containerLevelRecs []vpa_types.RecommendedContainerResources
+		expected           []vpa_types.RecommendedContainerResources
+	}{
+		{
+			// Here, LowerBound <= Target <= UpperBound holds for all containers, so no action is required.
+			name: "no violation",
+			containerLevelRecs: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+			},
+			expected: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+			},
+		},
+		{
+			// Here, LowerBound <= Target <= UpperBound holds for all containers, so no action is required.
+			name: "no violation",
+			containerLevelRecs: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+			},
+			expected: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+			},
+		},
+		{
+			name: "cpu and memory lower bounds are violated in c1, but no additional delta can be added to c2",
+			containerLevelRecs: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("25m"),
+						corev1.ResourceMemory: resource.MustParse("25Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+				},
+			},
+			expected: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),  // -5m
+						corev1.ResourceMemory: resource.MustParse("20Mi"), // -5Mi
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+				},
+			},
+		},
+		{
+			name: "cpu and memory lower bounds are violated in c1, add delta proportionally",
+			containerLevelRecs: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("28m"),
+						corev1.ResourceMemory: resource.MustParse("28Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+				{
+					ContainerName: "c3",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("50m"),
+						corev1.ResourceMemory: resource.MustParse("50Mi"),
+					},
+				},
+				{
+					ContainerName: "c4",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+			},
+			// There is a violation in c1, as the LowerBound is greater than the Target. To fix this violation, we need to lower c1's LowerBound to 20m and 20Mi,
+			// since the reference point (i.e. c1's Target) is 20m and 20Mi.
+			// Then, we need to add 8 millicores and 8 MiB proportionally to the others so that the sum of LowerBound values still equals 128m and 128Mi.
+			expected: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),  // -8m
+						corev1.ResourceMemory: resource.MustParse("20Mi"), // -8Mi
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(32, resource.DecimalSI), // + 2
+						corev1.ResourceMemory: *resource.NewQuantity(33973862, resource.BinarySI), // 31457280 + floor(8388608 x 0,3)
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+				{
+					ContainerName: "c3",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(44, resource.DecimalSI), // + 4
+						corev1.ResourceMemory: *resource.NewQuantity(45298484, resource.BinarySI), // 41943040 + ceil(8388608 x 0,4)
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("50m"),
+						corev1.ResourceMemory: resource.MustParse("50Mi"),
+					},
+				},
+				{
+					ContainerName: "c4",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(32, resource.DecimalSI), // + 2
+						corev1.ResourceMemory: *resource.NewQuantity(33973862, resource.BinarySI), // 31457280 + floor(8388608 x 0,3)
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+			},
+		},
+		{
+			name: "cpu and memory lower bounds are violated in c1, add delta proportionally, except in c2",
+			containerLevelRecs: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("28m"),
+						corev1.ResourceMemory: resource.MustParse("28Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+				{
+					ContainerName: "c3",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("60m"),
+						corev1.ResourceMemory: resource.MustParse("60Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("80m"),
+						corev1.ResourceMemory: resource.MustParse("80Mi"),
+					},
+				},
+				{
+					ContainerName: "c4",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("80m"),
+						corev1.ResourceMemory: resource.MustParse("80Mi"),
+					},
+				},
+			},
+			// There is a violation in c1, as the LowerBound is greater than the Target. To fix this violation, we need to lower c1's LowerBound to 20m and 20Mi,
+			// since the reference point (i.e. c1's Target) is 20m and 20Mi.
+			// In this case, we cannot add values to c2, as its Target equals its LowerBound.
+			// Then, we need to add 8 millicores and 8 MiB proportionally to the others so that the sum of LowerBound values still equals 168m and 168Mi.
+			expected: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),  // -8m
+						corev1.ResourceMemory: resource.MustParse("20Mi"), // -8Mi
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(40, resource.DecimalSI), // 40m
+						corev1.ResourceMemory: *resource.NewQuantity(41943040, resource.BinarySI), // 40Mi
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+				{
+					ContainerName: "c3",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(65, resource.DecimalSI),
+						corev1.ResourceMemory: *resource.NewQuantity(67947725, resource.BinarySI), // 62914560 + (8388608 x 0,6)
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("80m"),
+						corev1.ResourceMemory: resource.MustParse("80Mi"),
+					},
+				},
+				{
+					ContainerName: "c4",
+					LowerBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(43, resource.DecimalSI),
+						corev1.ResourceMemory: *resource.NewQuantity(45298483, resource.BinarySI), // 41943040 + (8388608 x 0,4)
+					},
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("80m"),
+						corev1.ResourceMemory: resource.MustParse("80Mi"),
+					},
+				},
+			},
+		},
+		{
+			name: "cpu and memory upper bounds are violated in c1, subtract delta proportionally",
+			containerLevelRecs: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("12m"),
+						corev1.ResourceMemory: resource.MustParse("12Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("10Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+				},
+				{
+					ContainerName: "c3",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("10Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+				{
+					ContainerName: "c4",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("10Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+				},
+			},
+			// There is a violation in c1, as the UpperBound is lower than the Target. To fix this violation, we need to increase c1's UpperBound to 20m and 20Mi,
+			// since the reference point (i.e. c1's Target) is 20m and 20Mi.
+			// Then, we need to subtract 8 millicores and 8 MiB proportionally from the others so that the sum of UpperBound values still equals 112m and 112Mi.
+			expected: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),  // +8
+						corev1.ResourceMemory: resource.MustParse("20Mi"), // +8
+					},
+				},
+				{
+					ContainerName: "c2",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("10Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(28, resource.DecimalSI), // -2
+						corev1.ResourceMemory: *resource.NewQuantity(28940698, resource.BinarySI), // 31457280 - floor(8388608 x 0.3)
+					},
+				},
+				{
+					ContainerName: "c3",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("10Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(36, resource.DecimalSI), // -4
+						corev1.ResourceMemory: *resource.NewQuantity(38587596, resource.BinarySI), // 41943040 - ceil(8388608 x 0.4)
+					},
+				},
+				{
+					ContainerName: "c4",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("10Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(28, resource.DecimalSI), // -2
+						corev1.ResourceMemory: *resource.NewQuantity(28940698, resource.BinarySI), // 31457280 - floor(8388608 x 0.3)
+					},
+				},
+			},
+		},
+		{
+			name: "cpu and memory upper bounds are violated in c1, subtract delta proportionally, except in c2",
+			containerLevelRecs: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("12m"),
+						corev1.ResourceMemory: resource.MustParse("12Mi"),
+					},
+				},
+				{
+					ContainerName: "c2",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+				},
+				{
+					ContainerName: "c3",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("10Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("40m"),
+						corev1.ResourceMemory: resource.MustParse("40Mi"),
+					},
+				},
+				{
+					ContainerName: "c4",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("10Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("60m"),
+						corev1.ResourceMemory: resource.MustParse("60Mi"),
+					},
+				},
+			},
+			// There is a violation in c1, as the UpperBound is lower than the Target. To fix this violation, we need to increase c1's UpperBound to 20m and 20Mi,
+			// since the reference point (i.e. c1's Target) is 20m and 20Mi.
+			// In this case, we cannot subtract values from c2, as its Target equals its UpperBound.
+			// Then, we need to subtract 8m and 8Mi proportionally from the others so that the sum of UpperBound values still equals 142m and 142Mi.
+			expected: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "c1",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("20m"),  // +8m
+						corev1.ResourceMemory: resource.MustParse("20Mi"), // +8Mi
+					},
+				},
+				{
+					ContainerName: "c2",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("30m"),
+						corev1.ResourceMemory: resource.MustParse("30Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(30, resource.DecimalSI), // 30m
+						corev1.ResourceMemory: *resource.NewQuantity(31457280, resource.BinarySI), // 30Mi
+					},
+				},
+				{
+					ContainerName: "c3",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("10Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(37, resource.DecimalSI), // -3
+						corev1.ResourceMemory: *resource.NewQuantity(38587597, resource.BinarySI), // 41943040 - floor(8388608 x 0.4)
+					},
+				},
+				{
+					ContainerName: "c4",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("10Mi"),
+					},
+					UpperBound: corev1.ResourceList{
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(55, resource.DecimalSI), // -5
+						corev1.ResourceMemory: *resource.NewQuantity(57881395, resource.BinarySI), // 62914560 - ceil(8388608 x 0.6)
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := ensureBoundsAreValid(tt.containerLevelRecs)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func Test_roundPreservingSum(t *testing.T) {
+	tests := []struct {
+		name           string
+		floats         []float64
+		expectedFloats []float64
+	}{
+		{
+			name:           "example1",
+			floats:         []float64{0, 1, 3.5, 3.5},
+			expectedFloats: []float64{0, 1, 4, 3},
+		},
+		{
+			name:           "example2",
+			floats:         []float64{0, 1, 2.8, 3.2},
+			expectedFloats: []float64{0, 1, 2, 4},
+		},
+		{
+			name:           "example3",
+			floats:         []float64{0, 1, 3, 3},
+			expectedFloats: []float64{0, 1, 3, 3},
+		},
+		{
+			name:           "example4",
+			floats:         []float64{0, 0, 0},
+			expectedFloats: []float64{0, 0, 0},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			floats := roundPreservingSum(tt.floats)
+			assert.Equal(t, tt.expectedFloats, floats)
 		})
 	}
 }

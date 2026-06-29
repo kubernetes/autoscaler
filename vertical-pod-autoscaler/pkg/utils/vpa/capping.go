@@ -19,6 +19,8 @@ package api
 import (
 	"errors"
 	"fmt"
+	"math"
+	"slices"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -107,6 +109,7 @@ func (c *cappingRecommendationProcessor) Apply(
 		}
 		updatedRecommendations = append(updatedRecommendations, *updatedContainerResources)
 	}
+	updatedRecommendations = ensureBoundsAreValid(updatedRecommendations)
 	return &vpa_types.RecommendedPodResources{ContainerRecommendations: updatedRecommendations}, containerToAnnotationsMap, nil
 }
 
@@ -536,3 +539,210 @@ func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRange(
 	containerRecommendations = applyPodLimitRange(containerRecommendations, pod, *podLimitRange, corev1.ResourceMemory, getLower)
 	return containerRecommendations, nil
 }
+
+// ensureBoundsAreValid ensures that for each container-level recommendation,
+// LowerBound <= Target <= UpperBound always holds.
+//
+// The function treats Target as the reference value and adjusts LowerBound
+// and UpperBound as needed to maintain valid bounds.
+//
+// When a violation occurs, for example when a container's UpperBound is lower than its Target,
+// the function caps the UpperBound to its Target to fix the violation.
+// Because we need to keep the sum of all UpperBounds the same as before,
+// we subtract the delta (calculated as Target - UpperBound in this case) proportionally across other containers.
+//
+// When there is a violation between a LowerBound and Target, the delta is proportionally distributed among containers where there is room to do so.
+func ensureBoundsAreValid(recs []vpa_types.RecommendedContainerResources) []vpa_types.RecommendedContainerResources {
+	// fixBound repairs violations of isBoundValid for a single resource/bound pair (e.g. "CPU LowerBound")
+	fixBound := func(
+		getBound func(vpa_types.RecommendedContainerResources) *corev1.ResourceList,
+		resourceName corev1.ResourceName,
+		isBoundValid func(bound, target resource.Quantity) bool,
+		subtract bool,
+	) {
+		var total resource.Quantity
+		// This variable contains the value to redistribute across containers without violations.
+		// Redistribution is done proportionally by increasing or decreasing values based on available capacity.
+		var totalDelta float64
+		eligibleIdxs := make([]int, 0, len(recs))
+
+		for i := range recs {
+			target, targetOK := (*getTarget(recs[i]))[resourceName]
+			boundRL := getBound(recs[i])
+			bound, boundOK := (*boundRL)[resourceName]
+			if !targetOK || !boundOK {
+				continue
+			}
+			if !isBoundValid(bound, target) {
+				totalDelta += math.Abs(float64(scalarValue(target, resourceName) - scalarValue(bound, resourceName)))
+				// Fix the violation for a container,
+				// in other words, set its LowerBound or UpperBound equal to the target
+				(*boundRL)[resourceName] = target
+				continue
+			}
+			eligibleIdxs = append(eligibleIdxs, i)
+			total.Add(bound)
+		}
+
+		if totalDelta == 0 || len(eligibleIdxs) == 0 || total.IsZero() {
+			return
+		}
+
+		weights := make([]float64, 0, len(eligibleIdxs))
+		constraints := make([]float64, 0, len(eligibleIdxs))
+		for _, idx := range eligibleIdxs {
+			bound := (*getBound(recs[idx]))[resourceName]
+			target := (*getTarget(recs[idx]))[resourceName]
+
+			weight, err := calculateWeight(total, bound, resourceName)
+			if err != nil {
+				return
+			}
+			weights = append(weights, *weight)
+			constraints = append(constraints, math.Abs(float64(scalarValue(bound, resourceName)-scalarValue(target, resourceName))))
+		}
+
+		// Calculate how much resources each container - where there is no violation - can give up or absorb
+		allocations, _ := iterativeWaterfilling(totalDelta, weights, constraints)
+		hasPositive := slices.ContainsFunc(allocations, func(n float64) bool {
+			return n > 0
+		})
+		if !hasPositive {
+			return
+		}
+		allocations = roundPreservingSum(allocations)
+
+		for i, idx := range eligibleIdxs {
+			boundRL := getBound(recs[idx])
+			bound := (*boundRL)[resourceName]
+			delta := newQuantity(int64(allocations[i]), bound.Format, resourceName)
+			adjusted := bound.DeepCopy()
+			if subtract {
+				adjusted.Sub(delta)
+			} else {
+				adjusted.Add(delta)
+			}
+			(*boundRL)[resourceName] = adjusted
+		}
+	}
+
+	lowerValid := func(lowerBound, target resource.Quantity) bool { return lowerBound.Cmp(target) <= 0 }
+	upperValid := func(upperBound, target resource.Quantity) bool { return upperBound.Cmp(target) >= 0 }
+
+	for _, resourceName := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory} {
+		fixBound(getLower, resourceName, lowerValid, false) // LowerBound must not exceed Target
+		fixBound(getUpper, resourceName, upperValid, true)  // UpperBound must not be below Target
+	}
+	return recs
+}
+
+func scalarValue(q resource.Quantity, resourceName corev1.ResourceName) int64 {
+	if resourceName == corev1.ResourceCPU {
+		return q.MilliValue()
+	}
+	return q.Value()
+}
+
+func newQuantity(value int64, format resource.Format, resourceName corev1.ResourceName) resource.Quantity {
+	if resourceName == corev1.ResourceCPU {
+		return *resource.NewMilliQuantity(value, format)
+	}
+	return *resource.NewQuantity(value, format)
+}
+
+// iterativeWaterfilling distributes total among channels proportionally to weights, enforcing per-channel
+// constraints. As the name suggests, the function implements an iterative water-filling algorithm.
+func iterativeWaterfilling(total float64, weights []float64, constraints []float64) ([]float64, error) {
+	if len(weights) != len(constraints) {
+		return nil, fmt.Errorf("weights and constraints must have equal length: %d vs %d", len(weights), len(constraints))
+	}
+
+	allocs := make([]float64, len(weights))
+	saturated := make([]bool, len(weights))
+
+	w := make([]float64, len(weights))
+	copy(w, weights)
+
+	for {
+		var newlySaturatedBudget float64
+		var unsaturatedWeightSum float64
+		anySaturated := false
+
+		for i := range w {
+			if saturated[i] {
+				continue
+			}
+			allocs[i] = w[i] * total
+			if allocs[i] >= constraints[i] {
+				allocs[i] = constraints[i]
+				saturated[i] = true
+				newlySaturatedBudget += constraints[i]
+				anySaturated = true
+			} else {
+				unsaturatedWeightSum += w[i]
+			}
+		}
+
+		// Either no new saturations, or all channels are saturated.
+		if !anySaturated || unsaturatedWeightSum == 0 {
+			return allocs, nil
+		}
+
+		total -= newlySaturatedBudget
+
+		// Renormalize so unsaturated weights sum to 1 for the next iteration
+		for i := range w {
+			if !saturated[i] {
+				w[i] /= unsaturatedWeightSum
+			}
+		}
+	}
+}
+
+func calculateWeight(total, value resource.Quantity, res corev1.ResourceName) (*float64, error) {
+	if total.IsZero() {
+		return nil, fmt.Errorf("total %s is zero", res)
+	}
+
+	var t, v float64
+	switch res {
+	case corev1.ResourceMemory:
+		t, v = float64(total.Value()), float64(value.Value())
+	case corev1.ResourceCPU:
+		t, v = float64(total.MilliValue()), float64(value.MilliValue())
+	default:
+		return nil, fmt.Errorf("unsupported resource type %q", res)
+	}
+
+	w := v / t
+	return &w, nil
+}
+
+// roundPreservingSum floors every element, then distributes the leftover
+// remainder (assumed to be at most 1) to the element with the largest integer value,
+// ensuring that the rounded slice still sums to the original total.
+// This function prevents losing fractional CPU (less than 1m) and fractional bytes.
+func roundPreservingSum(floats []float64) []float64 {
+	if len(floats) == 0 {
+		return floats
+	}
+	var sum, flooredSum float64
+	maxIdx, maxVal := 0, floats[0]
+
+	for i, f := range floats {
+		if f > maxVal {
+			maxIdx, maxVal = i, f
+		}
+		sum += f
+		floats[i] = math.Floor(f)
+		flooredSum += floats[i]
+	}
+	if sum != flooredSum {
+		floats[maxIdx]++
+	}
+	return floats
+}
+
+func getLower(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList  { return &rl.LowerBound }
+func getTarget(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList { return &rl.Target }
+func getUpper(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList  { return &rl.UpperBound }
