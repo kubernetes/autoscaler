@@ -42,6 +42,15 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
 )
 
+const (
+	// ValidCondition is the condition specifying whether the CapacityQuota is valid
+	ValidCondition = "cluster-autoscaler.kubernetes.io/valid"
+	// ValidationSucceeded specifies that the CapacityQuota is valid
+	ValidationSucceeded = "ValidationSucceeded"
+	// ValidationFailed specifies that the CapacityQuota is invalid
+	ValidationFailed = "ValidationFailed"
+)
+
 // Reconciler reconciles a CapacityQuota object
 type Reconciler struct {
 	client     client.Client
@@ -80,7 +89,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	validationErrs := r.validateCapacityQuota(ctx, &cq)
 	if len(validationErrs) > 0 {
 		errMsg := formatValidationErrors(validationErrs)
-		setCondition(&cq, v1alpha1.ValidCondition, metav1.ConditionFalse, v1alpha1.ValidationFailed, errMsg)
+		setCondition(&cq, ValidCondition, metav1.ConditionFalse, ValidationFailed, errMsg)
 		setCondition(&cq, v1alpha1.ReconciledCondition, metav1.ConditionFalse, v1alpha1.ReconciliationFailed, "Validation failed")
 
 		if patchErr := r.patchStatus(ctx, originalCQ, &cq); patchErr != nil {
@@ -88,7 +97,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		}
 		return ctrl.Result{}, nil
 	}
-	setCondition(&cq, v1alpha1.ValidCondition, metav1.ConditionTrue, v1alpha1.ValidationSucceeded, "CapacityQuota is valid")
+	setCondition(&cq, ValidCondition, metav1.ConditionTrue, ValidationSucceeded, "CapacityQuota is valid")
 
 	result, err := r.reconcileCapacityQuota(ctx, &cq)
 
