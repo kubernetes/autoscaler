@@ -45,8 +45,9 @@ const (
 )
 
 type nodegroup struct {
-	machineController *machineController
-	scalableResource  *unstructuredScalableResource
+	machineController           *machineController
+	scalableResource            *unstructuredScalableResource
+	nodeDeletionBatcherInterval time.Duration
 }
 
 var _ cloudprovider.NodeGroup = (*nodegroup)(nil)
@@ -117,7 +118,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 
 	// Step 1: Verify all nodes belong to this node group.
 	for _, node := range nodes {
-		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node)
+		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node, ng.nodeDeletionBatcherInterval)
 		if err != nil {
 			return nil
 		}
@@ -157,7 +158,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 			continue
 		}
 
-		nodeGroup, err := ng.machineController.nodeGroupForNode(node)
+		nodeGroup, err := ng.machineController.nodeGroupForNode(node, ng.nodeDeletionBatcherInterval)
 		if err != nil {
 			return err
 		}
@@ -543,7 +544,7 @@ func (ng *nodegroup) IsMachineDeploymentAndRollingOut() (bool, error) {
 	return false, nil
 }
 
-func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured) (*nodegroup, error) {
+func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured, nodeDeletionBatcherInterval time.Duration) (*nodegroup, error) {
 	// Ensure that the resulting node group would be allowed based on the autodiscovery specs if defined
 	if !controller.allowedByAutoDiscoverySpecs(unstructuredScalableResource) {
 		return nil, nil
@@ -576,8 +577,9 @@ func newNodeGroupFromScalableResource(controller *machineController, unstructure
 	}
 
 	return &nodegroup{
-		machineController: controller,
-		scalableResource:  scalableResource,
+		machineController:           controller,
+		scalableResource:            scalableResource,
+		nodeDeletionBatcherInterval: nodeDeletionBatcherInterval,
 	}, nil
 }
 
