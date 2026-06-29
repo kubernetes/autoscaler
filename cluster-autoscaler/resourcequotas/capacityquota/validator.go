@@ -21,17 +21,17 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
+	cqv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
 )
 
 // Validator checks whether CapacityQuota is valid.
 type Validator interface {
-	Validate(ctx context.Context, cq *cqv1alpha1.CapacityQuota) error
+	Validate(ctx context.Context, cq *cqv1beta1.CapacityQuota) error
 }
 
 type labelSelectorValidator struct{}
 
-func (v *labelSelectorValidator) Validate(_ context.Context, cq *cqv1alpha1.CapacityQuota) error {
+func (v *labelSelectorValidator) Validate(_ context.Context, cq *cqv1beta1.CapacityQuota) error {
 	if _, err := metav1.LabelSelectorAsSelector(cq.Spec.Selector); err != nil {
 		return field.Invalid(field.NewPath("spec").Child("selector"), cq.Spec.Selector, err.Error())
 	}
