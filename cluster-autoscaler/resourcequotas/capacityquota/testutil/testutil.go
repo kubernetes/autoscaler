@@ -22,6 +22,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
 )
 
+const (
+	validCondition      = "cluster-autoscaler.kubernetes.io/valid"
+	validationSucceeded = "ValidationSucceeded"
+	validationFailed    = "ValidationFailed"
+)
+
 // QuotaOption is a functional option for configuring a CapacityQuota.
 type QuotaOption func(*v1alpha1.CapacityQuota)
 
@@ -60,9 +66,9 @@ func WithLimits(limits v1alpha1.ResourceList) QuotaOption {
 func WithValidCondition() QuotaOption {
 	return func(cq *v1alpha1.CapacityQuota) {
 		c := metav1.Condition{
-			Type:   v1alpha1.ValidCondition,
+			Type:   validCondition,
 			Status: metav1.ConditionTrue,
-			Reason: v1alpha1.ValidationSucceeded,
+			Reason: validationSucceeded,
 		}
 		meta.SetStatusCondition(&cq.Status.Conditions, c)
 	}
@@ -72,9 +78,9 @@ func WithValidCondition() QuotaOption {
 func WithInvalidCondition() QuotaOption {
 	return func(cq *v1alpha1.CapacityQuota) {
 		c := metav1.Condition{
-			Type:   v1alpha1.ValidCondition,
+			Type:   validCondition,
 			Status: metav1.ConditionFalse,
-			Reason: v1alpha1.ValidationFailed,
+			Reason: validationFailed,
 		}
 		meta.SetStatusCondition(&cq.Status.Conditions, c)
 	}

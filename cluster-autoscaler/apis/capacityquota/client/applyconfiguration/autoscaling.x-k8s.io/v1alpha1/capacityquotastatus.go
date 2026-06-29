@@ -30,7 +30,10 @@ type CapacityQuotaStatusApplyConfiguration struct {
 	// Used shows the current usage of the quota.
 	Used *CapacityQuotaUsageApplyConfiguration `json:"used,omitempty"`
 	// Conditions provide a standard mechanism for reporting the quota's state.
-	// CapacityQuota will be enforced only if it has a Valid=True condition.
+	//
+	// Cluster Autoscaler manages cluster-autoscaler.kubernetes.io/valid condition, and will enforce
+	// the quota only if the status of the condition is True. Note that this condition is not considered a part
+	// of the public API.
 	Conditions []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
 	// ObservedGeneration is the last generation observed by the controller.
 	ObservedGeneration *int64 `json:"observedGeneration,omitempty"`

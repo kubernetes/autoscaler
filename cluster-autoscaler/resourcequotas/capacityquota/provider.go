@@ -49,7 +49,7 @@ func (p *Provider) Quotas() ([]resourcequotas.Quota, error) {
 	}
 	var quotas []resourcequotas.Quota
 	for _, cq := range capacityQuotas.Items {
-		if !meta.IsStatusConditionTrue(cq.Status.Conditions, cqv1alpha1.ValidCondition) {
+		if !meta.IsStatusConditionTrue(cq.Status.Conditions, ValidCondition) {
 			klog.V(5).Infof("CapacityQuota %q is not valid, skipping", cq.Name)
 			continue
 		}
