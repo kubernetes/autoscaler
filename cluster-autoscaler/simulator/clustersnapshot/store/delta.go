@@ -67,10 +67,11 @@ type internalDeltaSnapshotData struct {
 	modifiedNodeInfoMap map[string]schedulerinterface.NodeInfo
 	deletedNodeInfos    map[string]bool
 
-	nodeInfoList                     []schedulerinterface.NodeInfo
-	havePodsWithAffinity             []schedulerinterface.NodeInfo
-	havePodsWithRequiredAntiAffinity []schedulerinterface.NodeInfo
-	pvcNamespaceMap                  map[string]int
+	nodeInfoList                                  []schedulerinterface.NodeInfo
+	havePodsWithAffinity                          []schedulerinterface.NodeInfo
+	havePodsWithRequiredAntiAffinity              []schedulerinterface.NodeInfo
+	havePodsWithRequiredNonHostScopedAntiAffinity []schedulerinterface.NodeInfo
+	pvcNamespaceMap                               map[string]int
 }
 
 func newInternalDeltaSnapshotData() *internalDeltaSnapshotData {
@@ -178,6 +179,7 @@ func (data *internalDeltaSnapshotData) clearCaches() {
 func (data *internalDeltaSnapshotData) clearPodCaches() {
 	data.havePodsWithAffinity = nil
 	data.havePodsWithRequiredAntiAffinity = nil
+	data.havePodsWithRequiredNonHostScopedAntiAffinity = nil
 	// TODO: update the cache when adding/removing pods instead of invalidating the whole cache
 	data.pvcNamespaceMap = nil
 }
@@ -361,6 +363,24 @@ func (snapshot *deltaSnapshotStoreNodeLister) HavePodsWithRequiredAntiAffinityLi
 	}
 	data.havePodsWithRequiredAntiAffinity = havePodsWithRequiredAntiAffinityList
 	return data.havePodsWithRequiredAntiAffinity, nil
+}
+
+// HavePodsWithRequiredNonHostScopedAntiAffinityList returns nodes containing pods that require a wider topology scan (topologyKey other than hostname).
+func (snapshot *deltaSnapshotStoreNodeLister) HavePodsWithRequiredNonHostScopedAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
+	data := snapshot.data
+	if data.havePodsWithRequiredNonHostScopedAntiAffinity != nil {
+		return data.havePodsWithRequiredNonHostScopedAntiAffinity, nil
+	}
+
+	nodeInfoList := snapshot.data.getNodeInfoList()
+	havePodsWithRequiredNonHostScopedAntiAffinityList := make([]schedulerinterface.NodeInfo, 0, len(nodeInfoList))
+	for _, node := range nodeInfoList {
+		if len(node.GetPodsWithRequiredNonHostScopedAntiAffinity()) > 0 {
+			havePodsWithRequiredNonHostScopedAntiAffinityList = append(havePodsWithRequiredNonHostScopedAntiAffinityList, node)
+		}
+	}
+	data.havePodsWithRequiredNonHostScopedAntiAffinity = havePodsWithRequiredNonHostScopedAntiAffinityList
+	return data.havePodsWithRequiredNonHostScopedAntiAffinity, nil
 }
 
 // Get returns node info by node name.
