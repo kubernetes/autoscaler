@@ -19,7 +19,7 @@ package snapshot
 import (
 	"errors"
 
-	schedulingapi "k8s.io/api/scheduling/v1alpha2"
+	schedulingapi "k8s.io/api/scheduling/v1alpha3"
 )
 
 var (
