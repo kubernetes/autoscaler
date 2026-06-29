@@ -19,6 +19,7 @@ package clusterapi
 import (
 	"fmt"
 	"path"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -58,9 +59,10 @@ const (
 var _ cloudprovider.CloudProvider = (*provider)(nil)
 
 type provider struct {
-	controller      *machineController
-	providerName    string
-	resourceLimiter *cloudprovider.ResourceLimiter
+	controller                  *machineController
+	providerName                string
+	resourceLimiter             *cloudprovider.ResourceLimiter
+	nodeDeletionBatcherInterval time.Duration
 }
 
 func (p *provider) Name() string {
@@ -72,7 +74,7 @@ func (p *provider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) 
 }
 
 func (p *provider) NodeGroups() []cloudprovider.NodeGroup {
-	nodegroups, err := p.controller.nodeGroups()
+	nodegroups, err := p.controller.nodeGroups(p.nodeDeletionBatcherInterval)
 	if err != nil {
 		klog.Errorf("error getting node groups: %v", err)
 		return nil
@@ -81,7 +83,7 @@ func (p *provider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup, error) {
-	ng, err := p.controller.nodeGroupForNode(node)
+	ng, err := p.controller.nodeGroupForNode(node, p.nodeDeletionBatcherInterval)
 	if err != nil {
 		return nil, err
 	}
@@ -156,11 +158,13 @@ func newProvider(
 	name string,
 	rl *cloudprovider.ResourceLimiter,
 	controller *machineController,
+	nodeDeletionBatcherInterval time.Duration,
 ) cloudprovider.CloudProvider {
 	return &provider{
-		providerName:    name,
-		resourceLimiter: rl,
-		controller:      controller,
+		providerName:                name,
+		resourceLimiter:             rl,
+		controller:                  controller,
+		nodeDeletionBatcherInterval: nodeDeletionBatcherInterval,
 	}
 }
 
@@ -222,7 +226,7 @@ func BuildClusterAPI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeG
 		klog.Fatal(err)
 	}
 
-	scaleDownUpgradeProcessor := NewScaleDownNodeUpgradeProcessor(controller)
+	scaleDownUpgradeProcessor := NewScaleDownNodeUpgradeProcessor(controller, opts.NodeDeletionBatcherInterval)
 	if err := scaledowncandidates.RegisterCombinedScaleDownCandidateProcessor(opts.Processors.ScaleDownNodeProcessor, scaleDownUpgradeProcessor); err != nil {
 		klog.Fatalf("unable to register scale down upgrade processor: %v", err)
 	}
@@ -231,5 +235,5 @@ func BuildClusterAPI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeG
 		klog.Fatal(err)
 	}
 
-	return newProvider(cloudprovider.ClusterAPIProviderName, rl, controller)
+	return newProvider(cloudprovider.ClusterAPIProviderName, rl, controller, opts.NodeDeletionBatcherInterval)
 }

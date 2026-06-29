@@ -418,7 +418,7 @@ func TestControllerLookupNodeGroupForNonExistentNode(t *testing.T) {
 		node := testConfig.nodes[0].DeepCopy()
 		node.Spec.ProviderID = "does-not-exist"
 
-		ng, err := controller.nodeGroupForNode(node)
+		ng, err := controller.nodeGroupForNode(node, defaultNodeDeletionBatcherInterval)
 
 		// Looking up a node that doesn't exist doesn't generate an
 		// error. But, equally, the ng should actually be nil.
@@ -469,7 +469,7 @@ func TestControllerNodeGroupForNodeWithMissingMachineOwner(t *testing.T) {
 			t.Fatalf("unexpected error updating machine, got %v", err)
 		}
 
-		ng, err := controller.nodeGroupForNode(testConfig.nodes[0])
+		ng, err := controller.nodeGroupForNode(testConfig.nodes[0], defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -525,7 +525,7 @@ func TestControllerNodeGroupForNodeWithMissingSetMachineOwner(t *testing.T) {
 		t.Fatalf("unexpected error updating machine, got %v", err)
 	}
 
-	ng, err := controller.nodeGroupForNode(testConfig.nodes[0])
+	ng, err := controller.nodeGroupForNode(testConfig.nodes[0], defaultNodeDeletionBatcherInterval)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -541,7 +541,7 @@ func TestControllerNodeGroupForNodeWithPositiveScalingBounds(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfig)
 
-		ng, err := controller.nodeGroupForNode(testConfig.nodes[0])
+		ng, err := controller.nodeGroupForNode(testConfig.nodes[0], defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -579,7 +579,7 @@ func TestControllerNodeGroupForNodeWithPositiveScalingBounds(t *testing.T) {
 func TestControllerNodeGroups(t *testing.T) {
 	assertNodegroupLen := func(t *testing.T, controller *testMachineController, expected int) {
 		t.Helper()
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -687,7 +687,7 @@ func TestControllerNodeGroups(t *testing.T) {
 	if err := controller.AddTestConfigs(machineSetConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if _, err := controller.nodeGroups(); err == nil {
+	if _, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval); err == nil {
 		t.Fatalf("expected an error")
 	}
 
@@ -702,7 +702,7 @@ func TestControllerNodeGroups(t *testing.T) {
 	if err := controller.AddTestConfigs(machineDeploymentConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if _, err := controller.nodeGroups(); err == nil {
+	if _, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval); err == nil {
 		t.Fatalf("expected an error")
 	}
 }
@@ -737,7 +737,7 @@ func TestControllerNodeGroupsNodeCount(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfigs...)
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -863,7 +863,7 @@ func TestControllerMachineSetNodeNamesWithoutLinkage(t *testing.T) {
 		}
 	}
 
-	nodegroups, err := controller.nodeGroups()
+	nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -905,7 +905,7 @@ func TestControllerMachineSetNodeNamesUsingProviderID(t *testing.T) {
 	defer controller.Stop()
 	controller.AddTestConfigs(testConfig)
 
-	nodegroups, err := controller.nodeGroups()
+	nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -962,7 +962,7 @@ func TestControllerMachineSetNodeNamesUsingStatusNodeRefName(t *testing.T) {
 		}
 	}
 
-	nodegroups, err := controller.nodeGroups()
+	nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -1654,7 +1654,7 @@ func Test_machineController_nodeGroupForNode(t *testing.T) {
 			c.AddTestConfigs(allTestConfigs...)
 			c.autoDiscoverySpecs = tc.autoDiscoverySpecs
 
-			got, err := c.nodeGroupForNode(tc.node)
+			got, err := c.nodeGroupForNode(tc.node, defaultNodeDeletionBatcherInterval)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("nodeGroupForNode() error = %v, wantErr %v", err, tc.wantErr)
 				return
@@ -1793,7 +1793,7 @@ func Test_machineController_nodeGroups(t *testing.T) {
 			c.AddTestConfigs(allTestConfigs...)
 			c.autoDiscoverySpecs = tc.autoDiscoverySpecs
 
-			got, err := c.nodeGroups()
+			got, err := c.nodeGroups(defaultNodeDeletionBatcherInterval)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("nodeGroups() error = %v, wantErr %v", err, tc.wantErr)
 				return
