@@ -20,6 +20,8 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	schedulingv1alpha3 "k8s.io/api/scheduling/v1alpha3"
+	schedulingapi "k8s.io/api/scheduling/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
@@ -279,6 +281,9 @@ func (snapshot *BasicSnapshotStore) Clear() {
 type basicSnapshotStoreNodeLister BasicSnapshotStore
 type basicSnapshotStoreStorageLister BasicSnapshotStore
 type basicSnapshotStorePodGroupStateLister BasicSnapshotStore
+type basicSnapshotStorePodGroupLister BasicSnapshotStore
+type basicSnapshotStoreCompositePodGroupStateLister BasicSnapshotStore
+type basicSnapshotStoreCompositePodGroupLister BasicSnapshotStore
 
 // NodeInfos exposes snapshot as NodeInfoLister.
 func (snapshot *BasicSnapshotStore) NodeInfos() schedulerinterface.NodeInfoLister {
@@ -293,6 +298,21 @@ func (snapshot *BasicSnapshotStore) StorageInfos() schedulerinterface.StorageInf
 // PodGroupStates exposes snapshot as PodGroupStateLister.
 func (snapshot *BasicSnapshotStore) PodGroupStates() schedulerinterface.PodGroupStateLister {
 	return (*basicSnapshotStorePodGroupStateLister)(snapshot)
+}
+
+// PodGroups exposes snapshot as PodGroupLister.
+func (snapshot *BasicSnapshotStore) PodGroups() schedulerinterface.PodGroupLister {
+	return (*basicSnapshotStorePodGroupLister)(snapshot)
+}
+
+// CompositePodGroupStates exposes snapshot as CompositePodGroupStateLister.
+func (snapshot *BasicSnapshotStore) CompositePodGroupStates() schedulerinterface.CompositePodGroupStateLister {
+	return (*basicSnapshotStoreCompositePodGroupStateLister)(snapshot)
+}
+
+// CompositePodGroups exposes snapshot as CompositePodGroupLister.
+func (snapshot *BasicSnapshotStore) CompositePodGroups() schedulerinterface.CompositePodGroupLister {
+	return (*basicSnapshotStoreCompositePodGroupLister)(snapshot)
 }
 
 // List returns the list of nodes in the snapshot.
@@ -330,5 +350,17 @@ func (snapshot *basicSnapshotStoreStorageLister) IsPVCUsedByPods(key string) boo
 // This method is never supposed to be called in the cluster autoscaler simulations
 // as pod group states are not integrated with cluster autoscaler.
 func (snapshot *basicSnapshotStorePodGroupStateLister) Get(namespace string, podGroupName string) (schedulerinterface.PodGroupState, error) {
+	return nil, errorGettingPodGroupState
+}
+
+func (snapshot *basicSnapshotStorePodGroupLister) Get(namespace string, name string) (*schedulingapi.PodGroup, error) {
+	return nil, errorGettingPodGroupState
+}
+
+func (snapshot *basicSnapshotStoreCompositePodGroupStateLister) Get(namespace string, name string) (schedulerinterface.CompositePodGroupState, error) {
+	return nil, errorGettingPodGroupState
+}
+
+func (snapshot *basicSnapshotStoreCompositePodGroupLister) Get(namespace string, name string) (*schedulingv1alpha3.CompositePodGroup, error) {
 	return nil, errorGettingPodGroupState
 }

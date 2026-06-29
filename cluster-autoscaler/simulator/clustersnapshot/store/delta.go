@@ -20,6 +20,9 @@ import (
 	"errors"
 	"fmt"
 
+	schedulingv1alpha3 "k8s.io/api/scheduling/v1alpha3"
+	schedulingapi "k8s.io/api/scheduling/v1beta1"
+
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
@@ -59,6 +62,9 @@ type DeltaSnapshotStore struct {
 type deltaSnapshotStoreNodeLister DeltaSnapshotStore
 type deltaSnapshotStoreStorageLister DeltaSnapshotStore
 type deltaSnapshotPodGroupStateLister DeltaSnapshotStore
+type deltaSnapshotPodGroupLister DeltaSnapshotStore
+type deltaSnapshotCompositePodGroupStateLister DeltaSnapshotStore
+type deltaSnapshotCompositePodGroupLister DeltaSnapshotStore
 
 type internalDeltaSnapshotData struct {
 	baseData *internalDeltaSnapshotData
@@ -401,6 +407,18 @@ func (snapshot *deltaSnapshotPodGroupStateLister) Get(namespace string, podGroup
 	return nil, errorGettingPodGroupState
 }
 
+func (snapshot *deltaSnapshotPodGroupLister) Get(namespace string, name string) (*schedulingapi.PodGroup, error) {
+	return nil, errorGettingPodGroupState
+}
+
+func (snapshot *deltaSnapshotCompositePodGroupStateLister) Get(namespace string, name string) (schedulerinterface.CompositePodGroupState, error) {
+	return nil, errorGettingPodGroupState
+}
+
+func (snapshot *deltaSnapshotCompositePodGroupLister) Get(namespace string, name string) (*schedulingv1alpha3.CompositePodGroup, error) {
+	return nil, errorGettingPodGroupState
+}
+
 func (snapshot *DeltaSnapshotStore) getNodeInfo(nodeName string) (schedulerinterface.NodeInfo, error) {
 	data := snapshot.data
 	node, found := data.getNodeInfo(nodeName)
@@ -423,6 +441,21 @@ func (snapshot *DeltaSnapshotStore) StorageInfos() schedulerinterface.StorageInf
 // PodGroupStates returns pod group state lister.
 func (snapshot *DeltaSnapshotStore) PodGroupStates() schedulerinterface.PodGroupStateLister {
 	return (*deltaSnapshotPodGroupStateLister)(snapshot)
+}
+
+// PodGroups returns pod group lister.
+func (snapshot *DeltaSnapshotStore) PodGroups() schedulerinterface.PodGroupLister {
+	return (*deltaSnapshotPodGroupLister)(snapshot)
+}
+
+// CompositePodGroupStates returns composite pod group state lister.
+func (snapshot *DeltaSnapshotStore) CompositePodGroupStates() schedulerinterface.CompositePodGroupStateLister {
+	return (*deltaSnapshotCompositePodGroupStateLister)(snapshot)
+}
+
+// CompositePodGroups returns composite pod group lister.
+func (snapshot *DeltaSnapshotStore) CompositePodGroups() schedulerinterface.CompositePodGroupLister {
+	return (*deltaSnapshotCompositePodGroupLister)(snapshot)
 }
 
 // NewDeltaSnapshotStore creates instances of DeltaSnapshotStore.

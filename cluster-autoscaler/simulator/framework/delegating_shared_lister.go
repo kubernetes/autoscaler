@@ -21,7 +21,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
-	schedulingapi "k8s.io/api/scheduling/v1alpha3"
+	schedulingv1alpha3 "k8s.io/api/scheduling/v1alpha3"
+	schedulingapi "k8s.io/api/scheduling/v1beta1"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -101,6 +102,16 @@ func (lister *DelegatingSchedulerSharedLister) PodGroups() schedulerinterface.Po
 	return lister.delegate.PodGroups()
 }
 
+// CompositePodGroupStates returns a CompositePodGroupStateLister
+func (lister *DelegatingSchedulerSharedLister) CompositePodGroupStates() schedulerinterface.CompositePodGroupStateLister {
+	return lister.delegate.CompositePodGroupStates()
+}
+
+// CompositePodGroups returns a CompositePodGroupLister
+func (lister *DelegatingSchedulerSharedLister) CompositePodGroups() schedulerinterface.CompositePodGroupLister {
+	return lister.delegate.CompositePodGroups()
+}
+
 // ResetDelegate resets delegate to the unsetSharedListerSingleton.
 func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
 	lister.delegate = unsetSharedListerSingleton
@@ -115,6 +126,8 @@ type unsetResourceSliceLister unsetSharedLister
 type unsetDeviceClassLister unsetSharedLister
 type unsetDeviceClassResolver unsetSharedLister
 type unsetPodGroupLister unsetSharedLister
+type unsetCompositePodGroupStateLister unsetSharedLister
+type unsetCompositePodGroupLister unsetSharedLister
 type unsetCSINodeLister unsetSharedLister
 
 // List always returns an error
@@ -209,6 +222,14 @@ func (l *unsetPodGroupLister) Get(namespace, podGroupName string) (*schedulingap
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
+func (l *unsetCompositePodGroupStateLister) Get(namespace, compositePodGroupName string) (schedulerinterface.CompositePodGroupState, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (l *unsetCompositePodGroupLister) Get(namespace, name string) (*schedulingv1alpha3.CompositePodGroup, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
 func (u *unsetCSINodeLister) List() ([]*storagev1.CSINode, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
@@ -249,6 +270,14 @@ func (lister *unsetSharedLister) DeviceClassResolver() schedulerinterface.Device
 
 func (lister *unsetSharedLister) PodGroups() schedulerinterface.PodGroupLister {
 	return (*unsetPodGroupLister)(lister)
+}
+
+func (lister *unsetSharedLister) CompositePodGroupStates() schedulerinterface.CompositePodGroupStateLister {
+	return (*unsetCompositePodGroupStateLister)(lister)
+}
+
+func (lister *unsetSharedLister) CompositePodGroups() schedulerinterface.CompositePodGroupLister {
+	return (*unsetCompositePodGroupLister)(lister)
 }
 
 func (lister *unsetSharedLister) CSINodes() schedulerinterface.CSINodeLister {
