@@ -47,8 +47,9 @@ const (
 )
 
 type nodegroup struct {
-	machineController *machineController
-	scalableResource  *unstructuredScalableResource
+	machineController           *machineController
+	scalableResource            *unstructuredScalableResource
+	nodeDeletionBatcherInterval time.Duration
 }
 
 var _ cloudprovider.NodeGroup = (*nodegroup)(nil)
@@ -119,7 +120,7 @@ func (ng *nodegroup) DeleteNodes(ctx context.Context, nodes []*corev1.Node) erro
 
 	// Step 1: Verify all nodes belong to this node group.
 	for _, node := range nodes {
-		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node)
+		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node, ng.nodeDeletionBatcherInterval)
 		if err != nil {
 			if k8serrors.IsNotFound(err) {
 				klog.Warningf("Node group not found for node %q, skipping verification: %v", node.Spec.ProviderID, err)
@@ -208,10 +209,6 @@ func (ng *nodegroup) DeleteNodes(ctx context.Context, nodes []*corev1.Node) erro
 		}
 
 		_, hasNodeRef, err := unstructured.NestedFieldCopy(machine.UnstructuredContent(), "status", "nodeRef")
-		if err != nil {
-			return err
-		}
-
 		if !hasNodeRef {
 			// A machine that never became a Node never receives a deletion
 			// timestamp, because nothing drains it. Without this check the
@@ -612,7 +609,7 @@ func (ng *nodegroup) IsMachineDeploymentAndRollingOut() (bool, error) {
 	return false, nil
 }
 
-func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured) (*nodegroup, error) {
+func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured, nodeDeletionBatcherInterval time.Duration) (*nodegroup, error) {
 	// Ensure that the resulting node group would be allowed based on the autodiscovery specs if defined
 	if !controller.allowedByAutoDiscoverySpecs(unstructuredScalableResource) {
 		return nil, nil
@@ -645,8 +642,9 @@ func newNodeGroupFromScalableResource(controller *machineController, unstructure
 	}
 
 	return &nodegroup{
-		machineController: controller,
-		scalableResource:  scalableResource,
+		machineController:           controller,
+		scalableResource:            scalableResource,
+		nodeDeletionBatcherInterval: nodeDeletionBatcherInterval,
 	}, nil
 }
 

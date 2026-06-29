@@ -34,7 +34,7 @@ func TestProviderConstructorProperties(t *testing.T) {
 	controller := NewTestMachineController(t)
 	defer controller.Stop()
 
-	provider := newProvider(ProviderName, &resourceLimits, controller.machineController)
+	provider := newProvider(ProviderName, &resourceLimits, controller.machineController, 0)
 	if actual := provider.Name(); actual != ProviderName {
 		t.Errorf("expected %q, got %q", ProviderName, actual)
 	}
@@ -124,7 +124,7 @@ func BenchmarkNodeGroups(b *testing.B) {
 		b.Fatalf("unexpected error: %v", err)
 	}
 
-	provider := newProvider(ProviderName, &resourceLimits, controller.machineController)
+	provider := newProvider(ProviderName, &resourceLimits, controller.machineController, 0)
 	if actual := provider.Name(); actual != ProviderName {
 		b.Errorf("expected %q, got %q", ProviderName, actual)
 	}
@@ -261,7 +261,7 @@ func TestNodeGroups(t *testing.T) {
 			}
 		}
 
-		provider := newProvider(ProviderName, &resourceLimits, controller.machineController)
+		provider := newProvider(ProviderName, &resourceLimits, controller.machineController, 0)
 		if actual := provider.Name(); actual != ProviderName {
 			t.Errorf("expected %q, got %q", ProviderName, actual)
 		}
