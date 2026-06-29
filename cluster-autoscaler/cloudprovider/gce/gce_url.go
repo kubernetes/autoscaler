@@ -112,9 +112,10 @@ func InstanceTemplateNameFromUrl(instanceTemplateLink string) (InstanceTemplateN
 	if err != nil {
 		return InstanceTemplateName{}, err
 	}
-	regional := IsInstanceTemplateRegional(templateUrl.String())
-
 	_, templateName := path.Split(templateUrl.EscapedPath())
+
+	regional := IsInstanceTemplateRegional(instanceTemplateLink)
+
 	return InstanceTemplateName{templateName, regional}, nil
 }
 

@@ -19,7 +19,6 @@ package gce
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"path"
 	"regexp"
 	"strings"
@@ -549,12 +548,9 @@ func (c *cachingMigInfoProvider) setMigInfoCache(migRef GceRef, mig *gce.Instanc
 	c.cache.SetListManagedInstancesResults(migRef, mig.ListManagedInstancesResults)
 	c.cache.SetMigInstancesStateCount(migRef, createInstancesStateCount(mig.TargetSize, mig.CurrentActions))
 
-	templateUrl, err := url.Parse(mig.InstanceTemplate)
-	if err == nil {
-		_, templateName := path.Split(templateUrl.EscapedPath())
-		regional := IsInstanceTemplateRegional(templateUrl.String())
-		c.cache.SetMigInstanceTemplateName(migRef, InstanceTemplateName{templateName, regional})
-	}
+	_, templateName := path.Split(mig.InstanceTemplate)
+	regional := IsInstanceTemplateRegional(mig.InstanceTemplate)
+	c.cache.SetMigInstanceTemplateName(migRef, InstanceTemplateName{templateName, regional})
 }
 
 func (c *cachingMigInfoProvider) GetMigIsStable(migRef GceRef) (bool, error) {
