@@ -345,8 +345,6 @@ func getFirewall(manager *hetznerManager, firewallRef string) (*hcloud.Firewall,
 	defer cancel()
 
 	firewall, _, err := manager.client.Firewall.Get(ctx, firewallRef)
-
-	// Check if an error occurred
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, fmt.Errorf("Timed out checking if firewall `%s` exists.", firewallRef)
