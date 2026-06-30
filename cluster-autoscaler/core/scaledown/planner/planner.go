@@ -37,6 +37,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
@@ -297,7 +298,37 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	}
 	p.nodeUtilizationMap = utilizationMap
 	timer := time.NewTimer(p.autoscalingCtx.ScaleDownSimulationTimeout)
+	defer timer.Stop()
 	var skippedNodes []string
+
+	if p.autoscalingCtx.AutoscalingOptions.HighThroughputScaledownEnabled {
+		// Nodes that have pods to reschedule require binpacking simulations and are slower to categorize.
+		// To process as many nodes within ScaleDownSimulationTimeout as possible,
+		// we want to first evaluate any nodes that have no pods to reschedule ("empty nodes"),
+		// and then evaluate the rest of the nodes.
+		var emptyNodes []string
+		var nonEmptyNodes []string
+		for _, nodeName := range currentlyUnneededNodeNames {
+			nodeInfo, err := p.autoscalingCtx.ClusterSnapshot.GetNodeInfo(nodeName)
+			if err != nil {
+				nonEmptyNodes = append(nonEmptyNodes, nodeName)
+				continue
+			}
+
+			// If a node has pods that are neither daemonsets nor static pods, those pods may need to be rescheduled on other nodes,
+			// and binpacking simulations for such nodes can be expensive.
+			if nodeMayHavePodsToReschedule(nodeInfo) {
+				nonEmptyNodes = append(nonEmptyNodes, nodeName)
+				continue
+			}
+			// If a node has only daemonsets and static pods, there's nothing to reschedule.
+			// Binpacking simulations for such nodes are cheap.
+			emptyNodes = append(emptyNodes, nodeName)
+
+		}
+		// Nodes that are quick to categorize come first.
+		currentlyUnneededNodeNames = append(emptyNodes, nonEmptyNodes...)
+	}
 
 	for i, node := range currentlyUnneededNodeNames {
 		if timedOut(timer) {
@@ -335,6 +366,19 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	if unremovableCount > 0 {
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
 	}
+}
+
+// nodeMayHavePodsToReschedule returns true if a node has at least one pod that's neither a daemonset nor a static pod.
+func nodeMayHavePodsToReschedule(nodeInfo *framework.NodeInfo) bool {
+	hasPodsToReschedule := false
+	for _, podInfo := range nodeInfo.Pods() {
+		// "mirror pod" is synonymous with "static pod"
+		if !pod_util.IsDaemonSetPod(podInfo.Pod) && !pod_util.IsMirrorPod(podInfo.Pod) {
+			hasPodsToReschedule = true
+			break
+		}
+	}
+	return hasPodsToReschedule
 }
 
 // atomicScaleDownNode checks if the removable node would be considered for atomic scale down.

@@ -385,6 +385,8 @@ type AutoscalingOptions struct {
 	PendingPodsBatchingTimeout time.Duration
 	// GracefulDegradationEnabled tells if graceful degradation for unschedulable pods is enabled.
 	GracefulDegradationEnabled bool
+	// HighThroughputScaledownEnabled enables the scaledown throughput optimizations
+	HighThroughputScaledownEnabled bool
 }
 
 // KubeClientOptions specify options for kube client

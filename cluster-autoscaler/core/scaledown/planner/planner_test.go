@@ -1262,14 +1262,16 @@ func (f *fakeEligibilityChecker) FilterOutUnremovable(autoscalingCtx *ca_context
 }
 
 type fakeRemovalSimulator struct {
-	nodes []*apiv1.Node
-	sleep time.Duration
+	nodes          []*apiv1.Node
+	sleep          time.Duration
+	evaluatedNodes []string
 }
 
 func (r *fakeRemovalSimulator) DropOldHints() {}
 
 func (r *fakeRemovalSimulator) SimulateNodeRemoval(name string, _ map[string]bool, _ time.Time, _ pdb.RemainingPdbTracker) (*simulator.NodeToBeRemoved, *simulator.UnremovableNode) {
 	time.Sleep(r.sleep)
+	r.evaluatedNodes = append(r.evaluatedNodes, name)
 	node := &apiv1.Node{}
 	for _, n := range r.nodes {
 		if n.Name == name {
@@ -1299,4 +1301,169 @@ func TestAtomicScaleDownNodeNilGroup(t *testing.T) {
 
 	result := p.atomicScaleDownNode(node)
 	assert.False(t, result)
+}
+func TestScaledownThroughputOptimizations(t *testing.T) {
+	testCases := []struct {
+		name                  string
+		highThroughputEnabled bool
+		setupNodes            func() []*apiv1.Node
+		setupPods             func() []*apiv1.Pod
+		setupSnapshotNodes    func([]*apiv1.Node) []*apiv1.Node
+		verify                func(t *testing.T, evaluatedNodes []string)
+	}{
+		{
+			name:                  "Enabled - Empty node prioritized",
+			highThroughputEnabled: true,
+			setupNodes: func() []*apiv1.Node {
+				return []*apiv1.Node{
+					BuildTestNode("n1", 1000, 1000),
+					BuildTestNode("n2", 1000, 1000),
+					BuildTestNode("n3", 1000, 1000),
+				}
+			},
+			setupPods: func() []*apiv1.Pod {
+				return []*apiv1.Pod{
+					BuildScheduledTestPod("p1", 500, 1, "n1"),
+					BuildScheduledTestPod("p2", 500, 1, "n3"),
+				}
+			},
+			setupSnapshotNodes: func(nodes []*apiv1.Node) []*apiv1.Node {
+				return nodes
+			},
+			verify: func(t *testing.T, evaluatedNodes []string) {
+				assert.Equal(t, 3, len(evaluatedNodes))
+				if len(evaluatedNodes) > 0 {
+					assert.Equal(t, "n2", evaluatedNodes[0])
+				}
+			},
+		},
+		{
+			name:                  "Disabled - Nodes evaluated in order",
+			highThroughputEnabled: false,
+			setupNodes: func() []*apiv1.Node {
+				return []*apiv1.Node{
+					BuildTestNode("n1", 1000, 1000),
+					BuildTestNode("n2", 1000, 1000),
+					BuildTestNode("n3", 1000, 1000),
+				}
+			},
+			setupPods: func() []*apiv1.Pod {
+				return []*apiv1.Pod{
+					BuildScheduledTestPod("p1", 500, 1, "n1"),
+					BuildScheduledTestPod("p2", 500, 1, "n3"),
+				}
+			},
+			setupSnapshotNodes: func(nodes []*apiv1.Node) []*apiv1.Node {
+				return nodes
+			},
+			verify: func(t *testing.T, evaluatedNodes []string) {
+				assert.Equal(t, 3, len(evaluatedNodes))
+				if len(evaluatedNodes) > 0 {
+					assert.Equal(t, "n1", evaluatedNodes[0])
+				}
+			},
+		},
+		{
+			name:                  "Enabled - GetNodeInfo Error",
+			highThroughputEnabled: true,
+			setupNodes: func() []*apiv1.Node {
+				return []*apiv1.Node{
+					BuildTestNode("n1", 1000, 1000),
+					BuildTestNode("n2", 1000, 1000),
+					BuildTestNode("n3", 1000, 1000),
+				}
+			},
+			setupPods: func() []*apiv1.Pod {
+				return []*apiv1.Pod{}
+			},
+			setupSnapshotNodes: func(nodes []*apiv1.Node) []*apiv1.Node {
+				// We do NOT add n1 to the cluster snapshot, so GetNodeInfo(n1) will return an error
+				return []*apiv1.Node{nodes[1], nodes[2]}
+			},
+			verify: func(t *testing.T, evaluatedNodes []string) {
+				assert.Equal(t, 3, len(evaluatedNodes))
+				if len(evaluatedNodes) == 3 {
+					assert.NotEqual(t, "n1", evaluatedNodes[0])
+					assert.Equal(t, "n1", evaluatedNodes[2])
+				}
+			},
+		},
+		{
+			name:                  "Enabled - Topology",
+			highThroughputEnabled: true,
+			setupNodes: func() []*apiv1.Node {
+				n1 := BuildTestNode("n1", 1000, 1000)
+				n2 := BuildTestNode("n2", 1000, 1000)
+				n3 := BuildTestNode("n3", 1000, 1000)
+				n1.Labels = map[string]string{"topology.kubernetes.io/zone": "zone-a"}
+				n2.Labels = map[string]string{"topology.kubernetes.io/zone": "zone-b"}
+				n3.Labels = map[string]string{"topology.kubernetes.io/zone": "zone-c"}
+				return []*apiv1.Node{n1, n2, n3}
+			},
+			setupPods: func() []*apiv1.Pod {
+				// n1 will be non-empty, n2 and n3 will be empty
+				return []*apiv1.Pod{
+					BuildScheduledTestPod("p1", 500, 1, "n1"),
+				}
+			},
+			setupSnapshotNodes: func(nodes []*apiv1.Node) []*apiv1.Node {
+				return nodes
+			},
+			verify: func(t *testing.T, evaluatedNodes []string) {
+				assert.Equal(t, 3, len(evaluatedNodes))
+				if len(evaluatedNodes) == 3 {
+					assert.True(t, evaluatedNodes[0] == "n2" || evaluatedNodes[0] == "n3")
+					assert.True(t, evaluatedNodes[1] == "n2" || evaluatedNodes[1] == "n3")
+					assert.Equal(t, "n1", evaluatedNodes[2])
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			nodes := tc.setupNodes()
+			pods := tc.setupPods()
+			snapshotNodes := tc.setupSnapshotNodes(nodes)
+
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
+			provider.AddNodeGroup("ng1", 0, 0, 0)
+			for _, n := range nodes {
+				provider.AddNode("ng1", n)
+			}
+
+			autoscalingOptions := config.AutoscalingOptions{
+				HighThroughputScaledownEnabled: tc.highThroughputEnabled,
+				ScaleDownSimulationTimeout:     5 * time.Minute,
+				MaxScaleDownParallelism:        10,
+			}
+			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOptions)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOptions, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
+			assert.NoError(t, err)
+
+			// We skip ListerRegistry.Stop() here as it caused compilation issues, and test setup teardown is handled differently if needed.
+
+			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, snapshotNodes, pods)
+
+			deleteOptions := options.NodeDeleteOptions{}
+			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
+			p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
+
+			rs := &fakeRemovalSimulator{
+				nodes: nodes,
+			}
+			p.rs = rs
+
+			eligible := map[string]bool{}
+			for _, n := range nodes {
+				eligible[n.Name] = true
+			}
+			p.eligibilityChecker = &fakeEligibilityChecker{eligible: eligible}
+
+			err = p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now())
+			assert.NoError(t, err)
+
+			tc.verify(t, rs.evaluatedNodes)
+		})
+	}
 }
