@@ -5,6 +5,7 @@ all: $(addprefix build-arch-,$(ALL_ARCH))
 # Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
 # This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
 GO_TEST_DEFAULT_ANALYZERS?=atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests
+GO_TEST_PACKAGES = $$(go list ./... | grep -v "/test/e2e")
 TAG?=dev
 FLAGS=
 LDFLAGS?=-s
@@ -79,13 +80,13 @@ test-build-tags:
 	done
 
 test-unit: clean build
-	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+	go test -race $$(go list ./... | grep -v '/test/e2e') -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 test-controllers: setup-envtest clean build
 	ginkgo --race --vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG} ./test/integration/controllers/...
 
 test-ci: setup-envtest
-	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+	go test -race $$(go list ./... | grep -v '/test/e2e') -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 benchmark:
 	go test ./... -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
@@ -161,7 +162,7 @@ container-arch-%: build-in-docker-arch-% make-image-arch-%
 	@echo "Full in-docker image ${TAG}${FOR_PROVIDER}-$* completed"
 
 test-in-docker: clean docker-builder
-	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
+	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race $(GO_TEST_PACKAGES) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
@@ -188,6 +189,14 @@ envtest: $(ENVTEST) ## Download setup-envtest locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest,$(ENVTEST_VERSION))
 
+.PHONY: docker-build-e2e
+docker-build-e2e:
+	docker build --build-arg GOARCH=$(GOARCH) -t cluster-autoscaler:dev .
+
+.PHONY: test-e2e
+test-e2e: docker-build-e2e
+	go test -v ./test/e2e/... -args -v=4
+
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary
 # $2 - package url which can be installed
@@ -204,4 +213,4 @@ mv $(1) $(1)-$(3) ;\
 ln -sf $(1)-$(3) $(1)
 endef
 
-.PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest
+.PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest docker-build-e2e setup-test-e2e test-e2e cleanup-test-e2e
