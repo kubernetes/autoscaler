@@ -16,12 +16,12 @@ jobs:
     name: verify
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/autoscaler
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version: '1.25'
           cache-dependency-path: |
