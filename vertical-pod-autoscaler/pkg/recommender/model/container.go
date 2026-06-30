@@ -147,6 +147,12 @@ func (container *ContainerState) GetMemoryAggregationIntervalDuration() time.Dur
 	return container.aggregator.GetMemoryAggregationIntervalDuration()
 }
 
+// GetMaxAllowedMemory returns the maximum allowed memory from the VPA policy.
+// It delegates to the aggregator's implementation.
+func (container *ContainerState) GetMaxAllowedMemory() ResourceAmount {
+	return container.aggregator.GetMaxAllowedMemory()
+}
+
 func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, isOOM bool) bool {
 	ts := sample.MeasureStart
 	// We always process OOM samples.
@@ -218,6 +224,12 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
 	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(container.GetOOMMinBumpUp()),
 		ScaleResource(memoryUsed, container.GetOOMBumpUpRatio()))
+	// Cap synthetic OOM samples at maxAllowed to prevent a feedback loop where
+	// bumped up values exceed the max get capped back, trigger another OOM, and
+	// re insert the incorrect value (kubernetes/autoscaler#9521).
+	if maxAllowed := container.GetMaxAllowedMemory(); maxAllowed > 0 && memoryNeeded > maxAllowed {
+		memoryNeeded = maxAllowed
+	}
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,

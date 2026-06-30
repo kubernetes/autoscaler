@@ -153,6 +153,14 @@ func ResourceAmountMax(amount1, amount2 ResourceAmount) ResourceAmount {
 	return amount2
 }
 
+// ResourceAmountMin returns the smaller of two resource amounts.
+func ResourceAmountMin(amount1, amount2 ResourceAmount) ResourceAmount {
+	if amount1 < amount2 {
+		return amount1
+	}
+	return amount2
+}
+
 func resourceAmountFromFloat(amount float64) ResourceAmount {
 	if amount > float64(MaxResourceAmount) {
 		return MaxResourceAmount

@@ -91,6 +91,9 @@ type ContainerStateAggregator interface {
 	GetOOMMinBumpUp() float64
 	// GetMemoryAggregationIntervalDuration returns the memory aggregation interval for this container.
 	GetMemoryAggregationIntervalDuration() time.Duration
+	// GetMaxAllowedMemory returns the maximum allowed memory from the VPA policy.
+	// Returns 0 if no maximum is configured.
+	GetMaxAllowedMemory() ResourceAmount
 }
 
 // AggregateContainerState holds input signals aggregated from a set of containers.
@@ -124,6 +127,7 @@ type AggregateContainerState struct {
 	MemoryAggregationIntervalDuration time.Duration
 	MemoryAggregationIntervalCount    int64
 	ControlledResources               *[]ResourceName
+	MaxAllowedMemory                  ResourceAmount
 
 	mutex sync.RWMutex
 }
@@ -181,6 +185,12 @@ func (a *AggregateContainerState) GetOOMMinBumpUp() float64 {
 // GetMemoryAggregationIntervalDuration returns the memory aggregation interval for this container state.
 func (a *AggregateContainerState) GetMemoryAggregationIntervalDuration() time.Duration {
 	return a.MemoryAggregationIntervalDuration
+}
+
+// GetMaxAllowedMemory returns the maximum allowed memory from the VPA policy.
+// Returns 0 if no maximum is configured.
+func (a *AggregateContainerState) GetMaxAllowedMemory() ResourceAmount {
+	return a.MaxAllowedMemory
 }
 
 // MarkNotAutoscaled registers that this container state is not controlled by
@@ -373,6 +383,13 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 				klog.InfoS("memoryAggregationIntervalCount is set but %s feature gate is disabled, falling back to default value", features.PerVPAConfig)
 			}
 		}
+
+		// Set MaxAllowedMemory equal to 0 if no value is provided.
+		if maxMem, ok := resourcePolicy.MaxAllowed[corev1.ResourceMemory]; ok {
+			a.MaxAllowedMemory = ResourceAmount(maxMem.Value())
+		} else {
+			a.MaxAllowedMemory = 0
+		}
 	}
 }
 
@@ -461,4 +478,10 @@ func (p *ContainerStateAggregatorProxy) GetOOMBumpUpRatio() float64 {
 func (p *ContainerStateAggregatorProxy) GetMemoryAggregationIntervalDuration() time.Duration {
 	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
 	return aggregator.GetMemoryAggregationIntervalDuration()
+}
+
+// GetMaxAllowedMemory returns the maximum allowed memory from the VPA policy.
+func (p *ContainerStateAggregatorProxy) GetMaxAllowedMemory() ResourceAmount {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	return aggregator.GetMaxAllowedMemory()
 }
