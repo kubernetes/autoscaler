@@ -18,6 +18,7 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -252,6 +253,22 @@ func TestScaleSetTargetSize(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, targetSize)
 	}
+}
+
+func TestScaleSetTargetSizeReturnsErrorForCachedNegativeSize(t *testing.T) {
+	provider := newTestProvider(t)
+	err := provider.azureManager.forceRefresh()
+	assert.NoError(t, err)
+
+	scaleSet := newTestScaleSet(provider.azureManager, testASG)
+	scaleSet.curSize = -1
+	scaleSet.lastSizeRefresh = time.Now()
+	scaleSet.sizeRefreshPeriod = time.Hour
+
+	size, err := scaleSet.TargetSize()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cached size is -1 without provider error")
+	assert.Equal(t, -1, size)
 }
 
 func TestScaleSetIncreaseSize(t *testing.T) {
@@ -1120,6 +1137,80 @@ func TestScaleSetDeleteNodes(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, instance2.Status.State, cloudprovider.InstanceDeleting)
 	}
+}
+
+func TestScaleSetForceDeleteNodesDoesNotPublishNegativeCachedSize(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	vmssName := testASG
+	var vmssCapacity int64 = 3
+	orchMode := armcompute.OrchestrationModeUniform
+	expectedScaleSets := newTestVMSSList(vmssCapacity, vmssName, "eastus", orchMode)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+	expectedVMs := newTestVMList(3)
+
+	manager := newTestAzureManager(t)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	manager.azClient.vmssClientForDelete = mockDeleteClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, testASG).Return(expectedVMSSVMs, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+	manager.azClient.virtualMachinesClient = mockVMClient
+
+	err := manager.forceRefresh()
+	assert.NoError(t, err)
+
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+	provider, err := BuildAzureCloudProvider(manager, resourceLimiter)
+	assert.NoError(t, err)
+
+	registered := manager.RegisterNodeGroup(newTestScaleSet(manager, testASG))
+	manager.explicitlyConfigured[testASG] = true
+	assert.True(t, registered)
+	err = manager.forceRefresh()
+	assert.NoError(t, err)
+
+	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+	assert.True(t, ok)
+
+	targetSize, err := scaleSet.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+
+	scaleSet.curSize = 1
+	scaleSet.lastSizeRefresh = time.Now()
+	scaleSet.sizeRefreshPeriod = time.Hour
+
+	nodesToDelete := []*apiv1.Node{
+		newApiNode(orchMode, 0),
+		newApiNode(orchMode, 2),
+	}
+	err = scaleSet.ForceDeleteNodes(nodesToDelete)
+	assert.NoError(t, err)
+
+	scaleSet.sizeMutex.Lock()
+	curSize := scaleSet.curSize
+	lastSizeRefresh := scaleSet.lastSizeRefresh
+	scaleSet.sizeMutex.Unlock()
+	assert.Equal(t, int64(1), curSize)
+	assert.True(t, lastSizeRefresh.IsZero())
+
+	targetSize, err = scaleSet.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
 }
 
 func TestScaleSetDeleteNodeUnregistered(t *testing.T) {
@@ -2054,6 +2145,109 @@ func TestScaleSetETagPreconditionFailureRollsBackCapacity(t *testing.T) {
 	target, err := scaleSet.TargetSize()
 	assert.NoError(t, err)
 	assert.Equal(t, 3, target)
+}
+
+type testPollingHandler[T any] struct {
+	err    error
+	polled bool
+}
+
+func (f *testPollingHandler[T]) Done() bool {
+	return f.polled && f.err == nil
+}
+
+func (f *testPollingHandler[T]) Poll(_ context.Context) (*http.Response, error) {
+	f.polled = true
+	return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, f.err
+}
+
+func (f *testPollingHandler[T]) Result(_ context.Context, _ *T) error {
+	return f.err
+}
+
+func newTestPollerWithError(err error) *runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse] {
+	resp := &http.Response{
+		StatusCode: http.StatusAccepted,
+		Header:     http.Header{},
+		Body:       http.NoBody,
+	}
+	pl := runtime.NewPipeline("test", "v0.0.0", runtime.PipelineOptions{}, nil)
+	poller, pollerErr := runtime.NewPoller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse](resp, pl, &runtime.NewPollerOptions[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse]{
+		Handler: &testPollingHandler[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse]{err: err},
+	})
+	if pollerErr != nil {
+		panic(pollerErr)
+	}
+	return poller
+}
+
+func TestWaitForDeleteInstancesNoRetryOnOtherErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	manager := newTestAzureManager(t)
+
+	vmssName := "test-asg"
+	var vmssCapacity int64 = 3
+	orchMode := armcompute.OrchestrationModeUniform
+
+	expectedScaleSets := []*armcompute.VirtualMachineScaleSet{
+		{
+			Name: ptr.To(vmssName),
+			SKU:  &armcompute.SKU{Capacity: ptr.To(vmssCapacity)},
+			Properties: &armcompute.VirtualMachineScaleSetProperties{
+				OrchestrationMode: &orchMode,
+			},
+		},
+	}
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, "test-asg").Return(expectedVMSSVMs, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	manager.azClient.vmssClientForDelete = mockDeleteClient
+
+	err := manager.forceRefresh()
+	assert.NoError(t, err)
+
+	registered := manager.RegisterNodeGroup(newTestScaleSet(manager, "test-asg"))
+	manager.explicitlyConfigured["test-asg"] = true
+	assert.True(t, registered)
+	err = manager.forceRefresh()
+	assert.NoError(t, err)
+
+	requiredIds := &armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{
+		InstanceIDs: []*string{ptr.To("0")},
+	}
+
+	for _, strictCacheUpdates := range []bool{false, true} {
+		t.Run(fmt.Sprintf("strict cache updates %t", strictCacheUpdates), func(t *testing.T) {
+			manager.config.StrictCacheUpdates = strictCacheUpdates
+			scaleSet := newTestScaleSet(manager, "test-asg")
+			scaleSet.curSize = 1
+			scaleSet.lastSizeRefresh = time.Now()
+			scaleSet.sizeRefreshPeriod = time.Hour
+
+			// Create a poller that returns a non-preempted error
+			otherErrorPoller := newTestPollerWithError(errors.New("InternalServerError: something went wrong"))
+
+			// Act: PollUntilDone fails with a non-preempted error — should NOT trigger retry
+			scaleSet.waitForDeleteInstances(otherErrorPoller, requiredIds)
+
+			// Assert: BeginDeleteInstances was never called. gomock.Times(0) enforces this.
+			// Assert: caches were invalidated so TargetSize refreshes from VMSS capacity.
+			assert.False(t, scaleSet.lastInstanceRefresh.IsZero())
+			targetSize, err := scaleSet.TargetSize()
+			assert.NoError(t, err)
+			assert.Equal(t, 3, targetSize)
+		})
+	}
 }
 
 // TestScaleSetETagRetrySucceedsAfterPreconditionFailure verifies that a single 412

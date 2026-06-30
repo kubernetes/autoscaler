@@ -274,9 +274,14 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 func (scaleSet *ScaleSet) getScaleSetSize() (int64, error) {
 	// First, get the current size of the ScaleSet
 	size, getVMSSError := scaleSet.getCurSize()
-	if size == -1 || getVMSSError != nil {
-		klog.V(3).Infof("getScaleSetSize: either size is -1 (actual: %d) or error exists (actual err:%v)", size, getVMSSError.error)
+	if getVMSSError != nil {
+		klog.V(3).Infof("getScaleSetSize: error exists (actual err:%v)", getVMSSError.error)
 		return size, getVMSSError.error
+	}
+	if size == -1 {
+		err := fmt.Errorf("failed to get scale set size for %s: cached size is -1 without provider error", scaleSet.Name)
+		klog.V(3).Infof("getScaleSetSize: size is -1 (actual err:%v)", err)
+		return size, err
 	}
 	return size, nil
 }
@@ -324,6 +329,7 @@ func (scaleSet *ScaleSet) canIncreaseSize(delta int) (int64, error) {
 		return size, err
 	}
 
+	// Defensive: getScaleSetSize already errors on size == -1, so this is unreachable today.
 	if size == -1 {
 		return size, fmt.Errorf("the scale set %s is under initialization, skipping IncreaseSize", scaleSet.Name)
 	}
@@ -787,13 +793,21 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 
 	if !scaleSet.manager.config.StrictCacheUpdates {
 		// Proactively decrement scale set size so that we don't
-		// go below minimum node count if cache data is stale
-		// only do it for non-unregistered nodes
+		// go below minimum node count if cache data is stale.
+		// If the cached size can't represent the delete batch,
+		// mark it stale instead of publishing a negative size.
+		// Only do it for non-unregistered nodes.
 
 		if !hasUnregisteredNodes {
+			deleteCount := int64(len(instanceIDs))
 			scaleSet.sizeMutex.Lock()
-			scaleSet.curSize -= int64(len(instanceIDs))
-			scaleSet.lastSizeRefresh = time.Now()
+			if scaleSet.curSize < deleteCount {
+				klog.Warningf("VMSS: %s, cached size %d is smaller than instances to delete %d, invalidating size cache instead of decrementing", scaleSet.Name, scaleSet.curSize, deleteCount)
+				scaleSet.lastSizeRefresh = time.Time{}
+			} else {
+				scaleSet.curSize -= deleteCount
+				scaleSet.lastSizeRefresh = time.Now()
+			}
 			scaleSet.sizeMutex.Unlock()
 		}
 
@@ -825,9 +839,8 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompu
 		}
 		return
 	}
-	if !scaleSet.manager.config.StrictCacheUpdates {
-		scaleSet.invalidateInstanceCache()
-	}
+	scaleSet.invalidateInstanceCache()
+	scaleSet.invalidateLastSizeRefreshWithLock()
 	klog.Errorf("PollUntilDone for DeleteInstances(%v) for %s failed with error: %v", requiredIds.InstanceIDs, scaleSet.Name, err)
 }
 
@@ -839,6 +852,9 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 		return err
 	}
 
+	// This only catches callers already at min size. A future change should also reject
+	// batches that would go below min size; create-error cleanup fallback is the only
+	// currently known path that can reach this check without regular scale-down filtering.
 	if int(size) <= scaleSet.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
