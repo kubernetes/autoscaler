@@ -237,7 +237,7 @@ func BuildHetzner(_ *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDi
 
 		var placementGroup *hcloud.PlacementGroup
 		var subnetIPRange *net.IPNet
-		var firewalls []*hcloud.Firewall
+		var poolFirewalls []*hcloud.Firewall
 		if manager.clusterConfig.IsUsingNewFormat {
 			_, ok := manager.clusterConfig.NodeConfigs[spec.name]
 			if !ok {
@@ -265,7 +265,7 @@ func BuildHetzner(_ *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDi
 				if firewall == nil {
 					klog.Fatalf("The requested firewall `%s` does not appear to exist.", firewallRef)
 				}
-				firewalls = append(firewalls, firewall)
+				poolFirewalls = append(poolFirewalls, firewall)
 			}
 
 			if manager.network != nil {
@@ -295,7 +295,7 @@ func BuildHetzner(_ *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDi
 			clusterUpdateMutex: &clusterUpdateLock,
 			placementGroup:     placementGroup,
 			subnetIPRange:      subnetIPRange,
-			firewalls:          firewalls,
+			firewalls:          buildServerCreateFirewalls(manager.firewall, poolFirewalls),
 		}
 	}
 
