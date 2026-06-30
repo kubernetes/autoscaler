@@ -754,11 +754,11 @@ func TestDeleteVMsPoolNodesProactivelyMarksDeletion(t *testing.T) {
 
 	assert.NoError(t, ap.DeleteNodes([]*apiv1.Node{deletingNode}))
 
-	// The deleted node is proactively reported as gone (with the ErrNotImplemented
-	// taint-based fallback), while other nodes remain reported as present.
+	// The deleted node is proactively reported as gone (false, nil), while other
+	// nodes remain reported as present.
 	hasInstance, err = ap.manager.azureCache.HasInstance(deletingNode.Spec.ProviderID)
 	assert.False(t, hasInstance)
-	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+	assert.NoError(t, err)
 
 	hasInstance, err = ap.manager.azureCache.HasInstance(survivingNode.Spec.ProviderID)
 	assert.True(t, hasInstance)

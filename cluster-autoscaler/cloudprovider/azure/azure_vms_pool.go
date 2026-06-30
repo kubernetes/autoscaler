@@ -473,7 +473,11 @@ func (vmPool *VMPool) Nodes() ([]cloudprovider.Instance, error) {
 		// ClusterStateRegistry through it) can observe VMs that are being deleted.
 		// VMs pools do not support fast-delete-on-failed-provisioning, so the power
 		// state is irrelevant here.
-		status := instanceStatusFromProvisioningStateAndPowerState(resourceID, vm.Properties.ProvisioningState, vmPowerStateRunning, false)
+		var provisioningState *string
+		if vm.Properties != nil {
+			provisioningState = vm.Properties.ProvisioningState
+		}
+		status := instanceStatusFromProvisioningStateAndPowerState(resourceID, provisioningState, vmPowerStateRunning, disableFastDeleteOnFailure)
 		nodes = append(nodes, cloudprovider.Instance{Id: resourceID, Status: status})
 	}
 
