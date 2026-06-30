@@ -295,17 +295,55 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	}
 	p.nodeUtilizationMap = utilizationMap
 	timer := time.NewTimer(p.autoscalingCtx.ScaleDownSimulationTimeout)
+	defer timer.Stop()
 	var skippedNodes []string
 
-	for i, node := range currentlyUnneededNodeNames {
+	var evaluateNodeNames []string
+	if p.autoscalingCtx.AutoscalingOptions.HighThroughputScaledownEnabled {
+		// Nodes that have pods to reschedule require binpacking simulations and are slower to categorize.
+		// To process as many nodes within ScaleDownSimulationTimeout as possible,
+		// we want to first evaluate any nodes that have no pods to reschedule,
+		// and then evaluate the rest of the nodes.
+		emptyNodes := make([]string, 0, len(currentlyUnneededNodeNames))
+		nonEmptyNodes := make([]string, 0, len(currentlyUnneededNodeNames))
+		for _, nodeName := range currentlyUnneededNodeNames {
+			nodeInfo, err := p.autoscalingCtx.ClusterSnapshot.GetNodeInfo(nodeName)
+			if err != nil {
+				nonEmptyNodes = append(nonEmptyNodes, nodeName)
+				continue
+			}
+			isEmpty := true
+
+			// If a node has only daemonsets and static pods, we assume it has no pods to reschedule.
+			// This approach doesn't cover all corner cases and will have false negatives --
+			// some nodes that do not have pods to reschedule will be considered non-empty.
+			// This is OK, as it only affects the order of node evaluation.
+			for _, podInfo := range nodeInfo.Pods() {
+				if !pod_util.IsDaemonSetPod(podInfo.Pod) && !pod_util.IsMirrorPod(podInfo.Pod) {
+					isEmpty = false
+					break
+				}
+			}
+			if isEmpty {
+				emptyNodes = append(emptyNodes, nodeName)
+			} else {
+				nonEmptyNodes = append(nonEmptyNodes, nodeName)
+			}
+		}
+		evaluateNodeNames = append(emptyNodes, nonEmptyNodes...)
+	} else {
+		evaluateNodeNames = currentlyUnneededNodeNames
+	}
+
+	for i, node := range evaluateNodeNames {
 		if timedOut(timer) {
-			skippedNodes = currentlyUnneededNodeNames[i:]
-			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
+			skippedNodes = evaluateNodeNames[i:]
+			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(evaluateNodeNames)-i, len(evaluateNodeNames))
 			break
 		}
 		if len(removableList)-atomicScaleDownNodesCount >= p.unneededNodesLimit() {
-			skippedNodes = currentlyUnneededNodeNames[i:]
-			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more. Total atomic scale down nodes: %d", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList), atomicScaleDownNodesCount)
+			skippedNodes = evaluateNodeNames[i:]
+			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more. Total atomic scale down nodes: %d", len(evaluateNodeNames)-i, len(evaluateNodeNames), len(removableList), atomicScaleDownNodesCount)
 			break
 		}
 
