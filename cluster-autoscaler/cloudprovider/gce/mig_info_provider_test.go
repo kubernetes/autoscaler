@@ -830,6 +830,59 @@ func TestGetMigTargetSize(t *testing.T) {
 	}
 }
 
+func TestRefreshMigInfo(t *testing.T) {
+	targetSize := int64(42)
+	instanceGroupManager := &gce.InstanceGroupManager{
+		Zone:       mig.GceRef().Zone,
+		Name:       mig.GceRef().Name,
+		TargetSize: targetSize,
+		SelfLink:   fmt.Sprintf("projects/%s/zones/%s/instanceGroups/%s", mig.GceRef().Project, mig.GceRef().Zone, mig.GceRef().Name),
+	}
+
+	testCases := []struct {
+		name               string
+		cache              *GceCache
+		migQuery           *gceMig
+		fetchMig           func(GceRef) (*gce.InstanceGroupManager, error)
+		expectedTargetSize int64
+		expectedErr        error
+	}{
+		{
+			name:               "refresh cache success",
+			cache:              emptyCache(),
+			fetchMig:           fetchMigConst(instanceGroupManager),
+			expectedTargetSize: targetSize,
+			migQuery:           mig,
+		},
+		{
+			name:        "refresh cache failure",
+			cache:       emptyCache(),
+			fetchMig:    fetchMigFail,
+			expectedErr: errFetchMig,
+			migQuery:    mig,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &mockAutoscalingGceClient{
+				fetchMig: tc.fetchMig,
+			}
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second, false, true)
+
+			err := provider.RefreshMigInfo(tc.migQuery.GceRef())
+			assert.Equal(t, tc.expectedErr, err)
+
+			cachedTargetSize, found := tc.cache.GetMigTargetSize(tc.migQuery.GceRef())
+			assert.Equal(t, tc.expectedErr == nil, found)
+			if tc.expectedErr == nil {
+				assert.Equal(t, tc.expectedTargetSize, cachedTargetSize)
+			}
+		})
+	}
+}
+
 func TestGetMigBasename(t *testing.T) {
 	basename := "base-instance-name"
 	instanceGroupManager := &gce.InstanceGroupManager{

@@ -284,7 +284,7 @@ func (m *gceManagerImpl) DeleteInstances(instances []GceRef) error {
 			return fmt.Errorf("cannot delete instances which don't belong to the same MIG.")
 		}
 	}
-	m.cache.InvalidateMigTargetSize(commonMig.GceRef())
+	m.migInfoProvider.RefreshMigInfo(commonMig.GceRef())
 	m.cache.InvalidateMigInstances(commonMig.GceRef())
 	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
 }
