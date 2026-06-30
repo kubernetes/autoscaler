@@ -51,7 +51,7 @@ type hetznerNodeGroup struct {
 	clusterUpdateMutex *sync.Mutex
 	placementGroup     *hcloud.PlacementGroup
 	subnetIPRange      *net.IPNet
-	firewalls          []*hcloud.Firewall
+	firewalls          []*hcloud.ServerCreateFirewall
 }
 
 type hetznerNodeGroupSpec struct {
@@ -458,6 +458,7 @@ func instanceTypeArch(manager *hetznerManager, instanceType string) (string, err
 // buildServerCreateFirewalls returns the firewalls to attach to a new server: the
 // cluster-wide firewall (HCLOUD_FIREWALL, if set) plus the nodepool's own
 // firewalls, deduplicated by id so a pool can harmlessly list the global one.
+// It is computed once at node-group build time and reused for every server.
 func buildServerCreateFirewalls(clusterFirewall *hcloud.Firewall, nodePoolFirewalls []*hcloud.Firewall) []*hcloud.ServerCreateFirewall {
 	var result []*hcloud.ServerCreateFirewall
 	seen := make(map[int64]bool)
@@ -524,7 +525,7 @@ func createServer(n *hetznerNodeGroup) error {
 	if n.manager.network != nil && n.subnetIPRange == nil {
 		opts.Networks = []*hcloud.Network{n.manager.network}
 	}
-	opts.Firewalls = buildServerCreateFirewalls(n.manager.firewall, n.firewalls)
+	opts.Firewalls = n.firewalls
 
 	serverCreateResult, _, err := n.manager.client.Server.Create(ctx, opts)
 	if err != nil {
