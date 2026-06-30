@@ -283,7 +283,7 @@ func TestHasInstanceReportsDeletingNodesAsGone(t *testing.T) {
 			hasInstance, err = manager.azureCache.HasInstance(deletedNode.Spec.ProviderID)
 			if tc.expectDeletingBeforeRefresh {
 				assert.False(t, hasInstance)
-				assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+				assert.NoError(t, err)
 			} else {
 				assert.True(t, hasInstance)
 				assert.NoError(t, err)
@@ -294,12 +294,11 @@ func TestHasInstanceReportsDeletingNodesAsGone(t *testing.T) {
 			expectedVMSSVMs[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
 			assert.NoError(t, manager.forceRefresh())
 
-			// The node being deleted must now be reported as gone (with the
-			// ErrNotImplemented taint-based fallback), even though it is still tracked
-			// by the node group.
+			// The node being deleted must now be reported as gone (false, nil),
+			// even though it is still tracked by the node group.
 			hasInstance, err = manager.azureCache.HasInstance(deletedNode.Spec.ProviderID)
 			assert.False(t, hasInstance)
-			assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+			assert.NoError(t, err)
 			assert.NotNil(t, manager.azureCache.getInstanceFromCache(deletedNode.Spec.ProviderID))
 
 			// Nodes that are not being deleted continue to be reported as present.

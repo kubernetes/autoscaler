@@ -55,6 +55,8 @@ const (
 	provisioningStateMigrating string = "Migrating"
 	provisioningStateSucceeded string = "Succeeded"
 	provisioningStateUpdating  string = "Updating"
+	enableFastDeleteOnFailure  bool   = true
+	disableFastDeleteOnFailure bool   = false
 )
 
 // ScaleSet implements NodeGroup interface.

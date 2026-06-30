@@ -488,7 +488,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 		// An instance that is actively being deleted is reported as gone so that
 		// ClusterStateRegistry stops counting it as an upcoming node.
 		if state, found := m.instanceStates[instanceID]; found && state == cloudprovider.InstanceDeleting {
-			return false, cloudprovider.ErrNotImplemented
+			return false, nil
 		}
 		return true, nil
 	}

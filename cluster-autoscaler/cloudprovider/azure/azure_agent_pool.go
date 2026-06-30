@@ -529,7 +529,7 @@ func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
 		if instance.Properties != nil {
 			provisioningState = instance.Properties.ProvisioningState
 		}
-		status := instanceStatusFromProvisioningStateAndPowerState(resourceID, provisioningState, vmPowerStateRunning, false)
+		status := instanceStatusFromProvisioningStateAndPowerState(resourceID, provisioningState, vmPowerStateRunning, disableFastDeleteOnFailure)
 		nodes = append(nodes, cloudprovider.Instance{Id: resourceID, Status: status})
 	}
 

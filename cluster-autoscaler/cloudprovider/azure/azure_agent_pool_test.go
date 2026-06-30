@@ -502,7 +502,7 @@ func TestAgentPoolNodes(t *testing.T) {
 			Tags: map[string]*string{"poolName": ptr.To("as")},
 			ID:   &testValidProviderID0,
 			Properties: &armcompute.VirtualMachineProperties{
-				ProvisioningState: ptr.To("Succeeded"),
+				ProvisioningState: new("Succeeded"),
 			},
 		},
 	}
@@ -557,7 +557,7 @@ func TestAgentPoolDeleteInstancesProactivelyMarksDeletion(t *testing.T) {
 		func(ctx context.Context, resourceGroupName, vmName string, expand *string) (*armcompute.VirtualMachine, error) {
 			hasInstance, hasInstanceErr := as.manager.azureCache.HasInstance(testValidProviderID0)
 			assert.False(t, hasInstance)
-			assert.Equal(t, cloudprovider.ErrNotImplemented, hasInstanceErr)
+			assert.NoError(t, hasInstanceErr)
 			return &armcompute.VirtualMachine{
 				Properties: &armcompute.VirtualMachineProperties{
 					StorageProfile: &armcompute.StorageProfile{OSDisk: &armcompute.OSDisk{ManagedDisk: &armcompute.ManagedDiskParameters{}}},
