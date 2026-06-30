@@ -125,10 +125,6 @@ updates:
     - dependency-name: "k8s.io/cloud-provider-gcp/*"
     - dependency-name: "cloud.google.com/go/compute"
     - dependency-name: "cloud.google.com/go/compute/*"
-    - dependency-name: "sigs.k8s.io/cloud-provider-azure"
-    - dependency-name: "sigs.k8s.io/cloud-provider-azure/*"
-    - dependency-name: "github.com/Azure/*"
-    - dependency-name: "github.com/Azure/go-autorest/autorest/*"
     - dependency-name: "github.com/digitalocean/*"
     # Update dependencies exclusively used by providers manually
     - dependency-name: "github.com/gofrs/uuid"
