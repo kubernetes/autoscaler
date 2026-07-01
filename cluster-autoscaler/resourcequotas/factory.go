@@ -55,13 +55,6 @@ func (f *TrackerFactory) NewMaxQuotasTracker(autoscalingCtx *context.Autoscaling
 	return f.newQuotasTracker(autoscalingCtx, nodes, false /* isMinEnforcement */)
 }
 
-// NewQuotasTracker builds a new Tracker for maximum limits enforcement.
-//
-// Deprecated: Use NewMaxQuotasTracker instead.
-func (f *TrackerFactory) NewQuotasTracker(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node) (*Tracker, error) {
-	return f.NewMaxQuotasTracker(autoscalingCtx, nodes)
-}
-
 // NewMinQuotasTracker builds a new Tracker for minimum limits enforcement.
 //
 // NewMinQuotasTracker calculates resources used by the nodes for every
