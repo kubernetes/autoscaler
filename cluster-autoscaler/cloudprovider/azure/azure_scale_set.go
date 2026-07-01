@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 
 	azerrors "github.com/Azure/azure-sdk-for-go-extensions/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
