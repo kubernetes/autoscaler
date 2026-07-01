@@ -116,13 +116,13 @@ func TestBalanceSingleGroup(t *testing.T) {
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 
 	// just one node
-	scaleUpInfo, err := processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 1)
+	scaleUpInfo, err := processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 1, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(scaleUpInfo))
 	assert.Equal(t, 2, scaleUpInfo[0].NewSize)
 
 	// multiple nodes
-	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 4)
+	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 4, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(scaleUpInfo))
 	assert.Equal(t, 5, scaleUpInfo[0].NewSize)
@@ -139,19 +139,19 @@ func TestBalanceUnderMaxSize(t *testing.T) {
 	provider.AddNodeGroup("ng4", 1, 10, 5)
 
 	// add a single node
-	scaleUpInfo, err := processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 1)
+	scaleUpInfo, err := processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 1, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(scaleUpInfo))
 	assert.Equal(t, 2, scaleUpInfo[0].NewSize)
 
 	// add multiple nodes to single group
-	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 2)
+	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 2, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(scaleUpInfo))
 	assert.Equal(t, 3, scaleUpInfo[0].NewSize)
 
 	// add nodes to groups of different sizes, divisible
-	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 4)
+	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 4, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(scaleUpInfo))
 	assert.Equal(t, 4, scaleUpInfo[0].NewSize)
@@ -161,7 +161,7 @@ func TestBalanceUnderMaxSize(t *testing.T) {
 
 	// add nodes to groups of different sizes, non-divisible
 	// we expect new sizes to be 4 and 5, doesn't matter which group gets how many
-	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 5)
+	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 5, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(scaleUpInfo))
 	assert.Equal(t, 9, scaleUpInfo[0].NewSize+scaleUpInfo[1].NewSize)
@@ -170,7 +170,7 @@ func TestBalanceUnderMaxSize(t *testing.T) {
 	assert.True(t, scaleUpInfo[0].Group.Id() == "ng2" || scaleUpInfo[1].Group.Id() == "ng2")
 
 	// add nodes to all groups, divisible
-	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 10)
+	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, provider.NodeGroups(), 10, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(scaleUpInfo))
 	for _, info := range scaleUpInfo {
@@ -210,33 +210,33 @@ func TestBalanceHittingMaxSize(t *testing.T) {
 	}
 
 	// Just one maxed out group
-	scaleUpInfo, err := processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng1"), 1)
+	scaleUpInfo, err := processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng1"), 1, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(scaleUpInfo))
 
 	// Smallest group already maxed out, add one node
-	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng1", "ng2"), 1)
+	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng1", "ng2"), 1, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(scaleUpInfo))
 	assert.Equal(t, "ng2", scaleUpInfo[0].Group.Id())
 	assert.Equal(t, 2, scaleUpInfo[0].NewSize)
 
 	// Smallest group already maxed out, too many nodes (should cap to max capacity)
-	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng1", "ng2"), 5)
+	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng1", "ng2"), 5, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(scaleUpInfo))
 	assert.Equal(t, "ng2", scaleUpInfo[0].Group.Id())
 	assert.Equal(t, 3, scaleUpInfo[0].NewSize)
 
 	// First group maxes out before proceeding to next one
-	scaleUpInfo, _ = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng2", "ng3"), 4)
+	scaleUpInfo, _ = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng2", "ng3"), 4, nil)
 	assert.Equal(t, 2, len(scaleUpInfo))
 	scaleUpMap := toMap(scaleUpInfo)
 	assert.Equal(t, 3, scaleUpMap["ng2"].NewSize)
 	assert.Equal(t, 5, scaleUpMap["ng3"].NewSize)
 
 	// Last group maxes out before previous one
-	scaleUpInfo, _ = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng2", "ng3", "ng4"), 9)
+	scaleUpInfo, _ = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng2", "ng3", "ng4"), 9, nil)
 	assert.Equal(t, 3, len(scaleUpInfo))
 	scaleUpMap = toMap(scaleUpInfo)
 	assert.Equal(t, 3, scaleUpMap["ng2"].NewSize)
@@ -244,7 +244,7 @@ func TestBalanceHittingMaxSize(t *testing.T) {
 	assert.Equal(t, 7, scaleUpMap["ng4"].NewSize)
 
 	// Use all capacity, cap to max
-	scaleUpInfo, _ = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng2", "ng3", "ng4"), 900)
+	scaleUpInfo, _ = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng2", "ng3", "ng4"), 900, nil)
 	assert.Equal(t, 3, len(scaleUpInfo))
 	scaleUpMap = toMap(scaleUpInfo)
 	assert.Equal(t, 3, scaleUpMap["ng2"].NewSize)
@@ -252,8 +252,115 @@ func TestBalanceHittingMaxSize(t *testing.T) {
 	assert.Equal(t, 7, scaleUpMap["ng4"].NewSize)
 
 	// One node group exceeds max.
-	scaleUpInfo, _ = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng2", "ng5"), 1)
+	scaleUpInfo, _ = processor.BalanceScaleUpBetweenGroups(autoscalingCtx, getGroups("ng2", "ng5"), 1, nil)
 	assert.Equal(t, 1, len(scaleUpInfo))
 	scaleUpMap = toMap(scaleUpInfo)
 	assert.Equal(t, 2, scaleUpMap["ng2"].NewSize)
+}
+
+func TestBalanceRespectsMaxAddByGroup(t *testing.T) {
+	// Three groups starting at size 1 with a large MaxSize that does not bind:
+	// zone A (ng1) has quota for 5 more nodes, zones B and C (ng2, ng3) have
+	// quota for 1 each.
+	const initialSize = 1
+	const maxSize = 100
+
+	tests := []struct {
+		name     string
+		maxAdd   map[string]int
+		newNodes int
+		// expectedSizes pins deterministic groups; non-deterministic splits use expectedTotalAdded only.
+		expectedSizes      map[string]int
+		expectedTotalAdded int
+	}{
+		{
+			// Per-group headroom A=5, B=1, C=1; 9 requested → optimal (5,1,1)=7.
+			name:               "redistributes into the high-quota group in one loop",
+			maxAdd:             map[string]int{"ng1": 5, "ng2": 1, "ng3": 1},
+			newNodes:           9,
+			expectedSizes:      map[string]int{"ng1": 6, "ng2": 2, "ng3": 2},
+			expectedTotalAdded: 7,
+		},
+		{
+			// Quota tighter than MaxSize: each group capped to +2.
+			name:               "quota cap below MaxSize is respected",
+			maxAdd:             map[string]int{"ng1": 2, "ng2": 2, "ng3": 2},
+			newNodes:           100,
+			expectedSizes:      map[string]int{"ng1": 3, "ng2": 3, "ng3": 3},
+			expectedTotalAdded: 6,
+		},
+		{
+			// maxAdd far exceeds MaxSize headroom; the effective max must stay
+			// clamped at MaxSize. A request larger than the total MaxSize headroom
+			// fills every group exactly to MaxSize and no further.
+			name:               "quota cap above MaxSize does not raise it",
+			maxAdd:             map[string]int{"ng1": 1000, "ng2": 1000, "ng3": 1000},
+			newNodes:           400,
+			expectedSizes:      map[string]int{"ng1": maxSize, "ng2": maxSize, "ng3": maxSize},
+			expectedTotalAdded: 3 * (maxSize - initialSize),
+		},
+		{
+			// ng2 capped to 0 is excluded entirely; ng1/ng3 absorb the request.
+			name:               "group capped to zero is excluded",
+			maxAdd:             map[string]int{"ng1": 5, "ng2": 0, "ng3": 5},
+			newNodes:           4,
+			expectedSizes:      map[string]int{"ng2": initialSize},
+			expectedTotalAdded: 4,
+		},
+		{
+			// Only ng2 is constrained (capped to +1); ng1 and ng3 fall back to
+			// MaxSize (no cap) and absorb the rest, so all 9 nodes are placed.
+			name:               "group absent from map falls back to MaxSize",
+			maxAdd:             map[string]int{"ng2": 1},
+			newNodes:           9,
+			expectedSizes:      map[string]int{"ng2": 2},
+			expectedTotalAdded: 9,
+		},
+		{
+			// Headroom sums to 3; a request of 10 is capped to 3.
+			name:               "total capped to available quota capacity",
+			maxAdd:             map[string]int{"ng1": 1, "ng2": 1, "ng3": 1},
+			newNodes:           10,
+			expectedSizes:      map[string]int{"ng1": 2, "ng2": 2, "ng3": 2},
+			expectedTotalAdded: 3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			processor := NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{})
+			autoscalingCtx := &ca_context.AutoscalingContext{}
+
+			provider := testprovider.NewTestCloudProviderBuilder().Build()
+			provider.AddNodeGroup("ng1", 1, maxSize, initialSize)
+			provider.AddNodeGroup("ng2", 1, maxSize, initialSize)
+			provider.AddNodeGroup("ng3", 1, maxSize, initialSize)
+			groupsMap := make(map[string]cloudprovider.NodeGroup)
+			for _, group := range provider.NodeGroups() {
+				groupsMap[group.Id()] = group
+			}
+			groups := []cloudprovider.NodeGroup{groupsMap["ng1"], groupsMap["ng2"], groupsMap["ng3"]}
+
+			scaleUpInfo, err := processor.BalanceScaleUpBetweenGroups(autoscalingCtx, groups, tt.newNodes, tt.maxAdd)
+			assert.NoError(t, err)
+
+			// A group missing from the result was not scaled, i.e. stays at its
+			// initial size.
+			finalSizes := map[string]int{"ng1": initialSize, "ng2": initialSize, "ng3": initialSize}
+			totalAdded := 0
+			for _, sui := range scaleUpInfo {
+				added := sui.NewSize - sui.CurrentSize
+				// No group may be scaled past its quota cap (when one was given).
+				if maxAdd, ok := tt.maxAdd[sui.Group.Id()]; ok {
+					assert.LessOrEqualf(t, added, maxAdd, "%s added %d nodes, exceeds maxAdd %d", sui.Group.Id(), added, maxAdd)
+				}
+				finalSizes[sui.Group.Id()] = sui.NewSize
+				totalAdded += added
+			}
+			for id, want := range tt.expectedSizes {
+				assert.Equal(t, want, finalSizes[id], "unexpected size for %s", id)
+			}
+			assert.Equal(t, tt.expectedTotalAdded, totalAdded, "unexpected total nodes added")
+		})
+	}
 }

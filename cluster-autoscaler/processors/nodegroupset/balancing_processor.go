@@ -73,10 +73,15 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(autoscalingCtx *c
 //
 // Returns ScaleUpInfos for groups that need to be resized.
 //
-// MaxSize of each group will be respected. If newNodes > total free capacity
-// of all NodeGroups it will be capped to total capacity. In particular if all
-// group already have MaxSize, empty list will be returned.
-func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+// Each group's effective max is respected. If newNodes > total free capacity of
+// all NodeGroups it will be capped to total capacity. In particular if every
+// group is already at its effective max, an empty list will be returned.
+//
+// maxAddByGroup optionally caps, per node group ID, how many nodes may be added
+// beyond a group's current size, lowering its effective max to
+// min(MaxSize, currentSize+maxAdd). A nil map (or absent group) imposes no cap
+// beyond MaxSize, in which case the effective max is just MaxSize.
+func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int, maxAddByGroup map[string]int) ([]ScaleUpInfo, errors.AutoscalerError) {
 	if len(groups) == 0 {
 		return []ScaleUpInfo{}, errors.NewAutoscalerError(
 			errors.InternalError, "Can't balance scale up between 0 groups")
@@ -92,20 +97,24 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(autoscaling
 				errors.CloudProviderError,
 				"failed to get node group size: %v", err)
 		}
-		maxSize := ng.MaxSize()
-		if currentSize == maxSize {
-			// group already maxed, ignore it
+		// effMax is the effective maximum size of the group: its MaxSize,
+		// further lowered by any quota headroom passed in maxAddByGroup. The
+		// rest of the algorithm treats effMax exactly as it would MaxSize.
+		effMax := ng.MaxSize()
+		if maxAdd, ok := maxAddByGroup[ng.Id()]; ok {
+			effMax = min(effMax, currentSize+maxAdd)
+		}
+		if currentSize >= effMax {
+			// group already at its effective max (size limit or quota), ignore it
 			continue
 		}
-		if maxSize > currentSize {
-			// we still have capacity to expand
-			totalCapacity += (maxSize - currentSize)
-		}
+		// we still have capacity to expand
+		totalCapacity += (effMax - currentSize)
 		scaleUpInfos = append(scaleUpInfos, ScaleUpInfo{
 			Group:       ng,
 			CurrentSize: currentSize,
 			NewSize:     currentSize,
-			MaxSize:     maxSize,
+			MaxSize:     effMax,
 		})
 	}
 	if totalCapacity < newNodes {
