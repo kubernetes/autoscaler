@@ -68,6 +68,17 @@ func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithRequiredAnti
 	return havePodsWithRequiredAntiAffinityList, nil
 }
 
+func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithRequiredNonHostScopedAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
+	havePodsWithRequiredNonHostScopedAntiAffinityList := make([]schedulerinterface.NodeInfo, 0, len(data.nodeInfoMap))
+	for _, v := range data.nodeInfoMap {
+		if len(v.GetPodsWithRequiredNonHostScopedAntiAffinity()) > 0 {
+			havePodsWithRequiredNonHostScopedAntiAffinityList = append(havePodsWithRequiredNonHostScopedAntiAffinityList, v)
+		}
+	}
+
+	return havePodsWithRequiredNonHostScopedAntiAffinityList, nil
+}
+
 func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (schedulerinterface.NodeInfo, error) {
 	if v, ok := data.nodeInfoMap[nodeName]; ok {
 		return v, nil
@@ -297,6 +308,11 @@ func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithAffinityList() ([]sche
 // HavePodsWithRequiredAntiAffinityList returns the list of NodeInfos of nodes with pods with required anti-affinity terms.
 func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithRequiredAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfosThatHavePodsWithRequiredAntiAffinityList()
+}
+
+// HavePodsWithRequiredNonHostScopedAntiAffinityList returns nodes containing pods that require a wider topology scan (topologyKey other than hostname).
+func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithRequiredNonHostScopedAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
+	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfosThatHavePodsWithRequiredNonHostScopedAntiAffinityList()
 }
 
 // Returns the NodeInfo of the given node name.
