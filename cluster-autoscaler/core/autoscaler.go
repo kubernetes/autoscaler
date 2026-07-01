@@ -64,6 +64,7 @@ func NewAutoscaler(ctx context.Context, opts coreoptions.AutoscalerOptions, info
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
 	return NewStaticAutoscaler(
+		ctx,
 		opts.AutoscalingOptions,
 		opts.FrameworkHandle,
 		opts.ClusterSnapshot,

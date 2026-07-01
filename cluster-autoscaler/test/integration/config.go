@@ -53,6 +53,7 @@ var DefaultAutoscalingOptions = config.AutoscalingOptions{
 	ClusterName:                "cluster-test",
 	MaxBinpackingTime:          10 * time.Second,
 	PredicateParallelism:       1,
+	MaxConcurrentNodesTainting: 5,
 }
 
 // TestConfig is the "blueprint" for a test. It defines the entire
@@ -114,5 +115,12 @@ func WithScaleDownUnneededTime(d time.Duration) AutoscalingOptionOverride {
 func WithProvisioningRequestEnabled() AutoscalingOptionOverride {
 	return func(o *config.AutoscalingOptions) {
 		o.ProvisioningRequestEnabled = true
+	}
+}
+
+// WithMaxConcurrentNodesTainting sets the max concurrent nodes tainting option.
+func WithMaxConcurrentNodesTainting(n int) AutoscalingOptionOverride {
+	return func(o *config.AutoscalingOptions) {
+		o.MaxConcurrentNodesTainting = n
 	}
 }

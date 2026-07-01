@@ -17,6 +17,7 @@ limitations under the License.
 package nodes
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -360,7 +361,7 @@ func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
 				provider.AddNode(node.nodeGroup, node.node)
 				nodes = append(nodes, node.node)
 			}
-			context, _ := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
+			context, _ := NewScaleTestAutoscalingContext(context.Background(), config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{},
 			}, &fake.Clientset{}, nil, provider, nil, nil, nil)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)

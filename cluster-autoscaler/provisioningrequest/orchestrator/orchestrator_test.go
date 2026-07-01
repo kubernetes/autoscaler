@@ -492,7 +492,7 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 	}
 
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
