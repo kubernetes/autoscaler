@@ -517,6 +517,68 @@ func TestClusterStateFeeder_LoadPods_ContainerTracking(t *testing.T) {
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].InitContainers), 0)
 }
 
+func TestClusterStateFeeder_LoadPods_PodDeletion(t *testing.T) {
+	pod1ID := model.PodID{Namespace: "default", PodName: "Pod1"}
+	pod1 := newTestPodSpec(pod1ID, nil, nil)
+	pod2ID := model.PodID{Namespace: "default", PodName: "Pod2"}
+	pod2 := newTestPodSpec(pod2ID, nil, nil)
+
+	client := &testSpecClient{pods: []*spec.BasicPodSpec{pod1, pod2}}
+	clusterState := model.NewClusterState(testGcPeriod)
+
+	feeder := clusterStateFeeder{
+		specClient:     client,
+		memorySaveMode: false,
+		clusterState:   clusterState,
+	}
+
+	feeder.LoadPods()
+	assert.Len(t, feeder.clusterState.Pods(), 2)
+
+	client.pods = []*spec.BasicPodSpec{pod1}
+	feeder.LoadPods()
+
+	// Since deletion is shifted, pod2 should still exist in clusterState.
+	assert.Len(t, feeder.clusterState.Pods(), 2)
+	assert.Contains(t, feeder.clusterState.Pods(), pod2ID)
+
+	feeder.DeleteRemovedPods()
+	// Now pod2 should be deleted.
+	assert.Len(t, feeder.clusterState.Pods(), 1)
+	assert.NotContains(t, feeder.clusterState.Pods(), pod2ID)
+}
+
+func TestClusterStateFeeder_LoadPods_PodDeletionSafeguard(t *testing.T) {
+	pod1ID := model.PodID{Namespace: "default", PodName: "Pod1"}
+	pod1 := newTestPodSpec(pod1ID, nil, nil)
+	pod2ID := model.PodID{Namespace: "default", PodName: "Pod2"}
+	pod2 := newTestPodSpec(pod2ID, nil, nil)
+
+	client := &testSpecClient{pods: []*spec.BasicPodSpec{pod1, pod2}}
+	clusterState := model.NewClusterState(testGcPeriod)
+
+	feeder := clusterStateFeeder{
+		specClient:     client,
+		memorySaveMode: false,
+		clusterState:   clusterState,
+	}
+
+	feeder.LoadPods()
+	assert.Len(t, feeder.clusterState.Pods(), 2)
+
+	client.pods = []*spec.BasicPodSpec{pod1}
+	feeder.LoadPods()
+
+	// Without calling DeleteRemovedPods(), pod2 still exists.
+	assert.Len(t, feeder.clusterState.Pods(), 2)
+	assert.Contains(t, feeder.clusterState.Pods(), pod2ID)
+
+	// Calling LoadPods() again (next cycle) should trigger the safeguard and delete pod2.
+	feeder.LoadPods()
+	assert.Len(t, feeder.clusterState.Pods(), 1)
+	assert.NotContains(t, feeder.clusterState.Pods(), pod2ID)
+}
+
 func TestClusterStateFeeder_LoadPods_MemorySaverMode(t *testing.T) {
 	for _, tc := range []struct {
 		Name              string
