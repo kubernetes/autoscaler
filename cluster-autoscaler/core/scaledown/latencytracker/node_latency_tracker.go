@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/klog/v2"
 
 	processor "k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -38,8 +39,9 @@ const (
 )
 
 type unneededNodeState struct {
-	unneededSince    time.Time
-	removalThreshold time.Duration
+	unneededSince     time.Time
+	removalThreshold  time.Duration
+	latestDelayReason string
 }
 
 // NodeLatencyTracker keeps track of nodes that are marked as unneeded, when they became unneeded,
@@ -90,6 +92,8 @@ func (t *NodeLatencyTracker) Process(autoscalingCtx *ca_context.AutoscalingConte
 		t.wrapped.Process(autoscalingCtx, status)
 	}
 
+	t.updateLatestDelayReasons(status.UnremovableNodes)
+
 	for _, node := range status.ScaledDownNodes {
 		t.recordAndCleanup(node.Node.Name, true)
 	}
@@ -108,22 +112,27 @@ func (t *NodeLatencyTracker) recordAndCleanup(nodeName string, isRemoved bool) {
 	if !exists {
 		return
 	}
-	defer delete(t.unneededNodes, nodeName)
+	delete(t.unneededNodes, nodeName)
 
 	duration := time.Since(info.unneededSince)
 	latency := duration - info.removalThreshold
 
+	delayReason := info.latestDelayReason
+	if delayReason == "" {
+		delayReason = "none"
+	}
+
 	if latency > 0 {
-		metrics.UpdateScaleDownNodeRemovalLatency(isRemoved, latency)
+		metrics.UpdateScaleDownNodeRemovalLatency(isRemoved, delayReason, latency)
 	} else {
-		klog.V(6).Infof("Node %q was unneeded for %s (threshold %s). Latency %s is <= 0, skipping metric. isRemoved: %v",
-			nodeName, duration, info.removalThreshold, latency, isRemoved)
+		klog.V(6).Infof("Node %q was unneeded for %s (threshold %s). Latency %s is <= 0, skipping metric. isRemoved: %v, delayReason: %v",
+			nodeName, duration, info.removalThreshold, latency, isRemoved, delayReason)
 	}
 	if isRemoved {
 		t.logDeletion(nodeName, duration, info.removalThreshold, latency)
 	} else {
-		klog.V(4).Infof("Node %q is unremovable, became needed again (unneeded for %s). Latency: %s",
-			nodeName, duration, latency)
+		klog.V(4).Infof("Node %q became needed again (unneeded for %s). Blocker: %q. Latency: %s",
+			nodeName, duration, delayReason, latency)
 	}
 }
 
@@ -145,7 +154,25 @@ func (t *NodeLatencyTracker) getTrackedNodes() []string {
 
 // CleanUp cleans up internal structures.
 func (t *NodeLatencyTracker) CleanUp() {
+	t.unneededNodes = make(map[string]unneededNodeState)
 	if t.wrapped != nil {
 		t.wrapped.CleanUp()
 	}
+}
+
+func (t *NodeLatencyTracker) updateLatestDelayReasons(unremovableNodes []*status.UnremovableNode) {
+	for _, val := range unremovableNodes {
+		if info, exists := t.unneededNodes[val.Node.Name]; exists {
+			if isBlocker(val.Reason) {
+				reasonStr := val.Reason.String()
+				info.latestDelayReason = reasonStr
+				t.unneededNodes[val.Node.Name] = info
+				klog.V(6).Infof("Tracking latest delay reason %s for node %s.", reasonStr, val.Node.Name)
+			}
+		}
+	}
+}
+
+func isBlocker(reason simulator.UnremovableReason) bool {
+	return reason != simulator.NoReason && reason != simulator.NotUnneededLongEnough && reason != simulator.NotUnreadyLongEnough
 }
