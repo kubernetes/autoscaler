@@ -34,7 +34,7 @@ import (
 	azerrors "github.com/Azure/azure-sdk-for-go-extensions/pkg/errors"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"

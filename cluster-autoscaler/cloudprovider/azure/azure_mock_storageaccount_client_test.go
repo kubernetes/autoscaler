@@ -19,7 +19,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage/v2"
 	gomock "go.uber.org/mock/gomock"
 )
 
