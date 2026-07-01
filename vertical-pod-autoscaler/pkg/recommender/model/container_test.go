@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
@@ -372,5 +373,112 @@ func TestMemorySamplesWithCustomAggregationIntervalCount(t *testing.T) {
 	assert.True(t, c.AddSample(newUsageSample(testTimestamp.Add(2*interval), 10, ResourceMemory)))
 
 	test.mockCPUHistogram.AssertExpectations(t)
+	test.mockMemoryHistogram.AssertExpectations(t)
+}
+
+func TestRecordOOMCapsAtMaxMemory(t *testing.T) {
+	test := newContainerTest()
+
+	test.aggregateContainerState.OOMBumpUpRatio = 2.0
+	test.aggregateContainerState.OOMMinBumpUp = 0.0
+
+	test.container.MaxMemory = ResourceAmount(1000 * mb)
+
+	test.mockMemoryHistogram.On("AddSample",
+		mock.AnythingOfType("float64"),
+		1.0,
+		mock.Anything,
+	).Return()
+
+	err := test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb))
+	assert.NoError(t, err)
+
+	test.mockMemoryHistogram.AssertCalled(t, "AddSample",
+		mock.MatchedBy(func(val float64) bool {
+			return val == float64(1000*mb)
+		}),
+		1.0,
+		mock.Anything,
+	)
+}
+
+func TestRecordOOMWithoutMaxMemory(t *testing.T) {
+	test := newContainerTest()
+
+	test.aggregateContainerState.OOMBumpUpRatio = 2.0
+	test.aggregateContainerState.OOMMinBumpUp = 0.0
+
+	test.container.MaxMemory = 0
+
+	memoryAggregationWindowEnd :=
+		testTimestamp.Add(GetAggregationsConfig().MemoryAggregationIntervalDuration)
+
+	test.mockMemoryHistogram.On(
+		"AddSample",
+		2000.0*mb,
+		1.0,
+		memoryAggregationWindowEnd,
+	)
+
+	err := test.container.RecordOOM(
+		testTimestamp,
+		ResourceAmount(1000*mb),
+	)
+
+	assert.NoError(t, err)
+	test.mockMemoryHistogram.AssertExpectations(t)
+}
+
+func TestRecordOOMBelowMaxMemoryNotCapped(t *testing.T) {
+	test := newContainerTest()
+
+	test.aggregateContainerState.OOMBumpUpRatio = 1.2
+	test.aggregateContainerState.OOMMinBumpUp = 0.0
+
+	test.container.MaxMemory = ResourceAmount(3000 * mb)
+
+	memoryAggregationWindowEnd :=
+		testTimestamp.Add(GetAggregationsConfig().MemoryAggregationIntervalDuration)
+
+	test.mockMemoryHistogram.On(
+		"AddSample",
+		1200.0*mb,
+		1.0,
+		memoryAggregationWindowEnd,
+	)
+
+	err := test.container.RecordOOM(
+		testTimestamp,
+		ResourceAmount(1000*mb),
+	)
+
+	assert.NoError(t, err)
+	test.mockMemoryHistogram.AssertExpectations(t)
+}
+
+func TestRecordOOMAtMaxMemoryBoundary(t *testing.T) {
+	test := newContainerTest()
+
+	test.aggregateContainerState.OOMBumpUpRatio = 1.0
+	test.aggregateContainerState.OOMMinBumpUp = 0.0
+
+	test.container.MaxMemory = ResourceAmount(1000 * mb)
+
+	memoryAggregationWindowEnd :=
+		testTimestamp.Add(GetAggregationsConfig().MemoryAggregationIntervalDuration)
+
+	test.mockMemoryHistogram.On(
+		"AddSample",
+		1000.0*mb,
+		1.0,
+		memoryAggregationWindowEnd,
+	)
+
+	err := test.container.RecordOOM(
+		testTimestamp,
+		ResourceAmount(1000*mb),
+	)
+
+	assert.NoError(t, err)
 	test.mockMemoryHistogram.AssertExpectations(t)
 }
