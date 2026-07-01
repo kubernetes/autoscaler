@@ -19,7 +19,7 @@ package testutil
 import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
 )
 
 const (
@@ -29,11 +29,11 @@ const (
 )
 
 // QuotaOption is a functional option for configuring a CapacityQuota.
-type QuotaOption func(*v1alpha1.CapacityQuota)
+type QuotaOption func(*v1beta1.CapacityQuota)
 
 // NewCapacityQuota creates a new CapacityQuota with the given name and options.
-func NewCapacityQuota(name string, opts ...QuotaOption) *v1alpha1.CapacityQuota {
-	cq := &v1alpha1.CapacityQuota{
+func NewCapacityQuota(name string, opts ...QuotaOption) *v1beta1.CapacityQuota {
+	cq := &v1beta1.CapacityQuota{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
@@ -46,7 +46,7 @@ func NewCapacityQuota(name string, opts ...QuotaOption) *v1alpha1.CapacityQuota 
 
 // WithLabelSelector configures the CapacityQuota's LabelSelector to match the given labels.
 func WithLabelSelector(labels map[string]string) QuotaOption {
-	return func(cq *v1alpha1.CapacityQuota) {
+	return func(cq *v1beta1.CapacityQuota) {
 		cq.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: labels,
 		}
@@ -54,9 +54,9 @@ func WithLabelSelector(labels map[string]string) QuotaOption {
 }
 
 // WithLimits configures the CapacityQuota's resource limits.
-func WithLimits(limits v1alpha1.ResourceList) QuotaOption {
-	return func(cq *v1alpha1.CapacityQuota) {
-		cq.Spec.Limits = v1alpha1.CapacityQuotaLimits{
+func WithLimits(limits v1beta1.ResourceList) QuotaOption {
+	return func(cq *v1beta1.CapacityQuota) {
+		cq.Spec.Limits = v1beta1.CapacityQuotaLimits{
 			Resources: limits,
 		}
 	}
@@ -64,7 +64,7 @@ func WithLimits(limits v1alpha1.ResourceList) QuotaOption {
 
 // WithValidCondition sets Valid condition on the CapacityQuota to true.
 func WithValidCondition() QuotaOption {
-	return func(cq *v1alpha1.CapacityQuota) {
+	return func(cq *v1beta1.CapacityQuota) {
 		c := metav1.Condition{
 			Type:   validCondition,
 			Status: metav1.ConditionTrue,
@@ -76,7 +76,7 @@ func WithValidCondition() QuotaOption {
 
 // WithInvalidCondition sets Valid condition on the CapacityQuota to false.
 func WithInvalidCondition() QuotaOption {
-	return func(cq *v1alpha1.CapacityQuota) {
+	return func(cq *v1beta1.CapacityQuota) {
 		c := metav1.Condition{
 			Type:   validCondition,
 			Status: metav1.ConditionFalse,

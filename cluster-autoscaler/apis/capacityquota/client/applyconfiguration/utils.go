@@ -23,7 +23,9 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	managedfields "k8s.io/apimachinery/pkg/util/managedfields"
 	v1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
+	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
 	autoscalingxk8siov1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/client/applyconfiguration/autoscaling.x-k8s.io/v1alpha1"
+	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/client/applyconfiguration/autoscaling.x-k8s.io/v1beta1"
 	internal "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/client/applyconfiguration/internal"
 )
 
@@ -42,6 +44,18 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &autoscalingxk8siov1alpha1.CapacityQuotaStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("CapacityQuotaUsage"):
 		return &autoscalingxk8siov1alpha1.CapacityQuotaUsageApplyConfiguration{}
+
+		// Group=autoscaling.x-k8s.io, Version=v1beta1
+	case v1beta1.SchemeGroupVersion.WithKind("CapacityQuota"):
+		return &autoscalingxk8siov1beta1.CapacityQuotaApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("CapacityQuotaLimits"):
+		return &autoscalingxk8siov1beta1.CapacityQuotaLimitsApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("CapacityQuotaSpec"):
+		return &autoscalingxk8siov1beta1.CapacityQuotaSpecApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("CapacityQuotaStatus"):
+		return &autoscalingxk8siov1beta1.CapacityQuotaStatusApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("CapacityQuotaUsage"):
+		return &autoscalingxk8siov1beta1.CapacityQuotaUsageApplyConfiguration{}
 
 	}
 	return nil
