@@ -830,6 +830,60 @@ func TestGetMigTargetSize(t *testing.T) {
 	}
 }
 
+func TestGetMigTargetSize_Optimization(t *testing.T) {
+	targetSize := int64(42)
+	igm := &gce.InstanceGroupManager{
+		TargetSize: targetSize,
+		SelfLink:   fmt.Sprintf("projects/%s/zones/%s/instanceGroups/%s", mig.GceRef().Project, mig.GceRef().Zone, mig.GceRef().Name),
+	}
+
+	testCases := []struct {
+		name                   string
+		cache                  *GceCache
+		shouldCallFetchAllMigs bool
+	}{
+		{
+			name:                   "cold cache",
+			cache:                  emptyCache(),
+			shouldCallFetchAllMigs: true,
+		},
+		{
+			name: "warm cache & cache hit",
+			cache: NewGceCache().
+				WithMigs(map[GceRef]Mig{mig.GceRef(): mig}).
+				WithMigTargetSize(map[GceRef]int64{mig.GceRef(): targetSize}),
+			shouldCallFetchAllMigs: false,
+		},
+		{
+			name: "warm cache & cache miss",
+			cache: NewGceCache().
+				WithMigs(map[GceRef]Mig{mig.GceRef(): mig, mig1.GceRef(): mig1}).
+				WithMigTargetSize(map[GceRef]int64{mig1.GceRef(): targetSize}),
+			shouldCallFetchAllMigs: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fetchAllMigsCalled := false
+			client := &mockAutoscalingGceClient{
+				fetchMigs: func(zone string) ([]*gce.InstanceGroupManager, error) {
+					fetchAllMigsCalled = true
+					return []*gce.InstanceGroupManager{igm}, nil
+				},
+				fetchMig: fetchMigConst(igm),
+			}
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second, false, true)
+
+			size, err := provider.GetMigTargetSize(mig.GceRef())
+			assert.NoError(t, err)
+			assert.Equal(t, targetSize, size)
+			assert.Equal(t, tc.shouldCallFetchAllMigs, fetchAllMigsCalled, "FetchAllMigs call status mismatch")
+		})
+	}
+}
+
 func TestRefreshMigInfo(t *testing.T) {
 	targetSize := int64(42)
 	instanceGroupManager := &gce.InstanceGroupManager{

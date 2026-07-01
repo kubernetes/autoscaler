@@ -343,6 +343,16 @@ func (gc *GceCache) SetMigTargetSize(ref GceRef, size int64) {
 	gc.migTargetSizeCache[ref] = size
 }
 
+func (gc *GceCache) IsMigTargetSizeCacheEmpty() bool {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	if len(gc.migTargetSizeCache) == 0 {
+		return true
+	}
+	return false
+}
+
 // InvalidateMigTargetSize clears the target size cache
 func (gc *GceCache) InvalidateMigTargetSize(ref GceRef) {
 	gc.cacheMutex.Lock()
