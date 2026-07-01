@@ -34,6 +34,7 @@ import (
 	buffersfilter "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	"k8s.io/utils/ptr"
 )
 
 // Pods annotation keys and values for fake pods created by capacity buffer pod list processor
@@ -206,7 +207,7 @@ func withOwnerReference(pod *apiv1.Pod, buffer *v1beta1.CapacityBuffer) {
 		Kind:       capacitybuffer.CapacityBufferKind,
 		Name:       buffer.Name,
 		UID:        buffer.UID,
-		Controller: new(true),
+		Controller: ptr.To(true),
 	})
 }
 

@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	"k8s.io/utils/ptr"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,6 +37,7 @@ import (
 
 	buffersfake "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
 	testutil "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
+	"k8s.io/client-go/dynamic/fake"
 	fakeclient "k8s.io/client-go/kubernetes/fake"
 )
 
@@ -190,7 +192,8 @@ func TestPodListProcessor(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			fakeKubernetesClient := fakeclient.NewSimpleClientset(test.objectsInKubernetesClient...)
 			fakeBuffersClient := buffersfake.NewSimpleClientset(test.objectsInBuffersClient...)
-			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
+			fakeDynamicClient := fake.NewSimpleDynamicClient(runtime.NewScheme())
+			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, fakeDynamicClient, nil, nil)
 			capacityBuffersRegistry := fakepods.NewRegistry(nil)
 
 			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, capacityBuffersRegistry, test.forceSafeToEvict)
@@ -216,7 +219,7 @@ func TestPodListProcessor(t *testing.T) {
 								Kind:       capacitybuffer.CapacityBufferKind,
 								Name:       cb.Name,
 								UID:        cb.UID,
-								Controller: new(true),
+								Controller: ptr.To(true),
 							},
 						}, pod.OwnerReferences)
 					}
@@ -277,7 +280,8 @@ func TestCapacityBufferFakePodsRegistry(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			fakeKubernetesClient := fakeclient.NewSimpleClientset(test.objectsInKubernetesClient...)
 			fakeBuffersClient := buffersfake.NewSimpleClientset(test.objectsInBuffersClient...)
-			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
+			fakeDynamicClient := fake.NewSimpleDynamicClient(runtime.NewScheme())
+			fakeCapacityBuffersClient, _ := client.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, fakeDynamicClient, nil, nil)
 
 			registry := fakepods.NewRegistry(nil)
 			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, registry, false)
