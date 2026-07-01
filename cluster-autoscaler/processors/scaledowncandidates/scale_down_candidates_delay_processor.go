@@ -17,6 +17,7 @@ limitations under the License.
 package scaledowncandidates
 
 import (
+	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -30,6 +31,7 @@ import (
 // ScaleDownCandidatesDelayProcessor is a processor to filter out
 // nodes according to scale down delay per nodegroup
 type ScaleDownCandidatesDelayProcessor struct {
+	mu                sync.RWMutex
 	scaleUps          map[string]time.Time
 	scaleDowns        map[string]time.Time
 	scaleDownFailures map[string]time.Time
@@ -58,14 +60,21 @@ func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(autoscalingCt
 			continue
 		}
 
+		ngID := nodeGroup.Id()
 		currentTime := time.Now()
 
-		recent := func(m map[string]time.Time, d time.Duration, msg string) bool {
-			if !m[nodeGroup.Id()].IsZero() && m[nodeGroup.Id()].Add(d).After(currentTime) {
-				if !alreadyLoggedGroups[nodeGroup.Id()] {
-					klog.V(4).Infof("Skipping scale down on node group %s because it %s recently at %v",
-						nodeGroup.Id(), msg, m[nodeGroup.Id()])
-					alreadyLoggedGroups[nodeGroup.Id()] = true
+		// Read all timing data for this node group in a single critical section
+		p.mu.RLock()
+		scaleUpTime := p.scaleUps[ngID]
+		scaleDownTime := p.scaleDowns[ngID]
+		scaleDownFailureTime := p.scaleDownFailures[ngID]
+		p.mu.RUnlock()
+
+		recent := func(t time.Time, d time.Duration, msg string) bool {
+			if !t.IsZero() && t.Add(d).After(currentTime) {
+				if !alreadyLoggedGroups[ngID] {
+					klog.V(4).Infof("Skipping scale down on node group %s because it %s recently at %v", ngID, msg, t)
+					alreadyLoggedGroups[ngID] = true
 				}
 				return true
 			}
@@ -73,15 +82,15 @@ func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(autoscalingCt
 			return false
 		}
 
-		if recent(p.scaleUps, autoscalingCtx.ScaleDownDelayAfterAdd, "scaled up") {
+		if recent(scaleUpTime, autoscalingCtx.ScaleDownDelayAfterAdd, "scaled up") {
 			continue
 		}
 
-		if recent(p.scaleDowns, autoscalingCtx.ScaleDownDelayAfterDelete, "scaled down") {
+		if recent(scaleDownTime, autoscalingCtx.ScaleDownDelayAfterDelete, "scaled down") {
 			continue
 		}
 
-		if recent(p.scaleDownFailures, autoscalingCtx.ScaleDownDelayAfterFailure, "failed to scale down") {
+		if recent(scaleDownFailureTime, autoscalingCtx.ScaleDownDelayAfterFailure, "failed to scale down") {
 			continue
 		}
 
@@ -97,13 +106,17 @@ func (p *ScaleDownCandidatesDelayProcessor) CleanUp() {
 // RegisterScaleUp records when the last scale up happened for a nodegroup.
 func (p *ScaleDownCandidatesDelayProcessor) RegisterScaleUp(nodeGroup cloudprovider.NodeGroup,
 	_ int, currentTime time.Time) {
+	p.mu.Lock()
 	p.scaleUps[nodeGroup.Id()] = currentTime
+	p.mu.Unlock()
 }
 
 // RegisterScaleDown records when the last scale down happened for a nodegroup.
 func (p *ScaleDownCandidatesDelayProcessor) RegisterScaleDown(nodeGroup cloudprovider.NodeGroup,
 	nodeName string, currentTime time.Time, _ time.Time) {
+	p.mu.Lock()
 	p.scaleDowns[nodeGroup.Id()] = currentTime
+	p.mu.Unlock()
 }
 
 // RegisterFailedScaleUp records when the last scale up failed for a nodegroup.
@@ -113,7 +126,9 @@ func (p *ScaleDownCandidatesDelayProcessor) RegisterFailedScaleUp(_ cloudprovide
 // RegisterFailedScaleDown records failed scale-down for a nodegroup.
 func (p *ScaleDownCandidatesDelayProcessor) RegisterFailedScaleDown(nodeGroup cloudprovider.NodeGroup,
 	reason string, currentTime time.Time) {
+	p.mu.Lock()
 	p.scaleDownFailures[nodeGroup.Id()] = currentTime
+	p.mu.Unlock()
 }
 
 // NewScaleDownCandidatesDelayProcessor returns a new ScaleDownCandidatesDelayProcessor.
