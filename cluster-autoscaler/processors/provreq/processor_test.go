@@ -18,12 +18,14 @@ package provreq
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -33,6 +35,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
 func TestRefresh(t *testing.T) {
@@ -297,6 +300,56 @@ func TestBookCapacity(t *testing.T) {
 			processor.bookCapacity(&autoscalingCtx)
 			if (test.capacityIsBooked && len(injector.pods) == 0) || (!test.capacityIsBooked && len(injector.pods) > 0) {
 				t.Fail()
+			}
+		})
+	}
+}
+
+func TestBookCapacityConsumed(t *testing.T) {
+	const podCount = 2
+	testCases := []struct {
+		name          string
+		scheduledPods int
+		booked        bool
+	}{
+		{name: "none scheduled", scheduledPods: 0, booked: true},
+		{name: "partially scheduled", scheduledPods: 1, booked: true},
+		{name: "fully scheduled", scheduledPods: 2, booked: false},
+	}
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			provReq := provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", podCount, false, time.Now(), v1.ProvisioningClassBestEffortAtomicScaleUp)
+			conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, "", "", metav1.Now())
+
+			node := BuildTestNode("node", 10000, 10000)
+			scheduledPods := make([]*apiv1.Pod, test.scheduledPods)
+			for i := range scheduledPods {
+				pod := BuildTestPod(fmt.Sprintf("pod-%d", i), 1000, 0, func(p *apiv1.Pod) { p.Namespace = "ns"; p.Spec.NodeName = "node" })
+				pod.Annotations[v1.ProvisioningRequestPodAnnotationKey] = "pr"
+				scheduledPods[i] = pod
+			}
+
+			injector := &fakeInjector{pods: []*apiv1.Pod{}}
+			client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, provReq)
+			processor := &provReqProcessor{now: time.Now, client: client, maxUpdated: 20, injector: injector}
+			autoscalingCtx, _ := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, nil, nil, nil, nil)
+			if err := autoscalingCtx.ClusterSnapshot.SetClusterState([]*apiv1.Node{node}, scheduledPods, nil, nil); err != nil {
+				t.Fatalf("failed to set cluster state: %v", err)
+			}
+
+			processor.bookCapacity(&autoscalingCtx)
+
+			if booked := len(injector.pods) > 0; booked != test.booked {
+				t.Errorf("booked: got %v, want %v", booked, test.booked)
+			}
+			updated, err := client.ProvisioningRequest("ns", "pr")
+			if err != nil {
+				t.Fatalf("failed to get ProvisioningRequest: %v", err)
+			}
+			cond := apimeta.FindStatusCondition(updated.Status.Conditions, v1.BookingExpired)
+			consumed := cond != nil && cond.Reason == conditions.CapacityBookingConsumedReason
+			if consumed != !test.booked {
+				t.Errorf("consumed: got %v, want %v", consumed, !test.booked)
 			}
 		})
 	}
