@@ -27,9 +27,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/mock"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
@@ -2582,4 +2585,76 @@ func TestScaleUpPartialSuccessPopulatesPodsRemainUnschedulableSync(t *testing.T)
 	assert.Contains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p2_2")
 	assert.NotContains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p1_1")
 	assert.NotContains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p1_2")
+}
+
+func TestScaleUpMetricsEmission(t *testing.T) {
+	now := time.Now()
+	gpuNode := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceName("nvidia.com/gpu"): resource.MustParse("1"),
+			},
+		},
+	}
+	gpuNode.Labels = map[string]string{
+		"TestGPULabel/accelerator": "nvidia-tesla-k80",
+	}
+
+	slices := []*resourceapi.ResourceSlice{
+		{
+			Spec: resourceapi.ResourceSliceSpec{
+				Driver: "dra.net",
+			},
+		},
+	}
+
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(id string, delta int) error { return nil }).Build()
+	provider.AddNodeGroup("ng1", 0, 10, 0)
+	provider.SetMachineTemplates(map[string]*framework.NodeInfo{
+		"ng1": framework.NewNodeInfo(gpuNode, slices),
+	})
+
+	options := defaultOptions
+	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
+	podLister := kube_util.NewTestPodLister(nil)
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
+	assert.NoError(t, err)
+
+	mockMetrics := &mockMetrics{}
+	mockMetrics.On("RegisterScaleUp", 2, "nvidia.com/gpu", "nvidia-tesla-k80", "dra.net").Return()
+
+	producer := nodegroupchange.NewNodeGroupChangeMetricsProducer(provider, mockMetrics)
+	processors.ScaleStateNotifier.Register(producer)
+
+	executor := newScaleUpExecutor(&autoscalingCtx, processors.ScaleStateNotifier, processors.AsyncNodeGroupStateChecker)
+
+	nodeGroup := provider.GetNodeGroup("ng1")
+
+	err = executor.executeScaleUp(nodegroupset.ScaleUpInfo{
+		Group:       nodeGroup,
+		CurrentSize: 0,
+		NewSize:     2,
+		MaxSize:     10,
+	}, now, false)
+	assert.NoError(t, err)
+
+	mockMetrics.AssertCalled(t, "RegisterScaleUp", 2, "nvidia.com/gpu", "nvidia-tesla-k80", "dra.net")
+}
+
+type mockMetrics struct {
+	mock.Mock
+}
+
+func (m *mockMetrics) RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName string, gpuType string, draDriverNames string) {
+	m.Called(reason, gpuResourceName, gpuType, draDriverNames)
+}
+
+func (m *mockMetrics) RegisterFailedNodeCreations(reason metrics.FailedScaleUpReason, nodesCount int) {
+	m.Called(reason, nodesCount)
+}
+
+func (m *mockMetrics) RegisterScaleUp(nodesCount int, gpuResourceName string, gpuType string, draDriverNames string) {
+	m.Called(nodesCount, gpuResourceName, gpuType, draDriverNames)
 }
