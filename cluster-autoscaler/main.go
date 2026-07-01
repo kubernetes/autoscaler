@@ -96,9 +96,7 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	}()
 }
 
-func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {
-	autoscalingOpts := flags.AutoscalingOptions()
-
+func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, autoscalingOpts config.AutoscalingOptions) {
 	metrics.RegisterAll(autoscalingOpts.EmitPerNodeGroupMetrics)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -217,11 +215,16 @@ func main() {
 	// Must be called before kube_flag.InitFlags() to ensure leader election flags are parsed and available.
 	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
+	autoscalingFlags := &flags.AutoscalingFlags{}
 	logsapi.AddFlags(loggingConfig, pflag.CommandLine)
 	featureGate.AddFlag(pflag.CommandLine)
+	autoscalingFlags.AddFlags(pflag.CommandLine)
 	kube_flag.InitFlags()
 
-	autoscalingOpts := flags.AutoscalingOptions()
+	autoscalingOpts, err := autoscalingFlags.Options()
+	if err != nil {
+		klog.Fatalf("Failed to parse flags: %v", err)
+	}
 
 	// The DRA feature controls whether the DRA scheduler plugin is selected in scheduler framework. The local DRA flag controls whether
 	// DRA logic is enabled in Cluster Autoscaler. The 2 values should be in sync - enabling DRA logic in CA without selecting the DRA scheduler
@@ -269,7 +272,7 @@ func main() {
 	}()
 
 	if !leaderElection.LeaderElect {
-		run(healthCheck, debuggingSnapshotter)
+		run(healthCheck, debuggingSnapshotter, autoscalingOpts)
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
@@ -309,7 +312,7 @@ func main() {
 				OnStartedLeading: func(_ context.Context) {
 					// Since we are committing a suicide after losing
 					// mastership, we can safely ignore the argument.
-					run(healthCheck, debuggingSnapshotter)
+					run(healthCheck, debuggingSnapshotter, autoscalingOpts)
 				},
 				OnStoppedLeading: func() {
 					klog.Fatalf("lost master")
