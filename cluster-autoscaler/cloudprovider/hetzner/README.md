@@ -40,7 +40,8 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
                     "effect": "NoExecute"
                 }
             ],
-            "subnetIPRange": "10.0.0.0/24" // Optional, if not set the defaultSubnetIPRange will be used - make sure this subnet exists within you private network and to use the cidr notation
+            "subnetIPRange": "10.0.0.0/24", // Optional, if not set the defaultSubnetIPRange will be used - make sure this subnet exists within you private network and to use the cidr notation
+            "firewalls": ["my-pool1-firewall"] // Optional, firewall ids or names attached to this pool's servers in addition to HCLOUD_FIREWALL
         }
     }
 }
@@ -70,6 +71,8 @@ The global `defaultSubnetIPRange` can be overridden on a per-nodepool basis by a
 The `labels` field in a `nodeConfig` specifies key-value pairs used to simulate Kubernetes node labels for autoscaler scheduling decisions.
 
 The `serverLabels` field specifies key-value pairs applied directly to the Hetzner Cloud server at creation time (via the Hetzner API). They are merged with the mandatory internal label `cluster.autoscaler.nodeGroupLabel` (which identifies the node group) before being sent to the API. This allows you to tag servers with metadata visible in the Hetzner Cloud Console, usable for filtering via the Hetzner API, or required by cluster bootstrappers that authenticate nodes via Hetzner server labels (e.g. kops).
+
+The `firewalls` field specifies firewall ids or names attached to that nodepool's servers, in addition to the cluster-wide `HCLOUD_FIREWALL`. The cluster firewall and the per-nodepool firewalls are merged (deduplicated by id), so a pool can carry extra rules without relaxing the firewall on the rest of the cluster. Only available with the `nodeConfigs` format.
 
 `HCLOUD_NETWORK` Default empty , The id or name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
 

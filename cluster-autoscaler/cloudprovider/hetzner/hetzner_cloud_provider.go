@@ -240,6 +240,7 @@ func BuildHetzner(_ *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDi
 
 		var placementGroup *hcloud.PlacementGroup
 		var subnetIPRange *net.IPNet
+		var poolFirewalls []*hcloud.Firewall
 		if manager.clusterConfig.IsUsingNewFormat {
 			_, ok := manager.clusterConfig.NodeConfigs[spec.name]
 			if !ok {
@@ -258,6 +259,18 @@ func BuildHetzner(_ *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDi
 				}
 				placementGroupTotals[placementGroup.Name] += spec.maxSize
 			}
+
+			for _, firewallRef := range manager.clusterConfig.NodeConfigs[spec.name].Firewalls {
+				firewall, err := getFirewall(manager, firewallRef)
+				if err != nil {
+					klog.Fatalf("Encountered error while fetching firewall: %v", err)
+				}
+				if firewall == nil {
+					klog.Fatalf("The requested firewall `%s` does not appear to exist.", firewallRef)
+				}
+				poolFirewalls = append(poolFirewalls, firewall)
+			}
+
 			if manager.network != nil {
 				if manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange != "" {
 					_, subnetIPRange, err = net.ParseCIDR(manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange)
@@ -285,6 +298,7 @@ func BuildHetzner(_ *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDi
 			clusterUpdateMutex: &clusterUpdateLock,
 			placementGroup:     placementGroup,
 			subnetIPRange:      subnetIPRange,
+			firewalls:          buildServerCreateFirewalls(manager.firewall, poolFirewalls),
 		}
 	}
 
@@ -327,6 +341,21 @@ func getPlacementGroup(manager *hetznerManager, placementGroupRef string) (*hclo
 	}
 
 	return placementGroup, nil
+}
+
+func getFirewall(manager *hetznerManager, firewallRef string) (*hcloud.Firewall, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	firewall, _, err := manager.client.Firewall.Get(ctx, firewallRef)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, fmt.Errorf("Timed out checking if firewall `%s` exists.", firewallRef)
+		}
+		return nil, fmt.Errorf("Failed to verify if firewall `%s` exists. Error: %w", firewallRef, err)
+	}
+
+	return firewall, nil
 }
 
 func createNodePoolSpec(groupSpec string) (*hetznerNodeGroupSpec, error) {
