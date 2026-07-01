@@ -17,8 +17,8 @@ github.com/fxamacker/cbor/v2 v2.9.2 h1:X4Ksno9+x3cz0TZv69ec1hxP/+tymuR8PXQJyDwfh
 github.com/fxamacker/cbor/v2 v2.9.2/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=
 github.com/go-logr/logr v1.4.3/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
-github.com/go-openapi/jsonpointer v0.23.1 h1:1HBACs7XIwR2RcmItfdSFlALhGbe6S92p0ry4d1GWg4=
-github.com/go-openapi/jsonpointer v0.23.1/go.mod h1:iWRmZTrGn7XwYhtPt/fvdSFj1OfNBngqRT2UG3BxSqY=
+github.com/go-openapi/jsonpointer v0.24.0 h1:AA6mCjHYHmZ+1RU2Js089EaOK/iwXXNwQsTgnsTha2M=
+github.com/go-openapi/jsonpointer v0.24.0/go.mod h1:Z3rw7dWu1p9IgitXCFamSlA5lmDiklEB6vkaxcNZW5Y=
 github.com/go-openapi/jsonreference v0.21.6 h1:NZ5nGfnaM1n4I43Xjm1e5/M2GjOwQwndQz22uhxwD+Y=
 github.com/go-openapi/jsonreference v0.21.6/go.mod h1:xzbgtQ3ZbWxvET3AxdzCJlJt6vkovbf+IfSPJjD0tUY=
 github.com/go-openapi/swag v0.26.1 h1:l5sVEyVpwj+DDYeZyo7wQI/Ebn/mKYIyGB/pFwAfGoQ=
@@ -29,8 +29,8 @@ github.com/go-openapi/swag/conv v0.26.1 h1:slr5FVkg9Wc3Y5zcwenD8Sd/PQ94b2I/QJI7N
 github.com/go-openapi/swag/conv v0.26.1/go.mod h1:mvQXgPptZk9GTrFgGwWvT4q+dN+zQej9JfmGwnipz1A=
 github.com/go-openapi/swag/fileutils v0.26.1 h1:K1XCM2CGhfNsc6YDt6v7Q5+1e59rftYWdcu/isZhvFw=
 github.com/go-openapi/swag/fileutils v0.26.1/go.mod h1:mYUgxQAKX4ShS3qvvySx+/9yrlUnDhjiD1CalaQl8lQ=
-github.com/go-openapi/swag/jsonname v0.26.1 h1:VReupaV6WxlAsCn0e4DUfgV6bPmINnPpyJDLqSfNPcE=
-github.com/go-openapi/swag/jsonname v0.26.1/go.mod h1:OvdW6BoWoj33pTfi7x9vFrgmT+fk7aw0BRwvCE0YOuc=
+github.com/go-openapi/swag/jsonname v0.27.0 h1:4QVB//CKOdE8IOiBg19JNY2wfDS48MhesIquYBy2rUE=
+github.com/go-openapi/swag/jsonname v0.27.0/go.mod h1:I1YsyvvhBuZsFXSW6I7ODfdyq13p7hDil//1T9/pFFk=
 github.com/go-openapi/swag/jsonutils v0.26.1 h1:2hdBfFkHg+7Wrz2VsCbeyR6hzkRDs7AztnMR2u84yOY=
 github.com/go-openapi/swag/jsonutils v0.26.1/go.mod h1:U+RMJH3wa+6BRiphuRtIyI8fW9HPFqFQ4sHk2oRx0UQ=
 github.com/go-openapi/swag/jsonutils/fixtures_test v0.26.1 h1:1CD7NiLLb/TXl3tOnFYU4b+mNfb5rtgHkaA+q7RMYYQ=
@@ -49,8 +49,8 @@ github.com/go-openapi/swag/yamlutils v0.26.1 h1:0TSLK+lXs9vfIhAWzBeI/lOzEnIoot6W
 github.com/go-openapi/swag/yamlutils v0.26.1/go.mod h1:7W5b7PRX9MxwL7TjeG7H8HkyBGRsIDRObhyMWFgBI2M=
 github.com/go-openapi/testify/enable/yaml/v2 v2.5.1 h1:q9NtHwK4qHF7yZziBPvZyv7zWAIk8ok88Gh2mR6Jpc8=
 github.com/go-openapi/testify/enable/yaml/v2 v2.5.1/go.mod h1:JW0MXIotCYps/XsgJnG3a8Q7rE5xAiBwoOD5OfaIQBk=
-github.com/go-openapi/testify/v2 v2.5.1 h1:TMdhCaw8fUNraVSf3Omoob1dO/AzBfhtFAPW0an6sBo=
-github.com/go-openapi/testify/v2 v2.5.1/go.mod h1:SgsVHtfooshd0tublTtJ50FPKhujf47YRqauXXOUxfw=
+github.com/go-openapi/testify/v2 v2.6.0 h1:5PKH2HE7YJ/LuRPQGvSxBRlFXNQhSetBLlGAgUEu3ug=
+github.com/go-openapi/testify/v2 v2.6.0/go.mod h1:SgsVHtfooshd0tublTtJ50FPKhujf47YRqauXXOUxfw=
 github.com/golang-jwt/jwt/v5 v5.3.1 h1:kYf81DTWFe7t+1VvL7eS+jKFVWaUnK9cB1qbwn63YCY=
 github.com/golang-jwt/jwt/v5 v5.3.1/go.mod h1:fxCRLWMO43lRc8nhHWY6LGqRcf+1gQWArsqaEUEa5bE=
 github.com/google/gnostic-models v0.7.1 h1:SisTfuFKJSKM5CPZkffwi6coztzzeYUhc3v4yxLWH8c=
