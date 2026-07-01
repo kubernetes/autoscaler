@@ -329,6 +329,52 @@ func TestRecordOOMInNewWindowWithCustomInterval(t *testing.T) {
 	test.mockMemoryHistogram.AssertExpectations(t)
 }
 
+// TestRecordOOMMaxAllowedCapping verifies that OOM synthetic memory samples are capped
+// at maxAllowed to prevent the feedback loop in issue kubernetes/autoscaler#9521.
+func TestRecordOOMMaxAllowedCapping(t *testing.T) {
+	cases := []struct {
+		name            string
+		oomBumpUpRatio  float64
+		maxAllowedMem   ResourceAmount
+		requestedMemory ResourceAmount
+		expectedSample  float64
+	}{
+		{
+			name:            "Capped when bump up exceeds maxAllowed",
+			oomBumpUpRatio:  2.0,
+			maxAllowedMem:   ResourceAmount(30 * 1024 * mb),
+			requestedMemory: ResourceAmount(30 * 1024 * mb),
+			expectedSample:  float64(30 * 1024 * mb),
+		},
+		{
+			name:            "Not capped when bump up is below maxAllowed",
+			oomBumpUpRatio:  1.2,
+			maxAllowedMem:   ResourceAmount(100 * 1024 * mb),
+			requestedMemory: ResourceAmount(1000 * mb),
+			expectedSample:  1200.0 * mb,
+		},
+		{
+			name:            "No cap when maxAllowed is unset",
+			oomBumpUpRatio:  1.2,
+			maxAllowedMem:   0,
+			requestedMemory: ResourceAmount(1000 * mb),
+			expectedSample:  1200.0 * mb,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			test := newContainerTest()
+			test.aggregateContainerState.OOMBumpUpRatio = tc.oomBumpUpRatio
+			test.aggregateContainerState.MaxAllowedMemory = tc.maxAllowedMem
+			windowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationIntervalDuration)
+
+			test.mockMemoryHistogram.On("AddSample", tc.expectedSample, 1.0, windowEnd)
+			assert.NoError(t, test.container.RecordOOM(testTimestamp, tc.requestedMemory))
+			test.mockMemoryHistogram.AssertExpectations(t)
+		})
+	}
+}
+
 // Tests with custom MemoryAggregationIntervalCount to verify the per-VPA
 // MemoryAggregationIntervalCount setting affects container behavior.
 
