@@ -70,6 +70,7 @@ this document:
   * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
   * [How should I test my code before submitting PR?](#how-should-i-test-my-code-before-submitting-pr)
   * [How can I update CA dependencies (particularly k8s.io/kubernetes)?](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes)
+  * [Tests fail with `unable to start control plane itself: failed to start the controlplane.`](#tests-fail-with-unable-to-start-control-plane-itself-failed-to-start-the-controlplane)
 <!--- TOC END -->
 
 # Basics
@@ -1467,3 +1468,12 @@ If you need to update vendor to an unreleased commit of Kubernetes, you can use 
 ```
 ./hack/submodule-k8s.sh <k8s commit sha> git@github.com:kubernetes/kubernetes.git
 ```
+
+### Tests fail with `unable to start control plane itself: failed to start the controlplane.`
+
+Some of our test utilize `controller-runtime`'s [envtest library](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/envtest).
+Those tests run a local k8s API server and etcd instances. Running them requires having those binaries installed.
+
+To fix that, you can either:
+- Skip those tests by adding `-short` flag to `go test`.
+- Run `make setup-envtest` to install necessary binaries.
