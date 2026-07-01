@@ -17,14 +17,22 @@ limitations under the License.
 package clusterstateregistry
 
 import (
+	"context"
 	"testing"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	fakecloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/autoscaler/cluster-autoscaler/core"
+	"k8s.io/autoscaler/cluster-autoscaler/test/integration"
+	fakek8s "k8s.io/autoscaler/cluster-autoscaler/utils/fake"
+	testutils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
 // TestClusterStateRegistryScaleUpWithDeletedNodes is an integration test validating that ClusterStateRegistry correctly handles scaling up while deleted Nodes
-// from a previous scale-down are still hanging around in the K8s API.
+// from a previous scale-down are still hanging around in the K8s API. The test uses the fake CloudProvider with different semantics of certain methods being
+// tested.
 func TestClusterStateRegistryScaleUpWithDeletedNodes(t *testing.T) {
-	// This is a regression test for a complex race-condition bug in ClusterStateRegistry.
-	// Full details about the bug can be found in https://github.com/kubernetes/autoscaler/issues/9813
 	for _, tc := range []struct {
 		testName string
 		// nodeGroupForNodeWorksForDeletedNodes is used to test different supported behaviors of the CloudProvider.NodeGroupForNode() method.
@@ -56,7 +64,29 @@ func TestClusterStateRegistryScaleUpWithDeletedNodes(t *testing.T) {
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
-			RunTestClusterStateRegistryScaleUpWithDeletedNodes(t, tc.nodeGroupForNodeWorksForDeletedNodes, tc.hasInstanceNotImplemented)
+			autoscalerFactory := func(t *testing.T, ctx context.Context, args TestClusterStateRegistryScaleUpWithDeletedNodesSetupArgs) (core.Autoscaler, cloudprovider.NodeGroup, *fakek8s.Kubernetes) {
+				options := integration.NewTestConfig().WithOverrides(args.OptsOverride).ResolveOptions()
+				infra := integration.SetupInfrastructure(t)
+				// Configure the behavior of the fake CloudProvider methods according to the test case.
+				infra.Fakes.CloudProvider.ConfigureNodeGroupForNodeBehavior(tc.nodeGroupForNodeWorksForDeletedNodes)
+				infra.Fakes.CloudProvider.ConfigureHasInstanceBehavior(tc.hasInstanceNotImplemented)
+
+				autoscaler, _, err := integration.DefaultAutoscalingBuilder(options, infra).Build(ctx)
+				if err != nil {
+					t.Fatalf("DefaultAutoscalingBuilder() unexpected error: %v", err)
+				}
+
+				templateNode := testutils.BuildTestNode("ng-template", 1000, 2*units.GiB, testutils.IsReady(true))
+				nodeGroup := infra.Fakes.CloudProvider.AddNodeGroup("ng",
+					fakecloudprovider.WithNodes(templateNode, args.NodeCount),
+					fakecloudprovider.WithNodeGarbageCollectionDelay(args.NodeGarbageCollectionDelay),
+					fakecloudprovider.WithNodeRegistrationDelay(args.NodeRegistrationDelay),
+				)
+
+				return autoscaler, nodeGroup, infra.Fakes.K8s
+			}
+
+			RunTestClusterStateRegistryScaleUpWithDeletedNodes(t, autoscalerFactory)
 		})
 	}
 }
