@@ -220,6 +220,95 @@ func TestHasInstance(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestHasInstanceReportsDeletingNodesAsGone(t *testing.T) {
+	testCases := []struct {
+		name                        string
+		strictCacheUpdates          bool
+		expectDeletingBeforeRefresh bool
+	}{
+		{
+			name:                        "non-strict cache updates",
+			strictCacheUpdates:          false,
+			expectDeletingBeforeRefresh: true,
+		},
+		{
+			name:                        "strict cache updates",
+			strictCacheUpdates:          true,
+			expectDeletingBeforeRefresh: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			manager := newTestAzureManager(t)
+			manager.config.StrictCacheUpdates = tc.strictCacheUpdates
+
+			expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", armcompute.OrchestrationModeUniform)
+			expectedVMSSVMs := newTestVMSSVMList(3)
+
+			mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+			mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+			manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+			mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+			mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, "test-asg").Return(expectedVMSSVMs, nil).AnyTimes()
+			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+			mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+			mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			manager.azClient.vmssClientForDelete = mockDeleteClient
+
+			registered := manager.RegisterNodeGroup(newTestScaleSet(manager, "test-asg"))
+			manager.explicitlyConfigured["test-asg"] = true
+			assert.True(t, registered)
+			assert.NoError(t, manager.forceRefresh())
+
+			deletedNode := newApiNode(armcompute.OrchestrationModeUniform, 0)
+			survivingNode := newApiNode(armcompute.OrchestrationModeUniform, 1)
+
+			// Before the scale-down both instances are reported as present.
+			hasInstance, err := manager.azureCache.HasInstance(deletedNode.Spec.ProviderID)
+			assert.True(t, hasInstance)
+			assert.NoError(t, err)
+
+			scaleSet, ok := manager.azureCache.registeredNodeGroups[0].(*ScaleSet)
+			assert.True(t, ok)
+			assert.NoError(t, scaleSet.DeleteNodes([]*apiv1.Node{deletedNode}))
+
+			// In non-strict mode, deleting state is proactive. In strict mode, it is
+			// only reflected after refresh from Azure.
+			hasInstance, err = manager.azureCache.HasInstance(deletedNode.Spec.ProviderID)
+			if tc.expectDeletingBeforeRefresh {
+				assert.False(t, hasInstance)
+				assert.NoError(t, err)
+			} else {
+				assert.True(t, hasInstance)
+				assert.NoError(t, err)
+			}
+
+			// Simulate Azure still listing the VM in the Deleting provisioning state
+			// during the deletion window, then refresh the cache.
+			expectedVMSSVMs[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
+			assert.NoError(t, manager.forceRefresh())
+
+			// The node being deleted must now be reported as gone (false, nil),
+			// even though it is still tracked by the node group.
+			hasInstance, err = manager.azureCache.HasInstance(deletedNode.Spec.ProviderID)
+			assert.False(t, hasInstance)
+			assert.NoError(t, err)
+			assert.NotNil(t, manager.azureCache.getInstanceFromCache(deletedNode.Spec.ProviderID))
+
+			// Nodes that are not being deleted continue to be reported as present.
+			hasInstance, err = manager.azureCache.HasInstance(survivingNode.Spec.ProviderID)
+			assert.True(t, hasInstance)
+			assert.NoError(t, err)
+		})
+	}
+}
+
 func TestUnownedInstancesFallbackToDeletionTaint(t *testing.T) {
 	// VMSS Instances that belong to a VMSS on the cluster but do not belong to a registered ASG
 	// should return err unimplemented for HasInstance
