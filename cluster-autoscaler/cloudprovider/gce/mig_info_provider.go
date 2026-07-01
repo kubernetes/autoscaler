@@ -59,6 +59,8 @@ type MigInfoProvider interface {
 	GetListManagedInstancesResults(migRef GceRef) (string, error)
 	// GetMigIsStable returns whether given MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
 	GetMigIsStable(migRef GceRef) (bool, error)
+	// RefreshMigInfo updates the cached information for a specific MIG without rebuilding the full zone cache
+	RefreshMigInfo(migRef GceRef) error
 }
 
 type timeProvider interface {
@@ -525,6 +527,11 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 	}
 
 	return nil
+}
+
+// RefreshMigInfo updates the cached information for a specific MIG without rebuilding the full zone cache
+func (c *cachingMigInfoProvider) RefreshMigInfo(migRef GceRef) error {
+	return c.fillSingleMigInfo(migRef)
 }
 
 func (c *cachingMigInfoProvider) fillSingleMigInfo(migRef GceRef) error {
