@@ -26,7 +26,9 @@ import (
 	"github.com/digitalocean/godo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -452,6 +454,250 @@ func TestGenerateWorkerName(t *testing.T) {
 		assert.Equal(t, 2, len(parts), "incorrect number of components for generated worker name")
 		assert.Equal(t, prefix, parts[0], "unexpected prefix in generated worker name")
 		assert.Equal(t, expectedLength, len(parts[1]), "incorrect suffix length for generated worker name")
+	})
+}
+
+func TestParseToQuantity(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		rl, err := parseToQuantity(3800, 110, "8Gi")
+		require.NoError(t, err)
+
+		expCPU := resource.NewMilliQuantity(3800, resource.DecimalSI)
+		expPods := resource.NewQuantity(110, resource.DecimalSI)
+		expMem := resource.MustParse("8Gi")
+
+		assert.True(t, expCPU.Equal(rl[apiv1.ResourceCPU]))
+		assert.True(t, expPods.Equal(rl[apiv1.ResourcePods]))
+		assert.True(t, expMem.Equal(rl[apiv1.ResourceMemory]))
+
+		// compare with regular CPU quantity
+		rl, err = parseToQuantity(4000, 110, "8Gi")
+		require.NoError(t, err)
+		fullCPU := resource.NewQuantity(4, resource.DecimalSI)
+		assert.True(t, fullCPU.Equal(rl[apiv1.ResourceCPU]))
+	})
+
+	t.Run("invalid memory string", func(t *testing.T) {
+		_, err := parseToQuantity(100, 10, "not-a-valid-quantity")
+		assert.Error(t, err)
+	})
+}
+
+func TestToNodeInfoTemplate(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		resp := &godo.KubernetesNodePoolTemplate{
+			Template: &godo.KubernetesNodeTemplate{
+				Name: "my-pool",
+				Labels: map[string]string{
+					"pool": "primary",
+				},
+				Taints: []string{"dedicated=test:NoSchedule"},
+				Capacity: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 8000,
+					Pods:          110,
+					Memory:        "32Gi",
+				},
+				Allocatable: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 7800,
+					Pods:          110,
+					Memory:        "31Gi",
+				},
+			},
+		}
+
+		ni, err := toNodeInfoTemplate(resp)
+		require.NoError(t, err)
+		require.NotNil(t, ni)
+
+		node := ni.Node()
+		require.NotNil(t, node)
+
+		assert.True(t, strings.HasPrefix(node.Name, "my-pool-"))
+		assert.Len(t, strings.TrimPrefix(node.Name, "my-pool-"), generatedWorkerNameSuffixLength)
+
+		assert.Equal(t, cloudprovider.DefaultOS, node.Labels[apiv1.LabelOSStable])
+		assert.Equal(t, cloudprovider.DefaultArch, node.Labels[apiv1.LabelArchStable])
+		assert.Equal(t, "primary", node.Labels["pool"])
+
+		require.Len(t, node.Spec.Taints, 1)
+		assert.Equal(t, "dedicated", node.Spec.Taints[0].Key)
+		assert.Equal(t, "test", node.Spec.Taints[0].Value)
+		assert.Equal(t, apiv1.TaintEffectNoSchedule, node.Spec.Taints[0].Effect)
+
+		assert.Equal(t, apiv1.NodeRunning, node.Status.Phase)
+
+		capCPU := resource.NewMilliQuantity(8000, resource.DecimalSI)
+		allCPU := resource.NewMilliQuantity(7800, resource.DecimalSI)
+		assert.True(t, capCPU.Equal(node.Status.Capacity[apiv1.ResourceCPU]))
+		assert.True(t, allCPU.Equal(node.Status.Allocatable[apiv1.ResourceCPU]))
+
+		memCap := resource.MustParse("32Gi")
+		memAll := resource.MustParse("31Gi")
+		assert.True(t, memCap.Equal(node.Status.Capacity[apiv1.ResourceMemory]))
+		assert.True(t, memAll.Equal(node.Status.Allocatable[apiv1.ResourceMemory]))
+
+		podsCap := resource.NewQuantity(110, resource.DecimalSI)
+		assert.True(t, podsCap.Equal(node.Status.Capacity[apiv1.ResourcePods]))
+		assert.True(t, podsCap.Equal(node.Status.Allocatable[apiv1.ResourcePods]))
+
+		assert.NotEmpty(t, node.Status.Conditions)
+	})
+
+	t.Run("template labels override defaults", func(t *testing.T) {
+		resp := &godo.KubernetesNodePoolTemplate{
+			Template: &godo.KubernetesNodeTemplate{
+				Name: "pool",
+				Labels: map[string]string{
+					apiv1.LabelOSStable: "windows",
+				},
+				Capacity: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 2000,
+					Pods:          30,
+					Memory:        "4Gi",
+				},
+				Allocatable: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 1900,
+					Pods:          30,
+					Memory:        "4Gi",
+				},
+			},
+		}
+
+		ni, err := toNodeInfoTemplate(resp)
+		require.NoError(t, err)
+		assert.Equal(t, "windows", ni.Node().Labels[apiv1.LabelOSStable])
+		assert.Equal(t, cloudprovider.DefaultArch, ni.Node().Labels[apiv1.LabelArchStable])
+	})
+
+	t.Run("success with NVIDIA GPU", func(t *testing.T) {
+		resp := &godo.KubernetesNodePoolTemplate{
+			Template: &godo.KubernetesNodeTemplate{
+				Name: "gpu-pool",
+				Capacity: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 4000,
+					Pods:          110,
+					Memory:        "16Gi",
+				},
+				Allocatable: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 3800,
+					Pods:          110,
+					Memory:        "15Gi",
+				},
+				Gpu: &godo.KubernetesNodePoolGPUResources{
+					Vendor: "nvidia",
+					Model:  "a100",
+					Count:  4,
+				},
+			},
+		}
+
+		ni, err := toNodeInfoTemplate(resp)
+		require.NoError(t, err)
+
+		node := ni.Node()
+		gpuName := apiv1.ResourceName("nvidia.com/gpu")
+		expGPU := resource.MustParse("4")
+		assert.True(t, expGPU.Equal(node.Status.Capacity[gpuName]))
+		assert.True(t, expGPU.Equal(node.Status.Allocatable[gpuName]))
+	})
+
+	t.Run("success with AMD GPU", func(t *testing.T) {
+		resp := &godo.KubernetesNodePoolTemplate{
+			Template: &godo.KubernetesNodeTemplate{
+				Name: "amd-gpu-pool",
+				Capacity: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 8000,
+					Pods:          110,
+					Memory:        "32Gi",
+				},
+				Allocatable: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 7900,
+					Pods:          110,
+					Memory:        "31Gi",
+				},
+				Gpu: &godo.KubernetesNodePoolGPUResources{
+					Vendor: "amd",
+					Model:  "mi300x",
+					Count:  8,
+				},
+			},
+		}
+
+		ni, err := toNodeInfoTemplate(resp)
+		require.NoError(t, err)
+
+		node := ni.Node()
+		gpuName := apiv1.ResourceName("amd.com/gpu")
+		expGPU := resource.MustParse("8")
+		assert.True(t, expGPU.Equal(node.Status.Capacity[gpuName]))
+		assert.True(t, expGPU.Equal(node.Status.Allocatable[gpuName]))
+	})
+
+	t.Run("allocatable parse error", func(t *testing.T) {
+		resp := &godo.KubernetesNodePoolTemplate{
+			Template: &godo.KubernetesNodeTemplate{
+				Name: "pool",
+				Capacity: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 1000,
+					Pods:          10,
+					Memory:        "1Gi",
+				},
+				Allocatable: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 900,
+					Pods:          10,
+					Memory:        "NOT_VALID",
+				},
+			},
+		}
+
+		_, err := toNodeInfoTemplate(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to create allocatable resources")
+	})
+
+	t.Run("capacity parse error", func(t *testing.T) {
+		resp := &godo.KubernetesNodePoolTemplate{
+			Template: &godo.KubernetesNodeTemplate{
+				Name: "pool",
+				Capacity: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 1000,
+					Pods:          10,
+					Memory:        "NOT_VALID",
+				},
+				Allocatable: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 900,
+					Pods:          10,
+					Memory:        "1Gi",
+				},
+			},
+		}
+
+		_, err := toNodeInfoTemplate(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to create capacity resources")
+	})
+
+	t.Run("taints parse error", func(t *testing.T) {
+		resp := &godo.KubernetesNodePoolTemplate{
+			Template: &godo.KubernetesNodeTemplate{
+				Name: "pool",
+				Capacity: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 1000,
+					Pods:          10,
+					Memory:        "1Gi",
+				},
+				Allocatable: &godo.KubernetesNodePoolResources{
+					CpuMilliCores: 900,
+					Pods:          10,
+					Memory:        "1Gi",
+				},
+				Taints: []string{"this-is-not-a-valid-taint-string-format"},
+			},
+		}
+
+		_, err := toNodeInfoTemplate(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse taints")
 	})
 }
 
