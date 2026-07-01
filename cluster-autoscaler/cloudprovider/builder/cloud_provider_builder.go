@@ -20,9 +20,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/client-go/informers"
 
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 // NewCloudProvider builds a cloud provider from provided parameters.
@@ -44,7 +45,15 @@ func NewCloudProvider(opts *coreoptions.AutoscalerOptions, informerFactory infor
 	}
 
 	if builder, ok := GetCloudProviderBuilder(opts.CloudProviderName); ok {
-		return builder(opts, do, rl, informerFactory)
+		provider := builder(opts, do, rl, informerFactory)
+		if provider != nil {
+			if len(opts.AutoscalingOptions.BalancingLabels) > 0 {
+				opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+					Comparator: nodegroupset.CreateLabelNodeInfoComparator(opts.AutoscalingOptions.BalancingLabels),
+				}
+			}
+		}
+		return provider
 	}
 
 	klog.Fatalf("Unknown cloud provider: %s", opts.CloudProviderName)
