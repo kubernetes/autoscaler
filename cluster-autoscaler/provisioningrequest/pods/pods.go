@@ -39,6 +39,13 @@ const (
 // PodsForProvisioningRequest returns a list of pods for which Provisioning
 // Request needs to provision resources.
 func PodsForProvisioningRequest(pr *provreqwrapper.ProvisioningRequest) ([]*corev1.Pod, error) {
+	return PodsForProvisioningRequestPodSets(pr, nil)
+}
+
+// PodsForProvisioningRequestPodSets is like PodsForProvisioningRequest but only
+// generates pods for PodSets whose PodTemplateRef.Name is in allowedPodSets.
+// If allowedPodSets is nil, all PodSets are included.
+func PodsForProvisioningRequestPodSets(pr *provreqwrapper.ProvisioningRequest, allowedPodSets map[string]bool) ([]*corev1.Pod, error) {
 	if pr == nil {
 		return nil, nil
 	}
@@ -48,6 +55,9 @@ func PodsForProvisioningRequest(pr *provreqwrapper.ProvisioningRequest) ([]*core
 	}
 	pods := make([]*corev1.Pod, 0)
 	for i, podSet := range podSets {
+		if allowedPodSets != nil && !allowedPodSets[pr.Spec.PodSets[i].PodTemplateRef.Name] {
+			continue
+		}
 		for j := 0; j < int(podSet.Count); j++ {
 			pod, err := controller.GetPodFromTemplate(&podSet.PodTemplate, pr.ProvisioningRequest, ownerReference(pr))
 			if err != nil {

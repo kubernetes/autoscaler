@@ -301,3 +301,77 @@ func TestBookCapacity(t *testing.T) {
 		})
 	}
 }
+
+func TestBookCapacityPartialPodSets(t *testing.T) {
+	makeProvReq := func(name string) *provreqwrapper.ProvisioningRequest {
+		return provreqwrapper.NewProvisioningRequest(
+			&v1.ProvisioningRequest{
+				ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "ns"},
+				Spec: v1.ProvisioningRequestSpec{
+					ProvisioningClassName: v1.ProvisioningClassCheckCapacity,
+					PodSets: []v1.PodSet{
+						{PodTemplateRef: v1.Reference{Name: "template-0"}, Count: 3},
+						{PodTemplateRef: v1.Reference{Name: "template-1"}, Count: 2},
+					},
+				},
+				Status: v1.ProvisioningRequestStatus{Conditions: []metav1.Condition{}},
+			},
+			[]*apiv1.PodTemplate{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "template-0", Namespace: "ns"},
+					Template:   apiv1.PodTemplateSpec{Spec: apiv1.PodSpec{Containers: []apiv1.Container{{Name: "c", Image: "img"}}}},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "template-1", Namespace: "ns"},
+					Template:   apiv1.PodTemplateSpec{Spec: apiv1.PodSpec{Containers: []apiv1.Container{{Name: "c", Image: "img"}}}},
+				},
+			},
+		)
+	}
+
+	testCases := []struct {
+		name               string
+		schedulablePodSets string // JSON, empty means no detail set
+		wantPodCount       int
+	}{
+		{
+			name:         "no schedulablePodSets detail books all pods",
+			wantPodCount: 5,
+		},
+		{
+			name:               "first podset only: books 3 pods",
+			schedulablePodSets: `["template-0"]`,
+			wantPodCount:       3,
+		},
+		{
+			name:               "second podset only: books 2 pods",
+			schedulablePodSets: `["template-1"]`,
+			wantPodCount:       2,
+		},
+		{
+			name:               "both podsets: books all 5 pods",
+			schedulablePodSets: `["template-0","template-1"]`,
+			wantPodCount:       5,
+		},
+	}
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			pr := makeProvReq("pr")
+			conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionTrue, "", "", metav1.Now())
+			if test.schedulablePodSets != "" {
+				pr.SetProvisioningClassDetail(conditions.SchedulablePodSetsDetailKey, v1.Detail(test.schedulablePodSets))
+			}
+
+			injector := &fakeInjector{pods: []*apiv1.Pod{}}
+			processor := &provReqProcessor{
+				now:        func() time.Time { return time.Now() },
+				client:     provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, pr),
+				maxUpdated: 20,
+				injector:   injector,
+			}
+			autoscalingCtx, _ := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, nil, nil, nil, nil)
+			processor.bookCapacity(&autoscalingCtx)
+			assert.Equal(t, test.wantPodCount, len(injector.pods))
+		})
+	}
+}
