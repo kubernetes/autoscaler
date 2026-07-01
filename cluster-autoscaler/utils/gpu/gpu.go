@@ -51,6 +51,12 @@ var GPUVendorResourceNames = []apiv1.ResourceName{
 	ResourceDirectX,
 }
 
+// RegisterGPUResourceNames appends additional GPU vendor resource names at runtime.
+// Must be called before any scheduling simulation begins. Thread-safe to call once at startup.
+func RegisterGPUResourceNames(names ...apiv1.ResourceName) {
+	GPUVendorResourceNames = append(GPUVendorResourceNames, names...)
+}
+
 const (
 	// MetricsGenericGPU - for when there is no information about GPU type
 	MetricsGenericGPU = "generic"
