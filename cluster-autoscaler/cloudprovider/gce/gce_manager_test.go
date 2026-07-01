@@ -600,16 +600,8 @@ func TestGetAndSetMigSize(t *testing.T) {
 	// register another pool: extraPool2; pool uses mig in different zone
 	extraPool2Mig := setupTestExtraPool2(g, true)
 
-	// query for size of resized extraPool2Mig; execting API call refreshing target sizes
-	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers").Return(
-		buildListInstanceGroupManagersResponse(
-			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
-			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 8),
-		)).Once()
-	server.On("handle", "/projects/project1/zones/us-central1-c/instanceGroupManagers").Return(
-		buildListInstanceGroupManagersResponse(
-			buildListInstanceGroupManagersResponsePart(extraPool2MigName, zoneC, 9)),
-	).Once()
+	// query for size of resized extraPool2Mig; execting API call refreshing target size for this MIG
+	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-c/instanceGroupManagers/%s", extraPool2MigName)).Return(buildInstanceGroupManagerResponse(zoneC, extraPool2MigName, 9)).Once()
 
 	extraPool2MigSize, err := g.GetMigSize(extraPool2Mig)
 	assert.NoError(t, err)
@@ -666,14 +658,10 @@ func TestGetMigSizeListCallFails(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(7), defaultPoolMigSize)
 
-	// Querying another mig will yet again try to list all migs
-	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers").Return(
-		buildListInstanceGroupManagersResponse(
-			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
-			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 8),
-		)).Once()
+	// Querying another mig will execute a Get for this mig
+	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%s", extraPoolMigName)).Return(buildInstanceGroupManagerResponse(zoneB, extraPoolMigName, 8)).Once()
 
-	// getting size for defaultPoolMig should trigger listing all the InstanceGroupManagers
+	// getting size for extraPoolMig should trigger get call for this MIG
 	extraPoolMigSize, err := g.GetMigSize(extraPoolMig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(8), extraPoolMigSize)
