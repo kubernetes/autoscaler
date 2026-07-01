@@ -33,7 +33,7 @@ func TestProviderConstructorProperties(t *testing.T) {
 	controller := NewTestMachineController(t)
 	defer controller.Stop()
 
-	provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller.machineController)
+	provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller.machineController, defaultNodeDeletionBatcherInterval)
 	if actual := provider.Name(); actual != cloudprovider.ClusterAPIProviderName {
 		t.Errorf("expected %q, got %q", cloudprovider.ClusterAPIProviderName, actual)
 	}
@@ -123,7 +123,7 @@ func BenchmarkNodeGroups(b *testing.B) {
 		b.Fatalf("unexpected error: %v", err)
 	}
 
-	provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller.machineController)
+	provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller.machineController, defaultNodeDeletionBatcherInterval)
 	if actual := provider.Name(); actual != cloudprovider.ClusterAPIProviderName {
 		b.Errorf("expected %q, got %q", cloudprovider.ClusterAPIProviderName, actual)
 	}
@@ -260,7 +260,7 @@ func TestNodeGroups(t *testing.T) {
 			}
 		}
 
-		provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller.machineController)
+		provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller.machineController, defaultNodeDeletionBatcherInterval)
 		if actual := provider.Name(); actual != cloudprovider.ClusterAPIProviderName {
 			t.Errorf("expected %q, got %q", cloudprovider.ClusterAPIProviderName, actual)
 		}

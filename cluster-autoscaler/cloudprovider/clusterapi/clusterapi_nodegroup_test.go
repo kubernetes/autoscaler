@@ -39,20 +39,25 @@ import (
 	"k8s.io/utils/ptr"
 )
 
+var (
+	defaultNodeDeletionBatcherInterval = 0 * time.Second
+)
+
 const (
 	testNamespace = "test-namespace"
 )
 
 func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 	type testCase struct {
-		description string
-		annotations map[string]string
-		errors      bool
-		replicas    int32
-		minSize     int
-		maxSize     int
-		nodeCount   int
-		expectNil   bool
+		description                 string
+		annotations                 map[string]string
+		errors                      bool
+		replicas                    int32
+		minSize                     int
+		maxSize                     int
+		nodeCount                   int
+		expectNil                   bool
+		nodeDeletionBatcherInterval time.Duration
 	}
 
 	var testCases = []testCase{{
@@ -124,13 +129,24 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 		replicas:  1,
 		errors:    false,
 		expectNil: false,
+	}, {
+		description: "no error: min=0, max=1, nodeDeletionBatcherInterval is set",
+		annotations: map[string]string{
+			nodeGroupMaxSizeAnnotationKey: "1",
+		},
+		minSize:                     0,
+		maxSize:                     1,
+		replicas:                    0,
+		errors:                      false,
+		expectNil:                   true,
+		nodeDeletionBatcherInterval: 1 * time.Second,
 	}}
 
-	newNodeGroup := func(controller *testMachineController, testConfig *TestConfig) (*nodegroup, error) {
+	newNodeGroup := func(controller *testMachineController, testConfig *TestConfig, nodeDeletionBatcherInterval time.Duration) (*nodegroup, error) {
 		if testConfig.machineDeployment != nil {
-			return newNodeGroupFromScalableResource(controller.machineController, testConfig.machineDeployment)
+			return newNodeGroupFromScalableResource(controller.machineController, testConfig.machineDeployment, nodeDeletionBatcherInterval)
 		}
-		return newNodeGroupFromScalableResource(controller.machineController, testConfig.machineSet)
+		return newNodeGroupFromScalableResource(controller.machineController, testConfig.machineSet, nodeDeletionBatcherInterval)
 	}
 
 	test := func(t *testing.T, tc testCase, testConfig *TestConfig) {
@@ -138,7 +154,7 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfig)
 
-		ng, err := newNodeGroup(controller, testConfig)
+		ng, err := newNodeGroup(controller, testConfig, tc.nodeDeletionBatcherInterval)
 		if tc.errors && err == nil {
 			t.Fatal("expected an error")
 		}
@@ -171,6 +187,7 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 
 		expectedID := path.Join(expectedKind, testConfig.spec.namespace, expectedName)
 		expectedDebug := fmt.Sprintf(debugFormat, expectedID, tc.minSize, tc.maxSize, tc.replicas)
+		expectedNodeDeletionBatcherInterval := 1 * time.Second
 
 		if ng.scalableResource.Name() != expectedName {
 			t.Errorf("expected %q, got %q", expectedName, ng.scalableResource.Name())
@@ -194,6 +211,12 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 
 		if ng.Debug() != expectedDebug {
 			t.Errorf("expected %q, got %q", expectedDebug, ng.Debug())
+		}
+
+		if ng.nodeDeletionBatcherInterval != 0 {
+			if ng.nodeDeletionBatcherInterval != expectedNodeDeletionBatcherInterval {
+				t.Errorf("expected %q, got %q", expectedNodeDeletionBatcherInterval, ng.nodeDeletionBatcherInterval)
+			}
 		}
 
 		if exists := ng.Exist(); !exists {
@@ -267,7 +290,7 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfig)
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -365,7 +388,7 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfig)
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -528,7 +551,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			}
 		}
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -561,7 +584,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			if u.GetResourceVersion() != scalableResource.GetResourceVersion() {
 				return false, nil
 			}
-			ng, err := newNodeGroupFromScalableResource(controller.machineController, u)
+			ng, err := newNodeGroupFromScalableResource(controller.machineController, u, defaultNodeDeletionBatcherInterval)
 			if err != nil {
 				return true, fmt.Errorf("unexpected error: %v", err)
 			}
@@ -772,7 +795,7 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfig)
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -860,7 +883,7 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfig)
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -957,7 +980,7 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfigs...)
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -965,12 +988,12 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 			t.Fatalf("expected %d, got %d", expected, l)
 		}
 
-		ng0, err := controller.nodeGroupForNode(testConfig0.nodes[0])
+		ng0, err := controller.nodeGroupForNode(testConfig0.nodes[0], defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		ng1, err := controller.nodeGroupForNode(testConfig1.nodes[0])
+		ng1, err := controller.nodeGroupForNode(testConfig1.nodes[0], defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -1088,7 +1111,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfig)
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -1153,7 +1176,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		deadlineCtx, deadlineFn := context.WithTimeout(context.Background(), 5*time.Second)
 		defer deadlineFn()
 		if err := wait.PollUntilContextTimeout(deadlineCtx, 100*time.Millisecond, 5*time.Second, true, func(_ context.Context) (bool, error) {
-			nodegroups, err = controller.nodeGroups()
+			nodegroups, err = controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 			if err != nil {
 				return false, err
 			}
@@ -1166,7 +1189,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 			t.Fatalf("unexpected error waiting for nodegroup to be expected size: %v", err)
 		}
 
-		nodegroups, err = controller.nodeGroups()
+		nodegroups, err = controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -1259,7 +1282,7 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfig)
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -1316,7 +1339,7 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 		nodeToNodeGroup := make(map[*corev1.Node]*nodegroup)
 
 		for _, node := range nodesToBeDeleted {
-			nodeGroup, err := controller.nodeGroupForNode(node)
+			nodeGroup, err := controller.nodeGroupForNode(node, defaultNodeDeletionBatcherInterval)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -1329,7 +1352,7 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 			}
 		}
 
-		nodegroups, err = controller.nodeGroups()
+		nodegroups, err = controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -1391,6 +1414,108 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 	})
 }
 
+func TestNodeGroupDeleteNodesWithBatcherInterval(t *testing.T) {
+	test := func(t *testing.T, testConfig *TestConfig) {
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
+
+		oneSecondNodeDeletionBatcherInterval := 1 * time.Second
+
+		nodegroups, err := controller.nodeGroups(oneSecondNodeDeletionBatcherInterval)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if l := len(nodegroups); l != 1 {
+			t.Fatalf("expected 1 nodegroup, got %d", l)
+		}
+
+		ng := nodegroups[0].(*nodegroup)
+		nodeNames, err := ng.Nodes()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(nodeNames) != len(testConfig.nodes) {
+			t.Fatalf("expected len=%v, got len=%v", len(testConfig.nodes), len(nodeNames))
+		}
+
+		sort.SliceStable(nodeNames, func(i, j int) bool {
+			return nodeNames[i].Id < nodeNames[j].Id
+		})
+
+		for i := range len(nodeNames) {
+			if nodeNames[i].Id != testConfig.nodes[i].Spec.ProviderID {
+				t.Fatalf("expected %q, got %q", testConfig.nodes[i].Spec.ProviderID, nodeNames[i].Id)
+			}
+		}
+
+		if ng.nodeDeletionBatcherInterval != oneSecondNodeDeletionBatcherInterval {
+			t.Fatalf("expected %v, got %v", oneSecondNodeDeletionBatcherInterval, ng.nodeDeletionBatcherInterval)
+		}
+
+		if err := ng.DeleteNodes(testConfig.nodes[5:]); err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+
+		for i := 5; i < len(testConfig.machines); i++ {
+			machine, err := controller.managementClient.Resource(controller.machineResource).
+				Namespace(testConfig.spec.namespace).
+				Get(context.TODO(), testConfig.machines[i].GetName(), metav1.GetOptions{})
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if _, found := machine.GetAnnotations()[machineDeleteAnnotationKey]; !found {
+				t.Errorf("expected annotation %q on machine %s", machineDeleteAnnotationKey, machine.GetName())
+			}
+		}
+
+		gvr, err := ng.scalableResource.GroupVersionResource()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		scalableResource, err := ng.machineController.managementScaleClient.Scales(testConfig.spec.namespace).
+			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if scalableResource.Spec.Replicas != 5 {
+			t.Errorf("expected 5, got %v", scalableResource.Spec.Replicas)
+		}
+	}
+
+	// Note: 10 is an upper bound for the number of nodes/replicas
+	// Going beyond 10 will break the sorting that happens in the
+	// test() function because sort.Strings() will not do natural
+	// sorting and the expected semantics in test() will fail.
+
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+
+	t.Run("MachineSet", func(t *testing.T) {
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(10).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
+	})
+
+	t.Run("MachineDeployment", func(t *testing.T) {
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(10).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
+	})
+}
+
 func TestNodeGroupWithFailedMachine(t *testing.T) {
 	test := func(t *testing.T, testConfig *TestConfig) {
 		controller := NewTestMachineController(t)
@@ -1409,7 +1534,7 @@ func TestNodeGroupWithFailedMachine(t *testing.T) {
 			t.Fatalf("unexpected error updating machine, got %v", err)
 		}
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -1765,7 +1890,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfig)
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -1956,7 +2081,7 @@ func TestNodeGroupGetOptions(t *testing.T) {
 		defer controller.Stop()
 		controller.AddTestConfigs(testConfig)
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -2115,7 +2240,7 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 			}
 		}
 
-		nodegroups, err := controller.nodeGroups()
+		nodegroups, err := controller.nodeGroups(defaultNodeDeletionBatcherInterval)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
