@@ -27,6 +27,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/deallocate"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient/mock_virtualmachineclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient/mock_virtualmachinescalesetclient"
@@ -1512,4 +1513,93 @@ func TestInstanceStatusFromProvisioningStateAndPowerState(t *testing.T) {
 			assert.NotNil(t, status.ErrorInfo)
 		})
 	})
+}
+
+// TestForceDeleteNodesDeallocateMode verifies that ForceDeleteNodes routes to
+// deallocateInstances (BeginDeallocate) for deallocate-mode groups, and to
+// DeleteInstances (BeginDeleteInstances) for delete-mode groups.
+func TestForceDeleteNodesDeallocateMode(t *testing.T) {
+	tests := map[string]struct {
+		scaleDownPolicy       deallocate.ScaleDownPolicy
+		expectDeallocate      bool
+		expectDeleteInstances bool
+	}{
+		"deallocate mode routes to deallocateInstances": {
+			scaleDownPolicy:       deallocate.Deallocate,
+			expectDeallocate:      true,
+			expectDeleteInstances: false,
+		},
+		"delete mode routes to DeleteInstances": {
+			scaleDownPolicy:       deallocate.Delete,
+			expectDeallocate:      false,
+			expectDeleteInstances: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			vmssName := "test-asg"
+			var vmssCapacity int64 = 3
+
+			expectedVMSSVMs := newTestVMSSVMList(3)
+			expectedVMs := newTestVMList(3)
+
+			manager := newTestAzureManager(t)
+			manager.config.EnableForceDelete = true
+			expectedScaleSets := newTestVMSSList(vmssCapacity, vmssName, "eastus", armcompute.OrchestrationModeUniform)
+
+			mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+			mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).Times(2)
+			manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+			mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+			if tc.expectDeallocate {
+				mockDeleteClient.EXPECT().BeginDeallocate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+			}
+			if tc.expectDeleteInstances {
+				mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+			}
+			manager.azClient.vmssClientForDelete = mockDeleteClient
+
+			mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+			mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(expectedVMSSVMs, nil).AnyTimes()
+			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+			mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+			mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+			manager.azClient.virtualMachinesClient = mockVMClient
+
+			err := manager.forceRefresh()
+			assert.NoError(t, err)
+
+			resourceLimiter := cloudprovider.NewResourceLimiter(
+				map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+				map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+			provider, err := BuildAzureCloudProvider(manager, resourceLimiter)
+			assert.NoError(t, err)
+
+			scaleSet := newTestScaleSet(manager, vmssName)
+			scaleSet.scaleDownPolicy = tc.scaleDownPolicy
+			registered := manager.RegisterNodeGroup(scaleSet)
+			manager.explicitlyConfigured[vmssName] = true
+			assert.True(t, registered)
+
+			err = manager.forceRefresh()
+			assert.NoError(t, err)
+
+			ss, ok := provider.NodeGroups()[0].(*ScaleSet)
+			assert.True(t, ok)
+			ss.scaleDownPolicy = tc.scaleDownPolicy
+
+			nodesToDelete := []*apiv1.Node{
+				newApiNode(armcompute.OrchestrationModeUniform, 0),
+			}
+
+			err = ss.ForceDeleteNodes(nodesToDelete)
+			assert.NoError(t, err)
+		})
+	}
 }

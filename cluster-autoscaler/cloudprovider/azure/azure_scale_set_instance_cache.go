@@ -237,14 +237,27 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *armcompute.VirtualMachineScal
 		status.State = cloudprovider.InstanceRunning
 
 		klog.V(3).Infof("VM %s reports failed provisioning state with power state: %s, scale down mode: %s, eligible for fast delete: %s", ptr.Deref(vm.ID, ""), powerState, scaleSet.scaleDownPolicy, strconv.FormatBool(scaleSet.enableFastDeleteOnFailedProvisioning))
-		if scaleSet.scaleDownPolicy != deallocate.Deallocate && scaleSet.enableFastDeleteOnFailedProvisioning {
-			// Provisioning can fail both during instance creation or after the instance is running.
+		if scaleSet.scaleDownPolicy == deallocate.Deallocate {
+			// Deallocate mode: detect failed-to-start VMs.
+			if !isRunningVmPowerState(powerState) {
+				// VM failed to start — remains deallocated or stopped.
+				// Signal as creation error to trigger backoff via handleInstanceCreationErrors.
+				// Failed VMs will be deleted by deleteCreatedNodesWithErrors.
+				status.State = cloudprovider.InstanceCreating
+				status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:    "start-deallocated-failed",
+					ErrorMessage: "Failed to start deallocated VM",
+				}
+			}
+			// Running power state: VM started but may have extension errors.
+			// CSE error check below (enableDetailedCSEMessage) handles this case.
+		} else if scaleSet.enableFastDeleteOnFailedProvisioning {
+			// Delete mode: existing fast-delete path for failed provisioning.
 			// Per https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states,
 			// ProvisioningState represents the most recent provisioning state, therefore only report
 			// InstanceCreating errors when the power state indicates the instance has not yet started running
 			if !isRunningVmPowerState(powerState) {
-				// This fast deletion relies on the fact that InstanceCreating + ErrorInfo will subsequently trigger a deletion.
-				// Could be revisited to rely on something more stable/explicit.
 				status.State = cloudprovider.InstanceCreating
 				status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
@@ -254,9 +267,6 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *armcompute.VirtualMachineScal
 			} else {
 				status.State = cloudprovider.InstanceRunning
 			}
-		} else if scaleSet.scaleDownPolicy == deallocate.Deallocate {
-			// Current(?) deallocate mode design handles InstanceFailed and InstanceRunning differently.
-			status.State = cloudprovider.InstanceFailed
 		}
 	default:
 		status.State = cloudprovider.InstanceRunning
