@@ -27,7 +27,13 @@ type snapshotClassLister struct {
 }
 
 func (s snapshotClassLister) List() ([]*resourceapi.DeviceClass, error) {
-	return s.snapshot.listDeviceClasses(), nil
+	capacity := s.snapshot.deviceClasses.Len()
+	result := make([]*resourceapi.DeviceClass, 0, capacity)
+	s.snapshot.WalkDeviceClasses(func(class *resourceapi.DeviceClass) bool {
+		result = append(result, class)
+		return true
+	})
+	return result, nil
 }
 
 func (s snapshotClassLister) Get(className string) (*resourceapi.DeviceClass, error) {

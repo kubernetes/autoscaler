@@ -31,8 +31,7 @@ import (
 // an error if the NodeInfo doesn't have all ResourceSlices from a pool.
 func CalculateDynamicResourceUtilization(nodeInfo *framework.NodeInfo) (map[string]map[string]float64, error) {
 	result := map[string]map[string]float64{}
-	claims := nodeInfo.ResourceClaims()
-	allocatedDevices, err := groupAllocatedReservedDevices(claims)
+	allocatedDevices, err := groupAllocatedReservedDevices(nodeInfo.WalkResourceClaims)
 	if err != nil {
 		return nil, err
 	}
@@ -222,12 +221,14 @@ func getAllDevices(slices []*resourceapi.ResourceSlice) []resourceapi.Device {
 // groupAllocatedReservedDevices groups reserved devices from claim allocations by their driver and pool.
 // If a deviced will not exclusively reserved (i.e. AdminAccess), it will not be included in the result.
 // Returns an error if any of the claims isn't allocated.
-func groupAllocatedReservedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[string][]string, error) {
+func groupAllocatedReservedDevices(walkClaims func(func(*resourceapi.ResourceClaim) bool)) (map[string]map[string][]string, error) {
 	result := map[string]map[string][]string{}
-	for _, claim := range claims {
+	var walkErr error
+	walkClaims(func(claim *resourceapi.ResourceClaim) bool {
 		alloc := claim.Status.Allocation
 		if alloc == nil {
-			return nil, fmt.Errorf("claim %s/%s not allocated", claim.Namespace, claim.Name)
+			walkErr = fmt.Errorf("claim %s/%s not allocated", claim.Namespace, claim.Name)
+			return false
 		}
 
 		for _, deviceAlloc := range alloc.Devices.Results {
@@ -241,6 +242,10 @@ func groupAllocatedReservedDevices(claims []*resourceapi.ResourceClaim) (map[str
 			}
 			result[deviceAlloc.Driver][deviceAlloc.Pool] = append(result[deviceAlloc.Driver][deviceAlloc.Pool], deviceAlloc.Device)
 		}
+		return true
+	})
+	if walkErr != nil {
+		return nil, walkErr
 	}
 	return result, nil
 }

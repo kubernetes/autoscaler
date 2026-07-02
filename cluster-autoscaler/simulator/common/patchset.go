@@ -165,6 +165,42 @@ func (p *PatchSet[K, V]) AsMap() map[K]V {
 	return p.top.ToNativeMap()
 }
 
+// ListValues returns a slice of all effective values in the PatchSet.
+// This is much more performant than calling AsMap() and then iterating,
+// as it avoids allocating an intermediate Go map.
+func (p *PatchSet[K, V]) ListValues() []V {
+	if len(p.stack) == 0 {
+		return nil
+	}
+	values := make([]V, 0, p.top.Len())
+	p.top.Range(func(k K, v V) bool {
+		values = append(values, v)
+		return true
+	})
+	return values
+}
+
+// WalkValues iterates over all effective values in the PatchSet.
+// It calls the provided function `f` for each value.
+// If `f` returns false, the iteration stops.
+func (p *PatchSet[K, V]) WalkValues(f func(V) bool) {
+	if len(p.stack) == 0 {
+		return
+	}
+	p.top.Range(func(k K, v V) bool {
+		return f(v)
+	})
+}
+
+// Len returns the number of keys in the active patch layer.
+func (p *PatchSet[K, V]) Len() int {
+	if len(p.stack) == 0 {
+		return 0
+	}
+	return p.top.Len()
+}
+
+
 // SetCurrent adds or updates a key-value pair in the topmost patch layer.
 func (p *PatchSet[K, V]) SetCurrent(key K, value V) {
 	if len(p.stack) == 0 {
