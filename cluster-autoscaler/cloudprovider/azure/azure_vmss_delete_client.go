@@ -22,7 +22,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient"
 )

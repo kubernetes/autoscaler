@@ -26,7 +26,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	skewer "github.com/Azure/skewer/v2"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -323,6 +323,7 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]*armcompute.VirtualMac
 			instances[*vmPoolName] = append(instances[*vmPoolName], instance)
 		}
 	}
+
 	return instances, nil
 }
 
