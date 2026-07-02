@@ -48,6 +48,8 @@ func BuildTestPod(name string, cpu int64, mem int64, options ...func(*apiv1.Pod)
 		Spec: apiv1.PodSpec{
 			Containers: []apiv1.Container{
 				{
+					Name:  "test-container",
+					Image: "fake-image",
 					Resources: apiv1.ResourceRequirements{
 						Requests: apiv1.ResourceList{},
 					},
@@ -193,6 +195,18 @@ func WithCreationTimestamp(timestamp time.Time) func(*apiv1.Pod) {
 func WithDeletionTimestamp(deletionTimestamp time.Time) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
 		pod.DeletionTimestamp = &metav1.Time{Time: deletionTimestamp}
+	}
+}
+
+// WithNodeSelector sets pod's node selector.
+func WithNodeSelector(selector map[string]string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		if pod.Spec.NodeSelector == nil {
+			pod.Spec.NodeSelector = make(map[string]string)
+		}
+		for k, v := range selector {
+			pod.Spec.NodeSelector[k] = v
+		}
 	}
 }
 

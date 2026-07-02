@@ -29,6 +29,7 @@ import (
 	"testing"
 	"time"
 
+	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/e2e-framework/pkg/env"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
@@ -60,15 +61,22 @@ func TestMain(m *testing.M) {
 	}
 
 	kindClusterName := envconf.RandomName("e2e-cluster", 16)
+	namespace := envconf.RandomName("testns", 12)
 
 	testEnv.Setup(
 		envfuncs.CreateCluster(kind.NewProvider(), kindClusterName),
+		envfuncs.CreateNamespace(namespace),
 		envfuncs.LoadDockerImageToCluster(kindClusterName, projectImage),
+
+		envfuncs.SetupCRDs("../../apis/config/crd", "*"),
+		func(ctx context.Context, config *envconf.Config) (context.Context, error) {
+			err := cqv1alpha1.AddToScheme(config.Client().Resources().GetScheme())
+			// TODO: add other CRDs
+			return ctx, err
+		},
 
 		InstallKwok(),
 		InstallClusterAutoscaler(kindClusterName),
-
-		envfuncs.SetupCRDs("../../apis/config/crd", "*"),
 	)
 
 	testEnv.Finish(
@@ -139,6 +147,7 @@ func InstallClusterAutoscaler(clusterName string) env.Func {
 
 				"--set", "cloudProvider=kwok",
 				"--set", fmt.Sprintf("autoDiscovery.clusterName=kind-%s", clusterName),
+				"--set", "extraArgs.capacity-quotas-enabled=true",
 			),
 		)
 
