@@ -79,6 +79,10 @@ func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
 		if node.Annotations == nil {
 			node.Annotations = map[string]string{}
 		}
+		if node.Labels == nil {
+			node.Labels = make(map[string]string)
+		}
+		node.Labels["kubernetes.io/hostname"] = node.Name
 		node.Annotations["metrics.k8s.io/resource-metrics-path"] = fmt.Sprintf("/metrics/nodes/%s/metrics/resource", node.Name)
 		node.Spec.ProviderID = getProviderID(node.Name)
 		_, err := nodeGroup.kubeClient.CoreV1().Nodes().Create(context.Background(), node, v1.CreateOptions{})
