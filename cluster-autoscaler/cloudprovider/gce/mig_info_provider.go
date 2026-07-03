@@ -353,12 +353,21 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(migRef GceRef) (int64, error) 
 		return targetSize, nil
 	}
 
-	err := c.fillMigInfoCache()
+	var err error
+	if c.cache.IsMigTargetSizeCacheEmpty() {
+		// Cache is cold after Refresh() -- list all MIGs and populate the cache.
+		err = c.fillMigInfoCache()
+	}
+
 	targetSize, found = c.cache.GetMigTargetSize(migRef)
-	if err == nil && found {
+	if found && err == nil {
 		return targetSize, nil
 	}
 
+	// We get here in one of 3 cases:
+	//  * InvalidateMigTargetSize was called for this specific mig, so it's not found in cache
+	//  * fillMigInfoCache returned an error
+	//  * MIG not found
 	err = c.fillSingleMigInfo(migRef)
 	if err != nil {
 		return 0, err

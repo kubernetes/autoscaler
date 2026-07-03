@@ -343,6 +343,18 @@ func (gc *GceCache) SetMigTargetSize(ref GceRef, size int64) {
 	gc.migTargetSizeCache[ref] = size
 }
 
+// IsMigTargetSizeCacheEmpty returns true if no migs have a cached target size
+// A note on race conditions:
+// This check is done under a mutex which is released the moment the value is returned.
+// GceManager has access to GceCache and can invalidate or set target size for a specific MIG.
+// Only cachingMigInfoProvider can populate the whole mig target size cache, and it does it under its own migInfoMutex.
+func (gc *GceCache) IsMigTargetSizeCacheEmpty() bool {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	return len(gc.migTargetSizeCache) == 0
+}
+
 // InvalidateMigTargetSize clears the target size cache
 func (gc *GceCache) InvalidateMigTargetSize(ref GceRef) {
 	gc.cacheMutex.Lock()
