@@ -30,6 +30,23 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
 
+    - name: Cache Docker Go modules
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: docker-go-mod-cache
+        key: ${{ runner.os }}-docker-go-mod-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-docker-go-mod-
+
+    - name: Inject cache into Docker
+      uses: reproducible-containers/buildkit-cache-dance@5422eac04292c961a382e0f584ea0f03ad9da723 # v3.4.0
+      with:
+        cache-map: |
+          {
+            "docker-go-mod-cache": "/go/pkg/mod"
+          }
+        skip-extraction: ${{ steps.cache.outputs.cache-hit == 'true' }}
+
     - name: Build E2E image
       uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
       with:
