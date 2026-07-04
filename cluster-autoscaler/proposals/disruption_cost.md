@@ -110,7 +110,7 @@ The total disruption cost for a node should be calculated as the sum of annotati
 
 ### Corner cases
 
-* An annotation set on `DaemonSetPods` or `OnCompletionPods` has no impact on the node disruption cost.
+* An annotation set on `DaemonSetPods` has no impact on the node disruption cost.
 * `PodDisruptionBudget`s keep their current behavior.
 * Pods with `safe-to-evict=false` should keep blocking scale-down.
 
@@ -122,4 +122,3 @@ The following unit test scenarios should be added:
 * [TC2] Valid annotation values are parsed and summed for pods in `NodeToBeRemoved.PodsToReschedule`.
 * [TC3] Nodes with lower total disruption cost are preferred within the same existing ordering group.
 * [TC4] Existing `riskyNodes` and `okNodes` ordering is preserved.
-* [TC5] `DaemonSetPods` and `OnCompletionPods` do not affect the initial disruption cost calculation.
