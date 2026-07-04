@@ -4,7 +4,7 @@ Author: YurDuiachenko
 
 ## Background
 
-When scaling down a cluster, Cluster Autoscaler (CA) is currently not aware of the disruption "cost" the action will have, so it can pick a node that will be more disruptive than others. Users can prevent Cluster Autoscaler from evicting specific pods by using the safe-to-evict=false annotation, but it completely blocks scale-down rather than expressing relative disruption cost.
+When scaling down a cluster, Cluster Autoscaler (CA) is currently not aware of the disruption "cost" the action will have, so it can pick a node that will be more disruptive than others. Users can prevent Cluster Autoscaler from evicting specific pods by using the `safe-to-evict=false` annotation, but it completely blocks scale-down rather than expressing relative disruption cost.
 
 ## High level proposal
 
@@ -16,7 +16,7 @@ node-autoscaling.kubernetes.io/disruption-cost
 
 Cluster Autoscaler will read this annotation from pods that would need to be rescheduled when a node is removed. For each already-removable non-empty node, CA will sum the disruption costs of the pods and use this total to choose which node to remove next.
 
-If there is two removable nodes:
+If there are two removable nodes:
 
 ```text
 node-a:
@@ -62,9 +62,14 @@ spec:
         image: example/app
 ```
 
-Cluster Autoscaler only reads the annotation and never changes it.
+CA handles the annotation as follows:
 
-The value is a unit-less non-negative integer. A higher value means the pod is more expensive to disrupt. If the annotation is missing or cannot be parsed, CA treats the cost as zero.
+* Cluster Autoscaler only reads the annotation and does not change it.
+* The value is a unitless non-negative integer.
+* A higher value means the pod is more expensive to disrupt.
+* If the annotation is missing or cannot be parsed, CA treats the cost as zero.
+
+Examples:
 
 | Value              | CA sees it as         |
 | ------------------ |-----------------------|
@@ -76,41 +81,45 @@ The value is a unit-less non-negative integer. A higher value means the pod is m
 | `"10.5"`           | invalid, treated as 0 |
 | overflow           | invalid, treated as 0 |
 
-### Candidate ordering
+### Existing code integration
 
+The main logic will be implemented in `Planner.NodesToDelete()`.
 
-### Blocking behavior
+After CA has already calculated removable nodes:
 
-`safe-to-evict`
-
-PodDisruptionBudgets
-
-DaemonSet pods
-
-Completed pods
-
-
-
-
-### Existing code refactoring
-
-### Relationship to Karpenter
-
-`karpenter.sh/disruption-cost`
-
-
-## Monitoring
-
-
-
-```text
-cluster_autoscaler_invalid_disruption_cost_annotations_total
+```go
+emptyRemovableNodes, needDrainRemovableNodes, unremovableNodes :=
+    p.unneededNodes.RemovableAt(...)
 ```
 
+`needDrainRemovableNodes` are ordered with `sortByRisk`:
 
-
-```text
-cluster_autoscaler_selected_node_disruption_cost
+```go
+needDrainRemovableNodes = sortByRisk(needDrainRemovableNodes)
 ```
+
+The proposal extends that ordering with disruption cost:
+
+```go
+needDrainRemovableNodes = sortByRiskAndDisruptionCost(needDrainRemovableNodes)
+```
+
+The updated function should preserve the existing `riskyNodes` and `okNodes` grouping and use disruption cost as an additional ordering signal within each group.
+
+The total disruption cost for a node should be calculated as the sum of annotation values on pods listed in `NodeToBeRemoved.PodsToReschedule`.
+
+### Corner cases
+
+* An annotation set on `DaemonSetPods` or `OnCompletionPods` has no impact on the node disruption cost.
+* `PodDisruptionBudget`s keep their current behavior.
+* Pods with `safe-to-evict=false` should keep blocking scale-down.
 
 ## Testing
+
+The following unit test scenarios should be added:
+
+* [TC1] Missing, invalid, negative, non-integer, and overflowing annotation values are treated as zero.
+* [TC2] Valid annotation values are parsed and summed for pods in `NodeToBeRemoved.PodsToReschedule`.
+* [TC3] Nodes with lower total disruption cost are preferred within the same existing ordering group.
+* [TC4] Existing `riskyNodes` and `okNodes` ordering is preserved.
+* [TC5] `DaemonSetPods` and `OnCompletionPods` do not affect the initial disruption cost calculation.
