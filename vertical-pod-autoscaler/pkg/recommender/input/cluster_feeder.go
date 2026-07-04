@@ -476,9 +476,6 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 
 // LoadPods loads pod into the cluster state.
 func (feeder *clusterStateFeeder) LoadPods() {
-	// Clean up any pending deletions from a previous iteration in case the caller forgot.
-	feeder.DeleteRemovedPods()
-
 	podSpecs, err := feeder.specClient.GetPodSpecs()
 	if err != nil {
 		klog.ErrorS(err, "Cannot get SimplePodSpecs, skipping LoadPods cycle")
