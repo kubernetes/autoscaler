@@ -96,6 +96,7 @@ type ClusterStateFeederFactory struct {
 	RecommenderName     string
 	IgnoredNamespaces   []string
 	VpaObjectNamespace  string
+	podsToDelete        []model.PodID
 }
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
@@ -115,6 +116,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		recommenderName:     m.RecommenderName,
 		ignoredNamespaces:   m.IgnoredNamespaces,
 		vpaObjectNamespace:  m.VpaObjectNamespace,
+		podsToDelete:        m.podsToDelete,
 	}
 }
 
