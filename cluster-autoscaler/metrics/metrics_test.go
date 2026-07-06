@@ -18,8 +18,11 @@ package metrics
 
 import (
 	"testing"
+	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
+	dto "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/component-base/metrics"
 )
@@ -68,4 +71,25 @@ func TestUpdateNodesCount(t *testing.T) {
 	assert.Equal(t, 4, int(testutil.ToFloat64(m.nodesCount.GaugeVec.WithLabelValues(suspendedLabel))))
 	assert.Equal(t, 5, int(testutil.ToFloat64(m.nodesCount.GaugeVec.WithLabelValues(longUnregisteredLabel))))
 	assert.Equal(t, 6, int(testutil.ToFloat64(m.nodesCount.GaugeVec.WithLabelValues(unregisteredLabel))))
+}
+
+func TestUpdateScaleDownNodeRemovalLatency(t *testing.T) {
+	reg := metrics.NewKubeRegistry()
+	m := newCaMetricsWithRegistry(reg)
+	m.RegisterAll(false)
+
+	m.UpdateScaleDownNodeRemovalLatency(true, "none", 10*time.Second)
+	m.UpdateScaleDownNodeRemovalLatency(false, "BlockedByPod", 20*time.Second)
+
+	var metric1 dto.Metric
+	err := m.scaleDownNodeRemovalLatency.HistogramVec.WithLabelValues("true", "none").(prometheus.Histogram).Write(&metric1)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(1), metric1.Histogram.GetSampleCount())
+	assert.Equal(t, 10.0, metric1.Histogram.GetSampleSum())
+
+	var metric2 dto.Metric
+	err = m.scaleDownNodeRemovalLatency.HistogramVec.WithLabelValues("false", "BlockedByPod").(prometheus.Histogram).Write(&metric2)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(1), metric2.Histogram.GetSampleCount())
+	assert.Equal(t, 20.0, metric2.Histogram.GetSampleSum())
 }
