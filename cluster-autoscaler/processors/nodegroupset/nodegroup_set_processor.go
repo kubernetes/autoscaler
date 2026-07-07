@@ -48,7 +48,7 @@ type NodeGroupSetProcessor interface {
 	FindSimilarNodeGroups(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
 		nodeInfosForGroups map[string]*framework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError)
 
-	BalanceScaleUpBetweenGroups(autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError)
+	BalanceScaleUpBetweenGroups(autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int, maxAddByGroup map[string]int) ([]ScaleUpInfo, errors.AutoscalerError)
 	CleanUp()
 }
 
@@ -63,7 +63,7 @@ func (n *NoOpNodeGroupSetProcessor) FindSimilarNodeGroups(autoscalingCtx *ca_con
 }
 
 // BalanceScaleUpBetweenGroups splits a scale-up between provided NodeGroups.
-func (n *NoOpNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+func (n *NoOpNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int, maxAddByGroup map[string]int) ([]ScaleUpInfo, errors.AutoscalerError) {
 	return []ScaleUpInfo{}, nil
 }
 

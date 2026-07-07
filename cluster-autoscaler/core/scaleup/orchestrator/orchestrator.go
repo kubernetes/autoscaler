@@ -202,20 +202,6 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	}, nil
 }
 
-func (o *ScaleUpOrchestrator) applyLimits(newNodes int, tracker *resourcequotas.Tracker, nodeGroup cloudprovider.NodeGroup, nodeInfos map[string]*framework.NodeInfo) (int, errors.AutoscalerError) {
-	nodeInfo, found := nodeInfos[nodeGroup.Id()]
-	if !found {
-		// This should never happen, as we already should have retrieved nodeInfo for any considered nodegroup.
-		klog.Errorf("No node info for: %s", nodeGroup.Id())
-		return 0, errors.NewAutoscalerError(errors.CloudProviderError, "No node info for best expansion option!")
-	}
-	checkResult, err := tracker.CheckDelta(o.autoscalingCtx, nodeGroup, nodeInfo.Node(), newNodes)
-	if err != nil {
-		return 0, errors.ToAutoscalerError(errors.InternalError, err).AddPrefix("failed to check resource quotas: ")
-	}
-	return checkResult.AllowedDelta, nil
-}
-
 // ScaleUpToNodeGroupMinSize tries to scale up node groups that have less nodes
 // than the configured min size. The source of truth for the current node group
 // size is the TargetSize queried directly from cloud providers. Returns
@@ -699,11 +685,49 @@ func (o *ScaleUpOrchestrator) balanceScaleUps(
 		}
 		klog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), strings.Join(names, ", "))
 	}
-	scaleUpInfos, aErr := o.processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(o.autoscalingCtx, targetNodeGroups, newNodes)
+
+	maxAddByGroup := o.headroomByGroup(targetNodeGroups, nodeInfos, tracker)
+	scaleUpInfos, aErr := o.processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(o.autoscalingCtx, targetNodeGroups, newNodes, maxAddByGroup)
 	if aErr != nil {
 		return nil, aErr
 	}
 	return o.capScaleUpsByQuota(scaleUpInfos, nodeInfos, tracker), nil
+}
+
+// headroomByGroup returns, for each given node group, the maximum number of
+// nodes that may be added to it given its max size and resource quotas. Groups
+// whose headroom cannot be determined are omitted from the result.
+func (o *ScaleUpOrchestrator) headroomByGroup(
+	groups []cloudprovider.NodeGroup,
+	nodeInfos map[string]*framework.NodeInfo,
+	tracker *resourcequotas.Tracker,
+) map[string]int {
+	maxAddByGroup := make(map[string]int, len(groups))
+	for _, ng := range groups {
+		nodeInfo, found := nodeInfos[ng.Id()]
+		if !found {
+			continue
+		}
+		currentSize, err := ng.TargetSize()
+		if err != nil {
+			klog.Warningf("Failed to get target size of node group %s, ignoring its quota when balancing: %v", ng.Id(), err)
+			continue
+		}
+		probe := ng.MaxSize() - currentSize
+		if probe <= 0 {
+			// Group is already at (or above) MaxSize; nothing to add. Leaving it
+			// out of the map yields the same result as a 0 entry, since its
+			// effective max in balancing is then capped at MaxSize <= currentSize.
+			continue
+		}
+		checkResult, err := tracker.CheckQuota(o.autoscalingCtx, ng, nodeInfo.Node(), probe)
+		if err != nil {
+			klog.Warningf("Failed to check quota of node group %s, ignoring its quota when balancing: %v", ng.Id(), err)
+			continue
+		}
+		maxAddByGroup[ng.Id()] = checkResult.AllowedDelta
+	}
+	return maxAddByGroup
 }
 
 // capScaleUpsByQuota caps each group's scale-up delta by its available quota and filters
@@ -1100,26 +1124,6 @@ func (o *ScaleUpOrchestrator) prepareScaleUp(args scaleUpCtx) (scaleUpPlan, *sta
 			aErr,
 		)
 		return scaleUpPlan{}, st, err
-	}
-
-	newNodes, aErr = o.applyLimits(newNodes, args.tracker, bestOption.NodeGroup, args.nodeInfos)
-	if aErr != nil {
-		markedEquivalenceGroups := markAllGroupsAsUnschedulable(args.podEquivalenceGroups, ScaleUpExecutionErrorReason)
-		st, err := status.UpdateScaleUpError(
-			&status.ScaleUpStatus{
-				PodsTriggeredScaleUp:    bestOption.Pods,
-				PodsRemainUnschedulable: o.GetRemainingPods(markedEquivalenceGroups, args.nodeGroups, args.skippedNodeGroups, args.nodeInfos),
-			},
-			aErr,
-		)
-		return scaleUpPlan{}, st, err
-	}
-
-	if newNodes < bestOption.NodeCount {
-		klog.V(1).Infof("Only %d nodes can be added to %s due to resource quotas", newNodes, bestOption.NodeGroup.Id())
-		if args.allOrNothing {
-			return scaleUpPlan{}, o.abortAllOrNothing(args), nil
-		}
 	}
 
 	// If necessary, create the node group. This is no longer simulation, an empty node group will be created by cloud provider if supported.
