@@ -408,7 +408,6 @@ func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGr
 // when trying to scale-up node group. It will mark this group as not safe to autoscale
 // for some time.
 func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
-	csr.scaleUpFailures.RegisterFailedScaleUp(nodeGroup, delta, errorInfo, currentTime)
 	csr.backoffNodeGroup(nodeGroup, errorInfo, currentTime)
 }
 
