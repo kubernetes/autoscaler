@@ -233,7 +233,7 @@ func TestNewMaxQuotasTracker(t *testing.T) {
 				t.Errorf("failed to create tracker: %v", err)
 			}
 			var ng cloudprovider.NodeGroup
-			result, err := tracker.CheckDelta(ctx, ng, tc.newNode, tc.nodeDelta)
+			result, err := tracker.CheckQuota(ctx, ng, tc.newNode, tc.nodeDelta)
 			if err != nil {
 				t.Errorf("failed to check delta: %v", err)
 			}
