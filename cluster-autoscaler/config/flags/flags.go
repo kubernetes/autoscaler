@@ -238,6 +238,7 @@ var (
 	predicateParallelism                         = flag.Int("predicate-parallelism", 4, "Maximum parallelism of scheduler predicate checking.")
 	checkCapacityProcessorInstance               = flag.String("check-capacity-processor-instance", "", "Name of the processor instance. Only ProvisioningRequests that define this name in their parameters with the key \"processorInstance\" will be processed by this CA instance. It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance. Not recommended: Until CA 1.35, ProvisioningRequests with this name as prefix in their class will be also processed.")
 	nodeDeletionCandidateTTL                     = flag.Duration("node-deletion-candidate-ttl", time.Duration(0), "Maximum time a node can be marked as removable before the marking becomes stale. This sets the TTL of Cluster-Autoscaler's state if the Cluste-Autoscaler deployment becomes inactive")
+	maxConcurrentNodesTainting                   = flag.Int("max-concurrent-nodes-tainting", 5, "The maximum number of nodes that can be tainted in parallel.")
 	capacitybufferControllerEnabled              = flag.Bool("capacity-buffer-controller-enabled", false, "Whether to enable the default controller for capacity buffers or not")
 	capacitybufferPodInjectionEnabled            = flag.Bool("capacity-buffer-pod-injection-enabled", false, "Whether to enable pod list processor that processes ready capacity buffers and injects fake pods accordingly")
 	capacityBufferPodDryRunEnabled               = flag.Bool("capacity-buffer-pod-dry-run-enabled", true, "Whether to use server dry run to build managed pod templates for capacity buffers. That ensures that the buffers' fake pods will more reliably resemble real pods by going through the pod defaulting, mutating and validating webhooks. No-op if --capacity-buffer-controller-enabled is false. Note: requires \"create\" permission on pods to call server dry run. No real pods will be created.")
@@ -464,6 +465,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		MaxNodeSkipEvalTimeTrackerEnabled:            *maxNodeSkipEvalTimeTrackerEnabled,
 		CapacityQuotasEnabled:                        *capacityQuotasEnabled,
 		ScaleUpSimulationForSkippedNodeGroupsEnabled: *scaleUpSimulationForSkippedNodeGroupsEnabled,
+		MaxConcurrentNodesTainting:                   *maxConcurrentNodesTainting,
 	}
 }
 

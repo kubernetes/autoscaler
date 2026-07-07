@@ -47,6 +47,7 @@ import (
 // AutoscalingContext contains user-configurable constant and configuration-related objects passed to
 // scale up/scale down functions.
 type AutoscalingContext struct {
+	context.Context
 	// Options to customize how autoscaling works
 	config.AutoscalingOptions
 	// Kubernetes API clients.
@@ -130,6 +131,7 @@ func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions)
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
 func NewAutoscalingContext(
+	ctx context.Context,
 	options config.AutoscalingOptions,
 	fwHandle *framework.Handle,
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
@@ -145,6 +147,7 @@ func NewAutoscalingContext(
 	csiProvider *csinodeprovider.Provider,
 ) *AutoscalingContext {
 	return &AutoscalingContext{
+		Context:                  ctx,
 		AutoscalingOptions:       options,
 		CloudProvider:            cloudProvider,
 		AutoscalingKubeClients:   *autoscalingKubeClients,

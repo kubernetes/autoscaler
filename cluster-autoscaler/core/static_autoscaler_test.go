@@ -316,7 +316,7 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 	}
 
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(config.autoscalingOptions)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(config.autoscalingOptions, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), config.autoscalingOptions, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 	if err != nil {
 		return nil, err
 	}
@@ -423,7 +423,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	processors, TemplateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, TemplateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, TemplateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	setUpScaleDownActuator(&autoscalingCtx, options)
@@ -684,7 +684,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 			processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 
 			setUpScaleDownActuator(&autoscalingCtx, options)
@@ -834,7 +834,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	setUpScaleDownActuator(&autoscalingCtx, options)
@@ -982,7 +982,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 			processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 
 			setUpScaleDownActuator(&autoscalingCtx, options)
@@ -1148,7 +1148,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	setUpScaleDownActuator(&autoscalingCtx, options)
@@ -1279,7 +1279,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	setUpScaleDownActuator(&autoscalingCtx, options)
@@ -1376,7 +1376,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	setUpScaleDownActuator(&autoscalingCtx, options)
@@ -1720,7 +1720,7 @@ func TestStaticAutoscalerRunOnceWithExistingDeletionCandidateNodes(t *testing.T)
 			allNodeLister := kubernetes.NewDynamicTestNodeLister(clientset)
 
 			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(),
 				options,
 				clientset,
 				nil,
@@ -1843,7 +1843,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			}
 
 			_, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 
 			clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
@@ -2210,7 +2210,7 @@ func setupTestStaticAutoscalerInstanceCreationErrorsForZeroOrMaxScaling(t *testi
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	_, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
@@ -2495,7 +2495,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	autoscalingOptions := config.AutoscalingOptions{ScaleDownEnabled: true}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOptions)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOptions, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), autoscalingOptions, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	// Create CSR with unhealthy cluster protection effectively disabled, to guarantee we reach the tested logic.
@@ -3302,7 +3302,7 @@ func buildStaticAutoscaler(t *testing.T, provider cloudprovider.CloudProvider, a
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(autoscalingOptions)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(autoscalingOptions, fakeClient, listerRegistry, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), autoscalingOptions, fakeClient, listerRegistry, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	cp := scaledowncandidates.NewCombinedScaleDownCandidatesProcessor()
@@ -3584,7 +3584,7 @@ func TestStaticAutoscalerWithNodeDeclaredFeatures(t *testing.T) {
 			processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock, nil, nil, nil, nil)
 			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+			autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
 
 			for _, node := range tc.initialNodes {
@@ -3654,7 +3654,7 @@ func TestStaticAutoscalerRunOnceClearsRegistry(t *testing.T) {
 	options := config.AutoscalingOptions{}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	autoscalingCtx, _ := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	autoscalingCtx, _ := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock, nil, nil, nil, nil)
 	autoscalingCtx.ListerRegistry = listerRegistry
 
@@ -3737,7 +3737,7 @@ func TestStaticAutoscalerRunOnceWithNominatedNodeName(t *testing.T) {
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, nil, provider, processorCallbacks, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 
 	setUpScaleDownActuator(&autoscalingCtx, options)

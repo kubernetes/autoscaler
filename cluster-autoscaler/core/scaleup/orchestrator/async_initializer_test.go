@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -96,7 +97,7 @@ func TestNodePoolAsyncInitialization(t *testing.T) {
 	upcomingNodeGroup := provider.BuildNodeGroup("upcoming-ng", 0, 100, 0, false, true, "T1", nil)
 	options := config.AutoscalingOptions{AsyncNodeGroupsEnabled: true}
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
+	context, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 	option := expander.Option{NodeGroup: upcomingNodeGroup, Pods: []*apiv1.Pod{pod}}
 	processors.AsyncNodeGroupStateChecker = &asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: map[string]bool{upcomingNodeGroup.Id(): true}}
@@ -185,7 +186,7 @@ func TestPrepareScaleUps(t *testing.T) {
 	listers := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 	options := config.AutoscalingOptions{AsyncNodeGroupsEnabled: true}
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
+	context, err := NewScaleTestAutoscalingContext(context.Background(), options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
 	processors.AsyncNodeGroupStateChecker = &asyncnodegroups.MockAsyncNodeGroupStateChecker{IsUpcomingNodeGroup: map[string]bool{upcomingNodeGroup.Id(): true}}
 	executor := newScaleUpExecutor(&context, processors.ScaleStateNotifier, processors.AsyncNodeGroupStateChecker)

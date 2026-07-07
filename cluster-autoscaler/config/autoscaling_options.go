@@ -378,6 +378,8 @@ type AutoscalingOptions struct {
 	CapacityQuotasEnabled             bool
 	// ScaleUpSimulationForSkippedNodeGroupsEnabled is used to enable/disable the scaleUpSimulation for the skipped node groups
 	ScaleUpSimulationForSkippedNodeGroupsEnabled bool
+	// MaxConcurrentNodesTainting is the maximum number of nodes that can be tainted in parallel.
+	MaxConcurrentNodesTainting int
 }
 
 // KubeClientOptions specify options for kube client

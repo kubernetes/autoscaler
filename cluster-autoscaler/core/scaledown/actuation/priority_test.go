@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -73,7 +74,7 @@ func TestPriorityEvictor(t *testing.T) {
 		MaxGracefulTerminationSec: 20,
 		MaxPodEvictionTime:        5 * time.Second,
 	}
-	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil, nil)
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(context.Background(), options, fakeClient, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
 	evictor := Evictor{
