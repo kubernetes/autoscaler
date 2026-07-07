@@ -178,6 +178,10 @@ func (r *recommender) RunOnce() {
 
 	r.clusterStateFeeder.LoadRealTimeMetrics(ctx)
 	timer.ObserveStep("LoadMetrics")
+
+	r.clusterStateFeeder.DeleteRemovedPods()
+	timer.ObserveStep("DeleteRemovedPods")
+
 	klog.V(3).InfoS("ClusterState is tracking", "pods", len(r.clusterState.Pods()), "vpas", len(r.clusterState.VPAs()))
 
 	r.UpdateVPAs()

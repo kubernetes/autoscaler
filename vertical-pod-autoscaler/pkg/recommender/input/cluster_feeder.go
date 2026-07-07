@@ -73,6 +73,9 @@ type ClusterStateFeeder interface {
 	// LoadRealTimeMetrics updates clusterState with current usage metrics of containers.
 	LoadRealTimeMetrics(ctx context.Context)
 
+	// DeleteRemovedPods deletes pods that were identified as removed in the last LoadPods call.
+	DeleteRemovedPods()
+
 	// GarbageCollectCheckpoints removes historical checkpoints that don't have a matching VPA.
 	GarbageCollectCheckpoints(ctx context.Context)
 }
@@ -93,6 +96,7 @@ type ClusterStateFeederFactory struct {
 	RecommenderName     string
 	IgnoredNamespaces   []string
 	VpaObjectNamespace  string
+	podsToDelete        []model.PodID
 }
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
@@ -112,6 +116,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		recommenderName:     m.RecommenderName,
 		ignoredNamespaces:   m.IgnoredNamespaces,
 		vpaObjectNamespace:  m.VpaObjectNamespace,
+		podsToDelete:        m.podsToDelete,
 	}
 }
 
@@ -224,6 +229,7 @@ type clusterStateFeeder struct {
 	recommenderName     string
 	ignoredNamespaces   []string
 	vpaObjectNamespace  string
+	podsToDelete        []model.PodID
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
@@ -481,10 +487,12 @@ func (feeder *clusterStateFeeder) LoadPods() {
 	for _, spec := range podSpecs {
 		pods[spec.ID] = spec
 	}
+	feeder.podsToDelete = nil
 	for key := range feeder.clusterState.Pods() {
+		// The pods aren't deleted from the clusterState while loading pods since OomInfo from these removed containers
+		// may still need to be processed. We delete these pods after the OomInfo is processed.
 		if _, exists := pods[key]; !exists {
-			klog.V(3).InfoS("Deleting Pod", "pod", klog.KRef(key.Namespace, key.PodName))
-			feeder.clusterState.DeletePod(key)
+			feeder.podsToDelete = append(feeder.podsToDelete, key)
 		}
 	}
 	for _, pod := range pods {
@@ -505,6 +513,15 @@ func (feeder *clusterStateFeeder) LoadPods() {
 			klog.V(0).InfoS("Failed to set init containers", "pod", klog.KRef(pod.ID.Namespace, pod.ID.PodName), "error", err)
 		}
 	}
+}
+
+// DeleteRemovedPods deletes pods that were identified as removed in the last LoadPods call.
+func (feeder *clusterStateFeeder) DeleteRemovedPods() {
+	for _, key := range feeder.podsToDelete {
+		klog.V(3).InfoS("Deleting Pod", "pod", klog.KRef(key.Namespace, key.PodName))
+		feeder.clusterState.DeletePod(key)
+	}
+	feeder.podsToDelete = nil
 }
 
 func (feeder *clusterStateFeeder) LoadRealTimeMetrics(ctx context.Context) {
