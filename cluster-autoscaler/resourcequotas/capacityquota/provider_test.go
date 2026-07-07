@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
+	cqv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota/testutil"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -34,7 +34,7 @@ import (
 
 func TestProvider_Quotas(t *testing.T) {
 	scheme := runtime.NewScheme()
-	_ = cqv1alpha1.AddToScheme(scheme)
+	_ = cqv1beta1.AddToScheme(scheme)
 
 	testCases := []struct {
 		name        string
@@ -51,9 +51,9 @@ func TestProvider_Quotas(t *testing.T) {
 			existingCQs: []client.Object{
 				testutil.NewCapacityQuota("cq1",
 					testutil.WithLabelSelector(map[string]string{"foo": "bar"}),
-					testutil.WithLimits(cqv1alpha1.ResourceList{
-						cqv1alpha1.ResourceCPU:    resource.MustParse("10"),
-						cqv1alpha1.ResourceMemory: resource.MustParse("20Gi"),
+					testutil.WithLimits(cqv1beta1.ResourceList{
+						cqv1beta1.ResourceCPU:    resource.MustParse("10"),
+						cqv1beta1.ResourceMemory: resource.MustParse("20Gi"),
 					}),
 					testutil.WithValidCondition(),
 				),
@@ -65,15 +65,15 @@ func TestProvider_Quotas(t *testing.T) {
 			existingCQs: []client.Object{
 				testutil.NewCapacityQuota("cq1",
 					testutil.WithLabelSelector(map[string]string{"foo": "bar"}),
-					testutil.WithLimits(cqv1alpha1.ResourceList{
-						cqv1alpha1.ResourceCPU: resource.MustParse("10"),
+					testutil.WithLimits(cqv1beta1.ResourceList{
+						cqv1beta1.ResourceCPU: resource.MustParse("10"),
 					}),
 					testutil.WithValidCondition(),
 				),
 				testutil.NewCapacityQuota("cq2",
 					testutil.WithLabelSelector(map[string]string{"baz": "qux"}),
-					testutil.WithLimits(cqv1alpha1.ResourceList{
-						cqv1alpha1.ResourceMemory: resource.MustParse("5Gi"),
+					testutil.WithLimits(cqv1beta1.ResourceList{
+						cqv1beta1.ResourceMemory: resource.MustParse("5Gi"),
 					}),
 					testutil.WithValidCondition(),
 				),
@@ -84,7 +84,7 @@ func TestProvider_Quotas(t *testing.T) {
 			name: "capacity-quota-with-invalid-selector-is-skipped",
 			existingCQs: []client.Object{
 				testutil.NewCapacityQuota("cq_invalid",
-					func(cq *cqv1alpha1.CapacityQuota) {
+					func(cq *cqv1beta1.CapacityQuota) {
 						cq.Spec.Selector = &metav1.LabelSelector{
 							MatchExpressions: []metav1.LabelSelectorRequirement{
 								{
@@ -94,15 +94,15 @@ func TestProvider_Quotas(t *testing.T) {
 							},
 						}
 					},
-					testutil.WithLimits(cqv1alpha1.ResourceList{
-						cqv1alpha1.ResourceCPU: resource.MustParse("10"),
+					testutil.WithLimits(cqv1beta1.ResourceList{
+						cqv1beta1.ResourceCPU: resource.MustParse("10"),
 					}),
 					testutil.WithValidCondition(),
 				),
 				testutil.NewCapacityQuota("cq_valid",
 					testutil.WithLabelSelector(map[string]string{"valid": "true"}),
-					testutil.WithLimits(cqv1alpha1.ResourceList{
-						cqv1alpha1.ResourceMemory: resource.MustParse("1Gi"),
+					testutil.WithLimits(cqv1beta1.ResourceList{
+						cqv1beta1.ResourceMemory: resource.MustParse("1Gi"),
 					}),
 					testutil.WithValidCondition(),
 				),
@@ -114,15 +114,15 @@ func TestProvider_Quotas(t *testing.T) {
 			existingCQs: []client.Object{
 				testutil.NewCapacityQuota("cq_invalid",
 					testutil.WithLabelSelector(map[string]string{"valid": "false"}),
-					testutil.WithLimits(cqv1alpha1.ResourceList{
-						cqv1alpha1.ResourceCPU: resource.MustParse("10"),
+					testutil.WithLimits(cqv1beta1.ResourceList{
+						cqv1beta1.ResourceCPU: resource.MustParse("10"),
 					}),
 					testutil.WithInvalidCondition(),
 				),
 				testutil.NewCapacityQuota("cq_valid",
 					testutil.WithLabelSelector(map[string]string{"valid": "true"}),
-					testutil.WithLimits(cqv1alpha1.ResourceList{
-						cqv1alpha1.ResourceMemory: resource.MustParse("1Gi"),
+					testutil.WithLimits(cqv1beta1.ResourceList{
+						cqv1beta1.ResourceMemory: resource.MustParse("1Gi"),
 					}),
 					testutil.WithValidCondition(),
 				),
@@ -156,7 +156,7 @@ func TestProvider_Quotas(t *testing.T) {
 func TestCapacityQuota_Selector(t *testing.T) {
 	testCases := []struct {
 		name          string
-		cq            cqv1alpha1.CapacityQuota
+		cq            cqv1beta1.CapacityQuota
 		node          *corev1.Node
 		wantAppliesTo bool
 		wantErrMsg    string
@@ -165,7 +165,7 @@ func TestCapacityQuota_Selector(t *testing.T) {
 			name: "matchLabels-matches",
 			cq: *testutil.NewCapacityQuota("cq1",
 				testutil.WithLabelSelector(map[string]string{"foo": "bar"}),
-				testutil.WithLimits(cqv1alpha1.ResourceList{cqv1alpha1.ResourceCPU: resource.MustParse("1")}),
+				testutil.WithLimits(cqv1beta1.ResourceList{cqv1beta1.ResourceCPU: resource.MustParse("1")}),
 				testutil.WithValidCondition(),
 			),
 			node:          &corev1.Node{ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"foo": "bar"}}},
@@ -175,7 +175,7 @@ func TestCapacityQuota_Selector(t *testing.T) {
 			name: "matchLabels-does-not-match",
 			cq: *testutil.NewCapacityQuota("cq1",
 				testutil.WithLabelSelector(map[string]string{"foo": "bar"}),
-				testutil.WithLimits(cqv1alpha1.ResourceList{cqv1alpha1.ResourceCPU: resource.MustParse("1")}),
+				testutil.WithLimits(cqv1beta1.ResourceList{cqv1beta1.ResourceCPU: resource.MustParse("1")}),
 				testutil.WithValidCondition(),
 			),
 			node:          &corev1.Node{ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"foo": "baz"}}},
@@ -184,7 +184,7 @@ func TestCapacityQuota_Selector(t *testing.T) {
 		{
 			name: "nil-selector-matches-everything",
 			cq: *testutil.NewCapacityQuota("cq1",
-				testutil.WithLimits(cqv1alpha1.ResourceList{cqv1alpha1.ResourceCPU: resource.MustParse("1")}),
+				testutil.WithLimits(cqv1beta1.ResourceList{cqv1beta1.ResourceCPU: resource.MustParse("1")}),
 				testutil.WithValidCondition(),
 			),
 			node:          &corev1.Node{ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"any": "label"}}},
@@ -193,7 +193,7 @@ func TestCapacityQuota_Selector(t *testing.T) {
 		{
 			name: "invalid-selector",
 			cq: *testutil.NewCapacityQuota("cq1",
-				func(cq *cqv1alpha1.CapacityQuota) {
+				func(cq *cqv1beta1.CapacityQuota) {
 					cq.Spec.Selector = &metav1.LabelSelector{
 						MatchExpressions: []metav1.LabelSelectorRequirement{
 							{
@@ -231,16 +231,16 @@ func TestCapacityQuota_Selector(t *testing.T) {
 func TestCapacityQuota_Limits(t *testing.T) {
 	testCases := []struct {
 		name       string
-		cq         cqv1alpha1.CapacityQuota
+		cq         cqv1beta1.CapacityQuota
 		wantLimits map[string]int64
 	}{
 		{
 			name: "cpu-and-memory-limits",
 			cq: *testutil.NewCapacityQuota("cq1",
 				testutil.WithLabelSelector(map[string]string{"foo": "bar"}),
-				testutil.WithLimits(cqv1alpha1.ResourceList{
-					cqv1alpha1.ResourceCPU:    resource.MustParse("5"),
-					cqv1alpha1.ResourceMemory: resource.MustParse("10Gi"),
+				testutil.WithLimits(cqv1beta1.ResourceList{
+					cqv1beta1.ResourceCPU:    resource.MustParse("5"),
+					cqv1beta1.ResourceMemory: resource.MustParse("10Gi"),
 				}),
 				testutil.WithValidCondition(),
 			),
@@ -250,7 +250,7 @@ func TestCapacityQuota_Limits(t *testing.T) {
 			name: "empty-limits",
 			cq: *testutil.NewCapacityQuota("cq1",
 				testutil.WithLabelSelector(map[string]string{"foo": "bar"}),
-				testutil.WithLimits(cqv1alpha1.ResourceList{}),
+				testutil.WithLimits(cqv1beta1.ResourceList{}),
 				testutil.WithValidCondition(),
 			),
 			wantLimits: map[string]int64{},
