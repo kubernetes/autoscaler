@@ -99,16 +99,6 @@ func (t *Tracker) ConsumeQuota(
 	return result, nil
 }
 
-// ApplyDelta checks if a delta is within limits and applies it. Delta is applied only if it can be applied entirely.
-// See CheckDelta documentation for more information.
-//
-// Deprecated: Use ConsumeQuota instead.
-func (t *Tracker) ApplyDelta(
-	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
-) (*CheckDeltaResult, error) {
-	return t.ConsumeQuota(autoscalingCtx, nodeGroup, node, nodeDelta)
-}
-
 // CheckQuota checks if a delta is within limits and returns a struct containing information
 // about exceeded quotas, if any, and how many nodes could be added/removed without violating the quotas,
 // which is less than or equal to nodeDelta.
@@ -130,21 +120,6 @@ func (t *Tracker) CheckQuota(
 	}
 	matchingQuotas := t.matchingQuotaStatuses(node)
 	return t.checkQuota(delta, matchingQuotas, nodeDelta), nil
-}
-
-// CheckDelta checks if a delta is within limits and returns a struct containing information
-// about exceeded quotas, if any, and how many nodes could be added without violating the quotas,
-// which is less than or equal to nodeDelta.
-//
-// nodeDelta is the number of nodes that we try to add to the cluster. Resources used by each node
-// are taken from the template node passed via the node parameter. nodeGroup is required to fetch
-// the custom resources, such as GPU.
-//
-// Deprecated: Use CheckQuota instead.
-func (t *Tracker) CheckDelta(
-	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
-) (*CheckDeltaResult, error) {
-	return t.CheckQuota(autoscalingCtx, nodeGroup, node, nodeDelta)
 }
 
 func (t *Tracker) checkQuota(delta resourceList, matchingQuotas []*quotaStatus, nodeDelta int) *CheckDeltaResult {

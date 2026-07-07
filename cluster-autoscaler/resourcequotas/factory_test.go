@@ -225,7 +225,7 @@ func TestNewMaxQuotasTracker(t *testing.T) {
 			}
 			factory := NewTrackerFactory(TrackerOptions{
 				CustomResourcesProcessor: crp,
-				QuotaProvider:            NewCloudQuotasProvider(cloudProvider),
+				QuotaProvider:            NewCloudMaxProvider(cloudProvider),
 				NodeFilter:               tc.nodeFilter,
 			})
 			tracker, err := factory.NewMaxQuotasTracker(ctx, tc.nodes)
@@ -233,7 +233,7 @@ func TestNewMaxQuotasTracker(t *testing.T) {
 				t.Errorf("failed to create tracker: %v", err)
 			}
 			var ng cloudprovider.NodeGroup
-			result, err := tracker.CheckDelta(ctx, ng, tc.newNode, tc.nodeDelta)
+			result, err := tracker.CheckQuota(ctx, ng, tc.newNode, tc.nodeDelta)
 			if err != nil {
 				t.Errorf("failed to check delta: %v", err)
 			}
@@ -242,7 +242,7 @@ func TestNewMaxQuotasTracker(t *testing.T) {
 				cmpopts.EquateEmpty(),
 			}
 			if diff := cmp.Diff(tc.wantResult, result, opts...); diff != "" {
-				t.Errorf("CheckDelta() mismatch (-want +got):\n%s", diff)
+				t.Errorf("CheckQuota() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}
