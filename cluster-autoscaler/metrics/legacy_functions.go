@@ -257,3 +257,8 @@ func UpdateScaleDownNodeRemovalLatency(deleted bool, delayReason string, duratio
 func ObserveMaxNodeSkipEvalDurationSeconds(duration time.Duration) {
 	DefaultMetrics.ObserveMaxNodeSkipEvalDurationSeconds(duration)
 }
+
+// UpdateSkippedPodsCount records the number of pods skipped when doing scheduling simulations.
+func UpdateSkippedPodsCount(podsCount int, label string) {
+	DefaultMetrics.UpdateSkippedPodsCount(podsCount, label)
+}

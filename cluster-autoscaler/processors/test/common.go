@@ -17,6 +17,8 @@ limitations under the License.
 package test
 
 import (
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
@@ -41,6 +43,10 @@ import (
 func NewTestProcessors(options config.AutoscalingOptions) (*processors.AutoscalingProcessors, ca_context.TemplateNodeInfoRegistry) {
 	templateNodeInfoProvider := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false)
 	templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(templateNodeInfoProvider)
+	if options.PendingPodsBatchingTimeout == 0 {
+		// This disables graceful degradation in tests if not set explicitly.
+		options.PendingPodsBatchingTimeout = 24 * time.Hour
+	}
 
 	return &processors.AutoscalingProcessors{
 		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere),

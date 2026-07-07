@@ -17,6 +17,7 @@ limitations under the License.
 package provreq
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -45,7 +46,7 @@ const (
 )
 
 type injector interface {
-	TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]scheduling.Status, int, error)
+	TrySchedulePods(ctx context.Context, clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) (scheduling.Result, error)
 }
 
 type provReqProcessor struct {
@@ -185,7 +186,7 @@ func (p *provReqProcessor) bookCapacity(autoscalingCtx *ca_context.AutoscalingCo
 		return nil
 	}
 	// Scheduling the pods to reserve capacity for provisioning request.
-	if _, _, err = p.injector.TrySchedulePods(autoscalingCtx.ClusterSnapshot, podsToCreate, false, clustersnapshot.SchedulingOptions{}); err != nil {
+	if _, err = p.injector.TrySchedulePods(context.Background(), autoscalingCtx.ClusterSnapshot, podsToCreate, false, clustersnapshot.SchedulingOptions{}); err != nil {
 		return err
 	}
 	return nil

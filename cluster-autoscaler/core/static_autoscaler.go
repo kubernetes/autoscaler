@@ -82,6 +82,15 @@ const (
 	// The idea is that nodes with GPU are very expensive and we're ready to sacrifice
 	// a bit more latency to wait for more pods and make a more informed scale-up decision.
 	unschedulablePodWithGpuTimeBuffer = 30 * time.Second
+	// Number of autoscaler loops in a graceful degradation cycle.
+	// When autoscaler is unable to handle a large number of pending pods, when attempting to
+	// run scheduling simulations, autoscaler enters to a graceful degradation mode.
+	// When graceful degradation mode is active, autoscaler does scale ups and scale downs in
+	// alternative loops so scale down is not starved because of scale ups. Sometimes
+	// scale up could be blocked due to scale down as well. When graceful degradation
+	// mode is active every 4th loop is dedicated for scale down and the other loops
+	// are dedicated for scale up.
+	gracefulDegradationCycle = 4
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -536,46 +545,14 @@ func (a *StaticAutoscaler) RunOnce(ctx context.Context, currentTime time.Time) c
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
 
-	shouldScaleUp := true
-
-	if len(unschedulablePodsToHelp) == 0 {
-		scaleUpStatus.Result = status.ScaleUpNotNeeded
-		klog.V(1).Info("No unschedulable pods")
-		shouldScaleUp = false
-	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
-		scaleUpStatus.Result = status.ScaleUpLimitedByMaxNodesTotal
-		klog.Warningf("Max total nodes in cluster reached: %v. Current number of ready nodes: %v", a.MaxNodesTotal, len(readyNodes))
-		autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached",
-			"Max total nodes in cluster reached: %v", autoscalingCtx.MaxNodesTotal)
-		shouldScaleUp = false
-
-		noScaleUpInfoForPods := []status.NoScaleUpInfo{}
-		for _, pod := range unschedulablePodsToHelp {
-			noScaleUpInfo := status.NoScaleUpInfo{
-				Pod: pod,
-			}
-			noScaleUpInfoForPods = append(noScaleUpInfoForPods, noScaleUpInfo)
-		}
-		scaleUpStatus.PodsRemainUnschedulable = noScaleUpInfoForPods
-	} else if len(a.BypassedSchedulers) == 0 && allPodsAreNew(unschedulablePodsToHelp, currentTime) {
-		// The assumption here is that these pods have been created very recently and probably there
-		// is more pods to come. In theory we could check the newest pod time but then if pod were created
-		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
-		// We also want to skip a real scale down (just like if the pods were handled).
-		// This logic only makes sense if CA is not trying to react quickly
-		// by bypassing scheduler marking pods as unschedulable.
-		a.processorCallbacks.DisableScaleDownForLoop()
-		scaleUpStatus.Result = status.ScaleUpInCooldown
-		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
-		shouldScaleUp = false
-	}
+	shouldScaleUp, scaleUpStatus := a.shouldScaleUp(unschedulablePodsToHelp, scaleUpStatus, readyNodes, currentTime)
 
 	if err := ctx.Err(); err != nil {
 		klog.V(0).Infof("Skipping scale-up/scale-down, context cancelled: %v", err)
 		return nil
 	}
 
-	if shouldScaleUp || a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp) {
+	if shouldScaleUp {
 		scaleUpTriggered = true
 		nodes := make([]*apiv1.Node, len(allNodeInfos))
 		for i, nodeInfo := range allNodeInfos {
@@ -606,7 +583,7 @@ func (a *StaticAutoscaler) RunOnce(ctx context.Context, currentTime time.Time) c
 		}
 	}
 
-	if a.ScaleDownEnabled {
+	if a.shouldScaleDown() {
 		if typedErr = a.scaleDown(currentTime, allNodes, scaleDownActuationStatus, scaleDownStatus); typedErr != nil {
 			return typedErr
 		}
@@ -626,6 +603,50 @@ func (a *StaticAutoscaler) RunOnce(ctx context.Context, currentTime time.Time) c
 	}
 
 	return nil
+}
+
+func (a *StaticAutoscaler) shouldScaleUp(unschedulablePodsToHelp []*apiv1.Pod, scaleUpStatus *status.ScaleUpStatus, readyNodes []*apiv1.Node, currentTime time.Time) (bool, *status.ScaleUpStatus) {
+	shouldScaleUp := true
+	if len(unschedulablePodsToHelp) == 0 {
+		scaleUpStatus.Result = status.ScaleUpNotNeeded
+		klog.V(1).Info("No unschedulable pods")
+		shouldScaleUp = false
+	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
+		scaleUpStatus.Result = status.ScaleUpLimitedByMaxNodesTotal
+		klog.Warningf("Max total nodes in cluster reached: %v. Current number of ready nodes: %v", a.MaxNodesTotal, len(readyNodes))
+		a.LogRecorder.Eventf(apiv1.EventTypeWarning, "MaxNodesTotalReached",
+			"Max total nodes in cluster reached: %v", a.MaxNodesTotal)
+		shouldScaleUp = false
+
+		noScaleUpInfoForPods := []status.NoScaleUpInfo{}
+		for _, pod := range unschedulablePodsToHelp {
+			noScaleUpInfo := status.NoScaleUpInfo{
+				Pod: pod,
+			}
+			noScaleUpInfoForPods = append(noScaleUpInfoForPods, noScaleUpInfo)
+		}
+		scaleUpStatus.PodsRemainUnschedulable = noScaleUpInfoForPods
+	} else if len(a.BypassedSchedulers) == 0 && allPodsAreNew(unschedulablePodsToHelp, currentTime) {
+		// The assumption here is that these pods have been created very recently and probably there
+		// is more pods to come. In theory, we could check the newest pod time but then if pod were created
+		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
+		// We also want to skip a real scale down (just like if the pods were handled).
+		// This logic only makes sense if CA is not trying to react quickly
+		// by bypassing scheduler marking pods as unschedulable.
+		a.processorCallbacks.DisableScaleDownForLoop()
+		scaleUpStatus.Result = status.ScaleUpInCooldown
+		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
+		shouldScaleUp = false
+	}
+
+	shouldScaleUp = shouldScaleUp || a.processors.ScaleUpEnforcer.ShouldForceScaleUp(unschedulablePodsToHelp)
+
+	if a.GracefulDegradationEnabled && a.GracefulDegradationLoopCount > 0 && a.GracefulDegradationLoopCount%gracefulDegradationCycle == 0 {
+		shouldScaleUp = false
+		scaleUpStatus.Result = status.ScaleUpInCooldown
+	}
+
+	return shouldScaleUp, scaleUpStatus
 }
 
 // instrumentedScaleUp handles a single ScaleUp orchestrator call with metrics and status reporting.
@@ -752,6 +773,7 @@ func (a *StaticAutoscaler) updateSoftDeletionTaints(allNodes []*apiv1.Node) {
 }
 
 func (a *StaticAutoscaler) scaleDown(currentTime time.Time, allNodes []*apiv1.Node, scaleDownActuationStatus scaledown.ActuationStatus, scaleDownStatus *scaledownstatus.ScaleDownStatus) caerrors.AutoscalerError {
+
 	unneededStart := time.Now()
 
 	klog.V(4).Infof("Calculating unneeded nodes")
@@ -1409,4 +1431,12 @@ func listPods(podLister kube_util.PodLister, bypassedSchedulers, allowedSchedule
 			initialPodCount, len(podsBySchedulability.Scheduled), len(podsBySchedulability.NominatedNode), len(podsBySchedulability.Unschedulable), len(podsBySchedulability.Unprocessed), ignored, ignoredDueToDisallowed)
 	}
 	return
+}
+
+func (a *StaticAutoscaler) shouldScaleDown() bool {
+	if !a.ScaleDownEnabled {
+		return false
+	}
+	// When GracefulDegradationMode is active, autoscaler does scale down only on every 4th(gracefulDegradationCycle th) loop.
+	return !(a.AutoscalingContext.GracefulDegradationEnabled && a.AutoscalingContext.GracefulDegradationLoopCount > 0 && a.AutoscalingContext.GracefulDegradationLoopCount%gracefulDegradationCycle != 0)
 }
