@@ -17,8 +17,9 @@ limitations under the License.
 package model
 
 import (
+	"cmp"
 	"maps"
-	"sort"
+	"slices"
 	"sync"
 	"time"
 
@@ -68,8 +69,8 @@ func (conditionsMap *vpaConditionsMap) AsList() []vpa_types.VerticalPodAutoscale
 	}
 
 	// Sort conditions by type to avoid elements floating on the list
-	sort.Slice(conditions, func(i, j int) bool {
-		return conditions[i].Type < conditions[j].Type
+	slices.SortFunc(conditions, func(a, b vpa_types.VerticalPodAutoscalerCondition) int {
+		return cmp.Compare(a.Type, b.Type)
 	})
 
 	return conditions

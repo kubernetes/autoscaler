@@ -70,6 +70,8 @@ linters:
         - name: redundant-import-alias
         - name: confusing-results
         - name: unused-receiver
+        - name: identical-switch-branches
+        - name: use-slices-sort
 
         # Below lists the rules disabled
 
