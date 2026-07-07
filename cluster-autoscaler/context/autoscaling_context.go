@@ -77,6 +77,9 @@ type AutoscalingContext struct {
 	TemplateNodeInfoRegistry TemplateNodeInfoRegistry
 	// CsiProvider is the provider for CSI node aware scheduling.
 	CsiProvider *csinodeprovider.Provider
+	// GracefulDegradationLoopCount counts the number of subsequent CA loops where graceful degradation is active.
+	// GracefulDegradationLoopCount > 0 iff Cluster Autoscaler is running in a degraded mode.
+	GracefulDegradationLoopCount int
 }
 
 // TemplateNodeInfoRegistry is the interface for getting template node infos.

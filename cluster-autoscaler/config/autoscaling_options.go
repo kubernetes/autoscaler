@@ -378,6 +378,10 @@ type AutoscalingOptions struct {
 	CapacityQuotasEnabled             bool
 	// ScaleUpSimulationForSkippedNodeGroupsEnabled is used to enable/disable the scaleUpSimulation for the skipped node groups
 	ScaleUpSimulationForSkippedNodeGroupsEnabled bool
+	// PendingPodsBatchingTimeout is the maximum time spends when running scheduling simulations when preparing the batch of pods passed to scale up logic. This timeout is used in core filter-out pod list processor.
+	PendingPodsBatchingTimeout time.Duration
+	// GracefulDegradationEnabled tells if graceful degradation for unschedulable pods is enabled.
+	GracefulDegradationEnabled bool
 }
 
 // KubeClientOptions specify options for kube client

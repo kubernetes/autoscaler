@@ -17,6 +17,8 @@ limitations under the License.
 package besteffortatomic
 
 import (
+	"context"
+
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -138,13 +140,13 @@ func (o *bestEffortAtomicProvClass) Provision(
 }
 
 func (o *bestEffortAtomicProvClass) filterOutSchedulable(pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	statuses, _, err := o.injector.TrySchedulePods(o.autoscalingCtx.ClusterSnapshot, pods, false, clustersnapshot.SchedulingOptions{})
+	schedulingResult, err := o.injector.TrySchedulePods(context.Background(), o.autoscalingCtx.ClusterSnapshot, pods, false, clustersnapshot.SchedulingOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	scheduledPods := make(map[types.UID]bool)
-	for _, status := range statuses {
+	for _, status := range schedulingResult.Statuses {
 		scheduledPods[status.Pod.UID] = true
 	}
 
