@@ -303,3 +303,53 @@ func TestDetectNodeGPUResourceName(t *testing.T) {
 		})
 	}
 }
+
+func TestRegisterGPUResourceNames(t *testing.T) {
+	customResource := apiv1.ResourceName("nvidia.com/gpumem")
+	gpu.RegisterGPUResourceNames(customResource, "nvidia.com/gpucores")
+
+	t.Run("PodRequestsGpu detects custom resources", func(t *testing.T) {
+		pod := test.BuildTestPod("test-pod", 0, 0)
+		pod.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+			customResource: resource.MustParse("3000"),
+		}
+		assert.True(t, gpu.PodRequestsGpu(pod))
+	})
+
+	t.Run("NodeHasGpuAllocatable detects custom resources", func(t *testing.T) {
+		node := &apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{Name: "gpu-node"},
+			Status: apiv1.NodeStatus{
+				Allocatable: apiv1.ResourceList{
+					customResource: *resource.NewQuantity(16000, resource.DecimalSI),
+				},
+			},
+		}
+		val, hasGPU := gpu.NodeHasGpuAllocatable(node)
+		assert.True(t, hasGPU)
+		assert.Equal(t, int64(16000), val)
+	})
+
+	t.Run("DetectNodeGPUResourceName detects custom resources", func(t *testing.T) {
+		node := &apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{Name: "gpu-node"},
+			Status: apiv1.NodeStatus{
+				Capacity: apiv1.ResourceList{
+					customResource: *resource.NewQuantity(1, resource.DecimalSI),
+				},
+				Allocatable: apiv1.ResourceList{
+					customResource: *resource.NewQuantity(1, resource.DecimalSI),
+				},
+			},
+		}
+		assert.Equal(t, customResource, gpu.DetectNodeGPUResourceName(node))
+	})
+
+	t.Run("PodRequestsGpu ignores unknown resources", func(t *testing.T) {
+		pod := test.BuildTestPod("test-pod", 0, 0)
+		pod.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceName("example.com/not-a-gpu"): resource.MustParse("1"),
+		}
+		assert.False(t, gpu.PodRequestsGpu(pod))
+	})
+}

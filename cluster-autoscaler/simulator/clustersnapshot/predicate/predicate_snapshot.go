@@ -61,7 +61,7 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 	// which operate on *framework.NodeInfo. The only object that allows obtaining *framework.NodeInfos is PredicateSnapshot, so we have an ugly circular
 	// dependency between PluginRunner and PredicateSnapshot.
 	// TODO: Refactor PluginRunner so that it doesn't depend on PredicateSnapshot (e.g. move retrieving NodeInfos out of PluginRunner, to PredicateSnapshot).
-	snapshot.pluginRunner = NewSchedulerPluginRunner(fwHandle, snapshot, parallelism)
+	snapshot.pluginRunner = NewSchedulerPluginRunner(fwHandle, snapshot, parallelism, fwHandle.Extenders)
 	return snapshot
 }
 
