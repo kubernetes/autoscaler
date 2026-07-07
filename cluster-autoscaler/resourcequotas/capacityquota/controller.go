@@ -39,7 +39,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
 )
 
 const (
@@ -78,7 +78,7 @@ func NewCapacityQuotaReconciler(client client.Client, opts ReconcilerOptions) *R
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	var cq v1alpha1.CapacityQuota
+	var cq v1beta1.CapacityQuota
 	if err := r.client.Get(ctx, req.NamespacedName, &cq); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -90,7 +90,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	if len(validationErrs) > 0 {
 		errMsg := formatValidationErrors(validationErrs)
 		setCondition(&cq, ValidCondition, metav1.ConditionFalse, ValidationFailed, errMsg)
-		setCondition(&cq, v1alpha1.ReconciledCondition, metav1.ConditionFalse, v1alpha1.ReconciliationFailed, "Validation failed")
+		setCondition(&cq, v1beta1.ReconciledCondition, metav1.ConditionFalse, v1beta1.ReconciliationFailed, "Validation failed")
 
 		if patchErr := r.patchStatus(ctx, originalCQ, &cq); patchErr != nil {
 			return ctrl.Result{}, patchErr
@@ -102,9 +102,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	result, err := r.reconcileCapacityQuota(ctx, &cq)
 
 	if err != nil {
-		setCondition(&cq, v1alpha1.ReconciledCondition, metav1.ConditionFalse, v1alpha1.ReconciliationFailed, err.Error())
+		setCondition(&cq, v1beta1.ReconciledCondition, metav1.ConditionFalse, v1beta1.ReconciliationFailed, err.Error())
 	} else {
-		setCondition(&cq, v1alpha1.ReconciledCondition, metav1.ConditionTrue, v1alpha1.ReconciliationSucceeded, "CapacityQuota successfully reconciled")
+		setCondition(&cq, v1beta1.ReconciledCondition, metav1.ConditionTrue, v1beta1.ReconciliationSucceeded, "CapacityQuota successfully reconciled")
 	}
 
 	if patchErr := r.patchStatus(ctx, originalCQ, &cq); patchErr != nil {
@@ -122,7 +122,7 @@ func formatValidationErrors(errs []error) string {
 	return strings.Join(errStrings, "; ")
 }
 
-func (r *Reconciler) patchStatus(ctx context.Context, originalCQ, currentCQ *v1alpha1.CapacityQuota) error {
+func (r *Reconciler) patchStatus(ctx context.Context, originalCQ, currentCQ *v1beta1.CapacityQuota) error {
 	if !apiequality.Semantic.DeepEqual(originalCQ.Status, currentCQ.Status) {
 		if patchErr := r.client.Status().Patch(ctx, currentCQ, client.MergeFrom(originalCQ)); patchErr != nil {
 			return fmt.Errorf("failed to patch status: %w", patchErr)
@@ -131,7 +131,7 @@ func (r *Reconciler) patchStatus(ctx context.Context, originalCQ, currentCQ *v1a
 	return nil
 }
 
-func (r *Reconciler) validateCapacityQuota(ctx context.Context, cq *v1alpha1.CapacityQuota) []error {
+func (r *Reconciler) validateCapacityQuota(ctx context.Context, cq *v1beta1.CapacityQuota) []error {
 	var allErrs []error
 	for _, v := range r.validators {
 		if err := v.Validate(ctx, cq); err != nil {
@@ -146,20 +146,20 @@ func (r *Reconciler) validateCapacityQuota(ctx context.Context, cq *v1alpha1.Cap
 	return allErrs
 }
 
-func (r *Reconciler) reconcileCapacityQuota(ctx context.Context, cq *v1alpha1.CapacityQuota) (ctrl.Result, error) {
+func (r *Reconciler) reconcileCapacityQuota(ctx context.Context, cq *v1beta1.CapacityQuota) (ctrl.Result, error) {
 	matchingNodes, err := r.getMatchingNodes(ctx, cq)
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("failed to get matching nodes: %w", err)
 	}
 
-	cq.Status.Used = &v1alpha1.CapacityQuotaUsage{
+	cq.Status.Used = &v1beta1.CapacityQuotaUsage{
 		Resources: calculateResourceUsage(cq, matchingNodes),
 	}
 
 	return ctrl.Result{}, nil
 }
 
-func (r *Reconciler) getMatchingNodes(ctx context.Context, cq *v1alpha1.CapacityQuota) ([]*corev1.Node, error) {
+func (r *Reconciler) getMatchingNodes(ctx context.Context, cq *v1beta1.CapacityQuota) ([]*corev1.Node, error) {
 	var nodeList corev1.NodeList
 	var listOpts []client.ListOption
 
@@ -186,13 +186,13 @@ func (r *Reconciler) getMatchingNodes(ctx context.Context, cq *v1alpha1.Capacity
 	return matchingNodes, nil
 }
 
-func calculateResourceUsage(cq *v1alpha1.CapacityQuota, matchingNodes []*corev1.Node) v1alpha1.ResourceList {
-	used := make(v1alpha1.ResourceList)
+func calculateResourceUsage(cq *v1beta1.CapacityQuota, matchingNodes []*corev1.Node) v1beta1.ResourceList {
+	used := make(v1beta1.ResourceList)
 
 	for resName := range cq.Spec.Limits.Resources {
 		usage := resource.NewQuantity(0, resource.DecimalSI)
 		for _, node := range matchingNodes {
-			if resName == v1alpha1.ResourceNodes {
+			if resName == v1beta1.ResourceNodes {
 				usage.Add(*resource.NewQuantity(1, resource.DecimalSI))
 			} else if quantity, ok := node.Status.Capacity[corev1.ResourceName(resName)]; ok {
 				usage.Add(quantity)
@@ -203,7 +203,7 @@ func calculateResourceUsage(cq *v1alpha1.CapacityQuota, matchingNodes []*corev1.
 	return used
 }
 
-func setCondition(cq *v1alpha1.CapacityQuota, condType string, status metav1.ConditionStatus, reason, message string) {
+func setCondition(cq *v1beta1.CapacityQuota, condType string, status metav1.ConditionStatus, reason, message string) {
 	newCondition := metav1.Condition{
 		Type:               condType,
 		Status:             status,
@@ -241,7 +241,7 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&v1alpha1.CapacityQuota{}, builder.WithPredicates(predicate.GenerationChangedPredicate{})).
+		For(&v1beta1.CapacityQuota{}, builder.WithPredicates(predicate.GenerationChangedPredicate{})).
 		Watches(
 			&corev1.Node{},
 			handler.EnqueueRequestsFromMapFunc(r.findCapacityQuotasForNode),
@@ -256,7 +256,7 @@ func (r *Reconciler) findCapacityQuotasForNode(ctx context.Context, o client.Obj
 		return nil
 	}
 
-	var cqList v1alpha1.CapacityQuotaList
+	var cqList v1beta1.CapacityQuotaList
 	if err := r.client.List(ctx, &cqList); err != nil {
 		runtime.HandleError(fmt.Errorf("failed to list capacity quotas in map func: %w", err))
 		return nil

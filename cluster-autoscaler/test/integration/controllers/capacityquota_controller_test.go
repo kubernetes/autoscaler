@@ -32,7 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
+	cqv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
 	cqtest "k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota/testutil"
 	testutils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -69,15 +69,15 @@ var _ = Describe("CapacityQuota Controller", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("cleaning up quotas")
-		err = crClient.DeleteAllOf(ctx, &cqv1alpha1.CapacityQuota{})
+		err = crClient.DeleteAllOf(ctx, &cqv1beta1.CapacityQuota{})
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("should correctly sum capacities of all nodes with nil selector", func() {
 		By("creating a CapacityQuota without label selector")
 		cq := cqtest.NewCapacityQuota("test-quota-all",
-			cqtest.WithLimits(cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("20"),
+			cqtest.WithLimits(cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("20"),
 			}),
 		)
 		Expect(crClient.Create(ctx, cq)).To(Succeed())
@@ -85,8 +85,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 		By("waiting for the CapacityQuota to be reconciled with correct usage")
 		cqKey := types.NamespacedName{Name: "test-quota-all"}
 		Eventually(func(g Gomega) {
-			assertQuotaReconciled(ctx, g, cqKey, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("14"),
+			assertQuotaReconciled(ctx, g, cqKey, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("14"),
 			})
 		}).Should(Succeed())
 	})
@@ -95,11 +95,11 @@ var _ = Describe("CapacityQuota Controller", func() {
 		By("creating a CapacityQuota")
 		cq := cqtest.NewCapacityQuota("test-quota-pool",
 			cqtest.WithLabelSelector(map[string]string{"node-pool": "test-pool"}),
-			cqtest.WithLimits(cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU:    resource.MustParse("10"),
-				cqv1alpha1.ResourceMemory: resource.MustParse("32Gi"),
-				cqv1alpha1.ResourceNodes:  resource.MustParse("5"),
-				"nvidia.com/gpu":          resource.MustParse("2"),
+			cqtest.WithLimits(cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU:    resource.MustParse("10"),
+				cqv1beta1.ResourceMemory: resource.MustParse("32Gi"),
+				cqv1beta1.ResourceNodes:  resource.MustParse("5"),
+				"nvidia.com/gpu":         resource.MustParse("2"),
 			}),
 		)
 		Expect(crClient.Create(ctx, cq)).To(Succeed())
@@ -108,11 +108,11 @@ var _ = Describe("CapacityQuota Controller", func() {
 
 		By("waiting for the CapacityQuota to be reconciled with correct usage")
 		Eventually(func(g Gomega) {
-			assertQuotaReconciled(ctx, g, cqKey, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU:    resource.MustParse("6"),
-				cqv1alpha1.ResourceMemory: resource.MustParse("24Gi"),
-				cqv1alpha1.ResourceNodes:  resource.MustParse("2"),
-				"nvidia.com/gpu":          resource.MustParse("0"),
+			assertQuotaReconciled(ctx, g, cqKey, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU:    resource.MustParse("6"),
+				cqv1beta1.ResourceMemory: resource.MustParse("24Gi"),
+				cqv1beta1.ResourceNodes:  resource.MustParse("2"),
+				"nvidia.com/gpu":         resource.MustParse("0"),
 			})
 		}).Should(Succeed())
 	})
@@ -121,8 +121,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 		By("creating a CapacityQuota")
 		cq := cqtest.NewCapacityQuota("test-quota-pool-add",
 			cqtest.WithLabelSelector(map[string]string{"node-pool": "test-pool"}),
-			cqtest.WithLimits(cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("10"),
+			cqtest.WithLimits(cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("10"),
 			}),
 		)
 		Expect(crClient.Create(ctx, cq)).To(Succeed())
@@ -131,8 +131,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 
 		By("waiting for initial reconciliation")
 		Eventually(func(g Gomega) {
-			assertQuotaReconciled(ctx, g, cqKey, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("6"),
+			assertQuotaReconciled(ctx, g, cqKey, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("6"),
 			})
 		}).Should(Succeed())
 
@@ -145,8 +145,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 
 		By("ensuring quota was updated")
 		Eventually(func(g Gomega) {
-			assertQuotaReconciled(ctx, g, cqKey, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("8"),
+			assertQuotaReconciled(ctx, g, cqKey, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("8"),
 			})
 		}).Should(Succeed())
 	})
@@ -155,8 +155,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 		By("creating a CapacityQuota")
 		cq := cqtest.NewCapacityQuota("test-quota-pool-delete",
 			cqtest.WithLabelSelector(map[string]string{"node-pool": "test-pool"}),
-			cqtest.WithLimits(cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("10"),
+			cqtest.WithLimits(cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("10"),
 			}),
 		)
 		Expect(crClient.Create(ctx, cq)).To(Succeed())
@@ -165,8 +165,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 
 		By("waiting for initial reconciliation")
 		Eventually(func(g Gomega) {
-			assertQuotaReconciled(ctx, g, cqKey, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("6"),
+			assertQuotaReconciled(ctx, g, cqKey, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("6"),
 			})
 		}).Should(Succeed())
 
@@ -177,8 +177,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 
 		By("ensuring quota was updated")
 		Eventually(func(g Gomega) {
-			assertQuotaReconciled(ctx, g, cqKey, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("4"),
+			assertQuotaReconciled(ctx, g, cqKey, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("4"),
 			})
 		}).Should(Succeed())
 	})
@@ -187,8 +187,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 		By("creating the first CapacityQuota")
 		cq1 := cqtest.NewCapacityQuota("test-quota-pool-1",
 			cqtest.WithLabelSelector(map[string]string{"node-pool": "test-pool"}),
-			cqtest.WithLimits(cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("10"),
+			cqtest.WithLimits(cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("10"),
 			}),
 		)
 		Expect(crClient.Create(ctx, cq1)).To(Succeed())
@@ -196,8 +196,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 		By("creating the second CapacityQuota")
 		cq2 := cqtest.NewCapacityQuota("test-quota-pool-2",
 			cqtest.WithLabelSelector(map[string]string{"node-pool-2": "test-pool-2"}),
-			cqtest.WithLimits(cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("10"),
+			cqtest.WithLimits(cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("10"),
 			}),
 		)
 		Expect(crClient.Create(ctx, cq2)).To(Succeed())
@@ -217,11 +217,11 @@ var _ = Describe("CapacityQuota Controller", func() {
 
 		By("waiting for initial reconciliation")
 		Eventually(func(g Gomega) {
-			assertQuotaReconciled(ctx, g, cqKey1, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("11"),
+			assertQuotaReconciled(ctx, g, cqKey1, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("11"),
 			})
-			assertQuotaReconciled(ctx, g, cqKey2, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("5"),
+			assertQuotaReconciled(ctx, g, cqKey2, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("5"),
 			})
 		}).Should(Succeed())
 
@@ -233,11 +233,11 @@ var _ = Describe("CapacityQuota Controller", func() {
 
 		By("ensuring cq1 drops the capacity of node5 (11 -> 6), while cq2 remains unchanged (5)")
 		Eventually(func(g Gomega) {
-			assertQuotaReconciled(ctx, g, cqKey1, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("6"),
+			assertQuotaReconciled(ctx, g, cqKey1, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("6"),
 			})
-			assertQuotaReconciled(ctx, g, cqKey2, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("5"),
+			assertQuotaReconciled(ctx, g, cqKey2, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("5"),
 			})
 		}).Should(Succeed())
 	})
@@ -257,8 +257,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 		By("creating a CapacityQuota")
 		cq := cqtest.NewCapacityQuota("test-quota-pool-virtual",
 			cqtest.WithLabelSelector(map[string]string{"node-pool": "test-pool"}),
-			cqtest.WithLimits(cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("10"),
+			cqtest.WithLimits(cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("10"),
 			}),
 		)
 		Expect(crClient.Create(ctx, cq)).To(Succeed())
@@ -267,8 +267,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 
 		By("ensuring quota does not include the virtual node's capacity")
 		Eventually(func(g Gomega) {
-			assertQuotaReconciled(ctx, g, cqKey, cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("6"),
+			assertQuotaReconciled(ctx, g, cqKey, cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("6"),
 			})
 		}).Should(Succeed())
 	})
@@ -276,7 +276,7 @@ var _ = Describe("CapacityQuota Controller", func() {
 	It("should report a failure condition if the selector is invalid", func() {
 		By("creating a CapacityQuota with an invalid selector")
 		cq := cqtest.NewCapacityQuota("test-quota-pool-invalid",
-			func(cq *cqv1alpha1.CapacityQuota) {
+			func(cq *cqv1beta1.CapacityQuota) {
 				cq.Spec.Selector = &metav1.LabelSelector{
 					MatchExpressions: []metav1.LabelSelectorRequirement{
 						{
@@ -286,8 +286,8 @@ var _ = Describe("CapacityQuota Controller", func() {
 					},
 				}
 			},
-			cqtest.WithLimits(cqv1alpha1.ResourceList{
-				cqv1alpha1.ResourceCPU: resource.MustParse("10"),
+			cqtest.WithLimits(cqv1beta1.ResourceList{
+				cqv1beta1.ResourceCPU: resource.MustParse("10"),
 			}),
 		)
 		Expect(crClient.Create(ctx, cq)).To(Succeed())
@@ -296,7 +296,7 @@ var _ = Describe("CapacityQuota Controller", func() {
 
 		By("waiting for the CapacityQuota to be reconciled with a failed condition")
 		Eventually(func(g Gomega) {
-			var fetchedCQ cqv1alpha1.CapacityQuota
+			var fetchedCQ cqv1beta1.CapacityQuota
 			g.Expect(crClient.Get(ctx, cqKey, &fetchedCQ)).To(Succeed())
 
 			g.Expect(fetchedCQ.Status.ObservedGeneration).To(Equal(fetchedCQ.Generation))
@@ -306,13 +306,13 @@ var _ = Describe("CapacityQuota Controller", func() {
 			g.Expect(cond.Reason).To(Equal("ValidationFailed"))
 			g.Expect(cond.Message).To(ContainSubstring("is not a valid label selector operator"))
 
-			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, cqv1alpha1.ReconciledCondition)).To(BeTrue())
+			g.Expect(meta.IsStatusConditionFalse(fetchedCQ.Status.Conditions, cqv1beta1.ReconciledCondition)).To(BeTrue())
 		}).Should(Succeed())
 	})
 })
 
-func assertQuotaReconciled(ctx context.Context, g Gomega, cqKey types.NamespacedName, wantResources cqv1alpha1.ResourceList) {
-	var fetchedCQ cqv1alpha1.CapacityQuota
+func assertQuotaReconciled(ctx context.Context, g Gomega, cqKey types.NamespacedName, wantResources cqv1beta1.ResourceList) {
+	var fetchedCQ cqv1beta1.CapacityQuota
 	g.Expect(crClient.Get(ctx, cqKey, &fetchedCQ)).To(Succeed())
 
 	g.Expect(fetchedCQ.Status.ObservedGeneration).To(Equal(fetchedCQ.Generation))

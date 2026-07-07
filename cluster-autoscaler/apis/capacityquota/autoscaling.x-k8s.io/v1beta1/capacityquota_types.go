@@ -17,7 +17,7 @@ limitations under the License.
 // +groupName=autoscaling.x-k8s.io
 // +k8s:protobuf-gen=package
 
-package v1alpha1
+package v1beta1
 
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -48,7 +48,7 @@ type ResourceList map[ResourceName]resource.Quantity
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,shortName=cq
-// +kubebuilder:deprecatedversion
+// +kubebuilder:storageversion
 // +genclient
 
 // CapacityQuota limits the amount of resources that can be provisioned in the cluster
