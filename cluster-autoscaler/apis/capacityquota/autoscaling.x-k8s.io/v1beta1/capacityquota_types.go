@@ -22,6 +22,7 @@ package v1beta1
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // ResourceName is the name identifying a resource mirroring k8s.io/api/core/v1.ResourceName.
@@ -153,5 +154,8 @@ type CapacityQuotaList struct {
 }
 
 func init() {
-	SchemeBuilder.Register(&CapacityQuota{}, &CapacityQuotaList{})
+	SchemeBuilder.Register(func(s *runtime.Scheme) error {
+		s.AddKnownTypes(GroupVersion, &CapacityQuota{}, &CapacityQuotaList{})
+		return nil
+	})
 }
