@@ -276,6 +276,7 @@ func fromScwStatus(status scalewaygo.NodeStatus) *cloudprovider.InstanceStatus {
 	case scalewaygo.NodeStatusDeleting:
 		st.State = cloudprovider.InstanceDeleting
 	case scalewaygo.NodeStatusCreationError:
+		st.State = cloudprovider.InstanceCreating
 		st.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 			ErrorCode:    string(scalewaygo.NodeStatusCreationError),
 			ErrorMessage: "scaleway node could not be created",
