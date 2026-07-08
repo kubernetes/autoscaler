@@ -41,6 +41,6 @@ type Handler interface {
 	AdmissionResource() admission.AdmissionResource
 	// DisallowIncorrectObjects returns whether incorrect objects (eg. unparsable, not passing validations) should be disallowed by Admission Server.
 	DisallowIncorrectObjects() bool
-	// GetPatches returns patches for given AdmissionRequest
-	GetPatches(context.Context, *admissionv1.AdmissionRequest) ([]PatchRecord, field.ErrorList)
+	// GetPatches returns patches and warnings for given AdmissionRequest
+	GetPatches(context.Context, *admissionv1.AdmissionRequest) ([]PatchRecord, []string, field.ErrorList)
 }

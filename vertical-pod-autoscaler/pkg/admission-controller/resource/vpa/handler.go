@@ -56,11 +56,11 @@ func (*resourceHandler) DisallowIncorrectObjects() bool {
 }
 
 // GetPatches builds patches for VPA in given admission request.
-func (h *resourceHandler) GetPatches(_ context.Context, ar *admissionv1.AdmissionRequest) ([]resource.PatchRecord, field.ErrorList) {
+func (h *resourceHandler) GetPatches(_ context.Context, ar *admissionv1.AdmissionRequest) ([]resource.PatchRecord, []string, field.ErrorList) {
 	raw, isCreate := ar.Object.Raw, ar.Operation == admissionv1.Create
 	vpa, err := parseVPA(raw)
 	if err != nil {
-		return nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
+		return nil, nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 	}
 
 	oldVPA := &vpa_types.VerticalPodAutoscaler{}
@@ -69,7 +69,7 @@ func (h *resourceHandler) GetPatches(_ context.Context, ar *admissionv1.Admissio
 		oldRaw := ar.OldObject.Raw
 		oldVPA, err = parseVPA(oldRaw)
 		if err != nil {
-			return nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
+			return nil, nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 		}
 	}
 
@@ -77,11 +77,12 @@ func (h *resourceHandler) GetPatches(_ context.Context, ar *admissionv1.Admissio
 
 	vpa, err = h.preProcessor.Process(vpa, isCreate)
 	if err != nil {
-		return nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
+		return nil, nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 	}
 
-	if allErrs := validateVPA(vpa, opts); len(allErrs) > 0 {
-		return nil, allErrs
+	warnings, allErrs := validateVPA(vpa, opts)
+	if len(allErrs) > 0 {
+		return nil, warnings, allErrs
 	}
 
 	klog.V(4).InfoS("Processing vpa", "vpa", vpa)
@@ -95,7 +96,7 @@ func (h *resourceHandler) GetPatches(_ context.Context, ar *admissionv1.Admissio
 			Path:  "/spec/updatePolicy",
 			Value: vpa_types.PodUpdatePolicy{UpdateMode: &defaultUpdateMode}})
 	}
-	return patches, nil
+	return patches, warnings, nil
 }
 
 func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
