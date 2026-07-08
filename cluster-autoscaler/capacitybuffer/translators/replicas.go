@@ -28,18 +28,13 @@ import (
 // getBufferNumberOfPods calculates the desired number of pods for a buffer.
 // scalableReplicas is only provided if the buffer uses a scalable object.
 func getBufferNumberOfPods(buffer *apiv1.CapacityBuffer, podTemplate corev1.PodTemplateSpec, scalableReplicas *int32) (int32, error) {
-	var resolved bool
-	replicas := int32(math.MaxInt32)
+	replicas := int32(-1)
 
 	if buffer.Spec.Replicas != nil {
-		specReplicas := max(0, *buffer.Spec.Replicas)
-		replicas = min(replicas, specReplicas)
-		resolved = true
+		replicas = max(0, *buffer.Spec.Replicas)
 	}
-
 	if buffer.Spec.Percentage != nil && scalableReplicas != nil {
-		replicas = min(replicas, replicasFromPercentage(*buffer.Spec.Percentage, *scalableReplicas))
-		resolved = true
+		replicas = max(replicas, replicasFromPercentage(*buffer.Spec.Percentage, *scalableReplicas))
 	}
 
 	if buffer.Spec.Limits != nil {
@@ -47,14 +42,17 @@ func getBufferNumberOfPods(buffer *apiv1.CapacityBuffer, podTemplate corev1.PodT
 		if err != nil {
 			return 0, err
 		}
-		replicas = min(replicas, limitsReplicas)
-		resolved = true
+		if replicas >= 0 {
+			return min(replicas, limitsReplicas), nil
+		}
+		return limitsReplicas, nil
 	}
 
-	if !resolved {
-		return 0, errors.New("replicas, percentage and limits are not defined")
+	if replicas >= 0 {
+		return replicas, nil
 	}
-	return replicas, nil
+
+	return 0, errors.New("replicas, percentage and limits are not defined")
 }
 
 func replicasFromPercentage(percentage int32, scalableReplicas int32) int32 {

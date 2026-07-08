@@ -126,9 +126,10 @@ type CapacityBufferSpec struct {
 	ScalableRef *ScalableRef `json:"scalableRef,omitempty" protobuf:"bytes,3,opt,name=scalableRef"`
 
 	// Replicas defines the desired number of buffer chunks to provision.
-	// If neither `replicas` nor `percentage` is set, as many chunks as fit within
-	// defined resource limits (if any) will be created. If both are set, the maximum
-	// of the two will be used.
+	// The desired number is determined by taking the maximum of `replicas` and
+	// the computed replicas from `percentage` (whichever are defined), and is then capped
+	// by the defined resource `limits` (if defined). If neither `replicas` nor `percentage`
+	// is set, as many chunks as fit within the `limits` will be created.
 	// +optional
 	// +kubebuilder:validation:Minimum=0
 	// +kubebuilder:validation:ExclusiveMinimum=false
