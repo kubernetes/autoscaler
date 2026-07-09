@@ -137,7 +137,7 @@ type CapacityBufferSpec struct {
 
 	// Percentage defines the desired buffer capacity as a percentage of the
 	// `scalableRef`'s current replicas. This is only applicable if `scalableRef` is set.
-	// The absolute number of replicas is calculated from the percentage by rounding up to a minimum of 1.
+	// The absolute number of replicas is calculated from the percentage by rounding up to the nearest integer.
 	// For example, if `scalableRef` has 10 replicas and `percentage` is 20, 2 buffer chunks will be created.
 	// +optional
 	// +kubebuilder:validation:Minimum=0
