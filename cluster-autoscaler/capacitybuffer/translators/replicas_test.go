@@ -62,6 +62,12 @@ func TestGetBufferNumberOfPods(t *testing.T) {
 			expectedReplicas: 20,
 		},
 		{
+			name:             "Only Percentage Rounding Up",
+			percentage:       ptr.To[int32](33), // 33% of 10 = 3.3 -> ceil(3.3) = 4
+			scalableReplicas: ptr.To[int32](10),
+			expectedReplicas: 4,
+		},
+		{
 			name:             "Replicas and Percentage (Replicas larger)",
 			replicas:         ptr.To[int32](25),
 			percentage:       ptr.To[int32](200), // 200% * 10 = 20
@@ -162,10 +168,10 @@ func TestReplicasFromPercentage(t *testing.T) {
 			expected:         0,
 		},
 		{
-			name:             "Rounding down (3.3 -> 3)",
+			name:             "Rounding up (3.3 -> 4)",
 			percentage:       33,
 			scalableReplicas: 10,
-			expected:         3,
+			expected:         4,
 		},
 	}
 

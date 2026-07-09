@@ -56,7 +56,10 @@ func getBufferNumberOfPods(buffer *apiv1.CapacityBuffer, podTemplate corev1.PodT
 }
 
 func replicasFromPercentage(percentage int32, scalableReplicas int32) int32 {
-	return max(0, (percentage)*(scalableReplicas)/100)
+	if percentage <= 0 || scalableReplicas <= 0 {
+		return 0
+	}
+	return (percentage*scalableReplicas + 99) / 100
 }
 
 func limitNumberOfPodsForResource(podTemplate corev1.PodTemplateSpec, limits apiv1.ResourceList) (int32, error) {
