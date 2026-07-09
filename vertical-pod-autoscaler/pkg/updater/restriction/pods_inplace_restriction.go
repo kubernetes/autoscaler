@@ -94,22 +94,24 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 	}
 
 	if updateMode == vpa_types.UpdateModeInPlace && !features.Enabled(features.InPlace) {
+		klog.V(4).InfoS("Can't in-place update pod, VPA updateMode is InPlace but InPlace feature gate is not enabled", "pod", klog.KObj(pod), "vpa", klog.KObj(vpa))
 		return utils.InPlaceDeferred
 	}
 
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
 	if !present {
-		klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
+		klog.V(4).InfoS("Can't in-place update pod, pod's controller not found in replica creator map (pod may be unmanaged, controller info unavailable, or replica count below minimum while in-place-skip-disruption-budget is disabled)", "pod", klog.KObj(pod))
 		return utils.InPlaceDeferred
 	}
 
 	if pod.Status.Phase == corev1.PodPending {
+		klog.V(4).InfoS("Can't in-place update pod, pod is in Pending phase", "pod", klog.KObj(pod))
 		return utils.InPlaceDeferred
 	}
 
 	singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
 	if !present {
-		klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
+		klog.V(4).InfoS("Can't in-place update pod, no stats found for replication group", "pod", klog.KObj(pod), "replicaCreator", cr)
 		return utils.InPlaceDeferred
 	}
 
@@ -181,7 +183,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 		return utils.InPlaceApproved
 	}
 
-	klog.V(4).InfoS("Can't in-place update pod, but not falling back to eviction. Waiting for next loop", "pod", klog.KObj(pod))
+	klog.V(4).InfoS("Can't in-place update pod, disruption budget does not allow it", "pod", klog.KObj(pod))
 	return utils.InPlaceDeferred
 }
 
