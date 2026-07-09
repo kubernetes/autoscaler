@@ -311,14 +311,14 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 						"clusterName": spec.clusterName,
 						"replicas":    int64(spec.nodeCount),
 						"template": map[string]interface{}{
+							"metadata": map[string]interface{}{
+								"labels": map[string]interface{}{},
+							},
 							"spec": map[string]interface{}{
 								"infrastructureRef": map[string]interface{}{
 									"apiGroup": "infrastructure.cluster.x-k8s.io",
 									"kind":     machineTemplateKind,
 									"name":     "TestMachineTemplate",
-								},
-								"metadata": map[string]interface{}{
-									"labels": map[string]interface{}{},
 								},
 							},
 						},
@@ -342,7 +342,7 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 			config.machineSet.SetOwnerReferences(ownerRefs)
 
 			if spec.managedLabels != nil {
-				if err := unstructured.SetNestedStringMap(config.machineDeployment.Object, spec.managedLabels, "spec", "template", "spec", "metadata", "labels"); err != nil {
+				if err := unstructured.SetNestedStringMap(config.machineDeployment.Object, spec.managedLabels, "spec", "template", "metadata", "labels"); err != nil {
 					panic(err)
 				}
 			}
