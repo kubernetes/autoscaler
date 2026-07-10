@@ -60,7 +60,9 @@ import (
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/karpenter"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/annotations"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -71,7 +73,6 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 )
 
@@ -162,6 +163,21 @@ func NewStaticAutoscaler(
 	csiProvider *csinodeprovider.Provider,
 	capacityBufferPodsRegistry *fakepods.Registry) *StaticAutoscaler {
 
+	// WHY (Karpenter Guardrails Validation):
+	// 1. BypassedSchedulers bypasses standard pod filtering, which when combined with Karpenter solver mode would result
+	//    in duplicate or invalid scale-up triggers and overscaling.
+	// 2. ProvisioningRequest features use custom CRDs/annotations not supported by Karpenter's solver.
+	// 3. Karpenter solver mode works optimally with Salvo scale-up to process pods in bounded salvos (batch size <= 1000).
+	if opts.KarpenterSimulatorEnabled && len(opts.BypassedSchedulers) > 0 {
+		klog.Fatalf("BypassedSchedulers must be empty when KarpenterSimulatorEnabled is true to prevent overscaling.")
+	}
+	if opts.KarpenterSimulatorEnabled && opts.ProvisioningRequestEnabled {
+		klog.Fatalf("ProvisioningRequestEnabled must be false when KarpenterSimulatorEnabled is true.")
+	}
+	if opts.KarpenterSimulatorEnabled && !opts.SalvoScaleUp {
+		klog.Warningf("Karpenter solver mode is enabled without Salvo scale-up loop. Pod batching is disabled; Karpenter solver will evaluate pods in a single pass.")
+	}
+
 	klog.V(4).Infof("Creating new static autoscaler with opts: %v", opts)
 
 	templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(processors.TemplateNodeInfoProvider)
@@ -174,6 +190,16 @@ func NewStaticAutoscaler(
 	processors.ScaleStateNotifier.Register(scaleUpFailuresRegistry)
 	clusterStateRegistry := clusterstate.NewNotifiedClusterStateRegistry(cloudProvider, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor, templateNodeInfoRegistry, clusterstate.WithScaleUpFailuresRegistry(scaleUpFailuresRegistry), clusterstate.WithConfig(clusterStateConfig), clusterstate.WithAsyncNodeGroupStateChecker(processors.AsyncNodeGroupStateChecker), clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+
+	// WHY (Pod Scheduling Simulator Selection): In Karpenter solver mode, pod rescheduling evaluation during scale-down
+	// or node removal must use KarpenterReschedulingSimulator (which respects Karpenter node pool and topology constraints)
+	// rather than CA's standard hinting simulator.
+	var podSchedulingSimulator clustersnapshot.PodSchedulingSimulator
+	if opts.KarpenterSimulatorEnabled {
+		podSchedulingSimulator = karpenter.NewKarpenterReschedulingSimulator()
+	} else {
+		podSchedulingSimulator = scheduling.NewHintingSimulator()
+	}
 
 	autoscalingCtx := ca_context.NewAutoscalingContext(
 		opts,
@@ -188,7 +214,8 @@ func NewStaticAutoscaler(
 		clusterStateRegistry,
 		draProvider,
 		templateNodeInfoRegistry,
-		csiProvider)
+		csiProvider,
+		podSchedulingSimulator)
 
 	taintConfig := taints.NewTaintConfig(opts)
 
@@ -388,7 +415,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	allocatedPods := slices.Concat(podsBySchedulability.Scheduled, podsBySchedulability.NominatedNode)
 	nonExpendableAllocatedPods := core_utils.FilterOutExpendablePods(allocatedPods, a.ExpendablePodsPriorityCutoff)
 
-	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableAllocatedPods, draSnapshot, csiSnapshot); err != nil {
+	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableAllocatedPods, draSnapshot, csiSnapshot, nil, nil, nil); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err).AddPrefix("failed to initialize ClusterSnapshot: ")
 	}
 	// Initialize Pod Disruption Budget tracking
@@ -592,6 +619,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 				daemonsets,
 				nodes,
 				templateNodeInfos,
+				nil,
 			)
 		}
 
@@ -659,9 +687,10 @@ func (a *StaticAutoscaler) runSingleScaleUp(
 	daemonsets []*v1.DaemonSet,
 	nodes []*apiv1.Node,
 	templateNodeInfos map[string]*framework.NodeInfo,
+	expectedTargetSizes map[string]int,
 ) ([]*apiv1.Pod, *status.ScaleUpStatus, caerrors.AutoscalerError) {
 	scaleUpFn := func() (*status.ScaleUpStatus, caerrors.AutoscalerError) {
-		return a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, nodes, daemonsets, templateNodeInfos, false)
+		return a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, nodes, daemonsets, templateNodeInfos, false, scaleup.WithExpectedTargetSizes(expectedTargetSizes))
 	}
 	return a.instrumentedScaleUp(currentTime, scaleUpFn)
 }
@@ -677,9 +706,18 @@ func (a *StaticAutoscaler) runScaleUpSalvo(
 	var typedErr caerrors.AutoscalerError
 	var handledPods []*apiv1.Pod
 
-	podsMap := make(map[types.UID]*apiv1.Pod)
+	podsMap := make(map[string]*apiv1.Pod)
 	for _, pod := range unschedulablePodsToHelp {
-		podsMap[pod.UID] = pod
+		podsMap[klog.KObj(pod).String()] = pod
+	}
+
+	expectedTargetSizes := make(map[string]int)
+	if a.CloudProvider != nil {
+		for _, ng := range a.CloudProvider.NodeGroups() {
+			if sz, err := ng.TargetSize(); err == nil {
+				expectedTargetSizes[ng.Id()] = sz
+			}
+		}
 	}
 
 	budget := a.AutoscalingContext.AutoscalingOptions.SalvoScaleUpBudget
@@ -692,7 +730,7 @@ func (a *StaticAutoscaler) runScaleUpSalvo(
 		klog.V(4).Infof("Scale up salvo: iteration %d, pods left: %d", i, len(podsMap))
 		unschedulablePods := slices.Collect(maps.Values(podsMap))
 
-		handledPods, scaleUpStatus, typedErr = a.runSingleScaleUp(currentTime, unschedulablePods, daemonsets, nodes, templateNodeInfos)
+		handledPods, scaleUpStatus, typedErr = a.runSingleScaleUp(currentTime, unschedulablePods, daemonsets, nodes, templateNodeInfos, expectedTargetSizes)
 		if typedErr != nil {
 			klog.Infof("Scale up failed, finishing the scale up salvo: %v", typedErr)
 			break
@@ -707,7 +745,7 @@ func (a *StaticAutoscaler) runScaleUpSalvo(
 		}
 
 		for _, pod := range handledPods {
-			delete(podsMap, pod.UID)
+			delete(podsMap, klog.KObj(pod).String())
 		}
 
 		if len(podsMap) == 0 {
@@ -907,6 +945,13 @@ func (a *StaticAutoscaler) addLatestScaleUpResultsToClusterSnapshot(idx int, sca
 	newNodes, err := a.addUpcomingNodesToClusterSnapshot(upcomingCounts, templateNodeInfos, "%d-"+salvoSuffix)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get upcoming node infos for salvo %d: %v", idx, err)
+	}
+
+	for _, node := range newNodes {
+		if node.Annotations == nil {
+			node.Annotations = make(map[string]string)
+		}
+		node.Annotations[annotations.NodeSalvoAnnotation] = "true"
 	}
 
 	for _, pod := range handledPods {

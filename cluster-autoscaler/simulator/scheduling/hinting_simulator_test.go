@@ -37,7 +37,7 @@ func TestTrySchedulePods(t *testing.T) {
 		newPods         []*apiv1.Pod
 		hints           map[*apiv1.Pod]string
 		acceptableNodes func(*framework.NodeInfo) bool
-		wantStatuses    []Status
+		wantStatuses    []clustersnapshot.Status
 		wantErr         bool
 	}{
 		{
@@ -54,7 +54,7 @@ func TestTrySchedulePods(t *testing.T) {
 				BuildTestPod("p3", 500, 500000),
 			},
 			acceptableNodes: ScheduleAnywhere,
-			wantStatuses: []Status{
+			wantStatuses: []clustersnapshot.Status{
 				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
 				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n1"},
 			},
@@ -75,7 +75,7 @@ func TestTrySchedulePods(t *testing.T) {
 			},
 			hints:           map[*apiv1.Pod]string{BuildTestPod("p2", 800, 500000): "non-existing-node"},
 			acceptableNodes: ScheduleAnywhere,
-			wantStatuses: []Status{
+			wantStatuses: []clustersnapshot.Status{
 				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
 				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n1"},
 			},
@@ -95,7 +95,7 @@ func TestTrySchedulePods(t *testing.T) {
 				BuildTestPod("p4", 700, 500000),
 			},
 			acceptableNodes: ScheduleAnywhere,
-			wantStatuses: []Status{
+			wantStatuses: []clustersnapshot.Status{
 				{Pod: BuildTestPod("p2", 800, 500000), NodeName: "n2"},
 				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n1"},
 			},
@@ -126,7 +126,7 @@ func TestTrySchedulePods(t *testing.T) {
 				BuildTestPod("p3", 500, 500000),
 			},
 			acceptableNodes: singleNodeOk("n2"),
-			wantStatuses: []Status{
+			wantStatuses: []clustersnapshot.Status{
 				{Pod: BuildTestPod("p2", 500, 500000), NodeName: "n2"},
 				{Pod: BuildTestPod("p3", 500, 500000), NodeName: "n2"},
 			},
@@ -145,7 +145,7 @@ func TestTrySchedulePods(t *testing.T) {
 				BuildTestPod("p3", 500, 500000),
 			},
 			acceptableNodes: singleNodeOk("n1"),
-			wantStatuses: []Status{
+			wantStatuses: []clustersnapshot.Status{
 				{Pod: BuildTestPod("p2", 500, 500000), NodeName: "n1"},
 			},
 		},
@@ -243,12 +243,12 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, nodes, []*apiv1.Pod{})
 			pods := make([]*apiv1.Pod, 0, len(tc.podNodes))
 			s := NewHintingSimulator()
-			var expectedStatuses []Status
+			var expectedStatuses []clustersnapshot.Status
 			for p, n := range tc.podNodes {
 				pod := BuildTestPod(p, 1, 1)
 				pods = append(pods, pod)
 				s.hints.Set(HintKeyFromPod(pod), n)
-				expectedStatuses = append(expectedStatuses, Status{Pod: pod, NodeName: n})
+				expectedStatuses = append(expectedStatuses, clustersnapshot.Status{Pod: pod, NodeName: n})
 			}
 			statuses, _, err := s.TrySchedulePods(clusterSnapshot, pods, false, clustersnapshot.SchedulingOptions{})
 			assert.NoError(t, err)

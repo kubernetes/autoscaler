@@ -27,7 +27,9 @@ import (
 	schedulerconfiglatest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulerplugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/interpodaffinity"
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodevolumelimits"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/podtopologyspread"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
@@ -35,6 +37,35 @@ import (
 var (
 	initMetricsOnce sync.Once
 )
+
+// NewKarpenterDisabledPluginsSchedulerConfig returns a copy of base KubeSchedulerConfiguration with InterPodAffinity
+// and PodTopologySpread plugins disabled.
+// WHY: In Karpenter simulation mode, Karpenter's solver natively evaluates and validates all inter-pod affinities
+// and topology spread constraints. Disabling these plugins in CA's predicate snapshot framework prevents redundant,
+// expensive predicate evaluations during snapshot.SchedulePod, avoiding CPU overhead and false-positive predicate failures.
+func NewKarpenterDisabledPluginsSchedulerConfig(base *schedulerconfig.KubeSchedulerConfiguration) (*schedulerconfig.KubeSchedulerConfiguration, error) {
+	if base == nil {
+		var err error
+		base, err = schedulerconfiglatest.Default()
+		if err != nil {
+			return nil, fmt.Errorf("couldn't create default scheduler config: %v", err)
+		}
+	}
+	cfg := base.DeepCopy()
+	if len(cfg.Profiles) > 0 {
+		profile := &cfg.Profiles[0]
+		if profile.Plugins == nil {
+			profile.Plugins = &schedulerconfig.Plugins{}
+		}
+		disabledPlugins := []schedulerconfig.Plugin{
+			{Name: interpodaffinity.Name},
+			{Name: podtopologyspread.Name},
+		}
+		profile.Plugins.PreFilter.Disabled = append(profile.Plugins.PreFilter.Disabled, disabledPlugins...)
+		profile.Plugins.Filter.Disabled = append(profile.Plugins.Filter.Disabled, disabledPlugins...)
+	}
+	return cfg, nil
+}
 
 // Handle is meant for interacting with the scheduler framework.
 type Handle struct {

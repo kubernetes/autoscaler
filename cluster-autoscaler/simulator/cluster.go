@@ -155,18 +155,21 @@ type RemovalSimulator struct {
 	canPersist          bool
 	deleteOptions       options.NodeDeleteOptions
 	drainabilityRules   rules.Rules
-	schedulingSimulator *scheduling.HintingSimulator
+	schedulingSimulator clustersnapshot.PodSchedulingSimulator
 }
 
 // NewRemovalSimulator returns a new RemovalSimulator.
-func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool) *RemovalSimulator {
+func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool, podSchedulingSimulator clustersnapshot.PodSchedulingSimulator) *RemovalSimulator {
+	if podSchedulingSimulator == nil {
+		podSchedulingSimulator = scheduling.NewHintingSimulator()
+	}
 	return &RemovalSimulator{
 		listers:             listers,
 		clusterSnapshot:     clusterSnapshot,
 		canPersist:          persistSuccessfulSimulations,
 		deleteOptions:       deleteOptions,
 		drainabilityRules:   drainabilityRules,
-		schedulingSimulator: scheduling.NewHintingSimulator(),
+		schedulingSimulator: podSchedulingSimulator,
 	}
 }
 

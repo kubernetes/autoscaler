@@ -1214,7 +1214,7 @@ func runSimpleScaleUpTest(t *testing.T, testConfig *ScaleUpTestConfig) *ScaleUpT
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, kube_util.ScheduledPods(pods), nil, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, kube_util.ScheduledPods(pods), nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 	err = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
@@ -1335,7 +1335,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, pods, nil, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, pods, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
@@ -1384,7 +1384,7 @@ func TestBinpackingLimiter(t *testing.T) {
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 	err = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
@@ -1449,7 +1449,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 	assert.NoError(t, err)
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, pods, nil, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, pods, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
@@ -1610,7 +1610,7 @@ func TestComputeSimilarNodeGroups(t *testing.T) {
 			templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false))
 			autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{BalanceSimilarNodeGroups: tc.balancingEnabled, MaxNodeGroupBinpackingDuration: 1 * time.Second}, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
-			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
+			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil, nil, nil, nil)
 			assert.NoError(t, err)
 			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
@@ -1697,7 +1697,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 			processors, templateNodeInfoRegistry := processorstest.NewTestProcessors(options)
 			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
-			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, podList, nil, nil)
+			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, podList, nil, nil, nil, nil, nil)
 			assert.NoError(t, err)
 			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
@@ -1860,7 +1860,7 @@ func TestScaleUpBalanceGroupsRespectsQuota(t *testing.T) {
 			processors.NodeGroupSetProcessor = nodegroupset.NewDefaultNodeGroupSetProcessor([]string{nodeGroupLabel}, config.NodeGroupDifferenceRatios{})
 			autoscalingCtx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil, templateNodeInfoRegistry)
 			assert.NoError(t, err)
-			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, podList, nil, nil)
+			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, podList, nil, nil, nil, nil, nil)
 			assert.NoError(t, err)
 			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
@@ -2076,7 +2076,7 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{n1, n2}
-	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil, nil, nil, nil)
 	assert.NoError(t, err)
 	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
@@ -2380,7 +2380,7 @@ func TestScaleUpSimulationForSkippedNodeGroups(t *testing.T) {
 			assert.NoError(t, err)
 
 			nodes := []*apiv1.Node{node1, node2, node3}
-			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil)
+			err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil, nil, nil, nil)
 			assert.NoError(t, err)
 			_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 			nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
@@ -2582,4 +2582,75 @@ func TestScaleUpPartialSuccessPopulatesPodsRemainUnschedulableSync(t *testing.T)
 	assert.Contains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p2_2")
 	assert.NotContains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p1_1")
 	assert.NotContains(t, result.ScaleUpStatus.PodsRemainUnschedulable, "p1_2")
+}
+
+func TestDefaultSimulator_IsSimilarValid(t *testing.T) {
+	provider := testprovider.NewTestCloudProviderBuilder().WithOnScaleUp(func(string, int) error { return nil }).Build()
+	now := time.Now()
+	node1 := BuildTestNode("ng1-node", 1000, 1000)
+	node2 := BuildTestNode("ng2-node", 1000, 1000)
+	SetNodeReadyState(node1, true, now.Add(-2*time.Minute))
+	SetNodeReadyState(node2, true, now.Add(-2*time.Minute))
+	provider.AddNodeGroup("ng1", 0, 10, 1)
+	provider.AddNodeGroup("ng2", 0, 10, 1)
+	provider.AddNode("ng1", node1)
+	provider.AddNode("ng2", node2)
+
+	ng1 := provider.GetNodeGroup("ng1")
+	ng2 := provider.GetNodeGroup("ng2")
+	nodes := []*apiv1.Node{node1, node2}
+
+	pod := BuildTestPod("p1", 500, 500)
+
+	templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false))
+	autoscalingCtx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, nil, provider, nil, nil, templateNodeInfoRegistry)
+	assert.NoError(t, err)
+
+	err = autoscalingCtx.ClusterSnapshot.SetClusterState(nodes, nil, nil, nil, nil, nil, nil)
+	assert.NoError(t, err)
+	_ = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
+
+	processors, _ := processorstest.NewTestProcessors(autoscalingCtx.AutoscalingOptions)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(nodegroupchange.NewNodeGroupChangeObserversList()))
+	assert.NoError(t, clusterState.UpdateNodes(nodes, now))
+
+	cloudQuotasProvider := resourcequotas.NewCloudQuotasProvider(provider)
+	trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+		QuotaProvider:            cloudQuotasProvider,
+		CustomResourcesProcessor: processors.CustomResourcesProcessor,
+	})
+
+	orchestrator := &ScaleUpOrchestrator{}
+	orchestrator.Initialize(&autoscalingCtx, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{}, trackerFactory)
+	simulator := NewDefaultSimulator(orchestrator)
+
+	podEquivalenceGroups := []*equivalence.PodGroup{
+		{
+			Pods: []*apiv1.Pod{pod},
+		},
+	}
+
+	tracker, _ := trackerFactory.NewQuotasTracker(&autoscalingCtx, nil)
+
+	options, _, _, err := simulator.Simulate(
+		&autoscalingCtx,
+		podEquivalenceGroups,
+		[]*apiv1.Pod{pod},
+		[]*apiv1.Node{},
+		[]cloudprovider.NodeGroup{ng1, ng2},
+		nodeInfos,
+		tracker,
+		now,
+		false,
+	)
+	assert.NoError(t, err)
+	assert.Len(t, options, 1)
+	assert.NotEmpty(t, options[0])
+
+	for _, opt := range options[0] {
+		assert.NotNil(t, opt.IsSimilarValid, "IsSimilarValid should be populated on expander.Option")
+		assert.True(t, opt.IsSimilarValid(opt.NodeGroup, nodeInfos[opt.NodeGroup.Id()]))
+		assert.False(t, opt.IsSimilarValid(nil, nil))
+	}
 }

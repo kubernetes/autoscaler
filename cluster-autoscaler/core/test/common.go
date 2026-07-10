@@ -382,7 +382,7 @@ func (r *MockReportingStrategy) BestOption(options []expander.Option, nodeInfo m
 		if groupSizeChange == *r.optionToChoose {
 			bestOption := option
 			if r.similarNodeGroupsToChoose != nil {
-				bestOption.SimilarNodeGroups = []cloudprovider.NodeGroup{}
+				bestOption.SimilarNodeGroups = nil
 				for _, nodeGroup := range options {
 					if slices.Contains(*r.similarNodeGroupsToChoose, nodeGroup.NodeGroup.Id()) {
 						bestOption.SimilarNodeGroups = append(bestOption.SimilarNodeGroups, nodeGroup.NodeGroup)

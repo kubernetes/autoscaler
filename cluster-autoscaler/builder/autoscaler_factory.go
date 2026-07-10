@@ -83,7 +83,15 @@ func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerO
 		opts.AutoscalingKubeClients = ca_context.NewAutoscalingKubeClients(ctx, opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
 	if opts.FrameworkHandle == nil {
-		fwHandle, err := framework.NewHandle(ctx, opts.InformerFactory, opts.SchedulerConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled)
+		schedConfig := opts.SchedulerConfig
+		if opts.KarpenterSimulatorEnabled {
+			var err error
+			schedConfig, err = framework.NewKarpenterDisabledPluginsSchedulerConfig(schedConfig)
+			if err != nil {
+				return err
+			}
+		}
+		fwHandle, err := framework.NewHandle(ctx, opts.InformerFactory, schedConfig, opts.DynamicResourceAllocationEnabled, opts.CSINodeAwareSchedulingEnabled)
 		if err != nil {
 			return err
 		}

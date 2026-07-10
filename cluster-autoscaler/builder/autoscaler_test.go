@@ -76,3 +76,45 @@ func TestAutoscalerBuilderNoError(t *testing.T) {
 		time.Sleep(1 * time.Second)
 	})
 }
+
+func TestAutoscalerBuilderConflictError(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+
+		options := config.AutoscalingOptions{
+			CloudProviderName:          "gce",
+			EstimatorName:              estimator.BinpackingEstimatorName,
+			ExpanderNames:              expander.LeastWasteExpanderName,
+			KarpenterSimulatorEnabled:  true,
+			ProvisioningRequestEnabled: true,
+		}
+
+		debuggingSnapshotter := debuggingsnapshot.NewDebuggingSnapshotter(false)
+		kubeClient := fake.NewClientset()
+
+		mgr, err := manager.New(&rest.Config{}, manager.Options{
+			Metrics: metricsserver.Options{
+				BindAddress: "0",
+			},
+			HealthProbeBindAddress: "0",
+		})
+		assert.NoError(t, err)
+
+		autoscaler, trigger, err := New(options).
+			WithDebuggingSnapshotter(debuggingSnapshotter).
+			WithManager(mgr).
+			WithKubeClient(kubeClient).
+			WithInformerFactory(informers.NewSharedInformerFactory(kubeClient, 0)).
+			WithCloudProvider(test.NewCloudProvider(nil)).
+			WithPodObserver(&loop.UnschedulablePodObserver{}).
+			Build(ctx)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "ProvisioningRequest cannot be enabled when Karpenter simulator is enabled")
+		assert.Nil(t, autoscaler)
+		assert.Nil(t, trigger)
+
+		cancel()
+		time.Sleep(1 * time.Second)
+	})
+}

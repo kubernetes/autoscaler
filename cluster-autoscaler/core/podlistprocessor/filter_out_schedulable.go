@@ -32,14 +32,12 @@ import (
 )
 
 type filterOutSchedulablePodListProcessor struct {
-	schedulingSimulator *scheduling.HintingSimulator
 	nodeFilter          func(*framework.NodeInfo) bool
 }
 
 // NewFilterOutSchedulablePodListProcessor creates a PodListProcessor filtering out schedulable pods
 func NewFilterOutSchedulablePodListProcessor(nodeFilter func(*framework.NodeInfo) bool) *filterOutSchedulablePodListProcessor {
 	return &filterOutSchedulablePodListProcessor{
-		schedulingSimulator: scheduling.NewHintingSimulator(),
 		nodeFilter:          nodeFilter,
 	}
 }
@@ -61,11 +59,19 @@ func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_contex
 	//
 	// With the check enabled the last point won't happen because CA will ignore a pod
 	// which is supposed to schedule on an existing node.
+	//
+	// When Karpenter solver mode is enabled, autoscalingCtx.PodSchedulingSimulator is
+	// KarpenterReschedulingSimulator, which evaluates whether pending pods can be scheduled
+	// on existing ClusterSnapshot nodes without provisioning new NodePools.
 
 	klog.V(4).Infof("Filtering out schedulables")
 	filterOutSchedulableStart := time.Now()
 
-	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(unschedulablePods, autoscalingCtx.ClusterSnapshot)
+	simulator := autoscalingCtx.PodSchedulingSimulator
+	if simulator == nil {
+		simulator = scheduling.NewHintingSimulator()
+	}
+	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(unschedulablePods, autoscalingCtx.ClusterSnapshot, simulator)
 
 	if err != nil {
 		return nil, err
@@ -76,7 +82,7 @@ func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_contex
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
 		klog.V(2).Info("Schedulable pods present")
 
-		if autoscalingCtx.DebuggingSnapshotter.IsDataCollectionAllowed() {
+		if autoscalingCtx.DebuggingSnapshotter != nil && autoscalingCtx.DebuggingSnapshotter.IsDataCollectionAllowed() {
 			schedulablePods := findSchedulablePods(unschedulablePods, unschedulablePodsToHelp)
 			autoscalingCtx.DebuggingSnapshotter.SetUnscheduledPodsCanBeScheduled(schedulablePods)
 		}
@@ -94,13 +100,13 @@ func (p *filterOutSchedulablePodListProcessor) CleanUp() {
 // unschedulable can be scheduled on free capacity on existing nodes by trying to pack the pods. It
 // tries to pack the higher priority pods first. It takes into account pods that are bound to node
 // and will be scheduled after lower priority pod preemption.
-func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, clusterSnapshot clustersnapshot.ClusterSnapshot) ([]*apiv1.Pod, error) {
+func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, clusterSnapshot clustersnapshot.ClusterSnapshot, simulator clustersnapshot.PodSchedulingSimulator) ([]*apiv1.Pod, error) {
 	// Sort unschedulable pods by importance
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
 		return corev1helpers.PodPriority(unschedulableCandidates[i]) > corev1helpers.PodPriority(unschedulableCandidates[j])
 	})
 
-	statuses, overflowingControllerCount, err := p.schedulingSimulator.TrySchedulePods(clusterSnapshot, unschedulableCandidates, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: p.nodeFilter})
+	statuses, overflowingControllerCount, err := simulator.TrySchedulePods(clusterSnapshot, unschedulableCandidates, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: p.nodeFilter})
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +127,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 	metrics.UpdateOverflowingControllers(overflowingControllerCount)
 	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.", len(unschedulableCandidates)-len(unschedulablePods))
 
-	p.schedulingSimulator.DropOldHints()
+	simulator.DropOldHints()
 	return unschedulablePods, nil
 }
 

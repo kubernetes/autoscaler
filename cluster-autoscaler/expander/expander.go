@@ -49,6 +49,11 @@ type Option struct {
 	NodeCount         int
 	Debug             string
 	Pods              []*apiv1.Pod
+
+	// IsSimilarValid is an optional callback to validate if a candidate
+	// similar node group is valid for this option. Used to avoid zonal
+	// matching bugs.
+	IsSimilarValid func(group cloudprovider.NodeGroup, nodeInfo *framework.NodeInfo) bool
 }
 
 // Strategy describes an interface for selecting the best option when scaling up

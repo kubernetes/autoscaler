@@ -140,6 +140,10 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	// Get AutoscalingOptions from flags.
 	autoscalingOptions := b.options
 
+	if autoscalingOptions.KarpenterSimulatorEnabled && autoscalingOptions.ProvisioningRequestEnabled {
+		return nil, nil, fmt.Errorf("ProvisioningRequest cannot be enabled when Karpenter simulator is enabled")
+	}
+
 	if b.debuggingSnapshotter == nil {
 		return nil, nil, fmt.Errorf("debuggingSnapshotter is missing: ensure WithDebuggingSnapshotter() is called")
 	}
@@ -153,7 +157,16 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 		return nil, nil, fmt.Errorf("informerFactory is missing: ensure WithInformerFactory() is called")
 	}
 
-	fwHandle, err := framework.NewHandle(ctx, b.informerFactory, autoscalingOptions.SchedulerConfig, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.CSINodeAwareSchedulingEnabled)
+	schedConfig := autoscalingOptions.SchedulerConfig
+	if autoscalingOptions.KarpenterSimulatorEnabled {
+		var err error
+		schedConfig, err = framework.NewKarpenterDisabledPluginsSchedulerConfig(schedConfig)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	fwHandle, err := framework.NewHandle(ctx, b.informerFactory, schedConfig, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.CSINodeAwareSchedulingEnabled)
 	if err != nil {
 		return nil, nil, err
 	}

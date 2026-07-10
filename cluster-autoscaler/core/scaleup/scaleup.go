@@ -30,6 +30,40 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 )
 
+// scaleUpConfig holds configuration options for ScaleUp.
+type scaleUpConfig struct {
+	expectedTargetSizes map[string]int
+}
+
+// ScaleUpOption is a functional option for configuring ScaleUp.
+type ScaleUpOption func(*scaleUpConfig)
+
+// WithExpectedTargetSizes returns a ScaleUpOption that sets the expected target sizes.
+func WithExpectedTargetSizes(sizes map[string]int) ScaleUpOption {
+	return func(c *scaleUpConfig) {
+		c.expectedTargetSizes = sizes
+	}
+}
+
+// ExpectedTargetSizes returns expected target sizes configured in scaleUpConfig, or nil if not set.
+func (c *scaleUpConfig) ExpectedTargetSizes() map[string]int {
+	if c == nil {
+		return nil
+	}
+	return c.expectedTargetSizes
+}
+
+// ProcessScaleUpOptions processes the options and returns a scaleUpConfig.
+func ProcessScaleUpOptions(opts ...ScaleUpOption) *scaleUpConfig {
+	cfg := &scaleUpConfig{}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(cfg)
+		}
+	}
+	return cfg
+}
+
 // Orchestrator is a component that picks the node group to resize and triggers
 // creation of needed instances.
 type Orchestrator interface {
@@ -51,6 +85,7 @@ type Orchestrator interface {
 		daemonSets []*appsv1.DaemonSet,
 		nodeInfos map[string]*framework.NodeInfo,
 		allOrNothing bool,
+		opts ...ScaleUpOption,
 	) (*status.ScaleUpStatus, errors.AutoscalerError)
 	// ScaleUpToNodeGroupMinSize tries to scale up node groups that have less nodes
 	// than the configured min size. The source of truth for the current node group
@@ -61,3 +96,4 @@ type Orchestrator interface {
 		nodeInfos map[string]*framework.NodeInfo,
 	) (*status.ScaleUpStatus, errors.AutoscalerError)
 }
+

@@ -57,6 +57,8 @@ type AutoscalingContext struct {
 	FrameworkHandle *framework.Handle
 	// ClusterSnapshot denotes cluster snapshot used for predicate checking.
 	ClusterSnapshot clustersnapshot.ClusterSnapshot
+	// PodSchedulingSimulator is used to simulate scheduling of pods.
+	PodSchedulingSimulator clustersnapshot.PodSchedulingSimulator
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
 	ExpanderStrategy expander.Strategy
 	// ProcessorCallbacks is interface defining extra callback methods which can be called by processors used in extension points.
@@ -143,6 +145,7 @@ func NewAutoscalingContext(
 	draProvider *draprovider.Provider,
 	templateNodeInfoRegistry TemplateNodeInfoRegistry,
 	csiProvider *csinodeprovider.Provider,
+	podSchedulingSimulator clustersnapshot.PodSchedulingSimulator,
 ) *AutoscalingContext {
 	return &AutoscalingContext{
 		AutoscalingOptions:       options,
@@ -158,6 +161,7 @@ func NewAutoscalingContext(
 		DraProvider:              draProvider,
 		TemplateNodeInfoRegistry: templateNodeInfoRegistry,
 		CsiProvider:              csiProvider,
+		PodSchedulingSimulator:   podSchedulingSimulator,
 	}
 }
 

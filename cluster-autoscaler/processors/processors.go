@@ -84,7 +84,7 @@ func DefaultProcessors(options config.AutoscalingOptions) *AutoscalingProcessors
 		PodListProcessor:       pods.NewDefaultPodListProcessor(),
 		NodeGroupListProcessor: nodegroups.NewDefaultNodeGroupListProcessor(),
 		BinpackingLimiter:      binpacking.NewTimeLimiter(options.MaxBinpackingTime),
-		NodeGroupSetProcessor: nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{
+		NodeGroupSetProcessor: nodegroupset.NewDefaultNodeGroupSetProcessor(options.BalancingExtraIgnoredLabels, config.NodeGroupDifferenceRatios{
 			MaxAllocatableDifferenceRatio:    config.DefaultMaxAllocatableDifferenceRatio,
 			MaxCapacityMemoryDifferenceRatio: config.DefaultMaxCapacityMemoryDifferenceRatio,
 			MaxFreeDifferenceRatio:           config.DefaultMaxFreeDifferenceRatio,
