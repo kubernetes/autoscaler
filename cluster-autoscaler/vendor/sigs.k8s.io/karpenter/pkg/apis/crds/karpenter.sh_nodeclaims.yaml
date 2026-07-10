@@ -1,0 +1,397 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.20.1
+  name: nodeclaims.karpenter.sh
+spec:
+  group: karpenter.sh
+  names:
+    categories:
+      - karpenter
+    kind: NodeClaim
+    listKind: NodeClaimList
+    plural: nodeclaims
+    singular: nodeclaim
+  scope: Cluster
+  versions:
+    - additionalPrinterColumns:
+        - jsonPath: .metadata.labels.node\.kubernetes\.io/instance-type
+          name: Type
+          type: string
+        - jsonPath: .metadata.labels.karpenter\.sh/capacity-type
+          name: Capacity
+          type: string
+        - jsonPath: .metadata.labels.topology\.kubernetes\.io/zone
+          name: Zone
+          type: string
+        - jsonPath: .status.nodeName
+          name: Node
+          type: string
+        - jsonPath: .status.conditions[?(@.type=="Ready")].status
+          name: Ready
+          type: string
+        - jsonPath: .metadata.creationTimestamp
+          name: Age
+          type: date
+        - jsonPath: .status.imageID
+          name: ImageID
+          priority: 1
+          type: string
+        - jsonPath: .status.providerID
+          name: ID
+          priority: 1
+          type: string
+        - jsonPath: .metadata.labels.karpenter\.sh/nodepool
+          name: NodePool
+          priority: 1
+          type: string
+        - jsonPath: .spec.nodeClassRef.name
+          name: NodeClass
+          priority: 1
+          type: string
+        - jsonPath: .status.conditions[?(@.type=="Drifted")].status
+          name: Drifted
+          priority: 1
+          type: string
+      name: v1
+      schema:
+        openAPIV3Schema:
+          description: NodeClaim is the Schema for the NodeClaims API
+          properties:
+            apiVersion:
+              description: |-
+                APIVersion defines the versioned schema of this representation of an object.
+                Servers should convert recognized schemas to the latest internal value, and
+                may reject unrecognized values.
+                More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+              type: string
+            kind:
+              description: |-
+                Kind is a string value representing the REST resource this object represents.
+                Servers may infer this from the endpoint the client submits requests to.
+                Cannot be updated.
+                In CamelCase.
+                More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: NodeClaimSpec describes the desired state of the NodeClaim
+              properties:
+                expireAfter:
+                  default: 720h
+                  description: |-
+                    ExpireAfter is the duration the controller will wait
+                    before terminating a node, measured from when the node is created. This
+                    is useful to implement features like eventually consistent node upgrade,
+                    memory leak protection, and disruption testing.
+                  pattern: ^(([0-9]+(s|m|h))+|Never)$
+                  type: string
+                nodeClassRef:
+                  description: NodeClassRef is a reference to an object that defines provider specific configuration
+                  properties:
+                    group:
+                      description: API version of the referent
+                      pattern: ^[^/]*$
+                      type: string
+                      x-kubernetes-validations:
+                        - message: group may not be empty
+                          rule: self != ''
+                    kind:
+                      description: 'Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"'
+                      type: string
+                      x-kubernetes-validations:
+                        - message: kind may not be empty
+                          rule: self != ''
+                    name:
+                      description: 'Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                      type: string
+                      x-kubernetes-validations:
+                        - message: name may not be empty
+                          rule: self != ''
+                  required:
+                    - group
+                    - kind
+                    - name
+                  type: object
+                requirements:
+                  description: Requirements are layered with GetLabels and applied to every node.
+                  items:
+                    description: |-
+                      A node selector requirement is a selector that contains values, a key, an operator that relates the key and values
+                      and minValues that represent the requirement to have at least that many values.
+                    properties:
+                      key:
+                        description: The label key that the selector applies to.
+                        type: string
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
+                        x-kubernetes-validations:
+                          - message: label domain "karpenter.sh" is restricted
+                            rule: self in ["karpenter.sh/capacity-type", "karpenter.sh/nodepool"] || !self.find("^([^/]+)").endsWith("karpenter.sh")
+                          - message: label "kubernetes.io/hostname" is restricted
+                            rule: self != "kubernetes.io/hostname"
+                      minValues:
+                        description: |-
+                          This field is ALPHA and can be dropped or replaced at any time
+                          MinValues is the minimum number of unique values required to define the flexibility of the specific requirement.
+                        maximum: 50
+                        minimum: 1
+                        type: integer
+                      operator:
+                        description: |-
+                          Represents a key's relationship to a set of values.
+                          Valid operators are In, NotIn, Exists, DoesNotExist. Gt, Lt, Gte, and Lte.
+                        enum:
+                          - Gte
+                          - Lte
+                          - In
+                          - NotIn
+                          - Exists
+                          - DoesNotExist
+                          - Gt
+                          - Lt
+                        type: string
+                      values:
+                        description: |-
+                          An array of string values. If the operator is In or NotIn,
+                          the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                          the values array must be empty. If the operator is Gt, Lt, Gte, or Lte, the values
+                          array must have a single element, which will be interpreted as an integer.
+                          This array is replaced during a strategic merge patch.
+                        items:
+                          type: string
+                        type: array
+                        x-kubernetes-list-type: atomic
+                        maxLength: 63
+                        pattern: ^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$
+                    required:
+                      - key
+                      - operator
+                    type: object
+                  maxItems: 100
+                  type: array
+                  x-kubernetes-list-type: atomic
+                  x-kubernetes-validations:
+                    - message: requirements with operator 'In' must have a value defined
+                      rule: 'self.all(x, x.operator == ''In'' ? x.values.size() != 0 : true)'
+                    - message: requirements operator 'Gt', 'Lt', 'Gte', or 'Lte' must have a single positive integer value
+                      rule: 'self.all(x, (x.operator == ''Gt'' || x.operator == ''Lt'' || x.operator == ''Gte'' || x.operator == ''Lte'') ? (x.values.size() == 1 && int(x.values[0]) >= 0) : true)'
+                    - message: requirements with 'minValues' must have at least that many values specified in the 'values' field
+                      rule: 'self.all(x, (x.operator == ''In'' && has(x.minValues)) ? x.values.size() >= x.minValues : true)'
+                resources:
+                  description: Resources models the resource requirements for the NodeClaim to launch
+                  properties:
+                    requests:
+                      additionalProperties:
+                        anyOf:
+                          - type: integer
+                          - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      description: Requests describes the minimum required resources for the NodeClaim to launch
+                      type: object
+                  type: object
+                startupTaints:
+                  description: |-
+                    startupTaints are taints that are applied to nodes upon startup which are expected to be removed automatically
+                    within a short period of time, typically by a DaemonSet that tolerates the taint. These are commonly used by
+                    daemonsets to allow initialization and enforce startup ordering.  StartupTaints are ignored for provisioning
+                    purposes in that pods are not required to tolerate a StartupTaint in order to have nodes provisioned for them.
+                  items:
+                    description: |-
+                      The node this Taint is attached to has the "effect" on
+                      any pod that does not tolerate the Taint.
+                    properties:
+                      effect:
+                        description: |-
+                          Required. The effect of the taint on pods
+                          that do not tolerate the taint.
+                          Valid effects are NoSchedule, PreferNoSchedule and NoExecute.
+                        type: string
+                        enum:
+                          - NoSchedule
+                          - PreferNoSchedule
+                          - NoExecute
+                      key:
+                        description: Required. The taint key to be applied to a node.
+                        type: string
+                        minLength: 1
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
+                      timeAdded:
+                        description: TimeAdded represents the time at which the taint was added.
+                        format: date-time
+                        type: string
+                      value:
+                        description: The taint value corresponding to the taint key.
+                        type: string
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
+                    required:
+                      - effect
+                      - key
+                    type: object
+                  type: array
+                  x-kubernetes-list-type: atomic
+                taints:
+                  description: taints will be applied to the NodeClaim's node.
+                  items:
+                    description: |-
+                      The node this Taint is attached to has the "effect" on
+                      any pod that does not tolerate the Taint.
+                    properties:
+                      effect:
+                        description: |-
+                          Required. The effect of the taint on pods
+                          that do not tolerate the taint.
+                          Valid effects are NoSchedule, PreferNoSchedule and NoExecute.
+                        type: string
+                        enum:
+                          - NoSchedule
+                          - PreferNoSchedule
+                          - NoExecute
+                      key:
+                        description: Required. The taint key to be applied to a node.
+                        type: string
+                        minLength: 1
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
+                      timeAdded:
+                        description: TimeAdded represents the time at which the taint was added.
+                        format: date-time
+                        type: string
+                      value:
+                        description: The taint value corresponding to the taint key.
+                        type: string
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
+                    required:
+                      - effect
+                      - key
+                    type: object
+                  type: array
+                  x-kubernetes-list-type: atomic
+                terminationGracePeriod:
+                  description: |-
+                    TerminationGracePeriod is the maximum duration the controller will wait before forcefully deleting the pods on a node, measured from when deletion is first initiated.
+
+                    Warning: this feature takes precedence over a Pod's terminationGracePeriodSeconds value, and bypasses any blocked PDBs or the karpenter.sh/do-not-disrupt annotation.
+
+                    This field is intended to be used by cluster administrators to enforce that nodes can be cycled within a given time period.
+                    When set, drifted nodes will begin draining even if there are pods blocking eviction. Draining will respect PDBs and the do-not-disrupt annotation until the TGP is reached.
+
+                    Karpenter will preemptively delete pods so their terminationGracePeriodSeconds align with the node's terminationGracePeriod.
+                    If a pod would be terminated without being granted its full terminationGracePeriodSeconds prior to the node timeout,
+                    that pod will be deleted at T = node timeout - pod terminationGracePeriodSeconds.
+
+                    The feature can also be used to allow maximum time limits for long-running jobs which can delay node termination with preStop hooks.
+                    If left undefined, the controller will wait indefinitely for pods to be drained.
+                  pattern: ^([0-9]+(s|m|h))+$
+                  type: string
+              required:
+                - nodeClassRef
+                - requirements
+              type: object
+              x-kubernetes-validations:
+                - message: spec is immutable
+                  rule: self == oldSelf
+            status:
+              description: NodeClaimStatus defines the observed state of NodeClaim
+              properties:
+                allocatable:
+                  additionalProperties:
+                    anyOf:
+                      - type: integer
+                      - type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  description: Allocatable is the estimated allocatable capacity of the node
+                  type: object
+                capacity:
+                  additionalProperties:
+                    anyOf:
+                      - type: integer
+                      - type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  description: Capacity is the estimated full capacity of the node
+                  type: object
+                conditions:
+                  description: Conditions contains signals for health and readiness
+                  items:
+                    description: Condition aliases the upstream type and adds additional helper methods
+                    properties:
+                      lastTransitionTime:
+                        description: |-
+                          lastTransitionTime is the last time the condition transitioned from one status to another.
+                          This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                        format: date-time
+                        type: string
+                      message:
+                        description: |-
+                          message is a human readable message indicating details about the transition.
+                          This may be an empty string.
+                        maxLength: 32768
+                        type: string
+                      observedGeneration:
+                        description: |-
+                          observedGeneration represents the .metadata.generation that the condition was set based upon.
+                          For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                          with respect to the current state of the instance.
+                        format: int64
+                        minimum: 0
+                        type: integer
+                      reason:
+                        description: |-
+                          reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                          Producers of specific condition types may define expected values and meanings for this field,
+                          and whether the values are considered a guaranteed API.
+                          The value should be a CamelCase string.
+                          This field may not be empty.
+                        maxLength: 1024
+                        pattern: ^([A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?|)$
+                        type: string
+                      status:
+                        description: status of the condition, one of True, False, Unknown.
+                        enum:
+                          - "True"
+                          - "False"
+                          - Unknown
+                        type: string
+                      type:
+                        description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                        type: string
+                    required:
+                      - lastTransitionTime
+                      - status
+                      - type
+                    type: object
+                  type: array
+                  x-kubernetes-list-map-keys:
+                    - type
+                  x-kubernetes-list-type: map
+                imageID:
+                  description: ImageID is an identifier for the image that runs on the node
+                  type: string
+                lastPodEventTime:
+                  description: |-
+                    LastPodEventTime is updated with the last time a pod was scheduled
+                    or removed from the node. A pod going terminal or terminating
+                    is also considered as removed.
+                  format: date-time
+                  type: string
+                nodeName:
+                  description: NodeName is the name of the corresponding node object
+                  type: string
+                providerID:
+                  description: ProviderID of the corresponding node object
+                  type: string
+              type: object
+          required:
+            - spec
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}

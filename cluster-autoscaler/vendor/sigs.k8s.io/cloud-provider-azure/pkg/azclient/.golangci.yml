@@ -1,0 +1,64 @@
+version: "2"
+run:
+  modules-download-mode: mod
+  tests: true
+linters:
+  default: none
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - errcheck
+    - errorlint
+    - goconst
+    - gosec
+    - govet
+    - ineffassign
+    - loggercheck
+    - misspell
+    - nakedret
+    - revive
+    - staticcheck
+    - unconvert
+    - unused
+  settings:
+    goconst:
+      min-occurrences: 10
+    gosec:
+      excludes:
+        - G114
+        - G115
+    staticcheck:
+      checks:
+        - all
+        - -SA1019
+    revive:
+      rules:
+        - name: var-naming
+          disabled: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - sigs.k8s.io/cloud-provider-azure/pkg/azclient
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
