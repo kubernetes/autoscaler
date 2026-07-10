@@ -167,19 +167,23 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 		// For InPlaceOrRecreate mode, check timeout
 		canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
 		if canEvict {
+			klog.V(4).InfoS("Can't in-place update pod, timeout reached for InPlaceOrRecreate mode, evicting pod", "pod", klog.KObj(pod))
 			return utils.InPlaceEvict
 		}
+		klog.V(4).InfoS("In-place update deferred, waiting for timeout in InPlaceOrRecreate mode before evicting pod", "pod", klog.KObj(pod))
 		return utils.InPlaceDeferred
 	}
 
 	if ip.inPlaceSkipDisruptionBudget {
 		if utils.IsNonDisruptiveResize(pod) {
+			klog.V(4).InfoS("In-place update approved, pod has non-disruptive resize policy", "pod", klog.KObj(pod))
 			return utils.InPlaceApproved
 		}
 		klog.V(4).InfoS("in-place-skip-disruption-budget enabled, but pod has RestartContainer resize policy", "pod", klog.KObj(pod))
 	}
 
 	if singleGroupStats.isPodDisruptable() {
+		klog.V(4).InfoS("In-place update approved, pod is disruptable", "pod", klog.KObj(pod))
 		return utils.InPlaceApproved
 	}
 
