@@ -337,7 +337,7 @@ spec:
                           description: |-
                             Specifies the type of recommendations that will be computed
                             (and possibly applied) by VPA.
-                            If not specified, the default of [ResourceCPU, ResourceMemory] will be used.
+                            If not specified, the default of [cpu, memory] will be used.
                           items:
                             description: ResourceName is the name identifying various
                               resources in a ResourceList.

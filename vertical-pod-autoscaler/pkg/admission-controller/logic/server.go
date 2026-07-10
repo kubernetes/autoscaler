@@ -121,6 +121,7 @@ func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.
 	response.UID = ar.Request.UID
 
 	var patches []resource.PatchRecord
+	var warnings []string
 	var err error
 	var allErrs field.ErrorList
 	resource := metrics_admission.Unknown
@@ -134,8 +135,9 @@ func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.
 
 	handler, ok := s.resourceHandlers[admittedGroupResource]
 	if ok {
-		patches, allErrs = handler.GetPatches(ctx, ar.Request)
+		patches, warnings, allErrs = handler.GetPatches(ctx, ar.Request)
 		resource = handler.AdmissionResource()
+		response.Warnings = append(response.Warnings, warnings...)
 
 		if handler.DisallowIncorrectObjects() && len(allErrs) > 0 {
 			// we don't let in problematic objects - late validation

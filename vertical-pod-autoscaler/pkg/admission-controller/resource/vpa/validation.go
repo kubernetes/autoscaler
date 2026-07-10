@@ -33,17 +33,38 @@ type VPAValidationOptions struct {
 	AllowCPUStartupBoost bool
 	AllowPerVPAConfig    bool
 	AllowInPlace         bool
+	// ExistingControlledResources contains the controlled resources already
+	// present in the old VPA object, which stay allowed on update even if
+	// they wouldn't be accepted on create.
+	ExistingControlledResources map[corev1.ResourceName]bool
 }
 
 func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAValidationOptions {
 	opts := VPAValidationOptions{
-		IsVPACreate:          oldObj == nil,
-		AllowCPUStartupBoost: allowCPUBoost(oldObj),
-		AllowPerVPAConfig:    allowPerVPAConfig(oldObj),
-		AllowInPlace:         allowInPlace(oldObj),
+		IsVPACreate:                 oldObj == nil,
+		AllowCPUStartupBoost:        allowCPUBoost(oldObj),
+		AllowPerVPAConfig:           allowPerVPAConfig(oldObj),
+		AllowInPlace:                allowInPlace(oldObj),
+		ExistingControlledResources: existingControlledResources(oldObj),
 	}
 
 	return opts
+}
+
+func existingControlledResources(oldObj *vpa_types.VerticalPodAutoscaler) map[corev1.ResourceName]bool {
+	resources := map[corev1.ResourceName]bool{}
+	if oldObj == nil || oldObj.Spec.ResourcePolicy == nil {
+		return resources
+	}
+	for _, policy := range oldObj.Spec.ResourcePolicy.ContainerPolicies {
+		if policy.ControlledResources == nil {
+			continue
+		}
+		for _, resource := range *policy.ControlledResources {
+			resources[resource] = true
+		}
+	}
+	return resources
 }
 
 func allowCPUBoost(oldObj *vpa_types.VerticalPodAutoscaler) bool {
@@ -109,14 +130,13 @@ func allowInPlace(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	return false
 }
 
-func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions) field.ErrorList {
-	allErrs := field.ErrorList{}
-	allErrs = append(allErrs, validateVPASpec(&vpa.Spec, field.NewPath("spec"), opts)...)
-	return allErrs
+func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions) ([]string, field.ErrorList) {
+	return validateVPASpec(&vpa.Spec, field.NewPath("spec"), opts)
 }
 
-func validateVPASpec(spec *vpa_types.VerticalPodAutoscalerSpec, fldPath *field.Path, opts VPAValidationOptions) field.ErrorList {
+func validateVPASpec(spec *vpa_types.VerticalPodAutoscalerSpec, fldPath *field.Path, opts VPAValidationOptions) ([]string, field.ErrorList) {
 	allErrs := field.ErrorList{}
+	var warnings []string
 
 	// TODO: Add validation for spec.TargetRef
 	if spec.TargetRef == nil && opts.IsVPACreate {
@@ -128,7 +148,9 @@ func validateVPASpec(spec *vpa_types.VerticalPodAutoscalerSpec, fldPath *field.P
 	}
 
 	if spec.ResourcePolicy != nil {
-		allErrs = append(allErrs, validateVPASpecResourcePolicy(spec.ResourcePolicy, fldPath.Child("resourcePolicy"), opts)...)
+		policyWarnings, policyErrs := validateVPASpecResourcePolicy(spec.ResourcePolicy, fldPath.Child("resourcePolicy"), opts)
+		warnings = append(warnings, policyWarnings...)
+		allErrs = append(allErrs, policyErrs...)
 	}
 
 	if spec.StartupBoost != nil {
@@ -139,7 +161,7 @@ func validateVPASpec(spec *vpa_types.VerticalPodAutoscalerSpec, fldPath *field.P
 		allErrs = append(allErrs, field.TooMany(fldPath.Child("recommenders"), len(spec.Recommenders), 1))
 	}
 
-	return allErrs
+	return warnings, allErrs
 }
 
 func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPath *field.Path, opts VPAValidationOptions) field.ErrorList {
@@ -174,8 +196,9 @@ func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPat
 	return allErrs
 }
 
-func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, fldPath *field.Path, opts VPAValidationOptions) field.ErrorList {
+func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, fldPath *field.Path, opts VPAValidationOptions) ([]string, field.ErrorList) {
 	allErrs := field.ErrorList{}
+	var warnings []string
 
 	for i, policy := range resourcePolicy.ContainerPolicies {
 		policyPath := fldPath.Child("containerPolicies").Index(i)
@@ -205,6 +228,20 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 		if policy.Mode != nil && controlledValues != nil {
 			if *policy.Mode == vpa_types.ContainerScalingModeOff && *controlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
 				allErrs = append(allErrs, field.Forbidden(policyPath.Child("controlledValues"), "controlledValues shouldn't be specified if container scaling mode is off"))
+			}
+		}
+
+		if policy.ControlledResources != nil {
+			for j, resource := range *policy.ControlledResources {
+				if resource == corev1.ResourceCPU || resource == corev1.ResourceMemory {
+					continue
+				}
+				resourcePath := policyPath.Child("controlledResources").Index(j)
+				if opts.ExistingControlledResources[resource] {
+					warnings = append(warnings, fmt.Sprintf("%s: unsupported value %q is allowed only because it is present in the existing VPA object; supported values: %q, %q", resourcePath, resource, corev1.ResourceCPU, corev1.ResourceMemory))
+				} else {
+					allErrs = append(allErrs, field.NotSupported(resourcePath, resource, []string{string(corev1.ResourceCPU), string(corev1.ResourceMemory)}))
+				}
 			}
 		}
 
@@ -257,7 +294,7 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 		}
 	}
 
-	return allErrs
+	return warnings, allErrs
 }
 
 func validateVPASpecStartupBoost(startupBoost *vpa_types.StartupBoost, fldPath *field.Path, opts VPAValidationOptions) field.ErrorList {

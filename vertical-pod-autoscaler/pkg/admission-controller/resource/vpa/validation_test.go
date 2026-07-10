@@ -266,10 +266,11 @@ func TestValidateVPA(t *testing.T) {
 	validCPUBoostTypeQuantity := vpa_types.QuantityStartupBoostType
 
 	tests := []struct {
-		name        string
-		vpa         vpa_types.VerticalPodAutoscaler
-		expectError error
-		opts        VPAValidationOptions
+		name           string
+		vpa            vpa_types.VerticalPodAutoscaler
+		expectError    error
+		expectWarnings []string
+		opts           VPAValidationOptions
 	}{
 		{
 			name: "empty update",
@@ -1358,6 +1359,50 @@ func TestValidateVPA(t *testing.T) {
 			},
 			opts: VPAValidationOptions{IsVPACreate: true, AllowInPlace: true},
 		},
+		{
+			name: "unsupported controlledResources entry rejected on create",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:       "loot box",
+								ControlledResources: &[]corev1.ResourceName{"cpu", "broken"},
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].controlledResources[1]: Unsupported value: \"broken\": supported values: \"cpu\", \"memory\""),
+		},
+		{
+			name: "unsupported controlledResources entry allowed when present in old VPA",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:       "loot box",
+								ControlledResources: &[]corev1.ResourceName{"cpu", "broken"},
+							},
+						},
+					},
+				},
+			},
+			opts: VPAValidationOptions{
+				ExistingControlledResources: map[corev1.ResourceName]bool{"broken": true},
+			},
+			expectWarnings: []string{"spec.resourcePolicy.containerPolicies[0].controlledResources[1]: unsupported value \"broken\" is allowed only because it is present in the existing VPA object; supported values: \"cpu\", \"memory\""},
+		},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
@@ -1367,7 +1412,8 @@ func TestValidateVPA(t *testing.T) {
 				featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, tc.opts.AllowCPUStartupBoost)
 			}
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, tc.opts.AllowPerVPAConfig)
-			errs := validateVPA(&tc.vpa, tc.opts)
+			warnings, errs := validateVPA(&tc.vpa, tc.opts)
+			assert.ElementsMatch(t, tc.expectWarnings, warnings)
 			if tc.expectError == nil {
 				assert.Empty(t, errs)
 			} else {
@@ -1415,11 +1461,12 @@ func TestVeryInvalidateVPA(t *testing.T) {
 		"spec.resourcePolicy.containerPolicies[0].startupBoost",
 		"spec.resourcePolicy.containerPolicies[0].memoryAggregationIntervalCount",
 		"spec.resourcePolicy.containerPolicies[0].memoryAggregationIntervalSeconds",
+		"spec.resourcePolicy.containerPolicies[0].controlledResources[2]",
 	}
 
-	errs := validateVPA(&vpa, VPAValidationOptions{IsVPACreate: true})
+	_, errs := validateVPA(&vpa, VPAValidationOptions{IsVPACreate: true})
 
-	assert.Len(t, errs, 7)
+	assert.Len(t, errs, 8)
 	for _, err := range errs {
 		assert.Contains(t, expectFieldErrors, err.Field)
 	}
