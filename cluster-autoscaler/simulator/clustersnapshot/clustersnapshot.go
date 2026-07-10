@@ -20,12 +20,25 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
+
+// Status contains information about pods scheduled by the simulator
+type Status struct {
+	Pod      *apiv1.Pod
+	NodeName string
+}
+
+// PodSchedulingSimulator is an interface for simulating pod scheduling.
+type PodSchedulingSimulator interface {
+	TrySchedulePods(snapshot ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts SchedulingOptions) ([]Status, int, error)
+	DropOldHints()
+}
 
 // Forkable is an interface for objects that can be forked, reverted and committed.
 type Forkable interface {
@@ -49,7 +62,7 @@ type ClusterSnapshot interface {
 	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
 	// The provided draSnapshot and csiSnapshot are treated as the source of truth and are
 	// eagerly loaded into the internal NodeInfo and PodInfo objects.
-	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error
+	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot, pvs []*apiv1.PersistentVolume, pvcs []*apiv1.PersistentVolumeClaim, storageClasses []*storagev1.StorageClass) error
 
 	// AddNodeInfo adds the given NodeInfo to the snapshot without checking scheduler predicates.
 	// The Node and the Pods are added, as well as any DRA and CSI objects passed along them.
@@ -100,6 +113,23 @@ type ClusterSnapshot interface {
 
 	// CsiSnapshot returns an interface that allows accessing and modifying the CSINode objects in the snapshot.
 	CsiSnapshot() *csisnapshot.Snapshot
+
+	// GetPV returns a PersistentVolume by name.
+	GetPV(name string) (*apiv1.PersistentVolume, error)
+	// ListPVs returns all PersistentVolumes in the snapshot.
+	ListPVs() ([]*apiv1.PersistentVolume, error)
+	// GetPVC returns a PersistentVolumeClaim by namespace and name.
+	GetPVC(namespace, name string) (*apiv1.PersistentVolumeClaim, error)
+	// ListPVCs returns all PersistentVolumeClaims in the snapshot.
+	ListPVCs() ([]*apiv1.PersistentVolumeClaim, error)
+	// GetStorageClass returns a StorageClass by name.
+	GetStorageClass(name string) (*storagev1.StorageClass, error)
+	// ListStorageClasses returns all StorageClasses in the snapshot.
+	ListStorageClasses() ([]*storagev1.StorageClass, error)
+	// GetCSINode returns a CSINode by name.
+	GetCSINode(name string) (*storagev1.CSINode, error)
+	// ListCSINodes returns all CSINodes in the snapshot.
+	ListCSINodes() ([]*storagev1.CSINode, error)
 
 	// TODO(DRA): Move unschedulable Pods inside ClusterSnapshot (since their DRA objects are already here), refactor PodListProcessor.
 }

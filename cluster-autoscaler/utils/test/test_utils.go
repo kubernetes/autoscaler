@@ -356,10 +356,55 @@ func IsReady(ready bool) NodeOption {
 	}
 }
 
-// WithNodeLabels sets labels for a Node.
-func WithNodeLabels(labels map[string]string) NodeOption {
-	return func(node *apiv1.Node) {
-		node.Labels = labels
+// WithHardTopologySpreadConstraint sets a hard topology spread constraint to the pod.
+func WithHardTopologySpreadConstraint(maxSkew int32, topologyKey string, matchLabels map[string]string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.TopologySpreadConstraints = append(pod.Spec.TopologySpreadConstraints, apiv1.TopologySpreadConstraint{
+			MaxSkew:           maxSkew,
+			TopologyKey:       topologyKey,
+			WhenUnsatisfiable: apiv1.DoNotSchedule,
+			LabelSelector: &metav1.LabelSelector{
+				MatchLabels: matchLabels,
+			},
+		})
+	}
+}
+
+// WithPodAffinity sets pod's affinity for pods matching the given labels at the provided topology level.
+func WithPodAffinity(labels map[string]string, topologyKey string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		if pod.Spec.Affinity == nil {
+			pod.Spec.Affinity = &apiv1.Affinity{}
+		}
+		pod.Spec.Affinity.PodAffinity = &apiv1.PodAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
+				{
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: labels,
+					},
+					TopologyKey: topologyKey,
+				},
+			},
+		}
+	}
+}
+
+// WithPodAntiAffinity sets pod's anti-affinity for pods matching the given labels at the provided topology level.
+func WithPodAntiAffinity(labels map[string]string, topologyKey string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		if pod.Spec.Affinity == nil {
+			pod.Spec.Affinity = &apiv1.Affinity{}
+		}
+		pod.Spec.Affinity.PodAntiAffinity = &apiv1.PodAntiAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
+				{
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: labels,
+					},
+					TopologyKey: topologyKey,
+				},
+			},
+		}
 	}
 }
 
@@ -650,4 +695,15 @@ func IgnoreObjectOrder[T interface{ GetName() string }]() cmp.Option {
 	return cmpopts.SortSlices(func(c1, c2 T) bool {
 		return c1.GetName() < c2.GetName()
 	})
+}
+
+func WithNodeLabels(labels map[string]string) func(*apiv1.Node) {
+	return func(n *apiv1.Node) {
+		if n.Labels == nil {
+			n.Labels = make(map[string]string)
+		}
+		for k, v := range labels {
+			n.Labels[k] = v
+		}
+	}
 }

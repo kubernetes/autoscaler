@@ -38,14 +38,15 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/karpenter"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/klog/v2"
-)
+	)
 
-// ScaleUpOrchestrator implements scaleup.Orchestrator interface.
-type ScaleUpOrchestrator struct {
+	// ScaleUpOrchestrator implements scaleup.Orchestrator interface.
+	type ScaleUpOrchestrator struct {
 	autoscalingCtx       *ca_context.AutoscalingContext
 	processors           *ca_processors.AutoscalingProcessors
 	quotasTrackerFactory *resourcequotas.TrackerFactory
@@ -53,14 +54,37 @@ type ScaleUpOrchestrator struct {
 	scaleUpExecutor      *scaleUpExecutor
 	estimatorBuilder     estimator.EstimatorBuilder
 	taintConfig          taints.TaintConfig
+	simulator            ScaleUpSimulator
+	karpenterConverter   karpenter.KarpenterConverter
 	initialized          bool
-}
+	}
+
+	// ScaleUpOrchestratorOption defines a function to configure the ScaleUpOrchestrator.
+	type ScaleUpOrchestratorOption func(*ScaleUpOrchestrator)
+
+	// WithSimulator returns a ScaleUpOrchestratorOption that sets the simulator for the orchestrator.
+	func WithSimulator(simulator ScaleUpSimulator) ScaleUpOrchestratorOption {
+	return func(o *ScaleUpOrchestrator) {
+	        o.simulator = simulator
+	}
+	}
+
+	// WithKarpenterConverter returns a ScaleUpOrchestratorOption that sets the KarpenterConverter for the orchestrator.
+	func WithKarpenterConverter(converter karpenter.KarpenterConverter) ScaleUpOrchestratorOption {
+	return func(o *ScaleUpOrchestrator) {
+	        o.karpenterConverter = converter
+	}
+	}
 
 // New returns new instance of scale up Orchestrator.
-func New() *ScaleUpOrchestrator {
-	return &ScaleUpOrchestrator{
+func New(opts ...ScaleUpOrchestratorOption) *ScaleUpOrchestrator {
+	o := &ScaleUpOrchestrator{
 		initialized: false,
 	}
+	for _, opt := range opts {
+		opt(o)
+	}
+	return o
 }
 
 // Initialize initializes the orchestrator object with required fields.
@@ -79,6 +103,23 @@ func (o *ScaleUpOrchestrator) Initialize(
 	o.taintConfig = taintConfig
 	o.scaleUpExecutor = newScaleUpExecutor(autoscalingCtx, processors.ScaleStateNotifier, o.processors.AsyncNodeGroupStateChecker)
 	o.quotasTrackerFactory = quotasTrackerFactory
+	if o.simulator == nil {
+		defaultSim := NewDefaultSimulator(o)
+		if autoscalingCtx.AutoscalingOptions.KarpenterSimulatorEnabled {
+			conv := o.karpenterConverter
+			if conv == nil {
+				conv = &DefaultKarpenterConverter{}
+			}
+			if defConv, ok := conv.(*DefaultKarpenterConverter); ok {
+				if pm, err := autoscalingCtx.CloudProvider.Pricing(); err == nil {
+					defConv.PricingModel = pm
+				}
+			}
+			o.simulator = NewKarpenterSimulator(defaultSim, conv, o.processors.NodeGroupSetProcessor)
+		} else {
+			o.simulator = defaultSim
+		}
+	}
 	o.initialized = true
 }
 
@@ -657,6 +698,14 @@ func (o *ScaleUpOrchestrator) balanceScaleUps(
 	schedulablePodGroups map[string][]estimator.PodEquivalenceGroup,
 	tracker *resourcequotas.Tracker,
 ) ([]nodegroupset.ScaleUpInfo, errors.AutoscalerError) {
+	if composite, ok := nodeGroup.(*CompositeNodeGroup); ok {
+		if newNodes >= composite.planNodes() {
+			return composite.Plan, nil
+		}
+		// If capped, proportionally reduce the plan
+		return composite.cappedPlan(newNodes), nil
+	}
+
 	// Recompute similar node groups in case they need to be updated
 	similarNodeGroups := o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePodGroups, now)
 
@@ -1041,31 +1090,12 @@ type scaleUpPlan struct {
 }
 
 func (o *ScaleUpOrchestrator) prepareScaleUp(args scaleUpCtx) (scaleUpPlan, *status.ScaleUpStatus, errors.AutoscalerError) {
-	// Calculate expansion options
-	schedulablePodGroups := map[string][]estimator.PodEquivalenceGroup{}
-	var options []expander.Option
-
-	// This code here runs a simulation to see which pods can be scheduled on which node groups.
-	for _, nodeGroup := range args.validNodeGroups {
-		schedulablePodGroups[nodeGroup.Id()] = o.SchedulablePodGroups(args.podEquivalenceGroups, nodeGroup, args.nodeInfos[nodeGroup.Id()])
+	options, skippedNodeGroups, schedulablePodGroups, err := o.simulator.Simulate(o.autoscalingCtx, args.podEquivalenceGroups, args.unschedulablePods, args.nodes, args.nodeGroups, args.nodeInfos, args.tracker, args.now, args.allOrNothing)
+	if err != nil {
+		st, aErr := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
+		return scaleUpPlan{}, st, aErr
 	}
-
-	for _, nodeGroup := range args.validNodeGroups {
-		option := o.ComputeExpansionOption(nodeGroup, schedulablePodGroups, args.nodeInfos, len(args.nodes), args.now, args.allOrNothing)
-		o.processors.BinpackingLimiter.MarkProcessed(o.autoscalingCtx, nodeGroup.Id())
-
-		if len(option.Pods) == 0 || option.NodeCount == 0 {
-			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
-		} else if args.allOrNothing && len(option.Pods) < len(args.unschedulablePods) {
-			klog.V(4).Infof("Some pods can't fit to %s, giving up due to all-or-nothing scale-up strategy", nodeGroup.Id())
-		} else {
-			options = append(options, option)
-		}
-
-		if o.processors.BinpackingLimiter.StopBinpacking(o.autoscalingCtx, options) {
-			break
-		}
-	}
+	args.skippedNodeGroups = skippedNodeGroups
 
 	// Finalize binpacking limiter.
 	o.processors.BinpackingLimiter.FinalizeBinpacking(o.autoscalingCtx, options)
@@ -1076,6 +1106,15 @@ func (o *ScaleUpOrchestrator) prepareScaleUp(args scaleUpCtx) (scaleUpPlan, *sta
 	}
 
 	// Pick some expansion option.
+	for _, opt := range options {
+		if composite, ok := opt.NodeGroup.(*CompositeNodeGroup); ok {
+			if _, found := args.nodeInfos[composite.Id()]; !found {
+				if repInfo, found := args.nodeInfos[composite.NodeGroup.Id()]; found {
+					args.nodeInfos[composite.Id()] = repInfo
+				}
+			}
+		}
+	}
 	bestOption := o.autoscalingCtx.ExpanderStrategy.BestOption(options, args.nodeInfos)
 	if bestOption == nil || bestOption.NodeCount <= 0 {
 		klog.Infof("Expander filtered out all options, valid options: %d", len(options))

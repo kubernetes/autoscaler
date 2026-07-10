@@ -168,7 +168,7 @@ func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.Cluster
 
 	draSnapshot := drasnapshot.CloneTestSnapshot(state.draSnapshot)
 	csiSnapshot := csisnapshot.CloneTestSnapshot(state.csiSnapshot)
-	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot, csiSnapshot)
+	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot, csiSnapshot, nil, nil, nil)
 	assert.NoError(t, err)
 	return snapshot
 }
@@ -1471,7 +1471,7 @@ func TestSetClusterState(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, state)
 				compareStates(t, state, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil /*csiSnapshot*/))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil, nil, nil, nil /*csiSnapshot*/))
 
 				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 			})
@@ -1489,7 +1489,7 @@ func TestSetClusterState(t *testing.T) {
 					newCSINodeMap[node.Name] = BuildCSINode(node)
 				}
 
-				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, csisnapshot.NewSnapshot(newCSINodeMap)))
+				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, csisnapshot.NewSnapshot(newCSINodeMap), nil, nil, nil))
 
 				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewSnapshot(newCSINodeMap)}, getSnapshotState(t, snapshot))
 			})
@@ -1512,7 +1512,7 @@ func TestSetClusterState(t *testing.T) {
 					newCSINodeMap[node.Name] = BuildCSINode(node)
 				}
 
-				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, csisnapshot.NewSnapshot(newCSINodeMap)))
+				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, csisnapshot.NewSnapshot(newCSINodeMap), nil, nil, nil))
 
 				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewSnapshot(newCSINodeMap)}, getSnapshotState(t, snapshot))
 			})
@@ -1542,7 +1542,7 @@ func TestSetClusterState(t *testing.T) {
 
 				compareStates(t, snapshotState{nodes: allNodes, podsByNode: allPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewSnapshot(allCSINodeMap)}, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil /*csiSnapshot*/))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil, nil, nil, nil /*csiSnapshot*/))
 
 				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 
@@ -1958,7 +1958,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
-			assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil /*csiSnapshot*/))
+			assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil, nil, nil, nil /*csiSnapshot*/))
 			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, false, volumeExists)
 
@@ -2067,6 +2067,6 @@ func TestSetClusterStateConcurrentDRA(t *testing.T) {
 	// Set parallelism to 8 to ensure the workqueue utilizes multiple goroutines.
 	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 8, false)
 
-	err = snapshot.SetClusterState(nodes, pods, draSnap, nil)
+	err = snapshot.SetClusterState(nodes, pods, draSnap, nil, nil, nil, nil)
 	assert.NoError(t, err)
 }

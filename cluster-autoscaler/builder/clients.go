@@ -24,7 +24,8 @@ import (
 	provreqclientset "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
 	provreqinformers "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/informers/externalversions"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
+	"k8s.io/autoscaler/cluster-autoscaler/core/options"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/provreq"
@@ -42,7 +43,7 @@ import (
 func (b *AutoscalerBuilder) buildProvisioningRequest(
 	ctx context.Context,
 	autoscalingOptions config.AutoscalingOptions,
-	opts *coreoptions.AutoscalerOptions,
+	opts *options.AutoscalerOptions,
 	podListProcessor *pods.CombinedPodListProcessor,
 ) (*provreq.ProvisioningRequestPodsInjector, loopstart.Observer, error) {
 	podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
@@ -93,7 +94,7 @@ func (b *AutoscalerBuilder) buildProvisioningRequest(
 		besteffortatomic.New(client),
 	})
 
-	scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
+	scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(orchestrator.New(), provreqOrchestrator)
 	opts.ScaleUpOrchestrator = scaleUpOrchestrator
 	provreqProcesor := provreq.NewProvReqProcessor(client, opts.CheckCapacityProcessorInstance)
 

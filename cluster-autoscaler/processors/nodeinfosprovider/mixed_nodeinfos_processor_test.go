@@ -326,7 +326,7 @@ func TestMixedNodeInfosProvider(t *testing.T) {
 			}
 
 			snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-			err := snapshot.SetClusterState(allNodes, nil, nil, nil)
+			err := snapshot.SetClusterState(allNodes, nil, nil, nil, nil, nil, nil)
 			assert.NoError(t, err)
 
 			podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
