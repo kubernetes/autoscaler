@@ -260,9 +260,9 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 								"kind":       machineTemplateKind,
 								"name":       "TestMachineTemplate",
 							},
-							"metadata": map[string]interface{}{
-								"labels": map[string]interface{}{},
-							},
+						},
+						"metadata": map[string]interface{}{
+							"labels": map[string]interface{}{},
 						},
 					},
 				},
@@ -273,7 +273,7 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 		config.machineSet.SetAnnotations(make(map[string]string))
 
 		if spec.managedLabels != nil {
-			if err := unstructured.SetNestedStringMap(config.machineSet.Object, spec.managedLabels, "spec", "template", "spec", "metadata", "labels"); err != nil {
+			if err := unstructured.SetNestedStringMap(config.machineSet.Object, spec.managedLabels, "spec", "template", "metadata", "labels"); err != nil {
 				panic(err)
 			}
 		}
