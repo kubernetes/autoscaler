@@ -254,7 +254,7 @@ Disabling the feature gate causes:
 - No open bugs against the feature gate.
 - Positive user feedback on the field semantics (in particular the `CreationTimestamp`-anchored PATCH behaviour).
 
-**Beta → GA (gate locked on, then removed):**
+**Beta → GA (gate locked to enabled):**
 
 - No bug reports attributable to the feature for two consecutive releases.
 
