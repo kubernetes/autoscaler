@@ -73,7 +73,7 @@ InitialDelaySeconds *int32 `json:"initialDelaySeconds,omitempty"`
 
 Behaviour, in one sentence: **the Updater and the Admission Controller treat the VPA as if `updateMode` were `Off` until `now >= vpa.CreationTimestamp + spec.updatePolicy.initialDelaySeconds`.** After that, the configured `updateMode` takes effect.
 
-Modifying the VPA's spec does not reset the window. The gate is a pure function of the immutable `vpa.CreationTimestamp` and the current value of `initialDelaySeconds`, re-evaluated on every reconcile — there is no per-object state to reset. The full modification semantics are enumerated in [Gate Evaluation](#gate-evaluation). While the gate is active, the [`InitialDelayActive` status condition](#status-condition) surfaces it on the VPA object.
+Modifying the VPA's spec does not reset the window. The gate is a pure function of the immutable `vpa.CreationTimestamp` and the current value of `initialDelaySeconds`, re-evaluated on every reconcile — there is no per-object state to reset. The full modification semantics are described in [Gate Evaluation](#gate-evaluation). While the gate is active, the [`InitialDelayActive` status condition](#status-condition) surfaces it on the VPA object.
 
 ## Design Details
 
@@ -169,16 +169,7 @@ When `inInitialDelayWindow` returns `true`, both components take the same code p
 
 The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current spec value (mutable). No caching, no status writes.
 
-The gate consults exactly these two inputs. No other field — existing or added to the CRD in the future — participates in gate evaluation. The table below is therefore not a set of per-field policy decisions; it enumerates the consequences of that single formula:
-
-| Modification | Effect |
-| --- | --- |
-| Shorten `initialDelaySeconds` during window | Gate releases earlier on next reconcile. |
-| Extend `initialDelaySeconds` during window | Gate stays open longer. |
-| Extend `initialDelaySeconds` **after** expiry | Gate re-arms on the next reconcile **only if** the new expiry (`CreationTimestamp + newValue`) still lies in the future. A value whose expiry is already in the past leaves the gate open. |
-| Remove `initialDelaySeconds` (or set to zero) | Gate closes immediately on next reconcile. |
-| Modify `updateMode` | New mode takes effect when the window elapses (or immediately, if already elapsed). |
-| Modify `resourcePolicy` / `targetRef` | No effect on the gate. |
+No VPA spec change affects the gate **except** modifying `initialDelaySeconds` itself: the new value simply moves the expiry (`CreationTimestamp + initialDelaySeconds`), so on the next reconcile the gate may open earlier (value shortened or removed) or stay closed longer (value extended). No other field — existing or added to the CRD in the future — participates in gate evaluation; `updateMode` changes only what happens once the gate opens.
 
 Re-arm after expiry is possible but not guaranteed: because the window is anchored to `CreationTimestamp`, a modification re-arms the gate only when the new expiry still lies in the future. This is intentional — it lets users extend an observation window in response to observed instability without deleting the VPA, while a larger-but-already-elapsed value on an old VPA simply has no effect. If reviewers consider this a footgun serious enough to justify admission logic, we can add a check rejecting PATCHes that would push `expiry` past `now` once the window has already elapsed — see [Alternatives Considered](#alternatives-considered).
 
