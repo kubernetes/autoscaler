@@ -262,7 +262,7 @@ spec:
     observationPeriodSeconds: 21600   # 6 hours
 ```
 
-For the first six hours after creation, `web` pods are not evicted regardless of recommendations. After the window, `Recreate` behaviour takes effect.
+For the first six hours after creation, `web` pods are not evicted by the updater regardless of recommendations. After the window, `Recreate` behaviour takes effect.
 
 ### Fast iteration: `InPlace` with a short window
 
