@@ -283,7 +283,7 @@ This feature is entirely internal to the VPA controllers and depends on no new K
 
 ## Test Plan
 
-**Unit tests** (`pkg/updater/logic/`):
+**Updater tests:**
 
 - `inInitialDelayWindow` returns `true` when `now < CreationTimestamp + initialDelaySeconds`.
 - `inInitialDelayWindow` returns `false` when `now >= CreationTimestamp + initialDelaySeconds`.
