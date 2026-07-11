@@ -11,6 +11,7 @@
   - [API Changes](#api-changes)
   - [Gate Evaluation](#gate-evaluation)
   - [Interaction with <code>updateMode</code>](#interaction-with-updatemode)
+  - [Interaction with CPU Startup Boost](#interaction-with-cpu-startup-boost)
   - [Validation](#validation)
   - [Status Condition](#status-condition)
   - [Metric](#metric)
@@ -27,9 +28,9 @@
 
 ## Summary
 
-Add an optional `observationPeriodSeconds` field to `PodUpdatePolicy` that tells the Updater to refrain from applying recommendations for a configurable duration after a VPA's creation. During the window the Recommender continues to compute and publish recommendations to `status.recommendation` normally — only the Updater is gated. Once the window elapses, the configured `updateMode` takes effect automatically with no operator action.
+Add an optional `initialDelaySeconds` field to `PodUpdatePolicy` that delays actuation of recommendations for a configurable duration after a VPA's creation. During the window the Recommender continues to compute and publish recommendations to `status.recommendation` normally, but nothing actuates them: the Updater performs no evictions or in-place resizes, and the Admission Controller does not apply recommendations to pods created during the window. The VPA behaves exactly as if `updateMode` were `Off`. Once the window elapses, the configured `updateMode` takes effect automatically with no operator action.
 
-The window is computed as a pure function of `vpa.CreationTimestamp` and the current spec value, evaluated on every reconcile. No status writes are required.
+The window is computed as a pure function of `vpa.CreationTimestamp` and the current spec value, evaluated on every reconcile. No status writes are required. Modifying an existing VPA's spec does not reset the window — the anchor (`CreationTimestamp`) is immutable, and changing `initialDelaySeconds` itself simply moves the expiry relative to that anchor (see [Gate Evaluation](#gate-evaluation) for the full PATCH semantics).
 
 ## Motivation
 
@@ -41,11 +42,11 @@ This feature moves the sequencing into the VPA API itself. Operators declare "wa
 
 ### Goals
 
-- Provide a declarative per-VPA field that delays Updater actuation for a configurable duration after VPA creation.
+- Provide a declarative per-VPA field that delays all actuation — evictions, in-place resizes, and admission-time injection into newly created pods — for a configurable duration after VPA creation.
 - Keep the Recommender's behaviour unchanged: recommendations are still computed and published to `status.recommendation` during the window, so operators can inspect them.
 - Work uniformly across `Recreate`, `InPlaceOrRecreate`, `InPlace`, and `Initial`.
-- Require no status writes and no admission-side PATCH restrictions in v1: the gate is a pure function of `CreationTimestamp` and the current spec value.
-- Surface the gate state through both a status condition (`ObservationPeriodActive`) and a Prometheus gauge (`vpa_in_observation_window`), so operators and dashboards can see when a VPA is gated without inspecting `spec`.
+- Require no status writes and no PATCH-blocking admission validation in v1: the gate is a pure function of `CreationTimestamp` and the current spec value.
+- Surface the gate state through both a status condition (`InitialDelayActive`) and a Prometheus gauge (`vpa_initial_delay_active`), so operators and dashboards can see when a VPA is gated without inspecting `spec`.
 
 ### Non-Goals
 
@@ -58,25 +59,31 @@ This feature moves the sequencing into the VPA API itself. Operators declare "wa
 Add a single optional field to `PodUpdatePolicy` (autoscaling.k8s.io/v1):
 
 ```go
-// ObservationPeriodSeconds is the duration in seconds after this VPA's
-// creation during which the Updater will refrain from applying
-// recommendations, regardless of the configured UpdateMode.
+// InitialDelaySeconds is the duration in seconds after this VPA's
+// creation during which recommendations are not actuated: the Updater
+// performs no evictions or in-place resizes, and the Admission
+// Controller does not apply recommendations to newly created pods,
+// regardless of the configured UpdateMode.
 // +optional
 // +kubebuilder:validation:Minimum=1
-ObservationPeriodSeconds *int32 `json:"observationPeriodSeconds,omitempty"`
+// +kubebuilder:validation:Maximum=7776000
+InitialDelaySeconds *int32 `json:"initialDelaySeconds,omitempty"`
 ```
 
-Behaviour, in one sentence: **the Updater treats the VPA as if `updateMode` were `Off` until `now >= vpa.CreationTimestamp + spec.updatePolicy.observationPeriodSeconds`.** After that, the configured `updateMode` takes effect.
+Behaviour, in one sentence: **the Updater and the Admission Controller treat the VPA as if `updateMode` were `Off` until `now >= vpa.CreationTimestamp + spec.updatePolicy.initialDelaySeconds`.** After that, the configured `updateMode` takes effect.
+
+Modifying the VPA's spec does not reset the window. The gate is a pure function of the immutable `vpa.CreationTimestamp` and the current value of `initialDelaySeconds`, re-evaluated on every reconcile — there is no per-object state to reset. The full PATCH semantics are enumerated in [Gate Evaluation](#gate-evaluation). While the gate is active, the [`InitialDelayActive` status condition](#status-condition) surfaces it on the VPA object.
 
 ## Design Details
 
 ### Workflow
 
-1. The user creates a VPA with a non-`Off` `updateMode` and `observationPeriodSeconds: N` set on `spec.updatePolicy`.
+1. The user creates a VPA with a non-`Off` `updateMode` and `initialDelaySeconds: N` set on `spec.updatePolicy`.
 2. The Recommender begins computing recommendations on the normal schedule and populates `status.recommendation`. It is unaware of and unaffected by the observation window.
-3. On every Updater reconcile, before deciding whether the VPA is eligible for actuation, the Updater evaluates the gate. If the gate is active, the VPA is treated as if `updateMode` were `Off` for that reconcile: no pods are evicted (`Recreate` / `InPlaceOrRecreate`), no in-place resize is attempted (`InPlace` / `InPlaceOrRecreate`), and no admission-controller-side injection happens on new-pod creation (`Initial`).
-4. The Updater sets the `ObservationPeriodActive` status condition to `True` while the gate is active and `False` once it has elapsed. It emits the `vpa_in_observation_window` gauge accordingly.
-5. On the first reconcile after `CreationTimestamp + observationPeriodSeconds`, the gate opens and the configured `updateMode` takes effect on subsequent reconciles.
+3. On every Updater reconcile, before deciding whether the VPA is eligible for actuation, the Updater evaluates the gate. If the gate is active, the VPA is treated as if `updateMode` were `Off` for that reconcile: no pods are evicted (`Recreate` / `InPlaceOrRecreate`) and no in-place resize is attempted (`InPlace` / `InPlaceOrRecreate`).
+4. The Admission Controller evaluates the same gate whenever a pod matching the VPA's target is created. While the gate is active it does not patch the pod's resources — the pod is admitted with its original spec, exactly as under `updateMode: Off`. This applies to every mode, not just `Initial`: without it, pods created during the window (scale-ups, node replacements, crash restarts) would receive un-stabilised recommendations at admission time.
+5. The Updater sets the `InitialDelayActive` status condition to `True` while the gate is active and `False` once it has elapsed. It emits the `vpa_initial_delay_active` gauge accordingly.
+6. On the first reconcile after `CreationTimestamp + initialDelaySeconds`, the gate opens and the configured `updateMode` takes effect on subsequent reconciles and pod creations.
 
 ### API Changes
 
@@ -87,55 +94,68 @@ type PodUpdatePolicy struct {
     // ... existing fields (UpdateMode, MinReplicas, EvictionRequirements,
     //                     EvictAfterOOMSeconds) ...
 
-    // ObservationPeriodSeconds is the duration in seconds after this
-    // VPA's creation during which the Updater will refrain from applying
-    // recommendations, regardless of the configured UpdateMode.
+    // InitialDelaySeconds is the duration in seconds after this
+    // VPA's creation during which recommendations are not actuated,
+    // regardless of the configured UpdateMode.
     //
     // During the window, the Recommender continues to compute and
     // publish recommendations to status.recommendation as usual, but the
-    // Updater treats the VPA as if UpdateMode were Off. After the window
-    // elapses (now >= CreationTimestamp + ObservationPeriodSeconds), the
-    // configured UpdateMode takes effect on subsequent reconciles.
+    // Updater and the Admission Controller treat the VPA as if
+    // UpdateMode were Off: no evictions, no in-place resizes, and no
+    // recommendation injection into newly created pods. After the window
+    // elapses (now >= CreationTimestamp + InitialDelaySeconds), the
+    // configured UpdateMode takes effect on subsequent reconciles and
+    // pod creations.
     //
     // The window is computed as a pure function of vpa.CreationTimestamp
     // and this spec field. PATCH is allowed; the new value takes effect
     // on the next reconcile. Removing the field or setting it to zero
-    // closes the gate immediately. Extending the value after the window
-    // has already expired will re-arm the gate.
+    // closes the gate immediately. Setting a larger value after the
+    // window has expired re-arms the gate only if the new expiry
+    // (CreationTimestamp + InitialDelaySeconds) still lies in the
+    // future; otherwise the gate stays open.
     //
     // If UpdateMode is Off, this field has no effect: Off already
     // suppresses Updater actuation indefinitely.
     //
-    // Must be >= 1 if set.
+    // Must be between 1 and 7776000 (90 days) if set.
     // +optional
     // +kubebuilder:validation:Minimum=1
-    ObservationPeriodSeconds *int32 `json:"observationPeriodSeconds,omitempty"`
+    // +kubebuilder:validation:Maximum=7776000
+    InitialDelaySeconds *int32 `json:"initialDelaySeconds,omitempty"`
 }
 ```
 
-Follows the shape of `EvictAfterOOMSeconds` (the only existing time-based field on the same struct) and `DurationSeconds` from AEP-7862.
+Follows the shape of `EvictAfterOOMSeconds` (the only existing time-based field on the same struct) and `DurationSeconds` from AEP-7862; the name matches `initialDelaySeconds` on Pod probes.
+
+Gate state is surfaced via the [`InitialDelayActive` condition](#status-condition).
 
 ### Gate Evaluation
 
-Reference implementation, invoked at the beginning of the Updater's per-VPA eligibility path:
+Reference implementation, exposed from a shared package (`pkg/utils/vpa`) and consumed by both actuating components:
 
 ```go
-// inObservationWindow returns true if the VPA is currently within its
-// declared observation window and the Updater should refrain from
-// applying recommendations.
-func inObservationWindow(vpa *vpa_types.VerticalPodAutoscaler, now time.Time) bool {
+// inInitialDelayWindow returns true if the VPA is currently within its
+// declared observation window and the Updater and Admission Controller
+// should refrain from actuating recommendations.
+func inInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler, now time.Time) bool {
     p := vpa.Spec.UpdatePolicy
-    if p == nil || p.ObservationPeriodSeconds == nil || *p.ObservationPeriodSeconds < 1 {
+    if p == nil || p.InitialDelaySeconds == nil || *p.InitialDelaySeconds < 1 {
         return false
     }
     expiry := vpa.CreationTimestamp.Add(
-        time.Duration(*p.ObservationPeriodSeconds) * time.Second,
+        time.Duration(*p.InitialDelaySeconds) * time.Second,
     )
     return now.Before(expiry)
 }
 ```
 
-Insertion point: at the top of the Updater's eligibility check in `pkg/updater/logic/updater.go`, at the same call site where `UpdateModeOff` and `UpdateModeInitial` currently short-circuit the eviction path. When `inObservationWindow` returns `true`, the Updater takes the same code path it takes for `UpdateModeOff` today.
+Insertion points:
+
+- **Updater** — at the top of the eligibility check in `pkg/updater/logic/updater.go`, at the same call site where `UpdateModeOff` and `UpdateModeInitial` currently short-circuit the eviction path.
+- **Admission Controller** — at the existing `UpdateModeOff` short-circuits in `pkg/admission-controller/resource/vpa/matcher.go` and `pkg/admission-controller/resource/pod/recommendation/recommendation_provider.go`, so pods created during the window are admitted with their original spec resources.
+
+When `inInitialDelayWindow` returns `true`, both components take the same code path they take for `UpdateModeOff` today.
 
 The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current spec value (mutable). No caching, no status writes.
 
@@ -143,30 +163,39 @@ Consequences that fall out of this design:
 
 | PATCH operation | Effect |
 | --- | --- |
-| Shorten `observationPeriodSeconds` during window | Gate releases earlier on next reconcile. |
-| Extend `observationPeriodSeconds` during window | Gate stays open longer. |
-| Extend `observationPeriodSeconds` **after** expiry | Gate re-arms on next reconcile. |
-| Remove `observationPeriodSeconds` (or set to zero) | Gate closes immediately on next reconcile. |
+| Shorten `initialDelaySeconds` during window | Gate releases earlier on next reconcile. |
+| Extend `initialDelaySeconds` during window | Gate stays open longer. |
+| Extend `initialDelaySeconds` **after** expiry | Gate re-arms on the next reconcile **only if** the new expiry (`CreationTimestamp + newValue`) still lies in the future. A value whose expiry is already in the past leaves the gate open. |
+| Remove `initialDelaySeconds` (or set to zero) | Gate closes immediately on next reconcile. |
 | Modify `updateMode` | New mode takes effect when the window elapses (or immediately, if already elapsed). |
 | Modify `resourcePolicy` / `targetRef` | No effect on the gate. |
 
-The re-arm-after-expiry behaviour is intentional: it lets users manually extend an observation window in response to observed instability without deleting the VPA. If reviewers consider this a footgun serious enough to justify admission logic, we can add a check rejecting PATCHes that would push `expiry` past `now` once the window has already elapsed — see [Alternatives Considered](#alternatives-considered).
+Re-arm after expiry is possible but not guaranteed: because the window is anchored to `CreationTimestamp`, a PATCH re-arms the gate only when the new expiry still lies in the future. This is intentional — it lets users extend an observation window in response to observed instability without deleting the VPA, while a larger-but-already-elapsed value on an old VPA simply has no effect. If reviewers consider this a footgun serious enough to justify admission logic, we can add a check rejecting PATCHes that would push `expiry` past `now` once the window has already elapsed — see [Alternatives Considered](#alternatives-considered).
 
 ### Interaction with `updateMode`
 
-The observation window is orthogonal to `updateMode`. While the gate is active, the Updater behaves as if `updateMode` were `Off` regardless of the configured value. Once the gate opens, the configured mode takes effect normally:
+The observation window is orthogonal to `updateMode`. While the gate is active, the Updater and the Admission Controller behave as if `updateMode` were `Off` regardless of the configured value: no evictions, no in-place resizes, and no recommendation injection into pods created during the window. Once the gate opens, the configured mode takes effect normally:
 
 - `Recreate` → the Updater is now eligible to evict pods to apply recommendations.
 - `InPlaceOrRecreate` → the Updater attempts in-place resize first, falling back to eviction.
 - `InPlace` → the Updater attempts in-place resize only; no evictions.
 - `Initial` → the admission-controller-side injection is now eligible to run on subsequent new-pod creations. Pods created during the window (or pods that pre-dated the VPA) are unaffected, matching the standard `Initial` semantics.
-- `Off` → `observationPeriodSeconds` has no effect. `Off` already suppresses actuation indefinitely, so combining the two is a valid (but redundant) configuration that silently no-ops. No error, no warning; the field is simply ignored.
+- `Off` → `initialDelaySeconds` has no effect; `Off` already suppresses actuation indefinitely.
+
+### Interaction with CPU Startup Boost
+
+CPU Startup Boost (AEP-7862) still applies during the delay window: the boost is a startup-safety mechanism computed from the pod's own spec, not a recommendation, and the Admission Controller already applies it even under `updateMode: Off` (the `Off` short-circuit in `resource/vpa/matcher.go` is bypassed for VPAs with a boost). The gate reuses the same `Off` semantics, so boosted containers remain boosted.
+
+The interaction appears at boost expiry, when the Updater performs the post-boost in-place downscale:
+
+- Delay window still active → the pod is scaled down to its original spec resources; no recommendation is actuated.
+- Delay window elapsed → the pod is scaled down to the VPA recommendation, per normal post-boost behaviour.
 
 ### Validation
 
 Enforced via CRD schema:
 
-- `observationPeriodSeconds` must be an integer `>= 1` if set.
+- `initialDelaySeconds` must be an integer between `1` and `7776000` (90 days) if set. The upper bound follows the [API conventions for numeric fields](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#numeric-fields); observation windows are realistically hours to days, so 90 days is generous headroom while still rejecting absurd values.
 
 No dynamic (admission-webhook) validation is required in v1. All lifecycle transitions are handled declaratively by the gate.
 
@@ -174,41 +203,41 @@ No dynamic (admission-webhook) validation is required in v1. All lifecycle trans
 
 Add a new value to the existing `VerticalPodAutoscalerStatus.Conditions` slice:
 
-- **Type:** `ObservationPeriodActive`
+- **Type:** `InitialDelayActive`
 - **Status:** `True` while the gate is active, `False` once it has elapsed.
 - **Reason:** `WindowActive` (True) / `WindowExpired` (False).
 - **Message:** human-readable summary including expiry timestamp.
 
-This lets `kubectl describe vpa` surface the gate without an operator having to compute `CreationTimestamp + observationPeriodSeconds` mentally.
+This lets `kubectl describe vpa` surface the gate without an operator having to compute `CreationTimestamp + initialDelaySeconds` mentally.
 
 ### Metric
 
 Emit a new gauge from the Updater:
 
 ```
-vpa_in_observation_window{namespace, name} = 0 | 1
+vpa_initial_delay_active{namespace, name} = 0 | 1
 ```
 
 Value is `1` while the gate is active for that VPA, `0` otherwise. Enables fleet-wide visibility into how many VPAs are currently gated, useful for dashboards and alerting on stuck windows.
 
 ### Feature Enablement and Rollback
 
-Feature gate: **`VPAObservationWindow`**.
+Feature gate: **`VPAInitialDelay`**.
 
 Components consuming the gate:
 
-- `updater` — reads `observationPeriodSeconds` and honours the gate.
-- `admission-controller` — gates acceptance of the field on new/updated VPAs behind the feature gate.
+- `updater` — reads `initialDelaySeconds` and honours the gate.
+- `admission-controller` — gates acceptance of the field on new/updated VPAs behind the feature gate, and honours the gate by skipping recommendation injection for pods created during an active window.
 
 Enabling the feature gate causes:
 
-- `admission-controller` to accept `observationPeriodSeconds` on new/updated VPAs.
+- `admission-controller` to accept `initialDelaySeconds` on new/updated VPAs, and to skip recommendation injection for pods created while a VPA's window is active.
 - `updater` to honour the gate.
 
 Disabling the feature gate causes:
 
-- `admission-controller` to reject new VPAs that set `observationPeriodSeconds`, with a descriptive error message indicating the feature gate is disabled.
-- `updater` to ignore the field on existing objects — the VPA behaves as if the field were not set (fail-open). This is deliberate: disabling the gate should never *increase* actuation restrictions on existing objects.
+- `admission-controller` to reject new VPAs that set `initialDelaySeconds`, with a descriptive error message indicating the feature gate is disabled.
+- `updater` and `admission-controller` to ignore the field on existing objects — the VPA behaves as if the field were not set (fail-open). This is deliberate: disabling the gate should never *increase* actuation restrictions on existing objects.
 
 ### Kubernetes Version Compatibility
 
@@ -218,27 +247,30 @@ This feature is entirely internal to the VPA controllers and depends on no new K
 
 **Unit tests** (`pkg/updater/logic/`):
 
-- `inObservationWindow` returns `true` when `now < CreationTimestamp + observationPeriodSeconds`.
-- `inObservationWindow` returns `false` when `now >= CreationTimestamp + observationPeriodSeconds`.
-- `inObservationWindow` returns `false` when `observationPeriodSeconds` is `nil`, `0`, or absent.
+- `inInitialDelayWindow` returns `true` when `now < CreationTimestamp + initialDelaySeconds`.
+- `inInitialDelayWindow` returns `false` when `now >= CreationTimestamp + initialDelaySeconds`.
+- `inInitialDelayWindow` returns `false` when `initialDelaySeconds` is `nil`, `0`, or absent.
 - Gate short-circuits the eligibility path identically to `updateMode: Off` for `Recreate`, `InPlaceOrRecreate`, `InPlace`, `Initial`.
 - Gate has no effect when `updateMode: Off` — behavior matches plain `updateMode: Off` regardless of the field's value.
 - Metric and condition are set correctly on both sides of the transition.
-- PATCH scenarios: shortening releases the gate, extending stays gated, removing closes the gate, extending after expiry re-arms.
+- PATCH scenarios: shortening releases the gate, extending stays gated, removing closes the gate, extending after expiry re-arms only when the new expiry still lies in the future.
 
-**Admission-controller / CRD validation tests:**
+**Admission-controller tests:**
 
-- Accept `observationPeriodSeconds >= 1` on all update modes, including `Off` (no-op semantics).
-- Reject `observationPeriodSeconds < 1` via CRD schema validation.
-- Reject `observationPeriodSeconds` on any VPA when the `VPAObservationWindow` feature gate is disabled.
+- Accept `initialDelaySeconds >= 1` on all update modes, including `Off` (no-op semantics).
+- Reject `initialDelaySeconds < 1` and `initialDelaySeconds > 7776000` via CRD schema validation.
+- Reject `initialDelaySeconds` on any VPA when the `VPAInitialDelay` feature gate is disabled.
+- Pods created while the gate is active are admitted with their original spec resources, for every update mode.
+- Pods created after the window elapses receive recommendation injection per the configured mode's normal semantics.
 
 **E2E tests** (`e2e/`):
 
-- Create a VPA with `updateMode: Recreate` and `observationPeriodSeconds: 60`. Verify no eviction occurs during the first 60 s. Advance time past the window; verify the next reconcile evicts as expected.
+- Create a VPA with `updateMode: Recreate` and `initialDelaySeconds: 60`. Verify no eviction occurs during the first 60 s. Advance time past the window; verify the next reconcile evicts as expected.
 - Repeat for `InPlaceOrRecreate`, `InPlace`, and `Initial` (with pod-creation-timing tests for the last).
-- Create a VPA with `observationPeriodSeconds: 3600`, PATCH to `60` after 30 s, verify eviction becomes eligible around the 60 s mark.
-- Create a VPA with `observationPeriodSeconds: 60`, wait for expiry, PATCH to `3600`, verify the gate re-arms and eviction is again suppressed until the new expiry.
-- Verify the `ObservationPeriodActive` condition and `vpa_in_observation_window` gauge match the gate state throughout each scenario.
+- Create a VPA with `updateMode: Recreate` and `initialDelaySeconds: 3600`; scale the target Deployment up during the window and verify the new pod keeps its template resources (no admission-time injection). After expiry, verify newly created pods receive injected resources.
+- Create a VPA with `initialDelaySeconds: 3600`, PATCH to `60` after 30 s, verify eviction becomes eligible around the 60 s mark.
+- Create a VPA with `initialDelaySeconds: 60`, wait for expiry, PATCH to `3600`, verify the gate re-arms (the new expiry, `CreationTimestamp + 3600s`, still lies in the future) and eviction is again suppressed until the new expiry.
+- Verify the `InitialDelayActive` condition and `vpa_initial_delay_active` gauge match the gate state throughout each scenario.
 
 ## Examples
 
@@ -259,10 +291,10 @@ spec:
     name: web
   updatePolicy:
     updateMode: Recreate
-    observationPeriodSeconds: 21600   # 6 hours
+    initialDelaySeconds: 21600   # 6 hours
 ```
 
-For the first six hours after creation, `web` pods are not evicted by the updater regardless of recommendations. After the window, `Recreate` behaviour takes effect.
+For the first six hours after creation, `web` pods are not evicted by the Updater regardless of recommendations, and pods created during the window (scale-ups, restarts) keep the resources from the `Deployment` spec — no admission-time injection occurs. After the window, `Recreate` behaviour takes effect.
 
 ### Fast iteration: `InPlace` with a short window
 
@@ -281,7 +313,7 @@ spec:
     name: staging-svc
   updatePolicy:
     updateMode: InPlace
-    observationPeriodSeconds: 300     # 5 minutes
+    initialDelaySeconds: 300     # 5 minutes
 ```
 
 ### Pod-creation gating: `Initial` with a one-hour window
@@ -301,7 +333,7 @@ spec:
     name: worker
   updatePolicy:
     updateMode: Initial
-    observationPeriodSeconds: 3600    # 1 hour
+    initialDelaySeconds: 3600    # 1 hour
 ```
 
 Pods created during the first hour receive their `Deployment`-spec resources unchanged. Pods created after the window get VPA-injected resources.
@@ -316,11 +348,11 @@ Pods created during the first hour receive their `Deployment`-spec resources unc
 
 **4. Do nothing; rely on operator tooling.** The status quo. Ships the complexity downstream to every VPA operator; the CronJob-plus-patch-controller dance ends up reinvented per environment.
 
-**5. Immutable field after creation.** Reject PATCH that modifies `observationPeriodSeconds` via admission. Simpler in that it eliminates the re-arm and shortening cases, but forces users into delete-and-recreate to change the window — an expensive operation that also discards the VPA's recommendation history. The proposed stateless-gate design gets the same "one-line mental model" without that cost.
+**5. Immutable field after creation.** Reject PATCH that modifies `initialDelaySeconds` via admission. Simpler in that it eliminates the re-arm and shortening cases, but forces users into delete-and-recreate to change the window — an expensive operation that also discards the VPA's recommendation history. The proposed stateless-gate design gets the same "one-line mental model" without that cost.
 
 **6. Reset on "material" spec changes** (`resourcePolicy`, `targetRef`). Arguably more correct — a workload with a different target really does have different history semantics — but forces us to define "material" and requires a status field to track the current anchor. Deferred: this AEP does not preclude adding such semantics in a future revision, and the `CreationTimestamp` anchor is a strict subset of any future anchor policy.
 
-**7. Reject PATCH that re-arms an expired gate.** Split the difference on (5) and the proposed design: allow PATCH freely during the window, but reject PATCHes that would push `expiry` past `now` once the window has already elapsed. Rejected because it makes the admission logic dependent on real time (surprising) and does not eliminate the underlying "PATCHes can change gate state" surprise — the `ObservationPeriodActive` condition and gauge already surface any re-arm immediately.
+**7. Reject PATCH that re-arms an expired gate.** Split the difference on (5) and the proposed design: allow PATCH freely during the window, but reject PATCHes that would push `expiry` past `now` once the window has already elapsed. Rejected because it makes the admission logic dependent on real time (surprising) and does not eliminate the underlying "PATCHes can change gate state" surprise — the `InitialDelayActive` condition and gauge already surface any re-arm immediately.
 
 ## Implementation History
 
