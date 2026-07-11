@@ -16,6 +16,8 @@
   - [Status Condition](#status-condition)
   - [Metric](#metric)
   - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
+  - [Graduation Criteria](#graduation-criteria)
+  - [Version Skew](#version-skew)
   - [Kubernetes Version Compatibility](#kubernetes-version-compatibility)
 - [Test Plan](#test-plan)
 - [Examples](#examples)
@@ -239,6 +241,32 @@ Disabling the feature gate causes:
 - `admission-controller` to reject new VPAs that set `initialDelaySeconds`, with a descriptive error message indicating the feature gate is disabled.
 - `updater` and `admission-controller` to ignore the field on existing objects — the VPA behaves as if the field were not set (fail-open). This is deliberate: disabling the gate should never *increase* actuation restrictions on existing objects.
 
+### Graduation Criteria
+
+**Alpha (initial release):**
+
+- Feature gate `VPAInitialDelay` disabled by default.
+- Unit and e2e coverage as described in the [Test Plan](#test-plan).
+
+**Alpha → Beta (gate enabled by default):**
+
+- E2e tests stable for at least one release.
+- No open bugs against the feature gate.
+- Positive user feedback on the field semantics (in particular the `CreationTimestamp`-anchored PATCH behaviour).
+
+**Beta → GA (gate locked on, then removed):**
+
+- No bug reports attributable to the feature for two consecutive releases.
+
+### Version Skew
+
+The Recommender is unaffected by this feature. The gate is fully effective only when both the Updater and the Admission Controller run a version that supports it, with the feature gate enabled on both. During a rollout with mixed versions, an older component simply ignores the field and behaves as it does today (fail-open, matching the gate-disabled semantics in [Feature Enablement and Rollback](#feature-enablement-and-rollback)):
+
+- **Old Updater, new Admission Controller** — pods created during the window are admitted without injection, but the Updater may still evict or resize during the window.
+- **New Updater, old Admission Controller** — no evictions or resizes during the window, but pods created during the window still receive recommendation injection.
+
+Neither skew causes errors or corrupted state; the failure mode is only that part of the gate is not honoured until the rollout completes. Operators who need strict gating should enable the feature gate only after all components are upgraded.
+
 ### Kubernetes Version Compatibility
 
 This feature is entirely internal to the VPA controllers and depends on no new Kubernetes APIs. It is compatible with any Kubernetes version supported by the corresponding VPA release.
@@ -358,7 +386,7 @@ Pods created during the first hour receive their `Deployment`-spec resources unc
 
 - (issue filed) 2026-07-06 — Issue [kubernetes/autoscaler#9936](https://github.com/kubernetes/autoscaler/issues/9936) filed.
 - (triage accepted) 2026-07-07 — `/triage accepted` from SIG member.
-- (AEP PR opened) TBD.
+- (AEP PR opened) 2026-07-10 — PR [kubernetes/autoscaler#9962](https://github.com/kubernetes/autoscaler/pull/9962).
 - (initial implementation) TBD.
 - (alpha) TBD.
 - (beta) TBD.
