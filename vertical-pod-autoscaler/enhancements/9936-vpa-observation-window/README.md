@@ -147,8 +147,8 @@ Consequences that fall out of this design:
 | Extend `observationPeriodSeconds` during window | Gate stays open longer. |
 | Extend `observationPeriodSeconds` **after** expiry | Gate re-arms on next reconcile. |
 | Remove `observationPeriodSeconds` (or set to zero) | Gate closes immediately on next reconcile. |
-| PATCH `updateMode` | New mode takes effect when the window elapses (or immediately, if already elapsed). |
-| PATCH `resourcePolicy` / `targetRef` | No effect on the gate. |
+| Modify `updateMode` | New mode takes effect when the window elapses (or immediately, if already elapsed). |
+| Modify `resourcePolicy` / `targetRef` | No effect on the gate. |
 
 The re-arm-after-expiry behaviour is intentional: it lets users manually extend an observation window in response to observed instability without deleting the VPA. If reviewers consider this a footgun serious enough to justify admission logic, we can add a check rejecting PATCHes that would push `expiry` past `now` once the window has already elapsed — see [Alternatives Considered](#alternatives-considered).
 
