@@ -169,7 +169,7 @@ When `inInitialDelayWindow` returns `true`, both components take the same code p
 
 The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current spec value (mutable). No caching, no status writes.
 
-Consequences that fall out of this design:
+The gate consults exactly these two inputs. No other field — existing or added to the CRD in the future — participates in gate evaluation. The table below is therefore not a set of per-field policy decisions; it enumerates the consequences of that single formula:
 
 | Modification | Effect |
 | --- | --- |
