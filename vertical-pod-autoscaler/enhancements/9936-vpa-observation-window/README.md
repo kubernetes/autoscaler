@@ -175,12 +175,7 @@ Re-arm after expiry is possible but not guaranteed: because the window is anchor
 
 ### Interaction with `updateMode`
 
-The observation window is orthogonal to `updateMode`. While the gate is active, the Updater and the Admission Controller behave as if `updateMode` were `Off` regardless of the configured value: no evictions, no in-place resizes, and no recommendation injection into pods created during the window. Once the gate opens, the configured mode takes effect normally:
-
-- `Recreate` → the Updater is now eligible to evict pods to apply recommendations.
-- `InPlaceOrRecreate` → the Updater attempts in-place resize first, falling back to eviction.
-- `InPlace` → the Updater attempts in-place resize only; no evictions.
-- `Initial` → the admission-controller-side injection is now eligible to run on subsequent new-pod creations. Pods created during the window (or pods that pre-dated the VPA) are unaffected, matching the standard `Initial` semantics.
+The observation window is orthogonal to `updateMode`. While the gate is active, the Updater and the Admission Controller behave as if `updateMode` were `Off` regardless of the configured value: no evictions, no in-place resizes, and no recommendation injection into pods created during the window.
 
 ### Interaction with CPU Startup Boost
 
