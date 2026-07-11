@@ -144,7 +144,9 @@ func validateVPASpec(spec *vpa_types.VerticalPodAutoscalerSpec, fldPath *field.P
 	}
 
 	if spec.UpdatePolicy != nil {
-		allErrs = append(allErrs, validateVPASpecUpdatePolicy(spec.UpdatePolicy, fldPath.Child("updatePolicy"), opts)...)
+		updatePolicyWarnings, updatePolicyErrs := validateVPASpecUpdatePolicy(spec.UpdatePolicy, fldPath.Child("updatePolicy"), opts)
+		warnings = append(warnings, updatePolicyWarnings...)
+		allErrs = append(allErrs, updatePolicyErrs...)
 	}
 
 	if spec.ResourcePolicy != nil {
@@ -164,8 +166,9 @@ func validateVPASpec(spec *vpa_types.VerticalPodAutoscalerSpec, fldPath *field.P
 	return warnings, allErrs
 }
 
-func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPath *field.Path, opts VPAValidationOptions) field.ErrorList {
+func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPath *field.Path, opts VPAValidationOptions) ([]string, field.ErrorList) {
 	allErrs := field.ErrorList{}
+	var warnings []string
 
 	mode := updatePolicy.UpdateMode
 	if mode == nil {
@@ -173,6 +176,9 @@ func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPat
 	} else {
 		if _, found := vpa_types.GetUpdateModes()[*mode]; !found {
 			allErrs = append(allErrs, field.NotSupported(fldPath.Child("updateMode"), *mode, vpa_types.GetUpdateModesList()))
+		}
+		if *mode == vpa_types.UpdateModeAuto { //nolint:staticcheck
+			warnings = append(warnings, fmt.Sprintf("%s: %q mode is deprecated and will be removed in a future API version. Use explicit update modes like: %s. See https://github.com/kubernetes/autoscaler/issues/8424 for more details.", fldPath, *mode, vpa_types.GetUpdateModesList()))
 		}
 
 		if *mode == vpa_types.UpdateModeInPlace && !opts.AllowInPlace {
@@ -193,7 +199,7 @@ func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPat
 		}
 	}
 
-	return allErrs
+	return warnings, allErrs
 }
 
 func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, fldPath *field.Path, opts VPAValidationOptions) ([]string, field.ErrorList) {

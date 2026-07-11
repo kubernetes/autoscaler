@@ -35,17 +35,11 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 )
 
 const (
-	vpaGroup               = "autoscaling.k8s.io"
-	vpaResource            = "verticalpodautoscalers"
-	autoDeprecationWarning = `UpdateMode "Auto" is deprecated and will be removed in a future API version. ` +
-		`Use explicit update modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead. ` +
-		`See https://github.com/kubernetes/autoscaler/issues/8424 for more details.`
 	// maxAdmissionPayloadSize limits the size of the incoming admission request payload
 	// to prevent OOM (Denial of Service) attacks. A typical AdmissionReview is well under 100KB,
 	// and etcd limits objects to 1.5MB. With updates including both the new and old object,
@@ -74,37 +68,6 @@ func NewAdmissionServer(podPreProcessor pod.PreProcessor,
 // RegisterResourceHandler allows to register a custom logic for handling given types of resources.
 func (s *AdmissionServer) RegisterResourceHandler(resourceHandler resource.Handler) {
 	s.resourceHandlers[resourceHandler.GroupResource()] = resourceHandler
-}
-
-// addDeprecationWarnings adds deprecation warnings to the admission response for VPA objects using deprecated modes
-func (*AdmissionServer) addDeprecationWarnings(req *admissionv1.AdmissionRequest, resp *admissionv1.AdmissionResponse) {
-	if req.Object.Raw == nil {
-		return
-	}
-
-	// Check if this is a VPA object
-	admittedGroupResource := metav1.GroupResource{
-		Group:    req.Resource.Group,
-		Resource: req.Resource.Resource,
-	}
-
-	if admittedGroupResource.Group != vpaGroup || admittedGroupResource.Resource != vpaResource {
-		return
-	}
-
-	var vpa vpa_types.VerticalPodAutoscaler
-	if err := json.Unmarshal(req.Object.Raw, &vpa); err != nil {
-		klog.V(4).InfoS("Failed to unmarshal VPA object for deprecation warning check", "err", err)
-		return
-	}
-
-	if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.UpdateMode != nil &&
-		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto { //nolint:staticcheck
-		if resp.Warnings == nil {
-			resp.Warnings = []string{}
-		}
-		resp.Warnings = append(resp.Warnings, autoDeprecationWarning)
-	}
 }
 
 func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.AdmissionResponse, metrics_admission.AdmissionStatus, metrics_admission.AdmissionResource) {
@@ -183,9 +146,6 @@ func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.
 	if resource == metrics_admission.Pod {
 		metrics_admission.OnAdmittedPod(status == metrics_admission.Applied)
 	}
-
-	// Add deprecation warnings for VPA objects using deprecated modes
-	s.addDeprecationWarnings(ar.Request, &response)
 
 	return &response, status, resource
 }
