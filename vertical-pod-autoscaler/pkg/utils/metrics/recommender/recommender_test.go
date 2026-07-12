@@ -30,11 +30,6 @@ import (
 )
 
 func TestObjectCounter(t *testing.T) {
-	updateModeOff := vpa_types.UpdateModeOff
-	updateModeInitial := vpa_types.UpdateModeInitial
-	updateModeRecreate := vpa_types.UpdateModeRecreate
-	updateModeAuto := vpa_types.UpdateModeAuto //nolint:staticcheck
-	updateModeInPlaceOrRecreate := vpa_types.UpdateModeInPlaceOrRecreate
 	// We verify that other update modes are handled correctly as validation
 	// may not happen if there are issues with the admission controller.
 	updateModeUserDefined := vpa_types.UpdateMode("userDefined")
@@ -100,66 +95,7 @@ func TestObjectCounter(t *testing.T) {
 				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
 			},
 		},
-		{
-			name: "report update mode auto",
-			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					UpdateMode: &updateModeAuto,
-				},
-			},
-			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Auto,": 1,
-			},
-		},
-		{
-			name: "report update mode initial",
-			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					UpdateMode: &updateModeInitial,
-				},
-			},
-			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Initial,": 1,
-			},
-		},
-		{
-			name: "report update mode recreate",
-			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					UpdateMode: &updateModeRecreate,
-				},
-			},
-			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Recreate,": 1,
-			},
-		},
-		{
-			name: "report update mode off",
-			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					UpdateMode: &updateModeOff,
-				},
-			},
-			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=Off,": 1,
-			},
-		},
-		{
-			name: "report update mode InPlaceOrRecreate",
-			add: []*model.Vpa{
-				{
-					APIVersion: "v1",
-					UpdateMode: &updateModeInPlaceOrRecreate,
-				},
-			},
-			wantMetrics: map[string]float64{
-				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=InPlaceOrRecreate,": 1,
-			},
-		},
+
 		{
 			name: "report update mode user defined",
 			add: []*model.Vpa{
@@ -279,6 +215,26 @@ func TestObjectCounter(t *testing.T) {
 				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=true,update_mode=Recreate,": 1,
 			},
 		},
+	}
+
+	for mode := range vpa_types.GetUpdateModes() {
+		modeVal := mode // capture for pointer
+		cases = append(cases, struct {
+			name        string
+			add         []*model.Vpa
+			wantMetrics map[string]float64
+		}{
+			name: "report update mode " + string(mode),
+			add: []*model.Vpa{
+				{
+					APIVersion: "v1",
+					UpdateMode: &modeVal,
+				},
+			},
+			wantMetrics: map[string]float64{
+				"api=v1,has_recommendation=false,matches_pods=true,unsupported_config=false,update_mode=" + string(mode) + ",": 1,
+			},
+		})
 	}
 
 	for _, tc := range cases {
