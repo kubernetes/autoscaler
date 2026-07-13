@@ -40,7 +40,7 @@ func TestProvReqFullLifecycle(t *testing.T) {
 		)
 
 	options := config.ResolveOptions()
-	infra := integration.SetupInfrastructure(t)
+	infra := integration.SetupSimpleInfrastructure(t)
 	fakes := infra.Fakes
 
 	synctest.Test(t, func(t *testing.T) {

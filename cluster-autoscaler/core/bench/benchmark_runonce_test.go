@@ -31,6 +31,8 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/fake"
@@ -38,6 +40,7 @@ import (
 	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -201,7 +204,7 @@ func (s scenario) runIteration(b *testing.B, i int, fProf, fTrace *os.File) {
 
 // newClusterFakes initializes a fake cluster with predefined resource limits.
 func newClusterFakes() *integration.FakeSet {
-	clusterFakes := integration.NewFakeSet()
+	clusterFakes := integration.NewSimpleFakeSet()
 	clusterFakes.CloudProvider.SetResourceLimit(cloudprovider.ResourceNameCores, 0, maxCores)
 	clusterFakes.CloudProvider.SetResourceLimit(cloudprovider.ResourceNameMemory, 0, maxMem)
 	return clusterFakes
@@ -417,6 +420,99 @@ func setupScaleUp(nodes int) func(*integration.FakeSet) error {
 	}
 }
 
+// setupScaleUpDRA prepares a scenario that triggers a scale-up for the specified number of nodes
+// by creating a corresponding number of unschedulable pods requesting DRA resources.
+func setupScaleUpDRA(nodes int) func(*integration.FakeSet) error {
+	return func(clusterFakes *integration.FakeSet) error {
+		deviceClass := &resourceapi.DeviceClass{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "default-class",
+			},
+		}
+		_, err := clusterFakes.KubeClient.ResourceV1().DeviceClasses().Create(context.Background(), deviceClass, metav1.CreateOptions{})
+		if err != nil {
+			return err
+		}
+
+		nTemplate := BuildTestNode("n-template", nodeCPU, nodeMem)
+		SetNodeReadyState(nTemplate, true, time.Now())
+
+		const podsPerNode = 8
+		devices := make([]resourceapi.Device, podsPerNode)
+		for j := 0; j < podsPerNode; j++ {
+			devices[j] = resourceapi.Device{Name: fmt.Sprintf("gpu-%d", j)}
+		}
+
+		driverName := "gpu.nvidia.com"
+		nodeNameStr := "n-template"
+		nodeSlice := &resourceapi.ResourceSlice{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "rs-template",
+				UID:  "rs-template-uid",
+			},
+			Spec: resourceapi.ResourceSliceSpec{
+				NodeName: &nodeNameStr,
+				Driver:   driverName,
+				Pool: resourceapi.ResourcePool{
+					Name:               "n-template",
+					ResourceSliceCount: 1,
+				},
+				Devices: devices,
+			},
+		}
+
+		clusterFakes.CloudProvider.AddNodeGroup(ngName,
+			testprovider.WithTemplate(framework.NewNodeInfo(nTemplate, []*resourceapi.ResourceSlice{nodeSlice})),
+			testprovider.WithNGSize(0, maxNGSize),
+		)
+
+		totalPods := nodes * podsPerNode
+		for i := 0; i < totalPods; i++ {
+			podName := fmt.Sprintf("pod-dra-%d", i)
+			claimName := fmt.Sprintf("claim-%d", i)
+			// Allocate half of the available cpu and mem resources.
+			// This is an extra check if DRA logic works correctly.
+			// To make the DRA devices the deciding factor of scale up.
+			cpu := int64(nodeCPU / (podsPerNode * 2))
+			mem := int64(nodeMem / (podsPerNode * 2))
+
+			pod := BuildTestPod(podName, cpu, mem, MarkUnschedulable(), WithResourceClaim(claimName, claimName, ""))
+
+			expression := fmt.Sprintf(`device.driver == "%s"`, driverName)
+			claim := &resourceapi.ResourceClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      claimName,
+					Namespace: "default",
+					UID:       types.UID(claimName),
+				},
+				Spec: resourceapi.ResourceClaimSpec{
+					Devices: resourceapi.DeviceClaim{
+						Requests: []resourceapi.DeviceRequest{
+							{
+								Name: "req-0",
+								Exactly: &resourceapi.ExactDeviceRequest{
+									DeviceClassName: "default-class",
+									Selectors:       []resourceapi.DeviceSelector{{CEL: &resourceapi.CELDeviceSelector{Expression: expression}}},
+									AllocationMode:  resourceapi.DeviceAllocationModeExactCount,
+									Count:           1,
+								},
+							},
+						},
+					},
+				},
+			}
+
+			clusterFakes.K8s.AddPod(pod)
+
+			_, err = clusterFakes.KubeClient.ResourceV1().ResourceClaims("default").Create(context.Background(), claim, metav1.CreateOptions{})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
 // setupScaleDown60Percent prepares a scenario where the workload is reduced such
 // that it fits on 40% of the existing nodes, triggering a 60% scale-down.
 // Each node starts with 40 pods, each consuming 1% of the node's resources,
@@ -445,6 +541,152 @@ func setupScaleDown60Percent(nodesCount int) func(*integration.FakeSet) error {
 			}
 			pod.Annotations["cluster-autoscaler.kubernetes.io/safe-to-evict"] = "true"
 			clusterFakes.K8s.AddPod(pod)
+		}
+
+		return nil
+	}
+}
+
+// setupScaleDownDRA60Percent prepares a scenario where the workload is reduced such
+// that it fits on 40% of the existing nodes, triggering a 60% scale-down, using DRA.
+// Each node starts with 4 pods and has 10 DRA devices, meaning 40% device utilization.
+func setupScaleDownDRA60Percent(nodesCount int) func(*integration.FakeSet) error {
+	return func(clusterFakes *integration.FakeSet) error {
+		deviceClass := &resourceapi.DeviceClass{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "default-class",
+			},
+		}
+		_, err := clusterFakes.KubeClient.ResourceV1().DeviceClasses().Create(context.Background(), deviceClass, metav1.CreateOptions{})
+		if err != nil {
+			return err
+		}
+
+		nTemplate := BuildTestNode("n-template", nodeCPU, nodeMem)
+		SetNodeReadyState(nTemplate, true, time.Now())
+
+		ng := clusterFakes.CloudProvider.AddNodeGroup(ngName,
+			testprovider.WithNodes(nTemplate, nodesCount),
+			testprovider.WithNGSize(0, maxNGSize),
+		)
+
+		driverName := "gpu.nvidia.com"
+		const devicesPerNode = 10
+		const podsPerNode = 4
+
+		// Create ResourceSlice for each node.
+		for i := 0; i < nodesCount; i++ {
+			nodeName := fmt.Sprintf("%s-node-%d", ng.Id(), i)
+
+			devices := make([]resourceapi.Device, devicesPerNode)
+			for j := 0; j < devicesPerNode; j++ {
+				devices[j] = resourceapi.Device{Name: fmt.Sprintf("gpu-%d", j)}
+			}
+
+			nodeSlice := &resourceapi.ResourceSlice{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: fmt.Sprintf("rs-%s", nodeName),
+					UID:  types.UID(fmt.Sprintf("rs-%s-uid", nodeName)),
+				},
+				Spec: resourceapi.ResourceSliceSpec{
+					NodeName: &nodeName,
+					Driver:   driverName,
+					Pool: resourceapi.ResourcePool{
+						Name:               nodeName,
+						ResourceSliceCount: 1,
+					},
+					Devices: devices,
+				},
+			}
+
+			_, err = clusterFakes.KubeClient.ResourceV1().ResourceSlices().Create(context.Background(), nodeSlice, metav1.CreateOptions{})
+			if err != nil {
+				return err
+			}
+		}
+
+		// Create 4 pods per node.
+		// Each pod uses 1 DRA device, with CPU and Mem configured such that DRA remains the deciding factor of scale down.
+		for i := range nodesCount * podsPerNode {
+			podName := fmt.Sprintf("pod-dra-%d", i)
+			nodeName := fmt.Sprintf("%s-node-%d", ng.Id(), i%nodesCount)
+			claimName := fmt.Sprintf("claim-%d", i)
+
+			// Allocate half of the available cpu and mem resources when packed with max devices.
+			// To make the DRA devices the deciding factor of scale down.
+			cpu := int64(nodeCPU / (devicesPerNode * 2))
+			mem := int64(nodeMem / (devicesPerNode * 2))
+
+			pod := BuildTestPod(podName, cpu, mem, WithResourceClaim(claimName, claimName, ""))
+			pod.Spec.NodeName = nodeName
+			if pod.Annotations == nil {
+				pod.Annotations = make(map[string]string)
+			}
+			pod.Annotations["cluster-autoscaler.kubernetes.io/safe-to-evict"] = "true"
+
+			expression := fmt.Sprintf(`device.driver == "%s"`, driverName)
+			claim := &resourceapi.ResourceClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      claimName,
+					Namespace: "default",
+					UID:       types.UID(claimName),
+				},
+				Spec: resourceapi.ResourceClaimSpec{
+					Devices: resourceapi.DeviceClaim{
+						Requests: []resourceapi.DeviceRequest{
+							{
+								Name: "req-0",
+								Exactly: &resourceapi.ExactDeviceRequest{
+									DeviceClassName: "default-class",
+									Selectors:       []resourceapi.DeviceSelector{{CEL: &resourceapi.CELDeviceSelector{Expression: expression}}},
+									AllocationMode:  resourceapi.DeviceAllocationModeExactCount,
+									Count:           1,
+								},
+							},
+						},
+					},
+				},
+				Status: resourceapi.ResourceClaimStatus{
+					Allocation: &resourceapi.AllocationResult{
+						Devices: resourceapi.DeviceAllocationResult{
+							Results: []resourceapi.DeviceRequestAllocationResult{
+								{
+									Driver:  driverName,
+									Request: "req-0",
+									Pool:    nodeName,
+									Device:  fmt.Sprintf("gpu-%d", i/nodesCount), // distribute devices per node
+								},
+							},
+						},
+						NodeSelector: &corev1.NodeSelector{
+							NodeSelectorTerms: []corev1.NodeSelectorTerm{{
+								MatchFields: []corev1.NodeSelectorRequirement{
+									{
+										Key:      "metadata.name",
+										Operator: corev1.NodeSelectorOpIn,
+										Values:   []string{nodeName},
+									},
+								},
+							}},
+						},
+					},
+					ReservedFor: []resourceapi.ResourceClaimConsumerReference{
+						{
+							APIGroup: "",
+							Resource: "pods",
+							Name:     podName,
+							UID:      types.UID(podName),
+						},
+					},
+				},
+			}
+
+			clusterFakes.K8s.AddPod(pod)
+
+			_, err = clusterFakes.KubeClient.ResourceV1().ResourceClaims("default").Create(context.Background(), claim, metav1.CreateOptions{})
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -492,8 +734,8 @@ func verifyToBeDeleted(expectedDeletedSize int) func(*integration.FakeSet) error
 
 func BenchmarkRunOnceScaleUp(b *testing.B) {
 	s := scenario{
-		setup:  setupScaleUp(200),
-		verify: verifyTargetSize(200),
+		setup:  setupScaleUp(1000),
+		verify: verifyTargetSize(1000),
 		config: func(opts *config.AutoscalingOptions) {
 			opts.MaxNodesPerScaleUp = maxNGSize
 			opts.ScaleUpFromZero = true
@@ -502,19 +744,51 @@ func BenchmarkRunOnceScaleUp(b *testing.B) {
 	s.run(b)
 }
 
+func BenchmarkRunOnceScaleUpDRA(b *testing.B) {
+	s := scenario{
+		setup:  setupScaleUpDRA(500),
+		verify: verifyTargetSize(500),
+		config: func(opts *config.AutoscalingOptions) {
+			opts.MaxNodesPerScaleUp = maxNGSize
+			opts.ScaleUpFromZero = true
+			opts.DynamicResourceAllocationEnabled = true
+		},
+	}
+	s.run(b)
+}
+
 func BenchmarkRunOnceScaleDown(b *testing.B) {
 	s := scenario{
-		setup:  setupScaleDown60Percent(400),
-		verify: verifyToBeDeleted(240),
+		setup:  setupScaleDown60Percent(2000),
+		verify: verifyToBeDeleted(1200),
 		config: func(opts *config.AutoscalingOptions) {
 			opts.NodeGroupDefaults.ScaleDownUnneededTime = 0
-			opts.MaxScaleDownParallelism = 1000
-			opts.MaxDrainParallelism = 1000
+			opts.MaxScaleDownParallelism = 2000
+			opts.MaxDrainParallelism = 2000
 			opts.ScaleDownDelayAfterAdd = 0
 			opts.ScaleDownEnabled = true
-			opts.ScaleDownNonEmptyCandidatesCount = 1000
+			opts.ScaleDownNonEmptyCandidatesCount = 2000
 			opts.ScaleDownUnreadyEnabled = true
 			opts.ScaleDownSimulationTimeout = 60 * time.Second
+		},
+	}
+	s.run(b)
+}
+
+func BenchmarkRunOnceScaleDownDRA(b *testing.B) {
+	s := scenario{
+		setup:  setupScaleDownDRA60Percent(800),
+		verify: verifyToBeDeleted(480),
+		config: func(opts *config.AutoscalingOptions) {
+			opts.NodeGroupDefaults.ScaleDownUnneededTime = 0
+			opts.MaxScaleDownParallelism = 2000
+			opts.MaxDrainParallelism = 2000
+			opts.ScaleDownDelayAfterAdd = 0
+			opts.ScaleDownEnabled = true
+			opts.ScaleDownNonEmptyCandidatesCount = 2000
+			opts.ScaleDownUnreadyEnabled = true
+			opts.ScaleDownSimulationTimeout = 60 * time.Second
+			opts.DynamicResourceAllocationEnabled = true
 		},
 	}
 	s.run(b)
