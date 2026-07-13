@@ -94,18 +94,19 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 	}
 
 	if updateMode == vpa_types.UpdateModeInPlace && !features.Enabled(features.InPlace) {
-		klog.V(4).InfoS("Deferring in-place update because the VPA is configured for InPlace mode but the InPlace feature gate is disabled", "pod", klog.KObj(pod), "vpa", klog.KObj(vpa))
+		klog.V(4).InfoS("Can't in-place update pod, VPA updateMode is InPlace but InPlace feature gate is not enabled", "pod", klog.KObj(pod), "vpa", klog.KObj(vpa))
 		return utils.InPlaceDeferred
 	}
 
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
 	if !present {
 		klog.V(4).InfoS("Deferring in-place update because VPA cannot determine whether disrupting this Pod is safe; the Pod may be unmanaged, its controller information may be unavailable, or its replica group may be below the configured minimum size", "pod", klog.KObj(pod))
+		klog.V(5).InfoS("Pod lacks recognized owner references, its controller is untracked, or min replicas not met", "pod", klog.KObj(pod), "ownerReferences", pod.OwnerReferences)
 		return utils.InPlaceDeferred
 	}
 
 	if pod.Status.Phase == corev1.PodPending {
-		klog.V(4).InfoS("Deferring in-place update because the Pod is still pending; VPA will retry after the Pod starts running", "pod", klog.KObj(pod))
+		klog.V(4).InfoS("Can't in-place update pod, pod is in Pending phase", "pod", klog.KObj(pod))
 		return utils.InPlaceDeferred
 	}
 
@@ -116,7 +117,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 	}
 
 	if vpa.Status.Recommendation == nil {
-		klog.V(4).InfoS("Deferring in-place update because VPA has no current resource recommendation for this Pod; VPA will retry when a recommendation is available", "pod", klog.KObj(pod))
+		klog.V(4).InfoS("Can't in-place update pod, no recommendation available yet. Waiting for next loop", "pod", klog.KObj(pod))
 		return utils.InPlaceDeferred
 	}
 
