@@ -137,9 +137,11 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 
 			// consume more memory to get a higher recommendation
 			// NOTE: large range given due to unpredictability of actual memory usage
+			// NOTE: longer timeout: the memory recommendation grows slower than CPU
+			// and the updater then applies it to the pods serially, ~1-2 min apart.
 			rc.ConsumeMem(1024 * replicas)
 			err = waitForResourceRequestInRangeInPods(
-				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
+				f, 2*utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
 				ParseQuantityOrDie("900Mi"), ParseQuantityOrDie("4000Mi"))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		})
@@ -208,9 +210,11 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 
 			// consume more memory to get a higher recommendation
 			// NOTE: large range given due to unpredictability of actual memory usage
+			// NOTE: longer timeout: the memory recommendation grows slower than CPU
+			// and the updater then evicts the pods serially, ~1-2 min apart.
 			rc.ConsumeMem(1024 * replicas)
 			err = waitForResourceRequestInRangeInPods(
-				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
+				f, 2*utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
 				ParseQuantityOrDie("900Mi"), ParseQuantityOrDie("4000Mi"))
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		})
