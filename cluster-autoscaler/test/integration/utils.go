@@ -53,6 +53,16 @@ func SetupInfrastructure(t *testing.T) *TestInfrastructure {
 	}
 }
 
+// SetupSimpleInfrastructure initializes the test dependencies with lightweight fake clientsets.
+func SetupSimpleInfrastructure(t *testing.T) *TestInfrastructure {
+	t.Helper()
+	return &TestInfrastructure{
+		Fakes:       NewSimpleFakeSet(),
+		Manager:     MustCreateControllerRuntimeMgr(t),
+		Snapshotter: debuggingsnapshot.NewDebuggingSnapshotter(false),
+	}
+}
+
 // FakeSet encapsulates all the fake clients and providers needed for
 // an in-memory integration test.
 type FakeSet struct {
@@ -77,7 +87,7 @@ func NewFakeSet() *FakeSet {
 	fK8s := fakek8s.NewKubernetes(kubeClient, informerFactory)
 	fCloud := fakecloudprovider.NewCloudProvider(fK8s)
 	po := &loop.UnschedulablePodObserver{}
-	prClient := provreqfake.NewSimpleClientset()
+	prClient := provreqfake.NewClientset()
 
 	return &FakeSet{
 		KubeClient:      kubeClient,
@@ -85,6 +95,28 @@ func NewFakeSet() *FakeSet {
 		K8s:             fK8s,
 		CloudProvider:   fCloud,
 		PRClient:        prClient,
+		PodObserver:     po,
+	}
+}
+
+// NewSimpleFakeSet returns a FakeSet initialized with lightweight fake clientsets.
+// These are backed by a very simple object tracker that processes creates, updates and deletions as-is,
+// without applying any field management, validations and/or defaults.
+// It shouldn't be considered a replacement for a real clientset and is mostly useful in simple unit tests.
+func NewSimpleFakeSet() *FakeSet {
+	simpleKubeClient := fake.NewSimpleClientset()
+	informerFactory := informers.NewSharedInformerFactory(simpleKubeClient, 0)
+	fK8s := fakek8s.NewKubernetes(simpleKubeClient, informerFactory)
+	fCloud := fakecloudprovider.NewCloudProvider(fK8s)
+	po := &loop.UnschedulablePodObserver{}
+	simplePRClient := provreqfake.NewSimpleClientset()
+
+	return &FakeSet{
+		KubeClient:      simpleKubeClient,
+		InformerFactory: informerFactory,
+		K8s:             fK8s,
+		CloudProvider:   fCloud,
+		PRClient:        simplePRClient,
 		PodObserver:     po,
 	}
 }
