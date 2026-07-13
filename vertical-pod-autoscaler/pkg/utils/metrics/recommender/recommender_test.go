@@ -18,7 +18,6 @@ package recommender
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -218,7 +217,7 @@ func TestObjectCounter(t *testing.T) {
 		},
 	}
 
-	for _, mode := range sortedUpdateModes() {
+	for mode := range vpa_types.GetUpdateModes() {
 		cases = append(cases, struct {
 			name        string
 			add         []*model.Vpa
@@ -292,19 +291,6 @@ func TestObjectCounter(t *testing.T) {
 	}
 }
 
-// sortedUpdateModes returns all UpdateModes known to the API, via the shared
-// vpa_types.GetUpdateModes helper, in a deterministic order. Sourcing the
-// modes from the helper (instead of a hardcoded list) ensures these tests
-// automatically pick up any new UpdateMode added to the API.
-func sortedUpdateModes() []vpa_types.UpdateMode {
-	modes := make([]vpa_types.UpdateMode, 0, len(vpa_types.GetUpdateModes()))
-	for mode := range vpa_types.GetUpdateModes() {
-		modes = append(modes, mode)
-	}
-	slices.Sort(modes)
-	return modes
-}
-
 func labelsToKey(labels []*dto.LabelPair) string {
 	key := strings.Builder{}
 	for _, label := range labels {
@@ -317,7 +303,7 @@ func labelsToKey(labels []*dto.LabelPair) string {
 }
 
 func TestObjectCounterResetsAllUpdateModes(t *testing.T) {
-	for _, mode := range sortedUpdateModes() {
+	for mode := range vpa_types.GetUpdateModes() {
 		t.Run(string(mode), func(t *testing.T) {
 			t.Cleanup(func() {
 				vpaObjectCount.Reset()
