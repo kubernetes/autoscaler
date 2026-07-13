@@ -18,7 +18,7 @@ package recommender
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -219,7 +219,6 @@ func TestObjectCounter(t *testing.T) {
 	}
 
 	for _, mode := range sortedUpdateModes() {
-		mode := mode
 		cases = append(cases, struct {
 			name        string
 			add         []*model.Vpa
@@ -302,7 +301,7 @@ func sortedUpdateModes() []vpa_types.UpdateMode {
 	for mode := range vpa_types.GetUpdateModes() {
 		modes = append(modes, mode)
 	}
-	sort.Slice(modes, func(i, j int) bool { return modes[i] < modes[j] })
+	slices.Sort(modes)
 	return modes
 }
 
