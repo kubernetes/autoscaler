@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -28,7 +29,7 @@ type Autoscaler interface {
 	// Start starts components running in background.
 	Start() error
 	// RunOnce represents an iteration in the control-loop of CA
-	RunOnce(currentTime time.Time) errors.AutoscalerError
+	RunOnce(ctx context.Context, currentTime time.Time) errors.AutoscalerError
 	// ExitCleanUp is a clean-up performed just before process termination.
 	ExitCleanUp()
 	// LastScaleUpTime is a time of the last scale up
