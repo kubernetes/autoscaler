@@ -25,7 +25,9 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -183,4 +185,82 @@ func TestEquivalenceGroupIgnoresDaemonSets(t *testing.T) {
 	pods[1].OwnerReferences = GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ds.UID)
 	podGroups := groupPodsBySchedulingProperties(pods)
 	assert.Equal(t, 2, len(podGroups))
+}
+
+type testReason struct {
+	ReasonsList []string
+}
+
+func (tr *testReason) Reasons() []string {
+	return tr.ReasonsList
+}
+
+func TestPodGroupClone(t *testing.T) {
+	p1 := BuildTestPod("p1", 100, 200)
+	p2 := BuildTestPod("p2", 200, 300)
+	testCases := []struct {
+		name       string
+		mutate     func(pg *PodGroup)
+		expectDiff bool
+	}{
+		{
+			name: "modify schedulable",
+			mutate: func(pg *PodGroup) {
+				pg.Schedulable = !pg.Schedulable
+			},
+			expectDiff: true,
+		},
+		{
+			name: "modify schedulable groups",
+			mutate: func(pg *PodGroup) {
+				pg.SchedulableGroups[0] = "mutated-group"
+			},
+			expectDiff: true,
+		},
+		{
+			name: "modify scheduling errors",
+			mutate: func(pg *PodGroup) {
+				pg.SchedulingErrors["ng1"] = &testReason{ReasonsList: []string{"mutated-error"}}
+			},
+			expectDiff: true,
+		},
+		{
+			// If Pods are modified then both original and cloned are modified
+			name: "modify pods (shallow copy)",
+			mutate: func(pg *PodGroup) {
+				pg.Pods[0].Namespace = "mutated-namespace"
+			},
+			expectDiff: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pg := &PodGroup{
+				Pods: []*apiv1.Pod{p1.DeepCopy(), p2.DeepCopy()},
+				SchedulingErrors: map[string]status.Reasons{
+					"ng1": &testReason{ReasonsList: []string{"error1"}},
+				},
+				SchedulableGroups: []string{"ng1", "ng2"},
+				Schedulable:       true,
+			}
+			cloned := pg.Clone()
+			assert.NotNil(t, cloned)
+			// Verify that there are different pointers.
+			assert.True(t, pg != cloned, "Clone should return a new pointer")
+
+			// Verify that clone's content is initially identical to original's
+			assert.Empty(t, cmp.Diff(pg, cloned))
+
+			// Mutate original
+			tc.mutate(pg)
+
+			// Verify that clone is now differentiate from original (except for pod's modifications)
+			diff := cmp.Diff(pg, cloned)
+			if tc.expectDiff {
+				assert.NotEmpty(t, diff)
+			} else {
+				assert.Empty(t, diff)
+			}
+		})
+	}
 }
