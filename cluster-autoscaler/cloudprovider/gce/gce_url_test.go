@@ -312,7 +312,6 @@ func TestIsInstanceTemplateRegional(t *testing.T) {
 		name           string
 		templateUrl    string
 		expectRegional bool
-		wantErr        error
 	}{
 		{
 			name:           "Has regional instance url",
@@ -328,11 +327,7 @@ func TestIsInstanceTemplateRegional(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			regional, err := IsInstanceTemplateRegional(tt.templateUrl)
-			assert.Equal(t, tt.wantErr, err)
-			if tt.wantErr != nil {
-				return
-			}
+			regional := IsInstanceTemplateRegional(tt.templateUrl)
 			assert.Equal(t, tt.expectRegional, regional)
 		})
 	}
