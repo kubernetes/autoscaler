@@ -20,7 +20,6 @@ import (
 	"context"
 	"strings"
 
-	cqv1alpha1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1alpha1"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -140,10 +139,6 @@ func initializeDefaultOptions(ctx context.Context, opts *coreoptions.AutoscalerO
 		providers := []resourcequotas.Provider{resourcequotas.NewCloudQuotasProvider(opts.CloudProvider)}
 
 		if opts.CapacityQuotasEnabled {
-			// register informer here to disable lazy initialization
-			if _, err := opts.KubeCache.GetInformer(context.TODO(), &cqv1alpha1.CapacityQuota{}); err != nil {
-				return err
-			}
 			providers = append(providers, capacityquota.NewCapacityQuotasProvider(opts.KubeClientNew))
 		}
 		opts.QuotasTrackerOptions.QuotaProvider = resourcequotas.NewCombinedQuotasProvider(providers)
