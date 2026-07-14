@@ -118,7 +118,7 @@ func TestStaticAutoscalerSalvoScaleUp(t *testing.T) {
 			return id == "ng1" || id == "ng2"
 		}), 1).Return(nil).Once()
 
-		err := autoscaler.RunOnce(time.Now())
+		err := autoscaler.RunOnce(t.Context(), time.Now())
 		assert.NoError(t, err)
 		mock.AssertExpectationsForObjects(t, onScaleUpMock)
 	})
@@ -130,7 +130,7 @@ func TestStaticAutoscalerSalvoScaleUp(t *testing.T) {
 		onScaleUpMock.On("ScaleUp", "ng1", 1).Return(nil).Once()
 		onScaleUpMock.On("ScaleUp", "ng2", 1).Return(nil).Once()
 
-		err := autoscaler.RunOnce(time.Now())
+		err := autoscaler.RunOnce(t.Context(), time.Now())
 		assert.NoError(t, err)
 		mock.AssertExpectationsForObjects(t, onScaleUpMock)
 
@@ -176,7 +176,7 @@ func TestStaticAutoscalerSalvoScaleUp(t *testing.T) {
 		// Only the first scale up should be triggered before the budget is exhausted
 		onScaleUpMock.On("ScaleUp", mock.Anything, 1).Return(nil).Once()
 
-		err := autoscaler.RunOnce(time.Now())
+		err := autoscaler.RunOnce(t.Context(), time.Now())
 		assert.NoError(t, err)
 		mock.AssertExpectationsForObjects(t, onScaleUpMock)
 	})

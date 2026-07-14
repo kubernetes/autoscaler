@@ -179,7 +179,7 @@ func (s scenario) runIteration(b *testing.B, i int, fProf, fTrace *os.File) {
 	}
 
 	b.StartTimer()
-	err := autoscaler.RunOnce(time.Now().Add(10 * time.Second))
+	err := autoscaler.RunOnce(b.Context(), time.Now().Add(10*time.Second))
 	b.StopTimer()
 
 	if i == 0 {
