@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -32,6 +33,8 @@ const (
 	vkeLabel    = "vke.vultr.com"
 	nodeIDLabel = vkeLabel + "/node-id"
 )
+
+var errMissingNodeID = errors.New("missing node ID")
 
 // NodeGroup implements cloudprovider.NodeGroup interface. NodeGroup contains
 // configuration info and functions to control a set of nodes that have the
@@ -86,7 +89,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		return err
 	}
 
-	if updatedNodePool.NodeQuantity != targetSize {
+	if updatedNodePool != nil && updatedNodePool.NodeQuantity != targetSize {
 		return fmt.Errorf("couldn't increase size to %d (delta: %d). Current size is: %d",
 			targetSize, delta, updatedNodePool.NodeQuantity)
 	}
@@ -107,18 +110,16 @@ func (n *NodeGroup) AtomicIncreaseSize(delta int) error {
 // until node group size is updated. Implementation required.
 func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	for _, node := range nodes {
-		nodeID, ok := node.Labels[nodeIDLabel]
-		providerID := node.Spec.ProviderID
-
-		if !ok {
-			if providerID == "" {
-				return fmt.Errorf("cannot delete node %q on node pool %q: missing provider ID and node ID label %q", node.Name, n.id, nodeIDLabel)
-			}
-			nodeID = toNodeID(providerID)
+		nodeID, err := nodeIDFromNode(node)
+		if err != nil {
+			return fmt.Errorf("cannot delete node %q on node pool %q: %w", node.Name, n.id, err)
 		}
 
-		err := n.client.DeleteNodePoolInstance(context.Background(), n.clusterID, n.id, nodeID)
-		if err != nil {
+		if !n.hasNode(nodeID) {
+			return fmt.Errorf("cannot delete node %q (%q): node does not belong to node pool %q", node.Name, nodeID, n.id)
+		}
+
+		if err := n.client.DeleteNodePoolInstance(context.Background(), n.clusterID, n.id, nodeID); err != nil {
 			return fmt.Errorf("deleting node failed for cluster: %q node pool: %q node: %q: %s",
 				n.clusterID, n.id, nodeID, err)
 		}
@@ -150,6 +151,12 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 			n.nodePool.NodeQuantity, targetSize, n.MinSize())
 	}
 
+	currentSize := len(n.nodePool.Nodes)
+	if targetSize < currentSize {
+		return fmt.Errorf("cannot decrease target size below existing nodes. current target: %d desired: %d existing nodes: %d",
+			n.nodePool.NodeQuantity, targetSize, currentSize)
+	}
+
 	req := &govultr.NodePoolReqUpdate{NodeQuantity: targetSize}
 	updatedNodePool, err := n.client.UpdateNodePool(context.Background(), n.clusterID, n.id, req)
 	if err != nil {
@@ -161,8 +168,12 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 			targetSize, delta, updatedNodePool.NodeQuantity)
 	}
 
-	// update internal cache
-	n.nodePool.NodeQuantity = targetSize
+	// update internal cache while preserving node details if Vultr omits them from the update response
+	if updatedNodePool != nil {
+		n.nodePool.NodeQuantity = updatedNodePool.NodeQuantity
+	} else {
+		n.nodePool.NodeQuantity = targetSize
+	}
 	return nil
 }
 
@@ -189,7 +200,8 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	for _, nd := range nodes {
 
 		i := cloudprovider.Instance{
-			Id: toProviderID(nd.ID),
+			Id:     toProviderID(nd.ID),
+			Status: vultrNodeStatus(nd.Status),
 		}
 
 		instances = append(instances, i)
@@ -239,4 +251,47 @@ func (n *NodeGroup) Autoprovisioned() bool {
 // NodeGroup. Returning a nil will result in using default options.
 func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
+}
+
+func (n *NodeGroup) hasNode(nodeID string) bool {
+	for _, node := range n.nodePool.Nodes {
+		if node.ID == nodeID {
+			return true
+		}
+	}
+	return false
+}
+
+func nodeIDFromNode(node *apiv1.Node) (string, error) {
+	if nodeID, ok := node.Labels[nodeIDLabel]; ok && nodeID != "" {
+		return nodeID, nil
+	}
+
+	if node.Spec.ProviderID == "" {
+		return "", fmt.Errorf("%w: missing provider ID and node ID label %q", errMissingNodeID, nodeIDLabel)
+	}
+
+	return toNodeID(node.Spec.ProviderID)
+}
+
+func vultrNodeStatus(status string) *cloudprovider.InstanceStatus {
+	switch strings.ToLower(status) {
+	case "active", "upgrading":
+		return &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}
+	case "pending", "unknown", "":
+		return &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating}
+	case "closed":
+		return &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting}
+	case "suspended":
+		return &cloudprovider.InstanceStatus{
+			State: cloudprovider.InstanceRunning,
+			ErrorInfo: &cloudprovider.InstanceErrorInfo{
+				ErrorClass:   cloudprovider.OtherErrorClass,
+				ErrorCode:    "suspended",
+				ErrorMessage: "Vultr node is suspended",
+			},
+		}
+	default:
+		return &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating}
+	}
 }

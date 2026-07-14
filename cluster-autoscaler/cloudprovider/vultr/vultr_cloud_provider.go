@@ -17,6 +17,7 @@ limitations under the License.
 package vultr
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -26,7 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	autoscaler_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
@@ -73,22 +74,18 @@ func (v *vultrCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
 func (v *vultrCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	providerID := node.Spec.ProviderID
+	nodeID, err := nodeIDFromNode(node)
+	if err != nil {
+		if errors.Is(err, errMissingNodeID) {
+			return nil, nil
+		}
+		return nil, err
+	}
 
 	// we want to find the pool for a specific node
 	for _, group := range v.manager.nodeGroups {
-		nodes, err := group.Nodes()
-		if err != nil {
-			return nil, err
-		}
-
-		for _, node := range nodes {
-			if node.Id == providerID {
-				if group == nil {
-					return nil, nil
-				}
-				return group, nil
-			}
+		if group.hasNode(nodeID) {
+			return group, nil
 		}
 	}
 	return nil, nil
@@ -96,12 +93,16 @@ func (v *vultrCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (v *vultrCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+	ng, err := v.NodeGroupForNode(node)
+	if err != nil {
+		return false, err
+	}
+	return ng != nil, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (v *vultrCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (v *vultrCloudProvider) Pricing() (cloudprovider.PricingModel, autoscaler_errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -158,8 +159,15 @@ func toProviderID(nodeID string) string {
 }
 
 // toNodeID returns a node or droplet ID from the given provider ID.
-func toNodeID(providerID string) string {
-	return strings.TrimPrefix(providerID, vultrProviderIDPrefix)
+func toNodeID(providerID string) (string, error) {
+	if !strings.HasPrefix(providerID, vultrProviderIDPrefix) {
+		return "", fmt.Errorf("provider ID %q does not use expected prefix %q", providerID, vultrProviderIDPrefix)
+	}
+	nodeID := strings.TrimPrefix(providerID, vultrProviderIDPrefix)
+	if nodeID == "" {
+		return "", fmt.Errorf("provider ID %q does not contain a node ID", providerID)
+	}
+	return nodeID, nil
 }
 
 // BuildVultr builds the Vultr cloud provider.
