@@ -17,6 +17,8 @@ limitations under the License.
 package clusterapi
 
 import (
+	"time"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -26,13 +28,17 @@ import (
 // ScaleDownNodeUpgradeProcessor is a processor to filter out
 // nodes that are undergoing an upgrade through a MachineDeployment.
 type ScaleDownNodeUpgradeProcessor struct {
-	controller *machineController
+	controller                  *machineController
+	nodeDeletionBatcherInterval time.Duration
 }
 
 // NewScaleDownNodeUpgradeProcessor returns a new ScaleDownNodeUpgradeProcessor for use when
 // registering a new upgrade scale down processor.
-func NewScaleDownNodeUpgradeProcessor(c *machineController) *ScaleDownNodeUpgradeProcessor {
-	return &ScaleDownNodeUpgradeProcessor{controller: c}
+func NewScaleDownNodeUpgradeProcessor(c *machineController, nodeDeletionBatcherInterval time.Duration) *ScaleDownNodeUpgradeProcessor {
+	return &ScaleDownNodeUpgradeProcessor{
+		controller:                  c,
+		nodeDeletionBatcherInterval: nodeDeletionBatcherInterval,
+	}
 }
 
 // GetPodDestinationCandidates returns nodes as is no processing is required here
@@ -48,7 +54,7 @@ func (p *ScaleDownNodeUpgradeProcessor) GetScaleDownCandidates(ctx *context.Auto
 
 	for _, node := range nodes {
 		// check scale down, continue if not good
-		ng, err := p.controller.nodeGroupForNode(node)
+		ng, err := p.controller.nodeGroupForNode(node, p.nodeDeletionBatcherInterval)
 		if err != nil {
 			klog.Warningf("Error while checking node group for node %s: %v", node.Name, err)
 			continue

@@ -45,8 +45,9 @@ const (
 )
 
 type nodegroup struct {
-	machineController *machineController
-	scalableResource  *unstructuredScalableResource
+	machineController           *machineController
+	scalableResource            *unstructuredScalableResource
+	nodeDeletionBatcherInterval time.Duration
 }
 
 var _ cloudprovider.NodeGroup = (*nodegroup)(nil)
@@ -97,6 +98,11 @@ func (ng *nodegroup) AtomicIncreaseSize(delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
+type markedForDeletion struct {
+	nodegroup *nodegroup
+	machine   *unstructured.Unstructured
+}
+
 // DeleteNodes deletes nodes from this node group. Error is returned
 // either on failure or if the given node doesn't belong to this node
 // group. This function should wait until node group size is updated.
@@ -117,7 +123,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 
 	// Step 1: Verify all nodes belong to this node group.
 	for _, node := range nodes {
-		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node)
+		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node, ng.nodeDeletionBatcherInterval)
 		if err != nil {
 			return nil
 		}
@@ -141,6 +147,8 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	// Step 3: annotate the corresponding machine that it is a
 	// suitable candidate for deletion and drop the replica count
 	// by 1. Fail fast on any error.
+	toDelete := make([]markedForDeletion, 0, len(nodes))
+
 	for _, node := range nodes {
 		machine, err := ng.machineController.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
 		if err != nil {
@@ -157,7 +165,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 			continue
 		}
 
-		nodeGroup, err := ng.machineController.nodeGroupForNode(node)
+		nodeGroup, err := ng.machineController.nodeGroupForNode(node, ng.nodeDeletionBatcherInterval)
 		if err != nil {
 			return err
 		}
@@ -166,8 +174,26 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 			return err
 		}
 
+		toDelete = append(toDelete, markedForDeletion{
+			nodegroup: nodeGroup,
+			machine:   machine,
+		})
+	}
+
+	if ng.nodeDeletionBatcherInterval != 0 {
+		if err := ng.scalableResource.SetSize(replicas - len(toDelete)); err != nil {
+			for _, deletion := range toDelete {
+				_ = deletion.nodegroup.scalableResource.UnmarkMachineForDeletion(deletion.machine)
+			}
+			return err
+		}
+
+		return nil
+	}
+
+	for _, deletion := range toDelete {
 		if err := ng.scalableResource.SetSize(replicas - 1); err != nil {
-			_ = nodeGroup.scalableResource.UnmarkMachineForDeletion(machine)
+			_ = deletion.nodegroup.scalableResource.UnmarkMachineForDeletion(deletion.machine)
 			return err
 		}
 
@@ -543,7 +569,7 @@ func (ng *nodegroup) IsMachineDeploymentAndRollingOut() (bool, error) {
 	return false, nil
 }
 
-func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured) (*nodegroup, error) {
+func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured, nodeDeletionBatcherInterval time.Duration) (*nodegroup, error) {
 	// Ensure that the resulting node group would be allowed based on the autodiscovery specs if defined
 	if !controller.allowedByAutoDiscoverySpecs(unstructuredScalableResource) {
 		return nil, nil
@@ -576,8 +602,9 @@ func newNodeGroupFromScalableResource(controller *machineController, unstructure
 	}
 
 	return &nodegroup{
-		machineController: controller,
-		scalableResource:  scalableResource,
+		machineController:           controller,
+		scalableResource:            scalableResource,
+		nodeDeletionBatcherInterval: nodeDeletionBatcherInterval,
 	}, nil
 }
 
