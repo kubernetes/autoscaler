@@ -17,6 +17,7 @@ limitations under the License.
 package recommender
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -63,8 +64,8 @@ func TestRecordMetricsServerResponse(t *testing.T) {
 
 	RecordMetricsServerResponse(nil, "default-client")
 	RecordMetricsServerResponse(nil, "default-client")
-	RecordMetricsServerResponse(fmt.Errorf("metrics server unavailable"), "default-client")
-	RecordMetricsServerResponse(fmt.Errorf("metrics server unavailable"), "fallback-client")
+	RecordMetricsServerResponse(errors.New("metrics server unavailable"), "default-client")
+	RecordMetricsServerResponse(errors.New("metrics server unavailable"), "fallback-client")
 
 	cases := []struct {
 		name       string
