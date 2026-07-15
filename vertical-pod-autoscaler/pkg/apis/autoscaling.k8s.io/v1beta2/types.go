@@ -38,7 +38,7 @@ type VerticalPodAutoscalerList struct {
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +kubebuilder:resource:shortName=vpa
+// +kubebuilder:resource:shortName=vpa,categories=all
 // +kubebuilder:subresource:status
 // +k8s:prerelease-lifecycle-gen=true
 // +kubebuilder:metadata:annotations="api-approved.kubernetes.io=https://github.com/kubernetes/kubernetes/pull/63797"
