@@ -2581,6 +2581,63 @@ func TestScaleSetETagRetrySkippedWhenAlreadyAtTarget(t *testing.T) {
 	assert.Equal(t, 1, putCalls, "expected no second PUT when VMSS already at target")
 }
 
+// TestScaleSetETagRefreshInvalidatesInstanceCache verifies that the ETag refresh
+// invalidates the instance cache. A 412 means another writer changed the VMSS between
+// CA's read and its write, so the instance cache (which backs Nodes() and instance-state
+// queries) is stale after the refresh and must be recomputed from fresh Azure state.
+func TestScaleSetETagRefreshInvalidatesInstanceCache(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager := newTestAzureManager(t)
+	manager.config.EnableVMSSEtag = true
+
+	vmssName := "vmss-etag-invalidate"
+	orchMode := armcompute.OrchestrationModeUniform
+
+	manager.azureCache.setScaleSet(vmssName, &armcompute.VirtualMachineScaleSet{
+		Name:       ptr.To(vmssName),
+		SKU:        &armcompute.SKU{Capacity: ptr.To[int64](3)},
+		Properties: &armcompute.VirtualMachineScaleSetProperties{OrchestrationMode: &orchMode},
+		Etag:       ptr.To(`W/"stale"`),
+	})
+
+	// The refresh GET returns a fresh VMSS already at/above the target so the retry takes
+	// the skip path (GET only, no second PUT). The cache invalidation runs regardless.
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().Get(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).
+		Return(&armcompute.VirtualMachineScaleSet{
+			Name:       ptr.To(vmssName),
+			SKU:        &armcompute.SKU{Capacity: ptr.To[int64](5)},
+			Properties: &armcompute.VirtualMachineScaleSetProperties{OrchestrationMode: &orchMode},
+			Etag:       ptr.To(`W/"fresh"`),
+		}, nil).Times(1)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).
+		Return([]*armcompute.VirtualMachineScaleSet{}, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	scaleSet := newTestScaleSet(manager, vmssName)
+	scaleSet.instancesRefreshPeriod = time.Hour
+	// Mark the instance cache freshly refreshed so we can observe the invalidation.
+	scaleSet.lastInstanceRefresh = time.Now()
+	assert.True(t, scaleSet.lastInstanceRefresh.Add(scaleSet.instancesRefreshPeriod).After(time.Now()),
+		"precondition: instance cache should start valid")
+
+	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
+	defer cancel()
+
+	fresh, poller, err := scaleSet.retryCreateOrUpdateWithFreshETag(ctx, 4)
+	assert.NoError(t, err)
+	assert.Nil(t, poller, "already-at-target refresh should skip the retry PUT")
+	if assert.NotNil(t, fresh) && assert.NotNil(t, fresh.SKU) && assert.NotNil(t, fresh.SKU.Capacity) {
+		assert.Equal(t, int64(5), *fresh.SKU.Capacity)
+	}
+
+	assert.False(t, scaleSet.lastInstanceRefresh.Add(scaleSet.instancesRefreshPeriod).After(time.Now()),
+		"ETag refresh should invalidate the instance cache")
+}
+
 // TestScaleSetETagReconcilesConcurrentWriter exercises the core scenario ETag mode is
 // meant to protect: another writer mutates the VMSS between CA's read and its write.
 // Using a mock that enforces optimistic concurrency like the real API, CA's first PUT
