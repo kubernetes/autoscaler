@@ -606,6 +606,13 @@ func (scaleSet *ScaleSet) retryCreateOrUpdateWithFreshETag(ctx context.Context, 
 	// Persist the freshly-fetched VMSS (ETag and capacity) for subsequent operations.
 	scaleSet.manager.azureCache.setScaleSet(scaleSet.Name, fresh)
 
+	// The 412 means another writer changed the VMSS between our read and this write, so
+	// the instance cache (which backs Nodes() and instance-state queries) now reflects a
+	// pre-conflict view of the scale set. Invalidate it so instance-derived data is
+	// recomputed from fresh Azure state rather than a stale snapshot. Callers of this
+	// method hold sizeMutex; invalidateInstanceCache guards the instance cache separately.
+	scaleSet.invalidateInstanceCache()
+
 	// If another writer already grew the VMSS to at least our target, the desired floor
 	// is already met; don't issue a PUT that would shrink it back down. Return the fresh
 	// object (nil poller) so the caller publishes its actual capacity, not a stale target.
