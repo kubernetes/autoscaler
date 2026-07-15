@@ -23,12 +23,70 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	dto "github.com/prometheus/client_model/go"
 	corev1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
+
+func TestObserveRecommendationLatency(t *testing.T) {
+	before := readHistogram(t, recommendationLatency)
+
+	ObserveRecommendationLatency(time.Now().Add(-time.Second))
+
+	after := readHistogram(t, recommendationLatency)
+	if got, want := after.GetSampleCount(), before.GetSampleCount()+1; got != want {
+		t.Errorf("unexpected sample count: got %d, want %d", got, want)
+	}
+	if elapsed := after.GetSampleSum() - before.GetSampleSum(); elapsed < 1 || elapsed > 30 {
+		t.Errorf("unexpected observed recommendation latency: got %f seconds, want between 1 and 30 seconds", elapsed)
+	}
+}
+
+func TestRecordAggregateContainerStatesCount(t *testing.T) {
+	t.Cleanup(func() {
+		aggregateContainerStatesCount.Set(0)
+	})
+
+	RecordAggregateContainerStatesCount(5)
+
+	if got, want := testutil.ToFloat64(aggregateContainerStatesCount), float64(5); got != want {
+		t.Errorf("unexpected aggregate container states count: got %f, want %f", got, want)
+	}
+}
+
+func TestRecordMetricsServerResponse(t *testing.T) {
+	metricServerResponses.Reset()
+	t.Cleanup(metricServerResponses.Reset)
+
+	RecordMetricsServerResponse(nil, "default-client")
+	RecordMetricsServerResponse(nil, "default-client")
+	RecordMetricsServerResponse(fmt.Errorf("metrics server unavailable"), "default-client")
+	RecordMetricsServerResponse(fmt.Errorf("metrics server unavailable"), "fallback-client")
+
+	cases := []struct {
+		name       string
+		isError    string
+		clientName string
+		want       float64
+	}{
+		{name: "successful default client responses", isError: "false", clientName: "default-client", want: 2},
+		{name: "failed default client responses", isError: "true", clientName: "default-client", want: 1},
+		{name: "failed fallback client responses", isError: "true", clientName: "fallback-client", want: 1},
+		{name: "missing successful fallback client responses", isError: "false", clientName: "fallback-client", want: 0},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := testutil.ToFloat64(metricServerResponses.WithLabelValues(tc.isError, tc.clientName))
+			if got != tc.want {
+				t.Errorf("unexpected response count: got %f, want %f", got, tc.want)
+			}
+		})
+	}
+}
 
 func TestObjectCounter(t *testing.T) {
 	// We verify that other update modes are handled correctly as validation
@@ -300,6 +358,16 @@ func labelsToKey(labels []*dto.LabelPair) string {
 		key.WriteRune(',')
 	}
 	return key.String()
+}
+
+func readHistogram(t *testing.T, histogram prometheus.Histogram) *dto.Histogram {
+	t.Helper()
+
+	metric := &dto.Metric{}
+	if err := histogram.Write(metric); err != nil {
+		t.Fatalf("failed to read histogram: %v", err)
+	}
+	return metric.GetHistogram()
 }
 
 func TestObjectCounterResetsAllUpdateModes(t *testing.T) {
