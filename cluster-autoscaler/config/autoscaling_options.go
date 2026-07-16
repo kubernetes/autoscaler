@@ -242,6 +242,9 @@ type AutoscalingOptions struct {
 	// ScaleFromUnschedulable tells the autoscaler to ignore a node's .spec.unschedulable field when creating a node template.
 	// Specifically, this will cause the autoscaler to set the node template's .spec.unschedulable field to false.
 	ScaleFromUnschedulable bool
+	// SchedulerVerbosityOffset specifies the offset to apply to the internal scheduler
+	// simulation's logging to match the behavior configured by the --scheduler-verbosity flag.
+	SchedulerVerbosityOffset int
 	// GCEOptions contain autoscaling options specific to GCE cloud provider.
 	GCEOptions GCEOptions
 	// KubeClientOpts specify options for kube client
