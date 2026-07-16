@@ -1193,7 +1193,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 
-	// Mark unneeded nodes.
+	// Mark unneeded nodes. Use a short time advance (< ScaleDownUnneededTime) so that n1 is not yet eligible for deletion.
 	readyNodeLister.SetNodes([]*apiv1.Node{n1, n2, n3})
 	allNodeLister.SetNodes([]*apiv1.Node{n1, n2, n3})
 	allPodListerMock.On("List").Return([]*apiv1.Pod{p1, p2, p3, p4, p5}, nil).Once()
@@ -1202,20 +1202,20 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	ng2.SetTargetSize(2)
 
-	err = autoscaler.RunOnce(t.Context(), time.Now().Add(2*time.Hour))
+	err = autoscaler.RunOnce(t.Context(), time.Now().Add(30*time.Second))
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 
-	// Scale down.
+	// Scale down. n1 has been unneeded long enough now. Reschedule p4 to n2.
 	readyNodeLister.SetNodes([]*apiv1.Node{n1, n2, n3})
 	allNodeLister.SetNodes([]*apiv1.Node{n1, n2, n3})
-	allPodListerMock.On("List").Return([]*apiv1.Pod{p1, p2, p3, p4, p5}, nil).Twice()
+	p4Scheduled := p4.DeepCopy()
+	p4Scheduled.Spec.NodeName = "n2"
+	allPodListerMock.On("List").Return([]*apiv1.Pod{p1, p2, p3, p4Scheduled, p5}, nil).Twice()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 	onScaleDownMock.On("ScaleDown", "ng1", "n1").Return(nil).Once()
-
-	p4.Spec.NodeName = "n2"
 
 	err = autoscaler.RunOnce(t.Context(), time.Now().Add(3*time.Hour))
 	waitForDeleteToFinish(t, deleteFinished)
