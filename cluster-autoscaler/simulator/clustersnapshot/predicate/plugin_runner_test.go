@@ -517,8 +517,8 @@ func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfigurati
 	if err != nil {
 		return nil, nil, err
 	}
-	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, false)
-	return NewSchedulerPluginRunner(fwHandle, snapshot, 1), snapshot, nil
+	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, false, 1)
+	return NewSchedulerPluginRunner(fwHandle, snapshot, 1, 1), snapshot, nil
 }
 
 func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {

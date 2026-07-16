@@ -51,14 +51,14 @@ var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, true), nil
+		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, true, 1), nil
 	},
 	"delta": func() (clustersnapshot.ClusterSnapshot, error) {
 		fwHandle, err := framework.NewTestFrameworkHandle()
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(), fwHandle, true, 1, true), nil
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(), fwHandle, true, 1, true, 1), nil
 	},
 }
 
@@ -2065,7 +2065,7 @@ func TestSetClusterStateConcurrentDRA(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Set parallelism to 8 to ensure the workqueue utilizes multiple goroutines.
-	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 8, false)
+	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 8, false, 1)
 
 	err = snapshot.SetClusterState(nodes, pods, draSnap, nil)
 	assert.NoError(t, err)
