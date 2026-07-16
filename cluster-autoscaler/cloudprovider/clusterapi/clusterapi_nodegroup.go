@@ -27,6 +27,7 @@ import (
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -110,7 +111,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 		return err
 	}
 
-	// if we are at minSize already we wail early.
+	// if we are at minSize already we fail early.
 	if replicas <= ng.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
@@ -119,9 +120,12 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	for _, node := range nodes {
 		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node)
 		if err != nil {
-			return nil
+			if k8serrors.IsNotFound(err) {
+				klog.Warningf("Node group not found for node %q, skipping verification: %v", node.Spec.ProviderID, err)
+				continue
+			}
+			return err
 		}
-
 		if actualNodeGroup == nil {
 			return fmt.Errorf("no node group found for node %q", node.Spec.ProviderID)
 		}
@@ -135,18 +139,62 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	// < minSize, then the request to delete that many nodes is bogus
 	// and we fail fast.
 	if replicas-len(nodes) < ng.MinSize() {
-		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %d, minSize is %d ", len(nodes), ng.Id(), replicas, ng.MinSize())
+		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %d, minSize is %d", len(nodes), ng.Id(), replicas, ng.MinSize())
 	}
 
-	// Step 3: annotate the corresponding machine that it is a
-	// suitable candidate for deletion and drop the replica count
-	// by 1. Fail fast on any error.
+	// Step 3: when a backing Machine exists, mark it as a deletion candidate
+	// and decrease the replica count by 1. For MachinePool-backed node groups,
+	// if no per-node Machine can be resolved, fall back to replica decrement
+	// after verifying the node belongs to the MachinePool providerID list.
 	for _, node := range nodes {
-		machine, err := ng.machineController.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
+		nodeGroup, err := ng.machineController.nodeGroupForNode(node)
 		if err != nil {
+			if k8serrors.IsNotFound(err) {
+				klog.Warningf("Node group not found for node %q, skipping deletion: %v", node.Spec.ProviderID, err)
+				continue
+			}
 			return err
 		}
+
+		machine, err := ng.machineController.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
+		if err != nil && !k8serrors.IsNotFound(err) {
+			return err
+		}
+
 		if machine == nil {
+			// Fallback for MachinePool-based providers where no per-node Machine
+			// objects exist. In that case, allow scale-down by decreasing replicas,
+			// but only if the node providerID is explicitly present in the
+			// MachinePool providerIDList.
+			if nodeGroup.scalableResource.Kind() == machinePoolKind {
+				providerIDs, err := nodeGroup.scalableResource.ProviderIDs()
+				if err != nil {
+					return err
+				}
+
+				nodeProviderID := normalizedProviderString(node.Spec.ProviderID)
+				found := false
+				for _, id := range providerIDs {
+					if normalizedProviderString(id) == nodeProviderID {
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					return fmt.Errorf("node %q is not present in MachinePool providerIDList for nodegroup %q", node.Spec.ProviderID, nodeGroup.Id())
+				}
+
+				klog.Warningf("No Machine found for node %q in MachinePool %q, falling back to replica decrement only", node.Spec.ProviderID, nodeGroup.Id())
+
+				if err := nodeGroup.scalableResource.SetSize(replicas - 1); err != nil {
+					return err
+				}
+
+				replicas--
+				continue
+			}
+
 			return fmt.Errorf("unknown machine for node %q", node.Spec.ProviderID)
 		}
 
@@ -157,16 +205,11 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 			continue
 		}
 
-		nodeGroup, err := ng.machineController.nodeGroupForNode(node)
-		if err != nil {
-			return err
-		}
-
 		if err := nodeGroup.scalableResource.MarkMachineForDeletion(machine); err != nil {
 			return err
 		}
 
-		if err := ng.scalableResource.SetSize(replicas - 1); err != nil {
+		if err := nodeGroup.scalableResource.SetSize(replicas - 1); err != nil {
 			_ = nodeGroup.scalableResource.UnmarkMachineForDeletion(machine)
 			return err
 		}
