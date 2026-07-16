@@ -373,7 +373,7 @@ func (c *instancePoolCache) setSize(instancePoolID string, size int) error {
 		InstancePoolId: common.String(instancePoolID),
 	})
 	if err != nil {
-		klog.V(4).Infof("GetInstancePool for %s failed: %v", common.String(instancePoolID), err)
+		klog.V(4).Infof("GetInstancePool for %s failed: %v", instancePoolID, err)
 		return err
 	}
 
@@ -390,7 +390,7 @@ func (c *instancePoolCache) setSize(instancePoolID string, size int) error {
 		UpdateInstancePoolDetails: updateDetails,
 	})
 	if err != nil {
-		klog.V(4).Infof("UpdateInstancePool for %s failed: %v", common.String(instancePoolID), err)
+		klog.V(4).Infof("UpdateInstancePool for %s failed: %v", instancePoolID, err)
 		return err
 	}
 

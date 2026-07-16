@@ -167,7 +167,7 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		if _, err := n.client.DeleteNode(ctx, param); err != nil {
 			klog.Errorf("DeleteNodes: API error for cluster %d pool %s node %s: %v",
 				n.clusterID, n.id, nodeID, err)
-			return fmt.Errorf("deleting node failed for cluster %q node pool %q node %q: %w",
+			return fmt.Errorf("deleting node failed for cluster %d node pool %q node %q: %w",
 				n.clusterID, n.id, nodeID, err)
 		}
 		klog.V(4).Infof("DeleteNodes: provider confirmed deletion of node %s in pool %s", nodeID, n.id)
