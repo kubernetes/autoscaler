@@ -164,7 +164,7 @@ func (b *AutoscalerBuilder) Build(ctx context.Context) (core.Autoscaler, *loop.L
 	opts := coreoptions.AutoscalerOptions{
 		AutoscalingOptions:     autoscalingOptions,
 		FrameworkHandle:        fwHandle,
-		ClusterSnapshot:        predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.PredicateParallelism, autoscalingOptions.CSINodeAwareSchedulingEnabled),
+		ClusterSnapshot:        predicate.NewPredicateSnapshot(snapshotStore, fwHandle, autoscalingOptions.DynamicResourceAllocationEnabled, autoscalingOptions.PredicateParallelism, autoscalingOptions.CSINodeAwareSchedulingEnabled, autoscalingOptions.SchedulerVerbosityOffset),
 		KubeClient:             b.kubeClient,
 		InformerFactory:        b.informerFactory,
 		AutoscalingKubeClients: b.kubeClients,

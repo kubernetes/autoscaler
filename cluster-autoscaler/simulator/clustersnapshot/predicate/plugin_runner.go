@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/client-go/util/workqueue"
+	"k8s.io/klog/v2"
 
 	apiv1 "k8s.io/api/core/v1"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -37,21 +38,28 @@ type SchedulerPluginRunner struct {
 	snapshot            clustersnapshot.ClusterSnapshot
 	defaultNodeOrdering clustersnapshot.NodeOrderMapping
 	parallelism         int
+	verbosityOffset     int
 }
 
 // NewSchedulerPluginRunner builds a SchedulerPluginRunner.
-func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapshot.ClusterSnapshot, parallelism int) *SchedulerPluginRunner {
+func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapshot.ClusterSnapshot, parallelism int, verbosityOffset int) *SchedulerPluginRunner {
 	return &SchedulerPluginRunner{
 		fwHandle:            fwHandle,
 		snapshot:            snapshot,
 		defaultNodeOrdering: clustersnapshot.NewLastIndexOrderMapping(1),
 		parallelism:         parallelism,
+		verbosityOffset:     verbosityOffset,
 	}
 }
 
 // RunFiltersUntilPassingNode runs the scheduler framework PreFilter phase once, and then keeps running the Filter phase for all nodes in the cluster that match the
 // opts.IsNodeAcceptable function - until a Node where the Filters pass is found. Filters are only run for matching Nodes. If no matching Node with passing Filters is found, an error is returned.
 func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts clustersnapshot.SchedulingOptions) (*apiv1.Node, *schedulerimpl.CycleState, clustersnapshot.SchedulingError) {
+	// Currently, the scheduler checks that verbosity threshold for logs is at least 4 before adding contextual data to the logger.
+	// We don't want scheduler to add contextual data to the logger, as it causes performance issues in CA.
+	// This line sets the verbosity threshold of scheduler's logs to match that specified by --scheduler-verbosity flag (0 by default).
+	loggingCtx := klog.NewContext(context.TODO(), klog.Background().V(p.verbosityOffset))
+
 	nodeInfosList, err := p.snapshot.ListNodeInfos()
 	if err != nil {
 		return nil, nil, clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error listing NodeInfos: %v", err))
@@ -64,7 +72,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 	// Run the PreFilter phase of the framework for the Pod. This allows plugins to precompute some things (for all Nodes in the cluster at once) and
 	// save them in the CycleState. During the Filter phase, plugins can retrieve the precomputes from the CycleState and use them for answering the Filter
 	// for a given Node.
-	preFilterResult, preFilterStatus, _ := p.fwHandle.Framework.RunPreFilterPlugins(context.TODO(), state, pod)
+	preFilterResult, preFilterStatus, _ := p.fwHandle.Framework.RunPreFilterPlugins(loggingCtx, state, pod)
 	if !preFilterStatus.IsSuccess() {
 		// If any of the plugin PreFilter methods isn't successful, the corresponding Filter method can't be run, so the whole scheduling cycle is aborted.
 		// Match that behavior here.
@@ -117,7 +125,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 
 		// Run the Filter phase of the framework. Plugins retrieve the state they saved during PreFilter from CycleState, and answer whether the
 		// given Pod can be scheduled on the given Node.
-		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
+		filterStatus := p.fwHandle.Framework.RunFilterPlugins(loggingCtx, state, pod, nodeInfo)
 		if filterStatus.IsSuccess() {
 			// Filter passed for all plugins, so this pod can be scheduled on this Node.
 			mu.Lock()
@@ -144,6 +152,11 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 
 // RunFiltersOnNode runs the scheduler framework PreFilter and Filter phases to check if the given pod can be scheduled on the given node.
 func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string) (*apiv1.Node, *schedulerimpl.CycleState, clustersnapshot.SchedulingError) {
+	// Currently, the scheduler checks that verbosity threshold for logs is at least 4 before adding contextual data to the logger.
+	// We don't want scheduler to add contextual data to the logger, as it causes performance issues in CA.
+	// This line sets the verbosity threshold of scheduler's logs to match that specified by --scheduler-verbosity flag (0 by default).
+	loggingCtx := klog.NewContext(context.TODO(), klog.Background().V(p.verbosityOffset))
+
 	nodeInfo, err := p.snapshot.GetNodeInfo(nodeName)
 	if err != nil {
 		return nil, nil, clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error obtaining NodeInfo for name %q: %v", nodeName, err))
@@ -154,7 +167,7 @@ func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string
 
 	state := schedulerimpl.NewCycleState()
 	// Run the PreFilter phase of the framework for the Pod and check the results. See the corresponding comments in RunFiltersUntilPassingNode() for more info.
-	preFilterResult, preFilterStatus, nodeFilteringPlugins := p.fwHandle.Framework.RunPreFilterPlugins(context.TODO(), state, pod)
+	preFilterResult, preFilterStatus, nodeFilteringPlugins := p.fwHandle.Framework.RunPreFilterPlugins(loggingCtx, state, pod)
 	if !preFilterStatus.IsSuccess() {
 		// nil check on preFilterStatus not required, as IsSuccess returns true for nil
 		return nil, nil, clustersnapshot.NewFailingPredicateError(pod, preFilterStatus.Plugin(), preFilterStatus.Reasons(), "PreFilter failed", "")
@@ -165,7 +178,7 @@ func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string
 	}
 
 	// Run the Filter phase of the framework for the Pod and the Node and check the results. See the corresponding comments in RunFiltersUntilPassingNode() for more info.
-	filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
+	filterStatus := p.fwHandle.Framework.RunFilterPlugins(loggingCtx, state, pod, nodeInfo)
 	if !filterStatus.IsSuccess() {
 		filterName := filterStatus.Plugin()
 		filterReasons := filterStatus.Reasons()
