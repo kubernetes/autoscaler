@@ -26,26 +26,26 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	corev1helpers "k8s.io/component-helpers/scheduling/corev1"
 	klog "k8s.io/klog/v2"
 )
 
 type filterOutSchedulablePodListProcessor struct {
-	schedulingSimulator *scheduling.HintingSimulator
 	nodeFilter          func(*framework.NodeInfo) bool
 }
 
 // NewFilterOutSchedulablePodListProcessor creates a PodListProcessor filtering out schedulable pods
 func NewFilterOutSchedulablePodListProcessor(nodeFilter func(*framework.NodeInfo) bool) *filterOutSchedulablePodListProcessor {
 	return &filterOutSchedulablePodListProcessor{
-		schedulingSimulator: scheduling.NewHintingSimulator(),
 		nodeFilter:          nodeFilter,
 	}
 }
 
 // Process filters out pods which are schedulable from list of unschedulable pods.
 func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	if autoscalingCtx.AutoscalingOptions.KarpenterSimulatorEnabled {
+		return unschedulablePods, nil
+	}
 	// We need to check whether pods marked as unschedulable are actually unschedulable.
 	// It's likely we added a new node and the scheduler just haven't managed to put the
 	// pod on in yet. In this situation we don't want to trigger another scale-up.
@@ -65,7 +65,7 @@ func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_contex
 	klog.V(4).Infof("Filtering out schedulables")
 	filterOutSchedulableStart := time.Now()
 
-	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(unschedulablePods, autoscalingCtx.ClusterSnapshot)
+	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(unschedulablePods, autoscalingCtx.ClusterSnapshot, autoscalingCtx.PodSchedulingSimulator)
 
 	if err != nil {
 		return nil, err
@@ -94,13 +94,13 @@ func (p *filterOutSchedulablePodListProcessor) CleanUp() {
 // unschedulable can be scheduled on free capacity on existing nodes by trying to pack the pods. It
 // tries to pack the higher priority pods first. It takes into account pods that are bound to node
 // and will be scheduled after lower priority pod preemption.
-func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, clusterSnapshot clustersnapshot.ClusterSnapshot) ([]*apiv1.Pod, error) {
+func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, clusterSnapshot clustersnapshot.ClusterSnapshot, simulator clustersnapshot.PodSchedulingSimulator) ([]*apiv1.Pod, error) {
 	// Sort unschedulable pods by importance
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
 		return corev1helpers.PodPriority(unschedulableCandidates[i]) > corev1helpers.PodPriority(unschedulableCandidates[j])
 	})
 
-	statuses, overflowingControllerCount, err := p.schedulingSimulator.TrySchedulePods(clusterSnapshot, unschedulableCandidates, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: p.nodeFilter})
+	statuses, overflowingControllerCount, err := simulator.TrySchedulePods(clusterSnapshot, unschedulableCandidates, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: p.nodeFilter})
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 	metrics.UpdateOverflowingControllers(overflowingControllerCount)
 	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.", len(unschedulableCandidates)-len(unschedulablePods))
 
-	p.schedulingSimulator.DropOldHints()
+	simulator.DropOldHints()
 	return unschedulablePods, nil
 }
 

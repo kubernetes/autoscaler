@@ -60,7 +60,9 @@ import (
 	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/karpenter"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/annotations"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -162,6 +164,13 @@ func NewStaticAutoscaler(
 	csiProvider *csinodeprovider.Provider,
 	capacityBufferPodsRegistry *fakepods.Registry) *StaticAutoscaler {
 
+	if opts.KarpenterSimulatorEnabled && len(opts.BypassedSchedulers) > 0 {
+		klog.Fatalf("BypassedSchedulers must be empty when KarpenterSimulatorEnabled is true to prevent overscaling.")
+	}
+	if opts.KarpenterSimulatorEnabled && opts.ProvisioningRequestEnabled {
+		klog.Fatalf("ProvisioningRequestEnabled must be false when KarpenterSimulatorEnabled is true.")
+	}
+
 	klog.V(4).Infof("Creating new static autoscaler with opts: %v", opts)
 
 	templateNodeInfoRegistry := nodeinfosprovider.NewTemplateNodeInfoRegistry(processors.TemplateNodeInfoProvider)
@@ -174,6 +183,13 @@ func NewStaticAutoscaler(
 	processors.ScaleStateNotifier.Register(scaleUpFailuresRegistry)
 	clusterStateRegistry := clusterstate.NewNotifiedClusterStateRegistry(cloudProvider, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor, templateNodeInfoRegistry, clusterstate.WithScaleUpFailuresRegistry(scaleUpFailuresRegistry), clusterstate.WithConfig(clusterStateConfig), clusterstate.WithAsyncNodeGroupStateChecker(processors.AsyncNodeGroupStateChecker), clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+
+	var podSchedulingSimulator clustersnapshot.PodSchedulingSimulator
+	if opts.KarpenterSimulatorEnabled {
+		podSchedulingSimulator = karpenter.NewKarpenterReschedulingSimulator()
+	} else {
+		podSchedulingSimulator = scheduling.NewHintingSimulator()
+	}
 
 	autoscalingCtx := ca_context.NewAutoscalingContext(
 		opts,
@@ -188,7 +204,8 @@ func NewStaticAutoscaler(
 		clusterStateRegistry,
 		draProvider,
 		templateNodeInfoRegistry,
-		csiProvider)
+		csiProvider,
+		podSchedulingSimulator)
 
 	taintConfig := taints.NewTaintConfig(opts)
 
@@ -388,7 +405,7 @@ func (a *StaticAutoscaler) RunOnce(ctx context.Context, currentTime time.Time) c
 	allocatedPods := slices.Concat(podsBySchedulability.Scheduled, podsBySchedulability.NominatedNode)
 	nonExpendableAllocatedPods := core_utils.FilterOutExpendablePods(allocatedPods, a.ExpendablePodsPriorityCutoff)
 
-	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableAllocatedPods, draSnapshot, csiSnapshot); err != nil {
+	if err := a.ClusterSnapshot.SetClusterState(allNodes, nonExpendableAllocatedPods, draSnapshot, csiSnapshot, nil, nil, nil); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err).AddPrefix("failed to initialize ClusterSnapshot: ")
 	}
 	// Initialize Pod Disruption Budget tracking

@@ -23,7 +23,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -43,9 +42,9 @@ type WrapperOrchestrator struct {
 }
 
 // NewWrapperOrchestrator return WrapperOrchestrator
-func NewWrapperOrchestrator(provReqOrchestrator scaleup.Orchestrator) *WrapperOrchestrator {
+func NewWrapperOrchestrator(podsOrchestrator scaleup.Orchestrator, provReqOrchestrator scaleup.Orchestrator) *WrapperOrchestrator {
 	return &WrapperOrchestrator{
-		podsOrchestrator:    orchestrator.New(),
+		podsOrchestrator:    podsOrchestrator,
 		provReqOrchestrator: provReqOrchestrator,
 	}
 }

@@ -24,12 +24,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 )
 
-// Status contains information about pods scheduled by the HintingSimulator
-type Status struct {
-	Pod      *apiv1.Pod
-	NodeName string
-}
-
 // HintingSimulator is a helper object for simulating scheduler behavior.
 type HintingSimulator struct {
 	hints *Hints
@@ -50,10 +44,10 @@ func NewHintingSimulator() *HintingSimulator {
 // after the first scheduling attempt that fails. This is useful if all provided
 // pods need to be scheduled.
 // Note: this function does not fork clusterSnapshot: this has to be done by the caller.
-func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]Status, int, error) {
+func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]clustersnapshot.Status, int, error) {
 	similarPods := NewSimilarPodsScheduling()
 
-	var statuses []Status
+	var statuses []clustersnapshot.Status
 	loggingQuota := klogx.PodsLoggingQuota()
 	for _, pod := range pods {
 		klogx.V(5).UpTo(loggingQuota).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
@@ -71,7 +65,7 @@ func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.Clust
 
 		if nodeName != "" {
 			klogx.V(4).UpTo(loggingQuota).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodeName)
-			statuses = append(statuses, Status{Pod: pod, NodeName: nodeName})
+			statuses = append(statuses, clustersnapshot.Status{Pod: pod, NodeName: nodeName})
 		} else if breakOnFailure {
 			break
 		}

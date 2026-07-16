@@ -24,6 +24,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
@@ -191,7 +193,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 			clusterSnapshot.Fork()
 
 			processor := NewFilterOutSchedulablePodListProcessor(tc.nodeFilter)
-			unschedulablePods, err := processor.filterOutSchedulableByPacking(tc.unschedulableCandidates, clusterSnapshot)
+			unschedulablePods, err := processor.filterOutSchedulableByPacking(tc.unschedulableCandidates, clusterSnapshot, scheduling.NewHintingSimulator())
 
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, unschedulablePods, tc.expectedUnscheduledPods, "unschedulable pods differ")
@@ -207,6 +209,29 @@ func TestFilterOutSchedulable(t *testing.T) {
 			assert.ElementsMatch(t, scheduledPods, allExpectedScheduledPods, "scheduled pods differ")
 		})
 	}
+}
+
+func TestFilterOutSchedulableKarpenterEnabled(t *testing.T) {
+	node := buildReadyTestNode("node", 2000, 100)
+	pod := BuildTestPod("pod", 500, 10)
+
+	clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
+	err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+	assert.NoError(t, err)
+
+	autoscalingCtx := &ca_context.AutoscalingContext{
+		AutoscalingOptions: config.AutoscalingOptions{
+			KarpenterSimulatorEnabled: true,
+		},
+		ClusterSnapshot: clusterSnapshot,
+	}
+
+	processor := NewFilterOutSchedulablePodListProcessor(func(*framework.NodeInfo) bool { return true })
+	unschedulablePods := []*apiv1.Pod{pod}
+	processedPods, err := processor.Process(autoscalingCtx, unschedulablePods)
+
+	assert.NoError(t, err)
+	assert.Equal(t, unschedulablePods, processedPods, "Should return all pods when Karpenter is enabled")
 }
 
 func BenchmarkFilterOutSchedulable(b *testing.B) {
@@ -280,7 +305,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				}
 
 				clusterSnapshot := snapshotFactory()
-				if err := clusterSnapshot.SetClusterState(nodes, scheduledPods, nil, nil); err != nil {
+				if err := clusterSnapshot.SetClusterState(nodes, scheduledPods, nil, nil, nil, nil, nil); err != nil {
 					assert.NoError(b, err)
 				}
 
@@ -288,7 +313,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 
 				for i := 0; i < b.N; i++ {
 					processor := NewFilterOutSchedulablePodListProcessor(scheduling.ScheduleAnywhere)
-					if stillPending, err := processor.filterOutSchedulableByPacking(pendingPods, clusterSnapshot); err != nil {
+					if stillPending, err := processor.filterOutSchedulableByPacking(pendingPods, clusterSnapshot, scheduling.NewHintingSimulator()); err != nil {
 						assert.NoError(b, err)
 					} else if len(stillPending) < tc.pendingPods {
 						assert.Equal(b, len(stillPending), tc.pendingPods)

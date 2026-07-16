@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
@@ -228,7 +229,7 @@ func TestSimulateNodeRemoval(t *testing.T) {
 				destinations[node.Name] = true
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
-			r := NewRemovalSimulator(registry, clusterSnapshot, testDeleteOptions(), nil, false)
+			r := NewRemovalSimulator(registry, clusterSnapshot, testDeleteOptions(), nil, false, scheduling.NewHintingSimulator())
 			toRemove, unremovable := r.SimulateNodeRemoval(test.nodeName, destinations, time.Now(), nil)
 			assert.Equal(t, test.toRemove, toRemove)
 			assert.Equal(t, test.unremovable, unremovable)

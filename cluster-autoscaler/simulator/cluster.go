@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -155,18 +154,18 @@ type RemovalSimulator struct {
 	canPersist          bool
 	deleteOptions       options.NodeDeleteOptions
 	drainabilityRules   rules.Rules
-	schedulingSimulator *scheduling.HintingSimulator
+	schedulingSimulator clustersnapshot.PodSchedulingSimulator
 }
 
 // NewRemovalSimulator returns a new RemovalSimulator.
-func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool) *RemovalSimulator {
+func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool, podSchedulingSimulator clustersnapshot.PodSchedulingSimulator) *RemovalSimulator {
 	return &RemovalSimulator{
 		listers:             listers,
 		clusterSnapshot:     clusterSnapshot,
 		canPersist:          persistSuccessfulSimulations,
 		deleteOptions:       deleteOptions,
 		drainabilityRules:   drainabilityRules,
-		schedulingSimulator: scheduling.NewHintingSimulator(),
+		schedulingSimulator: podSchedulingSimulator,
 	}
 }
 

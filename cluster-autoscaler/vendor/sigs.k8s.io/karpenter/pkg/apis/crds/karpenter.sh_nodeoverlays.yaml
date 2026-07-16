@@ -1,0 +1,227 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.20.1
+  name: nodeoverlays.karpenter.sh
+spec:
+  group: karpenter.sh
+  names:
+    categories:
+      - karpenter
+    kind: NodeOverlay
+    listKind: NodeOverlayList
+    plural: nodeoverlays
+    shortNames:
+      - overlays
+    singular: nodeoverlay
+  scope: Cluster
+  versions:
+    - additionalPrinterColumns:
+        - jsonPath: .status.conditions[?(@.type=="Ready")].status
+          name: Ready
+          type: string
+        - jsonPath: .metadata.creationTimestamp
+          name: Age
+          type: date
+        - jsonPath: .spec.weight
+          name: Weight
+          priority: 1
+          type: integer
+      name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          properties:
+            apiVersion:
+              description: |-
+                APIVersion defines the versioned schema of this representation of an object.
+                Servers should convert recognized schemas to the latest internal value, and
+                may reject unrecognized values.
+                More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+              type: string
+            kind:
+              description: |-
+                Kind is a string value representing the REST resource this object represents.
+                Servers may infer this from the endpoint the client submits requests to.
+                Cannot be updated.
+                In CamelCase.
+                More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                capacity:
+                  additionalProperties:
+                    anyOf:
+                      - type: integer
+                      - type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  description: |-
+                    Capacity adds extended resources only, and does not replace any existing resources.
+                    These extended resources are appended to the node's existing resource list.
+                    Note: This field does not modify or override standard resources like cpu, memory, ephemeral-storage, or pods.
+                  type: object
+                  x-kubernetes-validations:
+                    - message: invalid resource restricted
+                      rule: self.all(x, !(x in ['cpu', 'memory', 'ephemeral-storage', 'pods']))
+                price:
+                  description: Price specifies amount for an instance types that match the specified labels. Users can override prices using a signed float representing the price override
+                  pattern: ^\d+(\.\d+)?$
+                  type: string
+                priceAdjustment:
+                  description: |-
+                    PriceAdjustment specifies the price change for matching instance types. Accepts either:
+                    - A fixed price modifier (e.g., -0.5, 1.2)
+                    - A percentage modifier (e.g., +10% for increase, -15% for decrease)
+                  pattern: ^(([+-]{1}(\d*\.?\d+))|(\+{1}\d*\.?\d+%)|(^(-\d{1,2}(\.\d+)?%)$)|(-100%))$
+                  type: string
+                requirements:
+                  description: |-
+                    requirements constrain when this NodeOverlay is applied during scheduling simulations.
+                    These requirements can match:
+                    - Well-known labels (e.g., node.kubernetes.io/instance-type, karpenter.sh/nodepool)
+                    - Custom labels from NodePool's spec.template.labels
+                  items:
+                    description: |-
+                      A node selector requirement is a selector that contains values, a key, an operator that relates the key and values
+                      to have at least that many values.
+                    properties:
+                      key:
+                        description: The label key that the selector applies to.
+                        type: string
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
+                        x-kubernetes-validations:
+                          - message: label domain "karpenter.sh" is restricted
+                            rule: self in ["karpenter.sh/capacity-type", "karpenter.sh/nodepool"] || !self.find("^([^/]+)").endsWith("karpenter.sh")
+                          - message: label "kubernetes.io/hostname" is restricted
+                            rule: self != "kubernetes.io/hostname"
+                      operator:
+                        description: |-
+                          Represents a key's relationship to a set of values.
+                          Valid operators are In, NotIn, Exists, DoesNotExist. Gt, Lt, Gte, and Lte.
+                        enum:
+                          - Gte
+                          - Lte
+                          - In
+                          - NotIn
+                          - Exists
+                          - DoesNotExist
+                          - Gt
+                          - Lt
+                        type: string
+                      values:
+                        description: |-
+                          An array of string values. If the operator is In or NotIn,
+                          the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                          the values array must be empty. If the operator is Gt, Lt, Gte, or Lte, the values
+                          array must have a single element, which will be interpreted as an integer.
+                        items:
+                          type: string
+                        type: array
+                        x-kubernetes-list-type: atomic
+                        maxLength: 63
+                        pattern: ^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$
+                    required:
+                      - key
+                      - operator
+                    type: object
+                  maxItems: 100
+                  type: array
+                  x-kubernetes-list-type: atomic
+                  x-kubernetes-validations:
+                    - message: requirements with operator 'NotIn' must have a value defined
+                      rule: 'self.all(x, x.operator == ''NotIn'' ? x.values.size() != 0 : true)'
+                    - message: requirements with operator 'In' must have a value defined
+                      rule: 'self.all(x, x.operator == ''In'' ? x.values.size() != 0 : true)'
+                    - message: requirements operator 'Gt', 'Lt', 'Gte' or 'Lte' must have a single positive integer value
+                      rule: 'self.all(x, (x.operator == ''Gt'' || x.operator == ''Lt'' || x.operator == ''Gte'' || x.operator == ''Lte'') ? (x.values.size() == 1 && int(x.values[0]) >= 0) : true)'
+                weight:
+                  description: |-
+                    Weight defines the priority of this NodeOverlay when overriding node attributes.
+                    NodeOverlays with higher numerical weights take precedence over those with lower weights.
+                    If no weight is specified, the NodeOverlay is treated as having a weight of 0.
+                    When multiple NodeOverlays have identical weights, they are merged in alphabetical order.
+                  format: int32
+                  maximum: 10000
+                  minimum: 1
+                  type: integer
+              required:
+                - requirements
+              type: object
+              x-kubernetes-validations:
+                - message: cannot set both 'price' and 'priceAdjustment'
+                  rule: '!has(self.price) || !has(self.priceAdjustment)'
+            status:
+              description: NodeOverlayStatus defines the observed state of NodeOverlay
+              properties:
+                conditions:
+                  description: Conditions contains signals for health and readiness
+                  items:
+                    description: Condition aliases the upstream type and adds additional helper methods
+                    properties:
+                      lastTransitionTime:
+                        description: |-
+                          lastTransitionTime is the last time the condition transitioned from one status to another.
+                          This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                        format: date-time
+                        type: string
+                      message:
+                        description: |-
+                          message is a human readable message indicating details about the transition.
+                          This may be an empty string.
+                        maxLength: 32768
+                        type: string
+                      observedGeneration:
+                        description: |-
+                          observedGeneration represents the .metadata.generation that the condition was set based upon.
+                          For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                          with respect to the current state of the instance.
+                        format: int64
+                        minimum: 0
+                        type: integer
+                      reason:
+                        description: |-
+                          reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                          Producers of specific condition types may define expected values and meanings for this field,
+                          and whether the values are considered a guaranteed API.
+                          The value should be a CamelCase string.
+                          This field may not be empty.
+                        maxLength: 1024
+                        minLength: 1
+                        pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                        type: string
+                      status:
+                        description: status of the condition, one of True, False, Unknown.
+                        enum:
+                          - "True"
+                          - "False"
+                          - Unknown
+                        type: string
+                      type:
+                        description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        maxLength: 316
+                        pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                        type: string
+                    required:
+                      - lastTransitionTime
+                      - message
+                      - reason
+                      - status
+                      - type
+                    type: object
+                  type: array
+                  x-kubernetes-list-map-keys:
+                    - type
+                  x-kubernetes-list-type: map
+              type: object
+          required:
+            - spec
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}

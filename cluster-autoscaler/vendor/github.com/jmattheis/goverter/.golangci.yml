@@ -1,0 +1,52 @@
+run:
+    skip-dirs:
+        - example
+
+linters:
+    enable:
+        - asciicheck
+        - exportloopref
+        - gci
+        - godot
+        - gofmt
+        - gofumpt
+        - goimports
+        - gomodguard
+        - goprintffuncname
+        - gosimple
+        - govet
+        - misspell
+        - nakedret
+        - nolintlint
+        - sqlclosecheck
+        - typecheck
+        - unconvert
+        - unused
+        - whitespace
+    disable:
+        - goerr113
+        - errcheck
+        - revive
+        - funlen
+        - gochecknoglobals
+        - staticcheck
+        - gocognit
+        - goconst
+        - gocyclo
+        - godox
+        - gomnd
+        - lll
+        - maligned
+        - nestif
+        - nlreturn
+        - noctx
+        - testpackage
+        - wsl
+        - ineffassign
+        - interfacer
+
+linters-settings:
+    gofumpt:
+        extra-rules: true
+    misspell:
+        locale: US

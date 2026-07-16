@@ -45,7 +45,8 @@ const (
 )
 
 type injector interface {
-	TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]scheduling.Status, int, error)
+	TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]clustersnapshot.Status, int, error)
+	DropOldHints()
 }
 
 type provReqProcessor struct {

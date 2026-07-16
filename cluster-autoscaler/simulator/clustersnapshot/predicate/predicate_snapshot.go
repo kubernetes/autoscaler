@@ -22,7 +22,9 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
 	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
@@ -44,6 +46,11 @@ type PredicateSnapshot struct {
 	parallelism                  int
 	draSnapshot                  *drasnapshot.Snapshot
 	csiSnapshot                  *csisnapshot.Snapshot
+
+	pvs            *common.PatchSet[string, *apiv1.PersistentVolume]
+	pvcs           *common.PatchSet[string, *apiv1.PersistentVolumeClaim]
+	storageClasses *common.PatchSet[string, *storagev1.StorageClass]
+	csiNodes       *common.PatchSet[string, *storagev1.CSINode]
 }
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
@@ -56,6 +63,10 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 		parallelism:                  parallelism,
 		draSnapshot:                  drasnapshot.NewEmptySnapshot(),
 		csiSnapshot:                  csisnapshot.NewEmptySnapshot(),
+		pvs:                          common.NewPatchSet[string, *apiv1.PersistentVolume](),
+		pvcs:                         common.NewPatchSet[string, *apiv1.PersistentVolumeClaim](),
+		storageClasses:               common.NewPatchSet[string, *storagev1.StorageClass](),
+		csiNodes:                     common.NewPatchSet[string, *storagev1.CSINode](),
 	}
 	// Plugin runner really only needs a framework.SharedLister for running the plugins, but it also needs to run the provided Node-matching functions
 	// which operate on *framework.NodeInfo. The only object that allows obtaining *framework.NodeInfos is PredicateSnapshot, so we have an ugly circular
@@ -69,8 +80,27 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 // with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName or status.NominatedNodeName.
 // The provided draSnapshot and csiSnapshot are treated as the source of truth and are eagerly
 // loaded into the created NodeInfo/PodInfo objects.
-func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
+func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot, pvs []*apiv1.PersistentVolume, pvcs []*apiv1.PersistentVolumeClaim, storageClasses []*storagev1.StorageClass) error {
 	s.ClusterSnapshotStore.Clear()
+
+	s.pvs = common.NewPatchSet[string, *apiv1.PersistentVolume]()
+	for _, pv := range pvs {
+		s.pvs.SetCurrent(pv.Name, pv)
+	}
+
+	s.pvcs = common.NewPatchSet[string, *apiv1.PersistentVolumeClaim]()
+	for _, pvc := range pvcs {
+		s.pvcs.SetCurrent(pvc.Namespace+"/"+pvc.Name, pvc)
+	}
+
+	s.storageClasses = common.NewPatchSet[string, *storagev1.StorageClass]()
+	for _, sc := range storageClasses {
+		s.storageClasses.SetCurrent(sc.Name, sc)
+	}
+
+	s.csiNodes = common.NewPatchSet[string, *storagev1.CSINode]()
+	// Populated from csiSnapshot below if needed, but we'll use csiSnapshot directly in GetCSINode
+
 
 	if draSnapshot == nil {
 		draSnapshot = drasnapshot.NewEmptySnapshot()
@@ -92,11 +122,9 @@ func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods [
 		ni := framework.NewNodeInfo(node, slices)
 
 		if s.enableCSINodeAwareScheduling && csiSnapshot != nil {
-			csiNode, err := csiSnapshot.Get(node.Name)
-			if err != nil {
-				return fmt.Errorf("couldn't obtain csi node: %v", err)
+			if csiNode, err := csiSnapshot.Get(node.Name); err == nil {
+				ni.SetCSINode(csiNode)
 			}
-			ni.SetCSINode(csiNode)
 		}
 
 		nodeInfos[i] = ni
@@ -391,6 +419,10 @@ func (s *PredicateSnapshot) Fork() {
 	s.ClusterSnapshotStore.Fork()
 	s.draSnapshot.Fork()
 	s.csiSnapshot.Fork()
+	if s.pvs != nil { s.pvs.Fork() }
+	if s.pvcs != nil { s.pvcs.Fork() }
+	if s.storageClasses != nil { s.storageClasses.Fork() }
+	if s.csiNodes != nil { s.csiNodes.Fork() }
 }
 
 // Revert reverts snapshot state to moment of forking.
@@ -398,6 +430,10 @@ func (s *PredicateSnapshot) Revert() {
 	s.ClusterSnapshotStore.Revert()
 	s.draSnapshot.Revert()
 	s.csiSnapshot.Revert()
+	if s.pvs != nil { s.pvs.Revert() }
+	if s.pvcs != nil { s.pvcs.Revert() }
+	if s.storageClasses != nil { s.storageClasses.Revert() }
+	if s.csiNodes != nil { s.csiNodes.Revert() }
 }
 
 // Commit commits changes done after forking.
@@ -407,6 +443,10 @@ func (s *PredicateSnapshot) Commit() error {
 	}
 	s.draSnapshot.Commit()
 	s.csiSnapshot.Commit()
+	if s.pvs != nil { s.pvs.Commit() }
+	if s.pvcs != nil { s.pvcs.Commit() }
+	if s.storageClasses != nil { s.storageClasses.Commit() }
+	if s.csiNodes != nil { s.csiNodes.Commit() }
 	return nil
 }
 
@@ -504,4 +544,82 @@ func (s *PredicateSnapshot) modifyResourceClaimsForNewPod(podInfo *framework.Pod
 		return fmt.Errorf("couldn't add pod %s/%s reservations to claims, this shouldn't happen: %v", podInfo.Namespace, podInfo.Name, err)
 	}
 	return nil
+}
+
+
+// GetPV returns a PersistentVolume by name.
+func (s *PredicateSnapshot) GetPV(name string) (*apiv1.PersistentVolume, error) {
+	if s.pvs != nil {
+		if pv, found := s.pvs.FindValue(name); found {
+			return pv, nil
+		}
+	}
+	return nil, fmt.Errorf("PV %s not found", name)
+}
+
+// ListPVs returns all PersistentVolumes in the snapshot.
+func (s *PredicateSnapshot) ListPVs() ([]*apiv1.PersistentVolume, error) {
+	var result []*apiv1.PersistentVolume
+	if s.pvs != nil {
+		for _, pv := range s.pvs.AsMap() {
+			result = append(result, pv)
+		}
+	}
+	return result, nil
+}
+
+// GetPVC returns a PersistentVolumeClaim by namespace and name.
+func (s *PredicateSnapshot) GetPVC(namespace, name string) (*apiv1.PersistentVolumeClaim, error) {
+	key := namespace + "/" + name
+	if s.pvcs != nil {
+		if pvc, found := s.pvcs.FindValue(key); found {
+			return pvc, nil
+		}
+	}
+	return nil, fmt.Errorf("PVC %s not found", key)
+}
+
+// ListPVCs returns all PersistentVolumeClaims in the snapshot.
+func (s *PredicateSnapshot) ListPVCs() ([]*apiv1.PersistentVolumeClaim, error) {
+	var result []*apiv1.PersistentVolumeClaim
+	if s.pvcs != nil {
+		for _, pvc := range s.pvcs.AsMap() {
+			result = append(result, pvc)
+		}
+	}
+	return result, nil
+}
+
+// GetStorageClass returns a StorageClass by name.
+func (s *PredicateSnapshot) GetStorageClass(name string) (*storagev1.StorageClass, error) {
+	if s.storageClasses != nil {
+		if sc, found := s.storageClasses.FindValue(name); found {
+			return sc, nil
+		}
+	}
+	return nil, fmt.Errorf("StorageClass %s not found", name)
+}
+
+// ListStorageClasses returns all StorageClasses in the snapshot.
+func (s *PredicateSnapshot) ListStorageClasses() ([]*storagev1.StorageClass, error) {
+	var result []*storagev1.StorageClass
+	if s.storageClasses != nil {
+		for _, sc := range s.storageClasses.AsMap() {
+			result = append(result, sc)
+		}
+	}
+	return result, nil
+}
+
+// GetCSINode returns a CSINode by name.
+func (s *PredicateSnapshot) GetCSINode(name string) (*storagev1.CSINode, error) {
+	if s.csiSnapshot != nil {
+		return s.csiSnapshot.Get(name)
+	}
+	return nil, fmt.Errorf("CSINode %s not found", name)
+}
+
+// ListCSINodes returns all CSINodes in the snapshot.
+func (s *PredicateSnapshot) ListCSINodes() ([]*storagev1.CSINode, error) {
+	return nil, fmt.Errorf("ListCSINodes is not implemented for csiSnapshot")
 }
