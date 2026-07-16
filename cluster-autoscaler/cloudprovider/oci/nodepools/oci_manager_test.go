@@ -7,11 +7,12 @@ package nodepools
 import (
 	"context"
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	"net/http"
 	"reflect"
 	"testing"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -571,5 +572,56 @@ func TestValidateNodePoolTags(t *testing.T) {
 				t.Errorf("Testcase '%s' failed: got %t ; expected %t", name, result, tc.expectedResult)
 			}
 		})
+	}
+}
+
+func TestGetBootVolumeEphemeralStorageBytes(t *testing.T) {
+	bootVolumeSize := int64(50)
+
+	nodePool := &oke.NodePool{
+		NodeSourceDetails: oke.NodeSourceViaImageDetails{
+			ImageId:             common.String("ocid1.image.oc1.test"),
+			BootVolumeSizeInGBs: &bootVolumeSize,
+		},
+	}
+
+	got := getBootVolumeEphemeralStorageBytes(nodePool)
+
+	const expected = int64(50) * 1024 * 1024 * 1024
+
+	if got != expected {
+		t.Fatalf("expected %d, got %d", expected, got)
+	}
+}
+
+func TestGetBootVolumeEphemeralStorageBytesNilNodePool(t *testing.T) {
+	got := getBootVolumeEphemeralStorageBytes(nil)
+
+	if got != -1 {
+		t.Fatalf("expected -1, got %d", got)
+	}
+}
+
+func TestGetBootVolumeEphemeralStorageBytesNilNodeSourceDetails(t *testing.T) {
+	nodePool := &oke.NodePool{}
+
+	got := getBootVolumeEphemeralStorageBytes(nodePool)
+
+	if got != -1 {
+		t.Fatalf("expected -1, got %d", got)
+	}
+}
+
+func TestGetBootVolumeEphemeralStorageBytesNilBootVolume(t *testing.T) {
+	nodePool := &oke.NodePool{
+		NodeSourceDetails: oke.NodeSourceViaImageDetails{
+			ImageId: common.String("ocid1.image.oc1.test"),
+		},
+	}
+
+	got := getBootVolumeEphemeralStorageBytes(nodePool)
+
+	if got != -1 {
+		t.Fatalf("expected -1, got %d", got)
 	}
 }

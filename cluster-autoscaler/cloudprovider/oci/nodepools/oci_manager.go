@@ -730,6 +730,16 @@ func (m *ociManagerImpl) buildNodeFromTemplate(nodePool *oke.NodePool) (*apiv1.N
 	if err != nil {
 		klog.Error(err)
 	}
+	if ephemeralStorage == -1 {
+		bootVolumeBytes := getBootVolumeEphemeralStorageBytes(nodePool)
+		if bootVolumeBytes != -1 {
+			klog.V(4).Infof(
+				"using boot volume size (%d bytes) as template ephemeral-storage capacity",
+				bootVolumeBytes,
+			)
+			ephemeralStorage = bootVolumeBytes
+		}
+	}
 	shape, err := m.ociShapeGetter.GetNodePoolShape(nodePool, ephemeralStorage)
 	if err != nil {
 		return nil, err
@@ -863,6 +873,26 @@ func getEphemeralResourceRequestsInBytes(tags map[string]string) (int64, error) 
 	}
 	klog.V(4).Infof("ephemeral-storage size not set as part of the nodepool's freeform tags")
 	return -1, nil
+}
+
+// getBootVolumeEphemeralStorageBytes returns the configured boot volume size
+// from the node pool in bytes, or -1 if unavailable.
+func getBootVolumeEphemeralStorageBytes(nodePool *oke.NodePool) int64 {
+	if nodePool == nil || nodePool.NodeSourceDetails == nil {
+		return -1
+	}
+
+	source, ok := nodePool.NodeSourceDetails.(oke.NodeSourceViaImageDetails)
+	if !ok {
+		return -1
+	}
+
+	if source.BootVolumeSizeInGBs == nil {
+		return -1
+	}
+
+	const gib = int64(1024 * 1024 * 1024)
+	return *source.BootVolumeSizeInGBs * gib
 }
 
 // IsConflict checks if the error is a conflict
