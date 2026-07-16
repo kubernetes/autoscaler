@@ -40,6 +40,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/atomic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	klog "k8s.io/klog/v2"
@@ -290,28 +291,44 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	unremovableCount := 0
 	var removableList []simulator.NodeToBeRemoved
 	atomicScaleDownNodesCount := 0
+	nonAtomicRemovableCount := 0
 	p.unremovableNodes.Update(p.autoscalingCtx.ClusterSnapshot, p.latestUpdate)
 	currentlyUnneededNodeNames, utilizationMap, ineligible := p.eligibilityChecker.FilterOutUnremovable(p.autoscalingCtx, scaleDownCandidates, p.latestUpdate, p.unremovableNodes)
 	for _, n := range ineligible {
 		p.unremovableNodes.Add(n)
 	}
 	p.nodeUtilizationMap = utilizationMap
+
+	// Prefilter incomplete atomic node groups so simulation isn't wasted on atomic groups that cannot scale down.
+	var prefilteredUnremovableCount int
+	currentlyUnneededNodeNames, prefilteredUnremovableCount = p.prefilterIncompleteAtomicNodeGroups(currentlyUnneededNodeNames, unremovableTimeout)
+	unremovableCount += prefilteredUnremovableCount
+
 	timer := time.NewTimer(p.autoscalingCtx.ScaleDownSimulationTimeout)
 	var skippedNodes []string
 
-	for i, node := range currentlyUnneededNodeNames {
+	for i, nodeName := range currentlyUnneededNodeNames {
 		if timedOut(timer) {
-			skippedNodes = currentlyUnneededNodeNames[i:]
+			skippedNodes = append(skippedNodes, currentlyUnneededNodeNames[i:]...)
 			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
 			break
 		}
-		if len(removableList)-atomicScaleDownNodesCount >= p.unneededNodesLimit() {
-			skippedNodes = currentlyUnneededNodeNames[i:]
-			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more. Total atomic scale down nodes: %d", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList), atomicScaleDownNodesCount)
-			break
+
+		nodeInfo, err := p.autoscalingCtx.ClusterSnapshot.GetNodeInfo(nodeName)
+		if err != nil || nodeInfo == nil || nodeInfo.Node() == nil {
+			klog.Errorf("failed to get node info for %s: %v", nodeName, err)
+			continue
+		}
+		node := nodeInfo.Node()
+		_, isAtomic := atomic.IsAtomicNodeGroup(p.autoscalingCtx, node)
+
+		if !isAtomic && nonAtomicRemovableCount >= p.unneededNodesLimit() {
+			skippedNodes = append(skippedNodes, nodeName)
+			klog.V(4).Infof("Skipping non-atomic node %s in scale down simulation: there are already %d non-atomic unneeded nodes.", nodeName, nonAtomicRemovableCount)
+			continue
 		}
 
-		removable, unremovable := p.rs.SimulateNodeRemoval(node, podDestinations, p.latestUpdate, p.autoscalingCtx.RemainingPdbTracker)
+		removable, unremovable := p.rs.SimulateNodeRemoval(nodeName, podDestinations, p.latestUpdate, p.autoscalingCtx.RemainingPdbTracker)
 		if removable != nil {
 			_, inParallel, _ := p.autoscalingCtx.RemainingPdbTracker.CanRemovePods(removable.PodsToReschedule)
 			if !inParallel {
@@ -320,9 +337,11 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			delete(podDestinations, removable.Node.Name)
 			p.autoscalingCtx.RemainingPdbTracker.RemovePods(removable.PodsToReschedule)
 			removableList = append(removableList, *removable)
-			if p.atomicScaleDownNode(removable) {
+			if isAtomic {
 				atomicScaleDownNodesCount++
 				klog.V(2).Infof("Considering node %s for atomic scale down. Total atomic scale down nodes count: %d", removable.Node.Name, atomicScaleDownNodesCount)
+			} else {
+				nonAtomicRemovableCount++
 			}
 		}
 		if unremovable != nil {
@@ -330,6 +349,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			p.unremovableNodes.AddTimeout(unremovable, unremovableTimeout)
 		}
 	}
+
 	p.handleUnprocessedNodes(skippedNodes)
 	p.unneededNodes.Update(p.autoscalingCtx, removableList, p.latestUpdate)
 	if unremovableCount > 0 {
@@ -337,26 +357,88 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	}
 }
 
-// atomicScaleDownNode checks if the removable node would be considered for atomic scale down.
-func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
-	nodeGroup, err := p.autoscalingCtx.CloudProvider.NodeGroupForNode(node.Node)
+// prefilterIncompleteAtomicNodeGroups identifies atomic node groups in currentlyUnneededNodeNames.
+// If an atomic node group has fewer unneeded candidates than its target size, it cannot be
+// atomically scaled down. Such incomplete atomic node groups are filtered out of simulation,
+// and their nodes are marked as unremovable.
+func (p *Planner) prefilterIncompleteAtomicNodeGroups(nodeNames []string, unremovableTimeout time.Time) ([]string, int) {
+	atomicGroupNodes := make(map[string][]string)
+	atomicGroupObj := make(map[string]cloudprovider.NodeGroup)
+	nodeNameToNode := make(map[string]*apiv1.Node)
+
+	for _, nodeName := range nodeNames {
+		nodeInfo, err := p.autoscalingCtx.ClusterSnapshot.GetNodeInfo(nodeName)
+		if err != nil || nodeInfo == nil || nodeInfo.Node() == nil {
+			continue
+		}
+		node := nodeInfo.Node()
+		nodeNameToNode[nodeName] = node
+		nodeGroup, isAtomic := atomic.IsAtomicNodeGroup(p.autoscalingCtx, node)
+		if isAtomic && nodeGroup != nil {
+			ngID := nodeGroup.Id()
+			atomicGroupNodes[ngID] = append(atomicGroupNodes[ngID], nodeName)
+			atomicGroupObj[ngID] = nodeGroup
+		}
+	}
+
+	if len(atomicGroupNodes) == 0 {
+		return nodeNames, 0
+	}
+
+	incompleteNodes := make(map[string]bool)
+	unremovableCount := 0
+
+	allNodes, err := allNodes(p.autoscalingCtx.ClusterSnapshot)
 	if err != nil {
-		klog.Errorf("failed to get node info for %v: %s", node.Node.Name, err)
-		return false
+		return nil, 0
 	}
-	if nodeGroup == nil {
-		klog.Errorf("Node group for node %s not found", node.Node.Name)
-		return false
+
+	for ngID, unneededNodes := range atomicGroupNodes {
+		ng := atomicGroupObj[ngID]
+		targetSize, err := ng.TargetSize()
+		if err != nil {
+			klog.Errorf("Failed to get target size for node group %s: %v", ngID, err)
+			continue
+		}
+
+		if len(unneededNodes) < targetSize {
+			registeredCount, countErr := atomic.CountRegisteredNodesForGroup(ng, allNodes)
+			if countErr == nil && len(unneededNodes) >= registeredCount {
+				// All registered nodes in the snapshot are unneeded
+				continue
+			}
+			klog.V(2).Infof("Atomic node group %s has %d unneeded nodes out of target size %d. Filtering out from scale down simulation.", ngID, len(unneededNodes), targetSize)
+			for _, nodeName := range unneededNodes {
+				incompleteNodes[nodeName] = true
+				if node, ok := nodeNameToNode[nodeName]; ok {
+					p.unremovableNodes.AddTimeout(&simulator.UnremovableNode{
+						Node:   node,
+						Reason: simulator.AtomicScaleDownFailed,
+					}, unremovableTimeout)
+					unremovableCount++
+				}
+			}
+		}
 	}
-	autoscalingOptions, err := nodeGroup.GetOptions(p.autoscalingCtx.NodeGroupDefaults)
-	if err != nil && err != cloudprovider.ErrNotImplemented {
-		klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
-		return false
+
+	if len(incompleteNodes) == 0 {
+		return nodeNames, 0
 	}
-	if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {
-		return true
+
+	filteredNodeNames := make([]string, 0, len(nodeNames)-len(incompleteNodes))
+	for _, nodeName := range nodeNames {
+		if !incompleteNodes[nodeName] {
+			filteredNodeNames = append(filteredNodeNames, nodeName)
+		}
 	}
-	return false
+
+	return filteredNodeNames, unremovableCount
+}
+
+// isNodeAtomicScaleDown checks if the node would be considered for atomic scale down.
+func (p *Planner) isNodeAtomicScaleDown(node *apiv1.Node) bool {
+	_, isAtomic := atomic.IsAtomicNodeGroup(p.autoscalingCtx, node)
+	return isAtomic
 }
 
 // unneededNodesLimit returns the number of nodes after which calculating more

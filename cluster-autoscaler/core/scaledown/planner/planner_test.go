@@ -1297,6 +1297,6 @@ func TestAtomicScaleDownNodeNilGroup(t *testing.T) {
 		Node: n1,
 	}
 
-	result := p.atomicScaleDownNode(node)
+	result := p.isNodeAtomicScaleDown(node.Node)
 	assert.False(t, result)
 }
