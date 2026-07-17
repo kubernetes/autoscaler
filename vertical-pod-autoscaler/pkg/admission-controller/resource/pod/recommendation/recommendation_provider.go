@@ -51,9 +51,9 @@ func NewProvider(calculator limitrange.LimitRangeCalculator,
 // If addAll is set to true, containers w/o a recommendation are also added to the list (and their non-recommended requests and limits will always be preserved if present),
 // otherwise they're skipped (default behaviour).
 func GetContainersResources(pod *corev1.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources, limitRange *corev1.LimitRangeItem,
-	addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) ([]vpa_api_util.ContainerResources, []vpa_api_util.ContainerResources) {
-	initResources := getResourcesForPodContainers(pod.Spec.InitContainers, pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
-	containerResources := getResourcesForPodContainers(pod.Spec.Containers, pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
+	addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) (initResources, containerResources []vpa_api_util.ContainerResources) {
+	initResources = getResourcesForPodContainers(pod.Spec.InitContainers, pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
+	containerResources = getResourcesForPodContainers(pod.Spec.Containers, pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
 	return initResources, containerResources
 }
 
@@ -130,14 +130,13 @@ func getSingleContainerResources(container corev1.Container, pod *corev1.Pod, vp
 
 // GetContainersResourcesForPod returns recommended request for a given pod and associated annotations.
 // The returned slice corresponds 1-1 to containers in the Pod.
-func (p *recommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, []vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
+func (p *recommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (initResources, resources []vpa_api_util.ContainerResources, annotations vpa_api_util.ContainerToAnnotationsMap, err error) {
 	if vpa == nil || pod == nil {
 		klog.V(2).InfoS("Can't calculate recommendations, one of VPA or Pod is nil", "vpa", vpa, "pod", pod)
 		return nil, nil, nil, nil
 	}
 	klog.V(2).InfoS("Updating requirements for pod", "pod", klog.KObj(pod))
 
-	var annotations vpa_api_util.ContainerToAnnotationsMap
 	recommendedPodResources := &vpa_types.RecommendedPodResources{}
 
 	if vpa.Status.Recommendation != nil {
