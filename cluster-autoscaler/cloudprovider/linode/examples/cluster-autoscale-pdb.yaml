@@ -1,9 +1,0 @@
-apiVersion: policy/v1beta1
-kind: PodDisruptionBudget
-metadata:
-  name: cluster-autoscaler-pdb
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler

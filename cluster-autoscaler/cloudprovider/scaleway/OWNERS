@@ -1,9 +1,0 @@
-#approvers:
-#- louisportay
-#- jtherin
-reviewers:
-- remyleone
-- Sh4d1
-
-labels:
-- area/provider/scaleway

@@ -1,7 +1,0 @@
-approvers:
-# - alphajc
-reviewers:
-# - alphajc
-
-labels:
-- area/provider/tencentcloud
