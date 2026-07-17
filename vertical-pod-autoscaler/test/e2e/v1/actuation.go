@@ -809,6 +809,72 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		}
 	})
 
+	f.It("evicts and updates only the native sidecar, leaving a plain init container untouched", framework.WithFeatureGate(features.NativeSidecar), func() {
+		ginkgo.By("Setting up a hamster deployment with a native sidecar and a plain init container")
+		d := NewHamsterDeploymentWithNativeSidecar(f,
+			ParseQuantityOrDie("50m"),  /*main CPU*/
+			ParseQuantityOrDie("50Mi"), /*main memory*/
+			ParseQuantityOrDie("50m"),  /*sidecar CPU*/
+			ParseQuantityOrDie("50Mi"), /*sidecar memory*/
+		)
+		// Add a plain (non-restarting) init container that VPA must never scale.
+		plainInit := d.Spec.Template.Spec.InitContainers[0].DeepCopy()
+		plainInit.Name = "plain-init"
+		plainInit.RestartPolicy = ptr.To(apiv1.ContainerRestartPolicyNever)
+		plainInit.Args = []string{"-c", "true"}
+		d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *plainInit)
+		podList := utils.StartDeploymentPods(f, d)
+
+		ginkgo.By("Setting up a VPA CRD targeting the native sidecar")
+		sidecarName := d.Spec.Template.Spec.InitContainers[0].Name
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(sidecarName).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(sidecarName).
+					WithTarget("100m", "100Mi").
+					WithLowerBound("100m", "100Mi").
+					WithUpperBound("100m", "100Mi").
+					GetContainerResources()).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for pods to be restarted")
+		err := WaitForPodsRestarted(f, podList)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Verifying only the native sidecar was updated")
+		updatedPodList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		for _, pod := range updatedPodList.Items {
+			gomega.Expect(pod.Spec.InitContainers).To(gomega.HaveLen(2))
+
+			var sidecar, plain *apiv1.Container
+			for i := range pod.Spec.InitContainers {
+				switch pod.Spec.InitContainers[i].Name {
+				case sidecarName:
+					sidecar = &pod.Spec.InitContainers[i]
+				case "plain-init":
+					plain = &pod.Spec.InitContainers[i]
+				}
+			}
+			gomega.Expect(sidecar).NotTo(gomega.BeNil())
+			gomega.Expect(plain).NotTo(gomega.BeNil())
+
+			// Native sidecar is scaled to the recommendation.
+			gomega.Expect(sidecar.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
+			gomega.Expect(sidecar.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+
+			// Plain init container is left at its original request.
+			gomega.Expect(plain.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("50m")))
+			gomega.Expect(plain.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("50Mi")))
+		}
+	})
+
 	f.It("doesn't evict and update pods with native sidecars when feature gate not enabled", func() {
 		if features.Enabled(features.NativeSidecar) {
 			ginkgo.Skip("only test when NativeSidecar feature gate is disabled")
