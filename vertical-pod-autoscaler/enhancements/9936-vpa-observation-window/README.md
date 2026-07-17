@@ -54,7 +54,7 @@ This feature moves the sequencing into the VPA API itself. Operators declare "wa
 
 - **Recommender-confidence-based gating.** This feature is a user-declared policy, not a recommender-computed signal. Interoperation with `LowConfidence` / `RecommendationProvided` is left for future work.
 - **Reset semantics on modification of other fields.** Changing `resourcePolicy`, `targetRef`, or the target workload does not reset the window. The window is anchored on `vpa.CreationTimestamp`; users who need to re-observe a workload after a material change should delete and recreate the VPA.
-- **Cluster-wide default windows.** Different applications and different VPAs on the same target want different windows; this is a per-VPA concern.
+- **Cluster-wide default windows.** Out of scope for this AEP; operators can inject a default with a Mutating Admission Policy (see [Alternatives Considered](#alternatives-considered), item 3).
 
 ## Proposal
 
@@ -378,7 +378,45 @@ Pods created during the first hour receive their `Deployment`-spec resources unc
 
 **2. Recommender-side confidence gate.** Block `RecommendationProvided` from becoming `True` for N hours or until a confidence threshold is met. Cleaner conceptually but hides visibility — operators would see no recommendation at all in `status.recommendation` during the window, defeating the "collect first, inspect, then apply" workflow this feature is meant to support.
 
-**3. Global Updater flag** (e.g. `--default-observation-window-seconds`). Wrong axis: different applications in the same cluster want different windows, and different VPAs on the same target want different windows.
+**3. Global default flag** (e.g. `--default-initial-delay-seconds`). A sane cluster-wide default is genuinely useful, but the flag would need to be added to — and kept in sync between — both the Updater and the Admission Controller, since both evaluate the gate. Operators who want a cluster-wide default can instead inject one at admission time with a [Mutating Admission Policy](https://kubernetes.io/docs/reference/access-authn-authz/mutating-admission-policy/), with no new VPA configuration surface. For example, to default every VPA that does not set the field to a one-hour window:
+
+```yaml
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: vpa-default-initial-delay
+spec:
+  matchConstraints:
+    resourceRules:
+    - apiGroups: ["autoscaling.k8s.io"]
+      apiVersions: ["v1"]
+      operations: ["CREATE"]
+      resources: ["verticalpodautoscalers"]
+  matchConditions:
+  - name: no-explicit-initial-delay
+    expression: "!has(object.spec.updatePolicy) || !has(object.spec.updatePolicy.initialDelaySeconds)"
+  failurePolicy: Ignore
+  mutations:
+  - patchType: ApplyConfiguration
+    applyConfiguration:
+      expression: >
+        Object{
+          spec: Object.spec{
+            updatePolicy: Object.spec.updatePolicy{
+              initialDelaySeconds: 3600
+            }
+          }
+        }
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: vpa-default-initial-delay-binding
+spec:
+  policyName: vpa-default-initial-delay
+```
+
+A component flag can be revisited as a follow-up if the policy route proves insufficient.
 
 **4. Do nothing; rely on operator tooling.** The status quo. Ships the complexity downstream to every VPA operator; the CronJob-plus-patch-controller dance ends up reinvented per environment.
 
