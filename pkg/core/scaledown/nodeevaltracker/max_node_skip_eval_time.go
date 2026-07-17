@@ -19,7 +19,7 @@ package nodeevaltracker
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 )
 
 type metricObserver interface {

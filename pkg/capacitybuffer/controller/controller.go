@@ -34,14 +34,14 @@ import (
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
-	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
-	filters "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
-	cbmetrics "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/metrics"
-	translators "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators"
-	scalableobject "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators/scalable_objects"
-	updater "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/updater"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer"
+	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/fakepods"
+	filters "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/filters"
+	cbmetrics "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/metrics"
+	translators "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/translators"
+	scalableobject "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/translators/scalable_objects"
+	updater "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/updater"
 	"k8s.io/utils/clock"
 )
 

@@ -22,9 +22,9 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander/grpcplugin/protos"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"k8s.io/klog/v2"
 
 	"google.golang.org/grpc"

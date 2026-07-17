@@ -19,7 +19,7 @@ package estimator
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 type staticThreshold struct {

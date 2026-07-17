@@ -35,15 +35,15 @@ import (
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	cqv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
-	autoscalerbuilder "k8s.io/autoscaler/cluster-autoscaler/builder"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/config/flags"
-	"k8s.io/autoscaler/cluster-autoscaler/core"
-	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/loop"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	"k8s.io/autoscaler/cluster-autoscaler/version"
+	autoscalerbuilder "sigs.k8s.io/cluster-autoscaler/pkg/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/flags"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core"
+	"sigs.k8s.io/cluster-autoscaler/pkg/debuggingsnapshot"
+	"sigs.k8s.io/cluster-autoscaler/pkg/loop"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
+	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
+	"sigs.k8s.io/cluster-autoscaler/pkg/version"
 	"k8s.io/client-go/informers"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 
@@ -52,7 +52,7 @@ import (
 	// by including or excluding these blank imports. This is particularly useful for
 	// external forks that want to avoid unnecessary dependencies.
 	// The router package is used to provide support for custom build tags (e.g. -tags aws).
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/router"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/router"
 
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"

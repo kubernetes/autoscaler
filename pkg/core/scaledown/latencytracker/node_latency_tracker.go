@@ -21,14 +21,14 @@ import (
 	"slices"
 	"time"
 
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/status"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator"
 	"k8s.io/klog/v2"
 
-	processor "k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	processor "sigs.k8s.io/cluster-autoscaler/pkg/processors/status"
 )
 
 const (

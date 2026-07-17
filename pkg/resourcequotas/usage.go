@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/context"
 )
 
 // NodeFilter customizes what nodes should be included in usage calculations.

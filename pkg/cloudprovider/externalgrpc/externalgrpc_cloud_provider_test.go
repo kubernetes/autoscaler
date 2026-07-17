@@ -28,8 +28,8 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/externalgrpc/protos"
 )
 
 func TestCloudProvider_NodeGroups(t *testing.T) {

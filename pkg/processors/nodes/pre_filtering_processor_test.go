@@ -22,9 +22,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 
-	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestPreFilteringScaleDownNodeProcessor_GetPodDestinationCandidates(t *testing.T) {

@@ -19,10 +19,10 @@ package scaledown
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/status"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/utilization"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 
 	apiv1 "k8s.io/api/core/v1"
 )

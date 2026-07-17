@@ -19,8 +19,8 @@ package drainability
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/pdb"
+	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 )
 
 // DrainContext contains parameters for drainability rules.

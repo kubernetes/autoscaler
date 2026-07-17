@@ -17,8 +17,8 @@ limitations under the License.
 package nodes
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
-	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown"
+	"sigs.k8s.io/cluster-autoscaler/pkg/resourcequotas"
 )
 
 // ScaleDownContext keeps an updated version actuationStatus and resourcesLeft for the scaling down process

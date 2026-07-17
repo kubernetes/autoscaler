@@ -19,7 +19,7 @@ package synctest
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/cluster-autoscaler/core"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core"
 	"testing"
 	"testing/synctest"
 	"time"

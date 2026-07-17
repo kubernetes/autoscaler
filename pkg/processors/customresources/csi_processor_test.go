@@ -24,12 +24,12 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
-	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot/store"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot/testsnapshot"
+	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {

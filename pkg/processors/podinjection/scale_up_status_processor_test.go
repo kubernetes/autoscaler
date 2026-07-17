@@ -21,11 +21,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	podinjectionbackoff "sigs.k8s.io/cluster-autoscaler/pkg/processors/podinjection/backoff"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/status"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/fake"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestProcess(t *testing.T) {

@@ -20,14 +20,14 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/pdb"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/drainability"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/drainability/rules"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/drain"
+	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
+	pod_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
 )
 
 // PodMoveInfo contains the pods that should be relocated and those that are blocking the drain.

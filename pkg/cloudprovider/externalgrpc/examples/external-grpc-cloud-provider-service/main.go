@@ -26,17 +26,17 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/examples/external-grpc-cloud-provider-service/wrapper"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
+	cloudBuilder "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/externalgrpc/examples/external-grpc-cloud-provider-service/wrapper"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/externalgrpc/protos"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/gce/localssdsize"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
 	kube_flag "k8s.io/component-base/cli/flag"
 	klog "k8s.io/klog/v2"
 
 	// Cloud providers must be explicitly imported to be registered in the builder.
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/router"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/router"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag

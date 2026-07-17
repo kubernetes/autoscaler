@@ -21,16 +21,16 @@ package router
 import (
 	// Blank import to register a cloudprovider outside main or test package.
 	// This is by design.
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/clusterapi"
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc"
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kwok"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/azure"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/clusterapi"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/externalgrpc"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/gce"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/kwok"
 )
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
 )
 
 func init() {

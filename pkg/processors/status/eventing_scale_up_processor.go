@@ -24,8 +24,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 )
 
 // EventingScaleUpStatusProcessor processes the state of the cluster after

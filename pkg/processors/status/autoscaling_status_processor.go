@@ -19,8 +19,8 @@ package status
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 )
 
 // AutoscalingStatusProcessor processes the status of the cluster after each autoscaling iteration.

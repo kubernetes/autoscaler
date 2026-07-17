@@ -23,11 +23,11 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	kube_record "k8s.io/client-go/tools/record"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	cp_test "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	cp_test "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodegroupset"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )

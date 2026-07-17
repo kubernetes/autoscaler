@@ -27,8 +27,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	cbapi "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
+	cbapi "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/testutil"
 )
 
 var _ = Describe("CapacityBuffer Controller", func() {

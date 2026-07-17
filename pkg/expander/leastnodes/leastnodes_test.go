@@ -21,7 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
 )
 
 func TestLeastNodes(t *testing.T) {

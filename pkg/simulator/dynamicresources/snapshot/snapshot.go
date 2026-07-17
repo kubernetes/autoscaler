@@ -22,8 +22,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
-	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/common"
+	drautils "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/utils"
 	resourceclaim "k8s.io/dynamic-resource-allocation/resourceclaim"
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"

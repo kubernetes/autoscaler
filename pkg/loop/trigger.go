@@ -22,7 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"

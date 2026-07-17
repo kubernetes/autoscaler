@@ -20,9 +20,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 )
 
 // PreFilteringScaleDownNodeProcessor filters out scale down candidates from nodegroup with

@@ -27,7 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	fakeclientset "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
-	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
+	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
 )
 
 func TestStatusUpdater(t *testing.T) {

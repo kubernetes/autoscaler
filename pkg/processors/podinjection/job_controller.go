@@ -19,7 +19,7 @@ package podinjection
 import (
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"k8s.io/klog/v2"
 )
 

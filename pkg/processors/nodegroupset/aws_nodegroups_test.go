@@ -19,9 +19,9 @@ package nodegroupset
 import (
 	"testing"
 
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestIsAwsNodeInfoSimilar(t *testing.T) {

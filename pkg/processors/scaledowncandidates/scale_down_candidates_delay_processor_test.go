@@ -23,10 +23,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 )
 
 func TestGetScaleDownCandidates(t *testing.T) {

@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
 
 	"github.com/stretchr/testify/assert"
 )

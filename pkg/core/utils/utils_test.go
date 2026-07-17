@@ -21,13 +21,13 @@ import (
 	"testing"
 	"time"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	mock_cloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mocks"
-	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	mock_cloudprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/mocks"
+	caerrors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 )
 
 func TestGetNodeResource(t *testing.T) {

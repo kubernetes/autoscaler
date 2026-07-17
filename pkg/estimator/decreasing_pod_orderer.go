@@ -20,10 +20,10 @@ import (
 	"sort"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 
-	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	podutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
 )
 
 // podScoreInfo contains Pod and score that corresponds to how important it is to handle the pod first.

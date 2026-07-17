@@ -21,7 +21,7 @@ import (
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	klog "k8s.io/klog/v2"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // GetNodeGroupSizeMap return a map of node group id and its target size

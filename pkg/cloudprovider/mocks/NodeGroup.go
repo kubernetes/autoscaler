@@ -17,10 +17,10 @@ limitations under the License.
 package mocks
 
 import (
-	cloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	config "k8s.io/autoscaler/cluster-autoscaler/config"
+	cloudprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	config "sigs.k8s.io/cluster-autoscaler/pkg/config"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 
 	mock "github.com/stretchr/testify/mock"
 

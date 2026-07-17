@@ -23,12 +23,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
-	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
-	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
+	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/deletiontracker"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/core/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/observers/nodegroupchange"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/taints"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 )

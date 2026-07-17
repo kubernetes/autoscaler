@@ -19,7 +19,7 @@ package provreq
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
+	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/provreqclient"
 	"k8s.io/utils/clock/testing"
 	"k8s.io/utils/lru"
 )

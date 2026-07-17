@@ -17,10 +17,10 @@ limitations under the License.
 package testsnapshot
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot/predicate"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot/store"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // testFailer is an abstraction that covers both *testing.T and *testing.B.

@@ -38,13 +38,13 @@ import (
 
 	capacitybuffer "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned"
 	cqv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
-	cbapi "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
-	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	cbctrl "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/controller"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
-	cbmetrics "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-	cqctrl "k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota"
+	cbapi "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer"
+	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
+	cbctrl "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/controller"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/fakepods"
+	cbmetrics "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/metrics"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/utils"
+	cqctrl "sigs.k8s.io/cluster-autoscaler/pkg/resourcequotas/capacityquota"
 )
 
 func TestControllers(t *testing.T) {

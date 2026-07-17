@@ -19,7 +19,7 @@ package scaledowncandidates
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown"
 )
 
 // Observer is an observer of scale down candidates

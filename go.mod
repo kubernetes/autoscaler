@@ -1,4 +1,4 @@
-module k8s.io/autoscaler/cluster-autoscaler
+module sigs.k8s.io/cluster-autoscaler
 
 go 1.26.0
 

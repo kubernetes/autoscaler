@@ -25,9 +25,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/pods"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 	"k8s.io/client-go/tools/record"
 )
 

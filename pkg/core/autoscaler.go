@@ -20,7 +20,7 @@ import (
 	"context"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 )
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration

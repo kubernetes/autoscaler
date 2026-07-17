@@ -22,9 +22,9 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/common"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
+	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/common"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/fakepods"
 )
 
 // podTemplateBufferTranslator translates podTemplateRef buffers specs to fill their status.

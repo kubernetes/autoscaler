@@ -17,8 +17,8 @@ limitations under the License.
 package status
 
 import (
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/status"
 )
 
 // ScaleDownStatusProcessor processes the status of the cluster after a scale-down.

@@ -17,20 +17,20 @@ limitations under the License.
 package processors
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/actionablecluster"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/binpacking"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/observers/nodegroupchange"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/actionablecluster"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/binpacking"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/customresources"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodegroupconfig"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodegroups"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodegroups/asyncnodegroups"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodegroupset"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodeinfosprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodes"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/pods"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/scaledowncandidates"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/status"
 )
 
 // AutoscalingProcessors are a set of customizable processors used for encapsulating

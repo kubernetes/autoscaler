@@ -19,9 +19,9 @@ package actuation
 import (
 	"time"
 
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/taints"
 
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"

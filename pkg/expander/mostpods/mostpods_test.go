@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
 )
 
 func TestMostPods(t *testing.T) {

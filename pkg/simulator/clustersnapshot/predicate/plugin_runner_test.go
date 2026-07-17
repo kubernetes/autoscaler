@@ -32,12 +32,12 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_config_latest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 
-	testconfig "k8s.io/autoscaler/cluster-autoscaler/config/test"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	testconfig "sigs.k8s.io/cluster-autoscaler/pkg/config/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot/store"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/scheduler"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestRunFiltersOnNode(t *testing.T) {

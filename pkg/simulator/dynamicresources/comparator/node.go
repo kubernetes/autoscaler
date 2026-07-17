@@ -20,7 +20,7 @@ import (
 	"slices"
 
 	resourceapi "k8s.io/api/resource/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	"k8s.io/klog/v2"
 )
 

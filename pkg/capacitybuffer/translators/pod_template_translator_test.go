@@ -26,15 +26,15 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/fakepods"
 	fakeClient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/utils/ptr"
 
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
+	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/testutil"
 )
 
 func TestPodTemplateBufferTranslator(t *testing.T) {

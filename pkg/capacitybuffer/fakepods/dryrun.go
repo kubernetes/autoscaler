@@ -21,7 +21,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	podutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
 )

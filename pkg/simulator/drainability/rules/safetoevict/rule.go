@@ -18,9 +18,9 @@ package safetoevict
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/drainability"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/drain"
 )
 
 // Rule is a drainability rule on how to handle safe to evict pods.

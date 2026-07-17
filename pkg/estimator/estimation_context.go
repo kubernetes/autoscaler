@@ -17,7 +17,7 @@ limitations under the License.
 package estimator
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // EstimationContext stores static and runtime state of autoscaling, used by Estimator

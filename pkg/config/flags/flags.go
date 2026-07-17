@@ -25,13 +25,13 @@ import (
 
 	"github.com/spf13/pflag"
 
-	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/estimator"
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
+	cloudBuilder "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/gce/localssdsize"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/estimator"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
+	scheduler_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/scheduler"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/units"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"

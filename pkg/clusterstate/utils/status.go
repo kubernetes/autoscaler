@@ -26,7 +26,7 @@ import (
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
+	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate/api"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/yaml"

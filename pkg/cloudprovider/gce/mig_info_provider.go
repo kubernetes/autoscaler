@@ -26,8 +26,8 @@ import (
 	"time"
 
 	gce "google.golang.org/api/compute/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 )

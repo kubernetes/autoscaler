@@ -32,7 +32,7 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test/pkg/environment"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/azure/test/pkg/environment"
 )
 
 var (

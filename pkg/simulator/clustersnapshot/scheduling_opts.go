@@ -19,7 +19,7 @@ package clustersnapshot
 import (
 	"sort"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // NodeOrderMapping defines the order in which nodes are iterated during scheduling simulation.

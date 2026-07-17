@@ -28,8 +28,8 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/azure"
 	klog "k8s.io/klog/v2"
 )
 

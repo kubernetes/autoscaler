@@ -17,8 +17,8 @@ limitations under the License.
 package podlistprocessor
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/pods"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // NewDefaultPodListProcessor returns a default implementation of the pod list

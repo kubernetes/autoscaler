@@ -22,14 +22,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
-	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
+	drasnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/snapshot"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 
 	apiv1 "k8s.io/api/core/v1"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	utils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	utils "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestDefaultProcessorFilterOut(t *testing.T) {

@@ -25,13 +25,13 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/core"
-	"k8s.io/autoscaler/cluster-autoscaler/test/integration"
-	synctestutils "k8s.io/autoscaler/cluster-autoscaler/test/integration/synctest"
-	fakek8s "k8s.io/autoscaler/cluster-autoscaler/utils/fake"
-	testutils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core"
+	"sigs.k8s.io/cluster-autoscaler/pkg/test/integration"
+	synctestutils "sigs.k8s.io/cluster-autoscaler/pkg/test/integration/synctest"
+	fakek8s "sigs.k8s.io/cluster-autoscaler/pkg/utils/fake"
+	testutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 // RunTestClusterStateRegistryScaleUpWithDeletedNodes runs an integration test validating that ClusterStateRegistry correctly handles scaling up while deleted Nodes

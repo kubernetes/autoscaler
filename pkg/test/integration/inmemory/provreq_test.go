@@ -25,11 +25,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
-	fakecloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
-	"k8s.io/autoscaler/cluster-autoscaler/test/integration"
-	synctestutils "k8s.io/autoscaler/cluster-autoscaler/test/integration/synctest"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	fakecloudprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/provreqwrapper"
+	"sigs.k8s.io/cluster-autoscaler/pkg/test/integration"
+	synctestutils "sigs.k8s.io/cluster-autoscaler/pkg/test/integration/synctest"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestProvReqFullLifecycle(t *testing.T) {

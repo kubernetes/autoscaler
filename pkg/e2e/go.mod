@@ -1,4 +1,4 @@
-module k8s.io/autoscaler/cluster-autoscaler/e2e
+module sigs.k8s.io/cluster-autoscaler/pkg/e2e
 
 go 1.26.0
 

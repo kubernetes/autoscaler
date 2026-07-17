@@ -42,7 +42,7 @@ syntax = "proto3";
 package clusterautoscaler.expander.v1;
 
 import "google/protobuf";
-import "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/generated.proto";
+import "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/generated.proto";
 import "k8s.io/api/core/v1/generated.proto";
 
 option go_package = "v1";

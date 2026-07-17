@@ -18,8 +18,8 @@ package podlistprocessor
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	core_utils "sigs.k8s.io/cluster-autoscaler/pkg/core/utils"
 )
 
 type filterOutExpendable struct {

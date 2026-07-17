@@ -19,7 +19,7 @@ package snapshot
 import (
 	"github.com/google/go-cmp/cmp"
 	storagev1 "k8s.io/api/storage/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/common"
 )
 
 // CloneTestSnapshot creates a deep copy of the provided Snapshot.

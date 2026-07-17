@@ -25,9 +25,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/pods"
+	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/provreqwrapper"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestFetchPodTemplates(t *testing.T) {

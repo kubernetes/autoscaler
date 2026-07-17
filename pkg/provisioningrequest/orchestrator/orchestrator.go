@@ -21,18 +21,18 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/estimator"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
-	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
-	ca_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
+	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/estimator"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/status"
+	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/provreqclient"
+	"sigs.k8s.io/cluster-autoscaler/pkg/resourcequotas"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/scheduling"
+	ca_errors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/taints"
 
-	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	ca_processors "sigs.k8s.io/cluster-autoscaler/pkg/processors"
 )
 
 // ProvisioningClass is an interface for ProvisioningRequests.

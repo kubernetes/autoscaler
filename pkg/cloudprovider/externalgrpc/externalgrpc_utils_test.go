@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/externalgrpc/protos"
 )
 
 type cloudProviderServerMock struct {

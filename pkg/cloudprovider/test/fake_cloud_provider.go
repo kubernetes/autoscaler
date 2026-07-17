@@ -26,13 +26,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/rand"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	fakek8s "k8s.io/autoscaler/cluster-autoscaler/utils/fake"
-	testutils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	fakek8s "sigs.k8s.io/cluster-autoscaler/pkg/utils/fake"
+	testutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/units"
 )
 
 const (

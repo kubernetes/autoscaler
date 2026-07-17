@@ -22,12 +22,12 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	v1 "k8s.io/api/core/v1"
-	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/core/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 )
 

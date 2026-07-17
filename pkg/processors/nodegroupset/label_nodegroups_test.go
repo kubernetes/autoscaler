@@ -19,7 +19,7 @@ package nodegroupset
 import (
 	"testing"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestNodeLabelComparison(t *testing.T) {

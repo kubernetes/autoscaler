@@ -25,7 +25,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander/grpcplugin/protos"
 )
 
 // This code is meant to be used as starter code, deployed as a separate app, not in Cluster Autoscaler.

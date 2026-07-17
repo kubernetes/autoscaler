@@ -20,8 +20,8 @@ import (
 	"fmt"
 
 	storagev1 "k8s.io/api/storage/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/common"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/common"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 

@@ -22,7 +22,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	grpc "google.golang.org/grpc"
-	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander/grpcplugin/protos"
 )
 
 // MockExpanderClient is a mock of ExpanderClient interface.

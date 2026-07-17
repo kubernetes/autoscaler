@@ -29,8 +29,8 @@ import (
 	v1ac "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
 	listers "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/listers/autoscaling.x-k8s.io/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
+	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest"
+	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/provreqwrapper"
 	corev1 "k8s.io/client-go/listers/core/v1"
 
 	klog "k8s.io/klog/v2"

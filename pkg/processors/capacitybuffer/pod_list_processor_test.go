@@ -24,10 +24,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
-	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
+	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/fakepods"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/drain"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,7 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	buffersfake "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
-	testutil "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
+	testutil "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/testutil"
 	fakeclient "k8s.io/client-go/kubernetes/fake"
 )
 

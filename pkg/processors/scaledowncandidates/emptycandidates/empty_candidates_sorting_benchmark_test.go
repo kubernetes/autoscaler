@@ -22,9 +22,9 @@ import (
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/options"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func BenchmarkEmptySorting(b *testing.B) {

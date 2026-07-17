@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
 )
 
 func TestSngCapacityThreshold(t *testing.T) {

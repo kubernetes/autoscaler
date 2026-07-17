@@ -20,13 +20,13 @@ import (
 	"maps"
 	"reflect"
 
-	"k8s.io/autoscaler/cluster-autoscaler/utils"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	pod_utils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/status"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/drain"
+	pod_utils "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
 )
 
 // PodGroup contains a group of pods that are equivalent in terms of schedulability.

@@ -24,13 +24,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
-	"k8s.io/autoscaler/cluster-autoscaler/expander/mocks"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander/grpcplugin/protos"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander/mocks"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
 
 	_ "github.com/golang/mock/mockgen/model"
 )

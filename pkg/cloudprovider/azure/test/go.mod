@@ -1,4 +1,4 @@
-module k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/test
+module sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/azure/test
 
 go 1.24.0
 

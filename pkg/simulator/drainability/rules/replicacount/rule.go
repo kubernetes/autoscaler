@@ -22,10 +22,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/drainability"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/drain"
+	pod_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
 )
 
 // Rule is a drainability rule on how to handle replicated pods.

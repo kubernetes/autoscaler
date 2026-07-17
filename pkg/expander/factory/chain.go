@@ -17,8 +17,8 @@ limitations under the License.
 package factory
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 type chainStrategy struct {

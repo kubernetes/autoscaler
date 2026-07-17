@@ -19,9 +19,9 @@ package metrics
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator"
 
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 	_ "k8s.io/component-base/metrics/prometheus/restclient" // for client-go metrics registration
 )
 

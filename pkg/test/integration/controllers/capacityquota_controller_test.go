@@ -28,14 +28,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/utils"
+	"sigs.k8s.io/cluster-autoscaler/pkg/resourcequotas/capacityquota"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	cqv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
-	cqtest "k8s.io/autoscaler/cluster-autoscaler/resourcequotas/capacityquota/testutil"
-	testutils "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
+	cqtest "sigs.k8s.io/cluster-autoscaler/pkg/resourcequotas/capacityquota/testutil"
+	testutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/units"
 )
 
 var _ = Describe("CapacityQuota Controller", func() {

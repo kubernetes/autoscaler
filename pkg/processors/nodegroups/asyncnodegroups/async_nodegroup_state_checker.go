@@ -17,7 +17,7 @@ limitations under the License.
 package asyncnodegroups
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // AsyncNodeGroupStateChecker is responsible for checking the state of a node group

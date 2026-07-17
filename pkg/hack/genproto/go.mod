@@ -1,4 +1,4 @@
-module k8s.io/autoscaler/cluster-autoscaler/genproto
+module sigs.k8s.io/cluster-autoscaler/pkg/genproto
 
 go 1.25.3
 

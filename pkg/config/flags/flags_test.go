@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
 	"github.com/google/go-cmp/cmp"

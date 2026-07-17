@@ -28,14 +28,14 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
-	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/fake"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	podinjectionbackoff "sigs.k8s.io/cluster-autoscaler/pkg/processors/podinjection/backoff"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot/store"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot/testsnapshot"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/fake"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestTargetCountInjectionPodListProcessor(t *testing.T) {

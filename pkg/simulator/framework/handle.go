@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"sync"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources"
 	"k8s.io/client-go/informers"
 	schedulerconfig "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	schedulerconfiglatest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"

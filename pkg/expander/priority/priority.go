@@ -23,10 +23,10 @@ import (
 
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 	klog "k8s.io/klog/v2"

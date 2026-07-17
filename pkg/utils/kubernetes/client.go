@@ -19,7 +19,7 @@ package kubernetes
 import (
 	"net/url"
 
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"

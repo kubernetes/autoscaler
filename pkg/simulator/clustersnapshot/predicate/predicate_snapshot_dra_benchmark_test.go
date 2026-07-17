@@ -26,13 +26,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/util/feature"
-	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
-	drautils "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	drasnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/snapshot"
+	drautils "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/utils"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	featuretesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/kubernetes/pkg/features"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func createTestResourceSlice(nodeName string, devicesPerSlice int, slicesPerNode int, driver string) *resourceapi.ResourceSlice {

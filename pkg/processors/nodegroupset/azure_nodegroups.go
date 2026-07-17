@@ -17,8 +17,8 @@ limitations under the License.
 package nodegroupset
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // AzureNodepoolLegacyLabel is a label specifying which Azure node pool a particular node belongs to.

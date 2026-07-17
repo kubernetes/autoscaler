@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	filters "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/filters"
+	filters "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/filters"
 	clocktesting "k8s.io/utils/clock/testing"
 	"k8s.io/utils/ptr"
 )

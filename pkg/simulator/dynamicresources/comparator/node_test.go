@@ -22,7 +22,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	resourceapi "k8s.io/api/resource/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 )
 
 var noOpLogger logger = func(format string, args ...any) {}

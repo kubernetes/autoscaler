@@ -19,7 +19,7 @@ package options
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 )
 
 // NodeDeleteOptions contains various options to customize how draining will behave

@@ -21,7 +21,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
+	"sigs.k8s.io/cluster-autoscaler/pkg/resourcequotas"
 )
 
 func TestMaxResourceLimitReached(t *testing.T) {

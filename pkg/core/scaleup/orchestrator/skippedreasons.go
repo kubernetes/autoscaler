@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
+	"sigs.k8s.io/cluster-autoscaler/pkg/resourcequotas"
 )
 
 // SkippedReasons contains information why given node group was skipped.

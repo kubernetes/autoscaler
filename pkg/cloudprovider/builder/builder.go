@@ -19,8 +19,8 @@ package builder
 import (
 	"sort"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
 	"k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
 )

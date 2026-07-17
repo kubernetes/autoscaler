@@ -23,7 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	podutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
 )
 
 const (

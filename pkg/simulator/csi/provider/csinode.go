@@ -19,7 +19,7 @@ package provider
 import (
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	csisnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/csi/snapshot"
+	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
 	informers "k8s.io/client-go/informers"
 	v1storagelister "k8s.io/client-go/listers/storage/v1"
 )

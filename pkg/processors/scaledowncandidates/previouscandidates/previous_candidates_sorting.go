@@ -20,7 +20,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown"
 )
 
 // PreviousCandidates is a struct that store scale down candidates from previous loop.

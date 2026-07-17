@@ -18,7 +18,7 @@ package pods
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 )
 
 // PodListProcessor processes lists of unschedulable pods.
