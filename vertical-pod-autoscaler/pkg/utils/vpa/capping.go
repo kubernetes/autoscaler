@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 )
@@ -403,13 +404,15 @@ func zipContainersWithRecommendations(resources []vpa_types.RecommendedContainer
 		recommendation := getRecommendationForContainer(container.Name, resources)
 		result = append(result, containerWithRecommendation{container: &container, recommendation: recommendation})
 	}
-	for _, container := range pod.Spec.InitContainers {
-		if container.RestartPolicy == nil ||
-			*container.RestartPolicy != corev1.ContainerRestartPolicyAlways {
-			continue
+	if features.Enabled(features.NativeSidecar) {
+		for _, container := range pod.Spec.InitContainers {
+			if container.RestartPolicy == nil ||
+				*container.RestartPolicy != corev1.ContainerRestartPolicyAlways {
+				continue
+			}
+			recommendation := getRecommendationForContainer(container.Name, resources)
+			result = append(result, containerWithRecommendation{container: &container, recommendation: recommendation})
 		}
-		recommendation := getRecommendationForContainer(container.Name, resources)
-		result = append(result, containerWithRecommendation{container: &container, recommendation: recommendation})
 	}
 	return result
 }
@@ -522,18 +525,24 @@ func insertRequestsForMissingRecommendations(containerRecommendations []vpa_type
 			Target:        requests,
 		})
 	}
-	for _, container := range pod.Spec.InitContainers {
-		if recommendationForContainerExists(container.Name, containerRecommendations) {
-			continue
+	if features.Enabled(features.NativeSidecar) {
+		for _, container := range pod.Spec.InitContainers {
+			// Only native sidecars are scaled; plain init containers must not surface as recommendations.
+			if container.RestartPolicy == nil || *container.RestartPolicy != corev1.ContainerRestartPolicyAlways {
+				continue
+			}
+			if recommendationForContainerExists(container.Name, containerRecommendations) {
+				continue
+			}
+			requests, _ := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
+			if len(requests) == 0 {
+				continue
+			}
+			result = append(result, vpa_types.RecommendedContainerResources{
+				ContainerName: container.Name,
+				Target:        requests,
+			})
 		}
-		requests, _ := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
-		if len(requests) == 0 {
-			continue
-		}
-		result = append(result, vpa_types.RecommendedContainerResources{
-			ContainerName: container.Name,
-			Target:        requests,
-		})
 	}
 	return result
 }
