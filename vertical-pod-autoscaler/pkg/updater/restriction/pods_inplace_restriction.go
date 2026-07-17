@@ -101,7 +101,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 	cr, present := ip.podToReplicaCreatorMap[getPodID(pod)]
 	if !present {
 		klog.V(4).InfoS("Deferring in-place update because VPA cannot determine whether disrupting this Pod is safe; the Pod may be unmanaged, its controller information may be unavailable, or its replica group may be below the configured minimum size", "pod", klog.KObj(pod))
-		klog.V(5).InfoS("Pod lacks recognized owner references, its controller is untracked, or min replicas not met", "pod", klog.KObj(pod), "ownerReferences", pod.OwnerReferences)
+		klog.V(5).InfoS("VPA could not add this Pod to a replica group used to enforce availability; the Pod may have no managing controller, its controller may be unavailable, or its group may have fewer replicas than the configured minimum", "pod", klog.KObj(pod), "ownerReferences", pod.OwnerReferences)
 		return utils.InPlaceDeferred
 	}
 
@@ -153,7 +153,7 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 				return utils.InPlaceDeferred
 			case utils.ResizeStatusInProgress:
 				// Resize is actively being applied, wait for completion.
-				klog.V(4).InfoS("Deferring in-place update because the kubelet is applying the previous resize request; VPA will wait for it to complete", "pod", klog.KObj(pod))
+				klog.V(4).InfoS("In-place update in progress, waiting for completion", "pod", klog.KObj(pod))
 				return utils.InPlaceDeferred
 			case utils.ResizeStatusError:
 				// Error during resize, will retry if recommendation changes.
@@ -168,23 +168,23 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 		// For InPlaceOrRecreate mode, check timeout
 		canEvict := CanEvictInPlacingPod(pod, singleGroupStats, ip.lastInPlaceAttemptTimeMap, ip.clock)
 		if canEvict {
-			klog.V(4).InfoS("Evicting Pod because its in-place resize has failed or stalled; InPlaceOrRecreate mode falls back to recreation when it is safe to disrupt the Pod", "pod", klog.KObj(pod), "resizeStatus", resizeStatus)
+			klog.V(5).InfoS("Evicting Pod because its in-place resize has failed or stalled", "pod", klog.KObj(pod), "resizeStatus", resizeStatus)
 			return utils.InPlaceEvict
 		}
-		klog.V(4).InfoS("Deferring update because the Pod already has an in-place resize pending or in progress; VPA will wait for it to complete or for replica availability to permit recreation", "pod", klog.KObj(pod), "resizeStatus", resizeStatus)
+		klog.V(5).InfoS("Deferring update because the Pod already has an in-place resize pending or in progress", "pod", klog.KObj(pod), "resizeStatus", resizeStatus)
 		return utils.InPlaceDeferred
 	}
 
 	if ip.inPlaceSkipDisruptionBudget {
 		if utils.IsNonDisruptiveResize(pod) {
-			klog.V(4).InfoS("Approving in-place update because the requested resize does not require restarting containers; the configured policy permits this without consuming the replica disruption budget", "pod", klog.KObj(pod))
+			klog.V(5).InfoS("Approving in-place update because the requested resize does not require restarting containers; the configured policy permits this without consuming the replica disruption budget", "pod", klog.KObj(pod))
 			return utils.InPlaceApproved
 		}
-		klog.V(4).InfoS("Not bypassing replica availability checks because the requested resize requires restarting containers", "pod", klog.KObj(pod))
+		klog.V(4).InfoS("in-place-skip-disruption-budget enabled, but pod has RestartContainer resize policy", "pod", klog.KObj(pod))
 	}
 
 	if singleGroupStats.isPodDisruptable() {
-		klog.V(4).InfoS("Approving in-place update because the replica group has enough available Pods to maintain its configured availability during the update", "pod", klog.KObj(pod))
+		klog.V(5).InfoS("Approving in-place update because the replica group has enough available Pods to maintain its configured availability during the update", "pod", klog.KObj(pod))
 		return utils.InPlaceApproved
 	}
 
@@ -294,7 +294,7 @@ func CanEvictInPlacingPod(pod *corev1.Pod, singleGroupStats singleGroupStats, la
 	}
 	lastUpdate, exists := lastInPlaceAttemptTimeMap[getPodID(pod)]
 	if !exists {
-		klog.V(4).InfoS("Pod already reports an in-place resize, but VPA has no recorded start time; starting the fallback timeout now", "pod", klog.KObj(pod))
+		klog.V(4).InfoS("In-place update in progress for pod but no lastUpdateTime found, setting it to now", "pod", klog.KObj(pod))
 		lastUpdate = clock.Now()
 		lastInPlaceAttemptTimeMap[getPodID(pod)] = lastUpdate
 	}
@@ -308,38 +308,36 @@ func CanEvictInPlacingPod(pod *corev1.Pod, singleGroupStats singleGroupStats, la
 		if ok {
 			switch resizePendingCondition.Reason {
 			case corev1.PodReasonDeferred:
-				elapsed := clock.Since(lastUpdate)
-				if elapsed > DeferredResizeUpdateTimeout {
-					klog.V(4).InfoS("Evicting Pod because the kubelet has deferred its in-place resize longer than the allowed timeout; recreation is now used as a fallback", "pod", klog.KObj(pod), "elapsed", elapsed, "timeout", DeferredResizeUpdateTimeout)
+				if clock.Since(lastUpdate) > DeferredResizeUpdateTimeout {
+					klog.V(4).InfoS(fmt.Sprintf("In-place update deferred for more than %v, falling back to eviction", DeferredResizeUpdateTimeout), "pod", klog.KObj(pod))
 					return true
 				}
 			case corev1.PodReasonInfeasible:
-				klog.V(4).InfoS("Evicting Pod because the kubelet reported that the node cannot accommodate its in-place resize; recreation is used as a fallback", "pod", klog.KObj(pod))
+				klog.V(4).InfoS("In-place update infeasible, falling back to eviction", "pod", klog.KObj(pod))
 				return true
 			default:
-				klog.V(4).InfoS("Evicting Pod because the kubelet reported an unexpected pending-resize condition; recreation is used as a safe fallback", "pod", klog.KObj(pod), "resizeConditionReason", resizePendingCondition.Reason, "resizeConditionMessage", resizePendingCondition.Message)
+				klog.V(4).InfoS("In-place update condition unknown, falling back to eviction", "pod", klog.KObj(pod), "condition", resizePendingCondition)
 				return true
 			}
 		} else {
 			resizeInProgressCondition, ok := utils.GetPodCondition(pod, corev1.PodResizeInProgress)
 			if ok {
 				if resizeInProgressCondition.Reason == "" && resizeInProgressCondition.Message == "" {
-					elapsed := clock.Since(lastUpdate)
-					if elapsed > InProgressResizeUpdateTimeout {
-						klog.V(4).InfoS("Evicting Pod because the kubelet has been applying its in-place resize longer than the allowed timeout; recreation is now used as a fallback", "pod", klog.KObj(pod), "elapsed", elapsed, "timeout", InProgressResizeUpdateTimeout)
+					if clock.Since(lastUpdate) > InProgressResizeUpdateTimeout {
+						klog.V(4).InfoS(fmt.Sprintf("In-place update in progress for more than %v, falling back to eviction", InProgressResizeUpdateTimeout), "pod", klog.KObj(pod))
 						return true
 					}
 				} else if resizeInProgressCondition.Reason == corev1.PodReasonError {
-					klog.V(4).InfoS("Evicting Pod because the kubelet reported an error while applying its in-place resize; recreation is used as a fallback", "pod", klog.KObj(pod), "resizeConditionMessage", resizeInProgressCondition.Message)
+					klog.V(4).InfoS("In-place update error, falling back to eviction", "pod", klog.KObj(pod), "message", resizeInProgressCondition.Message)
 					return true
 				} else {
-					klog.V(4).InfoS("Evicting Pod because the kubelet reported an unexpected in-progress-resize condition; recreation is used as a safe fallback", "pod", klog.KObj(pod), "resizeConditionReason", resizeInProgressCondition.Reason, "resizeConditionMessage", resizeInProgressCondition.Message)
+					klog.V(4).InfoS("In-place update condition unknown, falling back to eviction", "pod", klog.KObj(pod), "condition", resizeInProgressCondition)
 					return true
 				}
 			}
 		}
 		return false
 	}
-	klog.V(4).InfoS("Not evicting a Pod that is already resizing because the replica group cannot currently tolerate another disruption", "pod", klog.KObj(pod))
+	klog.V(4).InfoS("Would be able to evict, but already resizing", "pod", klog.KObj(pod))
 	return false
 }
