@@ -39,7 +39,7 @@ require (
 	k8s.io/api v0.36.2
 	k8s.io/apimachinery v0.36.2
 	k8s.io/apiserver v0.36.2
-	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20240627115740-d52e4b9665d7
+	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20260717085528-eec9bc4dc1d2
 	k8s.io/client-go v0.36.2
 	k8s.io/cloud-provider v0.36.2
 	k8s.io/cloud-provider-gcp/providers v0.28.2
@@ -235,8 +235,6 @@ replace k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation
 replace k8s.io/kms => k8s.io/kms v0.36.2
 
 replace k8s.io/endpointslice => k8s.io/endpointslice v0.36.2
-
-replace k8s.io/autoscaler/cluster-autoscaler/apis => ./apis
 
 replace k8s.io/cri-client => k8s.io/cri-client v0.36.2
 
