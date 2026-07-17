@@ -298,7 +298,7 @@ This feature is entirely internal to the VPA controllers and depends on no new K
 - Pods created while the gate is active are admitted with their original spec resources, for every update mode.
 - Pods created after the window elapses receive recommendation injection per the configured mode's normal semantics.
 
-**E2E tests** (`e2e/`):
+**Integration tests** (updater and admission-controller):
 
 - Create a VPA with `updateMode: Recreate`, `initialDelaySeconds: 60`, and a recommendation far enough from the pod's requests that eviction is expected. Watch for `InitialDelayActive=True` and verify no pods are evicted. Patch `initialDelaySeconds` to `1`; watch for `InitialDelayActive=False` and verify pods are evicted.
 - Repeat for `InPlaceOrRecreate`, `InPlace`, and `Initial` (for `Initial`, assert on injection at new-pod creation instead of eviction).
