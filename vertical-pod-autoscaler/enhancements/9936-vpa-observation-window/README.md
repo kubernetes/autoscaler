@@ -12,6 +12,7 @@
   - [Gate Evaluation](#gate-evaluation)
   - [Interaction with <code>updateMode</code>](#interaction-with-updatemode)
   - [Interaction with CPU Startup Boost](#interaction-with-cpu-startup-boost)
+  - [Interaction with Checkpoints](#interaction-with-checkpoints)
   - [Validation](#validation)
   - [Status Condition](#status-condition)
   - [Metric](#metric)
@@ -185,6 +186,16 @@ The interaction appears at boost expiry, when the Updater performs the post-boos
 
 - Delay window still active → the pod is scaled down to its original spec resources; no recommendation is actuated.
 - Delay window elapsed → the pod is scaled down to the VPA recommendation, per normal post-boost behaviour.
+
+### Interaction with Checkpoints
+
+`VerticalPodAutoscalerCheckpoint` objects persist the Recommender's learned usage history for each VPA. When a VPA is deleted, its checkpoints are garbage-collected on the Recommender's next pass (`--checkpoints-gc-interval`, 10 minutes by default) — so if a VPA is recreated with the same name before that pass, the Recommender restores its history from the checkpoint and `status.recommendation` is immediately repopulated with mature values, rather than starting cold.
+
+This matters here because a recreated VPA can therefore hold mature recommendations while its delay window is still active, which raises the question of whether the gate should open early in that case.
+
+Proposed handling: the gate ignores checkpoints entirely. A recreated VPA always starts a fresh window anchored to the new object's `CreationTimestamp`, whether its recommendations were restored or rebuilt from scratch.
+
+Rationale: keeping the gate a pure function of `CreationTimestamp` and the spec value is the core simplicity of this design — making it checkpoint-aware would reintroduce state and turn the field into a confidence signal, which is an explicit [non-goal](#non-goals). Users who recreate a VPA and are satisfied with the restored recommendations already have an escape hatch: shorten or remove `initialDelaySeconds` on the new object to open the gate early.
 
 ### Validation
 
