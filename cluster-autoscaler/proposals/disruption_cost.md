@@ -4,17 +4,26 @@ Author: YurDuiachenko
 
 ## Background
 
-When scaling down a cluster, Cluster Autoscaler (CA) is currently not aware of the disruption "cost" the action will have, so it can pick a node that will be more disruptive than others. Users can prevent Cluster Autoscaler from evicting specific pods by using the `safe-to-evict=false` annotation, but it completely blocks scale-down rather than expressing relative disruption cost.
+Currently, there is no common workload-level API for expressing disruption cost of a pod across different node autoscalers:
+
+- Cluster Autoscaler does not consider pod disruption cost in the scale-down process, so it can pick nodes whose removal will be more disruptive than others. 
+- Karpenter uses `controller.kubernetes.io/pod-deletion-cost` for node disruption scoring, but it overloads a ReplicaSet deletion signal with node disruption semantics.
+
+Users can also prevent specific pods from eviction by using autoscaler-specific annotations such as `cluster-autoscaler.kubernetes.io/safe-to-evict` or `karpenter.sh/do-not-disrupt`, 
+but it delays or completely blocks the scale-down process rather than ordering it.
 
 ## High level proposal
 
-The proposal is to introduce a new pod-level user-facing annotation:
+The proposal is to introduce a new user-facing autoscaler-agnostic annotation:
 
 ```text
 node-autoscaling.kubernetes.io/disruption-cost
 ```
 
-Cluster Autoscaler will read this annotation from pods that would need to be rescheduled when a node is removed. For each already-removable non-empty node, CA will sum the disruption costs of the pods and use this total to choose which node to remove next.
+Node autoscalers will read this annotation from pods, with higher values indicating a higher relative disruption cost. 
+Each autoscaler can use its own algorithms for aggregation and candidate selection.
+
+Cluster Autoscaler, for example, will sum the disruption costs of the pods that need to be rescheduled and use this total to choose which node to remove next.
 
 If there are two removable nodes:
 
@@ -30,11 +39,12 @@ node-b:
   total cost=15
 ```
 
-CA should prefer removing `node-b` before `node-a`.
+`node-b` should be removed before `node-a`.
 
 ## Goals
 
 * Allow users to express the relative disruption cost of evicting a pod.
+* Define a common API that can be consumed by different node autoscalers.
 * Add another layer of ordering to the scale-down process.
 * Protect long-running processes from being shut down and made to start over.
 
@@ -62,16 +72,18 @@ spec:
         image: example/app
 ```
 
-CA handles the annotation as follows:
+The common annotation semantics are:
 
-* Cluster Autoscaler only reads the annotation and does not change it.
-* The value is a unitless non-negative integer.
-* A higher value means the pod is more expensive to disrupt.
-* If the annotation is missing or cannot be parsed, CA treats the cost as zero.
+* The annotation is set by user.
+* Node autoscalers only read the annotation and never change it.
+* A higher value represents that disrupting the pod is relatively more expensive.
+* The annotation is a best-effort preference rather than a hard disruption constraint. 
+
+The annotation value is a unitless non-negative integer in the range `[0, MaxInt32]`, so missing, unparsable, negative or out-of-range value should be treated as zero.
 
 Examples:
 
-| Value              | CA sees it as         |
+| Value              | seen as               |
 | ------------------ |-----------------------|
 | missing annotation | 0                     |
 | `"0"`              | 0                     |
@@ -81,9 +93,46 @@ Examples:
 | `"10.5"`           | invalid, treated as 0 |
 | overflow           | invalid, treated as 0 |
 
-### Existing code integration
+### Difference with Pod Deletion Cost
 
-The main logic will be implemented in `Planner.NodesToDelete()`.
+Kubernetes already defines the `controller.kubernetes.io/pod-deletion-cost` annotation, so why is it preferred to introduce a new annotation over reusing the existing one?
+
+While both annotations are placed on pods and have similar naming, during the scale-down process `controller.kubernetes.io/pod-deletion-cost` is used to hint at the deletion cost of a pod compared to other pods within the same **_ReplicaSet_**,
+whereas `node-autoscaling.kubernetes.io/disruption-cost` is used to hint at the disruption cost of a pod compared across different **_nodes_**.
+
+Therefore, reusing the existing annotation would overload it with two independent meanings and consumers.
+The ReplicaSet controller needs a signal for which pods should be deleted first, and node autoscalers need a signal for which pods are more expensive to disrupt during node removal or consolidation. 
+These values are not necessarily the same and may even point in opposite directions.
+
+### Implementation in Cluster Autoscaler
+
+Disruption cost should influence two stages of the Cluster Autoscaler scale-down process:
+
+1. the order in which scale-down candidates are evaluated before node-removal simulation;
+2. the final ordering of already-removable non-empty nodes.
+
+Applying disruption cost only during final node deletion ordering is not sufficient, 
+because candidate evaluation order affects which nodes are marked as unneeded.
+
+For example, consider that either node A or node B can be removed, but not both:
+
+```text
+node-a:
+  total disruption cost=10
+
+node-b:
+  total disruption cost=100
+```
+
+If node B is evaluated first, the scale-down planner may determine that its pods can be moved to node A and mark node B as unneeded. Node A may then never be marked as unneeded. By the time final removable-node ordering is performed, node B may be the only available candidate, leaving no alternative for disruption-cost ordering to prefer.
+
+#### Candidate evaluation ordering
+
+TODO
+
+#### Final removable-node ordering
+
+The final logic will be implemented in `Planner.NodesToDelete()`.
 
 After CA has already calculated removable nodes:
 
@@ -98,7 +147,7 @@ emptyRemovableNodes, needDrainRemovableNodes, unremovableNodes :=
 needDrainRemovableNodes = sortByRisk(needDrainRemovableNodes)
 ```
 
-The proposal extends that ordering with disruption cost:
+That ordering should be extended with disruption cost:
 
 ```go
 needDrainRemovableNodes = sortByRiskAndDisruptionCost(needDrainRemovableNodes)
@@ -107,6 +156,11 @@ needDrainRemovableNodes = sortByRiskAndDisruptionCost(needDrainRemovableNodes)
 The updated function should preserve the existing `riskyNodes` and `okNodes` grouping and use disruption cost as an additional ordering signal within each group.
 
 The total disruption cost for a node should be calculated as the sum of annotation values on pods listed in `NodeToBeRemoved.PodsToReschedule`.
+
+
+### Relationship to Karpenter
+
+TODO
 
 ### Corner cases
 
