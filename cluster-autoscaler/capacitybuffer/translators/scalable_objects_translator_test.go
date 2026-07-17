@@ -156,6 +156,20 @@ func TestScalableObjectsTranslator(t *testing.T) {
 				}, ptr.To[int32](200), ptr.To[int32](15)),
 			},
 			expectedStatus: []*v1.CapacityBufferStatus{
+				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, ptr.To[int32](20), ptr.To[int64](0), nil, testutil.GetConditionReady()),
+			},
+			expectedNumberOfErrors: 0,
+		},
+		{
+			name: "A buffer referencing replica set with percentage 50% and replicas 15",
+			buffers: []*v1.CapacityBuffer{
+				getTestBufferWithScalableAttributes("buffer1", &v1.ScalableRef{
+					Name:     "replicaSet1",
+					Kind:     "ReplicaSet",
+					APIGroup: "apps",
+				}, ptr.To[int32](50), ptr.To[int32](15)),
+			},
+			expectedStatus: []*v1.CapacityBufferStatus{
 				testutil.GetBufferStatus(&v1.LocalObjectRef{Name: "capacitybuffer-buffer1-pod-template"}, ptr.To[int32](15), ptr.To[int64](0), nil, testutil.GetConditionReady()),
 			},
 			expectedNumberOfErrors: 0,
