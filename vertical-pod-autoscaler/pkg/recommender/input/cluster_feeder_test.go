@@ -931,11 +931,11 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 	if !assert.Contains(t, pod1State.InitContainers, containerInit) {
 		return
 	}
-	containerInitState := pod1State.InitSidecarsContainers[containerMem]
+	containerInitState := pod1State.Containers[containerMem]
 	if !assert.NotNil(t, containerInitState) {
 		return
 	}
-	containerState = pod1State.InitSidecarsContainers[containerMem]
+	containerState = pod1State.Containers[containerMem]
 	if !assert.NotNil(t, containerState) {
 		return
 	}
