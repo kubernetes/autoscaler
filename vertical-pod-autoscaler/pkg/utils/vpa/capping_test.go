@@ -22,8 +22,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -1222,6 +1224,68 @@ func TestApplyPodLimitRange(t *testing.T) {
 			assert.Equal(t, tc.expect, got)
 		})
 	}
+}
+
+// TestNativeSidecarCappingGating verifies that native sidecars (init containers with
+// restartPolicy: Always) are only pulled into pod-scoped capping when the NativeSidecar
+// feature is enabled. With the flag off, the sidecar must not appear in the zipped set
+// nor be backfilled into the recommendation list.
+func TestNativeSidecarCappingGating(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
+	pod := &corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Name: "app"},
+			},
+			InitContainers: []corev1.Container{
+				{
+					Name:          "sidecar",
+					RestartPolicy: &always,
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m")},
+					},
+				},
+				{
+					Name: "plain-init",
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("50m")},
+					},
+				},
+			},
+		},
+	}
+	recommendations := []vpa_types.RecommendedContainerResources{
+		{ContainerName: "app", Target: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}},
+	}
+
+	names := func(cwrs []containerWithRecommendation) []string {
+		result := make([]string, 0, len(cwrs))
+		for _, cwr := range cwrs {
+			result = append(result, cwr.container.Name)
+		}
+		return result
+	}
+	recNames := func(recs []vpa_types.RecommendedContainerResources) []string {
+		result := make([]string, 0, len(recs))
+		for _, r := range recs {
+			result = append(result, r.ContainerName)
+		}
+		return result
+	}
+
+	t.Run("flag off excludes sidecar", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, false)
+		assert.Equal(t, []string{"app"}, names(zipContainersWithRecommendations(recommendations, pod)))
+		// Only the standard container is backfilled; the sidecar (and plain init) are left out.
+		assert.Equal(t, []string{"app"}, recNames(insertRequestsForMissingRecommendations(recommendations, pod)))
+	})
+
+	t.Run("flag on includes sidecar only", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+		assert.Equal(t, []string{"app", "sidecar"}, names(zipContainersWithRecommendations(recommendations, pod)))
+		// The sidecar is backfilled; the plain init container never is.
+		assert.Equal(t, []string{"app", "sidecar"}, recNames(insertRequestsForMissingRecommendations(recommendations, pod)))
+	})
 }
 
 func TestApplyLimitRangeMinToRequest(t *testing.T) {
