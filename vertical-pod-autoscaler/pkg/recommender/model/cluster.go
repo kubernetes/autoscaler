@@ -120,10 +120,10 @@ type PodState struct {
 	ID PodID
 	// Set of labels attached to the Pod.
 	labelSetKey labelSetKey
-	// Containers that belong to the Pod, keyed by the container name.
+	// Containers that belong to the Pod, keyed by the container name. Native
+	// sidecars (init containers with restartPolicy: Always) are tracked here too,
+	// as they are scaled and aggregated exactly like standard containers.
 	Containers map[string]*ContainerState
-	// InitSidecarsContainers that belong to the Pod, keyed by the container name.
-	InitSidecarsContainers map[string]*ContainerState
 	// InitContainers is a list of init containers names which belong to the Pod.
 	InitContainers []string
 	// PodPhase describing current life cycle phase of the Pod.
@@ -174,10 +174,6 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 			containerID := ContainerID{PodID: podID, ContainerName: containerName}
 			container.aggregator = cluster.findOrCreateAggregateContainerState(containerID)
 		}
-		for containerName, container := range pod.InitSidecarsContainers {
-			containerID := ContainerID{PodID: podID, ContainerName: containerName}
-			container.aggregator = cluster.findOrCreateAggregateContainerState(containerID)
-		}
 		cluster.addPodToItsVpa(pod)
 	}
 	pod.Phase = phase
@@ -219,12 +215,7 @@ func (cluster *clusterState) removePodFromItsVpa(pod *PodState) {
 func (cluster *clusterState) GetContainer(containerID ContainerID) *ContainerState {
 	pod, podExists := cluster.pods[containerID.PodID]
 	if podExists {
-		container, containerExists := pod.Containers[containerID.ContainerName]
-		if containerExists {
-			return container
-		}
-		container, containerExists = pod.InitSidecarsContainers[containerID.ContainerName]
-		if containerExists {
+		if container, containerExists := pod.Containers[containerID.ContainerName]; containerExists {
 			return container
 		}
 	}
@@ -256,14 +247,11 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 		return nil
 	}
 
-	containerStateMap := pod.Containers
-	if containerType == ContainerTypeInitSidecar {
-		containerStateMap = pod.InitSidecarsContainers
-	}
-
-	if container, containerExists := containerStateMap[containerID.ContainerName]; !containerExists {
+	// Native sidecars are scaled and aggregated exactly like standard containers,
+	// so they share the same container map (names are unique within a pod).
+	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
 		cluster.findOrCreateAggregateContainerState(containerID)
-		containerStateMap[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
+		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
@@ -281,11 +269,7 @@ func (cluster *clusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 	}
 	containerState, containerExists := pod.Containers[sample.Container.ContainerName]
 	if !containerExists {
-		// check if the container exists as a sidecar
-		containerState, containerExists = pod.InitSidecarsContainers[sample.Container.ContainerName]
-		if !containerExists {
-			return NewKeyError(sample.Container)
-		}
+		return NewKeyError(sample.Container)
 	}
 	if !containerState.AddSample(&sample.ContainerUsageSample) {
 		return errors.New("sample discarded (invalid or out of order)")
@@ -301,10 +285,7 @@ func (cluster *clusterState) RecordOOM(containerID ContainerID, timestamp time.T
 	}
 	containerState, containerExists := pod.Containers[containerID.ContainerName]
 	if !containerExists {
-		containerState, containerExists = pod.InitSidecarsContainers[containerID.ContainerName]
-		if !containerExists {
-			return NewKeyError(containerID.ContainerName)
-		}
+		return NewKeyError(containerID.ContainerName)
 	}
 	err := containerState.RecordOOM(timestamp, requestedMemory)
 	if err != nil {
@@ -391,9 +372,8 @@ func (cluster *clusterState) ObservedVPAs() []*vpa_types.VerticalPodAutoscaler {
 
 func newPod(id PodID) *PodState {
 	return &PodState{
-		ID:                     id,
-		Containers:             make(map[string]*ContainerState),
-		InitSidecarsContainers: make(map[string]*ContainerState),
+		ID:         id,
+		Containers: make(map[string]*ContainerState),
 	}
 }
 
