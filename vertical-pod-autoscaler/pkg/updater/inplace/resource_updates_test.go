@@ -37,7 +37,7 @@ type fakeRecommendationProvider struct {
 	err           error
 }
 
-func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, []vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
+func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (initResources, resources []vpa_api_util.ContainerResources, annotations vpa_api_util.ContainerToAnnotationsMap, err error) {
 	return frp.initResources, frp.resources, nil, frp.err
 }
 
