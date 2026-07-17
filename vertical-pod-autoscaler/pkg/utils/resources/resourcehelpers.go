@@ -32,7 +32,7 @@ import (
 //   - Otherwise, fallback to the resource requests defined in the pod spec.
 //
 // [1] https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources
-func ContainerRequestsAndLimits(containerName string, pod *corev1.Pod) (corev1.ResourceList, corev1.ResourceList) {
+func ContainerRequestsAndLimits(containerName string, pod *corev1.Pod) (requests, limits corev1.ResourceList) {
 	containerStatuses, containers := pod.Status.ContainerStatuses, pod.Spec.Containers
 	containerStatusSource, containerSource := metrics_resources.ContainerStatus, metrics_resources.PodSpecContainer
 	if isInitContainer(containerName, pod) {
