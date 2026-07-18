@@ -38,12 +38,11 @@ Per [SIG discussion on the tracking issue](https://github.com/kubernetes/autosca
 
 - Allow overriding `--target-cpu-percentile` and `--target-memory-percentile` per container via `ContainerResourcePolicy`, with per-VPA configuration expressible through `containerName: "*"`.
 - Match the global flags' semantics exactly: the CPU target percentile affects only the CPU target recommendation (not CPU bounds, not memory), and likewise for memory.
-- Keep the Phase 1 conventions: `resource.Quantity` fields, `PerVPAConfig` feature gate, independent per-field fallback to the global flag.
+- Each field independently falls back to its global flag when unset, keeping the feature additive and off by default.
 
 ### Non-Goals
 
-- **Lower/upper bound percentiles.** Deferred to future work pending user feedback on the target fields.
-- **Per-VPA safety margin** (`recommendationMarginFraction`). Tracked separately in [#9963](https://github.com/kubernetes/autoscaler/issues/9963), currently parked for the same feedback-first reason.
+- **Other per-VPA recommender parameters** (such as lower/upper bound percentiles) are out of scope.
 - **Changing the recommendation model.** The histogram, decay, and confidence computations are untouched; only the percentile at which the target is read changes.
 
 ## Proposal
