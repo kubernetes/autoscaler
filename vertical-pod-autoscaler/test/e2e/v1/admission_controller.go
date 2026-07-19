@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -1425,7 +1426,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	})
 
 	f.It("doesn't apply request to native sidecar on pod creation when feature gate not enabled", func() {
-		if features.Enabled(features.NativeSidecar) {
+		if os.Getenv("TEST_WITH_FEATURE_GATES_ENABLED") == "true" {
 			ginkgo.Skip("only test when NativeSidecar feature gate is disabled")
 		}
 		d := NewHamsterDeploymentWithNativeSidecar(f,

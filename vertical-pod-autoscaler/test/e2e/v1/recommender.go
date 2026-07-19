@@ -491,6 +491,9 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		initContainerRestartNever := d.Spec.Template.Spec.InitContainers[0].DeepCopy()
 		initContainerRestartNever.Name = "normal-init-container"
 		initContainerRestartNever.RestartPolicy = ptr.To(apiv1.ContainerRestartPolicyNever)
+		// A plain init container (RestartPolicy: Never) must terminate before the pod starts, so
+		// override the sidecar's infinite `yes` command with one that exits immediately.
+		initContainerRestartNever.Args = []string{"-c", "true"}
 		d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *initContainerRestartNever)
 		podList := utils.StartDeploymentPods(f, d)
 
