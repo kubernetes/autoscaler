@@ -32,7 +32,7 @@ import (
 )
 
 type Interface interface {
-	Discovery() discovery.DiscoveryInterface
+	Discovery() discovery.DiscoveryInterfaces
 	AutoscalingV1() autoscalingv1.AutoscalingV1Interface
 	AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1Interface
 	AutoscalingV1beta2() autoscalingv1beta2.AutoscalingV1beta2Interface
@@ -69,7 +69,7 @@ func (c *Clientset) PocV1alpha1() pocv1alpha1.PocV1alpha1Interface {
 }
 
 // Discovery retrieves the DiscoveryClient
-func (c *Clientset) Discovery() discovery.DiscoveryInterface {
+func (c *Clientset) Discovery() discovery.DiscoveryInterfaces {
 	if c == nil {
 		return nil
 	}
