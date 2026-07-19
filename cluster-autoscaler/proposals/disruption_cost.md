@@ -175,13 +175,13 @@ The updated function should preserve the existing `riskyNodes` and `okNodes` gro
 
 The total disruption cost for a node should be calculated as the sum of annotation values on pods listed in `NodeToBeRemoved.PodsToReschedule`.
 
-
-
 ### Relationship to Karpenter
 
-Karpenter has a related use case for expressing pod disruption cost during consolidation. This proposal captures the same class of user-facing signal as an autoscaler-agnostic annotation under the `node-autoscaling.kubernetes.io` prefix, so workloads do not need separate autoscaler-specific annotations for the same disruption preference.
+Karpenter has a related use case for expressing pod disruption cost during consolidation. This proposal captures the same class of user-facing signal as an autoscaler-agnostic annotation under the `node-autoscaling.kubernetes.io` prefix, 
+so workloads do not need separate autoscaler-specific annotations for the same disruption preference.
 
 Karpenter-specific scoring, normalization, consolidation behavior, feature gates, and migration remain outside the scope of this proposal.
+
 ### Corner cases
 
 * An annotation set on `DaemonSetPods` has no impact on the node disruption cost.
