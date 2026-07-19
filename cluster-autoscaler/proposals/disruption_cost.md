@@ -4,7 +4,7 @@ Author: YurDuiachenko
 
 ## Background
 
-Currently, there is no common workload-level API for expressing disruption cost of a pod across different node autoscalers:
+Currently, there is no shared workload-level API for expressing disruption cost of a pod across different node autoscalers:
 
 - Cluster Autoscaler does not consider pod disruption cost in the scale-down process, so it can pick nodes whose removal will be more disruptive than others. 
 - Karpenter uses `controller.kubernetes.io/pod-deletion-cost` for node disruption scoring, but it overloads a ReplicaSet deletion signal with node disruption semantics.
@@ -39,7 +39,7 @@ node-b:
   total cost=15
 ```
 
-`node-b` should be removed before `node-a`.
+`node-b` will be removed before `node-a`.
 
 ## Goals
 
@@ -47,6 +47,7 @@ node-b:
 * Define a common API that can be consumed by different node autoscalers.
 * Add another layer of ordering to the scale-down process.
 * Protect long-running processes from being shut down and made to start over.
+* Reduce avoidable disruption to workloads that are expensive to restart.
 
 ## Detailed design
 
@@ -74,10 +75,9 @@ spec:
 
 The common annotation semantics are:
 
-* The annotation is set by user.
 * Node autoscalers only read the annotation and never change it.
 * A higher value represents that disrupting the pod is relatively more expensive.
-* The annotation is a best-effort preference rather than a hard disruption constraint. 
+* The annotation is a best-effort preference rather than a hard disruption constraint.
 
 The annotation value is a unitless non-negative integer in the range `[0, MaxInt32]`, so missing, unparsable, negative or out-of-range value should be treated as zero.
 
@@ -93,7 +93,7 @@ Examples:
 | `"10.5"`           | invalid, treated as 0 |
 | overflow           | invalid, treated as 0 |
 
-### Difference with Pod Deletion Cost
+### Difference from Pod Deletion Cost
 
 Kubernetes already defines the `controller.kubernetes.io/pod-deletion-cost` annotation, so why is it preferred to introduce a new annotation over reusing the existing one?
 
@@ -108,12 +108,10 @@ These values are not necessarily the same and may even point in opposite directi
 
 Disruption cost should influence two stages of the Cluster Autoscaler scale-down process:
 
-1. the order in which scale-down candidates are evaluated before node-removal simulation;
-2. the final ordering of already-removable non-empty nodes.
+1. the order in which scale-down candidates are evaluated before removal simulation;
+2. the final ordering of removable nodes.
 
-Applying disruption cost only during final node deletion ordering is not sufficient, 
-because candidate evaluation order affects which nodes are marked as unneeded.
-
+Otherwise, CA will behave incorrectly. 
 For example, consider that either node A or node B can be removed, but not both:
 
 ```text
@@ -124,11 +122,32 @@ node-b:
   total disruption cost=100
 ```
 
-If node B is evaluated first, the scale-down planner may determine that its pods can be moved to node A and mark node B as unneeded. Node A may then never be marked as unneeded. By the time final removable-node ordering is performed, node B may be the only available candidate, leaving no alternative for disruption-cost ordering to prefer.
+If node B is evaluated first, the scale-down planner may determine that its pods can be moved to node A and mark node B as unneeded. 
+Node A may then never be marked as unneeded. By the time final removable-node ordering is performed, node B may be the only available candidate,
+leaving no alternative to prefer.
 
 #### Candidate evaluation ordering
 
-TODO
+Candidate ordering should be applied after the existing eligibility filtering and before node-removal simulation.
+
+In `Planner.categorizeNodes()`, Cluster Autoscaler first filters out candidates that cannot be removed:
+
+```go
+currentlyUnneededNodeNames, utilizationMap, ineligible := p.eligibilityChecker.FilterOutUnremovable(...)
+```
+
+The remaining candidates are then evaluated one by one by `SimulateNodeRemoval()`. 
+The proposal adds a stable disruption cost ordering between these two steps:
+
+```go
+currentlyUnneededNodeNames = sortByPreliminaryDisruptionCost(currentlyUnneededNodeNames)
+
+for _, node := range currentlyUnneededNodeNames {
+    removable, unremovable := p.rs.SimulateNodeRemoval(...)
+}
+```
+
+Candidate nodes with lower preliminary disruption cost should be evaluated first, and candidates with equal preliminary disruption cost should preserve their existing relative order.
 
 #### Final removable-node ordering
 
@@ -137,8 +156,7 @@ The final logic will be implemented in `Planner.NodesToDelete()`.
 After CA has already calculated removable nodes:
 
 ```go
-emptyRemovableNodes, needDrainRemovableNodes, unremovableNodes :=
-    p.unneededNodes.RemovableAt(...)
+emptyRemovableNodes, needDrainRemovableNodes, unremovableNodes := p.unneededNodes.RemovableAt(...)
 ```
 
 `needDrainRemovableNodes` are ordered with `sortByRisk`:
@@ -158,15 +176,18 @@ The updated function should preserve the existing `riskyNodes` and `okNodes` gro
 The total disruption cost for a node should be calculated as the sum of annotation values on pods listed in `NodeToBeRemoved.PodsToReschedule`.
 
 
+
 ### Relationship to Karpenter
 
-TODO
+Karpenter has a related use case for expressing pod disruption cost during consolidation. This proposal captures the same class of user-facing signal as an autoscaler-agnostic annotation under the `node-autoscaling.kubernetes.io` prefix, so workloads do not need separate autoscaler-specific annotations for the same disruption preference.
 
+Karpenter-specific scoring, normalization, consolidation behavior, feature gates, and migration remain outside the scope of this proposal.
 ### Corner cases
 
 * An annotation set on `DaemonSetPods` has no impact on the node disruption cost.
 * `PodDisruptionBudget`s keep their current behavior.
-* Pods with `safe-to-evict=false` should keep blocking scale-down.
+* Pods with `cluster-autoscaler.kubernetes.io/safe-to-evict=false` keep blocking scale-down.
+* Pods with `cluster-autoscaler.kubernetes.io/safe-to-evict=on-completion` keep delaying scale-down until completion.
 
 ## Testing
 
@@ -176,3 +197,8 @@ The following unit test scenarios should be added:
 * [TC2] Valid annotation values are parsed and summed for pods in `NodeToBeRemoved.PodsToReschedule`.
 * [TC3] Nodes with lower total disruption cost are preferred within the same existing ordering group.
 * [TC4] Existing `riskyNodes` and `okNodes` ordering is preserved.
+* [TC5] Candidates with lower preliminary disruption cost are evaluated before higher-cost candidates before node-removal simulation.
+* [TC6] Existing candidate order is preserved when preliminary disruption costs are equal.
+* [TC7] Pods that do not require rescheduling, such as DaemonSet pods, are not included in disruption cost calculation.
+* [TC8] Existing behavior is unchanged when the annotation is absent.
+* [TC9] Increasing a pod's disruption cost does not make an otherwise equivalent node more preferred for removal.
