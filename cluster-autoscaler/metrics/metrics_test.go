@@ -73,6 +73,20 @@ func TestUpdateNodesCount(t *testing.T) {
 	assert.Equal(t, 6, int(testutil.ToFloat64(m.nodesCount.GaugeVec.WithLabelValues(unregisteredLabel))))
 }
 
+func TestInitMetricsInitializesFailedNodeCreations(t *testing.T) {
+	reg := metrics.NewKubeRegistry()
+	m := newCaMetricsWithRegistry(reg)
+	m.RegisterAll(false)
+
+	m.InitMetrics()
+
+	// failed_node_creations_total is only incremented when a scale-up fails, so
+	// without initialization it would be absent from the exposition until the
+	// first failure. InitMetrics should pre-create a zero-valued series for each
+	// FailedScaleUpReason, matching what it already does for failedScaleUpCount.
+	assert.Equal(t, 3, testutil.CollectAndCount(m.failedNodeCreationCount.CounterVec))
+}
+
 func TestUpdateScaleDownNodeRemovalLatency(t *testing.T) {
 	reg := metrics.NewKubeRegistry()
 	m := newCaMetricsWithRegistry(reg)
