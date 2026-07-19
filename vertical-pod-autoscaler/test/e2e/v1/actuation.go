@@ -19,6 +19,7 @@ package autoscaling
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
@@ -793,20 +794,25 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		err := WaitForPodsRestarted(f, podList)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
+		// WaitForPodsRestarted returns as soon as any pod has been recreated, so poll
+		// until every pod has converged on the updated sidecar resources.
 		ginkgo.By("Verifying updated resources for both main container and native sidecar")
-		updatedPodList, err := GetHamsterPods(f)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Eventually(func(g gomega.Gomega) {
+			updatedPodList, err := GetHamsterPods(f)
+			g.Expect(err).NotTo(gomega.HaveOccurred())
+			g.Expect(updatedPodList.Items).NotTo(gomega.BeEmpty())
 
-		for _, pod := range updatedPodList.Items {
-			// Verify main container has not updated resources
-			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("50m")))
-			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("50m")))
+			for _, pod := range updatedPodList.Items {
+				// Verify main container has not updated resources
+				g.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("50m")))
+				g.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("50Mi")))
 
-			// Verify native sidecar has updated resources
-			gomega.Expect(len(pod.Spec.InitContainers)).To(gomega.Equal(1))
-			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
-			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
-		}
+				// Verify native sidecar has updated resources
+				g.Expect(pod.Spec.InitContainers).To(gomega.HaveLen(1))
+				g.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
+				g.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+			}
+		}, utils.PollTimeout, utils.PollInterval).Should(gomega.Succeed())
 	})
 
 	f.It("evicts and updates only the native sidecar, leaving a plain init container untouched", framework.WithFeatureGate(features.NativeSidecar), func() {
@@ -846,37 +852,42 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		err := WaitForPodsRestarted(f, podList)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
+		// WaitForPodsRestarted returns as soon as any pod has been recreated, so poll
+		// until every pod has converged on the expected state.
 		ginkgo.By("Verifying only the native sidecar was updated")
-		updatedPodList, err := GetHamsterPods(f)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Eventually(func(g gomega.Gomega) {
+			updatedPodList, err := GetHamsterPods(f)
+			g.Expect(err).NotTo(gomega.HaveOccurred())
+			g.Expect(updatedPodList.Items).NotTo(gomega.BeEmpty())
 
-		for _, pod := range updatedPodList.Items {
-			gomega.Expect(pod.Spec.InitContainers).To(gomega.HaveLen(2))
+			for _, pod := range updatedPodList.Items {
+				g.Expect(pod.Spec.InitContainers).To(gomega.HaveLen(2))
 
-			var sidecar, plain *apiv1.Container
-			for i := range pod.Spec.InitContainers {
-				switch pod.Spec.InitContainers[i].Name {
-				case sidecarName:
-					sidecar = &pod.Spec.InitContainers[i]
-				case "plain-init":
-					plain = &pod.Spec.InitContainers[i]
+				var sidecar, plain *apiv1.Container
+				for i := range pod.Spec.InitContainers {
+					switch pod.Spec.InitContainers[i].Name {
+					case sidecarName:
+						sidecar = &pod.Spec.InitContainers[i]
+					case "plain-init":
+						plain = &pod.Spec.InitContainers[i]
+					}
 				}
+				g.Expect(sidecar).NotTo(gomega.BeNil())
+				g.Expect(plain).NotTo(gomega.BeNil())
+
+				// Native sidecar is scaled to the recommendation.
+				g.Expect(sidecar.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
+				g.Expect(sidecar.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
+
+				// Plain init container is left at its original request.
+				g.Expect(plain.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("50m")))
+				g.Expect(plain.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("50Mi")))
 			}
-			gomega.Expect(sidecar).NotTo(gomega.BeNil())
-			gomega.Expect(plain).NotTo(gomega.BeNil())
-
-			// Native sidecar is scaled to the recommendation.
-			gomega.Expect(sidecar.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("100m")))
-			gomega.Expect(sidecar.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("100Mi")))
-
-			// Plain init container is left at its original request.
-			gomega.Expect(plain.Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("50m")))
-			gomega.Expect(plain.Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("50Mi")))
-		}
+		}, utils.PollTimeout, utils.PollInterval).Should(gomega.Succeed())
 	})
 
 	f.It("doesn't evict and update pods with native sidecars when feature gate not enabled", func() {
-		if features.Enabled(features.NativeSidecar) {
+		if os.Getenv("TEST_WITH_FEATURE_GATES_ENABLED") == "true" {
 			ginkgo.Skip("only test when NativeSidecar feature gate is disabled")
 		}
 		ginkgo.By("Setting up a hamster deployment with native sidecar")
