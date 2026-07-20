@@ -166,7 +166,7 @@ func (ts *cloudProviderTestSuite) randomString(length int) string {
 }
 
 func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_Name() {
-	ts.Require().Equal(cloudprovider.ExoscaleProviderName, ts.p.Name())
+	ts.Require().Equal(ProviderName, ts.p.Name())
 }
 
 func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_InstancePool() {

@@ -33,10 +33,10 @@ import (
 )
 
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.TencentcloudProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildTencentcloud(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.TencentcloudProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (

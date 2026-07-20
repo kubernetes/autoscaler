@@ -17,6 +17,9 @@ import (
 	"strings"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "oci"
+
 // OciCloudProvider creates a cloud provider object that is compatible with node pools
 type OciCloudProvider struct {
 	rl      *cloudprovider.ResourceLimiter
@@ -33,7 +36,7 @@ func NewOciCloudProvider(manager NodePoolManager, rl *cloudprovider.ResourceLimi
 
 // Name returns name of the cloud provider.
 func (ocp *OciCloudProvider) Name() string {
-	return cloudprovider.OracleCloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

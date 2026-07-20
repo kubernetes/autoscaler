@@ -33,6 +33,9 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "huaweicloud"
+
 const (
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
@@ -47,10 +50,10 @@ var (
 )
 
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.HuaweicloudProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildHuaweiCloud(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.HuaweicloudProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 // huaweicloudCloudProvider implements CloudProvider interface defined in autoscaler/cluster-autoscaler/cloudprovider/cloud_provider.go
@@ -100,7 +103,7 @@ func newCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroup
 
 // Name returns the name of the cloud provider.
 func (hcp *huaweicloudCloudProvider) Name() string {
-	return cloudprovider.HuaweicloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups managed by this cloud provider.

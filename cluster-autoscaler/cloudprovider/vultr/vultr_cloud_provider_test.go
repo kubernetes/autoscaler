@@ -184,5 +184,5 @@ func TestVultrCloudProvider_Name(t *testing.T) {
 	require.NoError(t, err)
 
 	p := newVultrCloudProvider(manager, &cloudprovider.ResourceLimiter{})
-	assert.Equal(t, cloudprovider.VultrProviderName, p.Name(), "provider name doesn't match")
+	assert.Equal(t, ProviderName, p.Name(), "provider name doesn't match")
 }

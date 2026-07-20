@@ -31,11 +31,14 @@ import (
 	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "coreweave"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.CoreWeaveProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildCoreWeave(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.CoreWeaveProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 // CoreWeaveCloudProvider implements the CloudProvider interface for CoreWeave.
@@ -74,7 +77,7 @@ func NewCoreWeaveCloudProvider(rl *cloudprovider.ResourceLimiter, opts config.Au
 
 // Name returns the name of the cloud provider.
 func (c *CoreWeaveCloudProvider) Name() string {
-	return cloudprovider.CoreWeaveProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

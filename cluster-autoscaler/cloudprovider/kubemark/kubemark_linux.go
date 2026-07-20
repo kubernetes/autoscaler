@@ -47,10 +47,10 @@ import (
 )
 
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.KubemarkProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildKubemark(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.KubemarkProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (

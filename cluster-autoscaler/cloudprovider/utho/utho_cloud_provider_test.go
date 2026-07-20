@@ -137,7 +137,7 @@ func TestUthoCloudProvider_Name_ReturnsCorrectName(t *testing.T) {
 	require.NoError(t, err)
 
 	p := newUthoCloudProvider(manager, &cloudprovider.ResourceLimiter{})
-	assert.Equal(t, cloudprovider.UthoProviderName, p.Name(), "provider name doesn't match")
+	assert.Equal(t, ProviderName, p.Name(), "provider name doesn't match")
 }
 
 func TestUthoCloudProvider_Refresh_EmptyNodePools(t *testing.T) {

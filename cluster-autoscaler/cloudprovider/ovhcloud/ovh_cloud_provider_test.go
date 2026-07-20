@@ -127,7 +127,7 @@ func TestOVHCloudProvider_Name(t *testing.T) {
 	t.Run("check OVHcloud provider name", func(t *testing.T) {
 		name := provider.Name()
 
-		assert.Equal(t, cloudprovider.OVHcloudProviderName, name)
+		assert.Equal(t, ProviderName, name)
 	})
 }
 

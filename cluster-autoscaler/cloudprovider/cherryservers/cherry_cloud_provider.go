@@ -34,10 +34,10 @@ import (
 )
 
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.CherryServersProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildCherry(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.CherryServersProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (

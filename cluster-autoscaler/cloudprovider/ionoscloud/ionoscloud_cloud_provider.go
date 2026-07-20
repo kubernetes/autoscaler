@@ -33,6 +33,9 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "ionoscloud"
+
 const (
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = ""
@@ -49,10 +52,10 @@ type nodePool struct {
 var _ cloudprovider.NodeGroup = &nodePool{}
 
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.IonoscloudProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildIonosCloud(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.IonoscloudProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 // MaxSize returns maximum size of the node group.
@@ -212,7 +215,7 @@ func BuildIonosCloudCloudProvider(manager IonosCloudManager, rl *cloudprovider.R
 
 // Name returns name of the cloud provider.
 func (ic *IonosCloudCloudProvider) Name() string {
-	return cloudprovider.IonoscloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

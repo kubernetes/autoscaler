@@ -36,11 +36,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "baiducloud"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.BaiducloudProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildBaiducloud(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.BaiducloudProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (
@@ -157,7 +160,7 @@ func (baiducloud *baiducloudCloudProvider) addAsg(asg *Asg) {
 
 // Name returns name of the cloud provider.
 func (baiducloud *baiducloudCloudProvider) Name() string {
-	return cloudprovider.BaiducloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

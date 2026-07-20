@@ -34,10 +34,10 @@ import (
 )
 
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.BizflyCloudProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildBizflyCloud(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.BizflyCloudProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 var _ cloudprovider.CloudProvider = (*bizflycloudCloudProvider)(nil)
@@ -67,7 +67,7 @@ func newBizflyCloudProvider(manager *Manager, rl *cloudprovider.ResourceLimiter)
 
 // Name returns name of the cloud provider.
 func (d *bizflycloudCloudProvider) Name() string {
-	return cloudprovider.BizflyCloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

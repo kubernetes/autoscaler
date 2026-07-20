@@ -56,7 +56,7 @@ func TestBuildBaiduCloudProvider(t *testing.T) {
 
 func TestName(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	assert.Equal(t, provider.Name(), cloudprovider.BaiducloudProviderName)
+	assert.Equal(t, provider.Name(), ProviderName)
 }
 
 func TestNodeGroups(t *testing.T) {

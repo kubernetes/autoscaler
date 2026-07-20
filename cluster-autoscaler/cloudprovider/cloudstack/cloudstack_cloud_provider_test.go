@@ -77,7 +77,7 @@ func TestCreateClusterConfig(t *testing.T) {
 }
 
 func TestName(t *testing.T) {
-	assert.Equal(t, cloudprovider.CloudStackProviderName, provider.Name())
+	assert.Equal(t, ProviderName, provider.Name())
 }
 
 func TestNodeGroups(t *testing.T) {

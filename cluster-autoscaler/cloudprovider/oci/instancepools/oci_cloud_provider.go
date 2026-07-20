@@ -29,11 +29,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "oci"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.OracleCloudProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildOCI(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.OracleCloudProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 // OciCloudProvider implements the CloudProvider interface for OCI. It contains an
@@ -45,7 +48,7 @@ type OciCloudProvider struct {
 
 // Name returns name of the cloud provider.
 func (ocp *OciCloudProvider) Name() string {
-	return cloudprovider.OracleCloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

@@ -173,7 +173,7 @@ lke-cluster-id=456456
 		manager:         m,
 		resourceLimiter: resourceLimiter,
 	}
-	assert.Equal(t, cloudprovider.LinodeProviderName, lcp.Name())
+	assert.Equal(t, ProviderName, lcp.Name())
 	_, err := lcp.GetAvailableMachineTypes()
 	assert.Error(t, err)
 	_, err = lcp.NewNodeGroup("", nil, nil, nil, nil)

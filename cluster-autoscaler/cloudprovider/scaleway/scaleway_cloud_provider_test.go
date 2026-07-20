@@ -113,7 +113,7 @@ func TestScalewayCloudProvider_Name(t *testing.T) {
 		clusterID: "test-cluster",
 	}
 
-	assert.Equal(t, cloudprovider.ScalewayProviderName, provider.Name())
+	assert.Equal(t, ProviderName, provider.Name())
 }
 
 func TestScalewayCloudProvider_Refresh(t *testing.T) {

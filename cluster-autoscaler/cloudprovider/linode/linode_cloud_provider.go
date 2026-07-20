@@ -32,11 +32,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "linode"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.LinodeProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildLinode(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.LinodeProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 // linodeCloudProvider implements CloudProvider interface.
@@ -47,7 +50,7 @@ type linodeCloudProvider struct {
 
 // Name returns name of the cloud provider.
 func (l *linodeCloudProvider) Name() string {
-	return cloudprovider.LinodeProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

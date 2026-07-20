@@ -33,11 +33,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "alicloud"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.AlicloudProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildAlicloud(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.AlicloudProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (
@@ -106,7 +109,7 @@ func (ali *aliCloudProvider) addAsg(asg *Asg) {
 }
 
 func (ali *aliCloudProvider) Name() string {
-	return cloudprovider.AlicloudProviderName
+	return ProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.

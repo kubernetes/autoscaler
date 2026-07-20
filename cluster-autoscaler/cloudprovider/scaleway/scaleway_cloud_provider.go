@@ -37,11 +37,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "scaleway"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.ScalewayProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildScaleway(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.ScalewayProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (
@@ -162,7 +165,7 @@ func BuildScaleway(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGro
 
 // Name returns name of the cloud provider.
 func (*scalewayCloudProvider) Name() string {
-	return cloudprovider.ScalewayProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
