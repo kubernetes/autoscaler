@@ -14,6 +14,16 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 )
 
+type resourcePair struct {
+	Allocatable float64
+	Requested   float64
+}
+
+type nodeResources struct {
+	CPU resourcePair
+	Mem resourcePair
+}
+
 // metricReportingConfig holds level of reporting for scaleDownEfficiencyMetric.
 type metricReportingConfig struct {
 	ReportNodeLevel    bool
@@ -216,4 +226,159 @@ func (m *nodeCountMetric) ReportBenchmark(b *testing.B) {
 	b.ReportMetric(float64(m.initialNodeCount), "node_count_init")
 	b.ReportMetric(float64(m.nodeCount), "node_count_final")
 	b.ReportMetric(float64(nodesRemoved), "node_count_removed")
+}
+
+// resourceUtilizationMetric computes resource utilization ratio for cpu and memory.
+type resourceUtilizationMetric struct {
+	metricReportingConfig
+	nodeValues          map[string]any
+	initialSet          bool
+	initialCpuRatio     float64
+	initialMemRatio     float64
+	totalCPU            float64
+	totalCPUAllocatable float64
+	totalMem            float64
+	totalMemAllocatable float64
+	cpuRatio            float64
+	memRatio            float64
+	driver              string
+}
+
+func NewResourceUtilizationMetric(opts ...metricOption) *resourceUtilizationMetric {
+	m := &resourceUtilizationMetric{
+		nodeValues: make(map[string]any),
+	}
+	applyMetricOptions(&m.metricReportingConfig, opts...)
+	return m
+}
+
+func (m *resourceUtilizationMetric) GetNodeValues() map[string]any {
+	return m.nodeValues
+}
+
+func (m *resourceUtilizationMetric) Name() string {
+	return "resource_utilization"
+}
+
+func calculateAllocatableRequested(currentTime time.Time, nodeInfo *framework.NodeInfo, nodeName string) (float64, float64, float64, float64, error) {
+	cpuUtil, err := utilization.CalculateUtilizationOfResource(nodeInfo, apiv1.ResourceCPU, true, true, currentTime)
+	if err != nil {
+		return 0, 0, 0, 0, fmt.Errorf("error calculating %s utilization for node %s, err: %v", apiv1.ResourceCPU, nodeName, err)
+	}
+	memUtil, err := utilization.CalculateUtilizationOfResource(nodeInfo, apiv1.ResourceMemory, true, true, currentTime)
+	if err != nil {
+		return 0, 0, 0, 0, fmt.Errorf("error calculating %s utilization for node %s, err: %v", apiv1.ResourceMemory, nodeName, err)
+	}
+
+	nodeAllocatableCPU, foundCPU := nodeInfo.Node().Status.Allocatable[apiv1.ResourceCPU]
+	if !foundCPU {
+		return 0, 0, 0, 0, fmt.Errorf("failed to get %v from %s", apiv1.ResourceCPU, nodeName)
+	}
+	nodeAllocatableMem, foundMem := nodeInfo.Node().Status.Allocatable[apiv1.ResourceMemory]
+	if !foundMem {
+		return 0, 0, 0, 0, fmt.Errorf("failed to get %v from %s", apiv1.ResourceMemory, nodeName)
+	}
+	return float64(nodeAllocatableCPU.MilliValue()), float64(nodeAllocatableMem.MilliValue()), cpuUtil, memUtil, nil
+}
+
+// ComputeNodeLevel TODO: no GPU yet or other factors influencing node efficiency
+func (m *resourceUtilizationMetric) ComputeNodeLevel(nodeInfos []*framework.NodeInfo) error {
+	currentTime := time.Now()
+	m.nodeValues = make(map[string]any)
+
+	if len(nodeInfos) == 0 {
+		return nil
+	}
+
+	for _, nodeInfo := range nodeInfos {
+		if nodeInfo == nil || nodeInfo.Node() == nil {
+			continue
+		}
+		nodeName := nodeInfo.Node().Name
+		cAlloc, mAlloc, cUtil, mUtil, err := calculateAllocatableRequested(currentTime, nodeInfo, nodeName)
+		if err != nil {
+			return err
+		}
+
+		m.nodeValues[nodeName] = nodeResources{
+			CPU: resourcePair{Allocatable: cAlloc, Requested: cUtil * cAlloc},
+			Mem: resourcePair{Allocatable: mAlloc, Requested: mUtil * mAlloc},
+		}
+	}
+	return nil
+}
+
+func (m *resourceUtilizationMetric) ComputeClusterLevel() error {
+	m.totalCPU, m.totalCPUAllocatable, m.totalMem, m.totalMemAllocatable = 0, 0, 0, 0
+
+	for _, val := range m.nodeValues {
+		resources, ok := val.(nodeResources)
+		if !ok {
+			return fmt.Errorf("unexpected type in m.nodeValues")
+		}
+		m.totalCPU += resources.CPU.Requested
+		m.totalCPUAllocatable += resources.CPU.Allocatable
+		m.totalMem += resources.Mem.Requested
+		m.totalMemAllocatable += resources.Mem.Allocatable
+	}
+
+	m.memRatio, m.cpuRatio = 0, 0
+	if m.totalMemAllocatable > 0 {
+		m.memRatio = m.totalMem / m.totalMemAllocatable
+	}
+	if m.totalCPUAllocatable > 0 {
+		m.cpuRatio = m.totalCPU / m.totalCPUAllocatable
+	}
+	m.driver = "MEM"
+	if m.cpuRatio > m.memRatio {
+		m.driver = "CPU"
+	}
+	if !m.initialSet {
+		m.initialCpuRatio = m.cpuRatio
+		m.initialMemRatio = m.memRatio
+		m.initialSet = true
+	}
+	return nil
+}
+
+func (m *resourceUtilizationMetric) ReportNodeLevel(t testing.TB) {
+	for nodeName, val := range m.nodeValues {
+		resources, ok := val.(nodeResources)
+		if !ok {
+			t.Errorf("unexpected type in m.nodeValues, expected NodeResources")
+			continue
+		}
+		cpuRatio := resources.CPU.Requested / resources.CPU.Allocatable
+		memRatio := resources.Mem.Requested / resources.Mem.Allocatable
+
+		driver := "Mem"
+		if cpuRatio > memRatio {
+			driver = "CPU"
+		}
+		t.Logf("Node: %s, CPU ratio: %.2f, Mem ratio: %.2f, Efficiency: %.2f (%s driven)", nodeName, cpuRatio, memRatio, math.Max(memRatio, cpuRatio), driver)
+	}
+}
+
+func (m *resourceUtilizationMetric) ReportClusterLevel(t testing.TB) {
+	t.Logf("Allocated CPU: %.2f, Allocatable CPU: %.2f, CPU ratio: %.2f",
+		m.totalCPU, m.totalCPUAllocatable, m.cpuRatio)
+	t.Logf("Allocated Mem: %.2f, Allocatable Mem: %.2f, Mem ratio: %.2f",
+		m.totalMem, m.totalMemAllocatable, m.memRatio)
+
+	driver := "Mem"
+	if m.cpuRatio > m.memRatio {
+		driver = "CPU"
+	}
+	t.Logf("Overall efficiency: %.2f (%s driven)", math.Max(m.cpuRatio, m.memRatio), driver)
+}
+
+func (m *resourceUtilizationMetric) ReportBenchmark(b *testing.B) {
+	cpuImprovement := m.cpuRatio - m.initialCpuRatio
+	memImprovement := m.memRatio - m.initialMemRatio
+	b.ReportMetric(m.initialCpuRatio*100, "util_cpu_%_init")
+	b.ReportMetric(m.initialMemRatio*100, "util_mem_%_init")
+	b.ReportMetric(m.cpuRatio*100, "util_cpu_%_final")
+	b.ReportMetric(m.memRatio*100, "util_mem_%_final")
+	b.ReportMetric(cpuImprovement*100, "util_cpu_%_improved")
+	b.ReportMetric(memImprovement*100, "util_mem_%_improved")
 }
