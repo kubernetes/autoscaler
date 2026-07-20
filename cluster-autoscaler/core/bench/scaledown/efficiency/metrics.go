@@ -176,6 +176,7 @@ type nodeCountMetric struct {
 	nodeCount        int
 }
 
+// NewNodeCountMetric creates a new instance of nodeCountMetric with given metricReportingConfig.
 func NewNodeCountMetric(opts ...metricOption) *nodeCountMetric {
 	m := &nodeCountMetric{
 		nodeValues: make(map[string]any),
@@ -244,6 +245,7 @@ type resourceUtilizationMetric struct {
 	driver              string
 }
 
+// NewResourceUtilizationMetric creates a new instance of resourceUtilizationMetric with given metricReportingConfig.
 func NewResourceUtilizationMetric(opts ...metricOption) *resourceUtilizationMetric {
 	m := &resourceUtilizationMetric{
 		nodeValues: make(map[string]any),
@@ -406,6 +408,7 @@ type resourceFragmentationMetric struct {
 	fragMem        float64
 }
 
+// NewResourceFragmentationMetric creates a new instance of resourceFragmentationMetric with given metricReportingConfig.
 func NewResourceFragmentationMetric(opts ...metricOption) *resourceFragmentationMetric {
 	m := &resourceFragmentationMetric{
 		nodeValues: make(map[string]any),
@@ -573,6 +576,7 @@ type evictionCountMetric struct {
 	scaledDownNodes []*status.ScaleDownNode
 }
 
+// NewEvictionCountMetric creates a new instance of evictionCountMetric with given metricReportingConfig.
 func NewEvictionCountMetric(opts ...metricOption) *evictionCountMetric {
 	m := &evictionCountMetric{
 		nodeValues: make(map[string]any),
@@ -644,6 +648,7 @@ type evictionCostMetric struct {
 	scaledDownNodes  []*status.ScaleDownNode
 }
 
+// NewEvictionCostMetric creates a new instance of evictionCostMetric with given metricReportingConfig.
 func NewEvictionCostMetric(opts ...metricOption) *evictionCostMetric {
 	m := &evictionCostMetric{
 		nodeValues:    make(map[string]any),
@@ -755,6 +760,7 @@ type nodeCostMetric struct {
 	totalClusterCost float64
 }
 
+// NewNodeCostMetric creates a new instance of nodeCostMetric with given metricReportingConfig.
 func NewNodeCostMetric(opts ...metricOption) *nodeCostMetric {
 	m := &nodeCostMetric{
 		nodeValues: make(map[string]any),
