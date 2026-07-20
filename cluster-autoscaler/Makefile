@@ -188,6 +188,14 @@ envtest: $(ENVTEST) ## Download setup-envtest locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest,$(ENVTEST_VERSION))
 
+.PHONY: docker-build-e2e
+docker-build-e2e:
+	docker build --build-arg GOARCH=$(GOARCH) -t cluster-autoscaler:dev .
+
+.PHONY: test-e2e
+test-e2e: docker-build-e2e
+	go test -tags e2e -v ./test/e2e/... -args -v=4
+
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary
 # $2 - package url which can be installed
@@ -204,4 +212,4 @@ mv $(1) $(1)-$(3) ;\
 ln -sf $(1)-$(3) $(1)
 endef
 
-.PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest
+.PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest docker-build-e2e setup-test-e2e test-e2e cleanup-test-e2e

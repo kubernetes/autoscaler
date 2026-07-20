@@ -4,6 +4,7 @@
 
 # Ignore Go binaries and build artifacts
 cluster-autoscaler-*
+**/bin/
 
 # Ignore test files
 *_test.go
@@ -22,3 +23,5 @@ Makefile
 push_image.sh
 update_toc.py
 *.txt
+*.jpg
+*.png
