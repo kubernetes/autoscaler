@@ -156,3 +156,64 @@ func (mt *metricsTracker) ReportBenchmarks(b *testing.B) {
 		m.ReportBenchmark(b)
 	}
 }
+
+// nodeCountMetric counts number of nodes in the cluster snapshot.
+type nodeCountMetric struct {
+	metricReportingConfig
+	nodeValues       map[string]any
+	initialSet       bool
+	initialNodeCount int
+	nodeCount        int
+}
+
+func NewNodeCountMetric(opts ...metricOption) *nodeCountMetric {
+	m := &nodeCountMetric{
+		nodeValues: make(map[string]any),
+	}
+	applyMetricOptions(&m.metricReportingConfig, opts...)
+	return m
+}
+
+func (m *nodeCountMetric) GetNodeValues() map[string]any {
+	return m.nodeValues
+}
+
+func (m *nodeCountMetric) Name() string {
+	return "node_count"
+}
+
+func (m *nodeCountMetric) ComputeNodeLevel(nodeInfos []*framework.NodeInfo) error {
+	m.nodeValues = make(map[string]any)
+	if len(nodeInfos) == 0 {
+		return nil
+	}
+	for _, nodeInfo := range nodeInfos {
+		if nodeInfo != nil && nodeInfo.Node() != nil {
+			m.nodeValues[nodeInfo.Node().Name] = 1
+		}
+	}
+	return nil
+}
+
+func (m *nodeCountMetric) ComputeClusterLevel() error {
+	m.nodeCount = len(m.nodeValues)
+	if !m.initialSet {
+		m.initialNodeCount = m.nodeCount
+		m.initialSet = true
+	}
+	return nil
+}
+
+func (m *nodeCountMetric) ReportNodeLevel(t testing.TB) {
+}
+
+func (m *nodeCountMetric) ReportClusterLevel(t testing.TB) {
+	t.Logf("Total nodes: %d", m.nodeCount)
+}
+
+func (m *nodeCountMetric) ReportBenchmark(b *testing.B) {
+	nodesRemoved := m.initialNodeCount - m.nodeCount
+	b.ReportMetric(float64(m.initialNodeCount), "node_count_init")
+	b.ReportMetric(float64(m.nodeCount), "node_count_final")
+	b.ReportMetric(float64(nodesRemoved), "node_count_removed")
+}
