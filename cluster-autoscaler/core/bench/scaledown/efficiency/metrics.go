@@ -564,3 +564,70 @@ func (m *resourceFragmentationMetric) ReportBenchmark(b *testing.B) {
 	b.ReportMetric(m.fragMem*100, "frag_mem_%_final")
 	b.ReportMetric(fragMemDelta*100, "frag_mem_%_delta")
 }
+
+// evictionCountMetric counts number of evictions from scaled down nodes.
+type evictionCountMetric struct {
+	metricReportingConfig
+	nodeValues      map[string]any
+	totalEvictions  int
+	scaledDownNodes []*status.ScaleDownNode
+}
+
+func NewEvictionCountMetric(opts ...metricOption) *evictionCountMetric {
+	m := &evictionCountMetric{
+		nodeValues: make(map[string]any),
+	}
+	applyMetricOptions(&m.metricReportingConfig, opts...)
+	return m
+}
+
+func (m *evictionCountMetric) SetScaleDownNodes(nodes []*status.ScaleDownNode) {
+	m.scaledDownNodes = nodes
+}
+
+func (m *evictionCountMetric) GetNodeValues() map[string]any {
+	return m.nodeValues
+}
+
+func (m *evictionCountMetric) Name() string {
+	return "eviction_count"
+}
+
+func (m *evictionCountMetric) ComputeNodeLevel(nodeInfos []*framework.NodeInfo) error {
+	m.nodeValues = make(map[string]any)
+	for _, sdn := range m.scaledDownNodes {
+		m.nodeValues[sdn.Node.Name] = len(sdn.EvictedPods)
+	}
+	return nil
+}
+
+func (m *evictionCountMetric) ComputeClusterLevel() error {
+	for _, val := range m.nodeValues {
+		count, ok := val.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type in m.nodeValues, expected int")
+		}
+		m.totalEvictions += count
+
+	}
+	return nil
+}
+
+func (m *evictionCountMetric) ReportNodeLevel(t testing.TB) {
+	for nodeName, val := range m.nodeValues {
+		count, ok := val.(int)
+		if !ok {
+			t.Errorf("unexpected type in m.nodeValues, expected int")
+			return
+		}
+		t.Logf("Node: %s, Evicted pods: %d", nodeName, count)
+	}
+}
+
+func (m *evictionCountMetric) ReportClusterLevel(t testing.TB) {
+	t.Logf("Total evicted pods: %d", m.totalEvictions)
+}
+
+func (m *evictionCountMetric) ReportBenchmark(b *testing.B) {
+	b.ReportMetric(float64(m.totalEvictions), "eviction_count_total")
+}
