@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"text/template"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // This file contains fixtures for a hypothetical node group

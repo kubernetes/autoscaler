@@ -21,8 +21,8 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
+	podutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/units"
 )
 
 // Price implements Price interface for Equinix Metal.
