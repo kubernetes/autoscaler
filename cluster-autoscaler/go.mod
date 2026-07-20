@@ -55,7 +55,7 @@ require (
 	k8s.io/api v0.36.2
 	k8s.io/apimachinery v0.36.2
 	k8s.io/apiserver v0.36.2
-	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20240627115740-d52e4b9665d7
+	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20260717085528-eec9bc4dc1d2
 	k8s.io/client-go v0.36.2
 	k8s.io/cloud-provider v0.36.2
 	k8s.io/cloud-provider-aws v1.35.1
@@ -70,6 +70,7 @@ require (
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
 	sigs.k8s.io/cloud-provider-azure v1.36.2
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.21.3
+	sigs.k8s.io/cluster-autoscaler v0.0.0-20260717172343-c0fdb0051174
 	sigs.k8s.io/controller-runtime v0.24.1
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -320,3 +321,5 @@ replace k8s.io/externaljwt => k8s.io/externaljwt v0.36.2
 replace k8s.io/cri-streaming => k8s.io/cri-streaming v0.36.2
 
 replace k8s.io/streaming => k8s.io/streaming v0.36.2
+
+replace sigs.k8s.io/cluster-autoscaler => github.com/towca/cluster-autoscaler v0.0.0-20260717172343-c0fdb0051174
