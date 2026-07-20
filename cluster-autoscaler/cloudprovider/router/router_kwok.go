@@ -22,5 +22,5 @@ package router
 import (
 	// Blank import to register a cloudprovider outside main or test package.
 	// This is by design.
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kwok"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/kwok"
 )
