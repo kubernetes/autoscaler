@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 
 	gce "google.golang.org/api/compute/v1"
 	klog "k8s.io/klog/v2"

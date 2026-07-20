@@ -27,9 +27,9 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
-	test_util "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/klogx"
+	test_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"

@@ -28,9 +28,9 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 var packageTemplate = template.Must(template.New("").Parse(`/*

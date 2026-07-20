@@ -19,8 +19,8 @@ package exoscale
 import (
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	egoscale "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_MaxSize() {

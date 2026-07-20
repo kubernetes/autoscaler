@@ -31,19 +31,16 @@ import (
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/cherryservers"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/cloudstack"
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/clusterapi"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/coreweave"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/equinixmetal"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale"
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kamatera"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kwok"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools"
@@ -54,11 +51,14 @@ import (
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/volcengine"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/vultr"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/clusterapi"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/externalgrpc"
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/kwok"
 )
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
 )
 
 func init() {
