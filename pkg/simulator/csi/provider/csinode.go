@@ -19,9 +19,9 @@ package provider
 import (
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
 	informers "k8s.io/client-go/informers"
 	v1storagelister "k8s.io/client-go/listers/storage/v1"
+	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
 )
 
 // Provider provides access to CSI node information for the cluster.

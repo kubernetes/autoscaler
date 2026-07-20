@@ -21,12 +21,12 @@ import (
 	"slices"
 	"time"
 
+	"k8s.io/klog/v2"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown"
 	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/status"
 	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator"
-	"k8s.io/klog/v2"
 
 	processor "sigs.k8s.io/cluster-autoscaler/pkg/processors/status"
 )

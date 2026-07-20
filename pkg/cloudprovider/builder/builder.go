@@ -19,10 +19,10 @@ package builder
 import (
 	"sort"
 
-	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
-	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
 	"k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
 )
 
 // CloudProviderBuilder builds a cloud provider from provided parameters.

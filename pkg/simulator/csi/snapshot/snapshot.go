@@ -20,9 +20,9 @@ import (
 	"fmt"
 
 	storagev1 "k8s.io/api/storage/v1"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/common"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
-	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 
 // Snapshot represents a snapshot of CSI node information for cluster simulation.

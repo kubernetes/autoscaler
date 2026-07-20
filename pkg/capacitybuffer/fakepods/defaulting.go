@@ -21,8 +21,8 @@ import (
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
-	podutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
 	resourcehelper "k8s.io/component-helpers/resource"
+	podutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
 )
 
 // DefaultingResolver performs a basic defaulting of a Pod.

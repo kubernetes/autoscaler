@@ -22,12 +22,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	podinjectionbackoff "sigs.k8s.io/cluster-autoscaler/pkg/processors/podinjection/backoff"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/fake"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
-	"k8s.io/klog/v2"
 )
 
 // PodInjectionPodListProcessor is a PodListProcessor used to inject fake pods to consider replica count in the respective controllers for the scale-up.

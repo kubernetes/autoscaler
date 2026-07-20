@@ -26,9 +26,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 	"k8s.io/dynamic-resource-allocation/structured"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 var (

@@ -26,9 +26,9 @@ import (
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate/api"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
+	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate/api"
 
 	"github.com/stretchr/testify/assert"
 )

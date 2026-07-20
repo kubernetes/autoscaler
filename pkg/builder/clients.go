@@ -23,6 +23,7 @@ import (
 
 	provreqclientset "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
 	provreqinformers "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/informers/externalversions"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
 	"sigs.k8s.io/cluster-autoscaler/pkg/observers/loopstart"
@@ -33,7 +34,6 @@ import (
 	provreqorchestrator "sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/orchestrator"
 	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/provreqclient"
 	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
-	"k8s.io/klog/v2"
 )
 
 // buildProvisioningRequest instantiates and configures all components required for

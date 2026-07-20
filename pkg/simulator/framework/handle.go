@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"sync"
 
-	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources"
 	"k8s.io/client-go/informers"
 	schedulerconfig "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	schedulerconfiglatest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
@@ -30,6 +29,7 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/nodevolumelimits"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources"
 )
 
 var (

@@ -19,8 +19,8 @@ package azure
 import (
 	"testing"
 
-	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	"github.com/stretchr/testify/assert"

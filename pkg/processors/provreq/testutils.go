@@ -19,9 +19,9 @@ package provreq
 import (
 	"time"
 
-	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/provreqclient"
 	"k8s.io/utils/clock/testing"
 	"k8s.io/utils/lru"
+	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/provreqclient"
 )
 
 // NewFakePodsInjector creates a new instance of ProvisioningRequestPodsInjector with the given client and clock for testing.

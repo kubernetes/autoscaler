@@ -20,11 +20,11 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
 	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
 	drasnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/snapshot"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
-	"k8s.io/klog/v2"
-	schedulerinterface "k8s.io/kube-scheduler/framework"
 )
 
 // Forkable is an interface for objects that can be forked, reverted and committed.

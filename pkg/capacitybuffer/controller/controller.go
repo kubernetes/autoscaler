@@ -34,6 +34,7 @@ import (
 	"k8s.io/klog/v2"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/utils/clock"
 	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer"
 	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
 	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/fakepods"
@@ -42,7 +43,6 @@ import (
 	translators "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/translators"
 	scalableobject "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/translators/scalable_objects"
 	updater "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/updater"
-	"k8s.io/utils/clock"
 )
 
 // BufferController performs updates on Buffers and convert them to pods to be injected

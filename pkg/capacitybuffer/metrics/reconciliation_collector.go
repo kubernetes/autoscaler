@@ -24,12 +24,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
-	filters "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/filters"
-	"sigs.k8s.io/cluster-autoscaler/pkg/utils/klogx"
 	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
+	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
+	filters "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/filters"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/klogx"
 )
 
 const (

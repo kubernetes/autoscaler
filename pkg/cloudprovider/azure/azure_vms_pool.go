@@ -26,12 +26,12 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 
 	apiv1 "k8s.io/api/core/v1"
+	klog "k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
-	klog "k8s.io/klog/v2"
-	"k8s.io/utils/ptr"
 )
 
 // VMPool represents a group of standalone virtual machines (VMs) with a single SKU.

@@ -37,10 +37,10 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodegroups/asyncnodegroups"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 
-	"sigs.k8s.io/cluster-autoscaler/pkg/utils/taints"
-	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	kube_record "k8s.io/client-go/tools/record"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/taints"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

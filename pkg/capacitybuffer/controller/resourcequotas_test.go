@@ -26,11 +26,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	fakeClient "k8s.io/client-go/kubernetes/fake"
 	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer"
 	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
 	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/testutil"
 	podutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
-	fakeClient "k8s.io/client-go/kubernetes/fake"
 )
 
 func TestResourceQuotaAllocator(t *testing.T) {

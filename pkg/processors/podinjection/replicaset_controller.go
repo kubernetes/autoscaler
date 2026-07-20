@@ -19,8 +19,8 @@ package podinjection
 import (
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"k8s.io/klog/v2"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 )
 
 func createReplicaSetControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {

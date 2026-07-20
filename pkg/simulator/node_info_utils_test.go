@@ -35,6 +35,10 @@ import (
 	"k8s.io/kubernetes/pkg/controller/daemon"
 
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
+	ndf "k8s.io/component-helpers/nodedeclaredfeatures"
+	"k8s.io/dynamic-resource-allocation/resourceclaim"
+	"k8s.io/kubernetes/pkg/features"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	drautils "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/utils"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
@@ -42,10 +46,6 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/labels"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/taints"
 	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
-	featuregatetesting "k8s.io/component-base/featuregate/testing"
-	ndf "k8s.io/component-helpers/nodedeclaredfeatures"
-	"k8s.io/dynamic-resource-allocation/resourceclaim"
-	"k8s.io/kubernetes/pkg/features"
 )
 
 var (

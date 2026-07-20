@@ -19,9 +19,9 @@ package actuation
 import (
 	"time"
 
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/taints"
-	"k8s.io/klog/v2"
 )
 
 const sleepDurationWhenPolling = 50 * time.Millisecond

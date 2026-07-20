@@ -22,13 +22,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes/fake"
 	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	. "sigs.k8s.io/cluster-autoscaler/pkg/core/test"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot"
 	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
-	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {

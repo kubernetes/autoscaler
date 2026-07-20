@@ -18,8 +18,8 @@ package filter
 
 import (
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
-	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
 	"k8s.io/klog/v2"
+	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
 )
 
 // podTemplateGenerationChangedFilter filters in buffers that has pod template that its generation changeed

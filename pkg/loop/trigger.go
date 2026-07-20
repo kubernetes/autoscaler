@@ -22,12 +22,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
-	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	podv1 "k8s.io/kubernetes/pkg/api/v1/pod"
 	"reflect"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 )
 
 const maxPodChangeAge = 10 * time.Second

@@ -20,8 +20,8 @@ import (
 	"slices"
 
 	resourceapi "k8s.io/api/resource/v1"
-	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 )
 
 const (

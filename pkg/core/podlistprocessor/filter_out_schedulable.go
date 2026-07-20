@@ -24,13 +24,13 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	corev1helpers "k8s.io/component-helpers/scheduling/corev1"
+	klog "k8s.io/klog/v2"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/scheduling"
-	corev1helpers "k8s.io/component-helpers/scheduling/corev1"
-	klog "k8s.io/klog/v2"
 )
 
 const (

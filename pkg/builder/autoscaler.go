@@ -22,6 +22,10 @@ import (
 
 	cbv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	provreqclientset "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
+	"k8s.io/client-go/informers"
+	"k8s.io/client-go/kubernetes"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer"
 	capacityclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
 	cbctrl "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/controller"
@@ -58,10 +62,6 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/options"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/scheduling"
 	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
-	"k8s.io/client-go/informers"
-	"k8s.io/client-go/kubernetes"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 

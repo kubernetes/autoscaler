@@ -29,8 +29,8 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/klogx"
 
 	apiv1 "k8s.io/api/core/v1"
-	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 	"k8s.io/klog/v2"
+	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 )
 
 const (

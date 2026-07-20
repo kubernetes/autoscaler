@@ -18,9 +18,9 @@ package provider
 
 import (
 	resourceapi "k8s.io/api/resource/v1"
-	drasnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/snapshot"
 	"k8s.io/client-go/informers"
 	resourceapilisters "k8s.io/client-go/listers/resource/v1"
+	drasnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/snapshot"
 )
 
 // Provider provides DRA-related objects.

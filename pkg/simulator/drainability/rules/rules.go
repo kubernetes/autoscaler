@@ -18,6 +18,7 @@ package rules
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/pdb"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/drainability"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/drainability/rules/daemonset"
@@ -34,7 +35,6 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/drainability/rules/terminal"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/options"
-	"k8s.io/klog/v2"
 )
 
 // Rule determines whether a given pod can be drained or not.

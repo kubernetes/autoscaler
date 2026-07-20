@@ -20,11 +20,11 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/dynamicresources"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
-	"k8s.io/klog/v2"
 )
 
 // NodeGroupChangeObserver is an observer of:

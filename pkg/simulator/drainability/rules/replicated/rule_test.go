@@ -25,12 +25,12 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1appslister "k8s.io/client-go/listers/apps/v1"
+	v1lister "k8s.io/client-go/listers/core/v1"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/drainability"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/drain"
 	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
-	v1appslister "k8s.io/client-go/listers/apps/v1"
-	v1lister "k8s.io/client-go/listers/core/v1"
 
 	"github.com/stretchr/testify/assert"
 )

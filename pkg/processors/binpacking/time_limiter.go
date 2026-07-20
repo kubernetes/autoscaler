@@ -19,10 +19,10 @@ package binpacking
 import (
 	"time"
 
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
-	"k8s.io/klog/v2"
 )
 
 // TimeLimiter limits binpacking based on the total time spends on binpacking.

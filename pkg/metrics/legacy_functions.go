@@ -21,8 +21,8 @@ import (
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator"
 
-	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 	_ "k8s.io/component-base/metrics/prometheus/restclient" // for client-go metrics registration
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 )
 
 // DefaultMetrics is a default implementation using global legacyregistry

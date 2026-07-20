@@ -22,11 +22,11 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apiv1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/klog/v2"
 	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
 	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/common"
 	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/fakepods"
 	scalableobject "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/translators/scalable_objects"
-	"k8s.io/klog/v2"
 )
 
 // ScalableObjectsTranslator translates buffers processors into pod capacity.

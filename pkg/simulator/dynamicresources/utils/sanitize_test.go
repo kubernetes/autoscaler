@@ -25,9 +25,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 	"k8s.io/utils/ptr"
 	"k8s.io/utils/set"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestSanitizedNodeResourceSlices(t *testing.T) {

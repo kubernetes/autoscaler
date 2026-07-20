@@ -31,11 +31,11 @@ import (
 	azerrors "github.com/Azure/azure-sdk-for-go-extensions/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	klog "k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
-	klog "k8s.io/klog/v2"
 )
 
 const (

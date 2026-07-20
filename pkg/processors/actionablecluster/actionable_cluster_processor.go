@@ -20,12 +20,12 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate/api"
 	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate/utils"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
-	"k8s.io/klog/v2"
 )
 
 // NodesNotReadyAfterStartTimeout How long should Cluster Autoscaler wait for nodes to become ready after start.

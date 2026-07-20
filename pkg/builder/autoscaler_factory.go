@@ -20,6 +20,7 @@ import (
 	"context"
 	"strings"
 
+	"k8s.io/client-go/informers"
 	cloudBuilder "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/core"
@@ -39,7 +40,6 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/backoff"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
-	"k8s.io/client-go/informers"
 )
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters

@@ -23,8 +23,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"k8s.io/utils/ptr"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // CalculateDynamicResourceUtilization calculates a map of ResourceSlice pool utilization grouped by the driver and pool. Returns

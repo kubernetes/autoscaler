@@ -17,11 +17,11 @@ limitations under the License.
 package builder
 
 import (
+	"k8s.io/client-go/informers"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
 	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodegroupset"
-	"k8s.io/client-go/informers"
 
 	"k8s.io/klog/v2"
 )

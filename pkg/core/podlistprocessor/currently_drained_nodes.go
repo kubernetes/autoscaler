@@ -18,9 +18,9 @@ package podlistprocessor
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	pod_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
-	"k8s.io/klog/v2"
 )
 
 type currentlyDrainedNodesPodListProcessor struct {

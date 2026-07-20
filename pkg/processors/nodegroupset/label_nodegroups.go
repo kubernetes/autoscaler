@@ -17,8 +17,8 @@ limitations under the License.
 package nodegroupset
 
 import (
-	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // CreateLabelNodeInfoComparator returns a comparator that checks for node group similarity using the given labels.

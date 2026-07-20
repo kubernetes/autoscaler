@@ -24,11 +24,11 @@ import (
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	clock "k8s.io/utils/clock/testing"
+	"k8s.io/utils/lru"
 	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest"
 	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/provreqclient"
 	"sigs.k8s.io/cluster-autoscaler/pkg/provisioningrequest/provreqwrapper"
-	clock "k8s.io/utils/clock/testing"
-	"k8s.io/utils/lru"
 )
 
 func TestProvisioningRequestPodsInjector(t *testing.T) {

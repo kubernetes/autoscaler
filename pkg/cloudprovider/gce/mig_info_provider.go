@@ -26,10 +26,10 @@ import (
 	"time"
 
 	gce "google.golang.org/api/compute/v1"
-	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
-	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 )
 
 // MigInfoProvider allows obtaining information about MIGs

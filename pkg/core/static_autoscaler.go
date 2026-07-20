@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/utils/integer"
 	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/fakepods"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate"
@@ -66,7 +67,6 @@ import (
 	caerrors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/taints"
-	"k8s.io/utils/integer"
 
 	v1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"

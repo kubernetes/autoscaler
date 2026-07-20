@@ -35,8 +35,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	buffersfake "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
-	testutil "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/testutil"
 	fakeclient "k8s.io/client-go/kubernetes/fake"
+	testutil "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/testutil"
 )
 
 var (

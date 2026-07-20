@@ -19,8 +19,8 @@ package podinjection
 import (
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"k8s.io/klog/v2"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 )
 
 func createJobControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {

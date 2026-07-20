@@ -26,11 +26,11 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	apiv1 "k8s.io/api/core/v1"
+	klog "k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/externalgrpc/protos"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
-	klog "k8s.io/klog/v2"
 )
 
 // NodeGroup implements cloudprovider.NodeGroup interface. NodeGroup contains

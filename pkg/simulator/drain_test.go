@@ -27,6 +27,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/kubernetes/pkg/kubelet/types"
 	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/pdb"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/drainability"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/drainability/rules"
@@ -36,7 +37,6 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
-	"k8s.io/kubernetes/pkg/kubelet/types"
 
 	"github.com/stretchr/testify/assert"
 )

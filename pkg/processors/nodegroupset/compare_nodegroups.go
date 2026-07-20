@@ -22,10 +22,10 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	klog "k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/scheduler"
-	klog "k8s.io/klog/v2"
 )
 
 // BasicIgnoredLabels define a set of basic labels that should be ignored when comparing the similarity

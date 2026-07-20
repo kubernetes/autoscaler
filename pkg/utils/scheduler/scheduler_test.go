@@ -24,9 +24,9 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/api/resource"
-	testconfig "sigs.k8s.io/cluster-autoscaler/pkg/config/test"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
+	testconfig "sigs.k8s.io/cluster-autoscaler/pkg/config/test"
 
 	apiv1 "k8s.io/api/core/v1"
 

@@ -19,10 +19,10 @@ package waste
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	klog "k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	podutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/pod"
-	klog "k8s.io/klog/v2"
 )
 
 type leastwaste struct {

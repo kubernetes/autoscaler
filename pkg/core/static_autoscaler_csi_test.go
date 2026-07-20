@@ -34,6 +34,10 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	informers "k8s.io/client-go/informers"
+	clientsetfake "k8s.io/client-go/kubernetes/fake"
+	v1storagelister "k8s.io/client-go/listers/storage/v1"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	sdplanner "sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/planner"
 	"sigs.k8s.io/cluster-autoscaler/pkg/resourcequotas"
@@ -44,10 +48,6 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/options"
 	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
-	informers "k8s.io/client-go/informers"
-	clientsetfake "k8s.io/client-go/kubernetes/fake"
-	v1storagelister "k8s.io/client-go/listers/storage/v1"
-	"k8s.io/utils/ptr"
 )
 
 type testNodeGroupCSI struct {

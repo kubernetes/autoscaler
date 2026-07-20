@@ -26,9 +26,9 @@ import (
 	resourceapi "k8s.io/api/resource/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 	"k8s.io/klog/v2"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestNodeInfo(t *testing.T) {

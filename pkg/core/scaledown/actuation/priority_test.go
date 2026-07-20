@@ -25,14 +25,14 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/fake"
+	core "k8s.io/client-go/testing"
+	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	. "sigs.k8s.io/cluster-autoscaler/pkg/core/test"
 	"sigs.k8s.io/cluster-autoscaler/pkg/core/utils"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot"
 	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
-	"k8s.io/client-go/kubernetes/fake"
-	core "k8s.io/client-go/testing"
-	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 )
 
 func TestPriorityEvictor(t *testing.T) {

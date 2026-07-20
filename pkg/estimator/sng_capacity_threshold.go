@@ -17,8 +17,8 @@ limitations under the License.
 package estimator
 
 import (
-	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 type sngCapacityThreshold struct {

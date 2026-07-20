@@ -35,6 +35,8 @@ import (
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	cqv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/client-go/informers"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	autoscalerbuilder "sigs.k8s.io/cluster-autoscaler/pkg/builder"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config/flags"
@@ -44,8 +46,6 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 	"sigs.k8s.io/cluster-autoscaler/pkg/version"
-	"k8s.io/client-go/informers"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 
 	// Cloud providers must be explicitly imported to be registered in the builder.
 	// The registration pattern allows for customizing the set of supported cloud providers

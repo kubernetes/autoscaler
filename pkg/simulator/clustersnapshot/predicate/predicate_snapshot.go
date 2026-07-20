@@ -22,16 +22,16 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	"k8s.io/client-go/util/workqueue"
+	"k8s.io/dynamic-resource-allocation/resourceclaim"
+	schedulerinterface "k8s.io/kube-scheduler/framework"
+	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot"
 	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
 	drasnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/snapshot"
 	drautils "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/utils"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/klogx"
-	"k8s.io/client-go/util/workqueue"
-	"k8s.io/dynamic-resource-allocation/resourceclaim"
-	schedulerinterface "k8s.io/kube-scheduler/framework"
-	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // PredicateSnapshot implements ClusterSnapshot on top of a ClusterSnapshotStore by using

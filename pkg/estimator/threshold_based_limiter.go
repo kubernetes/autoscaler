@@ -21,8 +21,8 @@ import (
 	"strings"
 	"time"
 
-	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 type thresholdBasedEstimationLimiter struct {

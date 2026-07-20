@@ -23,11 +23,11 @@ import (
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator"
 
-	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
-	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 	"k8s.io/component-base/metrics"
 	"k8s.io/component-base/metrics/legacyregistry"
 	_ "k8s.io/component-base/metrics/prometheus/restclient" // for client-go metrics registration
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 
 	k8smetrics "k8s.io/component-base/metrics"
 	klog "k8s.io/klog/v2"

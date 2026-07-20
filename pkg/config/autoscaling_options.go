@@ -19,9 +19,9 @@ package config
 import (
 	"time"
 
-	gce_localssdsize "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/gce/localssdsize"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
+	gce_localssdsize "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/gce/localssdsize"
 )
 
 // GpuLimits define lower and upper bound on GPU instances of given type in cluster

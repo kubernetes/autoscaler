@@ -21,8 +21,8 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // ClusterNode captures a single entity of nodeInfo. i.e. Node specs and all the pods on that node.

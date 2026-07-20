@@ -46,8 +46,7 @@ find_files() {
     \) -name '*.go'
 }
 
-DOCKER_IMAGE=`grep --color=none 'FROM golang' builder/Dockerfile | sed 's/FROM //'`
-GOFMT="docker run -v $(pwd):/code -w /code $DOCKER_IMAGE gofmt -s"
+GOFMT="gofmt -s"
 
 bad_files=$(find_files | xargs $GOFMT -l)
 if [[ -n "${bad_files}" ]]; then
