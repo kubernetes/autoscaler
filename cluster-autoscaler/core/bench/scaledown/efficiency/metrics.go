@@ -745,3 +745,95 @@ func (m *evictionCostMetric) ReportClusterLevel(t testing.TB) {
 func (m *evictionCostMetric) ReportBenchmark(b *testing.B) {
 	b.ReportMetric(m.totalClusterCost, "eviction_cost_total")
 }
+
+// nodeCostMetric computes cluster cost for every loop.
+type nodeCostMetric struct {
+	metricReportingConfig
+	nodeValues       map[string]any
+	initialSet       bool
+	initialCost      float64
+	totalClusterCost float64
+}
+
+func NewNodeCostMetric(opts ...metricOption) *nodeCostMetric {
+	m := &nodeCostMetric{
+		nodeValues: make(map[string]any),
+	}
+	applyMetricOptions(&m.metricReportingConfig, opts...)
+	return m
+}
+
+func (m *nodeCostMetric) GetNodeValues() map[string]any {
+	return m.nodeValues
+}
+
+func (m *nodeCostMetric) Name() string {
+	return "node_cost"
+}
+
+// ComputeNodeLevel for nodeCostMetric does not take into account real existence time of the node at the moment.
+// Every loop adds hourly node price.
+func (m *nodeCostMetric) ComputeNodeLevel(nodeInfos []*framework.NodeInfo) error {
+	m.nodeValues = make(map[string]any)
+	if len(nodeInfos) == 0 {
+		return nil
+	}
+	for _, nodeInfo := range nodeInfos {
+		if nodeInfo == nil || nodeInfo.Node() == nil {
+			continue
+		}
+		cost, err := calculateNodeCost(nodeInfo.Node())
+		if err != nil {
+			// error calculating node cost, setting 0
+			m.nodeValues[nodeInfo.Node().Name] = 0.0
+		} else {
+			m.nodeValues[nodeInfo.Node().Name] = cost
+		}
+	}
+	return nil
+}
+
+func (m *nodeCostMetric) ComputeClusterLevel() error {
+	m.totalClusterCost = 0
+	for _, val := range m.nodeValues {
+		cost, ok := val.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type in m.nodeValues for node_cost, expected float64")
+		}
+		m.totalClusterCost += cost
+	}
+	if !m.initialSet {
+		m.initialCost = m.totalClusterCost
+		m.initialSet = true
+	}
+	return nil
+}
+
+func (m *nodeCostMetric) ReportNodeLevel(t testing.TB) {
+	for nodeName, val := range m.nodeValues {
+		cost, ok := val.(float64)
+		if !ok {
+			t.Errorf("unexpected type in m.nodeValues for node_cost: expected float64")
+			continue
+		}
+		t.Logf("Node: %s, Hourly cost: $%.5f", nodeName, cost)
+	}
+}
+
+func (m *nodeCostMetric) ReportClusterLevel(t testing.TB) {
+	t.Logf("Total hourly cost: $%.5f", m.totalClusterCost)
+}
+
+func (m *nodeCostMetric) ReportBenchmark(b *testing.B) {
+	if m.initialSet {
+		costSaved := m.initialCost - m.totalClusterCost
+		costSavedPerc := 0.0
+		if m.initialCost > 0 {
+			costSavedPerc = (costSaved / m.initialCost) * 100
+		}
+		b.ReportMetric(m.initialCost, "cost_init")
+		b.ReportMetric(m.totalClusterCost, "cost_final")
+		b.ReportMetric(costSaved, "cost_saved")
+		b.ReportMetric(costSavedPerc, "cost_saved_%")
+	}
+}
