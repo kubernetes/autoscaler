@@ -631,3 +631,117 @@ func (m *evictionCountMetric) ReportClusterLevel(t testing.TB) {
 func (m *evictionCountMetric) ReportBenchmark(b *testing.B) {
 	b.ReportMetric(float64(m.totalEvictions), "eviction_count_total")
 }
+
+// evictionCostMetric computes cost of eviction as workload disruption cost and number of time workload has been disrupted.
+// Workload disruption cost is approximated through CPU_req * time it has been running.
+// #Times workload has been disrupted is not reported to benchmarks but may be useful info.
+type evictionCostMetric struct {
+	metricReportingConfig
+	nodeValues       map[string]any
+	podAge           map[types.UID]int
+	podDisruption    map[types.UID]int
+	totalClusterCost float64
+	scaledDownNodes  []*status.ScaleDownNode
+}
+
+func NewEvictionCostMetric(opts ...metricOption) *evictionCostMetric {
+	m := &evictionCostMetric{
+		nodeValues:    make(map[string]any),
+		podAge:        make(map[types.UID]int),
+		podDisruption: make(map[types.UID]int),
+	}
+	applyMetricOptions(&m.metricReportingConfig, opts...)
+	return m
+}
+
+func (m *evictionCostMetric) Name() string {
+	return "eviction_cost"
+}
+
+func (m *evictionCostMetric) GetNodeValues() map[string]any {
+	return m.nodeValues
+}
+
+func (m *evictionCostMetric) getAgeForUID(uid types.UID) int {
+	loopsRunning, ok := m.podAge[uid]
+	if !ok {
+		return -1
+	}
+	return loopsRunning
+}
+
+func (m *evictionCostMetric) SetScaleDownNodes(nodes []*status.ScaleDownNode) {
+	m.scaledDownNodes = nodes
+}
+
+func (m *evictionCostMetric) ComputeNodeLevel(nodeInfos []*framework.NodeInfo) error {
+	m.nodeValues = make(map[string]any)
+
+	// pod evicted in this scaledown loop did not actually run in this loop
+	// so first delete its occurrence and then reinit if rescheduled
+	for _, sdn := range m.scaledDownNodes {
+		var nodeCost float64
+		for _, pod := range sdn.EvictedPods {
+			loopsRunning := m.getAgeForUID(pod.UID)
+			if loopsRunning == -1 {
+				continue // pod UID not found in pod age tracker, continue
+			}
+
+			var cpuReq float64
+			for _, container := range pod.Spec.Containers {
+				q, ok := container.Resources.Requests[apiv1.ResourceCPU]
+				if !ok {
+					continue // cpu request not found for container in pod, continue
+				}
+				cpuReq += float64(q.MilliValue())
+			}
+
+			// reset age tracking for the pod if it's rescheduled with the same UID
+			// the logic would be better with parsing ownerRef and counting disruptions/controllerObj
+			delete(m.podAge, pod.UID)
+			m.podDisruption[pod.UID]++
+			nodeCost += float64(loopsRunning) * cpuReq
+		}
+		m.nodeValues[sdn.Node.Name] = nodeCost
+	}
+
+	// Increase pod age by one loop survived
+	for _, nodeInfo := range nodeInfos {
+		for _, podInfo := range nodeInfo.Pods() {
+			if podInfo.Pod != nil {
+				m.podAge[podInfo.Pod.UID]++
+			}
+		}
+	}
+	return nil
+}
+
+func (m *evictionCostMetric) ComputeClusterLevel() error {
+	for _, val := range m.nodeValues {
+		cost, ok := val.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type in m.nodeValues, expected float64")
+		}
+		m.totalClusterCost += cost
+	}
+	return nil
+}
+
+func (m *evictionCostMetric) ReportNodeLevel(t testing.TB) {
+	for nodeName, val := range m.nodeValues {
+		cost, ok := val.(float64)
+		if !ok {
+			t.Errorf("unexpected type in m.nodeValues, expected float64")
+			continue
+		}
+		t.Logf("Node: %s, Eviction cost (cpu-loops): %.2f", nodeName, cost)
+	}
+}
+
+func (m *evictionCostMetric) ReportClusterLevel(t testing.TB) {
+	t.Logf("Total eviction cost (cpu-loops): %.2f", m.totalClusterCost)
+}
+
+func (m *evictionCostMetric) ReportBenchmark(b *testing.B) {
+	b.ReportMetric(m.totalClusterCost, "eviction_cost_total")
+}
