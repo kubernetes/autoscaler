@@ -35,8 +35,6 @@ const (
 	CloudStackProviderName = "cloudstack"
 	// CoreWeaveProviderName gets the provider name of coreweave
 	CoreWeaveProviderName = "coreweave"
-	// ClusterAPIProviderName gets the provider name of clusterapi
-	ClusterAPIProviderName = "clusterapi"
 	// DigitalOceanProviderName gets the provider name of digitalocean
 	DigitalOceanProviderName = "digitalocean"
 	// ExoscaleProviderName gets the provider name of exoscale
@@ -51,8 +49,6 @@ const (
 	KamateraProviderName = "kamatera"
 	// KubemarkProviderName gets the provider name of kubemark
 	KubemarkProviderName = "kubemark"
-	// KwokProviderName gets the provider name of kwok
-	KwokProviderName = "kwok"
 	// HuaweicloudProviderName gets the provider name of huaweicloud
 	HuaweicloudProviderName = "huaweicloud"
 	// IonoscloudProviderName gets the provider name of ionoscloud
@@ -75,8 +71,6 @@ const (
 	EquinixMetalProviderName = "equinixmetal"
 	// TencentcloudProviderName gets the provider name of tencentcloud
 	TencentcloudProviderName = "tencentcloud"
-	// ExternalGrpcProviderName gets the provider name of the external grpc provider
-	ExternalGrpcProviderName = "externalgrpc"
 	// CivoProviderName gets the provider name of civo
 	CivoProviderName = "civo"
 	// RancherProviderName gets the provider name of rancher
