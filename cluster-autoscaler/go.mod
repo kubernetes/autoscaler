@@ -55,7 +55,7 @@ require (
 	k8s.io/api v0.36.2
 	k8s.io/apimachinery v0.36.2
 	k8s.io/apiserver v0.36.2
-	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20240627115740-d52e4b9665d7
+	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20260717085528-eec9bc4dc1d2
 	k8s.io/client-go v0.36.2
 	k8s.io/cloud-provider v0.36.2
 	k8s.io/cloud-provider-aws v1.35.1
@@ -70,6 +70,7 @@ require (
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
 	sigs.k8s.io/cloud-provider-azure v1.36.2
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.21.3
+	sigs.k8s.io/cluster-autoscaler v0.0.0-20260731143349-6e285e0f4b4f
 	sigs.k8s.io/controller-runtime v0.24.1
 	sigs.k8s.io/yaml v1.6.0
 )
