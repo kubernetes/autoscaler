@@ -382,3 +382,185 @@ func (m *resourceUtilizationMetric) ReportBenchmark(b *testing.B) {
 	b.ReportMetric(cpuImprovement*100, "util_cpu_%_improved")
 	b.ReportMetric(memImprovement*100, "util_mem_%_improved")
 }
+
+type nodeFreeResources struct {
+	FreeCPU float64
+	FreeMem float64
+}
+
+// resourceFragmentationMetric computes value of resource fragmentation and Herfindahl-Hirschman Index.
+// HHI originally measures market concentration and competitiveness, here repurposed to measure consolidation of free resources in the cluster.
+// If HHI is lower, it indicates more competition, it higher it indicates consolidation.
+// In this context, higher values mean free resources are consolidated to fewer nodes, meaning lower fragmentation, therefore computed as 1-HHI.
+type resourceFragmentationMetric struct {
+	metricReportingConfig
+	nodeValues     map[string]any
+	initialSet     bool
+	initialFragCPU float64
+	initialFragMem float64
+	totalFreeCPU   float64
+	totalFreeMem   float64
+	hhiCPU         float64
+	hhiMem         float64
+	fragCPU        float64
+	fragMem        float64
+}
+
+func NewResourceFragmentationMetric(opts ...metricOption) *resourceFragmentationMetric {
+	m := &resourceFragmentationMetric{
+		nodeValues: make(map[string]any),
+	}
+	applyMetricOptions(&m.metricReportingConfig, opts...)
+	return m
+}
+
+func (m *resourceFragmentationMetric) GetNodeValues() map[string]any {
+	return m.nodeValues
+}
+
+func (m *resourceFragmentationMetric) Name() string {
+	return "resource_fragmentation"
+}
+
+// ComputeNodeLevel could reuse resourceUtilizationMetric which already computes needed values to avoid code duplication but that introduces unnecessary state holding.
+func (m *resourceFragmentationMetric) ComputeNodeLevel(nodeInfos []*framework.NodeInfo) error {
+	currentTime := time.Now()
+	m.nodeValues = make(map[string]any)
+	if len(nodeInfos) == 0 {
+		return nil
+	}
+
+	for _, nodeInfo := range nodeInfos {
+		if nodeInfo == nil || nodeInfo.Node() == nil {
+			continue
+		}
+		nodeName := nodeInfo.Node().Name
+		cAlloc, mAlloc, cUtil, mUtil, err := calculateAllocatableRequested(currentTime, nodeInfo, nodeName)
+		if err != nil {
+			return err
+		}
+
+		freeCPU := cAlloc - cUtil*cAlloc
+		freeMem := mAlloc - mUtil*mAlloc
+
+		// may signal overcommit, where packing may be dangerous and add to the node throttling
+		if freeCPU < 0 {
+			freeCPU = 0
+		}
+		if freeMem < 0 {
+			freeMem = 0
+		}
+		m.nodeValues[nodeName] = nodeFreeResources{
+			FreeCPU: freeCPU,
+			FreeMem: freeMem,
+		}
+	}
+	return nil
+}
+
+func (m *resourceFragmentationMetric) ComputeClusterLevel() error {
+	m.totalFreeCPU, m.totalFreeMem, m.hhiCPU, m.hhiMem = 0, 0, 0, 0
+	m.fragCPU, m.fragMem = -1.0, -1.0
+
+	for _, val := range m.nodeValues {
+		res, ok := val.(nodeFreeResources)
+		if !ok {
+			return fmt.Errorf("unexpected type in m.nodeValues, expected NodeFreeResources")
+		}
+		m.totalFreeCPU += res.FreeCPU
+		m.totalFreeMem += res.FreeMem
+	}
+
+	for _, val := range m.nodeValues {
+		res, ok := val.(nodeFreeResources)
+		if !ok {
+			return fmt.Errorf("unexpected type in m.nodeValues, expected NodeFreeResources")
+		}
+		if m.totalFreeCPU > 0 {
+			shareCPU := res.FreeCPU / m.totalFreeCPU
+			m.hhiCPU += shareCPU * shareCPU
+
+			if m.totalFreeMem > 0 {
+				shareMem := res.FreeMem / m.totalFreeMem
+				m.hhiMem += shareMem * shareMem
+			}
+		}
+	}
+	if m.totalFreeCPU > 0 {
+		m.fragCPU = 1.0 - m.hhiCPU
+	}
+	if m.totalFreeMem > 0 {
+		m.fragMem = 1.0 - m.hhiMem
+	}
+	if !m.initialSet {
+		m.initialFragCPU = m.fragCPU
+		m.initialFragMem = m.fragMem
+		m.initialSet = true
+	}
+	return nil
+}
+
+func (m *resourceFragmentationMetric) ReportNodeLevel(t testing.TB) {
+	for nodeName, val := range m.nodeValues {
+		res, ok := val.(nodeFreeResources)
+		if !ok {
+			t.Errorf("unexpected type in m.nodeValues, expected NodeFreeResources")
+			return
+		}
+		percCPU, percMem := 0.0, 0.0
+		if m.totalFreeCPU > 0 {
+			percCPU = (res.FreeCPU / m.totalFreeCPU) * 100
+		}
+		if m.totalFreeMem > 0 {
+			percMem = (res.FreeMem / m.totalFreeMem) * 100
+		}
+		t.Logf("Node: %s, Free CPU: %.2f (%.2f%%), Free Mem: %.2f (%.2f%%)",
+			nodeName, res.FreeCPU, percCPU, res.FreeMem, percMem)
+	}
+}
+
+func (m *resourceFragmentationMetric) ReportClusterLevel(t testing.TB) {
+	if m.fragCPU == -1.0 {
+		t.Logf("Resource: CPU, Total free: 0.00, HHI: N/A, Fragmentation: Undefined (cluster fully allocated)")
+	} else {
+		t.Logf("Resource: CPU, Total free: %.2f, HHI: %.2f, Fragmentation: %.2f", m.totalFreeCPU, m.hhiCPU, m.fragCPU)
+	}
+
+	if m.fragMem == -1.0 {
+		t.Logf("Resource: Mem, Total free: 0.00, HHI: N/A, Fragmentation: Undefined (cluster fully allocated)")
+	} else {
+		t.Logf("Resource: Mem, Total free: %.2f, HHI: %.2f, Fragmentation: %.2f", m.totalFreeMem, m.hhiMem, m.fragMem)
+	}
+
+}
+
+// ReportBenchmark for resourceFragmentationMetric has to handle edge cases (fully allocated cluster).
+// For initial and final states, -100% denotes fully allocated cluster, for delta the number is reset to 0.
+// Delta: fragCpuDelta < 0 = fragmentation decreased, fragCpuDelta > 0 = fragmentation increased.
+func (m *resourceFragmentationMetric) ReportBenchmark(b *testing.B) {
+	initialCpuDelta := m.initialFragCPU
+	finalCpuDelta := m.fragCPU
+	if initialCpuDelta == -1.0 {
+		initialCpuDelta = 0.0
+	}
+	if finalCpuDelta == -1.0 {
+		finalCpuDelta = 0.0
+	}
+	fragCpuDelta := finalCpuDelta - initialCpuDelta
+	b.ReportMetric(m.initialFragCPU*100, "frag_cpu_%_init")
+	b.ReportMetric(m.fragCPU*100, "frag_cpu_%_final")
+	b.ReportMetric(fragCpuDelta*100, "frag_cpu_%_delta")
+
+	initialMemDelta := m.initialFragMem
+	finalMemDelta := m.fragMem
+	if initialMemDelta == -1.0 {
+		initialMemDelta = 0.0
+	}
+	if finalMemDelta == -1.0 {
+		finalMemDelta = 0.0
+	}
+	fragMemDelta := finalMemDelta - initialMemDelta
+	b.ReportMetric(m.initialFragMem*100, "frag_mem_%_init")
+	b.ReportMetric(m.fragMem*100, "frag_mem_%_final")
+	b.ReportMetric(fragMemDelta*100, "frag_mem_%_delta")
+}
