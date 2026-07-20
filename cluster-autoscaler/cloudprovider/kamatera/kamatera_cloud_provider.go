@@ -36,11 +36,14 @@ import (
 	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "kamatera"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.KamateraProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildKamatera(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.KamateraProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 // kamateraCloudProvider implements cloudprovider.CloudProvider interface.
@@ -53,7 +56,7 @@ var _ cloudprovider.CloudProvider = (*kamateraCloudProvider)(nil)
 
 // Name returns name of the cloud provider.
 func (k *kamateraCloudProvider) Name() string {
-	return cloudprovider.KamateraProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

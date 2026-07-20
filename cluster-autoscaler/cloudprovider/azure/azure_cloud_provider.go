@@ -34,11 +34,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "azure"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.AzureProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildAzure(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.AzureProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (

@@ -37,11 +37,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "ovhcloud"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.OVHcloudProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildOVHcloud(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.OVHcloudProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (
@@ -102,7 +105,7 @@ func BuildOVHcloud(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGro
 
 // Name returns name of the cloud provider.
 func (provider *OVHCloudProvider) Name() string {
-	return cloudprovider.OVHcloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

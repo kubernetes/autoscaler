@@ -33,11 +33,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "digitalocean"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.DigitalOceanProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildDigitalOcean(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.DigitalOceanProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 var _ cloudprovider.CloudProvider = (*digitaloceanCloudProvider)(nil)
@@ -64,7 +67,7 @@ func newDigitalOceanCloudProvider(manager *Manager, rl *cloudprovider.ResourceLi
 
 // Name returns name of the cloud provider.
 func (d *digitaloceanCloudProvider) Name() string {
-	return cloudprovider.DigitalOceanProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

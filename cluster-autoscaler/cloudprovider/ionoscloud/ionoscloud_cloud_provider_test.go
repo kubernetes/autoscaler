@@ -186,7 +186,7 @@ func TestIonosCloudCloudProvider(t *testing.T) {
 
 func (s *CloudProviderTestSuite) TestName() {
 	var ionoscloud *IonosCloudCloudProvider
-	s.Equal(cloudprovider.IonoscloudProviderName, ionoscloud.Name())
+	s.Equal(ProviderName, ionoscloud.Name())
 }
 
 func (s *CloudProviderTestSuite) TestNodeGroups() {

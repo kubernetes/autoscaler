@@ -37,6 +37,14 @@ import (
 )
 
 const (
+	// EquinixMetalProviderName is the cloud provider name for this provider.
+	EquinixMetalProviderName = "equinixmetal"
+	// PacketProviderName is the cloud provider name for this provider.
+	// This is a legacy name.
+	PacketProviderName = "packet"
+)
+
+const (
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 	// DefaultControllerNodeLabelKey is the label added to Master/Controller to identify as
@@ -60,9 +68,9 @@ func init() {
 	build := func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildCloudProvider(opts, do, rl)
 	}
-	builder.RegisterCloudProvider(cloudprovider.EquinixMetalProviderName, build)
-	builder.RegisterCloudProvider(cloudprovider.PacketProviderName, build)
-	builder.SetDefaultCloudProvider(cloudprovider.EquinixMetalProviderName)
+	builder.RegisterCloudProvider(EquinixMetalProviderName, build)
+	builder.RegisterCloudProvider(PacketProviderName, build)
+	builder.SetDefaultCloudProvider(EquinixMetalProviderName)
 }
 
 // equinixMetalCloudProvider implements CloudProvider interface from cluster-autoscaler/cloudprovider module.
@@ -83,7 +91,7 @@ func buildEquinixMetalCloudProvider(metalManager equinixMetalManager, resourceLi
 
 // Name returns the name of the cloud provider.
 func (pcp *equinixMetalCloudProvider) Name() string {
-	return cloudprovider.EquinixMetalProviderName
+	return EquinixMetalProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.

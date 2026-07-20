@@ -41,11 +41,14 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "rancher"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.RancherProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildRancher(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.RancherProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (

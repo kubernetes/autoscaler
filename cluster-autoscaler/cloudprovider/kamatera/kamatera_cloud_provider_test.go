@@ -171,7 +171,7 @@ cluster-name=aaabbb
 		manager:         m,
 		resourceLimiter: resourceLimiter,
 	}
-	assert.Equal(t, cloudprovider.KamateraProviderName, kcp.Name())
+	assert.Equal(t, ProviderName, kcp.Name())
 	_, err := kcp.GetAvailableMachineTypes()
 	assert.Error(t, err)
 	_, err = kcp.NewNodeGroup("", nil, nil, nil, nil)

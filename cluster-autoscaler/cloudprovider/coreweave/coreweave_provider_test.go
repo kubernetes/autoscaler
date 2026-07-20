@@ -98,8 +98,8 @@ func (f *fakeManager) Refresh() error {
 
 func TestCoreWeaveCloudProvider_Name(t *testing.T) {
 	cp := &CoreWeaveCloudProvider{}
-	if cp.Name() != cloudprovider.CoreWeaveProviderName {
-		t.Errorf("expected provider name %q, got %q", cloudprovider.CoreWeaveProviderName, cp.Name())
+	if cp.Name() != ProviderName {
+		t.Errorf("expected provider name %q, got %q", ProviderName, cp.Name())
 	}
 }
 

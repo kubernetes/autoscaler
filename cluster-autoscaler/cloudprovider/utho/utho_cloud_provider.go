@@ -31,11 +31,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "utho"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.UthoProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildUtho(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.UthoProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 var _ cloudprovider.CloudProvider = (*uthoCloudProvider)(nil)
@@ -58,7 +61,7 @@ func newUthoCloudProvider(manager *Manager, rl *cloudprovider.ResourceLimiter) *
 
 // Name returns name of the cloud provider.
 func (u *uthoCloudProvider) Name() string {
-	return cloudprovider.UthoProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

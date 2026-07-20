@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"time"
 
-	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/magnum/gophercloud"
-	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/magnum/gophercloud/openstack"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack"
 )
 
 // DefaultExpirationTime is the maximum time to be alive of an OpenStack keystone token.

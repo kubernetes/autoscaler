@@ -37,11 +37,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "magnum"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.MagnumProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildMagnum(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.MagnumProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (
@@ -86,7 +89,7 @@ func buildMagnumCloudProvider(magnumManager magnumManager, resourceLimiter *clou
 
 // Name returns the name of the cloud provider.
 func (mcp *magnumCloudProvider) Name() string {
-	return cloudprovider.MagnumProviderName
+	return ProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.

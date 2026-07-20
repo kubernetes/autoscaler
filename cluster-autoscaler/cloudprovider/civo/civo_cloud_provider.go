@@ -33,11 +33,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "civo"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.CivoProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildCivo(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.CivoProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 var _ cloudprovider.CloudProvider = (*civoCloudProvider)(nil)
@@ -68,7 +71,7 @@ func newCivoCloudProvider(manager *Manager, rl *cloudprovider.ResourceLimiter) (
 
 // Name returns name of the cloud provider.
 func (d *civoCloudProvider) Name() string {
-	return cloudprovider.CivoProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

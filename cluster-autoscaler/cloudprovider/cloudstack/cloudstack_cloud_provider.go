@@ -34,11 +34,14 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "cloudstack"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.CloudStackProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildCloudStack(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.CloudStackProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (
@@ -63,7 +66,7 @@ type cloudStackCloudProvider struct {
 
 // Name returns name of the cloud provider.
 func (provider *cloudStackCloudProvider) Name() string {
-	return cloudprovider.CloudStackProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

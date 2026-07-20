@@ -38,11 +38,14 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "aws"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.AwsProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildAWS(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.AwsProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (
@@ -88,7 +91,7 @@ func (aws *awsCloudProvider) Cleanup() error {
 
 // Name returns name of the cloud provider.
 func (aws *awsCloudProvider) Name() string {
-	return cloudprovider.AwsProviderName
+	return ProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
