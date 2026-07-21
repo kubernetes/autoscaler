@@ -109,10 +109,6 @@ func (scenario scaleDownScenario) runIteration(b *testing.B) {
 	mt.Compute(deps.AutoscalingCtx.ClusterSnapshot, nil, b)
 	mt.Report("Initial Benchmark State", b)
 
-	if b.N != 1 {
-		b.Fatalf("This benchmark must be executed exactly once per run, use '-benchtime=1x' flag.")
-	}
-
 	if scenario.ScaleDownStrategy != nil {
 		for b.Loop() {
 			scenario.ScaleDownStrategy(b, mt, deps)
@@ -122,7 +118,7 @@ func (scenario scaleDownScenario) runIteration(b *testing.B) {
 	mt.ReportBenchmarks(b)
 }
 
-func BenchmarkRunOnceScaleDown(b *testing.B) {
+func BenchmarkScaledownEfficiency(b *testing.B) {
 	s := scaleDownScenario{
 		Name:                "three ng, basic setup",
 		InitialClusterState: differentNodeSizesMemIrrelevant(),
