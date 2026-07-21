@@ -605,6 +605,7 @@ func (m *caMetrics) InitMetrics() {
 
 	for _, reason := range []FailedScaleUpReason{CloudProviderError, APIError, Timeout} {
 		m.failedScaleUpCount.WithLabelValues(string(reason), "", "", "").Add(0)
+		m.failedNodeCreationCount.WithLabelValues(string(reason)).Add(0)
 	}
 
 	for _, reason := range []NodeScaleDownReason{Underutilized, Empty, Unready} {
