@@ -699,7 +699,7 @@ func (c *machineController) findScalableResourceProviderIDs(scalableResource *un
 				// Use an underscore as a separator between namespace and name as it is not a
 				// valid character within a namespace name.
 
-				// TODO(LucasAndFlores): once we moved far enough, we should exclude the check for failed machine (lines 684-708), since this state was deprecated.
+				// TODO(LucasAndFlores): once we moved to the version 1.15, we should exclude the check for failed machine (lines 684-708), since this state was deprecated.
 				// Ref: https://cluster-api.sigs.k8s.io/developer/providers/migrations/v1.10-to-v1.11#deprecations
 				klog.V(4).Infof("Status.FailureMessage of machine %q is %q", machine.GetName(), failureMessage)
 				providerIDs = append(providerIDs, createFailedMachineNormalizedProviderID(machine.GetNamespace(), machine.GetName()))
