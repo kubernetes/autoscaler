@@ -24,7 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // Fake manager for testing
@@ -98,8 +98,8 @@ func (f *fakeManager) Refresh() error {
 
 func TestCoreWeaveCloudProvider_Name(t *testing.T) {
 	cp := &CoreWeaveCloudProvider{}
-	if cp.Name() != cloudprovider.CoreWeaveProviderName {
-		t.Errorf("expected provider name %q, got %q", cloudprovider.CoreWeaveProviderName, cp.Name())
+	if cp.Name() != ProviderName {
+		t.Errorf("expected provider name %q, got %q", ProviderName, cp.Name())
 	}
 }
 

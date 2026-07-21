@@ -28,13 +28,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	brightbox "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/gobrightbox"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/k8ssdk"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/k8ssdk/mocks"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
 )
 
 const (
@@ -68,7 +68,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestName(t *testing.T) {
-	assert.Equal(t, makeFakeCloudProvider(nil).Name(), cloudprovider.BrightboxProviderName)
+	assert.Equal(t, makeFakeCloudProvider(nil).Name(), ProviderName)
 }
 
 func TestGPULabel(t *testing.T) {
@@ -141,12 +141,12 @@ func TestBuildBrightBox(t *testing.T) {
 	do := cloudprovider.NodeGroupDiscoveryOptions{}
 	opts := &coreoptions.AutoscalerOptions{
 		AutoscalingOptions: config.AutoscalingOptions{
-			CloudProviderName: cloudprovider.BrightboxProviderName,
+			CloudProviderName: ProviderName,
 			ClusterName:       fakeClusterName,
 		},
 	}
 	cloud := BuildBrightbox(opts, do, rl)
-	assert.Equal(t, cloud.Name(), cloudprovider.BrightboxProviderName)
+	assert.Equal(t, cloud.Name(), ProviderName)
 	obj, err := cloud.GetResourceLimiter()
 	assert.Equal(t, rl, obj)
 	assert.NoError(t, err)
@@ -175,7 +175,7 @@ func TestBuildBrightboxMissingClusterName(t *testing.T) {
 		do := cloudprovider.NodeGroupDiscoveryOptions{}
 		opts := &coreoptions.AutoscalerOptions{
 			AutoscalingOptions: config.AutoscalingOptions{
-				CloudProviderName: cloudprovider.BrightboxProviderName,
+				CloudProviderName: ProviderName,
 			},
 		}
 		BuildBrightbox(opts, do, rl)

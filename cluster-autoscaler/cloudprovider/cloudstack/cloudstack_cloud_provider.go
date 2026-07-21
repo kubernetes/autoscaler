@@ -22,23 +22,26 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/client-go/informers"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 
 	v1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "cloudstack"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.CloudStackProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildCloudStack(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.CloudStackProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (
@@ -63,7 +66,7 @@ type cloudStackCloudProvider struct {
 
 // Name returns name of the cloud provider.
 func (provider *cloudStackCloudProvider) Name() string {
-	return cloudprovider.CloudStackProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

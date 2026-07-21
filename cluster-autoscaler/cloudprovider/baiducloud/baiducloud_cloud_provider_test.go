@@ -21,7 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 var testBaiducloudManager = &BaiducloudManager{
@@ -56,7 +56,7 @@ func TestBuildBaiduCloudProvider(t *testing.T) {
 
 func TestName(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	assert.Equal(t, provider.Name(), cloudprovider.BaiducloudProviderName)
+	assert.Equal(t, provider.Name(), ProviderName)
 }
 
 func TestNodeGroups(t *testing.T) {

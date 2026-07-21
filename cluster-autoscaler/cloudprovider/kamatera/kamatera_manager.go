@@ -25,8 +25,8 @@ import (
 	"sort"
 	"sync"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 
 	"k8s.io/klog/v2"
 )

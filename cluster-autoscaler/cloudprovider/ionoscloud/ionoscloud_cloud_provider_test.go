@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 type NodeGroupTestSuite struct {
@@ -186,7 +186,7 @@ func TestIonosCloudCloudProvider(t *testing.T) {
 
 func (s *CloudProviderTestSuite) TestName() {
 	var ionoscloud *IonosCloudCloudProvider
-	s.Equal(cloudprovider.IonoscloudProviderName, ionoscloud.Name())
+	s.Equal(ProviderName, ionoscloud.Name())
 }
 
 func (s *CloudProviderTestSuite) TestNodeGroups() {

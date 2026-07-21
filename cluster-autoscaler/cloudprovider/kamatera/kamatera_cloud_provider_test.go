@@ -28,10 +28,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 func TestCloudProvider_newKamateraCloudProvider(t *testing.T) {
@@ -171,7 +171,7 @@ cluster-name=aaabbb
 		manager:         m,
 		resourceLimiter: resourceLimiter,
 	}
-	assert.Equal(t, cloudprovider.KamateraProviderName, kcp.Name())
+	assert.Equal(t, ProviderName, kcp.Name())
 	_, err := kcp.GetAvailableMachineTypes()
 	assert.Error(t, err)
 	_, err = kcp.NewNodeGroup("", nil, nil, nil, nil)

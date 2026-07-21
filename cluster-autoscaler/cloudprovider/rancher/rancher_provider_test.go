@@ -25,10 +25,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	provisioningv1 "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/rancher/provisioning.cattle.io/v1"
 	fakedynamic "k8s.io/client-go/dynamic/fake"
 	"k8s.io/utils/pointer"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 const testProviderID = "rke2://"

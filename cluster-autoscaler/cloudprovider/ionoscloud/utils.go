@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ionos "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 const (
