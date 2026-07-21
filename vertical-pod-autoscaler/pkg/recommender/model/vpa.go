@@ -21,10 +21,12 @@ import (
 	"maps"
 	"slices"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -194,6 +196,10 @@ type Vpa struct {
 	// Initial checkpoints of AggregateContainerStates for containers.
 	// The key is container name.
 	ContainersInitialAggregateState ContainerNameToAggregateStateMap
+	// Initial checkpoints of per-scope-value AggregateContainerStates for scoped
+	// DaemonSet VPAs. The outer key is the scope value and the inner key is the
+	// container name. It lets per-scope history survive recommender restarts.
+	ScopedContainersInitialAggregateState map[string]ContainerNameToAggregateStateMap
 	// UpdateMode describes how recommendations will be applied to pods
 	UpdateMode *vpa_types.UpdateMode
 	// Created denotes timestamp of the original VPA object creation
@@ -204,8 +210,15 @@ type Vpa struct {
 	APIVersion string
 	// TargetRef points to the controller managing the set of pods.
 	TargetRef *autoscalingv1.CrossVersionObjectReference
+	// Scope is an optional grouping key (node label key) for DaemonSet recommendations.
+	Scope string
 	// PodCount contains number of live Pods matching a given VPA object.
 	PodCount int
+
+	// scopedRecommendationGeneration increments whenever data that impacts scoped
+	// recommendations changes (samples, linked aggregations, policy/scope updates).
+	// Recommender uses it to skip full grouped recomputation on stable runs.
+	scopedRecommendationGeneration atomic.Uint64
 
 	// mutex protects concurrent access to conditions and recommendation fields
 	mutex sync.RWMutex
@@ -218,13 +231,14 @@ type Vpa struct {
 // links to the matched aggregations.
 func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 	vpa := &Vpa{
-		ID:                              id,
-		PodSelector:                     selector,
-		aggregateContainerStates:        make(aggregateContainerStatesMap),
-		ContainersInitialAggregateState: make(ContainerNameToAggregateStateMap),
-		Created:                         created,
-		Annotations:                     make(vpaAnnotationsMap),
-		conditions:                      make(vpaConditionsMap),
+		ID:                                    id,
+		PodSelector:                           selector,
+		aggregateContainerStates:              make(aggregateContainerStatesMap),
+		ContainersInitialAggregateState:       make(ContainerNameToAggregateStateMap),
+		ScopedContainersInitialAggregateState: make(map[string]ContainerNameToAggregateStateMap),
+		Created:                               created,
+		Annotations:                           make(vpaAnnotationsMap),
+		conditions:                            make(vpaConditionsMap),
 		// APIVersion defaults to the version of the client used to read resources.
 		// If a new version is introduced that needs to be differentiated beyond the
 		// client conversion, this needs to be done based on the resource content.
@@ -259,6 +273,7 @@ func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggre
 		aggregation.IsUnderVPA = true
 		aggregation.UpdateMode = vpa.UpdateMode
 		aggregation.UpdateFromPolicy(vpa_api_util.GetContainerResourcePolicy(aggregationKey.ContainerName(), vpa.ResourcePolicy))
+		vpa.TouchScopedRecommendationGeneration()
 	}
 }
 
@@ -299,6 +314,7 @@ func (vpa *Vpa) DeleteAggregation(aggregationKey AggregateStateKey) {
 	}
 	state.MarkNotAutoscaled()
 	delete(vpa.aggregateContainerStates, aggregationKey)
+	vpa.TouchScopedRecommendationGeneration()
 }
 
 // MergeCheckpointedState adds checkpointed VPA aggregations to the given aggregateStateMap.
@@ -321,6 +337,35 @@ func (vpa *Vpa) AggregateStateByContainerName() ContainerNameToAggregateStateMap
 	return containerNameToAggregateStateMap
 }
 
+// MergeScopedCheckpointedState adds per-scope checkpointed aggregations to the
+// given per-scope aggregate state map. It always merges checkpoint data into a
+// freshly owned AggregateContainerState so that shared live aggregations are not
+// mutated in place.
+func (vpa *Vpa) MergeScopedCheckpointedState(scopeGroups map[string]ContainerNameToAggregateStateMap) {
+	for scopeValue, containers := range vpa.ScopedContainersInitialAggregateState {
+		group, found := scopeGroups[scopeValue]
+		if !found {
+			group = make(ContainerNameToAggregateStateMap, len(containers))
+			scopeGroups[scopeValue] = group
+		}
+		for containerName, checkpointState := range containers {
+			merged := NewAggregateContainerState()
+			if existing, ok := group[containerName]; ok {
+				merged.MergeContainerState(existing)
+			}
+			merged.MergeContainerState(checkpointState)
+			group[containerName] = merged
+		}
+	}
+}
+
+// AggregateStateByScopeValueAndContainerName groups aggregation by scope value and container name.
+func (vpa *Vpa) AggregateStateByScopeValueAndContainerName(labelKey string) map[string]ContainerNameToAggregateStateMap {
+	scopeGroups := AggregateStateByLabelAndContainerName(vpa.aggregateContainerStates, labelKey)
+	vpa.MergeScopedCheckpointedState(scopeGroups)
+	return scopeGroups
+}
+
 // HasRecommendation returns if the VPA object contains any recommendation
 func (vpa *Vpa) HasRecommendation() bool {
 	vpa.mutex.RLock()
@@ -339,13 +384,24 @@ func (vpa *Vpa) matchesAggregation(aggregationKey AggregateStateKey) bool {
 // SetResourcePolicy updates the resource policy of the VPA and the scaling
 // policies of aggregators under this VPA.
 func (vpa *Vpa) SetResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy) {
-	if resourcePolicy == vpa.ResourcePolicy {
+	if apiequality.Semantic.DeepEqual(resourcePolicy, vpa.ResourcePolicy) {
 		return
 	}
 	vpa.ResourcePolicy = resourcePolicy
 	for container, state := range vpa.aggregateContainerStates {
 		state.UpdateFromPolicy(vpa_api_util.GetContainerResourcePolicy(container.ContainerName(), vpa.ResourcePolicy))
 	}
+	vpa.TouchScopedRecommendationGeneration()
+}
+
+// TouchScopedRecommendationGeneration marks scoped recommendation inputs as changed.
+func (vpa *Vpa) TouchScopedRecommendationGeneration() {
+	vpa.scopedRecommendationGeneration.Add(1)
+}
+
+// ScopedRecommendationGeneration returns a monotonic version of scoped recommendation inputs.
+func (vpa *Vpa) ScopedRecommendationGeneration() uint64 {
+	return vpa.scopedRecommendationGeneration.Load()
 }
 
 // SetUpdateMode updates the update mode of the VPA and aggregators under this VPA.

@@ -17,6 +17,7 @@ limitations under the License.
 package routines
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -24,15 +25,20 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
+	scopeutil "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/scope"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -40,6 +46,117 @@ type mockPodResourceRecommender struct{}
 
 func (*mockPodResourceRecommender) GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) logic.RecommendedPodResources {
 	return logic.RecommendedPodResources{}
+}
+
+type countingPodResourceRecommender struct {
+	calls atomic.Int64
+}
+
+func (c *countingPodResourceRecommender) GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) logic.RecommendedPodResources {
+	c.calls.Add(1)
+	return logic.RecommendedPodResources{}
+}
+
+func (c *countingPodResourceRecommender) CallCount() int64 {
+	return c.calls.Load()
+}
+
+func BenchmarkProcessVPAUpdateDaemonSetNoScope1000Pods(b *testing.B) {
+	r, vpaModel, observedVpa := setupProcessVPAUpdateBenchmark(b, 1000, false)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		processVPAUpdate(r, vpaModel, observedVpa)
+	}
+}
+
+func BenchmarkProcessVPAUpdateDaemonSetScope1000Groups(b *testing.B) {
+	r, vpaModel, observedVpa := setupProcessVPAUpdateBenchmark(b, 1000, true)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		processVPAUpdate(r, vpaModel, observedVpa)
+	}
+}
+
+func BenchmarkProcessVPAUpdateDaemonSetNoScope5000Pods(b *testing.B) {
+	r, vpaModel, observedVpa := setupProcessVPAUpdateBenchmark(b, 5000, false)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		processVPAUpdate(r, vpaModel, observedVpa)
+	}
+}
+
+func BenchmarkProcessVPAUpdateDaemonSetScope5000Groups(b *testing.B) {
+	r, vpaModel, observedVpa := setupProcessVPAUpdateBenchmark(b, 5000, true)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		processVPAUpdate(r, vpaModel, observedVpa)
+	}
+}
+
+func setupProcessVPAUpdateBenchmark(b *testing.B, podCount int, scoped bool) (*recommender, *model.Vpa, *vpaautoscalingv1.VerticalPodAutoscaler) {
+	return setupProcessVPAUpdateScenario(b, podCount, scoped, &mockPodResourceRecommender{})
+}
+
+func setupProcessVPAUpdateScenario(tb testing.TB, podCount int, scoped bool, podResourceRecommender logic.PodResourceRecommender) (*recommender, *model.Vpa, *vpaautoscalingv1.VerticalPodAutoscaler) {
+	tb.Helper()
+	if scoped {
+		featuregatetesting.SetFeatureGateDuringTest(tb, features.MutableFeatureGate, features.DaemonSetScope, true)
+	}
+	clusterState := model.NewClusterState(time.Minute)
+	selector, err := labels.Parse("app=daemon")
+	if err != nil {
+		tb.Fatalf("failed to parse selector: %v", err)
+	}
+
+	vpaName := "benchmark-process-vpa-update"
+	observedVpa := test.VerticalPodAutoscaler().
+		WithName(vpaName).
+		WithNamespace("default").
+		WithContainer("agent").
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+			Kind:       "DaemonSet",
+			Name:       "agent-ds",
+			APIVersion: "apps/v1",
+		}).
+		Get()
+	if scoped {
+		observedVpa.Spec.Scope = vpaautoscalingv1.VerticalPodAutoscalerScopeType("node.kubernetes.io/instance-type")
+	}
+
+	if err := clusterState.AddOrUpdateVpa(observedVpa, selector); err != nil {
+		tb.Fatalf("failed to add vpa: %v", err)
+	}
+	scopeLabelKey := scopeutil.AggregationLabelKey(string(observedVpa.Spec.Scope))
+	for i := range podCount {
+		podID := model.PodID{Namespace: "default", PodName: fmt.Sprintf("pod-%d", i)}
+		podLabels := labels.Set{"app": "daemon"}
+		if scoped {
+			podLabels[scopeLabelKey] = fmt.Sprintf("group-%04d", i)
+		}
+		clusterState.AddOrUpdatePod(podID, podLabels, corev1.PodRunning)
+		if err := clusterState.AddOrUpdateContainer(model.ContainerID{PodID: podID, ContainerName: "agent"}, model.Resources{}); err != nil {
+			tb.Fatalf("failed to add container for %s: %v", podID.PodName, err)
+		}
+	}
+
+	vpaID := model.VpaID{Namespace: "default", VpaName: vpaName}
+	vpaModel := clusterState.VPAs()[vpaID]
+	if vpaModel == nil {
+		tb.Fatalf("vpa %v was not found", vpaID)
+	}
+
+	fakeClient := vpa_fake.NewSimpleClientset(observedVpa).AutoscalingV1() //nolint:staticcheck // https://github.com/kubernetes/autoscaler/issues/8954
+	r := &recommender{
+		clusterState:                clusterState,
+		vpaClient:                   fakeClient,
+		podResourceRecommender:      podResourceRecommender,
+		recommendationPostProcessor: []RecommendationPostProcessor{},
+	}
+	return r, vpaModel, observedVpa
 }
 
 // TestProcessUpdateVPAsConcurrency tests processVPAUpdate for race conditions when run concurrently
@@ -274,6 +391,129 @@ func TestConcurrentVPAMethodAccess(t *testing.T) {
 	}
 
 	wg.Wait()
+}
+
+func TestProcessVPAUpdateScopedDaemonSetPublishesGlobalRecommendationAsFallback(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.DaemonSetScope, true)
+	vpaName := "scoped-vpa"
+	vpaID := model.VpaID{Namespace: "default", VpaName: vpaName}
+	selector, err := labels.Parse("app=test")
+	assert.NoError(t, err)
+
+	vpaModel := model.NewVpa(vpaID, selector, time.Now())
+	observedVpa := test.VerticalPodAutoscaler().
+		WithName(vpaName).
+		WithNamespace("default").
+		WithContainer("agent").
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+			Kind:       "DaemonSet",
+			Name:       "agent",
+			APIVersion: "apps/v1",
+		}).
+		Get()
+	observedVpa.Spec.Scope = vpaautoscalingv1.VerticalPodAutoscalerScopeType("node.deckhouse.io/group")
+
+	fakeClient := vpa_fake.NewSimpleClientset(observedVpa).AutoscalingV1() //nolint:staticcheck // https://github.com/kubernetes/autoscaler/issues/8954
+	r := &recommender{
+		clusterState:                model.NewClusterState(time.Minute),
+		vpaClient:                   fakeClient,
+		podResourceRecommender:      &mockPodResourceRecommender{},
+		recommendationPostProcessor: []RecommendationPostProcessor{},
+	}
+
+	processVPAUpdate(r, vpaModel, observedVpa)
+
+	updated, err := fakeClient.VerticalPodAutoscalers("default").Get(context.Background(), vpaName, metav1.GetOptions{})
+	assert.NoError(t, err)
+	// The global recommendation is always published, including for scoped
+	// DaemonSets, so it can serve as a fallback when the DaemonSetScope feature
+	// gate is disabled (for example during a rollback).
+	assert.NotNil(t, updated.Status.Recommendation)
+}
+
+func TestProcessVPAUpdateRegularVPAUsesRecommendationOnly(t *testing.T) {
+	vpaName := "regular-vpa"
+	vpaID := model.VpaID{Namespace: "default", VpaName: vpaName}
+	selector, err := labels.Parse("app=test")
+	assert.NoError(t, err)
+
+	vpaModel := model.NewVpa(vpaID, selector, time.Now())
+	observedVpa := test.VerticalPodAutoscaler().
+		WithName(vpaName).
+		WithNamespace("default").
+		WithContainer("app").
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+			Kind:       "Deployment",
+			Name:       "app",
+			APIVersion: "apps/v1",
+		}).
+		Get()
+
+	fakeClient := vpa_fake.NewSimpleClientset(observedVpa).AutoscalingV1() //nolint:staticcheck // https://github.com/kubernetes/autoscaler/issues/8954
+	r := &recommender{
+		clusterState:                model.NewClusterState(time.Minute),
+		vpaClient:                   fakeClient,
+		podResourceRecommender:      &mockPodResourceRecommender{},
+		recommendationPostProcessor: []RecommendationPostProcessor{},
+	}
+
+	processVPAUpdate(r, vpaModel, observedVpa)
+
+	updated, err := fakeClient.VerticalPodAutoscalers("default").Get(context.Background(), vpaName, metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.NotNil(t, updated.Status.Recommendation)
+	assert.Empty(t, updated.Status.RecommendationGroups)
+}
+
+func TestProcessVPAUpdateScopedDaemonSetUsesCacheWhenInputsUnchanged(t *testing.T) {
+	counter := &countingPodResourceRecommender{}
+	r, vpaModel, observedVpa := setupProcessVPAUpdateScenario(t, 2, true, counter)
+
+	processVPAUpdate(r, vpaModel, observedVpa)
+	firstRunCalls := counter.CallCount()
+	assert.Equal(t, int64(3), firstRunCalls, "expected 1 summary + 2 grouped recommendation calls")
+
+	processVPAUpdate(r, vpaModel, observedVpa)
+	assert.Equal(t, firstRunCalls, counter.CallCount(), "second run should hit scoped cache and avoid recomputation")
+}
+
+func TestProcessVPAUpdateScopedDaemonSetInvalidatesCacheOnNewSample(t *testing.T) {
+	counter := &countingPodResourceRecommender{}
+	r, vpaModel, observedVpa := setupProcessVPAUpdateScenario(t, 2, true, counter)
+
+	processVPAUpdate(r, vpaModel, observedVpa)
+	firstRunCalls := counter.CallCount()
+	assert.Equal(t, int64(3), firstRunCalls, "expected 1 summary + 2 grouped recommendation calls")
+
+	err := r.clusterState.AddSample(&model.ContainerUsageSampleWithKey{
+		ContainerUsageSample: model.ContainerUsageSample{
+			MeasureStart: time.Now(),
+			Resource:     model.ResourceCPU,
+			Usage:        model.CPUAmountFromCores(0.2),
+		},
+		Container: model.ContainerID{
+			PodID: model.PodID{
+				Namespace: "default",
+				PodName:   "pod-0",
+			},
+			ContainerName: "agent",
+		},
+	})
+	assert.NoError(t, err)
+
+	processVPAUpdate(r, vpaModel, observedVpa)
+	assert.Greater(t, counter.CallCount(), firstRunCalls, "cache should be invalidated after new metrics sample")
+}
+
+func TestProcessVPAUpdateRegularVPANotAffectedByScopedCache(t *testing.T) {
+	counter := &countingPodResourceRecommender{}
+	r, vpaModel, observedVpa := setupProcessVPAUpdateScenario(t, 2, false, counter)
+
+	processVPAUpdate(r, vpaModel, observedVpa)
+	processVPAUpdate(r, vpaModel, observedVpa)
+
+	// Regular VPA computes summary recommendation each run and does not use scoped cache.
+	assert.Equal(t, int64(2), counter.CallCount())
 }
 
 // TestUpdateVPAsRaceCondition tests the UpdateVPAs method for race conditions

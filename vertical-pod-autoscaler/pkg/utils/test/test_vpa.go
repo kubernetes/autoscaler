@@ -43,6 +43,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithTargetResource(resource corev1.ResourceName, value string) VerticalPodAutoscalerBuilder
 	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithTargetRef(targetRef *autoscalingv1.CrossVersionObjectReference) VerticalPodAutoscalerBuilder
+	WithScope(scope vpa_types.VerticalPodAutoscalerScopeType) VerticalPodAutoscalerBuilder
 	WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithAnnotations(map[string]string) VerticalPodAutoscalerBuilder
 	WithRecommender(string2 string) VerticalPodAutoscalerBuilder
@@ -98,6 +99,7 @@ type verticalPodAutoscalerBuilder struct {
 	recommender             string
 	oomBumpUpRatio          *resource.Quantity
 	oomMinBumpUp            *resource.Quantity
+	scope                   vpa_types.VerticalPodAutoscalerScopeType
 }
 
 func (b *verticalPodAutoscalerBuilder) WithName(vpaName string) VerticalPodAutoscalerBuilder {
@@ -234,6 +236,12 @@ func (b *verticalPodAutoscalerBuilder) WithMinReplicas(minReplicas *int32) Verti
 	return &c
 }
 
+func (b *verticalPodAutoscalerBuilder) WithScope(scope vpa_types.VerticalPodAutoscalerScopeType) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.scope = scope
+	return &c
+}
+
 func (b *verticalPodAutoscalerBuilder) WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.oomBumpUpRatio = ratio
@@ -352,6 +360,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			TargetRef:      b.targetRef,
 			Recommenders:   recommenders,
 			StartupBoost:   b.startupBoost,
+			Scope:          b.scope,
 		},
 		Status: vpa_types.VerticalPodAutoscalerStatus{
 			Recommendation: recommendation,

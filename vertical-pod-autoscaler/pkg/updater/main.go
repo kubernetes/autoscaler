@@ -169,7 +169,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 
 	ignoredNamespaces := strings.Split(commonFlag.IgnoredVpaObjectNamespaces, ",")
 
-	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
+	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessorWithNodeGetter(limitRangeCalculator, kubeClient.CoreV1().Nodes()))
 
 	calculators := []patch.Calculator{inplace.NewResourceInPlaceUpdatesCalculator(recommendationProvider), inplace.NewInPlaceUpdatedCalculator(), inplace.NewUnboostAnnotationCalculator()}
 
@@ -188,7 +188,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		config.PodLifetimeUpdateThreshold,
 		config.EvictAfterOOMThreshold,
 		admissionControllerStatusNamespace,
-		vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
+		vpa_api_util.NewCappingRecommendationProcessorWithNodeGetter(limitRangeCalculator, kubeClient.CoreV1().Nodes()),
 		priority.NewScalingDirectionPodEvictionAdmission(),
 		targetSelectorFetcher,
 		controllerFetcher,
