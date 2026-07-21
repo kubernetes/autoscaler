@@ -652,10 +652,11 @@ func TestFromScwStatus(t *testing.T) {
 			errorCode:    "deleted",
 		},
 		{
-			name:         "creation_error",
-			status:       scalewaygo.NodeStatusCreationError,
-			hasErrorInfo: true,
-			errorCode:    "creation_error",
+			name:          "creation_error",
+			status:        scalewaygo.NodeStatusCreationError,
+			expectedState: cloudprovider.InstanceCreating,
+			hasErrorInfo:  true,
+			errorCode:     "creation_error",
 		},
 		{
 			name:          "upgrading",
