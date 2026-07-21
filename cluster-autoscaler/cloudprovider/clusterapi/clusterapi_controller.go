@@ -66,6 +66,8 @@ const (
 	autoDiscovererTypeClusterAPI  = "clusterapi"
 	autoDiscovererClusterNameKey  = "clusterName"
 	autoDiscovererNamespaceKey    = "namespace"
+
+	machinePhaseFailed = "Failed"
 )
 
 // machineController watches for Nodes, Machines, MachinePools, MachineSets, and
@@ -685,14 +687,24 @@ func (c *machineController) findScalableResourceProviderIDs(scalableResource *un
 		}
 
 		if found {
-			// Provide a normalized ID to allow the autoscaler to track machines that will never
-			// become nodes and mark the nodegroup unhealthy after maxNodeProvisionTime.
-			// Fake ID needs to be recognised later and converted into a machine key.
-			// Use an underscore as a separator between namespace and name as it is not a
-			// valid character within a namespace name.
-			klog.V(4).Infof("Status.FailureMessage of machine %q is %q", machine.GetName(), failureMessage)
-			providerIDs = append(providerIDs, createFailedMachineNormalizedProviderID(machine.GetNamespace(), machine.GetName()))
-			continue
+			machinePhase, found, err := unstructured.NestedString(machine.UnstructuredContent(), "status", "phase")
+			if err != nil {
+				return nil, err
+			}
+
+			if found && machinePhase == machinePhaseFailed {
+				// Provide a normalized ID to allow the autoscaler to track machines that will never
+				// become nodes and mark the nodegroup unhealthy after maxNodeProvisionTime.
+				// Fake ID needs to be recognised later and converted into a machine key.
+				// Use an underscore as a separator between namespace and name as it is not a
+				// valid character within a namespace name.
+
+				// TODO(LucasAndFlores): once we moved to the version 1.15, we should exclude the check for failed machine (lines 684-708), since this state was deprecated.
+				// Ref: https://cluster-api.sigs.k8s.io/developer/providers/migrations/v1.10-to-v1.11#deprecations
+				klog.V(4).Infof("Status.FailureMessage of machine %q is %q", machine.GetName(), failureMessage)
+				providerIDs = append(providerIDs, createFailedMachineNormalizedProviderID(machine.GetNamespace(), machine.GetName()))
+				continue
+			}
 		}
 
 		// Deleting Machines
