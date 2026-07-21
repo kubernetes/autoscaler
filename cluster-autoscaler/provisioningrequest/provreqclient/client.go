@@ -24,9 +24,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"k8s.io/apimachinery/pkg/labels"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1ac "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
 	listers "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/listers/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
@@ -116,8 +116,22 @@ func (c *ProvisioningRequestClient) UpdateProvisioningRequest(pr *v1.Provisionin
 	if err != nil {
 		return pr, err
 	}
-	klog.V(4).Infof("Updated ProvisioningRequest %s/%s,  status: %q,", updatedPr.Namespace, updatedPr.Name, updatedPr.Status)
+	klog.V(4).Infof("Updated ProvisioningRequest %s/%s, status: %+v,", updatedPr.Namespace, updatedPr.Name, updatedPr.Status)
 	return updatedPr, nil
+}
+
+// ApplyProvisioningRequest applies the given ProvisioningRequest with Server-Side Apply.
+func (c *ProvisioningRequestClient) ApplyProvisioningRequest(prAC *v1ac.ProvisioningRequestApplyConfiguration, fieldOwner string) (*v1.ProvisioningRequest, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
+	defer cancel()
+	if prAC.Name == nil || prAC.Namespace == nil {
+		return nil, fmt.Errorf("failed to apply ProvisioningRequest: name and namespace are required")
+	}
+	pr, err := c.client.AutoscalingV1().ProvisioningRequests(*prAC.Namespace).ApplyStatus(ctx, prAC, metav1.ApplyOptions{FieldManager: fieldOwner, Force: true})
+	if err != nil {
+		return nil, err
+	}
+	return pr, nil
 }
 
 // ProvisioningRequestsForPods check that all pods belong to one ProvisioningRequest and return it.
