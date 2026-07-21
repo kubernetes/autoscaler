@@ -145,6 +145,9 @@ func buildAutoscaler(ctx context.Context, debuggingSnapshotter debuggingsnapshot
 		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
 
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
+		// Use a static JSON content type config for ProvisioningRequest CRD data exchange
+		// to adhere to CRD requirements.
+		restConfig.ContentType = "application/json"
 		client, err := provreqclient.NewProvisioningRequestClient(restConfig)
 		if err != nil {
 			return nil, nil, err
