@@ -230,6 +230,8 @@ metadata:
 spec:
   group: autoscaling.k8s.io
   names:
+    categories:
+    - podautoscalers
     kind: VerticalPodAutoscaler
     listKind: VerticalPodAutoscalerList
     plural: verticalpodautoscalers
