@@ -75,6 +75,9 @@ rules:
     - get
     - list
     - watch
+    - create
+    - update
+    - patch
   - apiGroups:
     - resource.k8s.io
     resources:
@@ -137,6 +140,7 @@ rules:
     - apps
     resources:
     - daemonsets
+    - deployments
     - replicasets
     - statefulsets
     verbs:
@@ -221,6 +225,23 @@ rules:
     - get
     - list
     - watch
+    - update
+    - patch
+  - apiGroups:
+    - autoscaling.x-k8s.io
+    resources:
+    - capacitybuffers
+    - capacityquotas
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - autoscaling.x-k8s.io
+    resources:
+    - capacityquotas/status
+    - capacitybuffers/status
+    verbs:
     - update
     - patch
 {{- if .Values.rbac.additionalRules }}
