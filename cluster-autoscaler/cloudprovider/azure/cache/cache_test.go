@@ -17,6 +17,7 @@ limitations under the License.
 package cache
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -128,6 +129,39 @@ func Test_Evict_RemovesCacheEntry(t *testing.T) {
 
 	// Verify the cache entry is no longer present after eviction
 	_, ok = cache.Read("test-key")
+	g.Expect(ok).To(BeFalse())
+}
+
+func Test_Cache_WithKeyCanonicalizer_UsesCanonicalKeyForAllOperations(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	cache := New[string, string](
+		logr.Discard(),
+		WithKeyCanonicalizer(strings.ToLower),
+	)
+
+	cache.Add("TEST-KEY", "test-value")
+
+	value, ok := cache.Read("test-key")
+	g.Expect(ok).To(BeTrue())
+	g.Expect(value).To(Equal("test-value"))
+	g.Expect(cache.entries).To(HaveKey("test-key"))
+
+	cache.Evict("TEST-KEY")
+
+	_, ok = cache.Read("test-key")
+	g.Expect(ok).To(BeFalse())
+}
+
+func Test_Cache_WithoutKeyCanonicalizer_PreservesKeyComparison(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	cache := New[string, string](logr.Discard())
+	cache.Add("TEST-KEY", "test-value")
+
+	_, ok := cache.Read("test-key")
 	g.Expect(ok).To(BeFalse())
 }
 

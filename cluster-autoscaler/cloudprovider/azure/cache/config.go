@@ -25,6 +25,7 @@ import (
 // config is a configuration for creating a new Cache instance.
 // Values are set using functional options passed to New()
 type config struct {
-	clock clock.PassiveClock
-	ttl   time.Duration
+	clock            clock.PassiveClock
+	ttl              time.Duration
+	keyCanonicalizer any // Forced to use an any because Go doesn't have target type generic coercion
 }

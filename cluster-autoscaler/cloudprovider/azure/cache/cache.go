@@ -28,6 +28,9 @@ type Cache[K comparable, V any] struct {
 	// entries is a map of cache entries, keyed by the cache key.
 	entries map[K]*item[V]
 
+	// keyCanonicalizer transforms keys before they are used to access entries.
+	keyCanonicalizer func(K) K
+
 	// ttl is the time-to-live for cache entries.
 	ttl time.Duration
 
@@ -52,8 +55,9 @@ func New[K comparable, V any](
 	options ...Option,
 ) *Cache[K, V] {
 	cfg := &config{
-		clock: clock.RealClock{},
-		ttl:   5 * time.Minute,
+		clock:            clock.RealClock{},
+		ttl:              5 * time.Minute,
+		keyCanonicalizer: func(key K) K { return key },
 	}
 
 	for _, option := range options {
@@ -61,19 +65,21 @@ func New[K comparable, V any](
 	}
 
 	return &Cache[K, V]{
-		entries: make(map[K]*item[V]),
-		log:     log,
-		clock:   cfg.clock,
-		ttl:     cfg.ttl,
+		entries:          make(map[K]*item[V]),
+		keyCanonicalizer: cfg.keyCanonicalizer.(func(K) K),
+		log:              log,
+		clock:            cfg.clock,
+		ttl:              cfg.ttl,
 	}
 }
 
 // Read returns the cached value for the given key, or loads it if not present or expired.
 func (c *Cache[K, V]) Read(key K) (V, bool) {
 	now := c.clock.Now()
+	canonicalKey := c.keyCanonicalizer(key)
 
 	// Check if the entry is present and not expired.
-	entry, entryFound := c.lookupEntry(key)
+	entry, entryFound := c.lookupEntry(canonicalKey)
 	if entryFound {
 		if now.Before(entry.expiry) {
 			c.log.V(4).Info("Cache hit",
@@ -84,9 +90,9 @@ func (c *Cache[K, V]) Read(key K) (V, bool) {
 
 		// Entry is expired, evict it.
 		c.log.V(4).Info("Cache entry expired, evicting",
-			"key", key,
+			"key", canonicalKey,
 			"expiry", entry.ExpiryString())
-		c.Evict(key)
+		c.evict(canonicalKey)
 	}
 
 	var zero V
@@ -99,6 +105,7 @@ func (c *Cache[K, V]) Read(key K) (V, bool) {
 // value is the value to be cached.
 // now is the current time, used to calculate the expiry time.
 func (c *Cache[K, V]) Add(key K, value V) {
+	canonicalKey := c.keyCanonicalizer(key)
 	toCache := item[V]{
 		value:  value,
 		expiry: c.clock.Now().Add(c.ttl),
@@ -106,17 +113,21 @@ func (c *Cache[K, V]) Add(key K, value V) {
 
 	c.log.V(4).Info(
 		"Adding cache entry",
-		"key", key,
+		"key", canonicalKey,
 		"expiry", toCache.ExpiryString())
 
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	c.entries[key] = &toCache
+	c.entries[canonicalKey] = &toCache
 }
 
 // Evict removes the cache entry (if present)
 func (c *Cache[K, V]) Evict(key K) {
+	c.evict(c.keyCanonicalizer(key))
+}
+
+func (c *Cache[K, V]) evict(key K) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 

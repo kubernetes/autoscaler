@@ -38,3 +38,10 @@ func WithTTL(ttl time.Duration) Option {
 		c.ttl = ttl
 	}
 }
+
+// WithKeyCanonicalizer sets the function used to transform keys before cache operations.
+func WithKeyCanonicalizer[K comparable](canonicalize func(K) K) Option {
+	return func(c *config) {
+		c.keyCanonicalizer = canonicalize
+	}
+}
