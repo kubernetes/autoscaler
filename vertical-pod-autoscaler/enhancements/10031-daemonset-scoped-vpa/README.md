@@ -178,7 +178,7 @@ const (
 ```go
 type VerticalPodAutoscalerStatus struct {
     Recommendation *RecommendedPodResources           `json:"recommendation,omitempty"`
-    Groups         []RecommendedPodResourcesGroup     `json:"groups,omitempty"`
+    RecommendationGroups         []RecommendedPodResourcesGroup     `json:"recommendationGroups,omitempty"`
     // Conditions, ObservedGeneration unchanged
 }
 
