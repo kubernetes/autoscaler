@@ -207,7 +207,7 @@ spec:
     name: falco
   scope: nvidia.com/gpu.present
   updatePolicy:
-    updateMode: "Auto"
+    updateMode: "Recreate"
 status:
   # recommendation omitted when scoped
   groups:
