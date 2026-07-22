@@ -435,6 +435,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 		currentTime,
 		targetSizes,
 	)
+
 	return nil
 }
 
@@ -1400,6 +1401,11 @@ func FakeNode(instance cloudprovider.Instance, reason string) *apiv1.Node {
 // GetScaleUpFailures returns the scale-up failures map.
 func (csr *ClusterStateRegistry) GetScaleUpFailures() map[string][]scaleupfailures.Record {
 	return csr.scaleUpFailures.Get()
+}
+
+// GetPerNodeGroupReadiness returns the perNodeGroupReadiness map.
+func (csr *ClusterStateRegistry) GetPerNodeGroupReadiness() map[string]Readiness {
+	return csr.perNodeGroupReadiness
 }
 
 func truncateIfExceedMaxLength(s string, maxLength int) string {
