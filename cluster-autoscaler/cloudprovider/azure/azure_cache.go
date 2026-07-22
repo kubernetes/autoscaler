@@ -103,7 +103,7 @@ type azureCache struct {
 	// cloudprovider.InstanceState. It is populated alongside instanceToNodeGroup
 	// from the results of calling Nodes() on each nodegroup. It is used by
 	// HasInstance to not include instances in an active state of deletion.
-	instanceStates map[azureRef]cloudprovider.InstanceState
+	instanceStates *cache.Cache[azureRef, cloudprovider.InstanceState]
 
 	// unownedInstance maintains a set of instance ids not belonging to any nodegroup.
 	// It is used (together with instanceToNodeGroup) when looking up the nodegroup for a given instance id.
@@ -125,10 +125,12 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 	instanceToNodeGroup := cache.New[azureRef, cloudprovider.NodeGroup](
 		klog.Background(),
 		cache.WithTTL(cacheTTL),
-		cache.WithKeyCanonicalizer(func(ref azureRef) azureRef {
-			ref.Name = strings.ToLower(ref.Name)
-			return ref
-		}),
+		cache.WithKeyCanonicalizer(azureRef.canonicalize),
+	)
+	instanceStates := cache.New[azureRef, cloudprovider.InstanceState](
+		klog.Background(),
+		cache.WithTTL(cacheTTL),
+		cache.WithKeyCanonicalizer(azureRef.canonicalize),
 	)
 
 	cache := &azureCache{
@@ -145,7 +147,7 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		virtualMachines:      make(map[string][]*armcompute.VirtualMachine),
 		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
 		instanceToNodeGroup:  instanceToNodeGroup,
-		instanceStates:       make(map[azureRef]cloudprovider.InstanceState),
+		instanceStates:       instanceStates,
 		unownedInstances:     make(map[azureRef]bool),
 		autoscalingOptions:   make(map[azureRef]map[string]string),
 		skus:                 &skewer.Cache{}, // populated iff config.EnableDynamicInstanceList
@@ -243,7 +245,7 @@ func (m *azureCache) regenerate() error {
 	defer m.mutex.Unlock()
 
 	m.instanceToNodeGroup.ReplaceAll(newInstanceToNodeGroupCache)
-	m.instanceStates = newInstanceStates
+	m.instanceStates.ReplaceAll(newInstanceStates)
 	m.autoscalingOptions = newAutoscalingOptions
 
 	// Reset unowned instances cache.
@@ -495,8 +497,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 	if _, found := m.instanceToNodeGroup.Read(instanceRef); found {
 		// An instance that is actively being deleted is reported as gone so that
 		// ClusterStateRegistry stops counting it as an upcoming node.
-		// TODO: Canonicalize this lookup when instanceStates becomes a cache.
-		if state, found := m.instanceStates[instanceRef]; found && state == cloudprovider.InstanceDeleting {
+		if state, found := m.instanceStates.Read(instanceRef); found && state == cloudprovider.InstanceDeleting {
 			return false, nil
 		}
 		return true, nil
@@ -595,6 +596,6 @@ func (m *azureCache) setInstanceStateByProviderID(providerID string, state cloud
 
 	ref := azureRef{Name: resourceID}
 	if _, found := m.instanceToNodeGroup.Read(ref); found {
-		m.instanceStates[ref] = state
+		m.instanceStates.Add(ref, state)
 	}
 }

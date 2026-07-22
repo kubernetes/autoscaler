@@ -189,6 +189,11 @@ type azureRef struct {
 	Name string
 }
 
+func (ref azureRef) canonicalize() azureRef {
+	ref.Name = strings.ToLower(ref.Name)
+	return ref
+}
+
 // GetKey returns key of the given azure reference.
 func (m *azureRef) GetKey() string {
 	return m.Name
