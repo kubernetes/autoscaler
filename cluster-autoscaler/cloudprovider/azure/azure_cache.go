@@ -19,7 +19,6 @@ package azure
 import (
 	"context"
 	"errors"
-	"maps"
 	"reflect"
 	"regexp"
 	"strings"
@@ -85,7 +84,8 @@ type azureCache struct {
 
 	// scaleSets keeps the set of all known scalesets in the resource group, populated/refreshed via VMSS.List() call.
 	// It is only used/populated if vmType is vmTypeVMSS (default).
-	scaleSets map[string]*armcompute.VirtualMachineScaleSet
+	scaleSets *cache.Cache[string, *armcompute.VirtualMachineScaleSet]
+
 	// virtualMachines keeps the set of all VMs in the resource group.
 	// It is only used/populated if vmType is vmTypeStandard.
 	virtualMachines map[string][]*armcompute.VirtualMachine
@@ -140,6 +140,12 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		cache.WithKeyCanonicalizer(strings.ToLower),
 	)
 
+	scaleSetsCache := cache.New[string, *armcompute.VirtualMachineScaleSet](
+		klog.Background(),
+		cache.WithTTL(cacheTTL),
+		cache.WithKeyCanonicalizer(strings.ToLower),
+	)
+
 	cache := &azureCache{
 		interrupt:            make(chan struct{}),
 		azClient:             client,
@@ -150,7 +156,7 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		enableVMsAgentPool:   config.EnableVMsAgentPool,
 		vmType:               config.VMType,
 		vmsPools:             vmsPoolCache,
-		scaleSets:            make(map[string]*armcompute.VirtualMachineScaleSet),
+		scaleSets:            scaleSetsCache,
 		virtualMachines:      make(map[string][]*armcompute.VirtualMachine),
 		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
 		instanceToNodeGroup:  instanceToNodeGroup,
@@ -187,7 +193,7 @@ func (m *azureCache) getVirtualMachines() map[string][]*armcompute.VirtualMachin
 	return m.virtualMachines
 }
 
-func (m *azureCache) getScaleSets() map[string]*armcompute.VirtualMachineScaleSet {
+func (m *azureCache) getScaleSetsCache() *cache.Cache[string, *armcompute.VirtualMachineScaleSet] {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -195,15 +201,8 @@ func (m *azureCache) getScaleSets() map[string]*armcompute.VirtualMachineScaleSe
 }
 
 // setScaleSet replaces the cached entry for a single VMSS, e.g. after a fresh GET.
-// It copies the map before mutating it so readers that obtained the map via
-// getScaleSets() are not exposed to a concurrent map write.
 func (m *azureCache) setScaleSet(name string, vmss *armcompute.VirtualMachineScaleSet) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	scaleSets := maps.Clone(m.scaleSets)
-	scaleSets[name] = vmss
-	m.scaleSets = scaleSets
+	m.scaleSets.Add(name, vmss)
 }
 
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
@@ -239,7 +238,7 @@ func (m *azureCache) regenerate() error {
 
 	// Regenerate VMSS to autoscaling options mapping.
 	newAutoscalingOptions := make(map[azureRef]map[string]string)
-	for _, vmss := range m.getScaleSets() {
+	for _, vmss := range m.getScaleSetsCache().ReadAll() {
 		ref := azureRef{Name: *vmss.Name}
 		options := extractAutoscalingOptionsFromScaleSetTags(vmss.Tags)
 		if !reflect.DeepEqual(m.getAutoscalingOptions(ref), options) {
@@ -291,7 +290,7 @@ func (m *azureCache) fetchAzureResources() error {
 	if err != nil {
 		return err
 	}
-	m.scaleSets = vmssResult
+	m.scaleSets.ReplaceAll(vmssResult)
 	vmResult, err := m.fetchVirtualMachines()
 	if err != nil {
 		return err
@@ -566,14 +565,14 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 }
 
 // isAllScaleSetsAreUniform determines if all the scale set autoscaler is monitoring are Uniform or not.
-// Should be called with lock, as it reads m.scaleSets directly.
 func (m *azureCache) areAllScaleSetsUniform() bool {
-	for _, scaleSet := range m.scaleSets {
+	for _, scaleSet := range m.scaleSets.ReadAll() {
 		if scaleSet.Properties != nil && scaleSet.Properties.OrchestrationMode != nil &&
 			*scaleSet.Properties.OrchestrationMode == armcompute.OrchestrationModeFlexible {
 			return false
 		}
 	}
+
 	return true
 }
 

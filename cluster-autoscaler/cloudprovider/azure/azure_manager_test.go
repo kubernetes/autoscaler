@@ -1138,8 +1138,7 @@ func TestVMSSNotFound(t *testing.T) {
 		assert.Len(t, nodeGroups, 1)
 		assert.Equal(t, nodeGroups[0].Id(), testASG)
 		// expect no scale sets to be present
-		scaleSets := manager.azureCache.getScaleSets()
-		assert.Len(t, scaleSets, 0)
+		assert.True(t, manager.azureCache.getScaleSetsCache().IsEmpty())
 	})
 }
 
