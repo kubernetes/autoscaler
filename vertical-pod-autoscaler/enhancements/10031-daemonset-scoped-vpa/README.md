@@ -494,8 +494,16 @@ scope on large clusters.
 ### Graduation Criteria
 
 The full feature ships in alpha behind the gate; the gate is a safe-rollout
-switch, not a staged feature drop. Beta is intentionally omitted — there is no
-additional functionality planned between alpha and GA, only stabilization.
+switch, not a mechanism for maturing the feature over time. All scope
+functionality lands in alpha — nothing is deferred to a later stage. The
+feature then follows the standard feature-gate graduation procedure:
+
+1. **Alpha** — the gate defaults to `false`; users opt in.
+2. **Beta** — the gate defaults to `true`; users can opt out.
+3. **GA** — the gate is locked to `true` and can no longer be disabled.
+
+Beta and GA do not add scope functionality; they only advance the default and
+lock the gate once the feature has proven stable at scale.
 
 **Alpha**
 
@@ -510,15 +518,18 @@ additional functionality planned between alpha and GA, only stabilization.
 - User-facing documentation and examples (including the GPU-label recipe) in
   https://github.com/kubernetes/autoscaler.
 
+**Beta**
+
+- The gate defaults to `true` (users can still disable it).
+- No new scope functionality; alpha feedback addressed, and performance and
+  checkpoint behavior validated on large clusters.
+
 **GA**
 
 - Feedback from real users / issue reports operating the feature on
   heterogeneous DaemonSets (for example a security or observability agent on a
   mixed GPU cluster), without breaking changes to the
   `status.recommendationGroups` shape.
-- Documented limits: the maximum number of groups / nodes at which the
-  recommender stays within an acceptable loop time and `status` size, verified
-  on a cluster of about 5000 nodes.
 
 ### Version Skew
 
