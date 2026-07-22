@@ -129,6 +129,30 @@ func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
 	return ResourceAmountMax(container.memoryPeak, container.oomPeak)
 }
 
+// InitMemoryPeakFromCheckpoint seeds the container's in-progress memory peak state from a
+// checkpoint that was restored after a recommender restart, and adds the peak to the
+// aggregation so it is reflected immediately. Subsequent memory samples continue to
+// aggregate into the same interval window (see addMemorySample), so the peak accumulated
+// before the restart is not lost. It is a no-op if peak is nil or holds no peak.
+func (container *ContainerState) InitMemoryPeakFromCheckpoint(peak *MemoryPeakData) {
+	if peak == nil {
+		return
+	}
+	container.WindowEnd = peak.WindowEnd
+	container.lastMemorySampleStart = peak.LastMemorySampleStart
+	container.memoryPeak = peak.MemoryPeak
+	container.oomPeak = peak.OOMPeak
+	maxPeak := container.GetMaxMemoryPeak()
+	if maxPeak == 0 {
+		return
+	}
+	container.aggregator.AddSample(&ContainerUsageSample{
+		MeasureStart: peak.WindowEnd,
+		Usage:        maxPeak,
+		Resource:     ResourceMemory,
+	})
+}
+
 // GetOOMBumpUpRatio returns the ratio to increase resources when OOM is detected.
 // It delegates to the aggregator's implementation.
 func (container *ContainerState) GetOOMBumpUpRatio() float64 {

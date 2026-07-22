@@ -242,7 +242,9 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	}
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
 		cluster.findOrCreateAggregateContainerState(containerID)
-		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
+		containerState := NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
+		cluster.seedMemoryPeakFromCheckpoint(containerID, containerState)
+		pod.Containers[containerID.ContainerName] = containerState
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
@@ -412,6 +414,28 @@ func (cluster *clusterState) findOrCreateAggregateContainerState(containerID Con
 		}
 	}
 	return aggregateContainerState
+}
+
+// seedMemoryPeakFromCheckpoint restores the in-progress memory peak persisted in a VPA
+// checkpoint (loaded into ContainersInitialAggregateState) into a newly created
+// ContainerState, so the peak accumulated before a recommender restart is not lost. The
+// peak is consumed once applied, so it seeds at most one container even when a VPA matches
+// multiple pods. It must be called after findOrCreateAggregateContainerState has linked the
+// aggregation to the matching VPAs.
+func (cluster *clusterState) seedMemoryPeakFromCheckpoint(containerID ContainerID, container *ContainerState) {
+	aggregateStateKey := cluster.aggregateStateKeyForContainerID(containerID)
+	for _, vpa := range cluster.vpas {
+		if !vpa.UsesAggregation(aggregateStateKey) {
+			continue
+		}
+		initial, ok := vpa.ContainersInitialAggregateState[containerID.ContainerName]
+		if !ok || initial.CurrentMemoryPeak == nil {
+			continue
+		}
+		container.InitMemoryPeakFromCheckpoint(initial.CurrentMemoryPeak)
+		initial.CurrentMemoryPeak = nil
+		return
+	}
 }
 
 // garbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the clusterState.
