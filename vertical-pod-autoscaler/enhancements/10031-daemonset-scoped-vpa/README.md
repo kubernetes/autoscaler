@@ -125,8 +125,8 @@ log shippers, CNI / policy agents) whenever a node label correlates with load.
 ### Non-Goals
 
 1. Scoped recommendations for Deployments, StatefulSets, or Job-like workloads.
-   This is out of scope for the initial alpha and can be revisited for other
-   controllers if there is user demand.
+   These are out of scope for this AEP; support for other controllers, if
+   needed, would be proposed as a separate AEP behind its own feature gate.
 2. Cross-group bootstrapping (using other groups to invent an initial
    recommendation for a never-seen label value).
 3. Requiring a fixed taxonomy of scopes (`Node`, `NodePool`, cloud-specific
@@ -205,9 +205,9 @@ type RecommendedPodResourcesGroup struct {
 ```
 
 To keep the status object small when there are many groups, each group carries
-only the effective `target` for its containers in alpha; `lowerBound`,
-`upperBound` and `uncappedTarget` are omitted from groups. The global
-`status.recommendation` still carries the full bounds.
+only the effective `target` for its containers; `lowerBound`, `upperBound` and
+`uncappedTarget` are omitted from groups. The global `status.recommendation`
+still carries the full bounds.
 
 #### `VerticalPodAutoscalerCheckpoint`
 
@@ -423,8 +423,8 @@ manifest.
 ### Checkpoints and Restart Behavior
 
 Live aggregation is partitioned per scope value via the synthetic label, and
-checkpoints are **scope-aware from alpha** so this partitioning survives
-recommender restarts and rollbacks:
+checkpoints are **scope-aware** so this partitioning survives recommender
+restarts and rollbacks:
 
 - The checkpoint writer persists one checkpoint per
   `(VPA, containerName, scopeValue)` **in addition to** the global
@@ -441,11 +441,14 @@ Garbage collection:
 - When a VPA is deleted, the existing checkpoint garbage collector removes all
   of its checkpoints — global and per-scope — because they share the same
   `spec.vpaObjectName`.
-- Cleanup of an individual **stale scope value** while the VPA still exists (a
-  node label value that no longer occurs anywhere in the cluster) is not
-  performed in alpha. Such a checkpoint is inert; it may reappear as an empty
-  group after a restart. Active per-scope-value cleanup can be added later
-  without an API change.
+- A **stale scope value** whose checkpoint outlives the label value in the
+  cluster (while the VPA still exists — for example a node label value that no
+  longer occurs anywhere) is not actively removed. Such a checkpoint is inert
+  and at worst reappears as an empty group after a restart. This is consistent
+  with how VPA already retains per-container checkpoints and is a general
+  checkpoint garbage-collection concern rather than something specific to this
+  feature; a dedicated cleanup, if ever wanted, would be a separate enhancement
+  and needs no API change here.
 
 ### Performance Considerations
 
@@ -521,22 +524,19 @@ scope on large clusters.
 
 ### Graduation Criteria
 
-The full feature ships in alpha behind the gate; the gate is a safe-rollout
-switch, not a mechanism for maturing the feature over time. All scope
-functionality lands in alpha — nothing is deferred to a later stage. The
-feature then follows the standard feature-gate graduation procedure:
+The feature gate is a rollout switch, not a mechanism for maturing the feature
+over time. The feature is complete in alpha: the full functionality — API,
+global-recommendation fallback, scope-aware checkpoints, admission validation,
+benchmarks, e2e, and documentation — ships in alpha. Graduation then only
+advances the gate's default and finally locks it; it adds no functionality.
+Anything genuinely out of scope (see [Non-Goals](#non-goals)) would be a
+separate AEP behind its own feature gate rather than a later stage of this one.
 
-1. **Alpha** — the gate defaults to `false`; users opt in.
-2. **Beta** — the gate defaults to `true`; users can opt out.
-3. **GA** — the gate is locked to `true` and can no longer be disabled.
+**Alpha** — gate defaults to `false` (opt-in). Delivered in full:
 
-Beta and GA do not add scope functionality; they only advance the default and
-lock the gate once the feature has proven stable at scale.
-
-**Alpha**
-
-- Feature gate, `spec.scope` and `status.recommendationGroups` API, admission
-  validation, and the global-recommendation fallback.
+- Feature gate, `spec.scope` and `status.recommendationGroups` API, the
+  `VerticalPodAutoscalerCheckpoint` `scopeValue` field, admission validation,
+  and the global-recommendation fallback.
 - Scope-aware checkpoints (per `(VPA, container, scopeValue)`).
 - Unit coverage for validation, feeder, recommender, capping/admission
   selection, and checkpoints.
@@ -546,18 +546,12 @@ lock the gate once the feature has proven stable at scale.
 - User-facing documentation and examples (including the GPU-label recipe) in
   https://github.com/kubernetes/autoscaler.
 
-**Beta**
+**Beta** — gate defaults to `true` (users can still opt out). No functional or
+API changes; this is only the default-on rollout step.
 
-- The gate defaults to `true` (users can still disable it).
-- No new scope functionality; alpha feedback addressed, and performance and
-  checkpoint behavior validated on large clusters.
-
-**GA**
-
-- Feedback from real users / issue reports operating the feature on
-  heterogeneous DaemonSets (for example a security or observability agent on a
-  mixed GPU cluster), without breaking changes to the
-  `status.recommendationGroups` shape.
+**GA** — gate is locked to `true`. No functional or API changes; the API
+(`spec.scope`, `status.recommendationGroups`, checkpoint `scopeValue`) is
+declared stable.
 
 ### Version Skew
 
@@ -581,7 +575,7 @@ what VPA already requires.
   [PR #10012](https://github.com/kubernetes/autoscaler/pull/10012).
 - 2026-07-22: AEP aligned to the implementation: global `status.recommendation`
   kept as a fallback, `status.recommendationGroups` naming, scope-aware
-  checkpoints in alpha, e2e and 5000-group benchmarks, and the Falco / GPU-label
+  checkpoints, e2e and 5000-group benchmarks, and the Falco / GPU-label
   motivating example.
 
 ## Alternatives
