@@ -392,6 +392,36 @@ func addTestContainer(t *testing.T, cluster ClusterState) *ContainerState {
 	return cluster.GetContainer(testContainerID)
 }
 
+// Verifies that the in-progress memory peak persisted in a checkpoint (loaded into
+// ContainersInitialAggregateState) is restored into a newly created container, and is
+// consumed so it is applied at most once.
+func TestAddContainerSeedsMemoryPeakFromCheckpoint(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	vpa := addTestVpa(cluster)
+
+	windowEnd := time.Unix(10000, 0)
+	initial := NewAggregateContainerState()
+	initial.CurrentMemoryPeak = &MemoryPeakData{
+		WindowEnd:             windowEnd,
+		LastMemorySampleStart: time.Unix(9900, 0),
+		MemoryPeak:            MemoryAmountFromBytes(7e9),
+	}
+	vpa.ContainersInitialAggregateState[testContainerID.ContainerName] = initial
+
+	addTestPod(cluster)
+	container := addTestContainer(t, cluster)
+
+	assert.Equal(t, windowEnd, container.WindowEnd, "window end should be restored from the checkpoint")
+	assert.Equal(t, MemoryAmountFromBytes(7e9), container.GetMaxMemoryPeak(), "peak should be restored from the checkpoint")
+	assert.Nil(t, initial.CurrentMemoryPeak, "restored peak should be consumed")
+
+	if assert.Len(t, vpa.aggregateContainerStates, 1) {
+		for _, acs := range vpa.aggregateContainerStates {
+			assert.False(t, acs.AggregateMemoryPeaks.IsEmpty(), "restored peak should be present in the live aggregation")
+		}
+	}
+}
+
 // Creates a VPA followed by a matching pod. Verifies that the links between
 // VPA, the container and the aggregation are set correctly.
 func TestAddVpaThenAddPod(t *testing.T) {
