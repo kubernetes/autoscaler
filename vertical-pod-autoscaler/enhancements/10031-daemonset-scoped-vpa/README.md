@@ -1,14 +1,8 @@
 # AEP-10031: DaemonSet-Scoped Vertical Pod Autoscaler Recommendations
 
 <!--
-Greenfield AEP describing the design implemented in
+AEP describing the design implemented in
 https://github.com/kubernetes/autoscaler/pull/10012
-
-Related discussion / earlier draft:
-https://github.com/kubernetes/autoscaler/pull/7942
-
-Replace NNNN with the tracking issue number before opening an AEP PR.
-Copy this directory to vertical-pod-autoscaler/enhancements/<NNNN>-daemonset-scope/
 -->
 
 <!-- toc -->
@@ -22,12 +16,17 @@ Copy this directory to vertical-pod-autoscaler/enhancements/<NNNN>-daemonset-sco
 - [Proposal](#proposal)
 - [Design Details](#design-details)
   - [API Changes](#api-changes)
+    - [<code>spec.scope</code>](#specscope)
+    - [<code>status.recommendationGroups</code>](#statusrecommendationgroups)
+    - [Example (Falco)](#example-falco)
   - [End-to-End Flow](#end-to-end-flow)
   - [Recommender](#recommender)
+    - [Grouping mechanism](#grouping-mechanism)
+    - [Cache lifecycle](#cache-lifecycle)
   - [Admission Controller and Updater](#admission-controller-and-updater)
   - [Validation](#validation)
   - [Feature Gate](#feature-gate)
-  - [Absent Labels and Cold Start](#absent-labels-and-cold-start)
+  - [Missing Scope Label and Cold Start](#missing-scope-label-and-cold-start)
   - [Checkpoints and Restart Behavior](#checkpoints-and-restart-behavior)
   - [Performance Considerations](#performance-considerations)
   - [Test Plan](#test-plan)
@@ -37,7 +36,6 @@ Copy this directory to vertical-pod-autoscaler/enhancements/<NNNN>-daemonset-sco
   - [Kubernetes Version Compatibility](#kubernetes-version-compatibility)
 - [Implementation History](#implementation-history)
 - [Alternatives](#alternatives)
-- [Relationship to AEP-7942](#relationship-to-aep-7942)
 <!-- /toc -->
 
 ## Summary
@@ -49,10 +47,10 @@ part of the fleet.
 
 This AEP adds **DaemonSet scope**: an optional `spec.scope` field naming a
 **node label key**. The recommender maintains independent recommendations for
-each distinct value of that label and publishes them as `status.groups`.
-Admission and updater select the group that matches the pod's node.
-
-The feature is alpha, default-off, behind the `DaemonSetScope` feature gate.
+each distinct value of that label and publishes them as
+`status.recommendationGroups`, while keeping the aggregate
+`status.recommendation` as a fallback. Admission and updater select the group
+that matches the pod's node.
 
 ## Motivation
 
@@ -87,10 +85,10 @@ CPU and memory on GPU nodes than on CPU-only nodes.
 
 A single VPA recommendation cannot fit both classes:
 
-| Node class       | What a global VPA tends to do                                |
-| ---------------- | ------------------------------------------------------------ |
-| CPU-only workers | Over-request Falco (capacity wasted on every node)           |
-| GPU workers      | Under-request Falco (throttling, OOMRisk, gaps in detection) |
+| Node class       | What a global VPA tends to do                                 |
+| ---------------- | ------------------------------------------------------------- |
+| CPU-only workers | Over-request Falco (capacity wasted on every node)            |
+| GPU workers      | Under-request Falco (throttling, OOM risk, gaps in detection) |
 
 Clusters already label GPU capacity, for example:
 
@@ -126,6 +124,8 @@ log shippers, CNI / policy agents) whenever a node label correlates with load.
 ### Non-Goals
 
 1. Scoped recommendations for Deployments, StatefulSets, or Job-like workloads.
+   This is out of scope for the initial alpha and can be revisited for other
+   controllers if there is user demand.
 2. Cross-group bootstrapping (using other groups to invent an initial
    recommendation for a never-seen label value).
 3. Requiring a fixed taxonomy of scopes (`Node`, `NodePool`, cloud-specific
@@ -141,16 +141,30 @@ When `DaemonSetScope` is enabled and a VPA targets a DaemonSet with non-empty
 
 1. **Recommender** groups matching pods by `node.labels[spec.scope]` (or a
    sentinel if the label is absent) and writes one recommendation per group to
-   `status.groups`.
-2. **`status.recommendation` is cleared** for that VPA so consumers cannot
-   mistake a global average for the scoped result.
+   `status.recommendationGroups`.
+2. **`status.recommendation` keeps the aggregate recommendation** for the whole
+   DaemonSet. It is a safe fallback for clients that do not consume
+   `recommendationGroups` (for example after the feature gate is disabled during
+   a rollback), so scoped mode never leaves pods without a recommendation.
 3. **Admission / updater** resolve the pod's scope value from its node and
-   apply the matching group’s container targets.
-4. If no group exists yet for that value, VPA does not override the pod’s
-   resources from recommendation data (DaemonSet defaults / last applied
-   values remain).
+   apply the matching group's container targets, falling back to the global
+   recommendation when no group matches or the gate is off.
+4. If no group exists yet for that value and the fallback recommendation is not
+   available either, VPA does not override the pod's resources from
+   recommendation data (DaemonSet defaults / last applied values remain).
 
 Unscoped VPAs are unchanged.
+
+Worked example: a DaemonSet runs on three nodes — node A labeled `gpu=true`,
+node B labeled `gpu=false`, and node C without the `gpu` label — with
+`spec.scope: gpu`. The recommender produces three groups:
+
+- `scopeValue: "true"` for node A's pod,
+- `scopeValue: "false"` for node B's pod,
+- `scopeValue: "__absent__"` for node C's pod (the label key is missing).
+
+Each pod receives the target from its node's group, while
+`status.recommendation` holds the aggregate across all three pods.
 
 ## Design Details
 
@@ -163,34 +177,36 @@ Unscoped VPAs are unchanged.
 Scope VerticalPodAutoscalerScopeType `json:"scope,omitempty"`
 
 type VerticalPodAutoscalerScopeType string
-
-const (
-    ScopeNode VerticalPodAutoscalerScopeType = "kubernetes.io/hostname"
-)
 ```
 
-- Type is a string alias so arbitrary label keys work.
-- `ScopeNode` documents the well-known per-node key; it is not the only valid
-  value.
+- Type is a string alias so any node label key works (cluster-specific labels
+  such as GPU labels are first-class).
+- The well-known per-node key is `kubernetes.io/hostname`; it is not special-
+  cased in the API, only handled as a fast path when resolving the scope value
+  (see [Admission Controller and Updater](#admission-controller-and-updater)).
 
-#### `status.groups`
+#### `status.recommendationGroups`
 
 ```go
 type VerticalPodAutoscalerStatus struct {
-    Recommendation *RecommendedPodResources           `json:"recommendation,omitempty"`
-    RecommendationGroups         []RecommendedPodResourcesGroup     `json:"recommendationGroups,omitempty"`
+    Recommendation       *RecommendedPodResources       `json:"recommendation,omitempty"`
+    RecommendationGroups []RecommendedPodResourcesGroup `json:"recommendationGroups,omitempty"`
     // Conditions, ObservedGeneration unchanged
 }
 
 type RecommendedPodResourcesGroup struct {
-    ScopeValue               string                           `json:"scopeValue"`
-    ContainerRecommendations []RecommendedContainerResources  `json:"containerRecommendations,omitempty"`
+    // ScopeValue is the value of the node label named by spec.scope shared by
+    // the pods in this group. The sentinel "__absent__" is used when the node
+    // does not carry that label key.
+    ScopeValue               string                          `json:"scopeValue"`
+    ContainerRecommendations []RecommendedContainerResources `json:"containerRecommendations,omitempty"`
 }
 ```
 
-Alpha payload compaction: for scoped groups, recommender stores **Target only**
-(LowerBound / UpperBound / UncappedTarget omitted) to limit object size when the
-number of groups is large.
+To keep the status object small when there are many groups, each group carries
+only the effective `target` for its containers in alpha; `lowerBound`,
+`upperBound` and `uncappedTarget` are omitted from groups. The global
+`status.recommendation` still carries the full bounds.
 
 #### Example (Falco)
 
@@ -209,8 +225,13 @@ spec:
   updatePolicy:
     updateMode: "Recreate"
 status:
-  # recommendation omitted when scoped
-  groups:
+  recommendation:
+    containerRecommendations:
+      - containerName: falco
+        target:
+          cpu: 250m
+          memory: 300Mi
+  recommendationGroups:
     - scopeValue: "true"
       containerRecommendations:
         - containerName: falco
@@ -238,13 +259,15 @@ Node labels                     DaemonSet pods
  recommender aggregates usage per (scopeValue, container)
      |
      v
- writes status.groups[]; clears status.recommendation
+ writes status.recommendationGroups[]; keeps global status.recommendation
      |
      v
- admission/updater: read pod.nodeName -> node.labels[scope]
+ admission/updater: resolve node (pod.spec.nodeName or the metadata.name
+ nodeAffinity matchField) -> node.labels[scope]
      |
      v
- select matching status.groups[].containerRecommendations
+ select matching status.recommendationGroups[].containerRecommendations,
+ or fall back to status.recommendation
      |
      v
  mutate / update pod requests (existing capping / policies apply)
@@ -255,13 +278,22 @@ Node labels                     DaemonSet pods
 #### Grouping mechanism
 
 The implementation keeps **a single in-memory VPA** per user object (no N
-shadow VPAs in ClusterState).
+shadow VPAs in ClusterState). Grouping reuses the existing aggregation
+machinery without changing how recommendations are calculated.
 
-For each pod matching a scoped DaemonSet VPA, the cluster feeder adds:
+`scopeKey` is the value of `spec.scope` — a node label key such as
+`nvidia.com/gpu.present`. To partition samples by that node label without
+colliding with the pod's own labels, the cluster feeder adds a **synthetic pod
+label** for each pod matching a scoped DaemonSet VPA:
 
 ```text
-podLabels["__vpa_scope_" + hex(fnv32(scopeKey))] = <labelValue or "__absent__">
+podLabels["__vpa_scope_" + hex(fnv32(scopeKey))] = <node label value or "__absent__">
 ```
+
+- The `__vpa_scope_` prefix plus a hash of `scopeKey` yields a stable, short
+  key that cannot clash with user labels.
+- The value is the node's value for `spec.scope`, or the sentinel `__absent__`
+  when the node does not carry that label key.
 
 Aggregate container state keys therefore diverge per scope value. The
 recommender:
@@ -269,16 +301,23 @@ recommender:
 1. Builds `map[scopeValue]ContainerNameToAggregateStateMap`.
 2. Runs the existing pod-resource recommender per scope value.
 3. Runs recommendation post-processors per group.
-4. Strips non-target fields from group recommendations.
-5. Updates VPA status: `Groups = ...`, `Recommendation = nil`.
+4. Strips non-target fields from group recommendations (targets only).
+5. Updates VPA status: sets `RecommendationGroups`, and keeps
+   `Recommendation` populated with the aggregate over all matching pods.
 6. Caches `(vpaID, scopedGeneration) -> (recommendation, groups)` so unchanged
    scoped inputs do not rebuild all groups every loop.
 
-#### Global recommendation field
+#### Cache lifecycle
 
-Even for scoped VPAs the recommender still computes an internal global
-aggregation for bookkeeping consistent with today’s VPA model, but **does not
-publish** it on `status.recommendation` when scope is active.
+- The recommender scoped cache is keyed by `(vpaID, scopedGeneration)`; it is
+  invalidated whenever the scoped generation changes (pods added/removed,
+  policy or scope changes).
+- Aggregations for pods on removed nodes age out through the existing VPA
+  aggregate garbage collection (`DeleteRemovedPods` plus normal aggregate
+  ageing), so scope values whose nodes disappear stop contributing and their
+  groups fall away.
+- Admission's node-label cache and the capping group lookup are described in
+  [Admission Controller and Updater](#admission-controller-and-updater).
 
 ### Admission Controller and Updater
 
@@ -286,14 +325,25 @@ Selection logic (shared capping / recommendation path):
 
 1. If not a scoped DaemonSet (gate off, empty scope, or non-DaemonSet): use
    `status.recommendation` as today.
-2. Resolve scope value:
-   - if `spec.scope == kubernetes.io/hostname`, use `pod.spec.nodeName`;
-   - else GET Node (cached) and read `labels[spec.scope]`, or `__absent__`.
-3. Look up `status.groups` by `scopeValue`.
-4. On miss: return empty container recommendations (no speculative fallback).
+2. Resolve the pod's node:
+   - use `pod.spec.nodeName` if it is already set;
+   - otherwise read the node name from the `metadata.name` matchField in the
+     pod's required `nodeAffinity`, which the DaemonSet controller injects
+     (since Kubernetes 1.12 DaemonSet pods are scheduled by the default
+     scheduler and have no `spec.nodeName` at admission time).
+3. Resolve the scope value:
+   - if `spec.scope` is the hostname label (`kubernetes.io/hostname`), the
+     scope value is the node name itself (fast path, no Node GET);
+   - otherwise GET (or read from cache) the Node object and use
+     `labels[spec.scope]`, or `__absent__` if the key is missing.
+4. Look up `status.recommendationGroups` by `scopeValue`.
+5. On miss: fall back to the global `status.recommendation`. If that is also
+   empty, return an empty container recommendation set (no speculative
+   per-group value is invented).
 
-Node label resolution is cached in admission to avoid a GET per pod on every
-webhook call.
+Node label resolution is cached in admission (short TTL) to avoid a Node GET
+per pod on every webhook call. The capping group lookup is keyed by the VPA's
+`resourceVersion` and scope, so it is rebuilt when the VPA changes.
 
 ### Validation
 
@@ -324,111 +374,162 @@ Enablement example:
 
 Must be set on all three components for full behavior.
 
-### Absent Labels and Cold Start
+### Missing Scope Label and Cold Start
 
-| Case                          | Scope value used   | Recommendation                        |
-| ----------------------------- | ------------------ | ------------------------------------- |
-| Label present                 | label value string | Matching `status.groups` entry        |
-| Label missing                 | `__absent__`       | Matching `__absent__` group if any    |
-| Never-seen value / no samples | (no group yet)     | No recommendation applied from groups |
-| Pod not bound to a node yet   | empty / unresolved | No group selection                    |
+"Missing label" here means the node does not carry the label key named by
+`spec.scope`. Scope resolution and cold start behave as follows:
 
-This matches the product decision that alpha will **not** invent an initial
-recommendation from other groups (avoids scheduling oversized agents onto small
-nodes — a concern raised in AEP-7942 discussions).
+| Case                          | Scope value used   | Recommendation applied                  |
+| ----------------------------- | ------------------ | --------------------------------------- |
+| Label present                 | label value string | Matching `recommendationGroups` entry   |
+| Label missing on the node     | `__absent__`       | Matching `__absent__` group if present  |
+| Never-seen value / no samples | (no group yet)     | Global `status.recommendation` fallback |
+| Pod not bound to a node yet   | empty / unresolved | Global `status.recommendation` fallback |
+
+For a brand-new node or a never-seen label value, VPA does not invent a
+per-group recommendation from other groups (that is a non-goal). Until the
+group has enough samples, the pod uses the global recommendation fallback, or —
+if no recommendation exists at all yet — the requests from the DaemonSet
+manifest.
 
 ### Checkpoints and Restart Behavior
 
-Live aggregation is per scope value (via the synthetic label).
+Live aggregation is partitioned per scope value via the synthetic label, and
+checkpoints are **scope-aware from alpha** so this partitioning survives
+recommender restarts and rollbacks:
 
-The existing checkpoint writer still keys checkpoints by `(VPA, containerName)`
-and merges aggregate states that share a container name. **Alpha limitation:**
-after a recommender restart, per-scope histogram separation may not fully
-survive checkpoint reload.
+- The checkpoint writer persists one checkpoint per
+  `(VPA, containerName, scopeValue)` **in addition to** the global
+  `(VPA, containerName)` checkpoint. The global checkpoint backs
+  `status.recommendation`; the per-scope checkpoints back
+  `status.recommendationGroups`.
+- Checkpoint object names embed a short hash of the scope value so arbitrary
+  label values stay within Kubernetes object-name limits, and the empty scope
+  value is stored with a distinct sentinel so it is not confused with the
+  non-scoped checkpoint.
 
-**Beta requirement:** checkpoint and restore per
-`(VPA, containerName, scopeValue)`, including naming and garbage collection for
-stale scope values.
+Garbage collection:
+
+- When a VPA is deleted, the existing checkpoint garbage collector removes all
+  of its checkpoints — global and per-scope — because they share the same
+  `spec.vpaObjectName`.
+- Cleanup of an individual **stale scope value** while the VPA still exists (a
+  node label value that no longer occurs anywhere in the cluster) is not
+  performed in alpha. Such a checkpoint is inert; it may reappear as an empty
+  group after a restart. Active per-scope-value cleanup can be added later
+  without an API change.
 
 ### Performance Considerations
 
-Cardinality is controlled by the operator’s choice of label:
+The number of groups is controlled by the operator's choice of label. A poor
+choice — especially `kubernetes.io/hostname` — increases recommender CPU and
+memory and the size of the VPA `status` object, because it creates one group
+per node. Kubernetes supports clusters of up to ~5000 nodes, so a hostname
+scope can produce up to ~5000 groups for a single VPA. Operators should prefer
+coarse-grained labels (GPU present, instance type, node pool) and reserve
+hostname scope for cases where load is genuinely per-node.
 
-| Scope key                          | Typical #groups | Guidance                            |
-| ---------------------------------- | --------------- | ----------------------------------- |
-| `nvidia.com/gpu.present`           | 2               | Preferred for Falco-like splits     |
-| `node.kubernetes.io/instance-type` | tens            | Good default for hardware classes   |
-| `kubernetes.io/hostname`           | ≈ node count    | Highest cost; use when truly needed |
+Design decisions that keep this workable:
 
-Mitigations already in the implementation:
+- **Scoped recommendation cache:** the recommender reuses the previous
+  iteration's groups when scoped inputs have not changed (keyed by
+  `(vpaID, scopedGeneration)`), so it does not rebuild every group each loop.
+- **Compact group status:** groups store only the effective `target`, keeping
+  the `status` object small even with many groups.
+- **Admission node-label cache:** node label lookups are cached (short TTL) to
+  avoid a Node GET per pod.
+- **Benchmarks:** the `ProcessVPAUpdate` and aggregation paths are benchmarked
+  at both 1000 and 5000 groups to confirm the cost scales roughly linearly with
+  the number of groups and stays acceptable at the maximum supported cluster
+  size.
 
-- scoped recommendation cache across recommender iterations;
-- compact group status (targets only);
-- admission node-label cache;
-- benchmarks for ~1000 groups on the ProcessVPAUpdate / aggregation paths.
+We measure recommender loop duration, allocations on the scoped
+`ProcessVPAUpdate` / aggregation paths, memory growth, and `status` object size
+as a function of the number of groups. The target is that overhead scales
+roughly linearly with the number of groups and remains acceptable for hostname
+scope on large clusters.
 
 ### Test Plan
 
 **Unit**
 
 - `IsScopedDaemonSet` respects the feature gate.
-- Feeder injects synthetic labels; uses `__absent__` when node label missing.
-- Recommender populates `status.groups` and clears `status.recommendation`.
-- Admission selects the correct group for GPU vs non-GPU labels.
+- Feeder injects synthetic labels; uses `__absent__` when the node label is
+  missing.
+- Recommender populates `status.recommendationGroups` and keeps the global
+  `status.recommendation` as a fallback.
+- Capping / recommendation provider selects the correct group by node label,
+  uses the hostname fast path, and falls back to the global recommendation on a
+  miss or when the gate is disabled.
+- Checkpoint writer persists per-scope checkpoints and the cluster feeder
+  restores them into the correct per-scope aggregate state.
 - Validation matrix for gate / kind / grandfathering.
 
 **Benchmarks**
 
-- DaemonSet scope with 1000 groups (update + aggregation).
+- DaemonSet scope with 1000 and 5000 groups (`ProcessVPAUpdate` and
+  aggregation).
 
 **e2e (alpha)**
 
-- Kind cluster with two node label classes and a DaemonSet VPA scoped on that
-  label; assert distinct mutated requests.
+- Kind cluster with three node classes for the scope label — two distinct
+  label values plus one node without the label — and a DaemonSet VPA scoped on
+  that label; assert distinct recommendation groups (including `__absent__` for
+  the unlabeled node) and that the global recommendation is kept.
 - Gate-off rejection of `spec.scope` on create.
 
 ### Feature Enablement and Rollback
 
 - **Enable:** set `DaemonSetScope=true` on admission, recommender, updater;
   create scoped VPAs.
-- **Disable:** stop writing/consuming groups; validation blocks new scoped
-  specs (existing fields remain stored). Running pods keep last-applied
-  requests until recreated.
-- **Re-enable:** recommender rebuilds groups from live metrics (checkpoint
-  fidelity limited in alpha — see above).
+- **Disable (rollback) does not lose data:** the recommender stops publishing
+  `recommendationGroups`, and admission/updater fall back to the global
+  `status.recommendation`, which is always kept for scoped VPAs. Validation
+  blocks new scoped specs while existing fields remain stored. Per-scope
+  history is preserved in scope-aware checkpoints, so re-enabling the gate
+  restores per-group recommendations without a cold start.
+- **Re-enable:** the recommender rebuilds groups from live metrics and the
+  restored per-scope checkpoints.
 
 ### Graduation Criteria
 
+The full feature ships in alpha behind the gate; the gate is a safe-rollout
+switch, not a staged feature drop. Beta is intentionally omitted — there is no
+additional functionality planned between alpha and GA, only stabilization.
+
 **Alpha**
 
-- Gate + API fields + unit tests + documented examples (including GPU label).
-- Known checkpoint limitation documented.
-
-**Beta**
-
-- Per-scope checkpoints.
-- e2e on Testgrid.
-- At least one production-like report for a heterogeneous DaemonSet (e.g.
-  security or observability agent on mixed GPU clusters).
-- No breaking changes to `status.groups` shape.
+- Feature gate, `spec.scope` and `status.recommendationGroups` API, admission
+  validation, and the global-recommendation fallback.
+- Scope-aware checkpoints (per `(VPA, container, scopeValue)`).
+- Unit coverage for validation, feeder, recommender, capping/admission
+  selection, and checkpoints.
+- Benchmarks for 1000 and 5000 groups.
+- e2e coverage for scoped grouping (including `__absent__`) and gate-off
+  rejection.
+- User-facing documentation and examples (including the GPU-label recipe) in
+  https://github.com/kubernetes/autoscaler.
 
 **GA**
 
-- Two releases in beta.
-- Stable performance envelope documented for hostname scope at supported
-  cluster sizes.
-- User-facing docs in kubernetes/autoscaler (and optionally kubernetes.io).
+- Feedback from real users / issue reports operating the feature on
+  heterogeneous DaemonSets (for example a security or observability agent on a
+  mixed GPU cluster), without breaking changes to the
+  `status.recommendationGroups` shape.
+- Documented limits: the maximum number of groups / nodes at which the
+  recommender stays within an acceptable loop time and `status` size, verified
+  on a cluster of about 5000 nodes.
 
 ### Version Skew
 
-| Recommender | Admission  | Effect                                             |
-| ----------- | ---------- | -------------------------------------------------- |
-| scoped on   | scoped on  | Full feature                                       |
-| scoped on   | scoped off | Groups written, ignored; pods keep defaults (safe) |
-| scoped off  | scoped on  | No groups; no scoped mutation (safe)               |
+| Recommender | Admission  | Effect                                                                      |
+| ----------- | ---------- | --------------------------------------------------------------------------- |
+| scoped on   | scoped on  | Full feature                                                                |
+| scoped on   | scoped off | Groups written but ignored; admission uses the global recommendation (safe) |
+| scoped off  | scoped on  | No groups; admission uses the global recommendation (safe)                  |
 
-Because scoped mode clears `status.recommendation`, skew does not accidentally
-apply a misleading global average.
+Because scoped mode keeps the global `status.recommendation`, any skew degrades
+gracefully to the aggregate recommendation instead of leaving pods without one.
 
 ### Kubernetes Version Compatibility
 
@@ -439,8 +540,10 @@ what VPA already requires.
 
 - 2026-07-21: Implementation opened as
   [PR #10012](https://github.com/kubernetes/autoscaler/pull/10012).
-- 2026-07-22: This greenfield AEP draft written to mirror #10012 exactly,
-  including the Falco / GPU-label motivating example.
+- 2026-07-22: AEP aligned to the implementation: global `status.recommendation`
+  kept as a fallback, `status.recommendationGroups` naming, scope-aware
+  checkpoints in alpha, e2e and 5000-group benchmarks, and the Falco / GPU-label
+  motivating example.
 
 ## Alternatives
 
@@ -449,25 +552,11 @@ what VPA already requires.
 2. **Only support `kubernetes.io/hostname`** — solves per-node variance but
    forces maximum cardinality even when a 2-way GPU split is enough (Falco).
 3. **Fixed enum scopes (`Node`, `NodePool`)** — fights cloud-specific and
-   custom labels; rejected in favor of arbitrary node label keys (also the
-   direction AEP-7942 converged on).
-4. **Keep publishing a global `status.recommendation` alongside groups** —
-   unsafe for naive clients; rejected.
+   custom labels; rejected in favor of arbitrary node label keys.
+4. **Clearing `status.recommendation` for scoped VPAs** — rejected; keeping the
+   global recommendation gives clients a safe fallback and makes disabling the
+   gate non-destructive.
 5. **Shadow VPA objects per scope value in ClusterState** — more churn; the
    synthetic-label approach reuses existing aggregation machinery.
 6. **Cross-group initial recommendation** — deferred; risk of unschedulable
    pods on smaller nodes.
-
-## Relationship to AEP-7942
-
-[AEP PR #7942](https://github.com/kubernetes/autoscaler/pull/7942) introduced
-the same high-level idea (`spec.scope` as a node label key for DaemonSets).
-This document is a self-contained rewrite that:
-
-- pins the **status API** (`status.groups`, cleared `status.recommendation`);
-- describes the **actual recommender/admission design** from PR #10012;
-- adds the **Falco / GPU label** motivating example;
-- states alpha/beta expectations for **checkpoints**.
-
-If maintainers prefer a single lineage, the content here can be merged into
-#7942 instead of landing as a separate AEP number.
