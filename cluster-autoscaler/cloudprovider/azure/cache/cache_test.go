@@ -50,6 +50,90 @@ func Test_Add_cachesEntry_withExpectedExpiry(t *testing.T) {
 	g.Expect(entry.expiry).To(Equal(clock.Now().Add(5 * time.Minute)))
 }
 
+func Test_AddAll_MergesEntriesAndOverwritesExistingEntries(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	cache := New[string, string](logr.Discard())
+	cache.Add("existing", "old-value")
+
+	entriesToAdd := map[string]string{
+		"existing": "new-value",
+		"new":      "new-entry",
+	}
+	cache.AddAll(entriesToAdd)
+
+	value, found := cache.Read("existing")
+	g.Expect(found).To(BeTrue())
+	g.Expect(value).To(Equal("new-value"))
+
+	value, found = cache.Read("new")
+	g.Expect(found).To(BeTrue())
+	g.Expect(value).To(Equal("new-entry"))
+}
+
+func Test_ReplaceAll_ReplacesExistingEntries(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	cache := New[string, string](logr.Discard())
+	cache.Add("removed", "old-entry")
+	cache.Add("retained", "old-value")
+
+	replacementEntries := map[string]string{
+		"retained": "new-value",
+		"new":      "new-entry",
+	}
+	cache.ReplaceAll(replacementEntries)
+
+	_, found := cache.Read("removed")
+	g.Expect(found).To(BeFalse())
+
+	value, found := cache.Read("retained")
+	g.Expect(found).To(BeTrue())
+	g.Expect(value).To(Equal("new-value"))
+
+	value, found = cache.Read("new")
+	g.Expect(found).To(BeTrue())
+	g.Expect(value).To(Equal("new-entry"))
+}
+
+func Test_AddAllAndReplaceAll_CanonicalizeKeysAndSetExpectedExpiry(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	clock := newFakePassiveClock()
+	cache := New[string, string](
+		logr.Discard(),
+		WithClock(clock),
+		WithTTL(5*time.Minute),
+		WithKeyCanonicalizer(strings.ToLower),
+	)
+
+	entriesToAdd := map[string]string{
+		"ADD-ALL": "value",
+	}
+	cache.AddAll(entriesToAdd)
+	entry, found := cache.entries["add-all"]
+	g.Expect(found).To(BeTrue())
+	g.Expect(entry.expiry).To(Equal(clock.Now().Add(5 * time.Minute)))
+
+	replacementEntries := map[string]string{
+		"REPLACE-ALL": "value",
+	}
+	cache.ReplaceAll(replacementEntries)
+
+	_, found = cache.Read("add-all")
+	g.Expect(found).To(BeFalse())
+
+	value, found := cache.Read("replace-all")
+	g.Expect(found).To(BeTrue())
+	g.Expect(value).To(Equal("value"))
+	entry, found = cache.entries["replace-all"]
+	g.Expect(found).To(BeTrue())
+	g.Expect(entry.expiry).To(Equal(clock.Now().Add(5 * time.Minute)))
+}
+
 func Test_Read_WhenCachePopulated_ReturnsCachedItem(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)

@@ -122,6 +122,28 @@ func (c *Cache[K, V]) Add(key K, value V) {
 	c.entries[canonicalKey] = &toCache
 }
 
+// AddAll adds all entries to the cache. Entries with existing keys are overwritten.
+func (c *Cache[K, V]) AddAll(entries map[K]V) {
+	toCache := c.newEntries(entries)
+
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	for key, entry := range toCache {
+		c.entries[key] = entry
+	}
+}
+
+// ReplaceAll replaces all cache entries with the given entries.
+func (c *Cache[K, V]) ReplaceAll(entries map[K]V) {
+	toCache := c.newEntries(entries)
+
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	c.entries = toCache
+}
+
 // Evict removes the cache entry (if present)
 func (c *Cache[K, V]) Evict(key K) {
 	c.evict(c.keyCanonicalizer(key))
@@ -132,6 +154,20 @@ func (c *Cache[K, V]) evict(key K) {
 	defer c.mutex.Unlock()
 
 	delete(c.entries, key)
+}
+
+func (c *Cache[K, V]) newEntries(entries map[K]V) map[K]*item[V] {
+	expiry := c.clock.Now().Add(c.ttl)
+	toCache := make(map[K]*item[V], len(entries))
+
+	for key, value := range entries {
+		toCache[c.keyCanonicalizer(key)] = &item[V]{
+			value:  value,
+			expiry: expiry,
+		}
+	}
+
+	return toCache
 }
 
 // lookupEntry looks up the cache entry for the given key.
