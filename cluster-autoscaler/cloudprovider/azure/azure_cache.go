@@ -29,6 +29,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	skewer "github.com/Azure/skewer/v2"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/cache"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 
@@ -95,7 +97,7 @@ type azureCache struct {
 	// It is populated from the results of calling Nodes() on each nodegroup.
 	// It is used (together with unownedInstances) when looking up the nodegroup
 	// for a given instance id (see FindForInstance).
-	instanceToNodeGroup map[azureRef]cloudprovider.NodeGroup
+	instanceToNodeGroup *cache.Cache[azureRef, cloudprovider.NodeGroup]
 
 	// instanceStates maintains a mapping from instance Ids to their last known
 	// cloudprovider.InstanceState. It is populated alongside instanceToNodeGroup
@@ -119,6 +121,16 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 	if config.HostedResourceGroup != "" {
 		nodeResourceGroup = config.HostedResourceGroup
 	}
+
+	instanceToNodeGroup := cache.New[azureRef, cloudprovider.NodeGroup](
+		klog.Background(),
+		cache.WithTTL(cacheTTL),
+		cache.WithKeyCanonicalizer(func(ref azureRef) azureRef {
+			ref.Name = strings.ToLower(ref.Name)
+			return ref
+		}),
+	)
+
 	cache := &azureCache{
 		interrupt:            make(chan struct{}),
 		azClient:             client,
@@ -132,7 +144,7 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		scaleSets:            make(map[string]*armcompute.VirtualMachineScaleSet),
 		virtualMachines:      make(map[string][]*armcompute.VirtualMachine),
 		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
-		instanceToNodeGroup:  make(map[azureRef]cloudprovider.NodeGroup),
+		instanceToNodeGroup:  instanceToNodeGroup,
 		instanceStates:       make(map[azureRef]cloudprovider.InstanceState),
 		unownedInstances:     make(map[azureRef]bool),
 		autoscalingOptions:   make(map[azureRef]map[string]string),
@@ -208,7 +220,7 @@ func (m *azureCache) regenerate() error {
 		klog.V(4).Infof("regenerate: found %d nodes for node group %s: %+v", len(instances), ng.Id(), instances)
 
 		for _, instance := range instances {
-			ref := azureRef{Name: instance.Id}
+			ref := azureRef{Name: strings.ToLower(instance.Id)}
 			newInstanceToNodeGroupCache[ref] = ng
 			if instance.Status != nil {
 				newInstanceStates[ref] = instance.Status.State
@@ -230,7 +242,7 @@ func (m *azureCache) regenerate() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	m.instanceToNodeGroup = newInstanceToNodeGroupCache
+	m.instanceToNodeGroup.ReplaceAll(newInstanceToNodeGroupCache)
 	m.instanceStates = newInstanceStates
 	m.autoscalingOptions = newAutoscalingOptions
 
@@ -479,16 +491,12 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 		return false, err
 	}
 
-	// A single pass over instanceToNodeGroup locates the instance. The matched key
-	// also indexes instanceStates, which setInstanceStateByProviderID keeps aligned
-	// with instanceToNodeGroup, so the state can be retrieved with a direct lookup.
-	for instanceID := range m.instanceToNodeGroup {
-		if !strings.EqualFold(instanceID.GetKey(), resourceID) {
-			continue
-		}
+	instanceRef := azureRef{Name: resourceID}
+	if _, found := m.instanceToNodeGroup.Read(instanceRef); found {
 		// An instance that is actively being deleted is reported as gone so that
 		// ClusterStateRegistry stops counting it as an upcoming node.
-		if state, found := m.instanceStates[instanceID]; found && state == cloudprovider.InstanceDeleting {
+		// TODO: Canonicalize this lookup when instanceStates becomes a cache.
+		if state, found := m.instanceStates[instanceRef]; found && state == cloudprovider.InstanceDeleting {
 			return false, nil
 		}
 		return true, nil
@@ -564,10 +572,10 @@ func (m *azureCache) areAllScaleSetsUniform() bool {
 // getInstanceFromCache gets the node group from cache. Returns nil if not found.
 // Should be called with lock.
 func (m *azureCache) getInstanceFromCache(providerID string) cloudprovider.NodeGroup {
-	for instanceID, nodeGroup := range m.instanceToNodeGroup {
-		if strings.EqualFold(instanceID.GetKey(), providerID) {
-			return nodeGroup
-		}
+	ref := azureRef{Name: providerID}
+	nodeGroup, found := m.instanceToNodeGroup.Read(ref)
+	if found {
+		return nodeGroup
 	}
 
 	return nil
@@ -585,10 +593,8 @@ func (m *azureCache) setInstanceStateByProviderID(providerID string, state cloud
 		return
 	}
 
-	for instanceID := range m.instanceToNodeGroup {
-		if strings.EqualFold(instanceID.GetKey(), resourceID) {
-			m.instanceStates[instanceID] = state
-			return
-		}
+	ref := azureRef{Name: resourceID}
+	if _, found := m.instanceToNodeGroup.Read(ref); found {
+		m.instanceStates[ref] = state
 	}
 }
