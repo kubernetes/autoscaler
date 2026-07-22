@@ -105,7 +105,13 @@ The admission controller therefore emits a warning (not a rejection) when a decl
 
 ### Validation
 
-Each field must be greater than `0` and at most `1` (`(0, 1]`), matching the value range the global flags accept. Enforced in the admission controller's VPA validation (`pkg/admission-controller/resource/vpa/validation.go`), which returns descriptive error messages and is also where the fields are rejected when the `PerVPAConfig` feature gate is disabled — both matching the Phase 1 fields' handling.
+Each field must be greater than `0` and at most `1` (`(0, 1]`), matching the value range the global flags accept. The bound is enforced at the CRD level with a CEL validation rule:
+
+```go
+// +kubebuilder:validation:XValidation:rule="self > quantity('0') && self <= quantity('1')",message="percentile must be in (0, 1]"
+```
+
+The admission controller's VPA validation (`pkg/admission-controller/resource/vpa/validation.go`) validates the same range to return more descriptive error messages, and is also where the fields are rejected when the `PerVPAConfig` feature gate is disabled — matching the Phase 1 fields' handling.
 
 ### Feature Enablement and Rollback
 
