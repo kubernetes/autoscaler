@@ -75,6 +75,48 @@ spec:
                       from BucketWeights.
                     type: number
                 type: object
+              currentMemoryPeak:
+                description: |-
+                  CurrentMemoryPeak holds the memory peak observed so far in the current (not yet
+                  completed) memory aggregation interval. Unlike MemoryHistogram, which only contains
+                  peaks from completed intervals, this field lets the in-progress peak survive a
+                  recommender restart, so that a restart in the middle of a long aggregation interval
+                  (e.g. the default 24h) does not discard the peak accumulated up to that point.
+                  It is nil when there is no in-progress peak to preserve.
+                properties:
+                  lastSampleStart:
+                    description: |-
+                      LastSampleStart is the start timestamp of the most recent memory sample that was
+                      aggregated into the current interval. On restore it is used to discard outdated
+                      samples that predate it.
+                    format: date-time
+                    nullable: true
+                    type: string
+                  oomPeak:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: OOMPeak is the maximum memory usage estimated from
+                      OOM events in the current interval.
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  peak:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: Peak is the maximum memory usage observed from usage
+                      samples in the current interval.
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  windowEnd:
+                    description: |-
+                      WindowEnd is the end time (not inclusive) of the memory aggregation interval that
+                      the peak belongs to. On restore it is used to decide whether the peak is still
+                      within the current interval and to keep aggregating into the same window.
+                    format: date-time
+                    nullable: true
+                    type: string
+                type: object
               firstSampleStart:
                 description: Timestamp of the first sample from the histograms.
                 format: date-time
