@@ -381,7 +381,7 @@ Mitigations already in the implementation:
 
 - DaemonSet scope with 1000 groups (update + aggregation).
 
-**e2e (alpha follow-up)**
+**e2e (alpha)**
 
 - Kind cluster with two node label classes and a DaemonSet VPA scoped on that
   label; assert distinct mutated requests.
