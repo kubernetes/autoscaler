@@ -20,4 +20,4 @@ package version
 // default placeholder value is overridden at build time via -ldflags by the
 // Makefile, which derives the value from the current git tag (or commit SHA
 // when HEAD is not tagged).
-var ClusterAutoscalerVersion = "dev"
+var ClusterAutoscalerVersion = "1.36.1"
