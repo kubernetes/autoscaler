@@ -994,14 +994,18 @@ The following startup parameters are supported for cluster autoscaler:
 | --- | --- | --- |
 | `add-dir-header` | If true, adds the file directory to the header of the log messages |  |
 | `address` | The address to expose prometheus metrics. | ":8085" |
+| `allow-dynamic-housekeeping` | Whether to allow the housekeeping interval to be dynamic | true |
 | `allowed-scheduler-names` | If set to non-empty value, CA will proceed only with pods targeting schedulers in the list, from the list of unschedulable and scheduler unprocessed pods |  |
 | `alsologtostderr` | log to standard error as well as files (no effect when -logtostderr=true) |  |
+| `alsologtostderrthreshold` | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |  |
+| `application-metrics-count-limit` | Max number of application metrics to store (per container) | 100 |
 | `async-node-groups` | Whether clusterautoscaler creates and deletes node groups asynchronously. Experimental: requires cloud provider supporting async node group operations, enable at your own risk. |  |
 | `aws-use-static-instance-list` | Should CA fetch instance types in runtime or use a static list. AWS only |  |
 | `balance-similar-node-groups` | Detect similar node groups and balance the number of nodes between them |  |
-| `balancing-ignore-label` | Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar | [] |
-| `balancing-label` | Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label. | [] |
+| `balancing-ignore-label` | Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar |  |
+| `balancing-label` | Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label. |  |
 | `blocking-system-pod-distruption-timeout` | The timeout after which CA will evict non-pdb-assigned blocking system pods, applicable only when --skip-nodes-with-system-pods is set to true | 1h0m0s |
+| `boot-id-file` | Comma-separated list of files to check for boot-id. Use the first one that exists. | "/proc/sys/kernel/random/boot_id" |
 | `bulk-mig-instances-listing-enabled` | Fetch GCE mig instances in bulk instead of per mig |  |
 | `bypassed-scheduler-names` | Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up. |  |
 | `capacity-buffer-controller-enabled` | Whether to enable the default controller for capacity buffers or not |  |
@@ -1013,26 +1017,36 @@ The following startup parameters are supported for cluster autoscaler:
 | `check-capacity-provisioning-request-batch-timebox` | Maximum time to process a batch of provisioning requests. | 10s |
 | `check-capacity-provisioning-request-max-batch-size` | Maximum number of provisioning requests to process in a single batch. | 10 |
 | `cloud-config` | The path to the cloud provider configuration file. Empty string for no configuration file. |  |
-| `cloud-provider` | Cloud provider type. Available values: [aws,azure,gce,alicloud,cherryservers,cloudstack,baiducloud,magnum,digitalocean,exoscale,externalgrpc,huaweicloud,hetzner,oci,ovhcloud,clusterapi,ionoscloud,kamatera,kwok,linode,bizflycloud,brightbox,equinixmetal,vultr,tencentcloud,civo,scaleway,rancher,volcengine,utho,coreweave] | "gce" |
+| `cloud-provider` | Cloud provider type. Available values: [alicloud,aws,azure,baiducloud,bizflycloud,brightbox,cherryservers,civo,cloudstack,clusterapi,coreweave,digitalocean,equinixmetal,exoscale,externalgrpc,gce,hetzner,huaweicloud,ionoscloud,kamatera,kubemark,kwok,linode,magnum,oci,ovhcloud,packet,rancher,scaleway,tencentcloud,utho,volcengine,vultr] | "gce" |
 | `cloud-provider-gce-l7lb-src-cidrs` | CIDRs opened in GCE firewall for L7 LB traffic proxy & health checks | 130.211.0.0/22,35.191.0.0/16 |
 | `cloud-provider-gce-lb-src-cidrs` | CIDRs opened in GCE firewall for L4 LB traffic proxy & health checks | 130.211.0.0/22,209.85.152.0/22,209.85.204.0/22,35.191.0.0/16 |
 | `cluster-name` | Autoscaled cluster name, if available |  |
-| `cluster-snapshot-parallelism` | Maximum parallelism of cluster snapshot creation. | 16 |
+| `cluster-snapshot-parallelism` | Maximum parallelism of cluster snapshot creation (Deprecated, use predicate-parallelism instead) | 16 |
 | `clusterapi-cloud-config-authoritative` | Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only |  |
+| `container-hints` | location of the container hints file | "/etc/cadvisor/container_hints.json" |
+| `containerd` | containerd endpoint | "/run/containerd/containerd.sock" |
+| `containerd-env-metadata-whitelist` | DEPRECATED: this flag will be removed, please use env_metadata_whitelist. A comma-separated list of environment variable keys matched with specified prefix that needs to be collected for containerd containers |  |
+| `containerd-namespace` | containerd namespace | "k8s.io" |
 | `cordon-node-before-terminating` | Should CA cordon nodes before terminating during downscale process | true |
 | `cores-total` | Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | "0:320000" |
+| `crio-client-timeout` | CRI-O client timeout. Default is no timeout. | 0s |
 | `daemonset-eviction-for-empty-nodes` | DaemonSet pods will be gracefully terminated from empty nodes |  |
 | `daemonset-eviction-for-occupied-nodes` | DaemonSet pods will be gracefully terminated from non-empty nodes | true |
 | `debugging-snapshot-enabled` | Whether the debugging snapshot of cluster autoscaler feature is enabled |  |
+| `disable-root-cgroup-stats` | Disable collecting root Cgroup stats |  |
+| `docker-only` | Only report docker containers in addition to root stats |  |
 | `drain-priority-config` | List of ',' separated pairs (priority:terminationGracePeriodSeconds) of integers separated by ':' enables priority evictor. Priority evictor groups pods into priority groups based on pod priority and evict pods in the ascending order of group priorities--max-graceful-termination-sec flag should not be set when this flag is set. Not setting this flag will use unordered evictor by default.Priority evictor reuses the concepts of drain logic in kubelet(https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2712-pod-priority-based-graceful-node-shutdown#migration-from-the-node-graceful-shutdown-feature).Eg. flag usage: '10000:20,1000:100,0:60' |  |
 | `dynamic-node-delete-delay-after-taint-enabled` | Enables dynamic adjustment of NodeDeleteDelayAfterTaint based of the latency between CA and api-server |  |
 | `emit-per-nodegroup-metrics` | If true, emit per node group metrics. |  |
 | `enable-csi-node-aware-scheduling` | Whether logic for handling CSINode objects is enabled. |  |
 | `enable-dynamic-resource-allocation` | Handle DRA (Dynamic Resource Allocation) objects, locked to true. | true |
+| `enable-load-reader` | Whether to enable cpu load reader |  |
 | `enable-proactive-scaleup` | Whether to enable/disable proactive scale-ups, defaults to false |  |
 | `enable-provisioning-requests` | Whether the clusterautoscaler will be handling the ProvisioningRequest CRs. |  |
 | `enforce-node-group-min-size` | Should CA scale up the node group to the configured min size if needed. |  |
 | `estimator` | Type of resource estimator to be used in scale up. Available values: [binpacking] | "binpacking" |
+| `event-storage-age-limit` | Max length of time for which to store events (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is a duration. Default is applied to all non-specified event types | "default=0" |
+| `event-storage-event-limit` | Max number of events to store (per type). Value is a comma separated list of key values, where the keys are event types (e.g.: creation, oom) or "default" and the value is an integer. Default is applied to all non-specified event types | "default=0" |
 | `expander` | Type of node group expander to be used in scale up. Available values: [random,most-pods,least-waste,price,priority,grpc]. Specifying multiple values separated by commas will call the expanders in succession until there is only one option remaining. Ties still existing after this process are broken randomly. | "least-waste" |
 | `expendable-pods-priority-cutoff` | Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable. | -10 |
 | `fastpath-binpacking-enabled` | Whether to use fastpath binpacking algorithm to optimize scale-ups. |  |
@@ -1043,12 +1057,14 @@ The following startup parameters are supported for cluster autoscaler:
 | `frequent-loops-enabled` | Whether clusterautoscaler triggers new iterations more frequently when it's needed | true |
 | `gce-concurrent-refreshes` | Maximum number of concurrent refreshes per cloud object type. | 1 |
 | `gce-mig-instances-min-refresh-wait-time` | The minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed. | 5s |
-| `gpu-total` | Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE. | [] |
+| `global-housekeeping-interval` | Interval between global housekeepings | 1m0s |
+| `gpu-total` | Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE. |  |
 | `grpc-expander-cert` | Path to cert used by gRPC server over TLS |  |
 | `grpc-expander-url` | URL to reach gRPC expander server. |  |
+| `housekeeping-interval` | Interval between container housekeepings | 10s |
 | `ignore-daemonsets-utilization` | Should CA ignore DaemonSet pods when calculating resource utilization for scaling down |  |
 | `ignore-mirror-pods-utilization` | Should CA ignore Mirror pods when calculating resource utilization for scaling down |  |
-| `ignore-taint` | Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead) | [] |
+| `ignore-taint` | Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead) |  |
 | `initial-node-group-backoff-duration` | initialNodeGroupBackoffDuration is the duration of first backoff after a new node failed to start. | 5m0s |
 | `kube-api-content-type` | Content type of requests sent to apiserver. | "application/vnd.kubernetes.protobuf" |
 | `kube-client-burst` | Burst value for kubernetes client. | 10 |
@@ -1062,7 +1078,9 @@ The following startup parameters are supported for cluster autoscaler:
 | `leader-elect-resource-name` | The name of resource object that is used for locking during leader election. | "cluster-autoscaler" |
 | `leader-elect-resource-namespace` | The namespace of resource object that is used for locking during leader election. |  |
 | `leader-elect-retry-period` | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. | 2s |
+| `legacy-stderr-threshold-behavior` | If true, stderrthreshold is ignored when logtostderr=true (legacy behavior). If false, stderrthreshold is honored even when logtostderr=true |  |
 | `log-backtrace-at` | when logging hits line file:N, emit a stack trace | :0 |
+| `log-cadvisor-usage` | Whether to log the usage of the cAdvisor container |  |
 | `log-dir` | If non-empty, write log files in this directory (no effect when -logtostderr=true) |  |
 | `log-file` | If non-empty, use this log file (no effect when -logtostderr=true) |  |
 | `log-file-max-size` | Defines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited. | 1800 |
@@ -1073,6 +1091,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `log-text-split-stream` | [Alpha] In text format, write error messages to stderr and info messages to stdout. The default is to write a single stream to stdout. Enable the LoggingAlphaOptions feature gate to use this. |  |
 | `logging-format` | Sets the log format. Permitted formats: "json" (gated by LoggingBetaOptions), "text". | "text" |
 | `logtostderr` | log to standard error instead of files | true |
+| `machine-id-file` | Comma-separated list of files to check for machine-id. Use the first one that exists. | "/etc/machine-id,/var/lib/dbus/machine-id" |
 | `max-allocatable-difference-ratio` | Maximum difference in allocatable resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's allocatable resource. | 0.05 |
 | `max-binpacking-time` | Maximum time spend on binpacking for a single scale-up. If binpacking is limited by this, scale-up will continue with the already calculated scale-up options. | 5m0s |
 | `max-bulk-soft-taint-count` | Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting. | 10 |
@@ -1081,6 +1100,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `max-failing-time` | Maximum time from last recorded successful autoscaler run before automatic restart | 15m0s |
 | `max-free-difference-ratio` | Maximum difference in free resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's free resource. | 0.05 |
 | `max-graceful-termination-sec` | Maximum number of seconds CA waits for pod termination when trying to scale down a node. This flag is mutually exclusion with drain-priority-config flag which allows more configuration options. | 600 |
+| `max-housekeeping-interval` | Largest interval to allow between container housekeepings | 1m0s |
 | `max-inactivity` | Maximum time from last recorded autoscaler activity before automatic restart | 10m0s |
 | `max-node-group-backoff-duration` | maxNodeGroupBackoffDuration is the maximum backoff duration for a NodeGroup after new nodes failed to start. | 30m0s |
 | `max-node-provision-time` | The default maximum time CA waits for node to be provisioned - the value can be overridden per node group | 15m0s |
@@ -1091,6 +1111,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `max-nodes-total` | Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number. |  |
 | `max-pod-eviction-time` | Maximum time CA tries to evict a pod before giving up | 2m0s |
 | `max-scale-down-parallelism` | Maximum number of nodes (both empty and needing drain) that can be deleted in parallel. | 10 |
+| `max-startup-time` | Maximum time until first recorded successful autoscaler run before automatic restart | 20m0s |
 | `max-total-unready-percentage` | Maximum percentage of unready nodes in the cluster. After this is exceeded, CA halts operations | 45 |
 | `memory-difference-ratio` | Maximum difference in memory capacity between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's memory capacity. | 0.015 |
 | `memory-total` | Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | "0:6400000" |
@@ -1101,11 +1122,11 @@ The following startup parameters are supported for cluster autoscaler:
 | `node-deletion-batcher-interval` | How long CA ScaleDown gather nodes to delete them in batch. | 0s |
 | `node-deletion-candidate-ttl` | Maximum time a node can be marked as removable before the marking becomes stale. This sets the TTL of Cluster-Autoscaler's state if the Cluste-Autoscaler deployment becomes inactive | 0s |
 | `node-deletion-delay-timeout` | Maximum time CA waits for removing delay-deletion.cluster-autoscaler.kubernetes.io/ annotations before deleting the node. | 2m0s |
-| `node-group-auto-discovery` | of discoverer>:[<key>[=<value>]] One or more definition(s) of node group auto-discovery. A definition is expressed <name of discoverer>:[<key>[=<value>]]. The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` Azure matches by VMSS tags, similar to AWS. And you can optionally specify a default min and max size, e.g. `label:tag=tagKey,anotherTagKey=bar,min=0,max=600`. Can be used multiple times. | [] |
+| `node-group-auto-discovery` | of discoverer>:[<key>[=<value>]] One or more definition(s) of node group auto-discovery. A definition is expressed <name of discoverer>:[<key>[=<value>]]. The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` Azure matches by VMSS tags, similar to AWS. And you can optionally specify a default min and max size, e.g. `label:tag=tagKey,anotherTagKey=bar,min=0,max=600`. Can be used multiple times. |  |
 | `node-group-backoff-reset-timeout` | nodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset. | 3h0m0s |
 | `node-info-cache-expire-time` | Node Info cache expire time for each item. Default value is 10 years. | 87600h0m0s |
 | `node-removal-latency-tracking-enabled` | Whether to track latency from when an unneeded node is eligible for scale down until it is removed or needed again. |  |
-| `nodes` | sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...> | [] |
+| `nodes` | sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...> |  |
 | `ok-total-unready-count` | Number of allowed unready nodes, irrespective of max-total-unready-percentage | 3 |
 | `one-output` | If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true) |  |
 | `parallel-scale-up` | Whether to allow parallel node groups scale up. Experimental: may not work on some cloud providers, enable at your own risk. |  |
@@ -1116,7 +1137,10 @@ The following startup parameters are supported for cluster autoscaler:
 | `provisioning-request-max-backoff-cache-size` | Max size for ProvisioningRequest cache size used for retry backoff mechanism. | 1000 |
 | `provisioning-request-max-backoff-time` | Max backoff time for ProvisioningRequest retry after failed ScaleUp. | 10m0s |
 | `record-duplicated-events` | enable duplication of similar events within a 5 minute window. |  |
+| `referenced-reset-interval` | Reset interval for referenced bytes (container_referenced_bytes metric), number of measurement cycles after which referenced bytes are cleared, if set to 0 referenced bytes are never cleared (default: 0) |  |
 | `regional` | Cluster is regional. |  |
+| `salvo-scale-up` | Whether to allow multiple scale-ups in a single CA loop. |  |
+| `salvo-scale-up-budget` | Maximum time CA spends on subsequent scale ups in a single CA loop. Requires salvo-scale-up flag to be enabled. | 1m0s |
 | `scale-down-candidates-pool-min-count` | Minimum number of nodes that are considered as additional non empty candidatesfor scale down when some candidates from previous iteration are no longer valid.When calculating the pool size for additional candidates we takemax(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count). | 50 |
 | `scale-down-candidates-pool-ratio` | A ratio of nodes that are considered as additional non empty candidates forscale down when some candidates from previous iteration are no longer valid.Lower value means better CA responsiveness but possible slower scale down latency.Higher value can affect CA performance with big clusters (hundreds of nodes).Set to 1.0 to turn this heuristics off - CA will take all nodes as additional candidates. | 0.1 |
 | `scale-down-delay-after-add` | How long after scale up that scale down evaluation resumes | 10m0s |
@@ -1133,6 +1157,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `scale-down-utilization-threshold` | The maximum value between the sum of cpu requests and sum of memory requests of all pods running on the node divided by node's corresponding allocatable resource, below which a node can be considered for scale down | 0.5 |
 | `scale-from-unschedulable` | Specifies that the CA should ignore a node's .spec.unschedulable field in node templates when considering to scale a node group. |  |
 | `scale-up-from-zero` | Should CA scale up when there are 0 ready nodes. | true |
+| `scaleup-simulation-for-skipped-node-groups-enabled` | Whether to enable the scale up simulation for skipped node groups. |  |
 | `scan-interval` | How often cluster is reevaluated for scale up or down | 10s |
 | `scheduler-config-file` | scheduler-config allows changing configuration of in-tree scheduler plugins acting on PreFilter and Filter extension points |  |
 | `skip-headers` | If true, avoid header prefixes in the log messages |  |
@@ -1140,14 +1165,23 @@ The following startup parameters are supported for cluster autoscaler:
 | `skip-nodes-with-custom-controller-pods` | If true cluster autoscaler will never delete nodes with pods owned by custom controllers | true |
 | `skip-nodes-with-local-storage` | If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath | true |
 | `skip-nodes-with-system-pods` | If true cluster autoscaler will wait for --blocking-system-pod-distruption-timeout before deleting nodes with pods from kube-system (except for DaemonSet or mirror pods) | true |
-| `startup-taint` | Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint) | [] |
-| `startup-taint-prefix` | Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times. | [] |
+| `startup-taint` | Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint) |  |
+| `startup-taint-prefix` | Specifies a taint key prefix. Any taint whose key starts with this prefix will be treated as a startup taint (in addition to the built-in prefixes). Can be used multiple times. |  |
 | `status-config-map-name` | Status configmap name | "cluster-autoscaler-status" |
-| `status-taint` | Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready | [] |
-| `stderrthreshold` | logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true) | 2 |
+| `status-taint` | Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready |  |
+| `stderrthreshold` | logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true unless -legacy_stderr_threshold_behavior=false) |  |
+| `storage-driver-buffer-duration` | Writes in the storage driver will be buffered for this duration, and committed to the non memory backends as a single transaction | 1m0s |
+| `storage-driver-db` | database name | "cadvisor" |
+| `storage-driver-host` | database host:port | "localhost:8086" |
+| `storage-driver-password` | database password | "root" |
+| `storage-driver-secure` | use secure connection with database |  |
+| `storage-driver-table` | table name | "stats" |
+| `storage-driver-user` | database username | "root" |
 | `unremovable-node-recheck-timeout` | The timeout before we check again a node that couldn't be removed before | 5m0s |
+| `update-machine-info-interval` | Interval between machine info updates. | 5m0s |
 | `user-agent` | User agent used for HTTP calls. | "cluster-autoscaler" |
 | `v` | number for the log level verbosity |  |
+| `version` | --version, --version=raw prints version information and quits; --version=vX.Y.Z... sets the reported version |  |
 | `vmodule` | comma-separated list of pattern=N settings for file-filtered logging (only works for text log format) |  |
 | `write-status-configmap` | Should CA write status information to a configmap | true |
 
