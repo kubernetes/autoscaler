@@ -99,6 +99,23 @@ func (c *Cache[K, V]) Read(key K) (V, bool) {
 	return zero, false
 }
 
+// ReadAll returns all non-expired cached values. The returned values have no guaranteed order.
+func (c *Cache[K, V]) ReadAll() []V {
+	now := c.clock.Now()
+
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+
+	values := make([]V, 0, len(c.entries))
+	for _, entry := range c.entries {
+		if now.Before(entry.expiry) {
+			values = append(values, entry.value)
+		}
+	}
+
+	return values
+}
+
 // Add adds a new entry to the cache with the given key and value, and sets its expiry time.
 // If an entry with the same key already exists, it will be overwritten.
 // key is the cache key.

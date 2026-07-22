@@ -188,6 +188,25 @@ func Test_Read_WhenCacheEntryExpired_ReturnsNoValue(t *testing.T) {
 	g.Expect(ok).To(BeFalse())
 }
 
+func Test_ReadAll_ReturnsOnlyCurrentEntries(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	clock := newFakePassiveClock()
+	cache := New[string, string](
+		logr.Discard(),
+		WithClock(clock),
+		WithTTL(5*time.Minute),
+	)
+
+	cache.Add("stale", "stale-value")
+	clock.SetTime(clock.Now().Add(4 * time.Minute))
+	cache.Add("current", "current-value")
+	clock.SetTime(clock.Now().Add(2 * time.Minute))
+
+	g.Expect(cache.ReadAll()).To(ConsistOf("current-value"))
+}
+
 func Test_Evict_RemovesCacheEntry(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
