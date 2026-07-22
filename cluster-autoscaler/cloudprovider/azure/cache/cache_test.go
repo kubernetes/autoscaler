@@ -216,6 +216,20 @@ func Test_Evict_RemovesCacheEntry(t *testing.T) {
 	g.Expect(ok).To(BeFalse())
 }
 
+func Test_IsEmpty_ReflectsStoredEntries(t *testing.T) {
+	t.Parallel()
+	g := NewWithT(t)
+
+	cache := New[string, string](logr.Discard())
+	g.Expect(cache.IsEmpty()).To(BeTrue())
+
+	cache.Add("test-key", "test-value")
+	g.Expect(cache.IsEmpty()).To(BeFalse())
+
+	cache.Evict("test-key")
+	g.Expect(cache.IsEmpty()).To(BeTrue())
+}
+
 func Test_Cache_WithKeyCanonicalizer_UsesCanonicalKeyForAllOperations(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)

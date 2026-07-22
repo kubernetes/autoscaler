@@ -144,6 +144,14 @@ func (c *Cache[K, V]) ReplaceAll(entries map[K]V) {
 	c.entries = toCache
 }
 
+// IsEmpty reports whether the cache has no stored entries.
+func (c *Cache[K, V]) IsEmpty() bool {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+
+	return len(c.entries) == 0
+}
+
 // Evict removes the cache entry (if present)
 func (c *Cache[K, V]) Evict(key K) {
 	c.evict(c.keyCanonicalizer(key))
