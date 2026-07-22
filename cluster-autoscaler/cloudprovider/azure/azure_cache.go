@@ -81,7 +81,7 @@ type azureCache struct {
 	// vmType can be one of vmTypeVMSS (default), vmTypeStandard
 	vmType string
 
-	vmsPoolMap map[string]armcontainerservice.AgentPool // track the nodepools that're vms pool
+	vmsPools *cache.Cache[string, armcontainerservice.AgentPool] // track the nodepools that are vms pool
 
 	// scaleSets keeps the set of all known scalesets in the resource group, populated/refreshed via VMSS.List() call.
 	// It is only used/populated if vmType is vmTypeVMSS (default).
@@ -127,10 +127,17 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		cache.WithTTL(cacheTTL),
 		cache.WithKeyCanonicalizer(azureRef.canonicalize),
 	)
+
 	instanceStates := cache.New[azureRef, cloudprovider.InstanceState](
 		klog.Background(),
 		cache.WithTTL(cacheTTL),
 		cache.WithKeyCanonicalizer(azureRef.canonicalize),
+	)
+
+	vmsPoolCache := cache.New[string, armcontainerservice.AgentPool](
+		klog.Background(),
+		cache.WithTTL(cacheTTL),
+		cache.WithKeyCanonicalizer(strings.ToLower),
 	)
 
 	cache := &azureCache{
@@ -142,7 +149,7 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		clusterName:          config.ClusterName,
 		enableVMsAgentPool:   config.EnableVMsAgentPool,
 		vmType:               config.VMType,
-		vmsPoolMap:           make(map[string]armcontainerservice.AgentPool),
+		vmsPools:             vmsPoolCache,
 		scaleSets:            make(map[string]*armcompute.VirtualMachineScaleSet),
 		virtualMachines:      make(map[string][]*armcompute.VirtualMachine),
 		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
@@ -166,11 +173,11 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 	return cache, nil
 }
 
-func (m *azureCache) getVMsPoolMap() map[string]armcontainerservice.AgentPool {
+func (m *azureCache) getVMsPoolCache() *cache.Cache[string, armcontainerservice.AgentPool] {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	return m.vmsPoolMap
+	return m.vmsPools
 }
 
 func (m *azureCache) getVirtualMachines() map[string][]*armcompute.VirtualMachine {
@@ -297,7 +304,7 @@ func (m *azureCache) fetchAzureResources() error {
 		if err != nil {
 			return err
 		}
-		m.vmsPoolMap = vmsPoolMap
+		m.vmsPools.ReplaceAll(vmsPoolMap)
 	}
 
 	return nil
@@ -509,7 +516,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 
 // FindForInstance returns node group of the given Instance
 func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
-	vmsPoolMap := m.getVMsPoolMap()
+	vmsPoolCache := m.getVMsPoolCache()
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -528,7 +535,7 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 	}
 
 	// cluster with vmss pool only
-	if vmType == providerazureconsts.VMTypeVMSS && len(vmsPoolMap) == 0 {
+	if vmType == providerazureconsts.VMTypeVMSS && vmsPoolCache.IsEmpty() {
 		if m.areAllScaleSetsUniform() {
 			// Omit virtual machines not managed by vmss only in case of uniform scale set.
 			if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {

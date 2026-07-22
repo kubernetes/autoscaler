@@ -508,11 +508,12 @@ func (vmPool *VMPool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo
 }
 
 func (vmPool *VMPool) getAgentpoolFromCache() (armcontainerservice.AgentPool, error) {
-	vmsPoolMap := vmPool.manager.azureCache.getVMsPoolMap()
-	if _, exists := vmsPoolMap[vmPool.agentPoolName]; !exists {
+	vmsPoolCache := vmPool.manager.azureCache.getVMsPoolCache()
+	agentPool, exists := vmsPoolCache.Read(vmPool.agentPoolName)
+	if !exists {
 		return armcontainerservice.AgentPool{}, fmt.Errorf("VMs agent pool %s not found in cache", vmPool.agentPoolName)
 	}
-	return vmsPoolMap[vmPool.agentPoolName], nil
+	return agentPool, nil
 }
 
 // getAgentpoolFromAzure returns the AKS agentpool from Azure

@@ -20,7 +20,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
@@ -30,6 +32,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/cache"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
@@ -435,10 +441,17 @@ func TestGetVMsFromCache(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
+			vmsPoolCache := cache.New[string, armcontainerservice.AgentPool](
+				klog.Background(),
+				cache.WithTTL(5*time.Minute),
+				cache.WithKeyCanonicalizer(strings.ToLower),
+			)
+
 			manager := &AzureManager{
 				azureCache: &azureCache{
 					virtualMachines: make(map[string][]*armcompute.VirtualMachine),
-					vmsPoolMap:      make(map[string]armcontainerservice.AgentPool),
+					vmsPools:        vmsPoolCache,
 				},
 			}
 			agentPool := &VMPool{
