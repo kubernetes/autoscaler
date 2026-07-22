@@ -18,6 +18,7 @@ https://github.com/kubernetes/autoscaler/pull/10012
   - [API Changes](#api-changes)
     - [<code>spec.scope</code>](#specscope)
     - [<code>status.recommendationGroups</code>](#statusrecommendationgroups)
+    - [<code>VerticalPodAutoscalerCheckpoint</code>](#verticalpodautoscalercheckpoint)
     - [Example (Falco)](#example-falco)
   - [End-to-End Flow](#end-to-end-flow)
   - [Recommender](#recommender)
@@ -207,6 +208,33 @@ To keep the status object small when there are many groups, each group carries
 only the effective `target` for its containers in alpha; `lowerBound`,
 `upperBound` and `uncappedTarget` are omitted from groups. The global
 `status.recommendation` still carries the full bounds.
+
+#### `VerticalPodAutoscalerCheckpoint`
+
+Scope-aware history requires each checkpoint to record which scope value it
+belongs to, so a restarted recommender restores per-scope aggregates instead of
+cold-starting:
+
+```go
+type VerticalPodAutoscalerCheckpointSpec struct {
+    VPAObjectName string `json:"vpaObjectName,omitempty"`
+    ContainerName string `json:"containerName,omitempty"`
+    // ScopeValue is the value of the spec.scope node label key this checkpoint
+    // belongs to when the VPA uses DaemonSet scoping. Empty for non-scoped VPAs,
+    // so existing checkpoints keep their meaning.
+    ScopeValue string `json:"scopeValue,omitempty"`
+}
+```
+
+- **Backward compatible:** the field is optional and empty for every existing
+  (non-scoped) checkpoint, so old checkpoints load unchanged.
+- **Object naming:** non-scoped checkpoints keep the historical
+  `<vpaName>-<container>` name; scoped checkpoints append a short FNV-32 hash of
+  the scope value (`<vpaName>-<container>-<hash>`), so arbitrary label values
+  cannot produce an invalid or over-long (RFC 1123) object name.
+- **Persisted sentinels:** an empty scope value is stored as `__empty__` (to
+  tell it apart from a non-scoped checkpoint); a node missing the scope label
+  key uses `__absent__`, consistent with `status.recommendationGroups`.
 
 #### Example (Falco)
 
