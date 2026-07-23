@@ -46,6 +46,20 @@ const (
 	// CPUStartupBoost enables the CPU startup boost feature.
 	CPUStartupBoost featuregate.Feature = "CPUStartupBoost"
 
+	// alpha: v1.8.0
+	// components: admission-controller, recommender, updater
+
+	// DaemonSetScope enables partitioning DaemonSet recommendations by a node label key
+	// specified in VerticalPodAutoscaler.spec.scope.
+	DaemonSetScope featuregate.Feature = "DaemonSetScope"
+
+	// alpha: v1.7.0
+	// components: admission-controller, updater
+
+	// InPlace enables the InPlace update mode to be used.
+	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
+	InPlace featuregate.Feature = "InPlace"
+
 	// alpha: v1.5.0
 	// components: admission-controller, recommender, updater
 
@@ -54,13 +68,6 @@ const (
 	// optimization strategies to be applied to different workloads within the
 	// same cluster.
 	PerVPAConfig featuregate.Feature = "PerVPAConfig"
-
-	// alpha: v1.7.0
-	// components: admission-controller, updater
-
-	// InPlace enables the InPlace update mode to be used.
-	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
-	InPlace featuregate.Feature = "InPlace"
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.

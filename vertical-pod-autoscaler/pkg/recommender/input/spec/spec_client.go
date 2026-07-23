@@ -17,9 +17,12 @@ limitations under the License.
 package spec
 
 import (
+	"maps"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	listersv1 "k8s.io/client-go/listers/core/v1"
+	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
@@ -37,6 +40,10 @@ type BasicPodSpec struct {
 	InitContainers []BasicContainerSpec
 	// PodPhase describing current life cycle phase of the Pod.
 	Phase corev1.PodPhase
+	// NodeName where pod is (or will be) scheduled.
+	NodeName string
+	// Labels of a node where pod is scheduled.
+	NodeLabels map[string]string
 }
 
 // BasicContainerSpec contains basic information defining a container.
@@ -56,14 +63,16 @@ type SpecClient interface {
 }
 
 type specClient struct {
-	podLister listersv1.PodLister
+	podLister  listersv1.PodLister
+	nodeLister listersv1.NodeLister
 }
 
 // NewSpecClient creates new client which can be used to get basic information about pods specification
 // It requires PodLister which is a data source for this client.
-func NewSpecClient(podLister listersv1.PodLister) SpecClient {
+func NewSpecClient(podLister listersv1.PodLister, nodeLister listersv1.NodeLister) SpecClient {
 	return &specClient{
-		podLister: podLister,
+		podLister:  podLister,
+		nodeLister: nodeLister,
 	}
 }
 
@@ -76,6 +85,15 @@ func (client *specClient) GetPodSpecs() ([]*BasicPodSpec, error) {
 	}
 	for _, pod := range pods {
 		basicPodSpec := newBasicPodSpec(pod)
+		if client.nodeLister != nil && basicPodSpec.NodeName != "" {
+			node, err := client.nodeLister.Get(basicPodSpec.NodeName)
+			if err != nil {
+				klog.V(2).InfoS("Cannot get node for pod while building pod specs", "pod", pod.Name, "namespace", pod.Namespace, "node", basicPodSpec.NodeName, "err", err)
+			} else if node != nil && len(node.Labels) > 0 {
+				basicPodSpec.NodeLabels = make(map[string]string, len(node.Labels))
+				maps.Copy(basicPodSpec.NodeLabels, node.Labels)
+			}
+		}
 		podSpecs = append(podSpecs, basicPodSpec)
 	}
 	return podSpecs, nil
@@ -91,6 +109,7 @@ func newBasicPodSpec(pod *corev1.Pod) *BasicPodSpec {
 		Containers:     containerSpecs,
 		InitContainers: initContainerSpecs,
 		Phase:          pod.Status.Phase,
+		NodeName:       pod.Spec.NodeName,
 	}
 	return basicPodSpec
 }

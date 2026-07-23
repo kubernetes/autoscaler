@@ -23,6 +23,7 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -123,12 +124,15 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, v
 	var annotations vpa_api_util.ContainerToAnnotationsMap
 	recommendedPodResources := &vpa_types.RecommendedPodResources{}
 
-	if vpa.Status.Recommendation != nil {
+	if vpa.Status.Recommendation != nil || (features.Enabled(features.DaemonSetScope) && len(vpa.Status.RecommendationGroups) > 0) || vpa.Spec.ResourcePolicy != nil {
 		var err error
 		recommendedPodResources, annotations, err = p.recommendationProcessor.Apply(vpa, pod)
 		if err != nil {
 			klog.V(2).InfoS("Cannot process recommendation for pod", "pod", klog.KObj(pod))
 			return nil, annotations, err
+		}
+		if recommendedPodResources == nil {
+			recommendedPodResources = &vpa_types.RecommendedPodResources{}
 		}
 	}
 	containerLimitRange, err := p.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)

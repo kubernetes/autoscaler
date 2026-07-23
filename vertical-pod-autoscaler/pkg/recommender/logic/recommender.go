@@ -191,6 +191,25 @@ func CreatePodResourceRecommender(config RecommendationConfig) PodResourceRecomm
 // MapToListOfRecommendedContainerResources converts the map of RecommendedContainerResources into a stable sorted list
 // This can be used to get a stable sequence while ranging on the data
 func MapToListOfRecommendedContainerResources(resources RecommendedPodResources, format RecommendationFormat) *vpa_types.RecommendedPodResources {
+	if len(resources) == 0 {
+		return &vpa_types.RecommendedPodResources{}
+	}
+	if len(resources) == 1 {
+		// Fast path for the common single-container case: avoid temporary
+		// containerNames slice allocation and sorting.
+		for name, recommendation := range resources {
+			return &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
+					ContainerName:  name,
+					Target:         model.ResourcesAsResourceList(recommendation.Target, format.HumanizeMemory, format.RoundCPUMillicores, format.RoundMemoryBytes),
+					LowerBound:     model.ResourcesAsResourceList(recommendation.LowerBound, format.HumanizeMemory, format.RoundCPUMillicores, format.RoundMemoryBytes),
+					UpperBound:     model.ResourcesAsResourceList(recommendation.UpperBound, format.HumanizeMemory, format.RoundCPUMillicores, format.RoundMemoryBytes),
+					UncappedTarget: model.ResourcesAsResourceList(recommendation.Target, format.HumanizeMemory, format.RoundCPUMillicores, format.RoundMemoryBytes),
+				}},
+			}
+		}
+	}
+
 	containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
 	// Sort the container names from the map. This is because maps are an
 	// unordered data structure, and iterating through the map will return

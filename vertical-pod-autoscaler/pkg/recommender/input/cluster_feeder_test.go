@@ -32,10 +32,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/klog/v2/ktesting"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
@@ -43,6 +45,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
+	scopeutil "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/scope"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -516,6 +519,84 @@ func TestClusterStateFeeder_LoadPods_ContainerTracking(t *testing.T) {
 		feeder.clusterState.Pods()[podWithInitContainersID].InitContainers,
 	)
 	assert.Equal(t, len(feeder.clusterState.Pods()[podWithoutInitContainersID].InitContainers), 0)
+}
+
+func TestClusterStateFeeder_LoadPods_AddsDaemonSetScopeLabel(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.DaemonSetScope, true)
+	clusterState := model.NewClusterState(testGcPeriod)
+	selector, err := labels.Parse("app=daemon")
+	assert.NoError(t, err)
+
+	vpaObj := test.VerticalPodAutoscaler().
+		WithName("scoped-vpa").
+		WithNamespace("default").
+		WithContainer("agent").
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+			Kind:       "DaemonSet",
+			Name:       "agent-ds",
+			APIVersion: "apps/v1",
+		}).
+		Get()
+	vpaObj.Spec.Scope = "node.kubernetes.io/instance-type"
+	assert.NoError(t, clusterState.AddOrUpdateVpa(vpaObj, selector))
+
+	podWithValueID := model.PodID{Namespace: "default", PodName: "agent-pod-value"}
+	podWithValue := &spec.BasicPodSpec{
+		ID:        podWithValueID,
+		PodLabels: map[string]string{"app": "daemon"},
+		NodeName:  "node-a",
+		NodeLabels: map[string]string{
+			"node.kubernetes.io/instance-type": "c3.large",
+		},
+		Containers: []spec.BasicContainerSpec{
+			newTestContainerSpec(podWithValueID, "agent", 100, 128*1024*1024),
+		},
+	}
+	podWithEmptyValueID := model.PodID{Namespace: "default", PodName: "agent-pod-empty"}
+	podWithEmptyValue := &spec.BasicPodSpec{
+		ID:         podWithEmptyValueID,
+		PodLabels:  map[string]string{"app": "daemon"},
+		NodeName:   "node-b",
+		NodeLabels: map[string]string{"node.kubernetes.io/instance-type": ""},
+		Containers: []spec.BasicContainerSpec{
+			newTestContainerSpec(podWithEmptyValueID, "agent", 100, 128*1024*1024),
+		},
+	}
+	podWithoutScopeLabelID := model.PodID{Namespace: "default", PodName: "agent-pod-absent"}
+	podWithoutScopeLabel := &spec.BasicPodSpec{
+		ID:         podWithoutScopeLabelID,
+		PodLabels:  map[string]string{"app": "daemon"},
+		NodeName:   "node-c",
+		NodeLabels: map[string]string{"kubernetes.io/hostname": "node-c"},
+		Containers: []spec.BasicContainerSpec{
+			newTestContainerSpec(podWithoutScopeLabelID, "agent", 100, 128*1024*1024),
+		},
+	}
+
+	feeder := clusterStateFeeder{
+		specClient:     &testSpecClient{pods: []*spec.BasicPodSpec{podWithValue, podWithEmptyValue, podWithoutScopeLabel}},
+		memorySaveMode: false,
+		clusterState:   clusterState,
+	}
+	feeder.LoadPods()
+
+	scopeKey := scopeutil.AggregationLabelKey("node.kubernetes.io/instance-type")
+
+	podWithValueState := clusterState.Pods()[podWithValueID]
+	assert.NotNil(t, podWithValueState)
+	keyWithValue := clusterState.MakeAggregateStateKey(podWithValueState, "agent")
+	assert.Equal(t, "c3.large", keyWithValue.Labels().Get(scopeKey))
+
+	podWithEmptyValueState := clusterState.Pods()[podWithEmptyValueID]
+	assert.NotNil(t, podWithEmptyValueState)
+	keyWithEmptyValue := clusterState.MakeAggregateStateKey(podWithEmptyValueState, "agent")
+	assert.True(t, keyWithEmptyValue.Labels().Has(scopeKey))
+	assert.Equal(t, "", keyWithEmptyValue.Labels().Get(scopeKey))
+
+	podWithoutScopeLabelState := clusterState.Pods()[podWithoutScopeLabelID]
+	assert.NotNil(t, podWithoutScopeLabelState)
+	keyWithoutScopeLabel := clusterState.MakeAggregateStateKey(podWithoutScopeLabelState, "agent")
+	assert.Equal(t, scopeutil.AbsentLabelValue, keyWithoutScopeLabel.Labels().Get(scopeKey))
 }
 
 func TestClusterStateFeeder_LoadPods_PodDeletion(t *testing.T) {
@@ -1086,4 +1167,41 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 	for _, vpa := range vpas {
 		assert.NotContains(t, deletedCheckpoints, vpa.Name)
 	}
+}
+
+func TestSetVpaCheckpointRoutesScopedCheckpoints(t *testing.T) {
+	namespace := "default"
+	clusterState := model.NewClusterState(testGcPeriod)
+	vpaID := model.VpaID{Namespace: namespace, VpaName: "scoped-vpa"}
+	vpaAPI := test.VerticalPodAutoscaler().WithNamespace(namespace).WithName(vpaID.VpaName).WithContainer("agent").Get()
+	assert.NoError(t, clusterState.AddOrUpdateVpa(vpaAPI, parseLabelSelector("app=agent")))
+
+	feeder := clusterStateFeeder{clusterState: clusterState}
+
+	validStatus, err := model.NewAggregateContainerState().SaveToCheckpoint()
+	assert.NoError(t, err)
+	makeCheckpoint := func(name, scopeValue string) *vpa_types.VerticalPodAutoscalerCheckpoint {
+		return &vpa_types.VerticalPodAutoscalerCheckpoint{
+			ObjectMeta: metav1.ObjectMeta{Namespace: namespace, Name: name},
+			Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
+				VPAObjectName: vpaID.VpaName,
+				ContainerName: "agent",
+				ScopeValue:    scopeValue,
+			},
+			Status: *validStatus,
+		}
+	}
+
+	assert.NoError(t, feeder.setVpaCheckpoint(makeCheckpoint("scoped-vpa-agent", "")))
+	assert.NoError(t, feeder.setVpaCheckpoint(makeCheckpoint("scoped-vpa-agent-worker", "worker")))
+	assert.NoError(t, feeder.setVpaCheckpoint(makeCheckpoint("scoped-vpa-agent-empty", scopeutil.EmptyLabelValue)))
+
+	vpa := clusterState.VPAs()[vpaID]
+	// Non-scoped checkpoint goes to the global initial state.
+	assert.Contains(t, vpa.ContainersInitialAggregateState, "agent")
+	// Scoped checkpoints are keyed by decoded scope value, including the empty one.
+	assert.Contains(t, vpa.ScopedContainersInitialAggregateState, "worker")
+	assert.Contains(t, vpa.ScopedContainersInitialAggregateState["worker"], "agent")
+	assert.Contains(t, vpa.ScopedContainersInitialAggregateState, "")
+	assert.Contains(t, vpa.ScopedContainersInitialAggregateState[""], "agent")
 }

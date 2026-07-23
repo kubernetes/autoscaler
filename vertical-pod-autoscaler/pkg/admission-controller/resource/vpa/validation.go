@@ -31,6 +31,7 @@ import (
 type VPAValidationOptions struct {
 	IsVPACreate          bool
 	AllowCPUStartupBoost bool
+	AllowDaemonSetScope  bool
 	AllowPerVPAConfig    bool
 	AllowInPlace         bool
 	// ExistingControlledResources contains the controlled resources already
@@ -43,6 +44,7 @@ func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAVali
 	opts := VPAValidationOptions{
 		IsVPACreate:                 oldObj == nil,
 		AllowCPUStartupBoost:        allowCPUBoost(oldObj),
+		AllowDaemonSetScope:         allowDaemonSetScope(oldObj),
 		AllowPerVPAConfig:           allowPerVPAConfig(oldObj),
 		AllowInPlace:                allowInPlace(oldObj),
 		ExistingControlledResources: existingControlledResources(oldObj),
@@ -130,6 +132,18 @@ func allowInPlace(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	return false
 }
 
+func allowDaemonSetScope(oldObj *vpa_types.VerticalPodAutoscaler) bool {
+	if features.Enabled(features.DaemonSetScope) {
+		return true
+	}
+
+	if oldObj == nil {
+		return false
+	}
+
+	return oldObj.Spec.Scope != ""
+}
+
 func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions) ([]string, field.ErrorList) {
 	return validateVPASpec(&vpa.Spec, field.NewPath("spec"), opts)
 }
@@ -157,6 +171,14 @@ func validateVPASpec(spec *vpa_types.VerticalPodAutoscalerSpec, fldPath *field.P
 
 	if spec.StartupBoost != nil {
 		allErrs = append(allErrs, validateVPASpecStartupBoost(spec.StartupBoost, fldPath.Child("startupBoost"), opts)...)
+	}
+
+	if spec.Scope != "" {
+		if !opts.AllowDaemonSetScope {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("scope"), fmt.Sprintf("not supported when feature flag %s is disabled", features.DaemonSetScope)))
+		} else if spec.TargetRef != nil && spec.TargetRef.Kind != "DaemonSet" {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("scope"), spec.Scope, "scope is only supported when targetRef.kind is DaemonSet"))
+		}
 	}
 
 	if len(spec.Recommenders) > 1 {
