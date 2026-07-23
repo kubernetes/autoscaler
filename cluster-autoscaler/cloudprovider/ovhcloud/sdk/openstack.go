@@ -36,7 +36,7 @@ type OpenStackProvider struct {
 	tokenExpirationTime time.Time
 }
 
-// NewOpenStackProvider initializes a client/token pair to interact with OpenStack
+// NewOpenStackProvider initializes a client/token pair to interact with OpenStack from a user/password.
 func NewOpenStackProvider(authUrl string, username string, password string, domain string, tenant string) (*OpenStackProvider, error) {
 	provider, err := openstack.AuthenticatedClient(gophercloud.AuthOptions{
 		IdentityEndpoint: authUrl,
@@ -45,6 +45,27 @@ func NewOpenStackProvider(authUrl string, username string, password string, doma
 		DomainName:       domain,
 		TenantID:         tenant,
 		AllowReauth:      true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create OpenStack authenticated client: %w", err)
+	}
+
+	return &OpenStackProvider{
+		provider:            provider,
+		AuthUrl:             authUrl,
+		Token:               provider.Token(),
+		tokenExpirationTime: time.Now().Add(DefaultExpirationTime),
+	}, nil
+}
+
+// NewOpenstackApplicationProvider initializes a client/token pair to interact with OpenStack from application credentials.
+func NewOpenstackApplicationProvider(authUrl string, applicationCredentialID string, applicationCredentialSecret string, domain string) (*OpenStackProvider, error) {
+	provider, err := openstack.AuthenticatedClient(gophercloud.AuthOptions{
+		IdentityEndpoint:            authUrl,
+		ApplicationCredentialID:     applicationCredentialID,
+		ApplicationCredentialSecret: applicationCredentialSecret,
+		DomainName:                  domain,
+		AllowReauth:                 true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create OpenStack authenticated client: %w", err)
