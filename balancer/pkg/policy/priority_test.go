@@ -21,6 +21,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	balancerapi "k8s.io/autoscaler/balancer/pkg/apis/balancer.x-k8s.io/v1alpha1"
 	"k8s.io/autoscaler/balancer/pkg/pods"
 )
 
@@ -189,4 +192,41 @@ func TestDistributeByPriority(t *testing.T) {
 			assert.Equal(t, tc.problems, problems)
 		})
 	}
+}
+
+func TestGetPlacementRejectsUnknownPriorityTarget(t *testing.T) {
+	balancer := &balancerapi.Balancer{
+		Spec: balancerapi.BalancerSpec{
+			Targets: []balancerapi.BalancerTarget{
+				{
+					Name: "a",
+					ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+						Name:       "a",
+						Kind:       "Deployment",
+						APIVersion: "apps/v1",
+					},
+				},
+				{
+					Name: "b",
+					ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+						Name:       "b",
+						Kind:       "Deployment",
+						APIVersion: "apps/v1",
+					},
+				},
+			},
+			Replicas: 10,
+			Selector: metav1.LabelSelector{MatchLabels: map[string]string{"service": "nginx"}},
+			Policy: balancerapi.BalancerPolicy{
+				PolicyName: balancerapi.PriorityPolicyName,
+				Priorities: &balancerapi.PriorityPolicy{
+					TargetOrder: []string{"a", "c"},
+				},
+			},
+		},
+	}
+
+	_, _, err := GetPlacement(balancer, map[string]pods.Summary{})
+
+	assert.ErrorContains(t, err, "unknown target")
 }
