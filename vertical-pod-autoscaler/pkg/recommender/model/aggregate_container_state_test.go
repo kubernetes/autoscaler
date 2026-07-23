@@ -265,13 +265,13 @@ func TestRecordCurrentMemoryPeakKeepsLargest(t *testing.T) {
 	}
 }
 
-func TestInitMemoryPeakFromCheckpoint(t *testing.T) {
+func TestLoadCurrentMemoryPeak(t *testing.T) {
 	a := NewAggregateContainerState()
 	container := NewContainerState(testRequest, a, nil)
 	windowEnd := time.Unix(2000, 0)
 	lastSample := time.Unix(1900, 0)
 
-	container.initMemoryPeakFromCheckpoint(&MemoryPeakData{
+	container.loadCurrentMemoryPeak(&MemoryPeakData{
 		WindowEnd:             windowEnd,
 		LastMemorySampleStart: lastSample,
 		MemoryPeak:            MemoryAmountFromBytes(4e9),
@@ -291,10 +291,10 @@ func TestInitMemoryPeakFromCheckpoint(t *testing.T) {
 	assert.Equal(t, MemoryAmountFromBytes(6e9), container.GetMaxMemoryPeak())
 }
 
-func TestInitMemoryPeakFromCheckpointNilIsNoOp(t *testing.T) {
+func TestLoadCurrentMemoryPeakNilIsNoOp(t *testing.T) {
 	a := NewAggregateContainerState()
 	container := NewContainerState(testRequest, a, nil)
-	container.initMemoryPeakFromCheckpoint(nil)
+	container.loadCurrentMemoryPeak(nil)
 	assert.True(t, container.WindowEnd.IsZero())
 	assert.True(t, a.AggregateMemoryPeaks.IsEmpty())
 }
