@@ -32,7 +32,13 @@ type snapshotClaimTracker struct {
 }
 
 func (ct snapshotClaimTracker) List() ([]*resourceapi.ResourceClaim, error) {
-	return ct.snapshot.listResourceClaims(), nil
+	capacity := ct.snapshot.resourceClaims.Len()
+	result := make([]*resourceapi.ResourceClaim, 0, capacity)
+	ct.snapshot.WalkResourceClaims(func(claim *resourceapi.ResourceClaim) bool {
+		result = append(result, claim)
+		return true
+	})
+	return result, nil
 }
 
 func (ct snapshotClaimTracker) Get(namespace, claimName string) (*resourceapi.ResourceClaim, error) {
@@ -46,12 +52,13 @@ func (ct snapshotClaimTracker) Get(namespace, claimName string) (*resourceapi.Re
 
 func (ct snapshotClaimTracker) ListAllAllocatedDevices() (sets.Set[structured.DeviceID], error) {
 	result := sets.New[structured.DeviceID]()
-	for _, claim := range ct.snapshot.listResourceClaims() {
+	ct.snapshot.WalkResourceClaims(func(claim *resourceapi.ResourceClaim) bool {
 		foreachAllocatedDevice(claim,
 			func(deviceID structured.DeviceID) {
 				result.Insert(deviceID)
 			}, false, func(structured.SharedDeviceID) {}, func(capacity structured.DeviceConsumedCapacity) {})
-	}
+		return true
+	})
 	return result, nil
 }
 
@@ -62,7 +69,7 @@ func (ct snapshotClaimTracker) GatherAllocatedState() (*structured.AllocatedStat
 
 	enabledConsumableCapacity := utilfeature.DefaultFeatureGate.Enabled(features.DRAConsumableCapacity)
 
-	for _, claim := range ct.snapshot.listResourceClaims() {
+	ct.snapshot.WalkResourceClaims(func(claim *resourceapi.ResourceClaim) bool {
 		foreachAllocatedDevice(claim,
 			func(deviceID structured.DeviceID) {
 				allocatedDevices.Insert(deviceID)
@@ -75,7 +82,8 @@ func (ct snapshotClaimTracker) GatherAllocatedState() (*structured.AllocatedStat
 				aggregatedCapacity.Insert(capacity)
 			},
 		)
-	}
+		return true
+	})
 
 	return &structured.AllocatedState{
 		AllocatedDevices:         allocatedDevices,

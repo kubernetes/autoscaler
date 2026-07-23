@@ -60,13 +60,10 @@ func NewSnapshot(claims map[ResourceClaimId]*resourceapi.ResourceClaim, nodeLoca
 	maps.Copy(slices, nodeLocalSlices)
 	slices[nonNodeLocalResourceSlicesIdentifier] = nonNodeLocalSlices
 
-	claimsPatch := common.NewPatchFromMap(claims)
-	slicesPatch := common.NewPatchFromMap(slices)
-	devicesPatch := common.NewPatchFromMap(deviceClasses)
 	return &Snapshot{
-		resourceClaims: common.NewPatchSet(claimsPatch),
-		resourceSlices: common.NewPatchSet(slicesPatch),
-		deviceClasses:  common.NewPatchSet(devicesPatch),
+		resourceClaims: common.NewPatchSetFromMap(claims),
+		resourceSlices: common.NewPatchSetFromMap(slices),
+		deviceClasses:  common.NewPatchSetFromMap(deviceClasses),
 	}
 }
 
@@ -256,26 +253,19 @@ func (s *Snapshot) Fork() {
 	s.resourceSlices.Fork()
 }
 
-// listDeviceClasses retrieves all effective DeviceClasses from the snapshot.
-func (s *Snapshot) listDeviceClasses() []*resourceapi.DeviceClass {
-	deviceClasses := s.deviceClasses.AsMap()
-	deviceClassesList := make([]*resourceapi.DeviceClass, 0, len(deviceClasses))
-	for _, class := range deviceClasses {
-		deviceClassesList = append(deviceClassesList, class)
-	}
-
-	return deviceClassesList
+// WalkDeviceClasses iterates over all DeviceClasses in the snapshot.
+func (s *Snapshot) WalkDeviceClasses(f func(*resourceapi.DeviceClass) bool) {
+	s.deviceClasses.WalkValues(f)
 }
 
-// listResourceClaims retrieves all effective ResourceClaims from the snapshot.
-func (s *Snapshot) listResourceClaims() []*resourceapi.ResourceClaim {
-	claims := s.resourceClaims.AsMap()
-	claimsList := make([]*resourceapi.ResourceClaim, 0, len(claims))
-	for _, claim := range claims {
-		claimsList = append(claimsList, claim)
-	}
+// WalkResourceClaims iterates over all ResourceClaims in the snapshot.
+func (s *Snapshot) WalkResourceClaims(f func(*resourceapi.ResourceClaim) bool) {
+	s.resourceClaims.WalkValues(f)
+}
 
-	return claimsList
+// WalkResourceSlices iterates over all ResourceSlices in the snapshot.
+func (s *Snapshot) WalkResourceSlices(f func([]*resourceapi.ResourceSlice) bool) {
+	s.resourceSlices.WalkValues(f)
 }
 
 // configureResourceClaim updates or adds a ResourceClaim in the current patch layer.
@@ -288,17 +278,6 @@ func (s *Snapshot) configureResourceClaim(claim *resourceapi.ResourceClaim) {
 // getResourceClaim retrieves a specific ResourceClaim by its ID from the snapshot.
 func (s *Snapshot) getResourceClaim(claimId ResourceClaimId) (*resourceapi.ResourceClaim, bool) {
 	return s.resourceClaims.FindValue(claimId)
-}
-
-// listResourceSlices retrieves all effective ResourceSlices from the snapshot.
-func (s *Snapshot) listResourceSlices() []*resourceapi.ResourceSlice {
-	resourceSlices := s.resourceSlices.AsMap()
-	resourceSlicesList := make([]*resourceapi.ResourceSlice, 0, len(resourceSlices))
-	for _, nodeSlices := range resourceSlices {
-		resourceSlicesList = append(resourceSlicesList, nodeSlices...)
-	}
-
-	return resourceSlicesList
 }
 
 // getDeviceClass retrieves a specific DeviceClass by its name from the snapshot.

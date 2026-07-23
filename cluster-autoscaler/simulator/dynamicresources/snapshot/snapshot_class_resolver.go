@@ -32,7 +32,7 @@ var _ schedulerinterface.DeviceClassResolver = &snapshotDeviceClassResolver{}
 // newSnapshotDeviceClassResolver implements DeviceClassResolver for a snapshot
 func newSnapshotDeviceClassResolver(snapshot *Snapshot) schedulerinterface.DeviceClassResolver {
 	deviceClassMap := make(map[v1.ResourceName]*resourceapi.DeviceClass)
-	for _, class := range snapshot.listDeviceClasses() {
+	snapshot.WalkDeviceClasses(func(class *resourceapi.DeviceClass) bool {
 		if class != nil {
 			deviceClassMap[v1.ResourceName(resourceapi.ResourceDeviceClassPrefix+class.Name)] = class
 			extendedResourceName := class.Spec.ExtendedResourceName
@@ -40,7 +40,8 @@ func newSnapshotDeviceClassResolver(snapshot *Snapshot) schedulerinterface.Devic
 				deviceClassMap[v1.ResourceName(*extendedResourceName)] = class
 			}
 		}
-	}
+		return true
+	})
 	return snapshotDeviceClassResolver{deviceClassMap: deviceClassMap}
 }
 
