@@ -138,8 +138,13 @@ func (o *observer) OnUpdate(oldObj, newObj any) {
 		klog.ErrorS(nil, "OOM observer received invalid newObj", "newObj", newObj)
 	}
 
-	for _, containerStatus := range newPod.Status.ContainerStatuses {
-		oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
+	o.processStatuses(newPod, oldPod, newPod.Status.ContainerStatuses, oldPod.Status.ContainerStatuses)
+	o.processStatuses(newPod, oldPod, newPod.Status.InitContainerStatuses, oldPod.Status.InitContainerStatuses)
+}
+
+func (o *observer) processStatuses(newPod, oldPod *corev1.Pod, statuses, oldStatuses []corev1.ContainerStatus) {
+	for _, containerStatus := range statuses {
+		oldStatus := findStatus(containerStatus.Name, oldStatuses)
 		if oldStatus == nil {
 			continue
 		}
