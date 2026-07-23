@@ -61,9 +61,7 @@ type ContainerState struct {
 	aggregator ContainerStateAggregator
 }
 
-// NewContainerState returns a new ContainerState. If currentMemoryPeak is non-nil, the
-// container's in-progress memory peak is seeded from it (see loadCurrentMemoryPeak),
-// restoring the peak accumulated before a recommender restart.
+// NewContainerState returns a new ContainerState loading the current memory peak.
 func NewContainerState(request Resources, aggregator ContainerStateAggregator, currentMemoryPeak *MemoryPeakData) *ContainerState {
 	container := &ContainerState{
 		Request:               request,
@@ -133,11 +131,7 @@ func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
 	return ResourceAmountMax(container.memoryPeak, container.oomPeak)
 }
 
-// loadCurrentMemoryPeak seeds the container's in-progress memory peak state from a
-// checkpoint that was restored after a recommender restart, and adds the peak to the
-// aggregation so it is reflected immediately. Subsequent memory samples continue to
-// aggregate into the same interval window (see addMemorySample), so the peak accumulated
-// before the restart is not lost. It is a no-op if peak is nil or holds no peak.
+// loadCurrentMemoryPeak loads the current memory peak into the container aggregator
 func (container *ContainerState) loadCurrentMemoryPeak(peak *MemoryPeakData) {
 	if peak == nil {
 		return
