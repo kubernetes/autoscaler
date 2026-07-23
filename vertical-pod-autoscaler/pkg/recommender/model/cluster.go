@@ -242,8 +242,8 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	}
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
 		cluster.findOrCreateAggregateContainerState(containerID)
-		initialMemoryPeak := cluster.getCurrentMemoryPeak(containerID)
-		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID), initialMemoryPeak)
+		currentMemoryPeak := cluster.getCurrentMemoryPeak(containerID)
+		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID), currentMemoryPeak)
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request

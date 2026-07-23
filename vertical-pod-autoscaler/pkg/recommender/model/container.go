@@ -61,10 +61,10 @@ type ContainerState struct {
 	aggregator ContainerStateAggregator
 }
 
-// NewContainerState returns a new ContainerState. If initialMemoryPeak is non-nil, the
+// NewContainerState returns a new ContainerState. If currentMemoryPeak is non-nil, the
 // container's in-progress memory peak is seeded from it (see initMemoryPeakFromCheckpoint),
 // restoring the peak accumulated before a recommender restart.
-func NewContainerState(request Resources, aggregator ContainerStateAggregator, initialMemoryPeak *MemoryPeakData) *ContainerState {
+func NewContainerState(request Resources, aggregator ContainerStateAggregator, currentMemoryPeak *MemoryPeakData) *ContainerState {
 	container := &ContainerState{
 		Request:               request,
 		LastCPUSampleStart:    time.Time{},
@@ -72,7 +72,7 @@ func NewContainerState(request Resources, aggregator ContainerStateAggregator, i
 		lastMemorySampleStart: time.Time{},
 		aggregator:            aggregator,
 	}
-	container.initMemoryPeakFromCheckpoint(initialMemoryPeak)
+	container.initMemoryPeakFromCheckpoint(currentMemoryPeak)
 	return container
 }
 
