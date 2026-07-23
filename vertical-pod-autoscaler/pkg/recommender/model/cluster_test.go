@@ -30,6 +30,7 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -390,6 +391,93 @@ func addTestContainer(t *testing.T, cluster ClusterState) *ContainerState {
 	err := cluster.AddOrUpdateContainer(testContainerID, testRequest)
 	assert.NoError(t, err)
 	return cluster.GetContainer(testContainerID)
+}
+
+// Verifies that the in-progress memory peak persisted in a checkpoint (loaded into
+// ContainersInitialAggregateState) is restored into a newly created container, and is
+// consumed so it is applied at most once.
+func TestAddContainerSeedsMemoryPeakFromCheckpoint(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	vpa := addTestVpa(cluster)
+
+	windowEnd := time.Unix(10000, 0)
+	initial := NewAggregateContainerState()
+	initial.CurrentMemoryPeak = &MemoryPeakData{
+		Peak:            MemoryAmountFromBytes(7e9),
+		WindowEnd:       windowEnd,
+		LastSampleStart: time.Unix(9900, 0),
+	}
+	vpa.ContainersInitialAggregateState[testContainerID.ContainerName] = initial
+
+	addTestPod(cluster)
+	container := addTestContainer(t, cluster)
+
+	assert.Equal(t, windowEnd, container.WindowEnd, "window end should be restored from the checkpoint")
+	assert.Equal(t, MemoryAmountFromBytes(7e9), container.GetMaxMemoryPeak(), "peak should be restored from the checkpoint")
+	assert.Nil(t, initial.CurrentMemoryPeak, "restored peak should be consumed")
+
+	if assert.Len(t, vpa.aggregateContainerStates, 1) {
+		for _, acs := range vpa.aggregateContainerStates {
+			assert.False(t, acs.AggregateMemoryPeaks.IsEmpty(), "restored peak should be present in the live aggregation")
+		}
+	}
+
+	// A later, larger memory sample within the same interval supersedes the restored peak
+	// (dedup within the window continues to work after restore).
+	assert.NoError(t, cluster.AddSample(&ContainerUsageSampleWithKey{
+		ContainerUsageSample: ContainerUsageSample{
+			MeasureStart: time.Unix(9950, 0),
+			Usage:        MemoryAmountFromBytes(9e9),
+			Resource:     ResourceMemory,
+		},
+		Container: testContainerID,
+	}))
+	assert.Equal(t, MemoryAmountFromBytes(9e9), container.GetMaxMemoryPeak(), "a larger sample within the window should supersede the restored peak")
+}
+
+// Verifies that a checkpointed in-progress memory peak is restored into the shared aggregation
+// exactly once, even when multiple replica pods and multiple overlapping VPAs (e.g. one Auto and
+// one Off) select the same pods and each carry a checkpointed peak.
+func TestAddContainerRestoresMemoryPeakOnceAcrossOverlappingVPAs(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+
+	// Two overlapping VPAs selecting the same pods, each with its own checkpointed peak.
+	vpaA := addVpa(cluster, VpaID{Namespace: "namespace-1", VpaName: "vpa-a"}, testAnnotations, testSelectorStr, testTargetRef)
+	vpaB := addVpa(cluster, VpaID{Namespace: "namespace-1", VpaName: "vpa-b"}, testAnnotations, testSelectorStr, testTargetRef)
+	windowEnd := time.Unix(10000, 0)
+	for _, vpa := range []*Vpa{vpaA, vpaB} {
+		initial := NewAggregateContainerState()
+		initial.CurrentMemoryPeak = &MemoryPeakData{
+			Peak:            MemoryAmountFromBytes(7e9),
+			WindowEnd:       windowEnd,
+			LastSampleStart: time.Unix(9900, 0),
+		}
+		vpa.ContainersInitialAggregateState[testContainerID.ContainerName] = initial
+	}
+
+	// Two replica pods with the same labels map to the same shared aggregation.
+	cluster.AddOrUpdatePod(testPodID, testLabels, corev1.PodRunning)
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
+	cluster.AddOrUpdatePod(testPodID3, testLabels, corev1.PodRunning)
+	assert.NoError(t, cluster.AddOrUpdateContainer(ContainerID{PodID: testPodID3, ContainerName: testContainerID.ContainerName}, testRequest))
+
+	// Only one VPA's peak is consumed: the shared aggregation's flag stops the second pod (and
+	// the second overlapping VPA) from restoring it again.
+	consumed := 0
+	for _, vpa := range []*Vpa{vpaA, vpaB} {
+		if vpa.ContainersInitialAggregateState[testContainerID.ContainerName].CurrentMemoryPeak == nil {
+			consumed++
+		}
+	}
+	assert.Equal(t, 1, consumed, "exactly one VPA's in-progress peak should be consumed")
+
+	// The peak appears in the shared aggregation exactly once (not once per pod or per VPA).
+	sharedAggregate := cluster.findOrCreateAggregateContainerState(testContainerID)
+	config := GetAggregationsConfig()
+	expected := util.NewDecayingHistogram(config.MemoryHistogramOptions, config.MemoryHistogramDecayHalfLife)
+	expected.AddSample(7e9, 1.0, windowEnd)
+	assert.True(t, expected.Equals(sharedAggregate.AggregateMemoryPeaks),
+		"expected the restored peak exactly once\nExpected:\n%s\nActual:\n%s", expected, sharedAggregate.AggregateMemoryPeaks)
 }
 
 // Creates a VPA followed by a matching pod. Verifies that the links between

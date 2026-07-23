@@ -75,6 +75,41 @@ spec:
                       from BucketWeights.
                     type: number
                 type: object
+              currentMemoryPeak:
+                description: |-
+                  CurrentMemoryPeak holds the memory peak observed so far in the current incomplete memory
+                  aggregation interval. This ensures that the current memory peak survives a recommender
+                  restart in the middle of an aggregation interval instead of being discarded.
+                properties:
+                  lastSampleStart:
+                    description: LastSampleStart is the start of the latest memory
+                      usage sample that was aggregated.
+                    format: date-time
+                    nullable: true
+                    type: string
+                  oomPeak:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: OOMPeak is the maximum memory usage estimated from
+                      OOM events in the current interval.
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  peak:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: Peak is the max memory usage observed in the current
+                      aggregation interval.
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  windowEnd:
+                    description: WindowEnd is the end time of the current memory aggregation
+                      interval (not inclusive).
+                    format: date-time
+                    nullable: true
+                    type: string
+                type: object
               firstSampleStart:
                 description: Timestamp of the first sample from the histograms.
                 format: date-time

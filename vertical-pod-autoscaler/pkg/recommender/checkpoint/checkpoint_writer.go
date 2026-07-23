@@ -144,15 +144,16 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, concurrent
 func buildAggregateContainerStateMap(vpa *model.Vpa, cluster model.ClusterState, now time.Time) map[string]*model.AggregateContainerState {
 	aggregateContainerStateMap := vpa.AggregateStateByContainerName()
 	// Note: the memory peak from the current (ongoing) aggregation interval is not included in the
-	// checkpoint to avoid having multiple peaks in the same interval after the state is restored from
-	// the checkpoint. Therefore we are extracting the current peak from all containers.
+	// checkpoint to avoid having multiple peaks in the same interval after the state is restored
+	// from the checkpoint. Therefore we are extracting the current peak from all containers and
+	// recording it so that it can be restored
 	// TODO: Avoid the nested loop over all containers for each VPA.
 	for _, pod := range cluster.Pods() {
 		for containerName, container := range pod.Containers {
 			aggregateKey := cluster.MakeAggregateStateKey(pod, containerName)
 			if vpa.UsesAggregation(aggregateKey) {
 				if aggregateContainerState, exists := aggregateContainerStateMap[containerName]; exists {
-					subtractCurrentContainerMemoryPeak(aggregateContainerState, container, now)
+					subtractAndRecordCurrentContainerMemoryPeak(aggregateContainerState, container, now)
 				}
 			}
 		}
@@ -160,8 +161,9 @@ func buildAggregateContainerStateMap(vpa *model.Vpa, cluster model.ClusterState,
 	return aggregateContainerStateMap
 }
 
-func subtractCurrentContainerMemoryPeak(a *model.AggregateContainerState, container *model.ContainerState, now time.Time) {
+func subtractAndRecordCurrentContainerMemoryPeak(a *model.AggregateContainerState, container *model.ContainerState, now time.Time) {
 	if now.Before(container.WindowEnd) {
 		a.AggregateMemoryPeaks.SubtractSample(model.BytesFromMemoryAmount(container.GetMaxMemoryPeak()), 1.0, container.WindowEnd)
+		a.RecordCurrentMemoryPeak(container)
 	}
 }
