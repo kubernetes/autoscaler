@@ -82,9 +82,8 @@ spec:
                   restart in the middle of an aggregation interval instead of being discarded.
                 properties:
                   lastSampleStart:
-                    description: |-
-                      LastSampleStart is the start timestamp of the most recent memory sample that was aggregated
-                      into the current interval. On restore it is used to discard outdated samples that predate it.
+                    description: LastSampleStart is the start of the latest memory
+                      usage sample that was aggregated.
                     format: date-time
                     nullable: true
                     type: string
@@ -100,15 +99,13 @@ spec:
                     anyOf:
                     - type: integer
                     - type: string
-                    description: Peak is the maximum memory usage observed from usage
-                      samples in the current interval.
+                    description: Peak is the max memory usage observed in the current
+                      aggregation interval.
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                   windowEnd:
-                    description: |-
-                      WindowEnd is the end time (not inclusive) of the memory aggregation interval that the peak
-                      belongs to. On restore it is used to decide whether the peak is still within the current
-                      interval and to keep aggregating into the same window.
+                    description: WindowEnd is the end time of the current memory aggregation
+                      interval (not inclusive).
                     format: date-time
                     nullable: true
                     type: string
