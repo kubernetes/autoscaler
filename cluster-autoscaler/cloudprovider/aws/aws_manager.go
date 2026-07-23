@@ -81,8 +81,23 @@ func createAWSManagerInternal(
 	klog.Infof("AWS SDK Version: %s", aws.SDKVersion)
 
 	if awsService == nil {
+
+		var autoScalingClientOpts []func(*autoscaling.Options)
+
+		for _, override := range awsSDKProvider.cloudConfig.ServiceOverride {
+			if override.Service == "autoscaling" {
+				autoScalingClientOpts = append(
+					autoScalingClientOpts,
+					autoscaling.WithEndpointResolver(
+						newAutoscalingOverrideResolver(awsSDKProvider.cloudConfig),
+					),
+				)
+				break
+			}
+		}
+
 		awsService = &awsWrapper{
-			autoScalingI: autoscaling.NewFromConfig(awsSDKProvider.cfg, autoscaling.WithEndpointResolver(newAutoscalingOverrideResolver(awsSDKProvider.cloudConfig))),
+			autoScalingI: autoscaling.NewFromConfig(awsSDKProvider.cfg, autoScalingClientOpts...),
 			ec2I:         ec2.NewFromConfig(awsSDKProvider.cfg, ec2.WithEndpointResolver(newEc2OverrideResolver(awsSDKProvider.cloudConfig))),
 			eksI:         eks.NewFromConfig(awsSDKProvider.cfg, eks.WithEndpointResolver(newEksOverrideResolver(awsSDKProvider.cloudConfig))),
 		}
