@@ -116,7 +116,7 @@ func TestNodeGroups(t *testing.T) {
 			}
 
 			if len(provider.NodeGroups()) != tc.expectedGroups {
-				t.Fatalf("expected %q groups, got %q", tc.expectedGroups, len(provider.NodeGroups()))
+				t.Fatalf("expected %d groups, got %d", tc.expectedGroups, len(provider.NodeGroups()))
 			}
 		})
 	}

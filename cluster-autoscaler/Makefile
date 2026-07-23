@@ -1,10 +1,9 @@
 ALL_ARCH = amd64 arm64 s390x
 all: $(addprefix build-arch-,$(ALL_ARCH))
 
-# TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
-# Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
-# This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
-GO_TEST_DEFAULT_ANALYZERS?=atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests
+# An empty list passed to "go test -vet=" performs all default tests
+GO_TEST_DEFAULT_ANALYZERS?=
+GO_TEST_EXCLUDE_REGEX?=/cloudprovider/oci/vendor-internal/
 TAG?=dev
 FLAGS=
 LDFLAGS?=-s
@@ -79,16 +78,16 @@ test-build-tags:
 	done
 
 test-unit: clean build
-	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+	go test -race $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 test-controllers: setup-envtest clean build
 	ginkgo --race --vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG} ./test/integration/controllers/...
 
 test-ci: setup-envtest
-	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+	go test -race $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 benchmark:
-	go test ./... -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
+	go test $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
 
 dev-release: dev-release-arch-$(GOARCH)
 
@@ -161,7 +160,7 @@ container-arch-%: build-in-docker-arch-% make-image-arch-%
 	@echo "Full in-docker image ${TAG}${FOR_PROVIDER}-$* completed"
 
 test-in-docker: clean docker-builder
-	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
+	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
