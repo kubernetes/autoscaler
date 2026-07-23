@@ -68,7 +68,7 @@ require (
 	k8s.io/kubelet v0.36.2
 	k8s.io/kubernetes v1.36.2
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
-	sigs.k8s.io/cloud-provider-azure v1.36.2
+	sigs.k8s.io/cloud-provider-azure v1.36.3
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.21.3
 	sigs.k8s.io/controller-runtime v0.24.1
 	sigs.k8s.io/yaml v1.6.0
@@ -244,7 +244,7 @@ require (
 	k8s.io/mount-utils v0.26.0-alpha.0 // indirect
 	k8s.io/streaming v0.36.2 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.34.0 // indirect
-	sigs.k8s.io/cloud-provider-azure/pkg/azclient/configloader v0.15.2 // indirect
+	sigs.k8s.io/cloud-provider-azure/pkg/azclient/configloader v0.15.3 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
