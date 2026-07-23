@@ -111,6 +111,7 @@ type StaticAutoscaler struct {
 	initialized                bool
 	taintConfig                taints.TaintConfig
 	capacityBufferPodsRegistry *fakepods.Registry
+	firstLoopFinished          bool
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -600,6 +601,11 @@ func (a *StaticAutoscaler) RunOnce(ctx context.Context, currentTime time.Time) c
 			return a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(nodes, templateNodeInfos)
 		}
 		_, scaleUpStatus, typedErr = a.instrumentedScaleUp(currentTime, scaleUpFn)
+	}
+
+	if !a.firstLoopFinished {
+		a.LogRecorder.Eventf(apiv1.EventTypeNormal, "InitializationFinished", "Autoscaler initialization finished after (re)start.")
+		a.firstLoopFinished = true
 	}
 
 	return nil
