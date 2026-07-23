@@ -127,6 +127,8 @@ var _ = BeforeSuite(func() {
 		[]string{cbapi.ActiveProvisioningStrategy, ""},
 		reconciliationCache,
 		clock,
+		cbctrl.NewDefaultRBACUpdater(client.GetKubernetesClient()),
+		client.GetDynamicClient(),
 	)
 
 	go controller.Run(ctx.Done())

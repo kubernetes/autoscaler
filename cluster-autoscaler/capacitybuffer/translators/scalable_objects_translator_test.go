@@ -26,11 +26,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	buffersfake "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/client/clientset/versioned/fake"
 	cbclient "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/client"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/fakepods"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
+	"k8s.io/client-go/dynamic/fake"
 	fakeclient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/utils/ptr"
 )
@@ -86,7 +88,8 @@ func TestScalableObjectsTranslator(t *testing.T) {
 	}
 	fakeKubernetesClient := fakeclient.NewSimpleClientset(podTemplate1, podTemplate2, replicaSet1, replicaSetWithResources)
 	fakeBuffersClient := buffersfake.NewSimpleClientset()
-	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, nil, nil)
+	fakeDynamicClient := fake.NewSimpleDynamicClient(runtime.NewScheme())
+	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClientFromClients(fakeBuffersClient, fakeKubernetesClient, fakeDynamicClient, nil, nil)
 	notReadyMsg := "Buffer not ready for provisioning: couldn't get number of replicas for buffer: replicas, percentage and limits are not defined"
 	tests := []struct {
 		name                   string

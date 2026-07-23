@@ -26,9 +26,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	cbapi "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
+	"k8s.io/utils/ptr"
 )
 
 var _ = Describe("CapacityBuffer Controller", func() {
@@ -105,7 +107,7 @@ var _ = Describe("CapacityBuffer Controller", func() {
 			Eventually(func(g Gomega) {
 				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "b1", metav1.GetOptions{})
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(b.Status.Replicas).To(Equal(new(int32(2))))
+				g.Expect(b.Status.Replicas).To(Equal(ptr.To(int32(2))))
 				g.Expect(meta.IsStatusConditionFalse(b.Status.Conditions, cbapi.LimitedByQuotasCondition)).To(BeTrue())
 			}).Should(Succeed())
 
@@ -124,14 +126,14 @@ var _ = Describe("CapacityBuffer Controller", func() {
 			Eventually(func(g Gomega) {
 				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "b2", metav1.GetOptions{})
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(b.Status.Replicas).To(Equal(new(int32(3))))
+				g.Expect(b.Status.Replicas).To(Equal(ptr.To(int32(3))))
 				g.Expect(meta.IsStatusConditionTrue(b.Status.Conditions, cbapi.LimitedByQuotasCondition)).To(BeTrue())
 			}).Should(Succeed())
 
 			By("increasing b1's replicas from 2 to 4")
 			b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "b1", metav1.GetOptions{})
 			Expect(err).NotTo(HaveOccurred())
-			b.Spec.Replicas = new(int32(4))
+			b.Spec.Replicas = ptr.To(int32(4))
 			_, err = buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Update(ctx, b, metav1.UpdateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -140,7 +142,7 @@ var _ = Describe("CapacityBuffer Controller", func() {
 				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "b1", metav1.GetOptions{})
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(meta.IsStatusConditionFalse(b.Status.Conditions, cbapi.LimitedByQuotasCondition)).To(BeTrue())
-				g.Expect(b.Status.Replicas).To(Equal(new(int32(4))))
+				g.Expect(b.Status.Replicas).To(Equal(ptr.To(int32(4))))
 			}).Should(Succeed())
 
 			// buffers are ordered in the order of creation
@@ -149,7 +151,7 @@ var _ = Describe("CapacityBuffer Controller", func() {
 				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "b2", metav1.GetOptions{})
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(meta.IsStatusConditionTrue(b.Status.Conditions, cbapi.LimitedByQuotasCondition)).To(BeTrue())
-				g.Expect(b.Status.Replicas).To(Equal(new(int32(1))))
+				g.Expect(b.Status.Replicas).To(Equal(ptr.To(int32(1))))
 			}).Should(Succeed())
 
 			By("increasing quota from 5 to 10")
@@ -162,14 +164,14 @@ var _ = Describe("CapacityBuffer Controller", func() {
 			Consistently(func(g Gomega) {
 				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "b1", metav1.GetOptions{})
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(b.Status.Replicas).To(Equal(new(int32(4))))
+				g.Expect(b.Status.Replicas).To(Equal(ptr.To(int32(4))))
 			}, 1*time.Second, 100*time.Millisecond).Should(Succeed())
 
 			By("checking that b2 used the newly available quota")
 			Eventually(func(g Gomega) {
 				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "b2", metav1.GetOptions{})
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(b.Status.Replicas).To(Equal(new(int32(4))))
+				g.Expect(b.Status.Replicas).To(Equal(ptr.To(int32(4))))
 				g.Expect(meta.IsStatusConditionFalse(b.Status.Conditions, cbapi.LimitedByQuotasCondition)).To(BeTrue())
 			}).Should(Succeed())
 		})
@@ -193,7 +195,7 @@ var _ = Describe("CapacityBuffer Controller", func() {
 					Namespace: namespace,
 				},
 				Spec: appsv1.DeploymentSpec{
-					Replicas: new(int32(10)),
+					Replicas: ptr.To(int32(10)),
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{"app": "my-dep"},
 					},
@@ -225,14 +227,14 @@ var _ = Describe("CapacityBuffer Controller", func() {
 			Eventually(func(g Gomega) {
 				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "b1", metav1.GetOptions{})
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(b.Status.Replicas).To(Equal(new(int32(2))))
+				g.Expect(b.Status.Replicas).To(Equal(ptr.To(int32(2))))
 			}).Should(Succeed())
 
 			By("updating deployment replicas to 20")
 			Eventually(func(g Gomega) {
 				d, err := k8sClient.AppsV1().Deployments(namespace).Get(ctx, "my-dep", metav1.GetOptions{})
 				g.Expect(err).NotTo(HaveOccurred())
-				d.Spec.Replicas = new(int32(20))
+				d.Spec.Replicas = ptr.To(int32(20))
 				_, err = k8sClient.AppsV1().Deployments(namespace).Update(ctx, d, metav1.UpdateOptions{})
 				g.Expect(err).NotTo(HaveOccurred())
 			}).Should(Succeed())
@@ -241,7 +243,7 @@ var _ = Describe("CapacityBuffer Controller", func() {
 			Eventually(func(g Gomega) {
 				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "b1", metav1.GetOptions{})
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(b.Status.Replicas).To(Equal(new(int32(4))))
+				g.Expect(b.Status.Replicas).To(Equal(ptr.To(int32(4))))
 			}).Should(Succeed())
 		})
 	})
@@ -270,7 +272,7 @@ var _ = Describe("CapacityBuffer Controller", func() {
 				testutil.WithName("unsupported"),
 				testutil.WithNamespace[*v1beta1.CapacityBuffer](namespace),
 				func(buffer *v1beta1.CapacityBuffer) {
-					buffer.Spec.ProvisioningStrategy = new("unsupported-strategy")
+					buffer.Spec.ProvisioningStrategy = ptr.To("unsupported-strategy")
 				},
 			)
 			bUnsupported, err = buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Create(ctx, bUnsupported, metav1.CreateOptions{})
@@ -282,6 +284,82 @@ var _ = Describe("CapacityBuffer Controller", func() {
 				snapshot := reconciliationCache.Snapshot()
 				g.Expect(snapshot[bSupported.UID]).To(BeTemporally("~", clock.Now(), toleranceRange))
 				g.Expect(snapshot[bUnsupported.UID]).To(BeTemporally("~", clock.Now(), toleranceRange))
+			}).Should(Succeed())
+		})
+	})
+
+	Context("Dynamic Watching and Custom CRD", func() {
+		SetDefaultEventuallyTimeout(10 * time.Second)
+		SetDefaultEventuallyPollingInterval(500 * time.Millisecond)
+
+		BeforeEach(func() {
+			By("creating a pod template")
+			podTemp := testutil.NewPodTemplate(
+				testutil.WithPodTemplateName("pod-temp"),
+				testutil.WithNamespace[*corev1.PodTemplate](namespace),
+				testutil.WithPodTemplateResources(corev1.ResourceList{"cpu": resource.MustParse("1")}, nil),
+			)
+			_, err := k8sClient.CoreV1().PodTemplates(namespace).Create(ctx, podTemp, metav1.CreateOptions{})
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			By("cleaning up test resources")
+			_ = buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, metav1.ListOptions{})
+			_ = k8sClient.CoreV1().PodTemplates(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, metav1.ListOptions{})
+		})
+
+		It("should establish a watch on a custom CRD", func() {
+			By("defining a custom CRD name and GVK")
+			gvk := schema.GroupVersionKind{
+				Group:   "example.com",
+				Version: "v1",
+				Kind:    "CustomScalable",
+			}
+
+			By("creating a buffer referencing a custom CRD")
+			b1 := testutil.NewBuffer(
+				testutil.WithName("custom-buffer"),
+				testutil.WithNamespace[*v1beta1.CapacityBuffer](namespace),
+				testutil.WithScalableRef(gvk.Group, gvk.Kind, "my-custom-obj"),
+				testutil.WithPercentage(50),
+				testutil.WithActiveProvisioningStrategy(),
+			)
+			_, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Create(ctx, b1, metav1.CreateOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("verifying the controller remains responsive for other buffers")
+			b2 := testutil.NewBuffer(
+				testutil.WithName("healthy-buffer"),
+				testutil.WithNamespace[*v1beta1.CapacityBuffer](namespace),
+				testutil.WithPodTemplateRef("pod-temp"),
+				testutil.WithReplicas(1),
+				testutil.WithActiveProvisioningStrategy(),
+			)
+			_, err = buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Create(ctx, b2, metav1.CreateOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func(g Gomega) {
+				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "healthy-buffer", metav1.GetOptions{})
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(b.Status.Replicas).To(Equal(ptr.To(int32(1))))
+			}).Should(Succeed())
+
+			By("verifying the custom-buffer has EventDrivenReconciliation=False condition")
+			Eventually(func(g Gomega) {
+				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "custom-buffer", metav1.GetOptions{})
+				g.Expect(err).NotTo(HaveOccurred())
+
+				found := false
+				for _, cond := range b.Status.Conditions {
+					if cond.Type == "EventDrivenReconciliation" {
+						g.Expect(cond.Status).To(Equal(metav1.ConditionFalse))
+						g.Expect(cond.Reason).To(Equal("DynamicWatchFailed"))
+						found = true
+						break
+					}
+				}
+				g.Expect(found).To(BeTrue(), "EventDrivenReconciliation condition not found")
 			}).Should(Succeed())
 		})
 	})

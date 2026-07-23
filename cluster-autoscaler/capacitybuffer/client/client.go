@@ -62,6 +62,7 @@ const ScalableRefIndex = "scalableRef"
 type CapacityBufferClient struct {
 	buffersClient         capacitybuffer.Interface
 	kubernetesClient      kubernetes.Interface
+	dynamicClient         dynamic.Interface
 	scaleGetter           scaleclient.ScalesGetter
 	scaleMapper           meta.RESTMapper
 	buffersLister         bufferslisters.CapacityBufferLister
@@ -85,13 +86,14 @@ type CapacityBufferClient struct {
 }
 
 // NewCapacityBufferClient returns a capacityBufferClient.
-func NewCapacityBufferClient(buffersClient capacitybuffer.Interface, kubernetesClient kubernetes.Interface, buffersLister bufferslisters.CapacityBufferLister,
+func NewCapacityBufferClient(buffersClient capacitybuffer.Interface, kubernetesClient kubernetes.Interface, dynamicClient dynamic.Interface, buffersLister bufferslisters.CapacityBufferLister,
 	podTemplateLister corev1listers.PodTemplateLister, replicaSetsLister appsv1listers.ReplicaSetLister, statefulSetsLister appsv1listers.StatefulSetLister,
 	jobsLister batchv1lister.JobLister, deploymentLister appsv1listers.DeploymentLister, replicationContLister corev1listers.ReplicationControllerLister,
 	scaleGetter scaleclient.ScalesGetter, scaleMapper meta.RESTMapper) (*CapacityBufferClient, error) {
 	return &CapacityBufferClient{
 		buffersClient:         buffersClient,
 		kubernetesClient:      kubernetesClient,
+		dynamicClient:         dynamicClient,
 		scaleGetter:           scaleGetter,
 		buffersLister:         buffersLister,
 		podTemplateLister:     podTemplateLister,
@@ -119,11 +121,15 @@ func NewCapacityBufferClientFromConfig(kubeConfig *rest.Config) (*CapacityBuffer
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create kubernetes client for capacity buffer: %v", err)
 	}
+	dynamicClient, err := dynamic.NewForConfig(kubeConfig)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create dynamic client for capacity buffer: %v", err)
+	}
 	scaleGetter, scaleMapper, err := createScaleSubresourceClientGetter(kubeConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create scale getter for capacity buffer: %v", err)
 	}
-	return NewCapacityBufferClientFromClients(buffersClient, kubernetesClient, scaleGetter, scaleMapper)
+	return NewCapacityBufferClientFromClients(buffersClient, kubernetesClient, dynamicClient, scaleGetter, scaleMapper)
 }
 
 func createScaleSubresourceClientGetter(kubeConfig *rest.Config) (scaleclient.ScalesGetter, meta.RESTMapper, error) {
@@ -141,8 +147,8 @@ func createScaleSubresourceClientGetter(kubeConfig *rest.Config) (scaleclient.Sc
 }
 
 // NewCapacityBufferClientFromClients returns a CapacityBufferClient based on the passed clients
-func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, kubernetesClient kubernetes.Interface, scaleGetter scaleclient.ScalesGetter, scaleMapper meta.RESTMapper) (*CapacityBufferClient, error) {
-	if buffersClient == nil || kubernetesClient == nil {
+func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, kubernetesClient kubernetes.Interface, dynamicClient dynamic.Interface, scaleGetter scaleclient.ScalesGetter, scaleMapper meta.RESTMapper) (*CapacityBufferClient, error) {
+	if buffersClient == nil || kubernetesClient == nil || dynamicClient == nil {
 		return nil, fmt.Errorf("Couldn't create capacity buffer client")
 	}
 	defaultResyncPeriod := 5 * time.Minute
@@ -193,6 +199,7 @@ func NewCapacityBufferClientFromClients(buffersClient capacitybuffer.Interface, 
 	bufferClient := &CapacityBufferClient{
 		buffersClient:                 buffersClient,
 		kubernetesClient:              kubernetesClient,
+		dynamicClient:                 dynamicClient,
 		scaleGetter:                   scaleGetter,
 		scaleMapper:                   scaleMapper,
 		buffersLister:                 buffersLister,
@@ -260,6 +267,21 @@ func (c *CapacityBufferClient) GetJobInformer() cache.SharedIndexInformer {
 // GetReplicationControllerInformer returns the informer for ReplicationController resource.
 func (c *CapacityBufferClient) GetReplicationControllerInformer() cache.SharedIndexInformer {
 	return c.replicationControllerInformer
+}
+
+// GetRESTMapper returns the RESTMapper for resolving GVK to GVR.
+func (c *CapacityBufferClient) GetRESTMapper() meta.RESTMapper {
+	return c.scaleMapper
+}
+
+// GetDynamicClient returns the dynamic client for dynamic watching.
+func (c *CapacityBufferClient) GetDynamicClient() dynamic.Interface {
+	return c.dynamicClient
+}
+
+// GetKubernetesClient returns the kubernetes client.
+func (c *CapacityBufferClient) GetKubernetesClient() kubernetes.Interface {
+	return c.kubernetesClient
 }
 
 // ListCapacityBuffers lists all Capacity buffer.
