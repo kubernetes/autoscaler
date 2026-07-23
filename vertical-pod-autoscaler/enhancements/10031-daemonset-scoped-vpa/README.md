@@ -107,7 +107,7 @@ spec:
   scope: nvidia.com/gpu.present
 ```
 
-The recommender then learns separate targets for `true` vs missing/`false`, and
+The recommender then learns separate targets for `true` vs missing, and
 each Falco pod receives the recommendation for its node's class.
 
 The same pattern applies to other node-local agents (Prometheus collectors,
