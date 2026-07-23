@@ -271,7 +271,7 @@ func TestInitMemoryPeakFromCheckpoint(t *testing.T) {
 	windowEnd := time.Unix(2000, 0)
 	lastSample := time.Unix(1900, 0)
 
-	container.InitMemoryPeakFromCheckpoint(&MemoryPeakData{
+	container.initMemoryPeakFromCheckpoint(&MemoryPeakData{
 		WindowEnd:             windowEnd,
 		LastMemorySampleStart: lastSample,
 		MemoryPeak:            MemoryAmountFromBytes(4e9),
@@ -294,7 +294,7 @@ func TestInitMemoryPeakFromCheckpoint(t *testing.T) {
 func TestInitMemoryPeakFromCheckpointNilIsNoOp(t *testing.T) {
 	a := NewAggregateContainerState()
 	container := NewContainerState(testRequest, a, nil)
-	container.InitMemoryPeakFromCheckpoint(nil)
+	container.initMemoryPeakFromCheckpoint(nil)
 	assert.True(t, container.WindowEnd.IsZero())
 	assert.True(t, a.AggregateMemoryPeaks.IsEmpty())
 }

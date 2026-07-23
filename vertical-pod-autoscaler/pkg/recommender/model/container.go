@@ -62,7 +62,7 @@ type ContainerState struct {
 }
 
 // NewContainerState returns a new ContainerState. If initialMemoryPeak is non-nil, the
-// container's in-progress memory peak is seeded from it (see InitMemoryPeakFromCheckpoint),
+// container's in-progress memory peak is seeded from it (see initMemoryPeakFromCheckpoint),
 // restoring the peak accumulated before a recommender restart.
 func NewContainerState(request Resources, aggregator ContainerStateAggregator, initialMemoryPeak *MemoryPeakData) *ContainerState {
 	container := &ContainerState{
@@ -72,7 +72,7 @@ func NewContainerState(request Resources, aggregator ContainerStateAggregator, i
 		lastMemorySampleStart: time.Time{},
 		aggregator:            aggregator,
 	}
-	container.InitMemoryPeakFromCheckpoint(initialMemoryPeak)
+	container.initMemoryPeakFromCheckpoint(initialMemoryPeak)
 	return container
 }
 
@@ -133,12 +133,12 @@ func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
 	return ResourceAmountMax(container.memoryPeak, container.oomPeak)
 }
 
-// InitMemoryPeakFromCheckpoint seeds the container's in-progress memory peak state from a
+// initMemoryPeakFromCheckpoint seeds the container's in-progress memory peak state from a
 // checkpoint that was restored after a recommender restart, and adds the peak to the
 // aggregation so it is reflected immediately. Subsequent memory samples continue to
 // aggregate into the same interval window (see addMemorySample), so the peak accumulated
 // before the restart is not lost. It is a no-op if peak is nil or holds no peak.
-func (container *ContainerState) InitMemoryPeakFromCheckpoint(peak *MemoryPeakData) {
+func (container *ContainerState) initMemoryPeakFromCheckpoint(peak *MemoryPeakData) {
 	if peak == nil {
 		return
 	}
