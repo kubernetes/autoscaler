@@ -17,6 +17,7 @@ limitations under the License.
 package checkcapacity
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -178,8 +179,8 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 	o.autoscalingCtx.ClusterSnapshot.Fork()
 
 	// Case 1: Capacity fits.
-	scheduled, _, err := o.schedulingSimulator.TrySchedulePods(o.autoscalingCtx.ClusterSnapshot, unschedulablePods, true, clustersnapshot.SchedulingOptions{})
-	if err == nil && len(scheduled) == len(unschedulablePods) {
+	schedulingResult, err := o.schedulingSimulator.TrySchedulePods(context.Background(), o.autoscalingCtx.ClusterSnapshot, unschedulablePods, true, clustersnapshot.SchedulingOptions{})
+	if err == nil && len(schedulingResult.Statuses) == len(unschedulablePods) {
 		commitError := o.autoscalingCtx.ClusterSnapshot.Commit()
 		if commitError != nil {
 			o.autoscalingCtx.ClusterSnapshot.Revert()

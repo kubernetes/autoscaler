@@ -234,9 +234,9 @@ type fakeInjector struct {
 	pods []*apiv1.Pod
 }
 
-func (f *fakeInjector) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]scheduling.Status, int, error) {
+func (f *fakeInjector) TrySchedulePods(ctx context.Context, clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) (scheduling.Result, error) {
 	f.pods = pods
-	return nil, 0, nil
+	return scheduling.Result{}, nil
 }
 
 func TestBookCapacity(t *testing.T) {

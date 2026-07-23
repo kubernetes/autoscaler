@@ -17,6 +17,7 @@ limitations under the License.
 package planner
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -271,12 +272,13 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 	pods = pod_util.ClearPodNodeNames(pods)
 	// Note: We're using ScheduleAnywhere, but the pods won't schedule back
 	// on the drained nodes due to taints.
-	statuses, _, err := p.actuationInjector.TrySchedulePods(p.autoscalingCtx.ClusterSnapshot, pods, true, clustersnapshot.SchedulingOptions{IsNodeAcceptable: scheduling.ScheduleAnywhere})
+	schedulingResult, err := p.actuationInjector.TrySchedulePods(context.Background(), p.autoscalingCtx.ClusterSnapshot, pods, true, clustersnapshot.SchedulingOptions{IsNodeAcceptable: scheduling.ScheduleAnywhere})
+
 	if err != nil {
 		return fmt.Errorf("cannot scale down, an unexpected error occurred: %v", err)
 	}
-	if len(statuses) != len(pods) {
-		return fmt.Errorf("can reschedule only %d out of %d pods from ongoing deletions", len(statuses), len(pods))
+	if len(schedulingResult.Statuses) != len(pods) {
+		return fmt.Errorf("can reschedule only %d out of %d pods from ongoing deletions", len(schedulingResult.Statuses), len(pods))
 	}
 	return nil
 }

@@ -3917,3 +3917,99 @@ func TestStaticAutoscalerScaleDownCustomQuota(t *testing.T) {
 		assert.Equal(t, simulator.MinimalResourceLimitExceeded, unremovableNode.Reason)
 	}
 }
+
+func TestShouldScaleDown(t *testing.T) {
+	now := time.Now()
+	underutilizedNode := BuildTestNode("underutilized-node", 1000, 1000)
+	SetNodeReadyState(underutilizedNode, true, now)
+
+	testCases := []struct {
+		name                         string
+		scaleDownEnabled             bool
+		gracefulDegradationEnabled   bool
+		gracefulDegradationLoopCount int
+		wantScaleDownAttempt         bool
+	}{
+		{
+			name:                 "scale down disabled",
+			wantScaleDownAttempt: false,
+		},
+		{
+			name:                       "scale down enabled, gracefulDegradation disabled",
+			scaleDownEnabled:           true,
+			gracefulDegradationEnabled: false,
+			wantScaleDownAttempt:       true,
+		},
+		{
+			name:                         "scale down enabled, gracefulDegradation enabled, graceful degradation not active",
+			scaleDownEnabled:             true,
+			gracefulDegradationEnabled:   true,
+			gracefulDegradationLoopCount: 0,
+			wantScaleDownAttempt:         true,
+		},
+		{
+			name:                         "scale down enabled, gracefulDegradation enabled, graceful degradation active, not a scale down loop",
+			scaleDownEnabled:             true,
+			gracefulDegradationEnabled:   true,
+			gracefulDegradationLoopCount: 5,
+			wantScaleDownAttempt:         false,
+		},
+		{
+			name:                         "scale down enabled, gracefulDegradation enabled, graceful degradation active, scale down loop",
+			scaleDownEnabled:             true,
+			gracefulDegradationEnabled:   true,
+			gracefulDegradationLoopCount: 8,
+			wantScaleDownAttempt:         true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mocks := newCommonMocks()
+			setupConfig := &autoscalerSetupConfig{
+				autoscalingOptions: config.AutoscalingOptions{
+					ScaleDownEnabled:           tc.scaleDownEnabled,
+					GracefulDegradationEnabled: tc.gracefulDegradationEnabled,
+					NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+						ScaleDownUnneededTime:         0 * time.Second,
+						ScaleDownUtilizationThreshold: 0.5,
+					},
+					MaxNodesTotal: 10,
+				},
+				nodeGroups: []*nodeGroup{{
+					name:     "ng1",
+					min:      0,
+					max:      10,
+					nodes:    []*apiv1.Node{underutilizedNode},
+					template: framework.NewTestNodeInfo(BuildTestNode("template-node", 1000, 1000)),
+				}},
+				nodeStateUpdateTime: now,
+				mocks:               mocks,
+				nodesDeleted:        make(chan bool, 1),
+			}
+
+			autoscaler, err := setupAutoscaler(setupConfig)
+			assert.NoError(t, err)
+			autoscaler.GracefulDegradationLoopCount = tc.gracefulDegradationLoopCount
+			autoscaler.initialized = true
+
+			mocks.allPodLister.On("List").Return([]*apiv1.Pod{}, nil)
+			mocks.daemonSetLister.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil)
+			mocks.podDisruptionBudgetLister.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil)
+			mocks.readyNodeLister.SetNodes([]*apiv1.Node{underutilizedNode})
+			mocks.allNodeLister.SetNodes([]*apiv1.Node{underutilizedNode})
+
+			mocks.onScaleDown.On("ScaleDown", "ng1", underutilizedNode.Name).Return(nil).Maybe()
+
+			err = autoscaler.RunOnce(context.Background(), now.Add(2*time.Minute))
+			assert.NoError(t, err)
+
+			if tc.wantScaleDownAttempt {
+				waitForDeleteToFinish(t, setupConfig.nodesDeleted)
+				mocks.onScaleDown.AssertCalled(t, "ScaleDown", "ng1", underutilizedNode.Name)
+			} else {
+				mocks.onScaleDown.AssertNotCalled(t, "ScaleDown", "ng1", underutilizedNode.Name)
+			}
+		})
+	}
+}
