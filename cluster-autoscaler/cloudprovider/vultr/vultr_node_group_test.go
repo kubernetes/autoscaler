@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -160,6 +161,19 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		err := ng.DecreaseTargetSize(delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease is too small")
 	})
+
+	t.Run("does not decrease below existing nodes", func(t *testing.T) {
+		client := &vultrClientMock{}
+		ng := testData(client, &govultr.NodePool{
+			NodeQuantity: 3,
+			MinNodes:     1,
+			MaxNodes:     5,
+			Nodes:        []govultr.Node{{ID: "a"}, {ID: "b"}, {ID: "c"}},
+		})
+
+		err := ng.DecreaseTargetSize(-1)
+		assert.EqualError(t, err, "cannot decrease target size below existing nodes. current target: 3 desired: 2 existing nodes: 3")
+	})
 }
 
 func TestNodeGroup_Nodes(t *testing.T) {
@@ -167,26 +181,54 @@ func TestNodeGroup_Nodes(t *testing.T) {
 	ng := testData(client, &govultr.NodePool{
 		Nodes: []govultr.Node{
 			{
-				ID: "a-1",
+				ID:     "a-1",
+				Status: "active",
 			},
 			{
-				ID: "a-2",
+				ID:     "a-2",
+				Status: "active",
 			},
 		},
 	})
 
 	instances := []cloudprovider.Instance{
 		{
-			Id: "vultr://a-1",
+			Id:     "vultr://a-1",
+			Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 		},
 		{
-			Id: "vultr://a-2",
+			Id:     "vultr://a-2",
+			Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 		},
 	}
 
 	nodes, err := ng.Nodes()
 	assert.NoError(t, err)
 	assert.Equal(t, instances, nodes, "nodes do not match")
+}
+
+func TestVultrNodeStatus(t *testing.T) {
+	for _, test := range []struct {
+		name      string
+		status    string
+		wantState cloudprovider.InstanceState
+		wantError bool
+	}{
+		{name: "active", status: "active", wantState: cloudprovider.InstanceRunning},
+		{name: "pending", status: "pending", wantState: cloudprovider.InstanceCreating},
+		{name: "upgrading", status: "upgrading", wantState: cloudprovider.InstanceRunning},
+		{name: "unknown", status: "unknown", wantState: cloudprovider.InstanceCreating},
+		{name: "empty", status: "", wantState: cloudprovider.InstanceCreating},
+		{name: "closed", status: "closed", wantState: cloudprovider.InstanceDeleting},
+		{name: "suspended", status: "suspended", wantState: cloudprovider.InstanceRunning, wantError: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			status := vultrNodeStatus(test.status)
+			require.NotNil(t, status)
+			assert.Equal(t, test.wantState, status.State)
+			assert.Equal(t, test.wantError, status.ErrorInfo != nil)
+		})
+	}
 }
 
 func TestNodeGroup_DeleteNodes(t *testing.T) {
@@ -220,6 +262,33 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 
 		err := ng.DeleteNodes(nodes)
 		assert.Error(t, err)
+	})
+
+	t.Run("delete by provider ID", func(t *testing.T) {
+		ctx := context.Background()
+		client := &vultrClientMock{}
+		ng := testData(client, &govultr.NodePool{NodeQuantity: 2, MinNodes: 1, MaxNodes: 3, Nodes: []govultr.Node{{ID: "a"}}})
+
+		nodes := []*apiv1.Node{
+			{Spec: apiv1.NodeSpec{ProviderID: toProviderID("a")}},
+		}
+
+		client.On("DeleteNodePoolInstance", ctx, ng.clusterID, ng.id, "a").Return(nil).Once()
+
+		err := ng.DeleteNodes(nodes)
+		assert.NoError(t, err)
+	})
+
+	t.Run("reject node from another pool", func(t *testing.T) {
+		client := &vultrClientMock{}
+		ng := testData(client, &govultr.NodePool{NodeQuantity: 2, MinNodes: 1, MaxNodes: 3, Nodes: []govultr.Node{{ID: "a"}}})
+
+		nodes := []*apiv1.Node{
+			{Spec: apiv1.NodeSpec{ProviderID: toProviderID("b")}},
+		}
+
+		err := ng.DeleteNodes(nodes)
+		assert.EqualError(t, err, "cannot delete node \"\" (\"b\"): node does not belong to node pool \"a\"")
 	})
 }
 
