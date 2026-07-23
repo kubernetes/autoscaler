@@ -131,6 +131,10 @@ type AggregateContainerState struct {
 	// checkpoint, so that the peak accumulated so far survives a recommender restart. It is
 	// nil when there is no in-progress peak to preserve.
 	CurrentMemoryPeak *MemoryPeakData
+	// memoryPeakRestored records whether a checkpointed in-progress memory peak has already been
+	// restored into this (shared) aggregation, so it is applied at most once even when multiple
+	// pods, or multiple overlapping VPAs, map to it (see clusterState.loadCurrentMemoryPeak).
+	memoryPeakRestored bool
 
 	mutex sync.RWMutex
 }
