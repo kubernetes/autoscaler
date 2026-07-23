@@ -17,11 +17,14 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
@@ -30,6 +33,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/client-go/informers"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestFilterOutSchedulable(t *testing.T) {
@@ -191,7 +196,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 			clusterSnapshot.Fork()
 
 			processor := NewFilterOutSchedulablePodListProcessor(tc.nodeFilter)
-			unschedulablePods, err := processor.filterOutSchedulableByPacking(tc.unschedulableCandidates, clusterSnapshot)
+			unschedulablePods, err := processor.filterOutSchedulableByPacking(&ca_context.AutoscalingContext{}, tc.unschedulableCandidates, clusterSnapshot)
 
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, unschedulablePods, tc.expectedUnscheduledPods, "unschedulable pods differ")
@@ -288,7 +293,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 
 				for i := 0; i < b.N; i++ {
 					processor := NewFilterOutSchedulablePodListProcessor(scheduling.ScheduleAnywhere)
-					if stillPending, err := processor.filterOutSchedulableByPacking(pendingPods, clusterSnapshot); err != nil {
+					if stillPending, err := processor.filterOutSchedulableByPacking(&ca_context.AutoscalingContext{}, pendingPods, clusterSnapshot); err != nil {
 						assert.NoError(b, err)
 					} else if len(stillPending) < tc.pendingPods {
 						assert.Equal(b, len(stillPending), tc.pendingPods)
@@ -309,4 +314,120 @@ func buildPriorityTestPod(name string, cpu, mem int64, priority int32) *apiv1.Po
 	pod := BuildTestPod(name, cpu, mem)
 	pod.Spec.Priority = &priority
 	return pod
+}
+
+func TestFilterOutSchedulable_GracefulDegradation(t *testing.T) {
+	node := buildReadyTestNode("node", 2000, 100)
+
+	testCases := []struct {
+		desc                       string
+		unschedulableCandidates    []*apiv1.Pod
+		expectedUnscheduled        []*apiv1.Pod
+		expectedScheduled          []*apiv1.Pod
+		initialModeActive          bool
+		initialLoopCount           int
+		expectedModeActive         bool
+		expectedLoopCount          int
+		simulationTimeout          time.Duration
+		gracefulDegradationEnabled bool
+	}{
+		{
+			desc: "graceful degradation enabled, negative timeout",
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod1", 500, 10),
+				BuildTestPod("pod2", 500, 10),
+			},
+			expectedUnscheduled:        []*apiv1.Pod{},
+			expectedScheduled:          []*apiv1.Pod{},
+			initialModeActive:          false,
+			initialLoopCount:           0,
+			expectedModeActive:         true,
+			expectedLoopCount:          1,
+			simulationTimeout:          -1 * time.Minute,
+			gracefulDegradationEnabled: true,
+		},
+		{
+			desc: "degradation enabled, zero timeout",
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod1", 500, 10),
+			},
+			expectedUnscheduled:        []*apiv1.Pod{},
+			expectedScheduled:          []*apiv1.Pod{},
+			initialModeActive:          false,
+			initialLoopCount:           1,
+			expectedModeActive:         true,
+			expectedLoopCount:          2,
+			simulationTimeout:          0,
+			gracefulDegradationEnabled: true,
+		},
+		{
+			desc: "degradation enabled, normal operation",
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod1", 500, 10),
+			},
+			expectedUnscheduled: []*apiv1.Pod{},
+			expectedScheduled: []*apiv1.Pod{
+				BuildTestPod("pod1", 500, 10),
+			},
+			initialModeActive:          true,
+			initialLoopCount:           5,
+			expectedModeActive:         false,
+			expectedLoopCount:          0,
+			simulationTimeout:          4 * time.Minute,
+			gracefulDegradationEnabled: true,
+		},
+		{
+			desc: "degradation disabled, negative timeout",
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod1", 500, 10),
+			},
+			expectedUnscheduled: []*apiv1.Pod{},
+			expectedScheduled: []*apiv1.Pod{
+				BuildTestPod("pod1", 500, 10),
+			},
+			initialModeActive:          false,
+			initialLoopCount:           0,
+			expectedModeActive:         false,
+			expectedLoopCount:          0,
+			simulationTimeout:          -1 * time.Minute,
+			gracefulDegradationEnabled: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
+			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, []*apiv1.Pod{}...))
+			assert.NoError(t, err)
+			clusterSnapshot.Fork()
+
+			ctx := context.Background()
+			opts := config.AutoscalingOptions{PendingPodsBatchingTimeout: tc.simulationTimeout}
+			fakeClientSet := fake.NewSimpleClientset()
+			fakeInformerFactory := informers.NewSharedInformerFactory(fakeClientSet, 0)
+			kubeClients := ca_context.NewAutoscalingKubeClients(ctx, opts, fakeClientSet, fakeInformerFactory)
+
+			autoscalingCtx := ca_context.NewAutoscalingContext(opts, nil, clusterSnapshot, kubeClients, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			autoscalingCtx.GracefulDegradationEnabled = tc.gracefulDegradationEnabled
+			autoscalingCtx.GracefulDegradationLoopCount = tc.initialLoopCount
+
+			processor := NewFilterOutSchedulablePodListProcessor(func(*framework.NodeInfo) bool { return true })
+			unschedulablePods, err := processor.filterOutSchedulableByPacking(autoscalingCtx, tc.unschedulableCandidates, clusterSnapshot)
+
+			assert.NoError(t, err, "filterOutSchedulableByPacking() should not return an error")
+			assert.ElementsMatch(t, tc.expectedUnscheduled, unschedulablePods, "Unexpected unscheduled pods")
+
+			nodeInfos, err := clusterSnapshot.ListNodeInfos()
+			assert.NoError(t, err)
+			var scheduledPods []*apiv1.Pod
+			for _, nodeInfo := range nodeInfos {
+				for _, podInfo := range nodeInfo.Pods() {
+					scheduledPods = append(scheduledPods, podInfo.Pod)
+				}
+			}
+			assert.ElementsMatch(t, tc.expectedScheduled, scheduledPods, "Unexpected scheduled pods")
+
+			assert.Equal(t, tc.expectedLoopCount, autoscalingCtx.GracefulDegradationLoopCount, "Unexpected GracefulDegradationLoopCount")
+		})
+	}
 }

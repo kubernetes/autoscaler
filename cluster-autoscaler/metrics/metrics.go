@@ -158,6 +158,7 @@ type caMetrics struct {
 	nodesGroupTargetSize   *k8smetrics.GaugeVec
 	nodesGroupHealthiness  *k8smetrics.GaugeVec
 	nodeGroupBackOffStatus *k8smetrics.GaugeVec
+	skippedPodsCounts      *k8smetrics.GaugeVec
 
 	// Metrics related to autoscaler execution
 	lastActivity            *k8smetrics.GaugeVec
@@ -538,6 +539,14 @@ func newCaMetrics() *caMetrics {
 				Help:      "Count of resource mismatches between ready nodes and node templates",
 			}, []string{"driver", "mismatch_type"},
 		),
+
+		skippedPodsCounts: k8smetrics.NewGaugeVec(
+			&k8smetrics.GaugeOpts{
+				Namespace: caNamespace,
+				Name:      "skipped_pods_count",
+				Help:      "Number of pods where scheduling simulation was skipped.",
+			}, []string{"requestor"},
+		),
 	}
 }
 
@@ -555,6 +564,7 @@ func (m *caMetrics) RegisterAll(emitPerNodeGroupMetrics bool) {
 	m.mustRegister(m.nodesCount)
 	m.mustRegister(m.nodeGroupsCount)
 	m.mustRegister(m.unschedulablePodsCount)
+	m.mustRegister(m.skippedPodsCounts)
 	m.mustRegister(m.maxNodesCount)
 	m.mustRegister(m.cpuCurrentCores)
 	m.mustRegister(m.cpuLimitsCores)
@@ -921,4 +931,9 @@ func (m *caMetrics) UpdateScaleDownNodeRemovalLatency(deleted bool, delayReason 
 // If a node is skipped multiple times consecutively, we store only the earliest timestamp.
 func (m *caMetrics) ObserveMaxNodeSkipEvalDurationSeconds(duration time.Duration) {
 	m.maxNodeSkipEvalDurationSeconds.Set(duration.Seconds())
+}
+
+// UpdateSkippedPodsCount records the number of pods skipped when doing scheduling simulations.
+func (m *caMetrics) UpdateSkippedPodsCount(podsCount int, label string) {
+	m.skippedPodsCounts.WithLabelValues(label).Set(float64(podsCount))
 }

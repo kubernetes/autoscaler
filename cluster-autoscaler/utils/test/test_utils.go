@@ -238,6 +238,13 @@ func WithPodHostnameAntiAffinity(labels map[string]string) func(*apiv1.Pod) {
 	}
 }
 
+// WithPodPriority sets the priority of the pod.
+func WithPodPriority(priority int32) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.Priority = &priority
+	}
+}
+
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)

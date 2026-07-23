@@ -17,12 +17,14 @@ limitations under the License.
 package scheduling
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -39,6 +41,7 @@ func TestTrySchedulePods(t *testing.T) {
 		acceptableNodes func(*framework.NodeInfo) bool
 		wantStatuses    []Status
 		wantErr         bool
+		contextDeadline time.Duration
 	}{
 		{
 			desc: "two new pods, two nodes",
@@ -149,6 +152,86 @@ func TestTrySchedulePods(t *testing.T) {
 				{Pod: BuildTestPod("p2", 500, 500000), NodeName: "n1"},
 			},
 		},
+		{
+			desc: "hinted pods are prioritized",
+			nodes: []*apiv1.Node{
+				buildReadyNode("n1", 1000, 2000000),
+			},
+			newPods: []*apiv1.Pod{
+				BuildTestPod("p1-high", 1100, 1000000, WithPodPriority(100)),
+				BuildTestPod("p2-low-not-hinted", 800, 1000000, WithPodPriority(10)),
+				BuildTestPod("p2-low-hinted", 800, 1000000, WithPodPriority(10)),
+			},
+			hints: map[*apiv1.Pod]string{
+				BuildTestPod("p2-low-hinted", 800, 1000000, WithPodPriority(10)): "n1",
+			},
+			acceptableNodes: ScheduleAnywhere,
+			wantStatuses: []Status{
+				{Pod: BuildTestPod("p2-low-hinted", 800, 1000000, WithPodPriority(10)), NodeName: "n1"},
+			},
+		},
+		{
+			desc: "higher priority pods are prioritized",
+			nodes: []*apiv1.Node{
+				buildReadyNode("n1", 1000, 2000000),
+				buildReadyNode("n2", 1000, 2000000),
+				buildReadyNode("n3", 1500, 2000000),
+			},
+			newPods: []*apiv1.Pod{
+				BuildTestPod("p1-low", 800, 1000000),
+				BuildTestPod("p2-high", 800, 1000000, WithPodPriority(100)),
+				BuildTestPod("p3-highest", 1100, 1000000, WithPodPriority(1000)),
+			},
+			hints: map[*apiv1.Pod]string{
+				BuildTestPod("p1-low", 800, 1000000):                             "n1",
+				BuildTestPod("p2-high", 800, 1000000, WithPodPriority(100)):      "n1",
+				BuildTestPod("p3-highest", 1100, 1000000, WithPodPriority(1000)): "n1",
+			},
+			acceptableNodes: ScheduleAnywhere,
+			wantStatuses: []Status{
+				{Pod: BuildTestPod("p3-highest", 1100, 1000000, WithPodPriority(1000)), NodeName: "n3"},
+				{Pod: BuildTestPod("p2-high", 800, 1000000, WithPodPriority(100)), NodeName: "n1"},
+				{Pod: BuildTestPod("p1-low", 800, 1000000), NodeName: "n2"},
+			},
+		},
+		{
+			desc: "first schedule pods with working hints and next schedule pods without hints for the remaining capacity while preserving the input pod order",
+			nodes: []*apiv1.Node{
+				buildReadyNode("n1", 2100, 4000000),
+			},
+			newPods: []*apiv1.Pod{
+				BuildTestPod("p1", 500, 1000000),
+				BuildTestPod("p2", 500, 1000000),
+				BuildTestPod("p3", 500, 1000000),
+				BuildTestPod("p4", 500, 1000000),
+				BuildTestPod("p5", 500, 1000000),
+				BuildTestPod("p6", 500, 1000000),
+			},
+			hints: map[*apiv1.Pod]string{
+				BuildTestPod("p2", 500, 1000000): "n1",
+				BuildTestPod("p5", 500, 1000000): "n1",
+				BuildTestPod("p6", 500, 1000000): "n2",
+			},
+			acceptableNodes: ScheduleAnywhere,
+			wantStatuses: []Status{
+				{Pod: BuildTestPod("p2", 500, 1000000), NodeName: "n1"},
+				{Pod: BuildTestPod("p5", 500, 1000000), NodeName: "n1"},
+				{Pod: BuildTestPod("p1", 500, 1000000), NodeName: "n1"},
+				{Pod: BuildTestPod("p3", 500, 1000000), NodeName: "n1"},
+			},
+		},
+		{
+			desc: "no simulations when context exceeded",
+			nodes: []*apiv1.Node{
+				buildReadyNode("n1", 1000, 2000000),
+			},
+			newPods: []*apiv1.Pod{
+				BuildTestPod("p1", 800, 500000),
+			},
+			acceptableNodes: ScheduleAnywhere,
+			wantStatuses:    nil,
+			contextDeadline: -2 * time.Minute,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -163,14 +246,21 @@ func TestTrySchedulePods(t *testing.T) {
 				s.hints.Set(HintKeyFromPod(pod), nodeName)
 			}
 
-			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: tc.acceptableNodes})
+			ctx := context.Background()
+			var cancel context.CancelFunc
+			if tc.contextDeadline.Abs() > 0 {
+				ctx, cancel = context.WithTimeout(ctx, tc.contextDeadline)
+				defer cancel()
+			}
+
+			schedulingResult, err := s.TrySchedulePods(ctx, clusterSnapshot, tc.newPods, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: tc.acceptableNodes})
 			if tc.wantErr {
 				assert.Error(t, err)
 				return
 			}
 
 			assert.NoError(t, err)
-			assert.Equal(t, tc.wantStatuses, statuses)
+			assert.Equal(t, tc.wantStatuses, schedulingResult.Statuses)
 
 			numScheduled := countPods(t, clusterSnapshot)
 			assert.Equal(t, len(tc.pods)+len(tc.wantStatuses), numScheduled)
@@ -250,9 +340,9 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 				s.hints.Set(HintKeyFromPod(pod), n)
 				expectedStatuses = append(expectedStatuses, Status{Pod: pod, NodeName: n})
 			}
-			statuses, _, err := s.TrySchedulePods(clusterSnapshot, pods, false, clustersnapshot.SchedulingOptions{})
+			schedulingResult, err := s.TrySchedulePods(context.Background(), clusterSnapshot, pods, false, clustersnapshot.SchedulingOptions{})
 			assert.NoError(t, err)
-			assert.Equal(t, expectedStatuses, statuses)
+			assert.Equal(t, expectedStatuses, schedulingResult.Statuses)
 
 			for p, hinted := range tc.podNodes {
 				actual := nodeNameForPod(t, clusterSnapshot, p)
@@ -302,5 +392,93 @@ func nodeNameForPod(t *testing.T, clusterSnapshot clustersnapshot.ClusterSnapsho
 func singleNodeOk(nodeName string) func(*framework.NodeInfo) bool {
 	return func(nodeInfo *framework.NodeInfo) bool {
 		return nodeName == nodeInfo.Node().Name
+	}
+}
+
+func TestNewResult(t *testing.T) {
+	p1 := BuildTestPod("p1", 100, 1000)
+	p2 := BuildTestPod("p2", 100, 1000)
+	p3 := BuildTestPod("p3", 100, 1000)
+	p4 := BuildTestPod("p4", 100, 1000)
+
+	testCases := []struct {
+		desc                 string
+		allPods              []*apiv1.Pod
+		unschedulablePodMap  map[types.UID]bool
+		statuses             []Status
+		similarPodScheduling *SimilarPodsScheduling
+		want                 Result
+	}{
+		{
+			desc:                 "empty inputs",
+			allPods:              []*apiv1.Pod{},
+			unschedulablePodMap:  map[types.UID]bool{},
+			statuses:             []Status{},
+			similarPodScheduling: &SimilarPodsScheduling{},
+			want:                 Result{[]Status{}, nil, 0},
+		},
+		{
+			desc:                 "no overlap",
+			allPods:              []*apiv1.Pod{p1, p2},
+			unschedulablePodMap:  map[types.UID]bool{p3.UID: true},
+			statuses:             []Status{{Pod: p4}},
+			similarPodScheduling: &SimilarPodsScheduling{},
+			want:                 Result{[]Status{{Pod: p4}}, []*apiv1.Pod{p1, p2}, 0},
+		},
+		{
+			desc:                 "overlap with unschedulablePodMap",
+			allPods:              []*apiv1.Pod{p1, p2, p3},
+			unschedulablePodMap:  map[types.UID]bool{p2.UID: true, p3.UID: true},
+			statuses:             []Status{},
+			similarPodScheduling: &SimilarPodsScheduling{},
+			want:                 Result{[]Status{}, []*apiv1.Pod{p1}, 0},
+		},
+		{
+			desc:                 "overlap with statuses",
+			allPods:              []*apiv1.Pod{p1, p2, p3},
+			unschedulablePodMap:  map[types.UID]bool{},
+			statuses:             []Status{{Pod: p1}, {Pod: p3}},
+			similarPodScheduling: &SimilarPodsScheduling{},
+			want:                 Result{[]Status{{Pod: p1}, {Pod: p3}}, []*apiv1.Pod{p2}, 0},
+		},
+		{
+			desc:                 "overlap with both",
+			allPods:              []*apiv1.Pod{p1, p2, p3, p4},
+			unschedulablePodMap:  map[types.UID]bool{p2.UID: true},
+			statuses:             []Status{{Pod: p4}},
+			similarPodScheduling: &SimilarPodsScheduling{},
+			want:                 Result{[]Status{{Pod: p4}}, []*apiv1.Pod{p1, p3}, 0},
+		},
+		{
+			desc:                 "pods in maps but not in allPods",
+			allPods:              []*apiv1.Pod{p1},
+			unschedulablePodMap:  map[types.UID]bool{p2.UID: true},
+			statuses:             []Status{{Pod: p3}},
+			similarPodScheduling: &SimilarPodsScheduling{},
+			want:                 Result{[]Status{{Pod: p3}}, []*apiv1.Pod{p1}, 0},
+		},
+		{
+			desc:                 "all pods are either schedulable or unschedulable",
+			allPods:              []*apiv1.Pod{p1, p2, p3, p4},
+			unschedulablePodMap:  map[types.UID]bool{p1.UID: true, p2.UID: true, p3.UID: true},
+			statuses:             []Status{{Pod: p4}},
+			similarPodScheduling: &SimilarPodsScheduling{},
+			want:                 Result{[]Status{{Pod: p4}}, nil, 0},
+		},
+		{
+			desc:                 "some pods are unprocessed",
+			allPods:              []*apiv1.Pod{p1, p2, p3, p4},
+			unschedulablePodMap:  map[types.UID]bool{p1.UID: true, p2.UID: true},
+			statuses:             []Status{{Pod: p4}},
+			similarPodScheduling: &SimilarPodsScheduling{overflowingControllers: map[string]bool{"c1": true, "c2": true}},
+			want:                 Result{[]Status{{Pod: p4}}, []*apiv1.Pod{p3}, 2},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			got := newResult(tc.allPods, tc.unschedulablePodMap, tc.statuses, tc.similarPodScheduling)
+			assert.Equal(t, tc.want, got)
+		})
 	}
 }

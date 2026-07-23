@@ -17,6 +17,8 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -29,6 +31,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	corev1helpers "k8s.io/component-helpers/scheduling/corev1"
 	klog "k8s.io/klog/v2"
+)
+
+const (
+	requestor = "filter-out-pod-list-processor"
 )
 
 type filterOutSchedulablePodListProcessor struct {
@@ -65,7 +71,7 @@ func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_contex
 	klog.V(4).Infof("Filtering out schedulables")
 	filterOutSchedulableStart := time.Now()
 
-	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(unschedulablePods, autoscalingCtx.ClusterSnapshot)
+	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(autoscalingCtx, unschedulablePods, autoscalingCtx.ClusterSnapshot)
 
 	if err != nil {
 		return nil, err
@@ -94,32 +100,51 @@ func (p *filterOutSchedulablePodListProcessor) CleanUp() {
 // unschedulable can be scheduled on free capacity on existing nodes by trying to pack the pods. It
 // tries to pack the higher priority pods first. It takes into account pods that are bound to node
 // and will be scheduled after lower priority pod preemption.
-func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, clusterSnapshot clustersnapshot.ClusterSnapshot) ([]*apiv1.Pod, error) {
+func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(autoscalingCtx *ca_context.AutoscalingContext, unschedulableCandidates []*apiv1.Pod, clusterSnapshot clustersnapshot.ClusterSnapshot) ([]*apiv1.Pod, error) {
 	// Sort unschedulable pods by importance
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
 		return corev1helpers.PodPriority(unschedulableCandidates[i]) > corev1helpers.PodPriority(unschedulableCandidates[j])
 	})
 
-	statuses, overflowingControllerCount, err := p.schedulingSimulator.TrySchedulePods(clusterSnapshot, unschedulableCandidates, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: p.nodeFilter})
+	var cancel context.CancelFunc
+	ctx := context.WithValue(context.Background(), scheduling.SimulationRequestorName, requestor)
+	if autoscalingCtx.GracefulDegradationEnabled {
+		ctx, cancel = context.WithTimeout(ctx, autoscalingCtx.PendingPodsBatchingTimeout)
+		defer cancel()
+	}
+
+	schedulingResult, err := p.schedulingSimulator.TrySchedulePods(ctx, clusterSnapshot, unschedulableCandidates, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: p.nodeFilter})
+
+	manageGracefulDegradation(autoscalingCtx, schedulingResult)
+
 	if err != nil {
 		return nil, err
 	}
 
 	scheduledPods := make(map[types.UID]bool)
-	for _, status := range statuses {
+	for _, status := range schedulingResult.Statuses {
 		scheduledPods[status.Pod.UID] = true
+	}
+
+	unprocessedPodsMap := make(map[types.UID]bool)
+	for _, pod := range schedulingResult.UnprocessedPods {
+		unprocessedPodsMap[pod.UID] = true
 	}
 
 	// Pods that remain unschedulable
 	var unschedulablePods []*apiv1.Pod
 	for _, pod := range unschedulableCandidates {
-		if !scheduledPods[pod.UID] {
+		if !scheduledPods[pod.UID] && !unprocessedPodsMap[pod.UID] {
 			unschedulablePods = append(unschedulablePods, pod)
 		}
 	}
 
-	metrics.UpdateOverflowingControllers(overflowingControllerCount)
-	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.", len(unschedulableCandidates)-len(unschedulablePods))
+	metrics.UpdateOverflowingControllers(schedulingResult.OverflowingControllerCount)
+	skippedPodCountMsg := ""
+	if len(schedulingResult.UnprocessedPods) > 0 {
+		skippedPodCountMsg = fmt.Sprintf(" %v pods were skipped due to exceeding pending pod batching timeout.", len(schedulingResult.UnprocessedPods))
+	}
+	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.%s", len(unschedulableCandidates)-len(unschedulablePods)-len(schedulingResult.UnprocessedPods), skippedPodCountMsg)
 
 	p.schedulingSimulator.DropOldHints()
 	return unschedulablePods, nil
@@ -137,4 +162,25 @@ func findSchedulablePods(allUnschedulablePods, podsStillUnschedulable []*apiv1.P
 		}
 	}
 	return schedulablePods
+}
+
+func manageGracefulDegradation(autoscalingCtx *ca_context.AutoscalingContext, schedulingResult scheduling.Result) {
+	metrics.UpdateSkippedPodsCount(len(schedulingResult.UnprocessedPods), requestor)
+
+	if !autoscalingCtx.GracefulDegradationEnabled {
+		return
+	}
+
+	if len(schedulingResult.UnprocessedPods) > 0 {
+		if autoscalingCtx.GracefulDegradationLoopCount == 0 {
+			autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeWarning, "GracefulDegradationStarted", "Autoscaler is unable to handle the large amount of unschedulable pods. Consider reducing the rate of adding new pods, so autoscaler could auto recover.")
+		}
+		autoscalingCtx.GracefulDegradationLoopCount += 1
+		return
+	}
+
+	if autoscalingCtx.GracefulDegradationLoopCount > 0 {
+		autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "GracefulDegradationStopped", "Autoscaler exited from GracefulDegradationMode and works normally.")
+	}
+	autoscalingCtx.GracefulDegradationLoopCount = 0
 }
