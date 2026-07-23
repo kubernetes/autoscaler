@@ -753,6 +753,141 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, podSet)
 	})
+
+	// Tests for the issue described here: https://github.com/kubernetes/autoscaler/pull/9935
+	f.It("should not get into an eviction loop when Pod LimitRange object with Max field is present", func() {
+		d := utils.NewNHamstersDeployment(f, 2)
+		InstallLimitRangeWithMax(f, "200m", "200Mi", apiv1.LimitTypePod)
+
+		// Request-to-limit ratio is 1:1 for all containers
+		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("200m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+		}
+		d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("200m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("200m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("200m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+		}
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithUpdateMode(vpa_types.UpdateModeRecreate).
+			WithContainer(container1Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container1Name).
+					WithLowerBound("80m", "80Mi").
+					WithTarget("80m", "80Mi").
+					WithUpperBound("80m", "80Mi").
+					GetContainerResources()).
+			WithContainer(container2Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container2Name).
+					WithLowerBound("20m", "20Mi").
+					WithTarget("100m", "100Mi").
+					WithUpperBound("300m", "300Mi").
+					GetContainerResources()).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		for _, pod := range podList.Items {
+			observedContainers, ok := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
+			gomega.Expect(ok).To(gomega.Equal(true))
+			containers, err := annotations.ParseVpaObservedContainersValue(observedContainers)
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+			gomega.Expect(containers).To(gomega.HaveLen(2))
+			gomega.Expect(pod.Spec.Containers).To(gomega.HaveLen(2))
+		}
+
+		podSet := MakePodSet(podList)
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
+	})
+
+	// Tests for the issue described here: https://github.com/kubernetes/autoscaler/pull/9935
+	f.It("should not get into an eviction loop when Pod LimitRange with Min field object is present", func() {
+		d := utils.NewNHamstersDeployment(f, 2)
+		InstallLimitRangeWithMin(f, "150m", "150Mi", apiv1.LimitTypePod)
+
+		// Request-to-limit ratio is 1:1 for all containers
+		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("200m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+		}
+		d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("200m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("200m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+		}
+		d.Spec.Template.Spec.Containers[1].Resources.Limits = apiv1.ResourceList{
+			apiv1.ResourceCPU:    ParseQuantityOrDie("200m"),
+			apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+		}
+		container1Name := utils.GetHamsterContainerNameByIndex(0)
+		container2Name := utils.GetHamsterContainerNameByIndex(1)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithUpdateMode(vpa_types.UpdateModeRecreate).
+			WithContainer(container1Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container1Name).
+					WithLowerBound("80m", "80Mi").
+					WithTarget("80m", "80Mi").
+					WithUpperBound("80m", "80Mi").
+					GetContainerResources()).
+			WithContainer(container2Name).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(container2Name).
+					WithLowerBound("20m", "20Mi").
+					WithTarget("100m", "100Mi").
+					WithUpperBound("300m", "300Mi").
+					GetContainerResources()).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		for _, pod := range podList.Items {
+			observedContainers, ok := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
+			gomega.Expect(ok).To(gomega.Equal(true))
+			containers, err := annotations.ParseVpaObservedContainersValue(observedContainers)
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+			gomega.Expect(containers).To(gomega.HaveLen(2))
+			gomega.Expect(pod.Spec.Containers).To(gomega.HaveLen(2))
+		}
+
+		podSet := MakePodSet(podList)
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
+	})
+
 })
 
 func getCPURequest(podSpec apiv1.PodSpec) resource.Quantity {
