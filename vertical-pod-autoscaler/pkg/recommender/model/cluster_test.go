@@ -402,9 +402,9 @@ func TestAddContainerSeedsMemoryPeakFromCheckpoint(t *testing.T) {
 	windowEnd := time.Unix(10000, 0)
 	initial := NewAggregateContainerState()
 	initial.CurrentMemoryPeak = &MemoryPeakData{
-		WindowEnd:             windowEnd,
-		LastMemorySampleStart: time.Unix(9900, 0),
-		MemoryPeak:            MemoryAmountFromBytes(7e9),
+		MemoryPeak:      MemoryAmountFromBytes(7e9),
+		WindowEnd:       windowEnd,
+		LastSampleStart: time.Unix(9900, 0),
 	}
 	vpa.ContainersInitialAggregateState[testContainerID.ContainerName] = initial
 
@@ -420,6 +420,18 @@ func TestAddContainerSeedsMemoryPeakFromCheckpoint(t *testing.T) {
 			assert.False(t, acs.AggregateMemoryPeaks.IsEmpty(), "restored peak should be present in the live aggregation")
 		}
 	}
+
+	// A later, larger memory sample within the same interval supersedes the restored peak
+	// (dedup within the window continues to work after restore).
+	assert.NoError(t, cluster.AddSample(&ContainerUsageSampleWithKey{
+		ContainerUsageSample: ContainerUsageSample{
+			MeasureStart: time.Unix(9950, 0),
+			Usage:        MemoryAmountFromBytes(9e9),
+			Resource:     ResourceMemory,
+		},
+		Container: testContainerID,
+	}))
+	assert.Equal(t, MemoryAmountFromBytes(9e9), container.GetMaxMemoryPeak(), "a larger sample within the window should supersede the restored peak")
 }
 
 // Creates a VPA followed by a matching pod. Verifies that the links between

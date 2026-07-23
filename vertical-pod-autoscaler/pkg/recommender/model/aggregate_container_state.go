@@ -140,14 +140,14 @@ type AggregateContainerState struct {
 // It mirrors the transient peak state of a ContainerState so that it can be persisted to
 // and restored from a checkpoint.
 type MemoryPeakData struct {
-	// WindowEnd is the end time (not inclusive) of the memory aggregation interval.
-	WindowEnd time.Time
-	// LastMemorySampleStart is the start of the latest memory sample aggregated into the interval.
-	LastMemorySampleStart time.Time
 	// MemoryPeak is the max memory usage observed from usage samples in the interval.
 	MemoryPeak ResourceAmount
 	// OOMPeak is the max memory usage estimated from OOM events in the interval.
 	OOMPeak ResourceAmount
+	// WindowEnd is the end time (not inclusive) of the memory aggregation interval.
+	WindowEnd time.Time
+	// LastSampleStart is the start of the latest memory sample aggregated into the interval.
+	LastSampleStart time.Time
 }
 
 // max returns the effective peak, i.e. the larger of the usage-based and OOM-based peaks.
@@ -222,10 +222,10 @@ func (a *AggregateContainerState) RecordCurrentMemoryPeak(container *ContainerSt
 		return
 	}
 	a.CurrentMemoryPeak = &MemoryPeakData{
-		WindowEnd:             container.WindowEnd,
-		LastMemorySampleStart: container.lastMemorySampleStart,
-		MemoryPeak:            container.memoryPeak,
-		OOMPeak:               container.oomPeak,
+		MemoryPeak:      container.memoryPeak,
+		OOMPeak:         container.oomPeak,
+		WindowEnd:       container.WindowEnd,
+		LastSampleStart: container.lastMemorySampleStart,
 	}
 }
 
@@ -329,10 +329,10 @@ func (a *AggregateContainerState) SaveToCheckpoint() (*vpa_types.VerticalPodAuto
 	}
 	if a.CurrentMemoryPeak != nil {
 		status.CurrentMemoryPeak = &vpa_types.MemoryPeakCheckpoint{
-			WindowEnd:       metav1.NewTime(a.CurrentMemoryPeak.WindowEnd),
-			LastSampleStart: metav1.NewTime(a.CurrentMemoryPeak.LastMemorySampleStart),
 			Peak:            QuantityFromMemoryAmount(a.CurrentMemoryPeak.MemoryPeak),
 			OOMPeak:         QuantityFromMemoryAmount(a.CurrentMemoryPeak.OOMPeak),
+			WindowEnd:       metav1.NewTime(a.CurrentMemoryPeak.WindowEnd),
+			LastSampleStart: metav1.NewTime(a.CurrentMemoryPeak.LastSampleStart),
 		}
 	}
 	return status, nil
@@ -357,10 +357,10 @@ func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.Verti
 	}
 	if checkpoint.CurrentMemoryPeak != nil {
 		a.CurrentMemoryPeak = &MemoryPeakData{
-			WindowEnd:             checkpoint.CurrentMemoryPeak.WindowEnd.Time,
-			LastMemorySampleStart: checkpoint.CurrentMemoryPeak.LastSampleStart.Time,
-			MemoryPeak:            MemoryAmountFromBytes(float64(checkpoint.CurrentMemoryPeak.Peak.Value())),
-			OOMPeak:               MemoryAmountFromBytes(float64(checkpoint.CurrentMemoryPeak.OOMPeak.Value())),
+			MemoryPeak:      MemoryAmountFromBytes(float64(checkpoint.CurrentMemoryPeak.Peak.Value())),
+			OOMPeak:         MemoryAmountFromBytes(float64(checkpoint.CurrentMemoryPeak.OOMPeak.Value())),
+			WindowEnd:       checkpoint.CurrentMemoryPeak.WindowEnd.Time,
+			LastSampleStart: checkpoint.CurrentMemoryPeak.LastSampleStart.Time,
 		}
 	}
 	return nil

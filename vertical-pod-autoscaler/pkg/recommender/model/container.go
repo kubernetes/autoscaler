@@ -61,17 +61,15 @@ type ContainerState struct {
 	aggregator ContainerStateAggregator
 }
 
-// NewContainerState returns a new ContainerState loading the current memory peak.
-func NewContainerState(request Resources, aggregator ContainerStateAggregator, currentMemoryPeak *MemoryPeakData) *ContainerState {
-	container := &ContainerState{
+// NewContainerState returns a new ContainerState.
+func NewContainerState(request Resources, aggregator ContainerStateAggregator) *ContainerState {
+	return &ContainerState{
 		Request:               request,
 		LastCPUSampleStart:    time.Time{},
 		WindowEnd:             time.Time{},
 		lastMemorySampleStart: time.Time{},
 		aggregator:            aggregator,
 	}
-	container.loadCurrentMemoryPeak(currentMemoryPeak)
-	return container
 }
 
 func (sample *ContainerUsageSample) isValid(expectedResource ResourceName) bool {
@@ -129,26 +127,6 @@ func (container *ContainerState) observeQualityMetrics(usage ResourceAmount, isO
 // GetMaxMemoryPeak returns maximum memory usage in the sample, possibly estimated from OOM
 func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
 	return ResourceAmountMax(container.memoryPeak, container.oomPeak)
-}
-
-// loadCurrentMemoryPeak loads the current memory peak into the container aggregator
-func (container *ContainerState) loadCurrentMemoryPeak(peak *MemoryPeakData) {
-	if peak == nil {
-		return
-	}
-	container.WindowEnd = peak.WindowEnd
-	container.lastMemorySampleStart = peak.LastMemorySampleStart
-	container.memoryPeak = peak.MemoryPeak
-	container.oomPeak = peak.OOMPeak
-	maxPeak := container.GetMaxMemoryPeak()
-	if maxPeak == 0 {
-		return
-	}
-	container.aggregator.AddSample(&ContainerUsageSample{
-		MeasureStart: peak.WindowEnd,
-		Usage:        maxPeak,
-		Resource:     ResourceMemory,
-	})
 }
 
 // GetOOMBumpUpRatio returns the ratio to increase resources when OOM is detected.
