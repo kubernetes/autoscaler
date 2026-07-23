@@ -13,7 +13,7 @@ The documentation is organized in the following high-level sections:
 ### Basic overview
 
 [Dynamic Resource Allocation (DRA)](https://kubernetes.io/docs/concepts/scheduling-eviction/dynamic-resource-allocation/)
-is Kubernetes feature that lets you request and share devices (e.g. GPUs) among Pods. DRA reached stable status, and so was
+is a Kubernetes feature that lets you request and share devices (e.g. GPUs) among Pods. DRA reached stable status, and so was
 enabled by default, in K8s 1.35.
 
 DRA solves similar problems as the older [Device Plugin feature](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/),
@@ -79,7 +79,7 @@ when they're no longer needed.
 
 ### Node provisioning
 
-When performing Node provisioning/scale-up simulations, Cluster Autoscaler assumes that adding a new Node to the NodeGroup will also an identical set of
+When performing Node provisioning/scale-up simulations, Cluster Autoscaler assumes that adding a new Node to the NodeGroup will also add an identical set of
 Node-local Devices.
 
 If a pending Pod referencing ResourceClaims can't be scheduled on any existing Node in a cluster, but could be scheduled
@@ -95,12 +95,12 @@ When analyzing whether to consolidate/scale-down a given Node that has Node-loca
 Node utilization very similarly to how it calculates GPU utilization:
 * If a Node has Node-local DRA Devices exposed, only the utilization of these DRA Devices matters for the final utilization value - CPU and
   memory utilization is ignored.
-* The utilization is calculated separately for each ResourcePool among the Node-local Devices, then the final utilization is a maximum of the
-  ResourcePool utilization. In a typical case, there's only a single ResourcePool.
+* The utilization is calculated separately for each ResourcePool among the Node-local Devices, then the final utilization is the maximum among the
+  ResourcePool utilizations. In a typical case, there's only a single ResourcePool.
 * The utilization of a given ResourcePool of Node-local Devices is calculated differently depending on if the ResourcePool utilizes Partitionable Devices:
   * If a ResourcePool doesn't utilize Partitionable Devices, the utilization is simply calculated as the number of allocated Devices in the pool divided by the total
     number of Devices in the pool.
-  * If a ResourcePool utilizes Partitionable Devices, the utilization is calculated as the sum of utilizations of every SharedCounter in the pool. The utilization of
+  * If a ResourcePool utilizes Partitionable Devices, the utilization is calculated as the average of utilizations of every SharedCounter in the pool. The utilization of
     a given SharedCounter is calculated as the maximum of utilizations among its Counters.
 
 ### Observability
@@ -109,7 +109,7 @@ The following metrics were extended or introduced to provide observability for D
 
 * A `dra_drivers` label was added to the metrics tracking scaling decisions - `scaled_up_nodes_total`, `scaled_down_nodes_total`, `failed_scale_ups_total`. 
   Using the new labels, the metrics can be drilled down to scaling decisions involving DRA Nodes.
-* A new `dra_node_template_resources_mismatch` gauge metric was introduced, with a single driver label. This metric reports differences in DRA devices between
+* A new `dra_node_template_resources_mismatch` gauge metric was introduced - with `driver`, and `mismatch_type` labels. This metric reports differences in DRA devices between
   scale-from-0 predictions and real Nodes.
 
 ### Cluster Autoscaler supported versions
@@ -159,8 +159,8 @@ Caveats:
   the existing non-Node-local Devices are all allocated.
   * For example, a Pod could reference two ResourceClaims - one for a GPU, and another one for a "meta Device" used for some bookkeeping, available globally and expected to be created by some controller for every Pod
     in the cluster. If the global Device is indeed created for the Pod, Cluster Autoscaler will be able to provision a new Node for the Pod from a configured DRA GPU NodeGroup. If the global Device is for some reason
-    not created, and all existing ones are already allocated, Cluster Autoscaler won't be able to provision a new Node for the Pod (and if it did provision a new Node, kube-scheduler also wouldn't be able to schedule
-    the Pod there).
+    not created, and all existing ones are already allocated, Cluster Autoscaler won't be able to provision a new Node for the Pod. This is the correct behavior, because even if CA did provision a new Node, kube-scheduler
+    also wouldn't be able to schedule the Pod there.
 
 ## Developer guide
 
@@ -168,11 +168,11 @@ Caveats:
 
 The following parts of Cluster Autoscaler logic interact with DRA:
 * New NodeInfo and PodInfo objects were introduced, wrapping the corresponding scheduler framework objects. These new objects track information about Nodes and Pods
-  specific to Cluster Autoscaler logic - like the Node-local ResourceSlices and the ResourceClaims referenced by Pod.
+  specific to Cluster Autoscaler logic - like the Node-local ResourceSlices and the ResourceClaims referenced by a Pod.
 * ClusterSnapshot tracks DRA-related objects in addition to Pods and Nodes:
   * Correlates Node-local Devices from ResourceSlices to the relevant NodeInfos.
   * Correlates ResourceClaims referenced by Pods to the relevant PodInfos.
-* Cluster Autoscaler had to start calling an additional phase of scheduler framework - Reserve:
+* Cluster Autoscaler had to start calling an additional phase of the scheduler framework - Reserve:
   * During the Filter phase, the DRA scheduler plugin has to determine which Devices can satisfy the ResourceClaims referenced by the Pod. This information is cached in CycleState,
     and then used during the Reserve phase to persist the allocation in the ResourceClaim status.
   * Cluster Autoscaler hooks into the DRA scheduler plugin so that the ResourceClaim status modifications modify the claims
@@ -185,7 +185,7 @@ The following parts of Cluster Autoscaler logic interact with DRA:
   existing "GPU hack" mechanism for Device Plugin.
   * It can take some time for the ResourceSlices to be published, even after the Node is already in a Ready state. Cluster Autoscaler has to modify the Node in-memory
     to be not-Ready until all the expected ResourceSlices are published.
-  * This logic also utilizes template NodeInfos to know what exactly ResourceSlices it should wait for:
+  * This logic also utilizes template NodeInfos to know exactly which ResourceSlices it should wait for:
     * If a given NodeGroup has existing Nodes, its existing ResourceSlices are used.
     * If a given NodeGroup is at 0 Nodes, `NodeGroup.TemplateNodeInfo()` is used to determine the slices.
 * Template NodeInfo sanitization logic now also has to sanitize ResourceSlices and potentially ResourceClaims (if DaemonSet/static Pods reference them).
@@ -200,10 +200,10 @@ The following parts of Cluster Autoscaler logic interact with DRA:
 
 ### CloudProvider integration
 
-CloudProvider integrations can implement support for scaling up a DRA NodeGroup up from 0 Nodes. This is done similarly to the existing scale-from-0 support,
+CloudProvider integrations can implement support for scaling a DRA NodeGroup up from 0 Nodes. This is done similarly to the existing scale-from-0 support,
 through the `NodeGroup.TemplateNodeInfo()` method:
 
-* A new CA-specific `NodeInfo` and `PodInfo` objects were introduced, wrapping the corresponding scheduler framework objects. `NodeGroup.TemplateNodeInfo()` was changed to
+* New CA-specific `NodeInfo` and `PodInfo` objects were introduced, wrapping the corresponding scheduler framework objects. `NodeGroup.TemplateNodeInfo()` was changed to
   return these new objects instead of the scheduler ones.
 * In order to implement scale-from-0 support for a given DRA driver, create the ResourceSlices expected to be created by the driver for the Node in `NodeGroup.TemplateNodeInfo()`,
   and include them in the return value - in `NodeInfo.LocalResourceSlices`.
@@ -212,7 +212,7 @@ through the `NodeGroup.TemplateNodeInfo()` method:
   scaling decisions.
 * The Node readiness-hacking logic for DRA (corresponding to the old GPU hack logic) is a bit more resilient to wrong predictions. Instead of waiting for the exact Devices
   returned from `NodeGroup.TemplateNodeInfo()` to be published, it waits for the expected number of complete ResourcePools from each driver to be published. So the logic
-  should work as long as `NodeGroup.TemplateNodeInfo()` predicts the same number of ResourcePools for each driver as there published in reality. If e.g. a single parameter
+  should work as long as `NodeGroup.TemplateNodeInfo()` predicts the same number of ResourcePools for each driver as there are published in reality. If e.g. a single parameter
   of some Device is predicted incorrectly, the readiness-hacking logic should still work (but scheduler filters will still not work correctly if a pending Pod references
   a ResourceClaim which references that incorrectly predicted parameter).
 * If a DaemonSet Pod targeting an autoscaled NodeGroup references ResourceClaims, the ResourceClaims should be included in the result of `NodeGroup.TemplateNodeInfo()` -
