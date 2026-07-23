@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -71,12 +72,12 @@ func NewUpdateLatencyTracker(nodeLister kubernetes.NodeLister) *UpdateLatencyTra
 
 // Start starts listening for node tainting start timestamps and update the timestamps that
 // the taint appears for the first time for a particular node. Listen AwaitOrStopChan for stop/await signals
-func (u *UpdateLatencyTracker) Start() {
+func (u *UpdateLatencyTracker) Start(ctx context.Context) {
 	for {
 		select {
 		case _, ok := <-u.AwaitOrStopChan:
 			if ok {
-				u.await()
+				u.await(ctx)
 			}
 			return
 		case ntst := <-u.StartTimeChan:
@@ -85,19 +86,20 @@ func (u *UpdateLatencyTracker) Start() {
 			continue
 		default:
 		}
-		u.updateFinishTime()
+		u.updateFinishTime(ctx)
 		time.Sleep(u.sleepDurationWhenPolling)
 	}
 }
 
-func (u *UpdateLatencyTracker) updateFinishTime() {
+func (u *UpdateLatencyTracker) updateFinishTime(ctx context.Context) {
+	logger := klog.FromContext(ctx)
 	for nodeName := range u.startTimestamp {
 		if _, ok := u.finishTimestamp[nodeName]; ok {
 			continue
 		}
 		node, err := u.nodeLister.Get(nodeName)
 		if err != nil {
-			klog.Errorf("Error getting node: %v", err)
+			logger.Error(err, "Error getting node")
 			continue
 		}
 		if taints.HasToBeDeletedTaint(node) {
@@ -119,7 +121,8 @@ func (u *UpdateLatencyTracker) calculateLatency() time.Duration {
 	return maxLatency
 }
 
-func (u *UpdateLatencyTracker) await() {
+func (u *UpdateLatencyTracker) await(ctx context.Context) {
+	logger := klog.FromContext(ctx)
 	waitingForTaintingStartTime := time.Now()
 	for {
 		switch {
@@ -128,12 +131,13 @@ func (u *UpdateLatencyTracker) await() {
 			u.ResultChan <- latency
 			return
 		case time.Now().After(waitingForTaintingStartTime.Add(waitForTaintingTimeoutDuration)):
-			klog.Errorf("Timeout before tainting all nodes, latency measurement will be stale")
+			logger.Error(nil, "Timeout before tainting all nodes, latency measurement will be stale")
+
 			close(u.ResultChan)
 			return
 		default:
 			time.Sleep(u.sleepDurationWhenPolling)
-			u.updateFinishTime()
+			u.updateFinishTime(ctx)
 		}
 	}
 }

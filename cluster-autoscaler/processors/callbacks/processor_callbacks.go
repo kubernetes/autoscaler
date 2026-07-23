@@ -16,6 +16,8 @@ limitations under the License.
 
 package callbacks
 
+import "context"
+
 // ProcessorCallbacks is interface defining extra callback methods which can be called by processors used in extension points.
 type ProcessorCallbacks interface {
 	// DisableScaleDownForLoop disables scale down for current loop iteration
@@ -24,10 +26,12 @@ type ProcessorCallbacks interface {
 	// ResetUnneededNodes resets information about any nodes that were previously considered unneeded by scale-down logic.
 	// CA will only delete a node if it's unneeded (meets criteria for scale-down) for time specified
 	// via --scale-down-unneeded-time. This call resets the timer for all the nodes in the cluster.
-	ResetUnneededNodes()
+	ResetUnneededNodes(context.
 
 	// SetExtraValue sets arbitrary value for given key. Value storage will be reset at the beginning of each loop iteration.
 	// Arbitrary value storage is used to pass information between processors used in extension points.
+	Context,)
+
 	SetExtraValue(key string, value interface{})
 
 	// GetExtraValue gets arbitrary value for given key. If value for given key is not found, found=false will be returned.

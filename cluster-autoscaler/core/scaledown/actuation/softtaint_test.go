@@ -74,42 +74,42 @@ func TestSoftTaintUpdate(t *testing.T) {
 
 	// Test no superfluous nodes
 	nodes := getAllNodes(t, fakeClient)
-	errs := UpdateSoftDeletionTaints(&actx, nil, nodes)
+	errs := UpdateSoftDeletionTaints(context.TODO(), &actx, nil, nodes)
 	assert.Empty(t, errs)
 	assert.False(t, hasDeletionCandidateTaint(t, fakeClient, n1000.Name))
 	assert.False(t, hasDeletionCandidateTaint(t, fakeClient, n2000.Name))
 
 	// Test one unneeded node
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, []*apiv1.Node{n1000}, []*apiv1.Node{n2000})
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, []*apiv1.Node{n1000}, []*apiv1.Node{n2000})
 	assert.Empty(t, errs)
 	assert.True(t, hasDeletionCandidateTaint(t, fakeClient, n1000.Name))
 	assert.False(t, hasDeletionCandidateTaint(t, fakeClient, n2000.Name))
 
 	// Test remove soft taint
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, nil, nodes)
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, nil, nodes)
 	assert.Empty(t, errs)
 	assert.False(t, hasDeletionCandidateTaint(t, fakeClient, n1000.Name))
 	assert.False(t, hasDeletionCandidateTaint(t, fakeClient, n2000.Name))
 
 	// Test bulk update taint limit
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, nodes, nil)
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, nodes, nil)
 	assert.Empty(t, errs)
 	assert.Equal(t, 1, countDeletionCandidateTaints(t, fakeClient))
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, nodes, nil)
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, nodes, nil)
 	assert.Empty(t, errs)
 	assert.Equal(t, 2, countDeletionCandidateTaints(t, fakeClient))
 
 	// Test bulk update untaint limit
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, nil, nodes)
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, nil, nodes)
 	assert.Empty(t, errs)
 	assert.Equal(t, 1, countDeletionCandidateTaints(t, fakeClient))
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, nil, nodes)
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, nil, nodes)
 	assert.Empty(t, errs)
 	assert.Equal(t, 0, countDeletionCandidateTaints(t, fakeClient))
 }
@@ -158,7 +158,7 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 
 	// Test bulk taint
 	nodes := getAllNodes(t, fakeClient)
-	errs := UpdateSoftDeletionTaints(&actx, nodes, nil)
+	errs := UpdateSoftDeletionTaints(context.TODO(), &actx, nodes, nil)
 	assert.Empty(t, errs)
 	assert.Equal(t, 2, countDeletionCandidateTaints(t, fakeClient))
 	assert.True(t, hasDeletionCandidateTaint(t, fakeClient, n1.Name))
@@ -166,7 +166,7 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 
 	// Test bulk untaint
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, nil, nodes)
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, nil, nodes)
 	assert.Empty(t, errs)
 	assert.Equal(t, 0, countDeletionCandidateTaints(t, fakeClient))
 	assert.False(t, hasDeletionCandidateTaint(t, fakeClient, n1.Name))
@@ -176,21 +176,21 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 
 	// Test duration limit of bulk taint
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, nodes, nil)
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, nodes, nil)
 	assert.Empty(t, errs)
 	assert.Equal(t, 1, countDeletionCandidateTaints(t, fakeClient))
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, nodes, nil)
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, nodes, nil)
 	assert.Empty(t, errs)
 	assert.Equal(t, 2, countDeletionCandidateTaints(t, fakeClient))
 
 	// Test duration limit of bulk untaint
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, nil, nodes)
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, nil, nodes)
 	assert.Empty(t, errs)
 	assert.Equal(t, 1, countDeletionCandidateTaints(t, fakeClient))
 	nodes = getAllNodes(t, fakeClient)
-	errs = UpdateSoftDeletionTaints(&actx, nil, nodes)
+	errs = UpdateSoftDeletionTaints(context.TODO(), &actx, nil, nodes)
 	assert.Empty(t, errs)
 	assert.Equal(t, 0, countDeletionCandidateTaints(t, fakeClient))
 }

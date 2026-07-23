@@ -196,7 +196,7 @@ type scaleDownStatusProcessorMock struct {
 	scaleDownStatus *status.ScaleDownStatus
 }
 
-func (p *scaleDownStatusProcessorMock) Process(_ *ca_context.AutoscalingContext, st *status.ScaleDownStatus) {
+func (p *scaleDownStatusProcessorMock) Process(ctx context.Context, _ *ca_context.AutoscalingContext, st *status.ScaleDownStatus) {
 	p.called += 1
 	p.scaleDownStatus = st
 }
@@ -348,7 +348,7 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 		QuotaProvider:            minQuotaProvider,
 	})
 
-	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules, minQuotasTrackerFactory)
+	sdPlanner := planner.New(context.TODO(), &autoscalingCtx, processors, deleteOptions, drainabilityRules, minQuotasTrackerFactory)
 
 	processorCallbacks.scaleDownPlanner = sdPlanner
 
@@ -1963,9 +1963,11 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			clusterState.UpdateNodes([]*apiv1.Node{}, now)
 
 			// delete nodes with create errors
-			autoscaler.deleteCreatedNodesWithErrors()
+			autoscaler.deleteCreatedNodesWithErrors(context.
 
-			// nodes should be deleted
+				// nodes should be deleted
+				TODO())
+
 			expectedDeleteCalls := 1
 			if tc.forceDeleteEnabled {
 				nodeGroupA.AssertNumberOfCalls(t, "ForceDeleteNodes", expectedDeleteCalls)
@@ -1998,9 +2000,11 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			clusterState.UpdateNodes([]*apiv1.Node{}, now)
 
 			// delete nodes with create errors
-			autoscaler.deleteCreatedNodesWithErrors()
+			autoscaler.deleteCreatedNodesWithErrors(context.
 
-			// nodes should be deleted again
+				// nodes should be deleted again
+				TODO())
+
 			expectedDeleteCalls += 1
 			if tc.forceDeleteEnabled {
 				nodeGroupA.AssertNumberOfCalls(t, "ForceDeleteNodes", expectedDeleteCalls)
@@ -2071,9 +2075,11 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			clusterState.UpdateNodes([]*apiv1.Node{}, now)
 
 			// delete nodes with create errors
-			autoscaler.deleteCreatedNodesWithErrors()
+			autoscaler.deleteCreatedNodesWithErrors(context.
 
-			// we expect no more Delete Nodes, don't increase expectedDeleteCalls
+				// we expect no more Delete Nodes, don't increase expectedDeleteCalls
+				TODO())
+
 			if tc.forceDeleteEnabled {
 				nodeGroupA.AssertNumberOfCalls(t, "ForceDeleteNodes", expectedDeleteCalls)
 				if !tc.forceDeleteImplemented {
@@ -2119,7 +2125,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			clusterState.UpdateNodes([]*apiv1.Node{}, time.Now())
 
 			// No nodes are deleted when failed nodes don't have matching node groups
-			autoscaler.deleteCreatedNodesWithErrors()
+			autoscaler.deleteCreatedNodesWithErrors(context.TODO())
 			nodeGroupC.AssertNumberOfCalls(t, deleteMethod, 0)
 
 			// Node group with getOptions error gets no deletes.
@@ -2168,7 +2174,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			clusterState.UpdateNodes([]*apiv1.Node{}, now)
 
 			// delete nodes with create errors
-			autoscaler.deleteCreatedNodesWithErrors()
+			autoscaler.deleteCreatedNodesWithErrors(context.TODO())
 
 			nodeGroupError.AssertNumberOfCalls(t, deleteMethod, 0)
 		})
@@ -2288,7 +2294,7 @@ func TestStaticAutoscalerInstanceCreationErrorsForZeroOrMaxScaling(t *testing.T)
 		},
 	}, false)
 
-	autoscaler.deleteCreatedNodesWithErrors()
+	autoscaler.deleteCreatedNodesWithErrors(context.TODO())
 
 	nodeGroupAtomic.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
 		func(nodes []*apiv1.Node) bool {
@@ -2328,7 +2334,7 @@ func TestStaticAutoscalerInstanceCreationErrorsForZeroOrMaxScaling(t *testing.T)
 		},
 	}, true)
 
-	autoscaler.deleteCreatedNodesWithErrors()
+	autoscaler.deleteCreatedNodesWithErrors(context.TODO())
 
 	nodeGroupAtomic.AssertNumberOfCalls(t, "DeleteNodes", 0)
 
@@ -2366,7 +2372,7 @@ func TestStaticAutoscalerInstanceCreationErrorsForZeroOrMaxScaling(t *testing.T)
 		},
 	}, true)
 
-	autoscaler.deleteCreatedNodesWithErrors()
+	autoscaler.deleteCreatedNodesWithErrors(context.TODO())
 
 	nodeGroupAtomic.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
 		func(nodes []*apiv1.Node) bool {
@@ -2385,7 +2391,7 @@ type candidateTrackingFakePlanner struct {
 	lastCandidateNodes map[string]bool
 }
 
-func (f *candidateTrackingFakePlanner) UpdateClusterState(podDestinations, scaleDownCandidates []*apiv1.Node, as scaledown.ActuationStatus, currentTime time.Time) errors.AutoscalerError {
+func (f *candidateTrackingFakePlanner) UpdateClusterState(ctx context.Context, podDestinations, scaleDownCandidates []*apiv1.Node, as scaledown.ActuationStatus, currentTime time.Time) errors.AutoscalerError {
 	f.lastCandidateNodes = map[string]bool{}
 	for _, node := range scaleDownCandidates {
 		f.lastCandidateNodes[node.Name] = true
@@ -2393,10 +2399,10 @@ func (f *candidateTrackingFakePlanner) UpdateClusterState(podDestinations, scale
 	return nil
 }
 
-func (f *candidateTrackingFakePlanner) CleanUpUnneededNodes() {
+func (f *candidateTrackingFakePlanner) CleanUpUnneededNodes(ctx context.Context) {
 }
 
-func (f *candidateTrackingFakePlanner) NodesToDelete(currentTime time.Time) (empty, needDrain []*apiv1.Node) {
+func (f *candidateTrackingFakePlanner) NodesToDelete(ctx context.Context, currentTime time.Time) (empty, needDrain []*apiv1.Node) {
 	return nil, nil
 }
 
@@ -2606,12 +2612,12 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Nothing should be fixed. The incorrect size state is not old enough.
-	removed, err := fixNodeGroupSize(autoscalingCtx, clusterState, now.Add(-50*time.Minute))
+	removed, err := fixNodeGroupSize(context.TODO(), autoscalingCtx, clusterState, now.Add(-50*time.Minute))
 	assert.NoError(t, err)
 	assert.False(t, removed)
 
 	// Node group should be decreased.
-	removed, err = fixNodeGroupSize(autoscalingCtx, clusterState, now)
+	removed, err = fixNodeGroupSize(context.TODO(), autoscalingCtx, clusterState, now)
 	assert.NoError(t, err)
 	assert.True(t, removed)
 	change := core_utils.GetStringFromChan(sizeChanges)
@@ -2662,12 +2668,12 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	}
 
 	// Nothing should be removed. The unregistered node is not old enough.
-	removed, err := autoscaler.removeOldUnregisteredNodes(unregisteredNodes, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
+	removed, err := autoscaler.removeOldUnregisteredNodes(context.TODO(), unregisteredNodes, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.False(t, removed)
 
 	// ng1_2 should be removed.
-	removed, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, clusterState, now, fakeLogRecorder)
+	removed, err = autoscaler.removeOldUnregisteredNodes(context.TODO(), unregisteredNodes, clusterState, now, fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.True(t, removed)
 	deletedNode := core_utils.GetStringFromChan(deletedNodes)
@@ -2730,12 +2736,12 @@ func TestRemoveOldUnregisteredNodesAtomic(t *testing.T) {
 	}
 
 	// Nothing should be removed. The unregistered node is not old enough.
-	removed, err := autoscaler.removeOldUnregisteredNodes(unregisteredNodes, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
+	removed, err := autoscaler.removeOldUnregisteredNodes(context.TODO(), unregisteredNodes, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.False(t, removed)
 
 	// unregNode is long unregistered, so all of the nodes should be removed due to ZeroOrMaxNodeScaling option
-	removed, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, clusterState, now, fakeLogRecorder)
+	removed, err = autoscaler.removeOldUnregisteredNodes(context.TODO(), unregisteredNodes, clusterState, now, fakeLogRecorder)
 
 	assert.NoError(t, err)
 	assert.True(t, removed)
@@ -2761,7 +2767,7 @@ func TestRemoveOldUnregisteredNodesAtomic(t *testing.T) {
 	}
 
 	// nodes are long unregistered, but not all of them, so all should be kept for ZeroOrMaxNodeScaling
-	removed, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, autoscaler.clusterStateRegistry, now, fakeLogRecorder)
+	removed, err = autoscaler.removeOldUnregisteredNodes(context.TODO(), unregisteredNodes, autoscaler.clusterStateRegistry, now, fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.False(t, removed)
 
@@ -2772,7 +2778,7 @@ func TestRemoveOldUnregisteredNodesAtomic(t *testing.T) {
 	assert.Equal(t, 10, len(unregisteredNodes))
 
 	// all nodes are long unregistered, so all should be removed for ZeroOrMaxNodeScaling
-	removed, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, autoscaler.clusterStateRegistry, now, fakeLogRecorder)
+	removed, err = autoscaler.removeOldUnregisteredNodes(context.TODO(), unregisteredNodes, autoscaler.clusterStateRegistry, now, fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.True(t, removed)
 
@@ -2917,7 +2923,7 @@ func TestFilterOutYoungPods(t *testing.T) {
 				klog.SetOutput(os.Stderr)
 			}()
 
-			actual := autoscaler.filterOutYoungPods(tt.pods, tt.runTime)
+			actual := autoscaler.filterOutYoungPods(context.TODO(), tt.pods, tt.runTime)
 
 			assert.Equal(t, tt.expectedPods, actual)
 			if tt.expectedError != "" {
@@ -3039,7 +3045,7 @@ func TestStaticAutoscalerRunOnceInvokesScaleDownStatusProcessor(t *testing.T) {
 				tracker := deletiontracker.NewNodeDeletionTracker(time.Second * 0)
 				for node, result := range test.fakeDeletionResults {
 					tracker.StartDeletion(test.fakeDeletionResultsNodeGroup, node)
-					tracker.EndDeletion(test.fakeDeletionResultsNodeGroup, node, result)
+					tracker.EndDeletion(context.TODO(), test.fakeDeletionResultsNodeGroup, node, result)
 				}
 
 				mocks.nodeDeletionTracker = tracker
@@ -3151,7 +3157,7 @@ func TestFilterNodesFromSelectedGroups(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			filteredNodes := filterNodesFromSelectedGroups(provider, tt.nodes...)
+			filteredNodes := filterNodesFromSelectedGroups(context.TODO(), provider, tt.nodes...)
 			assert.Equal(t, tt.wantNodes, filteredNodes)
 		})
 	}
@@ -3183,7 +3189,7 @@ func newScaleDownPlannerAndActuator(autoscalingCtx *ca_context.AutoscalingContex
 		nodeDeletionTracker = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
 	quotasTrackerFactory := newQuotasTrackerFactory(autoscalingCtx, p)
-	planner := planner.New(autoscalingCtx, p, deleteOptions, nil, quotasTrackerFactory)
+	planner := planner.New(context.TODO(), autoscalingCtx, p, deleteOptions, nil, quotasTrackerFactory)
 	actuator := actuation.NewActuator(autoscalingCtx, cs, nodeDeletionTracker, deleteOptions, nil, p.NodeGroupConfigProcessor)
 	return planner, actuator
 }
@@ -3317,7 +3323,7 @@ func buildStaticAutoscaler(t *testing.T, provider cloudprovider.CloudProvider, a
 	drainabilityRules := rules.Default(deleteOptions)
 
 	quotasTrackerFactory := newQuotasTrackerFactory(&autoscalingCtx, processors)
-	sdPlanner := planner.New(&autoscalingCtx, processors, deleteOptions, drainabilityRules, quotasTrackerFactory)
+	sdPlanner := planner.New(context.TODO(), &autoscalingCtx, processors, deleteOptions, drainabilityRules, quotasTrackerFactory)
 
 	autoscaler := &StaticAutoscaler{
 		AutoscalingContext:   &autoscalingCtx,

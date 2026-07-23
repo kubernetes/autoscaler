@@ -17,6 +17,7 @@ limitations under the License.
 package clusterstate
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -872,7 +873,7 @@ func (csr *ClusterStateRegistry) updateCloudProviderDeletedNodes(deletedNodes []
 }
 
 // UpdateScaleDownCandidates updates scale down candidates
-func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*scaledown.UnneededNode, now time.Time) {
+func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(ctx context.Context, nodes []*scaledown.UnneededNode, now time.Time) {
 	result := make(map[string][]string)
 	for _, node := range nodes {
 		group, err := csr.cloudProvider.NodeGroupForNode(node.Node)

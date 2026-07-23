@@ -118,50 +118,50 @@ func (a *Actuator) DeletionResults() (map[string]status.NodeDeleteResult, time.T
 }
 
 // StartDeletion triggers a new deletion process.
-func (a *Actuator) StartDeletion(empty, drain []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
-	return a.startDeletion(empty, drain, false)
+func (a *Actuator) StartDeletion(ctx context.Context, empty, drain []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
+	return a.startDeletion(ctx, empty, drain, false)
 }
 
 // StartForceDeletion triggers a new forced deletion process. It will bypass PDBs and forcefully delete the pods and the nodes.
 func (a *Actuator) StartForceDeletion(empty, drain []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
-	return a.startDeletion(empty, drain, true)
+	return a.startDeletion(context.TODO(), empty, drain, true)
 }
 
 // startDeletion contains the shared logic for deleting nodes. It handles both
 // normal deletions (respecting PDBs) and forced deletions (bypassing PDBs),
 // determined by the 'force' parameter.
-func (a *Actuator) startDeletion(empty, drain []*apiv1.Node, force bool) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
+func (a *Actuator) startDeletion(ctx context.Context, empty, drain []*apiv1.Node, force bool) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
 	a.nodeDeletionScheduler.ResetAndReportMetrics()
 	deletionStartTime := time.Now()
 	defer func() { metrics.UpdateDuration(metrics.ScaleDownNodeDeletion, time.Since(deletionStartTime)) }()
 
 	scaledDownNodes := make([]*status.ScaleDownNode, 0)
-	emptyToDelete, drainToDelete := a.budgetProcessor.CropNodes(a.nodeDeletionTracker, empty, drain)
+	emptyToDelete, drainToDelete := a.budgetProcessor.CropNodes(ctx, a.nodeDeletionTracker, empty, drain)
 	if len(emptyToDelete) == 0 && len(drainToDelete) == 0 {
 		return status.ScaleDownNoNodeDeleted, nil, nil
 	}
 
 	if len(emptyToDelete) > 0 {
 		// Taint all empty nodes synchronously
-		nodeDeleteDelayAfterTaint, err := a.taintNodesSync(emptyToDelete)
+		nodeDeleteDelayAfterTaint, err := a.taintNodesSync(ctx, emptyToDelete)
 		if err != nil {
 			return status.ScaleDownError, scaledDownNodes, err
 		}
 
-		emptyScaledDown := a.deleteAsyncEmpty(emptyToDelete, nodeDeleteDelayAfterTaint, force)
+		emptyScaledDown := a.deleteAsyncEmpty(ctx, emptyToDelete, nodeDeleteDelayAfterTaint, force)
 		scaledDownNodes = append(scaledDownNodes, emptyScaledDown...)
 	}
 
 	if len(drainToDelete) > 0 {
 		// Taint all nodes that need drain synchronously, but don't start any drain/deletion yet. Otherwise, pods evicted from one to-be-deleted node
 		// could get recreated on another.
-		nodeDeleteDelayAfterTaint, err := a.taintNodesSync(drainToDelete)
+		nodeDeleteDelayAfterTaint, err := a.taintNodesSync(ctx, drainToDelete)
 		if err != nil {
 			return status.ScaleDownError, scaledDownNodes, err
 		}
 
 		// All nodes involved in the scale-down should be tainted now - start draining and deleting nodes asynchronously.
-		drainScaledDown := a.deleteAsyncDrain(drainToDelete, nodeDeleteDelayAfterTaint, force)
+		drainScaledDown := a.deleteAsyncDrain(ctx, drainToDelete, nodeDeleteDelayAfterTaint, force)
 		scaledDownNodes = append(scaledDownNodes, drainScaledDown...)
 	}
 
@@ -170,16 +170,17 @@ func (a *Actuator) startDeletion(empty, drain []*apiv1.Node, force bool) (status
 
 // deleteAsyncEmpty immediately starts deletions asynchronously.
 // scaledDownNodes return value contains all nodes for which deletion successfully started.
-func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView, nodeDeleteDelayAfterTaint time.Duration, force bool) (reportedSDNodes []*status.ScaleDownNode) {
+func (a *Actuator) deleteAsyncEmpty(ctx context.Context, NodeGroupViews []*budgets.NodeGroupView, nodeDeleteDelayAfterTaint time.Duration, force bool) (reportedSDNodes []*status.ScaleDownNode) {
+	logger := klog.FromContext(ctx)
 	for _, bucket := range NodeGroupViews {
 		for _, node := range bucket.Nodes {
-			klog.V(0).Infof("Scale-down: removing empty node %q", node.Name)
+			logger.V(0).Info("Scale-down: removing empty node", "node", node.Name)
 			a.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: removing empty node %q", node.Name)
 
 			if sdNode, err := a.scaleDownNodeToReport(node, false); err == nil {
 				reportedSDNodes = append(reportedSDNodes, sdNode)
 			} else {
-				klog.Errorf("Scale-down: couldn't report scaled down node, err: %v", err)
+				logger.Error(err, "Scale-down: couldn't report scaled down node")
 			}
 
 			a.nodeDeletionTracker.StartDeletion(bucket.Group.Id(), node.Name)
@@ -187,7 +188,7 @@ func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView, nod
 	}
 
 	for _, bucket := range NodeGroupViews {
-		go a.deleteNodesAsync(bucket.Nodes, bucket.Group, false, force, bucket.BatchSize, nodeDeleteDelayAfterTaint)
+		go a.deleteNodesAsync(ctx, bucket.Nodes, bucket.Group, false, force, bucket.BatchSize, nodeDeleteDelayAfterTaint)
 	}
 
 	return reportedSDNodes
@@ -195,13 +196,13 @@ func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView, nod
 
 // taintNodesSync synchronously taints all provided nodes with NoSchedule. If tainting fails for any of the nodes, already
 // applied taints are cleaned up.
-func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) (time.Duration, errors.AutoscalerError) {
+func (a *Actuator) taintNodesSync(ctx context.Context, NodeGroupViews []*budgets.NodeGroupView) (time.Duration, errors.AutoscalerError) {
 	nodesToTaint := make([]*apiv1.Node, 0)
 	var updateLatencyTracker *UpdateLatencyTracker
 	nodeDeleteDelayAfterTaint := a.nodeDeleteDelayAfterTaint
 	if a.autoscalingCtx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
 		updateLatencyTracker = NewUpdateLatencyTracker(a.autoscalingCtx.AutoscalingKubeClients.ListerRegistry.AllNodeLister())
-		go updateLatencyTracker.Start()
+		go updateLatencyTracker.Start(ctx)
 	}
 
 	for _, bucket := range NodeGroupViews {
@@ -262,15 +263,16 @@ func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) (time
 
 // deleteAsyncDrain asynchronously starts deletions with drain for all provided nodes. scaledDownNodes return value contains all nodes for which
 // deletion successfully started.
-func (a *Actuator) deleteAsyncDrain(NodeGroupViews []*budgets.NodeGroupView, nodeDeleteDelayAfterTaint time.Duration, force bool) (reportedSDNodes []*status.ScaleDownNode) {
+func (a *Actuator) deleteAsyncDrain(ctx context.Context, NodeGroupViews []*budgets.NodeGroupView, nodeDeleteDelayAfterTaint time.Duration, force bool) (reportedSDNodes []*status.ScaleDownNode) {
+	logger := klog.FromContext(ctx)
 	for _, bucket := range NodeGroupViews {
 		for _, drainNode := range bucket.Nodes {
 			if sdNode, err := a.scaleDownNodeToReport(drainNode, true); err == nil {
-				klog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", drainNode.Name, sdNode.UtilInfo, joinPodNames(sdNode.EvictedPods))
+				logger.V(0).Info("Scale-down: removing node , utilization: , pods to reschedule", "drainNode", drainNode.Name, "utilInfo", sdNode.UtilInfo, "arg", joinPodNames(sdNode.EvictedPods))
 				a.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDown", "Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", drainNode.Name, sdNode.UtilInfo, joinPodNames(sdNode.EvictedPods))
 				reportedSDNodes = append(reportedSDNodes, sdNode)
 			} else {
-				klog.Errorf("Scale-down: couldn't report scaled down node, err: %v", err)
+				logger.Error(err, "Scale-down: couldn't report scaled down node")
 			}
 
 			a.nodeDeletionTracker.StartDeletionWithDrain(bucket.Group.Id(), drainNode.Name)
@@ -278,13 +280,14 @@ func (a *Actuator) deleteAsyncDrain(NodeGroupViews []*budgets.NodeGroupView, nod
 	}
 
 	for _, bucket := range NodeGroupViews {
-		go a.deleteNodesAsync(bucket.Nodes, bucket.Group, true, force, bucket.BatchSize, nodeDeleteDelayAfterTaint)
+		go a.deleteNodesAsync(ctx, bucket.Nodes, bucket.Group, true, force, bucket.BatchSize, nodeDeleteDelayAfterTaint)
 	}
 
 	return reportedSDNodes
 }
 
-func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool, force bool, batchSize int, nodeDeleteDelayAfterTaint time.Duration) {
+func (a *Actuator) deleteNodesAsync(ctx context.Context, nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool, force bool, batchSize int, nodeDeleteDelayAfterTaint time.Duration) {
+	logger := klog.FromContext(ctx)
 	var remainingPdbTracker pdb.RemainingPdbTracker
 	var registry kube_util.ListerRegistry
 
@@ -293,7 +296,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 	}
 
 	if nodeDeleteDelayAfterTaint > time.Duration(0) {
-		klog.V(0).Infof("Scale-down: waiting %v before trying to delete nodes", nodeDeleteDelayAfterTaint)
+		logger.V(0).Info("Scale-down: waiting before trying to delete nodes", "nodeDeleteDelayAfterTaint", nodeDeleteDelayAfterTaint)
 		time.Sleep(nodeDeleteDelayAfterTaint)
 	}
 
@@ -301,7 +304,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 	if err != nil {
 		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "createSnapshot returned error %v", err)}
 		for _, node := range nodes {
-			a.nodeDeletionScheduler.AbortNodeDeletionDueToError(node, nodeGroup.Id(), drain, "failed to create delete snapshot", nodeDeleteResult)
+			a.nodeDeletionScheduler.AbortNodeDeletionDueToError(ctx, node, nodeGroup.Id(), drain, "failed to create delete snapshot", nodeDeleteResult)
 		}
 		return
 	}
@@ -311,7 +314,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 		if err != nil {
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "podDisruptionBudgetLister.List returned error %v", err)}
 			for _, node := range nodes {
-				a.nodeDeletionScheduler.AbortNodeDeletionDueToError(node, nodeGroup.Id(), drain, "failed to fetch pod disruption budgets", nodeDeleteResult)
+				a.nodeDeletionScheduler.AbortNodeDeletionDueToError(ctx, node, nodeGroup.Id(), drain, "failed to fetch pod disruption budgets", nodeDeleteResult)
 			}
 			return
 		}
@@ -328,36 +331,36 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 		nodeInfo, err := clusterSnapshot.GetNodeInfo(node.Name)
 		if err != nil {
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "nodeInfos.Get for %q returned error: %v", node.Name, err)}
-			a.nodeDeletionScheduler.AbortNodeDeletionDueToError(node, nodeGroup.Id(), drain, "failed to get node info", nodeDeleteResult)
+			a.nodeDeletionScheduler.AbortNodeDeletionDueToError(ctx, node, nodeGroup.Id(), drain, "failed to get node info", nodeDeleteResult)
 			continue
 		}
 
 		podMoveInfo, err := simulator.GetPodsToMove(nodeInfo, a.deleteOptions, a.drainabilityRules, registry, remainingPdbTracker, time.Now())
 		if err != nil {
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "GetPodsToMove for %q returned error: %v", node.Name, err)}
-			a.nodeDeletionScheduler.AbortNodeDeletion(node, nodeGroup.Id(), drain, "failed to get pods to move on node", nodeDeleteResult, true)
+			a.nodeDeletionScheduler.AbortNodeDeletion(ctx, node, nodeGroup.Id(), drain, "failed to get pods to move on node", nodeDeleteResult, true)
 			continue
 		}
 
 		if !drain {
 			if len(podMoveInfo.Pods) != 0 {
 				nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "failed to delete empty node %q, new pods scheduled", node.Name)}
-				a.nodeDeletionScheduler.AbortNodeDeletion(node, nodeGroup.Id(), drain, "node is not empty", nodeDeleteResult, true)
+				a.nodeDeletionScheduler.AbortNodeDeletion(ctx, node, nodeGroup.Id(), drain, "node is not empty", nodeDeleteResult, true)
 				continue
 			}
 			if len(podMoveInfo.OnCompletionPods) != 0 {
 				nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "failed to delete empty node %q, active on-completion pods present", node.Name)}
-				a.nodeDeletionScheduler.AbortNodeDeletion(node, nodeGroup.Id(), drain, "active on-completion pods present", nodeDeleteResult, true)
+				a.nodeDeletionScheduler.AbortNodeDeletion(ctx, node, nodeGroup.Id(), drain, "active on-completion pods present", nodeDeleteResult, true)
 				continue
 			}
 		}
 
 		if force {
-			go a.nodeDeletionScheduler.scheduleForceDeletion(nodeInfo, nodeGroup, batchSize, drain)
+			go a.nodeDeletionScheduler.scheduleForceDeletion(ctx, nodeInfo, nodeGroup, batchSize, drain)
 			continue
 		}
 
-		go a.nodeDeletionScheduler.ScheduleDeletion(nodeInfo, nodeGroup, batchSize, drain)
+		go a.nodeDeletionScheduler.ScheduleDeletion(ctx, nodeInfo, nodeGroup, batchSize, drain)
 	}
 }
 

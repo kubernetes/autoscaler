@@ -17,6 +17,7 @@ limitations under the License.
 package clusterstate
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -342,7 +343,7 @@ func TestNodeWithoutNodeGroupDontCrash(t *testing.T) {
 	err := clusterstate.UpdateNodes([]*apiv1.Node{noNgNode}, now)
 	assert.NoError(t, err)
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
-	clusterstate.UpdateScaleDownCandidates([]*scaledown.UnneededNode{{Node: noNgNode}}, now)
+	clusterstate.UpdateScaleDownCandidates(context.TODO(), []*scaledown.UnneededNode{{Node: noNgNode}}, now)
 }
 
 func TestOKOneUnreadyNodeWithScaleDownCandidate(t *testing.T) {
@@ -368,7 +369,7 @@ func TestOKOneUnreadyNodeWithScaleDownCandidate(t *testing.T) {
 		OkTotalUnreadyCount:       1,
 	}), withNotifiedScaleUpFailuresRegistry(scaleUpFailuresRegistry))
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, now)
-	clusterstate.UpdateScaleDownCandidates([]*scaledown.UnneededNode{{Node: ng1_1}}, now)
+	clusterstate.UpdateScaleDownCandidates(context.TODO(), []*scaledown.UnneededNode{{Node: ng1_1}}, now)
 
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())

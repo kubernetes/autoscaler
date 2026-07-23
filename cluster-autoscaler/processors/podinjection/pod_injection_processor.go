@@ -17,6 +17,7 @@ limitations under the License.
 package podinjection
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -50,7 +51,7 @@ func NewPodInjectionPodListProcessor(fakePodRegistry *podinjectionbackoff.Contro
 }
 
 // Process updates unschedulablePods by injecting fake pods to match target replica count
-func (p *PodInjectionPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *PodInjectionPodListProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 
 	controllers := listControllers(autoscalingCtx)
 	controllers = p.skipBackedoffControllers(controllers)

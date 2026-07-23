@@ -16,6 +16,8 @@ limitations under the License.
 
 package callbacks
 
+import "context"
+
 // TestProcessorCallbacks is test implementation of ProcessorCallbacks
 type TestProcessorCallbacks struct {
 	// ScaleDownDisabledForLoop marks if scaledown should be disabled for loop
@@ -25,7 +27,7 @@ type TestProcessorCallbacks struct {
 }
 
 // ResetUnneededNodes is test implementation, which takes no action
-func (callbacks *TestProcessorCallbacks) ResetUnneededNodes() {
+func (callbacks *TestProcessorCallbacks) ResetUnneededNodes(ctx context.Context,) {
 	return
 }
 

@@ -17,6 +17,7 @@ limitations under the License.
 package podinjection
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -145,7 +146,7 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 				},
 				ClusterSnapshot: clusterSnapshot,
 			}
-			pods, err := p.Process(&autoscalingCtx, tc.unschedulablePods)
+			pods, err := p.Process(context.TODO(), &autoscalingCtx, tc.unschedulablePods)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, tc.wantPods, pods)
 		})

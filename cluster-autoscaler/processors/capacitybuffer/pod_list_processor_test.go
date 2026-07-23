@@ -194,7 +194,7 @@ func TestPodListProcessor(t *testing.T) {
 			capacityBuffersRegistry := fakepods.NewRegistry(nil)
 
 			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, capacityBuffersRegistry, test.forceSafeToEvict)
-			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
+			resUnschedulablePods, err := processor.Process(context.TODO(), nil, test.unschedulablePods)
 			assert.Equal(t, err != nil, test.expectError)
 
 			numberOfFakePods := 0
@@ -281,7 +281,7 @@ func TestCapacityBufferFakePodsRegistry(t *testing.T) {
 
 			registry := fakepods.NewRegistry(nil)
 			processor := NewCapacityBufferPodListProcessor(fakeCapacityBuffersClient, []string{testProvStrategyAllowed}, registry, false)
-			resUnschedulablePods, err := processor.Process(nil, test.unschedulablePods)
+			resUnschedulablePods, err := processor.Process(context.TODO(), nil, test.unschedulablePods)
 			assert.Equal(t, nil, err)
 			assert.Equal(t, test.expectedUnschedPodsCount, len(resUnschedulablePods))
 			for _, pod := range resUnschedulablePods {

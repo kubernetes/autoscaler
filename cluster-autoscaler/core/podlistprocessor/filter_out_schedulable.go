@@ -17,6 +17,7 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"context"
 	"sort"
 	"time"
 
@@ -45,27 +46,28 @@ func NewFilterOutSchedulablePodListProcessor(nodeFilter func(*framework.NodeInfo
 }
 
 // Process filters out pods which are schedulable from list of unschedulable pods.
-func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	// We need to check whether pods marked as unschedulable are actually unschedulable.
-	// It's likely we added a new node and the scheduler just haven't managed to put the
-	// pod on in yet. In this situation we don't want to trigger another scale-up.
-	//
-	// It's also important to prevent uncontrollable cluster growth if CA's simulated
-	// scheduler differs in opinion with real scheduler. Example of such situation:
-	// - CA and Scheduler has slightly different configuration
-	// - Scheduler can't schedule a pod and marks it as unschedulable
-	// - CA added a node which should help the pod
-	// - Scheduler doesn't schedule the pod on the new node
-	//   because according to it logic it doesn't fit there
-	// - CA see the pod is still unschedulable, so it adds another node to help it
-	//
-	// With the check enabled the last point won't happen because CA will ignore a pod
-	// which is supposed to schedule on an existing node.
-
-	klog.V(4).Infof("Filtering out schedulables")
+func (p *filterOutSchedulablePodListProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	logger :=
+		// We need to check whether pods marked as unschedulable are actually unschedulable.
+		// It's likely we added a new node and the scheduler just haven't managed to put the
+		// pod on in yet. In this situation we don't want to trigger another scale-up.
+		//
+		// It's also important to prevent uncontrollable cluster growth if CA's simulated
+		// scheduler differs in opinion with real scheduler. Example of such situation:
+		// - CA and Scheduler has slightly different configuration
+		// - Scheduler can't schedule a pod and marks it as unschedulable
+		// - CA added a node which should help the pod
+		// - Scheduler doesn't schedule the pod on the new node
+		//   because according to it logic it doesn't fit there
+		// - CA see the pod is still unschedulable, so it adds another node to help it
+		//
+		// With the check enabled the last point won't happen because CA will ignore a pod
+		// which is supposed to schedule on an existing node.
+		klog.FromContext(ctx)
+	logger.V(4).Info("Filtering out schedulables")
 	filterOutSchedulableStart := time.Now()
 
-	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(unschedulablePods, autoscalingCtx.ClusterSnapshot)
+	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(ctx, unschedulablePods, autoscalingCtx.ClusterSnapshot)
 
 	if err != nil {
 		return nil, err
@@ -74,7 +76,7 @@ func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_contex
 	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
 
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
-		klog.V(2).Info("Schedulable pods present")
+		logger.V(2).Info("Schedulable pods present")
 
 		if autoscalingCtx.DebuggingSnapshotter.IsDataCollectionAllowed() {
 			schedulablePods := findSchedulablePods(unschedulablePods, unschedulablePodsToHelp)
@@ -82,7 +84,7 @@ func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_contex
 		}
 
 	} else {
-		klog.V(4).Info("No schedulable pods")
+		logger.V(4).Info("No schedulable pods")
 	}
 	return unschedulablePodsToHelp, nil
 }
@@ -94,8 +96,11 @@ func (p *filterOutSchedulablePodListProcessor) CleanUp() {
 // unschedulable can be scheduled on free capacity on existing nodes by trying to pack the pods. It
 // tries to pack the higher priority pods first. It takes into account pods that are bound to node
 // and will be scheduled after lower priority pod preemption.
-func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, clusterSnapshot clustersnapshot.ClusterSnapshot) ([]*apiv1.Pod, error) {
-	// Sort unschedulable pods by importance
+func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(ctx context.Context, unschedulableCandidates []*apiv1.Pod, clusterSnapshot clustersnapshot.ClusterSnapshot) ([]*apiv1.Pod, error) {
+	logger :=
+		// Sort unschedulable pods by importance
+		klog.FromContext(ctx)
+
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
 		return corev1helpers.PodPriority(unschedulableCandidates[i]) > corev1helpers.PodPriority(unschedulableCandidates[j])
 	})
@@ -119,7 +124,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 	}
 
 	metrics.UpdateOverflowingControllers(overflowingControllerCount)
-	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.", len(unschedulableCandidates)-len(unschedulablePods))
+	logger.V(4).Info("pods marked as unschedulable can be scheduled.", "arg", len(unschedulableCandidates)-len(unschedulablePods))
 
 	p.schedulingSimulator.DropOldHints()
 	return unschedulablePods, nil

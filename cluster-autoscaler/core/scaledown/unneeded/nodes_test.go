@@ -17,6 +17,7 @@ limitations under the License.
 package unneeded
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -154,8 +155,8 @@ func TestUpdate(t *testing.T) {
 			nodes := NewNodes(fakeTimeGetter)
 			ctx := &ca_context.AutoscalingContext{CloudProvider: provider}
 
-			nodes.Update(ctx, tc.initialNodes, initialTimestamp)
-			nodes.Update(ctx, tc.finalNodes, finalTimestamp)
+			nodes.Update(context.TODO(), ctx, tc.initialNodes, initialTimestamp)
+			nodes.Update(context.TODO(), ctx, tc.finalNodes, finalTimestamp)
 
 			wantNodes := len(tc.wantTimestamps)
 			assert.Equal(t, wantNodes, len(nodes.AsList()))
@@ -269,7 +270,7 @@ func TestRemovableAt(t *testing.T) {
 			}
 			n := NewNodes(fakeTimeGetter)
 
-			n.Update(&autoscalingCtx, removableNodes, time.Now().Add(-10*time.Minute)) //add -10 min to work correctly with unneeded time threshold
+			n.Update(context.TODO(), &autoscalingCtx, removableNodes, time.Now().Add(-10*time.Minute)) //add -10 min to work correctly with unneeded time threshold
 
 			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
 				QuotaProvider:            resourcequotas.NewFakeProvider([]resourcequotas.Quota{}),
@@ -281,7 +282,7 @@ func TestRemovableAt(t *testing.T) {
 			}
 			tracker, _ := factory.NewMinQuotasTracker(&autoscalingCtx, nodes)
 
-			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(&autoscalingCtx, nodeprocessors.ScaleDownContext{
+			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(context.TODO(), &autoscalingCtx, nodeprocessors.ScaleDownContext{
 				ActuationStatus: as,
 				Tracker:         tracker,
 			}, time.Now())
@@ -468,7 +469,7 @@ func TestRemovableAt_UnremovableReasons(t *testing.T) {
 			}
 			n := NewNodes(timeGetter)
 
-			n.Update(&autoscalingCtx, nodesToProcess, now.Add(tc.nodeConfig.sinceOffset))
+			n.Update(context.TODO(), &autoscalingCtx, nodesToProcess, now.Add(tc.nodeConfig.sinceOffset))
 
 			sdCtx := nodeprocessors.ScaleDownContext{
 				ActuationStatus: &fakeActuationStatus{deletionCount: map[string]int{}},
@@ -481,7 +482,7 @@ func TestRemovableAt_UnremovableReasons(t *testing.T) {
 			tracker, _ := factory.NewMinQuotasTracker(&autoscalingCtx, []*apiv1.Node{node})
 
 			sdCtx.Tracker = tracker
-			gotEmptyToRemove, gotDrainToRemove, gotUnremovable := n.RemovableAt(&autoscalingCtx, sdCtx, now)
+			gotEmptyToRemove, gotDrainToRemove, gotUnremovable := n.RemovableAt(context.TODO(), &autoscalingCtx, sdCtx, now)
 
 			assert.Empty(t, gotEmptyToRemove, "Expected no empty nodes to be removable")
 			assert.Empty(t, gotDrainToRemove, "Expected no drain nodes to be removable")
@@ -577,7 +578,7 @@ func TestNodeLoadFromExistingTaints(t *testing.T) {
 			ctx := &ca_context.AutoscalingContext{CloudProvider: provider, AutoscalingOptions: config.AutoscalingOptions{NodeDeletionCandidateTTL: tc.nodeDeletionCandidateTTL}}
 			ctx.ListerRegistry = kube_util.NewListerRegistry(allNodeLister, readyNodeLister,
 				nil, nil, nil, nil, nil, nil, nil)
-			nodes.LoadFromExistingTaints(ctx, currentTime)
+			nodes.LoadFromExistingTaints(context.TODO(), ctx, currentTime)
 
 			unneededNodes := nodes.AsList()
 

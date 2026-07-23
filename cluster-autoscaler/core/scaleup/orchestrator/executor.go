@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -60,7 +61,7 @@ func newScaleUpExecutor(
 // May scale up groups concurrently when autoscler option is enabled.
 // In case of issues returns an error and a scale up info which failed to execute.
 // If there were multiple concurrent errors one combined error is returned.
-func (e *scaleUpExecutor) ExecuteScaleUps(
+func (e *scaleUpExecutor) ExecuteScaleUps(ctx context.Context,
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
 	nodeInfos map[string]*framework.NodeInfo,
 	now time.Time,
@@ -68,37 +69,39 @@ func (e *scaleUpExecutor) ExecuteScaleUps(
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
 	options := e.autoscalingCtx.AutoscalingOptions
 	if options.ParallelScaleUp {
-		return e.executeScaleUpsParallel(scaleUpInfos, nodeInfos, now, atomic)
+		return e.executeScaleUpsParallel(ctx, scaleUpInfos, nodeInfos, now, atomic)
 	}
-	return e.executeScaleUpsSync(scaleUpInfos, nodeInfos, now, atomic)
+	return e.executeScaleUpsSync(ctx, scaleUpInfos, nodeInfos, now, atomic)
 }
 
-func (e *scaleUpExecutor) executeScaleUpsSync(
+func (e *scaleUpExecutor) executeScaleUpsSync(ctx context.Context,
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
 	nodeInfos map[string]*framework.NodeInfo,
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
+	logger := klog.FromContext(ctx)
 	availableGPUTypes := e.autoscalingCtx.CloudProvider.GetAvailableGPUTypes()
 	for _, scaleUpInfo := range scaleUpInfos {
 		nodeInfo, ok := nodeInfos[scaleUpInfo.Group.Id()]
 		if !ok {
-			klog.Errorf("ExecuteScaleUp: failed to get node info for node group %s", scaleUpInfo.Group.Id())
+			logger.Error(nil, "ExecuteScaleUp: failed to get node info for node group", "groupId", scaleUpInfo.Group.Id())
 			continue
 		}
-		if aErr := e.executeScaleUp(scaleUpInfo, nodeInfo, availableGPUTypes, now, atomic); aErr != nil {
+		if aErr := e.executeScaleUp(ctx, scaleUpInfo, nodeInfo, availableGPUTypes, now, atomic); aErr != nil {
 			return aErr, []cloudprovider.NodeGroup{scaleUpInfo.Group}
 		}
 	}
 	return nil, nil
 }
 
-func (e *scaleUpExecutor) executeScaleUpsParallel(
+func (e *scaleUpExecutor) executeScaleUpsParallel(ctx context.Context,
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
 	nodeInfos map[string]*framework.NodeInfo,
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
+	logger := klog.FromContext(ctx)
 	if err := checkUniqueNodeGroups(scaleUpInfos); err != nil {
 		return err, extractNodeGroups(scaleUpInfos)
 	}
@@ -116,10 +119,10 @@ func (e *scaleUpExecutor) executeScaleUpsParallel(
 			defer wg.Done()
 			nodeInfo, ok := nodeInfos[info.Group.Id()]
 			if !ok {
-				klog.Errorf("ExecuteScaleUp: failed to get node info for node group %s", info.Group.Id())
+				logger.Error(nil, "ExecuteScaleUp: failed to get node info for node group", "groupId", info.Group.Id())
 				return
 			}
-			if aErr := e.executeScaleUp(info, nodeInfo, availableGPUTypes, now, atomic); aErr != nil {
+			if aErr := e.executeScaleUp(ctx, info, nodeInfo, availableGPUTypes, now, atomic); aErr != nil {
 				errResults <- errResult{err: aErr, info: &info}
 			}
 		}(scaleUpInfo)
@@ -153,17 +156,18 @@ func (e *scaleUpExecutor) increaseSize(nodeGroup cloudprovider.NodeGroup, increa
 	return nodeGroup.IncreaseSize(increase)
 }
 
-func (e *scaleUpExecutor) executeScaleUp(
+func (e *scaleUpExecutor) executeScaleUp(ctx context.Context,
 	info nodegroupset.ScaleUpInfo,
 	nodeInfo *framework.NodeInfo,
 	availableGPUTypes map[string]struct{},
 	now time.Time,
 	atomic bool,
 ) errors.AutoscalerError {
+	logger := klog.FromContext(ctx)
 	gpuConfig := e.autoscalingCtx.CloudProvider.GetNodeGpuConfig(nodeInfo.Node())
 	gpuResourceName, gpuType := gpu.GetGpuInfoForMetrics(gpuConfig, availableGPUTypes, nodeInfo.Node(), nil)
 	draDriverNames := dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
-	klog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
+	logger.V(0).Info("Scale-up: setting group size", "groupId", info.Group.Id(), "newSize", info.NewSize)
 	e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: setting group %s size to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	increase := info.NewSize - info.CurrentSize

@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"time"
 
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
@@ -28,7 +29,8 @@ import (
 )
 
 // UpdateSoftDeletionTaints manages soft taints of unneeded nodes.
-func UpdateSoftDeletionTaints(autoscalingCtx *ca_context.AutoscalingContext, uneededNodes, neededNodes []*apiv1.Node) (errors []error) {
+func UpdateSoftDeletionTaints(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, uneededNodes, neededNodes []*apiv1.Node) (errors []error) {
+	logger := klog.FromContext(ctx)
 	defer metrics.UpdateDurationFromStart(metrics.ScaleDownSoftTaintUnneeded, time.Now())
 	b := &budgetTracker{
 		apiCallBudget: autoscalingCtx.AutoscalingOptions.MaxBulkSoftTaintCount,
@@ -47,7 +49,7 @@ func UpdateSoftDeletionTaints(autoscalingCtx *ca_context.AutoscalingContext, une
 			_, err := taints.CleanDeletionCandidate(node, autoscalingCtx.ClientSet)
 			if err != nil {
 				errors = append(errors, err)
-				klog.Warningf("Soft taint on %s removal error %v", node.Name, err)
+				logger.Error(err, "Soft taint removal", "node", node.Name)
 			}
 		})
 	}
@@ -63,11 +65,11 @@ func UpdateSoftDeletionTaints(autoscalingCtx *ca_context.AutoscalingContext, une
 			_, err := taints.MarkDeletionCandidate(node, autoscalingCtx.ClientSet)
 			if err != nil {
 				errors = append(errors, err)
-				klog.Warningf("Soft taint on %s adding error %v", node.Name, err)
+				logger.Error(err, "Soft taint adding", "node", node.Name)
 			}
 		})
 	}
-	b.reportExceededLimits()
+	b.reportExceededLimits(ctx)
 	return
 }
 
@@ -90,8 +92,9 @@ func (b *budgetTracker) processWithinBudget(f func()) {
 	f()
 }
 
-func (b *budgetTracker) reportExceededLimits() {
+func (b *budgetTracker) reportExceededLimits(ctx context.Context) {
+	logger := klog.FromContext(ctx)
 	if b.skippedNodes > 0 {
-		klog.V(4).Infof("Skipped adding/removing soft taints on %v nodes - API call or time limit exceeded", b.skippedNodes)
+		logger.V(4).Info("Skipped adding/removing soft taints nodes - API call or time limit exceeded", "skippedNodes", b.skippedNodes)
 	}
 }

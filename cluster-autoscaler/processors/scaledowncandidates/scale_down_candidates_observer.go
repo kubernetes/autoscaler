@@ -17,6 +17,7 @@ limitations under the License.
 package scaledowncandidates
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
@@ -25,7 +26,7 @@ import (
 // Observer is an observer of scale down candidates
 type Observer interface {
 	// UpdateScaleDownCandidates updates scale down candidates.
-	UpdateScaleDownCandidates([]*scaledown.UnneededNode, time.Time)
+	UpdateScaleDownCandidates(context.Context, []*scaledown.UnneededNode, time.Time)
 }
 
 // ObserversList is a slice of observers of scale down candidates
@@ -39,9 +40,9 @@ func (l *ObserversList) Register(o Observer) {
 }
 
 // Update updates scale down candidates for each observer.
-func (l *ObserversList) Update(nodes []*scaledown.UnneededNode, now time.Time) {
+func (l *ObserversList) Update(ctx context.Context, nodes []*scaledown.UnneededNode, now time.Time) {
 	for _, observer := range l.observers {
-		observer.UpdateScaleDownCandidates(nodes, now)
+		observer.UpdateScaleDownCandidates(ctx, nodes, now)
 	}
 }
 

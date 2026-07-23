@@ -17,6 +17,7 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	podutils "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
@@ -32,10 +33,12 @@ func NewFilterOutDaemonSetPodListProcessor() *filterOutDaemonSetPodListProcessor
 }
 
 // Process filters out pods which are daemon set pods.
-func (p *filterOutDaemonSetPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	// Scale-up cannot help unschedulable Daemon Set pods, as those require a specific node
-	// for scheduling. To improve that we are filtering them here, as the CA won't be
-	// able to help them so there is no point to in passing them to scale-up logic.
+func (p *filterOutDaemonSetPodListProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	logger :=
+		// Scale-up cannot help unschedulable Daemon Set pods, as those require a specific node
+		// for scheduling. To improve that we are filtering them here, as the CA won't be
+		// able to help them so there is no point to in passing them to scale-up logic.
+		klog.FromContext(ctx)
 
 	var nonDaemonSetPods []*apiv1.Pod
 	for _, pod := range unschedulablePods {
@@ -43,8 +46,7 @@ func (p *filterOutDaemonSetPodListProcessor) Process(autoscalingCtx *ca_context.
 			nonDaemonSetPods = append(nonDaemonSetPods, pod)
 		}
 	}
-
-	klog.V(4).Infof("Filtered out %v daemon set pods, %v unschedulable pods left", len(unschedulablePods)-len(nonDaemonSetPods), len(nonDaemonSetPods))
+	logger.V(4).Info("Filtered out daemon set pods, unschedulable pods left", "arg", len(unschedulablePods)-len(nonDaemonSetPods), "nonDaemonSetPodsCount", len(nonDaemonSetPods))
 	return nonDaemonSetPods, nil
 }
 

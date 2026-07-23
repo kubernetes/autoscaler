@@ -17,6 +17,7 @@ limitations under the License.
 package scaleup
 
 import (
+	"context"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
@@ -45,7 +46,7 @@ type Orchestrator interface {
 	// ScaleUp tries to scale the cluster up. Returns appropriate status or error if
 	// an unexpected error occurred. Assumes that all nodes in the cluster are ready
 	// and in sync with instance groups.
-	ScaleUp(
+	ScaleUp(ctx context.Context,
 		unschedulablePods []*apiv1.Pod,
 		nodes []*apiv1.Node,
 		daemonSets []*appsv1.DaemonSet,
@@ -56,7 +57,7 @@ type Orchestrator interface {
 	// than the configured min size. The source of truth for the current node group
 	// size is the TargetSize queried directly from cloud providers. Returns
 	// appropriate status or error if an unexpected error occurred.
-	ScaleUpToNodeGroupMinSize(
+	ScaleUpToNodeGroupMinSize(ctx context.Context,
 		nodes []*apiv1.Node,
 		nodeInfos map[string]*framework.NodeInfo,
 	) (*status.ScaleUpStatus, errors.AutoscalerError)

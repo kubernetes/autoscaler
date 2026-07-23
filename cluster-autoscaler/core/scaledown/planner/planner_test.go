@@ -17,6 +17,7 @@ limitations under the License.
 package planner
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/autoscaler/cluster-autoscaler/resourcequotas"
@@ -509,7 +510,7 @@ func TestUpdateClusterState(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := options.NodeDeleteOptions{}
 			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
-			p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
+			p := New(context.TODO(), &autoscalingCtx, processors, deleteOptions, nil, factory)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			if tc.isSimulationTimeout {
 				autoscalingCtx.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
@@ -520,7 +521,7 @@ func TestUpdateClusterState(t *testing.T) {
 				p.rs = rs
 			}
 			// TODO(x13n): test subsets of nodes passed as podDestinations/scaleDownCandidates.
-			assert.NoError(t, p.UpdateClusterState(tc.nodes, tc.nodes, tc.actuationStatus, time.Now()))
+			assert.NoError(t, p.UpdateClusterState(context.TODO(), tc.nodes, tc.nodes, tc.actuationStatus, time.Now()))
 			wantUnneeded := asMap(tc.wantUnneeded)
 			wantUnremovable := asMap(tc.wantUnremovable)
 			for _, n := range tc.nodes {
@@ -708,11 +709,11 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, nodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
 			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
-			p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
+			p := New(context.TODO(), &autoscalingCtx, processors, deleteOptions, nil, factory)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
-			p.unneededNodes.Update(&autoscalingCtx, previouslyUnneeded, time.Now())
-			assert.NoError(t, p.UpdateClusterState(nodes, nodes, &fakeActuationStatus{}, time.Now()))
+			p.unneededNodes.Update(context.TODO(), &autoscalingCtx, previouslyUnneeded, time.Now())
+			assert.NoError(t, p.UpdateClusterState(context.TODO(), nodes, nodes, &fakeActuationStatus{}, time.Now()))
 			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList()))
 		})
 	}
@@ -845,7 +846,7 @@ func TestNewPlannerWithExistingDeletionCandidateNodes(t *testing.T) {
 
 			deleteOptions := options.NodeDeleteOptions{}
 			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
-			p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
+			p := New(context.TODO(), &autoscalingCtx, processors, deleteOptions, nil, factory)
 
 			p.unneededNodes.AsList()
 		})
@@ -1111,7 +1112,7 @@ func TestNodesToDelete(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, allNodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
 			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
-			p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
+			p := New(context.TODO(), &autoscalingCtx, processors, deleteOptions, nil, factory)
 			p.latestUpdate = time.Now()
 
 			if tc.minLimits != nil {
@@ -1120,9 +1121,9 @@ func TestNodesToDelete(t *testing.T) {
 			}
 
 			p.scaleDownContext.ActuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-			p.unneededNodes.Update(&autoscalingCtx, allRemovables, time.Now().Add(-1*time.Hour))
+			p.unneededNodes.Update(context.TODO(), &autoscalingCtx, allRemovables, time.Now().Add(-1*time.Hour))
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(allNodes))}
-			empty, drain := p.NodesToDelete(time.Now())
+			empty, drain := p.NodesToDelete(context.TODO(), time.Now())
 			assert.ElementsMatch(t, tc.wantEmpty, empty)
 			assert.ElementsMatch(t, tc.wantDrain, drain)
 
@@ -1247,7 +1248,7 @@ type fakeEligibilityChecker struct {
 	eligible map[string]bool
 }
 
-func (f *fakeEligibilityChecker) FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode) {
+func (f *fakeEligibilityChecker) FilterOutUnremovable(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode) {
 	eligible := []string{}
 	utilMap := make(map[string]utilization.Info)
 	for _, n := range scaleDownCandidates {
@@ -1291,12 +1292,12 @@ func TestAtomicScaleDownNodeNilGroup(t *testing.T) {
 
 	deleteOptions := options.NodeDeleteOptions{}
 	factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(provider)})
-	p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
+	p := New(context.TODO(), &autoscalingCtx, processors, deleteOptions, nil, factory)
 
 	node := &simulator.NodeToBeRemoved{
 		Node: n1,
 	}
 
-	result := p.atomicScaleDownNode(node)
+	result := p.atomicScaleDownNode(context.TODO(), node)
 	assert.False(t, result)
 }

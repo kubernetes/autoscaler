@@ -49,8 +49,7 @@ func NewAutoscaler(ctx context.Context, opts coreoptions.AutoscalerOptions, info
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	return core.NewStaticAutoscaler(
-		opts.AutoscalingOptions,
+	return core.NewStaticAutoscaler(ctx, opts.AutoscalingOptions,
 		opts.FrameworkHandle,
 		opts.ClusterSnapshot,
 		opts.AutoscalingKubeClients,

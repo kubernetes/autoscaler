@@ -17,6 +17,7 @@ limitations under the License.
 package deletiontracker
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -83,18 +84,19 @@ func (n *NodeDeletionTracker) StartDeletionWithDrain(nodeGroupId, nodeName strin
 }
 
 // EndDeletion decrements node deletion in progress counter for the given nodegroup.
-func (n *NodeDeletionTracker) EndDeletion(nodeGroupId, nodeName string, result status.NodeDeleteResult) {
+func (n *NodeDeletionTracker) EndDeletion(ctx context.Context, nodeGroupId, nodeName string, result status.NodeDeleteResult) {
+	logger := klog.FromContext(ctx)
 	n.Lock()
 	defer n.Unlock()
 
 	n.deletionResults.RegisterElement(&deletionResult{nodeName, result})
 	value, found := n.deletionsPerNodeGroup[nodeGroupId]
 	if !found {
-		klog.Errorf("This should never happen, counter for %s in NodeDeletionTracker wasn't found", nodeGroupId)
+		logger.Error(nil, "This should never happen, counter in NodeDeletionTracker wasn't found", "nodeGroupId", nodeGroupId)
 		return
 	}
 	if value <= 0 {
-		klog.Errorf("This should never happen, counter for %s in NodeDeletionTracker isn't greater than 0, counter value is %d", nodeGroupId, value)
+		logger.Error(nil, "This should never happen, counter in NodeDeletionTracker isn't greater than 0, counter value is", "nodeGroupId", nodeGroupId, "value", value)
 	}
 	n.deletionsPerNodeGroup[nodeGroupId]--
 	if n.deletionsPerNodeGroup[nodeGroupId] <= 0 {

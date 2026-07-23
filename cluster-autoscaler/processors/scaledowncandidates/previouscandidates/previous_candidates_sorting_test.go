@@ -17,6 +17,7 @@ limitations under the License.
 package previouscandidates
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -33,7 +34,7 @@ func TestScaleDownEarlierThan(t *testing.T) {
 	nonCandidate2 := BuildTestNode("non-candidate2", 100, 0)
 
 	p := NewPreviousCandidates()
-	p.UpdateScaleDownCandidates([]*scaledown.UnneededNode{{Node: candidate1}, {Node: candidate2}}, time.Now())
+	p.UpdateScaleDownCandidates(context.TODO(), []*scaledown.UnneededNode{{Node: candidate1}, {Node: candidate2}}, time.Now())
 	testCases := []struct {
 		name  string
 		node1 *apiv1.Node

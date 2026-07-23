@@ -17,6 +17,7 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
@@ -31,7 +32,7 @@ func NewClearTPURequestsPodListProcessor() *clearTpuRequests {
 }
 
 // Process removes pods' tpu requests
-func (p *clearTpuRequests) Process(autoscalingCtx *ca_context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *clearTpuRequests) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	return tpu.ClearTPURequests(pods), nil
 }
 

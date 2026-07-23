@@ -292,7 +292,7 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 			deleteOptions := options.NewNodeDeleteOptions(autoscaler.AutoscalingOptions)
 			drainabilityRules := rules.Default(deleteOptions)
 			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{CustomResourcesProcessor: autoscaler.processors.CustomResourcesProcessor, QuotaProvider: resourcequotas.NewCloudMinProvider(autoscaler.AutoscalingContext.CloudProvider)})
-			newSDPlanner := sdplanner.New(autoscaler.AutoscalingContext, autoscaler.processors, deleteOptions, drainabilityRules, factory)
+			newSDPlanner := sdplanner.New(context.TODO(), autoscaler.AutoscalingContext, autoscaler.processors, deleteOptions, drainabilityRules, factory)
 			autoscaler.scaleDownPlanner = newSDPlanner
 			autoscaler.processorCallbacks.scaleDownPlanner = newSDPlanner
 

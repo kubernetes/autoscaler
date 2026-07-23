@@ -17,6 +17,7 @@ limitations under the License.
 package unremovable
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -73,7 +74,7 @@ func TestUpdate(t *testing.T) {
 		for name, timeout := range tc.unremovable {
 			n.AddTimeout(makeUnremovableNode(name), timeout)
 		}
-		n.Update(niGetter, updateTime)
+		n.Update(context.TODO(), niGetter, updateTime)
 		got := len(n.ttls)
 		if got != tc.want {
 			t.Errorf("%s: got %d nodes, want %d", desc, got, tc.want)
@@ -95,7 +96,7 @@ func TestContains(t *testing.T) {
 		}
 	}
 	//remove nodes
-	n.Update(newFakeNodeInfoGetter(nodes), time.Now().Add(-1*time.Minute))
+	n.Update(context.TODO(), newFakeNodeInfoGetter(nodes), time.Now().Add(-1*time.Minute))
 	for _, node := range nodes {
 		if n.Contains(node) {
 			t.Errorf("n.Contains(%s) return true, want false", node)

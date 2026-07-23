@@ -17,6 +17,7 @@ limitations under the License.
 package provreq
 
 import (
+	"context"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -180,7 +181,7 @@ func (p *ProvisioningRequestPodsInjector) GetCheckCapacityBatch(maxPrs int) ([]P
 }
 
 // Process pick one ProvisioningRequest, update Accepted condition and inject pods to unscheduled pods list.
-func (p *ProvisioningRequestPodsInjector) Process(
+func (p *ProvisioningRequestPodsInjector) Process(ctx context.Context,
 	_ *ca_context.AutoscalingContext,
 	unschedulablePods []*apiv1.Pod,
 ) ([]*apiv1.Pod, error) {

@@ -17,6 +17,7 @@ limitations under the License.
 package provreq
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -127,7 +128,7 @@ func (p *provReqProcessor) CleanUp() {}
 
 // Process implements PodListProcessor.Process() and inject fake pods to the cluster snapshoot for Provisioned ProvReqs in order to
 // reserve capacity from ScaleDown.
-func (p *provReqProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *provReqProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	err := p.bookCapacity(autoscalingCtx)
 	if err != nil {
 		klog.Warningf("Failed to book capacity for ProvisioningRequests: %s", err)

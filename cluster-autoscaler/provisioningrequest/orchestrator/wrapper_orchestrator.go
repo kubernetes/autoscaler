@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	"context"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
@@ -58,7 +59,7 @@ func (o *WrapperOrchestrator) Initialize(autoscalingCtx *ca_context.AutoscalingC
 }
 
 // ScaleUp run scaleUp function for regular pods of pods from ProvisioningRequest.
-func (o *WrapperOrchestrator) ScaleUp(
+func (o *WrapperOrchestrator) ScaleUp(ctx context.Context,
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
@@ -77,9 +78,9 @@ func (o *WrapperOrchestrator) ScaleUp(
 	}
 
 	if o.autoscalingCtx.ProvisioningRequestScaleUpMode {
-		return o.provReqOrchestrator.ScaleUp(provReqPods, nodes, daemonSets, nodeInfos, allOrNothing)
+		return o.provReqOrchestrator.ScaleUp(ctx, provReqPods, nodes, daemonSets, nodeInfos, allOrNothing)
 	}
-	return o.podsOrchestrator.ScaleUp(regularPods, nodes, daemonSets, nodeInfos, allOrNothing)
+	return o.podsOrchestrator.ScaleUp(ctx, regularPods, nodes, daemonSets, nodeInfos, allOrNothing)
 }
 
 func splitOut(unschedulablePods []*apiv1.Pod) (provReqPods, regularPods []*apiv1.Pod) {
@@ -97,9 +98,9 @@ func splitOut(unschedulablePods []*apiv1.Pod) (provReqPods, regularPods []*apiv1
 // than the configured min size. The source of truth for the current node group
 // size is the TargetSize queried directly from cloud providers. Returns
 // appropriate status or error if an unexpected error occurred.
-func (o *WrapperOrchestrator) ScaleUpToNodeGroupMinSize(
+func (o *WrapperOrchestrator) ScaleUpToNodeGroupMinSize(ctx context.Context,
 	nodes []*apiv1.Node,
 	nodeInfos map[string]*framework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
-	return o.podsOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
+	return o.podsOrchestrator.ScaleUpToNodeGroupMinSize(ctx, nodes, nodeInfos)
 }

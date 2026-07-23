@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"testing"
@@ -182,7 +183,7 @@ func TestUpdateLatencyCalculation(t *testing.T) {
 			}
 			nodeLister := NewTestCustomNodeLister(nodes, tc.nodeTaintAfterNthGetCall)
 			updateLatencyTracker := NewUpdateLatencyTrackerForTesting(nodeLister, mc.Now)
-			go updateLatencyTracker.Start()
+			go updateLatencyTracker.Start(context.TODO())
 			for _, node := range nodes {
 				updateLatencyTracker.StartTimeChan <- nodeTaintStartTime{node.Name, tc.startTime}
 			}

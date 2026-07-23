@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -173,7 +174,7 @@ func TestScheduleDeletion(t *testing.T) {
 				for _, bucket := range ti.toAbort {
 					for _, node := range bucket.Nodes {
 						nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError}
-						scheduler.AbortNodeDeletionDueToError(node, bucket.Group.Id(), false, "simulated abort", nodeDeleteResult)
+						scheduler.AbortNodeDeletionDueToError(context.TODO(), node, bucket.Group.Id(), false, "simulated abort", nodeDeleteResult)
 					}
 				}
 				if err := scheduleAll(ti.toScheduleAfterAbort, scheduler); err != nil {
@@ -203,7 +204,7 @@ type countingBatcher struct {
 	addedNodes int
 }
 
-func (b *countingBatcher) AddNodes(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool) {
+func (b *countingBatcher) AddNodes(ctx context.Context, nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool) {
 	b.addedNodes += len(nodes)
 }
 
@@ -214,7 +215,7 @@ func scheduleAll(toSchedule []*budgets.NodeGroupView, scheduler *GroupDeletionSc
 			return fmt.Errorf("failed to get target size for node group %q: %s", bucket.Group.Id(), err)
 		}
 		for _, node := range bucket.Nodes {
-			scheduler.ScheduleDeletion(framework.NewTestNodeInfo(node), bucket.Group, bucketSize, false)
+			scheduler.ScheduleDeletion(context.TODO(), framework.NewTestNodeInfo(node), bucket.Group, bucketSize, false)
 		}
 	}
 	return nil

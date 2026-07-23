@@ -17,6 +17,7 @@ limitations under the License.
 package provreq
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -70,7 +71,7 @@ func TestProvisioningRequestPodsFilter(t *testing.T) {
 		eventRecorder := record.NewFakeRecorder(10)
 		autoscalingCtx := &ca_context.AutoscalingContext{AutoscalingKubeClients: ca_context.AutoscalingKubeClients{Recorder: eventRecorder}}
 		filter := NewProvisioningRequestPodsFilter(NewDefautlEventManager())
-		got, _ := filter.Process(autoscalingCtx, test.unschedulableCandidates)
+		got, _ := filter.Process(context.TODO(), autoscalingCtx, test.unschedulableCandidates)
 		assert.ElementsMatch(t, got, test.expectedUnscheduledPods)
 		if len(test.expectedUnscheduledPods) < len(test.expectedUnscheduledPods) {
 			select {
@@ -96,7 +97,7 @@ func TestEventManager(t *testing.T) {
 		prPod.Annotations[v1.ProvisioningRequestPodAnnotationKey] = "pr-class"
 		unscheduledPods = append(unscheduledPods, prPod)
 	}
-	got, err := prFilter.Process(autoscalingCtx, unscheduledPods)
+	got, err := prFilter.Process(context.TODO(), autoscalingCtx, unscheduledPods)
 	assert.NoError(t, err)
 	if len(got) != 1 {
 		t.Errorf("Want 1 unschedulable pod, got: %v", got)

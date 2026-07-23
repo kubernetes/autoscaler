@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"slices"
@@ -93,7 +94,7 @@ type fakeScaleDownStatusProcessor struct {
 	lastStatus *scaledownstatus.ScaleDownStatus
 }
 
-func (f *fakeScaleDownStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *scaledownstatus.ScaleDownStatus) {
+func (f *fakeScaleDownStatusProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, status *scaledownstatus.ScaleDownStatus) {
 	f.lastStatus = status
 }
 

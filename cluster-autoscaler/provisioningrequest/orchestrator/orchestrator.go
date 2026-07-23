@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	"context"
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -80,7 +81,7 @@ func (o *provReqOrchestrator) Initialize(
 // ScaleUp run ScaleUp for each Provisionining Class. As of now, CA pick one ProvisioningRequest,
 // so only one ProvisioningClass return non empty scaleUp result.
 // In case we implement multiple ProvisioningRequest ScaleUp, the function should return combined status
-func (o *provReqOrchestrator) ScaleUp(
+func (o *provReqOrchestrator) ScaleUp(ctx context.Context,
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
@@ -105,7 +106,7 @@ func (o *provReqOrchestrator) ScaleUp(
 }
 
 // ScaleUpToNodeGroupMinSize doesn't have implementation for ProvisioningRequest Orchestrator.
-func (o *provReqOrchestrator) ScaleUpToNodeGroupMinSize(
+func (o *provReqOrchestrator) ScaleUpToNodeGroupMinSize(ctx context.Context,
 	nodes []*apiv1.Node,
 	nodeInfos map[string]*framework.NodeInfo,
 ) (*status.ScaleUpStatus, ca_errors.AutoscalerError) {

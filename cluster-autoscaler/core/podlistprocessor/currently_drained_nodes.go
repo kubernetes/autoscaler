@@ -17,6 +17,7 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
@@ -33,27 +34,28 @@ func NewCurrentlyDrainedNodesPodListProcessor() *currentlyDrainedNodesPodListPro
 }
 
 // Process adds recreatable pods from currently drained nodes
-func (p *currentlyDrainedNodesPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	recreatablePods := pod_util.FilterRecreatablePods(currentlyDrainedPods(autoscalingCtx))
+func (p *currentlyDrainedNodesPodListProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	recreatablePods := pod_util.FilterRecreatablePods(currentlyDrainedPods(ctx, autoscalingCtx))
 	return append(unschedulablePods, pod_util.ClearPodNodeNames(recreatablePods)...), nil
 }
 
 func (p *currentlyDrainedNodesPodListProcessor) CleanUp() {
 }
 
-func currentlyDrainedPods(autoscalingCtx *ca_context.AutoscalingContext) []*apiv1.Pod {
+func currentlyDrainedPods(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) []*apiv1.Pod {
+	logger := klog.FromContext(ctx)
 	var pods []*apiv1.Pod
 	_, nodeNames := autoscalingCtx.ScaleDownActuator.CheckStatus().DeletionsInProgress()
 	for _, nodeName := range nodeNames {
 		nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(nodeName)
 		if err != nil {
-			klog.Warningf("Couldn't get node %v info, assuming the node got deleted already: %v", nodeName, err)
+			logger.Error(err, "Couldn't get node info, assuming the node got deleted already", "nodeName", nodeName)
 			continue
 		}
 		for _, podInfo := range nodeInfo.Pods() {
 			// Filter out pods that has deletion timestamp set
 			if podInfo.Pod.DeletionTimestamp != nil {
-				klog.Infof("Pod %v has deletion timestamp set, skipping injection to unschedulable pods list", podInfo.Pod.Name)
+				logger.Info("Pod has deletion timestamp set, skipping injection to unschedulable pods list", "name", podInfo.Pod.Name)
 				continue
 			}
 			pods = append(pods, podInfo.Pod)

@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"testing"
@@ -1284,7 +1285,7 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 	if force {
 		gotResult, gotScaleDownNodes, gotErr = actuator.StartForceDeletion(allEmptyNodes, allDrainNodes)
 	} else {
-		gotResult, gotScaleDownNodes, gotErr = actuator.StartDeletion(allEmptyNodes, allDrainNodes)
+		gotResult, gotScaleDownNodes, gotErr = actuator.StartDeletion(context.TODO(), allEmptyNodes, allDrainNodes)
 	}
 
 	if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
@@ -1556,7 +1557,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			}
 
 			for _, nodes := range deleteNodes {
-				actuator.StartDeletion(nodes, []*apiv1.Node{})
+				actuator.StartDeletion(context.TODO(), nodes, []*apiv1.Node{})
 				time.Sleep(deleteInterval)
 			}
 			wantDeletedNodes := 0

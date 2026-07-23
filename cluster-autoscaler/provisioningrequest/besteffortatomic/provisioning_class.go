@@ -17,6 +17,7 @@ limitations under the License.
 package besteffortatomic
 
 import (
+	"context"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -115,7 +116,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotNeeded}, nil
 	}
 
-	st, err := o.scaleUpOrchestrator.ScaleUp(actuallyUnschedulablePods, nodes, daemonSets, nodeInfos, true)
+	st, err := o.scaleUpOrchestrator.ScaleUp(context.TODO(), actuallyUnschedulablePods, nodes, daemonSets, nodeInfos, true)
 	if err == nil && st.Result == status.ScaleUpSuccessful {
 		// Happy path - all is well.
 		conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsProvisionedReason, conditions.CapacityIsProvisionedMsg, metav1.Now())

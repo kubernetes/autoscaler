@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -37,11 +38,12 @@ const (
 
 // WaitForDelayDeletion waits until the provided node has no annotations beginning with DelayDeletionAnnotationPrefix,
 // or until the provided timeout is reached - whichever comes first.
-func WaitForDelayDeletion(node *apiv1.Node, nodeLister kubernetes.NodeLister, timeout time.Duration) errors.AutoscalerError {
+func WaitForDelayDeletion(ctx context.Context, node *apiv1.Node, nodeLister kubernetes.NodeLister, timeout time.Duration) errors.AutoscalerError {
+	logger := klog.FromContext(ctx)
 	if timeout != 0 && hasDelayDeletionAnnotation(node) {
-		klog.V(1).Infof("Wait for removing %s annotations on node %v", DelayDeletionAnnotationPrefix, node.Name)
+		logger.V(1).Info("Wait for removing annotations on node", "DelayDeletionAnnotationPrefix", DelayDeletionAnnotationPrefix, "node", node.Name)
 		err := wait.Poll(5*time.Second, timeout, func() (bool, error) {
-			klog.V(5).Infof("Waiting for removing %s annotations on node %v", DelayDeletionAnnotationPrefix, node.Name)
+			logger.V(5).Info("Waiting for removing annotations on node", "DelayDeletionAnnotationPrefix", DelayDeletionAnnotationPrefix, "node", node.Name)
 			freshNode, err := nodeLister.Get(node.Name)
 			if err != nil || freshNode == nil {
 				return false, fmt.Errorf("failed to get node %v: %v", node.Name, err)
@@ -52,9 +54,9 @@ func WaitForDelayDeletion(node *apiv1.Node, nodeLister kubernetes.NodeLister, ti
 			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
 		if err == wait.ErrWaitTimeout {
-			klog.Warningf("Delay node deletion timed out for node %v, delay deletion annotation wasn't removed within %v, this might slow down scale down.", node.Name, timeout)
+			logger.Info("Delay node deletion timed out for node , delay deletion annotation wasn't removed within , this might slow down scale down.", "node", node.Name, "timeout", timeout)
 		} else {
-			klog.V(2).Infof("Annotation %s removed from node %v", DelayDeletionAnnotationPrefix, node.Name)
+			logger.V(2).Info("Annotation removed from node", "DelayDeletionAnnotationPrefix", DelayDeletionAnnotationPrefix, "node", node.Name)
 		}
 	}
 	return nil
