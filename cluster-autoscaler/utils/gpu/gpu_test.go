@@ -76,15 +76,80 @@ func TestNodeHasGpu(t *testing.T) {
 		},
 	}
 	assert.False(t, gpu.NodeHasGpu(GPULabel, nodeNoGpu))
+
+	nodeSharedGpuNoLabel := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "nodeSharedGpuNoLabel",
+			Labels: map[string]string{},
+		},
+		Status: apiv1.NodeStatus{
+			Capacity:    apiv1.ResourceList{},
+			Allocatable: apiv1.ResourceList{},
+		},
+	}
+	nodeSharedGpuNoLabel.Status.Allocatable["nvidia.com/gpu.shared"] = *resource.NewQuantity(2, resource.DecimalSI)
+	nodeSharedGpuNoLabel.Status.Capacity["nvidia.com/gpu.shared"] = *resource.NewQuantity(2, resource.DecimalSI)
+	assert.True(t, gpu.NodeHasGpu(GPULabel, nodeSharedGpuNoLabel))
+}
+
+func TestIsGPUResource(t *testing.T) {
+	testCases := []struct {
+		name         string
+		resourceName apiv1.ResourceName
+		expected     bool
+	}{
+		{
+			name:         "known nvidia gpu resource",
+			resourceName: gpu.ResourceNvidiaGPU,
+			expected:     true,
+		},
+		{
+			name:         "known directx gpu resource",
+			resourceName: gpu.ResourceDirectX,
+			expected:     true,
+		},
+		{
+			name:         "nvidia mig resource",
+			resourceName: "nvidia.com/mig-1g.5gb",
+			expected:     true,
+		},
+		{
+			name:         "nvidia timesliced resource",
+			resourceName: "nvidia.com/gpu.shared",
+			expected:     true,
+		},
+		{
+			name:         "non gpu resource",
+			resourceName: "example.com/fpga",
+			expected:     false,
+		},
+		{
+			name:         "unknown nvidia.com resource matches by prefix",
+			resourceName: "nvidia.com/some-future-resource",
+			expected:     true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, gpu.IsGPUResource(tc.resourceName))
+		})
+	}
 }
 
 func TestPodRequestsGpu(t *testing.T) {
 	podNoGpu := test.BuildTestPod("podNoGpu", 0, 1000)
 	podWithGpu := test.BuildTestPod("pod1AnyGpu", 0, 1000)
+	podWithSharedGpu := test.BuildTestPod("podWithSharedGpu", 0, 1000)
+	podWithMIG := test.BuildTestPod("podWithMIG", 0, 1000)
 	podWithGpu.Spec.Containers[0].Resources.Requests[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+	podWithSharedGpu.Spec.Containers[0].Resources.Requests["nvidia.com/gpu.shared"] = *resource.NewQuantity(1, resource.DecimalSI)
+	podWithMIG.Spec.Containers[0].Resources.Requests["nvidia.com/mig-1g.5gb"] = *resource.NewQuantity(1, resource.DecimalSI)
 
 	assert.False(t, gpu.PodRequestsGpu(podNoGpu))
 	assert.True(t, gpu.PodRequestsGpu(podWithGpu))
+	assert.True(t, gpu.PodRequestsGpu(podWithSharedGpu))
+	assert.True(t, gpu.PodRequestsGpu(podWithMIG))
 }
 
 func TestGetGpuInfoForMetrics(t *testing.T) {
@@ -280,6 +345,24 @@ func TestDetectNodeGPUResourceName(t *testing.T) {
 			expectedResourceName: gpu.ResourceAMDGPU,
 		},
 		{
+			name: "nvidia mig gpu",
+			node: &apiv1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:   "node-with-nvidia-mig-gpu",
+					Labels: map[string]string{},
+				},
+				Status: apiv1.NodeStatus{
+					Capacity: apiv1.ResourceList{
+						"nvidia.com/mig-1g.5gb": *resource.NewQuantity(2, resource.DecimalSI),
+					},
+					Allocatable: apiv1.ResourceList{
+						"nvidia.com/mig-1g.5gb": *resource.NewQuantity(2, resource.DecimalSI),
+					},
+				},
+			},
+			expectedResourceName: "nvidia.com/mig-1g.5gb",
+		},
+		{
 			name: "test default gpu resource name",
 			node: &apiv1.Node{
 				ObjectMeta: metav1.ObjectMeta{
@@ -289,6 +372,26 @@ func TestDetectNodeGPUResourceName(t *testing.T) {
 				Status: apiv1.NodeStatus{
 					Capacity:    apiv1.ResourceList{},
 					Allocatable: apiv1.ResourceList{},
+				},
+			},
+			expectedResourceName: gpu.ResourceNvidiaGPU,
+		},
+		{
+			name: "known vendor name takes precedence over prefix match",
+			node: &apiv1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:   "node-with-both-gpu-types",
+					Labels: map[string]string{},
+				},
+				Status: apiv1.NodeStatus{
+					Capacity: apiv1.ResourceList{
+						gpu.ResourceNvidiaGPU:   *resource.NewQuantity(1, resource.DecimalSI),
+						"nvidia.com/gpu.shared": *resource.NewQuantity(4, resource.DecimalSI),
+					},
+					Allocatable: apiv1.ResourceList{
+						gpu.ResourceNvidiaGPU:   *resource.NewQuantity(1, resource.DecimalSI),
+						"nvidia.com/gpu.shared": *resource.NewQuantity(4, resource.DecimalSI),
+					},
 				},
 			},
 			expectedResourceName: gpu.ResourceNvidiaGPU,
