@@ -77,18 +77,14 @@ spec:
                 type: object
               currentMemoryPeak:
                 description: |-
-                  CurrentMemoryPeak holds the memory peak observed so far in the current (not yet
-                  completed) memory aggregation interval. Unlike MemoryHistogram, which only contains
-                  peaks from completed intervals, this field lets the in-progress peak survive a
-                  recommender restart, so that a restart in the middle of a long aggregation interval
-                  (e.g. the default 24h) does not discard the peak accumulated up to that point.
-                  It is nil when there is no in-progress peak to preserve.
+                  CurrentMemoryPeak holds the memory peak observed so far in the current incomplete memory
+                  aggregation interval. This ensures that the current memory peak survives a recommender
+                  restart in the middle of an aggregation interval instead of being discarded.
                 properties:
                   lastSampleStart:
                     description: |-
-                      LastSampleStart is the start timestamp of the most recent memory sample that was
-                      aggregated into the current interval. On restore it is used to discard outdated
-                      samples that predate it.
+                      LastSampleStart is the start timestamp of the most recent memory sample that was aggregated
+                      into the current interval. On restore it is used to discard outdated samples that predate it.
                     format: date-time
                     nullable: true
                     type: string
@@ -110,9 +106,9 @@ spec:
                     x-kubernetes-int-or-string: true
                   windowEnd:
                     description: |-
-                      WindowEnd is the end time (not inclusive) of the memory aggregation interval that
-                      the peak belongs to. On restore it is used to decide whether the peak is still
-                      within the current interval and to keep aggregating into the same window.
+                      WindowEnd is the end time (not inclusive) of the memory aggregation interval that the peak
+                      belongs to. On restore it is used to decide whether the peak is still within the current
+                      interval and to keep aggregating into the same window.
                     format: date-time
                     nullable: true
                     type: string
