@@ -209,8 +209,8 @@ github.com/gkampitakis/go-diff v1.3.2 h1:Qyn0J9XJSDTgnsgHRdz9Zp24RaJeKMUHg2+PDZZ
 github.com/gkampitakis/go-diff v1.3.2/go.mod h1:LLgOrpqleQe26cte8s36HTWcTmMEur6OPYerdAAS9tk=
 github.com/gkampitakis/go-snaps v0.5.15 h1:amyJrvM1D33cPHwVrjo9jQxX8g/7E2wYdZ+01KS3zGE=
 github.com/gkampitakis/go-snaps v0.5.15/go.mod h1:HNpx/9GoKisdhw9AFOBT1N7DBs9DiHo/hGheFGBZ+mc=
-github.com/go-faker/faker/v4 v4.9.0 h1:a4HXLwueuTCtgF93VpUsl8Zd2nG1VH2SgNWDPVEBg5U=
-github.com/go-faker/faker/v4 v4.9.0/go.mod h1:u1dIRP5neLB6kTzgyVjdBOV5R1uP7BdxkcWk7tiKQXk=
+github.com/go-faker/faker/v4 v4.10.0 h1:rHTZVwG1x8aN4zXDYJUFucOGDQojuxOby5MTdC/M2Fw=
+github.com/go-faker/faker/v4 v4.10.0/go.mod h1:X+KzPB4JZ82GY4MYr7NV7zmp+i/K0SG5EDKqIg5zd1k=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=
 github.com/go-logr/logr v1.4.3/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
@@ -674,8 +674,8 @@ sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.34.0 h1:hSfpvjjTQXQY2
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.34.0/go.mod h1:Ve9uj1L+deCXFrPOk1LpFXqTg7LCFzFso6PA48q/XZw=
 sigs.k8s.io/cloud-provider-azure v1.36.2 h1:t7KW5rSXwXi+s4WeBjsBaPEU0VOHwVVjNDAB7k1LnEo=
 sigs.k8s.io/cloud-provider-azure v1.36.2/go.mod h1:8jb5L6J51VdO/qrmkV7c9pQNKVFcdmDuXFxRbIbAuww=
-sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.21.3 h1:0bvLkGdzonXJD/KjmhUQkm1A9Wr3XcVjeMhEHvNI2M8=
-sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.21.3/go.mod h1:o396fhu+YRYWM4HYueSNw/UcABjtD+HAPILrifi+WJA=
+sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.21.5 h1:IVAThJUdmNYBokVFokUMVCetzFR+knwyXJ5J4QjtmAI=
+sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.21.5/go.mod h1:zsp87MLaDLfKV2M2rMIMauXB9vBnBWlT3ZWnRHJUk7s=
 sigs.k8s.io/cloud-provider-azure/pkg/azclient/configloader v0.15.2 h1:be6PmylCocI/CZTamSn9uQpchsXcb4SCaH9jl3KDxkQ=
 sigs.k8s.io/cloud-provider-azure/pkg/azclient/configloader v0.15.2/go.mod h1:bFd+YoGg9on0uMr5Y4HjFiBovY1y6GbmokVl35+zQAA=
 sigs.k8s.io/controller-runtime v0.24.1 h1:miPEwrmirImAvgME1L9qebGHrOnGJoVmVdtOU9fRfo4=
