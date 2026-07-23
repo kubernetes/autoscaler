@@ -127,7 +127,7 @@ func TestBuildAggregateContainerStateMapRecordsCurrentMemoryPeak(t *testing.T) {
 		acs := aggregateContainerStateMap["container-1"]
 		assert.True(t, acs.AggregateMemoryPeaks.IsEmpty(), "current peak should be excluded from the aggregation")
 		if assert.NotNil(t, acs.CurrentMemoryPeak, "current peak should be recorded for the checkpoint") {
-			assert.Equal(t, peakBytes, acs.CurrentMemoryPeak.MemoryPeak)
+			assert.Equal(t, peakBytes, acs.CurrentMemoryPeak.Peak)
 			assert.Equal(t, container.WindowEnd, acs.CurrentMemoryPeak.WindowEnd)
 		}
 	}

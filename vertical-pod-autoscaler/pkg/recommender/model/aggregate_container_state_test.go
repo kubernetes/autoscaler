@@ -207,7 +207,7 @@ func TestAggregateContainerStateCurrentMemoryPeakRoundTrip(t *testing.T) {
 
 	cs := NewAggregateContainerState()
 	cs.CurrentMemoryPeak = &MemoryPeakData{
-		MemoryPeak:      MemoryAmountFromBytes(2e9),
+		Peak:            MemoryAmountFromBytes(2e9),
 		OOMPeak:         MemoryAmountFromBytes(3e9),
 		WindowEnd:       windowEnd,
 		LastSampleStart: lastSample,
@@ -225,7 +225,7 @@ func TestAggregateContainerStateCurrentMemoryPeakRoundTrip(t *testing.T) {
 	restored := NewAggregateContainerState()
 	assert.NoError(t, restored.LoadFromCheckpoint(checkpoint))
 	if assert.NotNil(t, restored.CurrentMemoryPeak) {
-		assert.Equal(t, MemoryAmountFromBytes(2e9), restored.CurrentMemoryPeak.MemoryPeak)
+		assert.Equal(t, MemoryAmountFromBytes(2e9), restored.CurrentMemoryPeak.Peak)
 		assert.Equal(t, MemoryAmountFromBytes(3e9), restored.CurrentMemoryPeak.OOMPeak)
 		assert.Equal(t, windowEnd, restored.CurrentMemoryPeak.WindowEnd)
 		assert.Equal(t, lastSample, restored.CurrentMemoryPeak.LastSampleStart)

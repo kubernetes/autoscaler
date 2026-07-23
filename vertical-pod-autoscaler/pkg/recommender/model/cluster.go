@@ -437,7 +437,7 @@ func (cluster *clusterState) loadCurrentMemoryPeak(containerID ContainerID, cont
 		peak := initial.CurrentMemoryPeak
 		initial.CurrentMemoryPeak = nil
 
-		container.memoryPeak = peak.MemoryPeak
+		container.memoryPeak = peak.Peak
 		container.oomPeak = peak.OOMPeak
 		container.WindowEnd = peak.WindowEnd
 		container.lastMemorySampleStart = peak.LastSampleStart

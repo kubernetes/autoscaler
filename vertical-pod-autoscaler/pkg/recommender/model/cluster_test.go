@@ -402,7 +402,7 @@ func TestAddContainerSeedsMemoryPeakFromCheckpoint(t *testing.T) {
 	windowEnd := time.Unix(10000, 0)
 	initial := NewAggregateContainerState()
 	initial.CurrentMemoryPeak = &MemoryPeakData{
-		MemoryPeak:      MemoryAmountFromBytes(7e9),
+		Peak:            MemoryAmountFromBytes(7e9),
 		WindowEnd:       windowEnd,
 		LastSampleStart: time.Unix(9900, 0),
 	}
