@@ -180,6 +180,58 @@ compartmentId:<compartmentId>,instancepoolTags:<tagKey1>=<tagValue1>&<tagKey2>=<
 ```
 Auto discovery can not be used along with static discovery (`node` parameter) to prevent conflicts.
 
+### Node template tags for OKE node pools
+
+For OKE node pools, Cluster Autoscaler can read node template hints from node pool freeform tags. These tags are used
+only when Cluster Autoscaler builds a template node for scale-up simulation. They do not configure kubelet or mutate the
+nodes. Make sure any labels or taints advertised by these tags are also applied by your node bootstrap configuration or
+kubelet arguments, and any resources advertised by these tags are also reported in the node's Kubernetes status after the
+node joins the cluster.
+
+OCI freeform tag keys must follow OCI tag key limits, so arbitrary Kubernetes label, taint, and resource names can be
+placed in the tag value using `<kubernetes-name>=<value>`. This is especially useful for scaling a node pool from 0 to 1
+when pods request an extended resource that is normally reported by a device plugin or other node status updater after a node
+exists. For example, to let Cluster Autoscaler consider a zero-sized node pool for pods requesting
+`example.com/custom-resource: 1`, add this freeform tag to the node pool:
+
+```
+cluster-autoscaler/node-template/resources/custom-resource: "example.com/custom-resource=1"
+```
+
+In this form, `custom-resource` is only an OCI tag-key-safe alias. The actual Kubernetes resource name used in the
+template is `example.com/custom-resource`, taken from the tag value before `=`.
+
+The following freeform tag prefixes are supported for OKE node pools:
+
+```
+cluster-autoscaler/node-template/label/<label-alias>: <label-value>
+cluster-autoscaler/node-template/label/<label-alias>: <label-name>=<label-value>
+cluster-autoscaler/node-template/taint/<taint-alias>: <taint-value>:<taint-effect>
+cluster-autoscaler/node-template/taint/<taint-alias>: <taint-name>=<taint-value>:<taint-effect>
+cluster-autoscaler/node-template/resources/<resource-alias>: <resource-quantity>
+cluster-autoscaler/node-template/resources/<resource-alias>: <resource-name>=<resource-quantity>
+cluster-autoscaler/node-template/autoscaling-options/<option-name>: <option-value>
+```
+
+Examples:
+
+```
+cluster-autoscaler/node-template/label/workload-tier: "batch"
+cluster-autoscaler/node-template/label/workload: "example.com/workload=batch"
+cluster-autoscaler/node-template/taint/dedicated: "batch:NoSchedule"
+cluster-autoscaler/node-template/taint/custom-dedicated: "example.com/dedicated=batch:NoSchedule"
+cluster-autoscaler/node-template/resources/ephemeral-storage: "100Gi"
+cluster-autoscaler/node-template/resources/custom-resource: "example.com/custom-resource=1"
+cluster-autoscaler/node-template/autoscaling-options/scaledownunneededtime: "10m"
+```
+
+Supported autoscaling option names are `scaledownutilizationthreshold`, `scaledowngpuutilizationthreshold`,
+`scaledownunneededtime`, `scaledownunreadytime`, and `ignoredaemonsetsutilization`.
+
+The legacy OCI freeform tag `cluster-autoscaler/node-ephemeral-storage` is still supported. If both that tag and
+`cluster-autoscaler/node-template/resources/ephemeral-storage` are set, the
+`cluster-autoscaler/node-template/resources/ephemeral-storage` tag takes precedence.
+
 ## Deployment
 
 ### Create OCI config secret (only if _not_ using Instance Principals)
