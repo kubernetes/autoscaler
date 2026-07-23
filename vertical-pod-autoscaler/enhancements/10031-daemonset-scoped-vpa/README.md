@@ -332,14 +332,9 @@ recommender:
 4. Strips non-target fields from group recommendations (targets only).
 5. Updates VPA status: sets `RecommendationGroups`, and keeps
    `Recommendation` populated with the aggregate over all matching pods.
-6. Caches `(vpaID, scopedGeneration) -> (recommendation, groups)` so unchanged
-   scoped inputs do not rebuild all groups every loop.
 
 #### Cache lifecycle
 
-- The recommender scoped cache is keyed by `(vpaID, scopedGeneration)`; it is
-  invalidated whenever the scoped generation changes (pods added/removed,
-  policy or scope changes).
 - Aggregations for pods on removed nodes age out through the existing VPA
   aggregate garbage collection (`DeleteRemovedPods` plus normal aggregate
   ageing), so scope values whose nodes disappear stop contributing and their
@@ -462,9 +457,6 @@ hostname scope for cases where load is genuinely per-node.
 
 Design decisions that keep this workable:
 
-- **Scoped recommendation cache:** the recommender reuses the previous
-  iteration's groups when scoped inputs have not changed (keyed by
-  `(vpaID, scopedGeneration)`), so it does not rebuild every group each loop.
 - **Compact group status:** groups store only the effective `target`, keeping
   the `status` object small even with many groups.
 - **Admission node-label cache:** node label lookups are cached (short TTL) to
@@ -498,8 +490,7 @@ scope on large clusters.
 
 **Benchmarks**
 
-- DaemonSet scope with 1000 and 5000 groups (`ProcessVPAUpdate` and
-  aggregation).
+- DaemonSet scope with 1000 and 5000 groups (`ProcessVPAUpdate` and aggregation).
 
 **e2e (alpha)**
 
@@ -524,13 +515,10 @@ scope on large clusters.
 
 ### Graduation Criteria
 
-The feature gate is a rollout switch, not a mechanism for maturing the feature
-over time. The feature is complete in alpha: the full functionality — API,
-global-recommendation fallback, scope-aware checkpoints, admission validation,
-benchmarks, e2e, and documentation — ships in alpha. Graduation then only
-advances the gate's default and finally locks it; it adds no functionality.
-Anything genuinely out of scope (see [Non-Goals](#non-goals)) would be a
-separate AEP behind its own feature gate rather than a later stage of this one.
+The feature gate controls rollout, not maturity. The whole feature ships in
+alpha. Beta and GA only change the gate's default and then lock it; they add no
+functionality. Out-of-scope work (see [Non-Goals](#non-goals)) would be a
+separate AEP with its own feature gate.
 
 **Alpha** — gate defaults to `false` (opt-in). Delivered in full:
 
@@ -538,13 +526,10 @@ separate AEP behind its own feature gate rather than a later stage of this one.
   `VerticalPodAutoscalerCheckpoint` `scopeValue` field, admission validation,
   and the global-recommendation fallback.
 - Scope-aware checkpoints (per `(VPA, container, scopeValue)`).
-- Unit coverage for validation, feeder, recommender, capping/admission
-  selection, and checkpoints.
+- Unit coverage for validation, feeder, recommender, capping/admission selection, and checkpoints.
 - Benchmarks for 1000 and 5000 groups.
-- e2e coverage for scoped grouping (including `__absent__`) and gate-off
-  rejection.
-- User-facing documentation and examples (including the GPU-label recipe) in
-  https://github.com/kubernetes/autoscaler.
+- e2e coverage for scoped grouping (including `__absent__`).
+- User-facing documentation and examples in [github.com/kubernetes/autoscaler](https://github.com/kubernetes/autoscaler).
 
 **Beta** — gate defaults to `true` (users can still opt out). No functional or
 API changes; this is only the default-on rollout step.
