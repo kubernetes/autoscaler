@@ -457,13 +457,9 @@ func (cluster *clusterState) loadCurrentMemoryPeak(pod *PodState, containerName 
 	containerState.oomPeak = currentMemoryPeak.OOMPeak
 	containerState.WindowEnd = currentMemoryPeak.WindowEnd
 	containerState.lastMemorySampleStart = currentMemoryPeak.LastSampleStart
-	maxPeak := containerState.GetMaxMemoryPeak()
-	if maxPeak == 0 {
-		return
-	}
 	aggregateContainerState.AddSample(&ContainerUsageSample{
 		MeasureStart: currentMemoryPeak.WindowEnd,
-		Usage:        maxPeak,
+		Usage:        containerState.GetMaxMemoryPeak(),
 		Resource:     ResourceMemory,
 	})
 }

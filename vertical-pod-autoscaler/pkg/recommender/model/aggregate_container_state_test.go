@@ -251,12 +251,6 @@ func TestRecordCurrentMemoryPeakKeepsLargest(t *testing.T) {
 	large.WindowEnd = windowEnd
 	large.memoryPeak = MemoryAmountFromBytes(5e9)
 
-	// A container without any peak must not set the field.
-	empty := NewContainerState(testRequest, a)
-	empty.WindowEnd = windowEnd
-	a.RecordCurrentMemoryPeak(empty)
-	assert.Nil(t, a.CurrentMemoryPeak)
-
 	a.RecordCurrentMemoryPeak(small)
 	a.RecordCurrentMemoryPeak(large)
 	a.RecordCurrentMemoryPeak(small) // out of order, must not shrink the recorded peak

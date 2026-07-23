@@ -219,9 +219,6 @@ func (a *AggregateContainerState) GetMemoryAggregationIntervalDuration() time.Du
 // Callers should only invoke it for peaks that are still within the current interval (and therefore
 // excluded from AggregateMemoryPeaks).
 func (a *AggregateContainerState) RecordCurrentMemoryPeak(container *ContainerState) {
-	if container.GetMaxMemoryPeak() == 0 {
-		return
-	}
 	if a.CurrentMemoryPeak != nil && a.CurrentMemoryPeak.max() >= container.GetMaxMemoryPeak() {
 		return
 	}
