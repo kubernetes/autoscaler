@@ -61,15 +61,19 @@ type ContainerState struct {
 	aggregator ContainerStateAggregator
 }
 
-// NewContainerState returns a new ContainerState.
-func NewContainerState(request Resources, aggregator ContainerStateAggregator) *ContainerState {
-	return &ContainerState{
+// NewContainerState returns a new ContainerState. If initialMemoryPeak is non-nil, the
+// container's in-progress memory peak is seeded from it (see InitMemoryPeakFromCheckpoint),
+// restoring the peak accumulated before a recommender restart.
+func NewContainerState(request Resources, aggregator ContainerStateAggregator, initialMemoryPeak *MemoryPeakData) *ContainerState {
+	container := &ContainerState{
 		Request:               request,
 		LastCPUSampleStart:    time.Time{},
 		WindowEnd:             time.Time{},
 		lastMemorySampleStart: time.Time{},
 		aggregator:            aggregator,
 	}
+	container.InitMemoryPeakFromCheckpoint(initialMemoryPeak)
+	return container
 }
 
 func (sample *ContainerUsageSample) isValid(expectedResource ResourceName) bool {

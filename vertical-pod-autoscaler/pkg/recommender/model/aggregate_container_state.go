@@ -210,11 +210,11 @@ func (a *AggregateContainerState) GetMemoryAggregationIntervalDuration() time.Du
 	return a.MemoryAggregationIntervalDuration
 }
 
-// RecordInProgressMemoryPeak records the container's in-progress interval peak as the peak
-// to persist in the checkpoint, keeping the largest peak across all containers that
-// aggregate into this state. Callers should only invoke it for peaks that are still within
-// the current interval (and therefore excluded from AggregateMemoryPeaks).
-func (a *AggregateContainerState) RecordInProgressMemoryPeak(container *ContainerState) {
+// RecordCurrentMemoryPeak records the container's in-progress interval peak as the peak to persist
+// in the checkpoint, keeping the largest peak across all containers that aggregate into this state.
+// Callers should only invoke it for peaks that are still within the current interval (and therefore
+// excluded from AggregateMemoryPeaks).
+func (a *AggregateContainerState) RecordCurrentMemoryPeak(container *ContainerState) {
 	if container.GetMaxMemoryPeak() == 0 {
 		return
 	}

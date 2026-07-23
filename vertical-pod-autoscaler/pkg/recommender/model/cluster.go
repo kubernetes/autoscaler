@@ -242,9 +242,8 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	}
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
 		cluster.findOrCreateAggregateContainerState(containerID)
-		containerState := NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
-		cluster.seedMemoryPeakFromCheckpoint(containerID, containerState)
-		pod.Containers[containerID.ContainerName] = containerState
+		initialMemoryPeak := cluster.consumeCheckpointMemoryPeak(containerID)
+		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID), initialMemoryPeak)
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
@@ -416,13 +415,13 @@ func (cluster *clusterState) findOrCreateAggregateContainerState(containerID Con
 	return aggregateContainerState
 }
 
-// seedMemoryPeakFromCheckpoint restores the in-progress memory peak persisted in a VPA
-// checkpoint (loaded into ContainersInitialAggregateState) into a newly created
-// ContainerState, so the peak accumulated before a recommender restart is not lost. The
-// peak is consumed once applied, so it seeds at most one container even when a VPA matches
-// multiple pods. It must be called after findOrCreateAggregateContainerState has linked the
-// aggregation to the matching VPAs.
-func (cluster *clusterState) seedMemoryPeakFromCheckpoint(containerID ContainerID, container *ContainerState) {
+// consumeCheckpointMemoryPeak returns the in-progress memory peak persisted in a VPA
+// checkpoint (loaded into ContainersInitialAggregateState) for the given container, so it
+// can seed a newly created ContainerState and survive a recommender restart. The peak is
+// cleared once returned, so it is applied to at most one container even when a VPA matches
+// multiple pods. It returns nil when there is no peak to restore, and must be called after
+// findOrCreateAggregateContainerState has linked the aggregation to the matching VPAs.
+func (cluster *clusterState) consumeCheckpointMemoryPeak(containerID ContainerID) *MemoryPeakData {
 	aggregateStateKey := cluster.aggregateStateKeyForContainerID(containerID)
 	for _, vpa := range cluster.vpas {
 		if !vpa.UsesAggregation(aggregateStateKey) {
@@ -432,10 +431,11 @@ func (cluster *clusterState) seedMemoryPeakFromCheckpoint(containerID ContainerI
 		if !ok || initial.CurrentMemoryPeak == nil {
 			continue
 		}
-		container.InitMemoryPeakFromCheckpoint(initial.CurrentMemoryPeak)
+		peak := initial.CurrentMemoryPeak
 		initial.CurrentMemoryPeak = nil
-		return
+		return peak
 	}
+	return nil
 }
 
 // garbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the clusterState.

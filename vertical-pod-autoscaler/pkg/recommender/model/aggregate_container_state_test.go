@@ -239,27 +239,27 @@ func TestAggregateContainerStateSaveToCheckpointNoInProgressPeak(t *testing.T) {
 	assert.Nil(t, checkpoint.CurrentMemoryPeak)
 }
 
-func TestRecordInProgressMemoryPeakKeepsLargest(t *testing.T) {
+func TestRecordCurrentMemoryPeakKeepsLargest(t *testing.T) {
 	a := NewAggregateContainerState()
 	windowEnd := time.Unix(1000, 0)
 
-	small := NewContainerState(testRequest, a)
+	small := NewContainerState(testRequest, a, nil)
 	small.WindowEnd = windowEnd
 	small.memoryPeak = MemoryAmountFromBytes(1e9)
 
-	large := NewContainerState(testRequest, a)
+	large := NewContainerState(testRequest, a, nil)
 	large.WindowEnd = windowEnd
 	large.memoryPeak = MemoryAmountFromBytes(5e9)
 
 	// A container without any peak must not set the field.
-	empty := NewContainerState(testRequest, a)
+	empty := NewContainerState(testRequest, a, nil)
 	empty.WindowEnd = windowEnd
-	a.RecordInProgressMemoryPeak(empty)
+	a.RecordCurrentMemoryPeak(empty)
 	assert.Nil(t, a.CurrentMemoryPeak)
 
-	a.RecordInProgressMemoryPeak(small)
-	a.RecordInProgressMemoryPeak(large)
-	a.RecordInProgressMemoryPeak(small) // out of order, must not shrink the recorded peak
+	a.RecordCurrentMemoryPeak(small)
+	a.RecordCurrentMemoryPeak(large)
+	a.RecordCurrentMemoryPeak(small) // out of order, must not shrink the recorded peak
 	if assert.NotNil(t, a.CurrentMemoryPeak) {
 		assert.Equal(t, MemoryAmountFromBytes(5e9), a.CurrentMemoryPeak.max())
 	}
@@ -267,7 +267,7 @@ func TestRecordInProgressMemoryPeakKeepsLargest(t *testing.T) {
 
 func TestInitMemoryPeakFromCheckpoint(t *testing.T) {
 	a := NewAggregateContainerState()
-	container := NewContainerState(testRequest, a)
+	container := NewContainerState(testRequest, a, nil)
 	windowEnd := time.Unix(2000, 0)
 	lastSample := time.Unix(1900, 0)
 
@@ -293,7 +293,7 @@ func TestInitMemoryPeakFromCheckpoint(t *testing.T) {
 
 func TestInitMemoryPeakFromCheckpointNilIsNoOp(t *testing.T) {
 	a := NewAggregateContainerState()
-	container := NewContainerState(testRequest, a)
+	container := NewContainerState(testRequest, a, nil)
 	container.InitMemoryPeakFromCheckpoint(nil)
 	assert.True(t, container.WindowEnd.IsZero())
 	assert.True(t, a.AggregateMemoryPeaks.IsEmpty())
