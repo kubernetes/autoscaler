@@ -1,10 +1,7 @@
 ALL_ARCH = amd64 arm64 s390x
 all: $(addprefix build-arch-,$(ALL_ARCH))
 
-# TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
-# Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
-# This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
-GO_TEST_DEFAULT_ANALYZERS?=atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests
+GO_VET_ANALYZER_NAME_FLAGS?=-appends=false -asmdecl=false -assign=false -cgocall=false -composites=false -copylocks=false -defers=false -framepointer=false -hostport=false -httpresponse=false -loopclosure=false -lostcancel=false -shift=false -sigchanyzer=false -stdmethods=false -stdversion=false -structtag=false -testinggoroutine=false -timeformat=false -unmarshal=false -unreachable=false -unsafeptr=false -unusedresult=false -waitgroup=false
 TAG?=dev
 FLAGS=
 LDFLAGS?=-s
@@ -79,7 +76,8 @@ test-build-tags:
 	done
 
 test-unit: clean build
-	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+	go test -race ./... $$(go list ./... | grep -v vendor | grep -v sdk-go | grep -v go-sdk) -vet=off ${TAGS_FLAG}
+	go vet "${GO_VET_ANALYZER_NAME_FLAGS}" ./...
 
 test-controllers: setup-envtest clean build
 	ginkgo --race --vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG} ./test/integration/controllers/...
@@ -88,7 +86,7 @@ test-ci: setup-envtest
 	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 benchmark:
-	go test ./... -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
+	go test ./... -bench=. -run='^$$'
 
 dev-release: dev-release-arch-$(GOARCH)
 
@@ -161,7 +159,7 @@ container-arch-%: build-in-docker-arch-% make-image-arch-%
 	@echo "Full in-docker image ${TAG}${FOR_PROVIDER}-$* completed"
 
 test-in-docker: clean docker-builder
-	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
+	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... ${TAGS_FLAG} && go vet "${GO_VET_ANALYZER_NAME_FLAGS}" ./...'
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
