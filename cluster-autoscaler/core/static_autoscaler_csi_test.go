@@ -281,7 +281,7 @@ func TestStaticAutoscalerCSI(t *testing.T) {
 
 			// Replace framework handle + snapshot with CSI-aware snapshot using the handle that has PVC/SC/CSIDriver informers.
 			autoscaler.AutoscalingContext.FrameworkHandle = fwHandle
-			autoscaler.AutoscalingContext.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, true)
+			autoscaler.AutoscalingContext.ClusterSnapshot = predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 1, true, 0)
 
 			// Provide CSI nodes snapshotting for the real nodes.
 			autoscaler.AutoscalingContext.CsiProvider = csinodeprovider.NewCSINodeProvider(&fakeCSINodeLister{nodes: csiNodes})

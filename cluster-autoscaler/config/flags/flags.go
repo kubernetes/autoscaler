@@ -175,6 +175,7 @@ var (
 	awsUseStaticInstanceList  = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
 	scaleFromUnschedulable    = flag.Bool("scale-from-unschedulable", false, "Specifies that the CA should ignore a node's .spec.unschedulable field in node templates when considering to scale a node group.")
 
+	schedulerVerbosity = flag.Int("scheduler-verbosity", 0, "Specifies the verbosity threshold for logs produced by the scheduler.")
 	// GCE specific flags
 	concurrentGceRefreshes             = flag.Int("gce-concurrent-refreshes", 1, "Maximum number of concurrent refreshes per cloud object type.")
 	gceMigInstancesMinRefreshWaitTime  = flag.Duration("gce-mig-instances-min-refresh-wait-time", 5*time.Second, "The minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.")
@@ -323,6 +324,18 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		maxStartupTime = maxHealthCheckTimeout
 	}
 
+	var verbosity int = *schedulerVerbosity
+	if vFlag := flag.CommandLine.Lookup("v"); vFlag != nil {
+		if v, err := strconv.Atoi(vFlag.Value.String()); err == nil {
+			verbosity = v
+		}
+	}
+
+	if verbosity < *schedulerVerbosity {
+		klog.Warningf("--scheduler-verbosity should be at most as high as -v flag, overriding it to: %d", verbosity)
+		*schedulerVerbosity = verbosity
+	}
+
 	return config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
@@ -394,6 +407,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		NodeDeletionDelayTimeout: *nodeDeletionDelayTimeout,
 		AWSUseStaticInstanceList: *awsUseStaticInstanceList,
 		ScaleFromUnschedulable:   *scaleFromUnschedulable,
+		SchedulerVerbosityOffset: verbosity - *schedulerVerbosity,
 		GCEOptions: config.GCEOptions{
 			ConcurrentRefreshes:            *concurrentGceRefreshes,
 			MigInstancesMinRefreshWaitTime: *gceMigInstancesMinRefreshWaitTime,
