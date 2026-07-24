@@ -42,6 +42,7 @@ const (
 	max                   = "max"
 	minSize               = "minSize"
 	maxSize               = "maxSize"
+	ociFaultDomainLabel   = "oci.oraclecloud.com/fault-domain"
 )
 
 var (
@@ -767,6 +768,9 @@ func (m *ociManagerImpl) buildNodeFromTemplate(nodePool *oke.NodePool) (*apiv1.N
 	}
 
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, ocicommon.BuildGenericLabels(*nodePool.Id, nodeName, shape.Name, availabilityDomain))
+	if faultDomain := getNodePoolFaultDomain(nodePool); faultDomain != "" {
+		node.Labels[ociFaultDomainLabel] = faultDomain
+	}
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
@@ -789,6 +793,26 @@ func getNodePoolAvailabilityDomain(np *oke.NodePool) (string, error) {
 	// and remove the hash prefix.
 	availabilityDomain := strings.Split(*np.NodeConfigDetails.PlacementConfigs[0].AvailabilityDomain, ":")[1]
 	return availabilityDomain, nil
+}
+
+// getNodePoolFaultDomain returns the fault domain used by the template node.
+// Node pools spanning multiple fault domains cannot be represented exactly by a
+// single template, so this follows the availability-domain behavior and uses
+// the first fault domain from the first placement configuration.
+func getNodePoolFaultDomain(np *oke.NodePool) string {
+	if np.NodeConfigDetails == nil || len(np.NodeConfigDetails.PlacementConfigs) == 0 {
+		return ""
+	}
+
+	faultDomains := np.NodeConfigDetails.PlacementConfigs[0].FaultDomains
+	if len(faultDomains) == 0 {
+		return ""
+	}
+	if len(faultDomains) > 1 {
+		klog.Warningf("node pool %q has more than 1 fault domain so picking first fault domain", *np.Id)
+	}
+
+	return faultDomains[0]
 }
 
 func addTaint(node *apiv1.Node, client kubernetes.Interface, taintKey string, effect apiv1.TaintEffect) error {
