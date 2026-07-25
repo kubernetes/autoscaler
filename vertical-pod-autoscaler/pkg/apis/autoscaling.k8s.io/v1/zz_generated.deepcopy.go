@@ -83,6 +83,16 @@ func (in *ContainerResourcePolicy) DeepCopyInto(out *ContainerResourcePolicy) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.TargetCPUPercentile != nil {
+		in, out := &in.TargetCPUPercentile, &out.TargetCPUPercentile
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.TargetMemoryPercentile != nil {
+		in, out := &in.TargetMemoryPercentile, &out.TargetMemoryPercentile
+		x := (*in).DeepCopy()
+		*out = &x
+	}
 	if in.StartupBoost != nil {
 		in, out := &in.StartupBoost, &out.StartupBoost
 		*out = new(StartupBoost)
