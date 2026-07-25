@@ -194,8 +194,6 @@ Every container in the job is targeted at the median, trading headroom for densi
 
 **1. Multiple Recommender instances (AEP-3919).** The status quo escape hatch: run one Recommender per percentile profile and point each VPA at one. Works, but each additional Recommender is another deployment to size, monitor, and upgrade, and workloads must be partitioned into a small number of static profiles. Differing percentiles are the canonical reason operators end up here; making the percentile declarative removes the most common need for the pattern.
 
-**2. Float fields instead of `resource.Quantity`.** More natural to read (`0.95` vs `"950m"`), but the Kubernetes API conventions discourage floating-point fields, and Phase 1 already established `Quantity` for fractional per-VPA values (`oomBumpUpRatio`). Consistency wins.
-
 ## Implementation History
 
 - (issue filed) 2026-07-11 — Issue [kubernetes/autoscaler#9970](https://github.com/kubernetes/autoscaler/issues/9970).
