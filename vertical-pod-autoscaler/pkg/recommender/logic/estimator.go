@@ -48,10 +48,17 @@ type combinedEstimator struct {
 
 type percentileCPUEstimator struct {
 	percentile float64
+	// useContainerOverride makes the estimator prefer the per-container CPU
+	// target percentile from the AggregateContainerState (when set) over the
+	// construction-time global percentile. Only the target estimator sets this;
+	// the lower/upper bound estimators must not, so they keep their global value.
+	useContainerOverride bool
 }
 
 type percentileMemoryEstimator struct {
 	percentile float64
+	// useContainerOverride: see percentileCPUEstimator.
+	useContainerOverride bool
 }
 
 // margins
@@ -97,17 +104,29 @@ func NewCombinedEstimator(cpuEstimator CPUEstimator, memoryEstimator MemoryEstim
 
 // NewPercentileCPUEstimator returns a new percentileCPUEstimator that uses provided percentile.
 func NewPercentileCPUEstimator(percentile float64) CPUEstimator {
-	return &percentileCPUEstimator{percentile}
+	return &percentileCPUEstimator{percentile: percentile}
+}
+
+// NewTargetPercentileCPUEstimator returns a percentileCPUEstimator that prefers the
+// per-container CPU target percentile override (when set) over the given global percentile.
+func NewTargetPercentileCPUEstimator(percentile float64) CPUEstimator {
+	return &percentileCPUEstimator{percentile: percentile, useContainerOverride: true}
 }
 
 // NewPercentileMemoryEstimator returns a new percentileMemoryEstimator that uses provided percentile.
 func NewPercentileMemoryEstimator(percentile float64) MemoryEstimator {
-	return &percentileMemoryEstimator{percentile}
+	return &percentileMemoryEstimator{percentile: percentile}
+}
+
+// NewTargetPercentileMemoryEstimator returns a percentileMemoryEstimator that prefers the
+// per-container memory target percentile override (when set) over the given global percentile.
+func NewTargetPercentileMemoryEstimator(percentile float64) MemoryEstimator {
+	return &percentileMemoryEstimator{percentile: percentile, useContainerOverride: true}
 }
 
 // NewMemoryEstimator returns a new percentileMemoryEstimator that uses provided percentile.
 func NewMemoryEstimator(percentile float64) MemoryEstimator {
-	return &percentileMemoryEstimator{percentile}
+	return &percentileMemoryEstimator{percentile: percentile}
 }
 
 // GetCPUEstimation returns the CPU estimation for the given AggregateContainerState.
@@ -155,11 +174,23 @@ func WithMemoryConfidenceMultiplier(multiplier, exponent float64, baseEstimator 
 }
 
 func (e *percentileCPUEstimator) GetCPUEstimation(s *model.AggregateContainerState) model.ResourceAmount {
-	return model.CPUAmountFromCores(s.AggregateCPUUsage.Percentile(e.percentile))
+	percentile := e.percentile
+	if e.useContainerOverride {
+		if override := s.GetTargetCPUPercentile(); override > 0 {
+			percentile = override
+		}
+	}
+	return model.CPUAmountFromCores(s.AggregateCPUUsage.Percentile(percentile))
 }
 
 func (e *percentileMemoryEstimator) GetMemoryEstimation(s *model.AggregateContainerState) model.ResourceAmount {
-	return model.MemoryAmountFromBytes(s.AggregateMemoryPeaks.Percentile(e.percentile))
+	percentile := e.percentile
+	if e.useContainerOverride {
+		if override := s.GetTargetMemoryPercentile(); override > 0 {
+			percentile = override
+		}
+	}
+	return model.MemoryAmountFromBytes(s.AggregateMemoryPeaks.Percentile(percentile))
 }
 
 // Returns resources computed by the underlying estimators, scaled based on the
