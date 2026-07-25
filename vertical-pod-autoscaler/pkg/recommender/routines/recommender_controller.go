@@ -56,8 +56,8 @@ const (
 // It implements controllercontext.Controller.
 type RecommenderController struct {
 	recommender Recommender
-	interval    time.Duration
 	healthCheck *metrics.HealthCheck
+	config      *recommender_config.RecommenderConfig
 }
 
 // NewRecommenderController creates a RecommenderController
@@ -167,23 +167,23 @@ func NewRecommenderController(
 		UpdateWorkerCount:            config.UpdateWorkerCount,
 	}.Make()
 
-	if err := initHistoryProvider(ctx, recommender, config); err != nil {
-		return nil, err
-	}
-
 	return &RecommenderController{
 		recommender: recommender,
-		interval:    config.MetricsFetcherInterval,
 		healthCheck: healthCheck,
+		config:      config,
 	}, nil
 }
 
 // Run starts the recommender loop and blocks until ctx is cancelled.
 // It implements controllercontext.Controller.
 func (c *RecommenderController) Run(ctx context.Context) error {
+	if err := initHistoryProvider(ctx, c.recommender, c.config); err != nil {
+		return err
+	}
+
 	c.healthCheck.StartMonitoring()
 
-	ticker := time.NewTicker(c.interval)
+	ticker := time.NewTicker(c.config.MetricsFetcherInterval)
 	defer ticker.Stop()
 
 	for {
