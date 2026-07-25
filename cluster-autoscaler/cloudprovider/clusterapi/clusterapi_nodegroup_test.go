@@ -951,6 +951,100 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 	})
 }
 
+func TestNodeGroupForceDeleteNodes(t *testing.T) {
+	// A node group sitting exactly at its minimum size. DeleteNodes must
+	// refuse to scale it down, while ForceDeleteNodes must be allowed to,
+	// so that nodes which no longer exist on the provider side can be
+	// removed and subsequently replaced.
+	test := func(t *testing.T, testConfig *TestConfig) {
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
+
+		nodegroups, err := controller.nodeGroups()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if l := len(nodegroups); l != 1 {
+			t.Fatalf("expected 1 nodegroup, got %d", l)
+		}
+
+		ng := nodegroups[0].(*nodegroup)
+
+		if ng.MinSize() != 3 {
+			t.Fatalf("expected minSize=3, got %d", ng.MinSize())
+		}
+
+		nodesToDelete := testConfig.nodes[:1]
+
+		// Sanity check: the regular deletion path is blocked by the min size
+		// constraint, which is what leaves the node group unable to replace
+		// nodes that vanished on the provider side.
+		if err := ng.DeleteNodes(nodesToDelete); err == nil {
+			t.Fatal("expected DeleteNodes to fail at min size, got no error")
+		} else if !strings.Contains(err.Error(), "min size reached") {
+			t.Fatalf("expected %q, got %q", "min size reached", err.Error())
+		}
+
+		// ForceDeleteNodes must bypass the min size constraint.
+		if err := ng.ForceDeleteNodes(nodesToDelete); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		machine, err := controller.managementClient.Resource(controller.machineResource).
+			Namespace(testConfig.spec.namespace).
+			Get(context.TODO(), testConfig.machines[0].GetName(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if _, found := machine.GetAnnotations()[machineDeleteAnnotationKey]; !found {
+			t.Errorf("expected annotation %q on machine %s", machineDeleteAnnotationKey, machine.GetName())
+		}
+
+		gvr, err := ng.scalableResource.GroupVersionResource()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		scalableResource, err := ng.machineController.managementScaleClient.Scales(testConfig.spec.namespace).
+			Get(context.TODO(), gvr.GroupResource(), ng.scalableResource.Name(), metav1.GetOptions{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Replicas are now below minSize; enforcing the minimum is left to the
+		// core autoscaler, which will scale the group back up and thereby
+		// replace the removed node.
+		if scalableResource.Spec.Replicas != 2 {
+			t.Errorf("expected 2, got %v", scalableResource.Spec.Replicas)
+		}
+	}
+
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "3",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+
+	t.Run("MachineSet", func(t *testing.T) {
+		testConfig := NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(3).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
+	})
+
+	t.Run("MachineDeployment", func(t *testing.T) {
+		testConfig := NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(3).
+			WithAnnotations(annotations).
+			Build()
+		test(t, testConfig)
+	})
+}
+
 func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 	test := func(t *testing.T, expected int, testConfigs []*TestConfig) {
 		testConfig0, testConfig1 := testConfigs[0], testConfigs[1]

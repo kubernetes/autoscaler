@@ -103,6 +103,13 @@ func (ng *nodegroup) AtomicIncreaseSize(delta int) error {
 // group. This function should wait until node group size is updated.
 // Implementation required.
 func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
+	return ng.deleteNodes(nodes, false)
+}
+
+// deleteNodes deletes nodes from this node group. When force is true the
+// minimum size of the node group is not enforced, allowing it to be scaled
+// below its configured minimum.
+func (ng *nodegroup) deleteNodes(nodes []*corev1.Node, force bool) error {
 	ng.machineController.accessLock.Lock()
 	defer ng.machineController.accessLock.Unlock()
 
@@ -112,7 +119,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	}
 
 	// if we are at minSize already we fail early.
-	if replicas <= ng.MinSize() {
+	if !force && replicas <= ng.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
@@ -138,7 +145,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	// Step 2: if deleting len(nodes) would make the replica count
 	// < minSize, then the request to delete that many nodes is bogus
 	// and we fail fast.
-	if replicas-len(nodes) < ng.MinSize() {
+	if !force && replicas-len(nodes) < ng.MinSize() {
 		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %d, minSize is %d", len(nodes), ng.Id(), replicas, ng.MinSize())
 	}
 
@@ -187,7 +194,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 
 				klog.Warningf("No Machine found for node %q in MachinePool %q, falling back to replica decrement only", node.Spec.ProviderID, nodeGroup.Id())
 
-				if err := nodeGroup.scalableResource.SetSize(replicas - 1); err != nil {
+				if err := nodeGroup.scalableResource.setSize(replicas-1, force); err != nil {
 					return err
 				}
 
@@ -209,7 +216,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 			return err
 		}
 
-		if err := nodeGroup.scalableResource.SetSize(replicas - 1); err != nil {
+		if err := nodeGroup.scalableResource.setSize(replicas-1, force); err != nil {
 			_ = nodeGroup.scalableResource.UnmarkMachineForDeletion(machine)
 			return err
 		}
@@ -222,7 +229,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
 func (ng *nodegroup) ForceDeleteNodes(nodes []*corev1.Node) error {
-	return cloudprovider.ErrNotImplemented
+	return ng.deleteNodes(nodes, true)
 }
 
 // DecreaseTargetSize decreases the target size of the node group.

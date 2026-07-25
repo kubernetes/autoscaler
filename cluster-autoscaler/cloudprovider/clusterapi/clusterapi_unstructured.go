@@ -115,11 +115,24 @@ func (r *unstructuredScalableResource) Replicas() (int, error) {
 }
 
 func (r *unstructuredScalableResource) SetSize(nreplicas int) error {
+	return r.setSize(nreplicas, false)
+}
+
+// setSize updates the replica count of the scalable resource. When force is
+// true the configured minimum size is not enforced, allowing the resource to
+// be scaled below it; the replica count is still never allowed to go negative
+// or above the configured maximum.
+func (r *unstructuredScalableResource) setSize(nreplicas int, force bool) error {
+	minSize := r.minSize
+	if force {
+		minSize = 0
+	}
+
 	switch {
 	case nreplicas > r.maxSize:
 		return fmt.Errorf("size increase too large - desired:%d max:%d", nreplicas, r.maxSize)
-	case nreplicas < r.minSize:
-		return fmt.Errorf("size decrease too large - desired:%d min:%d", nreplicas, r.minSize)
+	case nreplicas < minSize:
+		return fmt.Errorf("size decrease too large - desired:%d min:%d", nreplicas, minSize)
 	}
 
 	gvr, err := r.GroupVersionResource()
