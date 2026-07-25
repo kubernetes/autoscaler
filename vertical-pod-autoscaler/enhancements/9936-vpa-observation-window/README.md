@@ -378,45 +378,7 @@ Pods created during the first hour receive their `Deployment`-spec resources unc
 
 **2. Recommender-side confidence gate.** Block `RecommendationProvided` from becoming `True` for N hours or until a confidence threshold is met. Cleaner conceptually but hides visibility — operators would see no recommendation at all in `status.recommendation` during the window, defeating the "collect first, inspect, then apply" workflow this feature is meant to support.
 
-**3. Global default flag** (e.g. `--default-initial-delay-seconds`). A sane cluster-wide default is genuinely useful, but the flag would need to be added to — and kept in sync between — both the Updater and the Admission Controller, since both evaluate the gate. Operators who want a cluster-wide default can instead inject one at admission time with a [Mutating Admission Policy](https://kubernetes.io/docs/reference/access-authn-authz/mutating-admission-policy/), with no new VPA configuration surface. For example, to default every VPA that does not set the field to a one-hour window:
-
-```yaml
-apiVersion: admissionregistration.k8s.io/v1beta1
-kind: MutatingAdmissionPolicy
-metadata:
-  name: vpa-default-initial-delay
-spec:
-  matchConstraints:
-    resourceRules:
-    - apiGroups: ["autoscaling.k8s.io"]
-      apiVersions: ["v1"]
-      operations: ["CREATE"]
-      resources: ["verticalpodautoscalers"]
-  matchConditions:
-  - name: no-explicit-initial-delay
-    expression: "!has(object.spec.updatePolicy) || !has(object.spec.updatePolicy.initialDelaySeconds)"
-  failurePolicy: Ignore
-  mutations:
-  - patchType: ApplyConfiguration
-    applyConfiguration:
-      expression: >
-        Object{
-          spec: Object.spec{
-            updatePolicy: Object.spec.updatePolicy{
-              initialDelaySeconds: 3600
-            }
-          }
-        }
----
-apiVersion: admissionregistration.k8s.io/v1beta1
-kind: MutatingAdmissionPolicyBinding
-metadata:
-  name: vpa-default-initial-delay-binding
-spec:
-  policyName: vpa-default-initial-delay
-```
-
-A component flag can be revisited as a follow-up if the policy route proves insufficient.
+**3. Global default flag** (e.g. `--default-initial-delay-seconds`). A global default would have to be added to — and kept in sync between — both the Updater and the Admission Controller, since both evaluate the gate. Operators who want a default can instead apply a native [Mutating Admission Policy](https://kubernetes.io/docs/reference/access-authn-authz/mutating-admission-policy/) to inject the field, needing no new VPA configuration surface; a component flag can be revisited as a follow-up if that proves insufficient.
 
 **4. Do nothing; rely on operator tooling.** The status quo. Ships the complexity downstream to every VPA operator; the CronJob-plus-patch-controller dance ends up reinvented per environment.
 
