@@ -41,15 +41,15 @@ the 2:1 limit/request ratio from the template).
 ## Starting multiple recommenders
 
 It is possible to start one or more extra recommenders in order to use different percentile on different workload profiles.
-For example you could have 3 profiles:  [frugal](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment-low.yaml),
-[standard](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment.yaml) and
-[performance](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment-high.yaml) which will
-use different TargetCPUPercentile (50, 90 and 95) to calculate their recommendations.
+For example you could have 2 profiles: [standard](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment.yaml)
+and performance which will use different TargetCPUPercentile (90 and 95) to calculate their recommendations.
 
 Please note the usage of the following arguments to override default names and percentiles:
 
 - --recommender-name=performance
 - --target-cpu-percentile=0.95
+
+You can use the [standard recommender deployment](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment.yaml) as a base and adjust the arguments accordingly.
 
 You can then choose which recommender to use by setting `recommenders` inside the `VerticalPodAutoscaler` spec.
 
