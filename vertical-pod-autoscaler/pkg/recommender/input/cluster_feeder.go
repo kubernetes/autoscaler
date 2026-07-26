@@ -230,6 +230,11 @@ type clusterStateFeeder struct {
 	ignoredNamespaces   []string
 	vpaObjectNamespace  string
 	podsToDelete        []model.PodID
+	// checkpointsInitialized is set once InitFromCheckpoints has done its one-time bulk load of
+	// checkpoints. Afterwards, LoadVPAs lazily loads checkpoints for any VPA it newly starts
+	// tracking, so that a VPA reassigned to this recommender (e.g. via a spec.recommenders change)
+	// doesn't have its accumulated history wiped out by the next checkpoint write.
+	checkpointsInitialized bool
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
@@ -304,6 +309,36 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 			klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KRef(checkpoint.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
 			err = feeder.setVpaCheckpoint(checkpoint)
 			if err != nil {
+				klog.ErrorS(err, "Error while loading checkpoint")
+			}
+		}
+	}
+	feeder.checkpointsInitialized = true
+}
+
+// loadCheckpointsForNewVPAs loads persisted checkpoints for VPAs that have just started being
+// tracked by this recommender - either because they were newly assigned to it via
+// spec.recommenders, or because an existing VPA's pod selector changed and its in-memory state
+// was recreated from scratch. Without this, such a VPA would have its accumulated history
+// dropped the next time this recommender writes a checkpoint for it.
+func (feeder *clusterStateFeeder) loadCheckpointsForNewVPAs(newVpaIDs map[model.VpaID]bool) {
+	namespaces := make(map[string]bool)
+	for vpaID := range newVpaIDs {
+		namespaces[vpaID.Namespace] = true
+	}
+	for namespace := range namespaces {
+		checkpointList, err := feeder.vpaCheckpointLister.VerticalPodAutoscalerCheckpoints(namespace).List(labels.Everything())
+		if err != nil {
+			klog.ErrorS(err, "Cannot list VPA checkpoints", "namespace", namespace)
+			continue
+		}
+		for _, checkpoint := range checkpointList {
+			vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
+			if !newVpaIDs[vpaID] {
+				continue
+			}
+			klog.V(3).InfoS("Loading checkpoint for newly tracked VPA", "checkpoint", klog.KRef(checkpoint.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
+			if err := feeder.setVpaCheckpoint(checkpoint); err != nil {
 				klog.ErrorS(err, "Error while loading checkpoint")
 			}
 		}
@@ -442,11 +477,13 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 	klog.V(3).InfoS("Fetching VPAs", "count", len(vpaCRDs))
 	// Add or update existing VPAs in the model.
 	vpaKeys := make(map[model.VpaID]bool)
+	newVpaIDs := make(map[model.VpaID]bool)
 	for _, vpaCRD := range vpaCRDs {
 		vpaID := model.VpaID{
 			Namespace: vpaCRD.Namespace,
 			VpaName:   vpaCRD.Name,
 		}
+		previousVpa := feeder.clusterState.VPAs()[vpaID]
 
 		selector, conditions := feeder.getSelector(ctx, vpaCRD)
 		klog.V(4).InfoS("Using selector", "selector", selector.String(), "vpa", klog.KObj(vpaCRD))
@@ -454,6 +491,12 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 		if feeder.clusterState.AddOrUpdateVpa(vpaCRD, selector) == nil {
 			// Successfully added VPA to the model.
 			vpaKeys[vpaID] = true
+			// AddOrUpdateVpa recreates the Vpa object, with an empty checkpoint baseline, both
+			// when it's newly tracked and when an already-tracked VPA's pod selector changed.
+			// Detect either case by comparing object identity rather than just key presence.
+			if feeder.clusterState.VPAs()[vpaID] != previousVpa {
+				newVpaIDs[vpaID] = true
+			}
 
 			for _, condition := range conditions {
 				if condition.delete {
@@ -474,6 +517,12 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 		}
 	}
 	feeder.clusterState.SetObservedVPAs(vpaCRDs)
+
+	// The initial bulk load already covers every VPA tracked at startup; only lazily backfill
+	// checkpoints for VPAs that started being tracked afterwards (e.g. reassigned recommenders).
+	if feeder.checkpointsInitialized && len(newVpaIDs) > 0 {
+		feeder.loadCheckpointsForNewVPAs(newVpaIDs)
+	}
 }
 
 // LoadPods loads pod into the cluster state.
