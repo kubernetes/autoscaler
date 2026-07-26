@@ -17,22 +17,33 @@ limitations under the License.
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
+	scopeutil "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/scope"
 )
 
 // NewCappingRecommendationProcessor constructs new RecommendationsProcessor that adjusts recommendation
 // for given pod to obey VPA resources policy and container limits
 func NewCappingRecommendationProcessor(limitsRangeCalculator limitrange.LimitRangeCalculator) RecommendationProcessor {
-	return &cappingRecommendationProcessor{limitsRangeCalculator: limitsRangeCalculator}
+	return &cappingRecommendationProcessor{
+		limitsRangeCalculator: limitsRangeCalculator,
+		scopeCache:            map[string]cachedScopeValue{},
+		scopeCacheTTL:         time.Minute,
+		groupLookup:           map[string]map[string]vpa_types.RecommendedContainerResources{},
+	}
 }
 
 type cappingAction string
@@ -51,6 +62,34 @@ func toCappingAnnotation(resourceName corev1.ResourceName, action cappingAction)
 
 type cappingRecommendationProcessor struct {
 	limitsRangeCalculator limitrange.LimitRangeCalculator
+	nodeGetter            NodeGetter
+	scopeCache            map[string]cachedScopeValue
+	scopeCacheTTL         time.Duration
+	scopeCacheMu          sync.RWMutex
+	groupLookupKey        string
+	groupLookup           map[string]map[string]vpa_types.RecommendedContainerResources
+	groupLookupMu         sync.RWMutex
+}
+
+type cachedScopeValue struct {
+	value      string
+	cachedTime time.Time
+}
+
+// NodeGetter allows fetching node metadata for scope-aware recommendations.
+type NodeGetter interface {
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*corev1.Node, error)
+}
+
+// NewCappingRecommendationProcessorWithNodeGetter constructs new processor with node metadata support.
+func NewCappingRecommendationProcessorWithNodeGetter(limitsRangeCalculator limitrange.LimitRangeCalculator, nodeGetter NodeGetter) RecommendationProcessor {
+	return &cappingRecommendationProcessor{
+		limitsRangeCalculator: limitsRangeCalculator,
+		nodeGetter:            nodeGetter,
+		scopeCache:            map[string]cachedScopeValue{},
+		scopeCacheTTL:         time.Minute,
+		groupLookup:           map[string]map[string]vpa_types.RecommendedContainerResources{},
+	}
 }
 
 // Apply returns a recommendation for the given pod, adjusted to obey policy and limits.
@@ -68,8 +107,12 @@ func (c *cappingRecommendationProcessor) Apply(
 
 	policy := vpa.Spec.ResourcePolicy
 	podRecommendation := vpa.Status.Recommendation
+	hasScopedGroups := features.Enabled(features.DaemonSetScope) &&
+		len(vpa.Status.RecommendationGroups) > 0 &&
+		vpa.Spec.TargetRef != nil &&
+		scopeutil.IsScopedDaemonSet(vpa.Spec.TargetRef.Kind, string(vpa.Spec.Scope))
 
-	if podRecommendation == nil && policy == nil {
+	if podRecommendation == nil && policy == nil && !hasScopedGroups {
 		// If there is no recommendation and no policies have been defined then no recommendation can be computed.
 		return nil, nil, nil
 	}
@@ -77,9 +120,13 @@ func (c *cappingRecommendationProcessor) Apply(
 		// Policies have been specified. Create an empty recommendation so that the policies can be applied correctly.
 		podRecommendation = new(vpa_types.RecommendedPodResources)
 	}
+	containerRecommendations, err := c.selectRecommendationsForScope(vpa, pod, podRecommendation)
+	if err != nil {
+		return nil, nil, err
+	}
 	updatedRecommendations := []vpa_types.RecommendedContainerResources{}
 	containerToAnnotationsMap := ContainerToAnnotationsMap{}
-	limitAdjustedRecommendation, err := c.capProportionallyToPodLimitRange(podRecommendation.ContainerRecommendations, pod)
+	limitAdjustedRecommendation, err := c.capProportionallyToPodLimitRange(containerRecommendations, pod)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -108,6 +155,104 @@ func (c *cappingRecommendationProcessor) Apply(
 		updatedRecommendations = append(updatedRecommendations, *updatedContainerResources)
 	}
 	return &vpa_types.RecommendedPodResources{ContainerRecommendations: updatedRecommendations}, containerToAnnotationsMap, nil
+}
+
+func (c *cappingRecommendationProcessor) selectRecommendationsForScope(
+	vpa *vpa_types.VerticalPodAutoscaler,
+	pod *corev1.Pod,
+	podRecommendation *vpa_types.RecommendedPodResources,
+) ([]vpa_types.RecommendedContainerResources, error) {
+	// When the feature gate is disabled (for example during a rollback) fall back
+	// to the global recommendation instead of the per-scope groups.
+	if !features.Enabled(features.DaemonSetScope) ||
+		vpa.Spec.TargetRef == nil ||
+		!scopeutil.IsScopedDaemonSet(vpa.Spec.TargetRef.Kind, string(vpa.Spec.Scope)) {
+		return podRecommendation.ContainerRecommendations, nil
+	}
+
+	scopeValue, err := c.resolvePodScopeValue(pod, string(vpa.Spec.Scope))
+	if err != nil {
+		return nil, err
+	}
+
+	groupLookup := c.getGroupRecommendationLookup(vpa)
+	if group, found := groupLookup[scopeValue]; found {
+		selected := make([]vpa_types.RecommendedContainerResources, 0, len(group))
+		for _, recommendation := range group {
+			selected = append(selected, recommendation)
+		}
+		return selected, nil
+	}
+
+	return []vpa_types.RecommendedContainerResources{}, nil
+}
+
+func (c *cappingRecommendationProcessor) getGroupRecommendationLookup(vpa *vpa_types.VerticalPodAutoscaler) map[string]map[string]vpa_types.RecommendedContainerResources {
+	cacheKey := vpa.Namespace + "/" + vpa.Name + "/" + vpa.ResourceVersion + "/" + string(vpa.Spec.Scope)
+
+	c.groupLookupMu.RLock()
+	if c.groupLookupKey == cacheKey {
+		lookup := c.groupLookup
+		c.groupLookupMu.RUnlock()
+		return lookup
+	}
+	c.groupLookupMu.RUnlock()
+
+	lookup := buildGroupRecommendationLookup(vpa.Status.RecommendationGroups)
+	c.groupLookupMu.Lock()
+	c.groupLookupKey = cacheKey
+	c.groupLookup = lookup
+	c.groupLookupMu.Unlock()
+	return lookup
+}
+
+func buildGroupRecommendationLookup(groups []vpa_types.RecommendedPodResourcesGroup) map[string]map[string]vpa_types.RecommendedContainerResources {
+	lookup := make(map[string]map[string]vpa_types.RecommendedContainerResources, len(groups))
+	for _, group := range groups {
+		byContainer := make(map[string]vpa_types.RecommendedContainerResources, len(group.ContainerRecommendations))
+		for _, recommendation := range group.ContainerRecommendations {
+			byContainer[recommendation.ContainerName] = recommendation
+		}
+		if len(byContainer) > 0 {
+			lookup[group.ScopeValue] = byContainer
+		}
+	}
+	return lookup
+}
+
+func (c *cappingRecommendationProcessor) resolvePodScopeValue(pod *corev1.Pod, scopeKey string) (string, error) {
+	nodeName := getPodNode(pod)
+	if nodeName == "" {
+		return "", nil
+	}
+	if scopeKey == corev1.LabelHostname {
+		return nodeName, nil
+	}
+
+	cacheKey := nodeName + "\n" + scopeKey
+	c.scopeCacheMu.RLock()
+	cached, found := c.scopeCache[cacheKey]
+	c.scopeCacheMu.RUnlock()
+	if found && time.Since(cached.cachedTime) <= c.scopeCacheTTL {
+		return cached.value, nil
+	}
+
+	if c.nodeGetter == nil {
+		return scopeutil.AbsentLabelValue, nil
+	}
+	node, err := c.nodeGetter.Get(context.Background(), nodeName, metav1.GetOptions{})
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve node label %q for node %q: %w", scopeKey, nodeName, err)
+	}
+	scopeValue := scopeutil.AbsentLabelValue
+	if labelValue, found := node.Labels[scopeKey]; found {
+		scopeValue = labelValue
+	}
+
+	c.scopeCacheMu.Lock()
+	c.scopeCache[cacheKey] = cachedScopeValue{value: scopeValue, cachedTime: time.Now()}
+	c.scopeCacheMu.Unlock()
+	return scopeValue, nil
 }
 
 // getCappedRecommendationForContainer returns a recommendation for the given container, adjusted to obey policy and limits.
@@ -314,6 +459,30 @@ func getContainer(containerName string, pod *corev1.Pod) *corev1.Container {
 		}
 	}
 	return nil
+}
+
+func getPodNode(pod *corev1.Pod) string {
+	if pod.Spec.NodeName != "" {
+		return pod.Spec.NodeName
+	}
+	if pod.Spec.Affinity == nil || pod.Spec.Affinity.NodeAffinity == nil {
+		return ""
+	}
+	required := pod.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution
+	if required == nil {
+		return ""
+	}
+	for _, term := range required.NodeSelectorTerms {
+		for _, field := range term.MatchFields {
+			if field.Key != "metadata.name" {
+				continue
+			}
+			if field.Operator == corev1.NodeSelectorOpIn && len(field.Values) == 1 {
+				return field.Values[0]
+			}
+		}
+	}
+	return ""
 }
 
 // applyContainerLimitRange updates recommendation if recommended resources are outside of limits defined in VPA resources policy

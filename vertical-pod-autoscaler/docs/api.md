@@ -181,6 +181,7 @@ containers with `ContainerScalingMode` set to 'Off'.
 
 _Appears in:_
 - [RecommendedPodResources](#recommendedpodresources)
+- [RecommendedPodResourcesGroup](#recommendedpodresourcesgroup)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -207,6 +208,23 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `containerRecommendations` _[RecommendedContainerResources](#recommendedcontainerresources) array_ | Resources recommended by the autoscaler for each container. |  | Optional: \{\} <br /> |
+
+
+#### RecommendedPodResourcesGroup
+
+
+
+RecommendedPodResourcesGroup is a recommendation group for a single scope value.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerStatus](#verticalpodautoscalerstatus)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `scopeValue` _string_ | ScopeValue is the value of spec.scope label key for this group. |  |  |
+| `containerRecommendations` _[RecommendedContainerResources](#recommendedcontainerresources) array_ | Resources recommended by autoscaler for each container in this group. |  | Optional: \{\} <br /> |
 
 
 #### StartupBoost
@@ -326,6 +344,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `vpaObjectName` _string_ | Name of the VPA object that stored VerticalPodAutoscalerCheckpoint object. |  |  |
 | `containerName` _string_ | Name of the checkpointed container. |  |  |
+| `scopeValue` _string_ | ScopeValue is the value of the spec.scope node label key this checkpoint<br />belongs to when the VPA uses DaemonSet scoping. It is empty for<br />non-scoped VPAs so that existing checkpoints keep their meaning. |  | Optional: \{\} <br /> |
 
 
 #### VerticalPodAutoscalerCheckpointStatus
@@ -405,6 +424,19 @@ _Appears in:_
 | `name` _string_ | Name of the recommender responsible for generating recommendation for this object. |  |  |
 
 
+#### VerticalPodAutoscalerScopeType
+
+_Underlying type:_ _string_
+
+VerticalPodAutoscalerScopeType are the valid scopes of a VerticalPodAutoscaler.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerSpec](#verticalpodautoscalerspec)
+
+
+
 #### VerticalPodAutoscalerSpec
 
 
@@ -423,6 +455,7 @@ _Appears in:_
 | `resourcePolicy` _[PodResourcePolicy](#podresourcepolicy)_ | Controls how the autoscaler computes recommended resources.<br />The resource policy may be used to set constraints on the recommendations<br />for individual containers.<br />If any individual containers need to be excluded from getting the VPA recommendations, then<br />it must be disabled explicitly by setting mode to "Off" under containerPolicies.<br />If not specified, the autoscaler computes recommended resources for all containers in the pod,<br />without additional constraints. |  | Optional: \{\} <br /> |
 | `recommenders` _[VerticalPodAutoscalerRecommenderSelector](#verticalpodautoscalerrecommenderselector) array_ | Recommender responsible for generating recommendation for this object.<br />List should be empty (then the default recommender will generate the<br />recommendation) or contain exactly one recommender. |  | Optional: \{\} <br /> |
 | `startupBoost` _[StartupBoost](#startupboost)_ | startupBoost specifies the startup boost policy for the pod. |  | Optional: \{\} <br /> |
+| `scope` _[VerticalPodAutoscalerScopeType](#verticalpodautoscalerscopetype)_ | Scope controls additional recommendation partitioning for DaemonSet targets.<br />The value must be a node label key (for example: node.kubernetes.io/instance-type). |  | Optional: \{\} <br /> |
 
 
 #### VerticalPodAutoscalerStatus
@@ -441,5 +474,6 @@ _Appears in:_
 | `recommendation` _[RecommendedPodResources](#recommendedpodresources)_ | The most recently computed amount of resources recommended by the<br />autoscaler for the controlled pods. |  | Optional: \{\} <br /> |
 | `conditions` _[VerticalPodAutoscalerCondition](#verticalpodautoscalercondition) array_ | Conditions is the set of conditions required for this autoscaler to scale its target,<br />and indicates whether or not those conditions are met. |  | Optional: \{\} <br /> |
 | `observedGeneration` _integer_ | observedGeneration is the most recent generation observed by this autoscaler. |  | Minimum: 0 <br />Optional: \{\} <br /> |
+| `recommendationGroups` _[RecommendedPodResourcesGroup](#recommendedpodresourcesgroup) array_ | RecommendationGroups contains per-scope-value recommendations when spec.scope is used. |  | Optional: \{\} <br /> |
 
 

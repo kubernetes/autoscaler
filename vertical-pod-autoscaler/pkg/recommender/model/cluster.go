@@ -265,6 +265,13 @@ func (cluster *clusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 	if !containerState.AddSample(&sample.ContainerUsageSample) {
 		return errors.New("sample discarded (invalid or out of order)")
 	}
+	aggregateStateKey := cluster.aggregateStateKeyForContainerID(sample.Container)
+	for _, vpa := range cluster.vpas {
+		if vpa.UsesAggregation(aggregateStateKey) {
+			// Any accepted sample can change recommendation input for linked VPAs.
+			vpa.TouchScopedRecommendationGeneration()
+		}
+	}
 	return nil
 }
 
@@ -281,6 +288,13 @@ func (cluster *clusterState) RecordOOM(containerID ContainerID, timestamp time.T
 	err := containerState.RecordOOM(timestamp, requestedMemory)
 	if err != nil {
 		return fmt.Errorf("error while recording OOM for %v, Reason: %v", containerID, err)
+	}
+	aggregateStateKey := cluster.aggregateStateKeyForContainerID(containerID)
+	for _, vpa := range cluster.vpas {
+		if vpa.UsesAggregation(aggregateStateKey) {
+			// OOM-derived synthetic samples also affect grouped recommendations.
+			vpa.TouchScopedRecommendationGeneration()
+		}
 	}
 	return nil
 }
@@ -319,6 +333,12 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 		vpa.PodCount = len(cluster.GetMatchingPods(vpa))
 	}
 	vpa.TargetRef = apiObject.Spec.TargetRef
+	newScope := string(apiObject.Spec.Scope)
+	if vpa.Scope != newScope {
+		// Scope key controls grouping semantics, so cache must be invalidated.
+		vpa.Scope = newScope
+		vpa.TouchScopedRecommendationGeneration()
+	}
 	vpa.Annotations = annotationsMap
 	vpa.SetConditionsMap(conditionsMap)
 	vpa.SetRecommendationDirect(currentRecommendation)

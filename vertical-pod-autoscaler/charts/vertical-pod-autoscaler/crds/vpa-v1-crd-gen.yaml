@@ -49,6 +49,12 @@ spec:
               containerName:
                 description: Name of the checkpointed container.
                 type: string
+              scopeValue:
+                description: |-
+                  ScopeValue is the value of the spec.scope node label key this checkpoint
+                  belongs to when the VPA uses DaemonSet scoping. It is empty for
+                  non-scoped VPAs so that existing checkpoints keep their meaning.
+                type: string
               vpaObjectName:
                 description: Name of the VPA object that stored VerticalPodAutoscalerCheckpoint
                   object.
@@ -472,6 +478,11 @@ spec:
                       type: object
                     type: array
                 type: object
+              scope:
+                description: |-
+                  Scope controls additional recommendation partitioning for DaemonSet targets.
+                  The value must be a node label key (for example: node.kubernetes.io/instance-type).
+                type: string
               startupBoost:
                 description: startupBoost specifies the startup boost policy for the
                   pod.
@@ -746,6 +757,88 @@ spec:
                       type: object
                     type: array
                 type: object
+              recommendationGroups:
+                description: RecommendationGroups contains per-scope-value recommendations
+                  when spec.scope is used.
+                items:
+                  description: RecommendedPodResourcesGroup is a recommendation group
+                    for a single scope value.
+                  properties:
+                    containerRecommendations:
+                      description: Resources recommended by autoscaler for each container
+                        in this group.
+                      items:
+                        description: |-
+                          RecommendedContainerResources is the recommendation of resources computed by
+                          autoscaler for a specific container. Respects the container resource policy
+                          if present in the spec. In particular the recommendation is not produced for
+                          containers with `ContainerScalingMode` set to 'Off'.
+                        properties:
+                          containerName:
+                            description: Name of the container.
+                            type: string
+                          lowerBound:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: |-
+                              Minimum recommended amount of resources. Observes ContainerResourcePolicy.
+                              This amount is not guaranteed to be sufficient for the application to operate in a stable way, however
+                              running with less resources is likely to have significant impact on performance/availability.
+                            type: object
+                          target:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: Recommended amount of resources. Observes
+                              ContainerResourcePolicy.
+                            type: object
+                          uncappedTarget:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: |-
+                              The most recent recommended resources target computed by the autoscaler
+                              for the controlled pods, based only on actual resource usage, not taking
+                              into account the ContainerResourcePolicy.
+                              May differ from the Recommendation if the actual resource usage causes
+                              the target to violate the ContainerResourcePolicy (lower than MinAllowed
+                              or higher that MaxAllowed).
+                              Used only as status indication, will not affect actual resource assignment.
+                            type: object
+                          upperBound:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: |-
+                              Maximum recommended amount of resources. Observes ContainerResourcePolicy.
+                              Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum
+                              amount of application is actually capable of consuming.
+                            type: object
+                        required:
+                        - target
+                        type: object
+                      type: array
+                    scopeValue:
+                      description: ScopeValue is the value of spec.scope label key
+                        for this group.
+                      type: string
+                  required:
+                  - scopeValue
+                  type: object
+                type: array
             type: object
         required:
         - spec

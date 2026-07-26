@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 	"time"
 
@@ -47,6 +48,7 @@ import (
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/client"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
+	scopeutil "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/scope"
 )
 
 const (
@@ -89,6 +91,7 @@ type ClusterStateFeederFactory struct {
 	VpaCheckpointLister vpa_lister.VerticalPodAutoscalerCheckpointLister
 	VpaLister           vpa_lister.VerticalPodAutoscalerLister
 	PodLister           listersv1.PodLister
+	NodeLister          listersv1.NodeLister
 	OOMObserver         oom.Observer
 	SelectorFetcher     target.VpaTargetSelectorFetcher
 	MemorySaveMode      bool
@@ -109,7 +112,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		vpaCheckpointLister: m.VpaCheckpointLister,
 		vpaLister:           m.VpaLister,
 		clusterState:        m.ClusterState,
-		specClient:          spec.NewSpecClient(m.PodLister),
+		specClient:          spec.NewSpecClient(m.PodLister, m.NodeLister),
 		selectorFetcher:     m.SelectorFetcher,
 		memorySaveMode:      m.MemorySaveMode,
 		controllerFetcher:   m.ControllerFetcher,
@@ -274,6 +277,17 @@ func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.Vertica
 	err := cs.LoadFromCheckpoint(&checkpoint.Status)
 	if err != nil {
 		return fmt.Errorf("cannot load checkpoint for VPA %s/%s. Reason: %v", vpaID.Namespace, vpaID.VpaName, err)
+	}
+	if checkpoint.Spec.ScopeValue != "" {
+		// Per-scope checkpoint for a scoped DaemonSet VPA.
+		scopeValue := scopeutil.DecodeCheckpointScopeValue(checkpoint.Spec.ScopeValue)
+		group, ok := vpa.ScopedContainersInitialAggregateState[scopeValue]
+		if !ok {
+			group = make(model.ContainerNameToAggregateStateMap)
+			vpa.ScopedContainersInitialAggregateState[scopeValue] = group
+		}
+		group[checkpoint.Spec.ContainerName] = cs
+		return nil
 	}
 	vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
 	return nil
@@ -499,7 +513,8 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		if feeder.memorySaveMode && !feeder.matchesVPA(pod) {
 			continue
 		}
-		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
+		podLabels := feeder.addScopedDaemonSetGroupingLabels(pod)
+		feeder.clusterState.AddOrUpdatePod(pod.ID, podLabels, pod.Phase)
 		for _, container := range pod.Containers {
 			if err = feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request); err != nil {
 				klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
@@ -513,6 +528,29 @@ func (feeder *clusterStateFeeder) LoadPods() {
 			klog.V(0).InfoS("Failed to set init containers", "pod", klog.KRef(pod.ID.Namespace, pod.ID.PodName), "error", err)
 		}
 	}
+}
+
+func (feeder *clusterStateFeeder) addScopedDaemonSetGroupingLabels(pod *spec.BasicPodSpec) map[string]string {
+	podLabels := make(map[string]string, len(pod.PodLabels)+1)
+	maps.Copy(podLabels, pod.PodLabels)
+
+	baseLabels := labels.Set(pod.PodLabels)
+	for _, vpa := range feeder.clusterState.VPAs() {
+		if vpa.TargetRef == nil || !scopeutil.IsScopedDaemonSet(vpa.TargetRef.Kind, vpa.Scope) {
+			continue
+		}
+		if vpa.ID.Namespace != pod.ID.Namespace || !vpa.PodSelector.Matches(baseLabels) {
+			continue
+		}
+		scopeValue := scopeutil.AbsentLabelValue
+		if pod.NodeLabels != nil {
+			if value, found := pod.NodeLabels[vpa.Scope]; found {
+				scopeValue = value
+			}
+		}
+		podLabels[scopeutil.AggregationLabelKey(vpa.Scope)] = scopeValue
+	}
+	return podLabels
 }
 
 // DeleteRemovedPods deletes pods that were identified as removed in the last LoadPods call.

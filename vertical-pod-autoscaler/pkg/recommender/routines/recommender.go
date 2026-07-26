@@ -18,6 +18,7 @@ package routines
 
 import (
 	"context"
+	"slices"
 	"sync"
 	"time"
 
@@ -31,6 +32,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
+	scopeutil "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/scope"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -65,6 +67,20 @@ type recommender struct {
 	lastAggregateContainerStateGC time.Time
 	recommendationPostProcessor   []RecommendationPostProcessor
 	updateWorkerCount             int
+	// scopedRecommendationCache stores final scoped recommendations keyed by VPA ID and
+	// recommendation generation. It lets us skip grouped recomputation when no inputs changed.
+	scopedRecommendationCache      map[model.VpaID]scopedRecommendationCacheEntry
+	scopedRecommendationCacheMutex sync.RWMutex
+	// observedStatusMu guards reads/writes of ObservedVPAs status fields. UpdateVPAs may run
+	// concurrently (and workers process shared observed objects), so in-memory status sync
+	// must not race with status comparisons.
+	observedStatusMu sync.Mutex
+}
+
+type scopedRecommendationCacheEntry struct {
+	generation     uint64
+	recommendation *vpaautoscalingv1.RecommendedPodResources
+	groups         []vpaautoscalingv1.RecommendedPodResourcesGroup
 }
 
 func (r *recommender) GetClusterState() model.ClusterState {
@@ -75,17 +91,103 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 	return r.clusterStateFeeder
 }
 
+func (r *recommender) getScopedRecommendationCache(vpaID model.VpaID, generation uint64) (*vpaautoscalingv1.RecommendedPodResources, []vpaautoscalingv1.RecommendedPodResourcesGroup, bool) {
+	r.scopedRecommendationCacheMutex.RLock()
+	defer r.scopedRecommendationCacheMutex.RUnlock()
+	entry, found := r.scopedRecommendationCache[vpaID]
+	if !found || entry.generation != generation {
+		return nil, nil, false
+	}
+	return entry.recommendation, entry.groups, true
+}
+
+func (r *recommender) setScopedRecommendationCache(vpaID model.VpaID, generation uint64, recommendation *vpaautoscalingv1.RecommendedPodResources, groups []vpaautoscalingv1.RecommendedPodResourcesGroup) {
+	r.scopedRecommendationCacheMutex.Lock()
+	defer r.scopedRecommendationCacheMutex.Unlock()
+	if r.scopedRecommendationCache == nil {
+		r.scopedRecommendationCache = make(map[model.VpaID]scopedRecommendationCacheEntry)
+	}
+	r.scopedRecommendationCache[vpaID] = scopedRecommendationCacheEntry{
+		generation:     generation,
+		recommendation: recommendation,
+		groups:         groups,
+	}
+}
+
 func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *vpaautoscalingv1.VerticalPodAutoscaler) {
-	resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 	had := vpa.HasRecommendation()
+	isScopedDaemonSet := observedVpa.Spec.TargetRef != nil && scopeutil.IsScopedDaemonSet(observedVpa.Spec.TargetRef.Kind, string(observedVpa.Spec.Scope))
+	var recommendation *vpaautoscalingv1.RecommendedPodResources
+	var groups []vpaautoscalingv1.RecommendedPodResourcesGroup
 
-	listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources, r.recommendationFormat)
-
-	for _, postProcessor := range r.recommendationPostProcessor {
-		listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)
+	scopedGeneration := vpa.ScopedRecommendationGeneration()
+	cacheHit := false
+	if isScopedDaemonSet {
+		// If no scoped input changed since the previous run, reuse final recommendations
+		// and avoid rebuilding grouped state for all scope values.
+		if cachedRecommendation, cachedGroups, found := r.getScopedRecommendationCache(vpa.ID, scopedGeneration); found {
+			recommendation = cachedRecommendation
+			groups = cachedGroups
+			cacheHit = true
+		}
+	}
+	if !cacheHit {
+		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
+		recommendation = logic.MapToListOfRecommendedContainerResources(resources, r.recommendationFormat)
 	}
 
-	vpa.UpdateRecommendation(listOfResourceRecommendation)
+	if isScopedDaemonSet && !cacheHit {
+		recommendationByScopeValue := GetContainerNameToAggregateStateMapByScopeValue(vpa)
+		scopeValues := make([]string, 0, len(recommendationByScopeValue))
+		for scopeValue := range recommendationByScopeValue {
+			scopeValues = append(scopeValues, scopeValue)
+		}
+		slices.Sort(scopeValues)
+		// Preallocate output groups to avoid repeated slice growth for large scoped DaemonSets.
+		groups = make([]vpaautoscalingv1.RecommendedPodResourcesGroup, 0, len(scopeValues))
+		for _, scopeValue := range scopeValues {
+			resources := r.podResourceRecommender.GetRecommendedPodResources(recommendationByScopeValue[scopeValue])
+			groupRecommendation := logic.MapToListOfRecommendedContainerResources(resources, r.recommendationFormat)
+			groups = append(groups, vpaautoscalingv1.RecommendedPodResourcesGroup{
+				ScopeValue:               scopeValue,
+				ContainerRecommendations: groupRecommendation.ContainerRecommendations,
+			})
+		}
+	}
+
+	if !cacheHit {
+		for _, postProcessor := range r.recommendationPostProcessor {
+			recommendation = postProcessor.Process(observedVpa, recommendation)
+			for i := range groups {
+				groupRec := &vpaautoscalingv1.RecommendedPodResources{ContainerRecommendations: groups[i].ContainerRecommendations}
+				groupRec = postProcessor.Process(observedVpa, groupRec)
+				groups[i].ContainerRecommendations = groupRec.ContainerRecommendations
+			}
+		}
+
+		if isScopedDaemonSet {
+			for i := range groups {
+				for j := range groups[i].ContainerRecommendations {
+					containerRec := groups[i].ContainerRecommendations[j]
+					// Compact group payload: keep only effective target.
+					containerRec.LowerBound = nil
+					containerRec.UpperBound = nil
+					containerRec.UncappedTarget = nil
+					groups[i].ContainerRecommendations[j] = containerRec
+				}
+			}
+			r.setScopedRecommendationCache(vpa.ID, scopedGeneration, recommendation, groups)
+		}
+	}
+
+	status := vpa.AsStatus()
+	// Always publish the global recommendation, including for scoped DaemonSets.
+	// It is the aggregate across all pods and serves as a safe fallback for
+	// clients that do not consume recommendationGroups (for example when the
+	// DaemonSetScope feature gate is disabled during a rollback).
+	status.Recommendation = recommendation
+	status.RecommendationGroups = groups
+	vpa.UpdateRecommendation(recommendation)
 	if vpa.HasRecommendation() && !had {
 		metrics_recommender.ObserveRecommendationLatency(vpa.Created)
 	}
@@ -102,11 +204,29 @@ func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *vpaautoscalin
 		}
 	}
 
+	r.observedStatusMu.Lock()
+	statusUnchanged := vpa_utils.StatusEqual(&observedVpa.Status, status)
+	var oldStatus *vpaautoscalingv1.VerticalPodAutoscalerStatus
+	if !statusUnchanged {
+		oldStatus = observedVpa.Status.DeepCopy()
+	}
+	r.observedStatusMu.Unlock()
+
+	if statusUnchanged {
+		return
+	}
+
 	_, err := vpa_utils.UpdateVpaStatusIfNeeded(
-		r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status)
+		r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, status, oldStatus)
 	if err != nil {
 		klog.ErrorS(err, "Cannot update VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
+		return
 	}
+
+	// Keep local cache in sync so repeated processing doesn't recompute/patch identical status.
+	r.observedStatusMu.Lock()
+	observedVpa.Status = *status
+	r.observedStatusMu.Unlock()
 }
 
 // UpdateVPAs update VPA CRD objects' status.
@@ -234,6 +354,7 @@ func (c RecommenderFactory) Make() Recommender {
 		lastAggregateContainerStateGC: time.Now(),
 		lastCheckpointGC:              time.Now(),
 		updateWorkerCount:             c.UpdateWorkerCount,
+		scopedRecommendationCache:     make(map[model.VpaID]scopedRecommendationCacheEntry),
 	}
 	klog.V(3).InfoS("New Recommender created", "recommender", recommender)
 	return recommender

@@ -30,12 +30,15 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	core "k8s.io/client-go/testing"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/klog/v2"
 	klogtest "k8s.io/klog/v2/test"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	scopeutil "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/scope"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -103,6 +106,76 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 		assert.False(t, aggregateContainerStateMap["container-1"].AggregateMemoryPeaks.IsEmpty(),
 			"Old peak should not be excluded from the aggregation.")
 	}
+}
+
+func TestProcessCheckpointUpdateForScopedDaemonSetWritesPerScopeCheckpoints(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.DaemonSetScope, true)
+
+	const namespace = "test-namespace"
+	const scopeKey = "node.deckhouse.io/group"
+	scopeLabelKey := scopeutil.AggregationLabelKey(scopeKey)
+
+	clusterState := model.NewClusterState(testGcPeriod)
+	vpaID := model.VpaID{Namespace: namespace, VpaName: "scoped-vpa"}
+	vpaAPI := test.VerticalPodAutoscaler().
+		WithNamespace(namespace).
+		WithName(vpaID.VpaName).
+		WithContainer("agent").
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+			Kind:       "DaemonSet",
+			Name:       "agent",
+			APIVersion: "apps/v1",
+		}).
+		Get()
+	vpaAPI.Spec.Scope = vpa_types.VerticalPodAutoscalerScopeType(scopeKey)
+	selector, err := labels.Parse("app=agent")
+	assert.NoError(t, err)
+	assert.NoError(t, clusterState.AddOrUpdateVpa(vpaAPI, selector))
+
+	// Two pods on nodes belonging to different scope groups. The synthetic scope
+	// label is what the recommender input feeder injects for scoped DaemonSets.
+	scopeValues := map[string]string{"pod-worker": "worker", "pod-master": "master"}
+	for podName, scopeValue := range scopeValues {
+		podID := model.PodID{Namespace: namespace, PodName: podName}
+		podLabels := map[string]string{"app": "agent", scopeLabelKey: scopeValue}
+		clusterState.AddOrUpdatePod(podID, podLabels, corev1.PodRunning)
+		containerID := model.ContainerID{PodID: podID, ContainerName: "agent"}
+		assert.NoError(t, clusterState.AddOrUpdateContainer(containerID, testRequest))
+		clusterState.GetContainer(containerID).AddSample(&model.ContainerUsageSample{
+			MeasureStart: time.Unix(1, 0),
+			Usage:        model.CPUAmountFromCores(1),
+			Resource:     model.ResourceCPU,
+		})
+	}
+
+	created := map[string]vpa_types.VerticalPodAutoscalerCheckpointSpec{}
+	checkpointClient := &fakeautoscalingv1.FakeAutoscalingV1{Fake: &core.Fake{}}
+	// Force the create path (which carries the full object, including Spec) by
+	// making the status patch report a not-found error, as it would for a brand
+	// new checkpoint.
+	checkpointClient.AddReactor("patch", "verticalpodautoscalercheckpoints", func(action core.Action) (bool, runtime.Object, error) {
+		name := action.(core.PatchAction).GetName()
+		return true, nil, fmt.Errorf("verticalpodautoscalercheckpoints %q not found", name)
+	})
+	checkpointClient.AddReactor("create", "verticalpodautoscalercheckpoints", func(action core.Action) (bool, runtime.Object, error) {
+		cp := action.(core.CreateAction).GetObject().(*vpa_types.VerticalPodAutoscalerCheckpoint)
+		created[cp.Name] = cp.Spec
+		return true, cp, nil
+	})
+
+	writer := &checkpointWriter{vpaCheckpointClient: checkpointClient, cluster: clusterState}
+	processCheckpointUpdateForVPA(clusterState.VPAs()[vpaID], writer)
+
+	// Expect the global checkpoint plus one per scope value.
+	assert.Contains(t, created, "scoped-vpa-agent", "global fallback checkpoint should be written")
+	foundScopeValues := map[string]bool{}
+	for _, spec := range created {
+		if spec.ScopeValue != "" {
+			foundScopeValues[scopeutil.DecodeCheckpointScopeValue(spec.ScopeValue)] = true
+		}
+	}
+	assert.True(t, foundScopeValues["worker"], "expected a checkpoint for scope value worker")
+	assert.True(t, foundScopeValues["master"], "expected a checkpoint for scope value master")
 }
 
 func TestIsFetchingHistory(t *testing.T) {

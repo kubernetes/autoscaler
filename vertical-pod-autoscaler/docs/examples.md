@@ -3,6 +3,7 @@
 ## Contents
 
 <!-- toc -->
+
 - [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
 - [Capping to Limit Range](#capping-to-limit-range)
 - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
@@ -13,6 +14,7 @@
 - [Limiting which namespaces are used](#limiting-which-namespaces-are-used)
 - [Setting the webhook failurePolicy](#setting-the-webhook-failurepolicy)
 - [Specifying global maximum allowed resources to prevent pods from being unschedulable](#specifying-global-maximum-allowed-resources-to-prevent-pods-from-being-unschedulable)
+- [Scoped recommendations for a DaemonSet](#scoped-recommendations-for-a-daemonset)
 <!-- /toc -->
 
 ## Keeping limit proportional to request
@@ -41,7 +43,7 @@ the 2:1 limit/request ratio from the template).
 ## Starting multiple recommenders
 
 It is possible to start one or more extra recommenders in order to use different percentile on different workload profiles.
-For example you could have 3 profiles:  [frugal](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment-low.yaml),
+For example you could have 3 profiles: [frugal](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment-low.yaml),
 [standard](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment.yaml) and
 [performance](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment-high.yaml) which will
 use different TargetCPUPercentile (50, 90 and 95) to calculate their recommendations.
@@ -63,7 +65,7 @@ You can configure the minimum bump-up as well as the multiplier by specifying st
 Usage in recommender deployment
 
 ```yaml
-  containers:
+containers:
   - name: recommender
     args:
       - --oom-bump-up-ratio=2.0
@@ -89,17 +91,17 @@ To limit disruptions caused by evictions, you can put additional constraints on 
 Here is an example configuration which allows evictions only when CPU or memory get scaled up, but not when they both are scaled down
 
 ```yaml
- updatePolicy:
-   evictionRequirements:
-     - resources: ["cpu", "memory"]
-       changeRequirement: TargetHigherThanRequests
+updatePolicy:
+  evictionRequirements:
+    - resources: ["cpu", "memory"]
+      changeRequirement: TargetHigherThanRequests
 ```
 
 Note that this doesn't prevent scaling down entirely, as Pods may get recreated for different reasons, resulting in a new recommendation being applied. See [the original AEP](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4831-control-eviction-behavior) for more context and usage information.
 
 ## Limiting which namespaces are used
 
- By default the VPA will run against all namespaces. You can limit that behaviour by setting the following options:
+By default the VPA will run against all namespaces. You can limit that behaviour by setting the following options:
 
 1. `ignored-vpa-object-namespaces` - A comma separated list of namespaces to ignore
 1. `vpa-object-namespace` - A single namespace to monitor
@@ -118,9 +120,34 @@ The [Known limitations document](./known-limitations.md) outlines that VPA (vpa-
 It is possible to mitigate this issue by specifying the `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` flags of the vpa-recommender. These flags represent the global maximum amount of cpu/memory that will be recommended **for a container**. If the VerticalPodAutoscaler already defines a max allowed (`.spec.resourcePolicy.containerPolicies.maxAllowed`) then it takes precedence over the global max allowed. The global max allowed is merged to the VerticalPodAutoscaler's max allowed if VerticalPodAutoscaler's max allowed is specified only for cpu or memory. If the VerticalPodAutoscaler does not specify a max allowed and a global max allowed is specified, then the global max allowed is being used.
 
 The recommendation for computing the `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` values for your cluster is to use the largest node's allocatable (`.status.allocatable` field of a node) minus the DaemonSet pods resource requests minus a safety margin:
+
 ```
 <max allowed> = <largest node's allocatable> - <resource requests of DaemonSet pods> - <safety margin>
 ```
 
 > [!WARNING]
 > Pay attention that `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` are **container-level** flags. A pod enabling autoscaling for more than one container can theoretically still get unschedulable if the sum of the resource recommendations of the containers exceeds the largest Node's allocatable. In practice, it is not very likely to hit such case as usually a single container in a pod is the main one, the others are sidecars that either do not need autoscaling or do not consume high resource requests.
+
+## Scoped recommendations for a DaemonSet
+
+> Requires the `DaemonSetScope` feature gate (alpha) on the VPA recommender, admission-controller and updater. See [DaemonSet-Scoped Recommendations](./features.md#daemonset-scoped-recommendations-daemonsetscope).
+
+A DaemonSet often runs on heterogeneous nodes (for example GPU vs. CPU-only nodes) whose pods need very different resources. Setting `spec.scope` to a node label key partitions the recommendations by that label's value, so each node class gets its own recommendation instead of a single workload-wide one:
+
+```yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: my-daemonset-vpa
+  namespace: my-namespace
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: DaemonSet
+    name: my-daemonset
+  scope: node-role/gpu-shared
+  updatePolicy:
+    updateMode: "Initial"
+```
+
+The recommender then publishes one entry per distinct node label value in `status.recommendationGroups`, while keeping the global `status.recommendation` as a fallback. Nodes without the label are grouped under the `__absent__` scope value, and nodes that carry the label with an empty value are grouped under the empty string.

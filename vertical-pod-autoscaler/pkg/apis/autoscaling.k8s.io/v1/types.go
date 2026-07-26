@@ -114,7 +114,15 @@ type VerticalPodAutoscalerSpec struct {
 	// startupBoost specifies the startup boost policy for the pod.
 	// +optional
 	StartupBoost *StartupBoost `json:"startupBoost,omitempty"`
+
+	// Scope controls additional recommendation partitioning for DaemonSet targets.
+	// The value must be a node label key (for example: node.kubernetes.io/instance-type).
+	// +optional
+	Scope VerticalPodAutoscalerScopeType `json:"scope,omitempty"`
 }
+
+// VerticalPodAutoscalerScopeType are the valid scopes of a VerticalPodAutoscaler.
+type VerticalPodAutoscalerScopeType string
 
 // StartupBoost defines the startup boost policy.
 type StartupBoost struct {
@@ -374,6 +382,10 @@ type VerticalPodAutoscalerStatus struct {
 	// +optional
 	// +kubebuilder:validation:Minimum=0
 	ObservedGeneration *int64 `json:"observedGeneration,omitempty"`
+
+	// RecommendationGroups contains per-scope-value recommendations when spec.scope is used.
+	// +optional
+	RecommendationGroups []RecommendedPodResourcesGroup `json:"recommendationGroups,omitempty"`
 }
 
 // RecommendedPodResources is the recommendation of resources computed by
@@ -413,6 +425,15 @@ type RecommendedContainerResources struct {
 	// Used only as status indication, will not affect actual resource assignment.
 	// +optional
 	UncappedTarget corev1.ResourceList `json:"uncappedTarget,omitempty"`
+}
+
+// RecommendedPodResourcesGroup is a recommendation group for a single scope value.
+type RecommendedPodResourcesGroup struct {
+	// ScopeValue is the value of spec.scope label key for this group.
+	ScopeValue string `json:"scopeValue"`
+	// Resources recommended by autoscaler for each container in this group.
+	// +optional
+	ContainerRecommendations []RecommendedContainerResources `json:"containerRecommendations,omitempty"`
 }
 
 // VerticalPodAutoscalerConditionType are the valid conditions of
@@ -503,6 +524,12 @@ type VerticalPodAutoscalerCheckpointSpec struct {
 
 	// Name of the checkpointed container.
 	ContainerName string `json:"containerName,omitempty"`
+
+	// ScopeValue is the value of the spec.scope node label key this checkpoint
+	// belongs to when the VPA uses DaemonSet scoping. It is empty for
+	// non-scoped VPAs so that existing checkpoints keep their meaning.
+	// +optional
+	ScopeValue string `json:"scopeValue,omitempty"`
 }
 
 // VerticalPodAutoscalerCheckpointStatus contains data of the checkpoint.

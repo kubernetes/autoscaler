@@ -18,7 +18,6 @@ package checkpoint
 
 import (
 	"context"
-	"fmt"
 	"slices"
 	"sync"
 	"time"
@@ -29,6 +28,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	scopeutil "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/scope"
 	api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -74,30 +74,64 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 
 func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) {
 	now := time.Now()
+	saved := false
+
+	// Global per-container checkpoints. For scoped DaemonSet VPAs these are kept
+	// too and serve as a fallback when the DaemonSetScope feature gate is
+	// disabled (for example during a rollback).
 	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, writer.cluster, now)
 	for container, aggregatedContainerState := range aggregateContainerStateMap {
-		containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
-		if err != nil {
-			klog.ErrorS(err, "Cannot serialize checkpoint", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "container", container)
-			continue
-		}
-		checkpointName := fmt.Sprintf("%s-%s", vpa.ID.VpaName, container)
-		vpaCheckpoint := vpa_types.VerticalPodAutoscalerCheckpoint{
-			ObjectMeta: metav1.ObjectMeta{Name: checkpointName},
-			Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
-				ContainerName: container,
-				VPAObjectName: vpa.ID.VpaName,
-			},
-			Status: *containerCheckpoint,
-		}
-		err = api_util.CreateOrUpdateVpaCheckpoint(writer.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(vpa.ID.Namespace), &vpaCheckpoint)
-		if err != nil {
-			klog.ErrorS(err, "Cannot save checkpoint for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName)
-		} else {
-			klog.V(3).InfoS("Saved checkpoint for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName)
-			vpa.CheckpointWritten = now
+		if writer.storeContainerCheckpoint(vpa, container, "", aggregatedContainerState) {
+			saved = true
 		}
 	}
+
+	// Per-scope checkpoints for scoped DaemonSet VPAs so that per-scope history
+	// survives recommender restarts.
+	if vpa.TargetRef != nil && scopeutil.IsScopedDaemonSet(vpa.TargetRef.Kind, vpa.Scope) {
+		scopedStateMap := buildScopedAggregateContainerStateMap(vpa, writer.cluster, now)
+		for scopeValue, containers := range scopedStateMap {
+			persistedScopeValue := scopeutil.EncodeCheckpointScopeValue(scopeValue)
+			for container, aggregatedContainerState := range containers {
+				if writer.storeContainerCheckpoint(vpa, container, persistedScopeValue, aggregatedContainerState) {
+					saved = true
+				}
+			}
+		}
+	}
+
+	if saved {
+		vpa.CheckpointWritten = now
+	}
+}
+
+// storeContainerCheckpoint persists a single container checkpoint. An empty
+// persistedScopeValue stores the global (non-scoped) checkpoint; a non-empty one
+// stores the per-scope checkpoint for a scoped DaemonSet VPA. It returns true
+// when the checkpoint was written successfully.
+func (writer *checkpointWriter) storeContainerCheckpoint(vpa *model.Vpa, container, persistedScopeValue string, aggregatedContainerState *model.AggregateContainerState) bool {
+	containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
+	if err != nil {
+		klog.ErrorS(err, "Cannot serialize checkpoint", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "container", container, "scopeValue", persistedScopeValue)
+		return false
+	}
+	checkpointName := scopeutil.CheckpointName(vpa.ID.VpaName, container, persistedScopeValue)
+	vpaCheckpoint := vpa_types.VerticalPodAutoscalerCheckpoint{
+		ObjectMeta: metav1.ObjectMeta{Name: checkpointName},
+		Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
+			ContainerName: container,
+			VPAObjectName: vpa.ID.VpaName,
+			ScopeValue:    persistedScopeValue,
+		},
+		Status: *containerCheckpoint,
+	}
+	err = api_util.CreateOrUpdateVpaCheckpoint(writer.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(vpa.ID.Namespace), &vpaCheckpoint)
+	if err != nil {
+		klog.ErrorS(err, "Cannot save checkpoint for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName, "scopeValue", persistedScopeValue)
+		return false
+	}
+	klog.V(3).InfoS("Saved checkpoint for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName, "scopeValue", persistedScopeValue)
+	return true
 }
 
 func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, concurrentWorkers int) {
@@ -158,6 +192,46 @@ func buildAggregateContainerStateMap(vpa *model.Vpa, cluster model.ClusterState,
 		}
 	}
 	return aggregateContainerStateMap
+}
+
+// buildScopedAggregateContainerStateMap builds per-scope-value AggregateContainerStates
+// for a scoped DaemonSet VPA. It works on owned copies of the aggregations so that
+// subtracting the current memory peak does not mutate live state shared with the
+// recommender.
+func buildScopedAggregateContainerStateMap(vpa *model.Vpa, cluster model.ClusterState, now time.Time) map[string]model.ContainerNameToAggregateStateMap {
+	labelKey := scopeutil.AggregationLabelKey(vpa.Scope)
+	grouped := vpa.AggregateStateByScopeValueAndContainerName(labelKey)
+
+	owned := make(map[string]model.ContainerNameToAggregateStateMap, len(grouped))
+	for scopeValue, containers := range grouped {
+		ownedContainers := make(model.ContainerNameToAggregateStateMap, len(containers))
+		for containerName, aggregateContainerState := range containers {
+			copyState := model.NewAggregateContainerState()
+			copyState.MergeContainerState(aggregateContainerState)
+			ownedContainers[containerName] = copyState
+		}
+		owned[scopeValue] = ownedContainers
+	}
+
+	for _, pod := range cluster.Pods() {
+		for containerName, container := range pod.Containers {
+			aggregateKey := cluster.MakeAggregateStateKey(pod, containerName)
+			if !vpa.UsesAggregation(aggregateKey) {
+				continue
+			}
+			scopeLabels := aggregateKey.Labels()
+			if !scopeLabels.Has(labelKey) {
+				continue
+			}
+			scopeValue := scopeLabels.Get(labelKey)
+			if group, ok := owned[scopeValue]; ok {
+				if aggregateContainerState, ok := group[containerName]; ok {
+					subtractCurrentContainerMemoryPeak(aggregateContainerState, container, now)
+				}
+			}
+		}
+	}
+	return owned
 }
 
 func subtractCurrentContainerMemoryPeak(a *model.AggregateContainerState, container *model.ContainerState, now time.Time) {

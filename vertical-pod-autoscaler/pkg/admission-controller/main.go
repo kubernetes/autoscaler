@@ -88,7 +88,7 @@ func main() {
 		klog.ErrorS(err, "Failed to create limitRangeCalculator, falling back to not checking limits.")
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
-	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
+	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessorWithNodeGetter(limitRangeCalculator, kubeClient.CoreV1().Nodes()))
 	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher)
 
 	factory.Start(stopCh)

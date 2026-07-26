@@ -17,13 +17,19 @@ limitations under the License.
 package api
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	scopeutil "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/scope"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -1782,5 +1788,268 @@ func TestCapPodMemoryWithUnderByteSplit(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedRecommendation, *processedRecommendation)
 		})
+	}
+}
+
+type fakeNodeGetter struct {
+	nodes map[string]*corev1.Node
+}
+
+func (f *fakeNodeGetter) Get(_ context.Context, name string, _ metav1.GetOptions) (*corev1.Node, error) {
+	if node, found := f.nodes[name]; found {
+		return node, nil
+	}
+	return nil, assert.AnError
+}
+
+func TestApplyScopedRecommendationForDaemonSetByNodeLabelRequiresGroups(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.DaemonSetScope, true)
+	const containerName = "agent"
+	const scopeKey = "node.kubernetes.io/instance-type"
+	pod := test.Pod().
+		WithName("agent-pod").
+		AddContainer(test.Container().WithName(containerName).Get()).
+		Get()
+	pod.Spec.NodeName = "node-a"
+
+	vpa := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+			Kind:       "DaemonSet",
+			Name:       "agent-ds",
+			APIVersion: "apps/v1",
+		}).
+		Get()
+	vpa.Spec.Scope = vpa_types.VerticalPodAutoscalerScopeType(scopeKey)
+	vpa.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: containerName,
+				Target: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("1Gi"),
+				},
+			},
+		},
+	}
+
+	processor := NewCappingRecommendationProcessorWithNodeGetter(
+		&fakeLimitRangeCalculator{},
+		&fakeNodeGetter{
+			nodes: map[string]*corev1.Node{
+				"node-a": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-a",
+						Labels: map[string]string{
+							scopeKey: "c3.large",
+						},
+					},
+				},
+			},
+		},
+	)
+
+	res, _, err := processor.Apply(vpa, pod)
+	assert.NoError(t, err)
+	assert.Empty(t, res.ContainerRecommendations)
+}
+
+func TestApplyScopedRecommendationFromCompactGroups(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.DaemonSetScope, true)
+	const containerName = "agent"
+	const scopeKey = "node.deckhouse.io/group"
+	pod := test.Pod().
+		WithName("agent-pod").
+		AddContainer(test.Container().WithName(containerName).Get()).
+		Get()
+	pod.Spec.NodeName = "node-a"
+
+	vpa := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+			Kind:       "DaemonSet",
+			Name:       "agent-ds",
+			APIVersion: "apps/v1",
+		}).
+		Get()
+	vpa.Spec.Scope = vpa_types.VerticalPodAutoscalerScopeType(scopeKey)
+	vpa.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: containerName,
+				Target: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("1Gi"),
+				},
+			},
+		},
+	}
+	vpa.Status.RecommendationGroups = []vpa_types.RecommendedPodResourcesGroup{
+		{
+			ScopeValue: scopeutil.AbsentLabelValue,
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: containerName,
+					Target: corev1.ResourceList{
+						corev1.ResourceMemory: resource.MustParse("32Mi"),
+					},
+				},
+			},
+		},
+		{
+			ScopeValue: "",
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: containerName,
+					Target: corev1.ResourceList{
+						corev1.ResourceMemory: resource.MustParse("50Mi"),
+					},
+				},
+			},
+		},
+		{
+			ScopeValue: "master",
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: containerName,
+					Target: corev1.ResourceList{
+						corev1.ResourceMemory: resource.MustParse("50Mi"),
+					},
+				},
+			},
+		},
+		{
+			ScopeValue: "worker",
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: containerName,
+					Target: corev1.ResourceList{
+						corev1.ResourceMemory: resource.MustParse("500Mi"),
+					},
+				},
+			},
+		},
+	}
+
+	processor := NewCappingRecommendationProcessorWithNodeGetter(
+		&fakeLimitRangeCalculator{},
+		&fakeNodeGetter{
+			nodes: map[string]*corev1.Node{
+				"node-a": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-a",
+						Labels: map[string]string{
+							scopeKey: "worker",
+						},
+					},
+				},
+			},
+		},
+	)
+	res, _, err := processor.Apply(vpa, pod)
+	assert.NoError(t, err)
+	if assert.Len(t, res.ContainerRecommendations, 1) {
+		assert.Equal(t, resource.MustParse("500Mi"), res.ContainerRecommendations[0].Target[corev1.ResourceMemory])
+	}
+
+	podEmpty := pod.DeepCopy()
+	podEmpty.Spec.NodeName = "node-empty"
+	podAbsent := pod.DeepCopy()
+	podAbsent.Spec.NodeName = "node-absent"
+
+	processor = NewCappingRecommendationProcessorWithNodeGetter(
+		&fakeLimitRangeCalculator{},
+		&fakeNodeGetter{
+			nodes: map[string]*corev1.Node{
+				"node-empty": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   "node-empty",
+						Labels: map[string]string{scopeKey: ""},
+					},
+				},
+				"node-absent": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   "node-absent",
+						Labels: map[string]string{"kubernetes.io/hostname": "node-absent"},
+					},
+				},
+			},
+		},
+	)
+
+	resEmpty, _, err := processor.Apply(vpa, podEmpty)
+	assert.NoError(t, err)
+	if assert.Len(t, resEmpty.ContainerRecommendations, 1) {
+		assert.Equal(t, resource.MustParse("50Mi"), resEmpty.ContainerRecommendations[0].Target[corev1.ResourceMemory])
+	}
+
+	resAbsent, _, err := processor.Apply(vpa, podAbsent)
+	assert.NoError(t, err)
+	if assert.Len(t, resAbsent.ContainerRecommendations, 1) {
+		assert.Equal(t, resource.MustParse("32Mi"), resAbsent.ContainerRecommendations[0].Target[corev1.ResourceMemory])
+	}
+}
+
+func TestApplyScopedRecommendationFallsBackToGlobalWhenFeatureGateDisabled(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.DaemonSetScope, false)
+	const containerName = "agent"
+	const scopeKey = "node.deckhouse.io/group"
+	pod := test.Pod().
+		WithName("agent-pod").
+		AddContainer(test.Container().WithName(containerName).Get()).
+		Get()
+	pod.Spec.NodeName = "node-a"
+
+	vpa := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+			Kind:       "DaemonSet",
+			Name:       "agent-ds",
+			APIVersion: "apps/v1",
+		}).
+		Get()
+	vpa.Spec.Scope = vpa_types.VerticalPodAutoscalerScopeType(scopeKey)
+	vpa.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: containerName,
+				Target: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("1Gi"),
+				},
+			},
+		},
+	}
+	vpa.Status.RecommendationGroups = []vpa_types.RecommendedPodResourcesGroup{
+		{
+			ScopeValue: "worker",
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: containerName,
+					Target: corev1.ResourceList{
+						corev1.ResourceMemory: resource.MustParse("50Mi"),
+					},
+				},
+			},
+		},
+	}
+
+	processor := NewCappingRecommendationProcessorWithNodeGetter(
+		&fakeLimitRangeCalculator{},
+		&fakeNodeGetter{
+			nodes: map[string]*corev1.Node{
+				"node-a": {
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   "node-a",
+						Labels: map[string]string{scopeKey: "worker"},
+					},
+				},
+			},
+		},
+	)
+
+	res, _, err := processor.Apply(vpa, pod)
+	assert.NoError(t, err)
+	// With the feature gate disabled the per-scope groups are ignored and the
+	// global recommendation is used as a fallback.
+	if assert.Len(t, res.ContainerRecommendations, 1) {
+		assert.Equal(t, resource.MustParse("1Gi"), res.ContainerRecommendations[0].Target[corev1.ResourceMemory])
 	}
 }

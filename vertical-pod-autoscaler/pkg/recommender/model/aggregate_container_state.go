@@ -393,6 +393,58 @@ func AggregateStateByContainerName(aggregateContainerStateMap aggregateContainer
 	return containerNameToAggregateStateMap
 }
 
+// AggregateStateByLabelAndContainerName groups aggregations by a label value and container name.
+func AggregateStateByLabelAndContainerName(aggregateContainerStateMap aggregateContainerStatesMap, labelKey string) map[string]ContainerNameToAggregateStateMap {
+	result := make(map[string]ContainerNameToAggregateStateMap, len(aggregateContainerStateMap))
+	// Tracks entries in result that own a merged copy. We only initialize this
+	// on-demand for scope groups that actually have collisions.
+	var mergedEntriesByScope map[string]map[string]bool
+
+	for aggregationKey, aggregation := range aggregateContainerStateMap {
+		scopeLabels := aggregationKey.Labels()
+		scopeValue := scopeLabels.Get(labelKey)
+		if !scopeLabels.Has(labelKey) {
+			continue
+		}
+		group, found := result[scopeValue]
+		if !found {
+			group = make(ContainerNameToAggregateStateMap, 1)
+			result[scopeValue] = group
+		}
+
+		containerName := aggregationKey.ContainerName()
+		aggregateContainerState, isInitialized := group[containerName]
+		if !isInitialized {
+			group[containerName] = aggregation
+			continue
+		}
+
+		if mergedEntriesByScope != nil {
+			if mergedEntries, hasMergedEntries := mergedEntriesByScope[scopeValue]; hasMergedEntries && mergedEntries[containerName] {
+				aggregateContainerState.MergeContainerState(aggregation)
+				continue
+			}
+		}
+
+		// First collision for (scopeValue, containerName): create owned aggregate copy.
+		mergedState := NewAggregateContainerState()
+		mergedState.MergeContainerState(aggregateContainerState)
+		mergedState.MergeContainerState(aggregation)
+		group[containerName] = mergedState
+
+		if mergedEntriesByScope == nil {
+			mergedEntriesByScope = make(map[string]map[string]bool)
+		}
+		mergedEntries, hasMergedEntries := mergedEntriesByScope[scopeValue]
+		if !hasMergedEntries {
+			mergedEntries = make(map[string]bool)
+			mergedEntriesByScope[scopeValue] = mergedEntries
+		}
+		mergedEntries[containerName] = true
+	}
+	return result
+}
+
 // ContainerStateAggregatorProxy is a wrapper for ContainerStateAggregator
 // that creates ContainerStateAgregator for container if it is no longer
 // present in the cluster state.

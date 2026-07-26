@@ -3,6 +3,7 @@
 ## Contents
 
 <!-- toc -->
+
 - [Limits control](#limits-control)
 - [Memory Value Humanization](#memory-value-humanization)
 - [CPU Recommendation Rounding](#cpu-recommendation-rounding)
@@ -28,7 +29,14 @@
   - [Behavior](#behavior-2)
   - [Requirements](#requirements-2)
   - [Configuration](#configuration)
-<!-- /toc -->
+- [DaemonSet-Scoped Recommendations (<code>DaemonSetScope</code>)](#daemonset-scoped-recommendations-daemonsetscope)
+  - [Usage](#usage-3)
+  - [Behavior](#behavior-3)
+  - [Scope Value Semantics](#scope-value-semantics)
+  - [Requirements](#requirements-3)
+  - [Configuration](#configuration-1)
+  - [Limitations](#limitations-2)
+  <!-- /toc -->
 
 ## Limits control
 
@@ -51,10 +59,10 @@ To disable getting VPA recommendations for an individual container, set `mode` t
 > [!NOTE]
 > This feature was added in v1.3.0.
 
-
 VPA can present memory recommendations in human-readable binary units (KiB, MiB, GiB, TiB) instead of raw bytes, making resource recommendations easier to understand. This feature is controlled by the `--humanize-memory` flag in the recommender component.
 
 When enabled, memory values in recommendations will be:
+
 - Converted to the most appropriate binary unit (KiB, MiB, GiB, or TiB)
 - Displayed with up to 2 decimal places for precision
 - Applied to target, lower bound, and upper bound recommendations
@@ -64,6 +72,7 @@ For example, instead of seeing a memory recommendation of `262144000` bytes, you
 Note: Due to the conversion to binary units and decimal place rounding, the humanized values may be slightly higher than the raw byte recommendations. For example, 1537 bytes would be shown as "1.50Ki" (1536 bytes). Consider this small difference when doing precise capacity planning.
 
 To enable this feature, set the `--humanize-memory` flag to true when running the VPA recommender:
+
 ```bash
 --humanize-memory=true
 ```
@@ -73,6 +82,7 @@ To enable this feature, set the `--humanize-memory` flag to true when running th
 VPA can provide CPU recommendations rounded up to user-specified values, making it easier to interpret and configure resources. This feature is controlled by the `--round-cpu-millicores` flag in the recommender component.
 
 When enabled, CPU recommendations will be:
+
 - Rounded up to the nearest multiple of the specified millicore value
 - Applied to target, lower bound, and upper bound recommendations
 
@@ -89,6 +99,7 @@ To enable this feature, set the --round-cpu-millicores flag when running the VPA
 VPA can provide Memory recommendations rounded up to user-specified values, making it easier to interpret and configure resources. This feature is controlled by the `--round-memory-bytes` flag in the recommender component.
 
 When enabled, Memory recommendations will be:
+
 - Rounded up to the nearest multiple of the specified bytes value
 - Applied to target, lower bound, and upper bound recommendations
 
@@ -104,6 +115,7 @@ To enable this feature, set the `--round-memory-bytes` flag when running the VPA
 
 > [!NOTE]
 > FEATURE STATE:
+>
 > - VPA v1.4.0 [alpha]
 > - VPA v1.5.0 [beta]
 > - VPA v1.6.0 [ga]
@@ -114,6 +126,7 @@ For more information, see [AEP-4016: Support for in place updates in VPA](https:
 ### Usage
 
 To use in-place updates, set the VPA's `updateMode` to `InPlaceOrRecreate`:
+
 ```yaml
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -128,15 +141,16 @@ spec:
 
 When using `InPlaceOrRecreate` mode, VPA will first attempt to apply updates in-place, if in-place update fails, VPA will fall back to pod recreation.
 Updates are attempted when:
-* Container requests are outside the recommended bounds
-* Quick OOM occurs
-* For long-running pods (>12h), when recommendations differ significantly (>10%)
+
+- Container requests are outside the recommended bounds
+- Quick OOM occurs
+- For long-running pods (>12h), when recommendations differ significantly (>10%)
 
 Important Notes
 
-* Disruption Possibility: While in-place updates aim to minimize disruption, they cannot guarantee zero disruption as the container runtime is responsible for the actual resize operation.
+- Disruption Possibility: While in-place updates aim to minimize disruption, they cannot guarantee zero disruption as the container runtime is responsible for the actual resize operation.
 
-* Memory Limit Downscaling: In the beta version, memory limit downscaling is not supported for pods with resizePolicy: PreferNoRestart. In such cases, VPA will fall back to pod recreation.
+- Memory Limit Downscaling: In the beta version, memory limit downscaling is not supported for pods with resizePolicy: PreferNoRestart. In such cases, VPA will fall back to pod recreation.
 
 ### Skipping Disruption Budget for Non-Disruptive Updates
 
@@ -147,41 +161,41 @@ The `--in-place-skip-disruption-budget` flag (default: `false`) allows VPA to sk
 #### When Disruption Budgets Are Still Respected
 
 Even with this flag enabled, disruption budgets are enforced when:
-* Any container has `RestartContainer` resize policy for any resource
-* The update would result in pod eviction/recreation (fallback scenarios)
 
+- Any container has `RestartContainer` resize policy for any resource
+- The update would result in pod eviction/recreation (fallback scenarios)
 
 ### Requirements:
 
-* Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
-* VPA version 1.4.0 requires the `InPlaceOrRecreate` feature gate to be enabled. Starting from VPA version 1.5.0, the feature gate is enabled by default, and in VPA version 1.7.0, the feature gate was removed.
+- Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
+- VPA version 1.4.0 requires the `InPlaceOrRecreate` feature gate to be enabled. Starting from VPA version 1.5.0, the feature gate is enabled by default, and in VPA version 1.7.0, the feature gate was removed.
 
 ### Limitations
 
-* All containers in a pod are updated together (partial updates not supported)
-* Memory downscaling requires careful consideration to prevent OOMs
-* Updates still respect VPA's standard update conditions and timing restrictions
-* In-place updates will fail if they would result in a change to the pod's QoS class
+- All containers in a pod are updated together (partial updates not supported)
+- Memory downscaling requires careful consideration to prevent OOMs
+- Updates still respect VPA's standard update conditions and timing restrictions
+- In-place updates will fail if they would result in a change to the pod's QoS class
 
 ### Fallback Behavior
 
 VPA will fall back to pod recreation in the following scenarios:
 
-* In-place update is [infeasible](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/1287-in-place-update-pod-resources/README.md#resize-status) (node resources, etc.)
-* Update is [deferred](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/1287-in-place-update-pod-resources/README.md#resize-status) for more than 5 minutes
-* Update is in progress for more than 1 hour
-* [Pod QoS](https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/) class would change due to the update
-* Memory limit downscaling is required with [PreferNoRestart policy](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/1287-in-place-update-pod-resources/README.md#container-resize-policy)
+- In-place update is [infeasible](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/1287-in-place-update-pod-resources/README.md#resize-status) (node resources, etc.)
+- Update is [deferred](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/1287-in-place-update-pod-resources/README.md#resize-status) for more than 5 minutes
+- Update is in progress for more than 1 hour
+- [Pod QoS](https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/) class would change due to the update
+- Memory limit downscaling is required with [PreferNoRestart policy](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/1287-in-place-update-pod-resources/README.md#container-resize-policy)
 
 ### Monitoring
 
 VPA provides metrics to track in-place update operations:
 
-* `vpa_updater_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
-* `vpa_updater_in_place_updated_pods_total`: Number of pods successfully updated in-place
-* `vpa_updater_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
-* `vpa_updater_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
-* `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place.
+- `vpa_updater_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
+- `vpa_updater_in_place_updated_pods_total`: Number of pods successfully updated in-place
+- `vpa_updater_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
+- `vpa_updater_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
+- `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place.
 
 ## Eviction-Free In-Place Updates (`InPlace`)
 
@@ -215,22 +229,22 @@ When using `InPlace` mode, VPA will attempt to apply resource updates in-place a
 
 The updater evaluates each pod through the `CanInPlaceUpdate` function, which returns one of the following decisions:
 
-| Decision | Meaning |
-|---|---|
-| `InPlaceApproved` | Pod can be in-place updated |
-| `InPlaceDeferred` | Pod cannot be updated right now; will retry next loop |
-| `InPlaceInfeasible` | Update is infeasible; stores the attempt for tracking |
+| Decision                  | Meaning                                                    |
+| ------------------------- | ---------------------------------------------------------- |
+| `InPlaceApproved`         | Pod can be in-place updated                                |
+| `InPlaceDeferred`         | Pod cannot be updated right now; will retry next loop      |
+| `InPlaceInfeasible`       | Update is infeasible; stores the attempt for tracking      |
 | `InPlaceInfeasibleCached` | Previously cached infeasibility; skips without re-checking |
 
 When a pod is currently undergoing a resize, VPA checks the resize status reported by kubelet:
 
-| Resize Status | Action |
-|---|---|
-| `ResizeDeferred` | Wait for kubelet to proceed |
-| `ResizeInProgress` | Wait for completion |
-| `ResizeInfeasible` | Store as infeasible, skip pod |
-| `ResizeError` | Treat as infeasible, retry when recommendation changes |
-| `ResizeNone` | No resize pending, proceed with update evaluation |
+| Resize Status      | Action                                                 |
+| ------------------ | ------------------------------------------------------ |
+| `ResizeDeferred`   | Wait for kubelet to proceed                            |
+| `ResizeInProgress` | Wait for completion                                    |
+| `ResizeInfeasible` | Store as infeasible, skip pod                          |
+| `ResizeError`      | Treat as infeasible, retry when recommendation changes |
+| `ResizeNone`       | No resize pending, proceed with update evaluation      |
 
 ### Infeasible Attempt Tracking
 
@@ -238,24 +252,24 @@ VPA tracks infeasible resize attempts to prevent infinite retry loops. When an u
 
 ### Requirements
 
-* Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
-* VPA version 1.7.0+ with `InPlace` feature gate enabled
+- Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
+- VPA version 1.7.0+ with `InPlace` feature gate enabled
 
 ### Limitations
 
-* Resizes are never guaranteed to succeed — node capacity constraints may prevent in-place resizes indefinitely
-* Memory limit downsizing carries a risk of OOMKill if current usage exceeds the new limit (this is inherent to in-place updates, not VPA-specific)
-* The infeasible attempts map is stored in-memory; updater restarts will cause one retry of previously-infeasible attempts
+- Resizes are never guaranteed to succeed — node capacity constraints may prevent in-place resizes indefinitely
+- Memory limit downsizing carries a risk of OOMKill if current usage exceeds the new limit (this is inherent to in-place updates, not VPA-specific)
+- The infeasible attempts map is stored in-memory; updater restarts will cause one retry of previously-infeasible attempts
 
 ### Monitoring
 
 The same in-place update metrics used for `InPlaceOrRecreate` apply to `InPlace` mode:
 
-* `vpa_updater_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
-* `vpa_updater_in_place_updated_pods_total`: Number of pods successfully updated in-place
-* `vpa_updater_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
-* `vpa_updater_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
-* `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place
+- `vpa_updater_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
+- `vpa_updater_in_place_updated_pods_total`: Number of pods successfully updated in-place
+- `vpa_updater_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
+- `vpa_updater_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
+- `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place
 
 ## CPU Startup Boost
 
@@ -299,8 +313,8 @@ spec:
 
 ### Requirements
 
-*   Kubernetes 1.33+ with the `InPlacePodVerticalScaling` feature gate enabled.
-*   VPA version 1.7.0+ with the `CPUStartupBoost` feature gate enabled.
+- Kubernetes 1.33+ with the `InPlacePodVerticalScaling` feature gate enabled.
+- VPA version 1.7.0+ with the `CPUStartupBoost` feature gate enabled.
 
 ### Configuration
 
@@ -311,7 +325,112 @@ Enable the feature by setting the `CPUStartupBoost` feature gate in the VPA admi
 ```
 
 The `startupBoost` field contains a `cpu` field with the following sub-fields:
-*   `type`: (Required) The type of boost. Can be `Factor` to multiply the CPU, or `Quantity` to add a specific CPU value.
-*   `factor`: (Optional) The multiplier to apply if `type` is `Factor` (e.g., 2 for 2x CPU). Required if `type` is `Factor`.
-*   `quantity`: (Optional) The amount of CPU to add if `type` is `Quantity` (e.g., "500m"). Required if `type` is `Quantity`.
-*   `durationSeconds`: (Optional) How long to keep the boost active *after* the pod becomes `Ready`. Defaults to `0`.
+
+- `type`: (Required) The type of boost. Can be `Factor` to multiply the CPU, or `Quantity` to add a specific CPU value.
+- `factor`: (Optional) The multiplier to apply if `type` is `Factor` (e.g., 2 for 2x CPU). Required if `type` is `Factor`.
+- `quantity`: (Optional) The amount of CPU to add if `type` is `Quantity` (e.g., "500m"). Required if `type` is `Quantity`.
+- `durationSeconds`: (Optional) How long to keep the boost active _after_ the pod becomes `Ready`. Defaults to `0`.
+
+## DaemonSet-Scoped Recommendations (`DaemonSetScope`)
+
+> [!WARNING]
+> FEATURE STATE: VPA v1.8.0 [alpha]
+
+By default a VerticalPodAutoscaler produces a single recommendation for all pods of the target workload. For a `DaemonSet` this is often too coarse: the same DaemonSet frequently runs on heterogeneous nodes (for example GPU vs. CPU-only nodes, or different instance types) whose pods have very different resource footprints. A single workload-wide recommendation then over-provisions some nodes and under-provisions others.
+
+The `DaemonSetScope` feature lets a DaemonSet-targeting VPA partition its recommendations by a node label key set in `spec.scope`. The recommender groups the DaemonSet pods by the value of that node label and publishes one recommendation per group in `status.recommendationGroups`, in addition to the global recommendation.
+
+For more details, see [AEP-10031: DaemonSet-scoped VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/10031-daemonset-scoped-vpa).
+
+### Usage
+
+Enable the `DaemonSetScope` feature gate on the VPA components and set `spec.scope` to a node label key on a VPA whose `targetRef` is a `DaemonSet`:
+
+```yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: my-daemonset-vpa
+  namespace: my-namespace
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: DaemonSet
+    name: my-daemonset
+  scope: node-role/gpu-shared
+  updatePolicy:
+    updateMode: "Initial"
+```
+
+With the example above the recommender partitions the DaemonSet pods by the value of the `node-role/gpu-shared` node label and reports one group per distinct value, alongside the global recommendation:
+
+```yaml
+status:
+  conditions:
+    - type: RecommendationProvided
+      status: "True"
+  recommendation:
+    containerRecommendations:
+      - containerName: agent
+        target:
+          cpu: "300m"
+          memory: "512Mi"
+  recommendationGroups:
+    - scopeValue: "__absent__"
+      containerRecommendations:
+        - containerName: agent
+          target:
+            cpu: "150m"
+            memory: "220Mi"
+    - scopeValue: ""
+      containerRecommendations:
+        - containerName: agent
+          target:
+            cpu: "700m"
+            memory: "2Gi"
+    - scopeValue: "nvidia"
+      containerRecommendations:
+        - containerName: agent
+          target:
+            cpu: "1200m"
+            memory: "4Gi"
+```
+
+### Behavior
+
+- `spec.scope` is only honored when the target is a `DaemonSet` and the `DaemonSetScope` feature gate is enabled. For any other target, or when the gate is disabled, the field is ignored and the VPA behaves like a regular VPA.
+- The recommender keeps `status.recommendation` populated with the aggregate (global) recommendation for the whole DaemonSet, and additionally fills `status.recommendationGroups` with one entry per scope value. The global recommendation is a safe fallback for clients that do not consume `recommendationGroups` (for example after the feature gate is disabled during a rollback).
+- The admission controller resolves the node label value of the pod being created and applies the matching group's recommendation. When no group matches (or the feature gate is disabled) it falls back to the global recommendation.
+- Historical usage is checkpointed per scope value, so per-group recommendations survive recommender restarts.
+
+### Scope Value Semantics
+
+The `scopeValue` of a group encodes how the `spec.scope` label key appears on the node:
+
+| `scopeValue`        | Meaning                                                                                                         |
+| ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `__absent__`        | The node does not have the `spec.scope` label key at all.                                                       |
+| `""` (empty string) | The node has the label key with an empty value (presence-style labels, for example `node-role/gpu-shared: ""`). |
+| `"<value>"`         | The node has the label key with a non-empty value.                                                              |
+
+This makes grouping explicit and deterministic for common real-world patterns: unlabeled nodes, presence-style labels, and labels with explicit values are each represented as their own group.
+
+### Requirements
+
+- VPA version 1.8.0+ with the `DaemonSetScope` feature gate enabled.
+- The VPA `targetRef` must reference a `DaemonSet`.
+- `spec.scope` must be a valid node label key.
+
+### Configuration
+
+Enable the feature by setting the `DaemonSetScope` feature gate on the VPA recommender, admission-controller and updater:
+
+```bash
+--feature-gates=DaemonSetScope=true
+```
+
+### Limitations
+
+- Scoping is only available for `DaemonSet` targets.
+- A scope value only appears as a group once at least one DaemonSet pod is scheduled on a node carrying the corresponding label value.
+- When a VPA is deleted, the standard checkpoint garbage collector removes all of its checkpoints, including the per-scope ones (they all reference the same VPA object). However, while the VPA still exists, checkpoints for stale scope values (for example a node label value that no longer exists in the cluster) are not actively garbage-collected in the alpha implementation. Such a checkpoint lingers and, after a recommender restart, can reappear as an empty group in `status.recommendationGroups`.

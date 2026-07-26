@@ -30,6 +30,9 @@ var defaultVersionedFeatureGates = map[featuregate.Feature]featuregate.Versioned
 	CPUStartupBoost: {
 		{Version: version.MustParse("1.6"), Default: false, PreRelease: featuregate.Alpha},
 	},
+	DaemonSetScope: {
+		{Version: version.MustParse("1.8"), Default: false, PreRelease: featuregate.Alpha},
+	},
 	InPlace: {
 		{Version: version.MustParse("1.7"), Default: false, PreRelease: featuregate.Alpha},
 	},

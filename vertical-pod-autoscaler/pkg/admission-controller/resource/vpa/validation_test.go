@@ -245,6 +245,54 @@ func TestAllowPerVPAConfig(t *testing.T) {
 	}
 }
 
+func TestAllowDaemonSetScope(t *testing.T) {
+	tests := []struct {
+		name        string
+		oldObj      *vpa_types.VerticalPodAutoscaler
+		featureFlag bool
+		expected    bool
+	}{
+		{
+			name:        "feature enabled returns true",
+			oldObj:      nil,
+			featureFlag: true,
+			expected:    true,
+		},
+		{
+			name:        "feature disabled and oldObj nil returns false",
+			oldObj:      nil,
+			featureFlag: false,
+			expected:    false,
+		},
+		{
+			name: "feature disabled but scope already set returns true",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					Scope: "node.kubernetes.io/instance-type",
+				},
+			},
+			featureFlag: false,
+			expected:    true,
+		},
+		{
+			name: "feature disabled and no scope returns false",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{},
+			},
+			featureFlag: false,
+			expected:    false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.DaemonSetScope, tc.featureFlag)
+			result := allowDaemonSetScope(tc.oldObj)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestValidateVPA(t *testing.T) {
 	badUpdateMode := vpa_types.UpdateMode("bad")
 	validUpdateMode := vpa_types.UpdateModeOff
@@ -718,6 +766,47 @@ func TestValidateVPA(t *testing.T) {
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowCPUStartupBoost: true},
 			expectError: fmt.Errorf("spec.resourcePolicy.containerPolicies[0].startupBoost.cpu.quantity: Invalid value: \"%v\": must be a whole number of milli CPUs", &badCPUBoostQuantity),
+		},
+		{
+			name: "scope forbidden when feature disabled",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "DaemonSet",
+						Name: "agent",
+					},
+					Scope: "node.kubernetes.io/instance-type",
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowDaemonSetScope: false},
+			expectError: errors.New("spec.scope: Forbidden: not supported when feature flag DaemonSetScope is disabled"),
+		},
+		{
+			name: "scope allowed for DaemonSet when feature enabled",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "DaemonSet",
+						Name: "agent",
+					},
+					Scope: "node.kubernetes.io/instance-type",
+				},
+			},
+			opts: VPAValidationOptions{IsVPACreate: true, AllowDaemonSetScope: true},
+		},
+		{
+			name: "scope rejected for non-DaemonSet target",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					Scope: "node.kubernetes.io/instance-type",
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowDaemonSetScope: true},
+			expectError: errors.New("spec.scope: Invalid value: \"node.kubernetes.io/instance-type\": scope is only supported when targetRef.kind is DaemonSet"),
 		},
 		{
 			name: "top-level startupBoost with bad type",

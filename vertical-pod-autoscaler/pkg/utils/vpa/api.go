@@ -25,7 +25,6 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -64,16 +63,110 @@ func patchVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName st
 	return vpaClient.Patch(context.TODO(), vpaName, types.JSONPatchType, bytes, metav1.PatchOptions{}, "status")
 }
 
+func resourceListEqual(a, b corev1.ResourceList) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for resourceName, quantityA := range a {
+		quantityB, found := b[resourceName]
+		if !found || quantityA.Cmp(quantityB) != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func containerRecommendationEqual(a, b vpa_types.RecommendedContainerResources) bool {
+	return a.ContainerName == b.ContainerName &&
+		resourceListEqual(a.Target, b.Target) &&
+		resourceListEqual(a.LowerBound, b.LowerBound) &&
+		resourceListEqual(a.UpperBound, b.UpperBound) &&
+		resourceListEqual(a.UncappedTarget, b.UncappedTarget)
+}
+
+func recommendedPodResourcesEqual(a, b *vpa_types.RecommendedPodResources) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	if len(a.ContainerRecommendations) != len(b.ContainerRecommendations) {
+		return false
+	}
+	for i := range a.ContainerRecommendations {
+		if !containerRecommendationEqual(a.ContainerRecommendations[i], b.ContainerRecommendations[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func recommendationGroupsEqual(a, b []vpa_types.RecommendedPodResourcesGroup) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].ScopeValue != b[i].ScopeValue {
+			return false
+		}
+		if len(a[i].ContainerRecommendations) != len(b[i].ContainerRecommendations) {
+			return false
+		}
+		for j := range a[i].ContainerRecommendations {
+			if !containerRecommendationEqual(a[i].ContainerRecommendations[j], b[i].ContainerRecommendations[j]) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func conditionsEqual(a, b []vpa_types.VerticalPodAutoscalerCondition) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].Type != b[i].Type ||
+			a[i].Status != b[i].Status ||
+			a[i].Reason != b[i].Reason ||
+			a[i].Message != b[i].Message ||
+			!a[i].LastTransitionTime.Equal(&b[i].LastTransitionTime) {
+			return false
+		}
+	}
+	return true
+}
+
+func observedGenerationEqual(a, b *int64) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return *a == *b
+}
+
+func vpaStatusEqual(oldStatus, newStatus *vpa_types.VerticalPodAutoscalerStatus) bool {
+	return recommendedPodResourcesEqual(oldStatus.Recommendation, newStatus.Recommendation) &&
+		conditionsEqual(oldStatus.Conditions, newStatus.Conditions) &&
+		observedGenerationEqual(oldStatus.ObservedGeneration, newStatus.ObservedGeneration) &&
+		recommendationGroupsEqual(oldStatus.RecommendationGroups, newStatus.RecommendationGroups)
+}
+
+// StatusEqual reports whether two VPA status objects are semantically equal.
+func StatusEqual(oldStatus, newStatus *vpa_types.VerticalPodAutoscalerStatus) bool {
+	return vpaStatusEqual(oldStatus, newStatus)
+}
+
 // UpdateVpaStatusIfNeeded updates the status field of the VPA API object.
 func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, newStatus,
 	oldStatus *vpa_types.VerticalPodAutoscalerStatus) (result *vpa_types.VerticalPodAutoscaler, err error) {
-	patches := []patchRecord{{
-		Op:    "add",
-		Path:  "/status",
-		Value: *newStatus,
-	}}
-
-	if !apiequality.Semantic.DeepEqual(*oldStatus, *newStatus) {
+	// Fast structural comparison avoids reflection-heavy DeepEqual allocations
+	// on large grouped status payloads.
+	if !vpaStatusEqual(oldStatus, newStatus) {
+		// Build patch payload only when status changed; this avoids copying large status objects
+		// in the common no-op update path.
+		patches := []patchRecord{{
+			Op:    "add",
+			Path:  "/status",
+			Value: *newStatus,
+		}}
 		return patchVpaStatus(vpaClient, vpaName, patches)
 	}
 	return nil, nil

@@ -25,10 +25,18 @@
 - VPA recommendation might exceed available resources (e.g. Node size, available
   size, available quota) and cause **pods to go pending**. This can be partly
   addressed by:
-  * using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics) - the drawback of this approach is that pods can still get unschedulable if the recommendation exceeds the largest Node's allocatable.
-  * specifying the `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` flags - the drawback of this approach is that a pod can still get unschedulable if more than one container in the pod is scaled by VPA and the sum of the container recommendations exceeds the largest Node's allocatable.
+  - using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics) - the drawback of this approach is that pods can still get unschedulable if the recommendation exceeds the largest Node's allocatable.
+  - specifying the `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` flags - the drawback of this approach is that a pod can still get unschedulable if more than one container in the pod is scaled by VPA and the sum of the container recommendations exceeds the largest Node's allocatable.
 - Multiple VPA resources matching the same pod have undefined behavior.
 - Running the vpa-recommender with leader election enabled (`--leader-elect=true`) in a GKE cluster
   causes contention with a lease called `vpa-recommender` held by the GKE system component of the
   same name. To run your own VPA in GKE, make sure to specify a different lease name using
   `--leader-elect-resource-name=vpa-recommender-lease` (or specify your own lease name).
+- DaemonSet-scoped recommendations (`spec.scope`, alpha, behind the `DaemonSetScope` feature gate)
+  are only available for `DaemonSet` targets. A per-scope-value group is produced only after at
+  least one pod is scheduled on a node carrying the corresponding label value. When the VPA is
+  deleted, the standard checkpoint garbage collector removes all of its checkpoints, including the
+  per-scope ones. While the VPA still exists, however, checkpoints for stale scope values (node
+  label values that no longer exist in the cluster) are not actively garbage-collected in the alpha
+  implementation. See [DaemonSet-Scoped Recommendations](./features.md#daemonset-scoped-recommendations-daemonsetscope)
+  for details.

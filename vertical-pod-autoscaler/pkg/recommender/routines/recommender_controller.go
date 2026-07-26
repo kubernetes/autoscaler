@@ -74,6 +74,7 @@ func NewRecommenderController(
 	commonFlags := config.CommonFlags
 
 	clusterState := model.NewClusterState(aggregateContainerStateGCInterval)
+	nodeLister := factory.Core().V1().Nodes().Lister()
 	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor, stopCh)
 	podLister, oomObserver := input.NewPodListerAndOOMObserver(ctx, kubeClient, commonFlags.VpaObjectNamespace, stopCh)
 
@@ -120,6 +121,7 @@ func NewRecommenderController(
 
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
+		NodeLister:          nodeLister,
 		OOMObserver:         oomObserver,
 		KubeClient:          kubeClient,
 		MetricsClient:       input_metrics.NewMetricsClient(source, commonFlags.VpaObjectNamespace, "default-metrics-client"),

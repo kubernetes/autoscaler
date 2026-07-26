@@ -193,7 +193,7 @@ func (tc *specClientTestCase) createFakeSpecClient() SpecClient {
 	podListerMock := new(podListerMock)
 	podListerMock.On("List").Return(tc.getFakePods(), nil)
 
-	return NewSpecClient(podListerMock)
+	return NewSpecClient(podListerMock, nil)
 }
 
 func (tc *specClientTestCase) getFakePods() []*corev1.Pod {
