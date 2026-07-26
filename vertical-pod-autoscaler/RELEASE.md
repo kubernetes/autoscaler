@@ -52,9 +52,6 @@ Select either the Automatic and Manual process below.
 
 ### Option 1: (Preferred) Automatic
 
-NOTE: Currently this process can only be used for new minor releases. Patch
-releases need to follow the manual process below.
-
 Images are continuously built as part of the PR release process and are listed
 in the following repository:
 [gcr.io/k8s-staging-autoscaling](http://gcr.io/k8s-staging-autoscaling). Also
