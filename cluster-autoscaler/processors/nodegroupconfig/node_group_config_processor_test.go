@@ -176,6 +176,11 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 				ngError:       cloudprovider.ErrNotImplemented,
 				want:          GLOBAL,
 			},
+			"NodeGroup.GetOptions not implemented, error wrapped": {
+				globalOptions: globalOpts,
+				ngError:       fmt.Errorf("node group ng1: %w", cloudprovider.ErrNotImplemented),
+				want:          GLOBAL,
+			},
 			"NodeGroup returns error leads to error": {
 				globalOptions: globalOpts,
 				ngError:       errors.New("This sentence is false."),

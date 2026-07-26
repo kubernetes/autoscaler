@@ -1044,7 +1044,7 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 
 		if a.ForceDeleteLongUnregisteredNodes {
 			err = nodeGroup.ForceDeleteNodes(nodesToDelete)
-			if err == cloudprovider.ErrNotImplemented {
+			if errors.Is(err, cloudprovider.ErrNotImplemented) {
 				err = nodeGroup.DeleteNodes(nodesToDelete)
 			}
 		} else {
@@ -1150,7 +1150,7 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 // For a non-"ZeroOrMaxNodeScaling" node group it returns the unchanged list of nodes to delete.
 func overrideNodesToDeleteForZeroOrMax(defaults config.NodeGroupAutoscalingOptions, nodeGroup cloudprovider.NodeGroup, nodesToDelete []*apiv1.Node) ([]*apiv1.Node, error) {
 	opts, err := nodeGroup.GetOptions(defaults)
-	if err != nil && err != cloudprovider.ErrNotImplemented {
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return []*apiv1.Node{}, fmt.Errorf("Failed to get node group options for %s: %s", nodeGroup.Id(), err)
 	}
 	// If a scale-up of "ZeroOrMaxNodeScaling" node group failed, the cleanup

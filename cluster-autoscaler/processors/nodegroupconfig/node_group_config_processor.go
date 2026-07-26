@@ -17,6 +17,7 @@ limitations under the License.
 package nodegroupconfig
 
 import (
+	"errors"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -53,10 +54,10 @@ type DelegatingNodeGroupConfigProcessor struct {
 // GetScaleDownUnneededTime returns ScaleDownUnneededTime value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnneededTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
 	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
-	if err != nil && err != cloudprovider.ErrNotImplemented {
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return time.Duration(0), err
 	}
-	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+	if ngConfig == nil || errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return p.nodeGroupDefaults.ScaleDownUnneededTime, nil
 	}
 	return ngConfig.ScaleDownUnneededTime, nil
@@ -65,10 +66,10 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnneededTime(nodeGroup 
 // GetScaleDownUnreadyTime returns ScaleDownUnreadyTime value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnreadyTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
 	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
-	if err != nil && err != cloudprovider.ErrNotImplemented {
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return time.Duration(0), err
 	}
-	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+	if ngConfig == nil || errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return p.nodeGroupDefaults.ScaleDownUnreadyTime, nil
 	}
 	return ngConfig.ScaleDownUnreadyTime, nil
@@ -77,10 +78,10 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnreadyTime(nodeGroup c
 // GetScaleDownUtilizationThreshold returns ScaleDownUtilizationThreshold value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error) {
 	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
-	if err != nil && err != cloudprovider.ErrNotImplemented {
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return 0.0, err
 	}
-	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+	if ngConfig == nil || errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return p.nodeGroupDefaults.ScaleDownUtilizationThreshold, nil
 	}
 	return ngConfig.ScaleDownUtilizationThreshold, nil
@@ -89,10 +90,10 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUtilizationThreshold(no
 // GetScaleDownGpuUtilizationThreshold returns ScaleDownGpuUtilizationThreshold value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownGpuUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error) {
 	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
-	if err != nil && err != cloudprovider.ErrNotImplemented {
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return 0.0, err
 	}
-	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+	if ngConfig == nil || errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return p.nodeGroupDefaults.ScaleDownGpuUtilizationThreshold, nil
 	}
 	return ngConfig.ScaleDownGpuUtilizationThreshold, nil
@@ -101,10 +102,10 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownGpuUtilizationThreshold
 // GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
 	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
-	if err != nil && err != cloudprovider.ErrNotImplemented {
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return time.Duration(0), err
 	}
-	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+	if ngConfig == nil || errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return p.nodeGroupDefaults.MaxNodeProvisionTime, nil
 	}
 	return ngConfig.MaxNodeProvisionTime, nil
@@ -113,10 +114,10 @@ func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeProvisionTime(nodeGroup c
 // GetMaxNodeStartupTime returns MaxNodeStartupTime value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeStartupTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
 	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
-	if err != nil && err != cloudprovider.ErrNotImplemented {
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return p.nodeGroupDefaults.MaxNodeStartupTime, err
 	}
-	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+	if ngConfig == nil || errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return p.nodeGroupDefaults.MaxNodeStartupTime, nil
 	}
 	return ngConfig.MaxNodeStartupTime, nil
@@ -125,10 +126,10 @@ func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeStartupTime(nodeGroup clo
 // GetIgnoreDaemonSetsUtilization returns IgnoreDaemonSetsUtilization value that should be used for a given NodeGroup.
 func (p *DelegatingNodeGroupConfigProcessor) GetIgnoreDaemonSetsUtilization(nodeGroup cloudprovider.NodeGroup) (bool, error) {
 	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
-	if err != nil && err != cloudprovider.ErrNotImplemented {
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return false, err
 	}
-	if ngConfig == nil || err == cloudprovider.ErrNotImplemented {
+	if ngConfig == nil || errors.Is(err, cloudprovider.ErrNotImplemented) {
 		return p.nodeGroupDefaults.IgnoreDaemonSetsUtilization, nil
 	}
 	return ngConfig.IgnoreDaemonSetsUtilization, nil

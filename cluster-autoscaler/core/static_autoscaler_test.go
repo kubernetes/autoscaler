@@ -2674,6 +2674,74 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	assert.Equal(t, "ng1/ng1-2", deletedNode)
 }
 
+func TestRemoveOldUnregisteredNodesWithWrappedErrNotImplemented(t *testing.T) {
+	now := time.Now()
+
+	unregisteredNode := BuildTestNode("ng1-1", 1000, 1000)
+	unregisteredNode.Spec.ProviderID = "ng1-1"
+
+	options := config.AutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+			MaxNodeProvisionTime: 45 * time.Minute,
+		},
+		ForceDeleteLongUnregisteredNodes: true,
+	}
+
+	nodeGroup := &mockprovider.NodeGroup{}
+	nodeGroup.On("Id").Return("ng1")
+	nodeGroup.On("GetOptions", options.NodeGroupDefaults).Return(&options.NodeGroupDefaults, nil)
+	// The node group doesn't support force deletion and reports it by wrapping
+	// the sentinel error with additional context.
+	nodeGroup.On("ForceDeleteNodes", mock.Anything).Return(fmt.Errorf("node group ng1: %w", cloudprovider.ErrNotImplemented))
+	nodeGroup.On("DeleteNodes", mock.Anything).Return(nil)
+
+	provider := &mockprovider.CloudProvider{}
+	provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{nodeGroup})
+	provider.On("NodeGroupForNode", mock.Anything).Return(nodeGroup, nil)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := clusterstate_utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+
+	autoscalingCtx := &ca_context.AutoscalingContext{
+		AutoscalingOptions: options,
+		CloudProvider:      provider,
+	}
+	clusterState := clusterstate.NewClusterStateRegistry(provider, fakeLogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), nil, clusterstate.WithConfig(clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}))
+
+	autoscaler := &StaticAutoscaler{
+		AutoscalingContext:   autoscalingCtx,
+		clusterStateRegistry: clusterState,
+	}
+
+	unregisteredNodes := []clusterstate.UnregisteredNode{{Node: unregisteredNode, UnregisteredSince: now.Add(-time.Hour)}}
+
+	// The node should be removed via the DeleteNodes fallback.
+	removed, err := autoscaler.removeOldUnregisteredNodes(unregisteredNodes, clusterState, now, fakeLogRecorder)
+	assert.NoError(t, err)
+	assert.True(t, removed)
+	nodeGroup.AssertNumberOfCalls(t, "ForceDeleteNodes", 1)
+	nodeGroup.AssertNumberOfCalls(t, "DeleteNodes", 1)
+}
+
+func TestOverrideNodesToDeleteForZeroOrMaxWithWrappedErrNotImplemented(t *testing.T) {
+	defaults := config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 45 * time.Minute}
+
+	nodeGroup := &mockprovider.NodeGroup{}
+	nodeGroup.On("Id").Return("ng1")
+	// The node group doesn't support per-node-group options and reports it by
+	// wrapping the sentinel error with additional context.
+	nodeGroup.On("GetOptions", defaults).Return(nil, fmt.Errorf("node group ng1: %w", cloudprovider.ErrNotImplemented))
+
+	nodesToDelete := []*apiv1.Node{BuildTestNode("ng1-1", 1000, 1000)}
+
+	got, err := overrideNodesToDeleteForZeroOrMax(defaults, nodeGroup, nodesToDelete)
+	assert.NoError(t, err)
+	assert.Equal(t, nodesToDelete, got)
+}
+
 func setupTestRemoveOldUnregisteredNodesAtomic(t *testing.T, now time.Time, allowNonAtomicScaleUpToMax bool) (*clusterstate.ClusterStateRegistry, *ca_context.AutoscalingContext, *clusterstate_utils.LogEventRecorder, chan string) {
 	deletedNodes := make(chan string, 10)
 
