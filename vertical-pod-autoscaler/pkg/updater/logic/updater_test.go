@@ -144,7 +144,7 @@ func TestRunOnce_Mode(t *testing.T) {
 			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
-			expectedInPlacedCount: 5,
+			expectedInPlacedCount: 0,
 			canEvict:              true,
 			canInPlaceUpdate:      utils.InPlaceApproved,
 			isCPUBoostTest:        true,
@@ -155,7 +155,7 @@ func TestRunOnce_Mode(t *testing.T) {
 			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
-			expectedInPlacedCount: 5,
+			expectedInPlacedCount: 0,
 			canEvict:              true,
 			canInPlaceUpdate:      utils.InPlaceApproved,
 			isCPUBoostTest:        true,
@@ -166,7 +166,7 @@ func TestRunOnce_Mode(t *testing.T) {
 			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
-			expectedInPlacedCount: 5,
+			expectedInPlacedCount: 0,
 			canEvict:              true,
 			canInPlaceUpdate:      utils.InPlaceApproved,
 			isCPUBoostTest:        true,
@@ -177,7 +177,7 @@ func TestRunOnce_Mode(t *testing.T) {
 			shouldInPlaceFail:     true,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
-			expectedInPlacedCount: 5,
+			expectedInPlacedCount: 0,
 			canEvict:              true,
 			canInPlaceUpdate:      utils.InPlaceApproved,
 			isCPUBoostTest:        true,
@@ -739,7 +739,7 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 		priorityProcessor:            priority.NewProcessor(),
 	}
 
-	// Cycle 1: Unboost the cpu
+	// Cycle 1: Pods have boost annotations — RunOnce skips them (handled by queue worker)
 	for i := range pods {
 		pods[i].Annotations = map[string]string{annotations.GetStartupCPUBoostAnnotationKey(containerName): ""}
 		pods[i].Status.Conditions = []corev1.PodCondition{
@@ -748,22 +748,18 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 				Status: corev1.ConditionTrue,
 			},
 		}
-		inplace.On("CanUnboost", pods[i], vpaObj).Return(true).Once()
-		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
 	}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 	podLister.On("List").Return(pods, nil).Once()
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
 	updater.RunOnce(context.Background())
-	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 5)
-	inplace.AssertNumberOfCalls(t, "CanUnboost", 5)
+	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 0)
 	eviction.AssertNumberOfCalls(t, "Evict", 0)
 
-	// Cycle 2: Regular patch which will lead to eviction
+	// Cycle 2: Boost annotations removed — pods go through normal eviction path
 	for i := range pods {
 		pods[i].Annotations = nil
-		inplace.On("CanUnboost", pods[i], vpaObj).Return(false).Once()
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i], nil).Return(nil)
 	}
@@ -772,8 +768,7 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
 	updater.RunOnce(context.Background())
-	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 5) // all 5 from previous run only
-	inplace.AssertNumberOfCalls(t, "CanUnboost", 5)    // all 5 from previous run only
+	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 0)
 	eviction.AssertNumberOfCalls(t, "Evict", 5)
 }
 
@@ -836,7 +831,7 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 		priorityProcessor:            priority.NewProcessor(),
 	}
 
-	// Cycle 1: Unboost the cpu
+	// Cycle 1: Pods have boost annotations — RunOnce skips them (handled by queue worker)
 	for i := range pods {
 		pods[i].Annotations = map[string]string{annotations.GetStartupCPUBoostAnnotationKey(containerName): ""}
 		pods[i].Status.Conditions = []corev1.PodCondition{
@@ -845,22 +840,18 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 				Status: corev1.ConditionTrue,
 			},
 		}
-		inplace.On("CanUnboost", pods[i], vpaObj).Return(true).Once()
-		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
 	}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 	podLister.On("List").Return(pods, nil).Once()
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
 	updater.RunOnce(context.Background())
-	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 5)
-	inplace.AssertNumberOfCalls(t, "CanUnboost", 5)
+	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 0)
 	eviction.AssertNumberOfCalls(t, "Evict", 0)
 
-	// Cycle 2: Regular patch which will lead to eviction
+	// Cycle 2: Boost annotations removed — pods go through normal in-place update path
 	for i := range pods {
 		pods[i].Annotations = nil
-		inplace.On("CanUnboost", pods[i], vpaObj).Return(false).Once()
 		inplace.On("CanInPlaceUpdate", pods[i]).Return(utils.InPlaceApproved)
 		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
 	}
@@ -869,8 +860,7 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
 	updater.RunOnce(context.Background())
-	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 10)
-	inplace.AssertNumberOfCalls(t, "CanUnboost", 5) // all 5 from previous run only
+	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 5)
 	eviction.AssertNumberOfCalls(t, "Evict", 0)
 }
 

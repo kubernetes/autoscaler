@@ -21,11 +21,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/spf13/pflag"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/leaderelection"
@@ -38,6 +40,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	updater_config "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/config"
@@ -151,10 +154,10 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		informers.WithNamespace(commonFlag.VpaObjectNamespace),
 		informers.WithTransform(client.StripManagedFields),
 	)
+
 	podLister := updater.NewPodLister(kubeClient, commonFlag.VpaObjectNamespace, stopCh)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, kubeFactory, stopCh)
 	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, kubeFactory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor, stopCh)
-
 	var limitRangeCalculator limitrange.LimitRangeCalculator
 	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(kubeFactory)
 	if err != nil {
@@ -202,7 +205,6 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
-	// Start factories
 	kubeFactory.Start(stopCh)
 	informerMap := kubeFactory.WaitForCacheSync(stopCh)
 	for kind, synced := range informerMap {
@@ -212,14 +214,30 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		}
 	}
 
+	// Start boost worker only if CPUStartupBoost feature gate are enabled
+	if features.Enabled(features.CPUStartupBoost) {
+		var wg sync.WaitGroup
+		ctx, cancel := context.WithCancel(context.Background())
+		defer func() {
+			cancel()
+			updater.ShutDown()
+			wg.Wait()
+		}()
+		for i := 0; i < config.ConcurrentCPUStartupBoostSyncs; i++ {
+			wg.Go(func() {
+				wait.UntilWithContext(ctx, updater.RunBoostWorker, time.Second)
+			})
+		}
+	}
+
 	// Start updating health check endpoint.
 	healthCheck.StartMonitoring()
 
 	ticker := time.Tick(config.UpdaterInterval)
 	for range ticker {
-		ctx, cancel := context.WithTimeout(context.Background(), config.UpdaterInterval)
-		updater.RunOnce(ctx)
+		loopCtx, loopCancel := context.WithTimeout(context.Background(), config.UpdaterInterval)
+		updater.RunOnce(loopCtx)
 		healthCheck.UpdateLastActivity()
-		cancel()
+		loopCancel()
 	}
 }
