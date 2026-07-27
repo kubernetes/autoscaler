@@ -53,9 +53,6 @@ function script_path {
   fi
 }
 
-case ${ACTION} in
-delete|diff) COMPONENTS+=" vpa-beta2-crd" ;;
-esac
 
 if [ $# -gt 1 ]; then
   COMPONENTS="$2-deployment"
