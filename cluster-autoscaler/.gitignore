@@ -12,4 +12,3 @@ cluster_autoscaler
 Session.vim
 .netrwhist
 .vscode
-cloudprovider/vke/examples/*

@@ -1,5 +1,5 @@
-//go:build ovhcloud
-// +build ovhcloud
+//go:build vke
+// +build vke
 
 /*
 Copyright 2020 The Kubernetes Authors.
@@ -21,10 +21,12 @@ package builder
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/vke"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/client-go/informers"
 )
 
-// AvailableCloudProviders supported by the OVHcloud cloud provider builder.
+// AvailableCloudProviders supported by the VKE cloud provider builder.
 var AvailableCloudProviders = []string{
 	cloudprovider.VKEProviderName,
 }
@@ -32,10 +34,10 @@ var AvailableCloudProviders = []string{
 // DefaultCloudProvider is VKE.
 const DefaultCloudProvider = cloudprovider.VKEProviderName
 
-func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
 	case cloudprovider.VKEProviderName:
-		return vke.buildCloudProvider(opts, do, rl)
+		return vke.BuildVKE(opts, do, rl)
 	}
 
 	return nil

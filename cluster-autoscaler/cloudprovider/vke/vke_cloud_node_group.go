@@ -35,6 +35,8 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+const providerIDPrefix = "openstack:///"
+
 // NodeGroup implements cloudprovider.NodeGroup interface.
 type NodeGroup struct {
 	sdk.NodePool
@@ -57,15 +59,18 @@ func (ng *NodeGroup) MinSize() int {
 // TargetSize returns the current TARGET size of the node pool. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
 func (ng *NodeGroup) TargetSize() (int, error) {
-	// By default, fetch the API desired nodes before using target size from autoscaler
-	klog.V(4).Infof("NodeGroup %s has a target size of %d", ng.ID, ng.CurrentNodes)
-	return ng.CurrentNodes, nil
+	// Prefer the in-memory target size set by scale operations; otherwise use API current nodes.
+	if ng.CurrentSize == -1 {
+		klog.V(4).Infof("NodeGroup %s has a target size of %d", ng.ID, ng.CurrentNodes)
+		return ng.CurrentNodes, nil
+	}
+
+	klog.V(4).Infof("NodeGroup %s has a target size of %d", ng.ID, ng.CurrentSize)
+	return ng.CurrentSize, nil
 }
 
 // IncreaseSize increases node pool size.
 func (ng *NodeGroup) IncreaseSize(delta int) error {
-	// Do not use node group which does not support autoscaling
-
 	klog.V(4).Infof("Increasing NodeGroup size by %d node(s)", delta)
 
 	// First, verify the NodeGroup can be increased
@@ -79,17 +84,16 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 	}
 
 	if size+delta > ng.MaxSize() {
-		return fmt.Errorf("node group size would be above minimum size - desired: %d, max: %d", size+delta, ng.MaxSize())
+		return fmt.Errorf("node group size would be above maximum size - desired: %d, max: %d", size+delta, ng.MaxSize())
 	}
 
-	// Then, forge current size and parameters
-
-	klog.V(4).Infof("Upscaling node pool %s to %d current nodes", ng.ID, ng.CurrentNodes)
+	klog.V(4).Infof("Upscaling node pool %s to %d current nodes", ng.ID, size+delta)
 	for i := 0; i < delta; i++ {
 		_, err := ng.Manager.Client.AddNode(context.Background(), ng.Manager.ClusterID, ng.ID)
 		if err != nil {
 			return fmt.Errorf("failed to increase node pool desired size: %w", err)
 		}
+		ng.CurrentSize = size + i + 1
 	}
 
 	return nil
@@ -100,36 +104,30 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	// DeleteNodes is called in goroutine so it can run in parallel
 	// Goroutines created in: ScaleDown.scheduleDeleteEmptyNodes()
 	// Adding mutex to ensure CurrentSize attribute keeps consistency
-	// ng.mutex.Lock()
-	// defer ng.mutex.Unlock()
-
-	// Do not use node group which does not support autoscaling
+	ng.mutex.Lock()
+	defer ng.mutex.Unlock()
 
 	klog.V(4).Infof("Deleting %d node(s)", len(nodes))
 
 	// First, verify the NodeGroup can be decreased
-	NodeGroupInstances, err := ng.Manager.Client.ListNodePoolNodes(context.Background(), ng.Manager.ClusterID, ng.ID)
+	size, err := ng.TargetSize()
 	if err != nil {
-		return fmt.Errorf("failed to list node pool nodes: %w", err)
+		return fmt.Errorf("failed to get NodeGroup target size")
 	}
-	klog.V(5).Infof("DeleteNodes Triggered. Active Count: %d", len(NodeGroupInstances))
-	size := len(NodeGroupInstances)
+
 	if size-len(nodes) < ng.MinSize() {
-		return fmt.Errorf("node group size would be below minimum size - desired: %d, max: %d", size-len(nodes), ng.MinSize())
+		return fmt.Errorf("node group size would be below minimum size - desired: %d, min: %d", size-len(nodes), ng.MinSize())
 	}
 
 	for _, node := range nodes {
-		shortID := strings.TrimPrefix(node.Spec.ProviderID, "openstack:///")
+		shortID := strings.TrimPrefix(node.Spec.ProviderID, providerIDPrefix)
 		err = ng.Manager.Client.DeleteNode(context.Background(), ng.Manager.ClusterID, ng.ID, shortID)
 		if err != nil {
 			return fmt.Errorf("failed to delete node %s: %w", shortID, err)
 		}
 	}
-	size, err = ng.TargetSize()
-	if err != nil {
-		return fmt.Errorf("failed to get NodeGroup target size")
-	}
 
+	ng.CurrentSize = size - len(nodes)
 	return nil
 }
 
@@ -167,8 +165,9 @@ func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	// Cast all API nodes into instance interface
 	instances := make([]cloudprovider.Instance, 0)
 	for _, node := range nodes {
+		instanceID := strings.TrimPrefix(node.Id, providerIDPrefix)
 		instance := cloudprovider.Instance{
-			Id:     node.Id,
+			Id:     providerIDPrefix + instanceID,
 			Status: toInstanceStatus(node.Status),
 		}
 
@@ -233,47 +232,15 @@ func (ng *NodeGroup) Exist() bool {
 
 // Create creates the node group on the cloud provider side.
 func (ng *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
-	klog.V(4).Info("Creating a new NodeGroup")
-
-	// Forge create node pool parameters (defaulting b2-7 for now)
-	name := ng.Id()
-	min := uint32(ng.MinSize())
-	max := uint32(ng.MaxSize())
-
-	opts := sdk.CreateNodePoolOpts{
-		FlavorName: "b2-7",
-		Name:       &name,
-		MinNodes:   &min,
-		MaxNodes:   &max,
-		Autoscale:  true,
-	}
-
-	// Call API to add a node pool in the project/cluster
-	np, err := ng.Manager.Client.CreateNodePool(context.Background(), ng.Manager.ProjectID, ng.Manager.ClusterID, &opts)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create node pool: %w", err)
-	}
-
-	// Forge a node group interface given the API response
-	return &NodeGroup{
-		NodePool:    *np,
-		Manager:     ng.Manager,
-		CurrentSize: int(ng.CurrentSize),
-	}, nil
+	// Autoprovisioning is not supported for VKE yet.
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 func (ng *NodeGroup) Delete() error {
-	klog.V(4).Infof("Deleting NodeGroup %s", ng.Id())
-
-	// Call API to delete the node pool given its project and cluster
-	_, err := ng.Manager.Client.DeleteNodePool(context.Background(), ng.Manager.ProjectID, ng.Manager.ClusterID, ng.ID)
-	if err != nil {
-		return fmt.Errorf("failed to delete node pool: %w", err)
-	}
-
-	return nil
+	// Autoprovisioning is not supported for VKE yet.
+	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.

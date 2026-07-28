@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"sync"
 	"time"
 
@@ -39,30 +38,27 @@ type ClientInterface interface {
 	// ListNodePoolNodes lists all the nodes contained in a node pool.
 	ListNodePoolNodes(ctx context.Context, clusterID string, poolID string) ([]sdk.Node, error)
 
-	// CreateNodePool fills and installs a new pool in a Kubernetes cluster.
-	CreateNodePool(ctx context.Context, projectID string, clusterID string, opts *sdk.CreateNodePoolOpts) (*sdk.NodePool, error)
-
-	// UpdateNodePool updates the details of an existing node pool.
-	UpdateNodePool(ctx context.Context, clusterID string, poolID string, opts *sdk.UpdateNodePoolOpts) (*sdk.NodePool, error)
-
-	// DeleteNodePool deletes a specific pool.
-	DeleteNodePool(ctx context.Context, projectID string, clusterID string, poolID string) (*sdk.NodePool, error)
-
 	// DeleteNode deletes a specific node.
-	DeleteNode(ctx context.Context, clusterID string, nodeGroupID string, Id string) error
+	DeleteNode(ctx context.Context, clusterID string, nodeGroupID string, id string) error
 
-	// ListClusterFlavors list all available flavors usable in a Kubernetes cluster.
+	// ListClusterFlavors lists all available flavors usable in a Kubernetes cluster.
 	ListClusterFlavors(ctx context.Context, clusterID string) ([]sdk.Flavor, error)
-	//AddNode adds a node to a node pool
+
+	// AddNode adds a node to a node pool.
 	AddNode(ctx context.Context, clusterID string, nodeGroupID string) (*sdk.Node, error)
 }
 
+// VKEManager handles VKE API state for the cloud provider.
 type VKEManager struct {
 	Client            ClientInterface
 	OpenStackProvider *sdk.OpenStackProvider
 
 	ClusterID string
 	ProjectID string
+
+	authURL                     string
+	applicationCredentialID     string
+	applicationCredentialSecret string
 
 	NodePools                  []sdk.NodePool
 	NodeGroupPerProviderID     map[string]*NodeGroup
@@ -72,6 +68,7 @@ type VKEManager struct {
 	FlavorsCacheExpirationTime time.Time
 }
 
+// Config is the JSON cloud-config payload for the VKE provider.
 type Config struct {
 	// ClusterID is the id associated with the cluster where CA is running.
 	ClusterID string `json:"cluster_id"`
@@ -84,39 +81,25 @@ type Config struct {
 	TenantID                    string `json:"tenant_id"`
 }
 
-// NewManager initializes an API client given a cloud provider configuration file
+// NewManager initializes manager state from a cloud provider configuration file.
+// OpenStack authentication is deferred until the first Refresh/ReAuthenticate call.
 func NewManager(configFile io.Reader) (*VKEManager, error) {
-	var client ClientInterface
-	var openStackProvider *sdk.OpenStackProvider
-
-	// First, read configuration file to properly boot API client
 	cfg, err := readConfig(configFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	// Then, validate payload
 	err = validatePayload(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("config content validation failed: %w", err)
 	}
 
-	// Eventually, create API client given its authentication method
-	openStackProvider, err = sdk.NewOpenStackProvider(cfg.OpenStackAuthUrl, cfg.ApplicationCredentialID, cfg.ApplicationCredentialSecret, cfg.TenantID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create OpenStack provider: %w", err)
-	}
-	// client, err = sdk.NewClient(cfg.OpenStackAuthUrl, cfg.ApplicationKey, cfg.ApplicationSecret, cfg.TenantID)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to create API client: %w", err)
-	// }
-
 	return &VKEManager{
-		Client:            client,
-		OpenStackProvider: openStackProvider,
-
-		ProjectID: cfg.TenantID,
-		ClusterID: cfg.ClusterID,
+		ProjectID:                   cfg.TenantID,
+		ClusterID:                   cfg.ClusterID,
+		authURL:                     cfg.OpenStackAuthUrl,
+		applicationCredentialID:     cfg.ApplicationCredentialID,
+		applicationCredentialSecret: cfg.ApplicationCredentialSecret,
 
 		NodePools:                  make([]sdk.NodePool, 0),
 		NodeGroupPerProviderID:     make(map[string]*NodeGroup),
@@ -182,15 +165,20 @@ func (m *VKEManager) getNodeGroupPerProviderID(providerID string) *NodeGroup {
 
 // ReAuthenticate allows OpenStack keystone token to be revoked and re-created to call API
 func (m *VKEManager) ReAuthenticate() error {
-	if m.OpenStackProvider != nil {
-		klog.V(4).Infof("m.OpenStackProvider.IsTokenExpired():  %v ", m.OpenStackProvider.IsTokenExpired())
-		if m.OpenStackProvider.IsTokenExpired() {
-			err := m.OpenStackProvider.ReauthenticateToken()
-			if err != nil {
-				return fmt.Errorf("failed to re-authenticate OpenStack token: %w", err)
-			}
+	if m.OpenStackProvider == nil {
+		openStackProvider, err := sdk.NewOpenStackProvider(m.authURL, m.applicationCredentialID, m.applicationCredentialSecret, m.ProjectID)
+		if err != nil {
+			return fmt.Errorf("failed to create OpenStack provider: %w", err)
+		}
+		m.OpenStackProvider = openStackProvider
+	} else if m.OpenStackProvider.IsTokenExpired() {
+		klog.V(4).Infof("OpenStack token expired, re-authenticating")
+		err := m.OpenStackProvider.ReauthenticateToken()
+		if err != nil {
+			return fmt.Errorf("failed to re-authenticate OpenStack token: %w", err)
 		}
 	}
+
 	client, err := sdk.NewDefaultClientWithToken(m.OpenStackProvider.AuthUrl, m.OpenStackProvider.Token)
 	if err != nil {
 		return fmt.Errorf("failed to re-create client: %w", err)
@@ -205,7 +193,7 @@ func (m *VKEManager) ReAuthenticate() error {
 func readConfig(configFile io.Reader) (*Config, error) {
 	cfg := &Config{}
 	if configFile != nil {
-		body, err := ioutil.ReadAll(configFile)
+		body, err := io.ReadAll(configFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read content: %w", err)
 		}

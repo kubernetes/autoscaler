@@ -47,6 +47,9 @@ const (
 	GPUMachineCategory = "t"
 )
 
+var _ cloudprovider.CloudProvider = (*VKEProvider)(nil)
+var _ cloudprovider.NodeGroup = (*NodeGroup)(nil)
+
 type VKEProvider struct {
 	manager *VKEManager
 
@@ -92,13 +95,11 @@ func (provider *VKEProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-// NodeGroups returns all node groups configured for this cloud provider.
 func (provider *VKEProvider) NodeGroups() []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, 0)
 	// Cast API node pools into CA node groups
 	klog.V(5).Infof("Listing node pools to build NodeGroups %v", provider.manager.NodePools)
 	for _, pool := range provider.manager.NodePools {
-		// Node pools without autoscaling are equivalent to node pools with autoscaling but no scale possible
 		ng := NodeGroup{
 			NodePool:    pool,
 			Manager:     provider.manager,
@@ -115,24 +116,22 @@ func (provider *VKEProvider) NodeGroups() []cloudprovider.NodeGroup {
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
 func (provider *VKEProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	// We won't be able to determine the node group of the node with the information at hand.
+	// Empty provider ID means the node is not yet registered with OpenStack.
+	if node.Spec.ProviderID == "" || node.Spec.ProviderID == providerIDPrefix {
+		return nil, nil
+	}
 
 	// Try to retrieve the associated node group from an already built mapping in cache
 	if ng := provider.findNodeGroupFromCache(node.Spec.ProviderID); ng != nil {
 		return ng, nil
 	}
 
-	// // Try to find the associated node group from the nodepool label on the node
-	// if ng := provider.findNodeGroupFromLabel(node); ng != nil {
-	// 	return ng, nil
-	// }
-
-	klog.V(5).Infof("trying to find node group of node %s (provider ID %s) by listing all nodes under autoscaled node pools", node.Spec.ProviderID, node.Spec.ProviderID)
+	klog.V(5).Infof("trying to find node group of node %s (provider ID %s) by listing all nodes under autoscaled node pools", node.Name, node.Spec.ProviderID)
 
 	// This should also refresh the cache for the next time
 	ng, err := provider.findNodeGroupByListingNodes(node)
 	if ng == nil {
-		klog.Warningf("unable to find which node group the node %s (provider ID %s) belongs to", node.Spec.ProviderID, node.Spec.ProviderID)
+		klog.Warningf("unable to find which node group the node %s (provider ID %s) belongs to", node.Name, node.Spec.ProviderID)
 	}
 
 	return ng, err
@@ -151,25 +150,6 @@ func (provider *VKEProvider) findNodeGroupFromCache(providerID string) cloudprov
 	}
 	return nil // To avoid returning a (*cloudprovider.NodeGroup)(nil), which is different from nil
 }
-
-// // findNodeGroupFromLabel tries to find the associated node group from the nodepool label on the node
-// func (provider *VKEProvider) findNodeGroupFromLabel(node *apiv1.Node) cloudprovider.NodeGroup {
-// 	// Retrieve the label specifying the pool the node belongs to
-// 	labels := node.GetLabels()
-// 	label, exists := labels[NodePoolLabel]
-// 	if !exists {
-// 		return nil
-// 	}
-
-// 	// Find in the node groups stored in cache the one with the same name
-// 	for _, ng := range provider.NodeGroups() {
-// 		if ng.Id() == label {
-// 			return ng
-// 		}
-// 	}
-
-// 	return nil
-// }
 
 // findNodeGroupByListingNodes finds the associated node group from by listing all nodes under autoscaled node pools
 func (provider *VKEProvider) findNodeGroupByListingNodes(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
