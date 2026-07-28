@@ -385,6 +385,8 @@ type AutoscalingOptions struct {
 	PendingPodsBatchingTimeout time.Duration
 	// GracefulDegradationEnabled tells if graceful degradation for unschedulable pods is enabled.
 	GracefulDegradationEnabled bool
+	// PartialTaintActuation determines whether successfully tainted nodes in non-atomic nodegroups will still be deleted if other nodes in the batch fail to taint.
+	PartialTaintActuationEnabled bool
 }
 
 // KubeClientOptions specify options for kube client
