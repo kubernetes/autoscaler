@@ -1343,7 +1343,7 @@ k8s.io/apiserver/plugin/pkg/audit/truncate
 k8s.io/apiserver/plugin/pkg/audit/webhook
 k8s.io/apiserver/plugin/pkg/authenticator/token/webhook
 k8s.io/apiserver/plugin/pkg/authorizer/webhook
-# k8s.io/client-go v1.5.2 => k8s.io/client-go v0.29.0-alpha.3
+# k8s.io/client-go v0.29.0-alpha.3 => k8s.io/client-go v0.29.0-alpha.3
 ## explicit; go 1.21.3
 k8s.io/client-go/applyconfigurations/admissionregistration/v1
 k8s.io/client-go/applyconfigurations/admissionregistration/v1alpha1
@@ -2201,6 +2201,7 @@ sigs.k8s.io/cloud-provider-azure/pkg/azureclients
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/armclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/blobclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient
+sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient/mockcontainerserviceclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/deploymentclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient/mockdiskclient

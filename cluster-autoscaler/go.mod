@@ -1,8 +1,6 @@
 module k8s.io/autoscaler/cluster-autoscaler
 
-go 1.21.3
-
-toolchain go1.21.4
+go 1.21
 
 require (
 	cloud.google.com/go/compute/metadata v0.2.3
@@ -42,7 +40,7 @@ require (
 	k8s.io/api v0.29.0-alpha.3
 	k8s.io/apimachinery v0.29.0-alpha.3
 	k8s.io/apiserver v0.29.0-alpha.3
-	k8s.io/client-go v1.5.2
+	k8s.io/client-go v0.29.0-alpha.3
 	k8s.io/cloud-provider v0.29.0-alpha.3
 	k8s.io/cloud-provider-aws v1.27.0
 	k8s.io/code-generator v0.29.0-alpha.3
