@@ -39,7 +39,7 @@ node-b:
   total cost=15
 ```
 
-`node-b` will be removed before `node-a`.
+`node-b` should be removed before `node-a`.
 
 ## Goals
 
@@ -48,6 +48,12 @@ node-b:
 * Add another layer of ordering to the scale-down process.
 * Protect long-running processes from being shut down and made to start over.
 * Reduce avoidable disruption to workloads that are expensive to restart.
+
+## Non-Goals
+
+* Define Karpenter-specific scoring, normalization, consolidation behavior, feature gates, or migration.
+* Unify autoscaler-specific hard eviction controls such as `cluster-autoscaler.kubernetes.io/safe-to-evict` and `karpenter.sh/do-not-disrupt`.
+* Guarantee a strict pod or node disruption order.
 
 ## Detailed design
 
@@ -79,30 +85,34 @@ The common annotation semantics are:
 * A higher value represents that disrupting the pod is relatively more expensive.
 * The annotation is a best-effort preference rather than a hard disruption constraint.
 
-The annotation value is a unitless non-negative integer in the range `[0, MaxInt32]`, so missing, unparsable, negative or out-of-range value should be treated as zero.
+The annotation value is a unitless non-negative integer in the range `[0, MaxInt32]`, so missing, unparsable, negative or out-of-range value should be treated as the default for the autoscaler.
 
 Examples:
 
-| Value              | seen as               |
-| ------------------ |-----------------------|
-| missing annotation | 0                     |
-| `"0"`              | 0                     |
-| `"10"`             | 10                    |
-| `"-1"`             | invalid, treated as 0 |
-| `"abc"`            | invalid, treated as 0 |
-| `"10.5"`           | invalid, treated as 0 |
-| overflow           | invalid, treated as 0 |
+| Value              | seen as                     |
+| ------------------ |-----------------------------|
+| missing annotation | autoscaler default          |
+| `"0"`              | 0                           |
+| `"10"`             | 10                          |
+| `"-1"`             | invalid, treated as default |
+| `"abc"`            | invalid, treated as default |
+| `"10.5"`           | invalid, treated as default |
+| overflow           | invalid, treated as default |
 
 ### Difference from Pod Deletion Cost
 
 Kubernetes already defines the `controller.kubernetes.io/pod-deletion-cost` annotation, so why is it preferred to introduce a new annotation over reusing the existing one?
 
-While both annotations are placed on pods and have similar naming, during the scale-down process `controller.kubernetes.io/pod-deletion-cost` is used to hint at the deletion cost of a pod compared to other pods within the same **_ReplicaSet_**,
-whereas `node-autoscaling.kubernetes.io/disruption-cost` is used to hint at the disruption cost of a pod compared across different **_nodes_**.
+While both annotations are placed on pods and have similar naming, they have different shapes and consumers:
 
-Therefore, reusing the existing annotation would overload it with two independent meanings and consumers.
-The ReplicaSet controller needs a signal for which pods should be deleted first, and node autoscalers need a signal for which pods are more expensive to disrupt during node removal or consolidation. 
-These values are not necessarily the same and may even point in opposite directions.
+- `controller.kubernetes.io/pod-deletion-cost` is a relative ordering signal between pods that belong to the same ***ReplicaSet***. 
+It is consumed by the _ReplicaSet controller_ when deciding which replica should be deleted first during scale down.
+
+- `node-autoscaling.kubernetes.io/disruption-cost` is a relative disruption preference between potentially unrelated pods or workloads. 
+It is consumed by _node autoscalers_ when comparing node removal or consolidation candidates.
+
+Reusing `controller.kubernetes.io/pod-deletion-cost` would overload it with two independent meanings, 
+while separation allows autoscalers to write or derive it for ReplicaSet coordination without overwriting the user-facing disruption preference.
 
 ### Implementation in Cluster Autoscaler
 
@@ -184,7 +194,7 @@ Karpenter-specific scoring, normalization, consolidation behavior, feature gates
 
 ### Corner cases
 
-* An annotation set on `DaemonSetPods` has no impact on the node disruption cost.
+* DaemonSet pods do not contribute to node disruption cost.
 * `PodDisruptionBudget`s keep their current behavior.
 * Pods with `cluster-autoscaler.kubernetes.io/safe-to-evict=false` keep blocking scale-down.
 * Pods with `cluster-autoscaler.kubernetes.io/safe-to-evict=on-completion` keep delaying scale-down until completion.
@@ -193,7 +203,7 @@ Karpenter-specific scoring, normalization, consolidation behavior, feature gates
 
 The following unit test scenarios should be added:
 
-* [TC1] Missing, invalid, negative, non-integer, and overflowing annotation values are treated as zero.
+* [TC1] Missing, invalid, negative, non-integer, and out-of-range annotation values are treated as absent and resolved to the autoscaler default.
 * [TC2] Valid annotation values are parsed and summed for pods in `NodeToBeRemoved.PodsToReschedule`.
 * [TC3] Nodes with lower total disruption cost are preferred within the same existing ordering group.
 * [TC4] Existing `riskyNodes` and `okNodes` ordering is preserved.
