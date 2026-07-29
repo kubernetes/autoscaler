@@ -106,8 +106,6 @@ func buildScaleDownDependencies(b *testing.B, cs *initialClusterState, autoscali
 
 // Crucial to pass -benchtime=1x to let the Loop know to run scaledown strategy exactly once.
 func (scenario scaleDownScenario) runIteration(b *testing.B) {
-	klog.Infof("iteration: %d", b.N)
-
 	opts := defaultAutoscalingOptions()
 	if scenario.AutoscalingOpts != nil {
 		scenario.AutoscalingOpts(&opts)

@@ -91,7 +91,7 @@ const (
 var (
 	runOnceCpuProfile = flag.String("profile-cpu", "", "If set, the benchmark writes a CPU profile to this file, covering the RunOnce execution during the first iteration.")
 	runOnceTrace      = flag.String("trace", "", "If set, the benchmark writes an execution trace to this file, covering the RunOnce execution during the first iteration.")
-	withGC            = flag.Bool("gc", false, "If set to false, the benchmark disables garbage collection to stabilize the runtime.")
+	withGC            = flag.Bool("gc", true, "If set to false, the benchmark disables garbage collection to stabilize the runtime.")
 )
 
 type scenario struct {
