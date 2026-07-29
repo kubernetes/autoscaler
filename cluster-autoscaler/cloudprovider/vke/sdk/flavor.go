@@ -21,6 +21,7 @@ import (
 	"fmt"
 )
 
+// Flavor represents a VKE machine flavor usable for node templates.
 type Flavor struct {
 	Id       string `json:"id"`
 	Category string `json:"category"`

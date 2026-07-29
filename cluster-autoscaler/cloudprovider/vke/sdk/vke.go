@@ -34,8 +34,7 @@ import (
 // DefaultTimeout api requests after 180s
 const DefaultTimeout = 180 * time.Second
 
-// Endpoints
-
+// VKE is the API base URL loaded from the VKE_URL environment variable.
 var VKE = os.Getenv("VKE_URL")
 
 // Endpoints conveniently maps endpoints names to their URI for external configuration
@@ -45,9 +44,10 @@ var Endpoints = map[string]string{
 
 // Errors
 var (
-	ErrAPIDown = errors.New("The VKE API is down, it does't respond to /time anymore")
+	ErrAPIDown = errors.New("The VKE API is down, it doesn't respond to /time anymore")
 )
 
+// Client is the HTTP client used to call the VKE API.
 type Client struct {
 	AppKey string
 
@@ -121,8 +121,7 @@ func NewDefaultClientWithToken(authUrl, token string) (*Client, error) {
 	return client, nil
 }
 
-// High level helpers
-//
+// Ping checks whether the VKE API is reachable.
 // In fact, ping is just a /auth/time call, in order to check if API is up.
 func (c *Client) Ping() error {
 	_, err := c.getTime()
@@ -134,6 +133,7 @@ func (c *Client) TimeDelta() (time.Duration, error) {
 	return c.getTimeDelta()
 }
 
+// Time returns the current time from the VKE API.
 func (c *Client) Time() (*time.Time, error) {
 	return c.getTime()
 }

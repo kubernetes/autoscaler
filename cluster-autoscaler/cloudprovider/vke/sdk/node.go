@@ -44,6 +44,7 @@ import (
 // 	UpdatedAt  time.Time `json:"updatedAt"`
 // }
 
+// Node represents a VKE node returned by the control-plane API.
 type Node struct {
 	ClusterUUID   string `json:"cluster_uuid"`
 	Id            string `json:"id"`
