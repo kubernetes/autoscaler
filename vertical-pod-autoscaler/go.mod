@@ -11,13 +11,13 @@ require (
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
 	golang.org/x/time v0.15.0
-	k8s.io/api v0.37.0-alpha.3
-	k8s.io/apimachinery v0.37.0-alpha.3
-	k8s.io/client-go v0.37.0-alpha.3
-	k8s.io/code-generator v0.37.0-alpha.3
-	k8s.io/component-base v0.37.0-alpha.3
+	k8s.io/api v0.37.0-beta.0
+	k8s.io/apimachinery v0.37.0-beta.0
+	k8s.io/client-go v0.37.0-beta.0
+	k8s.io/code-generator v0.37.0-beta.0
+	k8s.io/component-base v0.37.0-beta.0
 	k8s.io/klog/v2 v2.140.0
-	k8s.io/metrics v0.37.0-alpha.3
+	k8s.io/metrics v0.37.0-beta.0
 	k8s.io/utils v0.0.0-20260626114624-be93311217bd
 )
 
