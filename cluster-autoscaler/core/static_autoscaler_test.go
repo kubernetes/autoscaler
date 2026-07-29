@@ -778,8 +778,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	onScaleDownMock := &onScaleDownMock{}
 	onNodeGroupCreateMock := &onNodeGroupCreateMock{}
 	onNodeGroupDeleteMock := &onNodeGroupDeleteMock{}
-	nodeGroupManager := &MockAutoprovisioningNodeGroupManager{t, 0}
-	nodeGroupListProcessor := &MockAutoprovisioningNodeGroupListProcessor{t}
+	nodeGroupManager := &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 0}
+	nodeGroupListProcessor := &MockAutoprovisioningNodeGroupListProcessor{T: t}
 	deleteFinished := make(chan bool, 1)
 
 	n1 := BuildTestNode("n1", 100, 1000)

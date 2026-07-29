@@ -414,7 +414,8 @@ func (c *instancePoolCache) setSize(instancePoolID string, size int) error {
 		return err
 	}
 	// Allow an additional time for the pool State to reach Running
-	ctx, _ = context.WithTimeout(ctx, 10*time.Minute)
+	ctx, cancelFunc = context.WithTimeout(ctx, 10*time.Minute)
+	defer cancelFunc()
 	err = c.waitForState(ctx, instancePoolID, core.InstancePoolLifecycleStateRunning)
 	if err != nil {
 		return err
