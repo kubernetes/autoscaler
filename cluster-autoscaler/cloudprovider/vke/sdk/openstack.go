@@ -36,6 +36,7 @@ type OpenStackProvider struct {
 	Token               string
 	tokenExpirationTime time.Time
 }
+
 // Auth holds OpenStack application credential fields.
 type Auth struct {
 	IdentityEndpoint            string `json:"identity_endpoint"`
