@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/types"
+	cbmetrics "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 	"k8s.io/klog/v2"
 
@@ -53,6 +54,10 @@ const (
 	FakePodsInjectedReason = "FakePodsInjected"
 )
 
+const (
+	unknownProvisioningStrategy = "unknown"
+)
+
 // CapacityBufferPodListProcessor processes the pod lists before scale up
 // and adds buffres api virtual pods.
 type CapacityBufferPodListProcessor struct {
@@ -66,6 +71,7 @@ type CapacityBufferPodListProcessor struct {
 
 // NewCapacityBufferPodListProcessor creates a new CapacityRequestPodListProcessor.
 func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, provStrategies []string, buffersRegistry *fakepods.Registry, forceSafeToEvictFakePods bool) *CapacityBufferPodListProcessor {
+	cbmetrics.RegisterActiveMetrics()
 	provStrategiesMap := map[string]bool{}
 	for _, ps := range provStrategies {
 		provStrategiesMap[ps] = true
@@ -84,12 +90,15 @@ func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, prov
 }
 
 // Process updates unschedulablePods by injecting fake pods to match replicas defined in buffers status
+// and updates the capacity buffers count metrics.
 func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	buffers, err := p.client.ListCapacityBuffers("")
 	if err != nil {
 		klog.Errorf("CapacityBufferPodListProcessor failed to list buffers with error: %v", err.Error())
 		return unschedulablePods, nil
 	}
+	emitCapacityBuffersCount(buffers)
+
 	buffers = p.filterBuffersProvStrategy(buffers)
 	_, buffers = p.statusFilter.Filter(buffers)
 	_, buffers = p.podTemplateGenFilter.Filter(buffers)
@@ -103,6 +112,27 @@ func (p *CapacityBufferPodListProcessor) Process(autoscalingCtx *ca_context.Auto
 	klog.V(2).Infof("Capacity pod processor injecting %v fake pods provisioning %v capacity buffers", len(totalFakePods), len(buffers))
 	unschedulablePods = append(unschedulablePods, totalFakePods...)
 	return unschedulablePods, nil
+}
+
+func emitCapacityBuffersCount(buffers []*v1beta1.CapacityBuffer) {
+	countsByType := capacityBuffersCountsByType(buffers)
+	cbmetrics.UpdateCapacityBuffersNumber(countsByType)
+}
+
+func capacityBuffersCountsByType(buffers []*v1beta1.CapacityBuffer) map[string]int {
+	countsByType := map[string]int{}
+	for _, buffer := range buffers {
+		if buffer == nil {
+			continue
+		}
+		ps := unknownProvisioningStrategy
+		if buffer.Status.ProvisioningStrategy != nil {
+			ps = *buffer.Status.ProvisioningStrategy
+		}
+		countsByType[ps]++
+	}
+
+	return countsByType
 }
 
 // CleanUp is called at CA termination

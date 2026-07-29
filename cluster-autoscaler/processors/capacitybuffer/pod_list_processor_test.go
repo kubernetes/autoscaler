@@ -324,3 +324,22 @@ func getTestingBuffer(bufferName, refName string, replicas int32, generation int
 	}
 	return buffer
 }
+
+func TestCapacityBuffersCountsByType(t *testing.T) {
+	strategy1 := "strategy_1"
+	strategy2 := "strategy_2"
+
+	buffers := []*apiv1.CapacityBuffer{
+		getTestingBuffer("buffer1", "ref1", 1, 1, true, 1, strategy1),
+		nil, // Defensive nil check validation
+		getTestingBuffer("buffer2", "ref2", 1, 1, true, 1, strategy2),
+		getTestingBuffer("buffer3", "ref3", 1, 1, true, 1, strategy1),
+	}
+
+	counts := capacityBuffersCountsByType(buffers)
+
+	// Verify that counts are correct and nil buffer is ignored without panic
+	assert.Equal(t, 2, counts[strategy1])
+	assert.Equal(t, 1, counts[strategy2])
+	assert.Equal(t, 2, len(counts))
+}
