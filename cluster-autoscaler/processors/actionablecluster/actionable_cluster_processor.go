@@ -75,7 +75,7 @@ func OnEmptyCluster(autoscalingCtx *ca_context.AutoscalingContext, status string
 		utils.WriteStatusConfigMap(autoscalingCtx.ClientSet, autoscalingCtx.ConfigNamespace, api.ClusterAutoscalerStatus{AutoscalerStatus: api.ClusterAutoscalerInitializing, Message: status}, autoscalingCtx.LogRecorder, autoscalingCtx.StatusConfigMapName, time.Now())
 	}
 	if emitEvent {
-		autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
+		autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "%s", status)
 	}
 }
 

@@ -217,7 +217,7 @@ func TestBestOptionsEmpty(t *testing.T) {
 			mockResponse: protos.BestOptionsResponse{Options: []*protos.Option{}},
 		},
 	}
-	for _, tc := range testCases {
+	for i := range testCases {
 		grpcNodeBytesMap := populateNodeInfoForGRPC(makeFakeNodeInfos())
 		assert.NotNil(t, grpcNodeBytesMap)
 		mockClient.EXPECT().BestOptions(
@@ -225,7 +225,7 @@ func TestBestOptionsEmpty(t *testing.T) {
 				&protos.BestOptionsRequest{
 					Options:      []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
 					NodeBytesMap: grpcNodeBytesMap,
-				})).Return(&tc.mockResponse, nil)
+				})).Return(&testCases[i].mockResponse, nil)
 		resp := g.BestOptions(options, makeFakeNodeInfos())
 
 		assert.Nil(t, resp)
@@ -281,18 +281,18 @@ func TestBestOptionsErrors(t *testing.T) {
 			errResponse:  nil,
 		},
 	}
-	for _, tc := range testCases {
-		grpcNodeBytesMap := populateNodeInfoForGRPC(tc.nodeInfo)
+	for i := range testCases {
+		grpcNodeBytesMap := populateNodeInfoForGRPC(testCases[i].nodeInfo)
 		assert.NotNil(t, grpcNodeBytesMap)
-		if tc.client.grpcClient != nil {
+		if testCases[i].client.grpcClient != nil {
 			mockClient.EXPECT().BestOptions(
 				gomock.Any(), gomock.Eq(
 					&protos.BestOptionsRequest{
 						Options:      []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
 						NodeBytesMap: grpcNodeBytesMap,
-					})).Return(&tc.mockResponse, tc.errResponse)
+					})).Return(&testCases[i].mockResponse, testCases[i].errResponse)
 		}
-		resp := tc.client.BestOptions(options, tc.nodeInfo)
+		resp := testCases[i].client.BestOptions(options, testCases[i].nodeInfo)
 
 		assert.Equal(t, resp, options)
 	}
