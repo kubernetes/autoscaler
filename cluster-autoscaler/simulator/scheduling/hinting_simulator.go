@@ -158,7 +158,7 @@ func handleContextError(ctx context.Context, pods []*apiv1.Pod, unschedulablePod
 		}
 
 		unprocessedPodsCount := len(pods) - len(statuses) - len(unschedulablePods)
-		klogx.V(4).Infof("Scheduling simulation aborted early due to %v. Requestor: %s, Simulated %d pods. %d pods were unprocessed", err, requestor, len(statuses), unprocessedPodsCount)
+		klogx.V(4).Infof("Scheduling simulation aborted early due to %v. Requestor: %s, Simulated %d pods. %d pods were unprocessed", err, requestor, len(statuses)+len(unschedulablePods), unprocessedPodsCount)
 		klogx.V(4).Over(loggingQuota).Infof("There were also %v other logs from HintingSimulator.TrySchedulePods func that were capped.", -loggingQuota.Left())
 
 		return newResult(pods, unschedulablePods, statuses, similarPods), nil
