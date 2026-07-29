@@ -138,8 +138,8 @@ func TestParseShutdownGracePeriodsAndPriorities(t *testing.T) {
 			name:  "parsable input",
 			input: "1:2,3:4",
 			want: []kubelet_config.ShutdownGracePeriodByPodPriority{
-				{1, 2},
-				{3, 4},
+				{Priority: 1, ShutdownGracePeriodSeconds: 2},
+				{Priority: 3, ShutdownGracePeriodSeconds: 4},
 			},
 		},
 	}
