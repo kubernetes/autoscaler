@@ -96,17 +96,20 @@ func (u *UpdateLatencyTracker) Start() {
 	}
 }
 
-// drainStartTimeChan safely and non-blockingly pulls all pending items out
-// of StartTimeChan until it's completely empty. It uses a select-default idiom
-// to avoid deadlocking, which is a risk when using `len(chan) > 0` checks
-// due to concurrent race conditions.
+// drainStartTimeChan pulls all pending items out  of u.StartTimeChan.
+// Returns immediately if u.StartTimeChan is empty.
 func (u *UpdateLatencyTracker) drainStartTimeChan() {
+DrainLoop:
 	for {
 		select {
-		case ntst := <-u.StartTimeChan:
+		case ntst, ok := <-u.StartTimeChan:
+			if !ok {
+				break DrainLoop
+			}
 			u.startTimestamp[ntst.nodeName] = ntst.startTime
 		default:
-			return // Channel is empty, safely exit without blocking.
+			// Channel is empty, safely exit without blocking.
+			break DrainLoop
 		}
 	}
 }

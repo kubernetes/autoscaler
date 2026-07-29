@@ -45,6 +45,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
+	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -71,21 +72,23 @@ type scaleDownStatusInfo struct {
 }
 
 type startDeletionTestCase struct {
-	defaultOnly           bool // Set to true to only run default deletion logic tests.
-	forcedOnly            bool // Set to true to only run forced deletion logic tests.
-	nodeGroups            map[string]*testprovider.TestNodeGroup
-	emptyNodes            []nodeGroupViewInfo
-	drainNodes            []nodeGroupViewInfo
-	pods                  map[string][]*apiv1.Pod
-	failedPodDrain        map[string]bool
-	failedNodeDeletion    map[string]bool
-	failedNodeTaint       map[string]bool
-	wantStatus            scaleDownStatusInfo
-	wantErr               error
-	wantDeletedPods       []string
-	wantDeletedNodes      []string
-	wantTaintUpdates      map[string][][]apiv1.Taint
-	wantNodeDeleteResults map[string]status.NodeDeleteResult
+	defaultOnly                   bool // Set to true to only run default deletion logic tests.
+	forcedOnly                    bool // Set to true to only run forced deletion logic tests.
+	nodeGroups                    map[string]*testprovider.TestNodeGroup
+	emptyNodes                    []nodeGroupViewInfo
+	drainNodes                    []nodeGroupViewInfo
+	pods                          map[string][]*apiv1.Pod
+	failedPodDrain                map[string]bool
+	failedNodeDeletion            map[string]bool
+	failedNodeTaint               map[string]bool
+	partialTaintActuationEnabled  bool
+	dynamicNodeDeleteDelayEnabled bool
+	wantStatus                    scaleDownStatusInfo
+	wantErr                       error
+	wantDeletedPods               []string
+	wantDeletedNodes              []string
+	wantTaintUpdates              map[string][][]apiv1.Taint
+	wantNodeDeleteResults         map[string]status.NodeDeleteResult
 }
 
 func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, force bool, suffix string) map[string]startDeletionTestCase {
@@ -178,6 +181,274 @@ func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, force bool, suf
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
 				"atomic-2-node-0": {ResultType: status.NodeDeleteOk},
 				"atomic-2-node-1": {ResultType: status.NodeDeleteOk},
+			},
+		},
+		"empty node deletion with failed taint": {
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test-4": sizedNodeGroup("test-4", 4, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"test-4", 0, 4},
+			},
+			failedNodeTaint: map[string]bool{
+				"test-4-node-1": true,
+			},
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownError,
+			},
+			wantErr:          caerrors.NewAutoscalerErrorf(caerrors.ApiCallError, "couldn't taint 1 nodes with ToBeDeleted"),
+			wantDeletedNodes: nil,
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"test-4-node-0": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"test-4-node-2": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"test-4-node-3": {
+					{toBeDeletedTaint},
+					{},
+				},
+			},
+		},
+
+		"empty node deletion with all taints failing, throughput optimized": {
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test-3": sizedNodeGroup("test-3", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"test-3", 0, 3},
+			},
+			failedNodeTaint: map[string]bool{
+				"test-3-node-0": true,
+				"test-3-node-1": true,
+				"test-3-node-2": true,
+			},
+			partialTaintActuationEnabled: true,
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownError,
+			},
+			wantErr:          caerrors.NewAutoscalerErrorf(caerrors.ApiCallError, "couldn't taint 3 nodes with ToBeDeleted and no nodes can be scaled down"),
+			wantDeletedNodes: nil,
+			wantTaintUpdates: map[string][][]apiv1.Taint{},
+		},
+		"drain node deletion with failed taint, throughput optimized": {
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test-4": sizedNodeGroup("test-4", 4, false, ignoreDaemonSetsUtilization),
+			},
+			drainNodes: []nodeGroupViewInfo{
+				{"test-4", 0, 4},
+			},
+			pods: map[string][]*apiv1.Pod{
+				"test-4-node-0": removablePods(1, "test-4-node-0"),
+				"test-4-node-1": removablePods(1, "test-4-node-1"),
+				"test-4-node-2": removablePods(1, "test-4-node-2"),
+				"test-4-node-3": removablePods(1, "test-4-node-3"),
+			},
+			failedNodeTaint: map[string]bool{
+				"test-4-node-1": true,
+			},
+			partialTaintActuationEnabled: true,
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
+					{
+						name:        "test-4-node-0",
+						nodeGroup:   "test-4",
+						utilInfo:    generateUtilInfo(0.125, 0.125),
+						evictedPods: removablePods(1, "test-4-node-0"),
+					},
+					{
+						name:        "test-4-node-2",
+						nodeGroup:   "test-4",
+						utilInfo:    generateUtilInfo(0.125, 0.125),
+						evictedPods: removablePods(1, "test-4-node-2"),
+					},
+					{
+						name:        "test-4-node-3",
+						nodeGroup:   "test-4",
+						utilInfo:    generateUtilInfo(0.125, 0.125),
+						evictedPods: removablePods(1, "test-4-node-3"),
+					},
+				},
+			},
+			wantErr: nil,
+			wantDeletedNodes: []string{
+				"test-4-node-0",
+				"test-4-node-2",
+				"test-4-node-3",
+			},
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+				"test-4-node-0": {ResultType: status.NodeDeleteOk},
+				"test-4-node-2": {ResultType: status.NodeDeleteOk},
+				"test-4-node-3": {ResultType: status.NodeDeleteOk},
+			},
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"test-4-node-0": {
+					{toBeDeletedTaint},
+				},
+				"test-4-node-2": {
+					{toBeDeletedTaint},
+				},
+				"test-4-node-3": {
+					{toBeDeletedTaint},
+				},
+			},
+		},
+
+		"drain atomic node deletion with failed taint, throughput optimized": {
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"atomic-4": sizedNodeGroup("atomic-4", 4, true, ignoreDaemonSetsUtilization),
+			},
+			drainNodes: []nodeGroupViewInfo{
+				{"atomic-4", 0, 4},
+			},
+			pods: map[string][]*apiv1.Pod{
+				"atomic-4-node-0": removablePods(1, "atomic-4-node-0"),
+				"atomic-4-node-1": removablePods(1, "atomic-4-node-1"),
+				"atomic-4-node-2": removablePods(1, "atomic-4-node-2"),
+				"atomic-4-node-3": removablePods(1, "atomic-4-node-3"),
+			},
+			failedNodeTaint: map[string]bool{
+				"atomic-4-node-1": true,
+			},
+			partialTaintActuationEnabled: true,
+			wantStatus: scaleDownStatusInfo{
+				result:          status.ScaleDownError,
+				scaledDownNodes: nil,
+			},
+			wantErr:               cmpopts.AnyError,
+			wantDeletedNodes:      nil,
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{},
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"atomic-4-node-0": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-4-node-2": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-4-node-3": {
+					{toBeDeletedTaint},
+					{},
+				},
+			},
+		},
+		"empty node deletion with failed taint, throughput optimized": {
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test-4": sizedNodeGroup("test-4", 4, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"test-4", 0, 4},
+			},
+			failedNodeTaint: map[string]bool{
+				"test-4-node-1": true,
+			},
+			partialTaintActuationEnabled: true,
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
+					{
+						name:      "test-4-node-0",
+						nodeGroup: "test-4",
+						utilInfo:  generateUtilInfo(0, 0),
+					},
+					{
+						name:      "test-4-node-2",
+						nodeGroup: "test-4",
+						utilInfo:  generateUtilInfo(0, 0),
+					},
+					{
+						name:      "test-4-node-3",
+						nodeGroup: "test-4",
+						utilInfo:  generateUtilInfo(0, 0),
+					},
+				},
+			},
+			wantDeletedNodes: []string{
+				"test-4-node-0",
+				"test-4-node-2",
+				"test-4-node-3",
+			},
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"test-4-node-0": {
+					{toBeDeletedTaint},
+				},
+				"test-4-node-2": {
+					{toBeDeletedTaint},
+				},
+				"test-4-node-3": {
+					{toBeDeletedTaint},
+				},
+			},
+			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+				"test-4-node-0": {ResultType: status.NodeDeleteOk},
+				"test-4-node-2": {ResultType: status.NodeDeleteOk},
+				"test-4-node-3": {ResultType: status.NodeDeleteOk},
+			},
+		},
+		"empty atomic node deletion with failed taint": {
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"atomic-4": sizedNodeGroup("atomic-4", 4, true, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"atomic-4", 0, 4},
+			},
+			failedNodeTaint: map[string]bool{
+				"atomic-4-node-1": true,
+			},
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownError,
+			},
+			wantErr:          caerrors.NewAutoscalerErrorf(caerrors.ApiCallError, "couldn't taint 1 nodes with ToBeDeleted"),
+			wantDeletedNodes: nil,
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"atomic-4-node-0": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-4-node-2": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-4-node-3": {
+					{toBeDeletedTaint},
+					{},
+				},
+			},
+		},
+		"empty atomic node deletion with failed taint, throughput optimized": {
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"atomic-4": sizedNodeGroup("atomic-4", 4, true, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"atomic-4", 0, 4},
+			},
+			failedNodeTaint: map[string]bool{
+				"atomic-4-node-1": true,
+			},
+			partialTaintActuationEnabled: true,
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownError,
+			},
+			wantErr:          caerrors.NewAutoscalerErrorf(caerrors.ApiCallError, "couldn't taint 1 nodes with ToBeDeleted and no nodes can be scaled down"),
+			wantDeletedNodes: nil,
+			wantTaintUpdates: map[string][][]apiv1.Taint{
+				"atomic-4-node-0": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-4-node-2": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-4-node-3": {
+					{toBeDeletedTaint},
+					{},
+				},
 			},
 		},
 		"deletion with drain": {
@@ -569,6 +840,26 @@ func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, force bool, suf
 				},
 				"test-node-1": {
 					{toBeDeletedTaint},
+				},
+				"atomic-6-node-0": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-6-node-1": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-6-node-3": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-6-node-4": {
+					{toBeDeletedTaint},
+					{},
+				},
+				"atomic-6-node-5": {
+					{toBeDeletedTaint},
+					{},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
@@ -996,11 +1287,9 @@ func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, force bool, suf
 			wantTaintUpdates: map[string][][]apiv1.Taint{
 				"test-node-0": {
 					{toBeDeletedTaint},
-					{},
 				},
 				"test-node-1": {
 					{toBeDeletedTaint},
-					{},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
@@ -1151,7 +1440,14 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 			defer nodesLock.Unlock()
 			update := action.(core.UpdateAction)
 			obj := update.GetObject().(*apiv1.Node)
-			if tc.failedNodeTaint[obj.Name] {
+			hasToBeDeletedTaint := false
+			for _, taint := range obj.Spec.Taints {
+				if taint.Key == taints.ToBeDeletedTaint {
+					hasToBeDeletedTaint = true
+					break
+				}
+			}
+			if tc.failedNodeTaint[obj.Name] && hasToBeDeletedTaint {
 				return true, nil, fmt.Errorf("SIMULATED ERROR: won't taint")
 			}
 			nt := nodeTaints{
@@ -1208,10 +1504,12 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 
 	// Set up other needed structures and options.
 	opts := config.AutoscalingOptions{
-		MaxScaleDownParallelism:        10,
-		MaxDrainParallelism:            5,
-		MaxPodEvictionTime:             0,
-		DaemonSetEvictionForEmptyNodes: true,
+		MaxScaleDownParallelism:                 10,
+		MaxDrainParallelism:                     5,
+		MaxPodEvictionTime:                      0,
+		DaemonSetEvictionForEmptyNodes:          true,
+		PartialTaintActuationEnabled:            tc.partialTaintActuationEnabled,
+		DynamicNodeDeleteDelayAfterTaintEnabled: tc.dynamicNodeDeleteDelayEnabled,
 	}
 
 	allPods := []*apiv1.Pod{}
@@ -1227,7 +1525,16 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 		t.Fatalf("Couldn't create daemonset lister")
 	}
 
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, pdbLister, dsLister, nil, nil, nil, nil)
+	allExpectedNodes := make([]*apiv1.Node, 0)
+	for _, n := range allEmptyNodes {
+		allExpectedNodes = append(allExpectedNodes, n)
+	}
+	for _, n := range allDrainNodes {
+		allExpectedNodes = append(allExpectedNodes, n)
+	}
+	nodeLister := kube_util.NewTestNodeLister(allExpectedNodes)
+
+	registry := kube_util.NewListerRegistry(nodeLister, nil, podLister, pdbLister, dsLister, nil, nil, nil, nil)
 	autoscalingCtx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("Couldn't set up autoscaling context: %v", err)
@@ -1376,34 +1683,68 @@ taintsLoop:
 
 func TestStartDeletion(t *testing.T) {
 	testSets := []map[string]startDeletionTestCase{
-		// IgnoreDaemonSetsUtilization is false
 		getStartDeletionTestCases(false, false, "testNg1"),
-		// IgnoreDaemonSetsUtilization is true
 		getStartDeletionTestCases(true, false, "testNg2"),
 	}
 
 	for _, testSet := range testSets {
 		for tn, tc := range testSet {
-			t.Run(tn, func(t *testing.T) {
-				runStartDeletionTest(t, tc, false)
-			})
+			if !tc.partialTaintActuationEnabled {
+				t.Run(fmt.Sprintf("%s-partialActuationEnabled:false", tn), func(t *testing.T) {
+					runStartDeletionTest(t, tc, false)
+				})
+			}
+		}
+	}
+}
+
+func TestStartDeletionThroughputOptimized(t *testing.T) {
+	testSets := []map[string]startDeletionTestCase{
+		getStartDeletionTestCases(false, false, "testNg1"),
+		getStartDeletionTestCases(true, false, "testNg2"),
+	}
+
+	for _, testSet := range testSets {
+		for tn, tc := range testSet {
+			if tc.partialTaintActuationEnabled {
+				t.Run(fmt.Sprintf("%s-partialActuationEnabled:true", tn), func(t *testing.T) {
+					runStartDeletionTest(t, tc, false)
+				})
+			}
 		}
 	}
 }
 
 func TestStartForceDeletion(t *testing.T) {
 	testSets := []map[string]startDeletionTestCase{
-		// IgnoreDaemonSetsUtilization is false
 		getStartDeletionTestCases(false, true, "testNg1"),
-		// IgnoreDaemonSetsUtilization is true
 		getStartDeletionTestCases(true, true, "testNg2"),
 	}
 
 	for _, testSet := range testSets {
 		for tn, tc := range testSet {
-			t.Run(tn, func(t *testing.T) {
-				runStartDeletionTest(t, tc, true)
-			})
+			if !tc.partialTaintActuationEnabled {
+				t.Run(fmt.Sprintf("%s-partialActuationEnabled:false", tn), func(t *testing.T) {
+					runStartDeletionTest(t, tc, true)
+				})
+			}
+		}
+	}
+}
+
+func TestStartForceDeletionThroughputOptimized(t *testing.T) {
+	testSets := []map[string]startDeletionTestCase{
+		getStartDeletionTestCases(false, true, "testNg1"),
+		getStartDeletionTestCases(true, true, "testNg2"),
+	}
+
+	for _, testSet := range testSets {
+		for tn, tc := range testSet {
+			if tc.partialTaintActuationEnabled {
+				t.Run(fmt.Sprintf("%s-partialActuationEnabled:true", tn), func(t *testing.T) {
+					runStartDeletionTest(t, tc, true)
+				})
+			}
 		}
 	}
 }
@@ -1719,4 +2060,134 @@ func waitForDeletionResultsCount(ndt *deletiontracker.NodeDeletionTracker, resul
 		}
 	}
 	return fmt.Errorf("timed out while waiting for node deletion results")
+}
+
+type expectedActuationResult struct {
+	status       status.ScaleDownResult
+	err          error
+	deletedNodes []string
+}
+
+type partialTaintingTestCase struct {
+	description     string
+	nodeGroupName   string
+	nodeGroups      map[string]*testprovider.TestNodeGroup
+	emptyNodes      []nodeGroupViewInfo
+	failedNodeTaint map[string]bool
+	enabled         expectedActuationResult
+	disabled        expectedActuationResult
+}
+
+func TestStartDeletion_PartialTaintActuation(t *testing.T) {
+	ignoreDaemonSetsUtilization := false
+	cases := []partialTaintingTestCase{
+		{
+			description:   "empty node deletion with partial taint failure",
+			nodeGroupName: "test-3",
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test-3": sizedNodeGroup("test-3", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"test-3", 0, 3},
+			},
+			failedNodeTaint: map[string]bool{
+				"test-3-node-1": true,
+			},
+			disabled: expectedActuationResult{
+				status:       status.ScaleDownError,
+				err:          caerrors.NewAutoscalerErrorf(caerrors.ApiCallError, "couldn't taint 1 nodes with ToBeDeleted"),
+				deletedNodes: nil,
+			},
+			enabled: expectedActuationResult{
+				status:       status.ScaleDownNodeDeleteStarted,
+				err:          nil,
+				deletedNodes: []string{"test-3-node-0", "test-3-node-2"},
+			},
+		},
+		{
+			description:   "empty node deletion with all taints failing",
+			nodeGroupName: "test-3",
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test-3": sizedNodeGroup("test-3", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"test-3", 0, 3},
+			},
+			failedNodeTaint: map[string]bool{
+				"test-3-node-0": true,
+				"test-3-node-1": true,
+				"test-3-node-2": true,
+			},
+			disabled: expectedActuationResult{
+				status:       status.ScaleDownError,
+				err:          caerrors.NewAutoscalerErrorf(caerrors.ApiCallError, "couldn't taint 3 nodes with ToBeDeleted"),
+				deletedNodes: nil,
+			},
+			enabled: expectedActuationResult{
+				status:       status.ScaleDownError,
+				err:          caerrors.NewAutoscalerErrorf(caerrors.ApiCallError, "couldn't taint 3 nodes with ToBeDeleted and no nodes can be scaled down"),
+				deletedNodes: nil,
+			},
+		},
+	}
+
+	buildExpected := func(wantResult status.ScaleDownResult, wantDeleted []string, nodeGroupName string) (scaleDownStatusInfo, map[string]status.NodeDeleteResult, map[string][][]apiv1.Taint) {
+		statusInfo := scaleDownStatusInfo{result: wantResult}
+		var deleteResults map[string]status.NodeDeleteResult
+		var taintUpdates map[string][][]apiv1.Taint
+		toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
+
+		if len(wantDeleted) > 0 {
+			deleteResults = make(map[string]status.NodeDeleteResult)
+			taintUpdates = make(map[string][][]apiv1.Taint)
+			for _, node := range wantDeleted {
+				statusInfo.scaledDownNodes = append(statusInfo.scaledDownNodes, scaleDownNodeInfo{
+					name:      node,
+					nodeGroup: nodeGroupName,
+					utilInfo:  generateUtilInfo(0, 0),
+				})
+				deleteResults[node] = status.NodeDeleteResult{ResultType: status.NodeDeleteOk}
+				taintUpdates[node] = [][]apiv1.Taint{{toBeDeletedTaint}}
+			}
+		}
+		return statusInfo, deleteResults, taintUpdates
+	}
+
+	for _, tc := range cases {
+		for _, dynamicDelayEnabled := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s-PartialTaintActuationEnabled:false-DynamicDelay:%v", tc.description, dynamicDelayEnabled), func(t *testing.T) {
+				statusInfo, deleteResults, taintUpdates := buildExpected(tc.disabled.status, tc.disabled.deletedNodes, tc.nodeGroupName)
+				baseTC := startDeletionTestCase{
+					nodeGroups:                    tc.nodeGroups,
+					emptyNodes:                    tc.emptyNodes,
+					failedNodeTaint:               tc.failedNodeTaint,
+					wantStatus:                    statusInfo,
+					wantErr:                       tc.disabled.err,
+					wantDeletedNodes:              tc.disabled.deletedNodes,
+					wantNodeDeleteResults:         deleteResults,
+					wantTaintUpdates:              taintUpdates,
+					partialTaintActuationEnabled:  false,
+					dynamicNodeDeleteDelayEnabled: dynamicDelayEnabled,
+				}
+				runStartDeletionTest(t, baseTC, false)
+			})
+
+			t.Run(fmt.Sprintf("%s-PartialTaintActuationEnabled:true-DynamicDelay:%v", tc.description, dynamicDelayEnabled), func(t *testing.T) {
+				statusInfo, deleteResults, taintUpdates := buildExpected(tc.enabled.status, tc.enabled.deletedNodes, tc.nodeGroupName)
+				baseTC := startDeletionTestCase{
+					nodeGroups:                    tc.nodeGroups,
+					emptyNodes:                    tc.emptyNodes,
+					failedNodeTaint:               tc.failedNodeTaint,
+					wantStatus:                    statusInfo,
+					wantErr:                       tc.enabled.err,
+					wantDeletedNodes:              tc.enabled.deletedNodes,
+					wantNodeDeleteResults:         deleteResults,
+					wantTaintUpdates:              taintUpdates,
+					partialTaintActuationEnabled:  true,
+					dynamicNodeDeleteDelayEnabled: dynamicDelayEnabled,
+				}
+				runStartDeletionTest(t, baseTC, false)
+			})
+		}
+	}
 }
