@@ -20,6 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/client-go/kubernetes"
 	klog "k8s.io/klog/v2"
 
@@ -67,6 +68,8 @@ type NodePoolManager interface {
 	GetNodePoolForInstance(instance ocicommon.OciRef) (NodePool, error)
 	// GetNodePoolTemplateNode returns a template node for NodePool.
 	GetNodePoolTemplateNode(np NodePool) (*apiv1.Node, error)
+	// GetNodePoolOptions returns the node pool-specific autoscaling options.
+	GetNodePoolOptions(np NodePool, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error)
 	// GetNodePoolSize gets NodePool size.
 	GetNodePoolSize(np NodePool) (int, error)
 	// SetNodePoolSize sets NodePool size.
@@ -670,6 +673,23 @@ func (m *ociManagerImpl) GetNodePoolTemplateNode(np NodePool) (*apiv1.Node, erro
 	return node, nil
 }
 
+// GetNodePoolOptions returns the node pool-specific autoscaling options.
+func (m *ociManagerImpl) GetNodePoolOptions(np NodePool, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	nodePool, err := m.nodePoolCache.get(np.Id())
+	if err != nil {
+		klog.Warningf("could not get node pool %q from cache while reading autoscaling option tags, using defaults: %v", np.Id(), err)
+		return &defaults, nil
+	}
+
+	freeformTags, err := m.ociTagsGetter.GetNodePoolFreeformTags(nodePool)
+	if err != nil {
+		klog.Warningf("could not get freeform tags for node pool %q while reading autoscaling options, using defaults: %v", np.Id(), err)
+		return &defaults, nil
+	}
+
+	return buildNodeGroupAutoscalingOptionsFromTags(freeformTags, defaults, np.Id()), nil
+}
+
 // GetNodePoolSize gets NodePool size.
 func (m *ociManagerImpl) GetNodePoolSize(np NodePool) (int, error) {
 	return m.nodePoolCache.getSize(np.Id())
@@ -743,6 +763,7 @@ func (m *ociManagerImpl) buildNodeFromTemplate(nodePool *oke.NodePool) (*apiv1.N
 	node.Spec = apiv1.NodeSpec{
 		Taints: taints,
 	}
+	node.Spec.Taints = append(node.Spec.Taints, extractNodeTemplateTaintsFromTags(freeformTags)...)
 	if shape.GPU > 0 {
 		node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
 			Key:    "nvidia.com/gpu",
@@ -751,15 +772,15 @@ func (m *ociManagerImpl) buildNodeFromTemplate(nodePool *oke.NodePool) (*apiv1.N
 		})
 	}
 
-	if err != nil {
-		return nil, err
-	}
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(int64(shape.CPU), resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(int64(shape.MemoryInBytes), resource.DecimalSI)
 	node.Status.Capacity[ipconsts.ResourceGPU] = *resource.NewQuantity(int64(shape.GPU), resource.DecimalSI)
 	if ephemeralStorage != -1 {
 		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(ephemeralStorage, resource.DecimalSI)
+	}
+	for name, quantity := range extractNodeTemplateResourcesFromTags(freeformTags) {
+		node.Status.Capacity[name] = quantity
 	}
 
 	node.Status.Allocatable = node.Status.Capacity
@@ -770,6 +791,7 @@ func (m *ociManagerImpl) buildNodeFromTemplate(nodePool *oke.NodePool) (*apiv1.N
 	}
 
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, ocicommon.BuildGenericLabels(*nodePool.Id, nodeName, shape.Name, availabilityDomain))
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractNodeTemplateLabelsFromTags(freeformTags))
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil

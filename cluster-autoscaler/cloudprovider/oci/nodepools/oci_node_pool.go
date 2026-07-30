@@ -369,7 +369,6 @@ func (np *nodePool) Autoprovisioned() bool {
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-// Implementation optional.
 func (np *nodePool) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	return np.manager.GetNodePoolOptions(np, defaults)
 }
