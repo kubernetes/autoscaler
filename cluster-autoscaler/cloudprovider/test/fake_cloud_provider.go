@@ -216,6 +216,13 @@ func WithTemplate(template *framework.NodeInfo) NodeGroupOption {
 	}
 }
 
+// WithNGOptions sets the autoscaling options of the node group.
+func WithNGOptions(opts *config.NodeGroupAutoscalingOptions) NodeGroupOption {
+	return func(n *NodeGroup) {
+		n.opts = opts
+	}
+}
+
 // WithNodeGarbageCollectionDelay can be used to simulate Node objects hanging around in the K8s API for some time after their VMs are deleted.
 func WithNodeGarbageCollectionDelay(delay time.Duration) NodeGroupOption {
 	return func(n *NodeGroup) {
@@ -317,6 +324,7 @@ type NodeGroup struct {
 	// nodeReadinessDelay can be used to simulate Node objects taking some time to transition to Ready after they appear in the K8s API. If unset,
 	// the Nodes will appear as Ready immediately after registration.
 	nodeReadinessDelay time.Duration
+	opts               *config.NodeGroupAutoscalingOptions
 }
 
 // MaxSize returns the maximum size of the node group.
@@ -439,7 +447,16 @@ func (n *NodeGroup) Autoprovisioned() bool {
 
 // GetOptions returns autoscaling options specific to this node group.
 func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, nil
+	n.RLock()
+	defer n.RUnlock()
+	return n.opts, nil
+}
+
+// SetOptions sets the autoscaling options for the node group.
+func (n *NodeGroup) SetOptions(opts *config.NodeGroupAutoscalingOptions) {
+	n.Lock()
+	defer n.Unlock()
+	n.opts = opts
 }
 
 // TargetSize returns the current target size of the node group.
