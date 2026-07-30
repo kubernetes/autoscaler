@@ -18,6 +18,7 @@ package gpu
 
 import (
 	"fmt"
+	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -49,6 +50,21 @@ var GPUVendorResourceNames = []apiv1.ResourceName{
 	ResourceIntelGPU,
 	ResourceAMDGPU,
 	ResourceDirectX,
+}
+
+// IsGPUResource returns true if the resource name points to a known GPU resource.
+// In addition to exact known names, all nvidia.com/* resources are treated as GPU resources
+// to support MIG (nvidia.com/mig-*) and time-sliced GPUs (nvidia.com/gpu.shared).
+// NOTE: this intentionally matches any nvidia.com/ prefixed resource. If NVIDIA ever
+// publishes non-GPU extended resources under this prefix, they would be misclassified.
+func IsGPUResource(resourceName apiv1.ResourceName) bool {
+	for _, gpuVendorResourceName := range GPUVendorResourceNames {
+		if resourceName == gpuVendorResourceName {
+			return true
+		}
+	}
+
+	return strings.HasPrefix(string(resourceName), "nvidia.com/")
 }
 
 const (
@@ -134,12 +150,17 @@ func NodeHasGpu(GPULabel string, node *apiv1.Node) bool {
 }
 
 // NodeHasGpuAllocatable returns the GPU allocatable value and whether the node has GPU allocatable resources.
-// It checks all known GPU vendor resource names and returns the first non-zero allocatable GPU value found.
+// It checks known GPU vendor resource names first for deterministic results, then falls back to
+// prefix-based matching to support resources like NVIDIA MIG and time-sliced GPUs.
 func NodeHasGpuAllocatable(node *apiv1.Node) (gpuAllocatableValue int64, hasGpuAllocatable bool) {
-	for _, gpuVendorResourceName := range GPUVendorResourceNames {
-		gpuAllocatable, found := node.Status.Allocatable[gpuVendorResourceName]
-		if found && !gpuAllocatable.IsZero() {
-			return gpuAllocatable.Value(), true
+	for _, rn := range GPUVendorResourceNames {
+		if qty, found := node.Status.Allocatable[rn]; found && !qty.IsZero() {
+			return qty.Value(), true
+		}
+	}
+	for rn, qty := range node.Status.Allocatable {
+		if IsGPUResource(rn) && !qty.IsZero() {
+			return qty.Value(), true
 		}
 	}
 	return 0, false
@@ -148,8 +169,8 @@ func NodeHasGpuAllocatable(node *apiv1.Node) (gpuAllocatableValue int64, hasGpuA
 // PodRequestsGpu returns true if a given pod has GPU request.
 func PodRequestsGpu(pod *apiv1.Pod) bool {
 	podRequests := podutils.PodRequests(pod)
-	for _, gpuVendorResourceName := range GPUVendorResourceNames {
-		if _, found := podRequests[gpuVendorResourceName]; found {
+	for resourceName := range podRequests {
+		if IsGPUResource(resourceName) {
 			return true
 		}
 	}
@@ -157,15 +178,20 @@ func PodRequestsGpu(pod *apiv1.Pod) bool {
 }
 
 // DetectNodeGPUResourceName inspects the node's allocatable resources and returns the first
-// known GPU extended resource name that has non-zero allocatable. Falls back to Nvidia for
-// backward compatibility if none are found but a GPU label is present.
+// GPU extended resource name that has non-zero allocatable. It checks known vendor names first
+// for deterministic results, then falls back to prefix-based matching for NVIDIA MIG and
+// time-sliced GPUs. Returns Nvidia for backward compatibility if none are found.
 func DetectNodeGPUResourceName(node *apiv1.Node) apiv1.ResourceName {
 	for _, rn := range GPUVendorResourceNames {
 		if qty, ok := node.Status.Allocatable[rn]; ok && !qty.IsZero() {
 			return rn
 		}
 	}
-	// Fallback: preserve previous behavior (defaulting to Nvidia) if label existed
+	for rn, qty := range node.Status.Allocatable {
+		if IsGPUResource(rn) && !qty.IsZero() {
+			return rn
+		}
+	}
 	return ResourceNvidiaGPU
 }
 

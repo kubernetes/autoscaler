@@ -25,9 +25,12 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
 const (
@@ -152,6 +155,38 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 	}
 	expectedReadiness[nodeNoGpuUnready.Name] = false
 
+	nodeSharedGpuReady := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "nodeSharedGpuReady",
+			Labels:            gpuLabels,
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Capacity:    apiv1.ResourceList{},
+			Allocatable: apiv1.ResourceList{},
+			Conditions:  []apiv1.NodeCondition{readyCondition},
+		},
+	}
+	nodeSharedGpuReady.Status.Allocatable["nvidia.com/gpu.shared"] = *resource.NewQuantity(4, resource.DecimalSI)
+	nodeSharedGpuReady.Status.Capacity["nvidia.com/gpu.shared"] = *resource.NewQuantity(4, resource.DecimalSI)
+	expectedReadiness[nodeSharedGpuReady.Name] = true
+
+	nodeMigGpuReady := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "nodeMigGpuReady",
+			Labels:            gpuLabels,
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Capacity:    apiv1.ResourceList{},
+			Allocatable: apiv1.ResourceList{},
+			Conditions:  []apiv1.NodeCondition{readyCondition},
+		},
+	}
+	nodeMigGpuReady.Status.Allocatable["nvidia.com/mig-1g.5gb"] = *resource.NewQuantity(7, resource.DecimalSI)
+	nodeMigGpuReady.Status.Capacity["nvidia.com/mig-1g.5gb"] = *resource.NewQuantity(7, resource.DecimalSI)
+	expectedReadiness[nodeMigGpuReady.Name] = true
+
 	nodeGPUReadyDra := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "nodeGPUViaDra",
@@ -173,6 +208,8 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		nodeDirectXReady,
 		nodeDirectXUnready,
 		nodeNoGpuReady,
+		nodeSharedGpuReady,
+		nodeMigGpuReady,
 		nodeGPUReadyDra,
 	}
 	initialAllNodes := []*apiv1.Node{
@@ -183,6 +220,8 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		nodeDirectXUnready,
 		nodeNoGpuReady,
 		nodeNoGpuUnready,
+		nodeSharedGpuReady,
+		nodeMigGpuReady,
 		nodeGPUReadyDra,
 	}
 
@@ -209,4 +248,57 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 			assert.Equal(t, node.Status.Conditions[0].Status, apiv1.ConditionFalse, fmt.Sprintf("Unexpected ready condition value for node %s", node.Name))
 		}
 	}
+}
+
+func TestGetNodeGpuTargetFallsBackToNvidiaPrefixResourcesInTemplate(t *testing.T) {
+	processor := GpuCustomResourcesProcessor{}
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider}
+
+	node := test.BuildTestNode("node-with-gpu-label", 1000, 1000)
+	node.Labels[GPULabel] = "nvidia-l4"
+
+	templateNode := test.BuildTestNode("template-with-shared-gpu", 1000, 1000)
+	templateNode.Status.Capacity["nvidia.com/gpu.shared"] = *resource.NewQuantity(4, resource.DecimalSI)
+
+	nodeGroup := provider.BuildNodeGroup("ng-with-shared-gpu", 1, 10, 1, true, false, "n1-standard-1", nil)
+	provider.SetMachineTemplates(map[string]*framework.NodeInfo{
+		nodeGroup.Id(): framework.NewNodeInfo(templateNode, nil),
+	})
+
+	gpuTarget, err := processor.GetNodeGpuTarget(autoscalingCtx, node, nodeGroup)
+	assert.Nil(t, err)
+	assert.Equal(t, CustomResourceTarget{ResourceType: "nvidia-l4", ResourceCount: 4}, gpuTarget)
+}
+
+func TestGetNodeGpuTargetUsesCloudProviderGpuResourceFromTemplate(t *testing.T) {
+	processor := GpuCustomResourcesProcessor{}
+	provider := testprovider.NewTestCloudProviderBuilder().
+		WithNodeGpuConfig(func(node *apiv1.Node) *cloudprovider.GpuConfig {
+			if _, found := node.Labels[GPULabel]; !found {
+				return nil
+			}
+			return &cloudprovider.GpuConfig{
+				Label:                GPULabel,
+				Type:                 node.Labels[GPULabel],
+				ExtendedResourceName: "example.com/custom-gpu",
+			}
+		}).
+		Build()
+	autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider}
+
+	node := test.BuildTestNode("node-with-custom-gpu-label", 1000, 1000)
+	node.Labels[GPULabel] = "custom-gpu-type"
+
+	templateNode := test.BuildTestNode("template-with-custom-gpu", 1000, 1000)
+	templateNode.Status.Capacity["example.com/custom-gpu"] = *resource.NewQuantity(3, resource.DecimalSI)
+
+	nodeGroup := provider.BuildNodeGroup("ng-with-custom-gpu", 1, 10, 1, true, false, "n1-standard-1", nil)
+	provider.SetMachineTemplates(map[string]*framework.NodeInfo{
+		nodeGroup.Id(): framework.NewNodeInfo(templateNode, nil),
+	})
+
+	gpuTarget, err := processor.GetNodeGpuTarget(autoscalingCtx, node, nodeGroup)
+	assert.Nil(t, err)
+	assert.Equal(t, CustomResourceTarget{ResourceType: "custom-gpu-type", ResourceCount: 3}, gpuTarget)
 }
