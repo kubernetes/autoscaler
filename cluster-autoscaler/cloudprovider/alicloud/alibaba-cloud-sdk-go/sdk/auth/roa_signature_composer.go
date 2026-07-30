@@ -42,7 +42,7 @@ func signRoaRequest(request requests.AcsRequest, signer Signer, regionId string)
 func completeROASignParams(request requests.AcsRequest, signer Signer, regionId string) {
 	headerParams := request.GetHeaders()
 
-	// complete query params
+	// Complete query params
 	queryParams := request.GetQueryParams()
 	//if _, ok := queryParams["RegionId"]; !ok {
 	//	queryParams["RegionId"] = regionId
@@ -58,7 +58,7 @@ func completeROASignParams(request requests.AcsRequest, signer Signer, regionId 
 		}
 	}
 
-	// complete header params
+	// Complete header params
 	headerParams["Date"] = utils.GetTimeInFormatRFC2616()
 	headerParams["x-acs-signature-method"] = signer.GetName()
 	headerParams["x-acs-signature-version"] = signer.GetVersion()
@@ -90,13 +90,13 @@ func buildRoaStringToSign(request requests.AcsRequest) (stringToSign string) {
 	stringToSignBuilder.WriteString(request.GetMethod())
 	stringToSignBuilder.WriteString(requests.HeaderSeparator)
 
-	// append header keys for sign
+	// Append header keys for sign
 	appendIfContain(headers, &stringToSignBuilder, "Accept", requests.HeaderSeparator)
 	appendIfContain(headers, &stringToSignBuilder, "Content-MD5", requests.HeaderSeparator)
 	appendIfContain(headers, &stringToSignBuilder, "Content-Type", requests.HeaderSeparator)
 	appendIfContain(headers, &stringToSignBuilder, "Date", requests.HeaderSeparator)
 
-	// sort and append headers witch starts with 'x-acs-'
+	// Sort and append headers witch starts with 'x-acs-'
 	var acsHeaders []string
 	for key := range headers {
 		if strings.HasPrefix(key, "x-acs-") {
