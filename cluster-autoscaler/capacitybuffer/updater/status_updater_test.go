@@ -48,7 +48,7 @@ func TestStatusUpdater(t *testing.T) {
 		Spec: v1.CapacityBufferSpec{},
 	}
 	fakeClient := fakeclientset.NewSimpleClientset(exitingBuffer)
-	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	fakeCapacityBuffersClient, _ := cbclient.NewCapacityBufferClient(fakeClient, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 	tests := []struct {
 		name               string

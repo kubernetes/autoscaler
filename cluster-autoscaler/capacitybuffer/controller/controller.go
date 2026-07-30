@@ -21,15 +21,21 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
+	"sync"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/retry"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 
@@ -43,6 +49,13 @@ import (
 	scalableobject "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/translators/scalable_objects"
 	updater "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/updater"
 	"k8s.io/utils/clock"
+)
+
+const (
+	// EventDrivenReconciliationCondition is a condition type that indicates if the buffer is being reconciled via events.
+	EventDrivenReconciliationCondition = "EventDrivenReconciliation"
+	// DynamicWatchFailedReason is a reason for EventDrivenReconciliationCondition when dynamic watch establishment fails.
+	DynamicWatchFailedReason = "DynamicWatchFailed"
 )
 
 // BufferController performs updates on Buffers and convert them to pods to be injected
@@ -60,6 +73,13 @@ type bufferController struct {
 	queue                   workqueue.TypedRateLimitingInterface[string]
 	clock                   clock.Clock
 	reconciliationTimeCache *cbmetrics.ReconciliationCache
+
+	// Dynamic watching and RBAC updates
+	rbacUpdater            CapacityBufferRBACUpdater
+	dynamicClient          dynamic.Interface
+	dynamicInformerFactory dynamicinformer.DynamicSharedInformerFactory
+	watchedGVKs            sync.Map // map[schema.GroupVersionKind]bool
+	stopCh                 <-chan struct{}
 }
 
 // NewBufferController creates new bufferController object
@@ -70,6 +90,8 @@ func NewBufferController(
 	updater updater.StatusUpdater,
 	clock clock.Clock,
 	reconciliationTimeCache *cbmetrics.ReconciliationCache,
+	rbacUpdater CapacityBufferRBACUpdater,
+	dynamicClient dynamic.Interface,
 ) BufferController {
 	bc := &bufferController{
 		client:         client,
@@ -82,6 +104,9 @@ func NewBufferController(
 		),
 		clock:                   clock,
 		reconciliationTimeCache: reconciliationTimeCache,
+		rbacUpdater:             rbacUpdater,
+		dynamicClient:           dynamicClient,
+		dynamicInformerFactory:  dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, 0),
 	}
 	bc.configureEventHandlers()
 	return bc
@@ -99,7 +124,7 @@ func InitializeAndRunDefaultBufferController(
 	reconciledBuffersCache := cbmetrics.NewReconciliationCache()
 	// Accepting empty string as it represents nil value for ProvisioningStrategy
 	defaultStrategies := []string{capacitybuffer.ActiveProvisioningStrategy, ""}
-	controller := NewDefaultBufferController(client, resolver, defaultStrategies, reconciledBuffersCache, realClock)
+	controller := NewDefaultBufferController(client, resolver, defaultStrategies, reconciledBuffersCache, realClock, NewDefaultRBACUpdater(client.GetKubernetesClient()), client.GetDynamicClient())
 	go controller.Run(ctx.Done())
 
 	cbmetrics.RegisterReconciliationTimestampCollector(client, defaultStrategies, reconciledBuffersCache, realClock)
@@ -112,6 +137,8 @@ func NewDefaultBufferController(
 	strategies []string,
 	reconciliationTimeCache *cbmetrics.ReconciliationCache,
 	clock clock.Clock,
+	rbacUpdater CapacityBufferRBACUpdater,
+	dynamicClient dynamic.Interface,
 ) BufferController {
 	bc := &bufferController{
 		client:         client,
@@ -129,6 +156,9 @@ func NewDefaultBufferController(
 		),
 		clock:                   clock,
 		reconciliationTimeCache: reconciliationTimeCache,
+		rbacUpdater:             rbacUpdater,
+		dynamicClient:           dynamicClient,
+		dynamicInformerFactory:  dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, 0),
 	}
 	bc.configureEventHandlers()
 	return bc
@@ -332,10 +362,9 @@ func (c *bufferController) Run(stopCh <-chan struct{}) {
 	defer runtime.HandleCrash()
 	defer c.queue.ShutDown()
 
-	klog.Info("Starting CapacityBuffer controller workers")
+	c.stopCh = stopCh
 
-	// Note: We assume the client passed to us has informers that are running and synced.
-	// CapacityBufferClient.NewCapacityBufferClientFromClients waits for sync before returning.
+	klog.Info("Starting CapacityBuffer controller workers")
 
 	// Launch a single worker (namespace processing is serial per namespace anyway)
 	go wait.Until(c.runWorker, time.Second, stopCh)
@@ -379,6 +408,13 @@ func (c *bufferController) reconcileNamespace(namespace string) error {
 	buffers, err := c.client.ListCapacityBuffers(namespace)
 	if err != nil {
 		return err
+	}
+
+	// Ensure dynamic watches for all scalable objects observed in this namespace
+	for _, buffer := range buffers {
+		if buffer.Spec.ScalableRef != nil {
+			c.ensureWatchFromScalableRef(buffer.Spec.ScalableRef)
+		}
 	}
 
 	// Filter the desired provisioning strategy
@@ -433,4 +469,221 @@ func (c *bufferController) updateReconciliationTimeCache(buffers []*v1.CapacityB
 		return
 	}
 	c.reconciliationTimeCache.Update(buffers, c.clock.Now())
+}
+
+func isBuiltInScalableObject(ref *v1.ScalableRef) bool {
+	if ref == nil {
+		return false
+	}
+	switch ref.Kind {
+	case scalableobject.DeploymentKind, scalableobject.ReplicaSetKind, scalableobject.StatefulSetKind:
+		return ref.APIGroup == scalableobject.ApiGroupApps
+	case scalableobject.JobKind:
+		return ref.APIGroup == scalableobject.ApiGroupBatch
+	case scalableobject.ReplicationControllerKind:
+		return ref.APIGroup == "" || ref.APIGroup == "core" || ref.APIGroup == scalableobject.ApiGroupCore
+	}
+	return false
+}
+
+func (c *bufferController) ensureWatchFromScalableRef(ref *v1.ScalableRef) {
+	if isBuiltInScalableObject(ref) {
+		return
+	}
+
+	gk := schema.GroupKind{
+		Group: ref.APIGroup,
+		Kind:  ref.Kind,
+	}
+
+	// Use RESTMapper to find the preferred version and resource mapping
+	mapping, err := c.client.GetRESTMapper().RESTMapping(gk)
+	if err != nil {
+		klog.V(4).Infof("Failed to resolve GVK for %v: %v", gk, err)
+		c.markBuffersAsNonEventDriven(gk.WithVersion(""), schema.GroupVersionResource{Group: gk.Group, Resource: strings.ToLower(gk.Kind) + "s"})
+		return
+	}
+
+	c.ensureWatch(mapping)
+}
+
+func (c *bufferController) ensureWatch(mapping *meta.RESTMapping) {
+	gvk := mapping.GroupVersionKind
+	if _, loaded := c.watchedGVKs.LoadOrStore(gvk, true); loaded {
+		return
+	}
+
+	klog.V(4).Infof("Establishing dynamic watch for GVK: %v", gvk)
+	// Start watch establishment with RBAC hook and retry mechanism
+	go c.establishWatchWithRetry(mapping)
+}
+
+func (c *bufferController) establishWatchWithRetry(mapping *meta.RESTMapping) {
+	gvk := mapping.GroupVersionKind
+	gvr := mapping.Resource
+
+	// Run RBAC updater hook once for newly discovered resource type
+	if err := c.rbacUpdater.UpdateRBAC(mapping); err != nil {
+		klog.Errorf("Failed to run RBAC updater for GVK %v: %v", gvk, err)
+	}
+
+	informer := c.dynamicInformerFactory.ForResource(gvr).Informer()
+	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			c.enqueueBuffersReferencingDynamicObject(obj, gvk)
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			c.enqueueBuffersReferencingDynamicObject(newObj, gvk)
+		},
+		DeleteFunc: func(obj interface{}) {
+			c.enqueueBuffersReferencingDynamicObject(obj, gvk)
+		},
+	})
+
+	// Start any newly registered informers in the factory
+	c.dynamicInformerFactory.Start(c.stopCh)
+
+	backoff := wait.Backoff{
+		Duration: 1 * time.Second,
+		Factor:   1.5,
+		Jitter:   0.1,
+		Steps:    3,
+	}
+
+	err := wait.ExponentialBackoff(backoff, func() (bool, error) {
+		klog.V(4).Infof("Waiting for dynamic watch cache sync for GVK: %v", gvk)
+
+		// Tolerate failure by checking cache sync with timeout
+		syncCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if !cache.WaitForCacheSync(syncCtx.Done(), informer.HasSynced) {
+			klog.V(4).Infof("Cache sync for %v not yet ready (might be RBAC or missing CRD). Retrying...", gvk)
+			return false, nil // retry
+		}
+
+		klog.V(2).Infof("Successfully established dynamic watch for GVR: %v", gvr)
+		return true, nil
+	})
+
+	if err != nil {
+		klog.Errorf("Exhausted retries for establishing watch on GVK %v: %v", gvk, err)
+		c.watchedGVKs.Delete(gvk) // Allow retry in next reconciliation cycle
+		c.markBuffersAsNonEventDriven(gvk, gvr)
+	} else {
+		c.markBuffersAsEventDriven(gvk)
+	}
+}
+
+func (c *bufferController) markBuffersAsEventDriven(gvk schema.GroupVersionKind) {
+	buffers, err := c.client.ListCapacityBuffers("")
+	if err != nil {
+		klog.Errorf("Failed to list buffers to mark as event driven: %v", err)
+		return
+	}
+
+	for _, buffer := range buffers {
+		if buffer.Spec.ScalableRef != nil &&
+			buffer.Spec.ScalableRef.Kind == gvk.Kind &&
+			buffer.Spec.ScalableRef.APIGroup == gvk.Group {
+
+			err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				latestBuffer, getErr := c.client.GetCapacityBuffer(buffer.Namespace, buffer.Name)
+				if getErr != nil {
+					return getErr
+				}
+
+				newCondition := metav1.Condition{
+					Type:               EventDrivenReconciliationCondition,
+					Status:             metav1.ConditionTrue,
+					Reason:             "DynamicWatchSynced",
+					Message:            fmt.Sprintf("Successfully established dynamic watch for %v. Event-driven reconciliation is active.", gvk),
+					LastTransitionTime: metav1.NewTime(c.clock.Now()),
+				}
+
+				existingCond := meta.FindStatusCondition(latestBuffer.Status.Conditions, EventDrivenReconciliationCondition)
+				if existingCond != nil && existingCond.Status == metav1.ConditionTrue && existingCond.Reason == "DynamicWatchSynced" {
+					return nil // No update needed
+				}
+
+				meta.SetStatusCondition(&latestBuffer.Status.Conditions, newCondition)
+
+				_, updateErr := c.client.UpdateCapacityBuffer(latestBuffer)
+				return updateErr
+			})
+
+			if err != nil {
+				klog.Errorf("Failed to update buffer %s/%s status with event driven condition: %v", buffer.Namespace, buffer.Name, err)
+			}
+		}
+	}
+}
+
+func (c *bufferController) markBuffersAsNonEventDriven(gvk schema.GroupVersionKind, gvr schema.GroupVersionResource) {
+	buffers, err := c.client.ListCapacityBuffers("")
+	if err != nil {
+		klog.Errorf("Failed to list buffers to mark as non-event driven: %v", err)
+		return
+	}
+
+	for _, buffer := range buffers {
+		if buffer.Spec.ScalableRef != nil &&
+			buffer.Spec.ScalableRef.Kind == gvk.Kind &&
+			buffer.Spec.ScalableRef.APIGroup == gvk.Group {
+
+			err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				latestBuffer, getErr := c.client.GetCapacityBuffer(buffer.Namespace, buffer.Name)
+				if getErr != nil {
+					return getErr
+				}
+
+				msg := fmt.Sprintf("Failed to establish dynamic watch for %v. Reconciliation will be periodic (up to 5m delay). "+
+					"Please ensure ClusterAutoscaler has 'get/list/watch' permissions for %s and %s/scale.", gvk, gvr.Resource, gvr.Resource)
+
+				newCondition := metav1.Condition{
+					Type:               EventDrivenReconciliationCondition,
+					Status:             metav1.ConditionFalse,
+					Reason:             DynamicWatchFailedReason,
+					Message:            msg,
+					LastTransitionTime: metav1.NewTime(c.clock.Now()),
+				}
+
+				existingCond := meta.FindStatusCondition(latestBuffer.Status.Conditions, EventDrivenReconciliationCondition)
+				if existingCond != nil && existingCond.Status == metav1.ConditionFalse && existingCond.Reason == DynamicWatchFailedReason && existingCond.Message == msg {
+					return nil // No update needed
+				}
+
+				meta.SetStatusCondition(&latestBuffer.Status.Conditions, newCondition)
+
+				_, updateErr := c.client.UpdateCapacityBuffer(latestBuffer)
+				return updateErr
+			})
+
+			if err != nil {
+				klog.Errorf("Failed to update buffer %s/%s status with non-event driven condition: %v", buffer.Namespace, buffer.Name, err)
+			}
+		}
+	}
+}
+
+func (c *bufferController) enqueueBuffersReferencingDynamicObject(obj interface{}, gvk schema.GroupVersionKind) {
+	metaObj, err := meta.Accessor(obj)
+	if err != nil {
+		klog.V(4).Infof("CapacityBuffer controller: failed to get meta accessor for dynamic object: %v", err)
+		return
+	}
+
+	// Use indexer to find buffers referencing this object
+	buffers, err := c.client.GetBufferInformer().GetIndexer().ByIndex(cbclient.ScalableRefIndex, metaObj.GetName())
+	if err != nil {
+		klog.Errorf("CapacityBuffer controller: error looking up buffers for dynamic object %s/%s: %v", gvk.Kind, metaObj.GetName(), err)
+		return
+	}
+
+	for _, b := range buffers {
+		buffer := b.(*v1.CapacityBuffer)
+		if buffer.Namespace == metaObj.GetNamespace() && buffer.Spec.ScalableRef != nil &&
+			buffer.Spec.ScalableRef.Kind == gvk.Kind && buffer.Spec.ScalableRef.APIGroup == gvk.Group {
+			c.enqueueNamespace(buffer)
+		}
+	}
 }

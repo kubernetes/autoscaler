@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	cbapi "k8s.io/autoscaler/cluster-autoscaler/capacitybuffer"
 	"k8s.io/autoscaler/cluster-autoscaler/capacitybuffer/testutil"
@@ -282,6 +283,119 @@ var _ = Describe("CapacityBuffer Controller", func() {
 				snapshot := reconciliationCache.Snapshot()
 				g.Expect(snapshot[bSupported.UID]).To(BeTemporally("~", clock.Now(), toleranceRange))
 				g.Expect(snapshot[bUnsupported.UID]).To(BeTemporally("~", clock.Now(), toleranceRange))
+			}).Should(Succeed())
+		})
+	})
+
+	Context("Dynamic Watching and Custom CRD", func() {
+		SetDefaultEventuallyTimeout(10 * time.Second)
+		SetDefaultEventuallyPollingInterval(500 * time.Millisecond)
+
+		BeforeEach(func() {
+			By("creating a pod template")
+			podTemp := testutil.NewPodTemplate(
+				testutil.WithPodTemplateName("pod-temp"),
+				testutil.WithNamespace[*corev1.PodTemplate](namespace),
+				testutil.WithPodTemplateResources(corev1.ResourceList{"cpu": resource.MustParse("1")}, nil),
+			)
+			_, err := k8sClient.CoreV1().PodTemplates(namespace).Create(ctx, podTemp, metav1.CreateOptions{})
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			By("cleaning up test resources")
+			_ = buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, metav1.ListOptions{})
+			_ = k8sClient.CoreV1().PodTemplates(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, metav1.ListOptions{})
+		})
+
+		It("should fail to establish a watch on an unregistered custom CRD", func() {
+			By("defining an unregistered custom CRD name and GVK")
+			gvk := schema.GroupVersionKind{
+				Group:   "example.com",
+				Version: "v1",
+				Kind:    "CustomScalable",
+			}
+
+			By("creating a buffer referencing an unregistered custom CRD")
+			b1 := testutil.NewBuffer(
+				testutil.WithName("custom-buffer"),
+				testutil.WithNamespace[*v1beta1.CapacityBuffer](namespace),
+				testutil.WithScalableRef(gvk.Group, gvk.Kind, "my-custom-obj"),
+				testutil.WithPercentage(50),
+				testutil.WithActiveProvisioningStrategy(),
+			)
+			_, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Create(ctx, b1, metav1.CreateOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("verifying the controller remains responsive for other buffers")
+			b2 := testutil.NewBuffer(
+				testutil.WithName("healthy-buffer"),
+				testutil.WithNamespace[*v1beta1.CapacityBuffer](namespace),
+				testutil.WithPodTemplateRef("pod-temp"),
+				testutil.WithReplicas(1),
+				testutil.WithActiveProvisioningStrategy(),
+			)
+			_, err = buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Create(ctx, b2, metav1.CreateOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func(g Gomega) {
+				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "healthy-buffer", metav1.GetOptions{})
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(b.Status.Replicas).To(Equal(new(int32(1))))
+			}).Should(Succeed())
+
+			By("verifying the custom-buffer has EventDrivenReconciliation=False condition")
+			Eventually(func(g Gomega) {
+				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "custom-buffer", metav1.GetOptions{})
+				g.Expect(err).NotTo(HaveOccurred())
+
+				found := false
+				for _, cond := range b.Status.Conditions {
+					if cond.Type == "EventDrivenReconciliation" {
+						g.Expect(cond.Status).To(Equal(metav1.ConditionFalse))
+						g.Expect(cond.Reason).To(Equal("DynamicWatchFailed"))
+						found = true
+						break
+					}
+				}
+				g.Expect(found).To(BeTrue(), "EventDrivenReconciliation condition not found")
+			}).Should(Succeed())
+		})
+
+		It("should successfully establish a watch on a registered custom CRD", func() {
+			By("defining a registered custom CRD GVK")
+			gvk := schema.GroupVersionKind{
+				Group:   "autoscaling.x-k8s.io",
+				Version: "v1beta1",
+				Kind:    "CapacityQuota",
+			}
+
+			By("creating a buffer referencing the registered custom CRD")
+			b := testutil.NewBuffer(
+				testutil.WithName("success-buffer"),
+				testutil.WithNamespace[*v1beta1.CapacityBuffer](namespace),
+				testutil.WithScalableRef(gvk.Group, gvk.Kind, "my-quota-obj"),
+				testutil.WithPercentage(50),
+				testutil.WithActiveProvisioningStrategy(),
+			)
+			_, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Create(ctx, b, metav1.CreateOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			By("verifying the success-buffer has EventDrivenReconciliation=True condition")
+			Eventually(func(g Gomega) {
+				b, err := buffersClient.AutoscalingV1beta1().CapacityBuffers(namespace).Get(ctx, "success-buffer", metav1.GetOptions{})
+				g.Expect(err).NotTo(HaveOccurred())
+
+				found := false
+				for _, cond := range b.Status.Conditions {
+					if cond.Type == "EventDrivenReconciliation" {
+						g.Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+						g.Expect(cond.Reason).To(Equal("DynamicWatchSynced"))
+						found = true
+						break
+					}
+				}
+				g.Expect(found).To(BeTrue(), "EventDrivenReconciliation condition not found or not True")
 			}).Should(Succeed())
 		})
 	})
