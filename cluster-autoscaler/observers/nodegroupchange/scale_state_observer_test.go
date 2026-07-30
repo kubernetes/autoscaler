@@ -34,6 +34,10 @@ type mockMetrics struct {
 	mock.Mock
 }
 
+func (m *mockMetrics) RegisterScaleUp(delta int, gpuResourceName, gpuType, draDriverName string) {
+	m.Called(delta, gpuResourceName, gpuType, draDriverName)
+}
+
 func (m *mockMetrics) RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType, draDrivers string) {
 	m.Called(reason, gpuResourceName, gpuType, draDrivers)
 }
@@ -114,4 +118,63 @@ func TestRegisterFailedScaleUpCallViaObserversList(t *testing.T) {
 	// Assertions
 	mockMetricsObj.AssertCalled(t, "RegisterFailedScaleUp", metrics.FailedScaleUpReason("TIMEOUT"), "", "", "")
 	mockMetricsObj.AssertCalled(t, "RegisterFailedNodeCreations", metrics.FailedScaleUpReason("TIMEOUT"), 5)
+}
+
+func TestRegisterScaleUpDirectCall(t *testing.T) {
+	now := time.Now()
+	gpuNode := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceName("nvidia.com/gpu"): resource.MustParse("1"),
+			},
+		},
+	}
+	gpuNode.Labels = map[string]string{
+		"TestGPULabel/accelerator": "nvidia-tesla-k80",
+	}
+
+	slices := []*resourceapi.ResourceSlice{
+		{
+			Spec: resourceapi.ResourceSliceSpec{
+				Driver: "dra.net",
+			},
+		},
+	}
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.SetMachineTemplates(map[string]*framework.NodeInfo{
+		"ng1": framework.NewNodeInfo(gpuNode, slices),
+	})
+
+	mockMetricsObj := &mockMetrics{}
+	mockMetricsObj.On("RegisterScaleUp", 2, "nvidia.com/gpu", "nvidia-tesla-k80", "dra.net").Return()
+
+	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj)
+
+	nodeGroup := provider.GetNodeGroup("ng1")
+	producer.RegisterScaleUp(nodeGroup, 2, now)
+
+	mockMetricsObj.AssertCalled(t, "RegisterScaleUp", 2, "nvidia.com/gpu", "nvidia-tesla-k80", "dra.net")
+}
+
+func TestRegisterScaleUpCallViaObserversList(t *testing.T) {
+	now := time.Now()
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng2", 1, 10, 1)
+	provider.SetMachineTemplates(map[string]*framework.NodeInfo{})
+
+	mockMetricsObj := &mockMetrics{}
+	mockMetricsObj.On("RegisterScaleUp", 4, "", "", "").Return()
+
+	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj)
+
+	list := NewNodeGroupChangeObserversList()
+	list.Register(producer)
+
+	nodeGroup := provider.GetNodeGroup("ng2")
+	list.RegisterScaleUp(nodeGroup, 4, now)
+
+	mockMetricsObj.AssertCalled(t, "RegisterScaleUp", 4, "", "", "")
 }

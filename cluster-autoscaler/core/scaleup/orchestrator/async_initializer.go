@@ -30,7 +30,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -113,16 +112,8 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 		s.emitScaleUpStatus(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, result.Error))
 		return
 	}
-	mainCreatedNodeGroup := result.CreationResult.MainCreatedNodeGroup
-	// If possible replace candidate node-info with node info based on crated node group. The latter
-	// one should be more in line with nodes which will be created by node group.
-	nodeInfo, aErr := simulator.SanitizedTemplateNodeInfoFromNodeGroup(mainCreatedNodeGroup, s.daemonSets, s.taintConfig)
-	if aErr != nil {
-		klog.Warningf("Cannot build node info for newly created main node group %s. Using fallback. Error: %v", mainCreatedNodeGroup.Id(), aErr)
-		nodeInfo = s.nodeInfo
-	}
 
-	scaleUpInfos, nodeInfos := s.prepareScaleUps(result, nodeInfo)
+	scaleUpInfos := s.prepareScaleUps(result)
 
 	if len(scaleUpInfos) == 0 {
 		klog.Infof("Scale-up for node group %s is already finished or no new scale-ups are needed.", s.nodeGroup.Id())
@@ -130,7 +121,7 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 	}
 
 	klog.Infof("Starting scale-up for async created node groups. Scale ups: %v", scaleUpInfos)
-	err, failedNodeGroups := s.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, time.Now(), s.atomicScaleUp)
+	err, failedNodeGroups := s.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, time.Now(), s.atomicScaleUp)
 	if err != nil {
 		var failedNodeGroupIds []string
 		for _, failedNodeGroup := range failedNodeGroups {
@@ -153,11 +144,10 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 	}, nil)
 }
 
-func (s *AsyncNodeGroupInitializer) prepareScaleUps(result nodegroups.AsyncNodeGroupCreationResult, nodeInfo *framework.NodeInfo) ([]nodegroupset.ScaleUpInfo, map[string]*framework.NodeInfo) {
+func (s *AsyncNodeGroupInitializer) prepareScaleUps(result nodegroups.AsyncNodeGroupCreationResult) []nodegroupset.ScaleUpInfo {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	nodeInfos := make(map[string]*framework.NodeInfo)
 	var scaleUpInfos []nodegroupset.ScaleUpInfo
 
 	for _, nodeGroup := range result.CreationResult.AllCreatedNodeGroups() {
@@ -170,7 +160,6 @@ func (s *AsyncNodeGroupInitializer) prepareScaleUps(result nodegroups.AsyncNodeG
 		currentSize := s.processedTargetSizes[upcomingId]
 
 		if delta := targetSize - currentSize; delta > 0 {
-			nodeInfos[nodeGroup.Id()] = nodeInfo
 			scaleUpInfo := nodegroupset.ScaleUpInfo{
 				Group:       nodeGroup,
 				CurrentSize: int(currentSize),
@@ -181,7 +170,7 @@ func (s *AsyncNodeGroupInitializer) prepareScaleUps(result nodegroups.AsyncNodeG
 			s.processedTargetSizes[upcomingId] = targetSize
 		}
 	}
-	return scaleUpInfos, nodeInfos
+	return scaleUpInfos
 }
 
 func (s *AsyncNodeGroupInitializer) emitScaleUpStatus(scaleUpStatus *status.ScaleUpStatus, err errors.AutoscalerError) {
