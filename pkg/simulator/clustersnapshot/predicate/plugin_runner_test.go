@@ -27,8 +27,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/client-go/informers"
 	clientsetfake "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_config_latest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 
@@ -38,6 +40,7 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/scheduler"
 	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
+	featuretesting "k8s.io/component-base/featuregate/testing"
 )
 
 func TestRunFiltersOnNode(t *testing.T) {
@@ -522,6 +525,7 @@ func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfigurati
 }
 
 func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
+	featuretesting.SetFeatureGateDuringTest(b, utilfeature.DefaultFeatureGate, features.InterPodAffinityHostnameFastPath, true)
 	pod := BuildTestPod("p", 100, 1000, WithPodHostnameAntiAffinity(map[string]string{"app": "p"}), WithLabels(map[string]string{"app": "p"}))
 	nodes := make([]*apiv1.Node, 0, 5001)
 	podsOnNodes := make(map[string][]*apiv1.Pod)
