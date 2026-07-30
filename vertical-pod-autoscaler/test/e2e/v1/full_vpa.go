@@ -62,7 +62,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 	var (
 		rc *ResourceConsumer
 	)
-	replicas := 3
+	replicas := 2
 
 	ginkgo.AfterEach(func() {
 		rc.CleanUp()
@@ -225,7 +225,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with default recommender explicitly c
 	var (
 		rc *ResourceConsumer
 	)
-	replicas := 3
+	replicas := 2
 
 	ginkgo.AfterEach(func() {
 		rc.CleanUp()
