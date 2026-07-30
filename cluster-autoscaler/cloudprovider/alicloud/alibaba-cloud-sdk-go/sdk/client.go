@@ -177,7 +177,7 @@ func (client *Client) DoAction(request requests.AcsRequest, response responses.A
 
 // BuildRequestWithSigner build request signer
 func (client *Client) BuildRequestWithSigner(request requests.AcsRequest, signer auth.Signer) (err error) {
-	// add clientVersion
+	// Add clientVersion
 	request.GetHeaders()["x-sdk-core-version"] = Version
 
 	regionId := client.regionId
@@ -223,7 +223,7 @@ func (client *Client) BuildRequestWithSigner(request requests.AcsRequest, signer
 // DoActionWithSigner do action with signer
 func (client *Client) DoActionWithSigner(request requests.AcsRequest, response responses.AcsResponse, signer auth.Signer) (err error) {
 
-	// add clientVersion
+	// Add clientVersion
 	request.GetHeaders()["x-sdk-core-version"] = Version
 
 	regionId := client.regionId
