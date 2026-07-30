@@ -85,7 +85,7 @@ Modifying the VPA's spec does not reset the window. The gate is a pure function 
 3. On every Updater reconcile, before deciding whether the VPA is eligible for actuation, the Updater evaluates the gate. If the gate is active, the VPA is treated as if `updateMode` were `Off` for that reconcile: no pods are evicted (`Recreate` / `InPlaceOrRecreate`) and no in-place resize is attempted (`InPlace` / `InPlaceOrRecreate`).
 4. The Admission Controller evaluates the same gate whenever a pod matching the VPA's target is created. While the gate is active it does not patch the pod's resources — the pod is admitted with its original spec, exactly as under `updateMode: Off`. This applies to every mode, not just `Initial`: without it, pods created during the window (scale-ups, node replacements, crash restarts) would receive un-stabilised recommendations at admission time.
 5. The Updater sets the `InitialDelayActive` status condition to `True` while the gate is active and `False` once it has elapsed. It emits the `vpa_initial_delay_active` gauge accordingly.
-6. On the first reconcile after `CreationTimestamp + initialDelaySeconds`, the gate opens and the configured `updateMode` takes effect on subsequent reconciles and pod creations.
+6. After the window elapses (i.e. `now >= CreationTimestamp + InitialDelaySeconds`), the gate opens and the configured `updateMode` takes effect on subsequent reconciles and pod creations.
 
 ### API Changes
 
