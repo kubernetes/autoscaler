@@ -52,7 +52,7 @@ This feature moves the sequencing into the VPA API itself. Operators declare "wa
 
 ### Non-Goals
 
-- **Recommender-confidence-based gating.** This feature is a user-declared policy, not a recommender-computed signal. Interoperation with `LowConfidence` / `RecommendationProvided` is left for future work.
+- **Recommender-confidence-based gating.** This feature is a user-declared policy, not a recommender-computed signal.
 - **Reset semantics on modification of other fields.** Changing `resourcePolicy`, `targetRef`, or the target workload does not reset the window. The window is anchored on `vpa.CreationTimestamp`; users who need to re-observe a workload after a material change should delete and recreate the VPA.
 - **Cluster-wide default windows.** Out of scope for this AEP; operators can inject a default with a Mutating Admission Policy (see [Alternatives Considered](#alternatives-considered), item 3).
 
