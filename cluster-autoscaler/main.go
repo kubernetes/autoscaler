@@ -235,6 +235,12 @@ func main() {
 		}
 	}
 
+	if autoscalingOpts.InterPodAffinityHostnameFastPath != featureGate.Enabled(features.InterPodAffinityHostnameFastPath) {
+		if err := featureGate.SetFromMap(map[string]bool{string(features.InterPodAffinityHostnameFastPath): autoscalingOpts.InterPodAffinityHostnameFastPath}); err != nil {
+			klog.Fatalf("couldn't set the InterPodAffinityHostnameFastPath feature gate to %v: %v", autoscalingOpts.InterPodAffinityHostnameFastPath, err)
+		}
+	}
+
 	logs.InitLogs()
 
 	opts, err := flags.ComputeLoggingOptions(pflag.CommandLine)

@@ -248,6 +248,7 @@ var (
 	scaleUpSimulationForSkippedNodeGroupsEnabled = flag.Bool("scaleup-simulation-for-skipped-node-groups-enabled", false, "Whether to enable the scale up simulation for skipped node groups.")
 	pendingPodsBatchingTimeout                   = flag.Duration("pending-pods-batching-timeout", 4*time.Minute, "The maximum time spends when running scheduling simulations when preparing the batch of pods passed to scale up logic. This timeout is used in core filter-out pod list processor.")
 	enableGracefulDegradation                    = flag.Bool("enable-graceful-degradation", false, "Enables graceful degradation for unschedulable pods. When enabled, scheduling simulations during filter out pod list processor will be stopped after a timeout(specified by scheduling-simulation-timeout) and CA will proceed with a sub set of pods.")
+	interPodAffinityHostnameFastPath             = flag.Bool("InterPodAffinityHostnameFastPath", false, "Enable the InterPodAffinityHostnameFastPath scheduler feature gate.")
 
 	// Deprecated flags
 	ignoreTaintsFlag           = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
@@ -482,6 +483,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleUpSimulationForSkippedNodeGroupsEnabled: *scaleUpSimulationForSkippedNodeGroupsEnabled,
 		PendingPodsBatchingTimeout:                   *pendingPodsBatchingTimeout,
 		GracefulDegradationEnabled:                   *enableGracefulDegradation,
+		InterPodAffinityHostnameFastPath:             *interPodAffinityHostnameFastPath,
 	}
 }
 

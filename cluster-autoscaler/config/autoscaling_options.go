@@ -247,6 +247,8 @@ type AutoscalingOptions struct {
 	SchedulerVerbosityOffset int
 	// GCEOptions contain autoscaling options specific to GCE cloud provider.
 	GCEOptions GCEOptions
+	// InterPodAffinityHostnameFastPath enables the fast path for inter-pod affinity calculations in the scheduler.
+	InterPodAffinityHostnameFastPath bool
 	// KubeClientOpts specify options for kube client
 	KubeClientOpts KubeClientOptions
 	// ClusterAPICloudConfigAuthoritative tells the Cluster API provider to treat the CloudConfig option as authoritative and
