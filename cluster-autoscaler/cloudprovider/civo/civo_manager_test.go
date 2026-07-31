@@ -21,8 +21,8 @@ import (
 	"errors"
 	"testing"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	civocloud "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo/civo-cloud-sdk-go"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 
 	"github.com/stretchr/testify/assert"
 )

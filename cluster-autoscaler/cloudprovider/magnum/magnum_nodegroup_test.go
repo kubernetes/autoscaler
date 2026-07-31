@@ -28,8 +28,8 @@ import (
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/nodegroups"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 const testNodeGroupUUID = "013701a6-4fcb-457d-91a4-44113d0f9b8d"

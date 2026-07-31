@@ -27,8 +27,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
 )
 
 var testAwsManager = &AwsManager{
@@ -146,7 +146,7 @@ func TestInstanceTypeFallback(t *testing.T) {
 
 func TestName(t *testing.T) {
 	provider := testProvider(t, testAwsManager)
-	assert.Equal(t, provider.Name(), cloudprovider.AwsProviderName)
+	assert.Equal(t, provider.Name(), ProviderName)
 }
 
 func TestNodeGroups(t *testing.T) {

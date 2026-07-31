@@ -17,8 +17,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/workrequests"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // this is a copy of the mockShapeClient code in common/oci_shape_test.go

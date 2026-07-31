@@ -30,23 +30,26 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
-	autoscalerErrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	autoscalerErrors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "hetzner"
 
 var _ cloudprovider.CloudProvider = (*HetznerCloudProvider)(nil)
 
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.HetznerProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildHetzner(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.HetznerProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
 
 const (
@@ -69,7 +72,7 @@ type HetznerCloudProvider struct {
 
 // Name returns name of the cloud provider.
 func (d *HetznerCloudProvider) Name() string {
-	return cloudprovider.HetznerProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

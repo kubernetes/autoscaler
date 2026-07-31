@@ -28,10 +28,10 @@ import (
 	"go.uber.org/mock/gomock"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient/mock_virtualmachineclient"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 var (
