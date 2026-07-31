@@ -1,4 +1,5 @@
 approvers:
+- sig-autoscaling-leads
 - aleksandra-malinowska
 - BigDarkClown
 - towca
