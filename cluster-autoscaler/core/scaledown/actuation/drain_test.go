@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"sync"
@@ -154,7 +155,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			}
 			nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(n1.Name)
 			assert.NoError(t, err)
-			_, err = evictor.EvictDaemonSetPods(&autoscalingCtx, nodeInfo)
+			_, err = evictor.EvictDaemonSetPods(context.TODO(), &autoscalingCtx, nodeInfo)
 			if scenario.err != nil {
 				assert.NotNil(t, err)
 				assert.Contains(t, err.Error(), scenario.err.Error())
@@ -221,7 +222,7 @@ func TestDrainNodeWithPods(t *testing.T) {
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, d1})
 	nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
-	_, err = evictor.DrainNode(&autoscalingCtx, nodeInfo)
+	_, err = evictor.DrainNode(context.TODO(), &autoscalingCtx, nodeInfo)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -285,7 +286,7 @@ func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2})
 	nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
-	_, err = evictor.DrainNode(&autoscalingCtx, nodeInfo)
+	_, err = evictor.DrainNode(context.TODO(), &autoscalingCtx, nodeInfo)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -354,7 +355,7 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, d1})
 	nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
-	_, err = evictor.DrainNode(&autoscalingCtx, nodeInfo)
+	_, err = evictor.DrainNode(context.TODO(), &autoscalingCtx, nodeInfo)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -429,7 +430,7 @@ func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, d1, d2})
 	nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
-	evictionResults, err := evictor.DrainNode(&autoscalingCtx, nodeInfo)
+	evictionResults, err := evictor.DrainNode(context.TODO(), &autoscalingCtx, nodeInfo)
 	assert.NoError(t, err)
 
 	assertPodEvictionResults(t, wantEvictionResults, evictionResults)
@@ -492,7 +493,7 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, p4})
 	nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
-	evictionResults, err := evictor.DrainNode(&autoscalingCtx, nodeInfo)
+	evictionResults, err := evictor.DrainNode(context.TODO(), &autoscalingCtx, nodeInfo)
 	assert.Error(t, err)
 
 	assertPodEvictionResults(t, wantEvictionResults, evictionResults)
@@ -574,7 +575,7 @@ func TestDrainForceNodeWithPodsEvictionFailure(t *testing.T) {
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, p4})
 	nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
-	evictionResults, err := evictor.drainNodeForce(&autoscalingCtx, nodeInfo)
+	evictionResults, err := evictor.drainNodeForce(context.TODO(), &autoscalingCtx, nodeInfo)
 	assert.Error(t, err)
 
 	assertPodEvictionResults(t, wantEvictionResults, evictionResults)
@@ -634,7 +635,7 @@ func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, p4})
 	nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(n1.Name)
 	assert.NoError(t, err)
-	evictionResults, err := evictor.DrainNode(&autoscalingCtx, nodeInfo)
+	evictionResults, err := evictor.DrainNode(context.TODO(), &autoscalingCtx, nodeInfo)
 	assert.Error(t, err)
 
 	assertPodEvictionResults(t, wantEvictionResults, evictionResults)

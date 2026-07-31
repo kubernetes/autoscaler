@@ -17,6 +17,7 @@ limitations under the License.
 package nodes
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -39,7 +40,7 @@ type ScaleDownSetProcessor interface {
 	// FilterUnremovableNodes divides all candidates into removable nodes and unremovable nodes with reason
 	// Note that len(removableNodes) + len(unremovableNode) should equal len(candidates)
 	// in other words, each candidate should end up in one and only one of the resulting node lists.
-	FilterUnremovableNodes(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCtx *ScaleDownContext, candidates []simulator.NodeToBeRemoved) ([]simulator.NodeToBeRemoved, []simulator.UnremovableNode)
+	FilterUnremovableNodes(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleDownCtx *ScaleDownContext, candidates []simulator.NodeToBeRemoved) ([]simulator.NodeToBeRemoved, []simulator.UnremovableNode)
 	// CleanUp is called at CA termination
 	CleanUp()
 }

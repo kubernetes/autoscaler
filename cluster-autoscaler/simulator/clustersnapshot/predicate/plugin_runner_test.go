@@ -175,7 +175,7 @@ func TestRunFiltersOnNode(t *testing.T) {
 			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(tt.node, tt.scheduledPods...))
 			assert.NoError(t, err)
 
-			node, state, predicateError := pluginRunner.RunFiltersOnNode(tt.testPod, tt.node.Name)
+			node, state, predicateError := pluginRunner.RunFiltersOnNode(context.TODO(), tt.testPod, tt.node.Name)
 			if tt.expectError {
 				assert.Nil(t, node)
 				assert.Nil(t, state)
@@ -279,7 +279,7 @@ func TestRunFilterUntilPassingNode(t *testing.T) {
 			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(n2000))
 			assert.NoError(t, err)
 
-			node, state, err := pluginRunner.RunFiltersUntilPassingNode(tc.pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(info *framework.NodeInfo) bool { return true }})
+			node, state, err := pluginRunner.RunFiltersUntilPassingNode(context.TODO(), tc.pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(info *framework.NodeInfo) bool { return true }})
 			if tc.expectError {
 				assert.Nil(t, node)
 				assert.Nil(t, state)
@@ -315,7 +315,7 @@ func TestRunFilterUntilPassingNode_NodeOrdering(t *testing.T) {
 
 	var visitOrder []string
 
-	_, _, err = pluginRunner.RunFiltersUntilPassingNode(p100, clustersnapshot.SchedulingOptions{
+	_, _, err = pluginRunner.RunFiltersUntilPassingNode(context.TODO(), p100, clustersnapshot.SchedulingOptions{
 		NodeOrdering: reverseOrderedIterator,
 		IsNodeAcceptable: func(info *framework.NodeInfo) bool {
 			visitOrder = append(visitOrder, info.Node().Name)
@@ -371,7 +371,7 @@ func TestRunFilterUntilPassingNode_ExitEarlyWhenOrderingReturnNegativeOne(t *tes
 	iter := newEarlyExitNodeOrderMapping(1) // Only allow visiting index 0 (node n1).
 	var nodesVisited []string
 
-	_, _, err = pluginRunner.RunFiltersUntilPassingNode(p100, clustersnapshot.SchedulingOptions{
+	_, _, err = pluginRunner.RunFiltersUntilPassingNode(context.TODO(), p100, clustersnapshot.SchedulingOptions{
 		NodeOrdering: iter,
 		IsNodeAcceptable: func(info *framework.NodeInfo) bool {
 			nodesVisited = append(nodesVisited, info.Node().Name)
@@ -414,7 +414,7 @@ func TestRunFilterUntilPassingNode_PreferSmallestSteps(t *testing.T) {
 	chosenNodeName := ""
 
 	go func() {
-		node, _, err := pluginRunner.RunFiltersUntilPassingNode(p100, clustersnapshot.SchedulingOptions{
+		node, _, err := pluginRunner.RunFiltersUntilPassingNode(context.TODO(), p100, clustersnapshot.SchedulingOptions{
 			NodeOrdering: orderedIterator, // Needed to make the test deterministic.
 			IsNodeAcceptable: func(info *framework.NodeInfo) bool {
 				if info.Node().Name == "n1" {
@@ -469,7 +469,7 @@ func TestDebugInfo(t *testing.T) {
 	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
 	assert.NoError(t, err)
 
-	_, _, predicateErr := defaultPluginRunner.RunFiltersOnNode(p1, "n1")
+	_, _, predicateErr := defaultPluginRunner.RunFiltersOnNode(context.TODO(), p1, "n1")
 	assert.NotNil(t, predicateErr)
 	assert.Contains(t, predicateErr.FailingPredicateReasons(), "node(s) had untolerated taint(s)")
 	assert.Contains(t, predicateErr.Error(), "node(s) had untolerated taint(s)")
@@ -500,7 +500,7 @@ func TestDebugInfo(t *testing.T) {
 	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
 	assert.NoError(t, err)
 
-	_, _, predicateErr = customPluginRunner.RunFiltersOnNode(p1, "n1")
+	_, _, predicateErr = customPluginRunner.RunFiltersOnNode(context.TODO(), p1, "n1")
 	assert.Nil(t, predicateErr)
 }
 
@@ -565,7 +565,7 @@ func BenchmarkRunFiltersUntilPassingNode(b *testing.B) {
 			pluginRunner.parallelism = tc.parallelism
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				_, _, err := pluginRunner.RunFiltersUntilPassingNode(pod, clustersnapshot.SchedulingOptions{
+				_, _, err := pluginRunner.RunFiltersUntilPassingNode(context.TODO(), pod, clustersnapshot.SchedulingOptions{
 					NodeOrdering: clustersnapshot.NewLastIndexOrderMapping(1),
 				})
 				assert.NoError(b, err)

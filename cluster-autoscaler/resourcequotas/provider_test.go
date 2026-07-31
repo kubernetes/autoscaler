@@ -17,6 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -33,7 +34,7 @@ func TestCloudLimitersProvider(t *testing.T) {
 	cloudProvider.SetResourceLimiter(resourceLimiter)
 
 	quotasProvider := NewCloudQuotasProvider(cloudProvider)
-	quotas, err := quotasProvider.Quotas()
+	quotas, err := quotasProvider.Quotas(context.TODO())
 	if err != nil {
 		t.Errorf("failed to get quotas: %v", err)
 	}
@@ -88,7 +89,7 @@ func TestCombinedQuotasProvider(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := NewCombinedQuotasProvider(tc.providers)
-			quotas, err := provider.Quotas()
+			quotas, err := provider.Quotas(context.TODO())
 
 			if !errors.Is(err, tc.wantErr) {
 				t.Errorf("Quotas() err mismatch: got %v, want %v", err, tc.wantErr)
@@ -147,7 +148,7 @@ func TestCloudMinProvider(t *testing.T) {
 	cloudProvider.SetResourceLimiter(resourceLimiter)
 
 	quotasProvider := NewCloudMinProvider(cloudProvider)
-	quotas, err := quotasProvider.Quotas()
+	quotas, err := quotasProvider.Quotas(context.TODO())
 	if err != nil {
 		t.Errorf("failed to get quotas: %v", err)
 	}
@@ -167,7 +168,7 @@ func TestCloudMaxProvider(t *testing.T) {
 	cloudProvider.SetResourceLimiter(resourceLimiter)
 
 	quotasProvider := NewCloudMaxProvider(cloudProvider)
-	quotas, err := quotasProvider.Quotas()
+	quotas, err := quotasProvider.Quotas(context.TODO())
 	if err != nil {
 		t.Errorf("failed to get quotas: %v", err)
 	}

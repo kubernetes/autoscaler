@@ -17,6 +17,7 @@ limitations under the License.
 package clustersnapshot
 
 import (
+	"context"
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -56,7 +57,7 @@ type ClusterSnapshot interface {
 	AddNodeInfo(nodeInfo *framework.NodeInfo) error
 	// RemoveNodeInfo removes the given NodeInfo from the snapshot.
 	// The Node and the Pods are removed, as well as any DRA and CSI objects owned by them.
-	RemoveNodeInfo(nodeName string) error
+	RemoveNodeInfo(ctx context.Context, nodeName string) error
 	// GetNodeInfo returns an internal NodeInfo for a given Node - all information about the Node tracked in the snapshot.
 	// The returned framework.NodeInfo is fully populated with DRA and CSI data.
 	// The internal NodeInfos obtained via this method should always be used in CA code instead of directly using *schedulerframework.NodeInfo.
@@ -78,14 +79,14 @@ type ClusterSnapshot interface {
 	// all relevant DRA objects are modified to reflect that. Returns nil if the pod got scheduled, and a non-nil
 	// error explaining why not otherwise. The error Type() can be checked against SchedulingInternalError to distinguish
 	// failing predicates from unexpected errors.
-	SchedulePod(pod *apiv1.Pod, nodeName string) SchedulingError
+	SchedulePod(ctx context.Context, pod *apiv1.Pod, nodeName string) SchedulingError
 	// SchedulePodOnAnyNodeMatching tries to schedule the given Pod on any Node for which opts.IsNodeAcceptable returns
 	// true. Scheduling predicates are checked, and the pod is scheduled only if there is a matching Node with passing
 	// predicates. If the pod is scheduled, all relevant DRA objects are modified to reflect that, and the name of the
 	// Node its scheduled on and nil are returned. If the pod can't be scheduled on any Node, an empty string and a non-nil
 	// error explaining why are returned. The error Type() can be checked against SchedulingInternalError to distinguish
 	// failing predicates from unexpected errors.
-	SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, opts SchedulingOptions) (matchingNode string, err SchedulingError)
+	SchedulePodOnAnyNodeMatching(ctx context.Context, pod *apiv1.Pod, opts SchedulingOptions) (matchingNode string, err SchedulingError)
 	// UnschedulePod removes the given Pod from the given Node inside the snapshot, and modifies all relevant DRA objects
 	// to reflect the removal. The pod can then be scheduled on another Node in the snapshot using the Schedule methods.
 	UnschedulePod(namespace string, podName string, nodeName string) error
@@ -93,7 +94,7 @@ type ClusterSnapshot interface {
 	// CheckPredicates runs scheduler predicates to check if the given Pod would be able to schedule on the Node with the given
 	// name. Returns nil if predicates pass, or a non-nil error specifying why they didn't otherwise. The error Type() can be
 	// checked against SchedulingInternalError to distinguish failing predicates from unexpected errors. Doesn't mutate the snapshot.
-	CheckPredicates(pod *apiv1.Pod, nodeName string) SchedulingError
+	CheckPredicates(ctx context.Context, pod *apiv1.Pod, nodeName string) SchedulingError
 
 	// DraSnapshot returns an interface that allows accessing and modifying the DRA objects in the snapshot.
 	DraSnapshot() *drasnapshot.Snapshot
@@ -121,7 +122,7 @@ type ClusterSnapshotStore interface {
 	StoreNodeInfo(nodeInfo *framework.NodeInfo) error
 	// RemoveNodeInfo removes the given *framework.NodeInfo from the snapshot.
 	// This shouldn't be used outside the clustersnapshot pkg, use ClusterSnapshot.RemoveNodeInfo() instead.
-	RemoveNodeInfo(nodeName string) error
+	RemoveNodeInfo(ctx context.Context, nodeName string) error
 
 	// Clear resets the snapshot to an empty, unforked state.
 	Clear()

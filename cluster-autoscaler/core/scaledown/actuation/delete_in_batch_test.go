@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -195,7 +196,7 @@ func TestRemove(t *testing.T) {
 				}
 			}
 
-			err = d.remove(nodeGroup.Id())
+			err = d.remove(context.TODO(), nodeGroup.Id())
 			if test.err {
 				if err == nil {
 					t.Errorf("remove() should return error, but return nil")

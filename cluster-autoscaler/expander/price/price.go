@@ -17,6 +17,7 @@ limitations under the License.
 package price
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"time"
@@ -87,7 +88,7 @@ func NewFilter(cloudProvider cloudprovider.CloudProvider,
 }
 
 // BestOption selects option based on cost and preferred node type.
-func (p *priceBased) BestOptions(expansionOptions []expander.Option, nodeInfos map[string]*framework.NodeInfo) []expander.Option {
+func (p *priceBased) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfos map[string]*framework.NodeInfo) []expander.Option {
 	var bestOptions []expander.Option
 	bestOptionScore := 0.0
 	now := time.Now()

@@ -17,6 +17,7 @@ limitations under the License.
 package pods
 
 import (
+	"context"
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -30,7 +31,7 @@ func TestDefaultUnschedulablePodListProcessor(t *testing.T) {
 	p1 := BuildTestPod("p1", 40, 0)
 	unschedulablePods := []*apiv1.Pod{p1}
 	podListProcessor := NewDefaultPodListProcessor()
-	gotUnschedulablePods, err := podListProcessor.Process(autoscalingCtx, unschedulablePods)
+	gotUnschedulablePods, err := podListProcessor.Process(context.TODO(), autoscalingCtx, unschedulablePods)
 	if len(gotUnschedulablePods) != 1 || err != nil {
 		t.Errorf("Error podListProcessor.Process() = %v,%v want %v, nil ",
 			gotUnschedulablePods, err, unschedulablePods)

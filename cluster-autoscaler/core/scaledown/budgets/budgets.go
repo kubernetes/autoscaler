@@ -17,6 +17,7 @@ limitations under the License.
 package budgets
 
 import (
+	"context"
 	"strconv"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -53,9 +54,9 @@ func NewScaleDownBudgetProcessor(autoscalingCtx *ca_context.AutoscalingContext) 
 // CropNodes crops the provided node lists to respect scale-down max parallelism budgets.
 // The returned nodes are grouped by a node group.
 // This function assumes that each node group may occur at most once in each of the "empty" and "drain" lists.
-func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empty, drain []*apiv1.Node) (emptyToDelete, drainToDelete []*NodeGroupView) {
-	emptyIndividual, emptyAtomic := bp.categorize(bp.group(empty))
-	drainIndividual, drainAtomic := bp.categorize(bp.group(drain))
+func (bp *ScaleDownBudgetProcessor) CropNodes(ctx context.Context, as scaledown.ActuationStatus, empty, drain []*apiv1.Node) (emptyToDelete, drainToDelete []*NodeGroupView) {
+	emptyIndividual, emptyAtomic := bp.categorize(ctx, bp.group(ctx, empty))
+	drainIndividual, drainAtomic := bp.categorize(ctx, bp.group(ctx, drain))
 
 	emptyAtomicMap := groupBuckets(emptyAtomic)
 	drainAtomicMap := groupBuckets(drainAtomic)
@@ -207,7 +208,7 @@ func cropIndividualNodes(toDelete []*NodeGroupView, groups []*NodeGroupView, bud
 	return toDelete, budget - remainingBudget
 }
 
-func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView {
+func (bp *ScaleDownBudgetProcessor) group(ctx context.Context, nodes []*apiv1.Node) []*NodeGroupView {
 	groupMap := map[string]int{}
 	grouped := []*NodeGroupView{}
 	for _, node := range nodes {
@@ -229,7 +230,7 @@ func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView 
 	return grouped
 }
 
-func (bp *ScaleDownBudgetProcessor) categorize(groups []*NodeGroupView) (individual, atomic []*NodeGroupView) {
+func (bp *ScaleDownBudgetProcessor) categorize(ctx context.Context, groups []*NodeGroupView) (individual, atomic []*NodeGroupView) {
 	for _, view := range groups {
 		autoscalingOptions, err := view.Group.GetOptions(bp.autoscalingCtx.NodeGroupDefaults)
 		if err != nil && err != cloudprovider.ErrNotImplemented {

@@ -17,6 +17,7 @@ limitations under the License.
 package predicate
 
 import (
+	"context"
 	"fmt"
 	"maps"
 	"math/rand"
@@ -364,7 +365,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.RemoveNodeInfo(node.Name)
+				return snapshot.RemoveNodeInfo(context.TODO(), node.Name)
 			},
 		},
 		{
@@ -374,7 +375,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				if err := snapshot.RemoveNodeInfo(node.Name); err != nil {
+				if err := snapshot.RemoveNodeInfo(context.TODO(), node.Name); err != nil {
 					return err
 				}
 				return snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
@@ -394,7 +395,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				if schedErr := snapshot.ForceAddPod(pod, node.Name); schedErr != nil {
 					return schedErr
 				}
-				return snapshot.RemoveNodeInfo(node.Name)
+				return snapshot.RemoveNodeInfo(context.TODO(), node.Name)
 			},
 		},
 		{
@@ -404,7 +405,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.SchedulePod(pod, node.Name)
+				return snapshot.SchedulePod(context.TODO(), pod, node.Name)
 			},
 			modifiedState: snapshotState{
 				nodes:       []*apiv1.Node{node},
@@ -419,7 +420,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, largeCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(context.TODO(), largePod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if diff := cmp.Diff(largeNode.Name, foundNodeName); diff != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
 				}
@@ -438,7 +439,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, largeCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(info *framework.NodeInfo) bool { return info.Node().Name == node.Name }})
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(context.TODO(), pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(info *framework.NodeInfo) bool { return info.Node().Name == node.Name }})
 				if diff := cmp.Diff(node.Name, foundNodeName); diff != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
 				}
@@ -457,7 +458,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.SchedulePod(largePod, node.Name)
+				return snapshot.SchedulePod(context.TODO(), largePod, node.Name)
 			},
 			// SchedulePod should fail on scheduling predicates because the pod is too big for the node.
 			wantErr: clustersnapshot.NewFailingPredicateError(nil, "", nil, "", ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
@@ -474,7 +475,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(largePod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(context.TODO(), largePod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -495,7 +496,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode, otherCSINode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return false }})
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(context.TODO(), pod, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return false }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -744,7 +745,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.RemoveNodeInfo(node.Name)
+				return snapshot.RemoveNodeInfo(context.TODO(), node.Name)
 			},
 			// LocalResourceSlices for the removed Node should get removed from the DRA snapshot.
 			// The pod-owned claim referenced by a pod from the removed Node should get removed from the DRA snapshot.
@@ -773,7 +774,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// Remove the NodeInfo and then add it back to the snapshot.
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				if err := snapshot.RemoveNodeInfo(node.Name); err != nil {
+				if err := snapshot.RemoveNodeInfo(context.TODO(), node.Name); err != nil {
 					return err
 				}
 				podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
@@ -803,7 +804,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.RemoveNodeInfo("wrong-name")
+				return snapshot.RemoveNodeInfo(context.TODO(), "wrong-name")
 			},
 			// The removed Node isn't in the snapshot, so this should be an error.
 			wantErr: cmpopts.AnyError,
@@ -828,7 +829,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// Run SchedulePod, which should allocate the claims in the DRA snapshot via the DRA scheduler plugin.
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.SchedulePod(podWithClaims, node.Name)
+				return snapshot.SchedulePod(context.TODO(), podWithClaims, node.Name)
 			},
 			// The pod should get added to the Node.
 			// The claims referenced by the Pod should get allocated and reserved for the Pod.
@@ -860,7 +861,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// Run SchedulePod, which should allocate the pod-owned claim in the DRA snapshot via the DRA scheduler plugin.
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.SchedulePod(podWithClaims, node.Name)
+				return snapshot.SchedulePod(context.TODO(), podWithClaims, node.Name)
 			},
 			// The pod should get added to the Node.
 			// The pod-owned claim referenced by the Pod should get allocated. Both claims referenced by the Pod should get reserved for the Pod.
@@ -890,7 +891,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.SchedulePod(podWithClaims, node.Name)
+				return snapshot.SchedulePod(context.TODO(), podWithClaims, node.Name)
 			},
 			// SchedulePod should fail at checking scheduling predicates, because the DRA plugin can't find one of the claims.
 			wantErr: clustersnapshot.NewFailingPredicateError(nil, "", nil, "", ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
@@ -920,7 +921,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.SchedulePod(podWithClaims, node.Name)
+				return snapshot.SchedulePod(context.TODO(), podWithClaims, node.Name)
 			},
 			// The shared claim referenced by the pod is already at the max reservation count, and no more reservations can be added - this should be an error to match scheduler behavior.
 			wantErr: clustersnapshot.NewSchedulingInternalError(nil, ""), // Only the type of the error is asserted (via cmp.EquateErrors() and errors.Is()), so the parameters don't matter here.
@@ -953,7 +954,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// Run SchedulePod, which should allocate the claims in the DRA snapshot via the DRA scheduler plugin.
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(context.TODO(), podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if diff := cmp.Diff(node.Name, foundNodeName); diff != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output (-want +got): %s", diff)
 				}
@@ -987,7 +988,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(context.TODO(), podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -1021,7 +1022,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
+				foundNodeName, err := snapshot.SchedulePodOnAnyNodeMatching(context.TODO(), podWithClaims, clustersnapshot.SchedulingOptions{IsNodeAcceptable: func(_ *framework.NodeInfo) bool { return true }})
 				if foundNodeName != "" {
 					t.Errorf("SchedulePodOnAnyNodeMatching(): unexpected output: want empty string, got %q", foundNodeName)
 				}
@@ -1091,7 +1092,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				if err := snapshot.UnschedulePod(podWithClaims.Namespace, podWithClaims.Name, node.Name); err != nil {
 					return err
 				}
-				return snapshot.SchedulePod(withNodeName(podWithClaims, node.Name), node.Name)
+				return snapshot.SchedulePod(context.TODO(), withNodeName(podWithClaims, node.Name), node.Name)
 			},
 			// The state shouldn't change.
 			modifiedState: snapshotState{
@@ -1156,7 +1157,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				if err := snapshot.UnschedulePod(podWithClaims.Namespace, podWithClaims.Name, node.Name); err != nil {
 					return err
 				}
-				return snapshot.SchedulePod(withNodeName(podWithClaims, node.Name), node.Name)
+				return snapshot.SchedulePod(context.TODO(), withNodeName(podWithClaims, node.Name), node.Name)
 			},
 			// The state shouldn't change.
 			modifiedState: snapshotState{
@@ -1565,7 +1566,7 @@ func TestNode404(t *testing.T) {
 			return snapshot.ForceRemovePod("default", "p1", "node")
 		}},
 		{"schedule pod", func(snapshot clustersnapshot.ClusterSnapshot) error {
-			return snapshot.SchedulePod(BuildTestPod("p1", 0, 0), "node")
+			return snapshot.SchedulePod(context.TODO(), BuildTestPod("p1", 0, 0), "node")
 		}},
 		{"unschedule pod", func(snapshot clustersnapshot.ClusterSnapshot) error {
 			return snapshot.UnschedulePod("default", "p1", "node")
@@ -1579,7 +1580,7 @@ func TestNode404(t *testing.T) {
 			return err
 		}},
 		{"remove NodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
-			return snapshot.RemoveNodeInfo("node")
+			return snapshot.RemoveNodeInfo(context.TODO(), "node")
 		}},
 	}
 
@@ -1608,7 +1609,7 @@ func TestNode404(t *testing.T) {
 					snapshot.Fork()
 					assert.NoError(t, err)
 
-					err = snapshot.RemoveNodeInfo("node")
+					err = snapshot.RemoveNodeInfo(context.TODO(), "node")
 					assert.NoError(t, err)
 
 					// Node deleted after fork - shouldn't be able to operate on it.
@@ -1633,7 +1634,7 @@ func TestNode404(t *testing.T) {
 					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 					assert.NoError(t, err)
 
-					err = snapshot.RemoveNodeInfo("node")
+					err = snapshot.RemoveNodeInfo(context.TODO(), "node")
 					assert.NoError(t, err)
 
 					// Node deleted from base - shouldn't be able to operate on it.

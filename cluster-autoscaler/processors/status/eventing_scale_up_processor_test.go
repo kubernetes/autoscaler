@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -125,7 +126,7 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 				Recorder: fakeRecorder,
 			},
 		}
-		p.Process(autoscalingCtx, tc.state)
+		p.Process(context.TODO(), autoscalingCtx, tc.state)
 		triggered := 0
 		noTriggered := 0
 		for eventsLeft := true; eventsLeft; {

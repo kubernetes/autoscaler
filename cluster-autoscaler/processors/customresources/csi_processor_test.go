@@ -17,6 +17,7 @@ limitations under the License.
 package customresources
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -307,7 +308,7 @@ func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {
 
 			autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider, ClusterSnapshot: clusterSnapshot}
 			processor := CSICustomResourcesProcessor{}
-			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, nil, csiSnapshot)
+			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.TODO(), autoscalingCtx, initialAllNodes, initialReadyNodes, nil, csiSnapshot)
 
 			readyNodes := make(map[string]bool)
 			for _, node := range newReadyNodes {

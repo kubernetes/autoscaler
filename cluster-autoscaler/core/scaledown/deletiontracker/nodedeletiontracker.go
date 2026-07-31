@@ -17,6 +17,7 @@ limitations under the License.
 package deletiontracker
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -83,7 +84,7 @@ func (n *NodeDeletionTracker) StartDeletionWithDrain(nodeGroupId, nodeName strin
 }
 
 // EndDeletion decrements node deletion in progress counter for the given nodegroup.
-func (n *NodeDeletionTracker) EndDeletion(nodeGroupId, nodeName string, result status.NodeDeleteResult) {
+func (n *NodeDeletionTracker) EndDeletion(ctx context.Context, nodeGroupId, nodeName string, result status.NodeDeleteResult) {
 	n.Lock()
 	defer n.Unlock()
 

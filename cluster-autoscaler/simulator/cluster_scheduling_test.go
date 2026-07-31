@@ -17,6 +17,7 @@ limitations under the License.
 package simulator
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -127,7 +128,7 @@ func TestTopologySpreadTaintScheduling(t *testing.T) {
 			replacementPod.Labels = map[string]string{"app": "topo-app"}
 			replacementPod.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{tc.tsc}
 
-			nodeName, schedErr := snapshot.SchedulePodOnAnyNodeMatching(replacementPod, clustersnapshot.SchedulingOptions{
+			nodeName, schedErr := snapshot.SchedulePodOnAnyNodeMatching(context.TODO(), replacementPod, clustersnapshot.SchedulingOptions{
 				IsNodeAcceptable: func(ni *framework.NodeInfo) bool {
 					return true
 				},

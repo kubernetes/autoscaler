@@ -17,6 +17,7 @@ limitations under the License.
 package emptycandidates
 
 import (
+	"context"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -97,7 +98,7 @@ func (p *EmptySorting) isNodeEmptyNoCache(node *apiv1.Node) emptyInfo {
 	if err != nil {
 		return emptyInfo{IsEmpty: false}
 	}
-	podMoveInfo, err := simulator.GetPodsToMove(nodeInfo, p.deleteOptions, p.drainabilityRules, nil, nil, time.Now())
+	podMoveInfo, err := simulator.GetPodsToMove(context.TODO(), nodeInfo, p.deleteOptions, p.drainabilityRules, nil, nil, time.Now())
 	if err == nil && len(podMoveInfo.Pods) == 0 {
 		return emptyInfo{
 			IsEmpty:             true,

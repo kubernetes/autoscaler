@@ -17,6 +17,7 @@ limitations under the License.
 package test
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"slices"
@@ -176,7 +177,7 @@ func NewScaleTestAutoscalingContext(
 	// Not enough buffer space causes the test to hang without printing any logs.
 	// This is not useful.
 	fakeRecorder := kube_record.NewFakeRecorder(100)
-	fakeLogRecorder, err := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false, "my-cool-configmap")
+	fakeLogRecorder, err := utils.NewStatusMapRecorder(context.TODO(), fakeClient, "kube-system", fakeRecorder, false, "my-cool-configmap")
 	if err != nil {
 		return ca_context.AutoscalingContext{}, err
 	}
@@ -323,7 +324,7 @@ func (p *MockBinpackingLimiter) MarkProcessed(autoscalingCtx *ca_context.Autosca
 }
 
 // StopBinpacking stops the binpacking early, if we already have requiredExpansionOptions i.e. 1.
-func (p *MockBinpackingLimiter) StopBinpacking(autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
+func (p *MockBinpackingLimiter) StopBinpacking(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
 	return len(evaluatedOptions) == p.requiredExpansionOptions
 }
 
@@ -372,10 +373,10 @@ func (r *MockReportingStrategy) LastInputOptions() []GroupSizeChange {
 // BestOption satisfies the Strategy interface. Picks the best option from those passed as an argument.
 // When parameter optionToChoose is defined, it's picked as the best one.
 // Otherwise, random option is used.
-func (r *MockReportingStrategy) BestOption(options []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
+func (r *MockReportingStrategy) BestOption(ctx context.Context, options []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
 	r.results.inputOptions = expanderOptionsToGroupSizeChanges(options)
 	if r.optionToChoose == nil {
-		return r.defaultStrategy.BestOption(options, nodeInfo)
+		return r.defaultStrategy.BestOption(ctx, options, nodeInfo)
 	}
 	for _, option := range options {
 		groupSizeChange := expanderOptionToGroupSizeChange(option)

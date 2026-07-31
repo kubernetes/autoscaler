@@ -17,6 +17,7 @@ limitations under the License.
 package predicate
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -358,7 +359,7 @@ func BenchmarkScheduleRevert(b *testing.B) {
 									WithResourceClaim(sharedClaim.Name, sharedClaim.Name, ""),
 								)
 
-								err := snapshot.SchedulePod(pod, nodeInfo.Node().Name)
+								err := snapshot.SchedulePod(context.TODO(), pod, nodeInfo.Node().Name)
 								if err != nil {
 									b.Errorf(
 										"Failed to schedule a pod %s to node %s: %v",
@@ -371,7 +372,7 @@ func BenchmarkScheduleRevert(b *testing.B) {
 
 							for podIndex := 0; podIndex < cfg.ownedClaimPods; podIndex++ {
 								owningPod := owningPods[nodeIndex][podIndex]
-								err := snapshot.SchedulePod(owningPod, nodeInfo.Node().Name)
+								err := snapshot.SchedulePod(context.TODO(), owningPod, nodeInfo.Node().Name)
 								if err != nil {
 									b.Errorf(
 										"Failed to schedule a pod %s to node %s: %v",

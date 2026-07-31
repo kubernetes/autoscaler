@@ -17,6 +17,7 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"context"
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -122,7 +123,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	autoscalingCtx.CloudProvider = provider
 
 	// Groups with different cpu and mem are not similar.
-	similar, err := processor.FindSimilarNodeGroups(autoscalingCtx, ng1, nodeInfosForGroups)
+	similar, err := processor.FindSimilarNodeGroups(context.TODO(), autoscalingCtx, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{})
 
@@ -131,7 +132,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	n2.ObjectMeta.Labels["agentpool"] = "foobar"
 	n1.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar"
 	n2.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar"
-	similar, err = processor.FindSimilarNodeGroups(autoscalingCtx, ng1, nodeInfosForGroups)
+	similar, err = processor.FindSimilarNodeGroups(context.TODO(), autoscalingCtx, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{ng2})
 
@@ -150,7 +151,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	n2.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar2"
 	n3.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar3"
 
-	similar, err = processor.FindSimilarNodeGroups(autoscalingCtx, ng1, nodeInfosForGroups)
+	similar, err = processor.FindSimilarNodeGroups(context.TODO(), autoscalingCtx, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{ng3})
 }

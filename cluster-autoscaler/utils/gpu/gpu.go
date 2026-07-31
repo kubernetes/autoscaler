@@ -17,6 +17,7 @@ limitations under the License.
 package gpu
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -69,7 +70,7 @@ const (
 // GetGpuInfoForMetrics returns the name of the custom resource and the GPU used on the node or empty string if there's no GPU
 // if the GPU type is unknown, "generic" is returned
 // NOTE: current implementation is GKE/GCE-specific
-func GetGpuInfoForMetrics(gpuConfig *cloudprovider.GpuConfig, availableGPUTypes map[string]struct{}, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuResource string, gpuType string) {
+func GetGpuInfoForMetrics(ctx context.Context, gpuConfig *cloudprovider.GpuConfig, availableGPUTypes map[string]struct{}, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuResource string, gpuType string) {
 	// There is no sign of GPU
 	if gpuConfig == nil {
 		return "", MetricsNoGPU

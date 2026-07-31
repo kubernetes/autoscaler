@@ -17,6 +17,7 @@ limitations under the License.
 package podinjection
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -43,7 +44,7 @@ func NewEnforceInjectedPodsLimitProcessor(podLimit int) *EnforceInjectedPodsLimi
 }
 
 // Process filters unschedulablePods and enforces the limit of the number of injected pods
-func (p *EnforceInjectedPodsLimitProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *EnforceInjectedPodsLimitProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 
 	numberOfFakePodsToRemove := len(unschedulablePods) - p.podLimit
 	removedFakePodsCount := 0

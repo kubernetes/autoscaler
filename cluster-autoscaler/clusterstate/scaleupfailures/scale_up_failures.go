@@ -17,6 +17,7 @@ limitations under the License.
 package scaleupfailures
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -44,7 +45,7 @@ func NewRegistry() *Registry {
 }
 
 // RegisterScaleUp records when the last scale up happened for a nodegroup.
-func (s *Registry) RegisterScaleUp(_ cloudprovider.NodeGroup,
+func (s *Registry) RegisterScaleUp(ctx context.Context, _ cloudprovider.NodeGroup,
 	_ int, _ time.Time) {
 }
 
@@ -54,7 +55,7 @@ func (s *Registry) RegisterScaleDown(_ cloudprovider.NodeGroup,
 }
 
 // RegisterFailedScaleUp records when the last scale up failed for a nodegroup.
-func (s *Registry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int,
+func (s *Registry) RegisterFailedScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup, delta int,
 	errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -67,7 +68,7 @@ func (s *Registry) RegisterFailedScaleDown(_ cloudprovider.NodeGroup,
 }
 
 // Refresh clears the scale-up failures.
-func (s *Registry) Refresh() {
+func (s *Registry) Refresh(ctx context.Context) {
 	s.clear()
 }
 

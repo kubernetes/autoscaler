@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	"context"
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -37,7 +38,7 @@ import (
 
 // ProvisioningClass is an interface for ProvisioningRequests.
 type ProvisioningClass interface {
-	Provision([]*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
+	Provision(context.Context, []*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
 		map[string]*framework.NodeInfo) (*status.ScaleUpStatus, ca_errors.AutoscalerError)
 	Initialize(*ca_context.AutoscalingContext, *ca_processors.AutoscalingProcessors, *clusterstate.ClusterStateRegistry,
 		estimator.EstimatorBuilder, taints.TaintConfig, *scheduling.HintingSimulator, *resourcequotas.TrackerFactory)
@@ -81,7 +82,7 @@ func (o *provReqOrchestrator) Initialize(
 // so only one ProvisioningClass return non empty scaleUp result.
 // In case we implement multiple ProvisioningRequest ScaleUp, the function should return combined status
 func (o *provReqOrchestrator) ScaleUp(
-	unschedulablePods []*apiv1.Pod,
+	ctx context.Context, unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*framework.NodeInfo,
@@ -96,7 +97,7 @@ func (o *provReqOrchestrator) ScaleUp(
 
 	// unschedulablePods pods should belong to one ProvisioningClass, so only one provClass should try to ScaleUp.
 	for _, provClass := range o.provisioningClasses {
-		st, err := provClass.Provision(unschedulablePods, nodes, daemonSets, nodeInfos)
+		st, err := provClass.Provision(ctx, unschedulablePods, nodes, daemonSets, nodeInfos)
 		if err != nil || st != nil && st.Result != status.ScaleUpNotTried {
 			return st, err
 		}
@@ -106,7 +107,7 @@ func (o *provReqOrchestrator) ScaleUp(
 
 // ScaleUpToNodeGroupMinSize doesn't have implementation for ProvisioningRequest Orchestrator.
 func (o *provReqOrchestrator) ScaleUpToNodeGroupMinSize(
-	nodes []*apiv1.Node,
+	ctx context.Context, nodes []*apiv1.Node,
 	nodeInfos map[string]*framework.NodeInfo,
 ) (*status.ScaleUpStatus, ca_errors.AutoscalerError) {
 	return nil, nil

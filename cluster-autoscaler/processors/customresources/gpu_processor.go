@@ -17,6 +17,7 @@ limitations under the License.
 package customresources
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
@@ -38,7 +39,7 @@ type GpuCustomResourcesProcessor struct {
 // it in allocatable from ready nodes list and updates their status to unready on all nodes list.
 // This is a hack/workaround for nodes with GPU coming up without installed drivers, resulting
 // in GPU missing from their allocatable and capacity.
-func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyGpu := make(map[string]*apiv1.Node)
@@ -71,14 +72,14 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 
 // GetNodeResourceTargets returns mapping of resource names to their targets.
 // This includes resources which are not yet ready to use and visible in kubernetes.
-func (p *GpuCustomResourcesProcessor) GetNodeResourceTargets(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
-	gpuTarget, err := p.GetNodeGpuTarget(autoscalingCtx, node, nodeGroup)
+func (p *GpuCustomResourcesProcessor) GetNodeResourceTargets(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+	gpuTarget, err := p.GetNodeGpuTarget(ctx, autoscalingCtx, node, nodeGroup)
 	return []CustomResourceTarget{gpuTarget}, err
 }
 
 // GetNodeGpuTarget returns the gpu target of a given node. This includes gpus
 // that are not ready to use and visible in kubernetes.
-func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (CustomResourceTarget, errors.AutoscalerError) {
+func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (CustomResourceTarget, errors.AutoscalerError) {
 	gpuLabel, found := node.Labels[autoscalingCtx.CloudProvider.GPULabel()]
 	if !found {
 		return CustomResourceTarget{}, nil

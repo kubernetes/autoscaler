@@ -17,13 +17,14 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 )
 
 // ScaleDownStatusProcessor processes the status of the cluster after a scale-down.
 type ScaleDownStatusProcessor interface {
-	Process(autoscalingCtx *ca_context.AutoscalingContext, status *status.ScaleDownStatus)
+	Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, status *status.ScaleDownStatus)
 	CleanUp()
 }
 
@@ -36,7 +37,7 @@ func NewDefaultScaleDownStatusProcessor() ScaleDownStatusProcessor {
 type NoOpScaleDownStatusProcessor struct{}
 
 // Process processes the status of the cluster after a scale-down.
-func (p *NoOpScaleDownStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *status.ScaleDownStatus) {
+func (p *NoOpScaleDownStatusProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, status *status.ScaleDownStatus) {
 }
 
 // CleanUp cleans up the processor's internal structures.

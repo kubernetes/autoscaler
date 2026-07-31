@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	gocontext "context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -61,7 +62,7 @@ func TestNewClusterCapacityThreshold(t *testing.T) {
 				currentNodeCount:    tt.contextCurrentNodes,
 				clusterMaxNodeLimit: tt.contextMaxNodes,
 			}
-			assert.Equal(t, tt.wantThreshold, NewClusterCapacityThreshold().NodeLimit(nil, context).Limit)
+			assert.Equal(t, tt.wantThreshold, NewClusterCapacityThreshold().NodeLimit(gocontext.TODO(), nil, context).Limit)
 			assert.True(t, NewClusterCapacityThreshold().DurationLimit(nil, nil).Duration == 0)
 		})
 	}

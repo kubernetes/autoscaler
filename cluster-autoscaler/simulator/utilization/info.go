@@ -17,6 +17,7 @@ limitations under the License.
 package utilization
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -47,7 +48,7 @@ type Info struct {
 // memory) or gpu utilization based on if the node has GPU or not. Per resource
 // utilization is the sum of requests for it divided by allocatable. It also
 // returns the individual cpu, memory and gpu utilization.
-func Calculate(nodeInfo *framework.NodeInfo, skipDaemonSetPods, skipMirrorPods, draEnabled bool, gpuConfig *cloudprovider.GpuConfig, currentTime time.Time) (utilInfo Info, err error) {
+func Calculate(ctx context.Context, nodeInfo *framework.NodeInfo, skipDaemonSetPods, skipMirrorPods, draEnabled bool, gpuConfig *cloudprovider.GpuConfig, currentTime time.Time) (utilInfo Info, err error) {
 	if gpuConfig != nil && !gpuConfig.ExposedViaDra() {
 		gpuUtil, err := CalculateUtilizationOfResource(nodeInfo, gpuConfig.ExtendedResourceName, skipDaemonSetPods, skipMirrorPods, currentTime)
 		if err != nil {

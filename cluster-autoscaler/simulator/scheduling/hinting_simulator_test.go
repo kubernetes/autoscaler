@@ -17,6 +17,7 @@ limitations under the License.
 package scheduling
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -163,7 +164,7 @@ func TestTrySchedulePods(t *testing.T) {
 				s.hints.Set(HintKeyFromPod(pod), nodeName)
 			}
 
-			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: tc.acceptableNodes})
+			statuses, _, err := s.TrySchedulePods(context.TODO(), clusterSnapshot, tc.newPods, false, clustersnapshot.SchedulingOptions{IsNodeAcceptable: tc.acceptableNodes})
 			if tc.wantErr {
 				assert.Error(t, err)
 				return
@@ -250,7 +251,7 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 				s.hints.Set(HintKeyFromPod(pod), n)
 				expectedStatuses = append(expectedStatuses, Status{Pod: pod, NodeName: n})
 			}
-			statuses, _, err := s.TrySchedulePods(clusterSnapshot, pods, false, clustersnapshot.SchedulingOptions{})
+			statuses, _, err := s.TrySchedulePods(context.TODO(), clusterSnapshot, pods, false, clustersnapshot.SchedulingOptions{})
 			assert.NoError(t, err)
 			assert.Equal(t, expectedStatuses, statuses)
 

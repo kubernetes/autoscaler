@@ -17,6 +17,7 @@ limitations under the License.
 package nodes
 
 import (
+	gocontext "context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -365,7 +366,7 @@ func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
 			}, &fake.Clientset{}, nil, provider, nil, nil, nil)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)
 
-			toBeRemoved, unRemovable := processor.FilterUnremovableNodes(&context, tc.scaleDownContext, candidates)
+			toBeRemoved, unRemovable := processor.FilterUnremovableNodes(gocontext.TODO(), &context, tc.scaleDownContext, candidates)
 
 			assert.ElementsMatch(t, tc.expectedToBeRemoved, toBeRemoved)
 			assert.ElementsMatch(t, tc.expectedUnremovable, unRemovable)

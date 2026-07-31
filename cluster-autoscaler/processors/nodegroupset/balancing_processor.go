@@ -17,6 +17,7 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"context"
 	"sort"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -34,7 +35,7 @@ type BalancingNodeGroupSetProcessor struct {
 
 // FindSimilarNodeGroups returns a list of NodeGroups similar to the given one using the
 // BalancingNodeGroupSetProcessor's comparator function.
-func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
+func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
 	nodeInfosForGroups map[string]*framework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
 
 	result := []cloudprovider.NodeGroup{}
@@ -76,7 +77,7 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(autoscalingCtx *c
 // MaxSize of each group will be respected. If newNodes > total free capacity
 // of all NodeGroups it will be capped to total capacity. In particular if all
 // group already have MaxSize, empty list will be returned.
-func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
 	if len(groups) == 0 {
 		return []ScaleUpInfo{}, errors.NewAutoscalerError(
 			errors.InternalError, "Can't balance scale up between 0 groups")

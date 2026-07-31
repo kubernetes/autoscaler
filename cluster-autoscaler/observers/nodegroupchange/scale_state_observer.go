@@ -17,6 +17,7 @@ limitations under the License.
 package nodegroupchange
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -34,12 +35,12 @@ import (
 // * scale-down failure(s) for a nodegroup
 type NodeGroupChangeObserver interface {
 	// RegisterScaleUp records scale up for a nodegroup.
-	RegisterScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time)
+	RegisterScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time)
 	// RegisterScaleDowns records scale down for a nodegroup.
 	RegisterScaleDown(nodeGroup cloudprovider.NodeGroup, nodeName string, currentTime time.Time, expectedDeleteTime time.Time)
 	// RegisterFailedScaleUp records failed scale-up for a nodegroup.
 	// errorInfo is a wrapper containing the reason for failed scale-up and the actual error message
-	RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time)
+	RegisterFailedScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time)
 	// RegisterFailedScaleDown records failed scale-down for a nodegroup.
 	RegisterFailedScaleDown(nodeGroup cloudprovider.NodeGroup, reason string, currentTime time.Time)
 }
@@ -58,12 +59,12 @@ func (l *NodeGroupChangeObserversList) Register(o NodeGroupChangeObserver) {
 }
 
 // RegisterScaleUp calls RegisterScaleUp for each observer.
-func (l *NodeGroupChangeObserversList) RegisterScaleUp(nodeGroup cloudprovider.NodeGroup,
+func (l *NodeGroupChangeObserversList) RegisterScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup,
 	delta int, currentTime time.Time) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	for _, observer := range l.observers {
-		observer.RegisterScaleUp(nodeGroup, delta, currentTime)
+		observer.RegisterScaleUp(ctx, nodeGroup, delta, currentTime)
 	}
 }
 
@@ -78,11 +79,11 @@ func (l *NodeGroupChangeObserversList) RegisterScaleDown(nodeGroup cloudprovider
 }
 
 // RegisterFailedScaleUp calls RegisterFailedScaleUp for each observer.
-func (l *NodeGroupChangeObserversList) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
+func (l *NodeGroupChangeObserversList) RegisterFailedScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	for _, observer := range l.observers {
-		observer.RegisterFailedScaleUp(nodeGroup, delta, errorInfo, currentTime)
+		observer.RegisterFailedScaleUp(ctx, nodeGroup, delta, errorInfo, currentTime)
 	}
 }
 
@@ -114,7 +115,7 @@ type NodeGroupChangeMetricsProducer struct {
 }
 
 // RegisterScaleUp calls RegisterScaleUp for each observer.
-func (p *NodeGroupChangeMetricsProducer) RegisterScaleUp(nodeGroup cloudprovider.NodeGroup,
+func (p *NodeGroupChangeMetricsProducer) RegisterScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup,
 	delta int, currentTime time.Time) {
 }
 
@@ -124,7 +125,7 @@ func (p *NodeGroupChangeMetricsProducer) RegisterScaleDown(nodeGroup cloudprovid
 }
 
 // RegisterFailedScaleUp emits the failed scale up metric.
-func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
+func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
 	availableGPUTypes := p.cloudProvider.GetAvailableGPUTypes()
 	gpuResourceName, gpuType, draDriverNames := "", "", ""
 	nodeInfo, err := nodeGroup.TemplateNodeInfo()
@@ -133,7 +134,7 @@ func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleUp(nodeGroup cloudpr
 	} else if nodeInfo == nil {
 		klog.Warningf("Template node info is nil for node group: %s", nodeGroup.Id())
 	} else {
-		gpuResourceName, gpuType = gpu.GetGpuInfoForMetrics(p.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), nodeGroup)
+		gpuResourceName, gpuType = gpu.GetGpuInfoForMetrics(ctx, p.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), nodeGroup)
 		draDriverNames = dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
 	}
 	reason := metrics.FailedScaleUpReason(errorInfo.ErrorCode)

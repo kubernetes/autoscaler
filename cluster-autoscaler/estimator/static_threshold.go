@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -27,7 +28,7 @@ type staticThreshold struct {
 	maxDuration time.Duration
 }
 
-func (l *staticThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) NodeLimitResult {
+func (l *staticThreshold) NodeLimit(ctx context.Context, _ cloudprovider.NodeGroup, _ EstimationContext) NodeLimitResult {
 	return NodeLimitResult{Limit: l.maxNodes}
 }
 

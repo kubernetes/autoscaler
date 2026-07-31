@@ -17,6 +17,7 @@ limitations under the License.
 package nodes
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 
@@ -43,7 +44,7 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(autoscalingC
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := make([]*apiv1.Node, 0, len(nodes))
 
-	nodeGroupSize := utils.GetNodeGroupSizeMap(autoscalingCtx.CloudProvider)
+	nodeGroupSize := utils.GetNodeGroupSizeMap(context.TODO(), autoscalingCtx.CloudProvider)
 
 	for _, node := range nodes {
 		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)

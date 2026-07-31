@@ -17,6 +17,7 @@ limitations under the License.
 package podinjection
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -99,7 +100,7 @@ func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			p := NewEnforceInjectedPodsLimitProcessor(tc.podLimit)
-			pods, _ := p.Process(nil, tc.unschedulablePods)
+			pods, _ := p.Process(context.TODO(), nil, tc.unschedulablePods)
 			assert.EqualValues(t, tc.expectedNumberOfResultedUnschedulablePods, len(pods))
 			numberOfFakePods := numberOfFakePods(pods)
 			assert.EqualValues(t, tc.expectedNumberOfResultedUnschedulableFakePods, numberOfFakePods)

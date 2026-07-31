@@ -17,6 +17,7 @@ limitations under the License.
 package utils
 
 import (
+	"context"
 	"errors"
 	"io/ioutil"
 	"testing"
@@ -156,7 +157,7 @@ func TestWriteStatusConfigMap(t *testing.T) {
 			if tc.preprocessor != nil {
 				tc.preprocessor(ti)
 			}
-			result, err := WriteStatusConfigMap(ti.client, ti.namespace, clusterAutoscalerStatus, nil, "my-cool-configmap", currentTime)
+			result, err := WriteStatusConfigMap(context.TODO(), ti.client, ti.namespace, clusterAutoscalerStatus, nil, "my-cool-configmap", currentTime)
 			assert.Equal(t, tc.wantError, err)
 			assert.Equal(t, tc.wantConfigMap, result)
 			assert.Equal(t, tc.wantGetCalled, ti.getCalled)
@@ -253,7 +254,7 @@ func TestWriteStatusConfigMapMarshal(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to Marshal %s: %v", statusYamlTestFile, err)
 	}
-	result, err := WriteStatusConfigMap(ti.client, ti.namespace, status, nil, "my-cool-configmap", time.Date(2023, 11, 24, 4, 28, 19, 546750398, time.UTC))
+	result, err := WriteStatusConfigMap(context.TODO(), ti.client, ti.namespace, status, nil, "my-cool-configmap", time.Date(2023, 11, 24, 4, 28, 19, 546750398, time.UTC))
 	if err != nil {
 		t.Fatalf("Expected WriteStatusConfigMap not to return error, got: %v", err)
 	}

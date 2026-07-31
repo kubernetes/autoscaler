@@ -17,6 +17,7 @@ limitations under the License.
 package metrics
 
 import (
+	"context"
 	"strconv"
 	"time"
 
@@ -91,7 +92,7 @@ func (c *reconciliationTimestampCollector) Collect(ch chan<- prometheus.Metric) 
 	// Delete buffers that no longer exist from cache
 	c.reconciledBuffers.Prune(buffers)
 
-	supportedBuffers, _ := c.supportedBuffersFilter.Filter(buffers)
+	supportedBuffers, _ := c.supportedBuffersFilter.Filter(context.TODO(), buffers)
 	reconciledBuffersSnapshot := c.reconciledBuffers.Snapshot()
 
 	now := c.clock.Now()

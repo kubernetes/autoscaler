@@ -158,7 +158,7 @@ func TestRefresh(t *testing.T) {
 		additionalPr.Spec.ProvisioningClassName = v1.ProvisioningClassCheckCapacity
 
 		processor := provReqProcessor{func() time.Time { return now }, 1, provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, pr, additionalPr), nil, ""}
-		processor.refresh([]*provreqwrapper.ProvisioningRequest{pr, additionalPr})
+		processor.refresh(context.Background(), []*provreqwrapper.ProvisioningRequest{pr, additionalPr})
 
 		assert.ElementsMatch(t, test.wantConditions, pr.Status.Conditions)
 		if len(test.conditions) == len(test.wantConditions) {
@@ -218,7 +218,7 @@ func TestDeleteOldProvReqs(t *testing.T) {
 	client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, pr, additionalPr, oldFailedPr, oldExpiredPr)
 
 	processor := provReqProcessor{func() time.Time { return now }, 1, client, nil, ""}
-	processor.refresh([]*provreqwrapper.ProvisioningRequest{pr, additionalPr, oldFailedPr, oldExpiredPr})
+	processor.refresh(context.Background(), []*provreqwrapper.ProvisioningRequest{pr, additionalPr, oldFailedPr, oldExpiredPr})
 
 	_, err := client.ProvisioningRequestNoCache(oldFailedPr.Namespace, oldFailedPr.Name)
 	assert.Error(t, err)
@@ -234,7 +234,7 @@ type fakeInjector struct {
 	pods []*apiv1.Pod
 }
 
-func (f *fakeInjector) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]scheduling.Status, int, error) {
+func (f *fakeInjector) TrySchedulePods(ctx context.Context, clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]scheduling.Status, int, error) {
 	f.pods = pods
 	return nil, 0, nil
 }
@@ -287,7 +287,7 @@ func TestBookCapacity(t *testing.T) {
 			test := test
 			injector := &fakeInjector{pods: []*apiv1.Pod{}}
 			for _, condition := range test.conditions {
-				conditions.AddOrUpdateCondition(test.provReq, condition, metav1.ConditionTrue, "", "", metav1.Now())
+				conditions.AddOrUpdateCondition(context.TODO(), test.provReq, condition, metav1.ConditionTrue, "", "", metav1.Now())
 			}
 
 			processor := &provReqProcessor{
@@ -297,7 +297,7 @@ func TestBookCapacity(t *testing.T) {
 				injector:   injector,
 			}
 			autoscalingCtx, _ := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, nil, nil, nil, nil)
-			processor.bookCapacity(&autoscalingCtx)
+			processor.bookCapacity(context.TODO(), &autoscalingCtx)
 			if (test.capacityIsBooked && len(injector.pods) == 0) || (!test.capacityIsBooked && len(injector.pods) > 0) {
 				t.Fail()
 			}
@@ -319,7 +319,7 @@ func TestBookCapacityConsumed(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			provReq := provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", podCount, false, time.Now(), v1.ProvisioningClassBestEffortAtomicScaleUp)
-			conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, "", "", metav1.Now())
+			conditions.AddOrUpdateCondition(context.TODO(), provReq, v1.Provisioned, metav1.ConditionTrue, "", "", metav1.Now())
 
 			node := BuildTestNode("node", 10000, 10000)
 			scheduledPods := make([]*apiv1.Pod, test.scheduledPods)
@@ -337,12 +337,12 @@ func TestBookCapacityConsumed(t *testing.T) {
 				t.Fatalf("failed to set cluster state: %v", err)
 			}
 
-			processor.bookCapacity(&autoscalingCtx)
+			processor.bookCapacity(context.TODO(), &autoscalingCtx)
 
 			if booked := len(injector.pods) > 0; booked != test.booked {
 				t.Errorf("booked: got %v, want %v", booked, test.booked)
 			}
-			updated, err := client.ProvisioningRequest("ns", "pr")
+			updated, err := client.ProvisioningRequest(context.TODO(), "ns", "pr")
 			if err != nil {
 				t.Fatalf("failed to get ProvisioningRequest: %v", err)
 			}

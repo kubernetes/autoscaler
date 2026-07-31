@@ -17,6 +17,7 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
@@ -31,7 +32,7 @@ func NewFilterOutExpendablePodListProcessor() *filterOutExpendable {
 }
 
 // Process filters out pods which are expendable and adds pods which is waiting for lower priority pods preemption to the cluster snapshot
-func (p *filterOutExpendable) Process(autoscalingCtx *ca_context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *filterOutExpendable) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	expendablePodsPriorityCutoff := autoscalingCtx.AutoscalingOptions.ExpendablePodsPriorityCutoff
 
 	unschedulablePods := core_utils.FilterOutExpendablePods(pods, expendablePodsPriorityCutoff)

@@ -93,7 +93,7 @@ type TemplateNodeInfoRegistry interface {
 	// The results are cached until the next Recompute() call.
 	// The getters can be used by logic that happens before the Recompute() call in the main CA loop,
 	// but the caller has to handle no results during the first CA loop.
-	Recompute(autoscalingCtx *AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) errors.AutoscalerError
+	Recompute(ctx context.Context, autoscalingCtx *AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) errors.AutoscalerError
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,
@@ -165,12 +165,12 @@ func NewAutoscalingContext(
 func NewAutoscalingKubeClients(ctx context.Context, opts config.AutoscalingOptions, kubeClient kube_client.Interface, informerFactory informers.SharedInformerFactory) *AutoscalingKubeClients {
 	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(informerFactory)
 	kubeEventRecorder := kube_util.CreateEventRecorder(ctx, kubeClient, opts.RecordDuplicatedEvents)
-	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, opts.WriteStatusConfigMap, opts.StatusConfigMapName)
+	logRecorder, err := utils.NewStatusMapRecorder(ctx, kubeClient, opts.ConfigNamespace, kubeEventRecorder, opts.WriteStatusConfigMap, opts.StatusConfigMapName)
 	if err != nil {
 		klog.Error("Failed to initialize status configmap, unable to write status events")
 		// Get a dummy, so we can at least safely call the methods
 		// TODO(maciekpytel): recover from this after successful status configmap update?
-		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, false, opts.StatusConfigMapName)
+		logRecorder, _ = utils.NewStatusMapRecorder(ctx, kubeClient, opts.ConfigNamespace, kubeEventRecorder, false, opts.StatusConfigMapName)
 	}
 
 	return &AutoscalingKubeClients{

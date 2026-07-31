@@ -17,6 +17,7 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -191,7 +192,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 			clusterSnapshot.Fork()
 
 			processor := NewFilterOutSchedulablePodListProcessor(tc.nodeFilter)
-			unschedulablePods, err := processor.filterOutSchedulableByPacking(tc.unschedulableCandidates, clusterSnapshot)
+			unschedulablePods, err := processor.filterOutSchedulableByPacking(context.TODO(), tc.unschedulableCandidates, clusterSnapshot)
 
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, unschedulablePods, tc.expectedUnscheduledPods, "unschedulable pods differ")
@@ -288,7 +289,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 
 				for i := 0; i < b.N; i++ {
 					processor := NewFilterOutSchedulablePodListProcessor(scheduling.ScheduleAnywhere)
-					if stillPending, err := processor.filterOutSchedulableByPacking(pendingPods, clusterSnapshot); err != nil {
+					if stillPending, err := processor.filterOutSchedulableByPacking(context.TODO(), pendingPods, clusterSnapshot); err != nil {
 						assert.NoError(b, err)
 					} else if len(stillPending) < tc.pendingPods {
 						assert.Equal(b, len(stillPending), tc.pendingPods)

@@ -17,6 +17,7 @@ limitations under the License.
 package nodeinfosprovider
 
 import (
+	"context"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -40,8 +41,8 @@ func NewAsgTagResourceNodeInfoProvider(t *time.Duration, forceDaemonSets bool) *
 }
 
 // Process returns the nodeInfos set for this cluster.
-func (p *AsgTagResourceNodeInfoProvider) Process(autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
-	nodeInfos, err := p.mixedTemplateNodeInfoProvider.Process(autoscalingCtx, nodes, daemonsets, taintConfig, currentTime)
+func (p *AsgTagResourceNodeInfoProvider) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
+	nodeInfos, err := p.mixedTemplateNodeInfoProvider.Process(ctx, autoscalingCtx, nodes, daemonsets, taintConfig, currentTime)
 	if err != nil {
 		return nil, err
 	}

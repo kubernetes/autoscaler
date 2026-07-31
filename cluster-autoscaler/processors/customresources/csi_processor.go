@@ -17,6 +17,7 @@ limitations under the License.
 package customresources
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -33,7 +34,7 @@ type CSICustomResourcesProcessor struct {
 }
 
 // FilterOutNodesWithUnreadyResources filters out nodes with unready CSI resources.
-func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyCSI := make(map[string]*apiv1.Node)
@@ -94,7 +95,7 @@ func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 
 // GetNodeResourceTargets returns mapping of resource names to their targets.
 // CSI processor doesn't track resource targets, so it returns an empty list.
-func (p *CSICustomResourcesProcessor) GetNodeResourceTargets(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+func (p *CSICustomResourcesProcessor) GetNodeResourceTargets(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
 	return []CustomResourceTarget{}, nil
 }
 

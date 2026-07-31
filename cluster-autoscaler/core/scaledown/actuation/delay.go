@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -37,7 +38,7 @@ const (
 
 // WaitForDelayDeletion waits until the provided node has no annotations beginning with DelayDeletionAnnotationPrefix,
 // or until the provided timeout is reached - whichever comes first.
-func WaitForDelayDeletion(node *apiv1.Node, nodeLister kubernetes.NodeLister, timeout time.Duration) errors.AutoscalerError {
+func WaitForDelayDeletion(ctx context.Context, node *apiv1.Node, nodeLister kubernetes.NodeLister, timeout time.Duration) errors.AutoscalerError {
 	if timeout != 0 && hasDelayDeletionAnnotation(node) {
 		klog.V(1).Infof("Wait for removing %s annotations on node %v", DelayDeletionAnnotationPrefix, node.Name)
 		err := wait.Poll(5*time.Second, timeout, func() (bool, error) {

@@ -17,6 +17,7 @@ limitations under the License.
 package rules
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -112,7 +113,7 @@ func TestDrainable(t *testing.T) {
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {
-			got := tc.rules.Drainable(nil, &apiv1.Pod{}, nil)
+			got := tc.rules.Drainable(context.TODO(), nil, &apiv1.Pod{}, nil)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("Drainable(): got status diff (-want +got):\n%s", diff)
 			}

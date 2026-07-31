@@ -17,6 +17,7 @@ limitations under the License.
 package customresources
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -34,7 +35,7 @@ import (
 
 // resourceDiscrepancyReporter defines the interface for reporting DRA discrepancies.
 type resourceDiscrepancyReporter interface {
-	ReportResourceDiscrepancies(nodeNames []string, templateSlices [][]*resourceapi.ResourceSlice, nodeSlices [][]*resourceapi.ResourceSlice)
+	ReportResourceDiscrepancies(ctx context.Context, nodeNames []string, templateSlices [][]*resourceapi.ResourceSlice, nodeSlices [][]*resourceapi.ResourceSlice)
 }
 
 // DraCustomResourcesProcessor handles DRA custom resource. It assumes,
@@ -52,7 +53,7 @@ func NewDraCustomResourcesProcessor() *DraCustomResourcesProcessor {
 
 // FilterOutNodesWithUnreadyResources removes nodes that should have DRA resource, but don't have
 // it in allocatable from ready nodes list and updates their status to unready on all nodes list.
-func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *snapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *snapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyDraResources := make(map[string]*apiv1.Node)
@@ -95,7 +96,7 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		}
 	}
 
-	p.resourcesComparator.ReportResourceDiscrepancies(readyNodeNames, readyTemplateSlices, readyNodeSlices)
+	p.resourcesComparator.ReportResourceDiscrepancies(ctx, readyNodeNames, readyTemplateSlices, readyNodeSlices)
 
 	// Override any node with unready DRA resources with its "unready" copy
 	for _, node := range allNodes {
@@ -118,7 +119,7 @@ func getNodeInfo(autoscalingCtx *ca_context.AutoscalingContext, ng cloudprovider
 }
 
 // GetNodeResourceTargets returns the resource targets for DRA resource slices, not implemented.
-func (p *DraCustomResourcesProcessor) GetNodeResourceTargets(_ *ca_context.AutoscalingContext, _ *apiv1.Node, _ cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+func (p *DraCustomResourcesProcessor) GetNodeResourceTargets(ctx context.Context, _ *ca_context.AutoscalingContext, _ *apiv1.Node, _ cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
 	// TODO(DRA): Figure out resource limits for DRA here.
 	return []CustomResourceTarget{}, nil
 }

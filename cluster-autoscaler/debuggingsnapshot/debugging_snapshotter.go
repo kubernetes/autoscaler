@@ -73,15 +73,15 @@ type DebuggingSnapshotter interface {
 
 	// StartDataCollection will check the State(s) and enable data
 	// collection for the loop if applicable
-	StartDataCollection()
+	StartDataCollection(context.Context)
 	// SetClusterNodes is a setter to capture all the ClusterNode
-	SetClusterNodes([]*framework.NodeInfo)
+	SetClusterNodes(context.Context, []*framework.NodeInfo)
 	// SetUnscheduledPodsCanBeScheduled is a setter for all pods which are unscheduled
 	// but they can be scheduled. i.e. pods which aren't triggering scale-up
-	SetUnscheduledPodsCanBeScheduled([]*v1.Pod)
+	SetUnscheduledPodsCanBeScheduled(context.Context, []*v1.Pod)
 	// SetTemplateNodes is a setter for all the TemplateNodes present in the cluster
 	// incl. templates for which there are no nodes
-	SetTemplateNodes(map[string]*framework.NodeInfo)
+	SetTemplateNodes(context.Context, map[string]*framework.NodeInfo)
 	// ResponseHandler is the http response handler to manage incoming requests
 	ResponseHandler(http.ResponseWriter, *http.Request)
 	// IsDataCollectionAllowed checks the internal State of the snapshotter
@@ -89,7 +89,7 @@ type DebuggingSnapshotter interface {
 	// for the snapshot
 	IsDataCollectionAllowed() bool
 	// Flush triggers the flushing of the snapshot
-	Flush()
+	Flush(context.Context)
 	// Cleanup clears the internal data beans of the snapshot, readying for next request
 	Cleanup()
 }
@@ -185,7 +185,7 @@ func (d *DebuggingSnapshotterImpl) IsDataCollectionAllowedNoLock() bool {
 // StartDataCollection changes the State when the trigger has been enabled
 // to start data collection. To be done at the start of the runLoop to allow for consistency
 // as the trigger can be called mid-loop leading to partial data collection
-func (d *DebuggingSnapshotterImpl) StartDataCollection() {
+func (d *DebuggingSnapshotterImpl) StartDataCollection(ctx context.Context) {
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 	if *d.State == TRIGGER_ENABLED {
@@ -197,7 +197,7 @@ func (d *DebuggingSnapshotterImpl) StartDataCollection() {
 
 // Flush is the impl for DebuggingSnapshotter.Flush
 // It checks if any data has been collected or data collection failed
-func (d *DebuggingSnapshotterImpl) Flush() {
+func (d *DebuggingSnapshotterImpl) Flush(ctx context.Context) {
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 
@@ -217,7 +217,7 @@ func (d *DebuggingSnapshotterImpl) Flush() {
 
 // SetClusterNodes is the setter for Node Group Info
 // All filtering/prettifying of data should be done here.
-func (d *DebuggingSnapshotterImpl) SetClusterNodes(nodeInfos []*framework.NodeInfo) {
+func (d *DebuggingSnapshotterImpl) SetClusterNodes(ctx context.Context, nodeInfos []*framework.NodeInfo) {
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 	if !d.IsDataCollectionAllowedNoLock() {
@@ -229,7 +229,7 @@ func (d *DebuggingSnapshotterImpl) SetClusterNodes(nodeInfos []*framework.NodeIn
 }
 
 // SetUnscheduledPodsCanBeScheduled is the setter for UnscheduledPodsCanBeScheduled
-func (d *DebuggingSnapshotterImpl) SetUnscheduledPodsCanBeScheduled(podList []*v1.Pod) {
+func (d *DebuggingSnapshotterImpl) SetUnscheduledPodsCanBeScheduled(ctx context.Context, podList []*v1.Pod) {
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 	if !d.IsDataCollectionAllowedNoLock() {
@@ -241,7 +241,7 @@ func (d *DebuggingSnapshotterImpl) SetUnscheduledPodsCanBeScheduled(podList []*v
 }
 
 // SetTemplateNodes is the setter for TemplateNodes
-func (d *DebuggingSnapshotterImpl) SetTemplateNodes(templates map[string]*framework.NodeInfo) {
+func (d *DebuggingSnapshotterImpl) SetTemplateNodes(ctx context.Context, templates map[string]*framework.NodeInfo) {
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 	if !d.IsDataCollectionAllowedNoLock() {

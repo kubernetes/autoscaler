@@ -17,6 +17,7 @@ limitations under the License.
 package loop
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -42,5 +43,5 @@ func RunAutoscalerOnce(autoscaler autoscaler, healthCheck *metrics.HealthCheck, 
 		metrics.UpdateLastTime(metrics.MainSuccessful, successTime)
 	}
 
-	metrics.UpdateDurationFromStart(metrics.Main, loopStart)
+	metrics.UpdateDurationFromStart(context.TODO(), metrics.Main, loopStart)
 }

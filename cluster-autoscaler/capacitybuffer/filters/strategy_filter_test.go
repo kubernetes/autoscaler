@@ -17,6 +17,7 @@ limitations under the License.
 package filter
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -86,7 +87,7 @@ func TestStrategyFilter(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			strategyFilter := NewStrategyFilter(test.strategiesToConsider)
-			filtered, filteredOut := strategyFilter.Filter(test.buffers)
+			filtered, filteredOut := strategyFilter.Filter(context.TODO(), test.buffers)
 			assert.ElementsMatch(t, test.expectedFilteredBuffers, filtered)
 			assert.ElementsMatch(t, test.expectedFilteredOutBuffers, filteredOut)
 		})

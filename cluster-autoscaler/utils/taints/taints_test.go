@@ -45,7 +45,7 @@ func TestMarkNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
-	_, err := MarkToBeDeleted(node, fakeClient, false)
+	_, err := MarkToBeDeleted(context.TODO(), node, fakeClient, false)
 	assert.NoError(t, err)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -57,7 +57,7 @@ func TestSoftMarkNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
-	_, err := MarkDeletionCandidate(node, fakeClient)
+	_, err := MarkDeletionCandidate(context.TODO(), node, fakeClient)
 	assert.NoError(t, err)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -80,7 +80,7 @@ func TestCheckNodes(t *testing.T) {
 			Effect: apiv1.TaintEffectNoSchedule,
 		},
 	}
-	addTaintsToSpec(node, taints, false)
+	addTaintsToSpec(context.TODO(), node, taints, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -104,7 +104,7 @@ func TestSoftCheckNodes(t *testing.T) {
 			Effect: apiv1.TaintEffectPreferNoSchedule,
 		},
 	}
-	addTaintsToSpec(node, taints, false)
+	addTaintsToSpec(context.TODO(), node, taints, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -116,7 +116,7 @@ func TestQueryNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
-	_, err := MarkToBeDeleted(node, fakeClient, false)
+	_, err := MarkToBeDeleted(context.TODO(), node, fakeClient, false)
 	assert.NoError(t, err)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -132,7 +132,7 @@ func TestSoftQueryNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClientWithConflicts(t, node)
-	_, err := MarkDeletionCandidate(node, fakeClient)
+	_, err := MarkDeletionCandidate(context.TODO(), node, fakeClient)
 	assert.NoError(t, err)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -159,7 +159,7 @@ func TestCleanNodes(t *testing.T) {
 			Effect: apiv1.TaintEffectNoSchedule,
 		},
 	}
-	addTaintsToSpec(node, taints, false)
+	addTaintsToSpec(context.TODO(), node, taints, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	apiNode := getNode(t, fakeClient, "node")
@@ -167,7 +167,7 @@ func TestCleanNodes(t *testing.T) {
 	assert.True(t, HasTaint(apiNode, "other-taint"))
 	assert.False(t, apiNode.Spec.Unschedulable)
 
-	updatedNode, err := CleanToBeDeleted(node, fakeClient, false)
+	updatedNode, err := CleanToBeDeleted(context.TODO(), node, fakeClient, false)
 	cleaned := !slices.Equal(updatedNode.Spec.Taints, node.Spec.Taints)
 	assert.True(t, cleaned)
 	assert.NoError(t, err)
@@ -194,7 +194,7 @@ func TestCleanNodesWithCordon(t *testing.T) {
 			Effect: apiv1.TaintEffectNoSchedule,
 		},
 	}
-	addTaintsToSpec(node, taints, true)
+	addTaintsToSpec(context.TODO(), node, taints, true)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	apiNode := getNode(t, fakeClient, "node")
@@ -202,7 +202,7 @@ func TestCleanNodesWithCordon(t *testing.T) {
 	assert.True(t, HasTaint(apiNode, "other-taint"))
 	assert.True(t, apiNode.Spec.Unschedulable)
 
-	updatedNode, err := CleanToBeDeleted(node, fakeClient, true)
+	updatedNode, err := CleanToBeDeleted(context.TODO(), node, fakeClient, true)
 	cleaned := !slices.Equal(updatedNode.Spec.Taints, node.Spec.Taints)
 	assert.True(t, cleaned)
 	assert.NoError(t, err)
@@ -229,7 +229,7 @@ func TestCleanNodesWithCordonOnOff(t *testing.T) {
 			Effect: apiv1.TaintEffectPreferNoSchedule,
 		},
 	}
-	addTaintsToSpec(node, taints, true)
+	addTaintsToSpec(context.TODO(), node, taints, true)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	apiNode := getNode(t, fakeClient, "node")
@@ -237,7 +237,7 @@ func TestCleanNodesWithCordonOnOff(t *testing.T) {
 	assert.True(t, HasTaint(apiNode, "other-taint"))
 	assert.True(t, apiNode.Spec.Unschedulable)
 
-	updatedNode, err := CleanToBeDeleted(node, fakeClient, false)
+	updatedNode, err := CleanToBeDeleted(context.TODO(), node, fakeClient, false)
 	cleaned := !slices.Equal(updatedNode.Spec.Taints, node.Spec.Taints)
 	assert.True(t, cleaned)
 	assert.NoError(t, err)
@@ -264,14 +264,14 @@ func TestSoftCleanNodes(t *testing.T) {
 			Effect: apiv1.TaintEffectPreferNoSchedule,
 		},
 	}
-	addTaintsToSpec(node, taints, false)
+	addTaintsToSpec(context.TODO(), node, taints, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	apiNode := getNode(t, fakeClient, "node")
 	assert.True(t, HasDeletionCandidateTaint(apiNode))
 	assert.True(t, HasTaint(apiNode, "other-taint"))
 
-	updatedNode, err := CleanDeletionCandidate(node, fakeClient)
+	updatedNode, err := CleanDeletionCandidate(context.TODO(), node, fakeClient)
 	cleaned := !slices.Equal(updatedNode.Spec.Taints, node.Spec.Taints)
 	assert.True(t, cleaned)
 	assert.NoError(t, err)
@@ -292,7 +292,7 @@ func TestCleanAllToBeDeleted(t *testing.T) {
 
 	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
 
-	CleanAllToBeDeleted([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder, false)
+	CleanAllToBeDeleted(context.TODO(), []*apiv1.Node{n1, n2}, fakeClient, fakeRecorder, false)
 
 	assert.Equal(t, 0, len(getNode(t, fakeClient, "n1").Spec.Taints))
 	assert.Equal(t, 0, len(getNode(t, fakeClient, "n2").Spec.Taints))
@@ -308,7 +308,7 @@ func TestCleanAllDeletionCandidates(t *testing.T) {
 
 	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
 
-	CleanStaleDeletionCandidates([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder, time.Duration(0))
+	CleanStaleDeletionCandidates(context.TODO(), []*apiv1.Node{n1, n2}, fakeClient, fakeRecorder, time.Duration(0))
 
 	assert.Equal(t, 0, len(getNode(t, fakeClient, "n1").Spec.Taints))
 	assert.Equal(t, 0, len(getNode(t, fakeClient, "n2").Spec.Taints))
@@ -532,7 +532,7 @@ func TestFilterOutNodesWithStartupTaints(t *testing.T) {
 				startupTaints:        tc.startupTaints,
 				startupTaintPrefixes: tc.startupTaintsPrefixes,
 			}
-			allNodes, readyNodes := FilterOutNodesWithStartupTaints(taintConfig, nodes, nodes)
+			allNodes, readyNodes := FilterOutNodesWithStartupTaints(context.TODO(), taintConfig, nodes, nodes)
 			assert.Equal(t, tc.allNodes, len(allNodes))
 			assert.Equal(t, tc.readyNodes, len(readyNodes))
 
@@ -624,7 +624,7 @@ func TestSanitizeTaints(t *testing.T) {
 		startupTaintPrefixes: []string{IgnoreTaintPrefix, StartupTaintPrefix},
 	}
 
-	newTaints := SanitizeTaints(node.Spec.Taints, taintConfig)
+	newTaints := SanitizeTaints(context.TODO(), node.Spec.Taints, taintConfig)
 	require.Equal(t, 2, len(newTaints))
 	assert.Equal(t, newTaints[0].Key, StatusTaintPrefix+"some-taint")
 	assert.Equal(t, newTaints[1].Key, "test-taint")
@@ -773,7 +773,7 @@ func TestAddTaints(t *testing.T) {
 					Effect: apiv1.TaintEffectNoSchedule,
 				}
 			}
-			updatedNode, err := AddTaints(n, fakeClient, newTaints, false)
+			updatedNode, err := AddTaints(context.TODO(), n, fakeClient, newTaints, false)
 			assert.NoError(t, err)
 			apiNode := getNode(t, fakeClient, "node")
 			for _, want := range tc.wantTaints {
@@ -834,7 +834,7 @@ func TestCleanTaints(t *testing.T) {
 			n.Spec.Taints = append([]apiv1.Taint{}, existingTaints...)
 			fakeClient := buildFakeClient(t, n)
 
-			updatedNode, err := CleanTaints(n, fakeClient, tc.taintsToRemove, false)
+			updatedNode, err := CleanTaints(context.TODO(), n, fakeClient, tc.taintsToRemove, false)
 			modified := !slices.Equal(updatedNode.Spec.Taints, n.Spec.Taints)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.wantModified, modified)
@@ -922,7 +922,7 @@ func TestCleanStaleDeletionCandidates(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			fakeClient := buildFakeClient(t, tc.allNodes...)
-			CleanStaleDeletionCandidates(
+			CleanStaleDeletionCandidates(context.TODO(),
 				tc.allNodes,
 				fakeClient,
 				kube_util.CreateEventRecorder(context.TODO(), fakeClient, false),

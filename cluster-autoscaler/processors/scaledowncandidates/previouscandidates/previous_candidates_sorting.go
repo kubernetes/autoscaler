@@ -17,6 +17,7 @@ limitations under the License.
 package previouscandidates
 
 import (
+	"context"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -34,7 +35,7 @@ func NewPreviousCandidates() *PreviousCandidates {
 }
 
 // UpdateScaleDownCandidates updates scale down candidates.
-func (p *PreviousCandidates) UpdateScaleDownCandidates(nodes []*scaledown.UnneededNode, now time.Time) {
+func (p *PreviousCandidates) UpdateScaleDownCandidates(ctx context.Context, nodes []*scaledown.UnneededNode, now time.Time) {
 	result := make(map[string]bool)
 	for _, node := range nodes {
 		result[node.Node.Name] = true

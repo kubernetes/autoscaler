@@ -17,6 +17,7 @@ limitations under the License.
 package podinjection
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -50,10 +51,10 @@ func NewPodInjectionPodListProcessor(fakePodRegistry *podinjectionbackoff.Contro
 }
 
 // Process updates unschedulablePods by injecting fake pods to match target replica count
-func (p *PodInjectionPodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *PodInjectionPodListProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 
-	controllers := listControllers(autoscalingCtx)
-	controllers = p.skipBackedoffControllers(controllers)
+	controllers := listControllers(ctx, autoscalingCtx)
+	controllers = p.skipBackedoffControllers(ctx, controllers)
 
 	nodeInfos, err := autoscalingCtx.ClusterSnapshot.ListNodeInfos()
 	if err != nil {
@@ -124,15 +125,15 @@ func podsFromNodeInfos(nodeInfos []*framework.NodeInfo) []*apiv1.Pod {
 }
 
 // listControllers returns the list of controllers that can be used to inject fake pods
-func listControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {
+func listControllers(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) []controller {
 	var controllers []controller
-	controllers = append(controllers, createReplicaSetControllers(autoscalingCtx)...)
-	controllers = append(controllers, createJobControllers(autoscalingCtx)...)
-	controllers = append(controllers, createStatefulSetControllers(autoscalingCtx)...)
+	controllers = append(controllers, createReplicaSetControllers(ctx, autoscalingCtx)...)
+	controllers = append(controllers, createJobControllers(ctx, autoscalingCtx)...)
+	controllers = append(controllers, createStatefulSetControllers(ctx, autoscalingCtx)...)
 	return controllers
 }
 
-func (p *PodInjectionPodListProcessor) skipBackedoffControllers(controllers []controller) []controller {
+func (p *PodInjectionPodListProcessor) skipBackedoffControllers(ctx context.Context, controllers []controller) []controller {
 	var filteredControllers []controller
 	backoffRegistry := p.fakePodControllerBackoffRegistry
 	now := time.Now()

@@ -17,6 +17,7 @@ limitations under the License.
 package nodeinfosprovider
 
 import (
+	"context"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -47,8 +48,8 @@ func NewCustomAnnotationNodeInfoProvider(templateNodeInfoProvider TemplateNodeIn
 }
 
 // Process returns the nodeInfos set for this cluster.
-func (p *AnnotationNodeInfoProvider) Process(autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
-	nodeInfos, err := p.templateNodeInfoProvider.Process(autoscalingCtx, nodes, daemonsets, taintConfig, currentTime)
+func (p *AnnotationNodeInfoProvider) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
+	nodeInfos, err := p.templateNodeInfoProvider.Process(ctx, autoscalingCtx, nodes, daemonsets, taintConfig, currentTime)
 	if err != nil {
 		return nil, err
 	}

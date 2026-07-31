@@ -233,13 +233,13 @@ func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
 
 // RemoveNodeInfo removes a NodeInfo matching the provided nodeName from the snapshot.
 // The DRA slices and CSI data are removed from the underlying draSnapshot and csiSnapshot.
-func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
+func (s *PredicateSnapshot) RemoveNodeInfo(ctx context.Context, nodeName string) error {
 	nodeInfo, err := s.GetNodeInfo(nodeName)
 	if err != nil {
 		return err
 	}
 
-	if err := s.ClusterSnapshotStore.RemoveNodeInfo(nodeName); err != nil {
+	if err := s.ClusterSnapshotStore.RemoveNodeInfo(ctx, nodeName); err != nil {
 		return err
 	}
 
@@ -247,7 +247,7 @@ func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
 		s.draSnapshot.RemoveNodeResourceSlices(nodeName)
 
 		for _, pod := range nodeInfo.Pods() {
-			s.draSnapshot.RemovePodOwnedClaims(pod.Pod)
+			s.draSnapshot.RemovePodOwnedClaims(ctx, pod.Pod)
 		}
 	}
 	if s.enableCSINodeAwareScheduling {
@@ -262,8 +262,8 @@ func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
 // SchedulePod adds pod to the snapshot and schedules it to given node.
 // The scheduler's Reserve phase computes DRA claim allocations, which are pushed to the draSnapshot.
 // The updated claims are then pulled to construct the final PodInfo.
-func (s *PredicateSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
-	node, cycleState, schedErr := s.pluginRunner.RunFiltersOnNode(pod, nodeName)
+func (s *PredicateSnapshot) SchedulePod(ctx context.Context, pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
+	node, cycleState, schedErr := s.pluginRunner.RunFiltersOnNode(ctx, pod, nodeName)
 	if schedErr != nil {
 		return schedErr
 	}
@@ -290,8 +290,8 @@ func (s *PredicateSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) cluster
 
 // SchedulePodOnAnyNodeMatching adds pod to the snapshot and schedules it to any node matching the provided function.
 // Data flow is the same as SchedulePod.
-func (s *PredicateSnapshot) SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, opts clustersnapshot.SchedulingOptions) (string, clustersnapshot.SchedulingError) {
-	node, cycleState, schedErr := s.pluginRunner.RunFiltersUntilPassingNode(pod, opts)
+func (s *PredicateSnapshot) SchedulePodOnAnyNodeMatching(ctx context.Context, pod *apiv1.Pod, opts clustersnapshot.SchedulingOptions) (string, clustersnapshot.SchedulingError) {
+	node, cycleState, schedErr := s.pluginRunner.RunFiltersUntilPassingNode(ctx, pod, opts)
 	if schedErr != nil {
 		return "", schedErr
 	}
@@ -364,8 +364,8 @@ func (s *PredicateSnapshot) ForceRemovePod(namespace string, podName string, nod
 }
 
 // CheckPredicates checks whether scheduler predicates pass for the given pod on the given node.
-func (s *PredicateSnapshot) CheckPredicates(pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
-	_, _, err := s.pluginRunner.RunFiltersOnNode(pod, nodeName)
+func (s *PredicateSnapshot) CheckPredicates(ctx context.Context, pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
+	_, _, err := s.pluginRunner.RunFiltersOnNode(ctx, pod, nodeName)
 	return err
 }
 

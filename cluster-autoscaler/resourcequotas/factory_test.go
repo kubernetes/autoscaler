@@ -17,6 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
+	gocontext "context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -228,12 +229,12 @@ func TestNewMaxQuotasTracker(t *testing.T) {
 				QuotaProvider:            NewCloudQuotasProvider(cloudProvider),
 				NodeFilter:               tc.nodeFilter,
 			})
-			tracker, err := factory.NewMaxQuotasTracker(ctx, tc.nodes)
+			tracker, err := factory.NewMaxQuotasTracker(gocontext.TODO(), ctx, tc.nodes)
 			if err != nil {
 				t.Errorf("failed to create tracker: %v", err)
 			}
 			var ng cloudprovider.NodeGroup
-			result, err := tracker.CheckQuota(ctx, ng, tc.newNode, tc.nodeDelta)
+			result, err := tracker.CheckQuota(gocontext.TODO(), ctx, ng, tc.newNode, tc.nodeDelta)
 			if err != nil {
 				t.Errorf("failed to check delta: %v", err)
 			}
@@ -429,12 +430,12 @@ func TestNewMinQuotasTracker(t *testing.T) {
 				QuotaProvider:            NewFakeProvider([]Quota{tc.quota}),
 				NodeFilter:               tc.nodeFilter,
 			})
-			tracker, err := factory.NewMinQuotasTracker(ctx, tc.nodes)
+			tracker, err := factory.NewMinQuotasTracker(gocontext.TODO(), ctx, tc.nodes)
 			if err != nil {
 				t.Errorf("failed to create tracker: %v", err)
 			}
 			var ng cloudprovider.NodeGroup
-			result, err := tracker.CheckQuota(ctx, ng, tc.newNode, tc.nodeDelta)
+			result, err := tracker.CheckQuota(gocontext.TODO(), ctx, ng, tc.newNode, tc.nodeDelta)
 			if err != nil {
 				t.Errorf("failed to check quota: %v", err)
 			}

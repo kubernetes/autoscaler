@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -236,7 +237,7 @@ func TestBinpackingEstimate(t *testing.T) {
 			node := makeNode(tc.millicores, tc.memory, 10, "template", "zone-mars")
 			nodeInfo := framework.NewTestNodeInfo(node)
 
-			estimatedNodes, estimatedPods := estimator.Estimate(tc.podsEquivalenceGroup, nodeInfo, nil)
+			estimatedNodes, estimatedPods := estimator.Estimate(context.TODO(), tc.podsEquivalenceGroup, nodeInfo, nil)
 			assert.Equal(t, tc.expectNodeCount, estimatedNodes)
 			assert.Equal(t, tc.expectPodCount, len(estimatedPods))
 			if tc.expectProcessedPods != nil {
@@ -245,7 +246,7 @@ func TestBinpackingEstimate(t *testing.T) {
 			// For single pod group estimations, the result should be consistent with fastpath and non-fastpath
 			if len(tc.podsEquivalenceGroup) == 1 {
 				fastpathEstimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */, true)
-				fastpathEstimatedNodes, fastpathEstimatedPods := fastpathEstimator.Estimate(tc.podsEquivalenceGroup, nodeInfo, nil)
+				fastpathEstimatedNodes, fastpathEstimatedPods := fastpathEstimator.Estimate(context.TODO(), tc.podsEquivalenceGroup, nodeInfo, nil)
 				assert.Equal(t, fastpathEstimatedNodes, estimatedNodes)
 				assert.Equal(t, fastpathEstimatedPods, estimatedPods)
 			}
@@ -296,7 +297,7 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 		node := makeNode(millicores, memory, podsPerNode, "template", "zone-mars")
 		nodeInfo := framework.NewTestNodeInfo(node)
 
-		estimatedNodes, estimatedPods := estimator.Estimate(podsEquivalenceGroup, nodeInfo, nil)
+		estimatedNodes, estimatedPods := estimator.Estimate(context.TODO(), podsEquivalenceGroup, nodeInfo, nil)
 		assert.Equal(b, expectNodeCount, estimatedNodes)
 		assert.Equal(b, expectPodCount, len(estimatedPods))
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package provreq
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -68,7 +69,7 @@ type ProvisioningRequestPodsFilter struct {
 
 // Process filters out all pods that are consuming a Provisioning Request from unschedulable pods list.
 func (p *ProvisioningRequestPodsFilter) Process(
-	autoscalingCtx *ca_context.AutoscalingContext,
+	ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext,
 	unschedulablePods []*apiv1.Pod,
 ) ([]*apiv1.Pod, error) {
 	now := time.Now()

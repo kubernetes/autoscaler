@@ -17,6 +17,7 @@ limitations under the License.
 package factory
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -35,7 +36,7 @@ func newSubstringTestFilterStrategy(substring string) *substringTestFilterStrate
 	}
 }
 
-func (s *substringTestFilterStrategy) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
+func (s *substringTestFilterStrategy) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
 	var ret []expander.Option
 	for _, option := range expansionOptions {
 		if strings.Contains(option.Debug, s.substring) {
@@ -46,8 +47,8 @@ func (s *substringTestFilterStrategy) BestOptions(expansionOptions []expander.Op
 
 }
 
-func (s *substringTestFilterStrategy) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
-	ret := s.BestOptions(expansionOptions, nodeInfo)
+func (s *substringTestFilterStrategy) BestOption(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
+	ret := s.BestOptions(ctx, expansionOptions, nodeInfo)
 	if len(ret) == 0 {
 		return nil
 	}
@@ -120,7 +121,7 @@ func TestChainStrategy_BestOption(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			subject := newChainStrategy(tc.filters, tc.fallback)
-			actual := subject.BestOption(tc.options, nil)
+			actual := subject.BestOption(context.TODO(), tc.options, nil)
 			assert.Equal(t, tc.expected, actual)
 		})
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package filter
 
 import (
+	"context"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 )
 
@@ -33,7 +34,7 @@ func NewStatusFilter(conditionsToFilterOut map[string]string) *statusFilter {
 }
 
 // Filter filters the passed buffers based on buffer status conditions
-func (f *statusFilter) Filter(buffersToFilter []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
+func (f *statusFilter) Filter(ctx context.Context, buffersToFilter []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
 	var buffers []*v1.CapacityBuffer
 	var filteredOutBuffers []*v1.CapacityBuffer
 

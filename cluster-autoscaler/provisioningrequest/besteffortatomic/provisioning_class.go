@@ -17,6 +17,7 @@ limitations under the License.
 package besteffortatomic
 
 import (
+	"context"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -76,7 +77,7 @@ func (o *bestEffortAtomicProvClass) Initialize(
 
 // Provision returns success if there is, or has just been requested, sufficient capacity in the cluster for pods from ProvisioningRequest.
 func (o *bestEffortAtomicProvClass) Provision(
-	unschedulablePods []*apiv1.Pod,
+	ctx context.Context, unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*framework.NodeInfo,
@@ -84,8 +85,8 @@ func (o *bestEffortAtomicProvClass) Provision(
 	if len(unschedulablePods) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
-	prs := provreqclient.ProvisioningRequestsForPods(o.client, unschedulablePods)
-	prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassBestEffortAtomicScaleUp, "")
+	prs := provreqclient.ProvisioningRequestsForPods(ctx, o.client, unschedulablePods)
+	prs = provreqclient.FilterOutProvisioningClass(ctx, prs, v1.ProvisioningClassBestEffortAtomicScaleUp, "")
 	if len(prs) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
@@ -96,10 +97,10 @@ func (o *bestEffortAtomicProvClass) Provision(
 	defer o.autoscalingCtx.ClusterSnapshot.Revert()
 
 	// For provisioning requests, unschedulablePods are actually all injected pods. Some may even be schedulable!
-	actuallyUnschedulablePods, err := o.filterOutSchedulable(unschedulablePods)
+	actuallyUnschedulablePods, err := o.filterOutSchedulable(ctx, unschedulablePods)
 	if err != nil {
-		conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionFalse, conditions.FailedToCheckCapacityReason, conditions.FailedToCheckCapacityMsg, metav1.Now())
-		if _, updateErr := o.client.UpdateProvisioningRequest(pr.ProvisioningRequest); updateErr != nil {
+		conditions.AddOrUpdateCondition(ctx, pr, v1.Provisioned, metav1.ConditionFalse, conditions.FailedToCheckCapacityReason, conditions.FailedToCheckCapacityMsg, metav1.Now())
+		if _, updateErr := o.client.UpdateProvisioningRequest(ctx, pr.ProvisioningRequest); updateErr != nil {
 			klog.Errorf("failed to add Provisioned=false condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
 		}
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "error during ScaleUp: %s", err.Error()))
@@ -107,19 +108,19 @@ func (o *bestEffortAtomicProvClass) Provision(
 
 	if len(actuallyUnschedulablePods) == 0 {
 		// Nothing to do here - everything fits without scale-up.
-		conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
-		if _, updateErr := o.client.UpdateProvisioningRequest(pr.ProvisioningRequest); updateErr != nil {
+		conditions.AddOrUpdateCondition(ctx, pr, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
+		if _, updateErr := o.client.UpdateProvisioningRequest(ctx, pr.ProvisioningRequest); updateErr != nil {
 			klog.Errorf("failed to add Provisioned=true condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
 			return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "capacity available, but failed to admit workload: %s", updateErr.Error()))
 		}
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotNeeded}, nil
 	}
 
-	st, err := o.scaleUpOrchestrator.ScaleUp(actuallyUnschedulablePods, nodes, daemonSets, nodeInfos, true)
+	st, err := o.scaleUpOrchestrator.ScaleUp(ctx, actuallyUnschedulablePods, nodes, daemonSets, nodeInfos, true)
 	if err == nil && st.Result == status.ScaleUpSuccessful {
 		// Happy path - all is well.
-		conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsProvisionedReason, conditions.CapacityIsProvisionedMsg, metav1.Now())
-		if _, updateErr := o.client.UpdateProvisioningRequest(pr.ProvisioningRequest); updateErr != nil {
+		conditions.AddOrUpdateCondition(ctx, pr, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsProvisionedReason, conditions.CapacityIsProvisionedMsg, metav1.Now())
+		if _, updateErr := o.client.UpdateProvisioningRequest(ctx, pr.ProvisioningRequest); updateErr != nil {
 			klog.Errorf("failed to add Provisioned=true condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
 			return st, errors.NewAutoscalerErrorf(errors.InternalError, "scale up requested, but failed to admit workload: %s", updateErr.Error())
 		}
@@ -127,8 +128,8 @@ func (o *bestEffortAtomicProvClass) Provision(
 	}
 
 	// We are not happy with the results.
-	conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
-	if _, updateErr := o.client.UpdateProvisioningRequest(pr.ProvisioningRequest); updateErr != nil {
+	conditions.AddOrUpdateCondition(ctx, pr, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
+	if _, updateErr := o.client.UpdateProvisioningRequest(ctx, pr.ProvisioningRequest); updateErr != nil {
 		klog.Errorf("failed to add Provisioned=false condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
 	}
 	if err != nil {
@@ -137,8 +138,8 @@ func (o *bestEffortAtomicProvClass) Provision(
 	return st, nil
 }
 
-func (o *bestEffortAtomicProvClass) filterOutSchedulable(pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	statuses, _, err := o.injector.TrySchedulePods(o.autoscalingCtx.ClusterSnapshot, pods, false, clustersnapshot.SchedulingOptions{})
+func (o *bestEffortAtomicProvClass) filterOutSchedulable(ctx context.Context, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	statuses, _, err := o.injector.TrySchedulePods(ctx, o.autoscalingCtx.ClusterSnapshot, pods, false, clustersnapshot.SchedulingOptions{})
 	if err != nil {
 		return nil, err
 	}

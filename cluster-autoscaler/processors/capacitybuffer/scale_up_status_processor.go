@@ -17,6 +17,7 @@ limitations under the License.
 package capacitybufferpodlister
 
 import (
+	gocontext "context"
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -45,7 +46,7 @@ func NewFakePodsScaleUpStatusProcessor(buffersRegistry *fakepods.Registry) *Fake
 
 // Process updates scaleupStatus to remove all capacity buffer fake pods from
 // PodsRemainUnschedulable, PodsAwaitEvaluation & PodsTriggeredScaleup
-func (p *FakePodsScaleUpStatusProcessor) Process(context *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus) {
+func (p *FakePodsScaleUpStatusProcessor) Process(ctx gocontext.Context, context *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus) {
 	var fakePodsRemainUnschedulable []status.NoScaleUpInfo
 	var fakePodsTriggeredScaleUp []*apiv1.Pod
 

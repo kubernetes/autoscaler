@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -35,7 +36,7 @@ type EventingScaleUpStatusProcessor struct{}
 
 // Process processes the state of the cluster after a scale-up by emitting
 // relevant events for pods depending on their post scale-up status.
-func (p *EventingScaleUpStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus) {
+func (p *EventingScaleUpStatusProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus) {
 	consideredNodeGroupsMap := cloudprovider.NodeGroupListToMapById(status.ConsideredNodeGroups)
 	if status.Result != ScaleUpSuccessful && status.Result != ScaleUpError {
 		for _, noScaleUpInfo := range status.PodsRemainUnschedulable {

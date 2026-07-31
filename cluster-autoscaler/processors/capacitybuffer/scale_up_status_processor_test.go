@@ -17,6 +17,7 @@ limitations under the License.
 package capacitybufferpodlister
 
 import (
+	gocontext "context"
 	"strings"
 	"testing"
 
@@ -85,7 +86,7 @@ func TestProcess(t *testing.T) {
 			autoscalingCtx := &ca_context.AutoscalingContext{}
 
 			p := NewFakePodsScaleUpStatusProcessor(fakepods.NewRegistry(nil))
-			p.Process(autoscalingCtx, scaleUpStatus)
+			p.Process(gocontext.TODO(), autoscalingCtx, scaleUpStatus)
 
 			assert.ElementsMatch(t, tc.expectedPodsRemainUnschedulable, extractPodsFromNoScaleUpInfo(scaleUpStatus.PodsRemainUnschedulable))
 			assert.ElementsMatch(t, tc.expectedPodsAwaitEvaluation, scaleUpStatus.PodsAwaitEvaluation)
@@ -288,7 +289,7 @@ func TestBuffersEvent(t *testing.T) {
 				},
 			}
 			p := NewFakePodsScaleUpStatusProcessor(tc.buffersRegistry)
-			p.Process(ctx, tc.state)
+			p.Process(gocontext.TODO(), ctx, tc.state)
 
 			triggeredScaleUp := 0
 			notTriggerScaleUp := 0

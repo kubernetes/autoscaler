@@ -17,6 +17,7 @@ limitations under the License.
 package unremovable
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -47,7 +48,7 @@ type nodeInfoGetter interface {
 
 // Update updates the internal structure according to current state of the
 // cluster. Removes the nodes that are no longer in the nodes list.
-func (n *Nodes) Update(nodeInfos nodeInfoGetter, timestamp time.Time) {
+func (n *Nodes) Update(ctx context.Context, nodeInfos nodeInfoGetter, timestamp time.Time) {
 	n.reasons = make(map[string]*simulator.UnremovableNode)
 	if len(n.ttls) <= 0 {
 		return

@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	gocontext "context"
 	"fmt"
 	"testing"
 
@@ -123,7 +124,7 @@ type fakeScaleUpStatusProcessor struct {
 	lastStatus *status.ScaleUpStatus
 }
 
-func (f *fakeScaleUpStatusProcessor) Process(_ *ca_context.AutoscalingContext, status *status.ScaleUpStatus) {
+func (f *fakeScaleUpStatusProcessor) Process(ctx gocontext.Context, _ *ca_context.AutoscalingContext, status *status.ScaleUpStatus) {
 	f.lastStatus = status
 }
 

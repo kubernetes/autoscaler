@@ -17,6 +17,7 @@ limitations under the License.
 package conditions
 
 import (
+	"context"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
@@ -63,8 +64,8 @@ const (
 )
 
 // ShouldCapacityBeBooked returns whether capacity should be booked.
-func ShouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
-	if !provisioningrequest.SupportedProvisioningClass(pr.ProvisioningRequest, checkCapacityProcessorInstance) {
+func ShouldCapacityBeBooked(ctx context.Context, pr *provreqwrapper.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
+	if !provisioningrequest.SupportedProvisioningClass(ctx, pr.ProvisioningRequest, checkCapacityProcessorInstance) {
 		return false
 	}
 	conditions := pr.Status.Conditions
@@ -77,7 +78,7 @@ func ShouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest, checkCapacit
 }
 
 // AddOrUpdateCondition adds a Condition if the condition is not present amond ProvisioningRequest conditions or updte it otherwise.
-func AddOrUpdateCondition(pr *provreqwrapper.ProvisioningRequest, conditionType string, conditionStatus metav1.ConditionStatus, reason, message string, now metav1.Time) {
+func AddOrUpdateCondition(ctx context.Context, pr *provreqwrapper.ProvisioningRequest, conditionType string, conditionStatus metav1.ConditionStatus, reason, message string, now metav1.Time) {
 	var newConditions []metav1.Condition
 	newCondition := metav1.Condition{
 		Type:               conditionType,

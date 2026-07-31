@@ -17,6 +17,8 @@ limitations under the License.
 package scheduling
 
 import (
+	"context"
+
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
@@ -50,20 +52,20 @@ func NewHintingSimulator() *HintingSimulator {
 // after the first scheduling attempt that fails. This is useful if all provided
 // pods need to be scheduled.
 // Note: this function does not fork clusterSnapshot: this has to be done by the caller.
-func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]Status, int, error) {
+func (s *HintingSimulator) TrySchedulePods(ctx context.Context, clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, breakOnFailure bool, opts clustersnapshot.SchedulingOptions) ([]Status, int, error) {
 	similarPods := NewSimilarPodsScheduling()
 
 	var statuses []Status
 	loggingQuota := klogx.PodsLoggingQuota()
 	for _, pod := range pods {
 		klogx.V(5).UpTo(loggingQuota).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
-		nodeName, err := s.tryScheduleUsingHints(clusterSnapshot, pod, opts.IsNodeAcceptable)
+		nodeName, err := s.tryScheduleUsingHints(ctx, clusterSnapshot, pod, opts.IsNodeAcceptable)
 		if err != nil {
 			return nil, 0, err
 		}
 
 		if nodeName == "" {
-			nodeName, err = s.trySchedule(similarPods, clusterSnapshot, pod, loggingQuota, opts)
+			nodeName, err = s.trySchedule(ctx, similarPods, clusterSnapshot, pod, loggingQuota, opts)
 			if err != nil {
 				return nil, 0, err
 			}
@@ -82,7 +84,7 @@ func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.Clust
 
 // tryScheduleUsingHints tries to schedule the provided Pod in the provided clusterSnapshot using hints. If the pod is scheduled, the name of its Node is returned. If the
 // pod couldn't be scheduled using hints, an empty string and nil error is returned. Error is only returned for unexpected errors.
-func (s *HintingSimulator) tryScheduleUsingHints(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool) (string, error) {
+func (s *HintingSimulator) tryScheduleUsingHints(ctx context.Context, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool) (string, error) {
 	hk := HintKeyFromPod(pod)
 	hintedNode, hasHint := s.hints.Get(hk)
 	if !hasHint {
@@ -98,7 +100,7 @@ func (s *HintingSimulator) tryScheduleUsingHints(clusterSnapshot clustersnapshot
 		return "", nil
 	}
 
-	if err := clusterSnapshot.SchedulePod(pod, hintedNode); err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
+	if err := clusterSnapshot.SchedulePod(ctx, pod, hintedNode); err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
 		// Unexpected error.
 		return "", err
 	} else if err != nil {
@@ -112,13 +114,13 @@ func (s *HintingSimulator) tryScheduleUsingHints(clusterSnapshot clustersnapshot
 
 // trySchedule tries to schedule the provided Pod in the provided clusterSnapshot on any Node passing isNodeAcceptable. If the pod is scheduled, the name of its Node is returned. If no Node
 // with passing scheduling predicates could be found, an empty string and nil error is returned. Error is only returned for unexpected errors.
-func (s *HintingSimulator) trySchedule(similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, loggingQuota *klogx.Quota, opts clustersnapshot.SchedulingOptions) (string, error) {
+func (s *HintingSimulator) trySchedule(ctx context.Context, similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, loggingQuota *klogx.Quota, opts clustersnapshot.SchedulingOptions) (string, error) {
 	if similarPods.IsSimilarUnschedulable(pod) {
 		klogx.V(4).UpTo(loggingQuota).Infof("failed to find place for %s/%s based on similar pods scheduling", pod.Namespace, pod.Name)
 		return "", nil
 	}
 
-	newNodeName, err := clusterSnapshot.SchedulePodOnAnyNodeMatching(pod, opts)
+	newNodeName, err := clusterSnapshot.SchedulePodOnAnyNodeMatching(ctx, pod, opts)
 	if err != nil && err.Type() == clustersnapshot.SchedulingInternalError {
 		// Unexpected error.
 		return "", err

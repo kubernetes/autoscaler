@@ -17,6 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
+	gocontext "context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -39,11 +40,11 @@ type mockCustomResourcesProcessor struct {
 // Verify that mockCustomResourcesProcessor implements the CustomResourcesProcessor interface.
 var _ customresources.CustomResourcesProcessor = &mockCustomResourcesProcessor{}
 
-func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(_ *context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx gocontext.Context, _ *context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	return allNodes, readyNodes
 }
 
-func (m *mockCustomResourcesProcessor) GetNodeResourceTargets(autoscalingCtx *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]customresources.CustomResourceTarget, errors.AutoscalerError) {
+func (m *mockCustomResourcesProcessor) GetNodeResourceTargets(ctx gocontext.Context, autoscalingCtx *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]customresources.CustomResourceTarget, errors.AutoscalerError) {
 	args := m.Called(autoscalingCtx, node, nodeGroup)
 	return args.Get(0).([]customresources.CustomResourceTarget), nil
 }
@@ -110,7 +111,7 @@ func TestNodeResourcesCache(t *testing.T) {
 			tc.setupCRPExpectations(&mockCRP.Mock)
 			nc := newNodeResourcesCache(mockCRP)
 			for _, call := range tc.calls {
-				resources, err := nc.totalNodeResources(autoscalingCtx, call.node, call.nodeGroup)
+				resources, err := nc.totalNodeResources(gocontext.TODO(), autoscalingCtx, call.node, call.nodeGroup)
 				if err != nil {
 					t.Fatalf("totalNodeResources unexpected error: %v", err)
 				}
@@ -173,7 +174,7 @@ func TestNodeResources(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := &context.AutoscalingContext{}
-			delta, err := totalNodeResources(ctx, tc.crp, tc.node, nil)
+			delta, err := totalNodeResources(gocontext.TODO(), ctx, tc.crp, tc.node, nil)
 			if err != nil {
 				t.Errorf("totalNodeResources: unexpected error: %v", err)
 			}

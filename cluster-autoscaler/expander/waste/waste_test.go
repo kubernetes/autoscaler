@@ -17,6 +17,7 @@ limitations under the License.
 package waste
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -89,7 +90,7 @@ func TestLeastWaste(t *testing.T) {
 	balancedOption := expander.Option{NodeGroup: &FakeNodeGroup{"balanced"}, NodeCount: 1}
 
 	// Test without any pods, one node info
-	ret := e.BestOptions([]expander.Option{balancedOption}, nodeMap)
+	ret := e.BestOptions(context.TODO(), []expander.Option{balancedOption}, nodeMap)
 	assert.Equal(t, ret, []expander.Option{balancedOption})
 
 	pod := &apiv1.Pod{
@@ -109,20 +110,20 @@ func TestLeastWaste(t *testing.T) {
 
 	// Test with one pod, one node info
 	balancedOption.Pods = []*apiv1.Pod{pod}
-	ret = e.BestOptions([]expander.Option{balancedOption}, nodeMap)
+	ret = e.BestOptions(context.TODO(), []expander.Option{balancedOption}, nodeMap)
 	assert.Equal(t, ret, []expander.Option{balancedOption})
 
 	// Test with one pod, two node infos, one that has lots of RAM one that has less
 	highmemNodeInfo := makeNodeInfo(16*cpuPerPod, 32*memoryPerPod, 100)
 	nodeMap["highmem"] = highmemNodeInfo
 	highmemOption := expander.Option{NodeGroup: &FakeNodeGroup{"highmem"}, NodeCount: 1, Pods: []*apiv1.Pod{pod}}
-	ret = e.BestOptions([]expander.Option{balancedOption, highmemOption}, nodeMap)
+	ret = e.BestOptions(context.TODO(), []expander.Option{balancedOption, highmemOption}, nodeMap)
 	assert.Equal(t, ret, []expander.Option{balancedOption})
 
 	// Test with one pod, three node infos, one that has lots of RAM one that has less, and one that has less CPU
 	lowcpuNodeInfo := makeNodeInfo(8*cpuPerPod, 16*memoryPerPod, 100)
 	nodeMap["lowcpu"] = lowcpuNodeInfo
 	lowcpuOption := expander.Option{NodeGroup: &FakeNodeGroup{"lowcpu"}, NodeCount: 1, Pods: []*apiv1.Pod{pod}}
-	ret = e.BestOptions([]expander.Option{balancedOption, highmemOption, lowcpuOption}, nodeMap)
+	ret = e.BestOptions(context.TODO(), []expander.Option{balancedOption, highmemOption, lowcpuOption}, nodeMap)
 	assert.Equal(t, ret, []expander.Option{lowcpuOption})
 }

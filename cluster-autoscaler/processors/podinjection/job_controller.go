@@ -17,13 +17,14 @@ limitations under the License.
 package podinjection
 
 import (
+	"context"
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/klog/v2"
 )
 
-func createJobControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {
+func createJobControllers(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) []controller {
 	var controllers []controller
 	jobs, err := autoscalingCtx.ListerRegistry.JobLister().List(labels.Everything())
 	if err != nil {

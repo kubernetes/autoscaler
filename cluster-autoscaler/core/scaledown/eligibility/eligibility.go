@@ -17,6 +17,7 @@ limitations under the License.
 package eligibility
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -64,7 +65,7 @@ func NewChecker(configGetter nodeGroupConfigGetter) *Checker {
 // utilization info.
 // TODO(x13n): Node utilization could actually be calculated independently for
 // all nodes and just used here. Next refactor...
-func (c *Checker) FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode) {
+func (c *Checker) FilterOutUnremovable(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode) {
 	ineligible := []*simulator.UnremovableNode{}
 	skipped := 0
 	utilizationMap := make(map[string]utilization.Info)
@@ -86,7 +87,7 @@ func (c *Checker) FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingCon
 			continue
 		}
 
-		reason, utilInfo := c.unremovableReasonAndNodeUtilization(autoscalingCtx, timestamp, nodeInfo, utilLogsQuota)
+		reason, utilInfo := c.unremovableReasonAndNodeUtilization(ctx, autoscalingCtx, timestamp, nodeInfo, utilLogsQuota)
 		if utilInfo != nil {
 			utilizationMap[node.Name] = *utilInfo
 		}
@@ -105,7 +106,7 @@ func (c *Checker) FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingCon
 	return currentlyUnneededNodeNames, utilizationMap, ineligible
 }
 
-func (c *Checker) unremovableReasonAndNodeUtilization(autoscalingCtx *ca_context.AutoscalingContext, timestamp time.Time, nodeInfo *framework.NodeInfo, utilLogsQuota *klogx.Quota) (simulator.UnremovableReason, *utilization.Info) {
+func (c *Checker) unremovableReasonAndNodeUtilization(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, timestamp time.Time, nodeInfo *framework.NodeInfo, utilLogsQuota *klogx.Quota) (simulator.UnremovableReason, *utilization.Info) {
 	node := nodeInfo.Node()
 
 	if actuation.IsNodeBeingDeleted(node, timestamp) {
@@ -138,7 +139,7 @@ func (c *Checker) unremovableReasonAndNodeUtilization(autoscalingCtx *ca_context
 	}
 
 	gpuConfig := autoscalingCtx.CloudProvider.GetNodeGpuConfig(node)
-	utilInfo, err := utilization.Calculate(nodeInfo, ignoreDaemonSetsUtilization, autoscalingCtx.IgnoreMirrorPodsUtilization, autoscalingCtx.DynamicResourceAllocationEnabled, gpuConfig, timestamp)
+	utilInfo, err := utilization.Calculate(ctx, nodeInfo, ignoreDaemonSetsUtilization, autoscalingCtx.IgnoreMirrorPodsUtilization, autoscalingCtx.DynamicResourceAllocationEnabled, gpuConfig, timestamp)
 	if err != nil {
 		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 		return simulator.UnexpectedError, nil

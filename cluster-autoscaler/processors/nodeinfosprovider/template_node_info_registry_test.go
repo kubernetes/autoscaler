@@ -17,6 +17,7 @@ limitations under the License.
 package nodeinfosprovider
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -36,7 +37,7 @@ type mockTemplateNodeInfoProvider struct {
 	nodeInfos map[string]*framework.NodeInfo
 }
 
-func (p *mockTemplateNodeInfoProvider) Process(_ *ca_context.AutoscalingContext, _ []*apiv1.Node, _ []*appsv1.DaemonSet, _ taints.TaintConfig, _ time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
+func (p *mockTemplateNodeInfoProvider) Process(ctx context.Context, _ *ca_context.AutoscalingContext, _ []*apiv1.Node, _ []*appsv1.DaemonSet, _ taints.TaintConfig, _ time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
 	return p.nodeInfos, nil
 }
 
@@ -51,7 +52,7 @@ func TestTemplateNodeInfoRegistry(t *testing.T) {
 	registry := NewTemplateNodeInfoRegistry(mockProvider)
 
 	// Test Recompute
-	err := registry.Recompute(nil, nil, nil, taints.TaintConfig{}, time.Now())
+	err := registry.Recompute(context.TODO(), nil, nil, nil, taints.TaintConfig{}, time.Now())
 	assert.NoError(t, err)
 
 	// Test GetNodeInfo
@@ -75,7 +76,7 @@ func TestTemplateNodeInfoRegistry(t *testing.T) {
 		"ng1": framework.NewTestNodeInfo(BuildTestNode("node1", 1000, 1000)),
 		"ng2": framework.NewTestNodeInfo(BuildTestNode("node2", 1000, 1000)),
 	}
-	err = registry.Recompute(nil, nil, nil, taints.TaintConfig{}, time.Now())
+	err = registry.Recompute(context.TODO(), nil, nil, nil, taints.TaintConfig{}, time.Now())
 	assert.NoError(t, err)
 
 	info, found = registry.GetNodeInfo("ng2")
@@ -98,7 +99,7 @@ func TestTemplateNodeInfoRegistry_Concurrent(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 100; i++ {
-			err := registry.Recompute(nil, nil, nil, taints.TaintConfig{}, time.Now())
+			err := registry.Recompute(context.TODO(), nil, nil, nil, taints.TaintConfig{}, time.Now())
 			assert.NoError(t, err)
 		}
 	}()

@@ -17,6 +17,7 @@ limitations under the License.
 package binpacking
 
 import (
+	"context"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -50,10 +51,10 @@ func (l *CombinedLimiter) MarkProcessed(autoscalingCtx *ca_context.AutoscalingCo
 }
 
 // StopBinpacking returns true if at least one of the underline limiter met the stop condition.
-func (l *CombinedLimiter) StopBinpacking(autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
+func (l *CombinedLimiter) StopBinpacking(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
 	stopCondition := false
 	for _, limiter := range l.limiters {
-		stopCondition = limiter.StopBinpacking(autoscalingCtx, evaluatedOptions) || stopCondition
+		stopCondition = limiter.StopBinpacking(ctx, autoscalingCtx, evaluatedOptions) || stopCondition
 	}
 	return stopCondition
 }

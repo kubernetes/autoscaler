@@ -17,13 +17,14 @@ limitations under the License.
 package podinjection
 
 import (
+	"context"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	ca_context "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/klog/v2"
 )
 
-func createStatefulSetControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {
+func createStatefulSetControllers(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) []controller {
 	var controllers []controller
 	statefulSets, err := autoscalingCtx.ListerRegistry.StatefulSetLister().List(labels.Everything())
 	if err != nil {

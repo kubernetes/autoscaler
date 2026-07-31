@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -116,7 +117,7 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 	mainCreatedNodeGroup := result.CreationResult.MainCreatedNodeGroup
 	// If possible replace candidate node-info with node info based on crated node group. The latter
 	// one should be more in line with nodes which will be created by node group.
-	nodeInfo, aErr := simulator.SanitizedTemplateNodeInfoFromNodeGroup(mainCreatedNodeGroup, s.daemonSets, s.taintConfig)
+	nodeInfo, aErr := simulator.SanitizedTemplateNodeInfoFromNodeGroup(context.TODO(), mainCreatedNodeGroup, s.daemonSets, s.taintConfig)
 	if aErr != nil {
 		klog.Warningf("Cannot build node info for newly created main node group %s. Using fallback. Error: %v", mainCreatedNodeGroup.Id(), aErr)
 		nodeInfo = s.nodeInfo
@@ -130,7 +131,7 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 	}
 
 	klog.Infof("Starting scale-up for async created node groups. Scale ups: %v", scaleUpInfos)
-	err, failedNodeGroups := s.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, time.Now(), s.atomicScaleUp)
+	err, failedNodeGroups := s.scaleUpExecutor.ExecuteScaleUps(context.TODO(), scaleUpInfos, nodeInfos, time.Now(), s.atomicScaleUp)
 	if err != nil {
 		var failedNodeGroupIds []string
 		for _, failedNodeGroup := range failedNodeGroups {
@@ -188,5 +189,5 @@ func (s *AsyncNodeGroupInitializer) emitScaleUpStatus(scaleUpStatus *status.Scal
 	if err != nil {
 		status.UpdateScaleUpError(scaleUpStatus, err)
 	}
-	s.scaleUpStatusProcessor.Process(s.autoscalingCtx, scaleUpStatus)
+	s.scaleUpStatusProcessor.Process(context.TODO(), s.autoscalingCtx, scaleUpStatus)
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package nodeinfosprovider
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -344,7 +345,7 @@ func TestMixedNodeInfosProvider(t *testing.T) {
 			if tc.withCache != nil {
 				processor.nodeInfoCache = tc.withCache
 			}
-			nodeInfos, err := processor.Process(ctx, allNodes, nil, taints.TaintConfig{}, now)
+			nodeInfos, err := processor.Process(context.TODO(), ctx, allNodes, nil, taints.TaintConfig{}, now)
 
 			assert.Equal(t, tc.wantError, err)
 			if tc.wantError == nil {
