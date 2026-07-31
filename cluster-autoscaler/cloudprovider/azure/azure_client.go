@@ -197,19 +197,24 @@ type azClient struct {
 	vmssClientForDelete VMSSDeleteClient
 }
 
-func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
-	// Create ARMClientConfig for azclient factory
+func newARMClientConfig(cfg *Config, env *azure.Environment) *azclient.ARMClientConfig {
 	armConfig := &azclient.ARMClientConfig{
 		Cloud:                   cfg.Cloud,
 		TenantID:                cfg.TenantID,
 		UserAgent:               getUserAgentExtension(),
 		ResourceManagerEndpoint: env.ResourceManagerEndpoint,
+		DisableAzureStackCloud:  cfg.DisableAzureStackCloud,
 	}
 
 	// Apply proxy URL or hosted subscription overrides
 	if cfg.HostedResourceProxyURL != "" {
 		armConfig.ResourceManagerEndpoint = cfg.HostedResourceProxyURL
 	}
+	return armConfig
+}
+
+func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
+	armConfig := newARMClientConfig(cfg, env)
 
 	// Create AzureAuthConfig for auth provider
 	authConfig := &azclient.AzureAuthConfig{
