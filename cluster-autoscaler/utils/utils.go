@@ -27,11 +27,12 @@ import (
 
 // GetNodeGroupSizeMap return a map of node group id and its target size
 func GetNodeGroupSizeMap(ctx context.Context, cloudProvider cloudprovider.CloudProvider) map[string]int {
+	logger := klog.FromContext(ctx)
 	nodeGroupSize := make(map[string]int)
 	for _, nodeGroup := range cloudProvider.NodeGroups() {
 		size, err := nodeGroup.TargetSize()
 		if err != nil {
-			klog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
+			logger.Error(err, "Error while checking node group size", "nodeGroupId", nodeGroup.Id())
 			continue
 		}
 		nodeGroupSize[nodeGroup.Id()] = size

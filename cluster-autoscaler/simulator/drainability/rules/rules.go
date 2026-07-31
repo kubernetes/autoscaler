@@ -86,6 +86,7 @@ type Rules []Rule
 // Drainable determines whether a given pod is drainable according to the
 // specified set of rules.
 func (rs Rules) Drainable(ctx context.Context, drainCtx *drainability.DrainContext, pod *apiv1.Pod, nodeInfo *framework.NodeInfo) drainability.Status {
+	logger := klog.FromContext(ctx)
 	if drainCtx == nil {
 		drainCtx = &drainability.DrainContext{}
 	}
@@ -104,7 +105,7 @@ func (rs Rules) Drainable(ctx context.Context, drainCtx *drainability.DrainConte
 		for _, candidate := range candidates {
 			for _, override := range candidate.status.Overrides {
 				if status.Outcome == override {
-					klog.V(5).Infof("Overriding pod %s/%s drainability rule %s with rule %s, outcome %v", pod.GetNamespace(), pod.GetName(), r.Name(), candidate.name, candidate.status.Outcome)
+					logger.V(5).Info("Overriding pod drainability rule with rule, outcome", "getNamespace", pod.GetNamespace(), "pod", pod.GetName(), "r", r.Name(), "candidate", candidate.name, "outcome", candidate.status.Outcome)
 					return candidate.status
 				}
 			}

@@ -35,11 +35,13 @@ type CSICustomResourcesProcessor struct {
 
 // FilterOutNodesWithUnreadyResources filters out nodes with unready CSI resources.
 func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+	logger := klog.FromContext(ctx)
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyCSI := make(map[string]*apiv1.Node)
 	if csiSnapshot == nil {
-		klog.Warningf("Cannot filter out nodes with unready CSI resources. The CSI snapshot is nil. Processing will be skipped.")
+		logger.Info("Cannot filter out nodes with unready CSI resources. The CSI snapshot is nil. Processing will be skipped.")
+
 		return allNodes, readyNodes
 	}
 
@@ -47,7 +49,7 @@ func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx con
 		ng, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
-			klog.Warningf("Failed to get node group for node %s, Skipping CSI readiness check and keeping node in ready list. Error: %v", node.Name, err)
+			logger.Info("Failed to get node group for node, Skipping CSI readiness check and keeping node in ready list. Error", "node", node.Name, "err", err)
 			continue
 		}
 		if ng == nil {
@@ -59,21 +61,21 @@ func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx con
 		templateNodeInfo, err := ng.TemplateNodeInfo()
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
-			klog.Warningf("Failed to get template node info for node group %s with error: %v", ng.Id(), err)
+			logger.Info("Failed to get template node info for node group with", "nodeGroupId", ng.Id(), "err", err)
 			continue
 		}
 
 		// if cloudprovider does not provide CSI related stuff, then we can skip the CSI readiness check
 		if templateNodeInfo.CSINode == nil {
 			newReadyNodes = append(newReadyNodes, node)
-			klog.V(5).Infof("No CSI node found for node %s, Skipping CSI readiness check and keeping node in ready list.", node.Name)
+			logger.V(5).Info("No CSI node found for node, Skipping CSI readiness check and keeping node in ready list.", "node", node.Name)
 			continue
 		}
 
 		csiNode, err := csiSnapshot.Get(node.Name)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
-			klog.V(5).Infof("Failed to get CSI node for node %s, Skipping CSI readiness check and keeping node in ready list. Error: %v", node.Name, err)
+			logger.V(5).Info("Failed to get CSI node for node, Skipping CSI readiness check and keeping node in ready list. Error", "node", node.Name, "err", err)
 			continue
 		}
 

@@ -40,6 +40,7 @@ type GpuCustomResourcesProcessor struct {
 // This is a hack/workaround for nodes with GPU coming up without installed drivers, resulting
 // in GPU missing from their allocatable and capacity.
 func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+	logger := klog.FromContext(ctx)
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyGpu := make(map[string]*apiv1.Node)
@@ -52,8 +53,7 @@ func (p *GpuCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx con
 		_, hasGpuLabel := node.Labels[autoscalingCtx.CloudProvider.GPULabel()]
 		_, hasAnyGpuAllocatable := gpu.NodeHasGpuAllocatable(node)
 		if hasGpuLabel && !hasAnyGpuAllocatable {
-			klog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
-				node.Name)
+			logger.V(3).Info("Overriding status of node, which seems to have unready GPU", "node", node.Name)
 			nodesWithUnreadyGpu[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.ResourceUnready)
 		} else {
 			newReadyNodes = append(newReadyNodes, node)
@@ -80,6 +80,7 @@ func (p *GpuCustomResourcesProcessor) GetNodeResourceTargets(ctx context.Context
 // GetNodeGpuTarget returns the gpu target of a given node. This includes gpus
 // that are not ready to use and visible in kubernetes.
 func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (CustomResourceTarget, errors.AutoscalerError) {
+	logger := klog.FromContext(ctx)
 	gpuLabel, found := node.Labels[autoscalingCtx.CloudProvider.GPULabel()]
 	if !found {
 		return CustomResourceTarget{}, nil
@@ -112,7 +113,7 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(ctx context.Context, auto
 
 	template, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
-		klog.Errorf("Failed to build template for getting GPU estimation for node %v: %v", node.Name, err)
+		logger.Error(err, "Failed to build template for getting GPU estimation for node", "node", node.Name)
 		return CustomResourceTarget{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 	for _, gpuVendorResourceName := range gpu.GPUVendorResourceNames {
@@ -122,7 +123,7 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(ctx context.Context, auto
 	}
 
 	// if template does not define gpus we assume node will not have any even if ith has gpu label
-	klog.Warningf("Template does not define gpus even though node from its node group does; node=%v", node.Name)
+	logger.Info("Template does not define gpus even though node from its node group does", "node", node.Name)
 	return CustomResourceTarget{}, nil
 }
 

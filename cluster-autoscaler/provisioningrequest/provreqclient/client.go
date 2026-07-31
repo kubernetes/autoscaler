@@ -93,11 +93,12 @@ func (c *ProvisioningRequestClient) ProvisioningRequests(ctx context.Context) ([
 
 // FetchPodTemplates fetches PodTemplates referenced by the Provisioning Request.
 func (c *ProvisioningRequestClient) FetchPodTemplates(ctx context.Context, pr *v1.ProvisioningRequest) ([]*apiv1.PodTemplate, error) {
+	logger := klog.FromContext(ctx)
 	podTemplates := make([]*apiv1.PodTemplate, 0, len(pr.Spec.PodSets))
 	for _, podSpec := range pr.Spec.PodSets {
 		podTemplate, err := c.podTemplLister.PodTemplates(pr.Namespace).Get(podSpec.PodTemplateRef.Name)
 		if errors.IsNotFound(err) {
-			klog.Infof("While fetching Pod Template for Provisioning Request %s/%s received not found error", pr.Namespace, pr.Name)
+			logger.Info("While fetching Pod Template for Provisioning Request received not found error", "namespace", pr.Namespace, "pr", pr.Name)
 			continue
 		} else if err != nil {
 			return nil, err
@@ -109,6 +110,7 @@ func (c *ProvisioningRequestClient) FetchPodTemplates(ctx context.Context, pr *v
 
 // UpdateProvisioningRequest updates the given ProvisioningRequest CR by propagating the changes using the ProvisioningRequestInterface and returns the updated instance or the original one in case of an error.
 func (c *ProvisioningRequestClient) UpdateProvisioningRequest(logging_ctx context.Context, pr *v1.ProvisioningRequest) (*v1.ProvisioningRequest, error) {
+	logger := klog.FromContext(logging_ctx)
 	ctx, cancel := context.WithTimeout(logging_ctx, provisioningRequestClientCallTimeout)
 	defer cancel()
 
@@ -116,12 +118,13 @@ func (c *ProvisioningRequestClient) UpdateProvisioningRequest(logging_ctx contex
 	if err != nil {
 		return pr, err
 	}
-	klog.V(4).Infof("Updated ProvisioningRequest %s/%s,  status: %q,", updatedPr.Namespace, updatedPr.Name, updatedPr.Status)
+	logger.V(4).Info("Updated ProvisioningRequest, status", "namespace", updatedPr.Namespace, "updatedPr", updatedPr.Name, "status", updatedPr.Status)
 	return updatedPr, nil
 }
 
 // ProvisioningRequestsForPods check that all pods belong to one ProvisioningRequest and return it.
 func ProvisioningRequestsForPods(ctx context.Context, client *ProvisioningRequestClient, unschedulablePods []*apiv1.Pod) []*provreqwrapper.ProvisioningRequest {
+	logger := klog.FromContext(ctx)
 	prMap := make(map[string]*provreqwrapper.ProvisioningRequest)
 	prList := []*provreqwrapper.ProvisioningRequest{}
 	if len(unschedulablePods) == 0 {
@@ -129,12 +132,12 @@ func ProvisioningRequestsForPods(ctx context.Context, client *ProvisioningReques
 	}
 	for _, pod := range unschedulablePods {
 		if len(pod.OwnerReferences) == 0 {
-			klog.Errorf("pod %s has no OwnerReference", pod.Name)
+			logger.Error(nil, "pod has no OwnerReference", "pod", pod.Name)
 			continue
 		}
 		provReq, err := client.ProvisioningRequest(ctx, pod.Namespace, pod.OwnerReferences[0].Name)
 		if err != nil {
-			klog.Errorf("failed to retrieve ProvisioningRequest from unschedulable pod, err: %v", err)
+			logger.Error(err, "failed to retrieve ProvisioningRequest from unschedulable pod")
 			continue
 		}
 		if _, found := prMap[provReq.Name]; !found {
@@ -150,13 +153,14 @@ func ProvisioningRequestsForPods(ctx context.Context, client *ProvisioningReques
 // DeleteProvisioningRequest deletes the given ProvisioningRequest CR using the ProvisioningRequestInterface and returns an error in case of failure.
 func (c *ProvisioningRequestClient) DeleteProvisioningRequest(ctx context.Context, pr *v1.ProvisioningRequest) error {
 	ctx, cancel := context.WithTimeout(ctx, provisioningRequestClientCallTimeout)
+	logger := klog.FromContext(ctx)
 	defer cancel()
 
 	err := c.client.AutoscalingV1().ProvisioningRequests(pr.Namespace).Delete(ctx, pr.Name, metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("error deleting ProvisioningRequest %s/%s: %w", pr.Namespace, pr.Name, err)
 	}
-	klog.V(4).Infof("Deleted ProvisioningRequest %s/%s", pr.Namespace, pr.Name)
+	logger.V(4).Info("Deleted ProvisioningRequest", "namespace", pr.Namespace, "pr", pr.Name)
 	return nil
 }
 

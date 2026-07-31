@@ -82,6 +82,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*framework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
+	logger := klog.FromContext(ctx)
 	if len(unschedulablePods) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
@@ -101,7 +102,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 	if err != nil {
 		conditions.AddOrUpdateCondition(ctx, pr, v1.Provisioned, metav1.ConditionFalse, conditions.FailedToCheckCapacityReason, conditions.FailedToCheckCapacityMsg, metav1.Now())
 		if _, updateErr := o.client.UpdateProvisioningRequest(ctx, pr.ProvisioningRequest); updateErr != nil {
-			klog.Errorf("failed to add Provisioned=false condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
+			logger.Error(updateErr, "failed to add Provisioned=false condition to ProvReq", "namespace", pr.Namespace, "pr", pr.Name)
 		}
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "error during ScaleUp: %s", err.Error()))
 	}
@@ -110,7 +111,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 		// Nothing to do here - everything fits without scale-up.
 		conditions.AddOrUpdateCondition(ctx, pr, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
 		if _, updateErr := o.client.UpdateProvisioningRequest(ctx, pr.ProvisioningRequest); updateErr != nil {
-			klog.Errorf("failed to add Provisioned=true condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
+			logger.Error(updateErr, "failed to add Provisioned=true condition to ProvReq", "namespace", pr.Namespace, "pr", pr.Name)
 			return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "capacity available, but failed to admit workload: %s", updateErr.Error()))
 		}
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotNeeded}, nil
@@ -121,7 +122,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 		// Happy path - all is well.
 		conditions.AddOrUpdateCondition(ctx, pr, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsProvisionedReason, conditions.CapacityIsProvisionedMsg, metav1.Now())
 		if _, updateErr := o.client.UpdateProvisioningRequest(ctx, pr.ProvisioningRequest); updateErr != nil {
-			klog.Errorf("failed to add Provisioned=true condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
+			logger.Error(updateErr, "failed to add Provisioned=true condition to ProvReq", "namespace", pr.Namespace, "pr", pr.Name)
 			return st, errors.NewAutoscalerErrorf(errors.InternalError, "scale up requested, but failed to admit workload: %s", updateErr.Error())
 		}
 		return st, nil
@@ -130,7 +131,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 	// We are not happy with the results.
 	conditions.AddOrUpdateCondition(ctx, pr, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
 	if _, updateErr := o.client.UpdateProvisioningRequest(ctx, pr.ProvisioningRequest); updateErr != nil {
-		klog.Errorf("failed to add Provisioned=false condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
+		logger.Error(updateErr, "failed to add Provisioned=false condition to ProvReq", "namespace", pr.Namespace, "pr", pr.Name)
 	}
 	if err != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "error during ScaleUp: %s", err.Error()))

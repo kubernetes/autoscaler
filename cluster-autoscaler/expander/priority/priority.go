@@ -84,12 +84,14 @@ func (p *priority) reloadConfigMap(ctx context.Context) (priorities, *apiv1.Conf
 }
 
 func (p *priority) logConfigWarning(ctx context.Context, cm *apiv1.ConfigMap, reason, msg string) {
+	logger := klog.FromContext(ctx)
 	p.logRecorder.Event(cm, apiv1.EventTypeWarning, reason, msg)
-	klog.Warning(msg)
+	logger.Info(msg)
 	p.badConfigUpdates++
 }
 
 func (p *priority) parsePrioritiesYAMLString(ctx context.Context, prioritiesYAML string) (priorities, error) {
+	logger := klog.FromContext(ctx)
 	if prioritiesYAML == "" {
 		return nil, fmt.Errorf("priority configuration in %s configmap is empty; please provide valid configuration",
 			PriorityConfigMapName)
@@ -112,12 +114,13 @@ func (p *priority) parsePrioritiesYAMLString(ctx context.Context, prioritiesYAML
 
 	p.okConfigUpdates++
 	msg := "Successfully loaded priority configuration from configmap."
-	klog.V(4).Info(msg)
+	logger.V(4).Info(msg)
 
 	return newPriorities, nil
 }
 
 func (p *priority) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
+	logger := klog.FromContext(ctx)
 	if len(expansionOptions) <= 0 {
 		return nil
 	}
@@ -161,7 +164,7 @@ func (p *priority) BestOptions(ctx context.Context, expansionOptions []expander.
 	}
 
 	for _, opt := range best {
-		klog.V(2).Infof("priority expander: %s chosen as the highest available", opt.NodeGroup.Id())
+		logger.V(2).Info("priority expander: chosen as the highest available", "nodeGroupId", opt.NodeGroup.Id())
 	}
 	return best
 }

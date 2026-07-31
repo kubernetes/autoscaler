@@ -40,16 +40,17 @@ type ScaleDownStatus struct {
 
 // SetUnremovableNodesInfo sets the status of nodes that were found to be unremovable.
 func (s *ScaleDownStatus) SetUnremovableNodesInfo(ctx context.Context, unremovableNodes []*simulator.UnremovableNode, nodeUtilizationMap map[string]utilization.Info, cp cloudprovider.CloudProvider) {
+	logger := klog.FromContext(ctx)
 	s.UnremovableNodes = make([]*UnremovableNode, 0, len(unremovableNodes))
 
 	for _, unremovableNode := range unremovableNodes {
 		nodeGroup, err := cp.NodeGroupForNode(unremovableNode.Node)
 		if err != nil {
-			klog.Errorf("Couldn't find node group for unremovable node in cloud provider %s", unremovableNode.Node.Name)
+			logger.Error(err, "Couldn't find node group for unremovable node in cloud provider", "node", unremovableNode.Node.Name)
 			continue
 		}
 		if nodeGroup == nil {
-			klog.Errorf("Unremovable node %s has no node group", unremovableNode.Node.Name)
+			logger.Error(nil, "Unremovable node has no node group", "node", unremovableNode.Node.Name)
 			continue
 		}
 

@@ -43,18 +43,19 @@ func (p *currentlyDrainedNodesPodListProcessor) CleanUp() {
 }
 
 func currentlyDrainedPods(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) []*apiv1.Pod {
+	logger := klog.FromContext(ctx)
 	var pods []*apiv1.Pod
 	_, nodeNames := autoscalingCtx.ScaleDownActuator.CheckStatus().DeletionsInProgress()
 	for _, nodeName := range nodeNames {
 		nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(nodeName)
 		if err != nil {
-			klog.Warningf("Couldn't get node %v info, assuming the node got deleted already: %v", nodeName, err)
+			logger.Info("Couldn't get node info, assuming the node got deleted already", "node", nodeName, "err", err)
 			continue
 		}
 		for _, podInfo := range nodeInfo.Pods() {
 			// Filter out pods that has deletion timestamp set
 			if podInfo.Pod.DeletionTimestamp != nil {
-				klog.Infof("Pod %v has deletion timestamp set, skipping injection to unschedulable pods list", podInfo.Pod.Name)
+				logger.Info("Pod has deletion timestamp set, skipping injection to unschedulable pods list", "pod", podInfo.Pod.Name)
 				continue
 			}
 			pods = append(pods, podInfo.Pod)

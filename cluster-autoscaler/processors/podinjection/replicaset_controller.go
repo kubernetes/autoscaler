@@ -25,10 +25,11 @@ import (
 )
 
 func createReplicaSetControllers(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) []controller {
+	logger := klog.FromContext(ctx)
 	var controllers []controller
 	replicaSets, err := autoscalingCtx.ListerRegistry.ReplicaSetLister().List(labels.Everything())
 	if err != nil {
-		klog.Errorf("Failed to list replicaSets: %v", err)
+		logger.Error(err, "Failed to list replicaSets")
 		return controllers
 	}
 	for _, replicaSet := range replicaSets {

@@ -181,9 +181,10 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	timestamp time.Time,
 	remainingPdbTracker pdb.RemainingPdbTracker,
 ) (*NodeToBeRemoved, *UnremovableNode) {
+	logger := klog.FromContext(ctx)
 	nodeInfo, err := r.clusterSnapshot.GetNodeInfo(nodeName)
 	if err != nil {
-		klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
+		logger.Error(err, "Can't retrieve node from snapshot", "node", nodeName)
 		unremovableReason := UnexpectedError
 		if errors.Is(err, clustersnapshot.ErrNodeNotFound) {
 			unremovableReason = NoNodeInfo
@@ -191,11 +192,11 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 		unremovableNode := &UnremovableNode{Node: &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: nodeName}}, Reason: unremovableReason}
 		return nil, unremovableNode
 	}
-	klog.V(2).Infof("Simulating node %s removal", nodeName)
+	logger.V(2).Info("Simulating node removal", "node", nodeName)
 
 	podMoveInfo, err := GetPodsToMove(ctx, nodeInfo, r.deleteOptions, r.drainabilityRules, r.listers, remainingPdbTracker, timestamp)
 	if err != nil {
-		klog.V(2).Infof("Node %s cannot be removed: %v", nodeName, err)
+		logger.V(2).Info("Node cannot be removed", "node", nodeName, "err", err)
 		if podMoveInfo.BlockingPod != nil {
 			return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: BlockedByPod, BlockingPod: podMoveInfo.BlockingPod}
 		}
@@ -206,10 +207,10 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 		return r.findPlaceFor(ctx, nodeName, podMoveInfo.Pods, destinationMap, timestamp)
 	})
 	if err != nil {
-		klog.V(2).Infof("Node %s is not suitable for removal: %v", nodeName, err)
+		logger.V(2).Info("Node is not suitable for removal", "node", nodeName, "err", err)
 		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: NoPlaceToMovePods}
 	}
-	klog.V(2).Infof("Node %s may be removed", nodeName)
+	logger.V(2).Info("Node may be removed", "node", nodeName)
 	return &NodeToBeRemoved{
 		Node:             nodeInfo.Node(),
 		PodsToReschedule: podMoveInfo.Pods,
@@ -235,6 +236,7 @@ func (r *RemovalSimulator) withForkedSnapshot(ctx context.Context, f func() erro
 }
 
 func (r *RemovalSimulator) findPlaceFor(ctx context.Context, removedNode string, pods []*apiv1.Pod, nodes map[string]bool, timestamp time.Time) error {
+	logger := klog.FromContext(ctx)
 	isCandidateNode := func(nodeInfo *framework.NodeInfo) bool {
 		return nodeInfo.Node().Name != removedNode && nodes[nodeInfo.Node().Name]
 	}
@@ -245,7 +247,7 @@ func (r *RemovalSimulator) findPlaceFor(ctx context.Context, removedNode string,
 	for _, pod := range pods {
 		if err := r.clusterSnapshot.UnschedulePod(pod.Namespace, pod.Name, removedNode); err != nil {
 			// just log error
-			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
+			logger.Error(err, "Simulating removal return error", "namespace", pod.Namespace, "pod", pod.Name)
 		}
 	}
 

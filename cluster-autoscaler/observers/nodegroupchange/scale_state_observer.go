@@ -126,13 +126,14 @@ func (p *NodeGroupChangeMetricsProducer) RegisterScaleDown(nodeGroup cloudprovid
 
 // RegisterFailedScaleUp emits the failed scale up metric.
 func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
+	logger := klog.FromContext(ctx)
 	availableGPUTypes := p.cloudProvider.GetAvailableGPUTypes()
 	gpuResourceName, gpuType, draDriverNames := "", "", ""
 	nodeInfo, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
-		klog.Warningf("Failed to get template node info for a node group: %s", err)
+		logger.Info("Failed to get template node info for a node group", "err", err)
 	} else if nodeInfo == nil {
-		klog.Warningf("Template node info is nil for node group: %s", nodeGroup.Id())
+		logger.Info("Template node info is nil for node group", "nodeGroupId", nodeGroup.Id())
 	} else {
 		gpuResourceName, gpuType = gpu.GetGpuInfoForMetrics(ctx, p.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), nodeGroup)
 		draDriverNames = dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)

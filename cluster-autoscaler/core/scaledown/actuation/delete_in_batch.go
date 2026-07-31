@@ -165,9 +165,10 @@ func deleteNodesFromCloudProvider(autoscalingCtx *ca_context.AutoscalingContext,
 }
 
 func nodeScaleDownReason(ctx context.Context, node *apiv1.Node, drain bool) metrics.NodeScaleDownReason {
+	logger := klog.FromContext(ctx)
 	readiness, err := kubernetes.GetNodeReadiness(node)
 	if err != nil {
-		klog.Errorf("Couldn't determine node %q readiness while scaling down - assuming unready: %v", node.Name, err)
+		logger.Error(err, "Couldn't determine node readiness while scaling down - assuming unready", "node", node.Name)
 		return metrics.Unready
 	}
 	if !readiness.Ready {
@@ -193,19 +194,26 @@ func CleanUpAndRecordErrorForFailedScaleDownEvent(ctx context.Context, autoscali
 
 // CleanUpAndRecordFailedScaleDownEvent record failed scale down event and log a warning or an error.
 func CleanUpAndRecordFailedScaleDownEvent(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroupId string, drain bool, nodeDeletionTracker *deletiontracker.NodeDeletionTracker, errMsg string, status status.NodeDeleteResult, logAsWarning bool) {
+	logger := klog.FromContext(ctx)
 	ctx = context.WithoutCancel(ctx)
-	var logMsgFormat, eventMsgFormat string
+	var eventMsgFormat string
 	if drain {
-		logMsgFormat = "couldn't delete node %q with drain"
 		eventMsgFormat = "failed to drain and delete node"
 	} else {
-		logMsgFormat = "couldn't delete empty node %q"
 		eventMsgFormat = "failed to delete empty node"
 	}
 	if logAsWarning {
-		klog.Warningf("Scale-down: "+logMsgFormat+", %v, status error: %v", node.Name, errMsg, status.Err)
+		if drain {
+			logger.Info("Scale-down: failed to delete node with drain", "node", node.Name, "errMsg", errMsg, "err", status.Err)
+		} else {
+			logger.Info("Scale-down: failed to delete empty node", "node", node.Name, "errMsg", errMsg, "err", status.Err)
+		}
 	} else {
-		klog.Errorf("Scale-down: "+logMsgFormat+", %v, status error: %v", node.Name, errMsg, status.Err)
+		if drain {
+			logger.Error(status.Err, "Scale-down: failed to delete node with drain", "node", node.Name, "errMsg", errMsg)
+		} else {
+			logger.Error(status.Err, "Scale-down: failed to delete empty node", "node", node.Name, "errMsg", errMsg)
+		}
 	}
 	autoscalingCtx.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", eventMsgFormat+": %v", status.Err)
 	taints.CleanToBeDeleted(ctx, node, autoscalingCtx.ClientSet, autoscalingCtx.CordonNodeBeforeTerminate)
@@ -214,6 +222,7 @@ func CleanUpAndRecordFailedScaleDownEvent(ctx context.Context, autoscalingCtx *c
 
 // RegisterAndRecordSuccessfulScaleDownEvent register scale down and record successful scale down event.
 func RegisterAndRecordSuccessfulScaleDownEvent(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleStateNotifier nodegroupchange.NodeGroupChangeObserver, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool, nodeDeletionTracker *deletiontracker.NodeDeletionTracker) {
+	logger := klog.FromContext(ctx)
 	autoscalingCtx.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "nodes removed by cluster autoscaler")
 	currentTime := time.Now()
 	expectedDeleteTime := time.Now().Add(MaxCloudProviderNodeDeletionTime)
@@ -223,7 +232,7 @@ func RegisterAndRecordSuccessfulScaleDownEvent(ctx context.Context, autoscalingC
 	draDriverNames := ""
 	nodeInfo, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
-		klog.Warningf("Failed to get template node info for a node group: %s", err)
+		logger.Info("Failed to get template node info for a node group", "err", err)
 	} else {
 		draDriverNames = dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
 	}

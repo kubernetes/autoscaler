@@ -51,6 +51,7 @@ func (f *podTemplateGenerationChangedFilter) Filter(ctx context.Context, buffers
 }
 
 func (f *podTemplateGenerationChangedFilter) podTemplateGenerationChanged(ctx context.Context, buffer *v1.CapacityBuffer) bool {
+	logger := klog.FromContext(ctx)
 	if buffer.Status.PodTemplateRef == nil || buffer.Status.PodTemplateGeneration == nil {
 		return false
 	}
@@ -58,7 +59,7 @@ func (f *podTemplateGenerationChangedFilter) podTemplateGenerationChanged(ctx co
 	podTemplate, err := f.client.GetPodTemplate(buffer.Namespace, buffer.Status.PodTemplateRef.Name)
 
 	if err != nil {
-		klog.Errorf("Couldn't get pod template defined in buffer %v, with error: %v", buffer.Name, err.Error())
+		logger.Error(err, "Couldn't get pod template defined in buffer", "buffer", buffer.Name)
 		return false
 	}
 	podTemplateGeneration := podTemplate.Generation

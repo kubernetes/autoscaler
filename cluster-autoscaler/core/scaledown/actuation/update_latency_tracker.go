@@ -92,13 +92,14 @@ func (u *UpdateLatencyTracker) Start(ctx context.Context) {
 }
 
 func (u *UpdateLatencyTracker) updateFinishTime(ctx context.Context) {
+	logger := klog.FromContext(ctx)
 	for nodeName := range u.startTimestamp {
 		if _, ok := u.finishTimestamp[nodeName]; ok {
 			continue
 		}
 		node, err := u.nodeLister.Get(nodeName)
 		if err != nil {
-			klog.Errorf("Error getting node: %v", err)
+			logger.Error(err, "Error getting node")
 			continue
 		}
 		if taints.HasToBeDeletedTaint(node) {
@@ -121,6 +122,7 @@ func (u *UpdateLatencyTracker) calculateLatency() time.Duration {
 }
 
 func (u *UpdateLatencyTracker) await(ctx context.Context) {
+	logger := klog.FromContext(ctx)
 	waitingForTaintingStartTime := time.Now()
 	for {
 		switch {
@@ -129,7 +131,8 @@ func (u *UpdateLatencyTracker) await(ctx context.Context) {
 			u.ResultChan <- latency
 			return
 		case time.Now().After(waitingForTaintingStartTime.Add(waitForTaintingTimeoutDuration)):
-			klog.Errorf("Timeout before tainting all nodes, latency measurement will be stale")
+			logger.Error(nil, "Timeout before tainting all nodes, latency measurement will be stale")
+
 			close(u.ResultChan)
 			return
 		default:

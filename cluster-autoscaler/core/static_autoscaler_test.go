@@ -2888,7 +2888,7 @@ func TestFilterOutYoungPods(t *testing.T) {
 			runTime:            now.Add(2 * time.Minute),
 			pods:               []*apiv1.Pod{p1, p3},
 			expectedPods:       []*apiv1.Pod(nil),
-			expectedError:      "Failed to set pod scale up delay for",
+			expectedError:      "Failed to set pod scale up delay through annotation",
 		},
 		{
 			name:               "annotation delay with error",

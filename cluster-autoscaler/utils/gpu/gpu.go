@@ -72,6 +72,7 @@ const (
 // NOTE: current implementation is GKE/GCE-specific
 func GetGpuInfoForMetrics(ctx context.Context, gpuConfig *cloudprovider.GpuConfig, availableGPUTypes map[string]struct{}, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuResource string, gpuType string) {
 	// There is no sign of GPU
+	logger := klog.FromContext(ctx)
 	if gpuConfig == nil {
 		return "", MetricsNoGPU
 	}
@@ -98,7 +99,7 @@ func GetGpuInfoForMetrics(ctx context.Context, gpuConfig *cloudprovider.GpuConfi
 	if nodeGroup != nil {
 		template, err := nodeGroup.TemplateNodeInfo()
 		if err != nil {
-			klog.Warningf("Failed to build template for getting GPU metrics for node %v: %v", node.Name, err)
+			logger.Info("Failed to build template for getting GPU metrics for node", "node", node.Name, "err", err)
 			return resourceName.String(), MetricsErrorGPU
 		}
 
@@ -107,7 +108,7 @@ func GetGpuInfoForMetrics(ctx context.Context, gpuConfig *cloudprovider.GpuConfi
 		}
 
 		// if template does not define GPUs we assume node will not have any even if it has gpu label
-		klog.Warningf("Template does not define GPUs even though node from its node group does; node=%v", node.Name)
+		logger.Info("Template does not define GPUs even though node from its node group does", "node", node.Name)
 		return resourceName.String(), MetricsUnexpectedLabelGPU
 	}
 

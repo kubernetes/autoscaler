@@ -76,6 +76,7 @@ func (f *TrackerFactory) NewMinQuotasTracker(ctx gocontext.Context, autoscalingC
 // If isMinEnforcement is true, it calculates headroom to the minimum limit (for scale-down).
 // Otherwise, it calculates headroom to the maximum limit (for scale-up).
 func (f *TrackerFactory) newQuotasTracker(ctx gocontext.Context, autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node, isMinEnforcement bool) (*Tracker, error) {
+	logger := klog.FromContext(ctx)
 	quotas, err := f.quotasProvider.Quotas(ctx)
 	if err != nil {
 		return nil, err
@@ -88,7 +89,7 @@ func (f *TrackerFactory) newQuotasTracker(ctx gocontext.Context, autoscalingCtx 
 	}
 	var quotaStatuses []*quotaStatus
 	for _, rq := range quotas {
-		klog.V(5).Infof("Quota %q status: limits: %v, usages: %v", rq.ID(), rq.Limits(), usages[rq.ID()])
+		logger.V(5).Info("Quota status: limits, usages", "rqId", rq.ID(), "limits", rq.Limits(), "usages", usages[rq.ID()])
 		limitsLeft := make(resourceList)
 		limits := rq.Limits()
 		for resourceType, limit := range limits {

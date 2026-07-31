@@ -133,8 +133,9 @@ func (o *checkCapacityProvClass) Provision(
 }
 
 func (o *checkCapacityProvClass) getProvisioningRequestsAndPods(ctx context.Context, unschedulablePods []*apiv1.Pod) ([]provreq.ProvisioningRequestWithPods, error) {
+	logger := klog.FromContext(ctx)
 	if !o.isBatchEnabled() {
-		klog.Info("Processing single provisioning request (non-batch)")
+		logger.Info("Processing single provisioning request (non-batch)")
 		prs := provreqclient.ProvisioningRequestsForPods(ctx, o.client, unschedulablePods)
 		prs = provreqclient.FilterOutProvisioningClass(ctx, prs, v1.ProvisioningClassCheckCapacity, o.autoscalingCtx.CheckCapacityProcessorInstance)
 		if len(prs) == 0 {
@@ -147,7 +148,7 @@ func (o *checkCapacityProvClass) getProvisioningRequestsAndPods(ctx context.Cont
 	if err != nil {
 		return nil, err
 	}
-	klog.Infof("Processing provisioning requests as batch of size %d", len(batch))
+	logger.Info("Processing provisioning requests as batch of size", "batchCount", len(batch))
 	return batch, nil
 }
 
@@ -156,10 +157,11 @@ func (o *checkCapacityProvClass) isBatchEnabled() bool {
 }
 
 func (o *checkCapacityProvClass) checkCapacityBatch(ctx context.Context, reqs []provreq.ProvisioningRequestWithPods, combinedStatus *combinedStatusSet, startTime time.Time) []*provreqwrapper.ProvisioningRequest {
+	logger := klog.FromContext(ctx)
 	updates := make([]*provreqwrapper.ProvisioningRequest, 0, len(reqs))
 	for _, req := range reqs {
 		if err := o.checkCapacity(ctx, req.Pods, req.PrWrapper, combinedStatus); err != nil {
-			klog.Errorf("error checking capacity %v", err)
+			logger.Error(err, "error checking capacity")
 			continue
 		}
 
@@ -167,7 +169,7 @@ func (o *checkCapacityProvClass) checkCapacityBatch(ctx context.Context, reqs []
 
 		// timebox checkCapacity when batch processing.
 		if o.isBatchEnabled() && time.Since(startTime) > o.checkCapacityProvisioningRequestBatchTimebox {
-			klog.Infof("Batch timebox exceeded, processed %d check capacity provisioning requests this iteration", len(updates))
+			logger.Info("Batch timebox exceeded, processed check capacity provisioning requests this iteration", "updatesCount", len(updates))
 			break
 		}
 	}
@@ -176,6 +178,7 @@ func (o *checkCapacityProvClass) checkCapacityBatch(ctx context.Context, reqs []
 
 // checkCapacity checks if there is capacity, updates combinedStatus and Conditions. If capacity is found, it commits to the clusterSnapshot.
 func (o *checkCapacityProvClass) checkCapacity(ctx context.Context, unschedulablePods []*apiv1.Pod, provReq *provreqwrapper.ProvisioningRequest, combinedStatus *combinedStatusSet) error {
+	logger := klog.FromContext(ctx)
 	o.autoscalingCtx.ClusterSnapshot.Fork()
 
 	// Case 1: Capacity fits.
@@ -199,7 +202,7 @@ func (o *checkCapacityProvClass) checkCapacity(ctx context.Context, unschedulabl
 		conditions.AddOrUpdateCondition(ctx, provReq, v1.Failed, metav1.ConditionTrue, conditions.CapacityIsNotFoundReason, "CA could not find requested capacity", metav1.Now())
 	} else {
 		if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry != "false" {
-			klog.Errorf("Ignoring Parameter %v with invalid value: %v in ProvisioningRequest: %v. Supported values are: \"true\", \"false\"", NoRetryParameterKey, noRetry, provReq.Name)
+			logger.Error(nil, "Ignoring Parameter with invalid value in ProvisioningRequest. Supported values are: \"true\", \"false\"", "NoRetryParameterKey", NoRetryParameterKey, "noRetry", noRetry, "provReq", provReq.Name)
 		}
 		conditions.AddOrUpdateCondition(ctx, provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
 	}

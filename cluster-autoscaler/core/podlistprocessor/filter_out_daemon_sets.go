@@ -38,14 +38,14 @@ func (p *filterOutDaemonSetPodListProcessor) Process(ctx context.Context, autosc
 	// for scheduling. To improve that we are filtering them here, as the CA won't be
 	// able to help them so there is no point to in passing them to scale-up logic.
 
+	logger := klog.FromContext(ctx)
 	var nonDaemonSetPods []*apiv1.Pod
 	for _, pod := range unschedulablePods {
 		if !podutils.IsDaemonSetPod(pod) {
 			nonDaemonSetPods = append(nonDaemonSetPods, pod)
 		}
 	}
-
-	klog.V(4).Infof("Filtered out %v daemon set pods, %v unschedulable pods left", len(unschedulablePods)-len(nonDaemonSetPods), len(nonDaemonSetPods))
+	logger.V(4).Info("Filtered out daemon set pods, unschedulable pods left", "unschedulablePodsCount", len(unschedulablePods)-len(nonDaemonSetPods), "nonDaemonSetPodsCount", len(nonDaemonSetPods))
 	return nonDaemonSetPods, nil
 }
 
