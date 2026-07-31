@@ -1,9 +1,0 @@
-# rancher server credentials
-url: https://rancher.example.org
-token: <rancher token>
-# name and namespace of the clusters.provisioning.cattle.io resource on the
-# rancher server
-clusterName: my-cluster
-clusterNamespace: fleet-default
-# optional, will be auto-discovered if not specified
-#clusterAPIVersion: v1alpha4

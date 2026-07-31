@@ -1,9 +1,0 @@
-approvers:
-#- happytreees
-#- optik-aper
-reviewers:
-#- happytreees
-#- optik-aper
-
-labels:
-- area/provider/vultr

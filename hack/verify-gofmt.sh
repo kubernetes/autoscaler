@@ -35,19 +35,11 @@ find_files() {
         -o -wholename '*/Godeps/*' \
         -o -wholename '*/vendor/*' \
         -o -wholename '*/zz_generated.deepcopy.go' \
-        -o -wholename './cluster-autoscaler/cloudprovider/magnum/gophercloud/*' \
-        -o -wholename './cluster-autoscaler/cloudprovider/digitalocean/godo/*' \
-        -o -wholename './cluster-autoscaler/cloudprovider/bizflycloud/gobizfly/*' \
-        -o -wholename './cluster-autoscaler/cloudprovider/externalgrpc/protos/*' \
-        -o -wholename './cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/*' \
-        -o -wholename './cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go/*' \
-        -o -wholename './cluster-autoscaler/cloudprovider/hetzner/hcloud-go/*' \
       \) -prune \
     \) -name '*.go'
 }
 
-DOCKER_IMAGE=`grep --color=none 'FROM golang' builder/Dockerfile | sed 's/FROM //'`
-GOFMT="docker run -v $(pwd):/code -w /code $DOCKER_IMAGE gofmt -s"
+GOFMT="gofmt -s"
 
 bad_files=$(find_files | xargs $GOFMT -l)
 if [[ -n "${bad_files}" ]]; then

@@ -1,0 +1,299 @@
+/*
+Copyright 2021 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package grpcplugin
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
+	v1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander/grpcplugin/protos"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander/mocks"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
+
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
+
+	_ "github.com/golang/mock/mockgen/model"
+)
+
+var (
+	nodes = []*v1.Node{
+		BuildTestNode("n1", 1000, 1000),
+		BuildTestNode("n2", 1000, 1000),
+		BuildTestNode("n3", 1000, 1000),
+		BuildTestNode("n4", 1000, 1000),
+	}
+
+	eoT2Micro = expander.Option{
+		Debug:     "t2.micro",
+		NodeGroup: test.NewTestNodeGroup("my-asg.t2.micro", 10, 1, 1, true, false, "t2.micro", nil, nil),
+	}
+	eoT2Large = expander.Option{
+		Debug:     "t2.large",
+		NodeGroup: test.NewTestNodeGroup("my-asg.t2.large", 10, 1, 1, true, false, "t2.large", nil, nil),
+	}
+	eoT3Large = expander.Option{
+		Debug:     "t3.large",
+		NodeGroup: test.NewTestNodeGroup("my-asg.t3.large", 10, 1, 1, true, false, "t3.large", nil, nil),
+	}
+	eoM44XLarge = expander.Option{
+		Debug:     "m4.4xlarge",
+		NodeGroup: test.NewTestNodeGroup("my-asg.m4.4xlarge", 10, 1, 1, true, false, "m4.4xlarge", nil, nil),
+	}
+	options = []expander.Option{eoT2Micro, eoT2Large, eoT3Large, eoM44XLarge}
+
+	grpcEoT2Micro = protos.Option{
+		NodeGroupId: eoT2Micro.NodeGroup.Id(),
+		NodeCount:   int32(eoT2Micro.NodeCount),
+		Debug:       eoT2Micro.Debug,
+	}
+	grpcEoT2Large = protos.Option{
+		NodeGroupId: eoT2Large.NodeGroup.Id(),
+		NodeCount:   int32(eoT2Large.NodeCount),
+		Debug:       eoT2Large.Debug,
+	}
+	grpcEoT3Large = protos.Option{
+		NodeGroupId: eoT3Large.NodeGroup.Id(),
+		NodeCount:   int32(eoT3Large.NodeCount),
+		Debug:       eoT3Large.Debug,
+	}
+	grpcEoM44XLarge = protos.Option{
+		NodeGroupId: eoM44XLarge.NodeGroup.Id(),
+		NodeCount:   int32(eoM44XLarge.NodeCount),
+		Debug:       eoM44XLarge.Debug,
+	}
+)
+
+func TestPopulateOptionsForGrpc(t *testing.T) {
+	testCases := []struct {
+		desc         string
+		opts         []expander.Option
+		expectedOpts []*protos.Option
+		expectedMap  map[string]expander.Option
+	}{
+		{
+			desc:         "empty options",
+			opts:         []expander.Option{},
+			expectedOpts: []*protos.Option{},
+			expectedMap:  map[string]expander.Option{},
+		},
+		{
+			desc:         "one option",
+			opts:         []expander.Option{eoT2Micro},
+			expectedOpts: []*protos.Option{&grpcEoT2Micro},
+			expectedMap:  map[string]expander.Option{eoT2Micro.NodeGroup.Id(): eoT2Micro},
+		},
+		{
+			desc:         "many options",
+			opts:         options,
+			expectedOpts: []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
+			expectedMap: map[string]expander.Option{
+				eoT2Micro.NodeGroup.Id():   eoT2Micro,
+				eoT2Large.NodeGroup.Id():   eoT2Large,
+				eoT3Large.NodeGroup.Id():   eoT3Large,
+				eoM44XLarge.NodeGroup.Id(): eoM44XLarge,
+			},
+		},
+	}
+	for _, tc := range testCases {
+		grpcOptionsSlice, nodeGroupIDOptionMap := populateOptionsForGRPC(tc.opts)
+		assert.Equal(t, tc.expectedOpts, grpcOptionsSlice)
+		assert.Equal(t, tc.expectedMap, nodeGroupIDOptionMap)
+	}
+}
+
+func makeFakeNodeInfos() map[string]*framework.NodeInfo {
+	nodeInfos := make(map[string]*framework.NodeInfo)
+	for i, opt := range options {
+		nodeInfo := framework.NewTestNodeInfo(nodes[i])
+		nodeInfos[opt.NodeGroup.Id()] = nodeInfo
+	}
+	return nodeInfos
+}
+
+func TestPopulateNodeInfoForGRPC(t *testing.T) {
+	nodeInfos := makeFakeNodeInfos()
+	grpcNodeBytesMap := populateNodeInfoForGRPC(nodeInfos)
+
+	expectedGrpcNodeBytesMap := make(map[string][]byte)
+	for i, opt := range options {
+		expectedGrpcNodeBytesMap[opt.NodeGroup.Id()], _ = nodes[i].Marshal()
+	}
+
+	assert.Equal(t, expectedGrpcNodeBytesMap, grpcNodeBytesMap)
+}
+
+func TestValidTransformAndSanitizeOptionsFromGRPC(t *testing.T) {
+	responseOptionsSlice := []*protos.Option{&grpcEoT2Micro, &grpcEoT3Large, &grpcEoM44XLarge}
+	nodeGroupIDOptionMap := map[string]expander.Option{
+		eoT2Micro.NodeGroup.Id():   eoT2Micro,
+		eoT2Large.NodeGroup.Id():   eoT2Large,
+		eoT3Large.NodeGroup.Id():   eoT3Large,
+		eoM44XLarge.NodeGroup.Id(): eoM44XLarge,
+	}
+
+	expectedOptions := []expander.Option{eoT2Micro, eoT3Large, eoM44XLarge}
+
+	ret := transformAndSanitizeOptionsFromGRPC(responseOptionsSlice, nodeGroupIDOptionMap)
+	assert.Equal(t, expectedOptions, ret)
+}
+
+func TestAnInvalidTransformAndSanitizeOptionsFromGRPC(t *testing.T) {
+	responseOptionsSlice := []*protos.Option{&grpcEoT2Micro, &grpcEoT3Large, &grpcEoM44XLarge}
+	nodeGroupIDOptionMap := map[string]expander.Option{
+		eoT2Micro.NodeGroup.Id(): eoT2Micro,
+		eoT2Large.NodeGroup.Id(): eoT2Large,
+		eoT3Large.NodeGroup.Id(): eoT3Large,
+	}
+
+	ret := transformAndSanitizeOptionsFromGRPC(responseOptionsSlice, nodeGroupIDOptionMap)
+	assert.Equal(t, []expander.Option{eoT2Micro, eoT3Large}, ret)
+}
+
+func TestBestOptionsValid(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mocks.NewMockExpanderClient(ctrl)
+	g := &grpcclientstrategy{mockClient}
+
+	nodeInfos := makeFakeNodeInfos()
+	grpcNodeBytesMap := make(map[string][]byte)
+	for i, opt := range options {
+		grpcNodeBytesMap[opt.NodeGroup.Id()], _ = nodes[i].Marshal()
+	}
+	expectedBestOptionsReq := &protos.BestOptionsRequest{
+		Options:      []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
+		NodeBytesMap: grpcNodeBytesMap,
+	}
+
+	mockClient.EXPECT().BestOptions(
+		gomock.Any(), gomock.Eq(expectedBestOptionsReq),
+	).Return(&protos.BestOptionsResponse{Options: []*protos.Option{&grpcEoT3Large}}, nil)
+
+	resp := g.BestOptions(options, nodeInfos)
+
+	assert.Equal(t, resp, []expander.Option{eoT3Large})
+}
+
+func TestBestOptionsEmpty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mocks.NewMockExpanderClient(ctrl)
+	g := grpcclientstrategy{mockClient}
+
+	testCases := []struct {
+		desc         string
+		mockResponse protos.BestOptionsResponse
+	}{
+		{
+			desc:         "empty bestOptions response",
+			mockResponse: protos.BestOptionsResponse{},
+		},
+		{
+			desc:         "empty bestOptions response, options nil",
+			mockResponse: protos.BestOptionsResponse{Options: nil},
+		},
+		{
+			desc:         "empty bestOptions response, empty options slice",
+			mockResponse: protos.BestOptionsResponse{Options: []*protos.Option{}},
+		},
+	}
+	for i := range testCases {
+		grpcNodeBytesMap := populateNodeInfoForGRPC(makeFakeNodeInfos())
+		assert.NotNil(t, grpcNodeBytesMap)
+		mockClient.EXPECT().BestOptions(
+			gomock.Any(), gomock.Eq(
+				&protos.BestOptionsRequest{
+					Options:      []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
+					NodeBytesMap: grpcNodeBytesMap,
+				})).Return(&testCases[i].mockResponse, nil)
+		resp := g.BestOptions(options, makeFakeNodeInfos())
+
+		assert.Nil(t, resp)
+	}
+}
+
+// All test cases should error, and no options should be filtered
+func TestBestOptionsErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mocks.NewMockExpanderClient(ctrl)
+	g := grpcclientstrategy{mockClient}
+
+	badProtosOption := protos.Option{
+		NodeGroupId: "badID",
+		NodeCount:   int32(eoM44XLarge.NodeCount),
+		Debug:       eoM44XLarge.Debug,
+	}
+
+	testCases := []struct {
+		desc         string
+		client       grpcclientstrategy
+		nodeInfo     map[string]*framework.NodeInfo
+		mockResponse protos.BestOptionsResponse
+		errResponse  error
+	}{
+		{
+			desc:         "Bad gRPC client config",
+			client:       grpcclientstrategy{nil},
+			nodeInfo:     makeFakeNodeInfos(),
+			mockResponse: protos.BestOptionsResponse{},
+			errResponse:  nil,
+		},
+		{
+			desc:         "gRPC error response",
+			client:       g,
+			nodeInfo:     makeFakeNodeInfos(),
+			mockResponse: protos.BestOptionsResponse{},
+			errResponse:  errors.New("timeout error"),
+		},
+		{
+			desc:         "bad bestOptions response, options invalid - nil",
+			client:       g,
+			nodeInfo:     makeFakeNodeInfos(),
+			mockResponse: protos.BestOptionsResponse{Options: []*protos.Option{&grpcEoT2Micro, nil, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge}},
+			errResponse:  nil,
+		},
+		{
+			desc:         "bad bestOptions response, options invalid - nonExistent nodeID",
+			client:       g,
+			nodeInfo:     makeFakeNodeInfos(),
+			mockResponse: protos.BestOptionsResponse{Options: []*protos.Option{&grpcEoT2Micro, &badProtosOption, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge}},
+			errResponse:  nil,
+		},
+	}
+	for i := range testCases {
+		grpcNodeBytesMap := populateNodeInfoForGRPC(testCases[i].nodeInfo)
+		assert.NotNil(t, grpcNodeBytesMap)
+		if testCases[i].client.grpcClient != nil {
+			mockClient.EXPECT().BestOptions(
+				gomock.Any(), gomock.Eq(
+					&protos.BestOptionsRequest{
+						Options:      []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
+						NodeBytesMap: grpcNodeBytesMap,
+					})).Return(&testCases[i].mockResponse, testCases[i].errResponse)
+		}
+		resp := testCases[i].client.BestOptions(options, testCases[i].nodeInfo)
+
+		assert.Equal(t, resp, options)
+	}
+}

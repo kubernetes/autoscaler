@@ -1,0 +1,45 @@
+/*
+Copyright 2021 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package customresources
+
+import (
+	apiv1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
+	drasnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/snapshot"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+)
+
+// CustomResourceTarget contains information about targeted custom resources
+type CustomResourceTarget struct {
+	// ResourceType is a type of targeted resources
+	ResourceType string
+	// ResourceCount is a count of targeted resources
+	ResourceCount int64
+}
+
+// CustomResourcesProcessor is interface defining handling custom resources
+type CustomResourcesProcessor interface {
+	// FilterOutNodesWithUnreadyResources removes nodes that should have a custom resource, but don't have
+	// it in allocatable from ready nodes list and updates their status to unready on all nodes list.
+	FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node)
+	// GetNodeResourceTargets returns mapping of resource names to their targets.
+	GetNodeResourceTargets(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError)
+	// CleanUp cleans up processor's internal structures.
+	CleanUp()
+}
