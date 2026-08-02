@@ -50,5 +50,5 @@ cat "${WORKSPACE}/autoscaling.k8s.io_verticalpodautoscalercheckpoints.yaml" > ${
 cat "${WORKSPACE}/autoscaling.k8s.io_verticalpodautoscalers.yaml" >> ${OUTPUT}
 
 # Copy the generated CRD to the charts directory
-{ echo "{{- if .Values.crds.enabled }}"; sed "/controller-gen.kubebuilder.io\/version:/a\    helm.sh/resource-policy: keep" ${OUTPUT}; echo "{{- end }}"; } > ${CHARTS_CRD_DIR}/vpa-v1-crd-gen.yaml
+{ echo "{{- if .Values.crds.enabled }}"; sed "/controller-gen.kubebuilder.io\/version:/a\\    {{- if .Values.crds.keep }}\n    helm.sh/resource-policy: keep\n    {{- end }}" ${OUTPUT}; echo "{{- end }}"; } > ${CHARTS_CRD_DIR}/vpa-v1-crd-gen.yaml
 echo "CRD copied to ${CHARTS_CRD_DIR}/vpa-v1-crd-gen.yaml"
