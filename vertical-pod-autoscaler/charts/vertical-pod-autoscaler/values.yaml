@@ -442,3 +442,7 @@ updater:
   # name of priorityclass for scheduling
   priorityClassName:
   # priorityClassName : high-priority
+
+# crds.enabled -- Whether to install and manage the VPA CRDs. Disable if you manage CRDs separately.
+crds:
+  enabled: true
