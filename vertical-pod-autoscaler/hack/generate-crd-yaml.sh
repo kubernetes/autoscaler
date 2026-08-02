@@ -22,7 +22,7 @@ REPOSITORY_ROOT=$(realpath $(dirname ${BASH_SOURCE})/..)
 CRD_OPTS=crd:allowDangerousTypes=true
 APIS_PATH=${REPOSITORY_ROOT}/pkg/apis
 OUTPUT=${REPOSITORY_ROOT}/deploy/vpa-v1-crd-gen.yaml
-CHARTS_CRD_DIR=${REPOSITORY_ROOT}/charts/vertical-pod-autoscaler/crds
+CHARTS_CRD_DIR=${REPOSITORY_ROOT}/charts/vertical-pod-autoscaler/templates/crds
 CONTROLLER_GEN_VERSION=v0.21.0
 WORKSPACE=$(mktemp -d)
 
@@ -50,5 +50,5 @@ cat "${WORKSPACE}/autoscaling.k8s.io_verticalpodautoscalercheckpoints.yaml" > ${
 cat "${WORKSPACE}/autoscaling.k8s.io_verticalpodautoscalers.yaml" >> ${OUTPUT}
 
 # Copy the generated CRD to the charts directory
-cp ${OUTPUT} ${CHARTS_CRD_DIR}/vpa-v1-crd-gen.yaml
+{ echo "{{- if .Values.crds.enabled }}"; sed "/controller-gen.kubebuilder.io\/version:/a\    helm.sh/resource-policy: keep" ${OUTPUT}; echo "{{- end }}"; } > ${CHARTS_CRD_DIR}/vpa-v1-crd-gen.yaml
 echo "CRD copied to ${CHARTS_CRD_DIR}/vpa-v1-crd-gen.yaml"
