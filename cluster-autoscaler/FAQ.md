@@ -266,7 +266,7 @@ It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/archi
 
 ### How does Cluster Autoscaler treat nodes with status/startup/ignore taints?
 
-### Startup taints
+#### Startup taints
 
 Startup taints are meant to be used when there is an operation that has to complete before any pods can run on the node, e.g. drivers installation.
 
@@ -282,7 +282,7 @@ Startup taints are defined as:
 * all taints with prefixes specified using `--startup-taint-prefix` flag,
 * all taints defined using `--startup-taint` flag.
 
-### Status taints
+#### Status taints
 
 Status taints are meant to be used when a given node should not be used to run pods for the time being.
 
@@ -295,7 +295,7 @@ Status taints are defined as:
 * all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--status-taint` flag.
 
-### Ignore taints
+#### Ignore taints
 
 Ignore taints are now deprecated and treated as startup taints.
 
@@ -303,6 +303,10 @@ Ignore taints are defined as:
 
 * all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--ignore-taint` flag.
+
+### How does Cluster Autoscaler handle Dynamic Resource Allocation (DRA)?
+
+Cluster Autoscaler support for DRA is documented [here](docs/dra_support.md).
 
 ****************
 

@@ -22,8 +22,8 @@ import (
 	"regexp"
 	"strings"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // GetInstanceTypeStatically uses static list of vmss generated at azure_instance_types.go to fetch vmss instance information.

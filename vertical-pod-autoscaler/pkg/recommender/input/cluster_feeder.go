@@ -283,11 +283,11 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 	klog.V(3).InfoS("Initializing VPA from checkpoints")
 	feeder.LoadVPAs(ctx)
 
-	klog.V(3).InfoS("Fetching VPA checkpoints")
 	checkpointList, err := feeder.vpaCheckpointLister.List(labels.Everything())
 	if err != nil {
 		klog.ErrorS(err, "Cannot list VPA checkpoints")
 	}
+	klog.V(3).InfoS("Fetching VPA checkpoints", "count", len(checkpointList))
 
 	namespaces := make(map[string]bool)
 	for _, v := range feeder.clusterState.VPAs() {

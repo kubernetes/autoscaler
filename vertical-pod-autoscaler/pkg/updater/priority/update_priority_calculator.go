@@ -17,7 +17,7 @@ limitations under the License.
 package priority
 
 import (
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -160,7 +160,15 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time, inf
 
 // GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
 func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmission) []*corev1.Pod {
-	sort.Sort(byPriorityDesc(calc.pods))
+	slices.SortFunc(calc.pods, func(a, b prioritizedPod) int {
+		if b.priority.Less(a.priority) {
+			return -1
+		}
+		if a.priority.Less(b.priority) {
+			return 1
+		}
+		return 0
+	})
 
 	result := []*corev1.Pod{}
 	for _, podPrio := range calc.pods {
@@ -291,21 +299,6 @@ type PodPriority struct {
 	ScaleUp bool
 	// Relative difference between the total requested and total recommended resources.
 	ResourceDiff float64
-}
-
-type byPriorityDesc []prioritizedPod
-
-func (list byPriorityDesc) Len() int {
-	return len(list)
-}
-func (list byPriorityDesc) Swap(i, j int) {
-	list[i], list[j] = list[j], list[i]
-}
-
-// Less implements reverse ordering by priority (highest priority first).
-// This means we return true if priority at index j is lower than at index i.
-func (list byPriorityDesc) Less(i, j int) bool {
-	return list[j].priority.Less(list[i].priority)
 }
 
 // Less returns true if p is lower than other.

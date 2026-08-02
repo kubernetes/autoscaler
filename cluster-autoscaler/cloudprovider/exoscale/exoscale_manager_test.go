@@ -19,8 +19,8 @@ package exoscale
 import (
 	"os"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	egoscale "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func (ts *cloudProviderTestSuite) TestNewManager() {

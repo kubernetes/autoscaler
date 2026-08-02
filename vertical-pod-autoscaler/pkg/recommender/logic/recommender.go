@@ -17,7 +17,7 @@ limitations under the License.
 package logic
 
 import (
-	"sort"
+	"slices"
 	"time"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -199,7 +199,7 @@ func MapToListOfRecommendedContainerResources(resources RecommendedPodResources,
 	for containerName := range resources {
 		containerNames = append(containerNames, containerName)
 	}
-	sort.Strings(containerNames)
+	slices.Sort(containerNames)
 	// Create the list of recommendations for each container.
 	for _, name := range containerNames {
 		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{

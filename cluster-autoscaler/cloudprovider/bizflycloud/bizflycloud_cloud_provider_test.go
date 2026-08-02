@@ -25,7 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/bizflycloud/gobizfly"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func testCloudProvider(t *testing.T, client *bizflyClientMock) *bizflycloudCloudProvider {
@@ -94,7 +94,7 @@ func TestBizflyCloudProvider_Name(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		name := provider.Name()
-		assert.Equal(t, cloudprovider.BizflyCloudProviderName, name, "provider name doesn't match")
+		assert.Equal(t, ProviderName, name, "provider name doesn't match")
 	})
 }
 

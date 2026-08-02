@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func defaultDOClientMock(clusterID string) *doClientMock {
@@ -121,7 +121,7 @@ func TestDigitalOceanCloudProvider_Name(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		name := provider.Name()
-		assert.Equal(t, cloudprovider.DigitalOceanProviderName, name, "provider name doesn't match")
+		assert.Equal(t, ProviderName, name, "provider name doesn't match")
 	})
 }
 

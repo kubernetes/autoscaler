@@ -523,16 +523,13 @@ func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restri
 		switch decision {
 		case utils.InPlaceApproved:
 			return true
-		case utils.InPlaceInfeasible:
-			// For InPlace mode, include infeasible pods to retry (no backoff for alpha)
+		case utils.InPlaceInfeasible, utils.InPlaceDeferred:
+			// For InPlace mode, include infeasible/deferred pods to retry (no backoff for alpha)
+			// or to check if recommendation changed and apply a new patch while a previous update is in progress
 			return updateMode == vpa_types.UpdateModeInPlace
 		case utils.InPlaceEvict:
 			// For InPlaceOrRecreate, include so they can be redirected to eviction in the loop
 			return updateMode == vpa_types.UpdateModeInPlaceOrRecreate
-		case utils.InPlaceDeferred:
-			// For InPlace mode, include deferred pods so we can check if recommendation
-			// changed and apply a new patch while a previous update is in progress
-			return updateMode == vpa_types.UpdateModeInPlace
 		case utils.InPlaceInfeasibleCached:
 			// Cached infeasibility means we've already determined this pod cannot be
 			// updated in-place and cached the result to avoid redundant checks

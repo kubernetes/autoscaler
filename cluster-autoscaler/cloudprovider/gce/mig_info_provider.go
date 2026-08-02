@@ -19,7 +19,6 @@ package gce
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"path"
 	"regexp"
 	"strings"
@@ -27,10 +26,10 @@ import (
 	"time"
 
 	gce "google.golang.org/api/compute/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 )
 
 // MigInfoProvider allows obtaining information about MIGs
@@ -565,16 +564,9 @@ func (c *cachingMigInfoProvider) setMigInfoCache(migRef GceRef, mig *gce.Instanc
 	c.cache.SetListManagedInstancesResults(migRef, mig.ListManagedInstancesResults)
 	c.cache.SetMigInstancesStateCount(migRef, createInstancesStateCount(mig.TargetSize, mig.CurrentActions))
 
-	templateUrl, err := url.Parse(mig.InstanceTemplate)
-	if err == nil {
-		_, templateName := path.Split(templateUrl.EscapedPath())
-		regional, err := IsInstanceTemplateRegional(templateUrl.String())
-		if err != nil {
-			klog.Errorf("Error parsing instance template url: %v; err=%v ", templateUrl.String(), err)
-		} else {
-			c.cache.SetMigInstanceTemplateName(migRef, InstanceTemplateName{templateName, regional})
-		}
-	}
+	_, templateName := path.Split(mig.InstanceTemplate)
+	regional := IsInstanceTemplateRegional(mig.InstanceTemplate)
+	c.cache.SetMigInstanceTemplateName(migRef, InstanceTemplateName{templateName, regional})
 }
 
 func (c *cachingMigInfoProvider) GetMigIsStable(migRef GceRef) (bool, error) {

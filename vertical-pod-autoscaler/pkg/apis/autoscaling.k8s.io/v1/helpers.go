@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1
 
-import "sort"
+import "slices"
 
 // GetUpdateModes returns all UpdateModes
 func GetUpdateModes() map[UpdateMode]any {
@@ -40,7 +40,7 @@ func GetUpdateModesList() []string {
 			result = append(result, string(mode))
 		}
 	}
-	sort.Strings(result)
+	slices.Sort(result)
 	return result
 }
 
@@ -59,6 +59,6 @@ func GetPossibleScalingModes() []string {
 	for mode := range modes {
 		result = append(result, string(mode))
 	}
-	sort.Strings(result)
+	slices.Sort(result)
 	return result
 }

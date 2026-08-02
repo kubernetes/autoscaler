@@ -14,9 +14,9 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
@@ -267,6 +267,89 @@ func TestGetNodePoolAvailabilityDomain(t *testing.T) {
 				t.Errorf("got %q ; wanted %q", ad, tc.result)
 			}
 		})
+	}
+}
+
+func TestGetNodePoolFaultDomain(t *testing.T) {
+	testCases := map[string]struct {
+		np     *oke.NodePool
+		result string
+	}{
+		"single fault domain": {
+			np: &oke.NodePool{
+				Id: common.String("id"),
+				NodeConfigDetails: &oke.NodePoolNodeConfigDetails{
+					PlacementConfigs: []oke.NodePoolPlacementConfigDetails{
+						{FaultDomains: []string{"FAULT-DOMAIN-1"}},
+					},
+				},
+			},
+			result: "FAULT-DOMAIN-1",
+		},
+		"multiple fault domains": {
+			np: &oke.NodePool{
+				Id: common.String("id"),
+				NodeConfigDetails: &oke.NodePoolNodeConfigDetails{
+					PlacementConfigs: []oke.NodePoolPlacementConfigDetails{
+						{FaultDomains: []string{"FAULT-DOMAIN-2", "FAULT-DOMAIN-3"}},
+					},
+				},
+			},
+			result: "FAULT-DOMAIN-2",
+		},
+		"no fault domain": {
+			np: &oke.NodePool{
+				Id: common.String("id"),
+				NodeConfigDetails: &oke.NodePoolNodeConfigDetails{
+					PlacementConfigs: []oke.NodePoolPlacementConfigDetails{{}},
+				},
+			},
+		},
+		"no placement config": {
+			np: &oke.NodePool{
+				Id:                common.String("id"),
+				NodeConfigDetails: &oke.NodePoolNodeConfigDetails{},
+			},
+		},
+		"nil node pool": {},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			if result := getNodePoolFaultDomain(tc.np); result != tc.result {
+				t.Errorf("got %q ; wanted %q", result, tc.result)
+			}
+		})
+	}
+}
+
+func TestBuildNodeFromTemplateIncludesFaultDomain(t *testing.T) {
+	nodePool := &oke.NodePool{
+		Id:        common.String("ocid1.nodepool.oc1.yul.test"),
+		NodeShape: common.String("VM.Standard.E4.Flex"),
+		NodeShapeConfig: &oke.NodeShapeConfig{
+			Ocpus:       common.Float32(1),
+			MemoryInGBs: common.Float32(16),
+		},
+		NodeConfigDetails: &oke.NodePoolNodeConfigDetails{
+			PlacementConfigs: []oke.NodePoolPlacementConfigDetails{{
+				AvailabilityDomain: common.String("hash:CA-MONTREAL-1-AD-1"),
+				FaultDomains:       []string{"FAULT-DOMAIN-1"},
+			}},
+		},
+	}
+	manager := &ociManagerImpl{
+		ociShapeGetter:         ocicommon.CreateShapeGetter(nil),
+		ociTagsGetter:          ocicommon.CreateTagsGetter(),
+		registeredTaintsGetter: CreateRegisteredTaintsGetter(),
+	}
+
+	node, err := manager.buildNodeFromTemplate(nodePool)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result := node.Labels[ociFaultDomainLabel]; result != "FAULT-DOMAIN-1" {
+		t.Errorf("got fault domain label %q ; wanted %q", result, "FAULT-DOMAIN-1")
 	}
 }
 

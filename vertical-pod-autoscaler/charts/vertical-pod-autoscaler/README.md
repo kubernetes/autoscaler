@@ -4,9 +4,9 @@ WARNING: This chart is currently under development and is not ready for producti
 
 Automatically adjust resources for your workloads
 
-![Version: 0.10.0](https://img.shields.io/badge/Version-0.10.0-informational?style=flat-square)
+![Version: 0.11.0](https://img.shields.io/badge/Version-0.11.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
-![AppVersion: 1.7.0](https://img.shields.io/badge/AppVersion-1.7.0-informational?style=flat-square)
+![AppVersion: 1.7.1](https://img.shields.io/badge/AppVersion-1.7.1-informational?style=flat-square)
 
 ## Introduction
 The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resource requests of pods to match their actual resource utilization.
@@ -77,8 +77,8 @@ If you need to update the CRDs to a newer version, please use `kubectl` to upgra
 ```bash
 kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-<appVersion>/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
 
-# Eg. version v1.7.0
-kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-1.7.0/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
+# Eg. version v1.7.1
+kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-1.7.1/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
 ```
 
 ## Migration Guides

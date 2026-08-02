@@ -26,11 +26,11 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho/utho-go"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 const (
@@ -167,7 +167,7 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		if _, err := n.client.DeleteNode(ctx, param); err != nil {
 			klog.Errorf("DeleteNodes: API error for cluster %d pool %s node %s: %v",
 				n.clusterID, n.id, nodeID, err)
-			return fmt.Errorf("deleting node failed for cluster %q node pool %q node %q: %w",
+			return fmt.Errorf("deleting node failed for cluster %d node pool %q node %q: %w",
 				n.clusterID, n.id, nodeID, err)
 		}
 		klog.V(4).Infof("DeleteNodes: provider confirmed deletion of node %s in pool %s", nodeID, n.id)

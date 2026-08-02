@@ -22,8 +22,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode/linodego"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func TestCloudProvider_newLinodeCloudProvider(t *testing.T) {
@@ -173,7 +173,7 @@ lke-cluster-id=456456
 		manager:         m,
 		resourceLimiter: resourceLimiter,
 	}
-	assert.Equal(t, cloudprovider.LinodeProviderName, lcp.Name())
+	assert.Equal(t, ProviderName, lcp.Name())
 	_, err := lcp.GetAvailableMachineTypes()
 	assert.Error(t, err)
 	_, err = lcp.NewNodeGroup("", nil, nil, nil, nil)

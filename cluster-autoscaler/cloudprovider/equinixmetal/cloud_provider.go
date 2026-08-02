@@ -28,12 +28,20 @@ import (
 	"k8s.io/client-go/informers"
 	klog "k8s.io/klog/v2"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
+)
+
+const (
+	// EquinixMetalProviderName is the cloud provider name for this provider.
+	EquinixMetalProviderName = "equinixmetal"
+	// PacketProviderName is the cloud provider name for this provider.
+	// This is a legacy name.
+	PacketProviderName = "packet"
 )
 
 const (
@@ -60,30 +68,30 @@ func init() {
 	build := func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildCloudProvider(opts, do, rl)
 	}
-	builder.RegisterCloudProvider(cloudprovider.EquinixMetalProviderName, build)
-	builder.RegisterCloudProvider(cloudprovider.PacketProviderName, build)
-	builder.SetDefaultCloudProvider(cloudprovider.EquinixMetalProviderName)
+	builder.RegisterCloudProvider(EquinixMetalProviderName, build)
+	builder.RegisterCloudProvider(PacketProviderName, build)
+	builder.SetDefaultCloudProvider(EquinixMetalProviderName)
 }
 
 // equinixMetalCloudProvider implements CloudProvider interface from cluster-autoscaler/cloudprovider module.
 type equinixMetalCloudProvider struct {
 	equinixMetalManager equinixMetalManager
 	resourceLimiter     *cloudprovider.ResourceLimiter
-	nodeGroups          []equinixMetalNodeGroup
+	nodeGroups          []*equinixMetalNodeGroup
 }
 
 func buildEquinixMetalCloudProvider(metalManager equinixMetalManager, resourceLimiter *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
 	pcp := &equinixMetalCloudProvider{
 		equinixMetalManager: metalManager,
 		resourceLimiter:     resourceLimiter,
-		nodeGroups:          []equinixMetalNodeGroup{},
+		nodeGroups:          []*equinixMetalNodeGroup{},
 	}
 	return pcp, nil
 }
 
 // Name returns the name of the cloud provider.
 func (pcp *equinixMetalCloudProvider) Name() string {
-	return cloudprovider.EquinixMetalProviderName
+	return EquinixMetalProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
@@ -106,13 +114,13 @@ func (pcp *equinixMetalCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudp
 func (pcp *equinixMetalCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, len(pcp.nodeGroups))
 	for i := range pcp.nodeGroups {
-		groups[i] = &pcp.nodeGroups[i]
+		groups[i] = pcp.nodeGroups[i]
 	}
 	return groups
 }
 
 // AddNodeGroup appends a node group to the list of node groups managed by this cloud provider.
-func (pcp *equinixMetalCloudProvider) AddNodeGroup(group equinixMetalNodeGroup) {
+func (pcp *equinixMetalCloudProvider) AddNodeGroup(group *equinixMetalNodeGroup) {
 	pcp.nodeGroups = append(pcp.nodeGroups, group)
 }
 
@@ -138,9 +146,9 @@ func (pcp *equinixMetalCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudp
 	if err != nil {
 		return nil, err
 	}
-	for i, nodeGroup := range pcp.nodeGroups {
+	for _, nodeGroup := range pcp.nodeGroups {
 		if nodeGroup.Id() == nodeGroupId {
-			return &(pcp.nodeGroups[i]), nil
+			return nodeGroup, nil
 		}
 	}
 	return nil, fmt.Errorf("Could not find group for node: %s", node.Spec.ProviderID)
@@ -245,7 +253,7 @@ func BuildCloudProvider(opts *coreoptions.AutoscalerOptions, do cloudprovider.No
 		if err != nil {
 			klog.Fatalf("Could not set current nodes in node group: %v", err)
 		}
-		provider.(*equinixMetalCloudProvider).AddNodeGroup(ng)
+		provider.(*equinixMetalCloudProvider).AddNodeGroup(&ng)
 	}
 
 	return provider

@@ -257,6 +257,7 @@ func TestValidateVPA(t *testing.T) {
 	controlledValuesRequestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
 	inPlaceOrRecreateUpdateMode := vpa_types.UpdateModeInPlaceOrRecreate
 	inPlaceUpdateMode := vpa_types.UpdateModeInPlace
+	autoUpdateMode := vpa_types.UpdateModeAuto //nolint:staticcheck
 	badCPUBoostFactor := int32(0)
 	validCPUBoostFactor := int32(2)
 	badCPUBoostQuantity := resource.MustParse("187500u")
@@ -323,6 +324,21 @@ func TestValidateVPA(t *testing.T) {
 					},
 				},
 			},
+		},
+		{
+			name: "deprecated Auto update mode set",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &autoUpdateMode,
+					},
+				},
+			},
+			expectWarnings: []string{fmt.Sprintf("spec.updatePolicy: %q mode is deprecated and will be removed in a future API version. Use explicit update modes like: %s. See https://github.com/kubernetes/autoscaler/issues/8424 for more details.", autoUpdateMode, vpa_types.GetUpdateModesList())},
 		},
 		{
 			name: "zero minReplicas",

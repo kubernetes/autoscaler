@@ -25,8 +25,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho/utho-go"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // Helper function to set up mock ListNodePools
@@ -137,7 +137,7 @@ func TestUthoCloudProvider_Name_ReturnsCorrectName(t *testing.T) {
 	require.NoError(t, err)
 
 	p := newUthoCloudProvider(manager, &cloudprovider.ResourceLimiter{})
-	assert.Equal(t, cloudprovider.UthoProviderName, p.Name(), "provider name doesn't match")
+	assert.Equal(t, ProviderName, p.Name(), "provider name doesn't match")
 }
 
 func TestUthoCloudProvider_Refresh_EmptyNodePools(t *testing.T) {

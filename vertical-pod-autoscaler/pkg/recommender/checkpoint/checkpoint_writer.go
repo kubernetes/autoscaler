@@ -19,7 +19,7 @@ package checkpoint
 import (
 	"context"
 	"fmt"
-	"sort"
+	"slices"
 	"sync"
 	"time"
 
@@ -66,8 +66,8 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 		}
 		vpas = append(vpas, vpa)
 	}
-	sort.Slice(vpas, func(i, j int) bool {
-		return vpas[i].CheckpointWritten.Before(vpas[j].CheckpointWritten)
+	slices.SortFunc(vpas, func(a, b *model.Vpa) int {
+		return a.CheckpointWritten.Compare(b.CheckpointWritten)
 	})
 	return vpas
 }

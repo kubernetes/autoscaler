@@ -26,10 +26,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/k8ssdk"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/k8ssdk/mocks"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	//schedulerframework "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 

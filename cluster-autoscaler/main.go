@@ -35,17 +35,17 @@ import (
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	cqv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
-	autoscalerbuilder "k8s.io/autoscaler/cluster-autoscaler/builder"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/config/flags"
-	"k8s.io/autoscaler/cluster-autoscaler/core"
-	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/loop"
-	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/client-go/informers"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	autoscalerbuilder "sigs.k8s.io/cluster-autoscaler/pkg/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/flags"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core"
+	"sigs.k8s.io/cluster-autoscaler/pkg/debuggingsnapshot"
+	"sigs.k8s.io/cluster-autoscaler/pkg/loop"
+	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
+	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 
 	// Cloud providers must be explicitly imported to be registered in the builder.
 	// The registration pattern allows for customizing the set of supported cloud providers
@@ -143,22 +143,24 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 			for {
 				select {
 				case <-ctx.Done():
-					// TODO: handle graceful shutdown with context
+					// Context is also passed down to RunOnce, so a long-running
+					// iteration in progress will be interrupted and cleaned up there.
 					return nil
 				default:
 					trigger.Wait(previousRun)
 					previousRun, lastRun = lastRun, time.Now()
-					loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, lastRun)
 				}
 			}
 		} else {
 			for {
 				select {
 				case <-ctx.Done():
-					// TODO: handle graceful shutdown with context
+					// Context is also passed down to RunOnce, so a long-running
+					// iteration in progress will be interrupted and cleaned up there.
 					return nil
 				case <-time.After(autoscalingOpts.ScanInterval):
-					loop.RunAutoscalerOnce(autoscaler, healthCheck, time.Now())
+					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, time.Now())
 				}
 			}
 		}

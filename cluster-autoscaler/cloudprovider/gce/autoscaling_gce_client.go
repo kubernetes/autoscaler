@@ -28,9 +28,9 @@ import (
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/klogx"
 
 	gce "google.golang.org/api/compute/v1"
 	klog "k8s.io/klog/v2"

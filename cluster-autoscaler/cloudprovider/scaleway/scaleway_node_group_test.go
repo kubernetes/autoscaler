@@ -24,9 +24,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/scaleway/scalewaygo"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 )
 
 func TestNodeGroup_MaxSize(t *testing.T) {
@@ -652,10 +652,11 @@ func TestFromScwStatus(t *testing.T) {
 			errorCode:    "deleted",
 		},
 		{
-			name:         "creation_error",
-			status:       scalewaygo.NodeStatusCreationError,
-			hasErrorInfo: true,
-			errorCode:    "creation_error",
+			name:          "creation_error",
+			status:        scalewaygo.NodeStatusCreationError,
+			expectedState: cloudprovider.InstanceCreating,
+			hasErrorInfo:  true,
+			errorCode:     "creation_error",
 		},
 		{
 			name:          "upgrading",
