@@ -279,25 +279,34 @@ func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.Vertica
 	return nil
 }
 
-// backfillCheckpoint loads any persisted checkpoint for a VPA the first time
-// this recommender instance starts tracking it. This covers both the normal
-// startup path and a VPA whose .spec.recommenders is changed at runtime to
-// select this (already running) recommender: without this, such a VPA would
-// never get its checkpoint history back, since checkpoints were otherwise
-// only read once, at startup. See kubernetes/autoscaler#9241.
-func (feeder *clusterStateFeeder) backfillCheckpoint(vpaID model.VpaID) {
-	checkpoints, err := feeder.vpaCheckpointLister.VerticalPodAutoscalerCheckpoints(vpaID.Namespace).List(labels.Everything())
-	if err != nil {
-		klog.ErrorS(err, "Cannot list VPA checkpoints", "namespace", vpaID.Namespace)
-		return
+// backfillCheckpoints loads any persisted checkpoints for VPAs the first time
+// this recommender instance starts tracking them. This covers the normal
+// startup path, a VPA whose .spec.recommenders is changed at runtime to
+// select this (already running) recommender, and a VPA whose pod selector
+// change caused AddOrUpdateVpa to recreate its in-memory object: in every
+// case the fresh Vpa object would otherwise keep an empty
+// ContainersInitialAggregateState, since checkpoints were previously only
+// read once, at startup. See kubernetes/autoscaler#9241.
+func (feeder *clusterStateFeeder) backfillCheckpoints(vpaIDs map[model.VpaID]bool) {
+	namespaces := make(map[string]bool)
+	for vpaID := range vpaIDs {
+		namespaces[vpaID.Namespace] = true
 	}
-	for _, checkpoint := range checkpoints {
-		if checkpoint.Spec.VPAObjectName != vpaID.VpaName {
+	for namespace := range namespaces {
+		checkpoints, err := feeder.vpaCheckpointLister.VerticalPodAutoscalerCheckpoints(namespace).List(labels.Everything())
+		if err != nil {
+			klog.ErrorS(err, "Cannot list VPA checkpoints", "namespace", namespace)
 			continue
 		}
-		klog.V(3).InfoS("Loading checkpoint for VPA", "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "checkpoint", checkpoint.Name, "container", checkpoint.Spec.ContainerName)
-		if err := feeder.setVpaCheckpoint(checkpoint); err != nil {
-			klog.ErrorS(err, "Error while loading checkpoint", "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "checkpoint", checkpoint.Name)
+		for _, checkpoint := range checkpoints {
+			vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
+			if !vpaIDs[vpaID] {
+				continue
+			}
+			klog.V(3).InfoS("Loading checkpoint for VPA", "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "checkpoint", checkpoint.Name, "container", checkpoint.Spec.ContainerName)
+			if err := feeder.setVpaCheckpoint(checkpoint); err != nil {
+				klog.ErrorS(err, "Error while loading checkpoint", "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "checkpoint", checkpoint.Name)
+			}
 		}
 	}
 }
@@ -439,12 +448,18 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 	klog.V(3).InfoS("Fetching VPAs", "count", len(vpaCRDs))
 	// Add or update existing VPAs in the model.
 	vpaKeys := make(map[model.VpaID]bool)
+	// newVpaIDs collects VPAs whose in-memory object is new this cycle - either
+	// never tracked before, or recreated by AddOrUpdateVpa because their pod
+	// selector changed. Detecting this by object identity (not just key
+	// presence) matters: a recreated VPA keeps the same VpaID but loses its
+	// previously loaded ContainersInitialAggregateState.
+	newVpaIDs := make(map[model.VpaID]bool)
 	for _, vpaCRD := range vpaCRDs {
 		vpaID := model.VpaID{
 			Namespace: vpaCRD.Namespace,
 			VpaName:   vpaCRD.Name,
 		}
-		_, alreadyTracked := feeder.clusterState.VPAs()[vpaID]
+		previousVpa := feeder.clusterState.VPAs()[vpaID]
 
 		selector, conditions := feeder.getSelector(ctx, vpaCRD)
 		klog.V(4).InfoS("Using selector", "selector", selector.String(), "vpa", klog.KObj(vpaCRD))
@@ -461,10 +476,13 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 				}
 			}
 
-			if !alreadyTracked {
-				feeder.backfillCheckpoint(vpaID)
+			if feeder.clusterState.VPAs()[vpaID] != previousVpa {
+				newVpaIDs[vpaID] = true
 			}
 		}
+	}
+	if len(newVpaIDs) > 0 {
+		feeder.backfillCheckpoints(newVpaIDs)
 	}
 	// Delete non-existent VPAs from the model.
 	for vpaID := range feeder.clusterState.VPAs() {
