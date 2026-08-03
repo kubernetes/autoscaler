@@ -522,6 +522,19 @@ func TestAddOrUpdateVpaPreservesInitialStateOnRealSelectorChange(t *testing.T) {
 		"ContainersInitialAggregateState must survive empty→real selector recreate")
 }
 
+// TestIsEmptySelector verifies isEmptySelector only matches labels.Nothing(),
+// not labels.Everything() — both stringify to "" but must be told apart
+// (see PR #10095 review discussion).
+func TestIsEmptySelector(t *testing.T) {
+	assert.True(t, isEmptySelector(nil))
+	assert.True(t, isEmptySelector(labels.Nothing()))
+	assert.False(t, isEmptySelector(labels.Everything()))
+
+	realSelector, err := labels.Parse(testSelectorStr)
+	assert.NoError(t, err)
+	assert.False(t, isEmptySelector(realSelector))
+}
+
 // Test setting ResourcePolicy and UpdatePolicy on adding or updating VPA object
 func TestAddOrUpdateVPAPolicies(t *testing.T) {
 	testVpaBuilder := test.VerticalPodAutoscaler().WithName(testVpaID.VpaName).

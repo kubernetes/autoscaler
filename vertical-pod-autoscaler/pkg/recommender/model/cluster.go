@@ -347,12 +347,12 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	return nil
 }
 
-// isEmptySelector reports whether s is nil or labels.Nothing()-like (empty
-// string form). Both Nothing and Everything stringify to "" in some cases;
-// callers only pass Nothing on target resolution failure, which is the case
-// we care about for #9891.
+// isEmptySelector reports whether s is the labels.Nothing() sentinel used to
+// signal a target resolution failure (see #9891). Both Nothing and
+// Everything stringify to "", so Empty() (true only for Everything) is
+// checked too, to avoid mistaking an all-matching selector for a failure.
 func isEmptySelector(s labels.Selector) bool {
-	return s == nil || s.String() == ""
+	return s == nil || (s.String() == "" && !s.Empty())
 }
 
 // DeleteVpa removes a VPA with the given ID from the clusterState.
