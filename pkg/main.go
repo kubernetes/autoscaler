@@ -199,8 +199,6 @@ func mustBuildAutoscaler(ctx context.Context, opts config.AutoscalingOptions, de
 	return autoscaler, trigger
 }
 
-// Comment to trigger a benchmark. 
-
 func main() {
 	klog.InitFlags(nil)
 
