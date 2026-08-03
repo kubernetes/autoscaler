@@ -528,7 +528,7 @@ func TestNoUnboundedGrowthOnRepeatedRelabeling(t *testing.T) {
 	addTestContainer(t, cluster)
 
 	const relabelCount = 5000
-	for i := 0; i < relabelCount; i++ {
+	for i := range relabelCount {
 		churningLabels := labels.Set{"pod-template-hash": fmt.Sprintf("rev-%d", i)}
 		cluster.AddOrUpdatePod(testPodID, churningLabels, corev1.PodRunning)
 	}
