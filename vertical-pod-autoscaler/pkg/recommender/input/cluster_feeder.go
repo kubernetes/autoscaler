@@ -295,9 +295,9 @@ func (feeder *clusterStateFeeder) backfillCheckpoint(vpaID model.VpaID) {
 		if checkpoint.Spec.VPAObjectName != vpaID.VpaName {
 			continue
 		}
-		klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KRef(checkpoint.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
+		klog.V(3).InfoS("Loading checkpoint for VPA", "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "checkpoint", checkpoint.Name, "container", checkpoint.Spec.ContainerName)
 		if err := feeder.setVpaCheckpoint(checkpoint); err != nil {
-			klog.ErrorS(err, "Error while loading checkpoint")
+			klog.ErrorS(err, "Error while loading checkpoint", "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "checkpoint", checkpoint.Name)
 		}
 	}
 }
