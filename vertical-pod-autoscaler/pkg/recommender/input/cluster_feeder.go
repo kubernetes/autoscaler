@@ -279,35 +279,32 @@ func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.Vertica
 	return nil
 }
 
+// backfillCheckpoint loads any persisted checkpoint for a VPA the first time
+// this recommender instance starts tracking it. This covers both the normal
+// startup path and a VPA whose .spec.recommenders is changed at runtime to
+// select this (already running) recommender: without this, such a VPA would
+// never get its checkpoint history back, since checkpoints were otherwise
+// only read once, at startup. See kubernetes/autoscaler#9241.
+func (feeder *clusterStateFeeder) backfillCheckpoint(vpaID model.VpaID) {
+	checkpoints, err := feeder.vpaCheckpointLister.VerticalPodAutoscalerCheckpoints(vpaID.Namespace).List(labels.Everything())
+	if err != nil {
+		klog.ErrorS(err, "Cannot list VPA checkpoints", "namespace", vpaID.Namespace)
+		return
+	}
+	for _, checkpoint := range checkpoints {
+		if checkpoint.Spec.VPAObjectName != vpaID.VpaName {
+			continue
+		}
+		klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KRef(checkpoint.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
+		if err := feeder.setVpaCheckpoint(checkpoint); err != nil {
+			klog.ErrorS(err, "Error while loading checkpoint")
+		}
+	}
+}
+
 func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 	klog.V(3).InfoS("Initializing VPA from checkpoints")
 	feeder.LoadVPAs(ctx)
-
-	checkpointList, err := feeder.vpaCheckpointLister.List(labels.Everything())
-	if err != nil {
-		klog.ErrorS(err, "Cannot list VPA checkpoints")
-	}
-	klog.V(3).InfoS("Fetching VPA checkpoints", "count", len(checkpointList))
-
-	namespaces := make(map[string]bool)
-	for _, v := range feeder.clusterState.VPAs() {
-		namespaces[v.ID.Namespace] = true
-	}
-
-	for namespace := range namespaces {
-		if feeder.shouldIgnoreNamespace(namespace) {
-			klog.V(3).InfoS("Skipping loading VPA Checkpoints from namespace.", "namespace", namespace, "vpaObjectNamespace", feeder.vpaObjectNamespace, "ignoredNamespaces", feeder.ignoredNamespaces)
-			continue
-		}
-
-		for _, checkpoint := range checkpointList {
-			klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KRef(checkpoint.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
-			err = feeder.setVpaCheckpoint(checkpoint)
-			if err != nil {
-				klog.ErrorS(err, "Error while loading checkpoint")
-			}
-		}
-	}
 }
 
 func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context) {
@@ -447,6 +444,7 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 			Namespace: vpaCRD.Namespace,
 			VpaName:   vpaCRD.Name,
 		}
+		_, alreadyTracked := feeder.clusterState.VPAs()[vpaID]
 
 		selector, conditions := feeder.getSelector(ctx, vpaCRD)
 		klog.V(4).InfoS("Using selector", "selector", selector.String(), "vpa", klog.KObj(vpaCRD))
@@ -461,6 +459,10 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 				} else {
 					feeder.clusterState.VPAs()[vpaID].SetCondition(condition.conditionType, true, "", condition.message)
 				}
+			}
+
+			if !alreadyTracked {
+				feeder.backfillCheckpoint(vpaID)
 			}
 		}
 	}

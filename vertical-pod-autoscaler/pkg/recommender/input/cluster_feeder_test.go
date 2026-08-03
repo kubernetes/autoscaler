@@ -362,13 +362,19 @@ func TestLoadVPAs(t *testing.T) {
 			vpaLister := &test.VerticalPodAutoscalerListerMock{}
 			vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpa}, nil)
 
+			checkpointNamespaceLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
+			checkpointNamespaceLister.On("List").Return([]*vpa_types.VerticalPodAutoscalerCheckpoint{}, nil)
+			checkpointLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
+			checkpointLister.On("VerticalPodAutoscalerCheckpoints", "testNamespace").Return(checkpointNamespaceLister)
+
 			targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 			clusterState := model.NewClusterState(testGcPeriod)
 
 			clusterStateFeeder := clusterStateFeeder{
-				vpaLister:       vpaLister,
-				clusterState:    clusterState,
-				selectorFetcher: targetSelectorFetcher,
+				vpaLister:           vpaLister,
+				vpaCheckpointLister: checkpointLister,
+				clusterState:        clusterState,
+				selectorFetcher:     targetSelectorFetcher,
 				controllerFetcher: &fakeControllerFetcher{
 					key: tc.topMostWellKnownOrScalableKey,
 					err: tc.findTopMostWellKnownOrScalableError,
@@ -1086,4 +1092,86 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 	for _, vpa := range vpas {
 		assert.NotContains(t, deletedCheckpoints, vpa.Name)
 	}
+}
+
+// TestCheckpointBackfilledOnRecommenderReassignment covers
+// kubernetes/autoscaler#9241: previously, InitFromCheckpoints ran exactly
+// once, at recommender startup, and only backfilled checkpoints for VPAs
+// that filterVPAs already resolved to this recommender's name at that
+// instant. If a VPA's .spec.recommenders was changed *after* startup to
+// point at this (already running) recommender, the regular LoadVPAs
+// reconcile loop picked it up as a brand new VPA with an empty
+// ContainersInitialAggregateState — the checkpoint was never read again, so
+// its history was lost forever for this recommender instance. LoadVPAs now
+// backfills the checkpoint the first time it starts tracking any VPA.
+func TestCheckpointBackfilledOnRecommenderReassignment(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	_, tctx := ktesting.NewTestContext(t)
+
+	const namespace = "default"
+	const vpaName = "app"
+	const containerName = "container"
+
+	// VPA initially selects the "default" recommender, not "frugal".
+	vpa := test.VerticalPodAutoscaler().WithName(vpaName).WithNamespace(namespace).
+		WithContainer(containerName).WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+		Kind: kind, Name: name1, APIVersion: apiVersion,
+	}).WithRecommender("default").Get()
+
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpa}, nil)
+
+	checkpoint := &vpa_types.VerticalPodAutoscalerCheckpoint{
+		ObjectMeta: metav1.ObjectMeta{Namespace: namespace, Name: vpaName},
+		Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
+			VPAObjectName: vpaName,
+			ContainerName: containerName,
+		},
+		Status: vpa_types.VerticalPodAutoscalerCheckpointStatus{
+			Version:           model.SupportedCheckpointVersion,
+			TotalSamplesCount: 100,
+			FirstSampleStart:  metav1.NewTime(time.Now().Add(-7 * 24 * time.Hour)),
+			LastSampleStart:   metav1.NewTime(time.Now()),
+		},
+	}
+	checkpointNamespaceLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
+	checkpointNamespaceLister.On("List").Return([]*vpa_types.VerticalPodAutoscalerCheckpoint{checkpoint}, nil)
+	checkpointLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
+	checkpointLister.On("VerticalPodAutoscalerCheckpoints", namespace).Return(checkpointNamespaceLister)
+
+	targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+
+	clusterState := model.NewClusterState(testGcPeriod)
+	feeder := clusterStateFeeder{
+		vpaLister:           vpaLister,
+		vpaCheckpointLister: checkpointLister,
+		clusterState:        clusterState,
+		selectorFetcher:     targetSelectorFetcher,
+		controllerFetcher:   &fakeControllerFetcher{},
+		recommenderName:     "frugal",
+	}
+
+	// Simulates the "frugal" recommender's one-time startup checkpoint load,
+	// while the VPA still selects "default" — frugal never sees it.
+	feeder.InitFromCheckpoints(tctx)
+
+	vpaID := model.VpaID{Namespace: namespace, VpaName: vpaName}
+	assert.NotContains(t, clusterState.VPAs(), vpaID,
+		"sanity check: frugal recommender should not track a VPA that doesn't select it yet")
+
+	// Now the VPA is reassigned to "frugal" at runtime (spec update), and the
+	// regular reconcile loop (LoadVPAs, not InitFromCheckpoints) picks it up.
+	vpa.Spec.Recommenders = []*vpa_types.VerticalPodAutoscalerRecommenderSelector{{Name: "frugal"}}
+	targetSelectorFetcher.EXPECT().Fetch(vpa).Return(parseLabelSelector("app = test"), nil)
+
+	feeder.LoadVPAs(tctx)
+
+	assert.Contains(t, clusterState.VPAs(), vpaID, "VPA should now be tracked by the frugal recommender")
+	storedVpa := clusterState.VPAs()[vpaID]
+	assert.NotEmpty(t, storedVpa.ContainersInitialAggregateState,
+		"checkpoint history must be backfilled the first time this recommender starts tracking a VPA, even after startup (kubernetes/autoscaler#9241)")
+	cs, ok := storedVpa.ContainersInitialAggregateState[containerName]
+	assert.True(t, ok)
+	assert.Equal(t, checkpoint.Status.TotalSamplesCount, cs.TotalSamplesCount)
 }
