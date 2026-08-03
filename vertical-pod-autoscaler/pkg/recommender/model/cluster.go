@@ -302,16 +302,34 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	}
 
 	vpa, vpaExists := cluster.vpas[vpaID]
+	var preservedInitialState ContainerNameToAggregateStateMap
 	if vpaExists && (vpa.PodSelector.String() != selector.String()) {
-		// Pod selector was changed. Delete the VPA object and recreate
-		// it with the new selector.
-		if err := cluster.DeleteVpa(vpaID); err != nil {
-			return err
+		// A transient targetRef resolution failure yields labels.Nothing()
+		// (empty selector string). That is not a real selector change — keep
+		// the previous selector so we do not wipe checkpointed history.
+		// See kubernetes/autoscaler#9891.
+		if isEmptySelector(selector) && !isEmptySelector(vpa.PodSelector) {
+			selector = vpa.PodSelector
+		} else {
+			// Real selector change (including ""→real after a failed first
+			// resolve): recreate the VPA object but keep
+			// ContainersInitialAggregateState (loaded from checkpoints).
+			// Without this, InitFromCheckpoints followed by a selector flip
+			// discards the just-loaded history and the next checkpoint write
+			// overwrites the CR with thin data.
+			preservedInitialState = vpa.ContainersInitialAggregateState
+			if err := cluster.DeleteVpa(vpaID); err != nil {
+				return err
+			}
+			vpaExists = false
+			vpa = nil
 		}
-		vpaExists = false
 	}
 	if !vpaExists {
 		vpa = NewVpa(vpaID, selector, apiObject.CreationTimestamp.Time)
+		if len(preservedInitialState) > 0 {
+			vpa.ContainersInitialAggregateState = preservedInitialState
+		}
 		cluster.vpas[vpaID] = vpa
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
 			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
@@ -327,6 +345,14 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	vpa.SetAPIVersion(apiObject.GetObjectKind().GroupVersionKind().Version)
 	vpa.Generation = apiObject.Generation
 	return nil
+}
+
+// isEmptySelector reports whether s is nil or labels.Nothing()-like (empty
+// string form). Both Nothing and Everything stringify to "" in some cases;
+// callers only pass Nothing on target resolution failure, which is the case
+// we care about for #9891.
+func isEmptySelector(s labels.Selector) bool {
+	return s == nil || s.String() == ""
 }
 
 // DeleteVpa removes a VPA with the given ID from the clusterState.
