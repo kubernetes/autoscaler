@@ -205,6 +205,7 @@ func MarkDeletionCandidate(ctx context.Context, node *apiv1.Node, client kube_cl
 
 // AddTaints sets the specified taints on the node and returns an updated copy of the node.
 func AddTaints(ctx context.Context, node *apiv1.Node, client kube_client.Interface, taints []apiv1.Taint, cordonNode bool) (*apiv1.Node, error) {
+	ctx = context.WithoutCancel(ctx)
 	logger := klog.FromContext(ctx)
 	retryDeadline := time.Now().Add(maxRetryDeadline)
 	freshNode := node.DeepCopy()
@@ -322,6 +323,7 @@ func CleanDeletionCandidate(ctx context.Context, node *apiv1.Node, client kube_c
 
 // CleanTaints cleans the specified taints from a node and returns an updated copy of the node.
 func CleanTaints(ctx context.Context, node *apiv1.Node, client kube_client.Interface, taintKeys []string, cordonNode bool) (*apiv1.Node, error) {
+	ctx = context.WithoutCancel(ctx)
 	logger := klog.FromContext(ctx)
 	retryDeadline := time.Now().Add(maxRetryDeadline)
 	freshNode := node.DeepCopy()

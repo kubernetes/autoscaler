@@ -78,11 +78,13 @@ func (ds *GroupDeletionScheduler) ResetAndReportMetrics() {
 // ScheduleDeletion schedules deletion of the node. Nodes that should be deleted in groups are queued until whole group is scheduled for deletion,
 // other nodes are passed over to NodeDeletionBatcher immediately.
 func (ds *GroupDeletionScheduler) ScheduleDeletion(ctx context.Context, nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup, batchSize int, drain bool) {
+	ctx = context.WithoutCancel(ctx)
 	ds.scheduleDeletion(ctx, nodeInfo, nodeGroup, batchSize, drain, false)
 }
 
 // scheduleForceDeletion schedules forced node deletion, similar to ScheduleDeletion but bypassing eviction errors and PDB checks.
 func (ds *GroupDeletionScheduler) scheduleForceDeletion(ctx context.Context, nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup, batchSize int, drain bool) {
+	ctx = context.WithoutCancel(ctx)
 	ds.scheduleDeletion(ctx, nodeInfo, nodeGroup, batchSize, drain, true)
 }
 

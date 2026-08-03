@@ -71,6 +71,7 @@ func NewNodeDeletionBatcher(autoscalingCtx *ca_context.AutoscalingContext, scale
 
 // AddNodes adds node list to delete candidates and schedules deletion. The deletion is performed asynchronously.
 func (d *NodeDeletionBatcher) AddNodes(ctx context.Context, nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool) {
+	ctx = context.WithoutCancel(ctx)
 	// If delete interval is 0, than instantly start node deletion.
 	if d.deleteInterval == 0 {
 		go d.deleteNodesAndRegisterStatus(ctx, nodes, nodeGroup.Id(), drain)
@@ -195,7 +196,6 @@ func CleanUpAndRecordErrorForFailedScaleDownEvent(ctx context.Context, autoscali
 // CleanUpAndRecordFailedScaleDownEvent record failed scale down event and log a warning or an error.
 func CleanUpAndRecordFailedScaleDownEvent(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroupId string, drain bool, nodeDeletionTracker *deletiontracker.NodeDeletionTracker, errMsg string, status status.NodeDeleteResult, logAsWarning bool) {
 	logger := klog.FromContext(ctx)
-	ctx = context.WithoutCancel(ctx)
 	var eventMsgFormat string
 	if drain {
 		eventMsgFormat = "failed to drain and delete node"

@@ -79,13 +79,11 @@ func NewEvictor(evictionRegister evictionRegister, shutdownGracePeriodByPodPrior
 // DrainNode groups pods in the node in to priority groups and, evicts pods in the ascending order of priorities.
 // If priority evictor is not enable, eviction of daemonSet pods is the best effort.
 func (e Evictor) DrainNode(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodeInfo *framework.NodeInfo) (map[string]status.PodEvictionResult, error) {
-	ctx = context.WithoutCancel(ctx)
 	return e.drainNode(ctx, autoscalingCtx, nodeInfo, false)
 }
 
 // drainNodeForce performs similar logic to DrainNode, but forcefully deletes pods on drain failure.
 func (e Evictor) drainNodeForce(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodeInfo *framework.NodeInfo) (map[string]status.PodEvictionResult, error) {
-	ctx = context.WithoutCancel(ctx)
 	return e.drainNode(ctx, autoscalingCtx, nodeInfo, true)
 }
 
@@ -105,7 +103,6 @@ func (e Evictor) drainNode(ctx context.Context, autoscalingCtx *ca_context.Autos
 func (e Evictor) EvictDaemonSetPods(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodeInfo *framework.NodeInfo) (map[string]status.PodEvictionResult, error) {
 	node := nodeInfo.Node()
 	dsPods, _ := podsToEvict(nodeInfo, autoscalingCtx.DaemonSetEvictionForEmptyNodes)
-	ctx = context.WithoutCancel(ctx)
 	return e.drainNodeWithPodsBasedOnPodPriority(ctx, autoscalingCtx, node, nil, dsPods, false) // force option applies only to full eviction pods
 }
 
@@ -231,6 +228,7 @@ func (e Evictor) initiateEviction(ctx context.Context, autoscalingCtx *ca_contex
 }
 
 func (e Evictor) evictPod(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, podToEvict *apiv1.Pod, retryUntil time.Time, maxTermination int64, fullEvictionPod bool, force bool) status.PodEvictionResult {
+	ctx = context.WithoutCancel(ctx)
 	logger := klog.FromContext(ctx)
 	autoscalingCtx.Recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
 
@@ -299,6 +297,7 @@ func podsToEvict(nodeInfo *framework.NodeInfo, evictDsByDefault bool) (dsPods, n
 }
 
 func forceDeletePod(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, pod *apiv1.Pod) error {
+	ctx = context.WithoutCancel(ctx)
 	logger := klog.FromContext(ctx)
 	logger.Info("Starting force deletion of pod", "pod", pod.Name)
 	if err := autoscalingCtx.ClientSet.CoreV1().Pods(pod.Namespace).Delete(ctx, pod.Name, metav1.DeleteOptions{}); err != nil {
