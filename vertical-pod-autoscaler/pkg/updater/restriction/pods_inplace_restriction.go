@@ -62,9 +62,9 @@ type PodsInPlaceRestriction interface {
 	// CanInPlaceUpdate checks if a pod can be safely updated in-place.
 	// Returns:
 	//   - InPlaceApproved: The pod can be updated in-place immediately.
-	//   - InPlaceDeferred: The update should be deferred (e.g., pod is pending, already updating, or group is not disruptable).
+	//   - InPlaceDeferred: The update should be deferred (e.g., pod is pending, already updating, group is not disruptable, or kubelet reported a resize error; on failure VPA defers and retries next loop without caching permanent infeasibility).
 	//   - InPlaceEvict: The pod should be evicted instead of updated in-place.
-	//   - InPlaceInfeasible: The in-place update is infeasible (node can't accommodate it or error occurred). Will only retry when recommendation changes.
+	//   - InPlaceInfeasible: The in-place update is infeasible (node can't accommodate it). Will only retry when recommendation changes.
 	//
 	// The updateMode parameter affects the decision:
 	//   - UpdateModeInPlace: Waits indefinitely for in-progress updates.
@@ -156,9 +156,9 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 				klog.V(4).InfoS("In-place update in progress, waiting for completion", "pod", klog.KObj(pod))
 				return utils.InPlaceDeferred
 			case utils.ResizeStatusError:
-				// Error during resize, will retry if recommendation changes.
-				klog.V(4).ErrorS(nil, "Not retrying in-place resize because the kubelet reported an error; VPA will retry only after a recommendation changes", "pod", klog.KObj(pod))
-				return utils.InPlaceInfeasible
+				// Transient kubelet error; retry next loop without caching as permanent infeasibility.
+				klog.V(4).InfoS("Deferring in-place resize because the kubelet reported an error", "pod", klog.KObj(pod))
+				return utils.InPlaceDeferred
 			default:
 				klog.V(4).InfoS("Deferring in-place update because the Pod reports an unrecognized resize status", "pod", klog.KObj(pod), "resizeStatus", resizeStatus)
 				return utils.InPlaceDeferred
