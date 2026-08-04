@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	dto "github.com/prometheus/client_model/go"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -139,21 +140,21 @@ func getMetric(labelName, labelValue string, value float64) *dto.Metric {
 
 func TestExtractMetricValueForResourceCount(t *testing.T) {
 	testCases := []struct {
-		name         string
-		mf           dto.MetricFamily
-		resourceName string
-		expectCount  uint64
-		expectErr    error
+		name           string
+		mf             dto.MetricFamily
+		resourceLabels map[string]string
+		expectCount    uint64
+		expectErr      error
 	}{
 		{
-			name:         "(nodes) empty",
-			resourceName: nodeResourceName,
-			mf:           dto.MetricFamily{},
-			expectErr:    fmt.Errorf("metric name: no valid metric values"),
+			name:           "(nodes) empty",
+			resourceLabels: nodeResourceLabels,
+			mf:             dto.MetricFamily{},
+			expectErr:      fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
-			name:         "(nodes) with proper value",
-			resourceName: nodeResourceName,
+			name:           "(nodes) with proper value",
+			resourceLabels: nodeResourceLabels,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "nodes", 4.0),
@@ -162,8 +163,8 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 			expectCount: 4,
 		},
 		{
-			name:         "(nodes) only wrong label",
-			resourceName: nodeResourceName,
+			name:           "(nodes) only wrong label",
+			resourceLabels: nodeResourceLabels,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("wrong", "nodes", 4.0),
@@ -172,8 +173,8 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 			expectErr: fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
-			name:         "(nodes) only wrong label value",
-			resourceName: nodeResourceName,
+			name:           "(nodes) only wrong label value",
+			resourceLabels: nodeResourceLabels,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "services", 4.0),
@@ -182,8 +183,8 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 			expectErr: fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
-			name:         "(nodes) with negative value",
-			resourceName: nodeResourceName,
+			name:           "(nodes) with negative value",
+			resourceLabels: nodeResourceLabels,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "nodes", -4.0),
@@ -192,14 +193,14 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 			expectErr: fmt.Errorf("metric name: metric unknown"),
 		},
 		{
-			name:         "(pods) empty",
-			resourceName: podResourceName,
-			mf:           dto.MetricFamily{},
-			expectErr:    fmt.Errorf("metric name: no valid metric values"),
+			name:           "(pods) empty",
+			resourceLabels: podResourceLabels,
+			mf:             dto.MetricFamily{},
+			expectErr:      fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
-			name:         "(pods) with proper value",
-			resourceName: podResourceName,
+			name:           "(pods) with proper value",
+			resourceLabels: podResourceLabels,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "pods", 6.0),
@@ -208,8 +209,8 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 			expectCount: 6,
 		},
 		{
-			name:         "(pods) only wrong label",
-			resourceName: podResourceName,
+			name:           "(pods) only wrong label",
+			resourceLabels: podResourceLabels,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("wrong", "pods", 4.0),
@@ -218,8 +219,8 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 			expectErr: fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
-			name:         "(pods) only wrong label value",
-			resourceName: podResourceName,
+			name:           "(pods) only wrong label value",
+			resourceLabels: podResourceLabels,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "services", 4.0),
@@ -228,8 +229,8 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 			expectErr: fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
-			name:         "(pods) with negative value",
-			resourceName: podResourceName,
+			name:           "(pods) with negative value",
+			resourceLabels: podResourceLabels,
 			mf: dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "pods", -4.0),
@@ -240,7 +241,7 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			gotCount, gotErr := extractMetricValueForResourceCount(tc.mf, tc.resourceName, "metric name")
+			gotCount, gotErr := extractMetricValueForResourceCount(&tc.mf, tc.resourceLabels, "metric name")
 			expectErrorOrCount(t, tc.expectErr, tc.expectCount, gotErr, gotCount)
 		})
 	}
@@ -264,12 +265,12 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 	preferredMetric := objectCountMetricName
 	fallbackMetric := objectCountFallbackMetricName
 	testCases := []struct {
-		name         string
-		metricValues []dto.MetricFamily
-		resourceName string
-		finalResult  error
-		expectValue  uint64
-		expectErr    error
+		name           string
+		metricValues   []dto.MetricFamily
+		resourceLabels map[string]string
+		finalResult    error
+		expectValue    uint64
+		expectErr      error
 	}{
 		{
 			name:        "empty",
@@ -277,9 +278,9 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			expectErr:   fmt.Errorf("no metric set"),
 		},
 		{
-			name:         "(nodes) with preferred metric",
-			finalResult:  io.EOF,
-			resourceName: nodeResourceName,
+			name:           "(nodes) with preferred metric",
+			finalResult:    io.EOF,
+			resourceLabels: nodeResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &preferredMetric,
@@ -291,9 +292,9 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			expectValue: 4,
 		},
 		{
-			name:         "(nodes) with fallback metric",
-			finalResult:  io.EOF,
-			resourceName: nodeResourceName,
+			name:           "(nodes) with fallback metric",
+			finalResult:    io.EOF,
+			resourceLabels: nodeResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -305,9 +306,9 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			expectValue: 4,
 		},
 		{
-			name:         "(nodes) with preferred and fallback metrics",
-			finalResult:  io.EOF,
-			resourceName: nodeResourceName,
+			name:           "(nodes) with preferred and fallback metrics",
+			finalResult:    io.EOF,
+			resourceLabels: nodeResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -330,9 +331,9 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			expectErr:   fmt.Errorf("decoding error: oops"),
 		},
 		{
-			name:         "(nodes) falls back on error in preferred metric",
-			finalResult:  io.EOF,
-			resourceName: nodeResourceName,
+			name:           "(nodes) falls back on error in preferred metric",
+			finalResult:    io.EOF,
+			resourceLabels: nodeResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -350,9 +351,9 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			expectValue: 4,
 		},
 		{
-			name:         "(nodes) reports error on both metrics",
-			finalResult:  io.EOF,
-			resourceName: nodeResourceName,
+			name:           "(nodes) reports error on both metrics",
+			finalResult:    io.EOF,
+			resourceLabels: nodeResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -367,12 +368,12 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 					},
 				},
 			},
-			expectErr: fmt.Errorf("at least one metric present but all present metrics have errors: apiserver_storage_objects: no valid metric values, etcd_object_counts: no valid metric values"),
+			expectErr: fmt.Errorf("at least one metric present but all present metrics have errors: <nil>, apiserver_storage_objects: no valid metric values, etcd_object_counts: no valid metric values"),
 		},
 		{
-			name:         "(nodes) multiple metrics in preferred metric family",
-			finalResult:  io.EOF,
-			resourceName: nodeResourceName,
+			name:           "(nodes) multiple metrics in preferred metric family",
+			finalResult:    io.EOF,
+			resourceLabels: nodeResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &preferredMetric,
@@ -390,9 +391,9 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			expectValue: 5.0,
 		},
 		{
-			name:         "(pods) with preferred metric",
-			finalResult:  io.EOF,
-			resourceName: podResourceName,
+			name:           "(pods) with preferred metric",
+			finalResult:    io.EOF,
+			resourceLabels: podResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &preferredMetric,
@@ -404,9 +405,9 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			expectValue: 10,
 		},
 		{
-			name:         "(pods) with fallback metric",
-			finalResult:  io.EOF,
-			resourceName: podResourceName,
+			name:           "(pods) with fallback metric",
+			finalResult:    io.EOF,
+			resourceLabels: podResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -418,9 +419,9 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			expectValue: 10,
 		},
 		{
-			name:         "(pods) with preferred and fallback metrics",
-			finalResult:  io.EOF,
-			resourceName: podResourceName,
+			name:           "(pods) with preferred and fallback metrics",
+			finalResult:    io.EOF,
+			resourceLabels: podResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -438,9 +439,9 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			expectValue: 15,
 		},
 		{
-			name:         "(pods) falls back on error in preferred metric",
-			finalResult:  io.EOF,
-			resourceName: podResourceName,
+			name:           "(pods) falls back on error in preferred metric",
+			finalResult:    io.EOF,
+			resourceLabels: podResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -458,9 +459,9 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			expectValue: 10,
 		},
 		{
-			name:         "(pods) reports error on both metrics",
-			finalResult:  io.EOF,
-			resourceName: podResourceName,
+			name:           "(pods) reports error on both metrics",
+			finalResult:    io.EOF,
+			resourceLabels: podResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
@@ -475,12 +476,12 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 					},
 				},
 			},
-			expectErr: fmt.Errorf("at least one metric present but all present metrics have errors: apiserver_storage_objects: no valid metric values, etcd_object_counts: no valid metric values"),
+			expectErr: fmt.Errorf("at least one metric present but all present metrics have errors: <nil>, apiserver_storage_objects: no valid metric values, etcd_object_counts: no valid metric values"),
 		},
 		{
-			name:         "(pods) multiple metrics in preferred metric family",
-			finalResult:  io.EOF,
-			resourceName: podResourceName,
+			name:           "(pods) multiple metrics in preferred metric family",
+			finalResult:    io.EOF,
+			resourceLabels: podResourceLabels,
 			metricValues: []dto.MetricFamily{
 				{
 					Name: &preferredMetric,
@@ -504,59 +505,89 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 				metricValues: tc.metricValues,
 				finalResult:  tc.finalResult,
 			}
-			gotCount, gotErr := getResourceCountFromDecoder(tc.resourceName, &fd)
+			gotCount, gotErr := getResourceCountFromDecoder(tc.resourceLabels, &fd)
 			expectErrorOrCount(t, tc.expectErr, tc.expectValue, gotErr, gotCount)
 		})
 	}
 }
 
 func TestGetResourceCountFromDecoder_MultpleLabels(t *testing.T) {
-	preferredMetric := objectCountMetricName
+	preferredMetric := resourceObjectsMetricName
 	value := 3.0
 	testCases := []struct {
-		name         string
-		labelName1   string
-		labelValue1  string
-		labelName2   string
-		labelValue2  string
-		resourceName string
+		name           string
+		metricLabels   map[string]string
+		resourceLabels map[string]string
+		expectCount    uint64
+		expectErr      error
 	}{
 		{
-			name:         "(nodes) get metric count with multiple labels",
-			labelName1:   resourceLabel,
-			labelValue1:  nodeResourceName,
-			labelName2:   "flavor",
-			labelValue2:  "up",
-			resourceName: nodeResourceName,
+			name:           "(nodes) get metric count with multiple labels",
+			metricLabels:   map[string]string{"resource": "nodes", "flavor": "up"},
+			resourceLabels: nodeResourceLabels,
+			expectCount:    3,
 		},
 		{
-			name:         "(pods) get metric count with multiple labels",
-			labelName1:   resourceLabel,
-			labelValue1:  podResourceName,
-			labelName2:   "flavor",
-			labelValue2:  "up",
-			resourceName: podResourceName,
+			name:           "(nodes) get metric count with missing group label",
+			metricLabels:   map[string]string{"resource": "nodes"},
+			resourceLabels: nodeResourceLabels,
+			expectCount:    3,
+		},
+		{
+			name:           "(nodes) get metric count with matching group label",
+			metricLabels:   map[string]string{"resource": "nodes", "group": ""},
+			resourceLabels: nodeResourceLabels,
+			expectCount:    3,
+		},
+		{
+			name:           "(nodes) get metric count with mismatched group label",
+			metricLabels:   map[string]string{"resource": "nodes", "group": "foo"},
+			resourceLabels: nodeResourceLabels,
+			expectCount:    0,
+			expectErr:      fmt.Errorf("at least one metric present but all present metrics have errors: apiserver_resource_objects: no valid metric values, <nil>, <nil>"),
+		},
+		{
+			name:           "(pods) get metric count with multiple labels",
+			metricLabels:   map[string]string{"resource": "pods", "flavor": "up"},
+			resourceLabels: podResourceLabels,
+			expectCount:    3,
+		},
+		{
+			name:           "(pods) get metric count with missing group label",
+			metricLabels:   map[string]string{"resource": "pods"},
+			resourceLabels: podResourceLabels,
+			expectCount:    3,
+		},
+		{
+			name:           "(pods) get metric count with matching group label",
+			metricLabels:   map[string]string{"resource": "pods", "group": ""},
+			resourceLabels: podResourceLabels,
+			expectCount:    3,
+		},
+		{
+			name:           "(pods) get metric count with mismatched group label",
+			metricLabels:   map[string]string{"resource": "pods", "group": "foo"},
+			resourceLabels: podResourceLabels,
+			expectCount:    0,
+			expectErr:      fmt.Errorf("at least one metric present but all present metrics have errors: apiserver_resource_objects: no valid metric values, <nil>, <nil>"),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+
+			metricLabelPairs := []*dto.LabelPair{}
+			for k, v := range tc.metricLabels {
+				metricLabelPairs = append(metricLabelPairs, &dto.LabelPair{Name: &k, Value: &v})
+			}
+
 			fd := fakeDecoder{
 				metricValues: []dto.MetricFamily{
 					{
 						Name: &preferredMetric,
 						Metric: []*dto.Metric{
 							{
-								Label: []*dto.LabelPair{
-									{
-										Name:  &tc.labelName1,
-										Value: &tc.labelValue1,
-									},
-									{
-										Name:  &tc.labelName2,
-										Value: &tc.labelValue2,
-									},
-								},
+								Label: metricLabelPairs,
 								Gauge: &dto.Gauge{
 									Value: &value,
 								},
@@ -566,8 +597,9 @@ func TestGetResourceCountFromDecoder_MultpleLabels(t *testing.T) {
 				},
 				finalResult: io.EOF,
 			}
-			gotCount, gotErr := getResourceCountFromDecoder(tc.resourceName, &fd)
-			expectErrorOrCount(t, nil, 3.0, gotErr, gotCount)
+			gotCount, gotErr := getResourceCountFromDecoder(tc.resourceLabels, &fd)
+			t.Log(gotCount, gotErr)
+			expectErrorOrCount(t, tc.expectErr, tc.expectCount, gotErr, gotCount)
 		})
 	}
 }
