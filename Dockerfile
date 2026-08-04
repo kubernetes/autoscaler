@@ -17,7 +17,6 @@ WORKDIR /workspace
 
 # Copy go.mod and go.sum files first to cache dependencies
 COPY go.mod go.sum ./
-COPY apis/go.mod apis/go.sum ./apis/
 
 # Download dependencies
 RUN go mod download
@@ -32,9 +31,9 @@ ARG BUILD_TAGS
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
     if [ -n "$BUILD_TAGS" ]; then \
-        CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-$GOARCH -ldflags="$LDFLAGS" -tags="$BUILD_TAGS"; \
+        CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-$GOARCH -ldflags="$LDFLAGS" -tags="$BUILD_TAGS" ./pkg; \
     else \
-        CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-$GOARCH -ldflags="$LDFLAGS"; \
+        CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-$GOARCH -ldflags="$LDFLAGS" ./pkg; \
     fi
 
 FROM gcr.io/distroless/static:nonroot
