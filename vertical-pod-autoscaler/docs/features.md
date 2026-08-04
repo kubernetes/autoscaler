@@ -229,7 +229,7 @@ When a pod is currently undergoing a resize, VPA checks the resize status report
 | `ResizeDeferred` | Wait for kubelet to proceed |
 | `ResizeInProgress` | Wait for completion |
 | `ResizeInfeasible` | Store as infeasible, skip pod |
-| `ResizeError` | Treat as infeasible, retry when recommendation changes |
+| `ResizeError` | Transient kubelet error; defer and retry next loop |
 | `ResizeNone` | No resize pending, proceed with update evaluation |
 
 ### Infeasible Attempt Tracking
