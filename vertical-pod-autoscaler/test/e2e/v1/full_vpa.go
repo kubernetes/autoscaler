@@ -35,6 +35,8 @@ import (
 	imageutils "k8s.io/kubernetes/test/utils/image"
 	podsecurity "k8s.io/pod-security-admission/api"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 )
@@ -293,12 +295,15 @@ var _ = FullVpaE2eDescribe("Pods under VPA with default recommender explicitly c
 
 var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender explicitly configured", func() {
 	var (
-		rc *ResourceConsumer
+		rc        *ResourceConsumer
+		rcControl *ResourceConsumer
+		vpaCRD    *vpa_types.VerticalPodAutoscaler
 	)
-	replicas := 3
+	replicas := 2
 
 	ginkgo.AfterEach(func() {
 		rc.CleanUp()
+		rcControl.CleanUp()
 	})
 
 	// This schedules AfterEach block that needs to run after the AfterEach above and
@@ -319,19 +324,34 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 			f.ClientSet,
 			f.ScalesGetter)
 
-		ginkgo.By("Setting up a VPA CRD with Recommender explicitly configured")
-		targetRef := &autoscaling.CrossVersionObjectReference{
-			APIVersion: "apps/v1",
-			Kind:       "Deployment",
-			Name:       "hamster",
-		}
+		// The control deployment is identical but has a VPA with the default
+		// recommender. Watching the control being updated proves the
+		// recommend-and-update pipeline is live and has had the opportunity to
+		// act on the non-recognized VPA - so the test doesn't have to prove a
+		// negative by waiting out a fixed timeout.
+		ginkgo.By("Setting up a control hamster deployment")
+		rcControl = NewDynamicResourceConsumer("hamster-control", ns, KindDeployment,
+			replicas,
+			1,             /*initCPUTotal*/
+			10,            /*initMemoryTotal*/
+			1,             /*initCustomMetric*/
+			initialCPU,    /*cpuRequest*/
+			initialMemory, /*memRequest*/
+			f.ClientSet,
+			f.ScalesGetter)
 
 		containerName := utils.GetHamsterContainerNameByIndex(0)
-		vpaCRD := test.VerticalPodAutoscaler().
-			WithName("hamster-vpa").
+
+		ginkgo.By("Setting up a VPA CRD with non-recognized Recommender explicitly configured")
+		vpaCRD = test.VerticalPodAutoscaler().
+			WithName("hamster").
 			WithRecommender("non-recognized").
-			WithNamespace(f.Namespace.Name).
-			WithTargetRef(targetRef).
+			WithNamespace(ns).
+			WithTargetRef(&autoscaling.CrossVersionObjectReference{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       "hamster",
+			}).
 			WithContainer(containerName).
 			AppendRecommendation(
 				test.Recommendation().
@@ -344,20 +364,78 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 
 		utils.InstallVPA(f, vpaCRD)
 
+		ginkgo.By("Setting up a control VPA CRD with the default recommender")
+		controlVpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-control").
+			WithNamespace(ns).
+			WithTargetRef(&autoscaling.CrossVersionObjectReference{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       "hamster-control",
+			}).
+			WithContainer(containerName).
+			AppendRecommendation(
+				test.Recommendation().
+					WithContainer(containerName).
+					WithTarget("250m", "200Mi").
+					WithLowerBound("250m", "200Mi").
+					WithUpperBound("250m", "200Mi").
+					GetContainerResources()).
+			Get()
+
+		utils.InstallVPA(f, controlVpaCRD)
 	})
 
-	f.It("deployment not updated by non-recognized recommender", framework.WithSlow(), func() {
+	f.It("deployment not updated by non-recognized recommender", func() {
+		// initial CPU usage is low so a minimal recommendation is expected in both deployments
 		err := waitForResourceRequestInRangeInPods(
 			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 			ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		// consume more CPU to get a higher recommendation
-		rc.ConsumeCPU(600 * replicas)
 		err = waitForResourceRequestInRangeInPods(
-			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
-			ParseQuantityOrDie("500m"), ParseQuantityOrDie("1000m"))
-		gomega.Expect(err).To(gomega.HaveOccurred())
+			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster-control"}, apiv1.ResourceCPU,
+			ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		// consume more CPU in both deployments, so that both would get a higher
+		// recommendation if their VPAs were handled by a recognized recommender
+		rc.ConsumeCPU(600 * replicas)
+		rcControl.ConsumeCPU(600 * replicas)
+
+		ginkgo.By("Waiting for the control deployment to be updated")
+		err = waitForResourceRequestInRangeInPods(
+			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster-control"}, apiv1.ResourceCPU,
+			ParseQuantityOrDie("500m"), ParseQuantityOrDie("1300m"))
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		// The recommender processes every VPA in each of its loops, so by the
+		// time the control's higher recommendation has propagated all the way
+		// to the control pods' requests, a recommender that (incorrectly)
+		// handled the non-recognized VPA would have long since overwritten its
+		// seeded recommendation. An untouched status therefore means the VPA
+		// was skipped, not that it just hasn't been processed yet.
+		ginkgo.By("Checking the non-recognized VPA's status was not updated")
+		vpa, err := utils.GetVpaClientSet(f).AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).Get(context.TODO(), "hamster", metav1.GetOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		statusDiff := cmp.Diff(vpaCRD.Status, vpa.Status,
+			cmpopts.EquateEmpty(),
+			cmp.Comparer(func(a, b resource.Quantity) bool {
+				return a.Cmp(b) == 0
+			}))
+		gomega.Expect(statusDiff).To(gomega.BeEmpty(),
+			"status of the VPA with a non-recognized recommender should have stayed at its seeded value, diff (-seeded +got):\n%s",
+			statusDiff)
+
+		ginkgo.By("Checking the hamster deployment's requests were not updated")
+		podList, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).List(context.TODO(), metav1.ListOptions{LabelSelector: "name=hamster"})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(podList.Items).NotTo(gomega.BeEmpty())
+		for _, pod := range podList.Items {
+			req := pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]
+			gomega.Expect(req.Cmp(ParseQuantityOrDie("500m"))).To(gomega.BeNumerically("<", 0),
+				"pod %s should not have received a usage-based CPU request, got %v", pod.Name, req.String())
+		}
 	})
 })
 
