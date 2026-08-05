@@ -96,31 +96,18 @@ type PodUpdatePolicy struct {
     // ... existing fields (UpdateMode, MinReplicas, EvictionRequirements,
     //                     EvictAfterOOMSeconds) ...
 
-    // InitialDelaySeconds is the duration in seconds after this
-    // VPA's creation during which recommendations are not actuated,
+    // InitialDelaySeconds specifies the number of seconds to wait after
+    // the VPA object is created before recommendations are actuated,
     // regardless of the configured UpdateMode.
     //
-    // During the window, the Recommender continues to compute and
-    // publish recommendations to status.recommendation as usual, but the
-    // Updater and the Admission Controller treat the VPA as if
-    // UpdateMode were Off: no evictions, no in-place resizes, and no
-    // recommendation injection into newly created pods. After the window
-    // elapses (now >= CreationTimestamp + InitialDelaySeconds), the
-    // configured UpdateMode takes effect on subsequent reconciles and
-    // pod creations.
+    // During the window, the Recommender still computes and publishes
+    // recommendations to status.recommendation, but the Updater and
+    // Admission Controller treat the VPA as if UpdateMode were Off: no
+    // evictions, in-place resizes, or injection into new pods. The
+    // configured UpdateMode takes effect once the window elapses.
     //
-    // The window is computed as a pure function of vpa.CreationTimestamp
-    // and this spec field. The field may be modified at any time; the
-    // new value takes effect on the next reconcile. Removing the field or setting it to zero
-    // closes the gate immediately. Setting a larger value after the
-    // window has expired re-arms the gate only if the new expiry
-    // (CreationTimestamp + InitialDelaySeconds) still lies in the
-    // future; otherwise the gate stays open.
-    //
-    // If UpdateMode is Off, this field has no effect: Off already
-    // suppresses Updater actuation indefinitely.
-    //
-    // Must be between 1 and 7776000 (90 days) if set.
+    // If UpdateMode is Off, this field has no effect. Must be between
+    // 1 and 7776000 (90 days) if set.
     // +optional
     // +kubebuilder:validation:Minimum=1
     // +kubebuilder:validation:Maximum=7776000
