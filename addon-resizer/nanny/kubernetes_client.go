@@ -24,6 +24,7 @@ import (
 
 	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/expfmt"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
@@ -34,17 +35,23 @@ import (
 )
 
 const (
-	// objectCountMetricName is the preferred metric to be used to get number of nodes (present in Kubernetes 1.21 and higher)
+	// resourceObjectsMetricName is the metric with the number of pods and nodes (Kubernetes >=1.34 and higher, with group and resource labels)
+	resourceObjectsMetricName = "apiserver_resource_objects"
+
+	// objectCountMetricName is the metric with the number of pods and nodes (Kubernetes 1.21-1.36, with resource label)
 	objectCountMetricName = "apiserver_storage_objects"
-	// objectCountFallbackMetricName is the metric to be used to get number of nodes if objectCountMetricName metric is missing
+
+	// objectCountFallbackMetricName is the metric with the number of pods and nodes (Kubernetes <1.21)
 	objectCountFallbackMetricName = "etcd_object_counts"
-	// nodeResourceName is the label value for Nodes in objectCountFallbackMetricName and objectCountMetricName metrics.
-	nodeResourceName = "nodes"
-	// podResourceName is the label value for Pods in objectCountFallbackMetricName and objectCountMetricName metrics.
-	podResourceName = "pods"
-	// resourceLabel is the label name for resource.
-	resourceLabel               = "resource"
-	fmtText       expfmt.Format = `text/plain; version=` + expfmt.TextVersion + `; charset=utf-8`
+
+	fmtText expfmt.Format = `text/plain; version=` + expfmt.TextVersion + `; charset=utf-8`
+)
+
+var (
+	// nodeResourceLabels are the label values for nodes, that must match if present in the metric.
+	nodeResourceLabels = map[string]string{"group": "", "resource": "nodes"}
+	// podResourceLabels are the label values for pods, that must match if present in the metric.
+	podResourceLabels = map[string]string{"group": "", "resource": "pods"}
 )
 
 type kubernetesClient struct {
@@ -61,7 +68,7 @@ type kubernetesClient struct {
 // 2) using etcd_object_count metric exposed by kube-apiserver
 func (k *kubernetesClient) CountNodes() (uint64, error) {
 	if k.useMetrics {
-		return k.countResourcesThroughMetrics(nodeResourceName)
+		return k.countResourcesThroughMetrics(nodeResourceLabels)
 	}
 	return k.countNodesThroughAPI()
 }
@@ -71,7 +78,7 @@ func (k *kubernetesClient) CountNodes() (uint64, error) {
 // 2) using etcd_object_count metric exposed by kube-apiserver
 func (k *kubernetesClient) CountContainers() (uint64, error) {
 	if k.useMetrics {
-		return k.countResourcesThroughMetrics(podResourceName)
+		return k.countResourcesThroughMetrics(podResourceLabels)
 	}
 	return k.countContainersThroughAPI()
 }
@@ -113,16 +120,20 @@ func hasEqualValues(a string, b *string) bool {
 	return b != nil && a == *b
 }
 
-func extractMetricValueForResourceCount(mf dto.MetricFamily, resourceName, metricName string) (uint64, error) {
+func extractMetricValueForResourceCount(mf *dto.MetricFamily, matchLabels map[string]string, metricName string) (uint64, error) {
 	for _, metric := range mf.Metric {
-		hasLabel := false
+		matchesExpectedLabel := false
+		mismatchesExpectedLabel := false
 		for _, label := range metric.Label {
-			if hasEqualValues(resourceLabel, label.Name) && hasEqualValues(resourceName, label.Value) {
-				hasLabel = true
-				break
+			if expectValue, ok := matchLabels[label.GetName()]; ok {
+				if label.GetValue() == expectValue {
+					matchesExpectedLabel = true
+				} else {
+					mismatchesExpectedLabel = true
+				}
 			}
 		}
-		if !hasLabel {
+		if !matchesExpectedLabel || mismatchesExpectedLabel {
 			continue
 		}
 		if metric.Gauge == nil || metric.Gauge.Value == nil {
@@ -138,49 +149,56 @@ func extractMetricValueForResourceCount(mf dto.MetricFamily, resourceName, metri
 	return 0, fmt.Errorf("%s: no valid metric values", metricName)
 }
 
-func getResourceCountFromDecoder(resourceName string, decoder expfmt.Decoder) (uint64, error) {
-	var mf dto.MetricFamily
-	var preferredMetricValue, fallbackMetricValue uint64
-	var preferredMetricError, fallbackMetricError error
-	gotPrefferedMetric, gotFallbackMetric := false, false
+func getResourceCountFromDecoder(matchLabels map[string]string, decoder expfmt.Decoder) (uint64, error) {
+	var resourceObjectsMetricValue, deprecatedMetricValue, fallbackMetricValue uint64
+	var resourceObjectsMetricError, deprecatedMetricError, fallbackMetricError error
+	gotResourceObjectsMetric, gotDeprecatedMetric, gotFallbackMetric := false, false, false
 
 	for {
+		var mf dto.MetricFamily
 		if err := decoder.Decode(&mf); err != nil {
 			if err == io.EOF {
 				break
 			}
 			return 0, fmt.Errorf("decoding error: %v", err)
 		}
+		if hasEqualValues(resourceObjectsMetricName, mf.Name) {
+			resourceObjectsMetricValue, resourceObjectsMetricError = extractMetricValueForResourceCount(&mf, matchLabels, mf.GetName())
+			gotResourceObjectsMetric = true
+		}
 		if hasEqualValues(objectCountMetricName, mf.Name) {
-			preferredMetricValue, preferredMetricError = extractMetricValueForResourceCount(mf, resourceName, *mf.Name)
-			gotPrefferedMetric = true
+			deprecatedMetricValue, deprecatedMetricError = extractMetricValueForResourceCount(&mf, matchLabels, mf.GetName())
+			gotDeprecatedMetric = true
 		}
 		if hasEqualValues(objectCountFallbackMetricName, mf.Name) {
-			fallbackMetricValue, fallbackMetricError = extractMetricValueForResourceCount(mf, resourceName, *mf.Name)
+			fallbackMetricValue, fallbackMetricError = extractMetricValueForResourceCount(&mf, matchLabels, mf.GetName())
 			gotFallbackMetric = true
 		}
 	}
 
-	if gotPrefferedMetric && preferredMetricError == nil {
-		return preferredMetricValue, nil
+	if gotResourceObjectsMetric && resourceObjectsMetricError == nil {
+		return resourceObjectsMetricValue, nil
+	}
+	if gotDeprecatedMetric && deprecatedMetricError == nil {
+		return deprecatedMetricValue, nil
 	}
 	if gotFallbackMetric && fallbackMetricError == nil {
 		return fallbackMetricValue, nil
 	}
-	if gotFallbackMetric || gotPrefferedMetric {
-		return 0, fmt.Errorf("at least one metric present but all present metrics have errors: %v, %v", preferredMetricError, fallbackMetricError)
+	if gotFallbackMetric || gotDeprecatedMetric || gotResourceObjectsMetric {
+		return 0, fmt.Errorf("at least one metric present but all present metrics have errors: %v, %v, %v", resourceObjectsMetricError, deprecatedMetricError, fallbackMetricError)
 	}
 	return 0, fmt.Errorf("no metric set")
 }
 
-func (k *kubernetesClient) countResourcesThroughMetrics(resourceName string) (uint64, error) {
+func (k *kubernetesClient) countResourcesThroughMetrics(matchLabels map[string]string) (uint64, error) {
 	// Similarly as for listing resources, permissions for /metrics endpoint are needed.
 	// Other than that, endpoint is visible from everywhere.
 	reader, err := k.clientset.CoreV1().RESTClient().Get().RequestURI("/metrics").Stream(context.Background())
 	if err != nil {
 		return 0, err
 	}
-	return getResourceCountFromDecoder(resourceName, expfmt.NewDecoder(reader, fmtText))
+	return getResourceCountFromDecoder(matchLabels, expfmt.NewDecoder(reader, fmtText))
 }
 
 func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, error) {
