@@ -169,10 +169,10 @@ The observation window is orthogonal to `updateMode`. While the gate is active, 
 
 CPU Startup Boost (AEP-7862) still applies during the delay window: the boost is a startup-safety mechanism computed from the pod's own spec, not a recommendation, and the Admission Controller already applies it even under `updateMode: Off` (the `Off` short-circuit in `resource/vpa/matcher.go` is bypassed for VPAs with a boost). The gate reuses the same `Off` semantics, so boosted containers remain boosted.
 
-The interaction appears at boost expiry, when the Updater performs the post-boost in-place downscale:
+The interaction appears at boost expiry, when the Updater performs the post-boost in-place resize:
 
 - Delay window still active → the pod is scaled down to its original spec resources; no recommendation is actuated.
-- Delay window elapsed → the pod is scaled down to the VPA recommendation, per normal post-boost behaviour.
+- Delay window elapsed → the pod is resized to the VPA recommendation, per normal post-boost behaviour.
 
 ### Interaction with Checkpoints
 
