@@ -526,20 +526,22 @@ func (u *updater) processNextBoostItem(ctx context.Context) bool {
 	}
 	defer u.cpuStartupBoostQueue.Done(key)
 
+	logger := klog.FromContext(ctx)
+
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
-		klog.ErrorS(err, "Failed to split key", "key", key)
+		logger.Error(err, "Failed to split key", "key", key)
 		u.cpuStartupBoostQueue.Forget(key)
 		return true
 	}
 	pod, err := u.podLister.Pods(namespace).Get(name)
 	if err != nil {
-		klog.V(4).InfoS("Pod no longer exists, skipping", "key", key)
+		logger.V(4).Info("Pod no longer exists, skipping", "key", key)
 		u.cpuStartupBoostQueue.Forget(key)
 		return true
 	}
 
-	logger := klog.FromContext(ctx).WithName("boost-worker").WithValues("pod", klog.KObj(pod))
+	logger = logger.WithValues("pod", klog.KObj(pod))
 
 	if !vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
 		logger.V(4).Info("Pod is not in boosted state, skipping")
