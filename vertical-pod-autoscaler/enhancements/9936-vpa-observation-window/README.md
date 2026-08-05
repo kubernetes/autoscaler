@@ -25,7 +25,7 @@
   - [Basic: <code>Recreate</code> with a six-hour window](#basic-recreate-with-a-six-hour-window)
   - [Fast iteration: <code>InPlace</code> with a short window](#fast-iteration-inplace-with-a-short-window)
   - [Pod-creation gating: <code>Initial</code> with a one-hour window](#pod-creation-gating-initial-with-a-one-hour-window)
-- [Alternatives Considered](#alternatives-considered)
+- [Alternatives](#alternatives)
 - [Implementation History](#implementation-history)
 <!-- /toc -->
 
@@ -54,7 +54,7 @@ This feature moves the sequencing into the VPA API itself. Operators declare "wa
 
 - **Recommender-confidence-based gating.** This feature is a user-declared policy, not a recommender-computed signal.
 - **Reset semantics on modification of other fields.** Changing `resourcePolicy`, `targetRef`, or the target workload does not reset the window. The window is anchored on `vpa.CreationTimestamp`; users who need to re-observe a workload after a material change should delete and recreate the VPA.
-- **Cluster-wide default windows.** Out of scope for this AEP; operators can inject a default with a Mutating Admission Policy (see [Alternatives Considered](#alternatives-considered), item 3).
+- **Cluster-wide default windows.** Out of scope for this AEP; operators can inject a default with a Mutating Admission Policy (see [Alternatives](#alternatives)).
 
 ## Proposal
 
@@ -159,7 +159,7 @@ The gate is stateless: it is a pure function of `CreationTimestamp` (immutable o
 
 No VPA spec change affects the gate **except** modifying `initialDelaySeconds` itself: the new value simply moves the expiry (`CreationTimestamp + initialDelaySeconds`), so on the next reconcile the gate may open earlier (value shortened or removed) or stay closed longer (value extended). No other field — existing or added to the CRD in the future — participates in gate evaluation; `updateMode` changes only what happens once the gate opens.
 
-Re-arm after expiry is possible but not guaranteed: because the window is anchored to `CreationTimestamp`, a modification re-arms the gate only when the new expiry still lies in the future. This is intentional — it lets users extend an observation window in response to observed instability without deleting the VPA, while a larger-but-already-elapsed value on an old VPA simply has no effect. If reviewers consider this a footgun serious enough to justify admission logic, we can add a check rejecting PATCHes that would push `expiry` past `now` once the window has already elapsed — see [Alternatives Considered](#alternatives-considered).
+Re-arm after expiry is possible but not guaranteed: because the window is anchored to `CreationTimestamp`, a modification re-arms the gate only when the new expiry still lies in the future. This is intentional — it lets users extend an observation window in response to observed instability without deleting the VPA, while a larger-but-already-elapsed value on an old VPA simply has no effect. If reviewers consider this a footgun serious enough to justify admission logic, we can add a check rejecting PATCHes that would push `expiry` past `now` once the window has already elapsed.
 
 ### Interaction with `updateMode`
 
@@ -352,21 +352,13 @@ spec:
 
 Pods created during the first hour receive their `Deployment`-spec resources unchanged. Pods created after the window get VPA-injected resources.
 
-## Alternatives Considered
+## Alternatives
 
-**1. Extend `EvictionRequirements` with a `TimeSinceCreationExceeds` value.** Reuses an existing extensibility hook (AEP-4831), but forces a duration to be encoded inside an enum meant for direction-of-change comparisons (`TargetHigherThanRequests` / `TargetLowerThanRequests`). Awkward and probably a design regression on that API.
+**1. External tooling (today's status quo).** Without this feature, you get the same behavior by creating the VPA in `Off` mode and flipping it to an active mode after N hours — a CronJob or a small controller that patches `updateMode`. It works, but every team rebuilds the same automation, and there's no per-VPA declarative way to say "wait N hours before acting."
 
-**2. Recommender-side confidence gate.** Block `RecommendationProvided` from becoming `True` for N hours or until a confidence threshold is met. Cleaner conceptually but hides visibility — operators would see no recommendation at all in `status.recommendation` during the window, defeating the "collect first, inspect, then apply" workflow this feature is meant to support.
+**2. Extend `EvictionRequirements` with a time-based condition.** `EvictionRequirements` (AEP-4831) already gates eviction on conditions. A duration doesn't fit its enum, which compares the recommendation against requests (`TargetHigherThanRequests` / `TargetLowerThanRequests`), and it only covers eviction — not admission-time injection or in-place resize.
 
-**3. Global default flag** (e.g. `--default-initial-delay-seconds`). A global default would have to be added to — and kept in sync between — both the Updater and the Admission Controller, since both evaluate the gate. Operators who want a default can instead apply a native [Mutating Admission Policy](https://kubernetes.io/docs/reference/access-authn-authz/mutating-admission-policy/) to inject the field, needing no new VPA configuration surface.
-
-**4. Do nothing; rely on operator tooling.** The status quo. Ships the complexity downstream to every VPA operator; the CronJob-plus-patch-controller dance ends up reinvented per environment.
-
-**5. Immutable field after creation.** Reject PATCH that modifies `initialDelaySeconds` via admission. Simpler in that it eliminates the re-arm and shortening cases, but forces users into delete-and-recreate to change the window — an expensive operation that also discards the VPA's recommendation history. The proposed stateless-gate design gets the same "one-line mental model" without that cost.
-
-**6. Reset on "material" spec changes** (`resourcePolicy`, `targetRef`). Arguably more correct — a workload with a different target really does have different history semantics — but forces us to define "material" and requires a status field to track the current anchor. Deferred: this AEP does not preclude adding such semantics in a future revision, and the `CreationTimestamp` anchor is a strict subset of any future anchor policy.
-
-**7. Reject PATCH that re-arms an expired gate.** Split the difference on (5) and the proposed design: allow PATCH freely during the window, but reject PATCHes that would push `expiry` past `now` once the window has already elapsed. Rejected because it makes the admission logic dependent on real time (surprising) and does not eliminate the underlying "PATCHes can change gate state" surprise — the `InitialDelayActive` condition and gauge already surface any re-arm immediately.
+**3. Default the field with a Mutating Admission Policy.** For a cluster-wide default, a [Mutating Admission Policy](https://kubernetes.io/docs/reference/access-authn-authz/mutating-admission-policy/) can set `initialDelaySeconds` on VPAs that don't specify it, using native Kubernetes with no VPA-side flag. This complements the field rather than replacing it.
 
 ## Implementation History
 
