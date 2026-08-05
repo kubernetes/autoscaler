@@ -325,8 +325,8 @@ type ContainerResourcePolicy struct {
 	// upper bound, or memory recommendations. Expressed as a fraction in
 	// (0, 1], e.g. "0.95" for p95. Falls back to the global flag when unset.
 	// Only honored when the PerVPAConfig feature gate is enabled.
+	// The (0, 1] range is enforced by the admission webhook.
 	// +optional
-	// +kubebuilder:validation:XValidation:rule="self > quantity('0') && self <= quantity('1')",message="targetCPUPercentile must be in (0, 1]"
 	TargetCPUPercentile *resource.Quantity `json:"targetCPUPercentile,omitempty"`
 
 	// targetMemoryPercentile overrides the global --target-memory-percentile
@@ -335,8 +335,8 @@ type ContainerResourcePolicy struct {
 	// lower bound, memory upper bound, or CPU recommendations. Expressed as a
 	// fraction in (0, 1], e.g. "0.95" for p95. Falls back to the global flag
 	// when unset. Only honored when the PerVPAConfig feature gate is enabled.
+	// The (0, 1] range is enforced by the admission webhook.
 	// +optional
-	// +kubebuilder:validation:XValidation:rule="self > quantity('0') && self <= quantity('1')",message="targetMemoryPercentile must be in (0, 1]"
 	TargetMemoryPercentile *resource.Quantity `json:"targetMemoryPercentile,omitempty"`
 
 	// startupBoost specifies the startup boost policy for the container.
