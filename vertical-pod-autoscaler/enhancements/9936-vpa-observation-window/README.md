@@ -218,20 +218,15 @@ Value is `1` while the gate is active for that VPA, `0` otherwise. Enables fleet
 
 Feature gate: **`VPAInitialDelay`**.
 
-Components consuming the gate:
+Both the `updater` and the `admission-controller` read `initialDelaySeconds` and honour the `VPAInitialDelay` feature gate. While the window is active:
 
-- `updater` — reads `initialDelaySeconds` and honours the gate.
-- `admission-controller` — gates acceptance of the field on new/updated VPAs behind the feature gate, and honours the gate by skipping recommendation injection for pods created during an active window.
+- `updater` — makes no evictions or in-place resizes for the VPA.
+- `admission-controller` — skips recommendation injection for newly created pods. It also validates the field on write and rejects it when the gate is disabled.
 
-Enabling the feature gate causes:
+Disabling the gate causes:
 
-- `admission-controller` to accept `initialDelaySeconds` on new/updated VPAs, and to skip recommendation injection for pods created while a VPA's window is active.
-- `updater` to honour the gate.
-
-Disabling the feature gate causes:
-
-- `admission-controller` to reject new VPAs that set `initialDelaySeconds`, with a descriptive error message indicating the feature gate is disabled.
-- `updater` and `admission-controller` to ignore the field on existing objects — the VPA behaves as if the field were not set (fail-open). This is deliberate: disabling the gate should never *increase* actuation restrictions on existing objects.
+- the `admission-controller` to reject new VPAs that set `initialDelaySeconds`, with a descriptive error.
+- both components to ignore the field on existing objects, so the VPA behaves as if it were unset (fail-open).
 
 ### Graduation Criteria
 
