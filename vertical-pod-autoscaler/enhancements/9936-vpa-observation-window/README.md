@@ -176,13 +176,11 @@ The interaction appears at boost expiry, when the Updater performs the post-boos
 
 ### Interaction with Checkpoints
 
-`VerticalPodAutoscalerCheckpoint` objects persist the Recommender's learned usage history for each VPA. When a VPA is deleted, its checkpoints are garbage-collected on the Recommender's next pass (`--checkpoints-gc-interval`, 10 minutes by default) — so if a VPA is recreated with the same name before that pass, the Recommender restores its history from the checkpoint and `status.recommendation` is immediately repopulated with mature values, rather than starting cold.
+A VPA's checkpoint stores the recommender's history for that VPA. Checkpoints are keyed by VPA name, not by a unique object ID, and one is only deleted once no VPA with that name exists (the recommender's GC pass, every 10 minutes by default via `--checkpoints-gc-interval`).
 
-This matters here because a recreated VPA can therefore hold mature recommendations while its delay window is still active, which raises the question of whether the gate should open early in that case.
+So deleting a VPA and recreating it with the same name hands the new object the old checkpoint, as long as GC hasn't removed it yet. The recommender loads that history and fills `status.recommendation` with mature values almost immediately, even though the new VPA has a fresh UID and creation time.
 
-Proposed handling: the gate ignores checkpoints entirely. A recreated VPA always starts a fresh window anchored to the new object's `CreationTimestamp`, whether its recommendations were restored or rebuilt from scratch.
-
-Rationale: keeping the gate a pure function of `CreationTimestamp` and the spec value is the core simplicity of this design — making it checkpoint-aware would reintroduce state and turn the field into a confidence signal, which is an explicit [non-goal](#non-goals). Users who recreate a VPA and are satisfied with the restored recommendations already have an escape hatch: shorten or remove `initialDelaySeconds` on the new object to open the gate early.
+This matters for the delay window, because a freshly recreated VPA can already hold mature recommendations while its window is still active. The window still starts from the new object's `CreationTimestamp`, whether the recommendations were restored from a checkpoint or built from scratch. Making the gate look at checkpoints would add state and turn `initialDelaySeconds` into a confidence signal, which is a [non-goal](#non-goals). Anyone who recreates a VPA and is happy with the restored recommendations can just set a smaller `initialDelaySeconds`, or leave it off, on the new object.
 
 ### Validation
 
