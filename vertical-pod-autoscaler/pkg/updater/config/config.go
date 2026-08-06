@@ -106,5 +106,10 @@ func InitUpdaterFlags() *UpdaterConfig {
 
 // ValidateUpdaterConfig performs validation of the updater flags
 func ValidateUpdaterConfig(config *UpdaterConfig) {
+	// TODO (omerap12): fill validation to all updater config flags.
+	if config.ConcurrentCPUStartupBoostSyncs <= 0 {
+		klog.ErrorS(nil, "ConcurrentCPUBoostSyncs should be positive", "ConcurrentCPUStartupBoostSyncs", config.ConcurrentCPUStartupBoostSyncs)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 	common.ValidateCommonConfig(config.CommonFlags)
 }
