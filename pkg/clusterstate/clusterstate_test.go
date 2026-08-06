@@ -2339,7 +2339,7 @@ func withNotifiedScaleUpFailuresRegistry(r *scaleupfailures.Registry) Option {
 // withMetrics sets the metrics for the ClusterStateRegistry.
 func withMetrics(m *mockMetrics, cloudProvider cloudprovider.CloudProvider) Option {
 	return func(o *options) {
-		metricProducer := nodegroupchange.NewNodeGroupChangeMetricsProducer(cloudProvider, m)
+		metricProducer := nodegroupchange.NewNodeGroupChangeMetricsProducer(cloudProvider, m, &emptyTemplateNodeInfoRegistry{})
 		o.scaleStateNotifier.Register(metricProducer)
 	}
 }

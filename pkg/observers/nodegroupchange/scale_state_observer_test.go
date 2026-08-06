@@ -77,7 +77,7 @@ func TestRegisterFailedScaleUpDirectCall(t *testing.T) {
 	mockMetricsObj.On("RegisterFailedScaleUp", metrics.FailedScaleUpReason("OUT_OF_RESOURCES"), "nvidia.com/gpu", "nvidia-tesla-k80", "dra.net").Return()
 	mockMetricsObj.On("RegisterFailedNodeCreations", metrics.FailedScaleUpReason("OUT_OF_RESOURCES"), 3).Return()
 
-	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj)
+	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj, nil)
 
 	nodeGroup := provider.GetNodeGroup("ng1")
 	errorInfo := cloudprovider.InstanceErrorInfo{
@@ -102,7 +102,7 @@ func TestRegisterFailedScaleUpCallViaObserversList(t *testing.T) {
 	mockMetricsObj.On("RegisterFailedScaleUp", metrics.FailedScaleUpReason("TIMEOUT"), "", "", "").Return()
 	mockMetricsObj.On("RegisterFailedNodeCreations", metrics.FailedScaleUpReason("TIMEOUT"), 5).Return()
 
-	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj)
+	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj, nil)
 
 	// Register with ObserversList
 	list := NewNodeGroupChangeObserversList()
@@ -150,7 +150,7 @@ func TestRegisterScaleUpDirectCall(t *testing.T) {
 	mockMetricsObj := &mockMetrics{}
 	mockMetricsObj.On("RegisterScaleUp", 2, "nvidia.com/gpu", "nvidia-tesla-k80", "dra.net").Return()
 
-	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj)
+	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj, nil)
 
 	nodeGroup := provider.GetNodeGroup("ng1")
 	producer.RegisterScaleUp(nodeGroup, 2, now)
@@ -168,7 +168,7 @@ func TestRegisterScaleUpCallViaObserversList(t *testing.T) {
 	mockMetricsObj := &mockMetrics{}
 	mockMetricsObj.On("RegisterScaleUp", 4, "", "", "").Return()
 
-	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj)
+	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj, nil)
 
 	list := NewNodeGroupChangeObserversList()
 	list.Register(producer)
@@ -177,4 +177,46 @@ func TestRegisterScaleUpCallViaObserversList(t *testing.T) {
 	list.RegisterScaleUp(nodeGroup, 4, now)
 
 	mockMetricsObj.AssertCalled(t, "RegisterScaleUp", 4, "", "", "")
+}
+
+type testNodeInfoRegistry struct {
+	nodeInfos map[string]*framework.NodeInfo
+}
+
+func (r *testNodeInfoRegistry) GetNodeInfo(id string) (*framework.NodeInfo, bool) {
+	ni, found := r.nodeInfos[id]
+	return ni, found
+}
+
+func TestRegisterScaleUpUsesNodeInfoRegistry(t *testing.T) {
+	now := time.Now()
+	gpuNode := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceName("nvidia.com/gpu"): resource.MustParse("1"),
+			},
+		},
+	}
+	gpuNode.Labels = map[string]string{
+		"TestGPULabel/accelerator": "nvidia-tesla-v100",
+	}
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+
+	registry := &testNodeInfoRegistry{
+		nodeInfos: map[string]*framework.NodeInfo{
+			"ng1": framework.NewNodeInfo(gpuNode, nil),
+		},
+	}
+
+	mockMetricsObj := &mockMetrics{}
+	mockMetricsObj.On("RegisterScaleUp", 1, "nvidia.com/gpu", "nvidia-tesla-v100", "").Return()
+
+	producer := NewNodeGroupChangeMetricsProducer(provider, mockMetricsObj, registry)
+
+	nodeGroup := provider.GetNodeGroup("ng1")
+	producer.RegisterScaleUp(nodeGroup, 1, now)
+
+	mockMetricsObj.AssertCalled(t, "RegisterScaleUp", 1, "nvidia.com/gpu", "nvidia-tesla-v100", "")
 }

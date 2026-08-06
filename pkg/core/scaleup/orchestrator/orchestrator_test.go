@@ -1223,7 +1223,7 @@ func runSimpleScaleUpTest(t *testing.T, testConfig *ScaleUpTestConfig) *ScaleUpT
 	assert.NoError(t, err)
 	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), autoscalingCtx.TemplateNodeInfoRegistry, clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
-	processors.ScaleStateNotifier.Register(nodegroupchange.NewNodeGroupChangeMetricsProducer(provider, metrics.DefaultMetrics))
+	processors.ScaleStateNotifier.Register(nodegroupchange.NewNodeGroupChangeMetricsProducer(provider, metrics.DefaultMetrics, autoscalingCtx.TemplateNodeInfoRegistry))
 	clusterState.UpdateNodes(nodes, time.Now())
 	processors.NodeGroupSetProcessor = nodegroupset.NewDefaultNodeGroupSetProcessor([]string{nodeGroupLabel}, config.NodeGroupDifferenceRatios{})
 	if testConfig.EnableAutoprovisioning {
@@ -2628,7 +2628,7 @@ func TestScaleUpMetricsEmission(t *testing.T) {
 	mockMetrics := &mockMetrics{}
 	mockMetrics.On("RegisterScaleUp", 2, "nvidia.com/gpu", "nvidia-tesla-k80", "dra.net").Return()
 
-	producer := nodegroupchange.NewNodeGroupChangeMetricsProducer(provider, mockMetrics)
+	producer := nodegroupchange.NewNodeGroupChangeMetricsProducer(provider, mockMetrics, templateNodeInfoRegistry)
 	processors.ScaleStateNotifier.Register(producer)
 
 	executor := newScaleUpExecutor(&autoscalingCtx, processors.ScaleStateNotifier, processors.AsyncNodeGroupStateChecker)
