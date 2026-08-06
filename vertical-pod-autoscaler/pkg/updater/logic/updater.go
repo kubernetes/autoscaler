@@ -623,10 +623,10 @@ func (u *updater) processNextBoostItem(ctx context.Context) bool {
 
 // TODO(omerap12):
 // we should revisit it.
-// Every time the boost worker processes a pod, it lists ALL VPAs and fetches selectors for each.
+// Every time the boost worker processes a pod, it lists ALL VPAs and fetches selectors for each (in the same namespace).
 // In clusters with many VPAs this is expensive (I know there is a lister so the list operation is in memory but maybe we can do something better)
 func (u *updater) getControllingVPAForPod(ctx context.Context, pod *corev1.Pod) (*vpa_api_util.VpaWithSelector, error) {
-	vpaList, err := u.vpaLister.List(labels.Everything())
+	vpaList, err := u.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
 	if err != nil {
 		return nil, err
 	}
