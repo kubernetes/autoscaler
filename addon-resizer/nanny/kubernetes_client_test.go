@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	dto "github.com/prometheus/client_model/go"
+	"google.golang.org/protobuf/proto"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -141,7 +142,7 @@ func getMetric(labelName, labelValue string, value float64) *dto.Metric {
 func TestExtractMetricValueForResourceCount(t *testing.T) {
 	testCases := []struct {
 		name           string
-		mf             dto.MetricFamily
+		mf             *dto.MetricFamily
 		resourceLabels map[string]string
 		expectCount    uint64
 		expectErr      error
@@ -149,13 +150,13 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 		{
 			name:           "(nodes) empty",
 			resourceLabels: nodeResourceLabels,
-			mf:             dto.MetricFamily{},
+			mf:             &dto.MetricFamily{},
 			expectErr:      fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
 			name:           "(nodes) with proper value",
 			resourceLabels: nodeResourceLabels,
-			mf: dto.MetricFamily{
+			mf: &dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "nodes", 4.0),
 				},
@@ -165,7 +166,7 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 		{
 			name:           "(nodes) only wrong label",
 			resourceLabels: nodeResourceLabels,
-			mf: dto.MetricFamily{
+			mf: &dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("wrong", "nodes", 4.0),
 				},
@@ -175,7 +176,7 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 		{
 			name:           "(nodes) only wrong label value",
 			resourceLabels: nodeResourceLabels,
-			mf: dto.MetricFamily{
+			mf: &dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "services", 4.0),
 				},
@@ -185,7 +186,7 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 		{
 			name:           "(nodes) with negative value",
 			resourceLabels: nodeResourceLabels,
-			mf: dto.MetricFamily{
+			mf: &dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "nodes", -4.0),
 				},
@@ -195,13 +196,13 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 		{
 			name:           "(pods) empty",
 			resourceLabels: podResourceLabels,
-			mf:             dto.MetricFamily{},
+			mf:             &dto.MetricFamily{},
 			expectErr:      fmt.Errorf("metric name: no valid metric values"),
 		},
 		{
 			name:           "(pods) with proper value",
 			resourceLabels: podResourceLabels,
-			mf: dto.MetricFamily{
+			mf: &dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "pods", 6.0),
 				},
@@ -211,7 +212,7 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 		{
 			name:           "(pods) only wrong label",
 			resourceLabels: podResourceLabels,
-			mf: dto.MetricFamily{
+			mf: &dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("wrong", "pods", 4.0),
 				},
@@ -221,7 +222,7 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 		{
 			name:           "(pods) only wrong label value",
 			resourceLabels: podResourceLabels,
-			mf: dto.MetricFamily{
+			mf: &dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "services", 4.0),
 				},
@@ -231,7 +232,7 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 		{
 			name:           "(pods) with negative value",
 			resourceLabels: podResourceLabels,
-			mf: dto.MetricFamily{
+			mf: &dto.MetricFamily{
 				Metric: []*dto.Metric{
 					getMetric("resource", "pods", -4.0),
 				},
@@ -241,14 +242,14 @@ func TestExtractMetricValueForResourceCount(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			gotCount, gotErr := extractMetricValueForResourceCount(&tc.mf, tc.resourceLabels, "metric name")
+			gotCount, gotErr := extractMetricValueForResourceCount(tc.mf, tc.resourceLabels, "metric name")
 			expectErrorOrCount(t, tc.expectErr, tc.expectCount, gotErr, gotCount)
 		})
 	}
 }
 
 type fakeDecoder struct {
-	metricValues []dto.MetricFamily
+	metricValues []*dto.MetricFamily
 	finalResult  error
 }
 
@@ -256,7 +257,8 @@ func (fd *fakeDecoder) Decode(output *dto.MetricFamily) error {
 	if len(fd.metricValues) == 0 {
 		return fd.finalResult
 	}
-	*output = fd.metricValues[len(fd.metricValues)-1]
+	output.Reset()
+	proto.Merge(output, fd.metricValues[len(fd.metricValues)-1])
 	fd.metricValues = fd.metricValues[:len(fd.metricValues)-1]
 	return nil
 }
@@ -266,7 +268,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 	fallbackMetric := objectCountFallbackMetricName
 	testCases := []struct {
 		name           string
-		metricValues   []dto.MetricFamily
+		metricValues   []*dto.MetricFamily
 		resourceLabels map[string]string
 		finalResult    error
 		expectValue    uint64
@@ -281,7 +283,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(nodes) with preferred metric",
 			finalResult:    io.EOF,
 			resourceLabels: nodeResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &preferredMetric,
 					Metric: []*dto.Metric{
@@ -295,7 +297,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(nodes) with fallback metric",
 			finalResult:    io.EOF,
 			resourceLabels: nodeResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
 					Metric: []*dto.Metric{
@@ -309,7 +311,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(nodes) with preferred and fallback metrics",
 			finalResult:    io.EOF,
 			resourceLabels: nodeResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
 					Metric: []*dto.Metric{
@@ -334,7 +336,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(nodes) falls back on error in preferred metric",
 			finalResult:    io.EOF,
 			resourceLabels: nodeResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
 					Metric: []*dto.Metric{
@@ -354,7 +356,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(nodes) reports error on both metrics",
 			finalResult:    io.EOF,
 			resourceLabels: nodeResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
 					Metric: []*dto.Metric{
@@ -374,7 +376,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(nodes) multiple metrics in preferred metric family",
 			finalResult:    io.EOF,
 			resourceLabels: nodeResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &preferredMetric,
 					Metric: []*dto.Metric{
@@ -394,7 +396,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(pods) with preferred metric",
 			finalResult:    io.EOF,
 			resourceLabels: podResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &preferredMetric,
 					Metric: []*dto.Metric{
@@ -408,7 +410,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(pods) with fallback metric",
 			finalResult:    io.EOF,
 			resourceLabels: podResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
 					Metric: []*dto.Metric{
@@ -422,7 +424,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(pods) with preferred and fallback metrics",
 			finalResult:    io.EOF,
 			resourceLabels: podResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
 					Metric: []*dto.Metric{
@@ -442,7 +444,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(pods) falls back on error in preferred metric",
 			finalResult:    io.EOF,
 			resourceLabels: podResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
 					Metric: []*dto.Metric{
@@ -462,7 +464,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(pods) reports error on both metrics",
 			finalResult:    io.EOF,
 			resourceLabels: podResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &fallbackMetric,
 					Metric: []*dto.Metric{
@@ -482,7 +484,7 @@ func TestGetResourceCountFromDecoder(t *testing.T) {
 			name:           "(pods) multiple metrics in preferred metric family",
 			finalResult:    io.EOF,
 			resourceLabels: podResourceLabels,
-			metricValues: []dto.MetricFamily{
+			metricValues: []*dto.MetricFamily{
 				{
 					Name: &preferredMetric,
 					Metric: []*dto.Metric{
@@ -582,7 +584,7 @@ func TestGetResourceCountFromDecoder_MultpleLabels(t *testing.T) {
 			}
 
 			fd := fakeDecoder{
-				metricValues: []dto.MetricFamily{
+				metricValues: []*dto.MetricFamily{
 					{
 						Name: &preferredMetric,
 						Metric: []*dto.Metric{
