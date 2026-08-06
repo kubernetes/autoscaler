@@ -24,7 +24,7 @@ import (
 
 // NannyConfiguration is a set of options that configure Nanny container.
 type NannyConfiguration struct {
-	metav1.TypeMeta `json:", inline"`
+	metav1.TypeMeta `json:",inline"`
 
 	BaseCPU string `json:"baseCPU"`
 
