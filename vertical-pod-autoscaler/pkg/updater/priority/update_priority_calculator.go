@@ -128,7 +128,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time, inf
 
 	// The update is allowed in following cases:
 	// - the request is outside the recommended range for some container.
-	// - the pod lives for at least 24h and the resource diff is >= MinChangePriority.
+	// - the pod lives for at least the duration of PodLifetimeUpdateThreshold and the resource diff is >= MinChangePriority.
 	// - a vpa scaled container OOMed in less than evictAfterOOMThreshold.
 	if !updatePriority.OutsideRecommendedRange && !quickOOM {
 		if pod.Status.StartTime == nil {
