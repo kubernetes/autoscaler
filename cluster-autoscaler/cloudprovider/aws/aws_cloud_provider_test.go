@@ -756,6 +756,20 @@ func TestHasInstance(t *testing.T) {
 	present, err = provider.HasInstance(node4)
 	assert.NoError(t, err)
 	assert.False(t, present)
+
+	// Case 5: node with unrecognized provider ID (e.g. EKS Hybrid Nodes,
+	// SageMaker HyperPod) - ignored, no error
+	node5 := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "hybrid-node-1",
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: "eks-hybrid:///us-west-2/my-cluster/my-node-1",
+		},
+	}
+	present, err = provider.HasInstance(node5)
+	assert.NoError(t, err)
+	assert.False(t, present)
 }
 
 func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
