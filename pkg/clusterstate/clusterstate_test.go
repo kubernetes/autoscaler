@@ -1978,6 +1978,10 @@ type mockMetrics struct {
 	mock.Mock
 }
 
+func (m *mockMetrics) RegisterScaleUp(delta int, gpuResourceName, gpuType, draDriverName string) {
+	m.Called(delta, gpuResourceName, gpuType, draDriverName)
+}
+
 func (m *mockMetrics) RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType, draDrivers string) {
 	m.Called(reason, gpuResourceName, gpuType, draDrivers)
 }
