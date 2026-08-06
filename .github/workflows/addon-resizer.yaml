@@ -5,10 +5,12 @@ on:
     paths:
       - 'addon-resizer/**'
       - '!addon-resizer/**/*.md'
+      - '.github/workflows/addon-resizer.yaml'
   pull_request:
     paths:
       - 'addon-resizer/**'
       - '!addon-resizer/**/*.md'
+      - '.github/workflows/addon-resizer.yaml'
 
 permissions:
   contents: read
