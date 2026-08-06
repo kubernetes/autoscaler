@@ -591,6 +591,7 @@ func (u *updater) processNextBoostItem(ctx context.Context) bool {
 		logger.V(2).Info("Unboosting pod")
 		if err := u.inPlaceRateLimiter.Wait(ctx); err != nil {
 			logger.Error(err, "In-place rate limiter wait failed for unboosting")
+			u.cpuStartupBoostQueue.AddRateLimited(key)
 			return true
 		}
 		if err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder); err != nil {
