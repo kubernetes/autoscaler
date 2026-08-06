@@ -108,6 +108,7 @@ const (
 	ScaleDownSoftTaintUnneeded FunctionLabel = "scaleDown:softTaintUnneeded"
 	ScaleUp                    FunctionLabel = "scaleUp"
 	BuildPodEquivalenceGroups  FunctionLabel = "scaleUp:buildPodEquivalenceGroups"
+	SkipNodeGroupSimulation    FunctionLabel = "scaleUp:skippedNodeGroupsSimulation"
 	Estimate                   FunctionLabel = "scaleUp:estimate"
 	FindUnneeded               FunctionLabel = "findUnneeded"
 	UpdateState                FunctionLabel = "updateClusterState"

@@ -818,7 +818,9 @@ func (o *ScaleUpOrchestrator) GetRemainingPods(egs []*equivalence.PodGroup, node
 		}
 		return remaining
 	}
-	// If ScaleUpSimulationForSkippedNodeGroupsEnabled is true we do the SchedulablePodGroups simulation for the skipped node groups.
+	// If ScaleUpSimulationForSkippedNodeGroupsEnabled is true we perform the SchedulablePodGroups simulation for the skipped node groups.
+	// We will also report how much time does this simulation take.
+	skippedNodeGroupsSimulationStart := time.Now()
 	nonSchedulableEgs := []*equivalence.PodGroup{}
 	for _, eg := range egs {
 		// there is no need to run the simulation for the schedulable pod groups, because for them we still do not return anything.
@@ -826,7 +828,9 @@ func (o *ScaleUpOrchestrator) GetRemainingPods(egs []*equivalence.PodGroup, node
 			nonSchedulableEgs = append(nonSchedulableEgs, eg.Clone())
 		}
 	}
-	return o.getRemainingPodsConsideringSkippedNodeGroups(nonSchedulableEgs, nodeGroups, skipped, nodeInfos)
+	noScaleUpInfosAfterSimulation := o.getRemainingPodsConsideringSkippedNodeGroups(nonSchedulableEgs, nodeGroups, skipped, nodeInfos)
+	metrics.UpdateDurationFromStart(metrics.SkipNodeGroupSimulation, skippedNodeGroupsSimulationStart)
+	return noScaleUpInfosAfterSimulation
 }
 
 func (o *ScaleUpOrchestrator) getRemainingPodsConsideringSkippedNodeGroups(egs []*equivalence.PodGroup, nodeGroups []cloudprovider.NodeGroup, skipped map[string]status.Reasons, nodeInfos map[string]*framework.NodeInfo) []status.NoScaleUpInfo {
@@ -905,6 +909,7 @@ func findSkippedNodeGroupsSatisfyingPodPredicates(eg *equivalence.PodGroup, skip
 		// if a node group is in skipped and for this eg it is not in scheduling errors, it means that it will stay in skipped, because it satisfies the pod predicates.
 		if _, hasPredicateError := eg.SchedulingErrors[skippedNodeGroupId]; !hasPredicateError {
 			matchingNodeGroups[skippedNodeGroupId] = skipReason
+			klog.V(4).Infof("Skipped node group %s satisfies pod predicates of %s pod's equivalence group", skippedNodeGroupId, eg.Pods[0].Name)
 		}
 	}
 	return matchingNodeGroups
