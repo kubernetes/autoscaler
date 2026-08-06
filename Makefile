@@ -25,7 +25,7 @@ GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
 REGISTRY?=gcr.io/k8s-staging-autoscaling
 DOCKER_NETWORK?=default
-SUPPORTED_BUILD_TAGS=$(shell ls cloudprovider/router/ | grep -e '^router_.*\.go' | sed 's/router_\(.*\)\.go/\1/')
+SUPPORTED_BUILD_TAGS=$(shell ls pkg/cloudprovider/router/ | grep -e '^router_.*\.go' | sed 's/router_\(.*\)\.go/\1/')
 
 # VERSION is the cluster-autoscaler version baked into the binary via -ldflags.
 #   1. Exact git tag pointing at HEAD, with the "cluster-autoscaler-" prefix stripped.
@@ -75,7 +75,7 @@ build:
 	@$(MAKE) build-arch-$(GOARCH)
 
 build-arch-%: clean-arch-%
-	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* ${LDFLAGS_FLAG} ${TAGS_FLAG}
+	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* ${LDFLAGS_FLAG} ${TAGS_FLAG} ./pkg
 
 test-build-tags:
 	@if [ -z "$(SUPPORTED_BUILD_TAGS)" ]; then \
@@ -91,7 +91,7 @@ test-unit: clean build
 	go test -race $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 test-controllers: setup-envtest clean build
-	ginkgo --race --vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG} ./test/integration/controllers/...
+	ginkgo --race --vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG} ./pkg/test/integration/controllers/...
 
 test-ci: setup-envtest
 	go test -race $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
