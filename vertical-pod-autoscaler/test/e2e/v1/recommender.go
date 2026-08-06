@@ -169,6 +169,81 @@ var _ = utils.RecommenderE2eDescribe("Checkpoints", func() {
 		})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
+
+	// Covers kubernetes/autoscaler#9241: a checkpoint that pre-dates its VPA (e.g. left
+	// over from before a VPA was reassigned to this recommender) must be picked up the
+	// first time the recommender starts tracking that VPA, not only on recommender
+	// restart. This VPA is new to the recommender the same way a reassigned one would
+	// be, without needing a second recommender instance.
+	f.It("is loaded for a VPA that becomes newly tracked", framework.WithSlow(), framework.WithSerial(), func() {
+		ns := f.Namespace.Name
+		vpaClientSet := utils.GetVpaClientSet(f)
+
+		ginkgo.By("Setting up hamster deployment")
+		SetupHamsterDeployment(f, "100m", "100Mi", utils.DefaultHamsterReplicas)
+
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(ns).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			Get()
+
+		ginkgo.By("Pre-creating a populated checkpoint before the VPA exists, simulating one left over from a previous recommender")
+		firstSampleStart := metav1.NewTime(time.Now().Add(-time.Hour))
+		const preloadedSamplesCount = 999999
+		checkpoint := &vpa_types.VerticalPodAutoscalerCheckpoint{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-%s", vpaCRD.Name, containerName),
+				Namespace: ns,
+			},
+			Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
+				VPAObjectName: vpaCRD.Name,
+				ContainerName: containerName,
+			},
+			Status: vpa_types.VerticalPodAutoscalerCheckpointStatus{
+				Version:           model.SupportedCheckpointVersion,
+				FirstSampleStart:  firstSampleStart,
+				LastUpdateTime:    firstSampleStart,
+				TotalSamplesCount: preloadedSamplesCount,
+			},
+		}
+		created, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).Create(context.TODO(), checkpoint, metav1.CreateOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		// The API server truncates FirstSampleStart to RFC3339 (second) precision, so compare
+		// against the server's round-tripped value rather than the pre-Create nanosecond-precision one.
+		firstSampleStart = created.Status.FirstSampleStart
+
+		ginkgo.By("Installing the VPA so it becomes newly tracked by the recommender")
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for the pre-existing checkpoint to be updated")
+		var updatedCheckpoint *vpa_types.VerticalPodAutoscalerCheckpoint
+		err = wait.PollUntilContextTimeout(context.Background(), utils.PollInterval, utils.PollTimeout, true, func(ctx context.Context) (bool, error) {
+			c, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).Get(ctx, checkpoint.Name, metav1.GetOptions{})
+			if err != nil {
+				klog.ErrorS(err, "Error getting VPA checkpoint")
+				return false, nil
+			}
+			if !c.Status.LastUpdateTime.After(firstSampleStart.Time) {
+				return false, nil
+			}
+			updatedCheckpoint = c
+			return true, nil
+		})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Checking that firstSampleStart was preserved, proving the checkpoint was loaded rather than reset")
+		gomega.Expect(updatedCheckpoint.Status.FirstSampleStart.Equal(&firstSampleStart)).To(gomega.BeTrue(),
+			fmt.Sprintf("firstSampleStart changed after the VPA became newly tracked: was %v, now %v",
+				firstSampleStart, updatedCheckpoint.Status.FirstSampleStart))
+
+		ginkgo.By("Checking that totalSamplesCount built on top of the preloaded value rather than starting from zero")
+		gomega.Expect(updatedCheckpoint.Status.TotalSamplesCount).To(gomega.BeNumerically(">", preloadedSamplesCount),
+			fmt.Sprintf("totalSamplesCount should have increased from the preloaded checkpoint value: was %d, now %d",
+				preloadedSamplesCount, updatedCheckpoint.Status.TotalSamplesCount))
+	})
 })
 
 var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
