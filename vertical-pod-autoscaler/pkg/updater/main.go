@@ -20,8 +20,10 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -144,6 +146,9 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 }
 
 func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
+	sigCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+
 	stopCh := make(chan struct{})
 	defer close(stopCh)
 
@@ -217,7 +222,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	// Start boost worker only if CPUStartupBoost feature gate are enabled
 	if features.Enabled(features.CPUStartupBoost) {
 		var wg sync.WaitGroup
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithCancel(sigCtx)
 		defer func() {
 			cancel()
 			updater.ShutDown()
@@ -233,11 +238,18 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	// Start updating health check endpoint.
 	healthCheck.StartMonitoring()
 
-	ticker := time.Tick(config.UpdaterInterval)
-	for range ticker {
-		loopCtx, loopCancel := context.WithTimeout(context.Background(), config.UpdaterInterval)
-		updater.RunOnce(loopCtx)
-		healthCheck.UpdateLastActivity()
-		loopCancel()
+	ticker := time.NewTicker(config.UpdaterInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			loopCtx, loopCancel := context.WithTimeout(sigCtx, config.UpdaterInterval)
+			updater.RunOnce(loopCtx)
+			healthCheck.UpdateLastActivity()
+			loopCancel()
+		case <-sigCtx.Done():
+			klog.InfoS("Received shutdown signal, exiting")
+			return
+		}
 	}
 }
