@@ -530,6 +530,32 @@ type VerticalPodAutoscalerCheckpointStatus struct {
 
 	// Total number of samples in the histograms.
 	TotalSamplesCount int `json:"totalSamplesCount,omitempty"`
+
+	// CurrentMemoryPeak holds the memory peak observed so far in the current incomplete memory
+	// aggregation interval. This ensures that the current memory peak survives a recommender
+	// restart in the middle of an aggregation interval instead of being discarded.
+	// +optional
+	CurrentMemoryPeak *MemoryPeakCheckpoint `json:"currentMemoryPeak,omitempty"`
+}
+
+// MemoryPeakCheckpoint holds the in-progress memory peak of the current memory aggregation interval
+// that has not yet been recorded into the memory histogram. Its fields mirror the memory-related
+// fields of model.ContainerState
+type MemoryPeakCheckpoint struct {
+	// Peak is the max memory usage observed in the current aggregation interval.
+	Peak resource.Quantity `json:"peak,omitempty"`
+
+	// OOMPeak is the maximum memory usage estimated from OOM events in the current interval.
+	// +optional
+	OOMPeak resource.Quantity `json:"oomPeak,omitempty"`
+
+	// WindowEnd is the end time of the current memory aggregation interval (not inclusive).
+	// +nullable
+	WindowEnd metav1.Time `json:"windowEnd,omitempty"`
+
+	// LastSampleStart is the start of the latest memory usage sample that was aggregated.
+	// +nullable
+	LastSampleStart metav1.Time `json:"lastSampleStart,omitempty"`
 }
 
 // HistogramCheckpoint contains data needed to reconstruct the histogram.

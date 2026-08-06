@@ -200,6 +200,65 @@ func TestAggregateContainerStateLoadFromCheckpoint(t *testing.T) {
 	assert.False(t, cs.AggregateMemoryPeaks.IsEmpty())
 }
 
+func TestAggregateContainerStateCurrentMemoryPeakRoundTrip(t *testing.T) {
+	location, _ := time.LoadLocation("UTC")
+	windowEnd := time.Date(2018, time.January, 2, 0, 0, 0, 0, location)
+	lastSample := time.Date(2018, time.January, 1, 23, 0, 0, 0, location)
+
+	cs := NewAggregateContainerState()
+	cs.CurrentMemoryPeak = &MemoryPeakData{
+		Peak:            MemoryAmountFromBytes(2e9),
+		OOMPeak:         MemoryAmountFromBytes(3e9),
+		WindowEnd:       windowEnd,
+		LastSampleStart: lastSample,
+	}
+
+	checkpoint, err := cs.SaveToCheckpoint()
+	assert.NoError(t, err)
+	if assert.NotNil(t, checkpoint.CurrentMemoryPeak) {
+		assert.Equal(t, int64(2e9), checkpoint.CurrentMemoryPeak.Peak.Value())
+		assert.Equal(t, int64(3e9), checkpoint.CurrentMemoryPeak.OOMPeak.Value())
+		assert.Equal(t, windowEnd, checkpoint.CurrentMemoryPeak.WindowEnd.Time)
+		assert.Equal(t, lastSample, checkpoint.CurrentMemoryPeak.LastSampleStart.Time)
+	}
+
+	restored := NewAggregateContainerState()
+	assert.NoError(t, restored.LoadFromCheckpoint(checkpoint))
+	if assert.NotNil(t, restored.CurrentMemoryPeak) {
+		assert.Equal(t, MemoryAmountFromBytes(2e9), restored.CurrentMemoryPeak.Peak)
+		assert.Equal(t, MemoryAmountFromBytes(3e9), restored.CurrentMemoryPeak.OOMPeak)
+		assert.Equal(t, windowEnd, restored.CurrentMemoryPeak.WindowEnd)
+		assert.Equal(t, lastSample, restored.CurrentMemoryPeak.LastSampleStart)
+	}
+}
+
+func TestAggregateContainerStateSaveToCheckpointNoInProgressPeak(t *testing.T) {
+	cs := NewAggregateContainerState()
+	checkpoint, err := cs.SaveToCheckpoint()
+	assert.NoError(t, err)
+	assert.Nil(t, checkpoint.CurrentMemoryPeak)
+}
+
+func TestRecordCurrentMemoryPeakKeepsLargest(t *testing.T) {
+	a := NewAggregateContainerState()
+	windowEnd := time.Unix(1000, 0)
+
+	small := NewContainerState(testRequest, a)
+	small.WindowEnd = windowEnd
+	small.memoryPeak = MemoryAmountFromBytes(1e9)
+
+	large := NewContainerState(testRequest, a)
+	large.WindowEnd = windowEnd
+	large.memoryPeak = MemoryAmountFromBytes(5e9)
+
+	a.RecordCurrentMemoryPeak(small)
+	a.RecordCurrentMemoryPeak(large)
+	a.RecordCurrentMemoryPeak(small) // out of order, must not shrink the recorded peak
+	if assert.NotNil(t, a.CurrentMemoryPeak) {
+		assert.Equal(t, MemoryAmountFromBytes(5e9), a.CurrentMemoryPeak.max())
+	}
+}
+
 func TestAggregateContainerStateIsExpired(t *testing.T) {
 	cs := NewAggregateContainerState()
 	cs.LastSampleStart = testTimestamp

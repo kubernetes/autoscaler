@@ -105,6 +105,44 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 	}
 }
 
+func TestBuildAggregateContainerStateMapRecordsCurrentMemoryPeak(t *testing.T) {
+	cluster := model.NewClusterState(testGcPeriod)
+	cluster.AddOrUpdatePod(testPodID1, testLabels, corev1.PodRunning)
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID1, testRequest))
+	container := cluster.GetContainer(testContainerID1)
+
+	timeNow := time.Unix(1, 0)
+	peakBytes := model.MemoryAmountFromBytes(1024 * 1024 * 1024)
+	container.AddSample(&model.ContainerUsageSample{
+		MeasureStart: timeNow,
+		Usage:        peakBytes,
+		Resource:     model.ResourceMemory,
+	})
+	vpa := addVpa(t, cluster, testVpaID1, testSelectorStr)
+
+	// The current peak is excluded from the aggregation but recorded separately so it can be
+	// persisted in the checkpoint and restored after a restart.
+	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, cluster, timeNow)
+	if assert.Contains(t, aggregateContainerStateMap, "container-1") {
+		acs := aggregateContainerStateMap["container-1"]
+		assert.True(t, acs.AggregateMemoryPeaks.IsEmpty(), "current peak should be excluded from the aggregation")
+		if assert.NotNil(t, acs.CurrentMemoryPeak, "current peak should be recorded for the checkpoint") {
+			assert.Equal(t, peakBytes, acs.CurrentMemoryPeak.Peak)
+			assert.Equal(t, container.WindowEnd, acs.CurrentMemoryPeak.WindowEnd)
+		}
+	}
+
+	// Once the peak belongs to a completed interval it stays in the aggregation and is no longer
+	// recorded as an in-progress peak.
+	timeNow = timeNow.Add(model.GetAggregationsConfig().MemoryAggregationIntervalDuration)
+	aggregateContainerStateMap = buildAggregateContainerStateMap(vpa, cluster, timeNow)
+	if assert.Contains(t, aggregateContainerStateMap, "container-1") {
+		acs := aggregateContainerStateMap["container-1"]
+		assert.False(t, acs.AggregateMemoryPeaks.IsEmpty(), "old peak should remain in the aggregation")
+		assert.Nil(t, acs.CurrentMemoryPeak, "a completed peak should not be recorded as in-progress")
+	}
+}
+
 func TestIsFetchingHistory(t *testing.T) {
 	testCases := []struct {
 		vpa               *model.Vpa

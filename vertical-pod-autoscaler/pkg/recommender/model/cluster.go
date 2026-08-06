@@ -242,7 +242,9 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	}
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
 		cluster.findOrCreateAggregateContainerState(containerID)
-		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
+		containerState := NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
+		cluster.loadCurrentMemoryPeak(pod, containerID.ContainerName, containerState)
+		pod.Containers[containerID.ContainerName] = containerState
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
@@ -412,6 +414,54 @@ func (cluster *clusterState) findOrCreateAggregateContainerState(containerID Con
 		}
 	}
 	return aggregateContainerState
+}
+
+// loadCurrentMemoryPeak restores the in-progress memory peak persisted in a VPA checkpoint
+// (loaded into ContainersInitialAggregateState) into the given container, so the peak
+// accumulated before a recommender restart is not lost. It seeds the container's peak state
+// and adds the peak to the aggregation, after which subsequent memory samples continue to
+// aggregate into the same interval window (see addMemorySample). It is a no-op when there is
+// no controlling VPA or no peak to restore. It must be called after
+// findOrCreateAggregateContainerState has linked the aggregation to the matching VPAs.
+//
+// The peak is added to the shared aggregation at most once, guarded by two things:
+//   - the aggregation's memoryPeakRestored flag, so multiple pods (replicas), or multiple
+//     overlapping VPAs pointing at the same aggregation, don't each add it; and
+//   - clearing the source peak, so a single VPA doesn't re-apply it across pods (e.g. across
+//     the two ReplicaSets of a rolling update, which share one ContainersInitialAggregateState
+//     entry but map to different aggregations).
+//
+// The peak is restored from the VPA controlling the pod (GetControllingVPA), so the choice is
+// consistent with pod ownership rather than depending on map iteration order. Overlapping VPAs
+// are still resolved arbitrarily (as elsewhere); the only residual imperfection is that a
+// restart coinciding with a rolling update under overlapping VPAs may briefly restore the peak
+// into both ReplicaSets' aggregations.
+func (cluster *clusterState) loadCurrentMemoryPeak(pod *PodState, containerName string, containerState *ContainerState) {
+	aggregateContainerState := cluster.findOrCreateAggregateContainerState(ContainerID{PodID: pod.ID, ContainerName: containerName})
+	if aggregateContainerState.memoryPeakRestored {
+		return
+	}
+	vpa := cluster.GetControllingVPA(pod)
+	if vpa == nil {
+		return
+	}
+	initialAggregateContainerState, ok := vpa.ContainersInitialAggregateState[containerName]
+	if !ok || initialAggregateContainerState.CurrentMemoryPeak == nil {
+		return
+	}
+	currentMemoryPeak := initialAggregateContainerState.CurrentMemoryPeak
+	initialAggregateContainerState.CurrentMemoryPeak = nil
+	aggregateContainerState.memoryPeakRestored = true
+
+	containerState.memoryPeak = currentMemoryPeak.Peak
+	containerState.oomPeak = currentMemoryPeak.OOMPeak
+	containerState.WindowEnd = currentMemoryPeak.WindowEnd
+	containerState.lastMemorySampleStart = currentMemoryPeak.LastSampleStart
+	aggregateContainerState.AddSample(&ContainerUsageSample{
+		MeasureStart: currentMemoryPeak.WindowEnd,
+		Usage:        containerState.GetMaxMemoryPeak(),
+		Resource:     ResourceMemory,
+	})
 }
 
 // garbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the clusterState.

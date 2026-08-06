@@ -125,7 +125,38 @@ type AggregateContainerState struct {
 	MemoryAggregationIntervalCount    int64
 	ControlledResources               *[]ResourceName
 
+	// CurrentMemoryPeak holds the in-progress memory peak of the current (not yet completed)
+	// aggregation interval, i.e. the peak that is excluded from AggregateMemoryPeaks. It is
+	// populated when saving a checkpoint (from the live container states) and when loading a
+	// checkpoint, so that the peak accumulated so far survives a recommender restart. It is
+	// nil when there is no in-progress peak to preserve.
+	CurrentMemoryPeak *MemoryPeakData
+	// memoryPeakRestored records whether a checkpointed in-progress memory peak has already been
+	// restored into this (shared) aggregation, so it is applied at most once even when multiple
+	// pods, or multiple overlapping VPAs, map to it (see clusterState.loadCurrentMemoryPeak).
+	memoryPeakRestored bool
+
 	mutex sync.RWMutex
+}
+
+// MemoryPeakData holds the in-progress memory peak of the current memory aggregation
+// interval, i.e. the peak that has not yet been recorded into the aggregated histogram.
+// It mirrors the transient peak state of a ContainerState so that it can be persisted to
+// and restored from a checkpoint.
+type MemoryPeakData struct {
+	// Peak is the max memory usage observed from usage samples in the interval.
+	Peak ResourceAmount
+	// OOMPeak is the max memory usage estimated from OOM events in the interval.
+	OOMPeak ResourceAmount
+	// WindowEnd is the end time (not inclusive) of the memory aggregation interval.
+	WindowEnd time.Time
+	// LastSampleStart is the start of the latest memory sample aggregated into the interval.
+	LastSampleStart time.Time
+}
+
+// max returns the effective peak, i.e. the larger of the usage-based and OOM-based peaks.
+func (m *MemoryPeakData) max() ResourceAmount {
+	return ResourceAmountMax(m.Peak, m.OOMPeak)
 }
 
 // GetLastRecommendation returns last recorded recommendation in a thread-safe manner.
@@ -181,6 +212,22 @@ func (a *AggregateContainerState) GetOOMMinBumpUp() float64 {
 // GetMemoryAggregationIntervalDuration returns the memory aggregation interval for this container state.
 func (a *AggregateContainerState) GetMemoryAggregationIntervalDuration() time.Duration {
 	return a.MemoryAggregationIntervalDuration
+}
+
+// RecordCurrentMemoryPeak records the container's in-progress interval peak as the peak to persist
+// in the checkpoint, keeping the largest peak across all containers that aggregate into this state.
+// Callers should only invoke it for peaks that are still within the current interval (and therefore
+// excluded from AggregateMemoryPeaks).
+func (a *AggregateContainerState) RecordCurrentMemoryPeak(container *ContainerState) {
+	if a.CurrentMemoryPeak != nil && a.CurrentMemoryPeak.max() >= container.GetMaxMemoryPeak() {
+		return
+	}
+	a.CurrentMemoryPeak = &MemoryPeakData{
+		Peak:            container.memoryPeak,
+		OOMPeak:         container.oomPeak,
+		WindowEnd:       container.WindowEnd,
+		LastSampleStart: container.lastMemorySampleStart,
+	}
 }
 
 // MarkNotAutoscaled registers that this container state is not controlled by
@@ -272,7 +319,7 @@ func (a *AggregateContainerState) SaveToCheckpoint() (*vpa_types.VerticalPodAuto
 	if err != nil {
 		return nil, err
 	}
-	return &vpa_types.VerticalPodAutoscalerCheckpointStatus{
+	status := &vpa_types.VerticalPodAutoscalerCheckpointStatus{
 		LastUpdateTime:    metav1.NewTime(time.Now()),
 		FirstSampleStart:  metav1.NewTime(a.FirstSampleStart),
 		LastSampleStart:   metav1.NewTime(a.LastSampleStart),
@@ -280,7 +327,16 @@ func (a *AggregateContainerState) SaveToCheckpoint() (*vpa_types.VerticalPodAuto
 		MemoryHistogram:   *memory,
 		CPUHistogram:      *cpu,
 		Version:           SupportedCheckpointVersion,
-	}, nil
+	}
+	if a.CurrentMemoryPeak != nil {
+		status.CurrentMemoryPeak = &vpa_types.MemoryPeakCheckpoint{
+			Peak:            QuantityFromMemoryAmount(a.CurrentMemoryPeak.Peak),
+			OOMPeak:         QuantityFromMemoryAmount(a.CurrentMemoryPeak.OOMPeak),
+			WindowEnd:       metav1.NewTime(a.CurrentMemoryPeak.WindowEnd),
+			LastSampleStart: metav1.NewTime(a.CurrentMemoryPeak.LastSampleStart),
+		}
+	}
+	return status, nil
 }
 
 // LoadFromCheckpoint deserializes data from VerticalPodAutoscalerCheckpointStatus
@@ -299,6 +355,14 @@ func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.Verti
 	err = a.AggregateCPUUsage.LoadFromCheckpoint(&checkpoint.CPUHistogram)
 	if err != nil {
 		return err
+	}
+	if checkpoint.CurrentMemoryPeak != nil {
+		a.CurrentMemoryPeak = &MemoryPeakData{
+			Peak:            MemoryAmountFromBytes(float64(checkpoint.CurrentMemoryPeak.Peak.Value())),
+			OOMPeak:         MemoryAmountFromBytes(float64(checkpoint.CurrentMemoryPeak.OOMPeak.Value())),
+			WindowEnd:       checkpoint.CurrentMemoryPeak.WindowEnd.Time,
+			LastSampleStart: checkpoint.CurrentMemoryPeak.LastSampleStart.Time,
+		}
 	}
 	return nil
 }
