@@ -41,7 +41,7 @@ const providerIDPrefix = "openstack:///"
 
 // NodeGroup implements cloudprovider.NodeGroup interface.
 type NodeGroup struct {
-	sdk.NodePool
+	*sdk.NodePool
 
 	Manager     *OvhCloudManager
 	CurrentSize int
@@ -213,7 +213,7 @@ func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 		instances = append(instances, instance)
 
 		// Store the associated node group in cache for future reference
-		ng.Manager.setNodeGroupPerProviderID(instance.Id, ng)
+		ng.Manager.setNodeGroupPerName(ng.Name, ng)
 	}
 
 	return instances, nil
@@ -238,11 +238,11 @@ func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		},
 	}
 
-	// Add the nodepool label
+	// Add the nodepool name label
 	if node.ObjectMeta.Labels == nil {
 		node.ObjectMeta.Labels = make(map[string]string)
 	}
-	node.ObjectMeta.Labels[NodePoolLabel] = ng.Id()
+	node.ObjectMeta.Labels[NodePoolLabel] = ng.Name
 
 	flavor, err := ng.Manager.getFlavorByName(ng.Flavor)
 	if err != nil {
@@ -294,7 +294,7 @@ func (ng *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
 
 	// Forge a node group interface given the API response
 	return &NodeGroup{
-		NodePool:    *np,
+		NodePool:    np,
 		Manager:     ng.Manager,
 		CurrentSize: int(ng.DesiredNodes),
 	}, nil
@@ -328,11 +328,12 @@ func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*c
 		return nil, nil
 	}
 
+	// Initialize configuration from defaults
+	cfg := defaults
+
 	// Forge autoscaling configuration from node pool
-	cfg := &config.NodeGroupAutoscalingOptions{
-		ScaleDownUnneededTime: time.Duration(ng.Autoscaling.ScaleDownUnneededTimeSeconds) * time.Second,
-		ScaleDownUnreadyTime:  time.Duration(ng.Autoscaling.ScaleDownUnreadyTimeSeconds) * time.Second,
-	}
+	cfg.ScaleDownUnneededTime = time.Duration(ng.Autoscaling.ScaleDownUnneededTimeSeconds) * time.Second
+	cfg.ScaleDownUnreadyTime = time.Duration(ng.Autoscaling.ScaleDownUnreadyTimeSeconds) * time.Second
 
 	// Switch utilization threshold from defaults given flavor type
 	if ng.isGpu() {
@@ -343,7 +344,7 @@ func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*c
 		cfg.ScaleDownGpuUtilizationThreshold = defaults.ScaleDownGpuUtilizationThreshold
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }
 
 // isGpu checks if a node group is using GPU machines
@@ -352,7 +353,11 @@ func (ng *NodeGroup) isGpu() bool {
 	if err != nil {
 		// Fallback when we are unable to get the flavor: refer to the only category
 		// known to be a GPU flavor category
-		return strings.HasPrefix(ng.Flavor, GPUMachineCategory)
+		for _, gpuCategoryPrefix := range GPUMachineCategoryPrefixes {
+			if strings.HasPrefix(ng.Flavor, gpuCategoryPrefix) {
+				return true
+			}
+		}
 	}
 
 	return flavor.GPUs > 0
