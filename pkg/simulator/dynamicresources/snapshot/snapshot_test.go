@@ -75,6 +75,24 @@ var (
 	deviceClass2 = &resourceapi.DeviceClass{ObjectMeta: metav1.ObjectMeta{Name: "class2", UID: "class2-uid"}}
 )
 
+// TestRemovePodOwnedClaimsMissingClaimNoPanic verifies that RemovePodOwnedClaims does not panic
+// when a Pod references a ResourceClaim that is not present in the snapshot. findPodClaims is
+// called with ignoreNotTracked=true on the RemovePodOwnedClaims path, so an untracked claim must
+// be skipped rather than returned as a nil entry that a later GetClaimId() dereference panics on.
+func TestRemovePodOwnedClaimsMissingClaimNoPanic(t *testing.T) {
+	// pod1 references pod1OwnClaim1 and pod1OwnClaim2; leave pod1OwnClaim2 out of the snapshot so
+	// that findPodClaims(pod1, true) encounters an untracked claim.
+	claims := map[ResourceClaimId]*resourceapi.ResourceClaim{
+		GetClaimId(sharedClaim1):  sharedClaim1.DeepCopy(),
+		GetClaimId(sharedClaim2):  sharedClaim2.DeepCopy(),
+		GetClaimId(pod1OwnClaim1): pod1OwnClaim1.DeepCopy(),
+	}
+	snapshot := NewSnapshot(claims, nil, nil, nil)
+
+	// Before the fix this panics with a nil-pointer dereference in GetClaimId().
+	snapshot.RemovePodOwnedClaims(pod1)
+}
+
 func TestSnapshotResourceClaims(t *testing.T) {
 	pod1NoClaimsInStatus := pod1.DeepCopy()
 	pod1NoClaimsInStatus.Status.ResourceClaimStatuses = nil
