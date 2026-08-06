@@ -449,6 +449,18 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 		}
 
 		selector, conditions := feeder.getSelector(ctx, vpaCRD)
+		// If the target controller is briefly unresolvable (informer not ready,
+		// workload mid-recreate), getSelector returns labels.Nothing(). Prefer
+		// the previously known selector so LoadVPAs does not flip ""→real and
+		// wipe checkpoint history. Conditions still record ConfigUnsupported.
+		// See kubernetes/autoscaler#9891.
+		if selector == nil || selector.String() == "" {
+			if existing, ok := feeder.clusterState.VPAs()[vpaID]; ok && existing.PodSelector != nil && existing.PodSelector.String() != "" {
+				klog.V(3).InfoS("Keeping previous VPA selector after targetRef resolution failure",
+					"selector", existing.PodSelector.String(), "vpa", klog.KObj(vpaCRD))
+				selector = existing.PodSelector
+			}
+		}
 		klog.V(4).InfoS("Using selector", "selector", selector.String(), "vpa", klog.KObj(vpaCRD))
 
 		if feeder.clusterState.AddOrUpdateVpa(vpaCRD, selector) == nil {
