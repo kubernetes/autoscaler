@@ -17,6 +17,7 @@ limitations under the License.
 package api
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1792,8 +1793,8 @@ func TestEnsureValidBounds(t *testing.T) {
 		expected           []vpa_types.RecommendedContainerResources
 	}{
 		{
-			// Here, LowerBound <= Target <= UpperBound holds for all containers, so no action is required.
-			name: "no violation",
+			// Here, LowerBound <= Target holds for all containers, so no action is required.
+			name: "no violation between LowerBound and Target",
 			containerLevelRecs: []vpa_types.RecommendedContainerResources{
 				{
 					ContainerName: "c1",
@@ -1844,8 +1845,8 @@ func TestEnsureValidBounds(t *testing.T) {
 			},
 		},
 		{
-			// Here, LowerBound <= Target <= UpperBound holds for all containers, so no action is required.
-			name: "no violation",
+			// Here, Target <= UpperBound holds for all containers, so no action is required.
+			name: "no violation between Target and UpperBound",
 			containerLevelRecs: []vpa_types.RecommendedContainerResources{
 				{
 					ContainerName: "c1",
@@ -2349,29 +2350,39 @@ func TestEnsureValidBounds(t *testing.T) {
 	}
 }
 
-func Test_roundPreservingSum(t *testing.T) {
+func TestRoundPreservingSum(t *testing.T) {
 	tests := []struct {
 		name           string
 		floats         []float64
 		expectedFloats []float64
 	}{
 		{
-			name:           "example1",
-			floats:         []float64{0, 1, 3.5, 3.5},
-			expectedFloats: []float64{0, 1, 4, 3},
-		},
-		{
-			name:           "example2",
+			name:           "increment the largest value",
 			floats:         []float64{0, 1, 2.8, 3.2},
 			expectedFloats: []float64{0, 1, 2, 4},
 		},
 		{
-			name:           "example3",
-			floats:         []float64{0, 1, 3, 3},
-			expectedFloats: []float64{0, 1, 3, 3},
+			name:           "increment the first occurrence of the largest value",
+			floats:         []float64{0, 1, 3.5, 3.5},
+			expectedFloats: []float64{0, 1, 4, 3},
 		},
 		{
-			name:           "example4",
+			name:           "sum of remainder is less than 1",
+			floats:         []float64{0, 1, 2.1, 3.1},
+			expectedFloats: []float64{0, 1, 2, 4},
+		},
+		{
+			name:           "sum of remainder is greater than 1",
+			floats:         []float64{0, 1, 2.9, 3.9},
+			expectedFloats: []float64{0, 1, 2, 4},
+		},
+		{
+			name:           "no remainder",
+			floats:         []float64{0, 1, 4, 3},
+			expectedFloats: []float64{0, 1, 4, 3},
+		},
+		{
+			name:           "slice where all elements are zero",
 			floats:         []float64{0, 0, 0},
 			expectedFloats: []float64{0, 0, 0},
 		},
@@ -2380,6 +2391,106 @@ func Test_roundPreservingSum(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			floats := roundPreservingSum(tt.floats)
 			assert.Equal(t, tt.expectedFloats, floats)
+		})
+	}
+}
+
+func TestIterativeWaterfilling(t *testing.T) {
+	neverSaturates := 999999.0
+	tests := []struct {
+		name                  string
+		total                 float64
+		weights               []float64
+		constraints           []float64
+		expectedDistributions []float64
+		expectedHasAllocation bool
+		expectedError         error
+	}{
+		// The first element should receive 10% of the total, the second 50%, and so on...
+		{
+			name:                  "no violation",
+			total:                 10,
+			weights:               []float64{0.1, 0.5, 0.3, 0.1},
+			constraints:           []float64{10, 10, 10, 10},
+			expectedDistributions: []float64{1, 5, 3, 1},
+			expectedHasAllocation: true,
+			expectedError:         nil,
+		},
+		{
+			name:                  "all constraints violated",
+			total:                 10,
+			weights:               []float64{0.1, 0.5, 0.3, 0.1},
+			constraints:           []float64{0, 0, 0, 0},
+			expectedDistributions: nil,
+			expectedHasAllocation: false,
+			expectedError:         nil,
+		},
+		{
+			name:                  "one element saturates, remainder absorbed by the other",
+			total:                 10,
+			weights:               []float64{0.5, 0.5},
+			constraints:           []float64{3, neverSaturates},
+			expectedDistributions: []float64{3, 7},
+			expectedHasAllocation: true,
+			expectedError:         nil,
+		},
+		{
+			name:                  "cascading saturation across multiple rounds",
+			total:                 100,
+			weights:               []float64{0.5, 0.3, 0.2},
+			constraints:           []float64{10, 50, neverSaturates},
+			expectedDistributions: []float64{10, 50, 40},
+			expectedHasAllocation: true,
+			expectedError:         nil,
+		},
+		{
+			name:                  "length mismatch",
+			total:                 10,
+			weights:               []float64{0.1, 0.9},
+			constraints:           []float64{1, 2, 3},
+			expectedDistributions: nil,
+			expectedHasAllocation: false,
+			expectedError:         fmt.Errorf("weights and constraints must have equal length: %d vs %d", 2, 3),
+		},
+		{
+			name:                  "all weights zero",
+			total:                 10,
+			weights:               []float64{0, 0},
+			constraints:           []float64{5, 5},
+			expectedDistributions: nil,
+			expectedHasAllocation: false,
+			expectedError:         nil,
+		},
+		{
+			name:                  "zero total",
+			total:                 0,
+			weights:               []float64{0.3, 0.7},
+			constraints:           []float64{5, 5},
+			expectedDistributions: nil,
+			expectedHasAllocation: false,
+			expectedError:         nil,
+		},
+		{
+			name:                  "empty slices",
+			total:                 10,
+			weights:               []float64{},
+			constraints:           []float64{},
+			expectedDistributions: nil,
+			expectedHasAllocation: false,
+			expectedError:         nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			floats, hasPositiveAllocation, err := iterativeWaterfilling(tt.total, tt.weights, tt.constraints)
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError.Error(), err.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, tt.expectedHasAllocation, hasPositiveAllocation)
+			assert.Equal(t, tt.expectedDistributions, floats)
 		})
 	}
 }

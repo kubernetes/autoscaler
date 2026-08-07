@@ -553,7 +553,7 @@ func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRange(
 //
 // When there is a violation between a LowerBound and Target, the delta is proportionally distributed among containers where there is room to do so.
 func ensureBoundsAreValid(recs []vpa_types.RecommendedContainerResources) []vpa_types.RecommendedContainerResources {
-	// fixBound repairs violations of isBoundValid for a single resource/bound pair (e.g. "CPU LowerBound")
+	// fixBound repairs violations for a single resource/bound pair (e.g. "CPU LowerBound") across all containers
 	fixBound := func(
 		getBound func(vpa_types.RecommendedContainerResources) *corev1.ResourceList,
 		resourceName corev1.ResourceName,
@@ -603,11 +603,9 @@ func ensureBoundsAreValid(recs []vpa_types.RecommendedContainerResources) []vpa_
 		}
 
 		// Calculate how much resources each container - where there is no violation - can give up or absorb
-		allocations, _ := iterativeWaterfilling(totalDelta, weights, constraints)
-		hasPositive := slices.ContainsFunc(allocations, func(n float64) bool {
-			return n > 0
-		})
-		if !hasPositive {
+		allocations, hasAllocation, _ := iterativeWaterfilling(totalDelta, weights, constraints)
+		// All constraints are already saturated at zero, exit early
+		if !hasAllocation {
 			return
 		}
 		allocations = roundPreservingSum(allocations)
@@ -650,13 +648,13 @@ func newQuantity(value int64, format resource.Format, resourceName corev1.Resour
 	return *resource.NewQuantity(value, format)
 }
 
-// iterativeWaterfilling distributes total among channels proportionally to weights, enforcing per-channel
-// constraints. As the name suggests, the function implements an iterative water-filling algorithm.
-func iterativeWaterfilling(total float64, weights []float64, constraints []float64) ([]float64, error) {
+// iterativeWaterfilling distributes total proportionally to weights
+// while respecting the per-element constraints.
+// As the name suggests, the function implements an iterative water-filling algorithm.
+func iterativeWaterfilling(total float64, weights []float64, constraints []float64) ([]float64, bool, error) {
 	if len(weights) != len(constraints) {
-		return nil, fmt.Errorf("weights and constraints must have equal length: %d vs %d", len(weights), len(constraints))
+		return nil, false, fmt.Errorf("weights and constraints must have equal length: %d vs %d", len(weights), len(constraints))
 	}
-
 	allocs := make([]float64, len(weights))
 	saturated := make([]bool, len(weights))
 
@@ -685,7 +683,13 @@ func iterativeWaterfilling(total float64, weights []float64, constraints []float
 
 		// Either no new saturations, or all channels are saturated.
 		if !anySaturated || unsaturatedWeightSum == 0 {
-			return allocs, nil
+			hasAllocation := slices.ContainsFunc(allocs, func(n float64) bool {
+				return n > 0
+			})
+			if !hasAllocation {
+				return nil, false, nil
+			}
+			return allocs, true, nil
 		}
 
 		total -= newlySaturatedBudget
@@ -718,9 +722,9 @@ func calculateWeight(total, value resource.Quantity, res corev1.ResourceName) (*
 	return &w, nil
 }
 
-// roundPreservingSum floors every element, then distributes the leftover
-// remainder (assumed to be at most 1) to the element with the largest integer value,
-// ensuring that the rounded slice still sums to the original total.
+// roundPreservingSum floors every element in the slice, then increments the
+// largest element by one. If multiple elements share the largest integer value,
+// the first occurrence is incremented.
 // This function prevents losing fractional CPU (less than 1m) and fractional bytes.
 func roundPreservingSum(floats []float64) []float64 {
 	if len(floats) == 0 {
