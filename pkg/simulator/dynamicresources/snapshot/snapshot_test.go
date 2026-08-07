@@ -75,24 +75,6 @@ var (
 	deviceClass2 = &resourceapi.DeviceClass{ObjectMeta: metav1.ObjectMeta{Name: "class2", UID: "class2-uid"}}
 )
 
-// TestRemovePodOwnedClaimsMissingClaimNoPanic verifies that RemovePodOwnedClaims does not panic
-// when a Pod references a ResourceClaim that is not present in the snapshot. findPodClaims is
-// called with ignoreNotTracked=true on the RemovePodOwnedClaims path, so an untracked claim must
-// be skipped rather than returned as a nil entry that a later GetClaimId() dereference panics on.
-func TestRemovePodOwnedClaimsMissingClaimNoPanic(t *testing.T) {
-	// pod1 references pod1OwnClaim1 and pod1OwnClaim2; leave pod1OwnClaim2 out of the snapshot so
-	// that findPodClaims(pod1, true) encounters an untracked claim.
-	claims := map[ResourceClaimId]*resourceapi.ResourceClaim{
-		GetClaimId(sharedClaim1):  sharedClaim1.DeepCopy(),
-		GetClaimId(sharedClaim2):  sharedClaim2.DeepCopy(),
-		GetClaimId(pod1OwnClaim1): pod1OwnClaim1.DeepCopy(),
-	}
-	snapshot := NewSnapshot(claims, nil, nil, nil)
-
-	// Before the fix this panics with a nil-pointer dereference in GetClaimId().
-	snapshot.RemovePodOwnedClaims(pod1)
-}
-
 func TestSnapshotResourceClaims(t *testing.T) {
 	pod1NoClaimsInStatus := pod1.DeepCopy()
 	pod1NoClaimsInStatus.Status.ResourceClaimStatuses = nil
@@ -223,6 +205,47 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				sharedClaim2, // pod1 reservation removed
 				drautils.TestClaimWithPodReservations(sharedClaim3, pod2), // unchanged
 				pod2OwnClaim1, // unchanged
+			},
+		},
+		{
+			// pod1OwnClaim2 is absent from the snapshot, so findPodClaims skips it on the lenient
+			// path. Cleanup must still remove pod1OwnClaim1 and reach the shared claims that follow
+			// the skipped reference, clearing pod1's reservations there.
+			testName: "RemovePodOwnedClaims(): skips a claim missing from the snapshot and keeps cleaning up",
+			claims: map[ResourceClaimId]*resourceapi.ResourceClaim{
+				GetClaimId(pod1OwnClaim1): pod1OwnClaim1.DeepCopy(),
+				GetClaimId(sharedClaim1):  drautils.TestClaimWithPodReservations(sharedClaim1, pod1),
+				GetClaimId(sharedClaim2):  drautils.TestClaimWithPodReservations(sharedClaim2, pod1),
+			},
+			claimsModFun: func(snapshot *Snapshot) error {
+				snapshot.RemovePodOwnedClaims(pod1)
+				return nil
+			},
+			pod:              pod1,
+			wantPodClaimsErr: cmpopts.AnyError,
+			wantAllClaims: []*resourceapi.ResourceClaim{
+				sharedClaim1, // pod1 reservation removed
+				sharedClaim2, // pod1 reservation removed
+			},
+		},
+		{
+			// pod1's own claims are template-backed and resolve to an empty name once the status is
+			// gone, so findPodClaims skips them on the lenient path. Cleanup must still reach the
+			// directly referenced shared claims that follow, clearing pod1's reservations.
+			testName: "RemovePodOwnedClaims(): skips a claim with an unresolved template name and keeps cleaning up",
+			claims: map[ResourceClaimId]*resourceapi.ResourceClaim{
+				GetClaimId(sharedClaim1): drautils.TestClaimWithPodReservations(sharedClaim1, pod1NoClaimsInStatus),
+				GetClaimId(sharedClaim2): drautils.TestClaimWithPodReservations(sharedClaim2, pod1NoClaimsInStatus),
+			},
+			claimsModFun: func(snapshot *Snapshot) error {
+				snapshot.RemovePodOwnedClaims(pod1NoClaimsInStatus)
+				return nil
+			},
+			pod:              pod1NoClaimsInStatus,
+			wantPodClaimsErr: cmpopts.AnyError,
+			wantAllClaims: []*resourceapi.ResourceClaim{
+				sharedClaim1, // pod1 reservation removed
+				sharedClaim2, // pod1 reservation removed
 			},
 		},
 		{
