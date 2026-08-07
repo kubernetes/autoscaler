@@ -449,3 +449,18 @@ crds:
   # crds.keep -- Whether to add the helm.sh/resource-policy: keep annotation to the CRDs,
   # so they are not removed by `helm uninstall`.
   keep: true
+  migrationJob:
+    # crds.migrationJob.enabled -- Whether to run a pre-upgrade Job that patches Helm
+    # ownership labels/annotations onto CRDs installed by chart versions before 0.12.0
+    # (when CRDs moved from crds/ to templates/). Without this, upgrading from an older
+    # release fails since Helm refuses to adopt resources it doesn't already own.
+    # Remove this once most users have upgraded past 0.12.0.
+    enabled: true
+    image:
+      # crds.migrationJob.image.registry -- registry.k8s.io/kubectl has no shell, so this
+      # uses alpine/k8s which bundles kubectl with a shell for the label/annotate commands.
+      registry: docker.io
+      repository: alpine/k8s
+      # crds.migrationJob.image.tag -- Pinned kubectl version for the migration job.
+      tag: "1.31.4"
+      pullPolicy: IfNotPresent

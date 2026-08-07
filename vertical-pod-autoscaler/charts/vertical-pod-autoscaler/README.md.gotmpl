@@ -88,6 +88,8 @@ The VPA CRDs are managed as regular chart templates and are kept in sync automat
 
 The CRDs are annotated with `helm.sh/resource-policy: keep`, so `helm uninstall` will not remove them, protecting any existing VPA objects from being deleted.
 
+If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`), a pre-upgrade Job automatically patches the Helm ownership metadata onto your existing CRDs so the upgrade doesn't fail. This is a one-time compatibility step and will be removed in a future release; set `crds.migrationJob.enabled: false` to skip it.
+
 ## Migration Guides
 
 ### Migrating from vpa-up.sh script
