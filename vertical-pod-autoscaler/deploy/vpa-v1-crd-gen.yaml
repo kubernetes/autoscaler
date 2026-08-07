@@ -480,9 +480,12 @@ spec:
                             upper bound, or memory recommendations. Expressed as a fraction in
                             (0, 1], e.g. "0.95" for p95. Falls back to the global flag when unset.
                             Only honored when the PerVPAConfig feature gate is enabled.
-                            The (0, 1] range is enforced by the admission webhook.
+                            The (0, 1] range is enforced by CRD validation and the admission webhook.
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
+                          x-kubernetes-validations:
+                          - message: targetCPUPercentile must be in (0, 1]
+                            rule: quantity(self).isGreaterThan(quantity('0')) && !quantity(self).isGreaterThan(quantity('1'))
                         targetMemoryPercentile:
                           anyOf:
                           - type: integer
@@ -494,9 +497,12 @@ spec:
                             lower bound, memory upper bound, or CPU recommendations. Expressed as a
                             fraction in (0, 1], e.g. "0.95" for p95. Falls back to the global flag
                             when unset. Only honored when the PerVPAConfig feature gate is enabled.
-                            The (0, 1] range is enforced by the admission webhook.
+                            The (0, 1] range is enforced by CRD validation and the admission webhook.
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
+                          x-kubernetes-validations:
+                          - message: targetMemoryPercentile must be in (0, 1]
+                            rule: quantity(self).isGreaterThan(quantity('0')) && !quantity(self).isGreaterThan(quantity('1'))
                       type: object
                     type: array
                 type: object
