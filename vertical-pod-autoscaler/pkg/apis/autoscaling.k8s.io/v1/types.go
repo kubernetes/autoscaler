@@ -319,6 +319,26 @@ type ContainerResourcePolicy struct {
 	// +kubebuilder:validation:Minimum=1
 	MemoryAggregationIntervalCount *int64 `json:"memoryAggregationIntervalCount,omitempty"`
 
+	// targetCPUPercentile overrides the global --target-cpu-percentile flag
+	// for this container: the CPU usage percentile used as the base for the
+	// CPU target recommendation. It does not affect the CPU lower bound, CPU
+	// upper bound, or memory recommendations. Expressed as a fraction in
+	// (0, 1], e.g. "0.95" for p95. Falls back to the global flag when unset.
+	// Only honored when the PerVPAConfig feature gate is enabled.
+	// The (0, 1] range is enforced by the admission webhook.
+	// +optional
+	TargetCPUPercentile *resource.Quantity `json:"targetCPUPercentile,omitempty"`
+
+	// targetMemoryPercentile overrides the global --target-memory-percentile
+	// flag for this container: the memory usage percentile used as the base
+	// for the memory target recommendation. It does not affect the memory
+	// lower bound, memory upper bound, or CPU recommendations. Expressed as a
+	// fraction in (0, 1], e.g. "0.95" for p95. Falls back to the global flag
+	// when unset. Only honored when the PerVPAConfig feature gate is enabled.
+	// The (0, 1] range is enforced by the admission webhook.
+	// +optional
+	TargetMemoryPercentile *resource.Quantity `json:"targetMemoryPercentile,omitempty"`
+
 	// startupBoost specifies the startup boost policy for the container.
 	// This overrides any pod-level startup boost policy.
 	// The startup boost policy takes precedence over the rest of the fields in
