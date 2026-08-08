@@ -21,12 +21,14 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"reflect"
 	"strings"
 	"sync"
 	"syscall"
 	"time"
 
 	"github.com/spf13/pflag"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -160,7 +162,15 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		informers.WithTransform(client.StripManagedFields),
 	)
 
-	podLister := updater.NewPodLister(kubeClient, commonFlag.VpaObjectNamespace, stopCh)
+	podInformerFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod,
+		informers.WithNamespace(commonFlag.VpaObjectNamespace),
+		informers.WithTransform(client.StripManagedFields),
+		informers.WithTweakListOptions(func(opts *metav1.ListOptions) {
+			// Filter out unscheduled pods and pods in terminal phases (Succeeded/Failed)
+			opts.FieldSelector = "spec.nodeName!=" + "" + ",status.phase!=" +
+				string(corev1.PodSucceeded) + ",status.phase!=" + string(corev1.PodFailed)
+		}),
+	)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, kubeFactory, stopCh)
 	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, kubeFactory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor, stopCh)
 	var limitRangeCalculator limitrange.LimitRangeCalculator
@@ -185,7 +195,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		kubeClient,
 		vpaClient,
 		kubeFactory,
-		podLister,
+		podInformerFactory,
 		config.MinReplicas,
 		config.EvictionRateLimit,
 		config.EvictionRateBurst,
@@ -211,11 +221,16 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	}
 
 	kubeFactory.Start(stopCh)
-	informerMap := kubeFactory.WaitForCacheSync(stopCh)
-	for kind, synced := range informerMap {
-		if !synced {
-			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
-			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	podInformerFactory.Start(stopCh)
+	for _, informerMap := range []map[reflect.Type]bool{
+		kubeFactory.WaitForCacheSync(stopCh),
+		podInformerFactory.WaitForCacheSync(stopCh),
+	} {
+		for kind, synced := range informerMap {
+			if !synced {
+				klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
+				klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+			}
 		}
 	}
 

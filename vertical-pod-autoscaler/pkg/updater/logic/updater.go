@@ -27,7 +27,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/informers"
@@ -110,7 +109,7 @@ func NewUpdater(
 	kubeClient kube_client.Interface,
 	vpaClient *vpa_clientset.Clientset,
 	kubeInformerFactory informers.SharedInformerFactory,
-	podLister listersv1.PodLister,
+	podInformerFactory informers.SharedInformerFactory,
 	minReplicasForEviction int,
 	evictionRateLimit float64,
 	evictionRateBurst int,
@@ -144,7 +143,7 @@ func NewUpdater(
 
 	u := &updater{
 		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
-		podLister:                    podLister,
+		podLister:                    podInformerFactory.Core().V1().Pods().Lister(),
 		eventRecorder:                newEventRecorder(kubeClient),
 		restrictionFactory:           factory,
 		recommendationProcessor:      recommendationProcessor,
@@ -167,7 +166,7 @@ func NewUpdater(
 		evictAfterOOMThreshold:     evictAfterOOMThreshold,
 	}
 	if features.Enabled(features.CPUStartupBoost) {
-		u.podInformer = kubeInformerFactory.Core().V1().Pods().Informer()
+		u.podInformer = podInformerFactory.Core().V1().Pods().Informer()
 		u.cpuStartupBoostQueue = workqueue.NewTypedRateLimitingQueueWithConfig(
 			workqueue.NewTypedItemExponentialFailureRateLimiter[string](100*time.Millisecond, 1000*time.Second),
 			workqueue.TypedRateLimitingQueueConfig[string]{
@@ -723,20 +722,6 @@ func filterDeletedPods(pods []*corev1.Pod) []*corev1.Pod {
 	return filterPods(pods, func(pod *corev1.Pod) bool {
 		return pod.DeletionTimestamp == nil
 	})
-}
-
-// NewPodLister creates a new PodLister that lists pods based on the provided kubeClient and namespace.
-// It filters out pods that are not scheduled (spec.nodeName is empty) and pods that are in Succeeded or Failed phase, as these pods are not relevant for eviction or in-place updates.
-func NewPodLister(kubeClient kube_client.Interface, namespace string, stopCh <-chan struct{}) listersv1.PodLister {
-	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
-		string(corev1.PodSucceeded) + ",status.phase!=" + string(corev1.PodFailed))
-	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
-	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	podLister := listersv1.NewPodLister(store)
-	podReflector := cache.NewReflector(podListWatch, &corev1.Pod{}, store, time.Hour)
-	go podReflector.Run(stopCh)
-
-	return podLister
 }
 
 func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
