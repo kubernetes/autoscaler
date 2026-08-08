@@ -766,8 +766,8 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// Two pods on the same node: podWithClaims owns podOwnedClaim (and references sharedClaim),
 			// and podConsumesOwned references podOwnedClaim directly. Teardown removes the owner's claim
 			// while processing the first pod, so cleanup of the second pod must tolerate the now-missing
-			// reference instead of panicking. podOwnedClaim is reserved for both pods so SetClusterState
-			// accepts the state.
+			// reference instead of panicking. podOwnedClaim is allocated and reserved for both pods to
+			// model the scheduled state.
 			state: snapshotState{
 				nodes:       []*apiv1.Node{node},
 				csiSnapshot: createCSISnapshot(csiNode),
