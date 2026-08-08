@@ -19,6 +19,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"slices"
 	"time"
 
@@ -26,7 +27,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/informers"
@@ -37,6 +37,7 @@ import (
 	listersv1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/set"
 
@@ -70,6 +71,14 @@ func logDeprecationWarnings(vpa *vpa_types.VerticalPodAutoscaler) {
 type Updater interface {
 	// RunOnce represents single iteration in the main-loop of Updater
 	RunOnce(context.Context)
+	// RunBoostWorker processes the startup boost unboost queue until ctx is cancelled.
+	RunBoostWorker(context.Context)
+	// PodAddHandler handles pod add events for the startup boost unboost queue.
+	PodAddHandler(obj any)
+	// PodUpdateHandler handles pod update events for the startup boost unboost queue.
+	PodUpdateHandler(oldObj, curObj any)
+	// ShutDown shuts down the boost work queue.
+	ShutDown()
 }
 
 type updater struct {
@@ -91,6 +100,8 @@ type updater struct {
 	defaultUpdateThreshold       float64
 	podLifetimeUpdateThreshold   time.Duration
 	evictAfterOOMThreshold       time.Duration
+	podInformer                  cache.SharedIndexInformer
+	cpuStartupBoostQueue         workqueue.TypedRateLimitingInterface[string]
 }
 
 // NewUpdater creates Updater with given configuration
@@ -98,7 +109,7 @@ func NewUpdater(
 	kubeClient kube_client.Interface,
 	vpaClient *vpa_clientset.Clientset,
 	kubeInformerFactory informers.SharedInformerFactory,
-	podLister listersv1.PodLister,
+	podInformerFactory informers.SharedInformerFactory,
 	minReplicasForEviction int,
 	evictionRateLimit float64,
 	evictionRateBurst int,
@@ -130,9 +141,9 @@ func NewUpdater(
 		inPlaceSkipDisruptionBudget,
 	)
 
-	return &updater{
+	u := &updater{
 		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
-		podLister:                    podLister,
+		podLister:                    podInformerFactory.Core().V1().Pods().Lister(),
 		eventRecorder:                newEventRecorder(kubeClient),
 		restrictionFactory:           factory,
 		recommendationProcessor:      recommendationProcessor,
@@ -153,7 +164,24 @@ func NewUpdater(
 		defaultUpdateThreshold:     defaultUpdateThreshold,
 		podLifetimeUpdateThreshold: podLifetimeUpdateThreshold,
 		evictAfterOOMThreshold:     evictAfterOOMThreshold,
-	}, nil
+	}
+	if features.Enabled(features.CPUStartupBoost) {
+		u.podInformer = podInformerFactory.Core().V1().Pods().Informer()
+		u.cpuStartupBoostQueue = workqueue.NewTypedRateLimitingQueueWithConfig(
+			workqueue.NewTypedItemExponentialFailureRateLimiter[string](100*time.Millisecond, 1000*time.Second),
+			workqueue.TypedRateLimitingQueueConfig[string]{
+				Name: "cpu-startup-boost",
+			},
+		)
+		if _, err := u.podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+			AddFunc:    u.PodAddHandler,
+			UpdateFunc: u.PodUpdateHandler,
+		}); err != nil {
+			return nil, fmt.Errorf("adding Pod event handler: %w", err)
+		}
+	}
+
+	return u, nil
 }
 
 // RunOnce represents single iteration in the main-loop of Updater
@@ -183,7 +211,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
 	inPlaceFeatureEnabled := features.Enabled(features.InPlace)
-	cpuStartupBoostFeatureEnabled := features.Enabled(features.CPUStartupBoost)
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
 			klog.V(3).InfoS("Skipping VPA object in ignored namespace", "vpa", klog.KObj(vpa), "namespace", vpa.Namespace)
@@ -203,7 +230,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		}
 		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
 		if err != nil {
-			klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
+			klog.V(3).ErrorS(err, "Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
 			continue
 		}
 
@@ -282,45 +309,16 @@ func (u *updater) RunOnce(ctx context.Context) {
 		metrics_updater.InitCounters(vpaSize, vpa.Name, vpa.Namespace, updateMode)
 
 		inPlaceLimiter := u.restrictionFactory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
-		podsAvailableForUpdate := make([]*corev1.Pod, 0)
-		podsToUnboost := make([]*corev1.Pod, 0)
 		withInPlaceUpdated := false
 
-		if cpuStartupBoostFeatureEnabled && vpa_api_util.HasStartupBoost(vpa) {
-			// First, handle unboosting for pods that have finished their startup period.
-			for _, pod := range livePods {
-				if len(vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)) > 0 {
-					podsToUnboost = append(podsToUnboost, pod)
-				}
-				if !vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
-					podsAvailableForUpdate = append(podsAvailableForUpdate, pod)
-				}
-			}
-
-			// Perform unboosting
-			for _, pod := range podsToUnboost {
-				if inPlaceLimiter.CanUnboost(pod, vpa) {
-					klog.V(2).InfoS("Unboosting pod", "pod", klog.KObj(pod))
-					err = u.inPlaceRateLimiter.Wait(ctx)
-					if err != nil {
-						klog.V(0).InfoS("In-place rate limiter wait failed for unboosting", "error", err)
-						return
-					}
-					err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
-					if err != nil {
-						klog.V(0).InfoS("Unboosting failed", "error", err, "pod", klog.KObj(pod))
-						metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "UnboostError")
-					} else {
-						klog.V(2).InfoS("Successfully unboosted pod", "pod", klog.KObj(pod))
-						withInPlaceUpdated = true
-						metrics_updater.AddInPlaceUpdatedPod(vpaSize, vpa.Name, vpa.Namespace)
-					}
-				}
-			}
-		} else {
-			// CPU Startup Boost is not enabled or configured for this VPA,
-			// so all live pods are available for potential standard VPA updates.
-			podsAvailableForUpdate = livePods
+		// Exclude pods with an active CPU startup boost from standard eviction/in-place processing.
+		// These pods are handled separately by the RunBoostWorker queue, which unbooosts them
+		// via in-place update once the boost duration expires — avoiding unnecessary evictions.
+		podsAvailableForUpdate := livePods
+		if features.Enabled(features.CPUStartupBoost) && vpa_api_util.HasStartupBoost(vpa) {
+			podsAvailableForUpdate = filterPods(livePods, func(pod *corev1.Pod) bool {
+				return !vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod)
+			})
 		}
 
 		if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial {
@@ -473,6 +471,180 @@ func (u *updater) recordInfeasibleAttempt(pod *corev1.Pod, vpa *vpa_types.Vertic
 	klog.V(2).InfoS("Recorded infeasible attempt, will retry when recommendation changes", "pod", klog.KObj(pod))
 }
 
+func (u *updater) PodAddHandler(obj any) {
+	pod, ok := obj.(*corev1.Pod)
+	if !ok {
+		klog.InfoS("Expected Pod", "got", pod)
+		return
+	}
+	if vpa_api_util.IsPodReady(pod) && vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
+		u.enqueuePod(pod)
+	}
+}
+
+func (u *updater) PodUpdateHandler(_, curObj any) {
+	curPod, ok := curObj.(*corev1.Pod)
+	if !ok {
+		klog.InfoS("Expected Pod", "got", curObj)
+		return
+	}
+
+	if vpa_api_util.IsPodReady(curPod) && vpa_api_util.PodHasCPUBoostInProgressAnnotation(curPod) {
+		u.enqueuePod(curPod)
+	}
+}
+
+func (u *updater) enqueuePod(obj any) {
+	key, err := cache.MetaNamespaceKeyFunc(obj)
+	if err != nil {
+		return
+	}
+	u.cpuStartupBoostQueue.Add(key)
+}
+
+func (u *updater) RunBoostWorker(ctx context.Context) {
+	logger := klog.FromContext(ctx).WithName("boost-worker")
+	ctx = klog.NewContext(ctx, logger)
+	if !cache.WaitForCacheSync(ctx.Done(), u.podInformer.HasSynced) {
+		klog.ErrorS(nil, "Failed to sync pod informer cache")
+		return
+	}
+	for u.processNextBoostItem(ctx) {
+	}
+	logger.Info("VPA updater is shutting down")
+}
+
+func (u *updater) ShutDown() {
+	u.cpuStartupBoostQueue.ShutDown()
+}
+
+func (u *updater) processNextBoostItem(ctx context.Context) bool {
+	key, quit := u.cpuStartupBoostQueue.Get()
+	if quit {
+		return false
+	}
+	defer u.cpuStartupBoostQueue.Done(key)
+
+	logger := klog.FromContext(ctx)
+
+	namespace, name, err := cache.SplitMetaNamespaceKey(key)
+	if err != nil {
+		logger.Error(err, "Failed to split key", "key", key)
+		u.cpuStartupBoostQueue.Forget(key)
+		return true
+	}
+	pod, err := u.podLister.Pods(namespace).Get(name)
+	if err != nil {
+		logger.V(4).Info("Pod no longer exists, skipping", "key", key)
+		u.cpuStartupBoostQueue.Forget(key)
+		return true
+	}
+
+	logger = logger.WithValues("pod", klog.KObj(pod))
+
+	if !vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
+		logger.V(4).Info("Pod is not in boosted state, skipping")
+		u.cpuStartupBoostQueue.Forget(key)
+		return true
+	}
+
+	vpaWithSelector, err := u.getControllingVPAForPod(ctx, pod)
+	if err != nil {
+		logger.Error(err, "Failed to get controlling VPA")
+		u.cpuStartupBoostQueue.AddRateLimited(key)
+		return true
+	}
+	if vpaWithSelector == nil {
+		logger.V(4).Info("No controlling VPA found for pod, skipping")
+		u.cpuStartupBoostQueue.Forget(key)
+		return true
+	}
+	vpa := vpaWithSelector.Vpa
+
+	expiredAnnotations := vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)
+	if len(expiredAnnotations) > 0 {
+		logger.V(4).Info("Found expired boost annotations", "count", len(expiredAnnotations))
+		allPodsPerVPA, err := u.podLister.Pods(namespace).List(vpaWithSelector.Selector)
+		if err != nil {
+			logger.Error(err, "Failed to list pods for VPA", "vpa", klog.KObj(vpa))
+			u.cpuStartupBoostQueue.AddRateLimited(key)
+			return true
+		}
+		livePods := filterDeletedPods(allPodsPerVPA)
+		vpaSize := len(livePods)
+
+		creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := u.restrictionFactory.GetCreatorMaps(livePods, vpa)
+		if err != nil {
+			logger.Error(err, "Failed to get creator maps for unboosting")
+			u.cpuStartupBoostQueue.AddRateLimited(key)
+			return true
+		}
+		inPlaceLimiter := u.restrictionFactory.NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+		if !inPlaceLimiter.CanUnboost(pod, vpa) {
+			logger.V(4).Info("Cannot unboost pod yet, re-enqueueing")
+			u.cpuStartupBoostQueue.AddRateLimited(key)
+			return true
+		}
+
+		logger.V(2).Info("Unboosting pod")
+		if err := u.inPlaceRateLimiter.Wait(ctx); err != nil {
+			logger.Error(err, "In-place rate limiter wait failed for unboosting")
+			u.cpuStartupBoostQueue.AddRateLimited(key)
+			return true
+		}
+		if err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder); err != nil {
+			logger.Error(err, "Unboosting failed")
+			metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "UnboostError")
+			u.cpuStartupBoostQueue.AddRateLimited(key)
+			return true
+		}
+		logger.V(2).Info("Successfully unboosted pod")
+		metrics_updater.AddInPlaceUpdatedPod(vpaSize, vpa.Name, vpa.Namespace)
+		u.cpuStartupBoostQueue.Forget(key)
+	}
+
+	remaining := vpa_api_util.GetBoostRemainingDuration(pod, vpa)
+	if remaining > 0 {
+		logger.V(4).Info("Boost still active, re-enqueueing", "remainingDuration", remaining)
+		u.cpuStartupBoostQueue.Forget(key)
+		u.cpuStartupBoostQueue.AddAfter(key, remaining)
+	} else if len(expiredAnnotations) == 0 && vpa_api_util.PodHasCPUBoostInProgressAnnotation(pod) {
+		// Pod has boost annotations but neither expired nor remaining — likely the pod
+		// is not yet Ready in the lister cache. Re-enqueue to retry shortly.
+		logger.V(4).Info("Pod has boost annotations but not yet Ready in cache, re-enqueueing")
+		u.cpuStartupBoostQueue.AddRateLimited(key)
+	} else {
+		logger.V(4).Info("No remaining boost duration")
+		u.cpuStartupBoostQueue.Forget(key)
+	}
+	return true
+}
+
+// TODO(omerap12):
+// we should revisit it.
+// Every time the boost worker processes a pod, it lists ALL VPAs and fetches selectors for each (in the same namespace).
+// In clusters with many VPAs this is expensive (I know there is a lister so the list operation is in memory but maybe we can do something better)
+func (u *updater) getControllingVPAForPod(ctx context.Context, pod *corev1.Pod) (*vpa_api_util.VpaWithSelector, error) {
+	vpaList, err := u.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
+	if err != nil {
+		return nil, err
+	}
+	vpas := make([]*vpa_api_util.VpaWithSelector, 0, len(vpaList))
+	for _, vpa := range vpaList {
+		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
+		if err != nil {
+			klog.V(3).ErrorS(err, "Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
+			continue
+		}
+		vpas = append(vpas, &vpa_api_util.VpaWithSelector{
+			Vpa:      vpa,
+			Selector: selector,
+		})
+	}
+	return vpa_api_util.GetControllingVPAForPod(ctx, pod, vpas, u.controllerFetcher), nil
+}
+
 func getRateLimiter(rateLimit float64, rateLimitBurst int) *rate.Limiter {
 	var rateLimiter *rate.Limiter
 	if rateLimit <= 0 {
@@ -550,20 +722,6 @@ func filterDeletedPods(pods []*corev1.Pod) []*corev1.Pod {
 	return filterPods(pods, func(pod *corev1.Pod) bool {
 		return pod.DeletionTimestamp == nil
 	})
-}
-
-// NewPodLister creates a new PodLister that lists pods based on the provided kubeClient and namespace.
-// It filters out pods that are not scheduled (spec.nodeName is empty) and pods that are in Succeeded or Failed phase, as these pods are not relevant for eviction or in-place updates.
-func NewPodLister(kubeClient kube_client.Interface, namespace string, stopCh <-chan struct{}) listersv1.PodLister {
-	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
-		string(corev1.PodSucceeded) + ",status.phase!=" + string(corev1.PodFailed))
-	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, selector)
-	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	podLister := listersv1.NewPodLister(store)
-	podReflector := cache.NewReflector(podListWatch, &corev1.Pod{}, store, time.Hour)
-	go podReflector.Run(stopCh)
-
-	return podLister
 }
 
 func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
