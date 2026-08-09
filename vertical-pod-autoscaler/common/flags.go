@@ -53,7 +53,7 @@ func InitCommonFlags() *CommonFlags {
 	flag.StringVar(&cf.KubeConfig, "kubeconfig", cf.KubeConfig, "Path to a kubeconfig. Only required if out-of-cluster.")
 	flag.Float64Var(&cf.KubeApiQps, "kube-api-qps", cf.KubeApiQps, "QPS limit when making requests to Kubernetes apiserver")
 	flag.Float64Var(&cf.KubeApiBurst, "kube-api-burst", cf.KubeApiBurst, "QPS burst limit when making requests to Kubernetes apiserver")
-	flag.BoolVar(&cf.EnableProfiling, "profiling", cf.EnableProfiling, "Is debug/pprof endpoint enabled")
+	flag.BoolVar(&cf.EnableProfiling, "profiling", cf.EnableProfiling, "Enable the debug/pprof endpoint")
 	flag.StringVar(&cf.VpaObjectNamespace, "vpa-object-namespace", cf.VpaObjectNamespace, "Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace.")
 	flag.StringVar(&cf.IgnoredVpaObjectNamespaces, "ignored-vpa-object-namespaces", cf.IgnoredVpaObjectNamespaces, "A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector.")
 	return cf

@@ -49,46 +49,58 @@ extract_flags() {
         type = ""
     }
 
+    # Print the row for the flag collected so far, extracting the default value
+    # from either the pflag default location or usage text "(default: value)"
+    function print_flag() {
+        sub(/[[:space:]]+$/, "", desc)
+        default_val = ""
+        while (match(desc, / \(default:? [^(]*\)$/)) {
+            if (default_val == "") {
+                default_val = substr(desc, RSTART, RLENGTH)
+                sub(/^ \(default:? /, "", default_val)
+                sub(/\)$/, "", default_val)
+            }
+            desc = substr(desc, 1, RSTART-1)
+        }
+
+        # Boolean default is omitted by pflag only when it is false
+        if (type == "bool" && default_val == "") {
+            default_val = "false"
+        }
+        gsub(/\|/, "\\|", default_val)
+        gsub(/\|/, "\\|", desc)
+        print "| `" flag "` | " type " | " default_val " | " desc " |"
+    }
+
     /^[[:space:]]*-{1,2}[a-zA-Z0-9_.-]+/ {
         if (collecting) {
-            gsub(/\|/, "\\|", desc)
-            print "| `" flag "` | " type " | " default_val " | " desc " |"
+            print_flag()
         }
         collecting = 1
         line = $0
-
-        # Extract flag name
         sub(/^[[:space:]]*/, "", line)
-        split(line, parts, " ")
-        flag = parts[1]
-        sub(/^--*/, "", flag)
 
-        # Extract default value (if any)
-        default_val = ""
-        match(line, /\(default[=: ]*[^)]*\)/)
-        if (RSTART > 0) {
-            default_val = substr(line, RSTART+8, RLENGTH-9)
+        # The flag together with the type is padded with spaces to align the
+        # usage text so the first run of two or more spaces separates them
+        if (match(line, /  +/)) {
+            names = substr(line, 1, RSTART-1)
+            desc = substr(line, RSTART+RLENGTH)
+        } else {
+            names = line
+            desc = ""
         }
 
-        # Try to guess type manually from known keywords in the line
-        type = ""
-        if (line ~ /string[[:space:]]/) type = "string"
-        else if (line ~ /int[[:space:]]/) type = "int"
-        else if (line ~ /uint[[:space:]]/) type = "uint"
-        else if (line ~ /float[[:space:]]/) type = "float"
-        else if (line ~ /bool[[:space:]]/) type = "bool"
-        else if (line ~ /mapStringBool[[:space:]]/) type = "mapStringBool"
-        else if (line ~ /traceLocation[[:space:]]/) type = "traceLocation"
-        else if (line ~ /severity[[:space:]]/) type = "severity"
-        else if (line ~ /moduleSpec[[:space:]]/) type = "moduleSpec"
+        # Extract the flag name, dropping any shorthand (e.g. "-v, --v Level")
+        sub(/^-[a-zA-Z0-9], /, "", names)
+        sub(/^--*/, "", names)
 
-        # Clean up description from line
-        desc = line
-        sub(/^[[:space:]]*-{1,2}[a-zA-Z0-9_.-]+[[:space:]]*/, "", desc)
-        sub(/\(default[=: ]*[^)]*\)/, "", desc)
-        gsub(/^[[:space:]]+/, "", desc)
-        if (type != "") {
-            sub(type "[[:space:]]+", "", desc)
+        # Whatever follows the flag name is its type (omitted for boolean flags)
+        if (match(names, /[[:space:]]/)) {
+            flag = substr(names, 1, RSTART-1)
+            type = substr(names, RSTART+1)
+        } else {
+            flag = names
+            type = "bool"
         }
         next
     }
@@ -103,8 +115,7 @@ extract_flags() {
 
     END {
         if (collecting) {
-            gsub(/\|/, "\\|", desc)
-            print "| `" flag "` | " type " | " default_val " | " desc " |"
+            print_flag()
         }
     }'
     echo
