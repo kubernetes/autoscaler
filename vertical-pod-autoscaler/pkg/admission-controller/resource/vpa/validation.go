@@ -299,7 +299,7 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 			if opts.AllowPerVPAConfig {
 				percentile := float64(policy.TargetCPUPercentile.MilliValue()) / 1000.0
 				if percentile <= 0 || percentile > 1 {
-					allErrs = append(allErrs, field.Invalid(policyPath.Child("targetCPUPercentile"), percentile, "must be in (0, 1]"))
+					allErrs = append(allErrs, field.Invalid(policyPath.Child("targetCPUPercentile"), percentile, "must be greater than 0 and less than or equal to 1"))
 				}
 			} else {
 				allErrs = append(allErrs, field.Forbidden(policyPath.Child("targetCPUPercentile"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
@@ -310,7 +310,7 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 			if opts.AllowPerVPAConfig {
 				percentile := float64(policy.TargetMemoryPercentile.MilliValue()) / 1000.0
 				if percentile <= 0 || percentile > 1 {
-					allErrs = append(allErrs, field.Invalid(policyPath.Child("targetMemoryPercentile"), percentile, "must be in (0, 1]"))
+					allErrs = append(allErrs, field.Invalid(policyPath.Child("targetMemoryPercentile"), percentile, "must be greater than 0 and less than or equal to 1"))
 				}
 			} else {
 				allErrs = append(allErrs, field.Forbidden(policyPath.Child("targetMemoryPercentile"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
