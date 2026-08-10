@@ -49,11 +49,11 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `v` | Level | 4 | set the log level verbosity |
 | `vmodule` | moduleSpec |  | comma-separated list of pattern=N settings for file-filtered logging |
 | `vpa-object-namespace` | string |  | Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace. |
-| `webhook-address` | string |  | Address under which webhook is registered. Used when registerByURL is set to true. |
+| `webhook-address` | string |  | Address under which webhook is registered. Used when --register-by-url is set to true. |
 | `webhook-failure-policy-fail` | bool | false | If set to true, will configure the admission webhook failurePolicy to "Fail". Use with caution. |
 | `webhook-labels` | string |  | Comma separated list of labels to add to the webhook object. Format: key1:value1,key2:value2 |
-| `webhook-port` | string |  | Port under which webhook is registered. Used when registerByURL is set to true. |
-| `webhook-service` | string | "vpa-webhook" | Kubernetes service under which webhook is registered. Used when registerByURL is set to false. |
+| `webhook-port` | string |  | Port under which webhook is registered. Used when --register-by-url is set to true. |
+| `webhook-service` | string | "vpa-webhook" | Kubernetes service under which webhook is registered. Used when --register-by-url is set to false. |
 | `webhook-timeout-seconds` | int | 30 | Timeout in seconds that the API server should wait for this webhook to respond before failing. |
 
 # What are the parameters to VPA recommender?
