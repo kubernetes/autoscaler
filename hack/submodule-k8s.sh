@@ -23,6 +23,9 @@
 set -o errexit
 set -o pipefail
 
+KUBE_ROOT="$(dirname "${BASH_SOURCE[0]}")/.."
+cd "${KUBE_ROOT}"
+
 VERSION=${1}
 FORK=${2:-git@github.com:kubernetes/kubernetes.git}
 if [ -z "$VERSION" ]; then
@@ -50,7 +53,7 @@ rm -rf ${WORKDIR}
 git submodule add --force https://github.com/kubernetes/kubernetes
 git submodule update --init --recursive --remote
 cd kubernetes
-git checkout $VERSION
+  git checkout "$VERSION" || git checkout "v$VERSION"
 cd ..
 
 go mod edit "-replace=k8s.io/kubernetes=./kubernetes"
