@@ -1461,10 +1461,10 @@ sub-library. It can be used with custom kubernetes fork, by default it uses
 Example execution looks like this:
 
 ```
-./hack/update-deps.sh v1.30.2 v1.30.2 git@github.com:kubernetes/kubernetes.git
+./hack/update-deps.sh v1.30.2 git@github.com:kubernetes/kubernetes.git
 ```
 
-The first of two versions denotes k8s dependency of Cluster Autoscaler, the second one refers to the apis/ submodule.
+The first parameter denotes the k8s dependency of Cluster Autoscaler, and the second one refers to the kubernetes fork to use.
 
 If you need to update vendor to an unreleased commit of Kubernetes, you can use the breakglass script:
 

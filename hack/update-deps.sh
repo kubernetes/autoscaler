@@ -24,13 +24,12 @@
 set -o errexit
 set -o pipefail
 
-KUBE_ROOT="$(dirname "${BASH_SOURCE[0]}")/../.."
+KUBE_ROOT="$(dirname "${BASH_SOURCE[0]}")/.."
 cd "${KUBE_ROOT}"
 
 VERSION=${1#"v"}
-APIS_VERSION=${2#"v"}
-FORK=${3:-git@github.com:kubernetes/kubernetes.git}
-SED=${4:-sed}
+FORK=${2:-git@github.com:kubernetes/kubernetes.git}
+SED=${3:-sed}
 
 # $1: The k8s version to download.
 cluster_autoscaler:list_mods:init() {
@@ -54,7 +53,7 @@ cluster_autoscaler:list_mods() {
   k8s_version="${1:-${VERSION}}"
 
   if [ -z "${k8s_version}" ]; then
-    echo "Usage: hack/update-deps.sh <k8s version> <k8s version for apis> <k8s fork:-git@github.com:kubernetes/kubernetes.git>"
+    echo "Usage: hack/update-deps.sh <k8s version> <k8s fork:-git@github.com:kubernetes/kubernetes.git>"
     exit 1
   fi
   cluster_autoscaler:list_mods:init "${k8s_version}" > /dev/null
@@ -79,38 +78,31 @@ cluster_autoscaler:update_deps() {
   for mod in "${mods[@]}"; do
     echo "${pkg}: ${mod}"
     gomod="${mod}@kubernetes-${k8s_version}"
-    gomod_json="$(go mod download -json "${gomod}")"
-    retval="${?}"
-    if [ "${retval}" -ne 0 ]; then
-      echo "Error downloading module ${gomod}."
+    if ! gomod_json="$(go mod download -json "${gomod}")"; then
+      echo "Error downloading module ${gomod}: the tag might not be published in the staging repo."
       exit 1
     fi
     mod_version=$(echo "${gomod_json}" | "${SED}" -n 's|.*"Version": "\(.*\)".*|\1|p')
-    if [ "${pkg}" = "./cluster-autoscaler" ] || [ "${pkg}" = "./cluster-autoscaler/e2e" ]; then
+    if [ "${pkg}" = "." ] || [ "${pkg}" = "./pkg/e2e" ]; then
       go mod edit "-replace=${mod}=${mod}@${mod_version}"
     else
       go get "${mod}@${mod_version}"
     fi
   done
 
-  go mod tidy
-
-  if [ "${pkg}" = "./cluster-autoscaler" ] || [ "${pkg}" = "./cluster-autoscaler/e2e" ]; then
+  if [ "${pkg}" = "." ] || [ "${pkg}" = "./pkg/e2e" ]; then
     go get "k8s.io/kubernetes@v${k8s_version}"
-    go mod tidy
   fi
+
+  go mod tidy
 
   git rm -r --force --ignore-unmatch kubernetes
   popd
 }
 
-# k8s.io/autoscaler/cluster-autoscaler/go.mod
+# sigs.k8s.io/cluster-autoscaler/go.mod
 mods=($(cluster_autoscaler:list_mods "${VERSION}"))
-cluster_autoscaler:update_deps "./cluster-autoscaler" "${VERSION}" "${mods[@]}"
+cluster_autoscaler:update_deps "." "${VERSION}" "${mods[@]}"
 
-# k8s.io/autoscaler/cluster-autoscaler/e2e/go.mod
-cluster_autoscaler:update_deps "./cluster-autoscaler/e2e" "${VERSION}" "${mods[@]}"
-
-# k8s.io/autoscaler/cluster-autoscaler/apis/go.mod
-apis_mods=($(cluster_autoscaler:list_mods "${APIS_VERSION}"))
-cluster_autoscaler:update_deps "./cluster-autoscaler/apis" "${APIS_VERSION}" "${apis_mods[@]}"
+# sigs.k8s.io/cluster-autoscaler/pkg/e2e/go.mod
+cluster_autoscaler:update_deps "./pkg/e2e" "${VERSION}" "${mods[@]}"
