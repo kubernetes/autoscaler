@@ -321,15 +321,13 @@ type ContainerResourcePolicy struct {
 
 	// targetCPUPercentile is the CPU usage percentile used as the target for
 	// the recommendation, overriding the global --target-cpu-percentile flag
-	// for this container. Must be in (0, 1], for example 0.9 for the 90th
-	// percentile.
+	// for this container. Must be in (0, 1].
 	// +optional
 	TargetCPUPercentile *resource.Quantity `json:"targetCPUPercentile,omitempty"`
 
 	// targetMemoryPercentile is the memory usage percentile used as the
 	// target for the recommendation, overriding the global
-	// --target-memory-percentile flag for this container. Must be in (0, 1],
-	// for example 0.9 for the 90th percentile.
+	// --target-memory-percentile flag for this container. Must be in (0, 1].
 	// +optional
 	TargetMemoryPercentile *resource.Quantity `json:"targetMemoryPercentile,omitempty"`
 
