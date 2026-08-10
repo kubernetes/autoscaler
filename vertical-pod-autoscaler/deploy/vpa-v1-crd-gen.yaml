@@ -474,13 +474,10 @@ spec:
                           - type: integer
                           - type: string
                           description: |-
-                            targetCPUPercentile overrides the global --target-cpu-percentile flag
-                            for this container: the CPU usage percentile used as the base for the
-                            CPU target recommendation. It does not affect the CPU lower bound, CPU
-                            upper bound, or memory recommendations. Expressed as a fraction in
-                            (0, 1], e.g. "0.95" for p95. Falls back to the global flag when unset.
-                            Only honored when the PerVPAConfig feature gate is enabled.
-                            The (0, 1] range is enforced by the admission webhook.
+                            targetCPUPercentile is the CPU usage percentile used as the target for
+                            the recommendation, overriding the global --target-cpu-percentile flag
+                            for this container. Must be in (0, 1], for example 0.9 for the 90th
+                            percentile.
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
                         targetMemoryPercentile:
@@ -488,13 +485,10 @@ spec:
                           - type: integer
                           - type: string
                           description: |-
-                            targetMemoryPercentile overrides the global --target-memory-percentile
-                            flag for this container: the memory usage percentile used as the base
-                            for the memory target recommendation. It does not affect the memory
-                            lower bound, memory upper bound, or CPU recommendations. Expressed as a
-                            fraction in (0, 1], e.g. "0.95" for p95. Falls back to the global flag
-                            when unset. Only honored when the PerVPAConfig feature gate is enabled.
-                            The (0, 1] range is enforced by the admission webhook.
+                            targetMemoryPercentile is the memory usage percentile used as the
+                            target for the recommendation, overriding the global
+                            --target-memory-percentile flag for this container. Must be in (0, 1],
+                            for example 0.9 for the 90th percentile.
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
                       type: object

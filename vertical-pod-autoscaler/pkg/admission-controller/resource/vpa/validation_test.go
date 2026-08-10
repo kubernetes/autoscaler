@@ -1048,8 +1048,8 @@ func TestValidateVPA(t *testing.T) {
 							{
 								ContainerName:          "*",
 								Mode:                   &validScalingMode,
-								TargetCPUPercentile:    ptr.To(resource.MustParse("0.95")),
-								TargetMemoryPercentile: ptr.To(resource.MustParse("1")),
+								TargetCPUPercentile:    resource.NewMilliQuantity(950, resource.DecimalSI),
+								TargetMemoryPercentile: resource.NewQuantity(1, resource.DecimalSI),
 							},
 						},
 					},
@@ -1073,14 +1073,14 @@ func TestValidateVPA(t *testing.T) {
 							{
 								ContainerName:       "*",
 								Mode:                &validScalingMode,
-								TargetCPUPercentile: ptr.To(resource.MustParse("1.5")),
+								TargetCPUPercentile: resource.NewMilliQuantity(1500, resource.DecimalSI),
 							},
 						},
 					},
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
-			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].targetCPUPercentile: Invalid value: 1.5: must be in (0, 1]"),
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].targetCPUPercentile: Invalid value: 1.5: must be greater than 0 and less than or equal to 1"),
 		},
 		{
 			name: "targetMemoryPercentile set but PerVPAConfig disabled",
@@ -1098,7 +1098,7 @@ func TestValidateVPA(t *testing.T) {
 							{
 								ContainerName:          "*",
 								Mode:                   &validScalingMode,
-								TargetMemoryPercentile: ptr.To(resource.MustParse("0.9")),
+								TargetMemoryPercentile: resource.NewMilliQuantity(900, resource.DecimalSI),
 							},
 						},
 					},
