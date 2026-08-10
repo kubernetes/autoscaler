@@ -177,7 +177,7 @@ app.kubernetes.io/component: recommender
 {{- end }}
 
 {{- define "vertical-pod-autoscaler.crds.migrationJob.fullname" -}}
-{{ include "vertical-pod-autoscaler.fullname" . }}-crd-ownership-fix
+{{- printf "%s-crd-ownership-fix" (include "vertical-pod-autoscaler.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 
 {{- define "vertical-pod-autoscaler.crds.migrationJob.labels" -}}

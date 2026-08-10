@@ -88,10 +88,14 @@ spec:
             - |
               set -e
               for crd in verticalpodautoscalercheckpoints.autoscaling.k8s.io verticalpodautoscalers.autoscaling.k8s.io; do
-                kubectl label crd "$crd" app.kubernetes.io/managed-by=Helm --overwrite
-                kubectl annotate crd "$crd" \
-                  meta.helm.sh/release-name={{ .Release.Name }} \
-                  meta.helm.sh/release-namespace={{ .Release.Namespace }} \
-                  --overwrite
+                if kubectl get crd "$crd" >/dev/null 2>&1; then
+                  kubectl label crd "$crd" app.kubernetes.io/managed-by=Helm --overwrite
+                  kubectl annotate crd "$crd" \
+                    meta.helm.sh/release-name={{ .Release.Name }} \
+                    meta.helm.sh/release-namespace={{ .Release.Namespace }} \
+                    --overwrite
+                else
+                  echo "CRD $crd not found, skipping"
+                fi
               done
 {{- end }}
