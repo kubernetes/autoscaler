@@ -89,9 +89,9 @@ By default, you must provide an existing `Issuer` or `ClusterIssuer` via `admiss
 
 The VPA CRDs are managed as regular chart templates and are kept in sync automatically on `helm upgrade` (set `crds.enabled: false` if you manage CRDs separately, e.g. via Argo CD or Fleet).
 
-The CRDs are annotated with `helm.sh/resource-policy: keep`, so `helm uninstall` will not remove them, protecting any existing VPA objects from being deleted.
+By default, the CRDs are annotated with `helm.sh/resource-policy: keep`, so `helm uninstall` will not remove them, protecting any existing VPA objects from being deleted. Set `crds.keep: false` to disable this.
 
-If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`), a pre-upgrade Job automatically patches the Helm ownership metadata onto your existing CRDs so the upgrade doesn't fail. This is a one-time compatibility step and will be removed in a future release; set `crds.migrationJob.enabled: false` to skip it.
+If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`), a pre-upgrade Job automatically patches the Helm ownership metadata onto your existing CRDs so the upgrade doesn't fail. It's idempotent and safe to leave enabled across repeated upgrades, but is only needed for the 0.12.0 transition and will be removed in a future release; set `crds.migrationJob.enabled: false` to skip it.
 
 ## Migration Guides
 
