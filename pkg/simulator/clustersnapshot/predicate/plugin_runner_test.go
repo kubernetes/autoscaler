@@ -34,13 +34,13 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_config_latest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 
+	featuretesting "k8s.io/component-base/featuregate/testing"
 	testconfig "sigs.k8s.io/cluster-autoscaler/pkg/config/test"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/clustersnapshot/store"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/scheduler"
 	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
-	featuretesting "k8s.io/component-base/featuregate/testing"
 )
 
 func TestRunFiltersOnNode(t *testing.T) {
