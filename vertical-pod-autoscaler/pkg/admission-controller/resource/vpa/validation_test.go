@@ -1073,7 +1073,7 @@ func TestValidateVPA(t *testing.T) {
 							{
 								ContainerName:       "*",
 								Mode:                &validScalingMode,
-								TargetCPUPercentile: resource.NewMilliQuantity(1500, resource.DecimalSI),
+								TargetCPUPercentile: ptr.To(resource.MustParse("1.5")),
 							},
 						},
 					},
@@ -1098,7 +1098,7 @@ func TestValidateVPA(t *testing.T) {
 							{
 								ContainerName:          "*",
 								Mode:                   &validScalingMode,
-								TargetMemoryPercentile: resource.NewMilliQuantity(900, resource.DecimalSI),
+								TargetMemoryPercentile: ptr.To(resource.MustParse("0.9")),
 							},
 						},
 					},

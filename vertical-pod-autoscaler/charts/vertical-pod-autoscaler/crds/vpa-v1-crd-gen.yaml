@@ -476,8 +476,7 @@ spec:
                           description: |-
                             targetCPUPercentile is the CPU usage percentile used as the target for
                             the recommendation, overriding the global --target-cpu-percentile flag
-                            for this container. Must be in (0, 1], for example 0.9 for the 90th
-                            percentile.
+                            for this container. Must be in (0, 1].
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
                         targetMemoryPercentile:
@@ -487,8 +486,7 @@ spec:
                           description: |-
                             targetMemoryPercentile is the memory usage percentile used as the
                             target for the recommendation, overriding the global
-                            --target-memory-percentile flag for this container. Must be in (0, 1],
-                            for example 0.9 for the 90th percentile.
+                            --target-memory-percentile flag for this container. Must be in (0, 1].
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
                       type: object
