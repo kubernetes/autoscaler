@@ -10,15 +10,15 @@ require (
 	github.com/onsi/ginkgo/v2 v2.32.0
 	github.com/onsi/gomega v1.42.1
 	golang.org/x/sync v0.22.0
-	k8s.io/api v0.37.0-rc.0
-	k8s.io/apiextensions-apiserver v0.37.0-rc.0
-	k8s.io/apimachinery v0.37.0-rc.0
-	k8s.io/apiserver v0.37.0-rc.0
+	k8s.io/api v0.38.0-alpha.0
+	k8s.io/apiextensions-apiserver v0.38.0-alpha.0
+	k8s.io/apimachinery v0.38.0-alpha.0
+	k8s.io/apiserver v0.38.0-alpha.0
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-00010101000000-000000000000
-	k8s.io/client-go v0.37.0-rc.0
+	k8s.io/client-go v0.38.0-alpha.0
 	k8s.io/klog/v2 v2.140.0
-	k8s.io/kubernetes v1.37.0-rc.0
-	k8s.io/pod-security-admission v0.37.0-rc.0
+	k8s.io/kubernetes v1.38.0-alpha.0
+	k8s.io/pod-security-admission v0.38.0-alpha.0
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
 )
 
@@ -175,31 +175,31 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/cli-runtime v0.37.0-rc.0 // indirect
-	k8s.io/cloud-provider v0.37.0-rc.0 // indirect
-	k8s.io/cluster-bootstrap v0.37.0-rc.0 // indirect
-	k8s.io/component-base v0.37.0-rc.0 // indirect
-	k8s.io/component-helpers v0.37.0-rc.0 // indirect
-	k8s.io/controller-manager v0.37.0-rc.0 // indirect
-	k8s.io/cri-api v0.37.0-rc.0 // indirect
-	k8s.io/cri-client v0.37.0-rc.0 // indirect
-	k8s.io/cri-streaming v0.37.0-rc.0 // indirect
-	k8s.io/csi-translation-lib v0.37.0-rc.0 // indirect
-	k8s.io/dynamic-resource-allocation v0.37.0-rc.0 // indirect
-	k8s.io/endpointslice v0.37.0-rc.0 // indirect
-	k8s.io/externaljwt v0.37.0-rc.0 // indirect
-	k8s.io/kms v0.37.0-rc.0 // indirect
-	k8s.io/kube-aggregator v0.37.0-rc.0 // indirect
-	k8s.io/kube-controller-manager v0.37.0-rc.0 // indirect
+	k8s.io/cli-runtime v0.38.0-alpha.0 // indirect
+	k8s.io/cloud-provider v0.38.0-alpha.0 // indirect
+	k8s.io/cluster-bootstrap v0.38.0-alpha.0 // indirect
+	k8s.io/component-base v0.38.0-alpha.0 // indirect
+	k8s.io/component-helpers v0.38.0-alpha.0 // indirect
+	k8s.io/controller-manager v0.38.0-alpha.0 // indirect
+	k8s.io/cri-api v0.38.0-alpha.0 // indirect
+	k8s.io/cri-client v0.38.0-alpha.0 // indirect
+	k8s.io/cri-streaming v0.38.0-alpha.0 // indirect
+	k8s.io/csi-translation-lib v0.38.0-alpha.0 // indirect
+	k8s.io/dynamic-resource-allocation v0.38.0-alpha.0 // indirect
+	k8s.io/endpointslice v0.38.0-alpha.0 // indirect
+	k8s.io/externaljwt v0.38.0-alpha.0 // indirect
+	k8s.io/kms v0.38.0-alpha.0 // indirect
+	k8s.io/kube-aggregator v0.38.0-alpha.0 // indirect
+	k8s.io/kube-controller-manager v0.38.0-alpha.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260721132016-d427ff9ee9ad // indirect
-	k8s.io/kube-proxy v0.37.0-rc.0 // indirect
-	k8s.io/kube-scheduler v0.37.0-rc.0 // indirect
-	k8s.io/kubectl v0.37.0-rc.0 // indirect
-	k8s.io/kubelet v0.37.0-rc.0 // indirect
-	k8s.io/metrics v0.37.0-rc.0 // indirect
-	k8s.io/mount-utils v0.37.0-rc.0 // indirect
-	k8s.io/sample-apiserver v0.37.0-rc.0 // indirect
-	k8s.io/streaming v0.37.0-rc.0 // indirect
+	k8s.io/kube-proxy v0.38.0-alpha.0 // indirect
+	k8s.io/kube-scheduler v0.38.0-alpha.0 // indirect
+	k8s.io/kubectl v0.38.0-alpha.0 // indirect
+	k8s.io/kubelet v0.38.0-alpha.0 // indirect
+	k8s.io/metrics v0.38.0-alpha.0 // indirect
+	k8s.io/mount-utils v0.38.0-alpha.0 // indirect
+	k8s.io/sample-apiserver v0.38.0-alpha.0 // indirect
+	k8s.io/streaming v0.38.0-alpha.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.36.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.21.1 // indirect
