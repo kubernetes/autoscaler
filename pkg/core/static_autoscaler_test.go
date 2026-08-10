@@ -85,10 +85,7 @@ import (
 	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 
 	"k8s.io/apimachinery/pkg/util/version"
-	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	ndf "k8s.io/component-helpers/nodedeclaredfeatures"
-	"k8s.io/kubernetes/pkg/features"
 )
 
 type podListerMock struct {
@@ -3475,61 +3472,54 @@ func TestStaticAutoscalerWithNodeDeclaredFeatures(t *testing.T) {
 	}
 
 	type testCase struct {
-		name                        string
-		nodeDeclaredFeaturesEnabled bool
-		declaredFeatures            []string
-		initialNodes                []*apiv1.Node
-		pods                        []*apiv1.Pod
-		expectedScaleUps            []scaleCall
+		name             string
+		declaredFeatures []string
+		initialNodes     []*apiv1.Node
+		pods             []*apiv1.Pod
+		expectedScaleUps []scaleCall
 	}
 	testCases := []testCase{
 		{
-			name:                        "Scale up node group A due to pod requiring FeatureA",
-			nodeDeclaredFeaturesEnabled: true,
-			declaredFeatures:            []string{"FeatureA", "FeatureB"},
-			initialNodes:                []*apiv1.Node{nodeA, nodeB},
-			pods:                        []*apiv1.Pod{fillerPodOnNodeA, podRequiresFeatureA},
-			expectedScaleUps:            []scaleCall{{ng: "nodeGroupA", delta: 1}},
+			name:             "Scale up node group A due to pod requiring FeatureA",
+			declaredFeatures: []string{"FeatureA", "FeatureB"},
+			initialNodes:     []*apiv1.Node{nodeA, nodeB},
+			pods:             []*apiv1.Pod{fillerPodOnNodeA, podRequiresFeatureA},
+			expectedScaleUps: []scaleCall{{ng: "nodeGroupA", delta: 1}},
 		},
 		{
-			name:                        "Feature gate disabled - No scale up as pod requiring FeatureA can be scheduled on other nodes",
-			nodeDeclaredFeaturesEnabled: false,
-			declaredFeatures:            []string{"FeatureA", "FeatureB"},
-			initialNodes:                []*apiv1.Node{nodeA, nodeB},
-			pods:                        []*apiv1.Pod{fillerPodOnNodeA, podRequiresFeatureA},
-			expectedScaleUps:            nil,
+			name:             "No scale, declared features are not supported",
+			declaredFeatures: nil,
+			initialNodes:     []*apiv1.Node{nodeA, nodeB},
+			pods:             []*apiv1.Pod{fillerPodOnNodeA, podRequiresFeatureA},
+			expectedScaleUps: nil,
 		},
 		{
-			name:                        "Two pods require FeatureA - Scale up by 2",
-			nodeDeclaredFeaturesEnabled: true,
-			declaredFeatures:            []string{"FeatureA", "FeatureB"},
-			initialNodes:                []*apiv1.Node{nodeA, nodeB},
-			pods:                        []*apiv1.Pod{fillerPodOnNodeA, podRequiresFeatureA, anotherPodRequiresFeatureA},
-			expectedScaleUps:            []scaleCall{{ng: "nodeGroupA", delta: 2}},
+			name:             "Two pods require FeatureA - Scale up by 2",
+			declaredFeatures: []string{"FeatureA", "FeatureB"},
+			initialNodes:     []*apiv1.Node{nodeA, nodeB},
+			pods:             []*apiv1.Pod{fillerPodOnNodeA, podRequiresFeatureA, anotherPodRequiresFeatureA},
+			expectedScaleUps: []scaleCall{{ng: "nodeGroupA", delta: 2}},
 		},
 		{
-			name:                        "No scale up - sufficient capacity on existing node",
-			nodeDeclaredFeaturesEnabled: true,
-			declaredFeatures:            []string{"FeatureA", "FeatureB"},
-			initialNodes:                []*apiv1.Node{nodeA, nodeB},
-			pods:                        []*apiv1.Pod{podRequiresFeatureB},
-			expectedScaleUps:            nil,
+			name:             "No scale up - sufficient capacity on existing node",
+			declaredFeatures: []string{"FeatureA", "FeatureB"},
+			initialNodes:     []*apiv1.Node{nodeA, nodeB},
+			pods:             []*apiv1.Pod{podRequiresFeatureB},
+			expectedScaleUps: nil,
 		},
 		{
-			name:                        "Scale up node group B due to pod requiring FeatureB",
-			nodeDeclaredFeaturesEnabled: true,
-			declaredFeatures:            []string{"FeatureA", "FeatureB"},
-			initialNodes:                []*apiv1.Node{nodeA, nodeB},
-			pods:                        []*apiv1.Pod{fillerPodOnNodeB, podRequiresFeatureB},
-			expectedScaleUps:            []scaleCall{{ng: "nodeGroupB", delta: 1}},
+			name:             "Scale up node group B due to pod requiring FeatureB",
+			declaredFeatures: []string{"FeatureA", "FeatureB"},
+			initialNodes:     []*apiv1.Node{nodeA, nodeB},
+			pods:             []*apiv1.Pod{fillerPodOnNodeB, podRequiresFeatureB},
+			expectedScaleUps: []scaleCall{{ng: "nodeGroupB", delta: 1}},
 		},
 		{
-			name:                        "No scale up when pod requiring feature is not present on any node group",
-			nodeDeclaredFeaturesEnabled: false,
-			declaredFeatures:            []string{"FeatureA", "FeatureB"},
-			initialNodes:                []*apiv1.Node{nodeA, nodeB},
-			pods:                        []*apiv1.Pod{podRequiresFeatureC},
-			expectedScaleUps:            nil,
+			name:             "No scale up when pod requiring feature is not present on any node group",
+			declaredFeatures: []string{"FeatureA", "FeatureB"},
+			initialNodes:     []*apiv1.Node{nodeA, nodeB},
+			pods:             []*apiv1.Pod{podRequiresFeatureC},
+			expectedScaleUps: nil,
 		},
 	}
 
@@ -3541,13 +3531,8 @@ func TestStaticAutoscalerWithNodeDeclaredFeatures(t *testing.T) {
 			onScaleUpMock := &onScaleUpMock{}
 			onScaleDownMock := &onScaleDownMock{}
 
-			// Feature gate setup
-			featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.NodeDeclaredFeatures, tc.nodeDeclaredFeaturesEnabled)
-
-			if tc.nodeDeclaredFeaturesEnabled {
-				cleanup := setupMockDeclaredFeatures(tc.declaredFeatures...)
-				defer cleanup()
-			}
+			cleanup := setupMockDeclaredFeatures(tc.declaredFeatures...)
+			defer cleanup()
 
 			readyNodeLister := kubernetes.NewTestNodeLister(tc.initialNodes)
 			allNodeLister := kubernetes.NewTestNodeLister(tc.initialNodes)
