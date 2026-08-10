@@ -21,7 +21,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
-	schedulingapi "k8s.io/api/scheduling/v1beta1"
+	schedulingalpha "k8s.io/api/scheduling/v1alpha3"
+	schedulingbeta "k8s.io/api/scheduling/v1beta1"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -64,6 +65,15 @@ func (lister *DelegatingSchedulerSharedLister) StorageInfos() schedulerinterface
 // PodGroupStates returns a PodGroupStateLister
 func (lister *DelegatingSchedulerSharedLister) PodGroupStates() schedulerinterface.PodGroupStateLister {
 	return lister.delegate.PodGroupStates()
+}
+
+func (lister *DelegatingSchedulerSharedLister) CompositePodGroupStates() schedulerinterface.CompositePodGroupStateLister {
+	return lister.delegate.CompositePodGroupStates()
+}
+
+// CompositePodsGroups returns a CompositePodGroupLister
+func (lister *DelegatingSchedulerSharedLister) CompositePodGroups() schedulerinterface.CompositePodGroupLister {
+	return lister.delegate.CompositePodGroups()
 }
 
 // ResourceClaims returns a ResourceClaimTracker.
@@ -110,11 +120,13 @@ type unsetSharedLister struct{}
 type unsetNodeInfoLister unsetSharedLister
 type unsetStorageInfoLister unsetSharedLister
 type unsetPodGroupStateLister unsetSharedLister
+type unsetCompositePodGroupStateLister unsetSharedLister
 type unsetResourceClaimTracker unsetSharedLister
 type unsetResourceSliceLister unsetSharedLister
 type unsetDeviceClassLister unsetSharedLister
 type unsetDeviceClassResolver unsetSharedLister
 type unsetPodGroupLister unsetSharedLister
+type unsetCompositePodGroupLister unsetSharedLister
 type unsetCSINodeLister unsetSharedLister
 
 // List always returns an error
@@ -132,6 +144,11 @@ func (lister *unsetNodeInfoLister) HavePodsWithRequiredAntiAffinityList() ([]sch
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
+// HavePodsWithRequiredNonHostScopedAntiAffinityList always returns an error.
+func (lister *unsetNodeInfoLister) HavePodsWithRequiredNonHostScopedAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
 // Get always returns an error
 func (lister *unsetNodeInfoLister) Get(nodeName string) (schedulerinterface.NodeInfo, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
@@ -142,6 +159,10 @@ func (lister *unsetStorageInfoLister) IsPVCUsedByPods(key string) bool {
 }
 
 func (lister *unsetPodGroupStateLister) Get(podGroupNamespace, podGroupName string) (schedulerinterface.PodGroupState, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (lister *unsetCompositePodGroupStateLister) Get(namespace, name string) (schedulerinterface.CompositePodGroupState, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
@@ -200,7 +221,11 @@ func (u *unsetDeviceClassResolver) GetDeviceClass(resourceName corev1.ResourceNa
 	return nil
 }
 
-func (l *unsetPodGroupLister) Get(namespace, podGroupName string) (*schedulingapi.PodGroup, error) {
+func (l *unsetPodGroupLister) Get(namespace, podGroupName string) (*schedulingbeta.PodGroup, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (l *unsetCompositePodGroupLister) Get(namespace, name string) (*schedulingalpha.CompositePodGroup, error) {
 	return nil, fmt.Errorf("lister not set in delegate")
 }
 
@@ -226,6 +251,10 @@ func (lister *unsetSharedLister) PodGroupStates() schedulerinterface.PodGroupSta
 	return (*unsetPodGroupStateLister)(lister)
 }
 
+func (lister *unsetSharedLister) CompositePodGroupStates() schedulerinterface.CompositePodGroupStateLister {
+	return (*unsetCompositePodGroupStateLister)(lister)
+}
+
 func (lister *unsetSharedLister) ResourceClaims() schedulerinterface.ResourceClaimTracker {
 	return (*unsetResourceClaimTracker)(lister)
 }
@@ -244,6 +273,10 @@ func (lister *unsetSharedLister) DeviceClassResolver() schedulerinterface.Device
 
 func (lister *unsetSharedLister) PodGroups() schedulerinterface.PodGroupLister {
 	return (*unsetPodGroupLister)(lister)
+}
+
+func (lister *unsetSharedLister) CompositePodGroups() schedulerinterface.CompositePodGroupLister {
+	return (*unsetCompositePodGroupLister)(lister)
 }
 
 func (lister *unsetSharedLister) CSINodes() schedulerinterface.CSINodeLister {

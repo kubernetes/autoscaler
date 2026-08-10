@@ -67,11 +67,6 @@ func (dm NoOpDRAManager) DeviceClassResolver() fwk.DeviceClassResolver {
 	return (noOpDeviceClassResolver)(dm)
 }
 
-// PodGroups returns a no-op PodGroupLister.
-func (dm NoOpDRAManager) PodGroups() fwk.PodGroupLister {
-	return (noOpPodGroupLister)(dm)
-}
-
 // -------------------------------------
 // Resource Claim Tracker Implementation
 // -------------------------------------
