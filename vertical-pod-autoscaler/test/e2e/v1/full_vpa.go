@@ -83,11 +83,9 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 				replicas,
 				1,             /*initCPUTotal*/
 				10,            /*initMemoryTotal*/
-				1,             /*initCustomMetric*/
 				initialCPU,    /*cpuRequest*/
 				initialMemory, /*memRequest*/
-				f.ClientSet,
-				f.ScalesGetter)
+				f.ClientSet)
 
 			ginkgo.By("Setting up a VPA CRD")
 			targetRef := &autoscaling.CrossVersionObjectReference{
@@ -123,7 +121,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			// consume more CPU to get a higher recommendation
-			rc.ConsumeCPU(600 * replicas)
+			rc.ConsumeCPUPerPod(600 * replicas)
 			err = waitForResourceRequestInRangeInPods(
 				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 				ParseQuantityOrDie("500m"), ParseQuantityOrDie("1300m"))
@@ -141,7 +139,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 			// NOTE: large range given due to unpredictability of actual memory usage
 			// NOTE: longer timeout: the memory recommendation grows slower than CPU
 			// and the updater then applies it to the pods serially, ~1-2 min apart.
-			rc.ConsumeMem(1024 * replicas)
+			rc.ConsumeMemPerPod(1024 * replicas)
 			err = waitForResourceRequestInRangeInPods(
 				f, 2*utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
 				ParseQuantityOrDie("900Mi"), ParseQuantityOrDie("4000Mi"))
@@ -157,11 +155,9 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 				replicas,
 				1,             /*initCPUTotal*/
 				10,            /*initMemoryTotal*/
-				1,             /*initCustomMetric*/
 				initialCPU,    /*cpuRequest*/
 				initialMemory, /*memRequest*/
-				f.ClientSet,
-				f.ScalesGetter)
+				f.ClientSet)
 
 			ginkgo.By("Setting up a VPA CRD")
 			targetRef := &autoscaling.CrossVersionObjectReference{
@@ -196,7 +192,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			// consume more CPU to get a higher recommendation
-			rc.ConsumeCPU(600 * replicas)
+			rc.ConsumeCPUPerPod(600 * replicas)
 			err = waitForResourceRequestInRangeInPods(
 				f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 				ParseQuantityOrDie("500m"), ParseQuantityOrDie("1300m"))
@@ -214,7 +210,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 			// NOTE: large range given due to unpredictability of actual memory usage
 			// NOTE: longer timeout: the memory recommendation grows slower than CPU
 			// and the updater then evicts the pods serially, ~1-2 min apart.
-			rc.ConsumeMem(1024 * replicas)
+			rc.ConsumeMemPerPod(1024 * replicas)
 			err = waitForResourceRequestInRangeInPods(
 				f, 2*utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
 				ParseQuantityOrDie("900Mi"), ParseQuantityOrDie("4000Mi"))
@@ -245,11 +241,9 @@ var _ = FullVpaE2eDescribe("Pods under VPA with default recommender explicitly c
 			replicas,
 			1,             /*initCPUTotal*/
 			10,            /*initMemoryTotal*/
-			1,             /*initCustomMetric*/
 			initialCPU,    /*cpuRequest*/
 			initialMemory, /*memRequest*/
-			f.ClientSet,
-			f.ScalesGetter)
+			f.ClientSet)
 
 		ginkgo.By("Setting up a VPA CRD with Recommender explicitly configured")
 		targetRef := &autoscaling.CrossVersionObjectReference{
@@ -285,7 +279,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with default recommender explicitly c
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		// consume more CPU to get a higher recommendation
-		rc.ConsumeCPU(600 * replicas)
+		rc.ConsumeCPUPerPod(600 * replicas)
 		err = waitForResourceRequestInRangeInPods(
 			f, utils.PollTimeout, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
 			ParseQuantityOrDie("500m"), ParseQuantityOrDie("1300m"))
@@ -318,11 +312,9 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 			replicas,
 			1,             /*initCPUTotal*/
 			10,            /*initMemoryTotal*/
-			1,             /*initCustomMetric*/
 			initialCPU,    /*cpuRequest*/
 			initialMemory, /*memRequest*/
-			f.ClientSet,
-			f.ScalesGetter)
+			f.ClientSet)
 
 		// The control deployment is identical but has a VPA with the default
 		// recommender. Watching the control being updated proves the
@@ -334,11 +326,9 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 			replicas,
 			1,             /*initCPUTotal*/
 			10,            /*initMemoryTotal*/
-			1,             /*initCustomMetric*/
 			initialCPU,    /*cpuRequest*/
 			initialMemory, /*memRequest*/
-			f.ClientSet,
-			f.ScalesGetter)
+			f.ClientSet)
 
 		containerName := utils.GetHamsterContainerNameByIndex(0)
 
@@ -400,8 +390,8 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 
 		// consume more CPU in both deployments, so that both would get a higher
 		// recommendation if their VPAs were handled by a recognized recommender
-		rc.ConsumeCPU(600 * replicas)
-		rcControl.ConsumeCPU(600 * replicas)
+		rc.ConsumeCPUPerPod(600 * replicas)
+		rcControl.ConsumeCPUPerPod(600 * replicas)
 
 		ginkgo.By("Waiting for the control deployment to be updated")
 		err = waitForResourceRequestInRangeInPods(
@@ -483,11 +473,9 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				replicas,
 				1,             /*initCPUTotal*/
 				10,            /*initMemoryTotal*/
-				1,             /*initCustomMetric*/
 				initialCPU,    /*cpuRequest*/
 				initialMemory, /*memRequest*/
-				f.ClientSet,
-				f.ScalesGetter)
+				f.ClientSet)
 
 			// Pods should be created with boosted CPU (10m * 20 = 200m)
 			err := waitForResourceRequestInRangeInPods(
@@ -532,11 +520,9 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				replicas,
 				1,             /*initCPUTotal*/
 				10,            /*initMemoryTotal*/
-				1,             /*initCustomMetric*/
 				initialCPU,    /*cpuRequest*/
 				initialMemory, /*memRequest*/
-				f.ClientSet,
-				f.ScalesGetter)
+				f.ClientSet)
 
 			ginkgo.By("Adding a second container to the deployment")
 			deployment, err := f.ClientSet.AppsV1().Deployments(ns).Get(context.TODO(), "hamster", metav1.GetOptions{})
@@ -610,11 +596,9 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 				replicas,
 				1,             /*initCPUTotal*/
 				10,            /*initMemoryTotal*/
-				1,             /*initCustomMetric*/
 				initialCPU,    /*cpuRequest*/
 				initialMemory, /*memRequest*/
-				f.ClientSet,
-				f.ScalesGetter)
+				f.ClientSet)
 
 			ginkgo.By("Adding a second container to the deployment")
 			deployment, err := f.ClientSet.AppsV1().Deployments(ns).Get(context.TODO(), "hamster", metav1.GetOptions{})
