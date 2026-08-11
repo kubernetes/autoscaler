@@ -77,7 +77,7 @@ func InitUpdaterFlags() *UpdaterConfig {
 	flag.DurationVar(&config.UpdaterInterval, "updater-interval", config.UpdaterInterval, "How often updater should run")
 	flag.IntVar(&config.MinReplicas, "min-replicas", config.MinReplicas, "Minimum number of replicas to perform update")
 	flag.Float64Var(&config.EvictionToleranceFraction, "eviction-tolerance", config.EvictionToleranceFraction, "Fraction of replica count that can be evicted for update, if more than one pod can be evicted.")
-	flag.Float64Var(&config.EvictionRateLimit, "eviction-rate-limit", config.EvictionRateLimit, "Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable the rate limiter.")
+	flag.Float64Var(&config.EvictionRateLimit, "eviction-rate-limit", config.EvictionRateLimit, "Number of pods that can be evicted per second. A rate limit set to 0 or -1 will disable the rate limiter.")
 	flag.IntVar(&config.EvictionRateBurst, "eviction-rate-burst", config.EvictionRateBurst, "Burst of pods that can be evicted.")
 	flag.StringVar(&config.Address, "address", config.Address, "The address to expose Prometheus metrics.")
 	flag.BoolVar(&config.UseAdmissionControllerStatus, "use-admission-controller-status", config.UseAdmissionControllerStatus, "If true, updater will only evict pods when admission controller status is valid.")
