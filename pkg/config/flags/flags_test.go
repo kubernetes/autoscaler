@@ -139,8 +139,14 @@ func TestParseShutdownGracePeriodsAndPriorities(t *testing.T) {
 			name:  "parsable input",
 			input: "1:2,3:4",
 			want: []kubelet_config.ShutdownGracePeriodByPodPriority{
-				{1, 2},
-				{3, 4},
+				{
+					Priority:                   1,
+					ShutdownGracePeriodSeconds: 2,
+				},
+				{
+					Priority:                   3,
+					ShutdownGracePeriodSeconds: 4,
+				},
 			},
 		},
 	}
@@ -495,7 +501,14 @@ func TestAutoscalingFlagsAllPossible(t *testing.T) {
 				assert.Equal(t, int64(100), opts.MaxCoresTotal)
 				assert.Equal(t, int64(4*1024*1024*1024), opts.MinMemoryTotal)
 				assert.Equal(t, int64(200*1024*1024*1024), opts.MaxMemoryTotal)
-				assert.Equal(t, []config.GpuLimits{{"nvidia", 1, 10}}, opts.GpuTotal)
+				wantLimits := []config.GpuLimits{
+					{
+						GpuType: "nvidia",
+						Min:     1,
+						Max:     10,
+					},
+				}
+				assert.Equal(t, wantLimits, opts.GpuTotal)
 				assert.Equal(t, 300, opts.MaxGracefulTerminationSec)
 				assert.Equal(t, 5*time.Second, opts.PendingPodsBatchingTimeout)
 				assert.True(t, opts.GracefulDegradationEnabled)
