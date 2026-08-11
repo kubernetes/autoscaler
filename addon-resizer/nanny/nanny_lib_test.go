@@ -212,33 +212,35 @@ func TestCheckResources(t *testing.T) {
 
 func TestShouldOverwriteResources(t *testing.T) {
 	testCases := []struct {
-		res     api.ResourceList
-		e       *EstimatorResult
-		wantRes *api.ResourceRequirements
-		wantOp  operation
+		res             api.ResourceList
+		e               *EstimatorResult
+		wantRes         *api.ResourceRequirements
+		wantOp          operation
+		cpuRequestsOnly bool
 	}{
-		{standard, standardRecommended, nil, unknown},
-		{belowStandard, standardRecommended, nil, unknown},
-		{aboveStandard, standardRecommended, nil, unknown},
-		{standard, standardAcceptableAboveRecommended, nil, unknown},
-		{standard, standardAcceptableBelowRecommended, nil, unknown},
-		{standard, standardAboveAcceptable, &api.ResourceRequirements{belowStandard, belowStandard}, scaleDown},
-		{standard, standardBelowAcceptable, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleUp},
-		{noStorage, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, unknown},
-		{noMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, unknown},
-		{noCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, unknown},
-		{smallStorage, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp},
-		{smallMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp},
-		{smallCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp},
-		{bigStorage, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown},
-		{bigMemory, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown},
-		{bigCPU, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown},
+		{standard, standardRecommended, nil, unknown, false},
+		{belowStandard, standardRecommended, nil, unknown, false},
+		{aboveStandard, standardRecommended, nil, unknown, false},
+		{standard, standardAcceptableAboveRecommended, nil, unknown, false},
+		{standard, standardAcceptableBelowRecommended, nil, unknown, false},
+		{standard, standardAboveAcceptable, &api.ResourceRequirements{belowStandard, belowStandard}, scaleDown, false},
+		{standard, standardBelowAcceptable, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleUp, false},
+		{noStorage, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, unknown, false},
+		{noMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, unknown, false},
+		{noCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, unknown, false},
+		{smallStorage, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp, false},
+		{smallMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp, false},
+		{smallCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp, false},
+		{smallCPU, standardRecommended, &api.ResourceRequirements{Limits: smallCPU, Requests: belowStandard}, scaleUp, true},
+		{bigStorage, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown, false},
+		{bigMemory, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown, false},
+		{bigCPU, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown, false},
 
 		// Test successful comparison when not all ResourceNames are present.
-		{smallMemoryNoStorage, standardRecommendedNoStorage, &api.ResourceRequirements{belowStandardNoStorage, belowStandardNoStorage}, scaleUp},
+		{smallMemoryNoStorage, standardRecommendedNoStorage, &api.ResourceRequirements{belowStandardNoStorage, belowStandardNoStorage}, scaleUp, false},
 	}
 	for i, tc := range testCases {
-		gotRes, gotOp := shouldOverwriteResources(tc.e, tc.res, tc.res)
+		gotRes, gotOp := shouldOverwriteResources(tc.e, tc.res, tc.res, tc.cpuRequestsOnly)
 		if !reflect.DeepEqual(tc.wantRes, gotRes) || !reflect.DeepEqual(tc.wantOp, gotOp) {
 			t.Errorf("shouldOverwriteResources got (%v, %v), want (%v, %v) for test case %d.", gotRes, gotOp, tc.wantRes, tc.wantOp, i)
 		}
@@ -251,36 +253,38 @@ func TestUpdateResources(t *testing.T) {
 	oneMinuteAgo := now.Add(-time.Minute)
 	oneHourAgo := now.Add(-time.Hour)
 	testCases := []struct {
-		res     api.ResourceList
-		e       *EstimatorResult
-		lc      time.Time
-		sud     time.Duration
-		sdd     time.Duration
-		wantRes *api.ResourceRequirements
-		want    updateResult
+		res             api.ResourceList
+		e               *EstimatorResult
+		lc              time.Time
+		sud             time.Duration
+		sdd             time.Duration
+		wantRes         *api.ResourceRequirements
+		want            updateResult
+		cpuRequestsOnly bool
 	}{
 		// No changes to the resources
-		{standard, standardRecommended, now, noDelay, noDelay, nil, noChange},
-		{standard, standardRecommended, oneHourAgo, noDelay, noDelay, nil, noChange},
-		{standard, standardRecommended, oneHourAgo, oneMinuteDelay, noDelay, nil, noChange},
-		{standard, standardRecommended, oneHourAgo, noDelay, oneMinuteDelay, nil, noChange},
-		{standard, standardAcceptableAboveRecommended, now, noDelay, noDelay, nil, noChange},
-		{standard, standardAcceptableBelowRecommended, now, noDelay, noDelay, nil, noChange},
+		{standard, standardRecommended, now, noDelay, noDelay, nil, noChange, false},
+		{standard, standardRecommended, oneHourAgo, noDelay, noDelay, nil, noChange, false},
+		{standard, standardRecommended, oneHourAgo, oneMinuteDelay, noDelay, nil, noChange, false},
+		{standard, standardRecommended, oneHourAgo, noDelay, oneMinuteDelay, nil, noChange, false},
+		{standard, standardAcceptableAboveRecommended, now, noDelay, noDelay, nil, noChange, false},
+		{standard, standardAcceptableBelowRecommended, now, noDelay, noDelay, nil, noChange, false},
 		// Delay has not passed
-		{smallCPU, standardRecommended, tenSecondsAgo, oneMinuteDelay, noDelay, nil, postpone},
-		{smallCPU, standardRecommended, tenSecondsAgo, oneMinuteDelay, oneSecondDelay, nil, postpone},
-		{bigCPU, standardRecommended, tenSecondsAgo, noDelay, oneMinuteDelay, nil, postpone},
-		{bigCPU, standardRecommended, tenSecondsAgo, oneSecondDelay, oneMinuteDelay, nil, postpone},
+		{smallCPU, standardRecommended, tenSecondsAgo, oneMinuteDelay, noDelay, nil, postpone, false},
+		{smallCPU, standardRecommended, tenSecondsAgo, oneMinuteDelay, oneSecondDelay, nil, postpone, false},
+		{bigCPU, standardRecommended, tenSecondsAgo, noDelay, oneMinuteDelay, nil, postpone, false},
+		{bigCPU, standardRecommended, tenSecondsAgo, oneSecondDelay, oneMinuteDelay, nil, postpone, false},
 		// Delay has passed
-		{smallCPU, standardRecommended, oneMinuteAgo, oneMinuteDelay, noDelay, &api.ResourceRequirements{belowStandard, belowStandard}, overwrite},
-		{bigCPU, standardRecommended, oneMinuteAgo, noDelay, oneMinuteDelay, &api.ResourceRequirements{aboveStandard, aboveStandard}, overwrite},
-		{smallCPU, standardRecommended, oneHourAgo, oneMinuteDelay, noDelay, &api.ResourceRequirements{belowStandard, belowStandard}, overwrite},
-		{bigCPU, standardRecommended, oneHourAgo, noDelay, oneMinuteDelay, &api.ResourceRequirements{aboveStandard, aboveStandard}, overwrite},
+		{smallCPU, standardRecommended, oneMinuteAgo, oneMinuteDelay, noDelay, &api.ResourceRequirements{belowStandard, belowStandard}, overwrite, false},
+		{smallCPU, standardRecommended, oneMinuteAgo, oneMinuteDelay, noDelay, &api.ResourceRequirements{Limits: smallCPU, Requests: belowStandard}, overwrite, true},
+		{bigCPU, standardRecommended, oneMinuteAgo, noDelay, oneMinuteDelay, &api.ResourceRequirements{aboveStandard, aboveStandard}, overwrite, false},
+		{smallCPU, standardRecommended, oneHourAgo, oneMinuteDelay, noDelay, &api.ResourceRequirements{belowStandard, belowStandard}, overwrite, false},
+		{bigCPU, standardRecommended, oneHourAgo, noDelay, oneMinuteDelay, &api.ResourceRequirements{aboveStandard, aboveStandard}, overwrite, false},
 	}
 	for i, tc := range testCases {
 		k8s := newFakeKubernetesClient(10, tc.res, tc.res)
 		est := newFakeResourceEstimator(tc.e)
-		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, noChange)
+		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, noChange, tc.cpuRequestsOnly)
 		if tc.want != got {
 			t.Errorf("updateResources got %d, want %d for test case %d.", got, tc.want, i)
 		}

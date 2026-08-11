@@ -70,16 +70,32 @@ func checkResource(estimatorResult *EstimatorResult, actual api.ResourceList, re
 // We'll over-write the resource limits if the limited resources are different, or if any limit is outside of the accepted range.
 // Returns null ResourceRequirements when no resources should be overridden.
 // Returned operation type (scale up/down or unknown) is calculated based on values taken from the first resource which requires overwrite.
-func shouldOverwriteResources(estimatorResult *EstimatorResult, limits, reqs api.ResourceList) (*api.ResourceRequirements, operation) {
-	for _, list := range []api.ResourceList{limits, reqs} {
-		for _, resourceType := range []api.ResourceName{api.ResourceCPU, api.ResourceMemory, api.ResourceStorage} {
+func shouldOverwriteResources(estimatorResult *EstimatorResult, limits, reqs api.ResourceList, cpuRequestsOnly bool) (*api.ResourceRequirements, operation) {
+	for _, resourceType := range []api.ResourceName{api.ResourceCPU, api.ResourceMemory, api.ResourceStorage} {
+		if cpuRequestsOnly && resourceType == api.ResourceCPU {
+			newReqs, op := checkResource(estimatorResult, reqs, resourceType)
+			if newReqs != nil {
+				log.V(4).Infof("Resource %s requests are out of bounds.", resourceType)
+				return &api.ResourceRequirements{
+					Limits:   limits,
+					Requests: *newReqs,
+				}, op
+			}
+			continue
+		}
+
+		for _, list := range []api.ResourceList{limits, reqs} {
 			newReqs, op := checkResource(estimatorResult, list, resourceType)
 			if newReqs != nil {
 				log.V(4).Infof("Resource %s is out of bounds.", resourceType)
-				return &api.ResourceRequirements{Limits: *newReqs, Requests: *newReqs}, op
+				return &api.ResourceRequirements{
+					Limits:   *newReqs,
+					Requests: *newReqs,
+				}, op
 			}
 		}
 	}
+
 	return nil, unknown
 }
 
@@ -100,7 +116,7 @@ type ResourceEstimator interface {
 // PollAPIServer periodically counts the number of nodes, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
-func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration) {
+func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, cpuRequestsOnly bool) {
 	lastChange := time.Now()
 	lastResult := noChange
 
@@ -110,7 +126,7 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scal
 			time.Sleep(pollPeriod)
 		}
 
-		if lastResult = updateResources(k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, lastResult); lastResult == overwrite {
+		if lastResult = updateResources(k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, lastResult, cpuRequestsOnly); lastResult == overwrite {
 			lastChange = time.Now()
 		}
 	}
@@ -122,7 +138,7 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod, scal
 // It returns overwrite if deployment has been updated, postpone if the change
 // could not be applied due to scale up/down delay and noChange if the estimated
 // expected ResourceRequirements are in line with the actual ResourceRequirements.
-func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChange time.Time, scaleDownDelay, scaleUpDelay time.Duration, prevResult updateResult) updateResult {
+func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChange time.Time, scaleDownDelay, scaleUpDelay time.Duration, prevResult updateResult, cpuRequestsOnly bool) updateResult {
 
 	// Query the apiserver for the number of nodes.
 	num, err := k8s.CountNodes()
@@ -147,7 +163,7 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	estimation := est.scaleWithNodes(num)
 
 	// If there's a difference, go ahead and set the new values.
-	overwriteResReq, op := shouldOverwriteResources(estimation, resources.Limits, resources.Requests)
+	overwriteResReq, op := shouldOverwriteResources(estimation, resources.Limits, resources.Requests, cpuRequestsOnly)
 	if overwriteResReq == nil {
 		log.V(4).Infof("Resources are within the expected limits. Actual: %+v, accepted range: %+v", jsonOrValue(*resources), jsonOrValue(estimation.AcceptableRange))
 		return noChange
