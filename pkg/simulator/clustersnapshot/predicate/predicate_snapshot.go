@@ -430,11 +430,6 @@ func (s *PredicateSnapshot) DeviceClassResolver() schedulerinterface.DeviceClass
 	return s.draSnapshot.DeviceClassResolver()
 }
 
-// PodGroups returns the snapshot as PodGroupLister.
-func (s *PredicateSnapshot) PodGroups() schedulerinterface.PodGroupLister {
-	return s.draSnapshot.PodGroups()
-}
-
 // CSINodes returns the CSI nodes snapshot.
 func (s *PredicateSnapshot) CSINodes() schedulerinterface.CSINodeLister {
 	return s.csiSnapshot.CSINodes()

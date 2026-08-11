@@ -20,6 +20,8 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	schedulingv1alpha3 "k8s.io/api/scheduling/v1alpha3"
+	schedulingv1beta1 "k8s.io/api/scheduling/v1beta1"
 	"k8s.io/klog/v2"
 	schedulerinterface "k8s.io/kube-scheduler/framework"
 	schedulerimpl "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -66,6 +68,17 @@ func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithRequiredAnti
 	}
 
 	return havePodsWithRequiredAntiAffinityList, nil
+}
+
+func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithRequiredNonHostScopedAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
+	havePodsWithRequiredNonHostScopedAntiAffinityList := make([]schedulerinterface.NodeInfo, 0, len(data.nodeInfoMap))
+	for _, v := range data.nodeInfoMap {
+		if len(v.GetPodsWithRequiredNonHostScopedAntiAffinity()) > 0 {
+			havePodsWithRequiredNonHostScopedAntiAffinityList = append(havePodsWithRequiredNonHostScopedAntiAffinityList, v)
+		}
+	}
+
+	return havePodsWithRequiredNonHostScopedAntiAffinityList, nil
 }
 
 func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (schedulerinterface.NodeInfo, error) {
@@ -268,6 +281,9 @@ func (snapshot *BasicSnapshotStore) Clear() {
 type basicSnapshotStoreNodeLister BasicSnapshotStore
 type basicSnapshotStoreStorageLister BasicSnapshotStore
 type basicSnapshotStorePodGroupStateLister BasicSnapshotStore
+type basicSnapshotStorePodGroupLister BasicSnapshotStore
+type basicSnapshotStoreCompositePodGroupStateLister BasicSnapshotStore
+type basicSnapshotStoreCompositePodGroupLister BasicSnapshotStore
 
 // NodeInfos exposes snapshot as NodeInfoLister.
 func (snapshot *BasicSnapshotStore) NodeInfos() schedulerinterface.NodeInfoLister {
@@ -282,6 +298,21 @@ func (snapshot *BasicSnapshotStore) StorageInfos() schedulerinterface.StorageInf
 // PodGroupStates exposes snapshot as PodGroupStateLister.
 func (snapshot *BasicSnapshotStore) PodGroupStates() schedulerinterface.PodGroupStateLister {
 	return (*basicSnapshotStorePodGroupStateLister)(snapshot)
+}
+
+// PodGroups exposes snapshot as PodGroupLister.
+func (snapshot *BasicSnapshotStore) PodGroups() schedulerinterface.PodGroupLister {
+	return (*basicSnapshotStorePodGroupLister)(snapshot)
+}
+
+// CompositePodGroupStates exposes snapshot as CompositePodGroupStateLister.
+func (snapshot *BasicSnapshotStore) CompositePodGroupStates() schedulerinterface.CompositePodGroupStateLister {
+	return (*basicSnapshotStoreCompositePodGroupStateLister)(snapshot)
+}
+
+// CompositePodGroups exposes snapshot as CompositePodGroupLister.
+func (snapshot *BasicSnapshotStore) CompositePodGroups() schedulerinterface.CompositePodGroupLister {
+	return (*basicSnapshotStoreCompositePodGroupLister)(snapshot)
 }
 
 // List returns the list of nodes in the snapshot.
@@ -299,6 +330,11 @@ func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithRequiredAntiAffinityLi
 	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfosThatHavePodsWithRequiredAntiAffinityList()
 }
 
+// HavePodsWithRequiredNonHostScopedAntiAffinityList returns nodes containing pods that require a wider topology scan (topologyKey other than hostname).
+func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithRequiredNonHostScopedAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
+	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfosThatHavePodsWithRequiredNonHostScopedAntiAffinityList()
+}
+
 // Returns the NodeInfo of the given node name.
 func (snapshot *basicSnapshotStoreNodeLister) Get(nodeName string) (schedulerinterface.NodeInfo, error) {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().getNodeInfo(nodeName)
@@ -312,7 +348,25 @@ func (snapshot *basicSnapshotStoreStorageLister) IsPVCUsedByPods(key string) boo
 // Get returns pod group state by namespace and pod group name.
 //
 // This method is never supposed to be called in the cluster autoscaler simulations
-// as pod group states are not integrated with cluster autoscaler.
+// until PodGroups are integrated with cluster autoscaler.
 func (snapshot *basicSnapshotStorePodGroupStateLister) Get(namespace string, podGroupName string) (schedulerinterface.PodGroupState, error) {
 	return nil, errorGettingPodGroupState
+}
+
+// This method is never supposed to be called in the cluster autoscaler simulations
+// until PodGroups are integrated with cluster autoscaler.
+func (snapshot *basicSnapshotStorePodGroupLister) Get(namespace string, podGroupName string) (*schedulingv1beta1.PodGroup, error) {
+	return nil, errorGettingPodGroup
+}
+
+// This method is never supposed to be called in the cluster autoscaler simulations
+// until CompositePodGroups are integrated with cluster autoscaler.
+func (snapshot *basicSnapshotStoreCompositePodGroupStateLister) Get(namespace string, name string) (schedulerinterface.CompositePodGroupState, error) {
+	return nil, errorGettingCompositePodGroupState
+}
+
+// This method is never supposed to be called in the cluster autoscaler simulations
+// until CompositePodGroups are integrated with cluster autoscaler.
+func (snapshot *basicSnapshotStoreCompositePodGroupLister) Get(namespace string, name string) (*schedulingv1alpha3.CompositePodGroup, error) {
+	return nil, errorGettingCompositePodGroup
 }

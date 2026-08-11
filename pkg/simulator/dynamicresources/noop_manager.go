@@ -21,7 +21,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
-	schedulingapi "k8s.io/api/scheduling/v1alpha2"
+	schedulingapi "k8s.io/api/scheduling/v1beta1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/dynamic-resource-allocation/structured"
@@ -65,11 +65,6 @@ func (dm NoOpDRAManager) DeviceClasses() fwk.DeviceClassLister {
 // DeviceClassResolver returns a no-op DeviceClassResolver.
 func (dm NoOpDRAManager) DeviceClassResolver() fwk.DeviceClassResolver {
 	return (noOpDeviceClassResolver)(dm)
-}
-
-// PodGroups returns a no-op PodGroupLister.
-func (dm NoOpDRAManager) PodGroups() fwk.PodGroupLister {
-	return (noOpPodGroupLister)(dm)
 }
 
 // -------------------------------------

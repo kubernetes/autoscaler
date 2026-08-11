@@ -34,11 +34,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/controller/daemon"
 
-	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	ndf "k8s.io/component-helpers/nodedeclaredfeatures"
 	"k8s.io/dynamic-resource-allocation/resourceclaim"
-	"k8s.io/kubernetes/pkg/features"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	drautils "sigs.k8s.io/cluster-autoscaler/pkg/simulator/dynamicresources/utils"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
@@ -574,7 +571,11 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.testName, func(t *testing.T) {
-			featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.NodeDeclaredFeatures, !tc.nodeDeclaredFeaturesDisabled)
+			if tc.nodeDeclaredFeaturesDisabled {
+				oldFrameWork := ndf.DefaultFramework
+				ndf.DefaultFramework = ndf.New(nil)
+				defer func() { ndf.DefaultFramework = oldFrameWork }()
+			}
 
 			newNameBase := "node"
 			suffix := "abc"
