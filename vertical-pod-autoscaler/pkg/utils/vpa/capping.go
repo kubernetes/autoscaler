@@ -252,7 +252,7 @@ func maybeCapToPolicyMax(recommended resource.Quantity, resourceName corev1.Reso
 func maybeCapToMax(recommended resource.Quantity, resourceName corev1.ResourceName,
 	maxAllowed corev1.ResourceList) (resource.Quantity, bool) {
 	maxResource, found := maxAllowed[resourceName]
-	if found && !maxResource.IsZero() && recommended.Cmp(maxResource) > 0 {
+	if found && recommended.Cmp(maxResource) > 0 {
 		return maxResource, true
 	}
 	return recommended, false
@@ -261,7 +261,7 @@ func maybeCapToMax(recommended resource.Quantity, resourceName corev1.ResourceNa
 func maybeCapToMin(recommended resource.Quantity, resourceName corev1.ResourceName,
 	minAllowed corev1.ResourceList) (resource.Quantity, bool) {
 	minResource, found := minAllowed[resourceName]
-	if found && !minResource.IsZero() && recommended.Cmp(minResource) < 0 {
+	if found && recommended.Cmp(minResource) < 0 {
 		return minResource, true
 	}
 	return recommended, false
@@ -381,10 +381,17 @@ func getBoundaryRecommendation(recommendation corev1.ResourceList,
 	}
 	boundaryCpu := GetBoundaryRequest(corev1.ResourceCPU, containerRequests.Cpu(), containerLimits.Cpu(), boundaryLimit.Cpu(), defaultLimit.Cpu())
 	boundaryMem := GetBoundaryRequest(corev1.ResourceMemory, containerRequests.Memory(), containerLimits.Memory(), boundaryLimit.Memory(), defaultLimit.Memory())
-	return corev1.ResourceList{
-		corev1.ResourceCPU:    *boundaryCpu,
-		corev1.ResourceMemory: *boundaryMem,
+	// GetBoundaryRequest returns a zero quantity when there is no boundary for
+	// the resource so we omit zero quantities so that a missing boundary does
+	// not cap the corresponding resource to zero
+	result := corev1.ResourceList{}
+	if !boundaryCpu.IsZero() {
+		result[corev1.ResourceCPU] = *boundaryCpu
 	}
+	if !boundaryMem.IsZero() {
+		result[corev1.ResourceMemory] = *boundaryMem
+	}
+	return result
 }
 
 type containerWithRecommendation struct {

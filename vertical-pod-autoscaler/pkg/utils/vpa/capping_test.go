@@ -263,6 +263,58 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 	}, res.ContainerRecommendations[0].UpperBound)
 }
 
+func TestRecommendationCappedToZeroMaxPolicy(t *testing.T) {
+	containerName := "ctr-name"
+	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName(containerName).Get()).Get()
+	podRecommendation := vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: containerName,
+				Target: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("100m"),
+					corev1.ResourceMemory: resource.MustParse("100Mi"),
+				},
+				UncappedTarget: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("100m"),
+					corev1.ResourceMemory: resource.MustParse("100Mi"),
+				},
+			},
+		},
+	}
+	policy := vpa_types.PodResourcePolicy{
+		ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+			{
+				ContainerName: containerName,
+				MaxAllowed: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("0"),
+					corev1.ResourceMemory: resource.MustParse("0"),
+				},
+			},
+		},
+	}
+
+	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).Get()
+	vpa.Spec.ResourcePolicy = &policy
+	vpa.Status.Recommendation = &podRecommendation
+
+	res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(vpa, pod)
+	assert.NoError(t, err)
+	assert.Equal(t, corev1.ResourceList{
+		corev1.ResourceCPU:    resource.MustParse("0"),
+		corev1.ResourceMemory: resource.MustParse("0"),
+	}, res.ContainerRecommendations[0].Target)
+
+	assert.Contains(t, annotations, containerName)
+	assert.Contains(t, annotations[containerName], "cpu capped to maxAllowed")
+	assert.Contains(t, annotations[containerName], "memory capped to maxAllowed")
+
+	// The uncapped target is left alone so the original recommendation stays visible.
+	assert.Equal(t, corev1.ResourceList{
+		corev1.ResourceCPU:    resource.MustParse("100m"),
+		corev1.ResourceMemory: resource.MustParse("100Mi"),
+	}, res.ContainerRecommendations[0].UncappedTarget)
+}
+
 var podRecommendation *vpa_types.RecommendedPodResources = &vpa_types.RecommendedPodResources{
 	ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 		{
@@ -595,6 +647,119 @@ func TestApplyVPAPolicy(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name:              "resource policy has max allowed of zero",
+			PodRecommendation: recommendation,
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "foo",
+						MaxAllowed: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+					},
+				},
+			},
+			GlobalMaxAllowed: nil,
+			Expected: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					{
+						ContainerName: "foo",
+						Target: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+						LowerBound: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+						UpperBound: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+						UncappedTarget: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("42m"),
+							corev1.ResourceMemory: resource.MustParse("42Mi"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Name:              "resource policy has max allowed of zero and global max allowed is set",
+			PodRecommendation: recommendation,
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "foo",
+						MaxAllowed: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+					},
+				},
+			},
+			GlobalMaxAllowed: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("30m"),
+				corev1.ResourceMemory: resource.MustParse("30Mi"),
+			},
+			Expected: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					{
+						ContainerName: "foo",
+						Target: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+						LowerBound: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+						UpperBound: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+						UncappedTarget: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("42m"),
+							corev1.ResourceMemory: resource.MustParse("42Mi"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Name:              "resource policy is nil and global max allowed is zero",
+			PodRecommendation: recommendation,
+			ResourcePolicy:    nil,
+			GlobalMaxAllowed: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("0"),
+				corev1.ResourceMemory: resource.MustParse("0"),
+			},
+			Expected: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					{
+						ContainerName: "foo",
+						Target: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+						LowerBound: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+						UpperBound: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+						UncappedTarget: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("42m"),
+							corev1.ResourceMemory: resource.MustParse("42Mi"),
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -691,6 +856,130 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 	assert.Contains(t, annotations, "container")
 	assert.ElementsMatch(t, []string{"cpu capped to fit Max in container LimitRange", "memory capped to fit Min in container LimitRange"}, annotations["container"])
 	assert.Equal(t, expectedRecommendation, *processedRecommendation)
+}
+
+func TestGetBoundaryRecommendation(t *testing.T) {
+	tests := []struct {
+		name              string
+		containerRequests corev1.ResourceList
+		containerLimits   corev1.ResourceList
+		boundaryLimit     corev1.ResourceList
+		defaultLimit      corev1.ResourceList
+		expect            corev1.ResourceList
+	}{
+		{
+			name:          "boundary limit is nil",
+			boundaryLimit: nil,
+			expect:        corev1.ResourceList{},
+		},
+		{
+			name: "container has no limits so there is no boundary",
+			containerRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("50M"),
+			},
+			containerLimits: nil,
+			boundaryLimit: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("200M"),
+			},
+			expect: corev1.ResourceList{},
+		},
+		{
+			name: "container has no cpu limit so only memory has a boundary",
+			containerRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("50M"),
+			},
+			containerLimits: corev1.ResourceList{
+				corev1.ResourceMemory: resource.MustParse("100M"),
+			},
+			boundaryLimit: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("200M"),
+			},
+			expect: corev1.ResourceList{
+				corev1.ResourceMemory: *resource.NewQuantity(100000000, resource.DecimalSI), // (50M*200M)/100M
+			},
+		},
+		{
+			name: "boundary limit is missing memory so only cpu has a boundary",
+			containerRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("50M"),
+			},
+			containerLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("100M"),
+			},
+			boundaryLimit: corev1.ResourceList{
+				corev1.ResourceCPU: resource.MustParse("4"),
+			},
+			expect: corev1.ResourceList{
+				corev1.ResourceCPU: *resource.NewMilliQuantity(2000, resource.DecimalSI), // (1*4)/2
+			},
+		},
+		{
+			name: "limit range default is used when the container has no limits",
+			containerRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("50M"),
+			},
+			containerLimits: nil,
+			boundaryLimit: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("200M"),
+			},
+			defaultLimit: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("100M"),
+			},
+			expect: corev1.ResourceList{
+				corev1.ResourceCPU:    *resource.NewMilliQuantity(2000, resource.DecimalSI), // (1*4)/2
+				corev1.ResourceMemory: *resource.NewQuantity(100000000, resource.DecimalSI), // (50M*200M)/100M
+			},
+		},
+		{
+			name:              "container has no requests so the boundary is the boundary limit",
+			containerRequests: nil,
+			containerLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("100M"),
+			},
+			boundaryLimit: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("200M"),
+			},
+			expect: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("4"),
+				corev1.ResourceMemory: resource.MustParse("200M"),
+			},
+		},
+		{
+			name: "cpu boundary rounds down to zero so it is omitted",
+			containerRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1m"),
+				corev1.ResourceMemory: resource.MustParse("50M"),
+			},
+			containerLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("100M"),
+			},
+			boundaryLimit: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("500m"),
+				corev1.ResourceMemory: resource.MustParse("200M"),
+			},
+			expect: corev1.ResourceList{
+				corev1.ResourceMemory: *resource.NewQuantity(100000000, resource.DecimalSI),
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := getBoundaryRecommendation(nil, tc.containerRequests, tc.containerLimits, tc.boundaryLimit, tc.defaultLimit)
+			assert.Equal(t, tc.expect, got)
+		})
+	}
 }
 
 func TestApplyPodLimitRange(t *testing.T) {
