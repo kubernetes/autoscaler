@@ -85,6 +85,7 @@ type updater struct {
 	selectorFetcher              target.VpaTargetSelectorFetcher
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
+	statusTimeout                time.Duration
 	controllerFetcher            controllerfetcher.ControllerFetcher
 	ignoredNamespaces            []string
 	infeasibleAttempts           map[types.UID]*vpa_types.RecommendedPodResources
@@ -108,7 +109,9 @@ func NewUpdater(
 	defaultUpdateThreshold float64,
 	podLifetimeUpdateThreshold time.Duration,
 	evictAfterOOMThreshold time.Duration,
+	statusLeaseName string,
 	statusNamespace string,
+	statusTimeout time.Duration,
 	recommendationProcessor vpa_api_util.RecommendationProcessor,
 	evictionAdmission priority.PodEvictionAdmission,
 	selectorFetcher target.VpaTargetSelectorFetcher,
@@ -145,9 +148,10 @@ func NewUpdater(
 		useAdmissionControllerStatus: useAdmissionControllerStatus,
 		statusValidator: status.NewValidator(
 			kubeClient,
-			status.AdmissionControllerStatusName,
+			statusLeaseName,
 			statusNamespace,
 		),
+		statusTimeout:              statusTimeout,
 		infeasibleAttempts:         make(map[types.UID]*vpa_types.RecommendedPodResources),
 		ignoredNamespaces:          ignoredNamespaces,
 		defaultUpdateThreshold:     defaultUpdateThreshold,
@@ -162,13 +166,13 @@ func (u *updater) RunOnce(ctx context.Context) {
 	defer timer.ObserveTotal()
 
 	if u.useAdmissionControllerStatus {
-		isValid, err := u.statusValidator.IsStatusValid(ctx, status.AdmissionControllerStatusTimeout)
+		isValid, err := u.statusValidator.IsStatusValid(ctx, u.statusTimeout)
 		if err != nil {
 			klog.ErrorS(err, "Error getting Admission Controller status. Skipping update loop")
 			return
 		}
 		if !isValid {
-			klog.V(0).InfoS("Admission Controller status is not valid. Skipping update loop", "timeout", status.AdmissionControllerStatusTimeout)
+			klog.V(0).InfoS("Admission Controller status is not valid. Skipping update loop", "timeout", u.statusTimeout)
 			return
 		}
 	}

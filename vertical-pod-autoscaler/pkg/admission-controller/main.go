@@ -49,7 +49,6 @@ import (
 
 const (
 	defaultResyncPeriod                        = 10 * time.Minute
-	statusUpdateInterval                       = 10 * time.Second
 	scaleCacheEntryLifetime      time.Duration = time.Hour
 	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
 	scaleCacheEntryJitterFactor  float64       = 1.
@@ -110,11 +109,14 @@ func main() {
 	if config.Namespace != "" {
 		statusNamespace = config.Namespace
 	}
+	if config.StatusLeaseNamespace != "" {
+		statusNamespace = config.StatusLeaseNamespace
+	}
 	statusUpdater := status.NewUpdater(
 		kubeClient,
-		status.AdmissionControllerStatusName,
+		config.StatusLeaseName,
 		statusNamespace,
-		statusUpdateInterval,
+		config.StatusLeaseUpdateInterval,
 		hostname,
 	)
 
