@@ -754,7 +754,7 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		CheckNoPodsEvicted(f, podSet)
 	})
 
-	// Tests for the issue described here: https://github.com/kubernetes/autoscaler/pull/9935
+	// Tests for the issue described here: https://github.com/kubernetes/autoscaler/pull/8776
 	f.It("should not get into an eviction loop when Pod LimitRange object with Max field is present", func() {
 		d := utils.NewNHamstersDeployment(f, 2)
 		InstallLimitRangeWithMax(f, "200m", "200Mi", apiv1.LimitTypePod)
@@ -821,8 +821,8 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		CheckNoPodsEvicted(f, podSet)
 	})
 
-	// Tests for the issue described here: https://github.com/kubernetes/autoscaler/pull/9935
-	f.It("should not get into an eviction loop when Pod LimitRange with Min field object is present", func() {
+	// Tests for the issue described here: https://github.com/kubernetes/autoscaler/pull/8776
+	f.It("should not get into an eviction loop when a Pod LimitRange object with a Min field is present", func() {
 		d := utils.NewNHamstersDeployment(f, 2)
 		InstallLimitRangeWithMin(f, "150m", "150Mi", apiv1.LimitTypePod)
 

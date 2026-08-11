@@ -17,7 +17,6 @@ limitations under the License.
 package api
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -2404,7 +2403,6 @@ func TestIterativeWaterfilling(t *testing.T) {
 		constraints           []float64
 		expectedDistributions []float64
 		expectedHasAllocation bool
-		expectedError         error
 	}{
 		// The first element should receive 10% of the total, the second 50%, and so on...
 		{
@@ -2414,7 +2412,6 @@ func TestIterativeWaterfilling(t *testing.T) {
 			constraints:           []float64{10, 10, 10, 10},
 			expectedDistributions: []float64{1, 5, 3, 1},
 			expectedHasAllocation: true,
-			expectedError:         nil,
 		},
 		{
 			name:                  "all constraints violated",
@@ -2423,7 +2420,6 @@ func TestIterativeWaterfilling(t *testing.T) {
 			constraints:           []float64{0, 0, 0, 0},
 			expectedDistributions: nil,
 			expectedHasAllocation: false,
-			expectedError:         nil,
 		},
 		{
 			name:                  "one element saturates, remainder absorbed by the other",
@@ -2432,7 +2428,6 @@ func TestIterativeWaterfilling(t *testing.T) {
 			constraints:           []float64{3, neverSaturates},
 			expectedDistributions: []float64{3, 7},
 			expectedHasAllocation: true,
-			expectedError:         nil,
 		},
 		{
 			name:                  "cascading saturation across multiple rounds",
@@ -2441,7 +2436,6 @@ func TestIterativeWaterfilling(t *testing.T) {
 			constraints:           []float64{10, 50, neverSaturates},
 			expectedDistributions: []float64{10, 50, 40},
 			expectedHasAllocation: true,
-			expectedError:         nil,
 		},
 		{
 			name:                  "length mismatch",
@@ -2450,7 +2444,6 @@ func TestIterativeWaterfilling(t *testing.T) {
 			constraints:           []float64{1, 2, 3},
 			expectedDistributions: nil,
 			expectedHasAllocation: false,
-			expectedError:         fmt.Errorf("weights and constraints must have equal length: %d vs %d", 2, 3),
 		},
 		{
 			name:                  "all weights zero",
@@ -2459,7 +2452,6 @@ func TestIterativeWaterfilling(t *testing.T) {
 			constraints:           []float64{5, 5},
 			expectedDistributions: nil,
 			expectedHasAllocation: false,
-			expectedError:         nil,
 		},
 		{
 			name:                  "zero total",
@@ -2468,7 +2460,6 @@ func TestIterativeWaterfilling(t *testing.T) {
 			constraints:           []float64{5, 5},
 			expectedDistributions: nil,
 			expectedHasAllocation: false,
-			expectedError:         nil,
 		},
 		{
 			name:                  "empty slices",
@@ -2477,18 +2468,11 @@ func TestIterativeWaterfilling(t *testing.T) {
 			constraints:           []float64{},
 			expectedDistributions: nil,
 			expectedHasAllocation: false,
-			expectedError:         nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			floats, hasPositiveAllocation, err := iterativeWaterfilling(tt.total, tt.weights, tt.constraints)
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError.Error(), err.Error())
-			} else {
-				assert.NoError(t, err)
-			}
+			floats, hasPositiveAllocation := iterativeWaterfilling(tt.total, tt.weights, tt.constraints)
 			assert.Equal(t, tt.expectedHasAllocation, hasPositiveAllocation)
 			assert.Equal(t, tt.expectedDistributions, floats)
 		})

@@ -567,10 +567,13 @@ func ensureBoundsAreValid(recs []vpa_types.RecommendedContainerResources) []vpa_
 		eligibleIdxs := make([]int, 0, len(recs))
 
 		for i := range recs {
-			target, targetOK := (*getTarget(recs[i]))[resourceName]
+			target, targetOK := recs[i].Target[resourceName]
+			if !targetOK {
+				continue
+			}
 			boundRL := getBound(recs[i])
 			bound, boundOK := (*boundRL)[resourceName]
-			if !targetOK || !boundOK {
+			if !boundOK {
 				continue
 			}
 			if !isBoundValid(bound, target) {
@@ -592,10 +595,11 @@ func ensureBoundsAreValid(recs []vpa_types.RecommendedContainerResources) []vpa_
 		constraints := make([]float64, 0, len(eligibleIdxs))
 		for _, idx := range eligibleIdxs {
 			bound := (*getBound(recs[idx]))[resourceName]
-			target := (*getTarget(recs[idx]))[resourceName]
+			target := recs[idx].Target[resourceName]
 
 			weight, err := calculateWeight(total, bound, resourceName)
 			if err != nil {
+				klog.V(2).InfoS("Skipping bound redistribution", "recommendations", recs, "error", err)
 				return
 			}
 			weights = append(weights, *weight)
@@ -603,7 +607,7 @@ func ensureBoundsAreValid(recs []vpa_types.RecommendedContainerResources) []vpa_
 		}
 
 		// Calculate how much resources each container - where there is no violation - can give up or absorb
-		allocations, hasAllocation, _ := iterativeWaterfilling(totalDelta, weights, constraints)
+		allocations, hasAllocation := iterativeWaterfilling(totalDelta, weights, constraints)
 		// All constraints are already saturated at zero, exit early
 		if !hasAllocation {
 			return
@@ -626,6 +630,9 @@ func ensureBoundsAreValid(recs []vpa_types.RecommendedContainerResources) []vpa_
 
 	lowerValid := func(lowerBound, target resource.Quantity) bool { return lowerBound.Cmp(target) <= 0 }
 	upperValid := func(upperBound, target resource.Quantity) bool { return upperBound.Cmp(target) >= 0 }
+
+	getLower := func(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList { return &rl.LowerBound }
+	getUpper := func(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList { return &rl.UpperBound }
 
 	for _, resourceName := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory} {
 		fixBound(getLower, resourceName, lowerValid, false) // LowerBound must not exceed Target
@@ -651,9 +658,9 @@ func newQuantity(value int64, format resource.Format, resourceName corev1.Resour
 // iterativeWaterfilling distributes total proportionally to weights
 // while respecting the per-element constraints.
 // As the name suggests, the function implements an iterative water-filling algorithm.
-func iterativeWaterfilling(total float64, weights []float64, constraints []float64) ([]float64, bool, error) {
+func iterativeWaterfilling(total float64, weights []float64, constraints []float64) ([]float64, bool) {
 	if len(weights) != len(constraints) {
-		return nil, false, fmt.Errorf("weights and constraints must have equal length: %d vs %d", len(weights), len(constraints))
+		return nil, false
 	}
 	allocs := make([]float64, len(weights))
 	saturated := make([]bool, len(weights))
@@ -687,9 +694,9 @@ func iterativeWaterfilling(total float64, weights []float64, constraints []float
 				return n > 0
 			})
 			if !hasAllocation {
-				return nil, false, nil
+				return nil, false
 			}
-			return allocs, true, nil
+			return allocs, true
 		}
 
 		total -= newlySaturatedBudget
@@ -746,7 +753,3 @@ func roundPreservingSum(floats []float64) []float64 {
 	}
 	return floats
 }
-
-func getLower(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList  { return &rl.LowerBound }
-func getTarget(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList { return &rl.Target }
-func getUpper(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList  { return &rl.UpperBound }
