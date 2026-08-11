@@ -73,6 +73,10 @@ func checkResource(estimatorResult *EstimatorResult, actual api.ResourceList, re
 func shouldOverwriteResources(estimatorResult *EstimatorResult, limits, reqs api.ResourceList, cpuRequestsOnly bool) (*api.ResourceRequirements, operation) {
 	for _, resourceType := range []api.ResourceName{api.ResourceCPU, api.ResourceMemory, api.ResourceStorage} {
 		if cpuRequestsOnly && resourceType == api.ResourceCPU {
+			if _, ok := estimatorResult.AcceptableRange.lower[resourceType]; !ok {
+				return nil, unknown
+			}
+
 			newReqs, op := checkResource(estimatorResult, reqs, resourceType)
 			if newReqs != nil {
 				log.V(4).Infof("Resource %s requests are out of bounds.", resourceType)

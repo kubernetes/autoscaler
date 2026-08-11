@@ -232,6 +232,7 @@ func TestShouldOverwriteResources(t *testing.T) {
 		{smallMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp, false},
 		{smallCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}, scaleUp, false},
 		{smallCPU, standardRecommended, &api.ResourceRequirements{Limits: smallCPU, Requests: belowStandard}, scaleUp, true},
+		{smallCPU, &EstimatorResult{}, nil, unknown, true},
 		{bigStorage, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown, false},
 		{bigMemory, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown, false},
 		{bigCPU, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}, scaleDown, false},
@@ -277,6 +278,7 @@ func TestUpdateResources(t *testing.T) {
 		// Delay has passed
 		{smallCPU, standardRecommended, oneMinuteAgo, oneMinuteDelay, noDelay, &api.ResourceRequirements{belowStandard, belowStandard}, overwrite, false},
 		{smallCPU, standardRecommended, oneMinuteAgo, oneMinuteDelay, noDelay, &api.ResourceRequirements{Limits: smallCPU, Requests: belowStandard}, overwrite, true},
+		{smallCPU, &EstimatorResult{}, oneMinuteAgo, oneMinuteDelay, noDelay, nil, noChange, true},
 		{bigCPU, standardRecommended, oneMinuteAgo, noDelay, oneMinuteDelay, &api.ResourceRequirements{aboveStandard, aboveStandard}, overwrite, false},
 		{smallCPU, standardRecommended, oneHourAgo, oneMinuteDelay, noDelay, &api.ResourceRequirements{belowStandard, belowStandard}, overwrite, false},
 		{bigCPU, standardRecommended, oneHourAgo, noDelay, oneMinuteDelay, &api.ResourceRequirements{aboveStandard, aboveStandard}, overwrite, false},
