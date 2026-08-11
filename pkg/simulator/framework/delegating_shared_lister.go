@@ -67,11 +67,12 @@ func (lister *DelegatingSchedulerSharedLister) PodGroupStates() schedulerinterfa
 	return lister.delegate.PodGroupStates()
 }
 
+// CompositePodGroupStates returns a CompositePodGroupStateLister.
 func (lister *DelegatingSchedulerSharedLister) CompositePodGroupStates() schedulerinterface.CompositePodGroupStateLister {
 	return lister.delegate.CompositePodGroupStates()
 }
 
-// CompositePodsGroups returns a CompositePodGroupLister
+// CompositePodGroups returns a CompositePodGroupLister.
 func (lister *DelegatingSchedulerSharedLister) CompositePodGroups() schedulerinterface.CompositePodGroupLister {
 	return lister.delegate.CompositePodGroups()
 }
