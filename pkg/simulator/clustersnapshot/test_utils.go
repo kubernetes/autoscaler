@@ -32,7 +32,7 @@ import (
 // InitializeClusterSnapshotOrDie clears cluster snapshot and then initializes it with given set of nodes and pods.
 // Both Spec.NodeName and Status.NominatedNodeName are used when simulating scheduling pods.
 func InitializeClusterSnapshotOrDie(
-	t *testing.T,
+	t testing.TB,
 	snapshot ClusterSnapshot,
 	nodes []*apiv1.Node,
 	pods []*apiv1.Pod) {
