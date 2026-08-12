@@ -59,6 +59,7 @@ type InstanceType struct {
 	MemoryMb     int64
 	GPU          int64
 	Architecture string
+	EBSVolumeLimit int64
 }
 
 // StaticListLastUpdateTime is a string declaring the last time the static list was updated.
@@ -73,6 +74,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     {{ .MemoryMb }},
 		GPU:          {{ .GPU }},
 		Architecture: "{{ .Architecture }}",
+		EBSVolumeLimit:  {{ .EBSVolumeLimit }},
 	},
 {{- end }}
 }

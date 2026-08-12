@@ -872,3 +872,50 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 2)
 
 }
+
+func TestAwsNodeGroupTemplateNodeInfoSetsCSINode(t *testing.T) {
+	const instanceTypeName = "m5.large"
+
+	manager := &AwsManager{
+		instanceTypes: map[string]*InstanceType{
+			instanceTypeName: {
+				InstanceType:   instanceTypeName,
+				VCPU:           2,
+				MemoryMb:       8192,
+				Architecture:   "amd64",
+				EBSVolumeLimit: 39,
+			},
+		},
+	}
+
+	origGetInstanceTypeFunc := getInstanceTypeForAsg
+	defer func() { getInstanceTypeForAsg = origGetInstanceTypeFunc }()
+	getInstanceTypeForAsg = func(_ *asgCache, _ *asg) (string, error) {
+		return instanceTypeName, nil
+	}
+
+	ng := &AwsNodeGroup{
+		awsManager: manager,
+		asg: &asg{
+			AwsRef:            AwsRef{Name: "test-asg"},
+			AvailabilityZones: []string{"us-east-1a"},
+			minSize:           0,
+			maxSize:           5,
+			curSize:           0,
+		},
+	}
+
+	nodeInfo, err := ng.TemplateNodeInfo()
+	assert.NoError(t, err)
+	assert.NotNil(t, nodeInfo)
+	assert.NotNil(t, nodeInfo.CSINode)
+	assert.Equal(t, nodeInfo.Node().Name, nodeInfo.CSINode.Name)
+	assert.Len(t, nodeInfo.CSINode.Spec.Drivers, 1)
+
+	driver := nodeInfo.CSINode.Spec.Drivers[0]
+	assert.Equal(t, "ebs.csi.aws.com", driver.Name)
+	assert.Equal(t, nodeInfo.Node().Name, driver.NodeID)
+	assert.NotNil(t, driver.Allocatable)
+	assert.NotNil(t, driver.Allocatable.Count)
+	assert.Equal(t, int32(39), *driver.Allocatable.Count)
+}

@@ -27,17 +27,18 @@ import (
 	"strings"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
+	apiv1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
@@ -339,6 +340,33 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+func (m *AwsManager) buildCSINodeFromTemplate(template *asgTemplate, nodeName string) *storagev1.CSINode {
+	if template == nil || template.InstanceType == nil {
+		return nil
+	}
+
+	driver := storagev1.CSINodeDriver{
+		Name:   "ebs.csi.aws.com",
+		NodeID: nodeName,
+	}
+	// Prefer a CSINode without Allocatable over nil when the attachment limit is
+	// unknown. Returning nil blocks CSI-aware scale-from-zero simulation.
+	if template.InstanceType.EBSVolumeLimit > 0 {
+		driver.Allocatable = &storagev1.VolumeNodeResources{
+			Count: ptr.To(int32(template.InstanceType.EBSVolumeLimit)),
+		}
+	}
+
+	return &storagev1.CSINode{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: nodeName,
+		},
+		Spec: storagev1.CSINodeSpec{
+			Drivers: []storagev1.CSINodeDriver{driver},
+		},
+	}
 }
 
 func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]string, mngLabels map[string]string) map[string]string {

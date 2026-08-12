@@ -426,6 +426,9 @@ func (ng *AwsNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	}
 
 	nodeInfo := framework.NewNodeInfo(node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.asg.Name), nil))
+	if csiNode := ng.awsManager.buildCSINodeFromTemplate(template, node.Name); csiNode != nil {
+		nodeInfo.SetCSINode(csiNode)
+	}
 	return nodeInfo, nil
 }
 

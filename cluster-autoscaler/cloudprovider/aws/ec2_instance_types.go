@@ -20,11 +20,12 @@ package aws
 
 // InstanceType is spec of EC2 instance
 type InstanceType struct {
-	InstanceType string
-	VCPU         int64
-	MemoryMb     int64
-	GPU          int64
-	Architecture string
+	InstanceType   string
+	VCPU           int64
+	MemoryMb       int64
+	GPU            int64
+	Architecture   string
+	EBSVolumeLimit int64
 }
 
 // StaticListLastUpdateTime is a string declaring the last time the static list was updated.

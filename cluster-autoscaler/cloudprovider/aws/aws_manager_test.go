@@ -951,3 +951,66 @@ func TestParseASGAutoDiscoverySpecs(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildCSINodeFromTemplate(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Equal(t, "template-node", got.Name)
+	require.Len(t, got.Spec.Drivers, 1)
+
+	driver := got.Spec.Drivers[0]
+	require.Equal(t, "ebs.csi.aws.com", driver.Name)
+	require.Equal(t, "template-node", driver.NodeID)
+	require.NotNil(t, driver.Allocatable)
+	require.Equal(t, int32(39), *driver.Allocatable.Count)
+}
+
+func TestBuildCSINodeFromTemplate_NoVolumeLimit(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 0,
+		},
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Equal(t, "template-node", got.Name)
+	require.Len(t, got.Spec.Drivers, 1)
+
+	driver := got.Spec.Drivers[0]
+	require.Equal(t, "ebs.csi.aws.com", driver.Name)
+	require.Equal(t, "template-node", driver.NodeID)
+	require.Nil(t, driver.Allocatable)
+}
+
+func TestBuildCSINodeFromTemplate_NilTemplate(t *testing.T) {
+	manager := &AwsManager{}
+
+	got := manager.buildCSINodeFromTemplate(nil, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_NilInstanceType(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
