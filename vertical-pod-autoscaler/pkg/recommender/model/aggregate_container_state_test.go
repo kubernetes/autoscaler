@@ -448,6 +448,25 @@ func TestUpdateFromPolicyTargetPercentile(t *testing.T) {
 	}
 }
 
+func TestUpdateFromPolicyTargetPercentileReset(t *testing.T) {
+	// AggregateContainerState is reused across reconciles, so removing a per-VPA
+	// override must reset the field back to 0 (global fallback), not keep the old value.
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, true)
+	cs := NewAggregateContainerState()
+
+	cs.UpdateFromPolicy(&vpa_types.ContainerResourcePolicy{
+		TargetCPUPercentile:    ptr.To(resource.MustParse("0.95")),
+		TargetMemoryPercentile: ptr.To(resource.MustParse("0.8")),
+	})
+	assert.Equal(t, 0.95, cs.GetTargetCPUPercentile())
+	assert.Equal(t, 0.8, cs.GetTargetMemoryPercentile())
+
+	// Re-applying a policy without the fields must clear the previous override.
+	cs.UpdateFromPolicy(&vpa_types.ContainerResourcePolicy{})
+	assert.Equal(t, float64(0), cs.GetTargetCPUPercentile())
+	assert.Equal(t, float64(0), cs.GetTargetMemoryPercentile())
+}
+
 func TestAggregateContainerStateIsExpiredWithCustomIntervalCount(t *testing.T) {
 	defaultInterval := GetAggregationsConfig().MemoryAggregationIntervalDuration
 	customCount := int64(4)
