@@ -76,6 +76,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     {{ .MemoryMb }},
 		GPU:          {{ .GPU }},
 		Architecture: "{{ .Architecture }}",
+		EBSVolumeLimit: {{ .EBSVolumeLimit }},
 	},
 {{- end }}
 }

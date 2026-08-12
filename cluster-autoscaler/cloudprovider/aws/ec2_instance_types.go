@@ -39,6 +39,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"a1.4xlarge": {
 		InstanceType: "a1.4xlarge",
@@ -46,6 +47,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"a1.large": {
 		InstanceType: "a1.large",
@@ -53,6 +55,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"a1.medium": {
 		InstanceType: "a1.medium",
@@ -60,6 +63,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"a1.metal": {
 		InstanceType: "a1.metal",
@@ -67,6 +71,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"a1.xlarge": {
 		InstanceType: "a1.xlarge",
@@ -74,6 +79,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c1.medium": {
 		InstanceType: "c1.medium",
@@ -81,6 +87,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1740,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"c1.xlarge": {
 		InstanceType: "c1.xlarge",
@@ -88,6 +95,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     7168,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"c3.2xlarge": {
 		InstanceType: "c3.2xlarge",
@@ -95,6 +103,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     15360,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"c3.4xlarge": {
 		InstanceType: "c3.4xlarge",
@@ -102,6 +111,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     30720,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"c3.8xlarge": {
 		InstanceType: "c3.8xlarge",
@@ -109,6 +119,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     61440,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"c3.large": {
 		InstanceType: "c3.large",
@@ -116,6 +127,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3840,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"c3.xlarge": {
 		InstanceType: "c3.xlarge",
@@ -123,6 +135,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     7680,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"c4.2xlarge": {
 		InstanceType: "c4.2xlarge",
@@ -130,6 +143,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     15360,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"c4.4xlarge": {
 		InstanceType: "c4.4xlarge",
@@ -137,6 +151,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     30720,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"c4.8xlarge": {
 		InstanceType: "c4.8xlarge",
@@ -144,6 +159,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     61440,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"c4.large": {
 		InstanceType: "c4.large",
@@ -151,6 +167,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3840,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"c4.xlarge": {
 		InstanceType: "c4.xlarge",
@@ -158,6 +175,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     7680,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"c5.12xlarge": {
 		InstanceType: "c5.12xlarge",
@@ -165,6 +183,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5.18xlarge": {
 		InstanceType: "c5.18xlarge",
@@ -172,6 +191,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     147456,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5.24xlarge": {
 		InstanceType: "c5.24xlarge",
@@ -179,6 +199,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5.2xlarge": {
 		InstanceType: "c5.2xlarge",
@@ -186,6 +207,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5.4xlarge": {
 		InstanceType: "c5.4xlarge",
@@ -193,6 +215,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5.9xlarge": {
 		InstanceType: "c5.9xlarge",
@@ -200,6 +223,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     73728,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5.large": {
 		InstanceType: "c5.large",
@@ -207,6 +231,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5.metal": {
 		InstanceType: "c5.metal",
@@ -214,6 +239,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"c5.xlarge": {
 		InstanceType: "c5.xlarge",
@@ -221,6 +247,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5a.12xlarge": {
 		InstanceType: "c5a.12xlarge",
@@ -228,6 +255,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5a.16xlarge": {
 		InstanceType: "c5a.16xlarge",
@@ -235,6 +263,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5a.24xlarge": {
 		InstanceType: "c5a.24xlarge",
@@ -242,6 +271,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5a.2xlarge": {
 		InstanceType: "c5a.2xlarge",
@@ -249,6 +279,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5a.4xlarge": {
 		InstanceType: "c5a.4xlarge",
@@ -256,6 +287,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5a.8xlarge": {
 		InstanceType: "c5a.8xlarge",
@@ -263,6 +295,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5a.large": {
 		InstanceType: "c5a.large",
@@ -270,6 +303,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5a.xlarge": {
 		InstanceType: "c5a.xlarge",
@@ -277,6 +311,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5ad.12xlarge": {
 		InstanceType: "c5ad.12xlarge",
@@ -284,6 +319,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"c5ad.16xlarge": {
 		InstanceType: "c5ad.16xlarge",
@@ -291,6 +327,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"c5ad.24xlarge": {
 		InstanceType: "c5ad.24xlarge",
@@ -298,6 +335,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"c5ad.2xlarge": {
 		InstanceType: "c5ad.2xlarge",
@@ -305,6 +343,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c5ad.4xlarge": {
 		InstanceType: "c5ad.4xlarge",
@@ -312,6 +351,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"c5ad.8xlarge": {
 		InstanceType: "c5ad.8xlarge",
@@ -319,6 +359,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"c5ad.large": {
 		InstanceType: "c5ad.large",
@@ -326,6 +367,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c5ad.xlarge": {
 		InstanceType: "c5ad.xlarge",
@@ -333,6 +375,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c5d.12xlarge": {
 		InstanceType: "c5d.12xlarge",
@@ -340,6 +383,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"c5d.18xlarge": {
 		InstanceType: "c5d.18xlarge",
@@ -347,6 +391,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     147456,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"c5d.24xlarge": {
 		InstanceType: "c5d.24xlarge",
@@ -354,6 +399,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"c5d.2xlarge": {
 		InstanceType: "c5d.2xlarge",
@@ -361,6 +407,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c5d.4xlarge": {
 		InstanceType: "c5d.4xlarge",
@@ -368,6 +415,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c5d.9xlarge": {
 		InstanceType: "c5d.9xlarge",
@@ -375,6 +423,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     73728,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c5d.large": {
 		InstanceType: "c5d.large",
@@ -382,6 +431,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c5d.metal": {
 		InstanceType: "c5d.metal",
@@ -389,6 +439,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"c5d.xlarge": {
 		InstanceType: "c5d.xlarge",
@@ -396,6 +447,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c5n.18xlarge": {
 		InstanceType: "c5n.18xlarge",
@@ -403,6 +455,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5n.2xlarge": {
 		InstanceType: "c5n.2xlarge",
@@ -410,6 +463,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     21504,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5n.4xlarge": {
 		InstanceType: "c5n.4xlarge",
@@ -417,6 +471,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     43008,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5n.9xlarge": {
 		InstanceType: "c5n.9xlarge",
@@ -424,6 +479,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5n.large": {
 		InstanceType: "c5n.large",
@@ -431,6 +487,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     5376,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c5n.metal": {
 		InstanceType: "c5n.metal",
@@ -438,6 +495,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"c5n.xlarge": {
 		InstanceType: "c5n.xlarge",
@@ -445,6 +503,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     10752,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6a.12xlarge": {
 		InstanceType: "c6a.12xlarge",
@@ -452,6 +511,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6a.16xlarge": {
 		InstanceType: "c6a.16xlarge",
@@ -459,6 +519,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6a.24xlarge": {
 		InstanceType: "c6a.24xlarge",
@@ -466,6 +527,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6a.2xlarge": {
 		InstanceType: "c6a.2xlarge",
@@ -473,6 +535,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6a.32xlarge": {
 		InstanceType: "c6a.32xlarge",
@@ -480,6 +543,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6a.48xlarge": {
 		InstanceType: "c6a.48xlarge",
@@ -487,6 +551,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6a.4xlarge": {
 		InstanceType: "c6a.4xlarge",
@@ -494,6 +559,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6a.8xlarge": {
 		InstanceType: "c6a.8xlarge",
@@ -501,6 +567,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6a.large": {
 		InstanceType: "c6a.large",
@@ -508,6 +575,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6a.metal": {
 		InstanceType: "c6a.metal",
@@ -515,6 +583,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"c6a.xlarge": {
 		InstanceType: "c6a.xlarge",
@@ -522,6 +591,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6g.12xlarge": {
 		InstanceType: "c6g.12xlarge",
@@ -529,6 +599,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6g.16xlarge": {
 		InstanceType: "c6g.16xlarge",
@@ -536,6 +607,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6g.2xlarge": {
 		InstanceType: "c6g.2xlarge",
@@ -543,6 +615,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6g.4xlarge": {
 		InstanceType: "c6g.4xlarge",
@@ -550,6 +623,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6g.8xlarge": {
 		InstanceType: "c6g.8xlarge",
@@ -557,6 +631,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6g.large": {
 		InstanceType: "c6g.large",
@@ -564,6 +639,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6g.medium": {
 		InstanceType: "c6g.medium",
@@ -571,6 +647,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6g.metal": {
 		InstanceType: "c6g.metal",
@@ -578,6 +655,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"c6g.xlarge": {
 		InstanceType: "c6g.xlarge",
@@ -585,6 +663,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6gd.12xlarge": {
 		InstanceType: "c6gd.12xlarge",
@@ -592,6 +671,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"c6gd.16xlarge": {
 		InstanceType: "c6gd.16xlarge",
@@ -599,6 +679,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"c6gd.2xlarge": {
 		InstanceType: "c6gd.2xlarge",
@@ -606,6 +687,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c6gd.4xlarge": {
 		InstanceType: "c6gd.4xlarge",
@@ -613,6 +695,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c6gd.8xlarge": {
 		InstanceType: "c6gd.8xlarge",
@@ -620,6 +703,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c6gd.large": {
 		InstanceType: "c6gd.large",
@@ -627,6 +711,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c6gd.medium": {
 		InstanceType: "c6gd.medium",
@@ -634,6 +719,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c6gd.metal": {
 		InstanceType: "c6gd.metal",
@@ -641,6 +727,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"c6gd.xlarge": {
 		InstanceType: "c6gd.xlarge",
@@ -648,6 +735,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c6gn.12xlarge": {
 		InstanceType: "c6gn.12xlarge",
@@ -655,6 +743,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6gn.16xlarge": {
 		InstanceType: "c6gn.16xlarge",
@@ -662,6 +751,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6gn.2xlarge": {
 		InstanceType: "c6gn.2xlarge",
@@ -669,6 +759,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6gn.4xlarge": {
 		InstanceType: "c6gn.4xlarge",
@@ -676,6 +767,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6gn.8xlarge": {
 		InstanceType: "c6gn.8xlarge",
@@ -683,6 +775,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6gn.large": {
 		InstanceType: "c6gn.large",
@@ -690,6 +783,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6gn.medium": {
 		InstanceType: "c6gn.medium",
@@ -697,6 +791,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6gn.xlarge": {
 		InstanceType: "c6gn.xlarge",
@@ -704,6 +799,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c6i.12xlarge": {
 		InstanceType: "c6i.12xlarge",
@@ -711,6 +807,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6i.16xlarge": {
 		InstanceType: "c6i.16xlarge",
@@ -718,6 +815,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6i.24xlarge": {
 		InstanceType: "c6i.24xlarge",
@@ -725,6 +823,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6i.2xlarge": {
 		InstanceType: "c6i.2xlarge",
@@ -732,6 +831,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6i.32xlarge": {
 		InstanceType: "c6i.32xlarge",
@@ -739,6 +839,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6i.4xlarge": {
 		InstanceType: "c6i.4xlarge",
@@ -746,6 +847,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6i.8xlarge": {
 		InstanceType: "c6i.8xlarge",
@@ -753,6 +855,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6i.large": {
 		InstanceType: "c6i.large",
@@ -760,6 +863,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6i.metal": {
 		InstanceType: "c6i.metal",
@@ -767,6 +871,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"c6i.xlarge": {
 		InstanceType: "c6i.xlarge",
@@ -774,6 +879,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6id.12xlarge": {
 		InstanceType: "c6id.12xlarge",
@@ -781,6 +887,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"c6id.16xlarge": {
 		InstanceType: "c6id.16xlarge",
@@ -788,6 +895,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"c6id.24xlarge": {
 		InstanceType: "c6id.24xlarge",
@@ -795,6 +903,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"c6id.2xlarge": {
 		InstanceType: "c6id.2xlarge",
@@ -802,6 +911,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c6id.32xlarge": {
 		InstanceType: "c6id.32xlarge",
@@ -809,6 +919,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"c6id.4xlarge": {
 		InstanceType: "c6id.4xlarge",
@@ -816,6 +927,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c6id.8xlarge": {
 		InstanceType: "c6id.8xlarge",
@@ -823,6 +935,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c6id.large": {
 		InstanceType: "c6id.large",
@@ -830,6 +943,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c6id.metal": {
 		InstanceType: "c6id.metal",
@@ -837,6 +951,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"c6id.xlarge": {
 		InstanceType: "c6id.xlarge",
@@ -844,6 +959,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"c6in.12xlarge": {
 		InstanceType: "c6in.12xlarge",
@@ -851,6 +967,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6in.16xlarge": {
 		InstanceType: "c6in.16xlarge",
@@ -858,6 +975,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6in.24xlarge": {
 		InstanceType: "c6in.24xlarge",
@@ -865,6 +983,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6in.2xlarge": {
 		InstanceType: "c6in.2xlarge",
@@ -872,6 +991,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6in.32xlarge": {
 		InstanceType: "c6in.32xlarge",
@@ -879,6 +999,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6in.4xlarge": {
 		InstanceType: "c6in.4xlarge",
@@ -886,6 +1007,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6in.8xlarge": {
 		InstanceType: "c6in.8xlarge",
@@ -893,6 +1015,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6in.large": {
 		InstanceType: "c6in.large",
@@ -900,6 +1023,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c6in.metal": {
 		InstanceType: "c6in.metal",
@@ -907,6 +1031,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"c6in.xlarge": {
 		InstanceType: "c6in.xlarge",
@@ -914,6 +1039,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"c7a.12xlarge": {
 		InstanceType: "c7a.12xlarge",
@@ -921,6 +1047,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7a.16xlarge": {
 		InstanceType: "c7a.16xlarge",
@@ -928,6 +1055,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"c7a.24xlarge": {
 		InstanceType: "c7a.24xlarge",
@@ -935,6 +1063,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"c7a.2xlarge": {
 		InstanceType: "c7a.2xlarge",
@@ -942,6 +1071,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7a.32xlarge": {
 		InstanceType: "c7a.32xlarge",
@@ -949,6 +1079,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 88,
 	},
 	"c7a.48xlarge": {
 		InstanceType: "c7a.48xlarge",
@@ -956,6 +1087,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"c7a.4xlarge": {
 		InstanceType: "c7a.4xlarge",
@@ -963,6 +1095,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7a.8xlarge": {
 		InstanceType: "c7a.8xlarge",
@@ -970,6 +1103,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7a.large": {
 		InstanceType: "c7a.large",
@@ -977,6 +1111,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7a.medium": {
 		InstanceType: "c7a.medium",
@@ -984,6 +1119,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7a.metal-48xl": {
 		InstanceType: "c7a.metal-48xl",
@@ -991,6 +1127,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"c7a.xlarge": {
 		InstanceType: "c7a.xlarge",
@@ -998,6 +1135,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7g.12xlarge": {
 		InstanceType: "c7g.12xlarge",
@@ -1005,6 +1143,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7g.16xlarge": {
 		InstanceType: "c7g.16xlarge",
@@ -1012,6 +1151,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7g.2xlarge": {
 		InstanceType: "c7g.2xlarge",
@@ -1019,6 +1159,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7g.4xlarge": {
 		InstanceType: "c7g.4xlarge",
@@ -1026,6 +1167,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7g.8xlarge": {
 		InstanceType: "c7g.8xlarge",
@@ -1033,6 +1175,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7g.large": {
 		InstanceType: "c7g.large",
@@ -1040,6 +1183,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7g.medium": {
 		InstanceType: "c7g.medium",
@@ -1047,6 +1191,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7g.metal": {
 		InstanceType: "c7g.metal",
@@ -1054,6 +1199,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"c7g.xlarge": {
 		InstanceType: "c7g.xlarge",
@@ -1061,6 +1207,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7gd.12xlarge": {
 		InstanceType: "c7gd.12xlarge",
@@ -1068,6 +1215,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"c7gd.16xlarge": {
 		InstanceType: "c7gd.16xlarge",
@@ -1075,6 +1223,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"c7gd.2xlarge": {
 		InstanceType: "c7gd.2xlarge",
@@ -1082,6 +1231,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c7gd.4xlarge": {
 		InstanceType: "c7gd.4xlarge",
@@ -1089,6 +1239,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c7gd.8xlarge": {
 		InstanceType: "c7gd.8xlarge",
@@ -1096,6 +1247,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c7gd.large": {
 		InstanceType: "c7gd.large",
@@ -1103,6 +1255,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c7gd.medium": {
 		InstanceType: "c7gd.medium",
@@ -1110,6 +1263,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c7gd.metal": {
 		InstanceType: "c7gd.metal",
@@ -1117,6 +1271,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"c7gd.xlarge": {
 		InstanceType: "c7gd.xlarge",
@@ -1124,6 +1279,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"c7gn.12xlarge": {
 		InstanceType: "c7gn.12xlarge",
@@ -1131,6 +1287,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7gn.16xlarge": {
 		InstanceType: "c7gn.16xlarge",
@@ -1138,6 +1295,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7gn.2xlarge": {
 		InstanceType: "c7gn.2xlarge",
@@ -1145,6 +1303,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7gn.4xlarge": {
 		InstanceType: "c7gn.4xlarge",
@@ -1152,6 +1311,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7gn.8xlarge": {
 		InstanceType: "c7gn.8xlarge",
@@ -1159,6 +1319,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7gn.large": {
 		InstanceType: "c7gn.large",
@@ -1166,6 +1327,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7gn.medium": {
 		InstanceType: "c7gn.medium",
@@ -1173,6 +1335,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7gn.metal": {
 		InstanceType: "c7gn.metal",
@@ -1180,6 +1343,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"c7gn.xlarge": {
 		InstanceType: "c7gn.xlarge",
@@ -1187,6 +1351,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"c7i-flex.12xlarge": {
 		InstanceType: "c7i-flex.12xlarge",
@@ -1194,6 +1359,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i-flex.16xlarge": {
 		InstanceType: "c7i-flex.16xlarge",
@@ -1201,6 +1367,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"c7i-flex.2xlarge": {
 		InstanceType: "c7i-flex.2xlarge",
@@ -1208,6 +1375,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i-flex.4xlarge": {
 		InstanceType: "c7i-flex.4xlarge",
@@ -1215,6 +1383,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i-flex.8xlarge": {
 		InstanceType: "c7i-flex.8xlarge",
@@ -1222,6 +1391,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i-flex.large": {
 		InstanceType: "c7i-flex.large",
@@ -1229,6 +1399,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i-flex.xlarge": {
 		InstanceType: "c7i-flex.xlarge",
@@ -1236,6 +1407,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i.12xlarge": {
 		InstanceType: "c7i.12xlarge",
@@ -1243,6 +1415,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i.16xlarge": {
 		InstanceType: "c7i.16xlarge",
@@ -1250,6 +1423,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"c7i.24xlarge": {
 		InstanceType: "c7i.24xlarge",
@@ -1257,6 +1431,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"c7i.2xlarge": {
 		InstanceType: "c7i.2xlarge",
@@ -1264,6 +1439,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i.48xlarge": {
 		InstanceType: "c7i.48xlarge",
@@ -1271,6 +1447,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"c7i.4xlarge": {
 		InstanceType: "c7i.4xlarge",
@@ -1278,6 +1455,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i.8xlarge": {
 		InstanceType: "c7i.8xlarge",
@@ -1285,6 +1463,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i.large": {
 		InstanceType: "c7i.large",
@@ -1292,6 +1471,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c7i.metal-24xl": {
 		InstanceType: "c7i.metal-24xl",
@@ -1299,6 +1479,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"c7i.metal-48xl": {
 		InstanceType: "c7i.metal-48xl",
@@ -1306,6 +1487,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"c7i.xlarge": {
 		InstanceType: "c7i.xlarge",
@@ -1313,6 +1495,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8a.12xlarge": {
 		InstanceType: "c8a.12xlarge",
@@ -1320,6 +1503,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8a.16xlarge": {
 		InstanceType: "c8a.16xlarge",
@@ -1327,6 +1511,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"c8a.24xlarge": {
 		InstanceType: "c8a.24xlarge",
@@ -1334,6 +1519,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"c8a.2xlarge": {
 		InstanceType: "c8a.2xlarge",
@@ -1341,6 +1527,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8a.48xlarge": {
 		InstanceType: "c8a.48xlarge",
@@ -1348,6 +1535,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"c8a.4xlarge": {
 		InstanceType: "c8a.4xlarge",
@@ -1355,6 +1543,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8a.8xlarge": {
 		InstanceType: "c8a.8xlarge",
@@ -1362,6 +1551,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8a.large": {
 		InstanceType: "c8a.large",
@@ -1369,6 +1559,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8a.medium": {
 		InstanceType: "c8a.medium",
@@ -1376,6 +1567,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8a.metal-24xl": {
 		InstanceType: "c8a.metal-24xl",
@@ -1383,6 +1575,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"c8a.metal-48xl": {
 		InstanceType: "c8a.metal-48xl",
@@ -1390,6 +1583,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"c8a.xlarge": {
 		InstanceType: "c8a.xlarge",
@@ -1397,6 +1591,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8g.12xlarge": {
 		InstanceType: "c8g.12xlarge",
@@ -1404,6 +1599,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8g.16xlarge": {
 		InstanceType: "c8g.16xlarge",
@@ -1411,6 +1607,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"c8g.24xlarge": {
 		InstanceType: "c8g.24xlarge",
@@ -1418,6 +1615,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"c8g.2xlarge": {
 		InstanceType: "c8g.2xlarge",
@@ -1425,6 +1623,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8g.48xlarge": {
 		InstanceType: "c8g.48xlarge",
@@ -1432,6 +1631,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"c8g.4xlarge": {
 		InstanceType: "c8g.4xlarge",
@@ -1439,6 +1639,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8g.8xlarge": {
 		InstanceType: "c8g.8xlarge",
@@ -1446,6 +1647,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8g.large": {
 		InstanceType: "c8g.large",
@@ -1453,6 +1655,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8g.medium": {
 		InstanceType: "c8g.medium",
@@ -1460,6 +1663,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8g.metal-24xl": {
 		InstanceType: "c8g.metal-24xl",
@@ -1467,6 +1671,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"c8g.metal-48xl": {
 		InstanceType: "c8g.metal-48xl",
@@ -1474,6 +1679,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 79,
 	},
 	"c8g.xlarge": {
 		InstanceType: "c8g.xlarge",
@@ -1481,6 +1687,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gb.12xlarge": {
 		InstanceType: "c8gb.12xlarge",
@@ -1488,6 +1695,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gb.16xlarge": {
 		InstanceType: "c8gb.16xlarge",
@@ -1495,6 +1703,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"c8gb.24xlarge": {
 		InstanceType: "c8gb.24xlarge",
@@ -1502,6 +1711,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"c8gb.2xlarge": {
 		InstanceType: "c8gb.2xlarge",
@@ -1509,6 +1719,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gb.4xlarge": {
 		InstanceType: "c8gb.4xlarge",
@@ -1516,6 +1727,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gb.8xlarge": {
 		InstanceType: "c8gb.8xlarge",
@@ -1523,6 +1735,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gb.large": {
 		InstanceType: "c8gb.large",
@@ -1530,6 +1743,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gb.medium": {
 		InstanceType: "c8gb.medium",
@@ -1537,6 +1751,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gb.metal-24xl": {
 		InstanceType: "c8gb.metal-24xl",
@@ -1544,6 +1759,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"c8gb.xlarge": {
 		InstanceType: "c8gb.xlarge",
@@ -1551,6 +1767,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gd.12xlarge": {
 		InstanceType: "c8gd.12xlarge",
@@ -1558,6 +1775,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gd.16xlarge": {
 		InstanceType: "c8gd.16xlarge",
@@ -1565,6 +1783,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"c8gd.24xlarge": {
 		InstanceType: "c8gd.24xlarge",
@@ -1572,6 +1791,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"c8gd.2xlarge": {
 		InstanceType: "c8gd.2xlarge",
@@ -1579,6 +1799,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gd.48xlarge": {
 		InstanceType: "c8gd.48xlarge",
@@ -1586,6 +1807,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"c8gd.4xlarge": {
 		InstanceType: "c8gd.4xlarge",
@@ -1593,6 +1815,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gd.8xlarge": {
 		InstanceType: "c8gd.8xlarge",
@@ -1600,6 +1823,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gd.large": {
 		InstanceType: "c8gd.large",
@@ -1607,6 +1831,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gd.medium": {
 		InstanceType: "c8gd.medium",
@@ -1614,6 +1839,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gd.metal-24xl": {
 		InstanceType: "c8gd.metal-24xl",
@@ -1621,6 +1847,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"c8gd.metal-48xl": {
 		InstanceType: "c8gd.metal-48xl",
@@ -1628,6 +1855,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 79,
 	},
 	"c8gd.xlarge": {
 		InstanceType: "c8gd.xlarge",
@@ -1635,6 +1863,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gn.12xlarge": {
 		InstanceType: "c8gn.12xlarge",
@@ -1642,6 +1871,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gn.16xlarge": {
 		InstanceType: "c8gn.16xlarge",
@@ -1649,6 +1879,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"c8gn.24xlarge": {
 		InstanceType: "c8gn.24xlarge",
@@ -1656,6 +1887,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"c8gn.2xlarge": {
 		InstanceType: "c8gn.2xlarge",
@@ -1663,6 +1895,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gn.48xlarge": {
 		InstanceType: "c8gn.48xlarge",
@@ -1670,6 +1903,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"c8gn.4xlarge": {
 		InstanceType: "c8gn.4xlarge",
@@ -1677,6 +1911,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gn.8xlarge": {
 		InstanceType: "c8gn.8xlarge",
@@ -1684,6 +1919,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gn.large": {
 		InstanceType: "c8gn.large",
@@ -1691,6 +1927,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gn.medium": {
 		InstanceType: "c8gn.medium",
@@ -1698,6 +1935,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8gn.metal-24xl": {
 		InstanceType: "c8gn.metal-24xl",
@@ -1705,6 +1943,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"c8gn.metal-48xl": {
 		InstanceType: "c8gn.metal-48xl",
@@ -1712,6 +1951,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 78,
 	},
 	"c8gn.xlarge": {
 		InstanceType: "c8gn.xlarge",
@@ -1719,6 +1959,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i-flex.12xlarge": {
 		InstanceType: "c8i-flex.12xlarge",
@@ -1726,6 +1967,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i-flex.16xlarge": {
 		InstanceType: "c8i-flex.16xlarge",
@@ -1733,6 +1975,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"c8i-flex.2xlarge": {
 		InstanceType: "c8i-flex.2xlarge",
@@ -1740,6 +1983,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i-flex.4xlarge": {
 		InstanceType: "c8i-flex.4xlarge",
@@ -1747,6 +1991,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i-flex.8xlarge": {
 		InstanceType: "c8i-flex.8xlarge",
@@ -1754,6 +1999,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i-flex.large": {
 		InstanceType: "c8i-flex.large",
@@ -1761,6 +2007,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i-flex.xlarge": {
 		InstanceType: "c8i-flex.xlarge",
@@ -1768,6 +2015,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i.12xlarge": {
 		InstanceType: "c8i.12xlarge",
@@ -1775,6 +2023,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i.16xlarge": {
 		InstanceType: "c8i.16xlarge",
@@ -1782,6 +2031,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"c8i.24xlarge": {
 		InstanceType: "c8i.24xlarge",
@@ -1789,6 +2039,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"c8i.2xlarge": {
 		InstanceType: "c8i.2xlarge",
@@ -1796,6 +2047,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i.32xlarge": {
 		InstanceType: "c8i.32xlarge",
@@ -1803,6 +2055,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 88,
 	},
 	"c8i.48xlarge": {
 		InstanceType: "c8i.48xlarge",
@@ -1810,6 +2063,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"c8i.4xlarge": {
 		InstanceType: "c8i.4xlarge",
@@ -1817,6 +2071,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i.8xlarge": {
 		InstanceType: "c8i.8xlarge",
@@ -1824,6 +2079,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i.96xlarge": {
 		InstanceType: "c8i.96xlarge",
@@ -1831,6 +2087,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"c8i.large": {
 		InstanceType: "c8i.large",
@@ -1838,6 +2095,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"c8i.metal-48xl": {
 		InstanceType: "c8i.metal-48xl",
@@ -1845,6 +2103,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"c8i.metal-96xl": {
 		InstanceType: "c8i.metal-96xl",
@@ -1852,6 +2111,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"c8i.xlarge": {
 		InstanceType: "c8i.xlarge",
@@ -1859,6 +2119,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"d2.2xlarge": {
 		InstanceType: "d2.2xlarge",
@@ -1866,6 +2127,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     62464,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"d2.4xlarge": {
 		InstanceType: "d2.4xlarge",
@@ -1873,6 +2135,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     124928,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"d2.8xlarge": {
 		InstanceType: "d2.8xlarge",
@@ -1880,6 +2143,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     249856,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"d2.xlarge": {
 		InstanceType: "d2.xlarge",
@@ -1887,6 +2151,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     31232,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"d3.2xlarge": {
 		InstanceType: "d3.2xlarge",
@@ -1894,6 +2159,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 21,
 	},
 	"d3.4xlarge": {
 		InstanceType: "d3.4xlarge",
@@ -1901,6 +2167,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 15,
 	},
 	"d3.8xlarge": {
 		InstanceType: "d3.8xlarge",
@@ -1908,6 +2175,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 3,
 	},
 	"d3.xlarge": {
 		InstanceType: "d3.xlarge",
@@ -1915,6 +2183,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 24,
 	},
 	"d3en.12xlarge": {
 		InstanceType: "d3en.12xlarge",
@@ -1922,6 +2191,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 3,
 	},
 	"d3en.2xlarge": {
 		InstanceType: "d3en.2xlarge",
@@ -1929,6 +2199,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"d3en.4xlarge": {
 		InstanceType: "d3en.4xlarge",
@@ -1936,6 +2207,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 19,
 	},
 	"d3en.6xlarge": {
 		InstanceType: "d3en.6xlarge",
@@ -1943,6 +2215,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 15,
 	},
 	"d3en.8xlarge": {
 		InstanceType: "d3en.8xlarge",
@@ -1950,6 +2223,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 11,
 	},
 	"d3en.xlarge": {
 		InstanceType: "d3en.xlarge",
@@ -1957,6 +2231,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"dl1.24xlarge": {
 		InstanceType: "dl1.24xlarge",
@@ -1992,6 +2267,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"f2.48xlarge": {
 		InstanceType: "f2.48xlarge",
@@ -1999,6 +2275,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2097152,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"f2.6xlarge": {
 		InstanceType: "f2.6xlarge",
@@ -2006,6 +2283,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g4ad.16xlarge": {
 		InstanceType: "g4ad.16xlarge",
@@ -2013,6 +2291,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          4,
 		Architecture: "amd64",
+		EBSVolumeLimit: 21,
 	},
 	"g4ad.2xlarge": {
 		InstanceType: "g4ad.2xlarge",
@@ -2020,6 +2299,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g4ad.4xlarge": {
 		InstanceType: "g4ad.4xlarge",
@@ -2027,6 +2307,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g4ad.8xlarge": {
 		InstanceType: "g4ad.8xlarge",
@@ -2034,6 +2315,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          2,
 		Architecture: "amd64",
+		EBSVolumeLimit: 24,
 	},
 	"g4ad.xlarge": {
 		InstanceType: "g4ad.xlarge",
@@ -2041,6 +2323,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g4dn.12xlarge": {
 		InstanceType: "g4dn.12xlarge",
@@ -2048,6 +2331,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          4,
 		Architecture: "amd64",
+		EBSVolumeLimit: 22,
 	},
 	"g4dn.16xlarge": {
 		InstanceType: "g4dn.16xlarge",
@@ -2055,6 +2339,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g4dn.2xlarge": {
 		InstanceType: "g4dn.2xlarge",
@@ -2062,6 +2347,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g4dn.4xlarge": {
 		InstanceType: "g4dn.4xlarge",
@@ -2069,6 +2355,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g4dn.8xlarge": {
 		InstanceType: "g4dn.8xlarge",
@@ -2076,6 +2363,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g4dn.metal": {
 		InstanceType: "g4dn.metal",
@@ -2083,6 +2371,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"g4dn.xlarge": {
 		InstanceType: "g4dn.xlarge",
@@ -2090,6 +2379,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g5.12xlarge": {
 		InstanceType: "g5.12xlarge",
@@ -2097,6 +2387,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          4,
 		Architecture: "amd64",
+		EBSVolumeLimit: 22,
 	},
 	"g5.16xlarge": {
 		InstanceType: "g5.16xlarge",
@@ -2104,6 +2395,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g5.24xlarge": {
 		InstanceType: "g5.24xlarge",
@@ -2111,6 +2403,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          4,
 		Architecture: "amd64",
+		EBSVolumeLimit: 22,
 	},
 	"g5.2xlarge": {
 		InstanceType: "g5.2xlarge",
@@ -2118,6 +2411,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g5.48xlarge": {
 		InstanceType: "g5.48xlarge",
@@ -2125,6 +2419,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 9,
 	},
 	"g5.4xlarge": {
 		InstanceType: "g5.4xlarge",
@@ -2132,6 +2427,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g5.8xlarge": {
 		InstanceType: "g5.8xlarge",
@@ -2139,6 +2435,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g5.xlarge": {
 		InstanceType: "g5.xlarge",
@@ -2146,6 +2443,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"g5g.16xlarge": {
 		InstanceType: "g5g.16xlarge",
@@ -2153,6 +2451,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          2,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"g5g.2xlarge": {
 		InstanceType: "g5g.2xlarge",
@@ -2160,6 +2459,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          1,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"g5g.4xlarge": {
 		InstanceType: "g5g.4xlarge",
@@ -2167,6 +2467,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          1,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"g5g.8xlarge": {
 		InstanceType: "g5g.8xlarge",
@@ -2174,6 +2475,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          1,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"g5g.metal": {
 		InstanceType: "g5g.metal",
@@ -2181,6 +2483,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          2,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"g5g.xlarge": {
 		InstanceType: "g5g.xlarge",
@@ -2188,6 +2491,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          1,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"g6.12xlarge": {
 		InstanceType: "g6.12xlarge",
@@ -2195,6 +2499,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          4,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6.16xlarge": {
 		InstanceType: "g6.16xlarge",
@@ -2202,6 +2507,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"g6.24xlarge": {
 		InstanceType: "g6.24xlarge",
@@ -2209,6 +2515,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          4,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"g6.2xlarge": {
 		InstanceType: "g6.2xlarge",
@@ -2216,6 +2523,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6.48xlarge": {
 		InstanceType: "g6.48xlarge",
@@ -2223,6 +2531,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"g6.4xlarge": {
 		InstanceType: "g6.4xlarge",
@@ -2230,6 +2539,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6.8xlarge": {
 		InstanceType: "g6.8xlarge",
@@ -2237,6 +2547,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6.xlarge": {
 		InstanceType: "g6.xlarge",
@@ -2244,6 +2555,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6e.12xlarge": {
 		InstanceType: "g6e.12xlarge",
@@ -2251,6 +2563,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          4,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6e.16xlarge": {
 		InstanceType: "g6e.16xlarge",
@@ -2258,6 +2571,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"g6e.24xlarge": {
 		InstanceType: "g6e.24xlarge",
@@ -2265,6 +2579,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          4,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"g6e.2xlarge": {
 		InstanceType: "g6e.2xlarge",
@@ -2272,6 +2587,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6e.48xlarge": {
 		InstanceType: "g6e.48xlarge",
@@ -2279,6 +2595,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"g6e.4xlarge": {
 		InstanceType: "g6e.4xlarge",
@@ -2286,6 +2603,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6e.8xlarge": {
 		InstanceType: "g6e.8xlarge",
@@ -2293,6 +2611,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6e.xlarge": {
 		InstanceType: "g6e.xlarge",
@@ -2300,6 +2619,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6f.2xlarge": {
 		InstanceType: "g6f.2xlarge",
@@ -2307,6 +2627,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6f.4xlarge": {
 		InstanceType: "g6f.4xlarge",
@@ -2314,6 +2635,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6f.large": {
 		InstanceType: "g6f.large",
@@ -2321,6 +2643,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g6f.xlarge": {
 		InstanceType: "g6f.xlarge",
@@ -2328,6 +2651,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g7e.12xlarge": {
 		InstanceType: "g7e.12xlarge",
@@ -2335,6 +2659,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          2,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g7e.24xlarge": {
 		InstanceType: "g7e.24xlarge",
@@ -2342,6 +2667,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          4,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"g7e.2xlarge": {
 		InstanceType: "g7e.2xlarge",
@@ -2349,6 +2675,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g7e.48xlarge": {
 		InstanceType: "g7e.48xlarge",
@@ -2356,6 +2683,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2097152,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"g7e.4xlarge": {
 		InstanceType: "g7e.4xlarge",
@@ -2363,6 +2691,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"g7e.8xlarge": {
 		InstanceType: "g7e.8xlarge",
@@ -2370,6 +2699,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"gr6.4xlarge": {
 		InstanceType: "gr6.4xlarge",
@@ -2377,6 +2707,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"gr6.8xlarge": {
 		InstanceType: "gr6.8xlarge",
@@ -2384,6 +2715,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"gr6f.4xlarge": {
 		InstanceType: "gr6f.4xlarge",
@@ -2391,6 +2723,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"h1.16xlarge": {
 		InstanceType: "h1.16xlarge",
@@ -2398,6 +2731,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"h1.2xlarge": {
 		InstanceType: "h1.2xlarge",
@@ -2405,6 +2739,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"h1.4xlarge": {
 		InstanceType: "h1.4xlarge",
@@ -2412,6 +2747,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"h1.8xlarge": {
 		InstanceType: "h1.8xlarge",
@@ -2419,6 +2755,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"hpc7g.16xlarge": {
 		InstanceType: "hpc7g.16xlarge",
@@ -2426,6 +2763,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"hpc7g.4xlarge": {
 		InstanceType: "hpc7g.4xlarge",
@@ -2433,6 +2771,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"hpc7g.8xlarge": {
 		InstanceType: "hpc7g.8xlarge",
@@ -2440,6 +2779,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"i2.2xlarge": {
 		InstanceType: "i2.2xlarge",
@@ -2447,6 +2787,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     62464,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"i2.4xlarge": {
 		InstanceType: "i2.4xlarge",
@@ -2454,6 +2795,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     124928,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"i2.8xlarge": {
 		InstanceType: "i2.8xlarge",
@@ -2461,6 +2803,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     249856,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"i2.xlarge": {
 		InstanceType: "i2.xlarge",
@@ -2468,6 +2811,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     31232,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"i3.16xlarge": {
 		InstanceType: "i3.16xlarge",
@@ -2475,6 +2819,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     499712,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"i3.2xlarge": {
 		InstanceType: "i3.2xlarge",
@@ -2482,6 +2827,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     62464,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"i3.4xlarge": {
 		InstanceType: "i3.4xlarge",
@@ -2489,6 +2835,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     124928,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"i3.8xlarge": {
 		InstanceType: "i3.8xlarge",
@@ -2496,6 +2843,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     249856,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"i3.large": {
 		InstanceType: "i3.large",
@@ -2503,6 +2851,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     15616,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"i3.xlarge": {
 		InstanceType: "i3.xlarge",
@@ -2510,6 +2859,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     31232,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"i3en.12xlarge": {
 		InstanceType: "i3en.12xlarge",
@@ -2517,6 +2867,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"i3en.24xlarge": {
 		InstanceType: "i3en.24xlarge",
@@ -2524,6 +2875,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 19,
 	},
 	"i3en.2xlarge": {
 		InstanceType: "i3en.2xlarge",
@@ -2531,6 +2883,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"i3en.3xlarge": {
 		InstanceType: "i3en.3xlarge",
@@ -2538,6 +2891,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"i3en.6xlarge": {
 		InstanceType: "i3en.6xlarge",
@@ -2545,6 +2899,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"i3en.large": {
 		InstanceType: "i3en.large",
@@ -2552,6 +2907,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"i3en.metal": {
 		InstanceType: "i3en.metal",
@@ -2559,6 +2915,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"i3en.xlarge": {
 		InstanceType: "i3en.xlarge",
@@ -2566,6 +2923,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"i4g.16xlarge": {
 		InstanceType: "i4g.16xlarge",
@@ -2573,6 +2931,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 23,
 	},
 	"i4g.2xlarge": {
 		InstanceType: "i4g.2xlarge",
@@ -2580,6 +2939,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"i4g.4xlarge": {
 		InstanceType: "i4g.4xlarge",
@@ -2587,6 +2947,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"i4g.8xlarge": {
 		InstanceType: "i4g.8xlarge",
@@ -2594,6 +2955,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"i4g.large": {
 		InstanceType: "i4g.large",
@@ -2601,6 +2963,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"i4g.xlarge": {
 		InstanceType: "i4g.xlarge",
@@ -2608,6 +2971,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"i4i.12xlarge": {
 		InstanceType: "i4i.12xlarge",
@@ -2615,6 +2979,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 24,
 	},
 	"i4i.16xlarge": {
 		InstanceType: "i4i.16xlarge",
@@ -2622,6 +2987,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"i4i.24xlarge": {
 		InstanceType: "i4i.24xlarge",
@@ -2629,6 +2995,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 21,
 	},
 	"i4i.2xlarge": {
 		InstanceType: "i4i.2xlarge",
@@ -2636,6 +3003,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"i4i.32xlarge": {
 		InstanceType: "i4i.32xlarge",
@@ -2643,6 +3011,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 19,
 	},
 	"i4i.4xlarge": {
 		InstanceType: "i4i.4xlarge",
@@ -2650,6 +3019,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"i4i.8xlarge": {
 		InstanceType: "i4i.8xlarge",
@@ -2657,6 +3027,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"i4i.large": {
 		InstanceType: "i4i.large",
@@ -2664,6 +3035,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"i4i.metal": {
 		InstanceType: "i4i.metal",
@@ -2671,6 +3043,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"i4i.xlarge": {
 		InstanceType: "i4i.xlarge",
@@ -2678,6 +3051,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"i7i.12xlarge": {
 		InstanceType: "i7i.12xlarge",
@@ -2685,6 +3059,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7i.16xlarge": {
 		InstanceType: "i7i.16xlarge",
@@ -2692,6 +3067,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"i7i.24xlarge": {
 		InstanceType: "i7i.24xlarge",
@@ -2699,6 +3075,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"i7i.2xlarge": {
 		InstanceType: "i7i.2xlarge",
@@ -2706,6 +3083,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7i.48xlarge": {
 		InstanceType: "i7i.48xlarge",
@@ -2713,6 +3091,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"i7i.4xlarge": {
 		InstanceType: "i7i.4xlarge",
@@ -2720,6 +3099,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7i.8xlarge": {
 		InstanceType: "i7i.8xlarge",
@@ -2727,6 +3107,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7i.large": {
 		InstanceType: "i7i.large",
@@ -2734,6 +3115,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7i.metal-24xl": {
 		InstanceType: "i7i.metal-24xl",
@@ -2741,6 +3123,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"i7i.metal-48xl": {
 		InstanceType: "i7i.metal-48xl",
@@ -2748,6 +3131,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"i7i.xlarge": {
 		InstanceType: "i7i.xlarge",
@@ -2755,6 +3139,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7ie.12xlarge": {
 		InstanceType: "i7ie.12xlarge",
@@ -2762,6 +3147,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7ie.18xlarge": {
 		InstanceType: "i7ie.18xlarge",
@@ -2769,6 +3155,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     589824,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"i7ie.24xlarge": {
 		InstanceType: "i7ie.24xlarge",
@@ -2776,6 +3163,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"i7ie.2xlarge": {
 		InstanceType: "i7ie.2xlarge",
@@ -2783,6 +3171,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7ie.3xlarge": {
 		InstanceType: "i7ie.3xlarge",
@@ -2790,6 +3179,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7ie.48xlarge": {
 		InstanceType: "i7ie.48xlarge",
@@ -2797,6 +3187,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"i7ie.6xlarge": {
 		InstanceType: "i7ie.6xlarge",
@@ -2804,6 +3195,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7ie.large": {
 		InstanceType: "i7ie.large",
@@ -2811,6 +3203,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i7ie.metal-24xl": {
 		InstanceType: "i7ie.metal-24xl",
@@ -2818,6 +3211,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"i7ie.metal-48xl": {
 		InstanceType: "i7ie.metal-48xl",
@@ -2825,6 +3219,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"i7ie.xlarge": {
 		InstanceType: "i7ie.xlarge",
@@ -2832,6 +3227,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"i8g.12xlarge": {
 		InstanceType: "i8g.12xlarge",
@@ -2839,6 +3235,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8g.16xlarge": {
 		InstanceType: "i8g.16xlarge",
@@ -2846,6 +3243,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"i8g.24xlarge": {
 		InstanceType: "i8g.24xlarge",
@@ -2853,6 +3251,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"i8g.2xlarge": {
 		InstanceType: "i8g.2xlarge",
@@ -2860,6 +3259,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8g.48xlarge": {
 		InstanceType: "i8g.48xlarge",
@@ -2867,6 +3267,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"i8g.4xlarge": {
 		InstanceType: "i8g.4xlarge",
@@ -2874,6 +3275,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8g.8xlarge": {
 		InstanceType: "i8g.8xlarge",
@@ -2881,6 +3283,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8g.large": {
 		InstanceType: "i8g.large",
@@ -2888,6 +3291,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8g.metal-24xl": {
 		InstanceType: "i8g.metal-24xl",
@@ -2895,6 +3299,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"i8g.xlarge": {
 		InstanceType: "i8g.xlarge",
@@ -2902,6 +3307,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8ge.12xlarge": {
 		InstanceType: "i8ge.12xlarge",
@@ -2909,6 +3315,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8ge.18xlarge": {
 		InstanceType: "i8ge.18xlarge",
@@ -2916,6 +3323,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     589824,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"i8ge.24xlarge": {
 		InstanceType: "i8ge.24xlarge",
@@ -2923,6 +3331,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"i8ge.2xlarge": {
 		InstanceType: "i8ge.2xlarge",
@@ -2930,6 +3339,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8ge.3xlarge": {
 		InstanceType: "i8ge.3xlarge",
@@ -2937,6 +3347,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8ge.48xlarge": {
 		InstanceType: "i8ge.48xlarge",
@@ -2944,6 +3355,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"i8ge.6xlarge": {
 		InstanceType: "i8ge.6xlarge",
@@ -2951,6 +3363,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8ge.large": {
 		InstanceType: "i8ge.large",
@@ -2958,6 +3371,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"i8ge.metal-24xl": {
 		InstanceType: "i8ge.metal-24xl",
@@ -2965,6 +3379,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"i8ge.metal-48xl": {
 		InstanceType: "i8ge.metal-48xl",
@@ -2972,6 +3387,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 79,
 	},
 	"i8ge.xlarge": {
 		InstanceType: "i8ge.xlarge",
@@ -2979,6 +3395,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"im4gn.16xlarge": {
 		InstanceType: "im4gn.16xlarge",
@@ -2986,6 +3403,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 23,
 	},
 	"im4gn.2xlarge": {
 		InstanceType: "im4gn.2xlarge",
@@ -2993,6 +3411,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"im4gn.4xlarge": {
 		InstanceType: "im4gn.4xlarge",
@@ -3000,6 +3419,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"im4gn.8xlarge": {
 		InstanceType: "im4gn.8xlarge",
@@ -3007,6 +3427,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"im4gn.large": {
 		InstanceType: "im4gn.large",
@@ -3014,6 +3435,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"im4gn.xlarge": {
 		InstanceType: "im4gn.xlarge",
@@ -3021,6 +3443,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"inf1.24xlarge": {
 		InstanceType: "inf1.24xlarge",
@@ -3028,6 +3451,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 11,
 	},
 	"inf1.2xlarge": {
 		InstanceType: "inf1.2xlarge",
@@ -3035,6 +3459,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"inf1.6xlarge": {
 		InstanceType: "inf1.6xlarge",
@@ -3042,6 +3467,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     49152,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"inf1.xlarge": {
 		InstanceType: "inf1.xlarge",
@@ -3049,6 +3475,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"inf2.24xlarge": {
 		InstanceType: "inf2.24xlarge",
@@ -3056,6 +3483,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 28,
 	},
 	"inf2.48xlarge": {
 		InstanceType: "inf2.48xlarge",
@@ -3063,6 +3491,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 28,
 	},
 	"inf2.8xlarge": {
 		InstanceType: "inf2.8xlarge",
@@ -3070,6 +3499,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"inf2.xlarge": {
 		InstanceType: "inf2.xlarge",
@@ -3077,6 +3507,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"is4gen.2xlarge": {
 		InstanceType: "is4gen.2xlarge",
@@ -3084,6 +3515,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     49152,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"is4gen.4xlarge": {
 		InstanceType: "is4gen.4xlarge",
@@ -3091,6 +3523,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"is4gen.8xlarge": {
 		InstanceType: "is4gen.8xlarge",
@@ -3098,6 +3531,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 23,
 	},
 	"is4gen.large": {
 		InstanceType: "is4gen.large",
@@ -3105,6 +3539,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     12288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"is4gen.medium": {
 		InstanceType: "is4gen.medium",
@@ -3112,6 +3547,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     6144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"is4gen.xlarge": {
 		InstanceType: "is4gen.xlarge",
@@ -3119,6 +3555,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     24576,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m1.large": {
 		InstanceType: "m1.large",
@@ -3126,6 +3563,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     7680,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m1.medium": {
 		InstanceType: "m1.medium",
@@ -3133,6 +3571,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3788,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m1.small": {
 		InstanceType: "m1.small",
@@ -3140,6 +3579,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1740,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m1.xlarge": {
 		InstanceType: "m1.xlarge",
@@ -3147,6 +3587,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     15360,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m2.2xlarge": {
 		InstanceType: "m2.2xlarge",
@@ -3154,6 +3595,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     35020,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m2.4xlarge": {
 		InstanceType: "m2.4xlarge",
@@ -3161,6 +3603,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     70041,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m2.xlarge": {
 		InstanceType: "m2.xlarge",
@@ -3168,6 +3611,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     17510,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m3.2xlarge": {
 		InstanceType: "m3.2xlarge",
@@ -3175,6 +3619,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     30720,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m3.large": {
 		InstanceType: "m3.large",
@@ -3182,6 +3627,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     7680,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m3.medium": {
 		InstanceType: "m3.medium",
@@ -3189,6 +3635,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3840,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m3.xlarge": {
 		InstanceType: "m3.xlarge",
@@ -3196,6 +3643,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     15360,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m4.10xlarge": {
 		InstanceType: "m4.10xlarge",
@@ -3203,6 +3651,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     163840,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"m4.16xlarge": {
 		InstanceType: "m4.16xlarge",
@@ -3210,6 +3659,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"m4.2xlarge": {
 		InstanceType: "m4.2xlarge",
@@ -3217,6 +3667,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"m4.4xlarge": {
 		InstanceType: "m4.4xlarge",
@@ -3224,6 +3675,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"m4.large": {
 		InstanceType: "m4.large",
@@ -3231,6 +3683,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"m4.xlarge": {
 		InstanceType: "m4.xlarge",
@@ -3238,6 +3691,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"m5.12xlarge": {
 		InstanceType: "m5.12xlarge",
@@ -3245,6 +3699,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5.16xlarge": {
 		InstanceType: "m5.16xlarge",
@@ -3252,6 +3707,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5.24xlarge": {
 		InstanceType: "m5.24xlarge",
@@ -3259,6 +3715,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5.2xlarge": {
 		InstanceType: "m5.2xlarge",
@@ -3266,6 +3723,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5.4xlarge": {
 		InstanceType: "m5.4xlarge",
@@ -3273,6 +3731,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5.8xlarge": {
 		InstanceType: "m5.8xlarge",
@@ -3280,6 +3739,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5.large": {
 		InstanceType: "m5.large",
@@ -3287,6 +3747,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5.metal": {
 		InstanceType: "m5.metal",
@@ -3294,6 +3755,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"m5.xlarge": {
 		InstanceType: "m5.xlarge",
@@ -3301,6 +3763,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5a.12xlarge": {
 		InstanceType: "m5a.12xlarge",
@@ -3308,6 +3771,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5a.16xlarge": {
 		InstanceType: "m5a.16xlarge",
@@ -3315,6 +3779,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5a.24xlarge": {
 		InstanceType: "m5a.24xlarge",
@@ -3322,6 +3787,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5a.2xlarge": {
 		InstanceType: "m5a.2xlarge",
@@ -3329,6 +3795,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5a.4xlarge": {
 		InstanceType: "m5a.4xlarge",
@@ -3336,6 +3803,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5a.8xlarge": {
 		InstanceType: "m5a.8xlarge",
@@ -3343,6 +3811,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5a.large": {
 		InstanceType: "m5a.large",
@@ -3350,6 +3819,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5a.xlarge": {
 		InstanceType: "m5a.xlarge",
@@ -3357,6 +3827,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5ad.12xlarge": {
 		InstanceType: "m5ad.12xlarge",
@@ -3364,6 +3835,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m5ad.16xlarge": {
 		InstanceType: "m5ad.16xlarge",
@@ -3371,6 +3843,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"m5ad.24xlarge": {
 		InstanceType: "m5ad.24xlarge",
@@ -3378,6 +3851,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"m5ad.2xlarge": {
 		InstanceType: "m5ad.2xlarge",
@@ -3385,6 +3859,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m5ad.4xlarge": {
 		InstanceType: "m5ad.4xlarge",
@@ -3392,6 +3867,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m5ad.8xlarge": {
 		InstanceType: "m5ad.8xlarge",
@@ -3399,6 +3875,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m5ad.large": {
 		InstanceType: "m5ad.large",
@@ -3406,6 +3883,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m5ad.xlarge": {
 		InstanceType: "m5ad.xlarge",
@@ -3413,6 +3891,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m5d.12xlarge": {
 		InstanceType: "m5d.12xlarge",
@@ -3420,6 +3899,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m5d.16xlarge": {
 		InstanceType: "m5d.16xlarge",
@@ -3427,6 +3907,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"m5d.24xlarge": {
 		InstanceType: "m5d.24xlarge",
@@ -3434,6 +3915,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"m5d.2xlarge": {
 		InstanceType: "m5d.2xlarge",
@@ -3441,6 +3923,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m5d.4xlarge": {
 		InstanceType: "m5d.4xlarge",
@@ -3448,6 +3931,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m5d.8xlarge": {
 		InstanceType: "m5d.8xlarge",
@@ -3455,6 +3939,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m5d.large": {
 		InstanceType: "m5d.large",
@@ -3462,6 +3947,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m5d.metal": {
 		InstanceType: "m5d.metal",
@@ -3469,6 +3955,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"m5d.xlarge": {
 		InstanceType: "m5d.xlarge",
@@ -3476,6 +3963,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m5dn.12xlarge": {
 		InstanceType: "m5dn.12xlarge",
@@ -3483,6 +3971,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m5dn.16xlarge": {
 		InstanceType: "m5dn.16xlarge",
@@ -3490,6 +3979,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"m5dn.24xlarge": {
 		InstanceType: "m5dn.24xlarge",
@@ -3497,6 +3987,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"m5dn.2xlarge": {
 		InstanceType: "m5dn.2xlarge",
@@ -3504,6 +3995,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m5dn.4xlarge": {
 		InstanceType: "m5dn.4xlarge",
@@ -3511,6 +4003,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m5dn.8xlarge": {
 		InstanceType: "m5dn.8xlarge",
@@ -3518,6 +4011,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m5dn.large": {
 		InstanceType: "m5dn.large",
@@ -3525,6 +4019,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m5dn.metal": {
 		InstanceType: "m5dn.metal",
@@ -3532,6 +4027,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"m5dn.xlarge": {
 		InstanceType: "m5dn.xlarge",
@@ -3539,6 +4035,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m5n.12xlarge": {
 		InstanceType: "m5n.12xlarge",
@@ -3546,6 +4043,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5n.16xlarge": {
 		InstanceType: "m5n.16xlarge",
@@ -3553,6 +4051,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5n.24xlarge": {
 		InstanceType: "m5n.24xlarge",
@@ -3560,6 +4059,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5n.2xlarge": {
 		InstanceType: "m5n.2xlarge",
@@ -3567,6 +4067,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5n.4xlarge": {
 		InstanceType: "m5n.4xlarge",
@@ -3574,6 +4075,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5n.8xlarge": {
 		InstanceType: "m5n.8xlarge",
@@ -3581,6 +4083,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5n.large": {
 		InstanceType: "m5n.large",
@@ -3588,6 +4091,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5n.metal": {
 		InstanceType: "m5n.metal",
@@ -3595,6 +4099,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"m5n.xlarge": {
 		InstanceType: "m5n.xlarge",
@@ -3602,6 +4107,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5zn.12xlarge": {
 		InstanceType: "m5zn.12xlarge",
@@ -3609,6 +4115,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5zn.2xlarge": {
 		InstanceType: "m5zn.2xlarge",
@@ -3616,6 +4123,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5zn.3xlarge": {
 		InstanceType: "m5zn.3xlarge",
@@ -3623,6 +4131,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     49152,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5zn.6xlarge": {
 		InstanceType: "m5zn.6xlarge",
@@ -3630,6 +4139,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5zn.large": {
 		InstanceType: "m5zn.large",
@@ -3637,6 +4147,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m5zn.metal": {
 		InstanceType: "m5zn.metal",
@@ -3644,6 +4155,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"m5zn.xlarge": {
 		InstanceType: "m5zn.xlarge",
@@ -3651,6 +4163,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6a.12xlarge": {
 		InstanceType: "m6a.12xlarge",
@@ -3658,6 +4171,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6a.16xlarge": {
 		InstanceType: "m6a.16xlarge",
@@ -3665,6 +4179,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6a.24xlarge": {
 		InstanceType: "m6a.24xlarge",
@@ -3672,6 +4187,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6a.2xlarge": {
 		InstanceType: "m6a.2xlarge",
@@ -3679,6 +4195,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6a.32xlarge": {
 		InstanceType: "m6a.32xlarge",
@@ -3686,6 +4203,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6a.48xlarge": {
 		InstanceType: "m6a.48xlarge",
@@ -3693,6 +4211,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6a.4xlarge": {
 		InstanceType: "m6a.4xlarge",
@@ -3700,6 +4219,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6a.8xlarge": {
 		InstanceType: "m6a.8xlarge",
@@ -3707,6 +4227,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6a.large": {
 		InstanceType: "m6a.large",
@@ -3714,6 +4235,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6a.metal": {
 		InstanceType: "m6a.metal",
@@ -3721,6 +4243,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"m6a.xlarge": {
 		InstanceType: "m6a.xlarge",
@@ -3728,6 +4251,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6g.12xlarge": {
 		InstanceType: "m6g.12xlarge",
@@ -3735,6 +4259,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m6g.16xlarge": {
 		InstanceType: "m6g.16xlarge",
@@ -3742,6 +4267,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m6g.2xlarge": {
 		InstanceType: "m6g.2xlarge",
@@ -3749,6 +4275,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m6g.4xlarge": {
 		InstanceType: "m6g.4xlarge",
@@ -3756,6 +4283,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m6g.8xlarge": {
 		InstanceType: "m6g.8xlarge",
@@ -3763,6 +4291,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m6g.large": {
 		InstanceType: "m6g.large",
@@ -3770,6 +4299,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m6g.medium": {
 		InstanceType: "m6g.medium",
@@ -3777,6 +4307,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m6g.metal": {
 		InstanceType: "m6g.metal",
@@ -3784,6 +4315,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"m6g.xlarge": {
 		InstanceType: "m6g.xlarge",
@@ -3791,6 +4323,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m6gd.12xlarge": {
 		InstanceType: "m6gd.12xlarge",
@@ -3798,6 +4331,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"m6gd.16xlarge": {
 		InstanceType: "m6gd.16xlarge",
@@ -3805,6 +4339,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"m6gd.2xlarge": {
 		InstanceType: "m6gd.2xlarge",
@@ -3812,6 +4347,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m6gd.4xlarge": {
 		InstanceType: "m6gd.4xlarge",
@@ -3819,6 +4355,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m6gd.8xlarge": {
 		InstanceType: "m6gd.8xlarge",
@@ -3826,6 +4363,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m6gd.large": {
 		InstanceType: "m6gd.large",
@@ -3833,6 +4371,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m6gd.medium": {
 		InstanceType: "m6gd.medium",
@@ -3840,6 +4379,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m6gd.metal": {
 		InstanceType: "m6gd.metal",
@@ -3847,6 +4387,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"m6gd.xlarge": {
 		InstanceType: "m6gd.xlarge",
@@ -3854,6 +4395,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m6i.12xlarge": {
 		InstanceType: "m6i.12xlarge",
@@ -3861,6 +4403,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6i.16xlarge": {
 		InstanceType: "m6i.16xlarge",
@@ -3868,6 +4411,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6i.24xlarge": {
 		InstanceType: "m6i.24xlarge",
@@ -3875,6 +4419,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6i.2xlarge": {
 		InstanceType: "m6i.2xlarge",
@@ -3882,6 +4427,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6i.32xlarge": {
 		InstanceType: "m6i.32xlarge",
@@ -3889,6 +4435,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6i.4xlarge": {
 		InstanceType: "m6i.4xlarge",
@@ -3896,6 +4443,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6i.8xlarge": {
 		InstanceType: "m6i.8xlarge",
@@ -3903,6 +4451,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6i.large": {
 		InstanceType: "m6i.large",
@@ -3910,6 +4459,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6i.metal": {
 		InstanceType: "m6i.metal",
@@ -3917,6 +4467,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"m6i.xlarge": {
 		InstanceType: "m6i.xlarge",
@@ -3924,6 +4475,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6id.12xlarge": {
 		InstanceType: "m6id.12xlarge",
@@ -3931,6 +4483,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m6id.16xlarge": {
 		InstanceType: "m6id.16xlarge",
@@ -3938,6 +4491,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m6id.24xlarge": {
 		InstanceType: "m6id.24xlarge",
@@ -3945,6 +4499,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"m6id.2xlarge": {
 		InstanceType: "m6id.2xlarge",
@@ -3952,6 +4507,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m6id.32xlarge": {
 		InstanceType: "m6id.32xlarge",
@@ -3959,6 +4515,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"m6id.4xlarge": {
 		InstanceType: "m6id.4xlarge",
@@ -3966,6 +4523,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m6id.8xlarge": {
 		InstanceType: "m6id.8xlarge",
@@ -3973,6 +4531,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m6id.large": {
 		InstanceType: "m6id.large",
@@ -3980,6 +4539,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m6id.metal": {
 		InstanceType: "m6id.metal",
@@ -3987,6 +4547,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"m6id.xlarge": {
 		InstanceType: "m6id.xlarge",
@@ -3994,6 +4555,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m6idn.12xlarge": {
 		InstanceType: "m6idn.12xlarge",
@@ -4001,6 +4563,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m6idn.16xlarge": {
 		InstanceType: "m6idn.16xlarge",
@@ -4008,6 +4571,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"m6idn.24xlarge": {
 		InstanceType: "m6idn.24xlarge",
@@ -4015,6 +4579,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"m6idn.2xlarge": {
 		InstanceType: "m6idn.2xlarge",
@@ -4022,6 +4587,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m6idn.32xlarge": {
 		InstanceType: "m6idn.32xlarge",
@@ -4029,6 +4595,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"m6idn.4xlarge": {
 		InstanceType: "m6idn.4xlarge",
@@ -4036,6 +4603,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m6idn.8xlarge": {
 		InstanceType: "m6idn.8xlarge",
@@ -4043,6 +4611,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m6idn.large": {
 		InstanceType: "m6idn.large",
@@ -4050,6 +4619,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m6idn.metal": {
 		InstanceType: "m6idn.metal",
@@ -4057,6 +4627,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"m6idn.xlarge": {
 		InstanceType: "m6idn.xlarge",
@@ -4064,6 +4635,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"m6in.12xlarge": {
 		InstanceType: "m6in.12xlarge",
@@ -4071,6 +4643,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6in.16xlarge": {
 		InstanceType: "m6in.16xlarge",
@@ -4078,6 +4651,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6in.24xlarge": {
 		InstanceType: "m6in.24xlarge",
@@ -4085,6 +4659,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6in.2xlarge": {
 		InstanceType: "m6in.2xlarge",
@@ -4092,6 +4667,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6in.32xlarge": {
 		InstanceType: "m6in.32xlarge",
@@ -4099,6 +4675,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6in.4xlarge": {
 		InstanceType: "m6in.4xlarge",
@@ -4106,6 +4683,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6in.8xlarge": {
 		InstanceType: "m6in.8xlarge",
@@ -4113,6 +4691,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6in.large": {
 		InstanceType: "m6in.large",
@@ -4120,6 +4699,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m6in.metal": {
 		InstanceType: "m6in.metal",
@@ -4127,6 +4707,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"m6in.xlarge": {
 		InstanceType: "m6in.xlarge",
@@ -4134,6 +4715,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"m7a.12xlarge": {
 		InstanceType: "m7a.12xlarge",
@@ -4141,6 +4723,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7a.16xlarge": {
 		InstanceType: "m7a.16xlarge",
@@ -4148,6 +4731,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"m7a.24xlarge": {
 		InstanceType: "m7a.24xlarge",
@@ -4155,6 +4739,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"m7a.2xlarge": {
 		InstanceType: "m7a.2xlarge",
@@ -4162,6 +4747,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7a.32xlarge": {
 		InstanceType: "m7a.32xlarge",
@@ -4169,6 +4755,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 88,
 	},
 	"m7a.48xlarge": {
 		InstanceType: "m7a.48xlarge",
@@ -4176,6 +4763,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"m7a.4xlarge": {
 		InstanceType: "m7a.4xlarge",
@@ -4183,6 +4771,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7a.8xlarge": {
 		InstanceType: "m7a.8xlarge",
@@ -4190,6 +4779,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7a.large": {
 		InstanceType: "m7a.large",
@@ -4197,6 +4787,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7a.medium": {
 		InstanceType: "m7a.medium",
@@ -4204,6 +4795,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7a.metal-48xl": {
 		InstanceType: "m7a.metal-48xl",
@@ -4211,6 +4803,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"m7a.xlarge": {
 		InstanceType: "m7a.xlarge",
@@ -4218,6 +4811,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7g.12xlarge": {
 		InstanceType: "m7g.12xlarge",
@@ -4225,6 +4819,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m7g.16xlarge": {
 		InstanceType: "m7g.16xlarge",
@@ -4232,6 +4827,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m7g.2xlarge": {
 		InstanceType: "m7g.2xlarge",
@@ -4239,6 +4835,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m7g.4xlarge": {
 		InstanceType: "m7g.4xlarge",
@@ -4246,6 +4843,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m7g.8xlarge": {
 		InstanceType: "m7g.8xlarge",
@@ -4253,6 +4851,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m7g.large": {
 		InstanceType: "m7g.large",
@@ -4260,6 +4859,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m7g.medium": {
 		InstanceType: "m7g.medium",
@@ -4267,6 +4867,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m7g.metal": {
 		InstanceType: "m7g.metal",
@@ -4274,6 +4875,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"m7g.xlarge": {
 		InstanceType: "m7g.xlarge",
@@ -4281,6 +4883,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"m7gd.12xlarge": {
 		InstanceType: "m7gd.12xlarge",
@@ -4288,6 +4891,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"m7gd.16xlarge": {
 		InstanceType: "m7gd.16xlarge",
@@ -4295,6 +4899,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"m7gd.2xlarge": {
 		InstanceType: "m7gd.2xlarge",
@@ -4302,6 +4907,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m7gd.4xlarge": {
 		InstanceType: "m7gd.4xlarge",
@@ -4309,6 +4915,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m7gd.8xlarge": {
 		InstanceType: "m7gd.8xlarge",
@@ -4316,6 +4923,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m7gd.large": {
 		InstanceType: "m7gd.large",
@@ -4323,6 +4931,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m7gd.medium": {
 		InstanceType: "m7gd.medium",
@@ -4330,6 +4939,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m7gd.metal": {
 		InstanceType: "m7gd.metal",
@@ -4337,6 +4947,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"m7gd.xlarge": {
 		InstanceType: "m7gd.xlarge",
@@ -4344,6 +4955,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"m7i-flex.12xlarge": {
 		InstanceType: "m7i-flex.12xlarge",
@@ -4351,6 +4963,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i-flex.16xlarge": {
 		InstanceType: "m7i-flex.16xlarge",
@@ -4358,6 +4971,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"m7i-flex.2xlarge": {
 		InstanceType: "m7i-flex.2xlarge",
@@ -4365,6 +4979,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i-flex.4xlarge": {
 		InstanceType: "m7i-flex.4xlarge",
@@ -4372,6 +4987,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i-flex.8xlarge": {
 		InstanceType: "m7i-flex.8xlarge",
@@ -4379,6 +4995,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i-flex.large": {
 		InstanceType: "m7i-flex.large",
@@ -4386,6 +5003,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i-flex.xlarge": {
 		InstanceType: "m7i-flex.xlarge",
@@ -4393,6 +5011,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i.12xlarge": {
 		InstanceType: "m7i.12xlarge",
@@ -4400,6 +5019,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i.16xlarge": {
 		InstanceType: "m7i.16xlarge",
@@ -4407,6 +5027,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"m7i.24xlarge": {
 		InstanceType: "m7i.24xlarge",
@@ -4414,6 +5035,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"m7i.2xlarge": {
 		InstanceType: "m7i.2xlarge",
@@ -4421,6 +5043,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i.48xlarge": {
 		InstanceType: "m7i.48xlarge",
@@ -4428,6 +5051,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"m7i.4xlarge": {
 		InstanceType: "m7i.4xlarge",
@@ -4435,6 +5059,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i.8xlarge": {
 		InstanceType: "m7i.8xlarge",
@@ -4442,6 +5067,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i.large": {
 		InstanceType: "m7i.large",
@@ -4449,6 +5075,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m7i.metal-24xl": {
 		InstanceType: "m7i.metal-24xl",
@@ -4456,6 +5083,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"m7i.metal-48xl": {
 		InstanceType: "m7i.metal-48xl",
@@ -4463,6 +5091,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"m7i.xlarge": {
 		InstanceType: "m7i.xlarge",
@@ -4470,6 +5099,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8a.12xlarge": {
 		InstanceType: "m8a.12xlarge",
@@ -4477,6 +5107,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8a.16xlarge": {
 		InstanceType: "m8a.16xlarge",
@@ -4484,6 +5115,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"m8a.24xlarge": {
 		InstanceType: "m8a.24xlarge",
@@ -4491,6 +5123,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"m8a.2xlarge": {
 		InstanceType: "m8a.2xlarge",
@@ -4498,6 +5131,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8a.48xlarge": {
 		InstanceType: "m8a.48xlarge",
@@ -4505,6 +5139,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"m8a.4xlarge": {
 		InstanceType: "m8a.4xlarge",
@@ -4512,6 +5147,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8a.8xlarge": {
 		InstanceType: "m8a.8xlarge",
@@ -4519,6 +5155,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8a.large": {
 		InstanceType: "m8a.large",
@@ -4526,6 +5163,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8a.medium": {
 		InstanceType: "m8a.medium",
@@ -4533,6 +5171,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8a.metal-24xl": {
 		InstanceType: "m8a.metal-24xl",
@@ -4540,6 +5179,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"m8a.metal-48xl": {
 		InstanceType: "m8a.metal-48xl",
@@ -4547,6 +5187,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"m8a.xlarge": {
 		InstanceType: "m8a.xlarge",
@@ -4554,6 +5195,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8g.12xlarge": {
 		InstanceType: "m8g.12xlarge",
@@ -4561,6 +5203,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8g.16xlarge": {
 		InstanceType: "m8g.16xlarge",
@@ -4568,6 +5211,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"m8g.24xlarge": {
 		InstanceType: "m8g.24xlarge",
@@ -4575,6 +5219,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"m8g.2xlarge": {
 		InstanceType: "m8g.2xlarge",
@@ -4582,6 +5227,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8g.48xlarge": {
 		InstanceType: "m8g.48xlarge",
@@ -4589,6 +5235,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"m8g.4xlarge": {
 		InstanceType: "m8g.4xlarge",
@@ -4596,6 +5243,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8g.8xlarge": {
 		InstanceType: "m8g.8xlarge",
@@ -4603,6 +5251,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8g.large": {
 		InstanceType: "m8g.large",
@@ -4610,6 +5259,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8g.medium": {
 		InstanceType: "m8g.medium",
@@ -4617,6 +5267,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8g.metal-24xl": {
 		InstanceType: "m8g.metal-24xl",
@@ -4624,6 +5275,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"m8g.metal-48xl": {
 		InstanceType: "m8g.metal-48xl",
@@ -4631,6 +5283,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 79,
 	},
 	"m8g.xlarge": {
 		InstanceType: "m8g.xlarge",
@@ -4638,6 +5291,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gb.12xlarge": {
 		InstanceType: "m8gb.12xlarge",
@@ -4645,6 +5299,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gb.16xlarge": {
 		InstanceType: "m8gb.16xlarge",
@@ -4652,6 +5307,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"m8gb.24xlarge": {
 		InstanceType: "m8gb.24xlarge",
@@ -4659,6 +5315,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"m8gb.2xlarge": {
 		InstanceType: "m8gb.2xlarge",
@@ -4666,6 +5323,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gb.4xlarge": {
 		InstanceType: "m8gb.4xlarge",
@@ -4673,6 +5331,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gb.8xlarge": {
 		InstanceType: "m8gb.8xlarge",
@@ -4680,6 +5339,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gb.large": {
 		InstanceType: "m8gb.large",
@@ -4687,6 +5347,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gb.medium": {
 		InstanceType: "m8gb.medium",
@@ -4694,6 +5355,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gb.xlarge": {
 		InstanceType: "m8gb.xlarge",
@@ -4701,6 +5363,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gd.12xlarge": {
 		InstanceType: "m8gd.12xlarge",
@@ -4708,6 +5371,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gd.16xlarge": {
 		InstanceType: "m8gd.16xlarge",
@@ -4715,6 +5379,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"m8gd.24xlarge": {
 		InstanceType: "m8gd.24xlarge",
@@ -4722,6 +5387,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"m8gd.2xlarge": {
 		InstanceType: "m8gd.2xlarge",
@@ -4729,6 +5395,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gd.48xlarge": {
 		InstanceType: "m8gd.48xlarge",
@@ -4736,6 +5403,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"m8gd.4xlarge": {
 		InstanceType: "m8gd.4xlarge",
@@ -4743,6 +5411,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gd.8xlarge": {
 		InstanceType: "m8gd.8xlarge",
@@ -4750,6 +5419,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gd.large": {
 		InstanceType: "m8gd.large",
@@ -4757,6 +5427,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gd.medium": {
 		InstanceType: "m8gd.medium",
@@ -4764,6 +5435,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gd.metal-24xl": {
 		InstanceType: "m8gd.metal-24xl",
@@ -4771,6 +5443,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"m8gd.metal-48xl": {
 		InstanceType: "m8gd.metal-48xl",
@@ -4778,6 +5451,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 79,
 	},
 	"m8gd.xlarge": {
 		InstanceType: "m8gd.xlarge",
@@ -4785,6 +5459,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gn.12xlarge": {
 		InstanceType: "m8gn.12xlarge",
@@ -4792,6 +5467,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gn.16xlarge": {
 		InstanceType: "m8gn.16xlarge",
@@ -4799,6 +5475,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"m8gn.24xlarge": {
 		InstanceType: "m8gn.24xlarge",
@@ -4806,6 +5483,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"m8gn.2xlarge": {
 		InstanceType: "m8gn.2xlarge",
@@ -4813,6 +5491,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gn.48xlarge": {
 		InstanceType: "m8gn.48xlarge",
@@ -4820,6 +5499,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"m8gn.4xlarge": {
 		InstanceType: "m8gn.4xlarge",
@@ -4827,6 +5507,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gn.8xlarge": {
 		InstanceType: "m8gn.8xlarge",
@@ -4834,6 +5515,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gn.large": {
 		InstanceType: "m8gn.large",
@@ -4841,6 +5523,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gn.medium": {
 		InstanceType: "m8gn.medium",
@@ -4848,6 +5531,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8gn.xlarge": {
 		InstanceType: "m8gn.xlarge",
@@ -4855,6 +5539,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i-flex.12xlarge": {
 		InstanceType: "m8i-flex.12xlarge",
@@ -4862,6 +5547,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i-flex.16xlarge": {
 		InstanceType: "m8i-flex.16xlarge",
@@ -4869,6 +5555,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"m8i-flex.2xlarge": {
 		InstanceType: "m8i-flex.2xlarge",
@@ -4876,6 +5563,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i-flex.4xlarge": {
 		InstanceType: "m8i-flex.4xlarge",
@@ -4883,6 +5571,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i-flex.8xlarge": {
 		InstanceType: "m8i-flex.8xlarge",
@@ -4890,6 +5579,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i-flex.large": {
 		InstanceType: "m8i-flex.large",
@@ -4897,6 +5587,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i-flex.xlarge": {
 		InstanceType: "m8i-flex.xlarge",
@@ -4904,6 +5595,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i.12xlarge": {
 		InstanceType: "m8i.12xlarge",
@@ -4911,6 +5603,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i.16xlarge": {
 		InstanceType: "m8i.16xlarge",
@@ -4918,6 +5611,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"m8i.24xlarge": {
 		InstanceType: "m8i.24xlarge",
@@ -4925,6 +5619,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"m8i.2xlarge": {
 		InstanceType: "m8i.2xlarge",
@@ -4932,6 +5627,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i.32xlarge": {
 		InstanceType: "m8i.32xlarge",
@@ -4939,6 +5635,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 88,
 	},
 	"m8i.48xlarge": {
 		InstanceType: "m8i.48xlarge",
@@ -4946,6 +5643,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"m8i.4xlarge": {
 		InstanceType: "m8i.4xlarge",
@@ -4953,6 +5651,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i.8xlarge": {
 		InstanceType: "m8i.8xlarge",
@@ -4960,6 +5659,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i.96xlarge": {
 		InstanceType: "m8i.96xlarge",
@@ -4967,6 +5667,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"m8i.large": {
 		InstanceType: "m8i.large",
@@ -4974,6 +5675,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"m8i.metal-48xl": {
 		InstanceType: "m8i.metal-48xl",
@@ -4981,6 +5683,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"m8i.metal-96xl": {
 		InstanceType: "m8i.metal-96xl",
@@ -4988,6 +5691,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"m8i.xlarge": {
 		InstanceType: "m8i.xlarge",
@@ -4995,6 +5699,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"mac-m4.metal": {
 		InstanceType: "mac-m4.metal",
@@ -5002,6 +5707,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     24576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"mac-m4pro.metal": {
 		InstanceType: "mac-m4pro.metal",
@@ -5009,6 +5715,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     49152,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"mac1.metal": {
 		InstanceType: "mac1.metal",
@@ -5016,6 +5723,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 16,
 	},
 	"mac2-m1ultra.metal": {
 		InstanceType: "mac2-m1ultra.metal",
@@ -5023,6 +5731,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 10,
 	},
 	"mac2-m2.metal": {
 		InstanceType: "mac2-m2.metal",
@@ -5030,6 +5739,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     24576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 10,
 	},
 	"mac2-m2pro.metal": {
 		InstanceType: "mac2-m2pro.metal",
@@ -5037,6 +5747,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 10,
 	},
 	"mac2.metal": {
 		InstanceType: "mac2.metal",
@@ -5044,6 +5755,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 10,
 	},
 	"p3.16xlarge": {
 		InstanceType: "p3.16xlarge",
@@ -5072,6 +5784,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 17,
 	},
 	"p4d.24xlarge": {
 		InstanceType: "p4d.24xlarge",
@@ -5079,6 +5792,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1179648,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 28,
 	},
 	"p4de.24xlarge": {
 		InstanceType: "p4de.24xlarge",
@@ -5086,6 +5800,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1179648,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 28,
 	},
 	"p5.48xlarge": {
 		InstanceType: "p5.48xlarge",
@@ -5093,6 +5808,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2097152,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"p5.4xlarge": {
 		InstanceType: "p5.4xlarge",
@@ -5100,6 +5816,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          1,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"p5en.48xlarge": {
 		InstanceType: "p5en.48xlarge",
@@ -5107,6 +5824,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2097152,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"p6-b200.48xlarge": {
 		InstanceType: "p6-b200.48xlarge",
@@ -5114,6 +5832,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2097152,
 		GPU:          8,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"r3.2xlarge": {
 		InstanceType: "r3.2xlarge",
@@ -5121,6 +5840,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     62464,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"r3.4xlarge": {
 		InstanceType: "r3.4xlarge",
@@ -5128,6 +5848,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     124928,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"r3.8xlarge": {
 		InstanceType: "r3.8xlarge",
@@ -5135,6 +5856,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     249856,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"r3.large": {
 		InstanceType: "r3.large",
@@ -5142,6 +5864,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     15360,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"r3.xlarge": {
 		InstanceType: "r3.xlarge",
@@ -5149,6 +5872,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     31232,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"r4.16xlarge": {
 		InstanceType: "r4.16xlarge",
@@ -5156,6 +5880,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     499712,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"r4.2xlarge": {
 		InstanceType: "r4.2xlarge",
@@ -5163,6 +5888,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     62464,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"r4.4xlarge": {
 		InstanceType: "r4.4xlarge",
@@ -5170,6 +5896,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     124928,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"r4.8xlarge": {
 		InstanceType: "r4.8xlarge",
@@ -5177,6 +5904,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     249856,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"r4.large": {
 		InstanceType: "r4.large",
@@ -5184,6 +5912,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     15616,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"r4.xlarge": {
 		InstanceType: "r4.xlarge",
@@ -5191,6 +5920,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     31232,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"r5.12xlarge": {
 		InstanceType: "r5.12xlarge",
@@ -5198,6 +5928,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5.16xlarge": {
 		InstanceType: "r5.16xlarge",
@@ -5205,6 +5936,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5.24xlarge": {
 		InstanceType: "r5.24xlarge",
@@ -5212,6 +5944,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5.2xlarge": {
 		InstanceType: "r5.2xlarge",
@@ -5219,6 +5952,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5.4xlarge": {
 		InstanceType: "r5.4xlarge",
@@ -5226,6 +5960,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5.8xlarge": {
 		InstanceType: "r5.8xlarge",
@@ -5233,6 +5968,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5.large": {
 		InstanceType: "r5.large",
@@ -5240,6 +5976,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5.metal": {
 		InstanceType: "r5.metal",
@@ -5247,6 +5984,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"r5.xlarge": {
 		InstanceType: "r5.xlarge",
@@ -5254,6 +5992,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5a.12xlarge": {
 		InstanceType: "r5a.12xlarge",
@@ -5261,6 +6000,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5a.16xlarge": {
 		InstanceType: "r5a.16xlarge",
@@ -5268,6 +6008,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5a.24xlarge": {
 		InstanceType: "r5a.24xlarge",
@@ -5275,6 +6016,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5a.2xlarge": {
 		InstanceType: "r5a.2xlarge",
@@ -5282,6 +6024,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5a.4xlarge": {
 		InstanceType: "r5a.4xlarge",
@@ -5289,6 +6032,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5a.8xlarge": {
 		InstanceType: "r5a.8xlarge",
@@ -5296,6 +6040,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5a.large": {
 		InstanceType: "r5a.large",
@@ -5303,6 +6048,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5a.xlarge": {
 		InstanceType: "r5a.xlarge",
@@ -5310,6 +6056,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5ad.12xlarge": {
 		InstanceType: "r5ad.12xlarge",
@@ -5317,6 +6064,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r5ad.16xlarge": {
 		InstanceType: "r5ad.16xlarge",
@@ -5324,6 +6072,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"r5ad.24xlarge": {
 		InstanceType: "r5ad.24xlarge",
@@ -5331,6 +6080,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"r5ad.2xlarge": {
 		InstanceType: "r5ad.2xlarge",
@@ -5338,6 +6088,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r5ad.4xlarge": {
 		InstanceType: "r5ad.4xlarge",
@@ -5345,6 +6096,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r5ad.8xlarge": {
 		InstanceType: "r5ad.8xlarge",
@@ -5352,6 +6104,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r5ad.large": {
 		InstanceType: "r5ad.large",
@@ -5359,6 +6112,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r5ad.xlarge": {
 		InstanceType: "r5ad.xlarge",
@@ -5366,6 +6120,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r5b.12xlarge": {
 		InstanceType: "r5b.12xlarge",
@@ -5373,6 +6128,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5b.16xlarge": {
 		InstanceType: "r5b.16xlarge",
@@ -5380,6 +6136,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5b.24xlarge": {
 		InstanceType: "r5b.24xlarge",
@@ -5387,6 +6144,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5b.2xlarge": {
 		InstanceType: "r5b.2xlarge",
@@ -5394,6 +6152,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5b.4xlarge": {
 		InstanceType: "r5b.4xlarge",
@@ -5401,6 +6160,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5b.8xlarge": {
 		InstanceType: "r5b.8xlarge",
@@ -5408,6 +6168,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5b.large": {
 		InstanceType: "r5b.large",
@@ -5415,6 +6176,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5b.metal": {
 		InstanceType: "r5b.metal",
@@ -5422,6 +6184,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"r5b.xlarge": {
 		InstanceType: "r5b.xlarge",
@@ -5429,6 +6192,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5d.12xlarge": {
 		InstanceType: "r5d.12xlarge",
@@ -5436,6 +6200,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r5d.16xlarge": {
 		InstanceType: "r5d.16xlarge",
@@ -5443,6 +6208,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"r5d.24xlarge": {
 		InstanceType: "r5d.24xlarge",
@@ -5450,6 +6216,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"r5d.2xlarge": {
 		InstanceType: "r5d.2xlarge",
@@ -5457,6 +6224,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r5d.4xlarge": {
 		InstanceType: "r5d.4xlarge",
@@ -5464,6 +6232,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r5d.8xlarge": {
 		InstanceType: "r5d.8xlarge",
@@ -5471,6 +6240,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r5d.large": {
 		InstanceType: "r5d.large",
@@ -5478,6 +6248,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r5d.metal": {
 		InstanceType: "r5d.metal",
@@ -5485,6 +6256,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"r5d.xlarge": {
 		InstanceType: "r5d.xlarge",
@@ -5492,6 +6264,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r5dn.12xlarge": {
 		InstanceType: "r5dn.12xlarge",
@@ -5499,6 +6272,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r5dn.16xlarge": {
 		InstanceType: "r5dn.16xlarge",
@@ -5506,6 +6280,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"r5dn.24xlarge": {
 		InstanceType: "r5dn.24xlarge",
@@ -5513,6 +6288,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"r5dn.2xlarge": {
 		InstanceType: "r5dn.2xlarge",
@@ -5520,6 +6296,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r5dn.4xlarge": {
 		InstanceType: "r5dn.4xlarge",
@@ -5527,6 +6304,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r5dn.8xlarge": {
 		InstanceType: "r5dn.8xlarge",
@@ -5534,6 +6312,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r5dn.large": {
 		InstanceType: "r5dn.large",
@@ -5541,6 +6320,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r5dn.metal": {
 		InstanceType: "r5dn.metal",
@@ -5548,6 +6328,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"r5dn.xlarge": {
 		InstanceType: "r5dn.xlarge",
@@ -5555,6 +6336,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r5n.12xlarge": {
 		InstanceType: "r5n.12xlarge",
@@ -5562,6 +6344,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5n.16xlarge": {
 		InstanceType: "r5n.16xlarge",
@@ -5569,6 +6352,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5n.24xlarge": {
 		InstanceType: "r5n.24xlarge",
@@ -5576,6 +6360,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5n.2xlarge": {
 		InstanceType: "r5n.2xlarge",
@@ -5583,6 +6368,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5n.4xlarge": {
 		InstanceType: "r5n.4xlarge",
@@ -5590,6 +6376,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5n.8xlarge": {
 		InstanceType: "r5n.8xlarge",
@@ -5597,6 +6384,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5n.large": {
 		InstanceType: "r5n.large",
@@ -5604,6 +6392,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r5n.metal": {
 		InstanceType: "r5n.metal",
@@ -5611,6 +6400,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"r5n.xlarge": {
 		InstanceType: "r5n.xlarge",
@@ -5618,6 +6408,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6a.12xlarge": {
 		InstanceType: "r6a.12xlarge",
@@ -5625,6 +6416,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6a.16xlarge": {
 		InstanceType: "r6a.16xlarge",
@@ -5632,6 +6424,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6a.24xlarge": {
 		InstanceType: "r6a.24xlarge",
@@ -5639,6 +6432,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6a.2xlarge": {
 		InstanceType: "r6a.2xlarge",
@@ -5646,6 +6440,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6a.32xlarge": {
 		InstanceType: "r6a.32xlarge",
@@ -5653,6 +6448,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6a.48xlarge": {
 		InstanceType: "r6a.48xlarge",
@@ -5660,6 +6456,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6a.4xlarge": {
 		InstanceType: "r6a.4xlarge",
@@ -5667,6 +6464,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6a.8xlarge": {
 		InstanceType: "r6a.8xlarge",
@@ -5674,6 +6472,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6a.large": {
 		InstanceType: "r6a.large",
@@ -5681,6 +6480,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6a.metal": {
 		InstanceType: "r6a.metal",
@@ -5688,6 +6488,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"r6a.xlarge": {
 		InstanceType: "r6a.xlarge",
@@ -5695,6 +6496,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6g.12xlarge": {
 		InstanceType: "r6g.12xlarge",
@@ -5702,6 +6504,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r6g.16xlarge": {
 		InstanceType: "r6g.16xlarge",
@@ -5709,6 +6512,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r6g.2xlarge": {
 		InstanceType: "r6g.2xlarge",
@@ -5716,6 +6520,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r6g.4xlarge": {
 		InstanceType: "r6g.4xlarge",
@@ -5723,6 +6528,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r6g.8xlarge": {
 		InstanceType: "r6g.8xlarge",
@@ -5730,6 +6536,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r6g.large": {
 		InstanceType: "r6g.large",
@@ -5737,6 +6544,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r6g.medium": {
 		InstanceType: "r6g.medium",
@@ -5744,6 +6552,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r6g.metal": {
 		InstanceType: "r6g.metal",
@@ -5751,6 +6560,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"r6g.xlarge": {
 		InstanceType: "r6g.xlarge",
@@ -5758,6 +6568,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r6gd.12xlarge": {
 		InstanceType: "r6gd.12xlarge",
@@ -5765,6 +6576,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"r6gd.16xlarge": {
 		InstanceType: "r6gd.16xlarge",
@@ -5772,6 +6584,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"r6gd.2xlarge": {
 		InstanceType: "r6gd.2xlarge",
@@ -5779,6 +6592,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r6gd.4xlarge": {
 		InstanceType: "r6gd.4xlarge",
@@ -5786,6 +6600,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r6gd.8xlarge": {
 		InstanceType: "r6gd.8xlarge",
@@ -5793,6 +6608,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r6gd.large": {
 		InstanceType: "r6gd.large",
@@ -5800,6 +6616,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r6gd.medium": {
 		InstanceType: "r6gd.medium",
@@ -5807,6 +6624,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r6gd.metal": {
 		InstanceType: "r6gd.metal",
@@ -5814,6 +6632,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"r6gd.xlarge": {
 		InstanceType: "r6gd.xlarge",
@@ -5821,6 +6640,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r6i.12xlarge": {
 		InstanceType: "r6i.12xlarge",
@@ -5828,6 +6648,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6i.16xlarge": {
 		InstanceType: "r6i.16xlarge",
@@ -5835,6 +6656,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6i.24xlarge": {
 		InstanceType: "r6i.24xlarge",
@@ -5842,6 +6664,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6i.2xlarge": {
 		InstanceType: "r6i.2xlarge",
@@ -5849,6 +6672,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6i.32xlarge": {
 		InstanceType: "r6i.32xlarge",
@@ -5856,6 +6680,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6i.4xlarge": {
 		InstanceType: "r6i.4xlarge",
@@ -5863,6 +6688,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6i.8xlarge": {
 		InstanceType: "r6i.8xlarge",
@@ -5870,6 +6696,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6i.large": {
 		InstanceType: "r6i.large",
@@ -5877,6 +6704,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6i.metal": {
 		InstanceType: "r6i.metal",
@@ -5884,6 +6712,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"r6i.xlarge": {
 		InstanceType: "r6i.xlarge",
@@ -5891,6 +6720,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6id.12xlarge": {
 		InstanceType: "r6id.12xlarge",
@@ -5898,6 +6728,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r6id.16xlarge": {
 		InstanceType: "r6id.16xlarge",
@@ -5905,6 +6736,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r6id.24xlarge": {
 		InstanceType: "r6id.24xlarge",
@@ -5912,6 +6744,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"r6id.2xlarge": {
 		InstanceType: "r6id.2xlarge",
@@ -5919,6 +6752,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r6id.32xlarge": {
 		InstanceType: "r6id.32xlarge",
@@ -5926,6 +6760,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"r6id.4xlarge": {
 		InstanceType: "r6id.4xlarge",
@@ -5933,6 +6768,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r6id.8xlarge": {
 		InstanceType: "r6id.8xlarge",
@@ -5940,6 +6776,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r6id.large": {
 		InstanceType: "r6id.large",
@@ -5947,6 +6784,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r6id.metal": {
 		InstanceType: "r6id.metal",
@@ -5954,6 +6792,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"r6id.xlarge": {
 		InstanceType: "r6id.xlarge",
@@ -5961,6 +6800,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r6idn.12xlarge": {
 		InstanceType: "r6idn.12xlarge",
@@ -5968,6 +6808,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r6idn.16xlarge": {
 		InstanceType: "r6idn.16xlarge",
@@ -5975,6 +6816,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"r6idn.24xlarge": {
 		InstanceType: "r6idn.24xlarge",
@@ -5982,6 +6824,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"r6idn.2xlarge": {
 		InstanceType: "r6idn.2xlarge",
@@ -5989,6 +6832,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r6idn.32xlarge": {
 		InstanceType: "r6idn.32xlarge",
@@ -5996,6 +6840,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"r6idn.4xlarge": {
 		InstanceType: "r6idn.4xlarge",
@@ -6003,6 +6848,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r6idn.8xlarge": {
 		InstanceType: "r6idn.8xlarge",
@@ -6010,6 +6856,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r6idn.large": {
 		InstanceType: "r6idn.large",
@@ -6017,6 +6864,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r6idn.metal": {
 		InstanceType: "r6idn.metal",
@@ -6024,6 +6872,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"r6idn.xlarge": {
 		InstanceType: "r6idn.xlarge",
@@ -6031,6 +6880,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"r6in.12xlarge": {
 		InstanceType: "r6in.12xlarge",
@@ -6038,6 +6888,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6in.16xlarge": {
 		InstanceType: "r6in.16xlarge",
@@ -6045,6 +6896,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6in.24xlarge": {
 		InstanceType: "r6in.24xlarge",
@@ -6052,6 +6904,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6in.2xlarge": {
 		InstanceType: "r6in.2xlarge",
@@ -6059,6 +6912,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6in.32xlarge": {
 		InstanceType: "r6in.32xlarge",
@@ -6066,6 +6920,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6in.4xlarge": {
 		InstanceType: "r6in.4xlarge",
@@ -6073,6 +6928,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6in.8xlarge": {
 		InstanceType: "r6in.8xlarge",
@@ -6080,6 +6936,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6in.large": {
 		InstanceType: "r6in.large",
@@ -6087,6 +6944,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r6in.metal": {
 		InstanceType: "r6in.metal",
@@ -6094,6 +6952,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"r6in.xlarge": {
 		InstanceType: "r6in.xlarge",
@@ -6101,6 +6960,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"r7a.12xlarge": {
 		InstanceType: "r7a.12xlarge",
@@ -6108,6 +6968,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7a.16xlarge": {
 		InstanceType: "r7a.16xlarge",
@@ -6115,6 +6976,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"r7a.24xlarge": {
 		InstanceType: "r7a.24xlarge",
@@ -6122,6 +6984,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"r7a.2xlarge": {
 		InstanceType: "r7a.2xlarge",
@@ -6129,6 +6992,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7a.32xlarge": {
 		InstanceType: "r7a.32xlarge",
@@ -6136,6 +7000,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 88,
 	},
 	"r7a.48xlarge": {
 		InstanceType: "r7a.48xlarge",
@@ -6143,6 +7008,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"r7a.4xlarge": {
 		InstanceType: "r7a.4xlarge",
@@ -6150,6 +7016,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7a.8xlarge": {
 		InstanceType: "r7a.8xlarge",
@@ -6157,6 +7024,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7a.large": {
 		InstanceType: "r7a.large",
@@ -6164,6 +7032,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7a.medium": {
 		InstanceType: "r7a.medium",
@@ -6171,6 +7040,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7a.metal-48xl": {
 		InstanceType: "r7a.metal-48xl",
@@ -6178,6 +7048,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"r7a.xlarge": {
 		InstanceType: "r7a.xlarge",
@@ -6185,6 +7056,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7g.12xlarge": {
 		InstanceType: "r7g.12xlarge",
@@ -6192,6 +7064,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r7g.16xlarge": {
 		InstanceType: "r7g.16xlarge",
@@ -6199,6 +7072,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r7g.2xlarge": {
 		InstanceType: "r7g.2xlarge",
@@ -6206,6 +7080,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r7g.4xlarge": {
 		InstanceType: "r7g.4xlarge",
@@ -6213,6 +7088,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r7g.8xlarge": {
 		InstanceType: "r7g.8xlarge",
@@ -6220,6 +7096,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r7g.large": {
 		InstanceType: "r7g.large",
@@ -6227,6 +7104,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r7g.medium": {
 		InstanceType: "r7g.medium",
@@ -6234,6 +7112,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r7g.metal": {
 		InstanceType: "r7g.metal",
@@ -6241,6 +7120,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"r7g.xlarge": {
 		InstanceType: "r7g.xlarge",
@@ -6248,6 +7128,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"r7gd.12xlarge": {
 		InstanceType: "r7gd.12xlarge",
@@ -6255,6 +7136,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"r7gd.16xlarge": {
 		InstanceType: "r7gd.16xlarge",
@@ -6262,6 +7144,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"r7gd.2xlarge": {
 		InstanceType: "r7gd.2xlarge",
@@ -6269,6 +7152,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r7gd.4xlarge": {
 		InstanceType: "r7gd.4xlarge",
@@ -6276,6 +7160,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r7gd.8xlarge": {
 		InstanceType: "r7gd.8xlarge",
@@ -6283,6 +7168,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r7gd.large": {
 		InstanceType: "r7gd.large",
@@ -6290,6 +7176,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r7gd.medium": {
 		InstanceType: "r7gd.medium",
@@ -6297,6 +7184,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r7gd.metal": {
 		InstanceType: "r7gd.metal",
@@ -6304,6 +7192,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"r7gd.xlarge": {
 		InstanceType: "r7gd.xlarge",
@@ -6311,6 +7200,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"r7i.12xlarge": {
 		InstanceType: "r7i.12xlarge",
@@ -6318,6 +7208,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7i.16xlarge": {
 		InstanceType: "r7i.16xlarge",
@@ -6325,6 +7216,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"r7i.24xlarge": {
 		InstanceType: "r7i.24xlarge",
@@ -6332,6 +7224,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"r7i.2xlarge": {
 		InstanceType: "r7i.2xlarge",
@@ -6339,6 +7232,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7i.48xlarge": {
 		InstanceType: "r7i.48xlarge",
@@ -6346,6 +7240,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"r7i.4xlarge": {
 		InstanceType: "r7i.4xlarge",
@@ -6353,6 +7248,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7i.8xlarge": {
 		InstanceType: "r7i.8xlarge",
@@ -6360,6 +7256,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7i.large": {
 		InstanceType: "r7i.large",
@@ -6367,6 +7264,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7i.metal-24xl": {
 		InstanceType: "r7i.metal-24xl",
@@ -6374,6 +7272,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"r7i.metal-48xl": {
 		InstanceType: "r7i.metal-48xl",
@@ -6381,6 +7280,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"r7i.xlarge": {
 		InstanceType: "r7i.xlarge",
@@ -6388,6 +7288,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7iz.12xlarge": {
 		InstanceType: "r7iz.12xlarge",
@@ -6395,6 +7296,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7iz.16xlarge": {
 		InstanceType: "r7iz.16xlarge",
@@ -6402,6 +7304,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"r7iz.2xlarge": {
 		InstanceType: "r7iz.2xlarge",
@@ -6409,6 +7312,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7iz.32xlarge": {
 		InstanceType: "r7iz.32xlarge",
@@ -6416,6 +7320,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 88,
 	},
 	"r7iz.4xlarge": {
 		InstanceType: "r7iz.4xlarge",
@@ -6423,6 +7328,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7iz.8xlarge": {
 		InstanceType: "r7iz.8xlarge",
@@ -6430,6 +7336,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7iz.large": {
 		InstanceType: "r7iz.large",
@@ -6437,6 +7344,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r7iz.metal-16xl": {
 		InstanceType: "r7iz.metal-16xl",
@@ -6444,6 +7352,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"r7iz.metal-32xl": {
 		InstanceType: "r7iz.metal-32xl",
@@ -6451,6 +7360,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"r7iz.xlarge": {
 		InstanceType: "r7iz.xlarge",
@@ -6458,6 +7368,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8a.12xlarge": {
 		InstanceType: "r8a.12xlarge",
@@ -6465,6 +7376,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8a.16xlarge": {
 		InstanceType: "r8a.16xlarge",
@@ -6472,6 +7384,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"r8a.24xlarge": {
 		InstanceType: "r8a.24xlarge",
@@ -6479,6 +7392,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"r8a.2xlarge": {
 		InstanceType: "r8a.2xlarge",
@@ -6486,6 +7400,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8a.48xlarge": {
 		InstanceType: "r8a.48xlarge",
@@ -6493,6 +7408,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"r8a.4xlarge": {
 		InstanceType: "r8a.4xlarge",
@@ -6500,6 +7416,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8a.8xlarge": {
 		InstanceType: "r8a.8xlarge",
@@ -6507,6 +7424,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8a.large": {
 		InstanceType: "r8a.large",
@@ -6514,6 +7432,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8a.medium": {
 		InstanceType: "r8a.medium",
@@ -6521,6 +7440,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8a.metal-24xl": {
 		InstanceType: "r8a.metal-24xl",
@@ -6528,6 +7448,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"r8a.metal-48xl": {
 		InstanceType: "r8a.metal-48xl",
@@ -6535,6 +7456,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"r8a.xlarge": {
 		InstanceType: "r8a.xlarge",
@@ -6542,6 +7464,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8g.12xlarge": {
 		InstanceType: "r8g.12xlarge",
@@ -6549,6 +7472,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8g.16xlarge": {
 		InstanceType: "r8g.16xlarge",
@@ -6556,6 +7480,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"r8g.24xlarge": {
 		InstanceType: "r8g.24xlarge",
@@ -6563,6 +7488,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"r8g.2xlarge": {
 		InstanceType: "r8g.2xlarge",
@@ -6570,6 +7496,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8g.48xlarge": {
 		InstanceType: "r8g.48xlarge",
@@ -6577,6 +7504,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"r8g.4xlarge": {
 		InstanceType: "r8g.4xlarge",
@@ -6584,6 +7512,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8g.8xlarge": {
 		InstanceType: "r8g.8xlarge",
@@ -6591,6 +7520,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8g.large": {
 		InstanceType: "r8g.large",
@@ -6598,6 +7528,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8g.medium": {
 		InstanceType: "r8g.medium",
@@ -6605,6 +7536,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8g.metal-24xl": {
 		InstanceType: "r8g.metal-24xl",
@@ -6612,6 +7544,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"r8g.metal-48xl": {
 		InstanceType: "r8g.metal-48xl",
@@ -6619,6 +7552,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 79,
 	},
 	"r8g.xlarge": {
 		InstanceType: "r8g.xlarge",
@@ -6626,6 +7560,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gb.12xlarge": {
 		InstanceType: "r8gb.12xlarge",
@@ -6633,6 +7568,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gb.16xlarge": {
 		InstanceType: "r8gb.16xlarge",
@@ -6640,6 +7576,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"r8gb.24xlarge": {
 		InstanceType: "r8gb.24xlarge",
@@ -6647,6 +7584,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"r8gb.2xlarge": {
 		InstanceType: "r8gb.2xlarge",
@@ -6654,6 +7592,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gb.4xlarge": {
 		InstanceType: "r8gb.4xlarge",
@@ -6661,6 +7600,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gb.8xlarge": {
 		InstanceType: "r8gb.8xlarge",
@@ -6668,6 +7608,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gb.large": {
 		InstanceType: "r8gb.large",
@@ -6675,6 +7616,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gb.medium": {
 		InstanceType: "r8gb.medium",
@@ -6682,6 +7624,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gb.metal-24xl": {
 		InstanceType: "r8gb.metal-24xl",
@@ -6689,6 +7632,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"r8gb.xlarge": {
 		InstanceType: "r8gb.xlarge",
@@ -6696,6 +7640,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gd.12xlarge": {
 		InstanceType: "r8gd.12xlarge",
@@ -6703,6 +7648,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gd.16xlarge": {
 		InstanceType: "r8gd.16xlarge",
@@ -6710,6 +7656,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"r8gd.24xlarge": {
 		InstanceType: "r8gd.24xlarge",
@@ -6717,6 +7664,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"r8gd.2xlarge": {
 		InstanceType: "r8gd.2xlarge",
@@ -6724,6 +7672,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gd.48xlarge": {
 		InstanceType: "r8gd.48xlarge",
@@ -6731,6 +7680,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"r8gd.4xlarge": {
 		InstanceType: "r8gd.4xlarge",
@@ -6738,6 +7688,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gd.8xlarge": {
 		InstanceType: "r8gd.8xlarge",
@@ -6745,6 +7696,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gd.large": {
 		InstanceType: "r8gd.large",
@@ -6752,6 +7704,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gd.medium": {
 		InstanceType: "r8gd.medium",
@@ -6759,6 +7712,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gd.metal-24xl": {
 		InstanceType: "r8gd.metal-24xl",
@@ -6766,6 +7720,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"r8gd.metal-48xl": {
 		InstanceType: "r8gd.metal-48xl",
@@ -6773,6 +7728,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 79,
 	},
 	"r8gd.xlarge": {
 		InstanceType: "r8gd.xlarge",
@@ -6780,6 +7736,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gn.12xlarge": {
 		InstanceType: "r8gn.12xlarge",
@@ -6787,6 +7744,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gn.16xlarge": {
 		InstanceType: "r8gn.16xlarge",
@@ -6794,6 +7752,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"r8gn.24xlarge": {
 		InstanceType: "r8gn.24xlarge",
@@ -6801,6 +7760,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"r8gn.2xlarge": {
 		InstanceType: "r8gn.2xlarge",
@@ -6808,6 +7768,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gn.48xlarge": {
 		InstanceType: "r8gn.48xlarge",
@@ -6815,6 +7776,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"r8gn.4xlarge": {
 		InstanceType: "r8gn.4xlarge",
@@ -6822,6 +7784,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gn.8xlarge": {
 		InstanceType: "r8gn.8xlarge",
@@ -6829,6 +7792,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gn.large": {
 		InstanceType: "r8gn.large",
@@ -6836,6 +7800,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gn.medium": {
 		InstanceType: "r8gn.medium",
@@ -6843,6 +7808,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8gn.metal-24xl": {
 		InstanceType: "r8gn.metal-24xl",
@@ -6850,6 +7816,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"r8gn.metal-48xl": {
 		InstanceType: "r8gn.metal-48xl",
@@ -6857,6 +7824,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 78,
 	},
 	"r8gn.xlarge": {
 		InstanceType: "r8gn.xlarge",
@@ -6864,6 +7832,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i-flex.12xlarge": {
 		InstanceType: "r8i-flex.12xlarge",
@@ -6871,6 +7840,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i-flex.16xlarge": {
 		InstanceType: "r8i-flex.16xlarge",
@@ -6878,6 +7848,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"r8i-flex.2xlarge": {
 		InstanceType: "r8i-flex.2xlarge",
@@ -6885,6 +7856,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i-flex.4xlarge": {
 		InstanceType: "r8i-flex.4xlarge",
@@ -6892,6 +7864,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i-flex.8xlarge": {
 		InstanceType: "r8i-flex.8xlarge",
@@ -6899,6 +7872,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i-flex.large": {
 		InstanceType: "r8i-flex.large",
@@ -6906,6 +7880,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i-flex.xlarge": {
 		InstanceType: "r8i-flex.xlarge",
@@ -6913,6 +7888,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i.12xlarge": {
 		InstanceType: "r8i.12xlarge",
@@ -6920,6 +7896,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i.16xlarge": {
 		InstanceType: "r8i.16xlarge",
@@ -6927,6 +7904,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"r8i.24xlarge": {
 		InstanceType: "r8i.24xlarge",
@@ -6934,6 +7912,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"r8i.2xlarge": {
 		InstanceType: "r8i.2xlarge",
@@ -6941,6 +7920,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i.32xlarge": {
 		InstanceType: "r8i.32xlarge",
@@ -6948,6 +7928,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 88,
 	},
 	"r8i.48xlarge": {
 		InstanceType: "r8i.48xlarge",
@@ -6955,6 +7936,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"r8i.4xlarge": {
 		InstanceType: "r8i.4xlarge",
@@ -6962,6 +7944,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i.8xlarge": {
 		InstanceType: "r8i.8xlarge",
@@ -6969,6 +7952,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i.96xlarge": {
 		InstanceType: "r8i.96xlarge",
@@ -6976,6 +7960,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3145728,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"r8i.large": {
 		InstanceType: "r8i.large",
@@ -6983,6 +7968,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"r8i.metal-48xl": {
 		InstanceType: "r8i.metal-48xl",
@@ -6990,6 +7976,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"r8i.metal-96xl": {
 		InstanceType: "r8i.metal-96xl",
@@ -6997,6 +7984,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3145728,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"r8i.xlarge": {
 		InstanceType: "r8i.xlarge",
@@ -7004,6 +7992,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"t1.micro": {
 		InstanceType: "t1.micro",
@@ -7011,6 +8000,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     627,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 39,
 	},
 	"t2.2xlarge": {
 		InstanceType: "t2.2xlarge",
@@ -7018,6 +8008,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"t2.large": {
 		InstanceType: "t2.large",
@@ -7025,6 +8016,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"t2.medium": {
 		InstanceType: "t2.medium",
@@ -7032,6 +8024,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"t2.micro": {
 		InstanceType: "t2.micro",
@@ -7039,6 +8032,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1024,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"t2.nano": {
 		InstanceType: "t2.nano",
@@ -7046,6 +8040,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     512,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"t2.small": {
 		InstanceType: "t2.small",
@@ -7053,6 +8048,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"t2.xlarge": {
 		InstanceType: "t2.xlarge",
@@ -7060,6 +8056,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"t3.2xlarge": {
 		InstanceType: "t3.2xlarge",
@@ -7067,6 +8064,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3.large": {
 		InstanceType: "t3.large",
@@ -7074,6 +8072,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3.medium": {
 		InstanceType: "t3.medium",
@@ -7081,6 +8080,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3.micro": {
 		InstanceType: "t3.micro",
@@ -7088,6 +8088,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1024,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3.nano": {
 		InstanceType: "t3.nano",
@@ -7095,6 +8096,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     512,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3.small": {
 		InstanceType: "t3.small",
@@ -7102,6 +8104,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3.xlarge": {
 		InstanceType: "t3.xlarge",
@@ -7109,6 +8112,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3a.2xlarge": {
 		InstanceType: "t3a.2xlarge",
@@ -7116,6 +8120,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3a.large": {
 		InstanceType: "t3a.large",
@@ -7123,6 +8128,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3a.medium": {
 		InstanceType: "t3a.medium",
@@ -7130,6 +8136,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3a.micro": {
 		InstanceType: "t3a.micro",
@@ -7137,6 +8144,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1024,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3a.nano": {
 		InstanceType: "t3a.nano",
@@ -7144,6 +8152,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     512,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3a.small": {
 		InstanceType: "t3a.small",
@@ -7151,6 +8160,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t3a.xlarge": {
 		InstanceType: "t3a.xlarge",
@@ -7158,6 +8168,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"t4g.2xlarge": {
 		InstanceType: "t4g.2xlarge",
@@ -7165,6 +8176,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"t4g.large": {
 		InstanceType: "t4g.large",
@@ -7172,6 +8184,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"t4g.medium": {
 		InstanceType: "t4g.medium",
@@ -7179,6 +8192,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4096,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"t4g.micro": {
 		InstanceType: "t4g.micro",
@@ -7186,6 +8200,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1024,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"t4g.nano": {
 		InstanceType: "t4g.nano",
@@ -7193,6 +8208,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     512,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"t4g.small": {
 		InstanceType: "t4g.small",
@@ -7200,6 +8216,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2048,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"t4g.xlarge": {
 		InstanceType: "t4g.xlarge",
@@ -7207,6 +8224,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 27,
 	},
 	"trn1.2xlarge": {
 		InstanceType: "trn1.2xlarge",
@@ -7214,6 +8232,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"trn1.32xlarge": {
 		InstanceType: "trn1.32xlarge",
@@ -7221,6 +8240,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 28,
 	},
 	"trn1n.32xlarge": {
 		InstanceType: "trn1n.32xlarge",
@@ -7228,6 +8248,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 28,
 	},
 	"u-3tb1.56xlarge": {
 		InstanceType: "u-3tb1.56xlarge",
@@ -7235,6 +8256,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3145728,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"u-6tb1.112xlarge": {
 		InstanceType: "u-6tb1.112xlarge",
@@ -7242,6 +8264,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     6291456,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"u-6tb1.56xlarge": {
 		InstanceType: "u-6tb1.56xlarge",
@@ -7249,6 +8272,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     6291456,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"u7i-12tb.224xlarge": {
 		InstanceType: "u7i-12tb.224xlarge",
@@ -7256,6 +8280,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     12582912,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"u7i-6tb.112xlarge": {
 		InstanceType: "u7i-6tb.112xlarge",
@@ -7263,6 +8288,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     6291456,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"u7i-8tb.112xlarge": {
 		InstanceType: "u7i-8tb.112xlarge",
@@ -7270,6 +8296,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8388608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"u7in-16tb.224xlarge": {
 		InstanceType: "u7in-16tb.224xlarge",
@@ -7277,6 +8304,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16777216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"u7in-24tb.224xlarge": {
 		InstanceType: "u7in-24tb.224xlarge",
@@ -7284,6 +8312,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     25165824,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"u7in-32tb.224xlarge": {
 		InstanceType: "u7in-32tb.224xlarge",
@@ -7291,6 +8320,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     33554432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"vt1.24xlarge": {
 		InstanceType: "vt1.24xlarge",
@@ -7298,6 +8328,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"vt1.3xlarge": {
 		InstanceType: "vt1.3xlarge",
@@ -7305,6 +8336,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     24576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"vt1.6xlarge": {
 		InstanceType: "vt1.6xlarge",
@@ -7312,6 +8344,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     49152,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 23,
 	},
 	"x1.16xlarge": {
 		InstanceType: "x1.16xlarge",
@@ -7319,6 +8352,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     999424,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"x1.32xlarge": {
 		InstanceType: "x1.32xlarge",
@@ -7326,6 +8360,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1998848,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"x1e.16xlarge": {
 		InstanceType: "x1e.16xlarge",
@@ -7333,6 +8368,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1998848,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"x1e.2xlarge": {
 		InstanceType: "x1e.2xlarge",
@@ -7340,6 +8376,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     249856,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"x1e.32xlarge": {
 		InstanceType: "x1e.32xlarge",
@@ -7347,6 +8384,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3997696,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"x1e.4xlarge": {
 		InstanceType: "x1e.4xlarge",
@@ -7354,6 +8392,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     499712,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"x1e.8xlarge": {
 		InstanceType: "x1e.8xlarge",
@@ -7361,6 +8400,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     999424,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"x1e.xlarge": {
 		InstanceType: "x1e.xlarge",
@@ -7368,6 +8408,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     124928,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 40,
 	},
 	"x2gd.12xlarge": {
 		InstanceType: "x2gd.12xlarge",
@@ -7375,6 +8416,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"x2gd.16xlarge": {
 		InstanceType: "x2gd.16xlarge",
@@ -7382,6 +8424,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 25,
 	},
 	"x2gd.2xlarge": {
 		InstanceType: "x2gd.2xlarge",
@@ -7389,6 +8432,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"x2gd.4xlarge": {
 		InstanceType: "x2gd.4xlarge",
@@ -7396,6 +8440,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"x2gd.8xlarge": {
 		InstanceType: "x2gd.8xlarge",
@@ -7403,6 +8448,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"x2gd.large": {
 		InstanceType: "x2gd.large",
@@ -7410,6 +8456,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"x2gd.medium": {
 		InstanceType: "x2gd.medium",
@@ -7417,6 +8464,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"x2gd.metal": {
 		InstanceType: "x2gd.metal",
@@ -7424,6 +8472,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 31,
 	},
 	"x2gd.xlarge": {
 		InstanceType: "x2gd.xlarge",
@@ -7431,6 +8480,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 26,
 	},
 	"x2idn.16xlarge": {
 		InstanceType: "x2idn.16xlarge",
@@ -7438,6 +8488,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"x2idn.24xlarge": {
 		InstanceType: "x2idn.24xlarge",
@@ -7445,6 +8496,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"x2idn.32xlarge": {
 		InstanceType: "x2idn.32xlarge",
@@ -7452,6 +8504,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2097152,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"x2idn.metal": {
 		InstanceType: "x2idn.metal",
@@ -7459,6 +8512,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2097152,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"x2iedn.16xlarge": {
 		InstanceType: "x2iedn.16xlarge",
@@ -7466,6 +8520,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2097152,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"x2iedn.24xlarge": {
 		InstanceType: "x2iedn.24xlarge",
@@ -7473,6 +8528,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3145728,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"x2iedn.2xlarge": {
 		InstanceType: "x2iedn.2xlarge",
@@ -7480,6 +8536,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"x2iedn.32xlarge": {
 		InstanceType: "x2iedn.32xlarge",
@@ -7487,6 +8544,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4194304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"x2iedn.4xlarge": {
 		InstanceType: "x2iedn.4xlarge",
@@ -7494,6 +8552,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"x2iedn.8xlarge": {
 		InstanceType: "x2iedn.8xlarge",
@@ -7501,6 +8560,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"x2iedn.metal": {
 		InstanceType: "x2iedn.metal",
@@ -7508,6 +8568,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4194304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"x2iedn.xlarge": {
 		InstanceType: "x2iedn.xlarge",
@@ -7515,6 +8576,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"x2iezn.12xlarge": {
 		InstanceType: "x2iezn.12xlarge",
@@ -7522,6 +8584,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"x2iezn.2xlarge": {
 		InstanceType: "x2iezn.2xlarge",
@@ -7529,6 +8592,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"x2iezn.4xlarge": {
 		InstanceType: "x2iezn.4xlarge",
@@ -7536,6 +8600,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"x2iezn.6xlarge": {
 		InstanceType: "x2iezn.6xlarge",
@@ -7543,6 +8608,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"x2iezn.8xlarge": {
 		InstanceType: "x2iezn.8xlarge",
@@ -7550,6 +8616,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 27,
 	},
 	"x2iezn.metal": {
 		InstanceType: "x2iezn.metal",
@@ -7557,6 +8624,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"x8g.12xlarge": {
 		InstanceType: "x8g.12xlarge",
@@ -7564,6 +8632,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"x8g.16xlarge": {
 		InstanceType: "x8g.16xlarge",
@@ -7571,6 +8640,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 48,
 	},
 	"x8g.24xlarge": {
 		InstanceType: "x8g.24xlarge",
@@ -7578,6 +8648,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 64,
 	},
 	"x8g.2xlarge": {
 		InstanceType: "x8g.2xlarge",
@@ -7585,6 +8656,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"x8g.48xlarge": {
 		InstanceType: "x8g.48xlarge",
@@ -7592,6 +8664,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3145728,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 128,
 	},
 	"x8g.4xlarge": {
 		InstanceType: "x8g.4xlarge",
@@ -7599,6 +8672,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"x8g.8xlarge": {
 		InstanceType: "x8g.8xlarge",
@@ -7606,6 +8680,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"x8g.large": {
 		InstanceType: "x8g.large",
@@ -7613,6 +8688,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"x8g.medium": {
 		InstanceType: "x8g.medium",
@@ -7620,6 +8696,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"x8g.metal-24xl": {
 		InstanceType: "x8g.metal-24xl",
@@ -7627,6 +8704,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 39,
 	},
 	"x8g.metal-48xl": {
 		InstanceType: "x8g.metal-48xl",
@@ -7634,6 +8712,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3145728,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 79,
 	},
 	"x8g.xlarge": {
 		InstanceType: "x8g.xlarge",
@@ -7641,6 +8720,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "arm64",
+		EBSVolumeLimit: 32,
 	},
 	"x8i.12xlarge": {
 		InstanceType: "x8i.12xlarge",
@@ -7648,6 +8728,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     786432,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"x8i.16xlarge": {
 		InstanceType: "x8i.16xlarge",
@@ -7655,6 +8736,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1048576,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 48,
 	},
 	"x8i.24xlarge": {
 		InstanceType: "x8i.24xlarge",
@@ -7662,6 +8744,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     1572864,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"x8i.2xlarge": {
 		InstanceType: "x8i.2xlarge",
@@ -7669,6 +8752,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     131072,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"x8i.32xlarge": {
 		InstanceType: "x8i.32xlarge",
@@ -7676,6 +8760,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     2097152,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 88,
 	},
 	"x8i.48xlarge": {
 		InstanceType: "x8i.48xlarge",
@@ -7683,6 +8768,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3145728,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"x8i.4xlarge": {
 		InstanceType: "x8i.4xlarge",
@@ -7690,6 +8776,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     262144,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"x8i.64xlarge": {
 		InstanceType: "x8i.64xlarge",
@@ -7697,6 +8784,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     4194304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"x8i.8xlarge": {
 		InstanceType: "x8i.8xlarge",
@@ -7704,6 +8792,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     524288,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"x8i.96xlarge": {
 		InstanceType: "x8i.96xlarge",
@@ -7711,6 +8800,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     6291456,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 128,
 	},
 	"x8i.large": {
 		InstanceType: "x8i.large",
@@ -7718,6 +8808,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"x8i.metal-48xl": {
 		InstanceType: "x8i.metal-48xl",
@@ -7725,6 +8816,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     3145728,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 64,
 	},
 	"x8i.metal-96xl": {
 		InstanceType: "x8i.metal-96xl",
@@ -7732,6 +8824,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     6291456,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 79,
 	},
 	"x8i.xlarge": {
 		InstanceType: "x8i.xlarge",
@@ -7739,6 +8832,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 32,
 	},
 	"z1d.12xlarge": {
 		InstanceType: "z1d.12xlarge",
@@ -7746,6 +8840,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 25,
 	},
 	"z1d.2xlarge": {
 		InstanceType: "z1d.2xlarge",
@@ -7753,6 +8848,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     65536,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"z1d.3xlarge": {
 		InstanceType: "z1d.3xlarge",
@@ -7760,6 +8856,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     98304,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"z1d.6xlarge": {
 		InstanceType: "z1d.6xlarge",
@@ -7767,6 +8864,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     196608,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"z1d.large": {
 		InstanceType: "z1d.large",
@@ -7774,6 +8872,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 	"z1d.metal": {
 		InstanceType: "z1d.metal",
@@ -7781,6 +8880,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     393216,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 31,
 	},
 	"z1d.xlarge": {
 		InstanceType: "z1d.xlarge",
@@ -7788,5 +8888,6 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 		Architecture: "amd64",
+		EBSVolumeLimit: 26,
 	},
 }
