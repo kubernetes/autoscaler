@@ -4,6 +4,7 @@
 
 <!-- toc -->
 - [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
+- [Requests explicitly set to zero](#requests-explicitly-set-to-zero)
 - [Capping to Limit Range](#capping-to-limit-range)
 - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
 - [Starting multiple recommenders](#starting-multiple-recommenders)
@@ -20,6 +21,17 @@
 The container template specifies resource request for 500 milli CPU and 1 GB of RAM. The template also
 specifies resource limit of 2 GB RAM. VPA recommendation is 1000 milli CPU and 2 GB of RAM. When VPA
 applies the recommendation, it will also set the memory limit to 4 GB.
+
+## Requests explicitly set to zero
+
+Kubernetes only defaults a request to the limit if the request is unset, so a request which is
+explicitly set to 0 gives no limit to request ratio to keep. There is no way to keep such a
+container's limit proportional to its request, so with `RequestsAndLimits` the limit is never
+lowered, it is only raised to the recommendation if the recommendation doesn't fit within it:
+
+The container template specifies a resource request of 0 CPU and a resource limit of 2 CPU. When the
+VPA recommendation is 1 CPU, VPA sets the CPU request to 1 CPU and leaves the CPU limit at 2 CPU.
+When the VPA recommendation is 3 CPU, VPA sets both the CPU request and the CPU limit to 3 CPU.
 
 ## Capping to Limit Range
 

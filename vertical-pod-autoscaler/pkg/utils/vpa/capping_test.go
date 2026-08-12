@@ -693,6 +693,78 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 	assert.Equal(t, expectedRecommendation, *processedRecommendation)
 }
 
+// TestApplyCapsToLimitRangeWithZeroRequests verifies that recommendations are capped so that the
+// limits VPA derives from them stay within the LimitRange, also for containers with requests
+// explicitly set to 0, for which the limit is only ever raised to the recommendation.
+func TestApplyCapsToLimitRangeWithZeroRequests(t *testing.T) {
+	limitRange := corev1.LimitRangeItem{
+		Type: corev1.LimitTypeContainer,
+		Max: corev1.ResourceList{
+			corev1.ResourceCPU: resource.MustParse("2"),
+		},
+		Min: corev1.ResourceList{
+			corev1.ResourceMemory: resource.MustParse("500M"),
+		},
+	}
+
+	containerName := "container"
+	vpa := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		Get()
+	vpa.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: containerName,
+				Target: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("3"),
+					corev1.ResourceMemory: resource.MustParse("200M"),
+				},
+			},
+		},
+	}
+
+	pod := corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name: containerName,
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("0"),
+							corev1.ResourceMemory: resource.MustParse("0"),
+						},
+						Limits: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("1"),
+							corev1.ResourceMemory: resource.MustParse("1G"),
+						},
+					},
+				},
+			},
+		},
+	}
+	expectedRecommendation := vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: containerName,
+				Target: corev1.ResourceList{
+					// Capped to the Max limit, which is what the CPU limit gets raised to.
+					corev1.ResourceCPU: resource.MustParse("2"),
+					// Capped to the Min limit, the memory limit stays at 1G.
+					corev1.ResourceMemory: resource.MustParse("500M"),
+				},
+			},
+		},
+	}
+
+	calculator := fakeLimitRangeCalculator{containerLimitRange: limitRange}
+	processor := NewCappingRecommendationProcessor(&calculator)
+	processedRecommendation, annotations, err := processor.Apply(vpa, &pod)
+	assert.NoError(t, err)
+	assert.Contains(t, annotations, containerName)
+	assert.ElementsMatch(t, []string{"cpu capped to fit Max in container LimitRange", "memory capped to fit Min in container LimitRange"}, annotations[containerName])
+	assert.Equal(t, expectedRecommendation, *processedRecommendation)
+}
+
 func TestApplyPodLimitRange(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -1210,6 +1282,75 @@ func TestApplyPodLimitRange(t *testing.T) {
 					ContainerName: "container2",
 					Target: corev1.ResourceList{
 						corev1.ResourceCPU: *resource.NewMilliQuantity(78, resource.DecimalSI), // floor((100*90)/115)
+					},
+				},
+			},
+		},
+		{
+			// container1 has its request explicitly set to 0, so its limit is left unchanged and
+			// counts towards the sum of the pod limits as it is.
+			name: "cap cpu to max with a zero request container",
+			resources: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "container1",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU: resource.MustParse("500m"),
+					},
+				},
+				{
+					ContainerName: "container2",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU: resource.MustParse("2"),
+					},
+				},
+			},
+			pod: corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("0"),
+								},
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("1"),
+								},
+							},
+						},
+						{
+							Name: "container2",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("1"),
+								},
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU: resource.MustParse("2"),
+								},
+							},
+						},
+					},
+				},
+			},
+			limitRange: corev1.LimitRangeItem{
+				Max: corev1.ResourceList{
+					corev1.ResourceCPU: resource.MustParse("3"),
+				},
+			},
+			resourceName: corev1.ResourceCPU,
+			expect: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "container1",
+					// floor((500*3000)/5000), where 5000m is the unchanged 1 CPU limit of
+					// container1 plus the 4 CPU limit container2 would be scaled up to.
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU: *resource.NewMilliQuantity(300, resource.DecimalSI),
+					},
+				},
+				{
+					ContainerName: "container2",
+					Target: corev1.ResourceList{
+						corev1.ResourceCPU: *resource.NewMilliQuantity(1200, resource.DecimalSI), // floor((2000*3000)/5000)
 					},
 				},
 			},

@@ -96,6 +96,18 @@ func TestUpdateResourceRequests(t *testing.T) {
 	limitsNoRequestsPod := test.Pod().WithName("test_initialized").
 		AddContainer(limitsNoRequestsContainer).WithLabels(labels).Get()
 
+	containerWithZeroRequestsBelowLimits := test.Container().WithName(containerName).
+		WithCPURequest(resource.MustParse("0")).WithCPULimit(resource.MustParse("4")).
+		WithMemRequest(resource.MustParse("0")).WithMemLimit(resource.MustParse("400Mi")).Get()
+	podWithZeroRequestsBelowLimits := test.Pod().WithName("test_initialized").
+		AddContainer(containerWithZeroRequestsBelowLimits).WithLabels(labels).Get()
+
+	containerWithZeroRequestsAboveLimits := test.Container().WithName(containerName).
+		WithCPURequest(resource.MustParse("0")).WithCPULimit(resource.MustParse("1")).
+		WithMemRequest(resource.MustParse("0")).WithMemLimit(resource.MustParse("100Mi")).Get()
+	podWithZeroRequestsAboveLimits := test.Pod().WithName("test_initialized").
+		AddContainer(containerWithZeroRequestsAboveLimits).WithLabels(labels).Get()
+
 	targetBelowMinVPA := vpaBuilder.WithTarget("3", "150Mi").WithMinAllowed(containerName, "4", "300Mi").WithMaxAllowed(containerName, "5", "1Gi").Get()
 	targetAboveMaxVPA := vpaBuilder.WithTarget("7", "2Gi").WithMinAllowed(containerName, "4", "300Mi").WithMaxAllowed(containerName, "5", "1Gi").Get()
 	vpaWithHighMemory := vpaBuilder.WithTarget("2", "1000Mi").WithMinAllowed(containerName, "", "").WithMaxAllowed(containerName, "3", "3Gi").Get()
@@ -226,6 +238,54 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedMem:      resource.MustParse("200Mi"),
 			expectedCPULimit: mustParseResourcePointer("4"),
 			expectedMemLimit: mustParseResourcePointer("400Mi"),
+		},
+		{
+			name:             "zero requests - recommendation within limits leaves limits unchanged",
+			pod:              podWithZeroRequestsBelowLimits,
+			vpa:              resourceRequestsAndLimitsVPA,
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("2"),
+			expectedMem:      resource.MustParse("200Mi"),
+			expectedCPULimit: nil,
+			expectedMemLimit: nil,
+			annotations: vpa_api_util.ContainerToAnnotationsMap{
+				containerName: []string{
+					"cpu: limit left unchanged since originalRequest is 0",
+					"memory: limit left unchanged since originalRequest is 0",
+				},
+			},
+		},
+		{
+			name:             "zero requests - recommendation above limits raises limits",
+			pod:              podWithZeroRequestsAboveLimits,
+			vpa:              resourceRequestsAndLimitsVPA,
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("2"),
+			expectedMem:      resource.MustParse("200Mi"),
+			expectedCPULimit: mustParseResourcePointer("2"),
+			expectedMemLimit: mustParseResourcePointer("200Mi"),
+			annotations: vpa_api_util.ContainerToAnnotationsMap{
+				containerName: []string{
+					"cpu: limit raised to recommendedRequest since originalRequest is 0",
+					"memory: limit raised to recommendedRequest since originalRequest is 0",
+				},
+			},
+		},
+		{
+			name:             "zero requests - limits never touched with RequestsOnly",
+			pod:              podWithZeroRequestsAboveLimits,
+			vpa:              resourceRequestsOnlyVPA,
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("1"),     // capped to the container limit
+			expectedMem:      resource.MustParse("100Mi"), // capped to the container limit
+			expectedCPULimit: nil,
+			expectedMemLimit: nil,
+			annotations: vpa_api_util.ContainerToAnnotationsMap{
+				containerName: []string{
+					"cpu capped to container limit",
+					"memory capped to container limit",
+				},
+			},
 		},
 		{
 			name:           "disabled limit scaling",

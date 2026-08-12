@@ -30,6 +30,16 @@ func mustParseToPointer(str string) *resource.Quantity {
 	return &val
 }
 
+// resourceList returns a resource list holding the given quantity for the given resource, or an
+// empty one if the quantity is nil, allowing test cases to distinguish an unset quantity from one
+// which is explicitly set to 0.
+func resourceList(resourceName corev1.ResourceName, quantity *resource.Quantity) corev1.ResourceList {
+	if quantity == nil {
+		return corev1.ResourceList{}
+	}
+	return corev1.ResourceList{resourceName: *quantity}
+}
+
 func TestGetProportionalResourceLimitCPU(t *testing.T) {
 	tests := []struct {
 		name               string
@@ -59,13 +69,52 @@ func TestGetProportionalResourceLimitCPU(t *testing.T) {
 			originalRequest:    mustParseToPointer("1"),
 			recommendedRequest: mustParseToPointer("10"),
 			expectLimit:        nil,
-			expectAnnotation:   true,
+		},
+		{
+			name:               "zero original limit",
+			originalLimit:      mustParseToPointer("0"),
+			originalRequest:    mustParseToPointer("1"),
+			recommendedRequest: mustParseToPointer("10"),
+			defaultLimit:       mustParseToPointer("2"),
+			expectLimit:        nil,
 		},
 		{
 			name:               "no original request",
 			originalLimit:      mustParseToPointer("2"),
 			recommendedRequest: mustParseToPointer("10"),
 			expectLimit:        mustParseToPointer("10"),
+		},
+		{
+			name:               "zero original request with recommendation within limit",
+			originalLimit:      mustParseToPointer("2"),
+			originalRequest:    mustParseToPointer("0"),
+			recommendedRequest: mustParseToPointer("1"),
+			expectLimit:        nil,
+			expectAnnotation:   true,
+		},
+		{
+			name:               "zero original request with recommendation equal to limit",
+			originalLimit:      mustParseToPointer("2"),
+			originalRequest:    mustParseToPointer("0"),
+			recommendedRequest: mustParseToPointer("2"),
+			expectLimit:        nil,
+			expectAnnotation:   true,
+		},
+		{
+			name:               "zero original request with recommendation above limit",
+			originalLimit:      mustParseToPointer("2"),
+			originalRequest:    mustParseToPointer("0"),
+			recommendedRequest: mustParseToPointer("10"),
+			expectLimit:        mustParseToPointer("10"),
+			expectAnnotation:   true,
+		},
+		{
+			name:               "zero original request with default limit",
+			originalRequest:    mustParseToPointer("0"),
+			recommendedRequest: mustParseToPointer("10"),
+			defaultLimit:       mustParseToPointer("2"),
+			expectLimit:        mustParseToPointer("10"),
+			expectAnnotation:   true,
 		},
 		{
 			name:               "no recommendation",
@@ -100,7 +149,9 @@ func TestGetProportionalResourceLimitCPU(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotLimit, gotAnnotation := getProportionalResourceLimit(corev1.ResourceCPU, tc.originalLimit, tc.originalRequest, tc.recommendedRequest, tc.defaultLimit)
+			gotLimit, gotAnnotation := getProportionalResourceLimit(corev1.ResourceCPU,
+				resourceList(corev1.ResourceCPU, tc.originalLimit), resourceList(corev1.ResourceCPU, tc.originalRequest),
+				resourceList(corev1.ResourceCPU, tc.recommendedRequest), resourceList(corev1.ResourceCPU, tc.defaultLimit))
 			if tc.expectLimit == nil {
 				assert.Nil(t, gotLimit)
 			} else {
@@ -142,13 +193,52 @@ func TestGetProportionalResourceLimitMem(t *testing.T) {
 			originalRequest:    mustParseToPointer("1"),
 			recommendedRequest: mustParseToPointer("10"),
 			expectLimit:        nil,
-			expectAnnotation:   true,
+		},
+		{
+			name:               "zero original limit",
+			originalLimit:      mustParseToPointer("0"),
+			originalRequest:    mustParseToPointer("1"),
+			recommendedRequest: mustParseToPointer("10"),
+			defaultLimit:       mustParseToPointer("2"),
+			expectLimit:        nil,
 		},
 		{
 			name:               "no original request",
 			originalLimit:      mustParseToPointer("2"),
 			recommendedRequest: mustParseToPointer("10"),
 			expectLimit:        mustParseToPointer("10"),
+		},
+		{
+			name:               "zero original request with recommendation within limit",
+			originalLimit:      mustParseToPointer("200"),
+			originalRequest:    mustParseToPointer("0"),
+			recommendedRequest: mustParseToPointer("100"),
+			expectLimit:        nil,
+			expectAnnotation:   true,
+		},
+		{
+			name:               "zero original request with recommendation equal to limit",
+			originalLimit:      mustParseToPointer("200"),
+			originalRequest:    mustParseToPointer("0"),
+			recommendedRequest: mustParseToPointer("200"),
+			expectLimit:        nil,
+			expectAnnotation:   true,
+		},
+		{
+			name:               "zero original request with recommendation above limit",
+			originalLimit:      mustParseToPointer("200"),
+			originalRequest:    mustParseToPointer("0"),
+			recommendedRequest: mustParseToPointer("300"),
+			expectLimit:        mustParseToPointer("300"),
+			expectAnnotation:   true,
+		},
+		{
+			name:               "zero original request with default limit",
+			originalRequest:    mustParseToPointer("0"),
+			recommendedRequest: mustParseToPointer("300"),
+			defaultLimit:       mustParseToPointer("200"),
+			expectLimit:        mustParseToPointer("300"),
+			expectAnnotation:   true,
 		},
 		{
 			name:               "no recommendation",
@@ -183,7 +273,9 @@ func TestGetProportionalResourceLimitMem(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotLimit, gotAnnotation := getProportionalResourceLimit(corev1.ResourceMemory, tc.originalLimit, tc.originalRequest, tc.recommendedRequest, tc.defaultLimit)
+			gotLimit, gotAnnotation := getProportionalResourceLimit(corev1.ResourceMemory,
+				resourceList(corev1.ResourceMemory, tc.originalLimit), resourceList(corev1.ResourceMemory, tc.originalRequest),
+				resourceList(corev1.ResourceMemory, tc.recommendedRequest), resourceList(corev1.ResourceMemory, tc.defaultLimit))
 			if tc.expectLimit == nil {
 				assert.Nil(t, gotLimit)
 			} else {

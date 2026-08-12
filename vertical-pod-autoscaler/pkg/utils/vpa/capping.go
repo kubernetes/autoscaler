@@ -379,8 +379,8 @@ func getBoundaryRecommendation(recommendation corev1.ResourceList,
 	if boundaryLimit == nil {
 		return corev1.ResourceList{}
 	}
-	boundaryCpu := GetBoundaryRequest(corev1.ResourceCPU, containerRequests.Cpu(), containerLimits.Cpu(), boundaryLimit.Cpu(), defaultLimit.Cpu())
-	boundaryMem := GetBoundaryRequest(corev1.ResourceMemory, containerRequests.Memory(), containerLimits.Memory(), boundaryLimit.Memory(), defaultLimit.Memory())
+	boundaryCpu := GetBoundaryRequest(corev1.ResourceCPU, containerRequests, containerLimits, boundaryLimit, defaultLimit)
+	boundaryMem := GetBoundaryRequest(corev1.ResourceMemory, containerRequests, containerLimits, boundaryLimit, defaultLimit)
 	return corev1.ResourceList{
 		corev1.ResourceCPU:    *boundaryCpu,
 		corev1.ResourceMemory: *boundaryMem,
@@ -406,7 +406,6 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 	fieldGetter func(vpa_types.RecommendedContainerResources) *corev1.ResourceList) []vpa_types.RecommendedContainerResources {
 	minLimit := limitRange.Min[resourceName]
 	maxLimit := limitRange.Max[resourceName]
-	defaultLimit := limitRange.Default[resourceName]
 
 	containersWithRecommendations := zipContainersWithRecommendations(resources, pod)
 	var sumLimit, sumRecommendation resource.Quantity
@@ -422,11 +421,19 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 		} else {
 			recommendation = (*fieldGetter(*containerWithRecommendation.recommendation))[resourceName]
 		}
-		containerLimit, _ := getProportionalResourceLimit(resourceName, &limit, &request, &recommendation, &defaultLimit)
-		if containerLimit != nil {
-			sumLimit.Add(*containerLimit)
+		containerLimit, _ := getProportionalResourceLimit(resourceName, limits, requests, corev1.ResourceList{resourceName: recommendation}, limitRange.Default)
+		if containerLimit == nil {
+			// The limit is left unchanged, so the container keeps the limit it already has.
+			containerLimit = &limit
 		}
+		sumLimit.Add(*containerLimit)
 		sumRecommendation.Add(recommendation)
+	}
+
+	// Nothing to cap if there is no recommendation for the resource. Recommendations are capped by
+	// scaling them proportionally to their sum, which is not possible if the sum is zero anyway.
+	if sumRecommendation.IsZero() {
+		return resources
 	}
 
 	if minLimit.Cmp(sumLimit) <= 0 && minLimit.Cmp(sumRecommendation) <= 0 && (maxLimit.IsZero() || maxLimit.Cmp(sumLimit) >= 0) {

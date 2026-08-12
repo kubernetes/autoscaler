@@ -73,11 +73,13 @@ func GetContainersResources(pod *corev1.Pod, vpaResourcePolicy *vpa_types.PodRes
 		containerControlledValues := vpa_api_util.GetContainerControlledValues(container.Name, vpaResourcePolicy)
 		if containerControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
 			proportionalLimits, limitAnnotations := vpa_api_util.GetProportionalLimit(containerLimits, containerRequests, resources[i].Requests, defaultLimit)
+			// Limits which should be left unchanged are absent from proportionalLimits, so the
+			// annotations explaining why are reported even when no limit is set at all.
 			if proportionalLimits != nil {
 				resources[i].Limits = proportionalLimits
-				if len(limitAnnotations) > 0 {
-					annotations[container.Name] = append(annotations[container.Name], limitAnnotations...)
-				}
+			}
+			if len(limitAnnotations) > 0 {
+				annotations[container.Name] = append(annotations[container.Name], limitAnnotations...)
 			}
 		}
 		// If the recommendation only contains CPU or Memory (if the VPA was configured this way), we need to make sure we "backfill" the other.
@@ -130,6 +132,9 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, v
 			klog.V(2).InfoS("Cannot process recommendation for pod", "pod", klog.KObj(pod))
 			return nil, annotations, err
 		}
+	}
+	if annotations == nil {
+		annotations = vpa_api_util.ContainerToAnnotationsMap{}
 	}
 	containerLimitRange, err := p.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
 	if err != nil {
