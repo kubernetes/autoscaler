@@ -360,6 +360,11 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 		a.ControlledResources = ResourceNamesApiToModel(*resourcePolicy.ControlledResources)
 	}
 
+	// Reset per-VPA target percentiles so that removing an override falls back
+	// to the global flag (0 means "unset" for these fields).
+	a.TargetCPUPercentile = 0
+	a.TargetMemoryPercentile = 0
+
 	// Per VPA components - feature flag "PerVPAConfig" must be enabled
 	if resourcePolicy != nil {
 		if resourcePolicy.OOMBumpUpRatio != nil {
