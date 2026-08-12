@@ -17,6 +17,7 @@ limitations under the License.
 package budgets
 
 import (
+	"context"
 	"strconv"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -53,9 +54,9 @@ func NewScaleDownBudgetProcessor(autoscalingCtx *ca_context.AutoscalingContext) 
 // CropNodes crops the provided node lists to respect scale-down max parallelism budgets.
 // The returned nodes are grouped by a node group.
 // This function assumes that each node group may occur at most once in each of the "empty" and "drain" lists.
-func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empty, drain []*apiv1.Node) (emptyToDelete, drainToDelete []*NodeGroupView) {
-	emptyIndividual, emptyAtomic := bp.categorize(bp.group(empty))
-	drainIndividual, drainAtomic := bp.categorize(bp.group(drain))
+func (bp *ScaleDownBudgetProcessor) CropNodes(ctx context.Context, as scaledown.ActuationStatus, empty, drain []*apiv1.Node) (emptyToDelete, drainToDelete []*NodeGroupView) {
+	emptyIndividual, emptyAtomic := bp.categorize(ctx, bp.group(ctx, empty))
+	drainIndividual, drainAtomic := bp.categorize(ctx, bp.group(ctx, drain))
 
 	emptyAtomicMap := groupBuckets(emptyAtomic)
 	drainAtomicMap := groupBuckets(drainAtomic)
@@ -92,7 +93,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 			}
 		}
 		var targetSize int
-		if targetSize, err = bucket.Group.TargetSize(); err != nil {
+		if targetSize, err = bucket.Group.TargetSize(ctx); err != nil {
 			// Very unlikely to happen, as we've got this far with this group.
 			klog.Errorf("not scaling atomically scaled group %v: can't get target size, err: %v", bucket.Group.Id(), err)
 			continue
@@ -102,7 +103,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 		// If available we consider only registered nodes for the scale down,
 		// excluding failed instances unable to register as K8s nodes. Waiting
 		// for such instances could block scale down indefinitely.
-		registeredNodes, err := bp.getAllRegisteredNodesForNodeGroup(allNodes, bucket.Group)
+		registeredNodes, err := bp.getAllRegisteredNodesForNodeGroup(ctx, allNodes, bucket.Group)
 		if err != nil {
 			klog.Errorf("failed to get registered nodes for node group %s: %v", bucket.Group.Id(), err)
 		}
@@ -142,7 +143,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 			}
 		}
 		var targetSize int
-		if targetSize, err = bucket.Group.TargetSize(); err != nil {
+		if targetSize, err = bucket.Group.TargetSize(ctx); err != nil {
 			// Very unlikely to happen, as we've got this far with this group.
 			klog.Errorf("not scaling atomically scaled group %v: can't get target size, err: %v", bucket.Group.Id(), err)
 			continue
@@ -152,7 +153,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(as scaledown.ActuationStatus, empt
 		// If available we consider only registered nodes for the scale down,
 		// excluding failed instances unable to register as K8s nodes. Waiting
 		// for such instances could block scale down indefinitely.
-		registeredNodes, err := bp.getAllRegisteredNodesForNodeGroup(allNodes, bucket.Group)
+		registeredNodes, err := bp.getAllRegisteredNodesForNodeGroup(ctx, allNodes, bucket.Group)
 		if err != nil {
 			klog.Errorf("Failed to get registered nodes for node group %s: %v", bucket.Group.Id(), err)
 		}
@@ -207,11 +208,11 @@ func cropIndividualNodes(toDelete []*NodeGroupView, groups []*NodeGroupView, bud
 	return toDelete, budget - remainingBudget
 }
 
-func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView {
+func (bp *ScaleDownBudgetProcessor) group(ctx context.Context, nodes []*apiv1.Node) []*NodeGroupView {
 	groupMap := map[string]int{}
 	grouped := []*NodeGroupView{}
 	for _, node := range nodes {
-		nodeGroup, err := bp.autoscalingCtx.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := bp.autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil || nodeGroup == nil {
 			klog.Errorf("Failed to find node group for %s: %v", node.Name, err)
 			continue
@@ -229,9 +230,9 @@ func (bp *ScaleDownBudgetProcessor) group(nodes []*apiv1.Node) []*NodeGroupView 
 	return grouped
 }
 
-func (bp *ScaleDownBudgetProcessor) categorize(groups []*NodeGroupView) (individual, atomic []*NodeGroupView) {
+func (bp *ScaleDownBudgetProcessor) categorize(ctx context.Context, groups []*NodeGroupView) (individual, atomic []*NodeGroupView) {
 	for _, view := range groups {
-		autoscalingOptions, err := view.Group.GetOptions(bp.autoscalingCtx.NodeGroupDefaults)
+		autoscalingOptions, err := view.Group.GetOptions(ctx, bp.autoscalingCtx.NodeGroupDefaults)
 		if err != nil && err != cloudprovider.ErrNotImplemented {
 			klog.Errorf("Failed to get autoscaling options for node group %s: %v", view.Group.Id(), err)
 			continue
@@ -258,8 +259,8 @@ func allNodes(s clustersnapshot.ClusterSnapshot) ([]*apiv1.Node, error) {
 	return nodes, nil
 }
 
-func (bp *ScaleDownBudgetProcessor) getAllRegisteredNodesForNodeGroup(allNodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]*apiv1.Node, error) {
-	allNodesInNodeGroup, err := nodeGroup.Nodes()
+func (bp *ScaleDownBudgetProcessor) getAllRegisteredNodesForNodeGroup(ctx context.Context, allNodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]*apiv1.Node, error) {
+	allNodesInNodeGroup, err := nodeGroup.Nodes(ctx)
 	if err != nil {
 		return nil, err
 	}

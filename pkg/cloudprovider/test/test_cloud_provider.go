@@ -17,6 +17,7 @@ limitations under the License.
 package test
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -171,17 +172,17 @@ func (b *TestCloudProviderBuilder) Build() *TestCloudProvider {
 }
 
 // Name returns name of the cloud provider.
-func (tcp *TestCloudProvider) Name() string {
+func (tcp *TestCloudProvider) Name(ctx context.Context) string {
 	return "TestCloudProvider"
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (tcp *TestCloudProvider) GPULabel() string {
+func (tcp *TestCloudProvider) GPULabel(ctx context.Context) string {
 	return "TestGPULabel/accelerator"
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
-func (tcp *TestCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (tcp *TestCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return map[string]struct{}{
 		"nvidia-tesla-k80":  {},
 		"nvidia-tesla-p100": {},
@@ -191,15 +192,15 @@ func (tcp *TestCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (tcp *TestCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+func (tcp *TestCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
 	if tcp.nodeGpuConfig != nil {
 		return tcp.nodeGpuConfig(node)
 	}
-	return gpu.GetNodeGPUFromCloudProvider(tcp, node)
+	return gpu.GetNodeGPUFromCloudProvider(ctx, tcp, node)
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (tcp *TestCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (tcp *TestCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	tcp.Lock()
 	defer tcp.Unlock()
 
@@ -220,7 +221,7 @@ func (tcp *TestCloudProvider) GetNodeGroup(name string) cloudprovider.NodeGroup 
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred.
-func (tcp *TestCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (tcp *TestCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	tcp.Lock()
 	defer tcp.Unlock()
 
@@ -241,7 +242,7 @@ func (tcp *TestCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.
 // HasInstance returns true if the node has corresponding instance in cloud provider,
 // or ErrNotImplemented to fall back to taint-based node deletion in clusterstate
 // readiness calculation.
-func (tcp *TestCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (tcp *TestCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	tcp.Lock()
 	defer tcp.Unlock()
 	if tcp.hasInstance != nil {
@@ -255,7 +256,7 @@ func (tcp *TestCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (tcp *TestCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (tcp *TestCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	if tcp.priceModel == nil {
 		return nil, cloudprovider.ErrNotImplemented
 	}
@@ -269,13 +270,13 @@ func (tcp *TestCloudProvider) SetPricingModel(priceModel cloudprovider.PricingMo
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
-func (tcp *TestCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (tcp *TestCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return tcp.machineTypes, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (tcp *TestCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (tcp *TestCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return &TestNodeGroup{
 		cloudProvider:   tcp,
@@ -365,7 +366,7 @@ func (tcp *TestCloudProvider) DeleteNode(node *apiv1.Node) {
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (tcp *TestCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (tcp *TestCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return tcp.resourceLimiter, nil
 }
 
@@ -380,13 +381,13 @@ func (tcp *TestCloudProvider) SetMachineTemplates(machineTemplates map[string]*f
 }
 
 // Cleanup this is a function to close resources associated with the cloud provider
-func (tcp *TestCloudProvider) Cleanup() error {
+func (tcp *TestCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (tcp *TestCloudProvider) Refresh() error {
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(context.TODO()).
+func (tcp *TestCloudProvider) Refresh(ctx context.Context) error {
 	return nil
 }
 
@@ -424,7 +425,7 @@ func NewTestNodeGroup(id string, maxSize, minSize, targetSize int, exist, autopr
 }
 
 // MaxSize returns maximum size of the node group.
-func (tng *TestNodeGroup) MaxSize() int {
+func (tng *TestNodeGroup) MaxSize(ctx context.Context) int {
 	tng.Lock()
 	defer tng.Unlock()
 
@@ -432,7 +433,7 @@ func (tng *TestNodeGroup) MaxSize() int {
 }
 
 // MinSize returns minimum size of the node group.
-func (tng *TestNodeGroup) MinSize() int {
+func (tng *TestNodeGroup) MinSize(ctx context.Context) int {
 	tng.Lock()
 	defer tng.Unlock()
 
@@ -443,7 +444,7 @@ func (tng *TestNodeGroup) MinSize() int {
 // number of nodes in Kubernetes is different at the moment but should be equal
 // to Size() once everything stabilizes (new nodes finish startup and registration or
 // removed nodes are deleted completely)
-func (tng *TestNodeGroup) TargetSize() (int, error) {
+func (tng *TestNodeGroup) TargetSize(ctx context.Context) (int, error) {
 	tng.Lock()
 	defer tng.Unlock()
 
@@ -460,7 +461,7 @@ func (tng *TestNodeGroup) SetTargetSize(size int) {
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated.
-func (tng *TestNodeGroup) IncreaseSize(delta int) error {
+func (tng *TestNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	tng.Lock()
 	tng.targetSize += delta
 	tng.Unlock()
@@ -469,7 +470,7 @@ func (tng *TestNodeGroup) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (tng *TestNodeGroup) AtomicIncreaseSize(delta int) error {
+func (tng *TestNodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	tng.Lock()
 	tng.targetSize += delta
 	tng.Unlock()
@@ -479,15 +480,15 @@ func (tng *TestNodeGroup) AtomicIncreaseSize(delta int) error {
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (tng *TestNodeGroup) Exist() bool {
+func (tng *TestNodeGroup) Exist(ctx context.Context) bool {
 	tng.Lock()
 	defer tng.Unlock()
 	return tng.exist
 }
 
 // Create creates the node group on the cloud provider side.
-func (tng *TestNodeGroup) Create() (cloudprovider.NodeGroup, error) {
-	if tng.Exist() {
+func (tng *TestNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	if tng.Exist(context.TODO()) {
 		return nil, fmt.Errorf("group already exist")
 	}
 	newNodeGroup := tng.cloudProvider.AddAutoprovisionedNodeGroup(tng.id, tng.minSize, tng.maxSize, 0, tng.machineType)
@@ -496,7 +497,7 @@ func (tng *TestNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (tng *TestNodeGroup) Delete() error {
+func (tng *TestNodeGroup) Delete(ctx context.Context) error {
 	err := tng.cloudProvider.onNodeGroupDelete(tng.id)
 	if err == nil {
 		tng.cloudProvider.DeleteNodeGroup(tng.Id())
@@ -507,7 +508,7 @@ func (tng *TestNodeGroup) Delete() error {
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
-func (tng *TestNodeGroup) DecreaseTargetSize(delta int) error {
+func (tng *TestNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	tng.Lock()
 	tng.targetSize += delta
 	tng.Unlock()
@@ -518,12 +519,12 @@ func (tng *TestNodeGroup) DecreaseTargetSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated.
-func (tng *TestNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (tng *TestNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	tng.Lock()
 	id := tng.id
 	tng.targetSize -= len(nodes)
 	tng.Unlock()
-	allNodes, _ := tng.Nodes()
+	allNodes, _ := tng.Nodes(context.TODO())
 	currentSize := len(allNodes)
 	if tng.opts != nil && tng.opts.ZeroOrMaxNodeScaling && tng.targetSize != 0 && currentSize != len(nodes) {
 		return fmt.Errorf("TestNodeGroup: attempted to partially scale down a node group that should be scaled down atomically")
@@ -538,8 +539,8 @@ func (tng *TestNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (tng *TestNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	return tng.DeleteNodes(nodes)
+func (tng *TestNodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	return tng.DeleteNodes(ctx, nodes)
 }
 
 // Id returns an unique identifier of the node group.
@@ -551,7 +552,7 @@ func (tng *TestNodeGroup) Id() string {
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (tng *TestNodeGroup) Debug() string {
+func (tng *TestNodeGroup) Debug(ctx context.Context) string {
 	tng.Lock()
 	defer tng.Unlock()
 
@@ -559,7 +560,7 @@ func (tng *TestNodeGroup) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (tng *TestNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (tng *TestNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	tng.Lock()
 	defer tng.Unlock()
 
@@ -578,12 +579,12 @@ func (tng *TestNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (tng *TestNodeGroup) Autoprovisioned() bool {
+func (tng *TestNodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return tng.autoprovisioned
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (tng *TestNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (tng *TestNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	if tng.cloudProvider.machineTemplates == nil {
 		return nil, cloudprovider.ErrNotImplemented
 	}
@@ -603,7 +604,7 @@ func (tng *TestNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (tng *TestNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (tng *TestNodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return tng.opts, nil
 }
 

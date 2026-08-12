@@ -17,6 +17,7 @@ limitations under the License.
 package scaledowncandidates
 
 import (
+	"context"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -42,13 +43,13 @@ func (p *ScaleDownCandidatesDelayProcessor) GetPodDestinationCandidates(autoscal
 }
 
 // GetScaleDownCandidates returns filter nodes based on if scale down is enabled or disabled per nodegroup.
-func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(autoscalingCtx *ca_context.AutoscalingContext,
+func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := []*apiv1.Node{}
 	alreadyLoggedGroups := make(map[string]bool)
 
 	for _, node := range nodes {
-		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
 			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
 			continue
@@ -95,7 +96,7 @@ func (p *ScaleDownCandidatesDelayProcessor) CleanUp() {
 }
 
 // RegisterScaleUp records when the last scale up happened for a nodegroup.
-func (p *ScaleDownCandidatesDelayProcessor) RegisterScaleUp(nodeGroup cloudprovider.NodeGroup,
+func (p *ScaleDownCandidatesDelayProcessor) RegisterScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup,
 	_ int, currentTime time.Time) {
 	p.scaleUps[nodeGroup.Id()] = currentTime
 }
@@ -107,7 +108,7 @@ func (p *ScaleDownCandidatesDelayProcessor) RegisterScaleDown(nodeGroup cloudpro
 }
 
 // RegisterFailedScaleUp records when the last scale up failed for a nodegroup.
-func (p *ScaleDownCandidatesDelayProcessor) RegisterFailedScaleUp(_ cloudprovider.NodeGroup, _ int, _ cloudprovider.InstanceErrorInfo, currentTime time.Time) {
+func (p *ScaleDownCandidatesDelayProcessor) RegisterFailedScaleUp(ctx context.Context, _ cloudprovider.NodeGroup, _ int, _ cloudprovider.InstanceErrorInfo, currentTime time.Time) {
 }
 
 // RegisterFailedScaleDown records failed scale-down for a nodegroup.

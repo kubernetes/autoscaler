@@ -17,6 +17,7 @@ limitations under the License.
 package podinjection
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -44,21 +45,21 @@ func NewFakePodsScaleUpStatusProcessor(fakePodRegistry *podinjectionbackoff.Cont
 
 // Process updates scaleupStatus to remove all fake pods from
 // PodsRemainUnschedulable, PodsAwaitEvaluation & PodsTriggeredScaleup
-func (a *FakePodsScaleUpStatusProcessor) Process(_ *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus) {
+func (a *FakePodsScaleUpStatusProcessor) Process(ctx context.Context, _ *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus) {
 	controllersToBackoff := extractFakePodsControllersUIDs(scaleUpStatus.PodsRemainUnschedulable)
 	for uid := range controllersToBackoff {
 		a.fakePodControllerBackoffRegistry.BackoffController(uid, time.Now())
 	}
 
-	scaleUpStatus.PodsRemainUnschedulable = filterFakePods(scaleUpStatus.PodsRemainUnschedulable, func(noScaleUpInfo status.NoScaleUpInfo) *apiv1.Pod { return noScaleUpInfo.Pod }, "PodsRemainUnschedulable")
-	scaleUpStatus.PodsAwaitEvaluation = filterFakePods(scaleUpStatus.PodsAwaitEvaluation, func(pod *apiv1.Pod) *apiv1.Pod { return pod }, "PodsAwaitEvaluation")
-	scaleUpStatus.PodsTriggeredScaleUp = filterFakePods(scaleUpStatus.PodsTriggeredScaleUp, func(pod *apiv1.Pod) *apiv1.Pod { return pod }, "PodsTriggeredScaleUp")
+	scaleUpStatus.PodsRemainUnschedulable = filterFakePods(ctx, scaleUpStatus.PodsRemainUnschedulable, func(noScaleUpInfo status.NoScaleUpInfo) *apiv1.Pod { return noScaleUpInfo.Pod }, "PodsRemainUnschedulable")
+	scaleUpStatus.PodsAwaitEvaluation = filterFakePods(ctx, scaleUpStatus.PodsAwaitEvaluation, func(pod *apiv1.Pod) *apiv1.Pod { return pod }, "PodsAwaitEvaluation")
+	scaleUpStatus.PodsTriggeredScaleUp = filterFakePods(ctx, scaleUpStatus.PodsTriggeredScaleUp, func(pod *apiv1.Pod) *apiv1.Pod { return pod }, "PodsTriggeredScaleUp")
 }
 
 // filterFakePods removes fake pods from the input list of T using passed getPod(T)
 // Uses `resourceName` to log which resource it has modified
 // Returns a list containing only non-fake pods
-func filterFakePods[T any](podsWrappers []T, getPod func(T) *apiv1.Pod, resourceName string) []T {
+func filterFakePods[T any](ctx context.Context, podsWrappers []T, getPod func(T) *apiv1.Pod, resourceName string) []T {
 	filteredPodsSouces := make([]T, 0)
 	removedPods := make([]*apiv1.Pod, 0)
 
@@ -79,7 +80,7 @@ func filterFakePods[T any](podsWrappers []T, getPod func(T) *apiv1.Pod, resource
 		klog.V(5).Infof("Filtering out pod %s from %v with controller reference %s", currentPod.Name, resourceName, controllerRef.Name)
 	}
 
-	logRemovedPods(removedPods, resourceName)
+	logRemovedPods(ctx, removedPods, resourceName)
 	return filteredPodsSouces
 }
 
@@ -95,7 +96,7 @@ func extractFakePodsControllersUIDs(NoScaleUpInfos []status.NoScaleUpInfo) map[t
 }
 
 // logRemovedPods logs the removed pods from resourceName
-func logRemovedPods(removedPods []*apiv1.Pod, resourceName string) {
+func logRemovedPods(ctx context.Context, removedPods []*apiv1.Pod, resourceName string) {
 	if len(removedPods) == 0 {
 		return
 	}

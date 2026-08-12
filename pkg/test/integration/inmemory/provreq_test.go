@@ -67,13 +67,13 @@ func TestProvReqFullLifecycle(t *testing.T) {
 		_, err = fakes.PRClient.AutoscalingV1().ProvisioningRequests(wrapper.ProvisioningRequest.Namespace).Create(ctx, wrapper.ProvisioningRequest, metav1.CreateOptions{})
 		assert.NoError(t, err)
 
-		tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		tg1, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize(context.TODO())
 		assert.Equal(t, 1, tg1)
 
 		synctestutils.MustRunOnceAfter(t, autoscaler, 10*time.Second)
 
 		// The NodeGroup should have scaled up by 1 due to the PR
-		tg1After, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		tg1After, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize(context.TODO())
 		assert.Equal(t, 2, tg1After)
 
 		// Scale-Down
@@ -89,7 +89,7 @@ func TestProvReqFullLifecycle(t *testing.T) {
 		// Step time forward by the ScaleDownUnneededTime (10 mins) + buffer (5 mins)
 		synctestutils.MustRunOnceAfter(t, autoscaler, 15*time.Minute)
 
-		tg1Final, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize()
+		tg1Final, _ := fakes.CloudProvider.GetNodeGroup("ng1").TargetSize(context.TODO())
 		assert.Equal(t, 1, tg1Final)
 	})
 }

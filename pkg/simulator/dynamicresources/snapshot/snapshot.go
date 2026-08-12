@@ -17,6 +17,7 @@ limitations under the License.
 package snapshot
 
 import (
+	"context"
 	"fmt"
 	"maps"
 
@@ -131,7 +132,7 @@ func (s *Snapshot) PodClaims(pod *apiv1.Pod) ([]*resourceapi.ResourceClaim, erro
 // RemovePodOwnedClaims iterates over all the claims referenced by the Pod, and removes the ones owned by the Pod from the Snapshot.
 // Claims referenced by the Pod but not owned by it are not removed, but the Pod's reservation is removed from them.
 // This method removes all relevant claims that are in the snapshot, and doesn't error out if any of the claims are missing.
-func (s *Snapshot) RemovePodOwnedClaims(pod *apiv1.Pod) {
+func (s *Snapshot) RemovePodOwnedClaims(ctx context.Context, pod *apiv1.Pod) {
 	claims, err := s.findPodClaims(pod, true)
 	if err != nil {
 		klog.Errorf("Snapshot.RemovePodOwnedClaims ignored an error: %s", err)

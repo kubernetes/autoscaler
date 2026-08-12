@@ -62,12 +62,12 @@ func NewProvisioningRequestClient(
 }
 
 // ProvisioningRequest gets a specific ProvisioningRequest CR.
-func (c *ProvisioningRequestClient) ProvisioningRequest(namespace, name string) (*provreqwrapper.ProvisioningRequest, error) {
+func (c *ProvisioningRequestClient) ProvisioningRequest(ctx context.Context, namespace, name string) (*provreqwrapper.ProvisioningRequest, error) {
 	v1PR, err := c.provReqLister.ProvisioningRequests(namespace).Get(name)
 	if err != nil {
 		return nil, err
 	}
-	podTemplates, err := c.FetchPodTemplates(v1PR)
+	podTemplates, err := c.FetchPodTemplates(ctx, v1PR)
 	if err != nil {
 		return nil, fmt.Errorf("while fetching pod templates for Get Provisioning Request %s/%s got error: %v", namespace, name, err)
 	}
@@ -75,14 +75,14 @@ func (c *ProvisioningRequestClient) ProvisioningRequest(namespace, name string) 
 }
 
 // ProvisioningRequests gets all ProvisioningRequest CRs.
-func (c *ProvisioningRequestClient) ProvisioningRequests() ([]*provreqwrapper.ProvisioningRequest, error) {
+func (c *ProvisioningRequestClient) ProvisioningRequests(ctx context.Context) ([]*provreqwrapper.ProvisioningRequest, error) {
 	v1PRs, err := c.provReqLister.List(labels.Everything())
 	if err != nil {
 		return nil, fmt.Errorf("error fetching provisioningRequests: %w", err)
 	}
 	prs := make([]*provreqwrapper.ProvisioningRequest, 0, len(v1PRs))
 	for _, v1PR := range v1PRs {
-		podTemplates, errPodTemplates := c.FetchPodTemplates(v1PR)
+		podTemplates, errPodTemplates := c.FetchPodTemplates(ctx, v1PR)
 		if errPodTemplates != nil {
 			return nil, fmt.Errorf("while fetching pod templates for List Provisioning Request %s/%s got error: %v", v1PR.Namespace, v1PR.Name, errPodTemplates)
 		}
@@ -92,7 +92,7 @@ func (c *ProvisioningRequestClient) ProvisioningRequests() ([]*provreqwrapper.Pr
 }
 
 // FetchPodTemplates fetches PodTemplates referenced by the Provisioning Request.
-func (c *ProvisioningRequestClient) FetchPodTemplates(pr *v1.ProvisioningRequest) ([]*apiv1.PodTemplate, error) {
+func (c *ProvisioningRequestClient) FetchPodTemplates(ctx context.Context, pr *v1.ProvisioningRequest) ([]*apiv1.PodTemplate, error) {
 	podTemplates := make([]*apiv1.PodTemplate, 0, len(pr.Spec.PodSets))
 	for _, podSpec := range pr.Spec.PodSets {
 		podTemplate, err := c.podTemplLister.PodTemplates(pr.Namespace).Get(podSpec.PodTemplateRef.Name)
@@ -108,7 +108,7 @@ func (c *ProvisioningRequestClient) FetchPodTemplates(pr *v1.ProvisioningRequest
 }
 
 // UpdateProvisioningRequest updates the given ProvisioningRequest CR by propagating the changes using the ProvisioningRequestInterface and returns the updated instance or the original one in case of an error.
-func (c *ProvisioningRequestClient) UpdateProvisioningRequest(pr *v1.ProvisioningRequest) (*v1.ProvisioningRequest, error) {
+func (c *ProvisioningRequestClient) UpdateProvisioningRequest(ctx context.Context, pr *v1.ProvisioningRequest) (*v1.ProvisioningRequest, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
 	defer cancel()
 
@@ -135,7 +135,7 @@ func (c *ProvisioningRequestClient) ApplyProvisioningRequest(prAC *v1ac.Provisio
 }
 
 // ProvisioningRequestsForPods check that all pods belong to one ProvisioningRequest and return it.
-func ProvisioningRequestsForPods(client *ProvisioningRequestClient, unschedulablePods []*apiv1.Pod) []*provreqwrapper.ProvisioningRequest {
+func ProvisioningRequestsForPods(ctx context.Context, client *ProvisioningRequestClient, unschedulablePods []*apiv1.Pod) []*provreqwrapper.ProvisioningRequest {
 	prMap := make(map[string]*provreqwrapper.ProvisioningRequest)
 	prList := []*provreqwrapper.ProvisioningRequest{}
 	if len(unschedulablePods) == 0 {
@@ -146,7 +146,7 @@ func ProvisioningRequestsForPods(client *ProvisioningRequestClient, unschedulabl
 			klog.Errorf("pod %s has no OwnerReference", pod.Name)
 			continue
 		}
-		provReq, err := client.ProvisioningRequest(pod.Namespace, pod.OwnerReferences[0].Name)
+		provReq, err := client.ProvisioningRequest(ctx, pod.Namespace, pod.OwnerReferences[0].Name)
 		if err != nil {
 			klog.Errorf("failed to retrieve ProvisioningRequest from unschedulable pod, err: %v", err)
 			continue
@@ -162,7 +162,7 @@ func ProvisioningRequestsForPods(client *ProvisioningRequestClient, unschedulabl
 }
 
 // DeleteProvisioningRequest deletes the given ProvisioningRequest CR using the ProvisioningRequestInterface and returns an error in case of failure.
-func (c *ProvisioningRequestClient) DeleteProvisioningRequest(pr *v1.ProvisioningRequest) error {
+func (c *ProvisioningRequestClient) DeleteProvisioningRequest(ctx context.Context, pr *v1.ProvisioningRequest) error {
 	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
 	defer cancel()
 
@@ -175,20 +175,20 @@ func (c *ProvisioningRequestClient) DeleteProvisioningRequest(pr *v1.Provisionin
 }
 
 // FilterOutProvisioningClass filters out ProvReqs that belongs to certain Provisioning Class
-func FilterOutProvisioningClass(prList []*provreqwrapper.ProvisioningRequest, class string, checkCapacityProcessorInstance string) []*provreqwrapper.ProvisioningRequest {
+func FilterOutProvisioningClass(ctx context.Context, prList []*provreqwrapper.ProvisioningRequest, class string, checkCapacityProcessorInstance string) []*provreqwrapper.ProvisioningRequest {
 	newPrList := []*provreqwrapper.ProvisioningRequest{}
 	for _, pr := range prList {
-		if matchesProvisioningClass(pr, class, checkCapacityProcessorInstance) {
+		if matchesProvisioningClass(ctx, pr, class, checkCapacityProcessorInstance) {
 			newPrList = append(newPrList, pr)
 		}
 	}
 	return newPrList
 }
 
-func matchesProvisioningClass(pr *provreqwrapper.ProvisioningRequest, class string, checkCapacityProcessorInstance string) bool {
+func matchesProvisioningClass(ctx context.Context, pr *provreqwrapper.ProvisioningRequest, class string, checkCapacityProcessorInstance string) bool {
 	switch class {
 	case v1.ProvisioningClassCheckCapacity:
-		return provisioningrequest.SupportedCheckCapacityClass(pr.ProvisioningRequest, checkCapacityProcessorInstance)
+		return provisioningrequest.SupportedCheckCapacityClass(ctx, pr.ProvisioningRequest, checkCapacityProcessorInstance)
 	case v1.ProvisioningClassBestEffortAtomicScaleUp:
 		return pr.Spec.ProvisioningClassName == v1.ProvisioningClassBestEffortAtomicScaleUp
 	default:

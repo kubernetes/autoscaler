@@ -17,6 +17,7 @@ limitations under the License.
 package filter
 
 import (
+	"context"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 )
 
@@ -38,7 +39,7 @@ func NewStrategyFilter(strategiesToUse []string) *strategyFilter {
 }
 
 // Filter filters out buffers with provisioning strategies not defined in strategiesToUseMap
-func (f *strategyFilter) Filter(buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
+func (f *strategyFilter) Filter(ctx context.Context, buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
 
 	var filteredBuffers []*v1.CapacityBuffer
 	var filteredOutBuffers []*v1.CapacityBuffer

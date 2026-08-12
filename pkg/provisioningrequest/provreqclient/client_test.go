@@ -37,7 +37,7 @@ func TestFetchPodTemplates(t *testing.T) {
 
 	ctx := context.Background()
 	c := NewFakeProvisioningRequestClient(ctx, t, mockProvisioningRequests...)
-	got, err := c.FetchPodTemplates(pr1.ProvisioningRequest)
+	got, err := c.FetchPodTemplates(context.TODO(), pr1.ProvisioningRequest)
 	if err != nil {
 		t.Errorf("provisioningRequestClient.ProvisioningRequests() error: %v", err)
 	}
@@ -90,7 +90,7 @@ func TestProvisioningRequestsForPods(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			got := ProvisioningRequestsForPods(client, tc.pods)
+			got := ProvisioningRequestsForPods(context.TODO(), client, tc.pods)
 			assert.ElementsMatch(t, got, tc.prs)
 		})
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
+	gocontext "context"
 	"errors"
 
 	corev1 "k8s.io/api/core/v1"
@@ -70,12 +71,12 @@ func newTracker(quotaStatuses []*quotaStatus, nodeCache *nodeResourcesCache) *Tr
 //
 // WARNING: nodeDelta must be non-negative. It is a magnitude/absolute value, so when removing a node, nodeDelta would be 1, not -1.
 func (t *Tracker) ConsumeQuota(
-	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
+	ctx gocontext.Context, autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
 	if nodeDelta < 0 {
 		return nil, ErrNegativeDelta
 	}
-	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
+	delta, err := t.nodeCache.totalNodeResources(ctx, autoscalingCtx, node, nodeGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +107,7 @@ func (t *Tracker) ConsumeQuota(
 func (t *Tracker) ApplyDelta(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
-	return t.ConsumeQuota(autoscalingCtx, nodeGroup, node, nodeDelta)
+	return t.ConsumeQuota(gocontext.TODO(), autoscalingCtx, nodeGroup, node, nodeDelta)
 }
 
 // CheckQuota checks if a delta is within limits and returns a struct containing information
@@ -119,12 +120,12 @@ func (t *Tracker) ApplyDelta(
 // are taken from the template node passed via the node parameter. nodeGroup is required to fetch
 // the custom resources, such as GPU.
 func (t *Tracker) CheckQuota(
-	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
+	ctx gocontext.Context, autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
 	if nodeDelta < 0 {
 		return nil, ErrNegativeDelta
 	}
-	delta, err := t.nodeCache.totalNodeResources(autoscalingCtx, node, nodeGroup)
+	delta, err := t.nodeCache.totalNodeResources(ctx, autoscalingCtx, node, nodeGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +145,7 @@ func (t *Tracker) CheckQuota(
 func (t *Tracker) CheckDelta(
 	autoscalingCtx *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, node *corev1.Node, nodeDelta int,
 ) (*CheckDeltaResult, error) {
-	return t.CheckQuota(autoscalingCtx, nodeGroup, node, nodeDelta)
+	return t.CheckQuota(gocontext.TODO(), autoscalingCtx, nodeGroup, node, nodeDelta)
 }
 
 func (t *Tracker) checkQuota(delta resourceList, matchingQuotas []*quotaStatus, nodeDelta int) *CheckDeltaResult {

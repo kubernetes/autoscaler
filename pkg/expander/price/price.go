@@ -17,6 +17,7 @@ limitations under the License.
 package price
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"time"
@@ -87,7 +88,7 @@ func NewFilter(cloudProvider cloudprovider.CloudProvider,
 }
 
 // BestOption selects option based on cost and preferred node type.
-func (p *priceBased) BestOptions(expansionOptions []expander.Option, nodeInfos map[string]*framework.NodeInfo) []expander.Option {
+func (p *priceBased) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfos map[string]*framework.NodeInfo) []expander.Option {
 	var bestOptions []expander.Option
 	bestOptionScore := 0.0
 	now := time.Now()
@@ -99,12 +100,12 @@ func (p *priceBased) BestOptions(expansionOptions []expander.Option, nodeInfos m
 		preferredNode = defaultPreferredNode
 	}
 
-	pricingModel, err := p.cloudProvider.Pricing()
+	pricingModel, err := p.cloudProvider.Pricing(ctx)
 	if err != nil {
 		klog.Errorf("Failed to get pricing model from cloud provider: %v", err)
 	}
 
-	stabilizationPrice, err := pricingModel.PodPrice(priceStabilizationPod, now, then)
+	stabilizationPrice, err := pricingModel.PodPrice(ctx, priceStabilizationPod, now, then)
 	if err != nil {
 		klog.Errorf("Failed to get price for stabilization pod: %v", err)
 		// continuing without stabilization.
@@ -117,7 +118,7 @@ nextoption:
 			klog.Warningf("No node info for %s", option.NodeGroup.Id())
 			continue
 		}
-		nodePrice, err := pricingModel.NodePrice(nodeInfo.Node(), now, then)
+		nodePrice, err := pricingModel.NodePrice(ctx, nodeInfo.Node(), now, then)
 		if err != nil {
 			klog.Warningf("Failed to calculate node price for %s: %v", option.NodeGroup.Id(), err)
 			continue
@@ -125,7 +126,7 @@ nextoption:
 		totalNodePrice := nodePrice * float64(option.NodeCount)
 		totalPodPrice := 0.0
 		for _, pod := range option.Pods {
-			podPrice, err := pricingModel.PodPrice(pod, now, then)
+			podPrice, err := pricingModel.PodPrice(ctx, pod, now, then)
 			if err != nil {
 				klog.Warningf("Failed to calculate pod price for %s/%s: %v", pod.Namespace, pod.Name, err)
 				continue nextoption
@@ -147,14 +148,14 @@ nextoption:
 
 		// Set constant, very high unfitness to make them unattractive for pods that doesn't need GPU and
 		// avoid optimizing them for CPU utilization.
-		if gpu.NodeHasGpu(p.cloudProvider.GPULabel(), nodeInfo.Node()) {
+		if gpu.NodeHasGpu(p.cloudProvider.GPULabel(ctx), nodeInfo.Node()) {
 			klog.V(4).Infof("Price expander overriding unfitness for node group with GPU %s", option.NodeGroup.Id())
 			supressedUnfitness = gpuUnfitnessOverride
 		}
 
 		optionScore := supressedUnfitness * priceSubScore
 
-		if !option.NodeGroup.Exist() {
+		if !option.NodeGroup.Exist(ctx) {
 			optionScore *= notExistCoeficient
 		}
 

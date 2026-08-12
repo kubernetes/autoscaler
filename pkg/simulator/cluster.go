@@ -176,6 +176,7 @@ func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clust
 // the outcome, exactly one of (NodeToBeRemoved, UnremovableNode) will be
 // populated in the return value, the other will be nil.
 func (r *RemovalSimulator) SimulateNodeRemoval(
+	ctx context.Context,
 	nodeName string,
 	destinationMap map[string]bool,
 	timestamp time.Time,
@@ -193,7 +194,7 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	}
 	klog.V(2).Infof("Simulating node %s removal", nodeName)
 
-	podMoveInfo, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, r.listers, remainingPdbTracker, timestamp)
+	podMoveInfo, err := GetPodsToMove(ctx, nodeInfo, r.deleteOptions, r.drainabilityRules, r.listers, remainingPdbTracker, timestamp)
 	if err != nil {
 		klog.V(2).Infof("Node %s cannot be removed: %v", nodeName, err)
 		if podMoveInfo.BlockingPod != nil {
@@ -202,8 +203,8 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError}
 	}
 
-	err = r.withForkedSnapshot(func() error {
-		return r.findPlaceFor(nodeName, podMoveInfo.Pods, destinationMap, timestamp)
+	err = r.withForkedSnapshot(ctx, func() error {
+		return r.findPlaceFor(ctx, nodeName, podMoveInfo.Pods, destinationMap, timestamp)
 	})
 	if err != nil {
 		klog.V(2).Infof("Node %s is not suitable for removal: %v", nodeName, err)
@@ -218,7 +219,7 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	}, nil
 }
 
-func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {
+func (r *RemovalSimulator) withForkedSnapshot(ctx context.Context, f func() error) (err error) {
 	r.clusterSnapshot.Fork()
 	defer func() {
 		if err == nil && r.canPersist {
@@ -234,7 +235,7 @@ func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {
 	return err
 }
 
-func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool, timestamp time.Time) error {
+func (r *RemovalSimulator) findPlaceFor(ctx context.Context, removedNode string, pods []*apiv1.Pod, nodes map[string]bool, timestamp time.Time) error {
 	isCandidateNode := func(nodeInfo *framework.NodeInfo) bool {
 		return nodeInfo.Node().Name != removedNode && nodes[nodeInfo.Node().Name]
 	}
@@ -249,7 +250,7 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 		}
 	}
 
-	if err := r.replaceWithTaintedGhostNode(removedNode, timestamp); err != nil {
+	if err := r.replaceWithTaintedGhostNode(ctx, removedNode, timestamp); err != nil {
 		return err
 	}
 
@@ -271,7 +272,7 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 	// After successful scheduling simulation, remove the tainted ghost node so that
 	// persisted snapshot state (used by subsequent simulations when canPersist=true)
 	// correctly reflects the node being gone.
-	return r.clusterSnapshot.RemoveNodeInfo(removedNode)
+	return r.clusterSnapshot.RemoveNodeInfo(ctx, removedNode)
 }
 
 // replaceWithTaintedGhostNode replaces the given node in the snapshot with a
@@ -283,12 +284,12 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 // though pods can't schedule on them. Removing the node entirely would
 // eliminate its domain from topology calculations, making the simulation
 // overly optimistic and causing scale-down/scale-up oscillation.
-func (r *RemovalSimulator) replaceWithTaintedGhostNode(nodeName string, timestamp time.Time) error {
+func (r *RemovalSimulator) replaceWithTaintedGhostNode(ctx context.Context, nodeName string, timestamp time.Time) error {
 	nodeInfo, err := r.clusterSnapshot.GetNodeInfo(nodeName)
 	if err != nil {
 		return fmt.Errorf("couldn't get NodeInfo for removed node %s: %v", nodeName, err)
 	}
-	if err = r.clusterSnapshot.RemoveNodeInfo(nodeName); err != nil {
+	if err = r.clusterSnapshot.RemoveNodeInfo(ctx, nodeName); err != nil {
 		return fmt.Errorf("couldn't remove NodeInfo for %s: %v", nodeName, err)
 	}
 	taintedNode := nodeInfo.Node().DeepCopy()

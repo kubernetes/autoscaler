@@ -17,6 +17,7 @@ limitations under the License.
 package customresources
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/klog/v2"
@@ -33,7 +34,7 @@ type CSICustomResourcesProcessor struct {
 }
 
 // FilterOutNodesWithUnreadyResources filters out nodes with unready CSI resources.
-func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyCSI := make(map[string]*apiv1.Node)
@@ -43,7 +44,7 @@ func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 	}
 
 	for _, node := range readyNodes {
-		ng, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
+		ng, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
 			klog.Warningf("Failed to get node group for node %s, Skipping CSI readiness check and keeping node in ready list. Error: %v", node.Name, err)
@@ -55,7 +56,7 @@ func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 		}
 
 		// TODO: Use TemplateNodeInfoRegistry after #8882 is merged
-		templateNodeInfo, err := ng.TemplateNodeInfo()
+		templateNodeInfo, err := ng.TemplateNodeInfo(ctx)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
 			klog.Warningf("Failed to get template node info for node group %s with error: %v", ng.Id(), err)
@@ -94,7 +95,7 @@ func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autosca
 
 // GetNodeResourceTargets returns mapping of resource names to their targets.
 // CSI processor doesn't track resource targets, so it returns an empty list.
-func (p *CSICustomResourcesProcessor) GetNodeResourceTargets(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+func (p *CSICustomResourcesProcessor) GetNodeResourceTargets(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
 	return []CustomResourceTarget{}, nil
 }
 

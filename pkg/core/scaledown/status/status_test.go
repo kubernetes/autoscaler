@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -61,7 +62,7 @@ func TestSetUnremovableNodesInfo(t *testing.T) {
 	}
 
 	s := &ScaleDownStatus{}
-	s.SetUnremovableNodesInfo(unremovableNodes, nodeUtilizationMap, provider)
+	s.SetUnremovableNodesInfo(context.TODO(), unremovableNodes, nodeUtilizationMap, provider)
 
 	assert.Equal(t, 1, len(s.UnremovableNodes))
 	assert.Equal(t, "n1", s.UnremovableNodes[0].Node.Name)

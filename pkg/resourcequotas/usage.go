@@ -17,6 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
+	gocontext "context"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
@@ -64,7 +65,7 @@ func newUsageCalculator(nodeFilter NodeFilter, nodeCache *nodeResourcesCache) *u
 
 // calculateUsages calculates resources used by nodes for every quota.
 // Returns a map with quota ID as a key and resources used in the corresponding quota as a value.
-func (u *usageCalculator) calculateUsages(autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node, quotas []Quota) (map[string]resourceList, error) {
+func (u *usageCalculator) calculateUsages(ctx gocontext.Context, autoscalingCtx *context.AutoscalingContext, nodes []*corev1.Node, quotas []Quota) (map[string]resourceList, error) {
 	usages := make(map[string]resourceList)
 	for _, rl := range quotas {
 		usages[rl.ID()] = make(resourceList)
@@ -75,11 +76,11 @@ func (u *usageCalculator) calculateUsages(autoscalingCtx *context.AutoscalingCon
 			continue
 		}
 
-		ng, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
+		ng, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get node group for node %q: %w", node.Name, err)
 		}
-		delta, err := u.nodeCache.totalNodeResources(autoscalingCtx, node, ng)
+		delta, err := u.nodeCache.totalNodeResources(ctx, autoscalingCtx, node, ng)
 		if err != nil {
 			return nil, err
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package leastnodes
 
 import (
+	"context"
 	"math"
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
@@ -32,7 +33,7 @@ func NewFilter() expander.Filter {
 }
 
 // BestOptions selects the expansion option that uses the least number of nodes
-func (m *leastnodes) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
+func (m *leastnodes) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
 	leastNodes := math.MaxInt
 	var leastOptions []expander.Option
 

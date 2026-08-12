@@ -17,6 +17,7 @@ limitations under the License.
 package predicate
 
 import (
+	"context"
 	"fmt"
 	"maps"
 	"math/rand"
@@ -168,7 +169,7 @@ func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.Cluster
 
 	draSnapshot := drasnapshot.CloneTestSnapshot(state.draSnapshot)
 	csiSnapshot := csisnapshot.CloneTestSnapshot(state.csiSnapshot)
-	err = snapshot.SetClusterState(state.nodes, pods, draSnapshot, csiSnapshot)
+	err = snapshot.SetClusterState(context.TODO(), state.nodes, pods, draSnapshot, csiSnapshot)
 	assert.NoError(t, err)
 	return snapshot
 }
@@ -369,7 +370,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.RemoveNodeInfo(node.Name)
+				return snapshot.RemoveNodeInfo(context.TODO(), node.Name)
 			},
 		},
 		{
@@ -379,7 +380,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				if err := snapshot.RemoveNodeInfo(node.Name); err != nil {
+				if err := snapshot.RemoveNodeInfo(context.TODO(), node.Name); err != nil {
 					return err
 				}
 				return snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
@@ -399,7 +400,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				if schedErr := snapshot.ForceAddPod(pod, node.Name); schedErr != nil {
 					return schedErr
 				}
-				return snapshot.RemoveNodeInfo(node.Name)
+				return snapshot.RemoveNodeInfo(context.TODO(), node.Name)
 			},
 		},
 		{
@@ -749,7 +750,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.RemoveNodeInfo(node.Name)
+				return snapshot.RemoveNodeInfo(context.TODO(), node.Name)
 			},
 			// LocalResourceSlices for the removed Node should get removed from the DRA snapshot.
 			// The pod-owned claim referenced by a pod from the removed Node should get removed from the DRA snapshot.
@@ -809,7 +810,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// Remove the NodeInfo and then add it back to the snapshot.
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				if err := snapshot.RemoveNodeInfo(node.Name); err != nil {
+				if err := snapshot.RemoveNodeInfo(context.TODO(), node.Name); err != nil {
 					return err
 				}
 				podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
@@ -839,7 +840,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.RemoveNodeInfo("wrong-name")
+				return snapshot.RemoveNodeInfo(context.TODO(), "wrong-name")
 			},
 			// The removed Node isn't in the snapshot, so this should be an error.
 			wantErr: cmpopts.AnyError,
@@ -1507,7 +1508,7 @@ func TestSetClusterState(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, state)
 				compareStates(t, state, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil /*csiSnapshot*/))
+				assert.NoError(t, snapshot.SetClusterState(context.TODO(), nil, nil, nil, nil /*csiSnapshot*/))
 
 				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 			})
@@ -1525,7 +1526,7 @@ func TestSetClusterState(t *testing.T) {
 					newCSINodeMap[node.Name] = BuildCSINode(node)
 				}
 
-				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, csisnapshot.NewSnapshot(newCSINodeMap)))
+				assert.NoError(t, snapshot.SetClusterState(context.TODO(), newNodes, newPods, nil, csisnapshot.NewSnapshot(newCSINodeMap)))
 
 				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewSnapshot(newCSINodeMap)}, getSnapshotState(t, snapshot))
 			})
@@ -1548,7 +1549,7 @@ func TestSetClusterState(t *testing.T) {
 					newCSINodeMap[node.Name] = BuildCSINode(node)
 				}
 
-				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, nil, csisnapshot.NewSnapshot(newCSINodeMap)))
+				assert.NoError(t, snapshot.SetClusterState(context.TODO(), newNodes, newPods, nil, csisnapshot.NewSnapshot(newCSINodeMap)))
 
 				compareStates(t, snapshotState{nodes: newNodes, podsByNode: newPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewSnapshot(newCSINodeMap)}, getSnapshotState(t, snapshot))
 			})
@@ -1578,7 +1579,7 @@ func TestSetClusterState(t *testing.T) {
 
 				compareStates(t, snapshotState{nodes: allNodes, podsByNode: allPodsByNode, draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewSnapshot(allCSINodeMap)}, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil /*csiSnapshot*/))
+				assert.NoError(t, snapshot.SetClusterState(context.TODO(), nil, nil, nil, nil /*csiSnapshot*/))
 
 				compareStates(t, snapshotState{draSnapshot: drasnapshot.NewEmptySnapshot(), csiSnapshot: csisnapshot.NewEmptySnapshot()}, getSnapshotState(t, snapshot))
 
@@ -1615,7 +1616,7 @@ func TestNode404(t *testing.T) {
 			return err
 		}},
 		{"remove NodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
-			return snapshot.RemoveNodeInfo("node")
+			return snapshot.RemoveNodeInfo(context.TODO(), "node")
 		}},
 	}
 
@@ -1644,7 +1645,7 @@ func TestNode404(t *testing.T) {
 					snapshot.Fork()
 					assert.NoError(t, err)
 
-					err = snapshot.RemoveNodeInfo("node")
+					err = snapshot.RemoveNodeInfo(context.TODO(), "node")
 					assert.NoError(t, err)
 
 					// Node deleted after fork - shouldn't be able to operate on it.
@@ -1669,7 +1670,7 @@ func TestNode404(t *testing.T) {
 					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 					assert.NoError(t, err)
 
-					err = snapshot.RemoveNodeInfo("node")
+					err = snapshot.RemoveNodeInfo(context.TODO(), "node")
 					assert.NoError(t, err)
 
 					// Node deleted from base - shouldn't be able to operate on it.
@@ -1994,7 +1995,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
-			assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil /*csiSnapshot*/))
+			assert.NoError(t, snapshot.SetClusterState(context.TODO(), nil, nil, nil, nil /*csiSnapshot*/))
 			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerimpl.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, false, volumeExists)
 
@@ -2103,6 +2104,6 @@ func TestSetClusterStateConcurrentDRA(t *testing.T) {
 	// Set parallelism to 8 to ensure the workqueue utilizes multiple goroutines.
 	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true, 8, false, 0)
 
-	err = snapshot.SetClusterState(nodes, pods, draSnap, nil)
+	err = snapshot.SetClusterState(context.TODO(), nodes, pods, draSnap, nil)
 	assert.NoError(t, err)
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package priority
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -58,7 +59,7 @@ func NewFilter(configMapLister v1lister.ConfigMapNamespaceLister,
 	return res
 }
 
-func (p *priority) reloadConfigMap() (priorities, *apiv1.ConfigMap, error) {
+func (p *priority) reloadConfigMap(ctx context.Context) (priorities, *apiv1.ConfigMap, error) {
 	cm, err := p.configMapLister.Get(PriorityConfigMapName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Priority expander config map %s not found: %v", PriorityConfigMapName, err)
@@ -68,27 +69,27 @@ func (p *priority) reloadConfigMap() (priorities, *apiv1.ConfigMap, error) {
 	if !found {
 		msg := fmt.Sprintf("Wrong configmap for priority expander, doesn't contain %s key. Ignoring update.",
 			ConfigMapKey)
-		p.logConfigWarning(cm, "PriorityConfigMapInvalid", msg)
+		p.logConfigWarning(ctx, cm, "PriorityConfigMapInvalid", msg)
 		return nil, cm, errors.New(msg)
 	}
 
-	newPriorities, err := p.parsePrioritiesYAMLString(prioString)
+	newPriorities, err := p.parsePrioritiesYAMLString(context.TODO(), prioString)
 	if err != nil {
 		msg := fmt.Sprintf("Wrong configuration for priority expander: %v. Ignoring update.", err)
-		p.logConfigWarning(cm, "PriorityConfigMapInvalid", msg)
+		p.logConfigWarning(ctx, cm, "PriorityConfigMapInvalid", msg)
 		return nil, cm, err
 	}
 
 	return newPriorities, cm, nil
 }
 
-func (p *priority) logConfigWarning(cm *apiv1.ConfigMap, reason, msg string) {
+func (p *priority) logConfigWarning(ctx context.Context, cm *apiv1.ConfigMap, reason, msg string) {
 	p.logRecorder.Event(cm, apiv1.EventTypeWarning, reason, msg)
 	klog.Warning(msg)
 	p.badConfigUpdates++
 }
 
-func (p *priority) parsePrioritiesYAMLString(prioritiesYAML string) (priorities, error) {
+func (p *priority) parsePrioritiesYAMLString(ctx context.Context, prioritiesYAML string) (priorities, error) {
 	if prioritiesYAML == "" {
 		return nil, fmt.Errorf("priority configuration in %s configmap is empty; please provide valid configuration",
 			PriorityConfigMapName)
@@ -116,12 +117,12 @@ func (p *priority) parsePrioritiesYAMLString(prioritiesYAML string) (priorities,
 	return newPriorities, nil
 }
 
-func (p *priority) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
+func (p *priority) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
 	if len(expansionOptions) <= 0 {
 		return nil
 	}
 
-	priorities, cm, err := p.reloadConfigMap()
+	priorities, cm, err := p.reloadConfigMap(ctx)
 	if err != nil {
 		return expansionOptions
 	}
@@ -149,13 +150,13 @@ func (p *priority) BestOptions(expansionOptions []expander.Option, nodeInfo map[
 		if !found {
 			msg := fmt.Sprintf("Priority expander: node group %s not found in priority expander configuration. "+
 				"The group won't be used.", id)
-			p.logConfigWarning(cm, "PriorityConfigMapNotMatchedGroup", msg)
+			p.logConfigWarning(ctx, cm, "PriorityConfigMapNotMatchedGroup", msg)
 		}
 	}
 
 	if len(best) == 0 {
 		msg := "Priority expander: no priorities info found for any of the expansion options. No options filtered."
-		p.logConfigWarning(cm, "PriorityConfigMapNoGroupMatched", msg)
+		p.logConfigWarning(ctx, cm, "PriorityConfigMapNoGroupMatched", msg)
 		return expansionOptions
 	}
 

@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -71,12 +72,12 @@ func NewUpdateLatencyTracker(nodeLister kubernetes.NodeLister) *UpdateLatencyTra
 
 // Start starts listening for node tainting start timestamps and update the timestamps that
 // the taint appears for the first time for a particular node. Listen AwaitOrStopChan for stop/await signals
-func (u *UpdateLatencyTracker) Start() {
+func (u *UpdateLatencyTracker) Start(ctx context.Context) {
 	for {
 		select {
 		case _, ok := <-u.AwaitOrStopChan:
 			if ok {
-				u.await()
+				u.await(ctx)
 			}
 			return
 		case ntst := <-u.StartTimeChan:
@@ -85,12 +86,12 @@ func (u *UpdateLatencyTracker) Start() {
 			continue
 		default:
 		}
-		u.updateFinishTime()
+		u.updateFinishTime(ctx)
 		time.Sleep(u.sleepDurationWhenPolling)
 	}
 }
 
-func (u *UpdateLatencyTracker) updateFinishTime() {
+func (u *UpdateLatencyTracker) updateFinishTime(ctx context.Context) {
 	for nodeName := range u.startTimestamp {
 		if _, ok := u.finishTimestamp[nodeName]; ok {
 			continue
@@ -119,7 +120,7 @@ func (u *UpdateLatencyTracker) calculateLatency() time.Duration {
 	return maxLatency
 }
 
-func (u *UpdateLatencyTracker) await() {
+func (u *UpdateLatencyTracker) await(ctx context.Context) {
 	waitingForTaintingStartTime := time.Now()
 	for {
 		switch {
@@ -133,7 +134,7 @@ func (u *UpdateLatencyTracker) await() {
 			return
 		default:
 			time.Sleep(u.sleepDurationWhenPolling)
-			u.updateFinishTime()
+			u.updateFinishTime(ctx)
 		}
 	}
 }

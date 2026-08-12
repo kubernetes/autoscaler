@@ -17,6 +17,7 @@ limitations under the License.
 package snapshot
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -177,7 +178,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(pod1OwnClaim2): pod1OwnClaim2.DeepCopy(),
 			},
 			claimsModFun: func(snapshot *Snapshot) error {
-				snapshot.RemovePodOwnedClaims(pod1)
+				snapshot.RemovePodOwnedClaims(context.TODO(), pod1)
 				return nil
 			},
 			pod:              pod1,
@@ -195,7 +196,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(pod1OwnClaim2): pod1OwnClaim2.DeepCopy(),
 			},
 			claimsModFun: func(snapshot *Snapshot) error {
-				snapshot.RemovePodOwnedClaims(pod1)
+				snapshot.RemovePodOwnedClaims(context.TODO(), pod1)
 				return nil
 			},
 			pod:              pod1,

@@ -17,6 +17,7 @@ limitations under the License.
 package mocks
 
 import (
+	"context"
 	cloudprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	errors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 
@@ -33,7 +34,7 @@ type CloudProvider struct {
 }
 
 // Cleanup provides a mock function with given fields:
-func (_m *CloudProvider) Cleanup() error {
+func (_m *CloudProvider) Cleanup(ctx context.Context) error {
 	ret := _m.Called()
 
 	var r0 error
@@ -47,7 +48,7 @@ func (_m *CloudProvider) Cleanup() error {
 }
 
 // GPULabel provides a mock function with given fields:
-func (_m *CloudProvider) GPULabel() string {
+func (_m *CloudProvider) GPULabel(ctx context.Context) string {
 	ret := _m.Called()
 
 	var r0 string
@@ -61,7 +62,7 @@ func (_m *CloudProvider) GPULabel() string {
 }
 
 // GetAvailableGPUTypes provides a mock function with given fields:
-func (_m *CloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (_m *CloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	ret := _m.Called()
 
 	var r0 map[string]struct{}
@@ -78,7 +79,7 @@ func (_m *CloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (_m *CloudProvider) GetNodeGpuConfig(_a0 *v1.Node) *cloudprovider.GpuConfig {
+func (_m *CloudProvider) GetNodeGpuConfig(ctx context.Context, _a0 *v1.Node) *cloudprovider.GpuConfig {
 	ret := _m.Called(_a0)
 
 	var r0 cloudprovider.GpuConfig
@@ -94,7 +95,7 @@ func (_m *CloudProvider) GetNodeGpuConfig(_a0 *v1.Node) *cloudprovider.GpuConfig
 }
 
 // GetAvailableMachineTypes provides a mock function with given fields:
-func (_m *CloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (_m *CloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	ret := _m.Called()
 
 	var r0 []string
@@ -117,7 +118,7 @@ func (_m *CloudProvider) GetAvailableMachineTypes() ([]string, error) {
 }
 
 // GetResourceLimiter provides a mock function with given fields:
-func (_m *CloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (_m *CloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	ret := _m.Called()
 
 	var r0 *cloudprovider.ResourceLimiter
@@ -140,7 +141,7 @@ func (_m *CloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, e
 }
 
 // Name provides a mock function with given fields:
-func (_m *CloudProvider) Name() string {
+func (_m *CloudProvider) Name(ctx context.Context) string {
 	ret := _m.Called()
 
 	var r0 string
@@ -154,7 +155,7 @@ func (_m *CloudProvider) Name() string {
 }
 
 // NewNodeGroup provides a mock function with given fields: machineType, labels, systemLabels, taints, extraResources
-func (_m *CloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, taints []v1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (_m *CloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string, taints []v1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	ret := _m.Called(machineType, labels, systemLabels, taints, extraResources)
 
 	var r0 cloudprovider.NodeGroup
@@ -177,7 +178,7 @@ func (_m *CloudProvider) NewNodeGroup(machineType string, labels map[string]stri
 }
 
 // NodeGroupForNode provides a mock function with given fields: _a0
-func (_m *CloudProvider) NodeGroupForNode(_a0 *v1.Node) (cloudprovider.NodeGroup, error) {
+func (_m *CloudProvider) NodeGroupForNode(ctx context.Context, _a0 *v1.Node) (cloudprovider.NodeGroup, error) {
 	ret := _m.Called(_a0)
 
 	var r0 cloudprovider.NodeGroup
@@ -200,7 +201,7 @@ func (_m *CloudProvider) NodeGroupForNode(_a0 *v1.Node) (cloudprovider.NodeGroup
 }
 
 // HasInstance provides a mock function with given fields:
-func (_m *CloudProvider) HasInstance(_a0 *v1.Node) (bool, error) {
+func (_m *CloudProvider) HasInstance(ctx context.Context, _a0 *v1.Node) (bool, error) {
 	ret := _m.Called(_a0)
 
 	var r0 bool
@@ -223,7 +224,7 @@ func (_m *CloudProvider) HasInstance(_a0 *v1.Node) (bool, error) {
 }
 
 // NodeGroups provides a mock function with given fields:
-func (_m *CloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (_m *CloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	ret := _m.Called()
 
 	var r0 []cloudprovider.NodeGroup
@@ -239,7 +240,7 @@ func (_m *CloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // Pricing provides a mock function with given fields:
-func (_m *CloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (_m *CloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	ret := _m.Called()
 
 	var r0 cloudprovider.PricingModel
@@ -264,7 +265,7 @@ func (_m *CloudProvider) Pricing() (cloudprovider.PricingModel, errors.Autoscale
 }
 
 // Refresh provides a mock function with given fields:
-func (_m *CloudProvider) Refresh() error {
+func (_m *CloudProvider) Refresh(ctx context.Context) error {
 	ret := _m.Called()
 
 	var r0 error

@@ -48,12 +48,12 @@ func init() {
 }
 
 // Name returns name of the cloud provider.
-func (kwok *KwokCloudProvider) Name() string {
+func (kwok *KwokCloudProvider) Name(ctx context.Context) string {
 	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (kwok *KwokCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (kwok *KwokCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	result := make([]cloudprovider.NodeGroup, 0, len(kwok.nodeGroups))
 	for _, nodegroup := range kwok.nodeGroups {
 		result = append(result, nodegroup)
@@ -62,7 +62,7 @@ func (kwok *KwokCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (kwok *KwokCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (kwok *KwokCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	// Skip nodes that are not managed by kwok cloud provider.
 	if !strings.HasPrefix(node.Spec.ProviderID, ProviderName) {
 		klog.V(2).Infof("ignoring node '%s' because it is not managed by kwok", node.GetName())
@@ -80,35 +80,35 @@ func (kwok *KwokCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 // Since there is no underlying cloud provider instance, return true
-func (kwok *KwokCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (kwok *KwokCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (kwok *KwokCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (kwok *KwokCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (kwok *KwokCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (kwok *KwokCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided.
-func (kwok *KwokCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (kwok *KwokCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint,
 	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (kwok *KwokCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (kwok *KwokCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return kwok.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (kwok *KwokCloudProvider) GPULabel() string {
+func (kwok *KwokCloudProvider) GPULabel(ctx context.Context) string {
 	// GPULabel() might get called before the config is loaded
 	if kwok.config == nil || kwok.config.status == nil {
 		return ""
@@ -117,7 +117,7 @@ func (kwok *KwokCloudProvider) GPULabel() string {
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
-func (kwok *KwokCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (kwok *KwokCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	// GetAvailableGPUTypes() might get called before the config is loaded
 	if kwok.config == nil || kwok.config.status == nil {
 		return map[string]struct{}{}
@@ -127,13 +127,13 @@ func (kwok *KwokCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (kwok *KwokCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(kwok, node)
+func (kwok *KwokCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), kwok, node)
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (kwok *KwokCloudProvider) Refresh() error {
+func (kwok *KwokCloudProvider) Refresh(ctx context.Context) error {
 
 	allNodes, err := kwok.allNodesLister.List(labels.Everything())
 	if err != nil {
@@ -160,7 +160,7 @@ func (kwok *KwokCloudProvider) Refresh() error {
 }
 
 // Cleanup cleans up all resources before the cloud provider is removed
-func (kwok *KwokCloudProvider) Cleanup() error {
+func (kwok *KwokCloudProvider) Cleanup(ctx context.Context) error {
 	for _, ng := range kwok.nodeGroups {
 		nodeNames, err := ng.getNodeNamesForNodeGroup()
 		if err != nil {

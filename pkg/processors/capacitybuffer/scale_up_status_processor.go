@@ -17,6 +17,8 @@ limitations under the License.
 package capacitybufferpodlister
 
 import (
+	"context"
+	gocontext "context"
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -45,7 +47,7 @@ func NewFakePodsScaleUpStatusProcessor(buffersRegistry *fakepods.Registry) *Fake
 
 // Process updates scaleupStatus to remove all capacity buffer fake pods from
 // PodsRemainUnschedulable, PodsAwaitEvaluation & PodsTriggeredScaleup
-func (p *FakePodsScaleUpStatusProcessor) Process(context *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus) {
+func (p *FakePodsScaleUpStatusProcessor) Process(ctx gocontext.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus) {
 	var fakePodsRemainUnschedulable []status.NoScaleUpInfo
 	var fakePodsTriggeredScaleUp []*apiv1.Pod
 
@@ -53,11 +55,11 @@ func (p *FakePodsScaleUpStatusProcessor) Process(context *ca_context.Autoscaling
 	scaleUpStatus.PodsTriggeredScaleUp, fakePodsTriggeredScaleUp = filterOutCapacityBuffersPod(scaleUpStatus.PodsTriggeredScaleUp, func(pod *apiv1.Pod) *apiv1.Pod { return pod })
 	scaleUpStatus.PodsAwaitEvaluation, _ = filterOutCapacityBuffersPod(scaleUpStatus.PodsAwaitEvaluation, func(pod *apiv1.Pod) *apiv1.Pod { return pod })
 
-	p.createBuffersNoScaleUpEvents(context, scaleUpStatus, fakePodsRemainUnschedulable)
-	p.createBuffersScaleUpEvents(context, scaleUpStatus, fakePodsTriggeredScaleUp)
+	p.createBuffersNoScaleUpEvents(ctx, autoscalingCtx, scaleUpStatus, fakePodsRemainUnschedulable)
+	p.createBuffersScaleUpEvents(autoscalingCtx, scaleUpStatus, fakePodsTriggeredScaleUp)
 }
 
-func (p *FakePodsScaleUpStatusProcessor) createBuffersNoScaleUpEvents(context *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus, fakePodsRemainUnschedulable []status.NoScaleUpInfo) {
+func (p *FakePodsScaleUpStatusProcessor) createBuffersNoScaleUpEvents(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleUpStatus *status.ScaleUpStatus, fakePodsRemainUnschedulable []status.NoScaleUpInfo) {
 	if scaleUpStatus.Result != status.ScaleUpSuccessful && scaleUpStatus.Result != status.ScaleUpError {
 		consideredNodeGroupsMap := cloudprovider.NodeGroupListToMapById(scaleUpStatus.ConsideredNodeGroups)
 		buffersInfo := map[string]*bufferInfo{}
@@ -72,12 +74,12 @@ func (p *FakePodsScaleUpStatusProcessor) createBuffersNoScaleUpEvents(context *c
 				}
 				buffersInfo[bufferUID].numberOfPods += 1
 				buffersInfo[bufferUID].reasonMessages = append(buffersInfo[bufferUID].reasonMessages,
-					status.ReasonsMessage(scaleUpStatus.Result, noScaleUpInfo, consideredNodeGroupsMap))
+					status.ReasonsMessage(ctx, scaleUpStatus.Result, noScaleUpInfo, consideredNodeGroupsMap))
 			}
 		}
 
 		for _, bufferInfo := range buffersInfo {
-			context.Recorder.Eventf(bufferInfo.buffer, apiv1.EventTypeNormal, "NotTriggerScaleUp",
+			autoscalingCtx.Recorder.Eventf(bufferInfo.buffer, apiv1.EventTypeNormal, "NotTriggerScaleUp",
 				"capacity buffer %d fake pods didn't trigger scale-up: %s",
 				bufferInfo.numberOfPods, strings.Join(bufferInfo.reasonMessages, ","))
 		}

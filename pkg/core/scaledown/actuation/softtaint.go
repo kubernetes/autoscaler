@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"time"
 
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
@@ -28,8 +29,8 @@ import (
 )
 
 // UpdateSoftDeletionTaints manages soft taints of unneeded nodes.
-func UpdateSoftDeletionTaints(autoscalingCtx *ca_context.AutoscalingContext, uneededNodes, neededNodes []*apiv1.Node) (errors []error) {
-	defer metrics.UpdateDurationFromStart(metrics.ScaleDownSoftTaintUnneeded, time.Now())
+func UpdateSoftDeletionTaints(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, uneededNodes, neededNodes []*apiv1.Node) (errors []error) {
+	defer metrics.UpdateDurationFromStart(ctx, metrics.ScaleDownSoftTaintUnneeded, time.Now())
 	b := &budgetTracker{
 		apiCallBudget: autoscalingCtx.AutoscalingOptions.MaxBulkSoftTaintCount,
 		timeBudget:    autoscalingCtx.AutoscalingOptions.MaxBulkSoftTaintTime,
@@ -44,7 +45,7 @@ func UpdateSoftDeletionTaints(autoscalingCtx *ca_context.AutoscalingContext, une
 			continue
 		}
 		b.processWithinBudget(func() {
-			_, err := taints.CleanDeletionCandidate(node, autoscalingCtx.ClientSet)
+			_, err := taints.CleanDeletionCandidate(ctx, node, autoscalingCtx.ClientSet)
 			if err != nil {
 				errors = append(errors, err)
 				klog.Warningf("Soft taint on %s removal error %v", node.Name, err)
@@ -60,14 +61,14 @@ func UpdateSoftDeletionTaints(autoscalingCtx *ca_context.AutoscalingContext, une
 			continue
 		}
 		b.processWithinBudget(func() {
-			_, err := taints.MarkDeletionCandidate(node, autoscalingCtx.ClientSet)
+			_, err := taints.MarkDeletionCandidate(ctx, node, autoscalingCtx.ClientSet)
 			if err != nil {
 				errors = append(errors, err)
 				klog.Warningf("Soft taint on %s adding error %v", node.Name, err)
 			}
 		})
 	}
-	b.reportExceededLimits()
+	b.reportExceededLimits(ctx)
 	return
 }
 
@@ -90,7 +91,7 @@ func (b *budgetTracker) processWithinBudget(f func()) {
 	f()
 }
 
-func (b *budgetTracker) reportExceededLimits() {
+func (b *budgetTracker) reportExceededLimits(ctx context.Context) {
 	if b.skippedNodes > 0 {
 		klog.V(4).Infof("Skipped adding/removing soft taints on %v nodes - API call or time limit exceeded", b.skippedNodes)
 	}

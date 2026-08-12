@@ -17,6 +17,7 @@ limitations under the License.
 package factory
 
 import (
+	"context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
@@ -33,13 +34,13 @@ func newChainStrategy(filters []expander.Filter, fallback expander.Strategy) exp
 	}
 }
 
-func (c *chainStrategy) BestOption(options []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
+func (c *chainStrategy) BestOption(ctx context.Context, options []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
 	filteredOptions := options
 	for _, filter := range c.filters {
-		filteredOptions = filter.BestOptions(filteredOptions, nodeInfo)
+		filteredOptions = filter.BestOptions(ctx, filteredOptions, nodeInfo)
 		if len(filteredOptions) == 1 {
 			return &filteredOptions[0]
 		}
 	}
-	return c.fallback.BestOption(filteredOptions, nodeInfo)
+	return c.fallback.BestOption(ctx, filteredOptions, nodeInfo)
 }

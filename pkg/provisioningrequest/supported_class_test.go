@@ -17,6 +17,7 @@ limitations under the License.
 package provisioningrequest
 
 import (
+	"context"
 	"testing"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
@@ -88,7 +89,7 @@ func TestSupportedProvisioningClass(t *testing.T) {
 					},
 				},
 			}
-			got := SupportedProvisioningClass(pr, test.checkCapacityProcessorInstance)
+			got := SupportedProvisioningClass(context.TODO(), pr, test.checkCapacityProcessorInstance)
 			if test.want != got {
 				t.Errorf("Expected SupportedProvisioningClass result: %v, got: %v", test.want, got)
 			}

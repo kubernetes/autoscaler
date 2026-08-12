@@ -17,6 +17,7 @@ limitations under the License.
 package test
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -52,7 +53,7 @@ type CloudProvider struct {
 	// - [default] If false, NodeGroupForNode() returns the NodeGroup based on the CloudProvider.nodeToGroup map, which means it doesn't work for deleted Nodes.
 	// - If true, NodeGroupForNode() returns the NodeGroup based on Node.ProviderID, which means it works for deleted Nodes.
 	nodeGroupForNodeWorksForDeletedNodes bool
-	// hasInstanceImplemented controls the behavior of CloudProvider.HasInstance(), so that different behaviors can be tested:
+	// hasInstanceImplemented controls the behavior of CloudProvider.HasInstance(context.TODO(), ), so that different behaviors can be tested:
 	// - [default] If false, HasInstance() is implemented and responds true for Nodes tracked by the fake CloudProvider until they're deleted via DeleteNodes().
 	// - If true, HasInstance() always returns the ErrNotImplemented error. This is supported by CA, HasInstance() is an optional method.
 	hasInstanceNotImplemented bool // The field is negated so that the default behavior with the field being false is "HasInstance() is implemented".
@@ -84,7 +85,7 @@ func NewCloudProvider(k8s *fakek8s.Kubernetes) *CloudProvider {
 }
 
 // NodeGroups returns all node groups configured in the fake CloudProvider.
-func (c *CloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (c *CloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	c.Lock()
 	defer c.Unlock()
 	var res []cloudprovider.NodeGroup
@@ -97,7 +98,7 @@ func (c *CloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group that a given node belongs to.
 // The method behaves differently based on the CloudProvider.nodeGroupForNodeWorksForDeletedNodes field,
 // so that different behaviors can be tested (see the comment on the field for more details).
-func (c *CloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (c *CloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	c.Lock()
 	defer c.Unlock()
 
@@ -119,7 +120,7 @@ func (c *CloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGr
 // HasInstance returns true if the given node is managed by this cloud provider, until the Node is deleted via DeleteNodes().
 // The method behaves differently based on the CloudProvider.nodeGroupForNodeWorksForDeletedNodes field,
 // so that different behaviors can be tested (see the comment on the field for more details).
-func (c *CloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (c *CloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	c.Lock()
 	defer c.Unlock()
 
@@ -132,42 +133,44 @@ func (c *CloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 }
 
 // GetResourceLimiter generates a new limiter based on our current internal maps.
-func (c *CloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (c *CloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	c.Lock()
 	defer c.Unlock()
 	return cloudprovider.NewResourceLimiter(c.minLimits, c.maxLimits), nil
 }
 
 // GPULabel returns the label used to identify GPU types in this provider.
-func (c *CloudProvider) GPULabel() string { return "gpu-label" }
+func (c *CloudProvider) GPULabel(ctx context.Context) string { return "gpu-label" }
 
 // GetAvailableGPUTypes returns a map of all GPU types available in this provider.
-func (c *CloudProvider) GetAvailableGPUTypes() map[string]struct{} { return nil }
+func (c *CloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} { return nil }
 
 // GetNodeGpuConfig returns the GPU configuration for a specific node.
-func (c *CloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig { return nil }
+func (c *CloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return nil
+}
 
 // Cleanup performs any necessary teardown of the CloudProvider.
-func (c *CloudProvider) Cleanup() error { return nil }
+func (c *CloudProvider) Cleanup(ctx context.Context) error { return nil }
 
 // Refresh updates the internal state of the CloudProvider.
-func (c *CloudProvider) Refresh() error { return nil }
+func (c *CloudProvider) Refresh(ctx context.Context) error { return nil }
 
 // Name returns the name of the cloud provider.
-func (c *CloudProvider) Name() string { return "Provider" }
+func (c *CloudProvider) Name(ctx context.Context) string { return "Provider" }
 
 // Pricing returns the pricing model associated with the provider.
-func (c *CloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (c *CloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes returns the machine types supported by the provider.
-func (c *CloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (c *CloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup creates a new node group based on the provided specifications.
-func (c *CloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (c *CloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
@@ -289,7 +292,7 @@ func (c *CloudProvider) ConfigureNodeGroupForNodeBehavior(worksForDeletedNodes b
 	c.nodeGroupForNodeWorksForDeletedNodes = worksForDeletedNodes
 }
 
-// ConfigureHasInstanceBehavior configures the behavior of CloudProvider.HasInstance(). See the comment on CloudProvider.hasInstanceNotImplemented for more details.
+// ConfigureHasInstanceBehavior configures the behavior of CloudProvider.HasInstance(context.TODO(), ). See the comment on CloudProvider.hasInstanceNotImplemented for more details.
 func (c *CloudProvider) ConfigureHasInstanceBehavior(notImplemented bool) {
 	c.Lock()
 	defer c.Unlock()
@@ -320,22 +323,22 @@ type NodeGroup struct {
 }
 
 // MaxSize returns the maximum size of the node group.
-func (n *NodeGroup) MaxSize() int {
+func (n *NodeGroup) MaxSize(ctx context.Context) int {
 	return n.maxSize
 }
 
 // MinSize returns the minimum size of the node group.
-func (n *NodeGroup) MinSize() int {
+func (n *NodeGroup) MinSize(ctx context.Context) int {
 	return n.minSize
 }
 
 // AtomicIncreaseSize is a version of IncreaseSize that increases the size of the node group atomically.
-func (n *NodeGroup) AtomicIncreaseSize(delta int) error {
-	return n.IncreaseSize(delta)
+func (n *NodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
+	return n.IncreaseSize(ctx, delta)
 }
 
 // DeleteNodes removes specific nodes from the node group and updates the internal mapping.
-func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (n *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	n.Lock()
 	defer n.Unlock()
 
@@ -378,12 +381,12 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes without checking for specific conditions (fake implementation).
-func (n *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	return n.DeleteNodes(nodes)
+func (n *NodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	return n.DeleteNodes(ctx, nodes)
 }
 
 // DecreaseTargetSize reduces the target size of the node group by the specified delta.
-func (n *NodeGroup) DecreaseTargetSize(delta int) error {
+func (n *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	n.Lock()
 	defer n.Unlock()
 	n.targetSize -= delta
@@ -396,12 +399,12 @@ func (n *NodeGroup) Id() string {
 }
 
 // Debug returns a string representation of the node group's current state.
-func (n *NodeGroup) Debug() string {
+func (n *NodeGroup) Debug(ctx context.Context) string {
 	return fmt.Sprintf("NodeGroup{id: %s, targetSize: %d}", n.id, n.targetSize)
 }
 
 // Nodes returns a list of all instances currently existing in this node group.
-func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (n *NodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	n.provider.Lock()
 	defer n.provider.Unlock()
 
@@ -418,39 +421,39 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // Exist returns true if the node group currently exists in the cloud provider.
-func (n *NodeGroup) Exist() bool {
+func (n *NodeGroup) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group in the cloud provider (not implemented).
-func (n *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (n *NodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group from the cloud provider (not implemented).
-func (n *NodeGroup) Delete() error {
+func (n *NodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (n *NodeGroup) Autoprovisioned() bool {
+func (n *NodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns autoscaling options specific to this node group.
-func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (n *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, nil
 }
 
 // TargetSize returns the current target size of the node group.
-func (n *NodeGroup) TargetSize() (int, error) {
+func (n *NodeGroup) TargetSize(ctx context.Context) (int, error) {
 	n.Lock()
 	defer n.Unlock()
 	return n.targetSize, nil
 }
 
 // IncreaseSize adds nodes to the node group and updates internal instance mapping.
-func (n *NodeGroup) IncreaseSize(delta int) error {
+func (n *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	n.Lock()
 	defer n.Unlock()
 
@@ -491,7 +494,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 }
 
 // TemplateNodeInfo returns the template node information for this node group.
-func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (n *NodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	n.Lock()
 	defer n.Unlock()
 	if n.template == nil {

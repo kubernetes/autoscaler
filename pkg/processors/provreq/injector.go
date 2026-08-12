@@ -17,6 +17,7 @@ limitations under the License.
 package provreq
 
 import (
+	"context"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -74,9 +75,9 @@ func (p *ProvisioningRequestPodsInjector) IsAvailableForProvisioning(pr *provreq
 }
 
 // MarkAsAccepted marks the ProvisioningRequest as accepted.
-func (p *ProvisioningRequestPodsInjector) MarkAsAccepted(pr *provreqwrapper.ProvisioningRequest) error {
-	provreqconditions.AddOrUpdateCondition(pr, v1.Accepted, metav1.ConditionTrue, provreqconditions.AcceptedReason, provreqconditions.AcceptedMsg, metav1.NewTime(p.clock.Now()))
-	if _, err := p.client.UpdateProvisioningRequest(pr.ProvisioningRequest); err != nil {
+func (p *ProvisioningRequestPodsInjector) MarkAsAccepted(ctx context.Context, pr *provreqwrapper.ProvisioningRequest) error {
+	provreqconditions.AddOrUpdateCondition(ctx, pr, v1.Accepted, metav1.ConditionTrue, provreqconditions.AcceptedReason, provreqconditions.AcceptedMsg, metav1.NewTime(p.clock.Now()))
+	if _, err := p.client.UpdateProvisioningRequest(ctx, pr.ProvisioningRequest); err != nil {
 		klog.Errorf("failed add Accepted condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, err)
 		return err
 	}
@@ -85,36 +86,36 @@ func (p *ProvisioningRequestPodsInjector) MarkAsAccepted(pr *provreqwrapper.Prov
 }
 
 // MarkAsFailed marks the ProvisioningRequest as failed.
-func (p *ProvisioningRequestPodsInjector) MarkAsFailed(pr *provreqwrapper.ProvisioningRequest, reason string, message string) {
-	provreqconditions.AddOrUpdateCondition(pr, v1.Failed, metav1.ConditionTrue, reason, message, metav1.NewTime(p.clock.Now()))
-	if _, err := p.client.UpdateProvisioningRequest(pr.ProvisioningRequest); err != nil {
+func (p *ProvisioningRequestPodsInjector) MarkAsFailed(ctx context.Context, pr *provreqwrapper.ProvisioningRequest, reason string, message string) {
+	provreqconditions.AddOrUpdateCondition(ctx, pr, v1.Failed, metav1.ConditionTrue, reason, message, metav1.NewTime(p.clock.Now()))
+	if _, err := p.client.UpdateProvisioningRequest(ctx, pr.ProvisioningRequest); err != nil {
 		klog.Errorf("failed add Failed condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, err)
 	}
 	p.UpdateLastProcessTime()
 }
 
-func (p *ProvisioningRequestPodsInjector) isSupportedClass(pr *provreqwrapper.ProvisioningRequest) bool {
-	return provisioningrequest.SupportedProvisioningClass(pr.ProvisioningRequest, p.checkCapacityProcessorInstance)
+func (p *ProvisioningRequestPodsInjector) isSupportedClass(ctx context.Context, pr *provreqwrapper.ProvisioningRequest) bool {
+	return provisioningrequest.SupportedProvisioningClass(ctx, pr.ProvisioningRequest, p.checkCapacityProcessorInstance)
 }
 
-func (p *ProvisioningRequestPodsInjector) isSupportedCheckCapacityClass(pr *provreqwrapper.ProvisioningRequest) bool {
-	return provisioningrequest.SupportedCheckCapacityClass(pr.ProvisioningRequest, p.checkCapacityProcessorInstance)
+func (p *ProvisioningRequestPodsInjector) isSupportedCheckCapacityClass(ctx context.Context, pr *provreqwrapper.ProvisioningRequest) bool {
+	return provisioningrequest.SupportedCheckCapacityClass(ctx, pr.ProvisioningRequest, p.checkCapacityProcessorInstance)
 }
 
-func (p *ProvisioningRequestPodsInjector) shouldMarkAsAccepted(pr *provreqwrapper.ProvisioningRequest) bool {
+func (p *ProvisioningRequestPodsInjector) shouldMarkAsAccepted(ctx context.Context, pr *provreqwrapper.ProvisioningRequest) bool {
 	// Don't mark as accepted the check capacity ProvReq when batch processing is enabled.
 	// It will be marked later, in parallel, during processing the requests.
-	return !p.checkCapacityBatchProcessing || !p.isSupportedCheckCapacityClass(pr)
+	return !p.checkCapacityBatchProcessing || !p.isSupportedCheckCapacityClass(ctx, pr)
 }
 
 // GetPodsFromNextRequest picks one ProvisioningRequest meeting the condition passed using isSupportedClass function, marks it as accepted and returns pods from it.
-func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest() ([]*apiv1.Pod, error) {
-	provReqs, err := p.client.ProvisioningRequests()
+func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(ctx context.Context) ([]*apiv1.Pod, error) {
+	provReqs, err := p.client.ProvisioningRequests(ctx)
 	if err != nil {
 		return nil, err
 	}
 	for _, pr := range provReqs {
-		if !p.isSupportedClass(pr) {
+		if !p.isSupportedClass(ctx, pr) {
 			continue
 		}
 
@@ -126,11 +127,11 @@ func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest() ([]*apiv1.Pod
 		podsFromProvReq, err := provreqpods.PodsForProvisioningRequest(pr)
 		if err != nil {
 			klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name)
-			p.MarkAsFailed(pr, provreqconditions.FailedToCreatePodsReason, err.Error())
+			p.MarkAsFailed(ctx, pr, provreqconditions.FailedToCreatePodsReason, err.Error())
 			continue
 		}
-		if p.shouldMarkAsAccepted(pr) {
-			if err := p.MarkAsAccepted(pr); err != nil {
+		if p.shouldMarkAsAccepted(ctx, pr) {
+			if err := p.MarkAsAccepted(ctx, pr); err != nil {
 				continue
 			}
 			return podsFromProvReq, nil
@@ -151,8 +152,8 @@ type ProvisioningRequestWithPods struct {
 // GetCheckCapacityBatch returns up to the requested number of ProvisioningRequestWithPods.
 // We do not mark the PRs as accepted here.
 // If we fail to get the pods for a PR, we mark the PR as failed and issue an update.
-func (p *ProvisioningRequestPodsInjector) GetCheckCapacityBatch(maxPrs int) ([]ProvisioningRequestWithPods, error) {
-	provReqs, err := p.client.ProvisioningRequests()
+func (p *ProvisioningRequestPodsInjector) GetCheckCapacityBatch(ctx context.Context, maxPrs int) ([]ProvisioningRequestWithPods, error) {
+	provReqs, err := p.client.ProvisioningRequests(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +162,7 @@ func (p *ProvisioningRequestPodsInjector) GetCheckCapacityBatch(maxPrs int) ([]P
 		if len(prsWithPods) >= maxPrs {
 			break
 		}
-		if !p.isSupportedCheckCapacityClass(pr) {
+		if !p.isSupportedCheckCapacityClass(ctx, pr) {
 			continue
 		}
 		if !p.IsAvailableForProvisioning(pr) {
@@ -171,7 +172,7 @@ func (p *ProvisioningRequestPodsInjector) GetCheckCapacityBatch(maxPrs int) ([]P
 		pods, err := provreqpods.PodsForProvisioningRequest(pr)
 		if err != nil {
 			klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name)
-			p.MarkAsFailed(pr, provreqconditions.FailedToCreatePodsReason, err.Error())
+			p.MarkAsFailed(ctx, pr, provreqconditions.FailedToCreatePodsReason, err.Error())
 			continue
 		}
 		prsWithPods = append(prsWithPods, ProvisioningRequestWithPods{pr, pods})
@@ -181,10 +182,11 @@ func (p *ProvisioningRequestPodsInjector) GetCheckCapacityBatch(maxPrs int) ([]P
 
 // Process pick one ProvisioningRequest, update Accepted condition and inject pods to unscheduled pods list.
 func (p *ProvisioningRequestPodsInjector) Process(
+	ctx context.Context,
 	_ *ca_context.AutoscalingContext,
 	unschedulablePods []*apiv1.Pod,
 ) ([]*apiv1.Pod, error) {
-	podsFromProvReq, err := p.GetPodsFromNextRequest()
+	podsFromProvReq, err := p.GetPodsFromNextRequest(ctx)
 	if err != nil {
 		return unschedulablePods, err
 	}

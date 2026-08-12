@@ -65,27 +65,27 @@ func NewProvReqProcessor(client *provreqclient.ProvisioningRequestClient, checkC
 // Refresh implements loop.Observer interface and will be run at the start
 // of every iteration of the main loop. It tries to fetch current
 // ProvisioningRequests and processes up to p.maxUpdated of them.
-func (p *provReqProcessor) Refresh() {
-	provReqs, err := p.client.ProvisioningRequests()
+func (p *provReqProcessor) Refresh(ctx context.Context) {
+	provReqs, err := p.client.ProvisioningRequests(ctx)
 	if err != nil {
 		klog.Errorf("Failed to get ProvisioningRequests list, err: %v", err)
 		return
 	}
-	p.refresh(provReqs)
+	p.refresh(ctx, provReqs)
 }
 
 // refresh iterates over ProvisioningRequests and apply:
 // -BookingExpired condition for Provisioned ProvisioningRequest if capacity reservation time is expired.
 // -Failed condition for ProvisioningRequest that were not provisioned during defaultExpirationTime.
 // TODO(yaroslava): fetch reservation and expiration time from ProvisioningRequest
-func (p *provReqProcessor) refresh(provReqs []*provreqwrapper.ProvisioningRequest) {
+func (p *provReqProcessor) refresh(ctx context.Context, provReqs []*provreqwrapper.ProvisioningRequest) {
 	expiredProvReq := []*provreqwrapper.ProvisioningRequest{}
 	failedProvReq := []*provreqwrapper.ProvisioningRequest{}
 	for _, provReq := range provReqs {
 		if len(expiredProvReq) >= p.maxUpdated {
 			break
 		}
-		if !provisioningrequest.SupportedProvisioningClass(provReq.ProvisioningRequest, p.checkCapacityProcessorInstance) {
+		if !provisioningrequest.SupportedProvisioningClass(ctx, provReq.ProvisioningRequest, p.checkCapacityProcessorInstance) {
 			continue
 		}
 		conditions := provReq.Status.Conditions
@@ -105,22 +105,22 @@ func (p *provReqProcessor) refresh(provReqs []*provreqwrapper.ProvisioningReques
 		}
 	}
 	for _, provReq := range expiredProvReq {
-		conditions.AddOrUpdateCondition(provReq, v1.BookingExpired, metav1.ConditionTrue, conditions.CapacityReservationTimeExpiredReason, conditions.CapacityReservationTimeExpiredMsg, metav1.NewTime(p.now()))
-		_, updErr := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+		conditions.AddOrUpdateCondition(ctx, provReq, v1.BookingExpired, metav1.ConditionTrue, conditions.CapacityReservationTimeExpiredReason, conditions.CapacityReservationTimeExpiredMsg, metav1.NewTime(p.now()))
+		_, updErr := p.client.UpdateProvisioningRequest(ctx, provReq.ProvisioningRequest)
 		if updErr != nil {
 			klog.Errorf("failed to add BookingExpired condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
 			continue
 		}
 	}
 	for _, provReq := range failedProvReq {
-		conditions.AddOrUpdateCondition(provReq, v1.Failed, metav1.ConditionTrue, conditions.ExpiredReason, conditions.ExpiredMsg, metav1.NewTime(p.now()))
-		_, updErr := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+		conditions.AddOrUpdateCondition(ctx, provReq, v1.Failed, metav1.ConditionTrue, conditions.ExpiredReason, conditions.ExpiredMsg, metav1.NewTime(p.now()))
+		_, updErr := p.client.UpdateProvisioningRequest(ctx, provReq.ProvisioningRequest)
 		if updErr != nil {
 			klog.Errorf("failed to add Failed condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
 			continue
 		}
 	}
-	p.DeleteOldProvReqs(provReqs)
+	p.DeleteOldProvReqs(ctx, provReqs)
 }
 
 // CleanUp cleans up internal state
@@ -128,8 +128,8 @@ func (p *provReqProcessor) CleanUp() {}
 
 // Process implements PodListProcessor.Process() and inject fake pods to the cluster snapshoot for Provisioned ProvReqs in order to
 // reserve capacity from ScaleDown.
-func (p *provReqProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	err := p.bookCapacity(autoscalingCtx)
+func (p *provReqProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	err := p.bookCapacity(ctx, autoscalingCtx)
 	if err != nil {
 		klog.Warningf("Failed to book capacity for ProvisioningRequests: %s", err)
 	}
@@ -138,8 +138,8 @@ func (p *provReqProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext
 
 // bookCapacity schedule fake pods for ProvisioningRequest that should have reserved capacity
 // in the cluster.
-func (p *provReqProcessor) bookCapacity(autoscalingCtx *ca_context.AutoscalingContext) error {
-	provReqs, err := p.client.ProvisioningRequests()
+func (p *provReqProcessor) bookCapacity(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) error {
+	provReqs, err := p.client.ProvisioningRequests(ctx)
 	if err != nil {
 		return fmt.Errorf("couldn't fetch ProvisioningRequests in the cluster: %v", err)
 	}
@@ -158,13 +158,13 @@ func (p *provReqProcessor) bookCapacity(autoscalingCtx *ca_context.AutoscalingCo
 	}
 	podsToCreate := []*apiv1.Pod{}
 	for _, provReq := range provReqs {
-		if !conditions.ShouldCapacityBeBooked(provReq, p.checkCapacityProcessorInstance) {
+		if !conditions.ShouldCapacityBeBooked(ctx, provReq, p.checkCapacityProcessorInstance) {
 			continue
 		}
 		// All pods already scheduled
 		if scheduledPods[provReq.Namespace+"/"+provReq.Name] >= provReq.PodCount() {
-			conditions.AddOrUpdateCondition(provReq, v1.BookingExpired, metav1.ConditionTrue, conditions.CapacityBookingConsumedReason, conditions.CapacityBookingConsumedMsg, metav1.NewTime(p.now()))
-			if _, err := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest); err != nil {
+			conditions.AddOrUpdateCondition(ctx, provReq, v1.BookingExpired, metav1.ConditionTrue, conditions.CapacityBookingConsumedReason, conditions.CapacityBookingConsumedMsg, metav1.NewTime(p.now()))
+			if _, err := p.client.UpdateProvisioningRequest(ctx, provReq.ProvisioningRequest); err != nil {
 				klog.Errorf("failed to add BookingExpired condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, err)
 			}
 			continue
@@ -174,8 +174,8 @@ func (p *provReqProcessor) bookCapacity(autoscalingCtx *ca_context.AutoscalingCo
 			// ClusterAutoscaler was able to create pods before, so we shouldn't have error here.
 			// If there is an error, mark PR as invalid, because we won't be able to book capacity
 			// for it anyway.
-			conditions.AddOrUpdateCondition(provReq, v1.Failed, metav1.ConditionTrue, conditions.FailedToBookCapacityReason, fmt.Sprintf("Couldn't create pods, err: %v", err), metav1.Now())
-			if _, err := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest); err != nil {
+			conditions.AddOrUpdateCondition(ctx, provReq, v1.Failed, metav1.ConditionTrue, conditions.FailedToBookCapacityReason, fmt.Sprintf("Couldn't create pods, err: %v", err), metav1.Now())
+			if _, err := p.client.UpdateProvisioningRequest(ctx, provReq.ProvisioningRequest); err != nil {
 				klog.Errorf("failed to add Accepted condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, err)
 			}
 			continue
@@ -193,7 +193,7 @@ func (p *provReqProcessor) bookCapacity(autoscalingCtx *ca_context.AutoscalingCo
 }
 
 // DeleteOldProvReqs delete ProvReq that have terminal state (Provisioned/Failed == True) more than a week.
-func (p *provReqProcessor) DeleteOldProvReqs(provReqs []*provreqwrapper.ProvisioningRequest) {
+func (p *provReqProcessor) DeleteOldProvReqs(ctx context.Context, provReqs []*provreqwrapper.ProvisioningRequest) {
 	provReqQuota := klogx.NewLoggingQuota(30)
 	for _, provReq := range provReqs {
 		conditions := provReq.Status.Conditions
@@ -202,7 +202,7 @@ func (p *provReqProcessor) DeleteOldProvReqs(provReqs []*provreqwrapper.Provisio
 		if provisioned != nil && provisioned.LastTransitionTime.Add(defaultTerminalProvReqTTL).Before(p.now()) ||
 			failed != nil && failed.LastTransitionTime.Add(defaultTerminalProvReqTTL).Before(p.now()) {
 			klogx.V(4).UpTo(provReqQuota).Infof("Delete old ProvisioningRequest %s/%s", provReq.Namespace, provReq.Name)
-			err := p.client.DeleteProvisioningRequest(provReq.ProvisioningRequest)
+			err := p.client.DeleteProvisioningRequest(ctx, provReq.ProvisioningRequest)
 			if err != nil {
 				klog.Warningf("Couldn't delete old %s/%s Provisioning Request, err: %v", provReq.Namespace, provReq.Name, err)
 			}

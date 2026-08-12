@@ -17,6 +17,7 @@ limitations under the License.
 package nodes
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -59,7 +60,7 @@ func TestPreFilteringScaleDownNodeProcessor_GetScaleDownCandidateNodes(t *testin
 	expectedNodes := []*apiv1.Node{ng1_1, ng1_2}
 	defaultProcessor := NewPreFilteringScaleDownNodeProcessor()
 	inputNodes := []*apiv1.Node{ng1_1, ng1_2, ng2_1, noNg}
-	result, err := defaultProcessor.GetScaleDownCandidates(autoscalingCtx, inputNodes)
+	result, err := defaultProcessor.GetScaleDownCandidates(context.TODO(), autoscalingCtx, inputNodes)
 
 	assert.NoError(t, err)
 	assert.Equal(t, result, expectedNodes)

@@ -17,6 +17,7 @@ limitations under the License.
 package capacityquota
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -136,7 +137,7 @@ func TestProvider_Quotas(t *testing.T) {
 			fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithObjects(tc.existingCQs...).Build()
 			p := &Provider{kubeClient: fakeClient}
 
-			gotQuotas, err := p.Quotas()
+			gotQuotas, err := p.Quotas(context.TODO())
 			if err != nil {
 				t.Fatalf("Provider.Quotas() unexpected error: %v", err)
 			}

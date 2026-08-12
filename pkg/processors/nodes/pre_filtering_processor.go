@@ -17,6 +17,8 @@ limitations under the License.
 package nodes
 
 import (
+	"context"
+
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
 
@@ -39,14 +41,14 @@ func (n *PreFilteringScaleDownNodeProcessor) GetPodDestinationCandidates(autosca
 }
 
 // GetScaleDownCandidates returns nodes that potentially could be scaled down and
-func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(autoscalingCtx *ca_context.AutoscalingContext,
+func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := make([]*apiv1.Node, 0, len(nodes))
 
-	nodeGroupSize := utils.GetNodeGroupSizeMap(autoscalingCtx.CloudProvider)
+	nodeGroupSize := utils.GetNodeGroupSizeMap(ctx, autoscalingCtx.CloudProvider)
 
 	for _, node := range nodes {
-		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
 			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
 			continue
@@ -60,7 +62,7 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(autoscalingC
 			klog.Errorf("Error while checking node group size %s: group size not found", nodeGroup.Id())
 			continue
 		}
-		minSize := nodeGroup.MinSize()
+		minSize := nodeGroup.MinSize(ctx)
 		if size <= minSize {
 			klog.V(1).Infof("Skipping %s - node group min size reached (current: %d, min: %d)", node.Name, size, minSize)
 			continue

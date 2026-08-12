@@ -93,6 +93,7 @@ func (o *checkCapacityProvClass) Initialize(
 
 // Provision return if there is capacity in the cluster for pods from ProvisioningRequest.
 func (o *checkCapacityProvClass) Provision(
+	ctx context.Context,
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
@@ -105,7 +106,7 @@ func (o *checkCapacityProvClass) Provision(
 	defer o.autoscalingCtx.ClusterSnapshot.Revert()
 
 	// Gather ProvisioningRequests.
-	prs, err := o.getProvisioningRequestsAndPods(unschedulablePods)
+	prs, err := o.getProvisioningRequestsAndPods(ctx, unschedulablePods)
 	if err != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "Error fetching provisioning requests and associated pods: %s", err.Error()))
 	} else if len(prs) == 0 {
@@ -120,30 +121,30 @@ func (o *checkCapacityProvClass) Provision(
 
 	// Add accepted condition to ProvisioningRequests.
 	for _, pr := range prs {
-		conditions.AddOrUpdateCondition(pr.PrWrapper, v1.Accepted, metav1.ConditionTrue, conditions.AcceptedReason, conditions.AcceptedMsg, metav1.Now())
+		conditions.AddOrUpdateCondition(ctx, pr.PrWrapper, v1.Accepted, metav1.ConditionTrue, conditions.AcceptedReason, conditions.AcceptedMsg, metav1.Now())
 	}
 
 	// Check Capacity. Add Provisioned or Failed conditions.
-	processedPrs := o.checkCapacityBatch(prs, &combinedStatus, startTime)
+	processedPrs := o.checkCapacityBatch(ctx, prs, &combinedStatus, startTime)
 
 	// Use client to update ProvisioningRequests conditions.
-	updateRequests(o.client, processedPrs, &combinedStatus)
+	updateRequests(ctx, o.client, processedPrs, &combinedStatus)
 
 	return combinedStatus.Export()
 }
 
-func (o *checkCapacityProvClass) getProvisioningRequestsAndPods(unschedulablePods []*apiv1.Pod) ([]provreq.ProvisioningRequestWithPods, error) {
+func (o *checkCapacityProvClass) getProvisioningRequestsAndPods(ctx context.Context, unschedulablePods []*apiv1.Pod) ([]provreq.ProvisioningRequestWithPods, error) {
 	if !o.isBatchEnabled() {
 		klog.Info("Processing single provisioning request (non-batch)")
-		prs := provreqclient.ProvisioningRequestsForPods(o.client, unschedulablePods)
-		prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassCheckCapacity, o.autoscalingCtx.CheckCapacityProcessorInstance)
+		prs := provreqclient.ProvisioningRequestsForPods(ctx, o.client, unschedulablePods)
+		prs = provreqclient.FilterOutProvisioningClass(ctx, prs, v1.ProvisioningClassCheckCapacity, o.autoscalingCtx.CheckCapacityProcessorInstance)
 		if len(prs) == 0 {
 			return nil, nil
 		}
 		return []provreq.ProvisioningRequestWithPods{{PrWrapper: prs[0], Pods: unschedulablePods}}, nil
 	}
 
-	batch, err := o.provreqInjector.GetCheckCapacityBatch(o.checkCapacityProvisioningRequestMaxBatchSize)
+	batch, err := o.provreqInjector.GetCheckCapacityBatch(ctx, o.checkCapacityProvisioningRequestMaxBatchSize)
 	if err != nil {
 		return nil, err
 	}
@@ -155,10 +156,10 @@ func (o *checkCapacityProvClass) isBatchEnabled() bool {
 	return o.provreqInjector != nil && o.checkCapacityProvisioningRequestMaxBatchSize > 1
 }
 
-func (o *checkCapacityProvClass) checkCapacityBatch(reqs []provreq.ProvisioningRequestWithPods, combinedStatus *combinedStatusSet, startTime time.Time) []*provreqwrapper.ProvisioningRequest {
+func (o *checkCapacityProvClass) checkCapacityBatch(ctx context.Context, reqs []provreq.ProvisioningRequestWithPods, combinedStatus *combinedStatusSet, startTime time.Time) []*provreqwrapper.ProvisioningRequest {
 	updates := make([]*provreqwrapper.ProvisioningRequest, 0, len(reqs))
 	for _, req := range reqs {
-		if err := o.checkCapacity(req.Pods, req.PrWrapper, combinedStatus); err != nil {
+		if err := o.checkCapacity(ctx, req.Pods, req.PrWrapper, combinedStatus); err != nil {
 			klog.Errorf("error checking capacity %v", err)
 			continue
 		}
@@ -175,7 +176,7 @@ func (o *checkCapacityProvClass) checkCapacityBatch(reqs []provreq.ProvisioningR
 }
 
 // checkCapacity checks if there is capacity, updates combinedStatus and Conditions. If capacity is found, it commits to the clusterSnapshot.
-func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, provReq *provreqwrapper.ProvisioningRequest, combinedStatus *combinedStatusSet) error {
+func (o *checkCapacityProvClass) checkCapacity(ctx context.Context, unschedulablePods []*apiv1.Pod, provReq *provreqwrapper.ProvisioningRequest, combinedStatus *combinedStatusSet) error {
 	o.autoscalingCtx.ClusterSnapshot.Fork()
 
 	// Case 1: Capacity fits.
@@ -187,7 +188,7 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 			return commitError
 		}
 		combinedStatus.Add(&status.ScaleUpStatus{Result: status.ScaleUpSuccessful})
-		conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
+		conditions.AddOrUpdateCondition(ctx, provReq, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
 		return nil
 	}
 	// Case 2: Capacity doesn't fit.
@@ -196,25 +197,25 @@ func (o *checkCapacityProvClass) checkCapacity(unschedulablePods []*apiv1.Pod, p
 	if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry == "true" {
 		// Failed=true condition triggers retry in Kueue. Otherwise ProvisioningRequest with Provisioned=Failed
 		// condition block capacity in Kueue even if it's in the middle of backoff waiting time.
-		conditions.AddOrUpdateCondition(provReq, v1.Failed, metav1.ConditionTrue, conditions.CapacityIsNotFoundReason, "CA could not find requested capacity", metav1.Now())
+		conditions.AddOrUpdateCondition(ctx, provReq, v1.Failed, metav1.ConditionTrue, conditions.CapacityIsNotFoundReason, "CA could not find requested capacity", metav1.Now())
 	} else {
 		if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry != "false" {
 			klog.Errorf("Ignoring Parameter %v with invalid value: %v in ProvisioningRequest: %v. Supported values are: \"true\", \"false\"", NoRetryParameterKey, noRetry, provReq.Name)
 		}
-		conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
+		conditions.AddOrUpdateCondition(ctx, provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
 	}
 	return err
 }
 
 // updateRequests calls the client to update ProvisioningRequests, in parallel.
-func updateRequests(client *provreqclient.ProvisioningRequestClient, prWrappers []*provreqwrapper.ProvisioningRequest, combinedStatus *combinedStatusSet) {
+func updateRequests(ctx context.Context, client *provreqclient.ProvisioningRequestClient, prWrappers []*provreqwrapper.ProvisioningRequest, combinedStatus *combinedStatusSet) {
 	wg := sync.WaitGroup{}
 	wg.Add(len(prWrappers))
 	lock := sync.Mutex{}
 	for _, wrapper := range prWrappers {
 		go func() {
 			provReq := wrapper.ProvisioningRequest
-			_, updErr := client.UpdateProvisioningRequest(provReq)
+			_, updErr := client.UpdateProvisioningRequest(ctx, provReq)
 			if updErr != nil {
 				err := fmt.Errorf("failed to update ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
 				scaleUpStatus, _ := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "error during ScaleUp: %s", err.Error()))

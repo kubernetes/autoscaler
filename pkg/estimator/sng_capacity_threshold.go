@@ -17,6 +17,8 @@ limitations under the License.
 package estimator
 
 import (
+	"context"
+
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
@@ -29,13 +31,13 @@ type sngCapacityThreshold struct {
 //   - -1 when this node group AND similar node groups have no available capacity
 //   - 0 when estimationContext is not set. Return value of 0 means that there is no limit.
 //   - Any positive number representing maximum possible number of new nodes
-func (t *sngCapacityThreshold) NodeLimit(nodeGroup cloudprovider.NodeGroup, estimationContext EstimationContext) NodeLimitResult {
+func (t *sngCapacityThreshold) NodeLimit(ctx context.Context, nodeGroup cloudprovider.NodeGroup, estimationContext EstimationContext) NodeLimitResult {
 	if estimationContext == nil {
 		return NodeLimitResult{Limit: 0}
 	}
-	totalAvailableCapacity := t.computeNodeGroupCapacity(nodeGroup)
+	totalAvailableCapacity := t.computeNodeGroupCapacity(ctx, nodeGroup)
 	for _, sng := range estimationContext.SimilarNodeGroups() {
-		totalAvailableCapacity += t.computeNodeGroupCapacity(sng)
+		totalAvailableCapacity += t.computeNodeGroupCapacity(ctx, sng)
 	}
 	if totalAvailableCapacity <= 0 {
 		return NodeLimitResult{Limit: -1}
@@ -43,14 +45,14 @@ func (t *sngCapacityThreshold) NodeLimit(nodeGroup cloudprovider.NodeGroup, esti
 	return NodeLimitResult{Limit: totalAvailableCapacity}
 }
 
-func (t *sngCapacityThreshold) computeNodeGroupCapacity(nodeGroup cloudprovider.NodeGroup) int {
-	nodeGroupTargetSize, err := nodeGroup.TargetSize()
+func (t *sngCapacityThreshold) computeNodeGroupCapacity(ctx context.Context, nodeGroup cloudprovider.NodeGroup) int {
+	nodeGroupTargetSize, err := nodeGroup.TargetSize(ctx)
 	// Should not ever happen as only valid node groups are passed to estimator
 	if err != nil {
 		klog.Errorf("Error while computing available capacity of a node group %v: can't get target size of the group: %v", nodeGroup.Id(), err)
 		return 0
 	}
-	groupCapacity := nodeGroup.MaxSize() - nodeGroupTargetSize
+	groupCapacity := nodeGroup.MaxSize(ctx) - nodeGroupTargetSize
 	if groupCapacity > 0 {
 		return groupCapacity
 	}

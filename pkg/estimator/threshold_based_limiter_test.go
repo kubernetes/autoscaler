@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -27,16 +28,16 @@ import (
 type limiterOperation func(*testing.T, EstimationLimiter)
 
 func expectDeny(t *testing.T, l EstimationLimiter) {
-	assert.Equal(t, false, l.PermissionToAddNode())
+	assert.Equal(t, false, l.PermissionToAddNode(context.TODO()))
 }
 
 func expectAllow(t *testing.T, l EstimationLimiter) {
-	assert.Equal(t, true, l.PermissionToAddNode())
+	assert.Equal(t, true, l.PermissionToAddNode(context.TODO()))
 }
 
 func resetLimiter(_ *testing.T, l EstimationLimiter) {
 	l.EndEstimation()
-	l.StartEstimation([]PodEquivalenceGroup{}, nil, nil)
+	l.StartEstimation(context.TODO(), []PodEquivalenceGroup{}, nil, nil)
 }
 
 type dynamicThreshold struct {
@@ -47,7 +48,7 @@ func (d *dynamicThreshold) DurationLimit(cloudprovider.NodeGroup, EstimationCont
 	return DurationLimitResult{Duration: 0}
 }
 
-func (d *dynamicThreshold) NodeLimit(cloudprovider.NodeGroup, EstimationContext) NodeLimitResult {
+func (d *dynamicThreshold) NodeLimit(ctx context.Context, _ cloudprovider.NodeGroup, _ EstimationContext) NodeLimitResult {
 	d.nodeLimit += 1
 	return NodeLimitResult{Limit: d.nodeLimit}
 }
@@ -172,7 +173,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			limiter := NewThresholdBasedEstimationLimiter(tc.thresholds).(*thresholdBasedEstimationLimiter)
-			limiter.StartEstimation([]PodEquivalenceGroup{}, nil, nil)
+			limiter.StartEstimation(context.TODO(), []PodEquivalenceGroup{}, nil, nil)
 
 			if tc.startDelta != time.Duration(0) {
 				limiter.start = limiter.start.Add(tc.startDelta)

@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -80,9 +81,9 @@ func TestWaitForDelayDeletion(t *testing.T) {
 			}
 			var err error
 			if test.addAnnotation {
-				err = WaitForDelayDeletion(nodeWithAnnotation, allNodeLister, test.timeout)
+				err = WaitForDelayDeletion(context.TODO(), nodeWithAnnotation, allNodeLister, test.timeout)
 			} else {
-				err = WaitForDelayDeletion(node, allNodeLister, test.timeout)
+				err = WaitForDelayDeletion(context.TODO(), node, allNodeLister, test.timeout)
 			}
 			assert.NoError(t, err)
 		})

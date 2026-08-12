@@ -17,6 +17,7 @@ limitations under the License.
 package simulator
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -146,7 +147,7 @@ func TestSanitizedTemplateNodeInfoFromNodeGroup(t *testing.T) {
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {
-			templateNodeInfo, err := SanitizedTemplateNodeInfoFromNodeGroup(tc.nodeGroup, testDaemonSets, taints.TaintConfig{})
+			templateNodeInfo, err := SanitizedTemplateNodeInfoFromNodeGroup(context.TODO(), tc.nodeGroup, testDaemonSets, taints.TaintConfig{})
 			if tc.wantCpError {
 				if err == nil || err.Type() != errors.CloudProviderError {
 					t.Fatalf("TemplateNodeInfoFromNodeGroupTemplate(): want CloudProviderError, but got: %v (%T)", err, err)
@@ -365,7 +366,7 @@ func TestSanitizedTemplateNodeInfoFromNodeInfo(t *testing.T) {
 				exampleNodeInfo.SetCSINode(tc.csiNode)
 			}
 
-			templateNodeInfo, err := SanitizedTemplateNodeInfoFromNodeInfo(exampleNodeInfo, nodeGroupId, tc.daemonSets, tc.forceDS, taints.TaintConfig{})
+			templateNodeInfo, err := SanitizedTemplateNodeInfoFromNodeInfo(context.TODO(), exampleNodeInfo, nodeGroupId, tc.daemonSets, tc.forceDS, taints.TaintConfig{})
 			if tc.wantError {
 				if err == nil {
 					t.Fatal("TemplateNodeInfoFromExampleNodeInfo(): want error, but got nil")
@@ -410,7 +411,7 @@ func TestSanitizedNodeInfo(t *testing.T) {
 	templateNodeInfo := framework.NewNodeInfo(templateNode, nil, pods...)
 
 	suffix := "abc"
-	freshNodeInfo, err := SanitizedNodeInfo(templateNodeInfo, suffix)
+	freshNodeInfo, err := SanitizedNodeInfo(context.TODO(), templateNodeInfo, suffix)
 	if err != nil {
 		t.Fatalf("FreshNodeInfoFromTemplateNodeInfo(): want nil error, got %v", err)
 	}
@@ -579,7 +580,7 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 
 			newNameBase := "node"
 			suffix := "abc"
-			nodeInfo, err := createSanitizedNodeInfo(tc.nodeInfo, newNameBase, suffix, tc.taintConfig)
+			nodeInfo, err := createSanitizedNodeInfo(context.TODO(), tc.nodeInfo, newNameBase, suffix, tc.taintConfig)
 			if err != nil {
 				t.Fatalf("sanitizeNodeInfo(): want nil error, got %v", err)
 			}
@@ -888,6 +889,6 @@ func (f *fakeNodeGroup) Id() string {
 	return f.id
 }
 
-func (f *fakeNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (f *fakeNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	return f.templateNodeInfoResult, f.templateNodeInfoErr
 }

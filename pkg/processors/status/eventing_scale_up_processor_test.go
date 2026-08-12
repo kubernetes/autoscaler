@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -125,7 +126,7 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 				Recorder: fakeRecorder,
 			},
 		}
-		p.Process(autoscalingCtx, tc.state)
+		p.Process(context.TODO(), autoscalingCtx, tc.state)
 		triggered := 0
 		noTriggered := 0
 		for eventsLeft := true; eventsLeft; {
@@ -181,7 +182,7 @@ func TestReasonsMessage(t *testing.T) {
 		"2 max limit reached",
 		"1 not ready",
 	}
-	result := ReasonsMessage(ScaleUpNoOptionsAvailable, NoScaleUpInfo{nil, rejected, skipped}, considered)
+	result := ReasonsMessage(context.TODO(), ScaleUpNoOptionsAvailable, NoScaleUpInfo{nil, rejected, skipped}, considered)
 
 	for _, part := range expected {
 		assert.Contains(t, result, part)
@@ -193,6 +194,6 @@ func TestReasonsMessageWhenScaleUpLimitedByMaxNodesTotal(t *testing.T) {
 	noScaleUpInfo := NoScaleUpInfo{
 		Pod: nil,
 	}
-	result := ReasonsMessage(ScaleUpLimitedByMaxNodesTotal, noScaleUpInfo, considered)
+	result := ReasonsMessage(context.TODO(), ScaleUpLimitedByMaxNodesTotal, noScaleUpInfo, considered)
 	assert.Contains(t, result, "max total nodes in cluster reached")
 }

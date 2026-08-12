@@ -17,6 +17,7 @@ limitations under the License.
 package metrics
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"time"
@@ -636,13 +637,13 @@ func (m *caMetrics) InitMetrics() {
 
 // UpdateDurationFromStart records the duration of the step identified by the
 // label using start time
-func (m *caMetrics) UpdateDurationFromStart(label FunctionLabel, start time.Time) {
+func (m *caMetrics) UpdateDurationFromStart(ctx context.Context, label FunctionLabel, start time.Time) {
 	duration := time.Now().Sub(start)
-	m.UpdateDuration(label, duration)
+	m.UpdateDuration(ctx, label, duration)
 }
 
 // UpdateDuration records the duration of the step identified by the label
-func (m *caMetrics) UpdateDuration(label FunctionLabel, duration time.Duration) {
+func (m *caMetrics) UpdateDuration(ctx context.Context, label FunctionLabel, duration time.Duration) {
 	if duration > LogLongDurationThreshold {
 		klog.V(4).Infof("Function %s took %v to complete", label, duration)
 	}

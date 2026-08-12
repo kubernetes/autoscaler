@@ -17,6 +17,7 @@ limitations under the License.
 package customresources
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -303,11 +304,11 @@ func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {
 
 			clusterSnapshotStore := store.NewBasicSnapshotStore()
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
-			clusterSnapshot.SetClusterState([]*apiv1.Node{}, []*apiv1.Pod{}, nil, csiSnapshot)
+			clusterSnapshot.SetClusterState(context.TODO(), []*apiv1.Node{}, []*apiv1.Pod{}, nil, csiSnapshot)
 
 			autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider, ClusterSnapshot: clusterSnapshot}
 			processor := CSICustomResourcesProcessor{}
-			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, nil, csiSnapshot)
+			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.TODO(), autoscalingCtx, initialAllNodes, initialReadyNodes, nil, csiSnapshot)
 
 			readyNodes := make(map[string]bool)
 			for _, node := range newReadyNodes {

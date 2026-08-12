@@ -17,6 +17,7 @@ limitations under the License.
 package price
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -39,14 +40,14 @@ type testPricingModel struct {
 	podPrice  map[string]float64
 }
 
-func (tpm *testPricingModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
+func (tpm *testPricingModel) NodePrice(ctx context.Context, node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	if price, found := tpm.nodePrice[node.Name]; found {
 		return price, nil
 	}
 	return 0.0, fmt.Errorf("price for node %v not found", node.Name)
 }
 
-func (tpm *testPricingModel) PodPrice(node *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
+func (tpm *testPricingModel) PodPrice(ctx context.Context, node *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
 	if price, found := tpm.podPrice[node.Name]; found {
 		return price, nil
 	}
@@ -86,9 +87,9 @@ func TestPriceExpander(t *testing.T) {
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
-	ng1, _ := provider.NodeGroupForNode(n1)
-	ng2, _ := provider.NodeGroupForNode(n2)
-	ng3, _ := provider.NewNodeGroup("MT1", nil, nil, nil, nil)
+	ng1, _ := provider.NodeGroupForNode(context.TODO(), n1)
+	ng2, _ := provider.NodeGroupForNode(context.TODO(), n2)
+	ng3, _ := provider.NewNodeGroup(context.TODO(), "MT1", nil, nil, nil, nil)
 
 	ni1 := framework.NewTestNodeInfo(n1)
 	ni2 := framework.NewTestNodeInfo(n2)
@@ -133,7 +134,7 @@ func TestPriceExpander(t *testing.T) {
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOptions(options, nodeInfosForGroups)), []string{"ng1"})
+	).BestOptions(context.TODO(), options, nodeInfosForGroups)), []string{"ng1"})
 
 	// First node group is cheaper, however, the second one is preferred.
 	pricingModel = &testPricingModel{
@@ -154,7 +155,7 @@ func TestPriceExpander(t *testing.T) {
 			preferred: buildNode(4000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOptions(options, nodeInfosForGroups)), []string{"ng2"})
+	).BestOptions(context.TODO(), options, nodeInfosForGroups)), []string{"ng2"})
 
 	// All node groups accept the same set of pods. Lots of nodes.
 	options1b := []expander.Option{
@@ -192,7 +193,7 @@ func TestPriceExpander(t *testing.T) {
 			preferred: buildNode(4000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOptions(options1b, nodeInfosForGroups)), []string{"ng1"})
+	).BestOptions(context.TODO(), options1b, nodeInfosForGroups)), []string{"ng1"})
 
 	// Second node group is cheaper
 	pricingModel = &testPricingModel{
@@ -213,7 +214,7 @@ func TestPriceExpander(t *testing.T) {
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOptions(options, nodeInfosForGroups)), []string{"ng2"})
+	).BestOptions(context.TODO(), options, nodeInfosForGroups)), []string{"ng2"})
 
 	// First group accept 1 pod and second accepts 2.
 	options2 := []expander.Option{
@@ -250,7 +251,7 @@ func TestPriceExpander(t *testing.T) {
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOptions(options2, nodeInfosForGroups)), []string{"ng2"})
+	).BestOptions(context.TODO(), options2, nodeInfosForGroups)), []string{"ng2"})
 
 	// Errors are expected
 	pricingModel = &testPricingModel{
@@ -264,7 +265,7 @@ func TestPriceExpander(t *testing.T) {
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOptions(options2, nodeInfosForGroups))
+	).BestOptions(context.TODO(), options2, nodeInfosForGroups))
 
 	// Add node info for autoprovisioned group.
 	nodeInfosForGroups["autoprovisioned-MT1"] = ni3
@@ -309,7 +310,7 @@ func TestPriceExpander(t *testing.T) {
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOptions(options3, nodeInfosForGroups)), []string{"ng2"})
+	).BestOptions(context.TODO(), options3, nodeInfosForGroups)), []string{"ng2"})
 
 	// Choose non-existing group when non-existing is cheaper.
 	pricingModel = &testPricingModel{
@@ -331,5 +332,5 @@ func TestPriceExpander(t *testing.T) {
 			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
-	).BestOptions(options3, nodeInfosForGroups)), []string{"ng3"})
+	).BestOptions(context.TODO(), options3, nodeInfosForGroups)), []string{"ng3"})
 }

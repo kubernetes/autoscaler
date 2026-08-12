@@ -17,6 +17,7 @@ limitations under the License.
 package nodegroups
 
 import (
+	"context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
@@ -33,7 +34,7 @@ type NodeGroupManager interface {
 	// Immediately returns upcoming node group that may be used for scale ups and scale up simulations.
 	CreateNodeGroupAsync(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer AsyncNodeGroupInitializer) (CreateNodeGroupResult, errors.AutoscalerError)
 
-	RemoveUnneededNodeGroups(autoscalingCtx *ca_context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error)
+	RemoveUnneededNodeGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error)
 
 	CleanUp()
 }
@@ -103,7 +104,7 @@ func (*NoOpNodeGroupManager) CreateNodeGroupAsync(autoscalingCtx *ca_context.Aut
 }
 
 // RemoveUnneededNodeGroups does nothing in NoOpNodeGroupManager
-func (*NoOpNodeGroupManager) RemoveUnneededNodeGroups(autoscalingCtx *ca_context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
+func (*NoOpNodeGroupManager) RemoveUnneededNodeGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
 	return nil, nil
 }
 

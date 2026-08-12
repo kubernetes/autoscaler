@@ -17,6 +17,7 @@ limitations under the License.
 package rules
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/pdb"
@@ -84,7 +85,7 @@ type Rules []Rule
 
 // Drainable determines whether a given pod is drainable according to the
 // specified set of rules.
-func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, nodeInfo *framework.NodeInfo) drainability.Status {
+func (rs Rules) Drainable(ctx context.Context, drainCtx *drainability.DrainContext, pod *apiv1.Pod, nodeInfo *framework.NodeInfo) drainability.Status {
 	if drainCtx == nil {
 		drainCtx = &drainability.DrainContext{}
 	}

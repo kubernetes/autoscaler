@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -57,24 +58,26 @@ func newScaleUpExecutor(
 // In case of issues returns an error and a scale up info which failed to execute.
 // If there were multiple concurrent errors one combined error is returned.
 func (e *scaleUpExecutor) ExecuteScaleUps(
+	ctx context.Context,
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
 	options := e.autoscalingCtx.AutoscalingOptions
 	if options.ParallelScaleUp {
-		return e.executeScaleUpsParallel(scaleUpInfos, now, atomic)
+		return e.executeScaleUpsParallel(ctx, scaleUpInfos, now, atomic)
 	}
-	return e.executeScaleUpsSync(scaleUpInfos, now, atomic)
+	return e.executeScaleUpsSync(ctx, scaleUpInfos, now, atomic)
 }
 
 func (e *scaleUpExecutor) executeScaleUpsSync(
+	ctx context.Context,
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
 	for _, scaleUpInfo := range scaleUpInfos {
-		if aErr := e.executeScaleUp(scaleUpInfo, now, atomic); aErr != nil {
+		if aErr := e.executeScaleUp(ctx, scaleUpInfo, now, atomic); aErr != nil {
 			return aErr, []cloudprovider.NodeGroup{scaleUpInfo.Group}
 		}
 	}
@@ -82,6 +85,7 @@ func (e *scaleUpExecutor) executeScaleUpsSync(
 }
 
 func (e *scaleUpExecutor) executeScaleUpsParallel(
+	ctx context.Context,
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
 	now time.Time,
 	atomic bool,
@@ -100,7 +104,7 @@ func (e *scaleUpExecutor) executeScaleUpsParallel(
 	for _, scaleUpInfo := range scaleUpInfos {
 		go func(info nodegroupset.ScaleUpInfo) {
 			defer wg.Done()
-			if aErr := e.executeScaleUp(info, now, atomic); aErr != nil {
+			if aErr := e.executeScaleUp(ctx, info, now, atomic); aErr != nil {
 				errResults <- errResult{err: aErr, info: &info}
 			}
 		}(scaleUpInfo)
@@ -123,18 +127,19 @@ func (e *scaleUpExecutor) executeScaleUpsParallel(
 	return nil, nil
 }
 
-func (e *scaleUpExecutor) increaseSize(nodeGroup cloudprovider.NodeGroup, increase int, atomic bool) error {
+func (e *scaleUpExecutor) increaseSize(ctx context.Context, nodeGroup cloudprovider.NodeGroup, increase int, atomic bool) error {
 	if atomic {
-		if err := nodeGroup.AtomicIncreaseSize(increase); err != cloudprovider.ErrNotImplemented {
+		if err := nodeGroup.AtomicIncreaseSize(ctx, increase); err != cloudprovider.ErrNotImplemented {
 			return err
 		}
 		// If error is cloudprovider.ErrNotImplemented, fall back to non-atomic
 		// increase - cloud provider doesn't support it.
 	}
-	return nodeGroup.IncreaseSize(increase)
+	return nodeGroup.IncreaseSize(ctx, increase)
 }
 
 func (e *scaleUpExecutor) executeScaleUp(
+	ctx context.Context,
 	info nodegroupset.ScaleUpInfo,
 	now time.Time,
 	atomic bool,
@@ -143,10 +148,10 @@ func (e *scaleUpExecutor) executeScaleUp(
 	e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: setting group %s size to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	increase := info.NewSize - info.CurrentSize
-	if err := e.increaseSize(info.Group, increase, atomic); err != nil {
+	if err := e.increaseSize(ctx, info.Group, increase, atomic); err != nil {
 		e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
 		aerr := errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to increase node group size: ")
-		e.scaleStateNotifier.RegisterFailedScaleUp(info.Group, increase, cloudprovider.InstanceErrorInfo{
+		e.scaleStateNotifier.RegisterFailedScaleUp(ctx, info.Group, increase, cloudprovider.InstanceErrorInfo{
 			ErrorClass:   cloudprovider.OtherErrorClass,
 			ErrorCode:    string(aerr.Type()),
 			ErrorMessage: aerr.Error(),
@@ -156,12 +161,12 @@ func (e *scaleUpExecutor) executeScaleUp(
 	if increase < 0 {
 		return errors.NewAutoscalerError(errors.InternalError, fmt.Sprintf("increase in number of nodes cannot be negative, got: %v", increase))
 	}
-	if !info.Group.Exist() && e.asyncNodeGroupStateChecker.IsUpcoming(info.Group) {
+	if !info.Group.Exist(ctx) && e.asyncNodeGroupStateChecker.IsUpcoming(info.Group) {
 		// Don't emit scale up event for upcoming node group as it will be generated after
 		// the node group is created, during initial scale up.
 		return nil
 	}
-	e.scaleStateNotifier.RegisterScaleUp(info.Group, increase, time.Now())
+	e.scaleStateNotifier.RegisterScaleUp(ctx, info.Group, increase, time.Now())
 	e.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: group %s size set to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	return nil

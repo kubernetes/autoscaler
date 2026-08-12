@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	gocontext "context"
 	"fmt"
 	"math"
 	"strconv"
@@ -100,13 +101,13 @@ func newEstimationState() *estimationState {
 // It is assumed that all pods from the given list can fit to nodeTemplate.
 // Returns the number of nodes needed to accommodate all pods from the list.
 func (e *BinpackingNodeEstimator) Estimate(
-	podsEquivalenceGroups []PodEquivalenceGroup,
+	ctx gocontext.Context, podsEquivalenceGroups []PodEquivalenceGroup,
 	nodeTemplate *framework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup,
 ) (int, []*apiv1.Pod) {
 	observeBinpackingHeterogeneity(podsEquivalenceGroups, nodeTemplate)
 
-	e.limiter.StartEstimation(podsEquivalenceGroups, nodeGroup, e.context)
+	e.limiter.StartEstimation(ctx, podsEquivalenceGroups, nodeGroup, e.context)
 	defer e.limiter.EndEstimation()
 
 	podsEquivalenceGroups = e.podOrderer.Order(podsEquivalenceGroups, nodeTemplate, nodeGroup)
@@ -143,9 +144,9 @@ func (e *BinpackingNodeEstimator) Estimate(
 		if newNodesAvailable {
 			// Since fastpath binpacking adds just one node to the snapshot, it will cause inaccurate simulations on subsequent loops, therefore we only use it on the last group
 			if i == len(podsEquivalenceGroups)-1 && useFastpathOnLastPEG {
-				newNodesAvailable, err = e.tryFastPath(estimationState, nodeTemplate, remainingPods)
+				newNodesAvailable, err = e.tryFastPath(ctx, estimationState, nodeTemplate, remainingPods)
 			} else {
-				newNodesAvailable, err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
+				newNodesAvailable, err = e.tryToScheduleOnNewNodes(ctx, estimationState, nodeTemplate, remainingPods)
 			}
 			if err != nil {
 				klog.Error(err.Error())
@@ -188,7 +189,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnExistingNodes(
 // Returns whether it is worth retrying adding new nodes and error in unexpected
 // situations where whole estimation should be stopped.
 func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
-	estimationState *estimationState,
+	ctx gocontext.Context, estimationState *estimationState,
 	nodeTemplate *framework.NodeInfo,
 	pods []*apiv1.Pod,
 ) (bool, error) {
@@ -241,12 +242,12 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 			// The thresholdBasedEstimationLimiter implementation assumes that for
 			// each call that returns true, one node gets added. Therefore this
 			// must be the last check right before really adding a node.
-			if !e.limiter.PermissionToAddNode() {
+			if !e.limiter.PermissionToAddNode(ctx) {
 				return false, nil
 			}
 
 			// Add new node
-			if err := e.addNewNodeToSnapshot(estimationState, nodeTemplate); err != nil {
+			if err := e.addNewNodeToSnapshot(ctx, estimationState, nodeTemplate); err != nil {
 				return false, fmt.Errorf("Error while adding new node for template to ClusterSnapshot; %w", err)
 			}
 
@@ -272,18 +273,18 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 // It attempts to pack as much pods as possible on a single node, and then estimates the total
 // amount of nodes by simple arithmetic: EstimatedNodes = ceil(TotalPods / PodsFittingOnASingleNode)
 func (e *BinpackingNodeEstimator) tryFastPath(
-	estimationState *estimationState,
+	ctx gocontext.Context, estimationState *estimationState,
 	nodeTemplate *framework.NodeInfo,
 	pods []*apiv1.Pod,
 ) (bool, error) {
 	if len(pods) == 0 {
 		return true, nil
 	}
-	if !e.limiter.PermissionToAddNode() {
+	if !e.limiter.PermissionToAddNode(ctx) {
 		return false, nil
 	}
 	// Add test node to snapshot.
-	if err := e.addNewNodeToSnapshot(estimationState, nodeTemplate); err != nil {
+	if err := e.addNewNodeToSnapshot(ctx, estimationState, nodeTemplate); err != nil {
 		return false, fmt.Errorf("Error while adding new node for template to ClusterSnapshot; %w", err)
 	}
 
@@ -309,7 +310,7 @@ func (e *BinpackingNodeEstimator) tryFastPath(
 
 	// We already added 1 node and scheduled on it, now the rest we can only mark without the simulation
 	for j := 1; j < scaleUpSize; j++ {
-		if !e.limiter.PermissionToAddNode() {
+		if !e.limiter.PermissionToAddNode(ctx) {
 			return false, nil
 		}
 		fakeNodeName := fmt.Sprintf("%s-fake-%d", estimationState.lastNodeName, j)
@@ -324,10 +325,10 @@ func (e *BinpackingNodeEstimator) tryFastPath(
 }
 
 func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
-	estimationState *estimationState,
+	ctx gocontext.Context, estimationState *estimationState,
 	template *framework.NodeInfo,
 ) error {
-	newNodeInfo, err := core_utils.SanitizedNodeInfo(template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
+	newNodeInfo, err := core_utils.SanitizedNodeInfo(ctx, template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
 	if err != nil {
 		return err
 	}

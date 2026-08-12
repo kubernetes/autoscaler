@@ -17,6 +17,7 @@ limitations under the License.
 package random
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,13 +29,13 @@ func TestRandomExpander(t *testing.T) {
 	e := NewStrategy()
 
 	eo1a := expander.Option{Debug: "EO1a"}
-	ret := e.BestOption([]expander.Option{eo1a}, nil)
+	ret := e.BestOption(context.TODO(), []expander.Option{eo1a}, nil)
 	assert.Equal(t, *ret, eo1a)
 
 	eo1b := expander.Option{Debug: "EO1b"}
-	ret = e.BestOption([]expander.Option{eo1a, eo1b}, nil)
+	ret = e.BestOption(context.TODO(), []expander.Option{eo1a, eo1b}, nil)
 	assert.True(t, assert.ObjectsAreEqual(*ret, eo1a) || assert.ObjectsAreEqual(*ret, eo1b))
 
-	ret = e.BestOption([]expander.Option{}, nil)
+	ret = e.BestOption(context.TODO(), []expander.Option{}, nil)
 	assert.Nil(t, ret)
 }

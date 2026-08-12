@@ -72,7 +72,7 @@ func createGRPCClient(expanderCert string, expanderUrl string) protos.ExpanderCl
 	return protos.NewExpanderClient(conn)
 }
 
-func (g *grpcclientstrategy) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
+func (g *grpcclientstrategy) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
 	if g.grpcClient == nil {
 		klog.Errorf("Incorrect gRPC client config, filtering no options")
 		return expansionOptions
@@ -97,7 +97,7 @@ func (g *grpcclientstrategy) BestOptions(expansionOptions []expander.Option, nod
 		return nil
 	}
 	// Transform back options slice
-	options := transformAndSanitizeOptionsFromGRPC(bestOptionsResponse.Options, nodeGroupIDOptionMap)
+	options := transformAndSanitizeOptionsFromGRPC(ctx, bestOptionsResponse.Options, nodeGroupIDOptionMap)
 	if options == nil {
 		klog.V(4).Info("Unable to sanitize GPRC returned bestOptions, no options filtered")
 		return expansionOptions
@@ -137,7 +137,7 @@ func populateNodeInfoForGRPC(nodeInfos map[string]*framework.NodeInfo) map[strin
 	return grpcNodeBytesMap
 }
 
-func transformAndSanitizeOptionsFromGRPC(bestOptionsResponseOptions []*protos.Option, nodeGroupIDOptionMap map[string]expander.Option) []expander.Option {
+func transformAndSanitizeOptionsFromGRPC(ctx context.Context, bestOptionsResponseOptions []*protos.Option, nodeGroupIDOptionMap map[string]expander.Option) []expander.Option {
 	var options []expander.Option
 	for _, option := range bestOptionsResponseOptions {
 		if option == nil {

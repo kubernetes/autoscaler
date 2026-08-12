@@ -17,6 +17,7 @@ limitations under the License.
 package actuation
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -89,7 +90,7 @@ func TestAddNodeToBucket(t *testing.T) {
 		}
 		batchCount := 0
 		for _, node := range test.nodes {
-			nodeGroup, err := provider.NodeGroupForNode(node)
+			nodeGroup, err := provider.NodeGroupForNode(context.TODO(), node)
 			if err != nil {
 				t.Errorf("couldn't get node info for node %s: %s", node.Name, err)
 			}
@@ -195,7 +196,7 @@ func TestRemove(t *testing.T) {
 				}
 			}
 
-			err = d.remove(nodeGroup.Id())
+			err = d.remove(context.TODO(), nodeGroup.Id())
 			if test.err {
 				if err == nil {
 					t.Errorf("remove() should return error, but return nil")

@@ -43,5 +43,5 @@ func RunAutoscalerOnce(ctx context.Context, autoscaler autoscaler, healthCheck *
 		metrics.UpdateLastTime(metrics.MainSuccessful, successTime)
 	}
 
-	metrics.UpdateDurationFromStart(metrics.Main, loopStart)
+	metrics.UpdateDurationFromStart(ctx, metrics.Main, loopStart)
 }

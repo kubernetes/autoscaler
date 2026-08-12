@@ -17,6 +17,7 @@ limitations under the License.
 package nodeinfosprovider
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -326,7 +327,7 @@ func TestMixedNodeInfosProvider(t *testing.T) {
 			}
 
 			snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-			err := snapshot.SetClusterState(allNodes, nil, nil, nil)
+			err := snapshot.SetClusterState(context.TODO(), allNodes, nil, nil, nil)
 			assert.NoError(t, err)
 
 			podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
@@ -344,7 +345,7 @@ func TestMixedNodeInfosProvider(t *testing.T) {
 			if tc.withCache != nil {
 				processor.nodeInfoCache = tc.withCache
 			}
-			nodeInfos, err := processor.Process(ctx, allNodes, nil, taints.TaintConfig{}, now)
+			nodeInfos, err := processor.Process(context.TODO(), ctx, allNodes, nil, taints.TaintConfig{}, now)
 
 			assert.Equal(t, tc.wantError, err)
 			if tc.wantError == nil {

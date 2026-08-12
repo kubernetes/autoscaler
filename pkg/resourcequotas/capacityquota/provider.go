@@ -41,9 +41,9 @@ func NewCapacityQuotasProvider(kubeClient client.Client) *Provider {
 }
 
 // Quotas returns quotas built from CapacityQuota resources in the cluster.
-func (p *Provider) Quotas() ([]resourcequotas.Quota, error) {
+func (p *Provider) Quotas(ctx context.Context) ([]resourcequotas.Quota, error) {
 	capacityQuotas := &cqv1beta1.CapacityQuotaList{}
-	err := p.kubeClient.List(context.TODO(), capacityQuotas)
+	err := p.kubeClient.List(ctx, capacityQuotas)
 	if err != nil {
 		return nil, err
 	}

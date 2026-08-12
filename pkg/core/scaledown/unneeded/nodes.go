@@ -17,6 +17,7 @@ limitations under the License.
 package unneeded
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -51,9 +52,9 @@ type node struct {
 
 type scaleDownTimeGetter interface {
 	// GetScaleDownUnneededTime returns ScaleDownUnneededTime value that should be used for a given NodeGroup.
-	GetScaleDownUnneededTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	GetScaleDownUnneededTime(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
 	// GetScaleDownUnreadyTime returns ScaleDownUnreadyTime value that should be used for a given NodeGroup.
-	GetScaleDownUnreadyTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	GetScaleDownUnreadyTime(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
 }
 
 // NewNodes returns a new initialized Nodes object.
@@ -104,7 +105,7 @@ func (n *Nodes) LoadFromExistingTaints(autoscalingCtx *ca_context.AutoscalingCon
 // It sets the initial state of unneeded nodes reflect the taint status of nodes in the cluster.
 // This is in order the avoid state loss between deployment restarts.
 func (n *Nodes) initialize(autoscalingCtx *ca_context.AutoscalingContext, nodes []simulator.NodeToBeRemoved, ts time.Time) {
-	n.updateInternalState(autoscalingCtx, nodes, ts, func(nn simulator.NodeToBeRemoved) *time.Time {
+	n.updateInternalState(context.TODO(), autoscalingCtx, nodes, ts, func(nn simulator.NodeToBeRemoved) *time.Time {
 		name := nn.Node.Name
 		if since, err := taints.GetDeletionCandidateTime(nn.Node); err == nil {
 			klog.V(4).Infof("Found node %s with deletion candidate taint from %s", name, since.String())
@@ -120,13 +121,13 @@ func (n *Nodes) initialize(autoscalingCtx *ca_context.AutoscalingContext, nodes 
 
 // Update stores nodes along with a time at which they were found to be
 // unneeded. Previously existing timestamps are preserved.
-func (n *Nodes) Update(autoscalingCtx *ca_context.AutoscalingContext, nodes []simulator.NodeToBeRemoved, ts time.Time) {
-	n.updateInternalState(autoscalingCtx, nodes, ts, func(nn simulator.NodeToBeRemoved) *time.Time {
+func (n *Nodes) Update(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodes []simulator.NodeToBeRemoved, ts time.Time) {
+	n.updateInternalState(ctx, autoscalingCtx, nodes, ts, func(nn simulator.NodeToBeRemoved) *time.Time {
 		return nil
 	})
 }
 
-func (n *Nodes) updateInternalState(autoscalingCtx *ca_context.AutoscalingContext, nodes []simulator.NodeToBeRemoved, ts time.Time, timestampGetter func(simulator.NodeToBeRemoved) *time.Time) {
+func (n *Nodes) updateInternalState(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodes []simulator.NodeToBeRemoved, ts time.Time, timestampGetter func(simulator.NodeToBeRemoved) *time.Time) {
 	updated := make(map[string]*node, len(nodes))
 	for _, nn := range nodes {
 		name := nn.Node.Name
@@ -137,10 +138,10 @@ func (n *Nodes) updateInternalState(autoscalingCtx *ca_context.AutoscalingContex
 				ntbr:  nn,
 				since: val.since,
 			}
-			n.lookupAndSetRemovalThreshold(newNodeState, autoscalingCtx.CloudProvider)
+			n.lookupAndSetRemovalThreshold(ctx, newNodeState, autoscalingCtx.CloudProvider)
 			updated[name] = newNodeState
 		} else {
-			updated[name] = n.newNode(nn, timestampGetter, ts, autoscalingCtx.CloudProvider)
+			updated[name] = n.newNode(ctx, nn, timestampGetter, ts, autoscalingCtx.CloudProvider)
 		}
 	}
 	n.byName = updated
@@ -152,7 +153,7 @@ func (n *Nodes) updateInternalState(autoscalingCtx *ca_context.AutoscalingContex
 	}
 }
 
-func (n *Nodes) newNode(nn simulator.NodeToBeRemoved, timestampGetter func(simulator.NodeToBeRemoved) *time.Time, ts time.Time, cp cloudprovider.CloudProvider) *node {
+func (n *Nodes) newNode(ctx context.Context, nn simulator.NodeToBeRemoved, timestampGetter func(simulator.NodeToBeRemoved) *time.Time, ts time.Time, cp cloudprovider.CloudProvider) *node {
 	var since time.Time
 	if existingts := timestampGetter(nn); existingts != nil {
 		since = *existingts
@@ -165,14 +166,14 @@ func (n *Nodes) newNode(nn simulator.NodeToBeRemoved, timestampGetter func(simul
 		since: since,
 	}
 
-	n.lookupAndSetRemovalThreshold(newNode, cp)
+	n.lookupAndSetRemovalThreshold(ctx, newNode, cp)
 
 	return newNode
 }
 
 // Clear resets the internal state, dropping information about all tracked nodes.
-func (n *Nodes) Clear() {
-	n.Update(nil, nil, time.Time{})
+func (n *Nodes) Clear(ctx context.Context) {
+	n.Update(ctx, nil, nil, time.Time{})
 }
 
 // Contains returns true iff a given node is unneeded.
@@ -204,13 +205,13 @@ func (n *Nodes) Drop(node string) {
 // RemovableAt returns all nodes that can be removed at a given time, divided
 // into empty and non-empty node lists, as well as a list of nodes that were
 // unneeded, but are not removable, annotated by reason.
-func (n *Nodes) RemovableAt(autoscalingCtx *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, ts time.Time) (empty, needDrain []simulator.NodeToBeRemoved, unremovable []simulator.UnremovableNode) {
-	nodeGroupSize := utils.GetNodeGroupSizeMap(autoscalingCtx.CloudProvider)
+func (n *Nodes) RemovableAt(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, ts time.Time) (empty, needDrain []simulator.NodeToBeRemoved, unremovable []simulator.UnremovableNode) {
+	nodeGroupSize := utils.GetNodeGroupSizeMap(ctx, autoscalingCtx.CloudProvider)
 	emptyNodes, drainNodes := n.splitEmptyAndNonEmptyNodes()
 
 	for nodeName, v := range emptyNodes {
 		klog.V(2).Infof("%s was unneeded for %s", nodeName, ts.Sub(v.since).String())
-		if r := n.unremovableReason(autoscalingCtx, scaleDownContext, v, ts, nodeGroupSize); r != simulator.NoReason {
+		if r := n.unremovableReason(ctx, autoscalingCtx, scaleDownContext, v, ts, nodeGroupSize); r != simulator.NoReason {
 			unremovable = append(unremovable, simulator.UnremovableNode{Node: v.ntbr.Node, Reason: r})
 			continue
 		}
@@ -218,7 +219,7 @@ func (n *Nodes) RemovableAt(autoscalingCtx *ca_context.AutoscalingContext, scale
 	}
 	for nodeName, v := range drainNodes {
 		klog.V(2).Infof("%s was unneeded for %s", nodeName, ts.Sub(v.since).String())
-		if r := n.unremovableReason(autoscalingCtx, scaleDownContext, v, ts, nodeGroupSize); r != simulator.NoReason {
+		if r := n.unremovableReason(ctx, autoscalingCtx, scaleDownContext, v, ts, nodeGroupSize); r != simulator.NoReason {
 			unremovable = append(unremovable, simulator.UnremovableNode{Node: v.ntbr.Node, Reason: r})
 			continue
 		}
@@ -228,8 +229,8 @@ func (n *Nodes) RemovableAt(autoscalingCtx *ca_context.AutoscalingContext, scale
 }
 
 // lookupAndSetRemovalThreshold gets the unneeded/unready time for a node and updates the node struct.
-func (n *Nodes) lookupAndSetRemovalThreshold(v *node, cp cloudprovider.CloudProvider) {
-	nodeGroup, err := cp.NodeGroupForNode(v.ntbr.Node)
+func (n *Nodes) lookupAndSetRemovalThreshold(ctx context.Context, v *node, cp cloudprovider.CloudProvider) {
+	nodeGroup, err := cp.NodeGroupForNode(ctx, v.ntbr.Node)
 	if err != nil {
 		klog.Warningf("Error determining node group for %s: %v", v.ntbr.Node.Name, err)
 		return
@@ -243,9 +244,9 @@ func (n *Nodes) lookupAndSetRemovalThreshold(v *node, cp cloudprovider.CloudProv
 	var removalThreshold time.Duration
 
 	if readiness.Ready {
-		removalThreshold, err = n.sdtg.GetScaleDownUnneededTime(nodeGroup)
+		removalThreshold, err = n.sdtg.GetScaleDownUnneededTime(ctx, nodeGroup)
 	} else {
-		removalThreshold, err = n.sdtg.GetScaleDownUnreadyTime(nodeGroup)
+		removalThreshold, err = n.sdtg.GetScaleDownUnreadyTime(ctx, nodeGroup)
 	}
 
 	if err != nil {
@@ -257,7 +258,7 @@ func (n *Nodes) lookupAndSetRemovalThreshold(v *node, cp cloudprovider.CloudProv
 	v.removalThreshold = removalThreshold
 }
 
-func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, v *node, ts time.Time, nodeGroupSize map[string]int) simulator.UnremovableReason {
+func (n *Nodes) unremovableReason(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, v *node, ts time.Time, nodeGroupSize map[string]int) simulator.UnremovableReason {
 	if v.thresholdRetrievalFailed {
 		return simulator.UnexpectedError
 	}
@@ -277,17 +278,17 @@ func (n *Nodes) unremovableReason(autoscalingCtx *ca_context.AutoscalingContext,
 		return simulator.NotUnreadyLongEnough
 	}
 
-	nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
+	nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 	if err != nil || nodeGroup == nil {
 		klog.V(4).Infof("Skipping %s - no node group config", node.Name)
 		return simulator.NotAutoscaled
 	}
 
-	if reason := verifyMinSize(node.Name, nodeGroup, nodeGroupSize, scaleDownContext.ActuationStatus); reason != simulator.NoReason {
+	if reason := verifyMinSize(ctx, node.Name, nodeGroup, nodeGroupSize, scaleDownContext.ActuationStatus); reason != simulator.NoReason {
 		return reason
 	}
 
-	checkResult, err := scaleDownContext.Tracker.ConsumeQuota(autoscalingCtx, nodeGroup, node, 1)
+	checkResult, err := scaleDownContext.Tracker.ConsumeQuota(ctx, autoscalingCtx, nodeGroup, node, 1)
 	if err != nil {
 		klog.Errorf("Failed to check limits for %s: %v", node.Name, err)
 		return simulator.UnexpectedError
@@ -315,14 +316,14 @@ func (n *Nodes) splitEmptyAndNonEmptyNodes() (empty, needDrain map[string]*node)
 	return
 }
 
-func verifyMinSize(nodeName string, nodeGroup cloudprovider.NodeGroup, nodeGroupSize map[string]int, as scaledown.ActuationStatus) simulator.UnremovableReason {
+func verifyMinSize(ctx context.Context, nodeName string, nodeGroup cloudprovider.NodeGroup, nodeGroupSize map[string]int, as scaledown.ActuationStatus) simulator.UnremovableReason {
 	size, found := nodeGroupSize[nodeGroup.Id()]
 	if !found {
 		klog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
 		return simulator.UnexpectedError
 	}
 	deletionsInProgress := as.DeletionsCount(nodeGroup.Id())
-	if size-deletionsInProgress <= nodeGroup.MinSize() {
+	if size-deletionsInProgress <= nodeGroup.MinSize(ctx) {
 		klog.V(1).Infof("Skipping %s - node group min size reached", nodeName)
 		return simulator.NodeGroupMinSizeReached
 	}

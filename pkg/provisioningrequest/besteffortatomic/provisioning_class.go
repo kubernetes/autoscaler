@@ -81,6 +81,7 @@ func (o *bestEffortAtomicProvClass) Initialize(
 
 // Provision returns success if there is, or has just been requested, sufficient capacity in the cluster for pods from ProvisioningRequest.
 func (o *bestEffortAtomicProvClass) Provision(
+	ctx context.Context,
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
@@ -89,8 +90,8 @@ func (o *bestEffortAtomicProvClass) Provision(
 	if len(unschedulablePods) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
-	prs := provreqclient.ProvisioningRequestsForPods(o.client, unschedulablePods)
-	prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassBestEffortAtomicScaleUp, "")
+	prs := provreqclient.ProvisioningRequestsForPods(ctx, o.client, unschedulablePods)
+	prs = provreqclient.FilterOutProvisioningClass(ctx, prs, v1.ProvisioningClassBestEffortAtomicScaleUp, "")
 	if len(prs) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
@@ -134,7 +135,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotNeeded}, nil
 	}
 
-	st, err := o.scaleUpOrchestrator.ScaleUp(actuallyUnschedulablePods, nodes, daemonSets, nodeInfos, true)
+	st, err := o.scaleUpOrchestrator.ScaleUp(ctx, actuallyUnschedulablePods, nodes, daemonSets, nodeInfos, true)
 	if err == nil && st.Result == status.ScaleUpSuccessful {
 		// Happy path - all is well.
 		prAC := v1ac.ProvisioningRequest(pr.Name, pr.Namespace)

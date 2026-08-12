@@ -17,6 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
+	gocontext "context"
 	apiv1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/context"
@@ -44,11 +45,11 @@ type fakeCustomResourcesProcessor struct {
 // Verify that fakeCustomResourcesProcessor implements the CustomResourcesProcessor interface.
 var _ customresources.CustomResourcesProcessor = &fakeCustomResourcesProcessor{}
 
-func (f *fakeCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(context *context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (f *fakeCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx gocontext.Context, context *context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	return allNodes, readyNodes
 }
 
-func (f *fakeCustomResourcesProcessor) GetNodeResourceTargets(context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]customresources.CustomResourceTarget, errors.AutoscalerError) {
+func (f *fakeCustomResourcesProcessor) GetNodeResourceTargets(ctx gocontext.Context, context *context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]customresources.CustomResourceTarget, errors.AutoscalerError) {
 	if f.NodeResourceTargets == nil {
 		return nil, nil
 	}
@@ -92,7 +93,7 @@ type FakeProvider struct {
 }
 
 // Quotas returns quotas or error explicitly passed to the fake provider.
-func (f *FakeProvider) Quotas() ([]Quota, error) {
+func (f *FakeProvider) Quotas(ctx gocontext.Context) ([]Quota, error) {
 	if f.err != nil {
 		return nil, f.err
 	}

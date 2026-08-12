@@ -17,6 +17,7 @@ limitations under the License.
 package provisioningrequest
 
 import (
+	"context"
 	"strings"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
@@ -32,7 +33,7 @@ const (
 )
 
 // SupportedProvisioningClass verifies if the ProvisioningRequest with the given checkCapacityProcessorInstance is supported.
-func SupportedProvisioningClass(pr *v1.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
+func SupportedProvisioningClass(ctx context.Context, pr *v1.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
 	if pr.Spec.ProvisioningClassName == v1.ProvisioningClassBestEffortAtomicScaleUp {
 		if checkCapacityProcessorInstance != "" {
 			// If processor instance is set, BestEffortAtomicScaleUp should not be processed.
@@ -41,11 +42,11 @@ func SupportedProvisioningClass(pr *v1.ProvisioningRequest, checkCapacityProcess
 		return true
 	}
 
-	return SupportedCheckCapacityClass(pr, checkCapacityProcessorInstance)
+	return SupportedCheckCapacityClass(ctx, pr, checkCapacityProcessorInstance)
 }
 
 // SupportedCheckCapacityClass verifies if the check capacity ProvisioningRequest with the given checkCapacityProcessorInstance is supported.
-func SupportedCheckCapacityClass(pr *v1.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
+func SupportedCheckCapacityClass(ctx context.Context, pr *v1.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
 	provisioningClassName := pr.Spec.ProvisioningClassName
 	processorInstance := string(pr.Spec.Parameters[CheckCapacityProcessorInstanceKey])
 

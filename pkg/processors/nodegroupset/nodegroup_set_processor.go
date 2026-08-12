@@ -17,6 +17,7 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"context"
 	"fmt"
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
@@ -45,10 +46,10 @@ func (s ScaleUpInfo) String() string {
 
 // NodeGroupSetProcessor finds nodegroups that are similar and allows balancing scale-up between them.
 type NodeGroupSetProcessor interface {
-	FindSimilarNodeGroups(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
+	FindSimilarNodeGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
 		nodeInfosForGroups map[string]*framework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError)
 
-	BalanceScaleUpBetweenGroups(autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError)
+	BalanceScaleUpBetweenGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError)
 	CleanUp()
 }
 
@@ -57,13 +58,13 @@ type NoOpNodeGroupSetProcessor struct {
 }
 
 // FindSimilarNodeGroups returns a list of NodeGroups similar to the one provided in parameter.
-func (n *NoOpNodeGroupSetProcessor) FindSimilarNodeGroups(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
+func (n *NoOpNodeGroupSetProcessor) FindSimilarNodeGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
 	nodeInfosForGroups map[string]*framework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
 	return []cloudprovider.NodeGroup{}, nil
 }
 
 // BalanceScaleUpBetweenGroups splits a scale-up between provided NodeGroups.
-func (n *NoOpNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+func (n *NoOpNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
 	return []ScaleUpInfo{}, nil
 }
 
