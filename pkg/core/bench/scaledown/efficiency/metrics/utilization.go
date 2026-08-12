@@ -14,72 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package efficiency
+package metrics
 
 import (
 	"fmt"
-	"testing"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
-	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/status"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/utilization"
 )
-
-type clusterState struct {
-	scaledDownNodes []*status.ScaleDownNode
-	nodeInfos       []*framework.NodeInfo
-	currentTime     time.Time
-}
-
-// scaleDownMetric is the unified interface all metrics implement.
-type scaleDownMetric interface {
-	// Name returns name of the scaleDownMetric.
-	Name() string
-	// Compute calculates single cluster-level metric value using clusterState.
-	Compute(clusterState clusterState) (float64, error)
-	// Summarize processes metric recorded timeline and derives final benchmarking values returned in a map.
-	Summarize(metricValues []float64) map[string]float64
-}
-
-// metricsTracker orchestrates the computation, storing, and reporting of multiple scaleDownMetric.
-type metricsTracker struct {
-	metrics         []scaleDownMetric
-	metricsTimeline map[string][]float64
-}
-
-// NewMetricsTracker creates a new instance of metricsTracker with given list of scaleDownMetrics.
-func NewMetricsTracker(metrics ...scaleDownMetric) *metricsTracker {
-	return &metricsTracker{
-		metrics:         metrics,
-		metricsTimeline: make(map[string][]float64),
-	}
-}
-
-// ReportToBenchmark registers final benchmark values to benchmark runner across a set of configured scaleDownMetrics.
-func (mt *metricsTracker) ReportToBenchmark(b *testing.B) {
-	for _, m := range mt.metrics {
-		metricValues := mt.metricsTimeline[m.Name()]
-		benchVals := m.Summarize(metricValues)
-		for name, val := range benchVals {
-			b.ReportMetric(val, name)
-		}
-	}
-}
-
-// ComputeMetrics computes metric value across a set of configured scaleDownMetrics.
-func (mt *metricsTracker) ComputeMetrics(clusterState clusterState, t testing.TB) {
-	for _, m := range mt.metrics {
-		val, err := m.Compute(clusterState)
-		if err != nil {
-			t.Errorf("failed to compute metric %s, err %v", m.Name(), err)
-			continue
-		}
-		mt.metricsTimeline[m.Name()] = append(mt.metricsTimeline[m.Name()], val)
-	}
-}
 
 // resource struct holds two values:
 // 1) node allocatable value of given resource (whole number)
@@ -89,7 +34,7 @@ type resource struct {
 	utilization float64
 }
 
-func resourceAllocatableRequested(resourceName apiv1.ResourceName, nodeInfo *framework.NodeInfo, nodeName string, currentTime time.Time) (resource, error) {
+func resourceAllocatableRequested(resourceName apiv1.ResourceName, nodeInfo *framework.NodeInfo, currentTime time.Time) (resource, error) {
 	var r resource
 	util, err := utilization.CalculateUtilizationOfResource(nodeInfo, resourceName, true, true, currentTime)
 	if err != nil {
@@ -98,7 +43,7 @@ func resourceAllocatableRequested(resourceName apiv1.ResourceName, nodeInfo *fra
 	r.utilization = util
 	allocatable, found := nodeInfo.Node().Status.Allocatable[resourceName]
 	if !found {
-		return r, fmt.Errorf("failed to get allocatable %v from %s", resourceName, nodeName)
+		return r, fmt.Errorf("failed to get allocatable %v from %s", resourceName, nodeInfo.Node().Name)
 	}
 	if resourceName == apiv1.ResourceCPU {
 		r.allocatable = float64(allocatable.MilliValue())
@@ -108,14 +53,13 @@ func resourceAllocatableRequested(resourceName apiv1.ResourceName, nodeInfo *fra
 	return r, nil
 }
 
-func computeResourceUtilization(metricName string, resourceName apiv1.ResourceName, clusterState clusterState) (float64, error) {
+func (m *resourceUtilizationMetric) computeResourceUtilization(clusterState ClusterState) (float64, error) {
 	var totalRequested, totalAllocatable, ratio float64
 	for _, nodeInfo := range clusterState.nodeInfos {
 		if nodeInfo == nil || nodeInfo.Node() == nil {
 			continue
 		}
-		nodeName := nodeInfo.Node().Name
-		res, err := resourceAllocatableRequested(resourceName, nodeInfo, nodeName, clusterState.currentTime)
+		res, err := resourceAllocatableRequested(m.resourceName, nodeInfo, clusterState.currentTime)
 		if err != nil {
 			return 0, err
 		}
@@ -129,7 +73,7 @@ func computeResourceUtilization(metricName string, resourceName apiv1.ResourceNa
 	}
 
 	klog.V(5).Infof("Metric: %s, Allocated: %.2f, Allocatable: %.2f, Ratio: %.2f",
-		metricName, totalRequested, totalAllocatable, ratio)
+		m.Name(), totalRequested, totalAllocatable, ratio)
 	return ratio, nil
 }
 
@@ -147,8 +91,8 @@ func (m *resourceUtilizationMetric) Name() string {
 	return fmt.Sprintf("%s_utilization", m.resourceName.String())
 }
 
-func (m *resourceUtilizationMetric) Compute(clusterState clusterState) (float64, error) {
-	ratio, err := computeResourceUtilization(m.Name(), m.resourceName, clusterState)
+func (m *resourceUtilizationMetric) Compute(clusterState ClusterState) (float64, error) {
+	ratio, err := m.computeResourceUtilization(clusterState)
 	if err != nil {
 		return 0, err
 	}
