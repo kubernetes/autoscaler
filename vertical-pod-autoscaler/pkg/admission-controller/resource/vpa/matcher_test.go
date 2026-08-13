@@ -27,11 +27,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/tools/cache"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 func parseLabelSelector(selector string) labels.Selector {
@@ -183,11 +185,11 @@ func TestGetMatchingVpa(t *testing.T) {
 
 			mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
-			vpaNamespaceLister := &test.VerticalPodAutoscalerListerMock{}
-			vpaNamespaceLister.On("List").Return(tc.vpas, nil)
-
-			vpaLister := &test.VerticalPodAutoscalerListerMock{}
-			vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
+			vpaIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc,
+				cache.Indexers{vpa_api_util.TargetRefIndex: vpa_api_util.TargetRefIndexFunc})
+			for _, vpa := range tc.vpas {
+				assert.NoError(t, vpaIndexer.Add(vpa))
+			}
 
 			if tc.labelSelector != "" {
 				mockSelectorFetcher.EXPECT().Fetch(gomock.Any()).AnyTimes().Return(parseLabelSelector(tc.labelSelector), nil)
@@ -196,7 +198,7 @@ func TestGetMatchingVpa(t *testing.T) {
 			// In other words, it cannot go through the hierarchy of controllers like "ReplicaSet => Deployment"
 			// For this reason we are using "StatefulSet" as the ownerRef kind in the test, since it is a direct link.
 			// The hierarchy part is being test in the "TestControllerFetcher" test.
-			matcher := NewMatcher(vpaLister, mockSelectorFetcher, controllerfetcher.FakeControllerFetcher{})
+			matcher := NewMatcher(vpaIndexer, mockSelectorFetcher, controllerfetcher.FakeControllerFetcher{})
 
 			vpa := matcher.GetMatchingVPA(context.Background(), tc.pod)
 			if tc.expectedFound && assert.NotNil(t, vpa) {

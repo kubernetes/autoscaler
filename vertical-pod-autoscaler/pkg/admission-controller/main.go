@@ -71,7 +71,7 @@ func main() {
 	defer close(stopCh)
 
 	vpaClient := vpa_clientset.NewForConfigOrDie(kubeConfig)
-	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), config.CommonFlags.VpaObjectNamespace)
+	_, vpaIndexer := vpa_api_util.NewVpasListerWithIndexer(vpaClient, make(chan struct{}), config.CommonFlags.VpaObjectNamespace)
 	kubeClient := kube_client.NewForConfigOrDie(kubeConfig)
 	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod,
 		informers.WithNamespace(config.CommonFlags.VpaObjectNamespace),
@@ -89,7 +89,7 @@ func main() {
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
-	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher)
+	vpaMatcher := vpa.NewMatcher(vpaIndexer, targetSelectorFetcher, controllerFetcher)
 
 	factory.Start(stopCh)
 	informerMap := factory.WaitForCacheSync(stopCh)
