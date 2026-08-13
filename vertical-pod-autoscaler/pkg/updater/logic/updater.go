@@ -38,6 +38,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 	"k8s.io/utils/set"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
@@ -91,6 +92,7 @@ type updater struct {
 	defaultUpdateThreshold       float64
 	podLifetimeUpdateThreshold   time.Duration
 	evictAfterOOMThreshold       time.Duration
+	requireObservedGeneration    bool
 }
 
 // NewUpdater creates Updater with given configuration
@@ -117,6 +119,7 @@ func NewUpdater(
 	namespace string,
 	ignoredNamespaces []string,
 	patchCalculators []patch.Calculator,
+	requireObservedGeneration bool,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	// TODO: Create in-place rate limits for the in-place rate limiter
@@ -153,6 +156,7 @@ func NewUpdater(
 		defaultUpdateThreshold:     defaultUpdateThreshold,
 		podLifetimeUpdateThreshold: podLifetimeUpdateThreshold,
 		evictAfterOOMThreshold:     evictAfterOOMThreshold,
+		requireObservedGeneration:  requireObservedGeneration,
 	}, nil
 }
 
@@ -201,6 +205,17 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"InPlace\", \"Recreate\" or \"Auto\" and it doesn't have startupBoost configured", "vpa", klog.KObj(vpa))
 			continue
 		}
+
+		// Only act on the VPA status once the recommender has observed the
+		// current spec. This avoids applying recommendations computed from a
+		// completely different spec (for example, a recommendation computed
+		// when the update mode was Off before the update mode was changed to
+		// Recreate with minAllowed/maxAllowed capping)
+		if u.requireObservedGeneration && (vpa.Status.ObservedGeneration == nil || *vpa.Status.ObservedGeneration != vpa.Generation) {
+			klog.V(3).InfoS("Skipping VPA object because the recommender has not observed its current generation yet", "vpa", klog.KObj(vpa), "generation", vpa.Generation, "observedGeneration", ptr.Deref(vpa.Status.ObservedGeneration, 0))
+			continue
+		}
+
 		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
 		if err != nil {
 			klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))

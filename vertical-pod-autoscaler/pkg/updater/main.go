@@ -196,6 +196,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		commonFlag.VpaObjectNamespace,
 		ignoredNamespaces,
 		calculators,
+		config.RequireObservedGeneration,
 	)
 	if err != nil {
 		klog.ErrorS(err, "Failed to create updater")
