@@ -152,6 +152,7 @@ func NewNodeGroupChangeMetricsProducer(cloudProvider cloudprovider.CloudProvider
 }
 
 func retrieveMetricsDataFromNodeGroup(ctx context.Context, nodeGroup cloudprovider.NodeGroup, cloudProvider cloudprovider.CloudProvider, registry nodeInfoRegistry) (string, string, string) {
+	logger := klog.FromContext(ctx)
 	availableGPUTypes := cloudProvider.GetAvailableGPUTypes(ctx)
 	gpuResourceName, gpuType, draDriverNames := "", "", ""
 	var nodeInfo *framework.NodeInfo
@@ -163,9 +164,9 @@ func retrieveMetricsDataFromNodeGroup(ctx context.Context, nodeGroup cloudprovid
 		var err error
 		nodeInfo, err = nodeGroup.TemplateNodeInfo(ctx)
 		if err != nil {
-			klog.Warningf("Failed to get template node info for a node group: %s", err)
+			logger.Info("Failed to get template node info for a node group", "err", err)
 		} else if nodeInfo == nil {
-			klog.Warningf("Template node info is nil for node group: %s", nodeGroup.Id())
+			logger.Info("Template node info for node group is nil", "nodeGroupId", nodeGroup.Id())
 		}
 	}
 	if nodeInfo != nil {

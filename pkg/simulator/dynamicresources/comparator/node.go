@@ -114,10 +114,12 @@ func (c *NodeResourcesComparator) ReportResourceDiscrepancies(
 	templateSlices [][]*resourceapi.ResourceSlice,
 	nodeSlices [][]*resourceapi.ResourceSlice,
 ) {
+	logger := klog.FromContext(ctx)
 	c.reset()
 
 	if len(nodeNames) != len(templateSlices) || len(nodeNames) != len(nodeSlices) {
-		klog.Errorf("NodeResourcesComparator: nodeNames, templateSlices, and nodeSlices must have the same length")
+		logger.Error(nil, "NodeResourcesComparator: nodeNames, templateSlices, and nodeSlices must have the same length")
+
 		return
 	}
 

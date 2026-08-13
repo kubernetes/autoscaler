@@ -47,6 +47,7 @@ func SupportedProvisioningClass(ctx context.Context, pr *v1.ProvisioningRequest,
 
 // SupportedCheckCapacityClass verifies if the check capacity ProvisioningRequest with the given checkCapacityProcessorInstance is supported.
 func SupportedCheckCapacityClass(ctx context.Context, pr *v1.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
+	logger := klog.FromContext(ctx)
 	provisioningClassName := pr.Spec.ProvisioningClassName
 	processorInstance := string(pr.Spec.Parameters[CheckCapacityProcessorInstanceKey])
 
@@ -68,7 +69,7 @@ func SupportedCheckCapacityClass(ctx context.Context, pr *v1.ProvisioningRequest
 	if !strings.HasPrefix(provisioningClassName, checkCapacityProcessorInstance) {
 		return false
 	}
-	klog.Warningf("ProvReq %s/%s has prefixed provisioningClassName %q that is not recommended and will be removed in CA 1.35. Parameters should be used instead", pr.Namespace, pr.Name, provisioningClassName)
+	logger.Info("ProvReq has prefixed provisioningClassName that is not recommended and will be removed in CA 1.35. Parameters should be used instead", "provReq", klog.KObj(pr), "provisioningClassName", provisioningClassName)
 
 	return provisioningClassName[len(checkCapacityProcessorInstance):] == v1.ProvisioningClassCheckCapacity
 }

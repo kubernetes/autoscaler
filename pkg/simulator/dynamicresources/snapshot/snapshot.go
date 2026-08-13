@@ -133,9 +133,10 @@ func (s *Snapshot) PodClaims(pod *apiv1.Pod) ([]*resourceapi.ResourceClaim, erro
 // Claims referenced by the Pod but not owned by it are not removed, but the Pod's reservation is removed from them.
 // This method removes all relevant claims that are in the snapshot, and doesn't error out if any of the claims are missing.
 func (s *Snapshot) RemovePodOwnedClaims(ctx context.Context, pod *apiv1.Pod) {
+	logger := klog.FromContext(ctx)
 	claims, err := s.findPodClaims(pod, true)
 	if err != nil {
-		klog.Errorf("Snapshot.RemovePodOwnedClaims ignored an error: %s", err)
+		logger.Error(err, "Snapshot.RemovePodOwnedClaims ignored an error")
 	}
 
 	for _, claim := range claims {

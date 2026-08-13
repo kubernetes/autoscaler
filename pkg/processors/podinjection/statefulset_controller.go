@@ -18,6 +18,7 @@ package podinjection
 
 import (
 	"context"
+
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
@@ -25,10 +26,11 @@ import (
 )
 
 func createStatefulSetControllers(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) []controller {
+	logger := klog.FromContext(ctx)
 	var controllers []controller
 	statefulSets, err := autoscalingCtx.ListerRegistry.StatefulSetLister().List(labels.Everything())
 	if err != nil {
-		klog.Errorf("Failed to list statefulsets: %v", err)
+		logger.Error(err, "Failed to list statefulsets")
 		return controllers
 	}
 	for _, statefulSet := range statefulSets {

@@ -62,6 +62,7 @@ func NewNodeLatencyTracker(wrapped processor.ScaleDownStatusProcessor) *NodeLate
 
 // UpdateScaleDownCandidates updates tracked unneeded nodes and reports those that became needed again.
 func (t *NodeLatencyTracker) UpdateScaleDownCandidates(ctx context.Context, list []*scaledown.UnneededNode, timestamp time.Time) {
+	logger := klog.FromContext(ctx)
 	currentSet := make(map[string]struct{}, len(list))
 	for _, candidate := range list {
 		nodeName := candidate.Node.Name
@@ -71,12 +72,12 @@ func (t *NodeLatencyTracker) UpdateScaleDownCandidates(ctx context.Context, list
 				unneededSince:    timestamp,
 				removalThreshold: candidate.RemovalThreshold,
 			}
-			klog.V(6).Infof("Started tracking unneeded node %s at %v with removal threshold %v.", nodeName, timestamp, candidate.RemovalThreshold)
+			logger.V(6).Info("Started tracking unneeded node with removal threshold.", "node", klog.KObj(candidate.Node), "timestamp", timestamp, "threshold", candidate.RemovalThreshold)
 		} else {
 			if info.removalThreshold != candidate.RemovalThreshold {
 				info.removalThreshold = candidate.RemovalThreshold
 				t.unneededNodes[nodeName] = info
-				klog.V(6).Infof("Updated removal threshold for tracked node %s to %v.", nodeName, candidate.RemovalThreshold)
+				logger.V(6).Info("Updated removal threshold for tracked node.", "node", klog.KObj(candidate.Node), "threshold", candidate.RemovalThreshold)
 			}
 		}
 	}
@@ -89,6 +90,7 @@ func (t *NodeLatencyTracker) UpdateScaleDownCandidates(ctx context.Context, list
 
 // Process updates unremovableNodes and reports node removal latency based on scale-down status.
 func (t *NodeLatencyTracker) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, status *status.ScaleDownStatus) {
+	logger := klog.FromContext(ctx)
 	if t.wrapped != nil {
 		t.wrapped.Process(ctx, autoscalingCtx, status)
 	}
@@ -101,7 +103,7 @@ func (t *NodeLatencyTracker) Process(ctx context.Context, autoscalingCtx *ca_con
 
 	if klog.V(6).Enabled() {
 		for nodeName := range t.unneededNodes {
-			klog.Infof("Node %q remains in unneeded list (not scaled down). Continuing to track latency.", nodeName)
+			logger.Info("Node remains in unneeded list (not scaled down). Continuing to track latency.", "nodeName", nodeName)
 		}
 	}
 }
@@ -109,6 +111,7 @@ func (t *NodeLatencyTracker) Process(ctx context.Context, autoscalingCtx *ca_con
 // recordAndCleanup calculates the time a node spent in the "unneeded" state, updates
 // relevant Prometheus metrics, and removes the node from internal tracking.
 func (t *NodeLatencyTracker) recordAndCleanup(ctx context.Context, nodeName string, isRemoved bool) {
+	logger := klog.FromContext(ctx)
 	info, exists := t.unneededNodes[nodeName]
 	if !exists {
 		return
@@ -126,26 +129,24 @@ func (t *NodeLatencyTracker) recordAndCleanup(ctx context.Context, nodeName stri
 	if latency > 0 {
 		metrics.UpdateScaleDownNodeRemovalLatency(isRemoved, delayReason, latency)
 	} else {
-		klog.V(6).Infof("Node %q was unneeded for %s (threshold %s). Latency %s is <= 0, skipping metric. isRemoved: %v, delayReason: %v",
-			nodeName, duration, info.removalThreshold, latency, isRemoved, delayReason)
+		logger.V(6).Info("Node was unneeded. Latency is <= 0, skipping metric", "nodeName", nodeName, "duration", duration, "threshold", info.removalThreshold, "latency", latency, "isRemoved", isRemoved, "delayReason", delayReason)
 	}
 	if isRemoved {
 		t.logDeletion(ctx, nodeName, duration, info.removalThreshold, latency)
 	} else {
-		klog.V(4).Infof("Node %q became needed again (unneeded for %s). Blocker: %q. Latency: %s",
-			nodeName, duration, delayReason, latency)
+		logger.V(4).Info("Node became needed again", "nodeName", nodeName, "unneededDuration", duration, "delayReason", delayReason, "latency", latency)
 	}
 }
 
 // logDeletion handles the logging for scaled-down nodes,
 // using a higher verbosity (V2) if the latency exceeds the configured threshold.
 func (t *NodeLatencyTracker) logDeletion(ctx context.Context, nodeName string, duration, threshold, latency time.Duration) {
+	logger := klog.FromContext(ctx)
 	level := klog.Level(6)
 	if latency > scaleDownLatencyLogThreshold {
 		level = klog.Level(2)
 	}
-	klog.V(level).Infof("Observing deletion for node %s, unneeded for %s (removal threshold was %s).",
-		nodeName, duration, threshold)
+	logger.V(int(level)).Info("Observing deletion for node", "nodeName", nodeName, "unneededDuration", duration, "removalThreshold", threshold)
 }
 
 // getTrackedNodes returns the names of all nodes currently tracked as unneeded.
@@ -162,13 +163,14 @@ func (t *NodeLatencyTracker) CleanUp() {
 }
 
 func (t *NodeLatencyTracker) updateLatestDelayReasons(ctx context.Context, unremovableNodes []*status.UnremovableNode) {
+	logger := klog.FromContext(ctx)
 	for _, val := range unremovableNodes {
 		if info, exists := t.unneededNodes[val.Node.Name]; exists {
 			if isBlocker(val.Reason) {
 				reasonStr := val.Reason.String()
 				info.latestDelayReason = reasonStr
 				t.unneededNodes[val.Node.Name] = info
-				klog.V(6).Infof("Tracking latest delay reason %s for node %s.", reasonStr, val.Node.Name)
+				logger.V(6).Info("Tracking latest delay reason for node", "delayReason", reasonStr, "node", klog.KObj(val.Node))
 			}
 		}
 	}

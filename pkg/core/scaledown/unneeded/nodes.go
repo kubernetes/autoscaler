@@ -128,6 +128,7 @@ func (n *Nodes) Update(ctx context.Context, autoscalingCtx *ca_context.Autoscali
 }
 
 func (n *Nodes) updateInternalState(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodes []simulator.NodeToBeRemoved, ts time.Time, timestampGetter func(simulator.NodeToBeRemoved) *time.Time) {
+	logger := klog.FromContext(ctx)
 	updated := make(map[string]*node, len(nodes))
 	for _, nn := range nodes {
 		name := nn.Node.Name
@@ -148,7 +149,7 @@ func (n *Nodes) updateInternalState(ctx context.Context, autoscalingCtx *ca_cont
 	n.cachedList = nil
 	if klog.V(4).Enabled() {
 		for k, v := range n.byName {
-			klog.Infof("%s is unneeded since %s duration %s", k, v.since, ts.Sub(v.since))
+			logger.Info("Node is unneeded", "nodeName", k, "since", v.since, "duration", ts.Sub(v.since).String())
 		}
 	}
 }
@@ -206,11 +207,12 @@ func (n *Nodes) Drop(node string) {
 // into empty and non-empty node lists, as well as a list of nodes that were
 // unneeded, but are not removable, annotated by reason.
 func (n *Nodes) RemovableAt(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, ts time.Time) (empty, needDrain []simulator.NodeToBeRemoved, unremovable []simulator.UnremovableNode) {
+	logger := klog.FromContext(ctx)
 	nodeGroupSize := utils.GetNodeGroupSizeMap(ctx, autoscalingCtx.CloudProvider)
 	emptyNodes, drainNodes := n.splitEmptyAndNonEmptyNodes()
 
 	for nodeName, v := range emptyNodes {
-		klog.V(2).Infof("%s was unneeded for %s", nodeName, ts.Sub(v.since).String())
+		logger.V(2).Info("Node is unneeded", "nodeName", nodeName, "duration", ts.Sub(v.since).String())
 		if r := n.unremovableReason(ctx, autoscalingCtx, scaleDownContext, v, ts, nodeGroupSize); r != simulator.NoReason {
 			unremovable = append(unremovable, simulator.UnremovableNode{Node: v.ntbr.Node, Reason: r})
 			continue
@@ -218,7 +220,7 @@ func (n *Nodes) RemovableAt(ctx context.Context, autoscalingCtx *ca_context.Auto
 		empty = append(empty, v.ntbr)
 	}
 	for nodeName, v := range drainNodes {
-		klog.V(2).Infof("%s was unneeded for %s", nodeName, ts.Sub(v.since).String())
+		logger.V(2).Info("Node is unneeded", "nodeName", nodeName, "duration", ts.Sub(v.since).String())
 		if r := n.unremovableReason(ctx, autoscalingCtx, scaleDownContext, v, ts, nodeGroupSize); r != simulator.NoReason {
 			unremovable = append(unremovable, simulator.UnremovableNode{Node: v.ntbr.Node, Reason: r})
 			continue
@@ -230,13 +232,14 @@ func (n *Nodes) RemovableAt(ctx context.Context, autoscalingCtx *ca_context.Auto
 
 // lookupAndSetRemovalThreshold gets the unneeded/unready time for a node and updates the node struct.
 func (n *Nodes) lookupAndSetRemovalThreshold(ctx context.Context, v *node, cp cloudprovider.CloudProvider) {
+	logger := klog.FromContext(ctx)
 	nodeGroup, err := cp.NodeGroupForNode(ctx, v.ntbr.Node)
 	if err != nil {
-		klog.Warningf("Error determining node group for %s: %v", v.ntbr.Node.Name, err)
+		logger.Info("Error determining node group for node", "node", klog.KObj(v.ntbr.Node), "err", err)
 		return
 	}
 	if nodeGroup == nil {
-		klog.V(4).Infof("Skipping %s - no node group config", v.ntbr.Node.Name)
+		logger.V(4).Info("Skipping node - no node group config", "node", klog.KObj(v.ntbr.Node))
 		return
 	}
 
@@ -250,7 +253,7 @@ func (n *Nodes) lookupAndSetRemovalThreshold(ctx context.Context, v *node, cp cl
 	}
 
 	if err != nil {
-		klog.Warningf("Failed to get scale down unneeded/unready time for %s: %v", v.ntbr.Node.Name, err)
+		logger.Info("Failed to get scale down unneeded/unready time for node", "node", klog.KObj(v.ntbr.Node), "err", err)
 		v.thresholdRetrievalFailed = true
 		return
 	}
@@ -259,13 +262,14 @@ func (n *Nodes) lookupAndSetRemovalThreshold(ctx context.Context, v *node, cp cl
 }
 
 func (n *Nodes) unremovableReason(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleDownContext nodes.ScaleDownContext, v *node, ts time.Time, nodeGroupSize map[string]int) simulator.UnremovableReason {
+	logger := klog.FromContext(ctx)
 	if v.thresholdRetrievalFailed {
 		return simulator.UnexpectedError
 	}
 	node := v.ntbr.Node
 	// Check if node is marked with no scale down annotation.
 	if eligibility.HasNoScaleDownAnnotation(node) {
-		klog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
+		logger.V(4).Info("Skipping node - scale down disabled annotation found", "node", klog.KObj(node))
 		return simulator.ScaleDownDisabledAnnotation
 	}
 
@@ -280,7 +284,7 @@ func (n *Nodes) unremovableReason(ctx context.Context, autoscalingCtx *ca_contex
 
 	nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 	if err != nil || nodeGroup == nil {
-		klog.V(4).Infof("Skipping %s - no node group config", node.Name)
+		logger.V(4).Info("Skipping node - no node group config", "node", klog.KObj(node))
 		return simulator.NotAutoscaled
 	}
 
@@ -290,12 +294,12 @@ func (n *Nodes) unremovableReason(ctx context.Context, autoscalingCtx *ca_contex
 
 	checkResult, err := scaleDownContext.Tracker.ConsumeQuota(ctx, autoscalingCtx, nodeGroup, node, 1)
 	if err != nil {
-		klog.Errorf("Failed to check limits for %s: %v", node.Name, err)
+		logger.Error(err, "Failed to check limits for node", "node", klog.KObj(node))
 		return simulator.UnexpectedError
 	}
 
 	if checkResult.Exceeded() {
-		klog.V(2).Infof("Skipping scale down of %s in this batch - would violate minimum limits", node.Name)
+		logger.V(2).Info("Skipping scale down for node in this batch - would violate minimum limits", "node", klog.KObj(node))
 		return simulator.MinimalResourceLimitExceeded
 	}
 
@@ -317,14 +321,15 @@ func (n *Nodes) splitEmptyAndNonEmptyNodes() (empty, needDrain map[string]*node)
 }
 
 func verifyMinSize(ctx context.Context, nodeName string, nodeGroup cloudprovider.NodeGroup, nodeGroupSize map[string]int, as scaledown.ActuationStatus) simulator.UnremovableReason {
+	logger := klog.FromContext(ctx)
 	size, found := nodeGroupSize[nodeGroup.Id()]
 	if !found {
-		klog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
+		logger.Error(nil, "Error while checking node group size: group size not found in cache", "nodeGroupId", nodeGroup.Id())
 		return simulator.UnexpectedError
 	}
 	deletionsInProgress := as.DeletionsCount(nodeGroup.Id())
 	if size-deletionsInProgress <= nodeGroup.MinSize(ctx) {
-		klog.V(1).Infof("Skipping %s - node group min size reached", nodeName)
+		logger.V(1).Info("Skipping node - node group min size reached", "nodeName", nodeName)
 		return simulator.NodeGroupMinSizeReached
 	}
 	return simulator.NoReason

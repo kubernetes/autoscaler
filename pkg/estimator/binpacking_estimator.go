@@ -105,6 +105,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 	nodeTemplate *framework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup,
 ) (int, []*apiv1.Pod) {
+	logger := klog.FromContext(ctx)
 	observeBinpackingHeterogeneity(podsEquivalenceGroups, nodeTemplate)
 
 	e.limiter.StartEstimation(ctx, podsEquivalenceGroups, nodeGroup, e.context)
@@ -137,7 +138,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 
 		remainingPods, err = e.tryToScheduleOnExistingNodes(estimationState, podsEquivalenceGroup.Pods)
 		if err != nil {
-			klog.Error(err.Error())
+			logger.Error(err, "Failed to schedule pods on existing nodes")
 			return 0, nil
 		}
 
@@ -149,7 +150,7 @@ func (e *BinpackingNodeEstimator) Estimate(
 				newNodesAvailable, err = e.tryToScheduleOnNewNodes(ctx, estimationState, nodeTemplate, remainingPods)
 			}
 			if err != nil {
-				klog.Error(err.Error())
+				logger.Error(err, "Failed to schedule pods on new nodes")
 				return 0, nil
 			}
 		}

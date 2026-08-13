@@ -86,9 +86,10 @@ func NewCapacityBufferPodListProcessor(client *client.CapacityBufferClient, prov
 
 // Process updates unschedulablePods by injecting fake pods to match replicas defined in buffers status
 func (p *CapacityBufferPodListProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	logger := klog.FromContext(ctx)
 	buffers, err := p.client.ListCapacityBuffers("")
 	if err != nil {
-		klog.Errorf("CapacityBufferPodListProcessor failed to list buffers with error: %v", err.Error())
+		logger.Error(err, "CapacityBufferPodListProcessor failed to list buffers")
 		return unschedulablePods, nil
 	}
 	buffers = p.filterBuffersProvStrategy(buffers)
@@ -101,7 +102,7 @@ func (p *CapacityBufferPodListProcessor) Process(ctx context.Context, autoscalin
 		p.updateCapacityBufferRegistry(fakePods, buffer)
 		totalFakePods = append(totalFakePods, fakePods...)
 	}
-	klog.V(2).Infof("Capacity pod processor injecting %v fake pods provisioning %v capacity buffers", len(totalFakePods), len(buffers))
+	logger.V(2).Info("Capacity pod processor injecting fake pods provisioning capacity buffers", "fakePodsCount", len(totalFakePods), "buffersCount", len(buffers))
 	unschedulablePods = append(unschedulablePods, totalFakePods...)
 	return unschedulablePods, nil
 }
@@ -175,9 +176,10 @@ func (p *CapacityBufferPodListProcessor) filterBuffersProvStrategy(buffers []*v1
 }
 
 func (p *CapacityBufferPodListProcessor) updateBufferStatus(ctx context.Context, buffer *v1beta1.CapacityBuffer) {
+	logger := klog.FromContext(ctx)
 	_, err := p.client.UpdateCapacityBuffer(buffer)
 	if err != nil {
-		klog.Errorf("Failed to update buffer status for buffer %v, error: %v", buffer.Name, err.Error())
+		logger.Error(err, "Failed to update buffer status", "buffer", buffer.Name)
 	}
 }
 

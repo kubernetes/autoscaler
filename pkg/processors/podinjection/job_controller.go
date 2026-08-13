@@ -18,6 +18,7 @@ package podinjection
 
 import (
 	"context"
+
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
@@ -25,10 +26,11 @@ import (
 )
 
 func createJobControllers(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) []controller {
+	logger := klog.FromContext(ctx)
 	var controllers []controller
 	jobs, err := autoscalingCtx.ListerRegistry.JobLister().List(labels.Everything())
 	if err != nil {
-		klog.Errorf("Failed to list jobs: %v", err)
+		logger.Error(err, "Failed to list jobs")
 	}
 	for _, job := range jobs {
 		controllers = append(controllers, controller{uid: job.UID, desiredReplicas: desiredReplicasFromJob(job)})

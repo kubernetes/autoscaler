@@ -89,6 +89,7 @@ func (ds *GroupDeletionScheduler) scheduleForceDeletion(ctx context.Context, nod
 // scheduleDeletion handles the common logic for scheduling node deletion, supporting
 // both normal and forced deletion based on the 'force' parameter.
 func (ds *GroupDeletionScheduler) scheduleDeletion(ctx context.Context, nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup, batchSize int, drain bool, force bool) {
+	logger := klog.FromContext(ctx)
 	opts, err := nodeGroup.GetOptions(ctx, ds.autoscalingCtx.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerErrorf(errors.InternalError, "GetOptions returned error %v", err)}
@@ -102,7 +103,8 @@ func (ds *GroupDeletionScheduler) scheduleDeletion(ctx context.Context, nodeInfo
 	nodeDeleteResult := ds.prepareNodeForDeletion(ctx, nodeInfo, drain, force)
 	if nodeDeleteResult.Err != nil {
 		if force {
-			klog.Infof("Starting force deletion of node %s", nodeInfo.Node().Name)
+			logger.Info("Starting force deletion of node", "node", klog.KObj(nodeInfo.Node()))
+
 			if err := nodeGroup.ForceDeleteNodes(ctx, []*apiv1.Node{nodeInfo.Node()}); err != nil {
 				focrefulNodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
 				ds.AbortNodeDeletion(ctx, nodeInfo.Node(), nodeGroup.Id(), drain, "forceful node deletion failed", focrefulNodeDeleteResult, true)
@@ -119,6 +121,7 @@ func (ds *GroupDeletionScheduler) scheduleDeletion(ctx context.Context, nodeInfo
 
 // prepareNodeForDeletion is a long-running operation, so it needs to avoid locking the AtomicDeletionScheduler object
 func (ds *GroupDeletionScheduler) prepareNodeForDeletion(ctx context.Context, nodeInfo *framework.NodeInfo, drain bool, force bool) status.NodeDeleteResult {
+	logger := klog.FromContext(ctx)
 	node := nodeInfo.Node()
 	if drain {
 		var evictionResults map[string]status.PodEvictionResult
@@ -134,7 +137,7 @@ func (ds *GroupDeletionScheduler) prepareNodeForDeletion(ctx context.Context, no
 	} else {
 		if _, err := ds.evictor.EvictDaemonSetPods(ctx, ds.autoscalingCtx, nodeInfo); err != nil {
 			// Evicting DS pods is best-effort, so proceed with the deletion even if there are errors.
-			klog.Warningf("Error while evicting DS pods from an empty node %q: %v", node.Name, err)
+			logger.Info("Error while evicting DS pods from an empty node", "node", klog.KObj(node), "err", err)
 		}
 	}
 	if err := WaitForDelayDeletion(ctx, node, ds.autoscalingCtx.ListerRegistry.AllNodeLister(), ds.autoscalingCtx.AutoscalingOptions.NodeDeletionDelayTimeout); err != nil {

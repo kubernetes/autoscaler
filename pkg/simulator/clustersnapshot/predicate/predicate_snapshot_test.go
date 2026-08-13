@@ -370,7 +370,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.RemoveNodeInfo(context.TODO(), node.Name)
+				return snapshot.RemoveNodeInfo(context.Background(), node.Name)
 			},
 		},
 		{
@@ -380,7 +380,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				csiSnapshot: createCSISnapshot(csiNode),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				if err := snapshot.RemoveNodeInfo(context.TODO(), node.Name); err != nil {
+				if err := snapshot.RemoveNodeInfo(context.Background(), node.Name); err != nil {
 					return err
 				}
 				return snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
@@ -400,7 +400,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				if schedErr := snapshot.ForceAddPod(pod, node.Name); schedErr != nil {
 					return schedErr
 				}
-				return snapshot.RemoveNodeInfo(context.TODO(), node.Name)
+				return snapshot.RemoveNodeInfo(context.Background(), node.Name)
 			},
 		},
 		{
@@ -750,7 +750,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.RemoveNodeInfo(context.TODO(), node.Name)
+				return snapshot.RemoveNodeInfo(context.Background(), node.Name)
 			},
 			// LocalResourceSlices for the removed Node should get removed from the DRA snapshot.
 			// The pod-owned claim referenced by a pod from the removed Node should get removed from the DRA snapshot.
@@ -810,7 +810,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			},
 			// Remove the NodeInfo and then add it back to the snapshot.
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				if err := snapshot.RemoveNodeInfo(context.TODO(), node.Name); err != nil {
+				if err := snapshot.RemoveNodeInfo(context.Background(), node.Name); err != nil {
 					return err
 				}
 				podInfo := framework.NewPodInfo(podWithClaims, []*resourceapi.ResourceClaim{
@@ -840,7 +840,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				draSnapshot: drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices}, nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.RemoveNodeInfo(context.TODO(), "wrong-name")
+				return snapshot.RemoveNodeInfo(context.Background(), "wrong-name")
 			},
 			// The removed Node isn't in the snapshot, so this should be an error.
 			wantErr: cmpopts.AnyError,
@@ -1616,7 +1616,7 @@ func TestNode404(t *testing.T) {
 			return err
 		}},
 		{"remove NodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
-			return snapshot.RemoveNodeInfo(context.TODO(), "node")
+			return snapshot.RemoveNodeInfo(context.Background(), "node")
 		}},
 	}
 
@@ -1645,7 +1645,7 @@ func TestNode404(t *testing.T) {
 					snapshot.Fork()
 					assert.NoError(t, err)
 
-					err = snapshot.RemoveNodeInfo(context.TODO(), "node")
+					err = snapshot.RemoveNodeInfo(context.Background(), "node")
 					assert.NoError(t, err)
 
 					// Node deleted after fork - shouldn't be able to operate on it.
@@ -1670,7 +1670,7 @@ func TestNode404(t *testing.T) {
 					err = snapshot.AddNodeInfo(framework.NewTestNodeInfoWithCSI(node, csiNode))
 					assert.NoError(t, err)
 
-					err = snapshot.RemoveNodeInfo(context.TODO(), "node")
+					err = snapshot.RemoveNodeInfo(context.Background(), "node")
 					assert.NoError(t, err)
 
 					// Node deleted from base - shouldn't be able to operate on it.

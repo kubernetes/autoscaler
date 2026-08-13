@@ -119,6 +119,7 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 // up-to-date information about the cluster.
 // Planner will evaluate scaleDownCandidates in the order provided here.
 func (p *Planner) UpdateClusterState(ctx context.Context, podDestinations, scaleDownCandidates []*apiv1.Node, as scaledown.ActuationStatus, currentTime time.Time) errors.AutoscalerError {
+	logger := klog.FromContext(ctx)
 	updateInterval := currentTime.Sub(p.latestUpdate)
 	if updateInterval < p.minUpdateInterval {
 		p.minUpdateInterval = updateInterval
@@ -130,7 +131,8 @@ func (p *Planner) UpdateClusterState(ctx context.Context, podDestinations, scale
 	defer p.autoscalingCtx.ClusterSnapshot.Revert()
 	err := p.injectRecentlyEvictedPods()
 	if err != nil {
-		klog.Warningf("Not all recently evicted pods could be injected")
+		logger.Info("Not all recently evicted pods could be injected", "err", err)
+
 	}
 	deletions := asMap(merged(as.DeletionsInProgress()))
 	podDestinations = filterOutOngoingDeletions(podDestinations, deletions)
@@ -150,17 +152,18 @@ func (p *Planner) CleanUpUnneededNodes(ctx context.Context) {
 // NodesToDelete returns all Nodes that could be removed right now, according
 // to the Planner.
 func (p *Planner) NodesToDelete(ctx context.Context, _ time.Time) (empty, needDrain []*apiv1.Node) {
+	logger := klog.FromContext(ctx)
 	empty, needDrain = []*apiv1.Node{}, []*apiv1.Node{}
 
 	nodes, err := allNodes(p.autoscalingCtx.ClusterSnapshot)
 	if err != nil {
-		klog.Errorf("Failed to list nodes for final limit check: %v", err)
+		logger.Error(err, "Failed to list nodes for final limit check")
 		return nil, nil
 	}
 
 	tracker, err := p.quotasTrackerFactory.NewMinQuotasTracker(ctx, p.autoscalingCtx, nodes)
 	if err != nil {
-		klog.Errorf("Failed to create tracker for final limit check: %v", err)
+		logger.Error(err, "Failed to create tracker for final limit check")
 		return nil, nil
 	}
 	p.scaleDownContext.Tracker = tracker
@@ -176,7 +179,7 @@ func (p *Planner) NodesToDelete(ctx context.Context, _ time.Time) (empty, needDr
 
 	for _, nodeToRemove := range nodesToRemove {
 		if len(nodeToRemove.OnCompletionPods) > 0 {
-			klog.V(2).Infof("Node %s has active on-completion pods, delaying scale down", nodeToRemove.Node.Name)
+			logger.V(2).Info("Node has active on-completion pods, delaying scale down", "node", klog.KObj(nodeToRemove.Node))
 			p.addUnremovableNodes([]simulator.UnremovableNode{{
 				Node:   nodeToRemove.Node,
 				Reason: simulator.BlockedByOnCompletionPod,
@@ -286,6 +289,7 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 // categorizeNodes determines, for each node, whether it can be eventually
 // removed or if there are reasons preventing that.
 func (p *Planner) categorizeNodes(ctx context.Context, podDestinations map[string]bool, scaleDownCandidates []*apiv1.Node) {
+	logger := klog.FromContext(ctx)
 	unremovableTimeout := p.latestUpdate.Add(p.autoscalingCtx.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	unremovableCount := 0
 	var removableList []simulator.NodeToBeRemoved
@@ -302,12 +306,12 @@ func (p *Planner) categorizeNodes(ctx context.Context, podDestinations map[strin
 	for i, node := range currentlyUnneededNodeNames {
 		if timedOut(timer) {
 			skippedNodes = currentlyUnneededNodeNames[i:]
-			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
+			logger.Info("Some nodes skipped in scale down simulation due to timeout", "skippedNodesCount", len(currentlyUnneededNodeNames)-i, "nodesCount", len(currentlyUnneededNodeNames))
 			break
 		}
 		if len(removableList)-atomicScaleDownNodesCount >= p.unneededNodesLimit() {
 			skippedNodes = currentlyUnneededNodeNames[i:]
-			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more. Total atomic scale down nodes: %d", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList), atomicScaleDownNodesCount)
+			logger.V(4).Info("Some nodes skipped in scale down simulation: unneeded nodes count already exceeded limit so no point in looking for more.", "skippedNodesCount", len(currentlyUnneededNodeNames)-i, "nodesCount", len(currentlyUnneededNodeNames), "unneededNodesCount", len(removableList), "atomicScaleDownNodesCount", atomicScaleDownNodesCount)
 			break
 		}
 
@@ -322,7 +326,7 @@ func (p *Planner) categorizeNodes(ctx context.Context, podDestinations map[strin
 			removableList = append(removableList, *removable)
 			if p.atomicScaleDownNode(ctx, removable) {
 				atomicScaleDownNodesCount++
-				klog.V(2).Infof("Considering node %s for atomic scale down. Total atomic scale down nodes count: %d", removable.Node.Name, atomicScaleDownNodesCount)
+				logger.V(2).Info("Considering node for atomic scale down", "node", klog.KObj(removable.Node), "atomicScaleDownNodesCount", atomicScaleDownNodesCount)
 			}
 		}
 		if unremovable != nil {
@@ -333,24 +337,25 @@ func (p *Planner) categorizeNodes(ctx context.Context, podDestinations map[strin
 	p.handleUnprocessedNodes(skippedNodes)
 	p.unneededNodes.Update(ctx, p.autoscalingCtx, removableList, p.latestUpdate)
 	if unremovableCount > 0 {
-		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
+		logger.V(1).Info("Some nodes found to be unremovable in simulation, will re-check them within timeout", "unremovableNodesCount", unremovableCount, "timeout", unremovableTimeout)
 	}
 }
 
 // atomicScaleDownNode checks if the removable node would be considered for atomic scale down.
 func (p *Planner) atomicScaleDownNode(ctx context.Context, node *simulator.NodeToBeRemoved) bool {
+	logger := klog.FromContext(ctx)
 	nodeGroup, err := p.autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node.Node)
 	if err != nil {
-		klog.Errorf("failed to get node info for %v: %s", node.Node.Name, err)
+		logger.Error(err, "Failed to get node info", "node", klog.KObj(node.Node))
 		return false
 	}
 	if nodeGroup == nil {
-		klog.Errorf("Node group for node %s not found", node.Node.Name)
+		logger.Error(nil, "Node group not found for node", "node", klog.KObj(node.Node))
 		return false
 	}
 	autoscalingOptions, err := nodeGroup.GetOptions(ctx, p.autoscalingCtx.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
-		klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
+		logger.Error(err, "Failed to get autoscaling options for node group", "nodeGroupId", nodeGroup.Id())
 		return false
 	}
 	if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {

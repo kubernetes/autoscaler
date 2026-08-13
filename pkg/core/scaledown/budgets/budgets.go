@@ -55,6 +55,7 @@ func NewScaleDownBudgetProcessor(autoscalingCtx *ca_context.AutoscalingContext) 
 // The returned nodes are grouped by a node group.
 // This function assumes that each node group may occur at most once in each of the "empty" and "drain" lists.
 func (bp *ScaleDownBudgetProcessor) CropNodes(ctx context.Context, as scaledown.ActuationStatus, empty, drain []*apiv1.Node) (emptyToDelete, drainToDelete []*NodeGroupView) {
+	logger := klog.FromContext(ctx)
 	emptyIndividual, emptyAtomic := bp.categorize(ctx, bp.group(ctx, empty))
 	drainIndividual, drainAtomic := bp.categorize(ctx, bp.group(ctx, drain))
 
@@ -71,7 +72,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(ctx context.Context, as scaledown.
 
 	allNodes, err := allNodes(bp.autoscalingCtx.ClusterSnapshot)
 	if err != nil {
-		klog.Errorf("failed to read all nodes from the cluster snapshot for nodes cropping, err: %s", err)
+		logger.Error(err, "failed to read all nodes from the cluster snapshot for nodes cropping")
 	}
 
 	for _, bucket := range emptyAtomic {
@@ -95,7 +96,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(ctx context.Context, as scaledown.
 		var targetSize int
 		if targetSize, err = bucket.Group.TargetSize(ctx); err != nil {
 			// Very unlikely to happen, as we've got this far with this group.
-			klog.Errorf("not scaling atomically scaled group %v: can't get target size, err: %v", bucket.Group.Id(), err)
+			logger.Error(err, "Nt scaling atomically scaled group: can't get target size", "nodeGroupId", bucket.Group.Id())
 			continue
 		}
 		bucket.BatchSize = targetSize
@@ -105,7 +106,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(ctx context.Context, as scaledown.
 		// for such instances could block scale down indefinitely.
 		registeredNodes, err := bp.getAllRegisteredNodesForNodeGroup(ctx, allNodes, bucket.Group)
 		if err != nil {
-			klog.Errorf("failed to get registered nodes for node group %s: %v", bucket.Group.Id(), err)
+			logger.Error(err, "Failed to get registered nodes for node group", "nodeGroupId", bucket.Group.Id())
 		}
 		currentSize := len(registeredNodes)
 		if len(bucket.Nodes) == currentSize {
@@ -114,7 +115,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(ctx context.Context, as scaledown.
 
 		if len(bucket.Nodes)+len(drainNodes) != targetSize && len(bucket.Nodes)+len(drainNodes) != currentSize {
 			// We can't only partially scale down atomic group.
-			klog.Errorf("not scaling atomic group %v because not all nodes are candidates, target size: %v, current size: %v empty: %v, drainable: %v", bucket.Group.Id(), targetSize, currentSize, len(bucket.Nodes), len(drainNodes))
+			logger.Error(nil, "Not scaling atomic group because not all nodes are candidates", "nodeGroupId", bucket.Group.Id(), "targetSize", targetSize, "size", currentSize, "emptyNodesCount", len(bucket.Nodes), "drainableNodesCount", len(drainNodes))
 			continue
 		}
 		emptyToDelete = append(emptyToDelete, bucket)
@@ -145,7 +146,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(ctx context.Context, as scaledown.
 		var targetSize int
 		if targetSize, err = bucket.Group.TargetSize(ctx); err != nil {
 			// Very unlikely to happen, as we've got this far with this group.
-			klog.Errorf("not scaling atomically scaled group %v: can't get target size, err: %v", bucket.Group.Id(), err)
+			logger.Error(err, "Not scaling atomically scaled group: can't get target size", "nodeGroupId", bucket.Group.Id())
 			continue
 		}
 		bucket.BatchSize = targetSize
@@ -155,7 +156,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(ctx context.Context, as scaledown.
 		// for such instances could block scale down indefinitely.
 		registeredNodes, err := bp.getAllRegisteredNodesForNodeGroup(ctx, allNodes, bucket.Group)
 		if err != nil {
-			klog.Errorf("Failed to get registered nodes for node group %s: %v", bucket.Group.Id(), err)
+			logger.Error(err, "Failed to get registered nodes for node group", "nodeGroupId", bucket.Group.Id())
 		}
 		currentSize := len(registeredNodes)
 		if len(bucket.Nodes) == currentSize {
@@ -164,7 +165,7 @@ func (bp *ScaleDownBudgetProcessor) CropNodes(ctx context.Context, as scaledown.
 
 		if len(bucket.Nodes) != targetSize && len(bucket.Nodes) != currentSize {
 			// We can't only partially scale down atomic group.
-			klog.Errorf("not scaling atomic group %v because not all nodes are candidates, target size: %v, current size: %v, empty: none, drainable: %v", bucket.Group.Id(), targetSize, currentSize, len(bucket.Nodes))
+			logger.Error(nil, "Not scaling atomic group because not all nodes are candidates", "nodeGroupId", bucket.Group.Id(), "targetSize", targetSize, "currentSize", currentSize, "drainableNodesCount", len(bucket.Nodes))
 			continue
 		}
 		drainToDelete = append(drainToDelete, bucket)
@@ -209,12 +210,13 @@ func cropIndividualNodes(toDelete []*NodeGroupView, groups []*NodeGroupView, bud
 }
 
 func (bp *ScaleDownBudgetProcessor) group(ctx context.Context, nodes []*apiv1.Node) []*NodeGroupView {
+	logger := klog.FromContext(ctx)
 	groupMap := map[string]int{}
 	grouped := []*NodeGroupView{}
 	for _, node := range nodes {
 		nodeGroup, err := bp.autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil || nodeGroup == nil {
-			klog.Errorf("Failed to find node group for %s: %v", node.Name, err)
+			logger.Error(err, "Failed to find node group for node", "node", klog.KObj(node))
 			continue
 		}
 		if idx, ok := groupMap[nodeGroup.Id()]; ok {
@@ -231,10 +233,11 @@ func (bp *ScaleDownBudgetProcessor) group(ctx context.Context, nodes []*apiv1.No
 }
 
 func (bp *ScaleDownBudgetProcessor) categorize(ctx context.Context, groups []*NodeGroupView) (individual, atomic []*NodeGroupView) {
+	logger := klog.FromContext(ctx)
 	for _, view := range groups {
 		autoscalingOptions, err := view.Group.GetOptions(ctx, bp.autoscalingCtx.NodeGroupDefaults)
 		if err != nil && err != cloudprovider.ErrNotImplemented {
-			klog.Errorf("Failed to get autoscaling options for node group %s: %v", view.Group.Id(), err)
+			logger.Error(err, "Failed to get autoscaling options for node group", "nodeGroupId", view.Group.Id())
 			continue
 		}
 		if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {

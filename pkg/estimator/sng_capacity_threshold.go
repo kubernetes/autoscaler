@@ -46,10 +46,11 @@ func (t *sngCapacityThreshold) NodeLimit(ctx context.Context, nodeGroup cloudpro
 }
 
 func (t *sngCapacityThreshold) computeNodeGroupCapacity(ctx context.Context, nodeGroup cloudprovider.NodeGroup) int {
+	logger := klog.FromContext(ctx)
 	nodeGroupTargetSize, err := nodeGroup.TargetSize(ctx)
 	// Should not ever happen as only valid node groups are passed to estimator
 	if err != nil {
-		klog.Errorf("Error while computing available capacity of a node group %v: can't get target size of the group: %v", nodeGroup.Id(), err)
+		logger.Error(err, "Error while computing available capacity of a node group: can't get target size of the group", "nodeGroupId", nodeGroup.Id())
 		return 0
 	}
 	groupCapacity := nodeGroup.MaxSize(ctx) - nodeGroupTargetSize

@@ -55,11 +55,13 @@ func NewDraCustomResourcesProcessor() *DraCustomResourcesProcessor {
 // FilterOutNodesWithUnreadyResources removes nodes that should have DRA resource, but don't have
 // it in allocatable from ready nodes list and updates their status to unready on all nodes list.
 func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *snapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+	logger := klog.FromContext(ctx)
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyDraResources := make(map[string]*apiv1.Node)
 	if draSnapshot == nil {
-		klog.Warningf("Cannot filter out nodes with unready DRA resources. The DRA snapshot is nil. Processing will be skipped.")
+		logger.Info("Cannot filter out nodes with unready DRA resources. The DRA snapshot is nil. Processing will be skipped.")
+
 		return allNodes, readyNodes
 	}
 
@@ -71,7 +73,7 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx con
 		ng, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
-			klog.Warningf("Failed to get node group for node %s, Skipping DRA readiness check and keeping node in ready list. Error: %v", node.Name, err)
+			logger.Info("Failed to get node group for node, Skipping DRA readiness check and keeping node in ready list", "node", klog.KObj(node), "err", err)
 			continue
 		}
 		if ng == nil {
@@ -82,7 +84,7 @@ func (p *DraCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx con
 		templateNodeInfo, err := getNodeInfo(ctx, autoscalingCtx, ng)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
-			klog.Warningf("Failed to get template node info for node group %s with error: %v", ng.Id(), err)
+			logger.Info("Failed to get template node info for node group", "nodeGroupId", ng.Id(), "err", err)
 			continue
 		}
 

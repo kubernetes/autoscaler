@@ -43,6 +43,7 @@ func (n *PreFilteringScaleDownNodeProcessor) GetPodDestinationCandidates(autosca
 // GetScaleDownCandidates returns nodes that potentially could be scaled down and
 func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
+	logger := klog.FromContext(ctx)
 	result := make([]*apiv1.Node, 0, len(nodes))
 
 	nodeGroupSize := utils.GetNodeGroupSizeMap(ctx, autoscalingCtx.CloudProvider)
@@ -50,21 +51,21 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx context.
 	for _, node := range nodes {
 		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
-			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
+			logger.Info("Error while checking node group for node", "node", klog.KObj(node), "err", err)
 			continue
 		}
 		if nodeGroup == nil {
-			klog.V(5).Infof("Node %s should not be processed by cluster autoscaler (no node group config)", node.Name)
+			logger.V(5).Info("Node should not be processed by cluster autoscaler (no node group config)", "node", klog.KObj(node))
 			continue
 		}
 		size, found := nodeGroupSize[nodeGroup.Id()]
 		if !found {
-			klog.Errorf("Error while checking node group size %s: group size not found", nodeGroup.Id())
+			logger.Error(nil, "Error while checking node group size: group size not found", "nodeGroupId", nodeGroup.Id())
 			continue
 		}
 		minSize := nodeGroup.MinSize(ctx)
 		if size <= minSize {
-			klog.V(1).Infof("Skipping %s - node group min size reached (current: %d, min: %d)", node.Name, size, minSize)
+			logger.V(1).Info("Skipping node - node group min size reached", "node", klog.KObj(node), "currentSize", size, "minSize", minSize)
 			continue
 		}
 		result = append(result, node)

@@ -109,6 +109,7 @@ func (e Evictor) EvictDaemonSetPods(ctx context.Context, autoscalingCtx *ca_cont
 // drainNodeWithPodsBasedOnPodPriority performs drain logic on the node based on pod priorities.
 // Removes all pods, giving each pod group up to ShutdownGracePeriodSeconds to finish. The list of pods to evict has to be provided.
 func (e Evictor) drainNodeWithPodsBasedOnPodPriority(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, fullEvictionPods, bestEffortEvictionPods []*apiv1.Pod, force bool) (map[string]status.PodEvictionResult, error) {
+	logger := klog.FromContext(ctx)
 	evictionResults := make(map[string]status.PodEvictionResult)
 
 	groups := groupByPriority(e.shutdownGracePeriodByPodPriority, fullEvictionPods, bestEffortEvictionPods)
@@ -138,24 +139,25 @@ func (e Evictor) drainNodeWithPodsBasedOnPodPriority(ctx context.Context, autosc
 			return evictionResults, err
 		}
 	}
-	klog.V(1).Infof("All pods removed from %s", node.Name)
+	logger.V(1).Info("All pods removed node", "node", klog.KObj(node))
 	return evictionResults, nil
 }
 
 func (e Evictor) waitPodsToDisappear(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod, evictionResults map[string]status.PodEvictionResult,
 	maxTermination int64) (map[string]status.PodEvictionResult, error) {
+	logger := klog.FromContext(ctx)
 	var allGone bool
 	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxTermination)*time.Second+e.PodEvictionHeadroom; time.Sleep(5 * time.Second) {
 		allGone = true
 		for _, pod := range pods {
 			podReturned, err := autoscalingCtx.ClientSet.CoreV1().Pods(pod.Namespace).Get(ctx, pod.Name, metav1.GetOptions{})
 			if err == nil && (podReturned == nil || podReturned.Spec.NodeName == node.Name) {
-				klog.V(1).Infof("Not deleted yet %s/%s", pod.Namespace, pod.Name)
+				logger.V(1).Info("Not deleted yet", "pod", klog.KObj(pod))
 				allGone = false
 				break
 			}
 			if err != nil && !kube_errors.IsNotFound(err) {
-				klog.Errorf("Failed to check pod %s/%s: %v", pod.Namespace, pod.Name, err)
+				logger.Error(err, "Failed to check pod", "pod", klog.KObj(pod))
 				allGone = false
 				break
 			}
@@ -226,6 +228,7 @@ func (e Evictor) initiateEviction(ctx context.Context, autoscalingCtx *ca_contex
 }
 
 func (e Evictor) evictPod(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, podToEvict *apiv1.Pod, retryUntil time.Time, maxTermination int64, fullEvictionPod bool, force bool) status.PodEvictionResult {
+	logger := klog.FromContext(ctx)
 	autoscalingCtx.Recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
 
 	termination := int64(apiv1.DefaultTerminationGracePeriodSeconds)
@@ -256,8 +259,7 @@ func (e Evictor) evictPod(ctx context.Context, autoscalingCtx *ca_context.Autosc
 			return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: nil}
 		}
 	}
-
-	klog.Errorf("Failed to evict pod %s, error: %v", podToEvict.Name, lastError)
+	logger.Error(lastError, "Failed to evict pod", "pod", klog.KObj(podToEvict))
 	if force {
 		// If eviction failed, forcefully delete the pod
 		if err := forceDeletePod(ctx, autoscalingCtx, podToEvict); err != nil {
@@ -293,9 +295,10 @@ func podsToEvict(nodeInfo *framework.NodeInfo, evictDsByDefault bool) (dsPods, n
 }
 
 func forceDeletePod(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, pod *apiv1.Pod) error {
-	klog.Infof("Starting force deletion of pod %s", pod.Name)
+	logger := klog.FromContext(ctx)
+	logger.Info("Starting force deletion of pod", "pod", klog.KObj(pod))
 	if err := autoscalingCtx.ClientSet.CoreV1().Pods(pod.Namespace).Delete(ctx, pod.Name, metav1.DeleteOptions{}); err != nil {
-		klog.Errorf("Failed to forcefully delete pod %s, error: %v", pod.Name, err)
+		logger.Error(err, "Failed to forcefully delete pod", "pod", klog.KObj(pod))
 		autoscalingCtx.Recorder.Eventf(pod, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to forcefully delete pod for ScaleDown")
 		return fmt.Errorf("failed to forcefully delete unevicted pod %s/%s (last error: %v)", pod.Namespace, pod.Name, err)
 	}

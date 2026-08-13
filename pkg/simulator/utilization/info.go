@@ -49,10 +49,12 @@ type Info struct {
 // utilization is the sum of requests for it divided by allocatable. It also
 // returns the individual cpu, memory and gpu utilization.
 func Calculate(ctx context.Context, nodeInfo *framework.NodeInfo, skipDaemonSetPods, skipMirrorPods, draEnabled bool, gpuConfig *cloudprovider.GpuConfig, currentTime time.Time) (utilInfo Info, err error) {
+	logger := klog.FromContext(ctx)
 	if gpuConfig != nil && !gpuConfig.ExposedViaDra() {
 		gpuUtil, err := CalculateUtilizationOfResource(nodeInfo, gpuConfig.ExtendedResourceName, skipDaemonSetPods, skipMirrorPods, currentTime)
 		if err != nil {
-			klog.V(3).Infof("node %s has unready GPU resource: %s", nodeInfo.Node().Name, gpuConfig.ExtendedResourceName)
+			logger.V(3).Info("Node has unready GPU resource", "node", klog.KObj(nodeInfo.Node()), "resourceName", gpuConfig.ExtendedResourceName, "err", err)
+
 			// Return 0 if GPU is unready. This will guarantee we can still scale down a node with unready GPU.
 			return Info{GpuUtil: 0, ResourceName: gpuConfig.ExtendedResourceName, Utilization: 0}, nil
 		}

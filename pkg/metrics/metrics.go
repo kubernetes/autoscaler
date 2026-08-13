@@ -644,8 +644,9 @@ func (m *caMetrics) UpdateDurationFromStart(ctx context.Context, label FunctionL
 
 // UpdateDuration records the duration of the step identified by the label
 func (m *caMetrics) UpdateDuration(ctx context.Context, label FunctionLabel, duration time.Duration) {
+	logger := klog.FromContext(ctx)
 	if duration > LogLongDurationThreshold {
-		klog.V(4).Infof("Function %s took %v to complete", label, duration)
+		logger.V(4).Info("Function completed", "functionLabel", label, "duration", duration)
 	}
 	m.functionDuration.WithLabelValues(string(label)).Observe(duration.Seconds())
 	m.functionDurationSummary.WithLabelValues(string(label)).Observe(duration.Seconds())

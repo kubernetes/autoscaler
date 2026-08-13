@@ -60,6 +60,7 @@ func (a *FakePodsScaleUpStatusProcessor) Process(ctx context.Context, _ *ca_cont
 // Uses `resourceName` to log which resource it has modified
 // Returns a list containing only non-fake pods
 func filterFakePods[T any](ctx context.Context, podsWrappers []T, getPod func(T) *apiv1.Pod, resourceName string) []T {
+	logger := klog.FromContext(ctx)
 	filteredPodsSouces := make([]T, 0)
 	removedPods := make([]*apiv1.Pod, 0)
 
@@ -72,12 +73,12 @@ func filterFakePods[T any](ctx context.Context, podsWrappers []T, getPod func(T)
 
 		controllerRef := v1.GetControllerOf(currentPod)
 		if controllerRef == nil {
-			klog.Infof("Failed to find controller for pod %s, ignoring.", currentPod.Name)
+			logger.Info("Failed to find controller for pod, ignoring.", "pod", klog.KObj(currentPod))
 			continue
 		}
 
 		removedPods = append(removedPods, currentPod)
-		klog.V(5).Infof("Filtering out pod %s from %v with controller reference %s", currentPod.Name, resourceName, controllerRef.Name)
+		logger.V(5).Info("Filtering out pod from resource", "pod", klog.KObj(currentPod), "resource", resourceName, "controllerName", controllerRef.Name)
 	}
 
 	logRemovedPods(ctx, removedPods, resourceName)
@@ -97,6 +98,7 @@ func extractFakePodsControllersUIDs(NoScaleUpInfos []status.NoScaleUpInfo) map[t
 
 // logRemovedPods logs the removed pods from resourceName
 func logRemovedPods(ctx context.Context, removedPods []*apiv1.Pod, resourceName string) {
+	logger := klog.FromContext(ctx)
 	if len(removedPods) == 0 {
 		return
 	}
@@ -104,7 +106,7 @@ func logRemovedPods(ctx context.Context, removedPods []*apiv1.Pod, resourceName 
 	for idx, pod := range removedPods {
 		controllerRefNames[idx] = v1.GetControllerOf(pod).Name
 	}
-	klog.Infof("Filtered out %d pods from %s for controllers %s", len(removedPods), resourceName, strings.Join(controllerRefNames, ", "))
+	logger.Info("Filtered out pods from resource", "podsCount", len(removedPods), "resource", resourceName, "controllerNames", strings.Join(controllerRefNames, ", "))
 }
 
 // CleanUp is called at CA termination

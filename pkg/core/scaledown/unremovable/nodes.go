@@ -49,6 +49,7 @@ type nodeInfoGetter interface {
 // Update updates the internal structure according to current state of the
 // cluster. Removes the nodes that are no longer in the nodes list.
 func (n *Nodes) Update(ctx context.Context, nodeInfos nodeInfoGetter, timestamp time.Time) {
+	logger := klog.FromContext(ctx)
 	n.reasons = make(map[string]*simulator.UnremovableNode)
 	if len(n.ttls) <= 0 {
 		return
@@ -57,7 +58,7 @@ func (n *Nodes) Update(ctx context.Context, nodeInfos nodeInfoGetter, timestamp 
 	for name, ttl := range n.ttls {
 		if _, err := nodeInfos.GetNodeInfo(name); err != nil {
 			// Not logging on error level as most likely cause is that node is no longer in the cluster.
-			klog.Infof("Can't retrieve node %s from snapshot, removing from unremovable nodes, err: %v", name, err)
+			logger.Info("Can't retrieve node from snapshot, removing from unremovable nodes", "name", name, "err", err)
 			continue
 		}
 		if ttl.After(timestamp) {

@@ -134,12 +134,13 @@ func listControllers(ctx context.Context, autoscalingCtx *ca_context.Autoscaling
 }
 
 func (p *PodInjectionPodListProcessor) skipBackedoffControllers(ctx context.Context, controllers []controller) []controller {
+	logger := klog.FromContext(ctx)
 	var filteredControllers []controller
 	backoffRegistry := p.fakePodControllerBackoffRegistry
 	now := time.Now()
 	for _, controller := range controllers {
 		if backoffUntil := backoffRegistry.BackOffUntil(controller.uid, now); backoffUntil.After(now) {
-			klog.Warningf("Skipping generating fake pods for controller in backoff until (%s): %v", backoffUntil.Format(time.TimeOnly), controller.uid)
+			logger.Info("Skipping generating fake pods for controller in backoff until timeout", "timeout", backoffUntil.Format(time.TimeOnly), "controllerUid", controller.uid)
 			continue
 		}
 		filteredControllers = append(filteredControllers, controller)

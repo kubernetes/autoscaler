@@ -171,15 +171,16 @@ func (a *Actuator) startDeletion(ctx context.Context, empty, drain []*apiv1.Node
 // deleteAsyncEmpty immediately starts deletions asynchronously.
 // scaledDownNodes return value contains all nodes for which deletion successfully started.
 func (a *Actuator) deleteAsyncEmpty(ctx context.Context, NodeGroupViews []*budgets.NodeGroupView, nodeDeleteDelayAfterTaint time.Duration, force bool) (reportedSDNodes []*status.ScaleDownNode) {
+	logger := klog.FromContext(ctx)
 	for _, bucket := range NodeGroupViews {
 		for _, node := range bucket.Nodes {
-			klog.V(0).Infof("Scale-down: removing empty node %q", node.Name)
+			logger.V(0).Info("Scale-down: removing empty node", "node", klog.KObj(node))
 			a.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: removing empty node %q", node.Name)
 
 			if sdNode, err := a.scaleDownNodeToReport(ctx, node, false); err == nil {
 				reportedSDNodes = append(reportedSDNodes, sdNode)
 			} else {
-				klog.Errorf("Scale-down: couldn't report scaled down node, err: %v", err)
+				logger.Error(err, "Scale-down: couldn't report scaled down node")
 			}
 
 			a.nodeDeletionTracker.StartDeletion(bucket.Group.Id(), node.Name)
@@ -263,14 +264,15 @@ func (a *Actuator) taintNodesSync(ctx context.Context, NodeGroupViews []*budgets
 // deleteAsyncDrain asynchronously starts deletions with drain for all provided nodes. scaledDownNodes return value contains all nodes for which
 // deletion successfully started.
 func (a *Actuator) deleteAsyncDrain(ctx context.Context, NodeGroupViews []*budgets.NodeGroupView, nodeDeleteDelayAfterTaint time.Duration, force bool) (reportedSDNodes []*status.ScaleDownNode) {
+	logger := klog.FromContext(ctx)
 	for _, bucket := range NodeGroupViews {
 		for _, drainNode := range bucket.Nodes {
 			if sdNode, err := a.scaleDownNodeToReport(ctx, drainNode, true); err == nil {
-				klog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", drainNode.Name, sdNode.UtilInfo, joinPodNames(sdNode.EvictedPods))
+				logger.V(0).Info("Scale-down: removing node", "node", klog.KObj(drainNode), "utilization", sdNode.UtilInfo, "podsToReschedule", joinPodNames(sdNode.EvictedPods))
 				a.autoscalingCtx.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDown", "Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", drainNode.Name, sdNode.UtilInfo, joinPodNames(sdNode.EvictedPods))
 				reportedSDNodes = append(reportedSDNodes, sdNode)
 			} else {
-				klog.Errorf("Scale-down: couldn't report scaled down node, err: %v", err)
+				logger.Error(err, "Scale-down: couldn't report scaled down node")
 			}
 
 			a.nodeDeletionTracker.StartDeletionWithDrain(bucket.Group.Id(), drainNode.Name)
@@ -285,6 +287,7 @@ func (a *Actuator) deleteAsyncDrain(ctx context.Context, NodeGroupViews []*budge
 }
 
 func (a *Actuator) deleteNodesAsync(ctx context.Context, nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool, force bool, batchSize int, nodeDeleteDelayAfterTaint time.Duration) {
+	logger := klog.FromContext(ctx)
 	var remainingPdbTracker pdb.RemainingPdbTracker
 	var registry kube_util.ListerRegistry
 
@@ -293,7 +296,7 @@ func (a *Actuator) deleteNodesAsync(ctx context.Context, nodes []*apiv1.Node, no
 	}
 
 	if nodeDeleteDelayAfterTaint > time.Duration(0) {
-		klog.V(0).Infof("Scale-down: waiting %v before trying to delete nodes", nodeDeleteDelayAfterTaint)
+		logger.V(0).Info("Scale-down: waiting before trying to delete nodes", "delay", nodeDeleteDelayAfterTaint)
 		time.Sleep(nodeDeleteDelayAfterTaint)
 	}
 

@@ -73,33 +73,34 @@ func createGRPCClient(expanderCert string, expanderUrl string) protos.ExpanderCl
 }
 
 func (g *grpcclientstrategy) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
+	logger := klog.FromContext(ctx)
 	if g.grpcClient == nil {
-		klog.Errorf("Incorrect gRPC client config, filtering no options")
+		logger.Error(nil, "Incorrect gRPC client config, filtering no options")
+
 		return expansionOptions
 	}
 
 	// Transform inputs to gRPC inputs
 	grpcOptionsSlice, nodeGroupIDOptionMap := populateOptionsForGRPC(expansionOptions)
 	grpcNodeBytesMap := populateNodeInfoForGRPC(nodeInfo)
-
 	// call gRPC server to get BestOption
-	klog.V(2).Infof("GPRC call of best options to server with %v options", len(nodeGroupIDOptionMap))
-	ctx, cancel := context.WithTimeout(context.Background(), gRPCTimeout)
+	logger.V(2).Info("GRPC call to get best options", "optionsCount", len(nodeGroupIDOptionMap))
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), gRPCTimeout)
 	defer cancel()
-	bestOptionsResponse, err := g.grpcClient.BestOptions(ctx, &protos.BestOptionsRequest{Options: grpcOptionsSlice, NodeBytesMap: grpcNodeBytesMap})
+	bestOptionsResponse, err := g.grpcClient.BestOptions(timeoutCtx, &protos.BestOptionsRequest{Options: grpcOptionsSlice, NodeBytesMap: grpcNodeBytesMap})
 	if err != nil {
-		klog.V(4).Infof("GRPC call failed, no options filtered: %v", err)
+		logger.V(4).Info("GRPC call failed, no options filtered", "err", err)
 		return expansionOptions
 	}
 
 	if bestOptionsResponse == nil || len(bestOptionsResponse.Options) == 0 {
-		klog.V(4).Info("GRPC returned nil bestOptions")
+		logger.V(4).Info("GRPC returned nil bestOptions")
 		return nil
 	}
 	// Transform back options slice
 	options := transformAndSanitizeOptionsFromGRPC(ctx, bestOptionsResponse.Options, nodeGroupIDOptionMap)
 	if options == nil {
-		klog.V(4).Info("Unable to sanitize GPRC returned bestOptions, no options filtered")
+		logger.V(4).Info("Unable to sanitize GPRC returned bestOptions, no options filtered")
 		return expansionOptions
 	}
 	return options
@@ -138,16 +139,17 @@ func populateNodeInfoForGRPC(nodeInfos map[string]*framework.NodeInfo) map[strin
 }
 
 func transformAndSanitizeOptionsFromGRPC(ctx context.Context, bestOptionsResponseOptions []*protos.Option, nodeGroupIDOptionMap map[string]expander.Option) []expander.Option {
+	logger := klog.FromContext(ctx)
 	var options []expander.Option
 	for _, option := range bestOptionsResponseOptions {
 		if option == nil {
-			klog.Error("GRPC server returned nil Option")
+			logger.Error(nil, "GRPC server returned nil Option")
 			continue
 		}
 		if _, ok := nodeGroupIDOptionMap[option.NodeGroupId]; ok {
 			options = append(options, nodeGroupIDOptionMap[option.NodeGroupId])
 		} else {
-			klog.Errorf("GRPC server returned invalid nodeGroup ID: %s", option.NodeGroupId)
+			logger.Error(nil, "GRPC server returned invalid nodeGroup ID", "nodeGroupId", option.NodeGroupId)
 			continue
 		}
 	}

@@ -68,13 +68,14 @@ func getMinLimit[V int | time.Duration](baseLimit V, targetLimit V) V {
 func (*thresholdBasedEstimationLimiter) EndEstimation() {}
 
 func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode(ctx gocontext.Context) bool {
+	logger := klog.FromContext(ctx)
 	if tbel.maxNodes < 0 || (tbel.maxNodes > 0 && tbel.nodes >= tbel.maxNodes) {
-		klog.V(4).Infof("Capping binpacking after exceeding threshold of %d nodes. Debug: %s", tbel.maxNodes, strings.Join(tbel.debugStrings, ","))
+		logger.V(4).Info("Capping binpacking after exceeding threshold number of nodes", "maxNodes", tbel.maxNodes, "debugInfo", strings.Join(tbel.debugStrings, ","))
 		return false
 	}
 	timeDefined := tbel.maxDuration > 0 && tbel.start != time.Time{}
 	if tbel.maxDuration < 0 || (timeDefined && time.Now().After(tbel.start.Add(tbel.maxDuration))) {
-		klog.V(4).Infof("Capping binpacking after exceeding max duration of %v. Debug: %s", tbel.maxDuration, strings.Join(tbel.debugStrings, ","))
+		logger.V(4).Info("Capping binpacking after exceeding max duration", "maxDuration", tbel.maxDuration, "debugInfo", strings.Join(tbel.debugStrings, ","))
 		return false
 	}
 	tbel.nodes++

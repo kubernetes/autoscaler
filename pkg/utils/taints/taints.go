@@ -205,6 +205,7 @@ func MarkDeletionCandidate(ctx context.Context, node *apiv1.Node, client kube_cl
 
 // AddTaints sets the specified taints on the node and returns an updated copy of the node.
 func AddTaints(ctx context.Context, node *apiv1.Node, client kube_client.Interface, taints []apiv1.Taint, cordonNode bool) (*apiv1.Node, error) {
+	logger := klog.FromContext(ctx)
 	retryDeadline := time.Now().Add(maxRetryDeadline)
 	freshNode := node.DeepCopy()
 	var err error
@@ -214,7 +215,7 @@ func AddTaints(ctx context.Context, node *apiv1.Node, client kube_client.Interfa
 			// Get the newest version of the node.
 			freshNode, err = client.CoreV1().Nodes().Get(ctx, node.Name, metav1.GetOptions{})
 			if err != nil || freshNode == nil {
-				klog.Warningf("Error while adding %v taints on node %v: %v", strings.Join(taintKeys(taints), ","), node.Name, err)
+				logger.Info("Error while adding taints on node", "taints", strings.Join(taintKeys(taints), ","), "node", klog.KObj(node), "err", err)
 				return nil, fmt.Errorf("failed to get node %v: %v", node.Name, err)
 			}
 		}
@@ -235,19 +236,20 @@ func AddTaints(ctx context.Context, node *apiv1.Node, client kube_client.Interfa
 		}
 
 		if err != nil {
-			klog.Warningf("Error while adding %v taints on node %v: %v", strings.Join(taintKeys(taints), ","), node.Name, err)
+			logger.Info("Error while adding taints on node", "taints", strings.Join(taintKeys(taints), ","), "node", klog.KObj(node), "err", err)
 			return nil, err
 		}
-		klog.V(1).Infof("Successfully added %v on node %v", strings.Join(taintKeys(taints), ","), node.Name)
+		logger.V(1).Info("Successfully added taints on node", "taints", strings.Join(taintKeys(taints), ","), "node", klog.KObj(node))
 		return freshNode, nil
 	}
 }
 
 func addTaintsToSpec(ctx context.Context, node *apiv1.Node, taints []apiv1.Taint, cordonNode bool) bool {
+	logger := klog.FromContext(ctx)
 	taintsAdded := false
 	for _, taint := range taints {
 		if HasTaint(node, taint.Key) {
-			klog.V(2).Infof("%v already present on node %v", taint.Key, node.Name)
+			logger.V(2).Info("Taint already present on node", "taint", taint.Key, "node", klog.KObj(node))
 			continue
 		}
 		taintsAdded = true
@@ -257,7 +259,7 @@ func addTaintsToSpec(ctx context.Context, node *apiv1.Node, taints []apiv1.Taint
 		return false
 	}
 	if cordonNode {
-		klog.V(1).Infof("Marking node %v to be cordoned by Cluster Autoscaler", node.Name)
+		logger.V(1).Info("Marking node to be cordoned by Cluster Autoscaler", "node", klog.KObj(node))
 		node.Spec.Unschedulable = true
 	}
 	return true
@@ -320,6 +322,7 @@ func CleanDeletionCandidate(ctx context.Context, node *apiv1.Node, client kube_c
 
 // CleanTaints cleans the specified taints from a node and returns an updated copy of the node.
 func CleanTaints(ctx context.Context, node *apiv1.Node, client kube_client.Interface, taintKeys []string, cordonNode bool) (*apiv1.Node, error) {
+	logger := klog.FromContext(ctx)
 	retryDeadline := time.Now().Add(maxRetryDeadline)
 	freshNode := node.DeepCopy()
 	var err error
@@ -329,7 +332,7 @@ func CleanTaints(ctx context.Context, node *apiv1.Node, client kube_client.Inter
 			// Get the newest version of the node.
 			freshNode, err = client.CoreV1().Nodes().Get(ctx, node.Name, metav1.GetOptions{})
 			if err != nil || freshNode == nil {
-				klog.Warningf("Error while removing %v taints from node %v: %v", strings.Join(taintKeys, ","), node.Name, err)
+				logger.Info("Error while removing taints", "taints", strings.Join(taintKeys, ","), "node", klog.KObj(node), "err", err)
 				return nil, fmt.Errorf("failed to get node %v: %v", node.Name, err)
 			}
 		}
@@ -338,7 +341,7 @@ func CleanTaints(ctx context.Context, node *apiv1.Node, client kube_client.Inter
 			keepTaint := true
 			for _, taintKey := range taintKeys {
 				if taint.Key == taintKey {
-					klog.V(1).Infof("Releasing taint %+v on node %v", taint, node.Name)
+					logger.V(1).Info("Releasing taint on node", "taint", taint, "node", klog.KObj(node))
 					keepTaint = false
 					break
 				}
@@ -358,7 +361,7 @@ func CleanTaints(ctx context.Context, node *apiv1.Node, client kube_client.Inter
 
 		freshNode.Spec.Taints = newTaints
 		if cordonNode {
-			klog.V(1).Infof("Marking node %v to be uncordoned by Cluster Autoscaler", freshNode.Name)
+			logger.V(1).Info("Marking node to be uncordoned by Cluster Autoscaler", "node", klog.KObj(freshNode))
 			freshNode.Spec.Unschedulable = false
 		}
 		_, err = client.CoreV1().Nodes().Update(ctx, freshNode, metav1.UpdateOptions{})
@@ -370,30 +373,31 @@ func CleanTaints(ctx context.Context, node *apiv1.Node, client kube_client.Inter
 		}
 
 		if err != nil {
-			klog.Warningf("Error while releasing %v taints on node %v: %v", strings.Join(taintKeys, ","), node.Name, err)
+			logger.Info("Error while releasing taints on node", "taints", strings.Join(taintKeys, ","), "node", klog.KObj(node), "err", err)
 			return nil, err
 		}
-		klog.V(1).Infof("Successfully released %v on node %v", strings.Join(taintKeys, ","), node.Name)
+		logger.V(1).Info("Successfully released on node", "taints", strings.Join(taintKeys, ","), "node", klog.KObj(node))
 		return freshNode, nil
 	}
 }
 
 // getDeletionCandidateTTLCondition returns a function that checks if a node's deletion candidate time has reached the specified TTL.
 func getDeletionCandidateTTLCondition(ctx context.Context, deletionCandidateTTL time.Duration) func(*apiv1.Node) bool {
+	logger := klog.FromContext(ctx)
 	return func(node *apiv1.Node) bool {
 		if deletionCandidateTTL == 0 {
 			return true
 		}
 		markedForDeletionTime, err := GetDeletionCandidateTime(node)
 		if err != nil {
-			klog.Warningf("Error while getting DeletionCandidate time for node %v: %v", node.Name, err)
+			logger.Info("Error while getting DeletionCandidate time for node", "node", klog.KObj(node), "err", err)
 			return true
 		}
 		if markedForDeletionTime == nil {
 			return true
 		}
 		if time.Since(*markedForDeletionTime) < deletionCandidateTTL {
-			klog.V(4).Infof("Node %v has stale %v taint: the time is %v (%v ago)", node.Name, DeletionCandidateTaintKey, markedForDeletionTime, time.Since(*markedForDeletionTime))
+			logger.V(4).Info("Node has stale taint", "node", klog.KObj(node), "taint", DeletionCandidateTaintKey, "taintedAt", markedForDeletionTime, "taintAge", time.Since(*markedForDeletionTime))
 			return false
 		}
 		return true
@@ -447,25 +451,26 @@ func matchesAnyPrefix(prefixes []string, key string) bool {
 
 // SanitizeTaints returns filtered taints
 func SanitizeTaints(ctx context.Context, taints []apiv1.Taint, taintConfig TaintConfig) []apiv1.Taint {
+	logger := klog.FromContext(ctx)
 	var newTaints []apiv1.Taint
 	for _, taint := range taints {
 		switch taint.Key {
 		case ToBeDeletedTaint:
-			klog.V(4).Infof("Removing autoscaler taint when creating template from node")
+			logger.V(4).Info("Removing autoscaler taint when creating template from node")
 			continue
 		case DeletionCandidateTaintKey:
-			klog.V(4).Infof("Removing autoscaler soft taint when creating template from node")
+			logger.V(4).Info("Removing autoscaler soft taint when creating template from node")
 			continue
 		}
 
 		// ignore conditional taints as they represent a transient node state.
 		if exists := NodeConditionTaints[taint.Key]; exists {
-			klog.V(4).Infof("Removing node condition taint %s, when creating template from node", taint.Key)
+			logger.V(4).Info("Removing node condition taint, when creating template from node", "key", taint.Key)
 			continue
 		}
 
 		if taintConfig.IsStartupTaint(taint.Key) || taintConfig.IsStatusTaint(taint.Key) {
-			klog.V(4).Infof("Removing taint %s, when creating template from node", taint.Key)
+			logger.V(4).Info("Removing taint, when creating template from node", "key", taint.Key)
 			continue
 		}
 
@@ -477,6 +482,7 @@ func SanitizeTaints(ctx context.Context, taints []apiv1.Taint, taintConfig Taint
 // FilterOutNodesWithStartupTaints override the condition status of the given nodes to mark them as NotReady when they have
 // filtered taints.
 func FilterOutNodesWithStartupTaints(ctx context.Context, taintConfig TaintConfig, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
+	logger := klog.FromContext(ctx)
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithStartupTaints := make(map[string]*apiv1.Node)
@@ -490,7 +496,7 @@ func FilterOutNodesWithStartupTaints(ctx context.Context, taintConfig TaintConfi
 			if taintConfig.IsStartupTaint(t.Key) {
 				ready = false
 				nodesWithStartupTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.StartupNodes)
-				klog.V(3).Infof("Overriding status of node %v, which seems to have startup taint %q", node.Name, t.Key)
+				logger.V(3).Info("Overriding status of node that seems to have startup taint", "node", klog.KObj(node), "key", t.Key)
 				break
 			}
 		}

@@ -38,6 +38,7 @@ type BalancingNodeGroupSetProcessor struct {
 func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
 	nodeInfosForGroups map[string]*framework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
 
+	logger := klog.FromContext(ctx)
 	result := []cloudprovider.NodeGroup{}
 	nodeGroupId := nodeGroup.Id()
 	nodeInfo, found := nodeInfosForGroups[nodeGroupId]
@@ -54,7 +55,7 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(ctx context.Conte
 		}
 		ngNodeInfo, found := nodeInfosForGroups[ngId]
 		if !found {
-			klog.Warningf("Failed to find nodeInfo for group %v", ngId)
+			logger.Info("Failed to find nodeInfo for group", "nodeGroupId", ngId)
 			continue
 		}
 		comparator := b.Comparator
@@ -78,6 +79,7 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(ctx context.Conte
 // of all NodeGroups it will be capped to total capacity. In particular if all
 // group already have MaxSize, empty list will be returned.
 func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+	logger := klog.FromContext(ctx)
 	if len(groups) == 0 {
 		return []ScaleUpInfo{}, errors.NewAutoscalerError(
 			errors.InternalError, "Can't balance scale up between 0 groups")
@@ -110,7 +112,7 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(ctx context
 		})
 	}
 	if totalCapacity < newNodes {
-		klog.V(2).Infof("Requested scale-up (%v) exceeds node group set capacity, capping to %v", newNodes, totalCapacity)
+		logger.V(2).Info("Requested scale-up exceeds node group set capacity, capping", "scaleUpSize", newNodes, "capacity", totalCapacity)
 		newNodes = totalCapacity
 	}
 
