@@ -146,6 +146,7 @@ func (p *AutoscalingFlags) AddFlags(fs *pflag.FlagSet) {
 	fs.DurationVar(&p.o.NewPodScaleUpDelay, "new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up. Can be increased for individual pods through annotation 'cluster-autoscaler.kubernetes.io/pod-scale-up-delay'. (default 0s)")
 	fs.BoolVar(&p.o.ScaleFromUnschedulable, "scale-from-unschedulable", false, "Specifies that the CA should ignore a node's .spec.unschedulable field in node templates when considering to scale a node group.")
 	fs.BoolVar(&p.o.EnableProfiling, "profiling", false, "Is debug/pprof endpoint enabled")
+	fs.BoolVar(&p.o.EnableContextualLogging, "enable-contextual-logging", true, "Enable contextual logging. If set, it overrides the ContextualLogging feature gate.")
 	fs.BoolVar(&p.o.ClusterAPICloudConfigAuthoritative, "clusterapi-cloud-config-authoritative", false, "Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only")
 	fs.BoolVar(&p.o.CordonNodeBeforeTerminate, "cordon-node-before-terminating", true, "Should CA cordon nodes before terminating during downscale process")
 	fs.BoolVar(&p.o.DaemonSetEvictionForEmptyNodes, "daemonset-eviction-for-empty-nodes", false, "DaemonSet pods will be gracefully terminated from empty nodes")

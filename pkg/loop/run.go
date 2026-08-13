@@ -18,11 +18,22 @@ package loop
 
 import (
 	"context"
+	"fmt"
+	"hash/fnv"
 	"time"
 
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 )
+
+var startTimeHash string
+
+func init() {
+	h := fnv.New32a()
+	h.Write([]byte(time.Now().String()))
+	startTimeHash = fmt.Sprintf("%08x", h.Sum32())
+}
 
 type autoscaler interface {
 	// RunOnce represents an iteration in the control-loop of CA.
@@ -30,7 +41,11 @@ type autoscaler interface {
 }
 
 // RunAutoscalerOnce triggers a single autoscaling iteration.
-func RunAutoscalerOnce(ctx context.Context, autoscaler autoscaler, healthCheck *metrics.HealthCheck, loopStart time.Time) {
+func RunAutoscalerOnce(ctx context.Context, autoscaler autoscaler, healthCheck *metrics.HealthCheck, loopStart time.Time, iteration int) {
+	iterationID := fmt.Sprintf("%s-%d", startTimeHash, iteration)
+	logger := klog.FromContext(ctx).WithValues("iterationId", iterationID)
+	ctx = klog.NewContext(ctx, logger)
+
 	metrics.UpdateLastTime(metrics.Main, loopStart)
 	healthCheck.UpdateLastActivity(loopStart)
 
