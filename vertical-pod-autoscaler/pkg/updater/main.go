@@ -184,6 +184,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		config.EvictionToleranceFraction,
 		config.UseAdmissionControllerStatus,
 		config.InPlaceSkipDisruptionBudget,
+		config.InPlaceAvoidDisruptiveUpdates,
 		config.DefaultUpdateThreshold,
 		config.PodLifetimeUpdateThreshold,
 		config.EvictAfterOOMThreshold,

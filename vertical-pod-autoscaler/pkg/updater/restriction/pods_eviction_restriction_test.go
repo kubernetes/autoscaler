@@ -54,7 +54,7 @@ func TestEvictTooFewReplicas(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10, 0.5, nil, nil, nil, false)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10, 0.5, nil, nil, nil, false, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -94,7 +94,7 @@ func TestEvictionTolerance(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, nil, nil, nil, false)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, nil, nil, nil, false, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -138,7 +138,7 @@ func TestEvictAtLeastOne(t *testing.T) {
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, nil, false)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, nil, false, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -230,7 +230,7 @@ func TestEvictEmitEvent(t *testing.T) {
 			pods = append(pods, p.pod)
 		}
 		clock := baseclocktest.NewFakeClock(time.Time{})
-		factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, testCase.evictionTolerance, clock, map[string]time.Time{}, nil, false)
+		factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, testCase.evictionTolerance, clock, map[string]time.Time{}, nil, false, false)
 		assert.NoError(t, err)
 		creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, testCase.vpa)
 		assert.NoError(t, err)
@@ -283,7 +283,7 @@ func TestEvictTooFewReplicasWithInPlaceSkipDisruptionBudget(t *testing.T) {
 
 	basicVpa := getBasicVpa()
 	// factory with inPlaceSkipDisruptionBudget on
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10, 0.5, nil, nil, nil, true)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10, 0.5, nil, nil, nil, true, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)

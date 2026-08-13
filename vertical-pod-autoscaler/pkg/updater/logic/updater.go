@@ -105,6 +105,7 @@ func NewUpdater(
 	evictionToleranceFraction float64,
 	useAdmissionControllerStatus bool,
 	inPlaceSkipDisruptionBudget bool,
+	inPlaceAvoidDisruptiveUpdates bool,
 	defaultUpdateThreshold float64,
 	podLifetimeUpdateThreshold time.Duration,
 	evictAfterOOMThreshold time.Duration,
@@ -128,6 +129,7 @@ func NewUpdater(
 		evictionToleranceFraction,
 		patchCalculators,
 		inPlaceSkipDisruptionBudget,
+		inPlaceAvoidDisruptiveUpdates,
 	)
 
 	return &updater{

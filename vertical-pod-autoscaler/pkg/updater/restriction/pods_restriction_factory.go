@@ -62,27 +62,29 @@ type PodsRestrictionFactory interface {
 
 // PodsRestrictionFactoryImpl is the implementation of the PodsRestrictionFactory interface.
 type PodsRestrictionFactoryImpl struct {
-	client                      kube_client.Interface
-	informerFactory             informers.SharedInformerFactory
-	minReplicas                 int
-	evictionToleranceFraction   float64
-	clock                       clock.Clock
-	lastInPlaceAttemptTimeMap   map[string]time.Time
-	patchCalculators            []patch.Calculator
-	inPlaceSkipDisruptionBudget bool
+	client                        kube_client.Interface
+	informerFactory               informers.SharedInformerFactory
+	minReplicas                   int
+	evictionToleranceFraction     float64
+	clock                         clock.Clock
+	lastInPlaceAttemptTimeMap     map[string]time.Time
+	patchCalculators              []patch.Calculator
+	inPlaceSkipDisruptionBudget   bool
+	inPlaceAvoidDisruptiveUpdates bool
 }
 
 // NewPodsRestrictionFactory creates a new PodsRestrictionFactory.
-func NewPodsRestrictionFactory(client kube_client.Interface, informerFactory informers.SharedInformerFactory, minReplicas int, evictionToleranceFraction float64, patchCalculators []patch.Calculator, inPlaceSkipDisruptionBudget bool) PodsRestrictionFactory {
+func NewPodsRestrictionFactory(client kube_client.Interface, informerFactory informers.SharedInformerFactory, minReplicas int, evictionToleranceFraction float64, patchCalculators []patch.Calculator, inPlaceSkipDisruptionBudget bool, inPlaceAvoidDisruptiveUpdates bool) PodsRestrictionFactory {
 	return &PodsRestrictionFactoryImpl{
-		client:                      client,
-		informerFactory:             informerFactory,
-		minReplicas:                 minReplicas,
-		evictionToleranceFraction:   evictionToleranceFraction,
-		clock:                       &clock.RealClock{},
-		lastInPlaceAttemptTimeMap:   make(map[string]time.Time),
-		patchCalculators:            patchCalculators,
-		inPlaceSkipDisruptionBudget: inPlaceSkipDisruptionBudget,
+		client:                        client,
+		informerFactory:               informerFactory,
+		minReplicas:                   minReplicas,
+		evictionToleranceFraction:     evictionToleranceFraction,
+		clock:                         &clock.RealClock{},
+		lastInPlaceAttemptTimeMap:     make(map[string]time.Time),
+		patchCalculators:              patchCalculators,
+		inPlaceSkipDisruptionBudget:   inPlaceSkipDisruptionBudget,
+		inPlaceAvoidDisruptiveUpdates: inPlaceAvoidDisruptiveUpdates,
 	}
 }
 
@@ -254,13 +256,14 @@ func (f *PodsRestrictionFactoryImpl) NewPodsEvictionRestriction(creatorToSingleG
 // NewPodsInPlaceRestriction creates a new PodsInPlaceRestriction.
 func (f *PodsRestrictionFactoryImpl) NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats, podToReplicaCreatorMap map[string]podReplicaCreator) PodsInPlaceRestriction {
 	return &PodsInPlaceRestrictionImpl{
-		client:                       f.client,
-		podToReplicaCreatorMap:       podToReplicaCreatorMap,
-		creatorToSingleGroupStatsMap: creatorToSingleGroupStatsMap,
-		clock:                        f.clock,
-		lastInPlaceAttemptTimeMap:    f.lastInPlaceAttemptTimeMap,
-		patchCalculators:             f.patchCalculators,
-		inPlaceSkipDisruptionBudget:  f.inPlaceSkipDisruptionBudget,
+		client:                        f.client,
+		podToReplicaCreatorMap:        podToReplicaCreatorMap,
+		creatorToSingleGroupStatsMap:  creatorToSingleGroupStatsMap,
+		clock:                         f.clock,
+		lastInPlaceAttemptTimeMap:     f.lastInPlaceAttemptTimeMap,
+		patchCalculators:              f.patchCalculators,
+		inPlaceSkipDisruptionBudget:   f.inPlaceSkipDisruptionBudget,
+		inPlaceAvoidDisruptiveUpdates: f.inPlaceAvoidDisruptiveUpdates,
 	}
 }
 

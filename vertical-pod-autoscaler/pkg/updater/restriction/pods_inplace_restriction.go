@@ -76,13 +76,14 @@ type PodsInPlaceRestriction interface {
 
 // PodsInPlaceRestrictionImpl is the implementation of the PodsInPlaceRestriction interface.
 type PodsInPlaceRestrictionImpl struct {
-	client                       kube_client.Interface
-	podToReplicaCreatorMap       map[string]podReplicaCreator
-	creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats
-	patchCalculators             []patch.Calculator
-	clock                        clock.Clock
-	lastInPlaceAttemptTimeMap    map[string]time.Time
-	inPlaceSkipDisruptionBudget  bool
+	client                        kube_client.Interface
+	podToReplicaCreatorMap        map[string]podReplicaCreator
+	creatorToSingleGroupStatsMap  map[podReplicaCreator]singleGroupStats
+	patchCalculators              []patch.Calculator
+	clock                         clock.Clock
+	lastInPlaceAttemptTimeMap     map[string]time.Time
+	inPlaceSkipDisruptionBudget   bool
+	inPlaceAvoidDisruptiveUpdates bool
 }
 
 // CanInPlaceUpdate checks if pod can be safely updated
@@ -119,6 +120,14 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 	if vpa.Status.Recommendation == nil {
 		klog.V(4).InfoS("Can't in-place update pod, no recommendation available yet. Waiting for next loop", "pod", klog.KObj(pod))
 		return utils.InPlaceDeferred
+	}
+
+	// When the updater is configured to avoid disruptive in-place updates and we have a choice
+	// between in-place updates or eviction then we choose eviction instead of attempting disruptive
+	// in-place updates to ensure that we respect PodDisruptionBudgets
+	if ip.inPlaceAvoidDisruptiveUpdates && updateMode == vpa_types.UpdateModeInPlaceOrRecreate && !utils.IsNonDisruptiveResize(pod) {
+		klog.V(4).InfoS("Evicting Pod instead of resizing in-place because the resize would be disruptive and --in-place-avoid-disruptive-updates is enabled", "pod", klog.KObj(pod))
+		return utils.InPlaceEvict
 	}
 
 	recommendation := vpa.Status.Recommendation

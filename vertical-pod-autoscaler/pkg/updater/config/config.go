@@ -34,15 +34,16 @@ type UpdaterConfig struct {
 	// Common flags
 	CommonFlags *common.CommonFlags
 
-	UpdaterInterval              time.Duration
-	MinReplicas                  int
-	EvictionToleranceFraction    float64
-	EvictionRateLimit            float64
-	EvictionRateBurst            int
-	Namespace                    string
-	Address                      string
-	UseAdmissionControllerStatus bool
-	InPlaceSkipDisruptionBudget  bool
+	UpdaterInterval               time.Duration
+	MinReplicas                   int
+	EvictionToleranceFraction     float64
+	EvictionRateLimit             float64
+	EvictionRateBurst             int
+	Namespace                     string
+	Address                       string
+	UseAdmissionControllerStatus  bool
+	InPlaceSkipDisruptionBudget   bool
+	InPlaceAvoidDisruptiveUpdates bool
 
 	DefaultUpdateThreshold     float64
 	PodLifetimeUpdateThreshold time.Duration
@@ -52,16 +53,17 @@ type UpdaterConfig struct {
 // DefaultUpdaterConfig returns a UpdaterConfig with default values
 func DefaultUpdaterConfig() *UpdaterConfig {
 	return &UpdaterConfig{
-		CommonFlags:                  common.DefaultCommonConfig(),
-		UpdaterInterval:              1 * time.Minute,
-		MinReplicas:                  2,
-		EvictionToleranceFraction:    0.5,
-		EvictionRateLimit:            -1,
-		EvictionRateBurst:            1,
-		Namespace:                    os.Getenv("NAMESPACE"),
-		Address:                      ":8943",
-		UseAdmissionControllerStatus: true,
-		InPlaceSkipDisruptionBudget:  false,
+		CommonFlags:                   common.DefaultCommonConfig(),
+		UpdaterInterval:               1 * time.Minute,
+		MinReplicas:                   2,
+		EvictionToleranceFraction:     0.5,
+		EvictionRateLimit:             -1,
+		EvictionRateBurst:             1,
+		Namespace:                     os.Getenv("NAMESPACE"),
+		Address:                       ":8943",
+		UseAdmissionControllerStatus:  true,
+		InPlaceSkipDisruptionBudget:   false,
+		InPlaceAvoidDisruptiveUpdates: false,
 
 		DefaultUpdateThreshold:     0.1,
 		PodLifetimeUpdateThreshold: time.Hour * 12,
@@ -82,6 +84,7 @@ func InitUpdaterFlags() *UpdaterConfig {
 	flag.StringVar(&config.Address, "address", config.Address, "The address to expose Prometheus metrics.")
 	flag.BoolVar(&config.UseAdmissionControllerStatus, "use-admission-controller-status", config.UseAdmissionControllerStatus, "If true, updater will only evict pods when admission controller status is valid.")
 	flag.BoolVar(&config.InPlaceSkipDisruptionBudget, "in-place-skip-disruption-budget", config.InPlaceSkipDisruptionBudget, "[BETA] If true, VPA updater skips disruption budget checks for in-place pod updates when all containers have NotRequired resize policy (or no policy defined) for both CPU and memory resources. Disruption budgets are still respected when any container has RestartContainer resize policy for any resource.")
+	flag.BoolVar(&config.InPlaceAvoidDisruptiveUpdates, "in-place-avoid-disruptive-updates", config.InPlaceAvoidDisruptiveUpdates, "[ALPHA] If true, VPA updater evicts a pod instead of resizing it in-place if the resize would restart one of its containers i.e. when any container has resize policy RestartContainer. Note that this does not guarantee that containers will not be restarted since there is a kubelet TOCTOU race condition when decreasing memory limits. Only applies to the InPlaceOrRecreate update mode where the updater is allowed to evict pods.")
 
 	flag.Float64Var(&config.DefaultUpdateThreshold, "pod-update-threshold", config.DefaultUpdateThreshold, "Ignore updates that have priority lower than the value of this flag")
 	flag.DurationVar(&config.PodLifetimeUpdateThreshold, "in-recommendation-bounds-eviction-lifetime-threshold", config.PodLifetimeUpdateThreshold, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")

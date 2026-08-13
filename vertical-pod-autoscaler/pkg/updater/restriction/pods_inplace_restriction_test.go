@@ -38,19 +38,20 @@ import (
 )
 
 type CanInPlaceUpdateTestParams struct {
-	name                        string
-	pods                        []*corev1.Pod
-	replicas                    int32
-	evictionTolerance           float64
-	lastInPlaceAttempt          time.Time
-	expectedInPlaceDecision     utils.InPlaceDecision
-	vpa                         *vpa_types.VerticalPodAutoscaler
-	clockTime                   *time.Time
-	minReplicas                 int
-	infeasibleAttempts          map[types.UID]*vpa_types.RecommendedPodResources
-	vpaForCreatorMaps           *vpa_types.VerticalPodAutoscaler
-	alsoTestInPlaceUpdate       bool
-	inPlaceSkipDisruptionBudget bool
+	name                          string
+	pods                          []*corev1.Pod
+	replicas                      int32
+	evictionTolerance             float64
+	lastInPlaceAttempt            time.Time
+	expectedInPlaceDecision       utils.InPlaceDecision
+	vpa                           *vpa_types.VerticalPodAutoscaler
+	clockTime                     *time.Time
+	minReplicas                   int
+	infeasibleAttempts            map[types.UID]*vpa_types.RecommendedPodResources
+	vpaForCreatorMaps             *vpa_types.VerticalPodAutoscaler
+	alsoTestInPlaceUpdate         bool
+	inPlaceSkipDisruptionBudget   bool
+	inPlaceAvoidDisruptiveUpdates bool
 }
 
 func TestCanInPlaceUpdate(t *testing.T) {
@@ -195,6 +196,98 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			lastInPlaceAttempt:      time.Time{},
 			expectedInPlaceDecision: utils.InPlaceDeferred,
 			vpa:                     getIPVpa(),
+		},
+		{
+			name: "CanInPlaceUpdate=InPlaceEvict(InPlaceOrRecreate) - restart possible, with inPlaceAvoidDisruptiveUpdates flag",
+			pods: []*corev1.Pod{
+				generatePod().AddContainer(test.Container().WithName("container1").WithContainerResizePolicy([]corev1.ContainerResizePolicy{
+					{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.RestartContainer},
+					{ResourceName: corev1.ResourceMemory, RestartPolicy: corev1.RestartContainer},
+				}).Get()).Get(),
+			},
+			replicas:                      1,
+			minReplicas:                   1,
+			evictionTolerance:             0.5,
+			lastInPlaceAttempt:            time.Time{},
+			expectedInPlaceDecision:       utils.InPlaceEvict,
+			vpa:                           getIPORVpa(),
+			inPlaceAvoidDisruptiveUpdates: true,
+		},
+		{
+			name: "CanInPlaceUpdate=InPlaceDeferred(InPlaceOrRecreate) - restart possible but no recommendation, with inPlaceAvoidDisruptiveUpdates flag",
+			pods: []*corev1.Pod{
+				generatePod().AddContainer(test.Container().WithName("container1").WithContainerResizePolicy([]corev1.ContainerResizePolicy{
+					{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.RestartContainer},
+					{ResourceName: corev1.ResourceMemory, RestartPolicy: corev1.RestartContainer},
+				}).Get()).Get(),
+			},
+			replicas:                      1,
+			minReplicas:                   1,
+			evictionTolerance:             0.5,
+			lastInPlaceAttempt:            time.Time{},
+			expectedInPlaceDecision:       utils.InPlaceDeferred,
+			vpa:                           iporVpaWithRec(nil),
+			inPlaceAvoidDisruptiveUpdates: true,
+		},
+		{
+			name: "CanInPlaceUpdate=InPlaceApproved(InPlace) - restart possible, with inPlaceAvoidDisruptiveUpdates flag",
+			pods: []*corev1.Pod{
+				generatePod().AddContainer(test.Container().WithName("container1").WithContainerResizePolicy([]corev1.ContainerResizePolicy{
+					{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.RestartContainer},
+					{ResourceName: corev1.ResourceMemory, RestartPolicy: corev1.RestartContainer},
+				}).Get()).Get(),
+			},
+			replicas:                      1,
+			minReplicas:                   1,
+			evictionTolerance:             0.5,
+			lastInPlaceAttempt:            time.Time{},
+			expectedInPlaceDecision:       utils.InPlaceApproved,
+			vpa:                           getIPVpa(),
+			inPlaceAvoidDisruptiveUpdates: true,
+		},
+		{
+			name: "CanInPlaceUpdate=InPlaceApproved - restart possible, without inPlaceAvoidDisruptiveUpdates flag",
+			pods: []*corev1.Pod{
+				generatePod().AddContainer(test.Container().WithName("container1").WithContainerResizePolicy([]corev1.ContainerResizePolicy{
+					{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.RestartContainer},
+					{ResourceName: corev1.ResourceMemory, RestartPolicy: corev1.RestartContainer},
+				}).Get()).Get(),
+			},
+			replicas:                1,
+			minReplicas:             1,
+			evictionTolerance:       0.5,
+			lastInPlaceAttempt:      time.Time{},
+			expectedInPlaceDecision: utils.InPlaceApproved,
+			vpa:                     getIPORVpa(),
+		},
+		{
+			name: "CanInPlaceUpdate=InPlaceApproved - restart not possible, with inPlaceAvoidDisruptiveUpdates flag",
+			pods: []*corev1.Pod{
+				generatePod().AddContainer(test.Container().WithName("container1").WithContainerResizePolicy([]corev1.ContainerResizePolicy{
+					{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.NotRequired},
+					{ResourceName: corev1.ResourceMemory, RestartPolicy: corev1.NotRequired},
+				}).Get()).Get(),
+			},
+			replicas:                      1,
+			minReplicas:                   1,
+			evictionTolerance:             0.5,
+			lastInPlaceAttempt:            time.Time{},
+			expectedInPlaceDecision:       utils.InPlaceApproved,
+			vpa:                           getIPORVpa(),
+			inPlaceAvoidDisruptiveUpdates: true,
+		},
+		{
+			name: "CanInPlaceUpdate=InPlaceApproved - no resize policy, with inPlaceAvoidDisruptiveUpdates flag",
+			pods: []*corev1.Pod{
+				generatePod().AddContainer(test.Container().WithName("container1").Get()).Get(),
+			},
+			replicas:                      1,
+			minReplicas:                   1,
+			evictionTolerance:             0.5,
+			lastInPlaceAttempt:            time.Time{},
+			expectedInPlaceDecision:       utils.InPlaceApproved,
+			vpa:                           getIPORVpa(),
+			inPlaceAvoidDisruptiveUpdates: true,
 		},
 		{
 			name: "CanInPlaceUpdate=InPlaceDeferred - no pods can be in-placed, one missing",
@@ -534,7 +627,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 				minReplicas = tc.minReplicas
 			}
 
-			factory, err := getRestrictionFactory(&rc, nil, nil, nil, minReplicas, tc.evictionTolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), tc.inPlaceSkipDisruptionBudget)
+			factory, err := getRestrictionFactory(&rc, nil, nil, nil, minReplicas, tc.evictionTolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), tc.inPlaceSkipDisruptionBudget, tc.inPlaceAvoidDisruptiveUpdates)
 			assert.NoError(t, err)
 
 			vpaForCreatorMaps := getIPORVpa()
@@ -584,7 +677,7 @@ func TestInPlaceTooFewReplicas(t *testing.T) {
 	lipatm := map[string]time.Time{}
 
 	basicVpa := getIPORVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -627,7 +720,7 @@ func TestEvictionToleranceForInPlace(t *testing.T) {
 	lipatm := map[string]time.Time{}
 
 	basicVpa := getIPORVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -674,7 +767,7 @@ func TestEvictionToleranceForInPlaceWithSkipDisruptionBudget(t *testing.T) {
 
 	basicVpa := getIPORVpa()
 	// inPlaceSkipDisruptionBudget = true
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), true /* inPlaceSkipDisruptionBudget */)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), true /* inPlaceSkipDisruptionBudget */, false)
 	assert.NoError(t, err)
 
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
@@ -725,7 +818,7 @@ func TestEvictionToleranceForInPlaceWithSkipDisruptionBudgetWithLessThanMinimumP
 	basicVpa := getIPORVpa()
 	// inPlaceSkipDisruptionBudget = true
 	// minReplicas needs to be greater than the number of live pods
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), true /* inPlaceSkipDisruptionBudget */)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), true /* inPlaceSkipDisruptionBudget */, false)
 	assert.NoError(t, err)
 
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
@@ -872,7 +965,7 @@ func TestInPlaceSkipDisruptionBudgetWithResizePolicy(t *testing.T) {
 			lipatm := map[string]time.Time{}
 
 			basicVpa := getIPORVpa()
-			factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), tc.inPlaceSkipDisruptionBudget)
+			factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), tc.inPlaceSkipDisruptionBudget, false)
 			assert.NoError(t, err)
 
 			creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
@@ -921,7 +1014,7 @@ func TestInPlaceAtLeastOne(t *testing.T) {
 	}
 
 	inPlaceOrRecreateVPA := getIPORVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceOrRecreateVPA)
 	assert.NoError(t, err)
@@ -963,7 +1056,7 @@ func TestInPlaceUpdate_EventEmission(t *testing.T) {
 	}
 
 	inPlaceOrRecreateVPA := getIPORVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceOrRecreateVPA)
 	assert.NoError(t, err)
@@ -1008,7 +1101,7 @@ func TestInPlaceModeDisabledFeatureGate(t *testing.T) {
 	}
 
 	inPlaceVpa := getIPVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceVpa)
 	assert.NoError(t, err)
@@ -1046,7 +1139,7 @@ func TestInPlaceModeAtLeastOne(t *testing.T) {
 	}
 
 	inPlaceVpa := getIPVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, GetFakeCalculatorsWithFakeResourceCalc(), false, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, inPlaceVpa)
 	assert.NoError(t, err)
@@ -1237,7 +1330,7 @@ func TestInPlaceModeResizeStatuses(t *testing.T) {
 				vpa = getIPORVpa()
 			}
 
-			factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false)
+			factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false, false)
 			assert.NoError(t, err)
 			creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, vpa)
 			assert.NoError(t, err)
@@ -1287,7 +1380,7 @@ func TestInPlaceModeAllowsRetryForInfeasible(t *testing.T) {
 	lipatm := map[string]time.Time{}
 
 	vpa := getIPVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, clock, lipatm, GetFakeCalculatorsWithFakeResourceCalc(), false, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, vpa)
 	assert.NoError(t, err)
