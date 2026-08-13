@@ -784,7 +784,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 				return snapshot.RemoveNodeInfo(node.Name)
 			},
 			// Both pods leave with the node. The pod-owned claim is removed, and the shared claim
-			// stays with the owner's reservation cleared. Before the fix this panics.
+			// stays with the owner's reservation cleared.
 			modifiedState: snapshotState{
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
