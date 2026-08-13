@@ -12,39 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+.PHONY: build-kwok
+build-kwok:
+	@CGO_ENABLED=0 GOOS=linux go build -o cluster-autoscaler-kwok ./kwok
 
-GO_TEST_DEFAULT_ANALYZERS?=all
-TAG?=dev
-FLAGS=
-LDFLAGS?=-s
-ENVVAR=CGO_ENABLED=0
-GOOS?=linux
-GOARCH?=$(shell go env GOARCH)
-DOCKER_NETWORK?=default
+.PHONY: image-kwok
+image-kwok: TAG?=dev
+image-kwok: build-kwok
+	@docker build -t cluster-autoscaler-kwok:${TAG} -f kwok/Dockerfile .
 
-build:
-	@$(MAKE) build-arch-$(GOARCH)
+.PHONY: test
+test:
+	@go test -race ./...
 
-build-arch-%: clean-arch-%
-	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* ${LDFLAGS_FLAG} ${TAGS_FLAG} ./pkg
+test-controllers: setup-envtest
+	@ginkgo --race ./pkg/test/integration/controllers/...
 
-test-unit: clean build
-	go test -race $$(go list ./... ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+.PHONY: clean
+clean:
+	@rm -f cluster-autoscaler-kwok
 
-test-controllers: setup-envtest clean build
-	ginkgo --race --vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG} ./pkg/test/integration/controllers/...
-
-test-ci: setup-envtest
-	go test -race $$(go list ./... ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
-
-benchmark:
-	go test $$(go list ./... ) -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
-
-clean: clean-arch-$(GOARCH)
-
-clean-arch-%:
-	rm -f cluster-autoscaler-$*
-
+.PHONY: format
 format:
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -d {} + | tee /dev/stderr)" || \
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -w {} + | tee /dev/stderr)"
@@ -95,5 +83,3 @@ mv $(1) $(1)-$(3) ;\
 } ;\
 ln -sf $(1)-$(3) $(1)
 endef
-
-.PHONY: all build test-unit clean format

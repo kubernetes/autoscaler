@@ -32,8 +32,11 @@ jobs:
       - name: Apt-get
         run: sudo apt-get install libseccomp-dev -qq
 
+      - name: Setup-envtest
+        run: make setup-envtest
+
       - name: Test
-        run: make test-ci
+        run: make test
         env:
           GO111MODULE: auto
           PROJECT_NAMES: ""
