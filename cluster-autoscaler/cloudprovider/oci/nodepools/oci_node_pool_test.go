@@ -109,6 +109,26 @@ func TestDeleteCreateErrorNodeWithoutInstanceIDDecreasesTargetSize(t *testing.T)
 	}
 }
 
+func TestHasInstanceForUnmanagedNodePool(t *testing.T) {
+	provider := NewOciCloudProvider(&mockManager{err: errInstanceNodePoolNotFound}, nil)
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "unmanaged-node",
+			Annotations: map[string]string{
+				"oci.oraclecloud.com/node-pool-id": "unmanaged-pool",
+			},
+		},
+	}
+
+	hasInstance, err := provider.HasInstance(node)
+	if err != nil {
+		t.Fatalf("HasInstance() returned an error for an unmanaged node pool: %v", err)
+	}
+	if !hasInstance {
+		t.Fatal("HasInstance() = false for an unmanaged node pool, want true")
+	}
+}
+
 type mockManager struct {
 	called                          []string
 	nodePools                       []NodePool

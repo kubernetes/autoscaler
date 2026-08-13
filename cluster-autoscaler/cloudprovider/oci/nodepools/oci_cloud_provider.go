@@ -94,6 +94,11 @@ func (ocp *OciCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 		return false, nil
 	}
 	np, err := ocp.manager.GetNodePoolForInstance(instance)
+	// An instance from a node pool that is not configured for this autoscaler
+	// still exists in OCI, even though it is outside this autoscaler's scope.
+	if errors.Cause(err) == errInstanceNodePoolNotFound {
+		return true, nil
+	}
 	if err != nil {
 		return true, err
 	}
