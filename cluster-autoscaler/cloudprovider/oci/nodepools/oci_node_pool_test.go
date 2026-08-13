@@ -52,6 +52,80 @@ func TestDeletePastMinSize(t *testing.T) {
 	}
 }
 
+func TestDeleteCreateErrorNodeWithoutInstanceIDDecreasesTargetSize(t *testing.T) {
+	client := fake.NewSimpleClientset()
+
+	manager := &mockManager{
+		size:                           1,
+		existingNodePoolSizeViaCompute: 0,
+		nodes: []cloudprovider.Instance{
+			{
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
+					ErrorInfo: &cloudprovider.InstanceErrorInfo{
+						ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+						ErrorCode:    "QuotaExceeded",
+						ErrorMessage: "quota exceeded",
+					},
+				},
+			},
+		},
+	}
+	np := &nodePool{
+		kubeClient: client,
+		manager:    manager,
+		minSize:    0,
+		maxSize:    10,
+		id:         "abc",
+	}
+	manager.nodePool = np
+
+	nodeWithoutInstanceID := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "",
+			Annotations: map[string]string{
+				cloudprovider.FakeNodeReasonAnnotation: cloudprovider.FakeNodeCreateError,
+			},
+		},
+	}
+
+	if err := np.DeleteNodes([]*apiv1.Node{nodeWithoutInstanceID}); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if manager.deleteInstancesCalled != 0 {
+		t.Fatalf("expected DeleteInstances not to be called, got %d calls", manager.deleteInstancesCalled)
+	}
+	if !manager.invalidateAndRefreshCacheCalled {
+		t.Fatalf("expected cache invalidation before decreasing target size")
+	}
+	if !manager.setSizeCalled {
+		t.Fatalf("expected SetNodePoolSize to be called")
+	}
+	if manager.setSize != 0 {
+		t.Fatalf("expected target size to be decreased to 0, got %d", manager.setSize)
+	}
+}
+
+func TestHasInstanceForUnmanagedNodePool(t *testing.T) {
+	provider := NewOciCloudProvider(&mockManager{err: errInstanceNodePoolNotFound}, nil)
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "unmanaged-node",
+			Annotations: map[string]string{
+				"oci.oraclecloud.com/node-pool-id": "unmanaged-pool",
+			},
+		},
+	}
+
+	hasInstance, err := provider.HasInstance(node)
+	if err != nil {
+		t.Fatalf("HasInstance() returned an error for an unmanaged node pool: %v", err)
+	}
+	if !hasInstance {
+		t.Fatal("HasInstance() = false for an unmanaged node pool, want true")
+	}
+}
+
 type mockManager struct {
 	called    []string
 	nodePools []NodePool
