@@ -48,11 +48,10 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/version"
 
 	// Cloud providers must be explicitly imported to be registered in the builder.
-	// The registration pattern allows for customizing the set of supported cloud providers
-	// by including or excluding these blank imports. This is particularly useful for
-	// external forks that want to avoid unnecessary dependencies.
-	// The router package is used to provide support for custom build tags (e.g. -tags aws).
-	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/router"
+	// For this specialized KWOK-based build, we directly and exclusively import
+	// the kwok cloudprovider, completely bypassing the general router package.
+	// TODO(Choraden): we should consider moving kwok cloud provider under kwok/.
+	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/kwok"
 
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
@@ -196,6 +195,10 @@ func mustBuildAutoscaler(ctx context.Context, opts config.AutoscalingOptions, de
 	}
 	return autoscaler, trigger
 }
+
+// TODO(Choraden): Refactor main function.
+// Refactor main function into short, easily reusable setup with other cloud providers.
+// Kwok build is mainly for local development and CI testing, so there is no reason to keep it that heavy.
 
 func main() {
 	klog.InitFlags(nil)
