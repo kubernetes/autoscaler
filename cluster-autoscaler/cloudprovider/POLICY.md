@@ -48,7 +48,7 @@ from cloudprovider owners:
 
 One way to integrate CA with a cloudprovider is to use existing
 [External
-gRPC](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/externalgrpc)
+gRPC](https://github.com/kubernetes-sigs/cluster-autoscaler/tree/main/pkg/cloudprovider/externalgrpc)
 provider. Integrating with gRPC interface may be easier than implementing an
 in-tree cloudprovider and the gRPC provider comes with some essential caching
 built in.
