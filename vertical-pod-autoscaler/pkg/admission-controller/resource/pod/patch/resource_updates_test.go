@@ -150,6 +150,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 		name                 string
 		pod                  *corev1.Pod
 		namespace            string
+		updateMode           vpa_types.UpdateMode
 		initResources        []vpa_api_util.ContainerResources
 		recommendResources   []vpa_api_util.ContainerResources
 		recommendAnnotations vpa_api_util.ContainerToAnnotationsMap
@@ -367,13 +368,42 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
 			expectPatches:        []resource_admission.PatchRecord{},
 		},
+		{
+			name: "native sidecar recommendation not applied when update mode is off",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					InitContainers: []corev1.Container{{
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								cpu: resource.MustParse("0"),
+							},
+						},
+					}},
+				},
+			},
+			namespace:  "default",
+			updateMode: vpa_types.UpdateModeOff,
+			initResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches:        []resource_admission.PatchRecord{},
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
 			frp := fakeRecommendationProvider{tc.initResources, tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
 			c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
-			patches, err := c.CalculatePatches(tc.pod, test.VerticalPodAutoscaler().WithContainer("test").WithName("name").Get())
+			vpaBuilder := test.VerticalPodAutoscaler().WithContainer("test").WithName("name")
+			if tc.updateMode != "" {
+				vpaBuilder = vpaBuilder.WithUpdateMode(tc.updateMode)
+			}
+			patches, err := c.CalculatePatches(tc.pod, vpaBuilder.Get())
 			if tc.expectError == nil {
 				assert.NoError(t, err)
 			} else {

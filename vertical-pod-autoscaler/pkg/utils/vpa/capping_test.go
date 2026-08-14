@@ -1273,18 +1273,90 @@ func TestNativeSidecarCappingGating(t *testing.T) {
 		return result
 	}
 
-	t.Run("flag off excludes sidecar", func(t *testing.T) {
+	tests := []struct {
+		name                string
+		nativeSidecarGate   bool
+		expectZippedNames   []string
+		expectBackfillNames []string
+	}{
+		{
+			name:                "gate off excludes sidecar",
+			nativeSidecarGate:   false,
+			expectZippedNames:   []string{"app"},
+			expectBackfillNames: []string{"app"},
+		},
+		{
+			name:                "gate on includes sidecar only",
+			nativeSidecarGate:   true,
+			expectZippedNames:   []string{"app", "sidecar"},
+			expectBackfillNames: []string{"app", "sidecar"},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, tc.nativeSidecarGate)
+			// The plain init container is never zipped/backfilled, regardless of the gate.
+			assert.Equal(t, tc.expectZippedNames, names(zipContainersWithRecommendations(recommendations, pod)))
+			assert.Equal(t, tc.expectBackfillNames, recNames(insertRequestsForMissingRecommendations(recommendations, pod)))
+		})
+	}
+}
+
+// TestNativeSidecarPodLimitRangeCapping verifies that applyPodLimitRange's proportional capping
+// output includes a native sidecar's target only when the NativeSidecar feature gate is enabled;
+// a regression in the capping math for the sidecar path wouldn't be caught by helper-membership
+// checks alone.
+func TestNativeSidecarPodLimitRangeCapping(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
+	newPod := func() *corev1.Pod {
+		return &corev1.Pod{
+			Spec: corev1.PodSpec{
+				Containers: []corev1.Container{{
+					Name: "app",
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+						Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+					},
+				}},
+				InitContainers: []corev1.Container{{
+					Name:          "sidecar",
+					RestartPolicy: &always,
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+						Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+					},
+				}},
+			},
+		}
+	}
+	limitRange := corev1.LimitRangeItem{
+		Max: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+	}
+	getTarget := func(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList { return &rl.Target }
+
+	t.Run("gate off leaves sidecar recommendation untouched", func(t *testing.T) {
 		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, false)
-		assert.Equal(t, []string{"app"}, names(zipContainersWithRecommendations(recommendations, pod)))
-		// Only the standard container is backfilled; the sidecar (and plain init) are left out.
-		assert.Equal(t, []string{"app"}, recNames(insertRequestsForMissingRecommendations(recommendations, pod)))
+		resources := []vpa_types.RecommendedContainerResources{
+			{ContainerName: "app", Target: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}},
+			{ContainerName: "sidecar", Target: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}},
+		}
+		got := applyPodLimitRange(resources, newPod(), limitRange, corev1.ResourceCPU, getTarget)
+		// "app" alone doesn't exceed the 1 CPU max, so nothing is capped; the sidecar recommendation
+		// isn't considered for capping at all, and is returned exactly as given.
+		assert.Equal(t, resource.MustParse("1"), got[0].Target[corev1.ResourceCPU])
+		assert.Equal(t, resource.MustParse("1"), got[1].Target[corev1.ResourceCPU])
 	})
 
-	t.Run("flag on includes sidecar only", func(t *testing.T) {
+	t.Run("gate on caps sidecar proportionally with app", func(t *testing.T) {
 		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
-		assert.Equal(t, []string{"app", "sidecar"}, names(zipContainersWithRecommendations(recommendations, pod)))
-		// The sidecar is backfilled; the plain init container never is.
-		assert.Equal(t, []string{"app", "sidecar"}, recNames(insertRequestsForMissingRecommendations(recommendations, pod)))
+		resources := []vpa_types.RecommendedContainerResources{
+			{ContainerName: "app", Target: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}},
+			{ContainerName: "sidecar", Target: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}},
+		}
+		got := applyPodLimitRange(resources, newPod(), limitRange, corev1.ResourceCPU, getTarget)
+		// app + sidecar limits sum to 2 CPU, exceeding the 1 CPU max, so both are capped to 500m.
+		assert.Equal(t, *resource.NewMilliQuantity(500, resource.DecimalSI), got[0].Target[corev1.ResourceCPU])
+		assert.Equal(t, *resource.NewMilliQuantity(500, resource.DecimalSI), got[1].Target[corev1.ResourceCPU])
 	})
 }
 

@@ -23,6 +23,7 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -86,8 +87,13 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_typ
 	for _, podContainer := range pod.Spec.Containers {
 		processContainer(podContainer)
 	}
-	for _, initContainer := range pod.Spec.InitContainers {
-		processContainer(initContainer)
+	if features.Enabled(features.NativeSidecar) {
+		for _, initContainer := range pod.Spec.InitContainers {
+			if initContainer.RestartPolicy == nil || *initContainer.RestartPolicy != corev1.ContainerRestartPolicyAlways {
+				continue
+			}
+			processContainer(initContainer)
+		}
 	}
 
 	resourceDiff := 0.0
