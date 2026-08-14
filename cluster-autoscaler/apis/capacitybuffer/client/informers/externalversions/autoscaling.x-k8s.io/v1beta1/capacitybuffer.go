@@ -34,11 +34,39 @@ import (
 )
 
 // CapacityBufferInformer provides access to a shared informer and lister for
-// CapacityBuffers.
+// CapacityBuffers. Prefer using the type-safe variant (see [TypedCapacityBufferInformer]).
 type CapacityBufferInformer interface {
 	Informer() cache.SharedIndexInformer
 	Lister() autoscalingxk8siov1beta1.CapacityBufferLister
 }
+
+// TypedCapacityBufferInformer provides access to a shared informer and lister for
+// CapacityBuffers, including the type-safe TypedInformer variant.
+// It is a superset of CapacityBufferInformer.
+type TypedCapacityBufferInformer interface {
+	Informer() cache.SharedIndexInformer
+	TypedInformer() CapacityBufferIndexInformer
+	Lister() autoscalingxk8siov1beta1.CapacityBufferLister
+}
+
+// CapacityBufferIndexInformer is a wrapper around the underlying [cache.SharedIndexInformer]
+// with type-safe variants of several methods.
+type CapacityBufferIndexInformer cache.TypedSharedIndexInformer[*capacitybufferautoscalingxk8siov1beta1.CapacityBuffer]
+
+// CapacityBufferHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerFuncs] for CapacityBuffer.
+type CapacityBufferHandlerFuncs = cache.TypedResourceEventHandlerFuncs[*capacitybufferautoscalingxk8siov1beta1.CapacityBuffer]
+
+// CapacityBufferDetailedHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerDetailedFuncs] for CapacityBuffer.
+type CapacityBufferDetailedHandlerFuncs = cache.TypedResourceEventHandlerDetailedFuncs[*capacitybufferautoscalingxk8siov1beta1.CapacityBuffer]
+
+// CapacityBufferFilteringHandler is a specialization of [cache.TypedFilteringResourceEventHandler] for CapacityBuffer.
+type CapacityBufferFilteringHandler = cache.TypedFilteringResourceEventHandler[*capacitybufferautoscalingxk8siov1beta1.CapacityBuffer]
+
+// CapacityBufferIndexers is a specialization of [cache.TypedIndexers] for CapacityBuffer.
+type CapacityBufferIndexers = cache.TypedIndexers[*capacitybufferautoscalingxk8siov1beta1.CapacityBuffer]
+
+// DeletedCapacityBuffer is a specialization of [cache.DeletedObject] for CapacityBuffer.
+type DeletedCapacityBuffer = cache.DeletedObject[*capacitybufferautoscalingxk8siov1beta1.CapacityBuffer]
 
 type capacityBufferInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
@@ -49,25 +77,49 @@ type capacityBufferInformer struct {
 // NewCapacityBufferInformer constructs a new informer for CapacityBuffer type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedCapacityBufferInformer]).
 func NewCapacityBufferInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewCapacityBufferInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers})
+}
+
+// NewTypedCapacityBufferInformer constructs a new informer for CapacityBuffer type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedCapacityBufferInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers CapacityBufferIndexers) CapacityBufferIndexInformer {
+	return NewTypedCapacityBufferInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers)})
 }
 
 // NewFilteredCapacityBufferInformer constructs a new informer for CapacityBuffer type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedFilteredCapacityBufferInformer]).
 func NewFilteredCapacityBufferInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
-	return NewCapacityBufferInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+	return NewTypedCapacityBufferInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+}
+
+// NewTypedFilteredCapacityBufferInformer constructs a new informer for CapacityBuffer type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedFilteredCapacityBufferInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers CapacityBufferIndexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) CapacityBufferIndexInformer {
+	return NewTypedCapacityBufferInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers), TweakListOptions: tweakListOptions})
 }
 
 // NewCapacityBufferInformerWithOptions constructs a new informer for CapacityBuffer type with additional options.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedCapacityBufferInformerWithOptions]).
 func NewCapacityBufferInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) cache.SharedIndexInformer {
+	return NewTypedCapacityBufferInformerWithOptions(client, namespace, options)
+}
+
+// NewTypedCapacityBufferInformerWithOptions constructs a new informer for CapacityBuffer type with additional options.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedCapacityBufferInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) CapacityBufferIndexInformer {
 	gvr := schema.GroupVersionResource{Group: "autoscaling.x-k8s.io", Version: "v1beta1", Resource: "capacitybuffers"}
 	identifier := options.InformerName.WithResource(gvr)
 	tweakListOptions := options.TweakListOptions
-	return cache.NewSharedIndexInformerWithOptions(
+	return cache.NewTypedSharedIndexInformer[*capacitybufferautoscalingxk8siov1beta1.CapacityBuffer](cache.NewSharedIndexInformerWithOptions(
 		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(opts v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
@@ -100,17 +152,57 @@ func NewCapacityBufferInformerWithOptions(client versioned.Interface, namespace 
 			Indexers:     options.Indexers,
 			Identifier:   identifier,
 		},
-	)
+	))
 }
 
 func (f *capacityBufferInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewCapacityBufferInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
+	return NewTypedCapacityBufferInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
 }
 
 func (f *capacityBufferInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&capacitybufferautoscalingxk8siov1beta1.CapacityBuffer{}, f.defaultInformer)
+	return f.TypedInformer()
+}
+
+func (f *capacityBufferInformer) TypedInformer() CapacityBufferIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*capacitybufferautoscalingxk8siov1beta1.CapacityBuffer](f.factory.InformerFor(&capacitybufferautoscalingxk8siov1beta1.CapacityBuffer{}, f.defaultInformer))
 }
 
 func (f *capacityBufferInformer) Lister() autoscalingxk8siov1beta1.CapacityBufferLister {
 	return autoscalingxk8siov1beta1.NewCapacityBufferLister(f.Informer().GetIndexer())
+}
+
+// ToTypedCapacityBufferInformer converts an untyped informer into a TypedCapacityBufferInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *CapacityBuffer. If that is not the case, calling type-safe methods of the returned
+// TypedCapacityBufferInformer leads to runtime panics. A safer alternative is to pass
+// around a TypedCapacityBufferInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToTypedCapacityBufferInformer(informer CapacityBufferInformer) TypedCapacityBufferInformer {
+	if informer, ok := informer.(TypedCapacityBufferInformer); ok {
+		return informer
+	}
+	return &capacityBufferTypedInformerAdapter{informer}
+}
+
+type capacityBufferTypedInformerAdapter struct {
+	CapacityBufferInformer
+}
+
+func (a *capacityBufferTypedInformerAdapter) TypedInformer() CapacityBufferIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*capacitybufferautoscalingxk8siov1beta1.CapacityBuffer](a.Informer())
+}
+
+// ToCapacityBufferIndexInformer converts an untyped informer into a CapacityBufferIndexInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *CapacityBuffer. If that is not the case, calling type-safe methods of the returned
+// CapacityBufferIndexInformer leads to runtime panics. A safer alternative is to pass
+// around a CapacityBufferIndexInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToCapacityBufferIndexInformer(informer cache.SharedIndexInformer) CapacityBufferIndexInformer {
+	if informer, ok := informer.(CapacityBufferIndexInformer); ok {
+		return informer
+	}
+	return cache.NewTypedSharedIndexInformer[*capacitybufferautoscalingxk8siov1beta1.CapacityBuffer](informer)
 }

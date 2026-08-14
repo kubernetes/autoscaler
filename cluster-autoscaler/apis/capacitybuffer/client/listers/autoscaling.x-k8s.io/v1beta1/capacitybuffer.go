@@ -26,7 +26,7 @@ import (
 )
 
 // CapacityBufferLister helps list CapacityBuffers.
-// All objects returned here must be treated as read-only.
+// All objects returned here must be treated as read-onlyf.
 type CapacityBufferLister interface {
 	// List lists all CapacityBuffers in the indexer.
 	// Objects returned here must be treated as read-only.

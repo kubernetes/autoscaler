@@ -32,6 +32,7 @@ import (
 	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/version"
 	"k8s.io/kubernetes/pkg/controller/daemon"
 
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
@@ -574,6 +575,9 @@ func TestCreateSanitizedNodeInfo(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.testName, func(t *testing.T) {
+			if tc.nodeDeclaredFeaturesDisabled {
+				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, utilfeature.DefaultFeatureGate, version.MustParse("1.36"))
+			}
 			featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.NodeDeclaredFeatures, !tc.nodeDeclaredFeaturesDisabled)
 
 			newNameBase := "node"
