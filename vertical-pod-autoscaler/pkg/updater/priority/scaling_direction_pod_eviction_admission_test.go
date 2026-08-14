@@ -22,8 +22,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -355,6 +357,76 @@ func TestAdmitForSingleContainer(t *testing.T) {
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("600m", "9Gi").Get()
 
 		assert.Equal(t, false, sdpea.Admit(pod, recommendation))
+	})
+}
+
+func TestAdmitForNativeSidecar(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
+	containerName := "test-container"
+	sidecarName := "sidecar"
+	plainInitName := "plain-init"
+
+	newPod := func() *corev1.Pod {
+		return test.Pod().WithName("test-pod").
+			AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("500m")).WithMemRequest(resource.MustParse("10Gi")).Get()).
+			AddInitContainer(corev1.Container{
+				Name:          sidecarName,
+				RestartPolicy: &always,
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("500m"),
+						corev1.ResourceMemory: resource.MustParse("10Gi"),
+					},
+				},
+			}).
+			AddInitContainer(corev1.Container{
+				Name: plainInitName,
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("500m"),
+						corev1.ResourceMemory: resource.MustParse("10Gi"),
+					},
+				},
+			}).
+			Get()
+	}
+	evictionRequirementsFor := func(pod *corev1.Pod) map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement {
+		return map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{
+			pod: {
+				{
+					Resources:         []corev1.ResourceName{corev1.ResourceCPU},
+					ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
+				},
+			},
+		}
+	}
+	// Only the sidecar's recommendation scales up; app and plain-init don't.
+	recommendationFor := func() *vpaautoscalingv1.RecommendedPodResources {
+		return &vpaautoscalingv1.RecommendedPodResources{
+			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
+				test.Recommendation().WithContainer(containerName).WithTarget("500m", "10Gi").GetContainerResources(),
+				test.Recommendation().WithContainer(sidecarName).WithTarget("600m", "10Gi").GetContainerResources(),
+				test.Recommendation().WithContainer(plainInitName).WithTarget("600m", "10Gi").GetContainerResources(),
+			},
+		}
+	}
+
+	t.Run("gate disabled never admits based on init containers", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, false)
+		pod := newPod()
+		sdpea := NewScalingDirectionPodEvictionAdmission()
+		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirementsFor(pod)
+
+		assert.Equal(t, false, sdpea.Admit(pod, recommendationFor()))
+	})
+
+	t.Run("gate enabled admits based on the native sidecar", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+		pod := newPod()
+		sdpea := NewScalingDirectionPodEvictionAdmission()
+		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirementsFor(pod)
+
+		assert.Equal(t, true, sdpea.Admit(pod, recommendationFor()))
 	})
 }
 

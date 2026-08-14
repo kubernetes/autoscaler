@@ -75,12 +75,6 @@ func containerStatusFor(containerName string, containerStatuses []corev1.Contain
 }
 
 func isInitContainer(containerName string, pod *corev1.Pod) bool {
-	// A regular container with the same name takes precedence over an init container.
-	for _, container := range pod.Spec.Containers {
-		if container.Name == containerName {
-			return false
-		}
-	}
 	for _, container := range pod.Spec.InitContainers {
 		if container.Name == containerName {
 			return true
