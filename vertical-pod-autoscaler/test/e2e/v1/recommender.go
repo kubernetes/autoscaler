@@ -19,6 +19,7 @@ package autoscaling
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -603,6 +604,41 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		gomega.Expect(mainMemTarget.Value()).To(gomega.BeNumerically(">", 0))
 		gomega.Expect(sidecarCPUTarget.Value()).To(gomega.BeNumerically(">", 0))
 		gomega.Expect(sidecarMemTarget.Value()).To(gomega.BeNumerically(">", 0))
+	})
+
+	f.It("doesn't generate recommendations for native sidecar containers when feature gate not enabled", func() {
+		if os.Getenv("TEST_WITH_FEATURE_GATES_ENABLED") == "true" {
+			ginkgo.Skip("only test when NativeSidecar feature gate is disabled")
+		}
+		ginkgo.By("Setting up a hamster deployment with native sidecar")
+		d := NewHamsterDeploymentWithNativeSidecar(f,
+			ParseQuantityOrDie("100m"),  /*main CPU*/
+			ParseQuantityOrDie("100Mi"), /*main memory*/
+			ParseQuantityOrDie("50m"),   /*sidecar CPU*/
+			ParseQuantityOrDie("50Mi"),  /*sidecar memory*/
+		)
+		utils.StartDeploymentPods(f, d)
+
+		ginkgo.By("Setting up a VPA CRD")
+		sidecarName := d.Spec.Template.Spec.InitContainers[0].Name
+		mainContainerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(mainContainerName).
+			WithContainer(sidecarName).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled for the main container")
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		// Only the main container should have a recommendation; the native sidecar must not,
+		// since the feature gate is disabled.
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).To(gomega.HaveLen(1))
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(mainContainerName))
 	})
 })
 

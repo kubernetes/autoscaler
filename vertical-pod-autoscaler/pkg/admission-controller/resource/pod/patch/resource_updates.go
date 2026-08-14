@@ -73,6 +73,10 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 			containersResources[i].Requests = nil
 			containersResources[i].Limits = nil
 		}
+		for i := range initContainersResources {
+			initContainersResources[i].Requests = nil
+			initContainersResources[i].Limits = nil
+		}
 		annotationsPerContainer = vpa_api_util.ContainerToAnnotationsMap{}
 	}
 
