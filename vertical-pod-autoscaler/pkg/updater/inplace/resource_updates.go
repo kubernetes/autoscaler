@@ -105,6 +105,9 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *corev1.Po
 }
 
 func getInitContainerPatch(pod *corev1.Pod, i int, containerResources vpa_api_util.ContainerResources) []resource_admission.PatchRecord {
+	if len(containerResources.Requests) == 0 && len(containerResources.Limits) == 0 {
+		return nil
+	}
 	var patches []resource_admission.PatchRecord
 	// Add empty resources object if missing.
 	if pod.Spec.InitContainers[i].Resources.Limits == nil &&

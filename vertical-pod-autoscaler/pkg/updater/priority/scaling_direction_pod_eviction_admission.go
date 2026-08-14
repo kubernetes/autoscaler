@@ -22,6 +22,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -58,16 +59,21 @@ func (s *scalingDirectionPodEvictionAdmission) Admit(pod *corev1.Pod, resources 
 			return true
 		}
 	}
-	for _, container := range pod.Spec.InitContainers {
-		recommendedResources := vpa_utils.GetRecommendationForContainer(container.Name, resources)
-		// if a container doesn't have a recommendation, the VPA has set `.containerPolicy.mode: off` for this container,
-		// so we can skip this container
-		if recommendedResources == nil {
-			continue
-		}
-		containerRequests, _ := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
-		if s.admitContainer(containerRequests, recommendedResources, podEvictionRequirements) {
-			return true
+	if features.Enabled(features.NativeSidecar) {
+		for _, container := range pod.Spec.InitContainers {
+			if container.RestartPolicy == nil || *container.RestartPolicy != corev1.ContainerRestartPolicyAlways {
+				continue
+			}
+			recommendedResources := vpa_utils.GetRecommendationForContainer(container.Name, resources)
+			// if a container doesn't have a recommendation, the VPA has set `.containerPolicy.mode: off` for this container,
+			// so we can skip this container
+			if recommendedResources == nil {
+				continue
+			}
+			containerRequests, _ := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
+			if s.admitContainer(containerRequests, recommendedResources, podEvictionRequirements) {
+				return true
+			}
 		}
 	}
 	return false

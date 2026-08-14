@@ -24,8 +24,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -73,9 +75,23 @@ func TestUpdateResourceRequests(t *testing.T) {
 	initialized := test.Pod().WithName("test_initialized").
 		AddContainer(initializedContainer).WithLabels(labels).Get()
 
-	initializedWithInit := test.Pod().WithName("test_initialized").
+	sidecarName := "sidecar1"
+	always := corev1.ContainerRestartPolicyAlways
+	nativeSidecarContainer := test.Container().WithName(sidecarName).
+		WithCPURequest(resource.MustParse("2")).WithMemRequest(resource.MustParse("100Mi")).Get()
+	nativeSidecarContainer.RestartPolicy = &always
+	vpaWithSidecar := vpaBuilder.
+		AppendRecommendation(test.Recommendation().WithContainer(sidecarName).WithTarget("2", "200Mi").GetContainerResources()).
+		Get()
+	initializedWithNativeSidecar := test.Pod().WithName("test_initialized").
 		AddContainer(initializedContainer).WithLabels(labels).
-		AddInitContainer(initializedContainer).WithLabels(labels).Get()
+		AddInitContainer(nativeSidecarContainer).WithLabels(labels).Get()
+
+	plainInitContainer := test.Container().WithName(sidecarName).
+		WithCPURequest(resource.MustParse("2")).WithMemRequest(resource.MustParse("100Mi")).Get()
+	initializedWithPlainInitContainer := test.Pod().WithName("test_initialized").
+		AddContainer(initializedContainer).WithLabels(labels).
+		AddInitContainer(plainInitContainer).WithLabels(labels).Get()
 
 	limitsMatchRequestsContainer := test.Container().WithName(containerName).
 		WithCPURequest(resource.MustParse("2")).WithCPULimit(resource.MustParse("2")).
@@ -116,18 +132,21 @@ func TestUpdateResourceRequests(t *testing.T) {
 	vpaWithNilRecommendation.Status.Recommendation = nil
 
 	testCases := []struct {
-		name              string
-		pod               *corev1.Pod
-		vpa               *vpa_types.VerticalPodAutoscaler
-		expectedAction    bool
-		expectedError     error
-		expectedMem       resource.Quantity
-		expectedCPU       resource.Quantity
-		expectedCPULimit  *resource.Quantity
-		expectedMemLimit  *resource.Quantity
-		limitRange        *corev1.LimitRangeItem
-		limitRangeCalcErr error
-		annotations       vpa_api_util.ContainerToAnnotationsMap
+		name                 string
+		pod                  *corev1.Pod
+		vpa                  *vpa_types.VerticalPodAutoscaler
+		nativeSidecarEnabled bool
+		expectedAction       bool
+		expectedError        error
+		expectedMem          resource.Quantity
+		expectedCPU          resource.Quantity
+		expectedInitMem      *resource.Quantity // nil means "same as expectedMem"
+		expectedInitCPU      *resource.Quantity // nil means "same as expectedCPU"
+		expectedCPULimit     *resource.Quantity
+		expectedMemLimit     *resource.Quantity
+		limitRange           *corev1.LimitRangeItem
+		limitRangeCalcErr    error
+		annotations          vpa_api_util.ContainerToAnnotationsMap
 	}{
 		{
 			name:           "uninitialized pod",
@@ -168,12 +187,34 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedCPU:    resource.MustParse("2"),
 		},
 		{
-			name:           "pod with init container",
-			pod:            initializedWithInit,
-			vpa:            vpa,
-			expectedAction: true,
-			expectedMem:    resource.MustParse("200Mi"),
-			expectedCPU:    resource.MustParse("2"),
+			name:                 "pod with native sidecar init container",
+			pod:                  initializedWithNativeSidecar,
+			vpa:                  vpaWithSidecar,
+			nativeSidecarEnabled: true,
+			expectedAction:       true,
+			expectedMem:          resource.MustParse("200Mi"),
+			expectedCPU:          resource.MustParse("2"),
+		},
+		{
+			name:                 "plain init container is excluded from recommendations even when gate is enabled",
+			pod:                  initializedWithPlainInitContainer,
+			vpa:                  vpa,
+			nativeSidecarEnabled: true,
+			expectedAction:       true,
+			expectedMem:          resource.MustParse("200Mi"),
+			expectedCPU:          resource.MustParse("2"),
+			expectedInitMem:      mustParseResourcePointer("0"),
+			expectedInitCPU:      mustParseResourcePointer("0"),
+		},
+		{
+			name:            "native sidecar init container excluded when gate disabled",
+			pod:             initializedWithNativeSidecar,
+			vpa:             vpaWithSidecar,
+			expectedAction:  true,
+			expectedMem:     resource.MustParse("200Mi"),
+			expectedCPU:     resource.MustParse("2"),
+			expectedInitMem: mustParseResourcePointer("0"),
+			expectedInitCPU: mustParseResourcePointer("0"),
 		},
 		{
 			name:           "high memory",
@@ -306,6 +347,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, tc.nativeSidecarEnabled)
 			recommendationProvider := &recommendationProvider{
 				recommendationProcessor: vpa_api_util.NewCappingRecommendationProcessor(limitrange.NewNoopLimitsCalculator()),
 				limitsRangeCalculator: &fakeLimitRangeCalculator{
@@ -324,10 +366,18 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 				assert.Equal(t, len(tc.pod.Spec.InitContainers), len(initResources), "init containers resources length mismatch")
 				if len(tc.pod.Spec.InitContainers) > 0 {
+					expectedInitCPU := tc.expectedCPU
+					if tc.expectedInitCPU != nil {
+						expectedInitCPU = *tc.expectedInitCPU
+					}
+					expectedInitMem := tc.expectedMem
+					if tc.expectedInitMem != nil {
+						expectedInitMem = *tc.expectedInitMem
+					}
 					cpuRequestInit := initResources[0].Requests[corev1.ResourceCPU]
-					assert.Equal(t, tc.expectedCPU.Value(), cpuRequestInit.Value(), "init cpu request doesn't match")
+					assert.Equal(t, expectedInitCPU.Value(), cpuRequestInit.Value(), "init cpu request doesn't match")
 					memoryRequestInit := initResources[0].Requests[corev1.ResourceMemory]
-					assert.Equal(t, tc.expectedMem.Value(), memoryRequestInit.Value(), "init memory request doesn't match")
+					assert.Equal(t, expectedInitMem.Value(), memoryRequestInit.Value(), "init memory request doesn't match")
 				}
 
 				assert.NotContains(t, resources, "", "expected empty resource to be removed")

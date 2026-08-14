@@ -231,6 +231,8 @@ type clusterStateFeeder struct {
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
+	// Prometheus history doesn't carry container type, so a live pod spec lookup is needed to
+	// classify each container (standard/init/init-sidecar) when rebuilding cluster state from history.
 	pods, err := feeder.podSpecLookup()
 	if err != nil {
 		klog.ErrorS(err, "Cannot get SimplePodSpecs")
@@ -253,10 +255,11 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 				PodID:         podID,
 				ContainerName: containerName,
 			}
-			klog.V(0).InfoS("Adding", "container", containerID)
+			klog.V(4).InfoS("Adding", "container", containerID)
 
 			containerSpec := podSpec.GetContainerSpec(containerName)
 			if containerSpec == nil {
+				klog.V(4).InfoS("Container spec not found, skipping", "container", containerID)
 				continue
 			}
 			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil, containerSpec.ContainerType); err != nil {
@@ -274,6 +277,22 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 			}
 		}
 	}
+}
+
+func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
+	vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
+	vpa, exists := feeder.clusterState.VPAs()[vpaID]
+	if !exists {
+		return fmt.Errorf("cannot load checkpoint to missing VPA object %s/%s", vpaID.Namespace, vpaID.VpaName)
+	}
+
+	cs := model.NewAggregateContainerState()
+	err := cs.LoadFromCheckpoint(&checkpoint.Status)
+	if err != nil {
+		return fmt.Errorf("cannot load checkpoint for VPA %s/%s. Reason: %v", vpaID.Namespace, vpaID.VpaName, err)
+	}
+	vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
+	return nil
 }
 
 func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
@@ -561,22 +580,6 @@ func (feeder *clusterStateFeeder) podSpecLookup() (map[model.PodID]*spec.BasicPo
 		pods[spec.ID] = spec
 	}
 	return pods, nil
-}
-
-func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
-	vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-	vpa, exists := feeder.clusterState.VPAs()[vpaID]
-	if !exists {
-		return fmt.Errorf("cannot load checkpoint to missing VPA object %s/%s", vpaID.Namespace, vpaID.VpaName)
-	}
-
-	cs := model.NewAggregateContainerState()
-	err := cs.LoadFromCheckpoint(&checkpoint.Status)
-	if err != nil {
-		return fmt.Errorf("cannot load checkpoint for VPA %s/%s. Reason: %v", vpaID.Namespace, vpaID.VpaName, err)
-	}
-	vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
-	return nil
 }
 
 func (feeder *clusterStateFeeder) matchesVPA(pod *spec.BasicPodSpec) bool {

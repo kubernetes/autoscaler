@@ -235,7 +235,6 @@ func (cluster *clusterState) DeletePod(podID PodID) {
 // adds it to the parent pod in the clusterState object, if not yet present.
 // Requires the pod to be added to the clusterState first. Otherwise an error is
 // returned.
-// TODO maybe make this take in the containerspec since it has all this info?
 func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, request Resources, containerType ContainerType) error {
 	pod, podExists := cluster.pods[containerID.PodID]
 	if !podExists {
@@ -243,6 +242,9 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	}
 
 	if containerType == ContainerTypeInit {
+		// Plain init containers run once and don't have ongoing usage worth tracking, so only
+		// their name is recorded (for VPA container-recommendation matching/status display);
+		// they're never added to the aggregate-container-state map below.
 		pod.InitContainers = append(pod.InitContainers, containerID.ContainerName)
 		return nil
 	}
