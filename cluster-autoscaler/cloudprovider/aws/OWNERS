@@ -1,0 +1,11 @@
+approvers:
+- gjtempleton
+emeritus_approvers:
+- Jeffwan
+- jaypipes
+- drmorr0
+reviewers:
+- gjtempleton
+
+labels:
+- area/provider/aws

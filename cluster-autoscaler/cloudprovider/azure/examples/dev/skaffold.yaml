@@ -1,0 +1,14 @@
+apiVersion: skaffold/v4beta9
+kind: Config
+metadata:
+  name: cluster-autoscaler
+build:
+  artifacts:
+  - image: cluster-autoscaler
+    ko: {}
+manifests:
+  rawYaml:
+  - "cloudprovider/azure/examples/dev/cluster-autoscaler-vmss-wi-dynamic.yaml"
+  # include workload here to have it deployed _and removed_ with CAS;
+  # comment out if this does not fit your workflow
+  - "cloudprovider/azure/examples/workloads/inflate.yaml"

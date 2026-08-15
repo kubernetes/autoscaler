@@ -1,0 +1,162 @@
+/*
+Copyright 2018 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
+	"k8s.io/client-go/informers"
+	kube_client "k8s.io/client-go/kubernetes"
+	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
+	"k8s.io/klog/v2"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
+	admissioncontroller_config "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/config"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
+	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/client"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
+	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/server"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+)
+
+const (
+	defaultResyncPeriod                        = 10 * time.Minute
+	statusUpdateInterval                       = 10 * time.Second
+	scaleCacheEntryLifetime      time.Duration = time.Hour
+	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
+	scaleCacheEntryJitterFactor  float64       = 1.
+	webHookDelay                               = 10 * time.Second
+)
+
+func main() {
+	config := admissioncontroller_config.InitAdmissionControllerFlags()
+
+	klog.V(1).InfoS("Starting Vertical Pod Autoscaler Admission Controller", "version", common.VerticalPodAutoscalerVersion())
+
+	healthCheck := metrics.NewHealthCheck(time.Minute)
+	metrics_admission.Register()
+	server.Initialize(&config.CommonFlags.EnableProfiling, healthCheck, &config.Address)
+
+	kubeConfig := common.CreateKubeConfigOrDie(config.CommonFlags.KubeConfig, float32(config.CommonFlags.KubeApiQps), int(config.CommonFlags.KubeApiBurst))
+
+	stopCh := make(chan struct{})
+	defer close(stopCh)
+
+	vpaClient := vpa_clientset.NewForConfigOrDie(kubeConfig)
+	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), config.CommonFlags.VpaObjectNamespace)
+	kubeClient := kube_client.NewForConfigOrDie(kubeConfig)
+	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod,
+		informers.WithNamespace(config.CommonFlags.VpaObjectNamespace),
+		informers.WithTransform(client.StripManagedFields),
+	)
+	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, factory, stopCh)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor, stopCh)
+
+	podPreprocessor := pod.NewDefaultPreProcessor()
+	vpaPreprocessor := vpa.NewDefaultPreProcessor()
+	var limitRangeCalculator limitrange.LimitRangeCalculator
+	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
+	if err != nil {
+		klog.ErrorS(err, "Failed to create limitRangeCalculator, falling back to not checking limits.")
+		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
+	}
+	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
+	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher)
+
+	factory.Start(stopCh)
+	informerMap := factory.WaitForCacheSync(stopCh)
+	for kind, synced := range informerMap {
+		if !synced {
+			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+	}
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		klog.ErrorS(err, "Unable to get hostname")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	statusNamespace := status.AdmissionControllerStatusNamespace
+	if config.Namespace != "" {
+		statusNamespace = config.Namespace
+	}
+	statusUpdater := status.NewUpdater(
+		kubeClient,
+		status.AdmissionControllerStatusName,
+		statusNamespace,
+		statusUpdateInterval,
+		hostname,
+	)
+
+	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider, config.MaxAllowedCPUBoost), patch.NewObservedContainersCalculator()}
+	as := logic.NewAdmissionServer(podPreprocessor, vpaPreprocessor, limitRangeCalculator, vpaMatcher, calculators)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		as.Serve(w, r)
+		healthCheck.UpdateLastActivity()
+	})
+	var mutatingWebhookClient typedadmregv1.MutatingWebhookConfigurationInterface
+	if config.RegisterWebhook {
+		mutatingWebhookClient = kubeClient.AdmissionregistrationV1().MutatingWebhookConfigurations()
+	}
+	server := &http.Server{
+		Addr:      fmt.Sprintf(":%d", config.Port),
+		TLSConfig: configTLS(*config.CertsConfiguration, config.MinTlsVersion, config.Ciphers, stopCh, mutatingWebhookClient),
+	}
+	url := fmt.Sprintf("%v:%v", config.WebhookAddress, config.WebhookPort)
+	ignoredNamespaces := strings.Split(config.CommonFlags.IgnoredVpaObjectNamespaces, ",")
+	go func() {
+		if config.RegisterWebhook {
+			selfRegistration(
+				kubeClient,
+				readFile(config.CertsConfiguration.ClientCaFile),
+				webHookDelay,
+				config.Namespace,
+				config.ServiceName,
+				url,
+				config.RegisterByURL,
+				int32(config.WebhookTimeout),
+				config.CommonFlags.VpaObjectNamespace,
+				ignoredNamespaces,
+				config.WebhookFailurePolicy,
+				config.WebhookLabels,
+			)
+		}
+		// Start status updates after the webhook is initialized.
+		statusUpdater.Run(stopCh)
+	}()
+
+	if err = server.ListenAndServeTLS("", ""); err != nil {
+		klog.ErrorS(err, "Failed to start HTTPS server")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+}

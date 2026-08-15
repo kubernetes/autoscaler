@@ -1,0 +1,213 @@
+/*
+Copyright 2018 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package logic
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+
+	admissionv1 "k8s.io/api/admission/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/klog/v2"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
+	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
+)
+
+const (
+	// maxAdmissionPayloadSize limits the size of the incoming admission request payload
+	// to prevent OOM (Denial of Service) attacks. A typical AdmissionReview is well under 100KB,
+	// and etcd limits objects to 1.5MB. With updates including both the new and old object,
+	// 5MB is an extremely safe upper bound that leaves a comfortable margin.
+	maxAdmissionPayloadSize = 1024 * 1024 * 5 // 5MB
+)
+
+// AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
+type AdmissionServer struct {
+	limitsChecker    limitrange.LimitRangeCalculator
+	resourceHandlers map[metav1.GroupResource]resource.Handler
+}
+
+// NewAdmissionServer constructs new AdmissionServer
+func NewAdmissionServer(podPreProcessor pod.PreProcessor,
+	vpaPreProcessor vpa.PreProcessor,
+	limitsChecker limitrange.LimitRangeCalculator,
+	vpaMatcher vpa.Matcher,
+	patchCalculators []patch.Calculator) *AdmissionServer {
+	as := &AdmissionServer{limitsChecker, map[metav1.GroupResource]resource.Handler{}}
+	as.RegisterResourceHandler(pod.NewResourceHandler(podPreProcessor, vpaMatcher, patchCalculators))
+	as.RegisterResourceHandler(vpa.NewResourceHandler(vpaPreProcessor))
+	return as
+}
+
+// RegisterResourceHandler allows to register a custom logic for handling given types of resources.
+func (s *AdmissionServer) RegisterResourceHandler(resourceHandler resource.Handler) {
+	s.resourceHandlers[resourceHandler.GroupResource()] = resourceHandler
+}
+
+func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.AdmissionResponse, metrics_admission.AdmissionStatus, metrics_admission.AdmissionResource) {
+	// we don't block the admission by default, even on unparsable JSON
+	response := admissionv1.AdmissionResponse{}
+	response.Allowed = true
+
+	ar := admissionv1.AdmissionReview{}
+	if err := json.Unmarshal(data, &ar); err != nil {
+		klog.Error(err)
+		return &response, metrics_admission.Error, metrics_admission.Unknown
+	}
+
+	response.UID = ar.Request.UID
+
+	var patches []resource.PatchRecord
+	var warnings []string
+	var err error
+	var allErrs field.ErrorList
+	resource := metrics_admission.Unknown
+
+	admittedGroupResource := metav1.GroupResource{
+		Group:    ar.Request.Resource.Group,
+		Resource: ar.Request.Resource.Resource,
+	}
+	kind := ar.Request.RequestKind.Kind
+	name := ar.Request.Name
+
+	handler, ok := s.resourceHandlers[admittedGroupResource]
+	if ok {
+		patches, warnings, allErrs = handler.GetPatches(ctx, ar.Request)
+		resource = handler.AdmissionResource()
+		response.Warnings = append(response.Warnings, warnings...)
+
+		if handler.DisallowIncorrectObjects() && len(allErrs) > 0 {
+			// we don't let in problematic objects - late validation
+			err := apierrors.NewInvalid(
+				schema.GroupKind{
+					Group: admittedGroupResource.Group,
+					Kind:  kind,
+				},
+				name,
+				allErrs,
+			)
+			status := err.ErrStatus
+			response.Result = &status
+			response.Allowed = false
+		}
+	} else {
+		patches, err = nil, fmt.Errorf("not supported resource type: %v", admittedGroupResource)
+	}
+
+	if err != nil {
+		klog.Error(err)
+		return &response, metrics_admission.Error, resource
+	}
+
+	if len(patches) > 0 {
+		patch, err := json.Marshal(patches)
+		if err != nil {
+			klog.Errorf("Cannot marshal the patch %v: %v", patches, err)
+			return &response, metrics_admission.Error, resource
+		}
+		patchType := admissionv1.PatchTypeJSONPatch
+		response.PatchType = &patchType
+		response.Patch = patch
+		klog.V(4).InfoS("Sending patches", "patches", patches)
+	}
+
+	var status metrics_admission.AdmissionStatus
+	if len(patches) > 0 {
+		status = metrics_admission.Applied
+	} else {
+		status = metrics_admission.Skipped
+	}
+	if resource == metrics_admission.Pod {
+		metrics_admission.OnAdmittedPod(status == metrics_admission.Applied)
+	}
+
+	return &response, status, resource
+}
+
+// Serve is a handler function of AdmissionServer
+func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	executionTimer := metrics_admission.NewExecutionTimer()
+	defer executionTimer.ObserveTotal()
+	admissionLatency := metrics_admission.NewAdmissionLatency()
+
+	// verify the content type is accurate
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		klog.Errorf("contentType=%s, expect application/json", contentType)
+		admissionLatency.Observe(metrics_admission.Error, metrics_admission.Unknown)
+		return
+	}
+
+	var body []byte
+	if r.Body != nil {
+		if data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxAdmissionPayloadSize)); err == nil {
+			body = data
+		} else {
+			var maxBytesErr *http.MaxBytesError
+			if errors.As(err, &maxBytesErr) {
+				klog.ErrorS(err, "Admission request body exceeds size limit", "limit", maxAdmissionPayloadSize)
+				http.Error(w, "request payload too large", http.StatusRequestEntityTooLarge)
+				admissionLatency.Observe(metrics_admission.Error, metrics_admission.Unknown)
+				return
+			}
+			klog.ErrorS(err, "Failed to read admission request body")
+		}
+	}
+	executionTimer.ObserveStep("read_request")
+
+	reviewResponse, status, resource := s.admit(ctx, body)
+	ar := admissionv1.AdmissionReview{
+		Response: reviewResponse,
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AdmissionReview",
+			APIVersion: "admission.k8s.io/v1",
+		},
+	}
+	executionTimer.ObserveStep("admit")
+
+	resp, err := json.Marshal(ar)
+	if err != nil {
+		klog.Error(err)
+		admissionLatency.Observe(metrics_admission.Error, resource)
+		return
+	}
+	executionTimer.ObserveStep("build_response")
+
+	_, err = w.Write(resp)
+	if err != nil {
+		klog.Error(err)
+		admissionLatency.Observe(metrics_admission.Error, resource)
+		return
+	}
+	executionTimer.ObserveStep("write_response")
+
+	admissionLatency.Observe(status, resource)
+}

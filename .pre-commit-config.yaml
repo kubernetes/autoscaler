@@ -1,0 +1,22 @@
+repos:
+  - hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+    repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.1.0
+  - hooks:
+      - id: helmlint
+    repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.9
+  - hooks:
+      - id: helm-docs
+        files: (README\.md\.gotmpl|(Chart|requirements|values)\.yaml)$
+    repo: https://github.com/norwoodj/helm-docs
+    rev: v1.3.0
+  - hooks:
+      - id : update-flags
+        name: Update Cluster-Autoscaler Flags Table
+        entry: bash cluster-autoscaler/hack/update-faq-flags.sh
+        language: system
+        files: cluster-autoscaler/config/flags/flags\.go
+    repo: local

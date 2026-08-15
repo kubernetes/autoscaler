@@ -1,0 +1,8 @@
+approvers:
+- sig-autoscaling-leads
+reviewers:
+- sig-autoscaling-leads
+emeritus_approvers:
+- bskiba # 2022-09-30
+- mwielgus
+- maciekpytel

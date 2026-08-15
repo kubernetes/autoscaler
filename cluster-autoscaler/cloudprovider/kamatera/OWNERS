@@ -1,0 +1,7 @@
+approvers:
+- OriHoch
+reviewers:
+- OriHoch
+
+labels:
+- area/provider/kamatera

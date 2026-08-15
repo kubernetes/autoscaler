@@ -1,0 +1,193 @@
+# Vertical Pod Autoscaler Flags
+This document contains the flags for all VPA components.
+
+To view the most recent _release_ of flags for all VPA components, consult the release tag [flags(1.7.1)](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler-1.7.1/vertical-pod-autoscaler/docs/flags.md) documentation.
+
+> **Note:** This document is auto-generated from the default branch (master) of the VPA repository.
+
+<!-- toc -->
+- [What are the parameters to VPA admission-controller?](#what-are-the-parameters-to-vpa-admission-controller)
+- [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
+- [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
+<!-- /toc -->
+
+# What are the parameters to VPA admission-controller?
+This document is auto-generated from the flag definitions in the VPA admission-controller code.
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `add-dir-header` | bool | false | If true, adds the file directory to the header of the log messages |
+| `address` | string | ":8944" | The address to expose Prometheus metrics. |
+| `alsologtostderr` | bool | false | log to standard error as well as files (no effect when -logtostderr=true) |
+| `alsologtostderrthreshold` | severity |  | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |
+| `client-ca-file` | string | "/etc/tls-certs/caCert.pem" | Path to CA PEM file. |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>InPlace=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
+| `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
+| `kube-api-burst` | float | 100 | QPS burst limit when making requests to Kubernetes apiserver |
+| `kube-api-qps` | float | 50 | QPS limit when making requests to Kubernetes apiserver |
+| `kubeconfig` | string |  | Path to a kubeconfig. Only required if out-of-cluster. |
+| `legacy-stderr-threshold-behavior` | bool | true | If true, stderrthreshold is ignored when logtostderr=true (legacy behavior). If false, stderrthreshold is honored even when logtostderr=true |
+| `log-backtrace-at` | traceLocation | :0 | when logging hits line file:N, emit a stack trace |
+| `log-dir` | string |  | If non-empty, write log files in this directory (no effect when -logtostderr=true) |
+| `log-file` | string |  | If non-empty, use this log file (no effect when -logtostderr=true) |
+| `log-file-max-size` | uint | 1800 | Defines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited. |
+| `logtostderr` | bool | true | log to standard error instead of files |
+| `max-allowed-cpu-boost` | quantity |  | Maximum amount of CPU that will be applied for a container with boost. |
+| `min-tls-version` | string | "tls1_2" | The minimum TLS version to accept. Must be set to either tls1_2 or tls1_3. |
+| `one-output` | bool | false | If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
+| `port` | int | 8000 | The port to listen on. |
+| `profiling` | bool | false | Enable the debug/pprof endpoint |
+| `register-by-url` | bool | false | If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name |
+| `register-webhook` | bool | true | If set to true, admission webhook object will be created on start up to register with the API server. |
+| `reload-cert` | bool | false | If set to true, reload leaf and CA certificates when changed. |
+| `skip-headers` | bool | false | If true, avoid header prefixes in the log messages |
+| `skip-log-headers` | bool | false | If true, avoid headers when opening log files (no effect when -logtostderr=true) |
+| `stderrthreshold` | severity | info | set the log level threshold for writing to standard error |
+| `tls-cert-file` | string | "/etc/tls-certs/serverCert.pem" | Path to server certificate PEM file. |
+| `tls-ciphers` | string |  | A comma-separated or colon-separated list of ciphers to accept. Only works when min-tls-version is set to tls1_2. |
+| `tls-private-key` | string | "/etc/tls-certs/serverKey.pem" | Path to server certificate key PEM file. |
+| `v` | Level | 4 | set the log level verbosity |
+| `vmodule` | moduleSpec |  | comma-separated list of pattern=N settings for file-filtered logging |
+| `vpa-object-namespace` | string |  | Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace. |
+| `webhook-address` | string |  | Address under which webhook is registered. Used when --register-by-url is set to true. |
+| `webhook-failure-policy-fail` | bool | false | If set to true, will configure the admission webhook failurePolicy to "Fail". Use with caution. |
+| `webhook-labels` | string |  | Comma separated list of labels to add to the webhook object. Format: key1:value1,key2:value2 |
+| `webhook-port` | string |  | Port under which webhook is registered. Used when --register-by-url is set to true. |
+| `webhook-service` | string | "vpa-webhook" | Kubernetes service under which webhook is registered. Used when --register-by-url is set to false. |
+| `webhook-timeout-seconds` | int | 30 | Timeout in seconds that the API server should wait for this webhook to respond before failing. |
+
+# What are the parameters to VPA recommender?
+This document is auto-generated from the flag definitions in the VPA recommender code.
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `add-dir-header` | bool | false | If true, adds the file directory to the header of the log messages |
+| `address` | string | ":8942" | The address to expose Prometheus metrics. |
+| `alsologtostderr` | bool | false | log to standard error as well as files (no effect when -logtostderr=true) |
+| `alsologtostderrthreshold` | severity |  | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |
+| `checkpoints-gc-interval` | duration | 10m0s | How often orphaned checkpoints should be garbage collected |
+| `checkpoints-timeout` | duration | 1m0s | Timeout for writing checkpoints since the start of the recommender's main loop |
+| `confidence-interval-cpu` | duration | 24h0m0s | The time interval used for computing the confidence multiplier for the CPU lower and upper bound. Default: 24h |
+| `confidence-interval-memory` | duration | 24h0m0s | The time interval used for computing the confidence multiplier for the memory lower and upper bound. Default: 24h |
+| `container-name-label` | string | "name" | Label name to look for container names |
+| `container-namespace-label` | string | "namespace" | Label name to look for container namespaces |
+| `container-pod-name-label` | string | "pod_name" | Label name to look for container pod names |
+| `container-recommendation-max-allowed-cpu` | quantity |  | Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed. |
+| `container-recommendation-max-allowed-memory` | quantity |  | Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed. |
+| `cpu-histogram-decay-half-life` | duration | 24h0m0s | The amount of time it takes a historical CPU usage sample to lose half of its weight. |
+| `cpu-integer-post-processor-enabled` | bool | false | Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental) |
+| `external-metrics-cpu-metric` | string |  | ALPHA. Metric to use with external metrics provider for CPU usage. |
+| `external-metrics-memory-metric` | string |  | ALPHA. Metric to use with external metrics provider for memory usage. |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>InPlace=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
+| `history-cpu-metric` | string | "container_cpu_usage_seconds_total" | Name of the metric to use for CPU history when querying Prometheus. |
+| `history-length` | string | "8d" | How much time back Prometheus has to be queried to get historical metrics |
+| `history-memory-metric` | string | "container_memory_working_set_bytes" | Name of the metric to use for memory history when querying Prometheus |
+| `history-resolution` | string | "1h" | Resolution at which Prometheus is queried for historical metrics |
+| `humanize-memory` | bool | false | DEPRECATED: Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability. This flag is deprecated and will be removed in a future version. Use --round-memory-bytes instead. |
+| `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
+| `kube-api-burst` | float | 100 | QPS burst limit when making requests to Kubernetes apiserver |
+| `kube-api-qps` | float | 50 | QPS limit when making requests to Kubernetes apiserver |
+| `kubeconfig` | string |  | Path to a kubeconfig. Only required if out-of-cluster. |
+| `leader-elect` | bool | false | Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. |
+| `leader-elect-lease-duration` | duration | 15s | The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. |
+| `leader-elect-renew-deadline` | duration | 10s | The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than the lease duration. This is only applicable if leader election is enabled. |
+| `leader-elect-resource-lock` | string | "leases" | The type of resource object that is used for locking during leader election. Supported options are 'leases'. |
+| `leader-elect-resource-name` | string | "vpa-recommender-lease" | The name of resource object that is used for locking during leader election. |
+| `leader-elect-resource-namespace` | string | "kube-system" | The namespace of resource object that is used for locking during leader election. |
+| `leader-elect-retry-period` | duration | 2s | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. |
+| `legacy-stderr-threshold-behavior` | bool | true | If true, stderrthreshold is ignored when logtostderr=true (legacy behavior). If false, stderrthreshold is honored even when logtostderr=true |
+| `log-backtrace-at` | traceLocation | :0 | when logging hits line file:N, emit a stack trace |
+| `log-dir` | string |  | If non-empty, write log files in this directory (no effect when -logtostderr=true) |
+| `log-file` | string |  | If non-empty, use this log file (no effect when -logtostderr=true) |
+| `log-file-max-size` | uint | 1800 | Defines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited. |
+| `logtostderr` | bool | true | log to standard error instead of files |
+| `memory-aggregation-interval` | duration | 24h0m0s | Default length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval). This value applies to all VPAs unless overridden in the VPA spec. Default is 24h. |
+| `memory-aggregation-interval-count` | int | 8 | Default number of consecutive memory-aggregation-intervals which make up the MemoryAggregationWindowLength which in turn is the period for memory usage aggregation by VPA. In other words, MemoryAggregationWindowLength = memory-aggregation-interval * memory-aggregation-interval-count. This value applies to all VPAs unless overridden in the VPA spec. Default is 8. |
+| `memory-histogram-decay-half-life` | duration | 24h0m0s | The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period. |
+| `memory-saver` | bool | false | If true, only track pods which have an associated VPA |
+| `metric-for-pod-labels` | string | "up{job=\"kubernetes-pods\"}" | Which metric to look for pod labels in metrics |
+| `min-checkpoints` | int | 10 | Minimum number of checkpoints to write per recommender's main loop. WARNING: this flag is deprecated and doesn't have any effect. It will be removed in a future release. Refer to update-worker-count to influence the minimum number of checkpoints written per loop. |
+| `one-output` | bool | false | If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
+| `oom-bump-up-ratio` | float | 1.2 | Default memory bump up ratio when OOM occurs. This value applies to all VPAs unless overridden in the VPA spec. Default is 1.2. |
+| `oom-min-bump-up-bytes` | float | 1.048576e+08 | Default minimal increase of memory (in bytes) when OOM occurs. This value applies to all VPAs unless overridden in the VPA spec. Default is 100 * 1024 * 1024 (100Mi). |
+| `password` | string |  | The password used in the Prometheus server basic auth. Can also be set via the PROMETHEUS_PASSWORD environment variable |
+| `pod-label-prefix` | string | "pod_label_" | Which prefix to look for pod labels in metrics |
+| `pod-name-label` | string | "kubernetes_pod_name" | Label name to look for pod names |
+| `pod-namespace-label` | string | "kubernetes_namespace" | Label name to look for pod namespaces |
+| `pod-recommendation-min-cpu-millicores` | float | 25 | Minimum CPU recommendation for a pod |
+| `pod-recommendation-min-memory-mb` | float | 250 | Minimum memory recommendation for a pod |
+| `profiling` | bool | false | Enable the debug/pprof endpoint |
+| `prometheus-address` | string | "http://prometheus.monitoring.svc" | Where to reach for Prometheus metrics |
+| `prometheus-bearer-token` | string |  | The bearer token used in the Prometheus server bearer token auth |
+| `prometheus-bearer-token-file` | string |  | Path to the bearer token file used for authentication by the Prometheus server |
+| `prometheus-cadvisor-job-name` | string | "kubernetes-cadvisor" | Name of the Prometheus job which scrapes the cAdvisor metrics |
+| `prometheus-insecure` | bool | false | Skip TLS verification if HTTPS is used in the prometheus-address |
+| `prometheus-query-timeout` | string | "5m" | How long to wait before killing long queries |
+| `recommendation-lower-bound-cpu-percentile` | float | 0.5 | CPU usage percentile that will be used for the lower bound on CPU recommendation. |
+| `recommendation-lower-bound-memory-percentile` | float | 0.5 | Memory usage percentile that will be used for the lower bound on memory recommendation. |
+| `recommendation-margin-fraction` | float | 0.15 | Fraction of usage added as the safety margin to the recommended request |
+| `recommendation-upper-bound-cpu-percentile` | float | 0.95 | CPU usage percentile that will be used for the upper bound on CPU recommendation. |
+| `recommendation-upper-bound-memory-percentile` | float | 0.95 | Memory usage percentile that will be used for the upper bound on memory recommendation. |
+| `recommender-interval` | duration | 1m0s | How often metrics should be fetched |
+| `recommender-name` | string | "default" | Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster. |
+| `round-cpu-millicores` | int | 1 | CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor. |
+| `round-memory-bytes` | int | 1 | Memory recommendation rounding factor in bytes. The Memory value will always be rounded up to the nearest multiple of this factor. |
+| `skip-headers` | bool | false | If true, avoid header prefixes in the log messages |
+| `skip-log-headers` | bool | false | If true, avoid headers when opening log files (no effect when -logtostderr=true) |
+| `stderrthreshold` | severity | info | set the log level threshold for writing to standard error |
+| `storage` | string | checkpoint | Specifies storage mode. Supported values: prometheus, checkpoint |
+| `target-cpu-percentile` | float | 0.9 | CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. |
+| `target-memory-percentile` | float | 0.9 | Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. |
+| `update-worker-count` | int | 10 | Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits ('kube-api-qps' and 'kube-api-burst') are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop. |
+| `use-external-metrics` | bool | false | ALPHA. Use an external metrics provider instead of metrics_server. |
+| `username` | string |  | The username used in the Prometheus server basic auth. Can also be set via the PROMETHEUS_USERNAME environment variable |
+| `v` | Level | 4 | set the log level verbosity |
+| `vmodule` | moduleSpec |  | comma-separated list of pattern=N settings for file-filtered logging |
+| `vpa-object-namespace` | string |  | Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace. |
+
+# What are the parameters to VPA updater?
+This document is auto-generated from the flag definitions in the VPA updater code.
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `add-dir-header` | bool | false | If true, adds the file directory to the header of the log messages |
+| `address` | string | ":8943" | The address to expose Prometheus metrics. |
+| `alsologtostderr` | bool | false | log to standard error as well as files (no effect when -logtostderr=true) |
+| `alsologtostderrthreshold` | severity |  | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |
+| `evict-after-oom-threshold` | duration | 10m0s | The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start. |
+| `eviction-rate-burst` | int | 1 | Burst of pods that can be evicted. |
+| `eviction-rate-limit` | float | -1 | Number of pods that can be evicted per second. A rate limit set to 0 or -1 will disable the rate limiter. |
+| `eviction-tolerance` | float | 0.5 | Fraction of replica count that can be evicted for update, if more than one pod can be evicted. |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>InPlace=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
+| `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
+| `in-place-skip-disruption-budget` | bool | false | [BETA] If true, VPA updater skips disruption budget checks for in-place pod updates when all containers have NotRequired resize policy (or no policy defined) for both CPU and memory resources. Disruption budgets are still respected when any container has RestartContainer resize policy for any resource. |
+| `in-recommendation-bounds-eviction-lifetime-threshold` | duration | 12h0m0s | Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range |
+| `kube-api-burst` | float | 100 | QPS burst limit when making requests to Kubernetes apiserver |
+| `kube-api-qps` | float | 50 | QPS limit when making requests to Kubernetes apiserver |
+| `kubeconfig` | string |  | Path to a kubeconfig. Only required if out-of-cluster. |
+| `leader-elect` | bool | false | Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. |
+| `leader-elect-lease-duration` | duration | 15s | The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. |
+| `leader-elect-renew-deadline` | duration | 10s | The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than the lease duration. This is only applicable if leader election is enabled. |
+| `leader-elect-resource-lock` | string | "leases" | The type of resource object that is used for locking during leader election. Supported options are 'leases'. |
+| `leader-elect-resource-name` | string | "vpa-updater" | The name of resource object that is used for locking during leader election. |
+| `leader-elect-resource-namespace` | string | "kube-system" | The namespace of resource object that is used for locking during leader election. |
+| `leader-elect-retry-period` | duration | 2s | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. |
+| `legacy-stderr-threshold-behavior` | bool | true | If true, stderrthreshold is ignored when logtostderr=true (legacy behavior). If false, stderrthreshold is honored even when logtostderr=true |
+| `log-backtrace-at` | traceLocation | :0 | when logging hits line file:N, emit a stack trace |
+| `log-dir` | string |  | If non-empty, write log files in this directory (no effect when -logtostderr=true) |
+| `log-file` | string |  | If non-empty, use this log file (no effect when -logtostderr=true) |
+| `log-file-max-size` | uint | 1800 | Defines the maximum size a log file can grow to (no effect when -logtostderr=true). Unit is megabytes. If the value is 0, the maximum file size is unlimited. |
+| `logtostderr` | bool | true | log to standard error instead of files |
+| `min-replicas` | int | 2 | Minimum number of replicas to perform update |
+| `one-output` | bool | false | If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
+| `pod-update-threshold` | float | 0.1 | Ignore updates that have priority lower than the value of this flag |
+| `profiling` | bool | false | Enable the debug/pprof endpoint |
+| `skip-headers` | bool | false | If true, avoid header prefixes in the log messages |
+| `skip-log-headers` | bool | false | If true, avoid headers when opening log files (no effect when -logtostderr=true) |
+| `stderrthreshold` | severity | info | set the log level threshold for writing to standard error |
+| `updater-interval` | duration | 1m0s | How often updater should run |
+| `use-admission-controller-status` | bool | true | If true, updater will only evict pods when admission controller status is valid. |
+| `v` | Level | 4 | set the log level verbosity |
+| `vmodule` | moduleSpec |  | comma-separated list of pattern=N settings for file-filtered logging |
+| `vpa-object-namespace` | string |  | Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace. |
+

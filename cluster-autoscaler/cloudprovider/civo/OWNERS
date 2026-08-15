@@ -1,0 +1,8 @@
+approvers:
+- vishalanarase
+
+reviewers:
+- vishalanarase
+
+labels:
+- area/provider/civo

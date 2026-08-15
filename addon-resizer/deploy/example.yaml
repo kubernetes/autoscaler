@@ -1,0 +1,145 @@
+# Config map for resource configuration.
+# Specify 'baseCPU', 'cpuPerNode', 'baseMemory', and 'memoryPerNode' to
+# overwrite the CLI resource options 'cpu', 'extra-cpu', 'memory' and 'extra-memory'
+# respectively.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nanny-config
+  namespace: default
+data:
+  NannyConfiguration: |-
+    apiVersion: nannyconfig/v1alpha1
+    kind: NannyConfiguration
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pod-nanny
+  namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nanny-v1
+  namespace: default
+  labels:
+    k8s-app: nanny
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: nanny
+      version: v1
+  template:
+    metadata:
+      labels:
+        k8s-app: nanny
+        version: v1
+        kubernetes.io/cluster-service: "true"
+    spec:
+      serviceAccountName: pod-nanny
+      containers:
+        - image: registry.k8s.io/autoscaling/addon-resizer:1.8.14
+          imagePullPolicy: Always
+          name: pod-nanny
+          resources:
+            limits:
+              cpu: 300m
+              memory: 200Mi
+            requests:
+              cpu: 300m
+              memory: 200Mi
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+          - name: nanny-config-volume
+            mountPath: /etc/config
+          command:
+            - /pod_nanny
+            - --config-dir=/etc/config
+            - --cpu=300m
+            - --extra-cpu=20m
+            - --memory=200Mi
+            - --extra-memory=10Mi
+            - --threshold=5
+            - --deployment=nanny-v1
+      volumes:
+      - name: nanny-config-volume
+        configMap:
+          name: nanny-config
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: default:pod-nanny
+rules:
+### --use-metrics=false
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+### --use-metrics=true
+# - nonResourceURLs:
+#   - /metrics
+#   verbs:
+#   - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pod-nanny-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: default:pod-nanny
+subjects:
+- kind: ServiceAccount
+  name: pod-nanny
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: default:pod-nanny
+  namespace: default
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - "apps"
+  resources:
+  - deployments
+  resourceNames:
+  - nanny-v1
+  verbs:
+  - get
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-nanny-binding
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: default:pod-nanny
+subjects:
+- kind: ServiceAccount
+  name: pod-nanny
+---

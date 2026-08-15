@@ -1,0 +1,355 @@
+/*
+Copyright 2019 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// Package v1beta2 contains definitions of Vertical Pod Autoscaler related objects.
+package v1beta2
+
+import (
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VerticalPodAutoscalerList is a list of VerticalPodAutoscaler objects.
+type VerticalPodAutoscalerList struct {
+	metav1.TypeMeta `json:",inline"`
+	// metadata is the standard list metadata.
+	// +optional
+	metav1.ListMeta `json:"metadata"`
+
+	// items is the list of vertical pod autoscaler objects.
+	Items []VerticalPodAutoscaler `json:"items"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:resource:shortName=vpa
+// +kubebuilder:subresource:status
+// +k8s:prerelease-lifecycle-gen=true
+// +kubebuilder:metadata:annotations="api-approved.kubernetes.io=https://github.com/kubernetes/kubernetes/pull/63797"
+
+// VerticalPodAutoscaler is the configuration for a vertical pod
+// autoscaler, which automatically manages pod resources based on historical and
+// real time resource utilization.
+// +k8s:prerelease-lifecycle-gen:introduced=0.4.0
+// +k8s:prerelease-lifecycle-gen:deprecated=0.13.0
+// +k8s:prerelease-lifecycle-gen:replacement=autoscaling,v1,VerticalPodAutoscaler
+// +kubebuilder:deprecatedversion:warning=autoscaling.k8s.io/v1beta2 API is deprecated
+// +kubebuilder:unservedversion
+type VerticalPodAutoscaler struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Specification of the behavior of the autoscaler.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
+	Spec VerticalPodAutoscalerSpec `json:"spec"`
+
+	// Current information about the autoscaler.
+	// +optional
+	Status VerticalPodAutoscalerStatus `json:"status,omitempty"`
+}
+
+// VerticalPodAutoscalerSpec is the specification of the behavior of the autoscaler.
+type VerticalPodAutoscalerSpec struct {
+
+	// TargetRef points to the controller managing the set of pods for the
+	// autoscaler to control - e.g. Deployment, StatefulSet. VerticalPodAutoscaler
+	// can be targeted at controller implementing scale subresource (the pod set is
+	// retrieved from the controller's ScaleStatus) or some well known controllers
+	// (e.g. for DaemonSet the pod set is read from the controller's spec).
+	// If VerticalPodAutoscaler cannot use specified target it will report
+	// ConfigUnsupported condition.
+	// Note that VerticalPodAutoscaler does not require full implementation
+	// of scale subresource - it will not use it to modify the replica count.
+	// The only thing retrieved is a label selector matching pods grouped by
+	// the target resource.
+	TargetRef *autoscalingv1.CrossVersionObjectReference `json:"targetRef"`
+
+	// Describes the rules on how changes are applied to the pods.
+	// If not specified, all fields in the `PodUpdatePolicy` are set to their
+	// default values.
+	// +optional
+	UpdatePolicy *PodUpdatePolicy `json:"updatePolicy,omitempty"`
+
+	// Controls how the autoscaler computes recommended resources.
+	// The resource policy may be used to set constraints on the recommendations
+	// for individual containers. If not specified, the autoscaler computes recommended
+	// resources for all containers in the pod, without additional constraints.
+	// +optional
+	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty"`
+}
+
+// PodUpdatePolicy describes the rules on how changes are applied to the pods.
+type PodUpdatePolicy struct {
+	// Controls when autoscaler applies changes to the pod resources.
+	// The default is 'Auto'.
+	// +optional
+	UpdateMode *UpdateMode `json:"updateMode,omitempty"`
+}
+
+// UpdateMode controls when autoscaler applies changes to the pod resources.
+// +kubebuilder:validation:Enum=Off;Initial;Recreate;Auto
+type UpdateMode string
+
+const (
+	// UpdateModeOff means that autoscaler never changes Pod resources.
+	// The recommender still sets the recommended resources in the
+	// VerticalPodAutoscaler object. This can be used for a "dry run".
+	UpdateModeOff UpdateMode = "Off"
+	// UpdateModeInitial means that autoscaler only assigns resources on pod
+	// creation and does not change them during the lifetime of the pod.
+	UpdateModeInitial UpdateMode = "Initial"
+	// UpdateModeRecreate means that autoscaler assigns resources on pod
+	// creation and additionally can update them during the lifetime of the
+	// pod by deleting and recreating the pod.
+	UpdateModeRecreate UpdateMode = "Recreate"
+	// UpdateModeAuto means that autoscaler assigns resources on pod creation
+	// and additionally can update them during the lifetime of the pod,
+	// using any available update method. Currently this is equivalent to
+	// Recreate, which is the only available update method.
+	UpdateModeAuto UpdateMode = "Auto"
+)
+
+// PodResourcePolicy controls how autoscaler computes the recommended resources
+// for containers belonging to the pod. There can be at most one entry for every
+// named container and optionally a single wildcard entry with `containerName` = '*',
+// which handles all containers that don't have individual policies.
+type PodResourcePolicy struct {
+	// Per-container resource policies.
+	// +optional
+	// +patchMergeKey=containerName
+	// +patchStrategy=merge
+	ContainerPolicies []ContainerResourcePolicy `json:"containerPolicies,omitempty" patchStrategy:"merge" patchMergeKey:"containerName"`
+}
+
+// ContainerResourcePolicy controls how autoscaler computes the recommended
+// resources for a specific container.
+type ContainerResourcePolicy struct {
+	// Name of the container or DefaultContainerResourcePolicy, in which
+	// case the policy is used by the containers that don't have their own
+	// policy specified.
+	ContainerName string `json:"containerName,omitempty"`
+	// Whether autoscaler is enabled for the container. The default is "Auto".
+	// +optional
+	Mode *ContainerScalingMode `json:"mode,omitempty"`
+	// Specifies the minimal amount of resources that will be recommended
+	// for the container. The default is no minimum.
+	// +optional
+	MinAllowed corev1.ResourceList `json:"minAllowed,omitempty"`
+	// Specifies the maximum amount of resources that will be recommended
+	// for the container. The default is no maximum.
+	// +optional
+	MaxAllowed corev1.ResourceList `json:"maxAllowed,omitempty"`
+}
+
+const (
+	// DefaultContainerResourcePolicy can be passed as
+	// ContainerResourcePolicy.ContainerName to specify the default policy.
+	DefaultContainerResourcePolicy = "*"
+)
+
+// ContainerScalingMode controls whether autoscaler is enabled for a specific
+// container.
+// +kubebuilder:validation:Enum=Auto;Off
+type ContainerScalingMode string
+
+const (
+	// ContainerScalingModeAuto means autoscaling is enabled for a container.
+	ContainerScalingModeAuto ContainerScalingMode = "Auto"
+	// ContainerScalingModeOff means autoscaling is disabled for a container.
+	ContainerScalingModeOff ContainerScalingMode = "Off"
+)
+
+// VerticalPodAutoscalerStatus describes the runtime state of the autoscaler.
+type VerticalPodAutoscalerStatus struct {
+	// The most recently computed amount of resources recommended by the
+	// autoscaler for the controlled pods.
+	// +optional
+	Recommendation *RecommendedPodResources `json:"recommendation,omitempty"`
+
+	// Conditions is the set of conditions required for this autoscaler to scale its target,
+	// and indicates whether or not those conditions are met.
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Conditions []VerticalPodAutoscalerCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+}
+
+// RecommendedPodResources is the recommendation of resources computed by
+// autoscaler. It contains a recommendation for each container in the pod
+// (except for those with `ContainerScalingMode` set to 'Off').
+type RecommendedPodResources struct {
+	// Resources recommended by the autoscaler for each container.
+	// +optional
+	ContainerRecommendations []RecommendedContainerResources `json:"containerRecommendations,omitempty"`
+}
+
+// RecommendedContainerResources is the recommendation of resources computed by
+// autoscaler for a specific container. Respects the container resource policy
+// if present in the spec. In particular the recommendation is not produced for
+// containers with `ContainerScalingMode` set to 'Off'.
+type RecommendedContainerResources struct {
+	// Name of the container.
+	ContainerName string `json:"containerName,omitempty"`
+	// Recommended amount of resources. Observes ContainerResourcePolicy.
+	Target corev1.ResourceList `json:"target"`
+	// Minimum recommended amount of resources. Observes ContainerResourcePolicy.
+	// This amount is not guaranteed to be sufficient for the application to operate in a stable way, however
+	// running with less resources is likely to have significant impact on performance/availability.
+	// +optional
+	LowerBound corev1.ResourceList `json:"lowerBound,omitempty"`
+	// Maximum recommended amount of resources. Observes ContainerResourcePolicy.
+	// Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum
+	// amount of application is actually capable of consuming.
+	// +optional
+	UpperBound corev1.ResourceList `json:"upperBound,omitempty"`
+	// The most recent recommended resources target computed by the autoscaler
+	// for the controlled pods, based only on actual resource usage, not taking
+	// into account the ContainerResourcePolicy.
+	// May differ from the Recommendation if the actual resource usage causes
+	// the target to violate the ContainerResourcePolicy (lower than MinAllowed
+	// or higher that MaxAllowed).
+	// Used only as status indication, will not affect actual resource assignment.
+	// +optional
+	UncappedTarget corev1.ResourceList `json:"uncappedTarget,omitempty"`
+}
+
+// VerticalPodAutoscalerConditionType are the valid conditions of
+// a VerticalPodAutoscaler.
+type VerticalPodAutoscalerConditionType string
+
+var (
+	// RecommendationProvided indicates whether the VPA recommender was able to calculate a recommendation.
+	RecommendationProvided VerticalPodAutoscalerConditionType = "RecommendationProvided"
+	// LowConfidence indicates whether the VPA recommender has low confidence in the recommendation for
+	// some of containers.
+	LowConfidence VerticalPodAutoscalerConditionType = "LowConfidence"
+	// NoPodsMatched indicates that label selector used with VPA object didn't match any pods.
+	NoPodsMatched VerticalPodAutoscalerConditionType = "NoPodsMatched"
+	// FetchingHistory indicates that VPA recommender is in the process of loading additional history samples.
+	FetchingHistory VerticalPodAutoscalerConditionType = "FetchingHistory"
+	// ConfigDeprecated indicates that this VPA configuration is deprecated
+	// and will stop being supported soon.
+	ConfigDeprecated VerticalPodAutoscalerConditionType = "ConfigDeprecated"
+	// ConfigUnsupported indicates that this VPA configuration is unsupported
+	// and recommendations will not be provided for it.
+	ConfigUnsupported VerticalPodAutoscalerConditionType = "ConfigUnsupported"
+)
+
+// VerticalPodAutoscalerCondition describes the state of
+// a VerticalPodAutoscaler at a certain point.
+type VerticalPodAutoscalerCondition struct {
+	// type describes the current condition
+	Type VerticalPodAutoscalerConditionType `json:"type"`
+	// status is the status of the condition (True, False, Unknown)
+	Status corev1.ConditionStatus `json:"status"`
+	// lastTransitionTime is the last time the condition transitioned from
+	// one status to another
+	// +optional
+	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
+	// reason is the reason for the condition's last transition.
+	// +optional
+	Reason string `json:"reason,omitempty"`
+	// message is a human-readable explanation containing details about
+	// the transition
+	// +optional
+	Message string `json:"message,omitempty"`
+}
+
+// +genclient
+// +genclient:noStatus
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:resource:shortName=vpacheckpoint
+// +kubebuilder:metadata:annotations="api-approved.kubernetes.io=https://github.com/kubernetes/kubernetes/pull/63797"
+// +kubebuilder:unservedversion
+
+// VerticalPodAutoscalerCheckpoint is the checkpoint of the internal state of VPA that
+// is used for recovery after recommender's restart.
+type VerticalPodAutoscalerCheckpoint struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Specification of the checkpoint.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
+	// +optional
+	Spec VerticalPodAutoscalerCheckpointSpec `json:"spec,omitempty"`
+
+	// Data of the checkpoint.
+	// +optional
+	Status VerticalPodAutoscalerCheckpointStatus `json:"status,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VerticalPodAutoscalerCheckpointList is a list of VerticalPodAutoscalerCheckpoint objects.
+type VerticalPodAutoscalerCheckpointList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+	Items           []VerticalPodAutoscalerCheckpoint `json:"items"`
+}
+
+// VerticalPodAutoscalerCheckpointSpec is the specification of the checkpoint object.
+type VerticalPodAutoscalerCheckpointSpec struct {
+	// Name of the VPA object that stored VerticalPodAutoscalerCheckpoint object.
+	VPAObjectName string `json:"vpaObjectName,omitempty"`
+
+	// Name of the checkpointed container.
+	ContainerName string `json:"containerName,omitempty"`
+}
+
+// VerticalPodAutoscalerCheckpointStatus contains data of the checkpoint.
+type VerticalPodAutoscalerCheckpointStatus struct {
+	// The time when the status was last refreshed.
+	// +nullable
+	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty"`
+
+	// Version of the format of the stored data.
+	Version string `json:"version,omitempty"`
+
+	// Checkpoint of histogram for consumption of CPU.
+	CPUHistogram HistogramCheckpoint `json:"cpuHistogram,omitempty"`
+
+	// Checkpoint of histogram for consumption of memory.
+	MemoryHistogram HistogramCheckpoint `json:"memoryHistogram,omitempty"`
+
+	// Timestamp of the first sample from the histograms.
+	// +nullable
+	FirstSampleStart metav1.Time `json:"firstSampleStart,omitempty"`
+
+	// Timestamp of the last sample from the histograms.
+	// +nullable
+	LastSampleStart metav1.Time `json:"lastSampleStart,omitempty"`
+
+	// Total number of samples in the histograms.
+	TotalSamplesCount int `json:"totalSamplesCount,omitempty"`
+}
+
+// HistogramCheckpoint contains data needed to reconstruct the histogram.
+type HistogramCheckpoint struct {
+	// Reference timestamp for samples collected within this histogram.
+	// +nullable
+	ReferenceTimestamp metav1.Time `json:"referenceTimestamp,omitempty"`
+
+	// Map from bucket index to bucket weight.
+	// +kubebuilder:validation:Type=object
+	// +kubebuilder:validation:XPreserveUnknownFields
+	BucketWeights map[int]uint32 `json:"bucketWeights,omitempty"`
+
+	// Sum of samples to be used as denominator for weights from BucketWeights.
+	TotalWeight float64 `json:"totalWeight,omitempty"`
+}

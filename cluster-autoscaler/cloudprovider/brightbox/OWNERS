@@ -1,0 +1,9 @@
+approvers:
+# - NeilW
+# - johnl
+reviewers:
+# - NeilW
+# - johnl
+
+labels:
+- area/provider/brightbox

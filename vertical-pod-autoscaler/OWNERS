@@ -1,0 +1,10 @@
+approvers:
+- sig-autoscaling-vpa-approvers
+reviewers:
+- sig-autoscaling-vpa-reviewers
+emeritus_approvers:
+- schylek # 2022-09-30
+- kgolab # 2025-02-21
+- krzysied # 2025-02-21
+labels:
+- area/vertical-pod-autoscaler

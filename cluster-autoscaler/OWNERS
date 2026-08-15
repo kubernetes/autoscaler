@@ -1,0 +1,14 @@
+approvers:
+- aleksandra-malinowska
+- BigDarkClown
+- towca
+- x13n
+reviewers:
+- aleksandra-malinowska
+- BigDarkClown
+- x13n
+- elmiko
+- mtrqq
+- norbertcyran
+labels:
+- area/cluster-autoscaler

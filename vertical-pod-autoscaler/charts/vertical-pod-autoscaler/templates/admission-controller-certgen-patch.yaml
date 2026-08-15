@@ -1,0 +1,70 @@
+{{- if and .Values.admissionController.enabled .Values.admissionController.certGen.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.certGen.fullname" . }}-patch
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.certGen.labels" . | nindent 4 }}
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      name: {{ include "vertical-pod-autoscaler.admissionController.certGen.fullname" . }}-patch
+      labels:
+        {{- include "vertical-pod-autoscaler.admissionController.certGen.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ include "vertical-pod-autoscaler.admissionController.certGen.fullname" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+        - name: patch
+          image: {{ printf "%s:%s" .Values.admissionController.certGen.image.repository .Values.admissionController.certGen.image.tag }}
+          imagePullPolicy: {{ .Values.admissionController.certGen.image.pullPolicy }}
+          args:
+            - patch
+            - --webhook-name={{ include "vertical-pod-autoscaler.admissionController.webhook.configName" . }}
+            - --namespace={{ .Release.Namespace }}
+            - --secret-name={{ include "vertical-pod-autoscaler.admissionController.tls.secretName" . }}
+            - --patch-validating=false
+          {{- with .Values.admissionController.certGen.env }}
+          env:
+            {{- range $key, $value := . }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- end }}
+          {{- with .Values.admissionController.certGen.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.admissionController.certGen.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.admissionController.certGen.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.admissionController.certGen.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.admissionController.certGen.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.admissionController.certGen.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end -}}

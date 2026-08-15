@@ -1,0 +1,7 @@
+approvers:
+- ellistarn
+reviewers:
+- ellistarn
+
+labels:
+- area/provider/kubemark

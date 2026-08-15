@@ -1,0 +1,7 @@
+approvers:
+- tghartland
+reviewers:
+- tghartland
+
+labels:
+- area/provider/magnum

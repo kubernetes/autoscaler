@@ -1,0 +1,7 @@
+# Disable inheritance as we want to only give sig-autoscaling-leads approval to this directory
+options:
+  no_parent_owners: true
+approvers:
+- sig-autoscaling-leads
+reviewers:
+- sig-autoscaling-vpa-reviewers

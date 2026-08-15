@@ -1,0 +1,10 @@
+approvers:
+- gjtempleton
+- jackfrancis
+reviewers:
+- gjtempleton
+- Shubham82
+- jackfrancis
+
+labels:
+- area/helm-charts

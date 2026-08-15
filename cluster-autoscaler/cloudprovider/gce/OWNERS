@@ -1,0 +1,11 @@
+approvers:
+- towca
+- x13n
+- BigDarkClown
+reviewers:
+- towca
+- x13n
+- BigDarkClown
+
+labels:
+- area/provider/gce

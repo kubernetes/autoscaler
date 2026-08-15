@@ -1,0 +1,128 @@
+/*
+Copyright 2016 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package gce
+
+import (
+	"fmt"
+	"net/url"
+	"path"
+	"regexp"
+)
+
+const (
+	projectsSubstring  = "/projects/"
+	defaultDomainUrl   = "https://www.googleapis.com/compute/v1"
+	anyHttpsUrlPattern = "https://.*/"
+)
+
+var (
+	regionalInstanceTemplateRe = regexp.MustCompile("(/projects/.*[A-Za-z0-9]+.*/regions/)")
+	migUrlRe                   = regexp.MustCompile(anyHttpsUrlPattern + "projects/(.*)/zones/(.*)/instanceGroups/(.*)")
+	igmUrlRe                   = regexp.MustCompile(anyHttpsUrlPattern + "projects/(.*)/zones/(.*)/instanceGroupManagers/(.*)")
+	igmRefUrlRe                = regexp.MustCompile("projects/(.*)/zones/(.*)/instanceGroupManagers/(.*)")
+	instanceUrlRe              = regexp.MustCompile(anyHttpsUrlPattern + "projects/(.*)/zones/(.*)/instances/(.*)")
+)
+
+// ParseMigUrl expects url in format:
+// https://.*/projects/<project-id>/zones/<zone>/instanceGroups/<name>
+func ParseMigUrl(url string) (project string, zone string, name string, err error) {
+	return parseGceUrl(url, migUrlRe, anyHttpsUrlPattern, "instanceGroups")
+}
+
+// ParseIgmUrl expects url in format:
+// https://.*/<project-id>/zones/<zone>/instanceGroupManagers/<name>
+func ParseIgmUrl(url string) (project string, zone string, name string, err error) {
+	return parseGceUrl(url, igmUrlRe, anyHttpsUrlPattern, "instanceGroupManagers")
+}
+
+// ParseIgmUrlRef expects url in format:
+// projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>
+// and returns a GceRef struct for it.
+func ParseIgmUrlRef(url string) (GceRef, error) {
+	project, zone, name, err := parseGceUrl(url, igmRefUrlRe, "", "instanceGroupManagers")
+	if err != nil {
+		return GceRef{}, err
+	}
+	return GceRef{
+		Project: project,
+		Zone:    zone,
+		Name:    name,
+	}, nil
+}
+
+// ParseInstanceUrl expects url in format:
+// https://.*/<project-id>/zones/<zone>/instances/<name>
+func ParseInstanceUrl(url string) (project string, zone string, name string, err error) {
+	return parseGceUrl(url, instanceUrlRe, anyHttpsUrlPattern, "instances")
+}
+
+// ParseInstanceUrlRef expects url in format:
+// https://.*/projects/<project-id>/zones/<zone>/instances/<name>
+// and returns a GceRef struct for it.
+func ParseInstanceUrlRef(url string) (GceRef, error) {
+	project, zone, name, err := ParseInstanceUrl(url)
+	if err != nil {
+		return GceRef{}, err
+	}
+	return GceRef{
+		Project: project,
+		Zone:    zone,
+		Name:    name,
+	}, nil
+}
+
+// GenerateInstanceUrl generates url for instance.
+func GenerateInstanceUrl(domainUrl string, ref GceRef) string {
+	if domainUrl == "" {
+		domainUrl = defaultDomainUrl
+	}
+	return domainUrl + projectsSubstring + ref.Project + "/zones/" + ref.Zone + "/instances/" + ref.Name
+}
+
+// GenerateMigUrl generates url for instance.
+func GenerateMigUrl(domainUrl string, ref GceRef) string {
+	if domainUrl == "" {
+		domainUrl = defaultDomainUrl
+	}
+	return domainUrl + projectsSubstring + ref.Project + "/zones/" + ref.Zone + "/instanceGroups/" + ref.Name
+}
+
+// IsInstanceTemplateRegional determines whether or not an instance template is regional based on the url
+func IsInstanceTemplateRegional(templateUrl string) bool {
+	return regionalInstanceTemplateRe.MatchString(templateUrl)
+}
+
+// InstanceTemplateNameFromUrl retrieves name of the Instance Template from the url.
+func InstanceTemplateNameFromUrl(instanceTemplateLink string) (InstanceTemplateName, error) {
+	templateUrl, err := url.Parse(instanceTemplateLink)
+	if err != nil {
+		return InstanceTemplateName{}, err
+	}
+	_, templateName := path.Split(templateUrl.EscapedPath())
+
+	regional := IsInstanceTemplateRegional(instanceTemplateLink)
+
+	return InstanceTemplateName{templateName, regional}, nil
+}
+
+func parseGceUrl(url string, re *regexp.Regexp, prefix, expectedResource string) (project string, zone string, name string, err error) {
+	subMatches := re.FindStringSubmatch(url)
+	if len(subMatches) < 4 {
+		return "", "", "", fmt.Errorf("wrong url: expected format %sprojects/<project-id>/zones/<zone>/%s/<name>, got %s", prefix, expectedResource, url)
+	}
+	return subMatches[1], subMatches[2], subMatches[3], nil
+}

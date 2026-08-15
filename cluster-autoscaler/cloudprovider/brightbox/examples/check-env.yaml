@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: check-env
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: check-env
+        image: bash
+        envFrom:
+        - secretRef:
+            name: brightbox-credentials
+        command: ["env"]

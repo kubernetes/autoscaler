@@ -1,0 +1,13 @@
+approvers:
+#- ctrox
+#- gajicdev
+#- pawelkuc
+#- thirdeyenick
+reviewers:
+#- ctrox
+#- gajicdev
+#- pawelkuc
+#- thirdeyenick
+
+labels:
+- area/provider/rancher

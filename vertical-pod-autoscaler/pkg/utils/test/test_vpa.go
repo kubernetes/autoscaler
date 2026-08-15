@@ -1,0 +1,361 @@
+/*
+Copyright 2018 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package test
+
+import (
+	"time"
+
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+)
+
+// VerticalPodAutoscalerBuilder helps building test instances of VerticalPodAutoscaler.
+type VerticalPodAutoscalerBuilder interface {
+	WithName(vpaName string) VerticalPodAutoscalerBuilder
+	WithContainer(containerName string) VerticalPodAutoscalerBuilder
+	WithNamespace(namespace string) VerticalPodAutoscalerBuilder
+	WithUpdateMode(updateMode vpa_types.UpdateMode) VerticalPodAutoscalerBuilder
+	WithEvictAfterOOMSeconds(*int32) VerticalPodAutoscalerBuilder
+	WithCreationTimestamp(timestamp time.Time) VerticalPodAutoscalerBuilder
+	WithMinAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder
+	WithMaxAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder
+	WithControlledValues(containerName string, mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder
+	WithScalingMode(containerName string, scalingMode vpa_types.ContainerScalingMode) VerticalPodAutoscalerBuilder
+	WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder
+	WithTargetResource(resource corev1.ResourceName, value string) VerticalPodAutoscalerBuilder
+	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
+	WithTargetRef(targetRef *autoscalingv1.CrossVersionObjectReference) VerticalPodAutoscalerBuilder
+	WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
+	WithAnnotations(map[string]string) VerticalPodAutoscalerBuilder
+	WithRecommender(string2 string) VerticalPodAutoscalerBuilder
+	WithGroupVersion(gv metav1.GroupVersion) VerticalPodAutoscalerBuilder
+	WithEvictionRequirements([]*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder
+	WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder
+	WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder
+	WithOOMMinBumpUp(minBumpUp *resource.Quantity) VerticalPodAutoscalerBuilder
+	WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, durationSeconds int32) VerticalPodAutoscalerBuilder
+	WithContainerCPUStartupBoost(containerName string, boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, durationSeconds int32) VerticalPodAutoscalerBuilder
+	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
+		status corev1.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
+	AppendRecommendation(vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder
+	Get() *vpa_types.VerticalPodAutoscaler
+}
+
+// TODO part of this interface is a repetition of RecommendationBuilder, we can probably factorize some code
+
+// VerticalPodAutoscaler returns a new VerticalPodAutoscalerBuilder.
+func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
+	return &verticalPodAutoscalerBuilder{
+		groupVersion:            metav1.GroupVersion(vpa_types.SchemeGroupVersion),
+		recommendation:          Recommendation(),
+		appendedRecommendations: []vpa_types.RecommendedContainerResources{},
+		namespace:               "default",
+		conditions:              []vpa_types.VerticalPodAutoscalerCondition{},
+		minAllowed:              map[string]corev1.ResourceList{},
+		maxAllowed:              map[string]corev1.ResourceList{},
+		controlledValues:        map[string]*vpa_types.ContainerControlledValues{},
+		scalingMode:             map[string]*vpa_types.ContainerScalingMode{},
+		containerStartupBoost:   map[string]*vpa_types.StartupBoost{},
+	}
+}
+
+type verticalPodAutoscalerBuilder struct {
+	groupVersion            metav1.GroupVersion
+	vpaName                 string
+	containerNames          []string
+	namespace               string
+	updatePolicy            *vpa_types.PodUpdatePolicy
+	creationTimestamp       time.Time
+	minAllowed              map[string]corev1.ResourceList
+	maxAllowed              map[string]corev1.ResourceList
+	controlledValues        map[string]*vpa_types.ContainerControlledValues
+	scalingMode             map[string]*vpa_types.ContainerScalingMode
+	containerStartupBoost   map[string]*vpa_types.StartupBoost
+	startupBoost            *vpa_types.StartupBoost
+	recommendation          RecommendationBuilder
+	conditions              []vpa_types.VerticalPodAutoscalerCondition
+	annotations             map[string]string
+	targetRef               *autoscalingv1.CrossVersionObjectReference
+	appendedRecommendations []vpa_types.RecommendedContainerResources
+	recommender             string
+	oomBumpUpRatio          *resource.Quantity
+	oomMinBumpUp            *resource.Quantity
+}
+
+func (b *verticalPodAutoscalerBuilder) WithName(vpaName string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.vpaName = vpaName
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithContainer(containerName string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.containerNames = append(c.containerNames, containerName)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithNamespace(namespace string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.namespace = namespace
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithUpdateMode(updateMode vpa_types.UpdateMode) VerticalPodAutoscalerBuilder {
+	c := *b
+	if c.updatePolicy == nil {
+		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
+	}
+	c.updatePolicy.UpdateMode = &updateMode
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithEvictAfterOOMSeconds(threshold *int32) VerticalPodAutoscalerBuilder {
+	c := *b
+	if c.updatePolicy == nil {
+		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
+	}
+	c.updatePolicy.EvictAfterOOMSeconds = threshold
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithCreationTimestamp(timestamp time.Time) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.creationTimestamp = timestamp
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithMinAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.minAllowed[containerName] = Resources(cpu, memory)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithMaxAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.maxAllowed[containerName] = Resources(cpu, memory)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithControlledValues(containerName string, mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.controlledValues[containerName] = &mode
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithScalingMode(containerName string, scalingMode vpa_types.ContainerScalingMode) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.scalingMode[containerName] = &scalingMode
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.recommendation = c.recommendation.WithTarget(cpu, memory)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithTargetResource(resource corev1.ResourceName, value string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.recommendation = c.recommendation.WithTargetResource(resource, value)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.recommendation = c.recommendation.WithLowerBound(cpu, memory)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.recommendation = c.recommendation.WithUpperBound(cpu, memory)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithTargetRef(targetRef *autoscalingv1.CrossVersionObjectReference) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.targetRef = targetRef
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithAnnotations(annotations map[string]string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.annotations = annotations
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithRecommender(recommender string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.recommender = recommender
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithGroupVersion(gv metav1.GroupVersion) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.groupVersion = gv
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithEvictionRequirements(evictionRequirements []*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder {
+	updateModeAuto := vpa_types.UpdateModeRecreate
+	c := *b
+	if c.updatePolicy == nil {
+		c.updatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}
+	}
+	c.updatePolicy.EvictionRequirements = evictionRequirements
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder {
+	updateModeAuto := vpa_types.UpdateModeRecreate
+	c := *b
+	if c.updatePolicy == nil {
+		c.updatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}
+	}
+	c.updatePolicy.MinReplicas = minReplicas
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithOOMBumpUpRatio(ratio *resource.Quantity) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.oomBumpUpRatio = ratio
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithOOMMinBumpUp(minBumpUp *resource.Quantity) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.oomMinBumpUp = minBumpUp
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
+	status corev1.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.conditions = append(c.conditions, vpa_types.VerticalPodAutoscalerCondition{
+		Type:               conditionType,
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		LastTransitionTime: metav1.NewTime(lastTransitionTime)})
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) AppendRecommendation(recommendation vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.appendedRecommendations = append(c.appendedRecommendations, recommendation)
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithCPUStartupBoost(boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, durationSeconds int32) VerticalPodAutoscalerBuilder {
+	c := *b
+	cpuStartupBoost := &vpa_types.GenericStartupBoost{
+		Type:            boostType,
+		DurationSeconds: &durationSeconds,
+	}
+	if factor != nil {
+		cpuStartupBoost.Factor = factor
+	}
+	if quantity != nil {
+		cpuStartupBoost.Quantity = quantity
+	}
+	c.startupBoost = &vpa_types.StartupBoost{
+		CPU: cpuStartupBoost,
+	}
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) WithContainerCPUStartupBoost(containerName string, boostType vpa_types.StartupBoostType, factor *int32, quantity *resource.Quantity, durationSeconds int32) VerticalPodAutoscalerBuilder {
+	c := *b
+	cpuStartupBoost := &vpa_types.GenericStartupBoost{
+		Type:            boostType,
+		DurationSeconds: &durationSeconds,
+	}
+	if factor != nil {
+		cpuStartupBoost.Factor = factor
+	}
+	if quantity != nil {
+		cpuStartupBoost.Quantity = quantity
+	}
+	c.containerStartupBoost[containerName] = &vpa_types.StartupBoost{
+		CPU: cpuStartupBoost,
+	}
+	return &c
+}
+
+func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
+	if len(b.containerNames) == 0 {
+		panic("Must call WithContainer() before Get()")
+	}
+	var recommenders []*vpa_types.VerticalPodAutoscalerRecommenderSelector
+	if b.recommender != "" {
+		recommenders = []*vpa_types.VerticalPodAutoscalerRecommenderSelector{{Name: b.recommender}}
+	}
+	resourcePolicy := vpa_types.PodResourcePolicy{}
+	recommendation := &vpa_types.RecommendedPodResources{}
+	scalingModeAuto := vpa_types.ContainerScalingModeAuto
+	for _, containerName := range b.containerNames {
+		containerResourcePolicy := vpa_types.ContainerResourcePolicy{
+			ContainerName:    containerName,
+			MinAllowed:       b.minAllowed[containerName],
+			MaxAllowed:       b.maxAllowed[containerName],
+			ControlledValues: b.controlledValues[containerName],
+			Mode:             &scalingModeAuto,
+			OOMBumpUpRatio:   b.oomBumpUpRatio,
+			OOMMinBumpUp:     b.oomMinBumpUp,
+			StartupBoost:     b.containerStartupBoost[containerName],
+		}
+		if scalingMode, ok := b.scalingMode[containerName]; ok {
+			containerResourcePolicy.Mode = scalingMode
+		}
+		resourcePolicy.ContainerPolicies = append(resourcePolicy.ContainerPolicies, containerResourcePolicy)
+	}
+	// VPAs with a single container may still use the old/implicit way of adding recommendations
+	r := b.recommendation.WithContainer(b.containerNames[0]).Get()
+	if r.ContainerRecommendations[0].Target != nil {
+		recommendation = r
+	}
+
+	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, b.appendedRecommendations...)
+
+	return &vpa_types.VerticalPodAutoscaler{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: b.groupVersion.String(),
+			Kind:       "VerticalPodAutoscaler",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              b.vpaName,
+			Namespace:         b.namespace,
+			Annotations:       b.annotations,
+			CreationTimestamp: metav1.NewTime(b.creationTimestamp),
+		},
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			UpdatePolicy:   b.updatePolicy,
+			ResourcePolicy: &resourcePolicy,
+			TargetRef:      b.targetRef,
+			Recommenders:   recommenders,
+			StartupBoost:   b.startupBoost,
+		},
+		Status: vpa_types.VerticalPodAutoscalerStatus{
+			Recommendation: recommendation,
+			Conditions:     b.conditions,
+		},
+	}
+}

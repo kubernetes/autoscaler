@@ -1,0 +1,220 @@
+/*
+Copyright 2018 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package main
+
+import (
+	"context"
+	"crypto/tls"
+	"fmt"
+	"strings"
+	"time"
+
+	admissionregistration "k8s.io/api/admissionregistration/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
+	"k8s.io/klog/v2"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/config"
+)
+
+const (
+	webhookConfigName = "vpa-webhook-config"
+	webhookName       = "vpa.k8s.io"
+)
+
+// MutatingWebhookConfigurationInterface
+func configTLS(cfg config.CertsConfig, minTlsVersion, ciphers string, stop <-chan struct{}, mutatingWebhookClient typedadmregv1.MutatingWebhookConfigurationInterface) *tls.Config {
+	var tlsVersion uint16
+	var ciphersuites []uint16
+	reverseCipherMap := make(map[string]uint16)
+
+	for _, c := range tls.CipherSuites() {
+		reverseCipherMap[c.Name] = c.ID
+	}
+	for c := range strings.SplitSeq(strings.ReplaceAll(ciphers, ",", ":"), ":") {
+		cipher, ok := reverseCipherMap[c]
+		if ok {
+			ciphersuites = append(ciphersuites, cipher)
+		}
+	}
+	if len(ciphersuites) == 0 {
+		ciphersuites = nil
+	}
+
+	switch minTlsVersion {
+	case "", "tls1_2":
+		tlsVersion = tls.VersionTLS12
+	case "tls1_3":
+		tlsVersion = tls.VersionTLS13
+	default:
+		klog.Fatal(fmt.Errorf("unable to determine value for --min-tls-version (%s), must be either tls1_2 or tls1_3", minTlsVersion))
+	}
+
+	config := &tls.Config{
+		MinVersion:   tlsVersion,
+		CipherSuites: ciphersuites,
+	}
+	if cfg.Reload {
+		cr := certReloader{
+			tlsCertPath:           cfg.TlsCertFile,
+			tlsKeyPath:            cfg.TlsPrivateKey,
+			clientCaPath:          cfg.ClientCaFile,
+			mutatingWebhookClient: mutatingWebhookClient,
+		}
+		if err := cr.load(); err != nil {
+			klog.Fatal(err)
+		}
+		if err := cr.start(stop); err != nil {
+			klog.Fatal(err)
+		}
+		config.GetCertificate = cr.getCertificate
+	} else {
+		cert, err := tls.LoadX509KeyPair(cfg.TlsCertFile, cfg.TlsPrivateKey)
+		if err != nil {
+			klog.Fatal(err)
+		}
+		config.Certificates = []tls.Certificate{cert}
+	}
+	return config
+}
+
+// register this webhook admission controller with the kube-apiserver
+// by creating MutatingWebhookConfiguration.
+func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDelay time.Duration, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32, selectedNamespace string, ignoredNamespaces []string, webHookFailurePolicy bool, webHookLabels string) {
+	time.Sleep(webHookDelay)
+	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
+	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
+	if err == nil {
+		if err2 := client.Delete(context.TODO(), webhookConfigName, metav1.DeleteOptions{}); err2 != nil {
+			klog.Fatal(err2)
+		}
+	}
+	registerClientConfig := admissionregistration.WebhookClientConfig{}
+	if !registerByURL {
+		registerClientConfig.Service = &admissionregistration.ServiceReference{
+			Namespace: namespace,
+			Name:      serviceName,
+		}
+	} else {
+		registerClientConfig.URL = &url
+	}
+	sideEffects := admissionregistration.SideEffectClassNone
+
+	var failurePolicy admissionregistration.FailurePolicyType
+	if webHookFailurePolicy {
+		failurePolicy = admissionregistration.Fail
+	} else {
+		failurePolicy = admissionregistration.Ignore
+	}
+
+	registerClientConfig.CABundle = caCert
+
+	var namespaceSelector metav1.LabelSelector
+	if len(ignoredNamespaces) > 0 {
+		namespaceSelector = metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "kubernetes.io/metadata.name",
+					Operator: metav1.LabelSelectorOpNotIn,
+					Values:   ignoredNamespaces,
+				},
+			},
+		}
+	} else if len(selectedNamespace) > 0 {
+		namespaceSelector = metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "kubernetes.io/metadata.name",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{selectedNamespace},
+				},
+			},
+		}
+	}
+	webhookLabelsMap, err := convertLabelsToMap(webHookLabels)
+	if err != nil {
+		klog.ErrorS(err, "Unable to parse webhook labels")
+		webhookLabelsMap = map[string]string{}
+	}
+	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   webhookConfigName,
+			Labels: webhookLabelsMap,
+		},
+		Webhooks: []admissionregistration.MutatingWebhook{
+			{
+				Name:                    webhookName,
+				AdmissionReviewVersions: []string{"v1"},
+				Rules: []admissionregistration.RuleWithOperations{
+					{
+						Operations: []admissionregistration.OperationType{admissionregistration.Create},
+						Rule: admissionregistration.Rule{
+							APIGroups:   []string{""},
+							APIVersions: []string{"v1"},
+							Resources:   []string{"pods"},
+						},
+					},
+					{
+						Operations: []admissionregistration.OperationType{admissionregistration.Create, admissionregistration.Update},
+						Rule: admissionregistration.Rule{
+							APIGroups:   []string{"autoscaling.k8s.io"},
+							APIVersions: []string{"*"},
+							Resources:   []string{"verticalpodautoscalers"},
+						},
+					},
+				},
+				FailurePolicy:     &failurePolicy,
+				ClientConfig:      registerClientConfig,
+				SideEffects:       &sideEffects,
+				TimeoutSeconds:    &timeoutSeconds,
+				NamespaceSelector: &namespaceSelector,
+			},
+		},
+	}
+	if _, err := client.Create(context.TODO(), webhookConfig, metav1.CreateOptions{}); err != nil {
+		klog.Fatal(err)
+	} else {
+		klog.V(3).Info("Self registration as MutatingWebhook succeeded.")
+	}
+}
+
+// convertLabelsToMap convert the labels from string to map
+// the valid labels format is "key1:value1,key2:value2", which could be converted to
+// {"key1": "value1", "key2": "value2"}
+func convertLabelsToMap(labels string) (map[string]string, error) {
+	m := make(map[string]string)
+	if labels == "" {
+		return m, nil
+	}
+	labels = strings.Trim(labels, "\"")
+	s := strings.SplitSeq(labels, ",")
+	for tag := range s {
+		kv := strings.SplitN(tag, ":", 2)
+		if len(kv) != 2 {
+			return map[string]string{}, fmt.Errorf("labels '%s' are invalid, the format should be: 'key1:value1,key2:value2'", labels)
+		}
+		key := strings.TrimSpace(kv[0])
+		if key == "" {
+			return map[string]string{}, fmt.Errorf("labels '%s' are invalid, the format should be: 'key1:value1,key2:value2'", labels)
+		}
+		value := strings.TrimSpace(kv[1])
+		m[key] = value
+	}
+
+	return m, nil
+}

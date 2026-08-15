@@ -1,0 +1,445 @@
+# API Reference
+
+## Packages
+- [autoscaling.k8s.io/v1](#autoscalingk8siov1)
+
+
+## autoscaling.k8s.io/v1
+
+Package v1 contains definitions of Vertical Pod Autoscaler related objects.
+
+
+
+#### ContainerControlledValues
+
+_Underlying type:_ _string_
+
+ContainerControlledValues controls which resource value should be autoscaled.
+
+_Validation:_
+- Enum: [RequestsAndLimits RequestsOnly]
+
+_Appears in:_
+- [ContainerResourcePolicy](#containerresourcepolicy)
+
+| Field | Description |
+| --- | --- |
+| `RequestsAndLimits` | ContainerControlledValuesRequestsAndLimits means resource request and limits<br />are scaled automatically. The limit is scaled proportionally to the request.<br /> |
+| `RequestsOnly` | ContainerControlledValuesRequestsOnly means only requested resource is autoscaled.<br /> |
+
+
+#### ContainerResourcePolicy
+
+
+
+ContainerResourcePolicy controls how autoscaler computes the recommended
+resources for a specific container.
+
+
+
+_Appears in:_
+- [PodResourcePolicy](#podresourcepolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `containerName` _string_ | Name of the container or DefaultContainerResourcePolicy, in which<br />case the policy is used by the containers that don't have their own<br />policy specified. |  |  |
+| `mode` _[ContainerScalingMode](#containerscalingmode)_ | Whether autoscaler is enabled for the container. The default is "Auto". |  | Enum: [Auto Off] <br />Optional: \{\} <br /> |
+| `minAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Specifies the minimal amount of resources that will be recommended<br />for the container. The default is no minimum. |  | Optional: \{\} <br /> |
+| `maxAllowed` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Specifies the maximum amount of resources that will be recommended<br />for the container. The default is no maximum. |  | Optional: \{\} <br /> |
+| `controlledResources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcename-v1-core)_ | Specifies the type of recommendations that will be computed<br />(and possibly applied) by VPA.<br />If not specified, the default of [cpu, memory] will be used. |  |  |
+| `controlledValues` _[ContainerControlledValues](#containercontrolledvalues)_ | Specifies which resource values should be controlled.<br />The default is "RequestsAndLimits". |  | Enum: [RequestsAndLimits RequestsOnly] <br />Optional: \{\} <br /> |
+| `oomBumpUpRatio` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#quantity-resource-api)_ | oomBumpUpRatio is the ratio to increase memory when OOM is detected. |  | Optional: \{\} <br /> |
+| `oomMinBumpUp` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#quantity-resource-api)_ | oomMinBumpUp is the minimum increase in memory when OOM is detected. |  | Optional: \{\} <br /> |
+| `memoryAggregationIntervalSeconds` _integer_ | memoryAggregationIntervalSeconds is the length of a single interval<br />(in seconds) for which the peak memory usage is computed.<br />Memory usage peaks are aggregated in multiples of this interval.<br />In other words, there is one memory usage sample per interval<br />(the maximum usage over that interval). |  | Minimum: 1 <br />Optional: \{\} <br /> |
+| `memoryAggregationIntervalCount` _integer_ | memoryAggregationIntervalCount is the number of consecutive<br />memoryAggregationIntervals which make up the memory aggregation window.<br />The total window length is:<br />MemoryAggregationIntervalSeconds * MemoryAggregationIntervalCount. |  | Minimum: 1 <br />Optional: \{\} <br /> |
+| `startupBoost` _[StartupBoost](#startupboost)_ | startupBoost specifies the startup boost policy for the container.<br />This overrides any pod-level startup boost policy.<br />The startup boost policy takes precedence over the rest of the fields in<br />this struct, except for ContainerName and ControlledValues. |  | Optional: \{\} <br /> |
+
+
+#### ContainerScalingMode
+
+_Underlying type:_ _string_
+
+ContainerScalingMode controls whether autoscaler is enabled for a specific
+container.
+
+_Validation:_
+- Enum: [Auto Off]
+
+_Appears in:_
+- [ContainerResourcePolicy](#containerresourcepolicy)
+
+| Field | Description |
+| --- | --- |
+| `Auto` | ContainerScalingModeAuto means autoscaling is enabled for a container.<br /> |
+| `Off` | ContainerScalingModeOff means autoscaling is disabled for a container.<br /> |
+
+
+#### EvictionChangeRequirement
+
+_Underlying type:_ _string_
+
+EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
+
+_Validation:_
+- Enum: [TargetHigherThanRequests TargetLowerThanRequests]
+
+_Appears in:_
+- [EvictionRequirement](#evictionrequirement)
+
+| Field | Description |
+| --- | --- |
+| `TargetHigherThanRequests` | TargetHigherThanRequests means the new target recommendation for a Pod is higher than its current requests, i.e. the Pod is scaled up<br /> |
+| `TargetLowerThanRequests` | TargetLowerThanRequests means the new target recommendation for a Pod is lower than its current requests, i.e. the Pod is scaled down<br /> |
+
+
+#### EvictionRequirement
+
+
+
+EvictionRequirement defines a single condition which needs to be true in
+order to evict a Pod
+
+
+
+_Appears in:_
+- [PodUpdatePolicy](#podupdatepolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `resources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcename-v1-core) array_ | Resources is a list of one or more resources that the condition applies<br />to. If more than one resource is given, the EvictionRequirement is fulfilled<br />if at least one resource meets `changeRequirement`. |  |  |
+| `changeRequirement` _[EvictionChangeRequirement](#evictionchangerequirement)_ |  |  | Enum: [TargetHigherThanRequests TargetLowerThanRequests] <br /> |
+
+
+
+
+#### HistogramCheckpoint
+
+
+
+HistogramCheckpoint contains data needed to reconstruct the histogram.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerCheckpointStatus](#verticalpodautoscalercheckpointstatus)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `referenceTimestamp` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#time-v1-meta)_ | Reference timestamp for samples collected within this histogram. |  |  |
+| `bucketWeights` _object (keys:integer, values:integer)_ | Map from bucket index to bucket weight. |  | Type: object <br />XPreserveUnknownFields: \{\} <br /> |
+| `totalWeight` _float_ | Sum of samples to be used as denominator for weights from BucketWeights. |  |  |
+
+
+#### PodResourcePolicy
+
+
+
+PodResourcePolicy controls how autoscaler computes the recommended resources
+for containers belonging to the pod. There can be at most one entry for every
+named container and optionally a single wildcard entry with `containerName` = '*',
+which handles all containers that don't have individual policies.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerSpec](#verticalpodautoscalerspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `containerPolicies` _[ContainerResourcePolicy](#containerresourcepolicy) array_ | Per-container resource policies. |  | Optional: \{\} <br /> |
+
+
+#### PodUpdatePolicy
+
+
+
+PodUpdatePolicy describes the rules on how changes are applied to the pods.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerSpec](#verticalpodautoscalerspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `updateMode` _[UpdateMode](#updatemode)_ | Controls when autoscaler applies changes to the pod resources.<br />The default is 'Recreate'. |  | Enum: [Off Initial Recreate InPlaceOrRecreate InPlace Auto] <br />Optional: \{\} <br /> |
+| `minReplicas` _integer_ | Minimal number of replicas which need to be alive for Updater to attempt<br />pod eviction (pending other checks like PDB). Only positive values are<br />allowed. Overrides global '--min-replicas' flag. |  | Optional: \{\} <br /> |
+| `evictionRequirements` _[EvictionRequirement](#evictionrequirement) array_ | EvictionRequirements is a list of EvictionRequirements that need to<br />evaluate to true in order for a Pod to be evicted. If more than one<br />EvictionRequirement is specified, all of them need to be fulfilled to allow eviction. |  | Optional: \{\} <br /> |
+| `evictAfterOOMSeconds` _integer_ | evictAfterOOMSeconds specifies the time in seconds to wait after an OOM event before<br />considering the pod for eviction. Pods that have OOMed in less than this time<br />since start will be evicted. |  | Minimum: 1 <br />Optional: \{\} <br /> |
+
+
+#### RecommendedContainerResources
+
+
+
+RecommendedContainerResources is the recommendation of resources computed by
+autoscaler for a specific container. Respects the container resource policy
+if present in the spec. In particular the recommendation is not produced for
+containers with `ContainerScalingMode` set to 'Off'.
+
+
+
+_Appears in:_
+- [RecommendedPodResources](#recommendedpodresources)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `containerName` _string_ | Name of the container. |  |  |
+| `target` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Recommended amount of resources. Observes ContainerResourcePolicy. |  |  |
+| `lowerBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Minimum recommended amount of resources. Observes ContainerResourcePolicy.<br />This amount is not guaranteed to be sufficient for the application to operate in a stable way, however<br />running with less resources is likely to have significant impact on performance/availability. |  | Optional: \{\} <br /> |
+| `upperBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Maximum recommended amount of resources. Observes ContainerResourcePolicy.<br />Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum<br />amount of application is actually capable of consuming. |  | Optional: \{\} <br /> |
+| `uncappedTarget` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | The most recent recommended resources target computed by the autoscaler<br />for the controlled pods, based only on actual resource usage, not taking<br />into account the ContainerResourcePolicy.<br />May differ from the Recommendation if the actual resource usage causes<br />the target to violate the ContainerResourcePolicy (lower than MinAllowed<br />or higher that MaxAllowed).<br />Used only as status indication, will not affect actual resource assignment. |  | Optional: \{\} <br /> |
+
+
+#### RecommendedPodResources
+
+
+
+RecommendedPodResources is the recommendation of resources computed by
+autoscaler. It contains a recommendation for each container in the pod
+(except for those with `ContainerScalingMode` set to 'Off').
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerStatus](#verticalpodautoscalerstatus)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `containerRecommendations` _[RecommendedContainerResources](#recommendedcontainerresources) array_ | Resources recommended by the autoscaler for each container. |  | Optional: \{\} <br /> |
+
+
+#### StartupBoost
+
+
+
+StartupBoost defines the startup boost policy.
+
+
+
+_Appears in:_
+- [ContainerResourcePolicy](#containerresourcepolicy)
+- [VerticalPodAutoscalerSpec](#verticalpodautoscalerspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `cpu` _[GenericStartupBoost](#genericstartupboost)_ | cpu specifies the CPU startup boost policy.<br />If this field is not set, no startup boost is applied. |  | Optional: \{\} <br /> |
+
+
+#### StartupBoostType
+
+_Underlying type:_ _string_
+
+StartupBoostType is the type of startup boost.
+
+_Validation:_
+- Enum: [Factor Quantity]
+
+_Appears in:_
+- [GenericStartupBoost](#genericstartupboost)
+
+| Field | Description |
+| --- | --- |
+| `Factor` | FactorStartupBoostType applies a factor to the resource.<br /> |
+| `Quantity` | QuantityStartupBoostType applies a fixed quantity to the resource.<br /> |
+
+
+#### UpdateMode
+
+_Underlying type:_ _string_
+
+UpdateMode controls when autoscaler applies changes to the pod resources.
+
+_Validation:_
+- Enum: [Off Initial Recreate InPlaceOrRecreate InPlace Auto]
+
+_Appears in:_
+- [PodUpdatePolicy](#podupdatepolicy)
+
+| Field | Description |
+| --- | --- |
+| `Off` | UpdateModeOff means that autoscaler never changes Pod resources.<br />The recommender still sets the recommended resources in the<br />VerticalPodAutoscaler object. This can be used for a "dry run".<br /> |
+| `Initial` | UpdateModeInitial means that autoscaler only assigns resources on pod<br />creation and does not change them during the lifetime of the pod.<br /> |
+| `Recreate` | UpdateModeRecreate means that autoscaler assigns resources on pod<br />creation and additionally can update them during the lifetime of the<br />pod by deleting and recreating the pod.<br /> |
+| `Auto` | UpdateModeAuto means that autoscaler assigns resources on pod creation<br />and additionally can update them during the lifetime of the pod,<br />using any available update method. Currently this is equivalent to<br />Recreate.<br />Deprecated: This value is deprecated and will be removed in a future API version.<br />Use explicit update modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead.<br />See https://github.com/kubernetes/autoscaler/issues/8424 for more details.<br /> |
+| `InPlaceOrRecreate` | UpdateModeInPlaceOrRecreate means that autoscaler tries to assign resources in-place.<br />If this is not possible (e.g., resizing takes too long or is infeasible), it falls back to the<br />"Recreate" update mode.<br />Requires cluster feature gate "InPlacePodVerticalScaling" to be enabled.<br /> |
+| `InPlace` | UpdateModeInPlace means that autoscaler will only attempt to update pods in-place<br />and will never evict them. If in-place update fails, autoscaler will rely on<br />Kubelet's automatic retry mechanism.<br />Requires VPA level feature gate "InPlace" to be enabled<br />on the admission and updater pods<br />Requires cluster feature gate "InPlacePodVerticalScaling" to be enabled.<br /> |
+
+
+#### VerticalPodAutoscaler
+
+
+
+VerticalPodAutoscaler is the configuration for a vertical pod
+autoscaler, which automatically manages pod resources based on historical and
+real time resource utilization.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerList](#verticalpodautoscalerlist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[VerticalPodAutoscalerSpec](#verticalpodautoscalerspec)_ | Specification of the behavior of the autoscaler.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status. |  |  |
+| `status` _[VerticalPodAutoscalerStatus](#verticalpodautoscalerstatus)_ | Current information about the autoscaler. |  | Optional: \{\} <br /> |
+
+
+#### VerticalPodAutoscalerCheckpoint
+
+
+
+VerticalPodAutoscalerCheckpoint is the checkpoint of the internal state of VPA that
+is used for recovery after recommender's restart.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerCheckpointList](#verticalpodautoscalercheckpointlist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[VerticalPodAutoscalerCheckpointSpec](#verticalpodautoscalercheckpointspec)_ | Specification of the checkpoint.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status. |  | Optional: \{\} <br /> |
+| `status` _[VerticalPodAutoscalerCheckpointStatus](#verticalpodautoscalercheckpointstatus)_ | Data of the checkpoint. |  | Optional: \{\} <br /> |
+
+
+
+
+#### VerticalPodAutoscalerCheckpointSpec
+
+
+
+VerticalPodAutoscalerCheckpointSpec is the specification of the checkpoint object.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerCheckpoint](#verticalpodautoscalercheckpoint)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `vpaObjectName` _string_ | Name of the VPA object that stored VerticalPodAutoscalerCheckpoint object. |  |  |
+| `containerName` _string_ | Name of the checkpointed container. |  |  |
+
+
+#### VerticalPodAutoscalerCheckpointStatus
+
+
+
+VerticalPodAutoscalerCheckpointStatus contains data of the checkpoint.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerCheckpoint](#verticalpodautoscalercheckpoint)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `lastUpdateTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#time-v1-meta)_ | The time when the status was last refreshed. |  |  |
+| `version` _string_ | Version of the format of the stored data. |  |  |
+| `cpuHistogram` _[HistogramCheckpoint](#histogramcheckpoint)_ | Checkpoint of histogram for consumption of CPU. |  |  |
+| `memoryHistogram` _[HistogramCheckpoint](#histogramcheckpoint)_ | Checkpoint of histogram for consumption of memory. |  |  |
+| `firstSampleStart` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#time-v1-meta)_ | Timestamp of the first sample from the histograms. |  |  |
+| `lastSampleStart` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#time-v1-meta)_ | Timestamp of the last sample from the histograms. |  |  |
+| `totalSamplesCount` _integer_ | Total number of samples in the histograms. |  |  |
+
+
+#### VerticalPodAutoscalerCondition
+
+
+
+VerticalPodAutoscalerCondition describes the state of
+a VerticalPodAutoscaler at a certain point.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerStatus](#verticalpodautoscalerstatus)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `type` _[VerticalPodAutoscalerConditionType](#verticalpodautoscalerconditiontype)_ | type describes the current condition |  |  |
+| `status` _[ConditionStatus](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#conditionstatus-v1-core)_ | status is the status of the condition (True, False, Unknown) |  |  |
+| `lastTransitionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#time-v1-meta)_ | lastTransitionTime is the last time the condition transitioned from<br />one status to another |  | Optional: \{\} <br /> |
+| `reason` _string_ | reason is the reason for the condition's last transition. |  | Optional: \{\} <br /> |
+| `message` _string_ | message is a human-readable explanation containing details about<br />the transition |  | Optional: \{\} <br /> |
+| `observedGeneration` _integer_ | observedGeneration represents the .metadata.generation that the condition was set based upon.<br />For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date<br />with respect to the current state of the instance. |  | Minimum: 0 <br />Optional: \{\} <br /> |
+
+
+#### VerticalPodAutoscalerConditionType
+
+_Underlying type:_ _string_
+
+VerticalPodAutoscalerConditionType are the valid conditions of
+a VerticalPodAutoscaler.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerCondition](#verticalpodautoscalercondition)
+
+
+
+
+
+#### VerticalPodAutoscalerRecommenderSelector
+
+
+
+VerticalPodAutoscalerRecommenderSelector points to a specific Vertical Pod Autoscaler recommender.
+In the future it might pass parameters to the recommender.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscalerSpec](#verticalpodautoscalerspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name of the recommender responsible for generating recommendation for this object. |  |  |
+
+
+#### VerticalPodAutoscalerSpec
+
+
+
+VerticalPodAutoscalerSpec is the specification of the behavior of the autoscaler.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscaler](#verticalpodautoscaler)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `targetRef` _[CrossVersionObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#crossversionobjectreference-v1-autoscaling)_ | TargetRef points to the controller managing the set of pods for the<br />autoscaler to control - e.g. Deployment, StatefulSet. VerticalPodAutoscaler<br />can be targeted at controller implementing scale subresource (the pod set is<br />retrieved from the controller's ScaleStatus) or some well known controllers<br />(e.g. for DaemonSet the pod set is read from the controller's spec).<br />If VerticalPodAutoscaler cannot use specified target it will report<br />ConfigUnsupported condition.<br />Note that VerticalPodAutoscaler does not require full implementation<br />of scale subresource - it will not use it to modify the replica count.<br />The only thing retrieved is a label selector matching pods grouped by<br />the target resource. |  |  |
+| `updatePolicy` _[PodUpdatePolicy](#podupdatepolicy)_ | Describes the rules on how changes are applied to the pods.<br />If not specified, all fields in the `PodUpdatePolicy` are set to their<br />default values. |  | Optional: \{\} <br /> |
+| `resourcePolicy` _[PodResourcePolicy](#podresourcepolicy)_ | Controls how the autoscaler computes recommended resources.<br />The resource policy may be used to set constraints on the recommendations<br />for individual containers.<br />If any individual containers need to be excluded from getting the VPA recommendations, then<br />it must be disabled explicitly by setting mode to "Off" under containerPolicies.<br />If not specified, the autoscaler computes recommended resources for all containers in the pod,<br />without additional constraints. |  | Optional: \{\} <br /> |
+| `recommenders` _[VerticalPodAutoscalerRecommenderSelector](#verticalpodautoscalerrecommenderselector) array_ | Recommender responsible for generating recommendation for this object.<br />List should be empty (then the default recommender will generate the<br />recommendation) or contain exactly one recommender. |  | Optional: \{\} <br /> |
+| `startupBoost` _[StartupBoost](#startupboost)_ | startupBoost specifies the startup boost policy for the pod. |  | Optional: \{\} <br /> |
+
+
+#### VerticalPodAutoscalerStatus
+
+
+
+VerticalPodAutoscalerStatus describes the runtime state of the autoscaler.
+
+
+
+_Appears in:_
+- [VerticalPodAutoscaler](#verticalpodautoscaler)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `recommendation` _[RecommendedPodResources](#recommendedpodresources)_ | The most recently computed amount of resources recommended by the<br />autoscaler for the controlled pods. |  | Optional: \{\} <br /> |
+| `conditions` _[VerticalPodAutoscalerCondition](#verticalpodautoscalercondition) array_ | Conditions is the set of conditions required for this autoscaler to scale its target,<br />and indicates whether or not those conditions are met. |  | Optional: \{\} <br /> |
+| `observedGeneration` _integer_ | observedGeneration is the most recent generation observed by this autoscaler. |  | Minimum: 0 <br />Optional: \{\} <br /> |
+
+
