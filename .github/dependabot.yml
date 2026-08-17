@@ -23,20 +23,12 @@ updates:
     include: scope
   ignore:
     # Update providers manually.
-    - dependency-name: "k8s.io/cloud-provider-aws"
-    - dependency-name: "k8s.io/cloud-provider-aws/*"
-    - dependency-name: "github.com/aws/*"
+    # TODO(Choraden): Cleanup this after removal of GCE and Azure cloudproviders.
     - dependency-name: "k8s.io/cloud-provider-gcp"
     - dependency-name: "k8s.io/cloud-provider-gcp/*"
     - dependency-name: "cloud.google.com/go/compute"
     - dependency-name: "cloud.google.com/go/compute/*"
-    - dependency-name: "github.com/digitalocean/*"
     # Update dependencies exclusively used by providers manually
-    - dependency-name: "github.com/gofrs/uuid"
-    - dependency-name: "github.com/google/go-querystring"
-    - dependency-name: "github.com/jmattheis/goverter"
-    - dependency-name: "github.com/jmespath-community/go-jmespath"
-    - dependency-name: "github.com/vburenin/ifacemaker"
     - dependency-name: "golang.org/x/oauth2"
     - dependency-name: "golang.org/x/sys"
     - dependency-name: "google.golang.org/api"
