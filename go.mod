@@ -33,7 +33,7 @@ require (
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.264.0
 	google.golang.org/grpc v1.83.0
-	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af
+	google.golang.org/protobuf v1.36.12
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	k8s.io/api v0.37.0-rc.0
