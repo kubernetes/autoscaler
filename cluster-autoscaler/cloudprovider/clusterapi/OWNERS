@@ -2,16 +2,12 @@ approvers:
 - enxebre
 - elmiko
 - hardikdr
-- detiber
 reviewers:
 - enxebre
 - elmiko
 - hardikdr
-- detiber
 - jackfrancis
-- mrajashree
 - arunmk
-- shysank
 
 labels:
 - area/provider/cluster-api
