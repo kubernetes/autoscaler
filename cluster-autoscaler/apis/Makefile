@@ -15,5 +15,9 @@ generate:
 clients:
 	./hack/update-codegen.sh
 
+.PHONY: test
+test:
+	go test -race ./...
+
 .PHONY: all
 all: manifests generate clients
