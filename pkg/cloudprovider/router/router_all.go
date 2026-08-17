@@ -22,8 +22,6 @@ import (
 	// Blank import to register a cloudprovider outside main or test package.
 	// This is by design.
 	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/azure"
-	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/clusterapi"
-	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/externalgrpc"
 	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/gce"
 	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/kwok"
 )
