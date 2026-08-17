@@ -1,0 +1,275 @@
+/*
+Copyright 2020 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package clusterapi
+
+import (
+	"reflect"
+	"slices"
+	"testing"
+
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+)
+
+func TestProviderConstructorProperties(t *testing.T) {
+	resourceLimits := cloudprovider.ResourceLimiter{}
+
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+
+	provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller.machineController)
+	if actual := provider.Name(); actual != cloudprovider.ClusterAPIProviderName {
+		t.Errorf("expected %q, got %q", cloudprovider.ClusterAPIProviderName, actual)
+	}
+
+	rl, err := provider.GetResourceLimiter()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if reflect.DeepEqual(rl, resourceLimits) {
+		t.Errorf("expected %+v, got %+v", resourceLimits, rl)
+	}
+
+	if _, err := provider.Pricing(); err != cloudprovider.ErrNotImplemented {
+		t.Errorf("expected an error")
+	}
+
+	machineTypes, err := provider.GetAvailableMachineTypes()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if len(machineTypes) != 0 {
+		t.Errorf("expected 0, got %v", len(machineTypes))
+	}
+
+	if _, err := provider.NewNodeGroup("foo", nil, nil, nil, nil); err == nil {
+		t.Error("expected an error")
+	}
+
+	if err := provider.Cleanup(); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	if err := provider.Refresh(); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	nodegroups := provider.NodeGroups()
+
+	if len(nodegroups) != 0 {
+		t.Errorf("expected 0, got %v", len(nodegroups))
+	}
+
+	ng, err := provider.NodeGroupForNode(&corev1.Node{
+		TypeMeta: v1.TypeMeta{
+			Kind: "Node",
+		},
+		ObjectMeta: v1.ObjectMeta{
+			Name: "missing-node",
+		},
+	})
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if ng != nil {
+		t.Fatalf("unexpected nodegroup: %v", ng.Id())
+	}
+
+	if got := provider.GPULabel(); got != GPULabel {
+		t.Fatalf("expected %q, got %q", GPULabel, got)
+	}
+
+	if got := len(provider.GetAvailableGPUTypes()); got != 0 {
+		t.Fatalf("expected 0 GPU types, got %d", got)
+	}
+}
+
+func BenchmarkNodeGroups(b *testing.B) {
+	resourceLimits := cloudprovider.ResourceLimiter{}
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "2",
+	}
+
+	controller := NewTestMachineController(b)
+	defer controller.Stop()
+	machineSetConfigs := NewTestConfigBuilder().
+		ForMachineSet().
+		WithNamespace("namespace").
+		WithClusterName("").
+		WithNodeCount(1).
+		WithAnnotations(annotations).
+		BuildMultiple(100)
+	if err := controller.AddTestConfigs(machineSetConfigs...); err != nil {
+		b.Fatalf("unexpected error: %v", err)
+	}
+
+	provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller.machineController)
+	if actual := provider.Name(); actual != cloudprovider.ClusterAPIProviderName {
+		b.Errorf("expected %q, got %q", cloudprovider.ClusterAPIProviderName, actual)
+	}
+
+	b.ResetTimer()
+	b.Run("NodeGroups", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			provider.NodeGroups()
+		}
+	})
+}
+
+func TestNodeGroups(t *testing.T) {
+	resourceLimits := cloudprovider.ResourceLimiter{}
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "2",
+	}
+	pausedAnnotations := map[string]string{
+		resourcePausedAnnotation: "true",
+	}
+
+	testConfigs := []struct {
+		name                    string
+		scalableResourceConfigs []*TestConfig
+		expectedNodeGroupCount  int
+	}{
+		{
+			"no node groups return empty list",
+			[]*TestConfig{},
+			0,
+		},
+		{
+			"multiple MachineSet node groups without scaling enabled returns empty list",
+			NewTestConfigBuilder().
+				ForMachineSet().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				BuildMultiple(10),
+			0,
+		},
+		{
+			"multiple MachineDeployment node groups without scaling enabled returns empty list",
+			NewTestConfigBuilder().
+				ForMachineDeployment().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				BuildMultiple(10),
+			0,
+		},
+		{
+			"multiple MachineSet node groups with scaling enabled returns correct length",
+			NewTestConfigBuilder().
+				ForMachineSet().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				WithAnnotations(annotations).
+				BuildMultiple(10),
+			10,
+		},
+		{
+			"multiple MachineDeployment node groups with scaling enabled returns correct length",
+			NewTestConfigBuilder().
+				ForMachineDeployment().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				WithAnnotations(annotations).
+				BuildMultiple(10),
+			10,
+		},
+		{
+			"multiple paused MachineSet node groups with scaling enabled returns correct length",
+			NewTestConfigBuilder().
+				ForMachineSet().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				WithAnnotations(annotations).
+				WithAnnotations(pausedAnnotations).
+				BuildMultiple(10),
+			0,
+		},
+		{
+			"multiple paused MachineDeployment node groups with scaling enabled returns correct length",
+			NewTestConfigBuilder().
+				ForMachineDeployment().
+				WithNamespace("namespace").
+				WithClusterName("").
+				WithNodeCount(1).
+				WithAnnotations(annotations).
+				WithAnnotations(pausedAnnotations).
+				BuildMultiple(10),
+			0,
+		},
+		{
+			"blend of paused, unpaused, and non-scaling node groups returns correct length",
+			slices.Concat(
+				NewTestConfigBuilder().
+					ForMachineDeployment().
+					WithNamespace("namespace").
+					WithClusterName("").
+					WithNodeCount(1).
+					WithAnnotations(annotations).
+					WithAnnotations(pausedAnnotations).
+					BuildMultiple(5),
+				NewTestConfigBuilder().
+					ForMachineDeployment().
+					WithNamespace("namespace").
+					WithClusterName("").
+					WithNodeCount(1).
+					WithAnnotations(annotations).
+					BuildMultiple(5),
+				NewTestConfigBuilder().
+					ForMachineDeployment().
+					WithNamespace("namespace").
+					WithClusterName("").
+					WithNodeCount(1).
+					BuildMultiple(5),
+			),
+			5,
+		},
+	}
+
+	for _, tc := range testConfigs {
+		controller := NewTestMachineController(t)
+
+		if len(tc.scalableResourceConfigs) > 0 {
+			if err := controller.AddTestConfigs(tc.scalableResourceConfigs...); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+		}
+
+		provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller.machineController)
+		if actual := provider.Name(); actual != cloudprovider.ClusterAPIProviderName {
+			t.Errorf("expected %q, got %q", cloudprovider.ClusterAPIProviderName, actual)
+		}
+
+		observed := provider.NodeGroups()
+		if len(observed) != tc.expectedNodeGroupCount {
+			t.Fatalf("unexpected node group length, expected: %d, observed %d", tc.expectedNodeGroupCount, observed)
+		}
+
+		controller.Stop()
+	}
+}
