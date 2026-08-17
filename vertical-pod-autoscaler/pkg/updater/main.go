@@ -166,6 +166,9 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	if config.Namespace != "" {
 		admissionControllerStatusNamespace = config.Namespace
 	}
+	if config.AdmissionControllerStatusLeaseNamespace != "" {
+		admissionControllerStatusNamespace = config.AdmissionControllerStatusLeaseNamespace
+	}
 
 	ignoredNamespaces := strings.Split(commonFlag.IgnoredVpaObjectNamespaces, ",")
 
@@ -187,7 +190,9 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		config.DefaultUpdateThreshold,
 		config.PodLifetimeUpdateThreshold,
 		config.EvictAfterOOMThreshold,
+		config.AdmissionControllerStatusLeaseName,
 		admissionControllerStatusNamespace,
+		config.AdmissionControllerStatusLeaseTimeout,
 		vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
 		priority.NewScalingDirectionPodEvictionAdmission(),
 		targetSelectorFetcher,

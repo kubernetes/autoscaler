@@ -42,6 +42,9 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `reload-cert` | bool | false | If set to true, reload leaf and CA certificates when changed. |
 | `skip-headers` | bool | false | If true, avoid header prefixes in the log messages |
 | `skip-log-headers` | bool | false | If true, avoid headers when opening log files (no effect when -logtostderr=true) |
+| `status-lease-name` | string | "vpa-admission-controller" | The name of the Lease object used to publish the admission controller status. Must match the updater's --admission-controller-status-lease-name flag. |
+| `status-lease-namespace` | string |  | The namespace of the Lease object used to publish the admission controller status. Defaults to the value of the NAMESPACE environment variable, or kube-system if that is also unset. Must match the updater's --admission-controller-status-lease-namespace flag. |
+| `status-lease-update-interval` | duration | 10s | How often the admission controller status Lease is renewed. This is also the timeout for each renewal attempt. Must be well below the updater's --admission-controller-status-lease-timeout flag, otherwise the updater will consider the admission controller unhealthy and stop evicting pods. |
 | `stderrthreshold` | severity | info | set the log level threshold for writing to standard error |
 | `tls-cert-file` | string | "/etc/tls-certs/serverCert.pem" | Path to server certificate PEM file. |
 | `tls-ciphers` | string |  | A comma-separated or colon-separated list of ciphers to accept. Only works when min-tls-version is set to tls1_2. |
@@ -152,6 +155,9 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 |------|------|---------|-------------|
 | `add-dir-header` | bool | false | If true, adds the file directory to the header of the log messages |
 | `address` | string | ":8943" | The address to expose Prometheus metrics. |
+| `admission-controller-status-lease-name` | string | "vpa-admission-controller" | The name of the Lease object used to check the admission controller status. Must match the admission controller's --status-lease-name flag. |
+| `admission-controller-status-lease-namespace` | string |  | The namespace of the Lease object used to check the admission controller status. Defaults to the value of the NAMESPACE environment variable, or kube-system if that is also unset. Must match the admission controller's --status-lease-namespace flag. |
+| `admission-controller-status-lease-timeout` | duration | 1m0s | The time after which the admission controller status is considered stale and the updater stops evicting pods. Must be longer than the admission controller's --status-lease-update-interval flag. |
 | `alsologtostderr` | bool | false | log to standard error as well as files (no effect when -logtostderr=true) |
 | `alsologtostderrthreshold` | severity |  | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |
 | `evict-after-oom-threshold` | duration | 10m0s | The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start. |
