@@ -175,6 +175,13 @@ func TestCreateAutoscalingOptions(t *testing.T) {
 			},
 		},
 		{
+			testName: "CSI node aware scheduling is enabled by default",
+			flags:    []string{},
+			wantOptionsAsserter: func(t *testing.T, gotOptions config.AutoscalingOptions) {
+				assert.True(t, gotOptions.CSINodeAwareSchedulingEnabled)
+			},
+		},
+		{
 			testName: "DrainPriorityConfig is parsed correctly when the flag passed",
 			flags:    []string{"--drain-priority-config", "5000:60,3000:50,0:40"},
 			wantOptionsAsserter: func(t *testing.T, gotOptions config.AutoscalingOptions) {
@@ -366,7 +373,7 @@ func TestAutoscalingFlagsAllPossible(t *testing.T) {
 				"--check-capacity-provisioning-request-batch-timebox=5s",
 				"--force-delete-unregistered-nodes=true",
 				"--force-delete-failed-nodes=true",
-				"--enable-csi-node-aware-scheduling=true",
+				"--enable-csi-node-aware-scheduling=false",
 				"--predicate-parallelism=8",
 				"--check-capacity-processor-instance=inst",
 				"--node-deletion-candidate-ttl=1m",
@@ -487,7 +494,7 @@ func TestAutoscalingFlagsAllPossible(t *testing.T) {
 				assert.Equal(t, 5*time.Second, opts.CheckCapacityProvisioningRequestBatchTimebox)
 				assert.True(t, opts.ForceDeleteLongUnregisteredNodes)
 				assert.True(t, opts.ForceDeleteFailedNodes)
-				assert.True(t, opts.CSINodeAwareSchedulingEnabled)
+				assert.False(t, opts.CSINodeAwareSchedulingEnabled)
 				assert.Equal(t, 8, opts.PredicateParallelism)
 				assert.Equal(t, "inst", opts.CheckCapacityProcessorInstance)
 				assert.Equal(t, 1*time.Minute, opts.NodeDeletionCandidateTTL)
