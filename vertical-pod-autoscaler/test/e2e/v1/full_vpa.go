@@ -492,7 +492,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 		})
 
 		// Flake to be fixed with https://github.com/kubernetes/autoscaler/issues/9698
-		f.It("to a subset of containers in a pod", framework.WithFeatureGate(features.CPUStartupBoost), framework.WithFlaky(), ginkgo.FlakeAttempts(3), func() {
+		f.It("to a subset of containers in a pod", framework.WithFeatureGate(features.CPUStartupBoost), framework.WithFlaky(), func() {
 			ns := f.Namespace.Name
 
 			ginkgo.By("Setting up a VPA CRD with CPUStartupBoost")
@@ -565,7 +565,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
 		})
 
 		// Flake to be fixed with https://github.com/kubernetes/autoscaler/issues/9698
-		f.It("with different durations for different containers in a pod", framework.WithFeatureGate(features.CPUStartupBoost), framework.WithFlaky(), ginkgo.FlakeAttempts(3), func() {
+		f.It("with different durations for different containers in a pod", framework.WithFeatureGate(features.CPUStartupBoost), framework.WithFlaky(), func() {
 			ns := f.Namespace.Name
 
 			ginkgo.By("Setting up a VPA CRD with CPUStartupBoost with different durations")
