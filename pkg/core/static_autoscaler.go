@@ -202,7 +202,7 @@ func NewStaticAutoscaler(
 	taintConfig := taints.NewTaintConfig(opts)
 
 	processors.ScaleDownCandidatesNotifier.Register(clusterStateRegistry)
-	processors.ScaleStateNotifier.Register(nodegroupchange.NewNodeGroupChangeMetricsProducer(cloudProvider, metrics.DefaultMetrics))
+	processors.ScaleStateNotifier.Register(nodegroupchange.NewNodeGroupChangeMetricsProducer(cloudProvider, metrics.DefaultMetrics, templateNodeInfoRegistry))
 
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.

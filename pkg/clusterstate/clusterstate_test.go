@@ -1978,6 +1978,10 @@ type mockMetrics struct {
 	mock.Mock
 }
 
+func (m *mockMetrics) RegisterScaleUp(delta int, gpuResourceName, gpuType, draDriverName string) {
+	m.Called(delta, gpuResourceName, gpuType, draDriverName)
+}
+
 func (m *mockMetrics) RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType, draDrivers string) {
 	m.Called(reason, gpuResourceName, gpuType, draDrivers)
 }
@@ -2335,7 +2339,7 @@ func withNotifiedScaleUpFailuresRegistry(r *scaleupfailures.Registry) Option {
 // withMetrics sets the metrics for the ClusterStateRegistry.
 func withMetrics(m *mockMetrics, cloudProvider cloudprovider.CloudProvider) Option {
 	return func(o *options) {
-		metricProducer := nodegroupchange.NewNodeGroupChangeMetricsProducer(cloudProvider, m)
+		metricProducer := nodegroupchange.NewNodeGroupChangeMetricsProducer(cloudProvider, m, &emptyTemplateNodeInfoRegistry{})
 		o.scaleStateNotifier.Register(metricProducer)
 	}
 }

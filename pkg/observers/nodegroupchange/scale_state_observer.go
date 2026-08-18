@@ -23,6 +23,7 @@ import (
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/metrics"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/dynamicresources"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
@@ -102,51 +103,73 @@ func NewNodeGroupChangeObserversList() *NodeGroupChangeObserversList {
 }
 
 type metricObserver interface {
+	RegisterScaleUp(delta int, gpuResourceName, gpuType, draDriverName string)
 	RegisterFailedScaleUp(reason metrics.FailedScaleUpReason, gpuResourceName, gpuType, draDriverName string)
 	RegisterFailedNodeCreations(reason metrics.FailedScaleUpReason, nodesCount int)
+}
+
+type nodeInfoRegistry interface {
+	GetNodeInfo(id string) (*framework.NodeInfo, bool)
 }
 
 // NodeGroupChangeMetricsProducer is an implementation of NodeGroupChangeObserver for reporting the scale up/down metrics
 type NodeGroupChangeMetricsProducer struct {
 	cloudProvider cloudprovider.CloudProvider
 	// metrics is an instance of metricObserver interface which allows to mock and test the nodegroupchange metrics
-	metrics metricObserver
+	metrics          metricObserver
+	nodeInfoRegistry nodeInfoRegistry
 }
 
-// RegisterScaleUp calls RegisterScaleUp for each observer.
+// RegisterScaleUp emits the scale up metric.
 func (p *NodeGroupChangeMetricsProducer) RegisterScaleUp(nodeGroup cloudprovider.NodeGroup,
 	delta int, currentTime time.Time) {
+	gpuResourceName, gpuType, draDriverNames := retrieveMetricsDataFromNodeGroup(nodeGroup, p.cloudProvider, p.nodeInfoRegistry)
+	p.metrics.RegisterScaleUp(delta, gpuResourceName, gpuType, draDriverNames)
 }
 
-// RegisterScaleDown calls RegisterScaleDown for each observer.
+// RegisterScaleDown is a no-op for NodeGroupChangeMetricsProducer.
 func (p *NodeGroupChangeMetricsProducer) RegisterScaleDown(nodeGroup cloudprovider.NodeGroup,
 	nodeName string, currentTime time.Time, expectedDeleteTime time.Time) {
 }
 
 // RegisterFailedScaleUp emits the failed scale up metric.
 func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
-	availableGPUTypes := p.cloudProvider.GetAvailableGPUTypes()
-	gpuResourceName, gpuType, draDriverNames := "", "", ""
-	nodeInfo, err := nodeGroup.TemplateNodeInfo()
-	if err != nil {
-		klog.Warningf("Failed to get template node info for a node group: %s", err)
-	} else if nodeInfo == nil {
-		klog.Warningf("Template node info is nil for node group: %s", nodeGroup.Id())
-	} else {
-		gpuResourceName, gpuType = gpu.GetGpuInfoForMetrics(p.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), nodeGroup)
-		draDriverNames = dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
-	}
+	gpuResourceName, gpuType, draDriverNames := retrieveMetricsDataFromNodeGroup(nodeGroup, p.cloudProvider, p.nodeInfoRegistry)
 	reason := metrics.FailedScaleUpReason(errorInfo.ErrorCode)
 	p.metrics.RegisterFailedScaleUp(reason, gpuResourceName, gpuType, draDriverNames)
 	p.metrics.RegisterFailedNodeCreations(reason, delta)
 }
 
-// RegisterFailedScaleDown records failed scale-down for a nodegroup.
+// RegisterFailedScaleDown is a no-op for NodeGroupChangeMetricsProducer.
 func (p *NodeGroupChangeMetricsProducer) RegisterFailedScaleDown(nodeGroup cloudprovider.NodeGroup,
 	reason string, currentTime time.Time) {
 }
 
 // NewNodeGroupChangeMetricsProducer returns a new NodeGroupChangeMetricsProducer.
-func NewNodeGroupChangeMetricsProducer(cloudProvider cloudprovider.CloudProvider, metrics metricObserver) *NodeGroupChangeMetricsProducer {
-	return &NodeGroupChangeMetricsProducer{cloudProvider: cloudProvider, metrics: metrics}
+func NewNodeGroupChangeMetricsProducer(cloudProvider cloudprovider.CloudProvider, metrics metricObserver, nodeInfoRegistry nodeInfoRegistry) *NodeGroupChangeMetricsProducer {
+	return &NodeGroupChangeMetricsProducer{cloudProvider: cloudProvider, metrics: metrics, nodeInfoRegistry: nodeInfoRegistry}
+}
+
+func retrieveMetricsDataFromNodeGroup(nodeGroup cloudprovider.NodeGroup, cloudProvider cloudprovider.CloudProvider, registry nodeInfoRegistry) (string, string, string) {
+	availableGPUTypes := cloudProvider.GetAvailableGPUTypes()
+	gpuResourceName, gpuType, draDriverNames := "", "", ""
+	var nodeInfo *framework.NodeInfo
+	var found bool
+	if registry != nil {
+		nodeInfo, found = registry.GetNodeInfo(nodeGroup.Id())
+	}
+	if !found {
+		var err error
+		nodeInfo, err = nodeGroup.TemplateNodeInfo()
+		if err != nil {
+			klog.Warningf("Failed to get template node info for a node group: %s", err)
+		} else if nodeInfo == nil {
+			klog.Warningf("Template node info is nil for node group: %s", nodeGroup.Id())
+		}
+	}
+	if nodeInfo != nil {
+		gpuResourceName, gpuType = gpu.GetGpuInfoForMetrics(cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), nodeGroup)
+		draDriverNames = dynamicresources.GetDriverNamesForMetricsCompacted(nodeInfo.LocalResourceSlices)
+	}
+	return gpuResourceName, gpuType, draDriverNames
 }
