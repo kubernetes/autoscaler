@@ -48,6 +48,27 @@ type VpaWithSelector struct {
 	Selector labels.Selector
 }
 
+// TargetRefIndex is the name of the informer index that indexes VPA objects
+// by the namespace/kind/name of their targetRef.
+const TargetRefIndex = "vpaTargetRef"
+
+// TargetRefIndexKey returns the TargetRefIndex key for the given target controller.
+func TargetRefIndexKey(namespace, kind, name string) string {
+	return namespace + "/" + kind + "/" + name
+}
+
+// TargetRefIndexFunc indexes a VPA object by its targetRef. VPAs without a targetRef are not indexed.
+func TargetRefIndexFunc(obj any) ([]string, error) {
+	vpa, ok := obj.(*vpa_types.VerticalPodAutoscaler)
+	if !ok {
+		return nil, fmt.Errorf("expected *VerticalPodAutoscaler, got %T", obj)
+	}
+	if vpa.Spec.TargetRef == nil {
+		return nil, nil
+	}
+	return []string{TargetRefIndexKey(vpa.Namespace, vpa.Spec.TargetRef.Kind, vpa.Spec.TargetRef.Name)}, nil
+}
+
 type patchRecord struct {
 	Op    string `json:"op,inline"`
 	Path  string `json:"path,inline"`
@@ -83,14 +104,24 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 // set namespace to k8sapiv1.NamespaceAll to select all namespaces.
 // The method blocks until vpaLister is initially populated.
 func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}, namespace string) vpa_lister.VerticalPodAutoscalerLister {
+	lister, _ := NewVpasListerWithIndexer(vpaClient, stopChannel, namespace)
+	return lister
+}
+
+// NewVpasListerWithIndexer is like NewVpasLister but also returns the underlying indexer,
+// which additionally indexes VPA objects by targetRef (see TargetRefIndex).
+func NewVpasListerWithIndexer(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}, namespace string) (vpa_lister.VerticalPodAutoscalerLister, cache.Indexer) {
 	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1().RESTClient(), "verticalpodautoscalers", namespace, fields.Everything())
 	informerOptions := cache.InformerOptions{
 		ObjectType:    &vpa_types.VerticalPodAutoscaler{},
 		ListerWatcher: vpaListWatch,
 		Handler:       &cache.ResourceEventHandlerFuncs{},
 		ResyncPeriod:  1 * time.Hour,
-		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
-		Transform:     client.StripManagedFields,
+		Indexers: cache.Indexers{
+			cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
+			TargetRefIndex:       TargetRefIndexFunc,
+		},
+		Transform: client.StripManagedFields,
 	}
 
 	store, controller := cache.NewInformerWithOptions(informerOptions)
@@ -107,7 +138,7 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 	} else {
 		klog.InfoS("Initial VPA synced successfully")
 	}
-	return vpaLister
+	return vpaLister, indexer
 }
 
 // NewVpaCheckpointLister returns VerticalPodAutoscalerCheckpointLister configured to fetch all VPACheckpoint objects from namespace,

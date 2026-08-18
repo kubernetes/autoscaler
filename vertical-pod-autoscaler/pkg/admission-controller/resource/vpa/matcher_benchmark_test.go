@@ -29,9 +29,9 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 type fixedSelectorFetcher struct {
@@ -43,8 +43,7 @@ func (f *fixedSelectorFetcher) Fetch(_ context.Context, _ *vpa_types.VerticalPod
 }
 
 // setupMatcherBenchmark populates a cache with vpaCount VPAs in the pod's namespace, each
-// targeting a distinct workload. Exactly one VPA targets the pod's owner; the matcher still
-// scans all of them.
+// targeting a distinct workload. The pod's owner matches the last VPA (worst case for a scan).
 func setupMatcherBenchmark(b *testing.B, vpaCount int) (Matcher, *corev1.Pod) {
 	b.Helper()
 
@@ -65,9 +64,8 @@ func setupMatcherBenchmark(b *testing.B, vpaCount int) (Matcher, *corev1.Pod) {
 		Get()
 
 	indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{
-		cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
+		vpa_api_util.TargetRefIndex: vpa_api_util.TargetRefIndexFunc,
 	})
-
 	for i := range vpaCount {
 		vpa := test.VerticalPodAutoscaler().
 			WithContainer("bench-container").
@@ -85,7 +83,7 @@ func setupMatcherBenchmark(b *testing.B, vpaCount int) (Matcher, *corev1.Pod) {
 	}
 
 	selectorFetcher := &fixedSelectorFetcher{selector: parseLabelSelector("app = test")}
-	matcher := NewMatcher(vpa_lister.NewVerticalPodAutoscalerLister(indexer), selectorFetcher, controllerfetcher.FakeControllerFetcher{})
+	matcher := NewMatcher(indexer, selectorFetcher, controllerfetcher.FakeControllerFetcher{})
 	return matcher, pod
 }
 
