@@ -1,0 +1,13 @@
+approvers:
+- enxebre
+- elmiko
+- hardikdr
+reviewers:
+- enxebre
+- elmiko
+- hardikdr
+- jackfrancis
+- arunmk
+
+labels:
+- area/provider/cluster-api

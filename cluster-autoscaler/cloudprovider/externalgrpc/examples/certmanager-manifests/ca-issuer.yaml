@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer
+  namespace: kube-system
+spec:
+  ca:
+    secretName: ca-root-secret

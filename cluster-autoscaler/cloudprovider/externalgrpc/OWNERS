@@ -1,0 +1,7 @@
+approvers:
+- dbonfigli
+reviewers:
+- dbonfigli
+
+labels:
+- area/provider/externalgrpc
