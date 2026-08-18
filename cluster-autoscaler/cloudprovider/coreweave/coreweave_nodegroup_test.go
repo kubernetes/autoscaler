@@ -567,6 +567,25 @@ func TestTemplateNodeInfo(t *testing.T) {
 				require.Equal(t, int64(72), cpu.Value())
 			},
 		},
+		"b300 instance type": {
+			nodePool: makeTestNodePool("uid-b300", "ng-b300", 0, 4, 0,
+				withInstanceType("b300-8x"),
+			),
+			validateNode: func(t *testing.T, node *apiv1.Node) {
+				require.Equal(t, "amd64", node.Labels[apiv1.LabelArchStable])
+
+				cpu := node.Status.Capacity[apiv1.ResourceCPU]
+				memory := node.Status.Capacity[apiv1.ResourceMemory]
+				storage := node.Status.Capacity[apiv1.ResourceEphemeralStorage]
+				gpuCount := node.Status.Capacity[gpu.ResourceNvidiaGPU]
+				pods := node.Status.Capacity[apiv1.ResourcePods]
+				require.Equal(t, int64(192), cpu.Value())
+				require.True(t, memory.Equal(resource.MustParse("4225760944Ki")))
+				require.True(t, storage.Equal(resource.MustParse("30003181568Ki")))
+				require.Equal(t, int64(8), gpuCount.Value())
+				require.Equal(t, int64(110), pods.Value())
+			},
+		},
 		"missing instance type error": {
 			nodePool: makeTestNodePool("uid-err-1", "ng-err-1", 1, 5, 3,
 				withInstanceType(""),

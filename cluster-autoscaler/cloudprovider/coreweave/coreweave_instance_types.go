@@ -46,6 +46,14 @@ var InstanceTypes = map[string]*InstanceType{
 		Architecture:       "amd64",
 		MaxPods:            110,
 	},
+	"b300-8x": {
+		VCPU:               192,
+		MemoryKi:           4225760944,
+		GPU:                8,
+		EphemeralStorageKi: 30003181568,
+		Architecture:       "amd64",
+		MaxPods:            110,
+	},
 	"cd-gp-a192-genoa": {
 		VCPU:               192,
 		MemoryKi:           1583811548,
