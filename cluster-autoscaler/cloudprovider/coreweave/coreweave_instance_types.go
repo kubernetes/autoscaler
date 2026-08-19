@@ -27,6 +27,8 @@ type InstanceType struct {
 	MemoryKi int64
 	// GPU is the number of GPUs
 	GPU int64
+	// RDMA is the capacity of the rdma/ib resource
+	RDMA int64
 	// EphemeralStorageKi is the amount of ephemeral storage in kibibytes (1 Ki = 1024 bytes)
 	EphemeralStorageKi int64
 	// Architecture is the CPU architecture (e.g., "amd64", "arm64")
@@ -42,6 +44,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:               128,
 		MemoryKi:           2112277172,
 		GPU:                8,
+		RDMA:               64,
 		EphemeralStorageKi: 30003181568,
 		Architecture:       "amd64",
 		MaxPods:            110,
@@ -50,6 +53,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:               192,
 		MemoryKi:           4225760944,
 		GPU:                8,
+		RDMA:               64,
 		EphemeralStorageKi: 30003181568,
 		Architecture:       "amd64",
 		MaxPods:            110,
@@ -98,6 +102,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:               384,
 		MemoryKi:           1583672504,
 		GPU:                0,
+		RDMA:               64,
 		EphemeralStorageKi: 30003181568,
 		Architecture:       "amd64",
 		MaxPods:            110,
@@ -138,6 +143,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:               128,
 		MemoryKi:           2112109804,
 		GPU:                8,
+		RDMA:               64,
 		EphemeralStorageKi: 30003181568,
 		Architecture:       "amd64",
 		MaxPods:            110,
@@ -146,6 +152,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:               128,
 		MemoryKi:           2112109800,
 		GPU:                8,
+		RDMA:               64,
 		EphemeralStorageKi: 30003181568,
 		Architecture:       "amd64",
 		MaxPods:            110,

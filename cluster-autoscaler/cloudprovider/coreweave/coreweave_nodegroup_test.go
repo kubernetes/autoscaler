@@ -623,3 +623,24 @@ func TestTemplateNodeInfo(t *testing.T) {
 		})
 	}
 }
+
+func TestRDMATemplateNodeInfo(t *testing.T) {
+	instanceTypes := []string{
+		"b200-8x",
+		"b300-8x",
+		"cd-hc-a384ib-genoa",
+		"gd-8xh100ib-i128",
+		"gd-8xh200ib-i128",
+	}
+
+	for _, instanceType := range instanceTypes {
+		t.Run(instanceType, func(t *testing.T) {
+			nodePool := makeTestNodePool("uid-rdma", "ng-rdma", 0, 1, 0, withInstanceType(instanceType))
+			nodeInfo, err := NewCoreWeaveNodeGroup(nodePool).TemplateNodeInfo(t.Context())
+			require.NoError(t, err)
+
+			rdma := nodeInfo.Node().Status.Allocatable[apiv1.ResourceName("rdma/ib")]
+			require.Equal(t, int64(64), rdma.Value())
+		})
+	}
+}
