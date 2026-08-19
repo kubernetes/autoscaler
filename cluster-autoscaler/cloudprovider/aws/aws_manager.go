@@ -357,6 +357,11 @@ func (m *AwsManager) buildCSINodeFromTemplate(template *asgTemplate, nodeName st
 		driver.Allocatable = &storagev1.VolumeNodeResources{
 			Count: ptr.To(int32(template.InstanceType.EBSVolumeLimit)),
 		}
+	} else {
+		klog.Errorf(
+			"EBS volume attachment limit unavailable for instance type %q",
+			template.InstanceType.InstanceType,
+		)
 	}
 
 	return &storagev1.CSINode{
