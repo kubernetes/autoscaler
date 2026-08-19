@@ -9,7 +9,7 @@ VPA minor releases are aligned with Kubernetes (k/k) minor releases:
 
 - **Code freeze**: 2 weeks after the corresponding Kubernetes release.
   No new features are merged after this point; only bug fixes and release-related changes.
-- **VPA release**: 4 weeks after the corresponding Kubernetes release.
+- **VPA release**: roughly 4 weeks after the corresponding Kubernetes release.
 
 This gives maintainers 2 weeks to land remaining changes after a Kubernetes release, followed by
 2 weeks of stabilization before cutting the VPA release.
