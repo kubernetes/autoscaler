@@ -242,7 +242,7 @@ func (p *AutoscalingFlags) AddFlags(fs *pflag.FlagSet) {
 			"--max-graceful-termination-sec flag should not be set when this flag is set. Not setting this flag will use unordered evictor by default."+
 			"Priority evictor reuses the concepts of drain logic in kubelet(https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2712-pod-priority-based-graceful-node-shutdown#migration-from-the-node-graceful-shutdown-feature)."+
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
-	fs.IntVar(&p.schedulerVerbosity, "scheduler-verbosity", 0, "Specifies the verbosity threshold for logs produced by the scheduler.")
+	fs.IntVar(&p.schedulerVerbosity, "scheduler-verbosity", -1, "Specifies the verbosity threshold for logs produced by the scheduler. Should not be greater than -v flag value. If it's set to -1 the scheduler log verbosity will be equal to -v flag value.")
 }
 
 // Options builds AutoscalingOptions from the flags and returns them by value
@@ -309,15 +309,17 @@ func (p *AutoscalingFlags) Options() (config.AutoscalingOptions, error) {
 		p.o.MaxStartupTime = maxHealthCheckTimeout
 	}
 
-	var verbosity int = p.schedulerVerbosity
+	var verbosity int
 	if vFlag := flag.CommandLine.Lookup("v"); vFlag != nil {
 		if v, err := strconv.Atoi(vFlag.Value.String()); err == nil {
 			verbosity = v
 		}
 	}
-
 	if verbosity < p.schedulerVerbosity {
-		klog.Warningf("--scheduler-verbosity should be at most as high as -v flag, overriding it to: %d", verbosity)
+		klog.Warningf("--scheduler-verbosity should be at most as high as --v flag, overriding it to: %d", verbosity)
+		p.schedulerVerbosity = verbosity
+	}
+	if p.schedulerVerbosity < 0 {
 		p.schedulerVerbosity = verbosity
 	}
 
