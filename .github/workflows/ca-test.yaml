@@ -40,4 +40,3 @@ jobs:
         env:
           GO111MODULE: auto
           PROJECT_NAMES: ""
-          ENVTEST_K8S_VERSION: "1.36" # TODO Remove once envtest supports 1.37
