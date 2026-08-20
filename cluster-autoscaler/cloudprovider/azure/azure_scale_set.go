@@ -212,7 +212,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	set, err := scaleSet.getVMSSFromCache()
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
-		return -1, newGetVMSSFailedError(err, true)
+		return scaleSet.curSize, newGetVMSSFailedError(err, true)
 	}
 
 	// // Remove check for returning in-memory size when VMSS is in updating state
@@ -277,6 +277,10 @@ func (scaleSet *ScaleSet) getScaleSetSize() (int64, error) {
 	// First, get the current size of the ScaleSet
 	size, getVMSSError := scaleSet.getCurSize()
 	if getVMSSError != nil {
+		if getVMSSError.notFound && size >= 0 {
+			klog.Warningf("VMSS %s not in cache; returning last-known size %d", scaleSet.Name, size)
+			return size, nil
+		}
 		klog.V(3).Infof("getScaleSetSize: error exists (actual err:%v)", getVMSSError.error)
 		return size, getVMSSError.error
 	}
@@ -964,9 +968,13 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	if getVMSSError != nil {
 		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, getVMSSError.error)
 		if getVMSSError.notFound {
-			return []cloudprovider.Instance{}, nil // Don't return error if VMSS not found
+			// azureCache.regenerate calls Nodes for every registered node group and
+			// aborts the entire cache refresh on any error. A missing VMSS means this
+			// group currently has no instances, so represent it as an empty group and
+			// allow healthy node groups to refresh. Other errors still propagate below.
+			return []cloudprovider.Instance{}, nil
 		}
-		return nil, getVMSSError.error // We want to return error if other errors occur.
+		return nil, getVMSSError.error
 	}
 
 	scaleSet.instanceMutex.Lock()

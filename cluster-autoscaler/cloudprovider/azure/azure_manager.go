@@ -288,7 +288,7 @@ func (m *AzureManager) fetchAutoNodeGroups() error {
 		}
 	}
 
-	for _, nodeGroup := range m.getNodeGroups() {
+	for _, nodeGroup := range m.azureCache.getRegisteredNodeGroups() {
 		nodeGroupID := nodeGroup.Id()
 		if !exists[nodeGroupID] && !m.explicitlyConfigured[nodeGroupID] {
 			m.UnregisterNodeGroup(nodeGroup)
@@ -304,7 +304,22 @@ func (m *AzureManager) fetchAutoNodeGroups() error {
 }
 
 func (m *AzureManager) getNodeGroups() []cloudprovider.NodeGroup {
-	return m.azureCache.getRegisteredNodeGroups()
+	registered := m.azureCache.getRegisteredNodeGroups()
+	scaleSets := m.azureCache.getScaleSets()
+	nodeGroups := make([]cloudprovider.NodeGroup, 0, len(registered))
+
+	for _, nodeGroup := range registered {
+		scaleSet, ok := nodeGroup.(*ScaleSet)
+		if ok {
+			if _, exists := scaleSets[scaleSet.Name]; !exists {
+				klog.V(4).Infof("getNodeGroups: excluding %s: no backing VMSS in cache", scaleSet.Name)
+				continue
+			}
+		}
+		nodeGroups = append(nodeGroups, nodeGroup)
+	}
+
+	return nodeGroups
 }
 
 // RegisterNodeGroup registers an a NodeGroup.
