@@ -16,6 +16,8 @@ limitations under the License.
 
 package cloudstack
 
+import "context"
+
 import (
 	"testing"
 	"time"
@@ -178,8 +180,8 @@ func TestFetchCluster(t *testing.T) {
 	assert.GreaterOrEqual(t, int64(time.Since(start)), int64(200*time.Millisecond))
 	assert.Equal(t, nil, err)
 	assert.Equal(t, testConfig.clusterID, asg.Id())
-	assert.Equal(t, testConfig.maxSize, asg.MaxSize())
-	assert.Equal(t, testConfig.minSize, asg.MinSize())
+	assert.Equal(t, testConfig.maxSize, asg.MaxSize(context.TODO()))
+	assert.Equal(t, testConfig.minSize, asg.MinSize(context.TODO()))
 	assert.Nil(t, asg.cluster.VirtualMachineMap[""])
 	s.AssertExpectations(t)
 }

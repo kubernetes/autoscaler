@@ -172,43 +172,43 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 		expectedID := path.Join(expectedKind, testConfig.spec.namespace, expectedName)
 		expectedDebug := fmt.Sprintf(debugFormat, expectedID, tc.minSize, tc.maxSize, tc.replicas)
 
-		if ng.scalableResource.Name() != expectedName {
-			t.Errorf("expected %q, got %q", expectedName, ng.scalableResource.Name())
+		if ng.scalableResource.Name(context.TODO()) != expectedName {
+			t.Errorf("expected %q, got %q", expectedName, ng.scalableResource.Name(context.TODO()))
 		}
 
 		if ng.scalableResource.Namespace() != testConfig.spec.namespace {
 			t.Errorf("expected %q, got %q", testConfig.spec.namespace, ng.scalableResource.Namespace())
 		}
 
-		if ng.MinSize() != tc.minSize {
-			t.Errorf("expected %v, got %v", tc.minSize, ng.MinSize())
+		if ng.MinSize(context.TODO()) != tc.minSize {
+			t.Errorf("expected %v, got %v", tc.minSize, ng.MinSize(context.TODO()))
 		}
 
-		if ng.MaxSize() != tc.maxSize {
-			t.Errorf("expected %v, got %v", tc.maxSize, ng.MaxSize())
+		if ng.MaxSize(context.TODO()) != tc.maxSize {
+			t.Errorf("expected %v, got %v", tc.maxSize, ng.MaxSize(context.TODO()))
 		}
 
 		if ng.Id() != expectedID {
 			t.Errorf("expected %q, got %q", expectedID, ng.Id())
 		}
 
-		if ng.Debug() != expectedDebug {
-			t.Errorf("expected %q, got %q", expectedDebug, ng.Debug())
+		if ng.Debug(context.TODO()) != expectedDebug {
+			t.Errorf("expected %q, got %q", expectedDebug, ng.Debug(context.TODO()))
 		}
 
-		if exists := ng.Exist(); !exists {
+		if exists := ng.Exist(context.TODO()); !exists {
 			t.Errorf("expected %t, got %t", true, exists)
 		}
 
-		if _, err := ng.Create(); err != cloudprovider.ErrAlreadyExist {
+		if _, err := ng.Create(context.TODO()); err != cloudprovider.ErrAlreadyExist {
 			t.Error("expected error")
 		}
 
-		if err := ng.Delete(); err != cloudprovider.ErrNotImplemented {
+		if err := ng.Delete(context.TODO()); err != cloudprovider.ErrNotImplemented {
 			t.Error("expected error")
 		}
 
-		if result := ng.Autoprovisioned(); result {
+		if result := ng.Autoprovisioned(context.TODO()); result {
 			t.Errorf("expected %t, got %t", false, result)
 		}
 
@@ -277,7 +277,7 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 		}
 
 		ng := nodegroups[0].(*nodegroup)
-		currReplicas, err := ng.TargetSize()
+		currReplicas, err := ng.TargetSize(context.TODO())
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -288,7 +288,7 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 
 		errors := len(tc.errorMsg) > 0
 
-		err = ng.IncreaseSize(tc.delta)
+		err = ng.IncreaseSize(context.TODO(), tc.delta)
 		if errors && err == nil {
 			t.Fatal("expected an error")
 		}
@@ -375,7 +375,7 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 		}
 
 		ng := nodegroups[0].(*nodegroup)
-		currReplicas, err := ng.TargetSize()
+		currReplicas, err := ng.TargetSize(context.TODO())
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -384,7 +384,7 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			t.Errorf("initially expected %v, got %v", tc.initial, currReplicas)
 		}
 
-		if err := ng.IncreaseSize(tc.delta); err != nil {
+		if err := ng.IncreaseSize(context.TODO(), tc.delta); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
@@ -569,7 +569,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 			if ng == nil {
 				return false, nil
 			}
-			currReplicas, err := ng.TargetSize()
+			currReplicas, err := ng.TargetSize(context.TODO())
 			if err != nil {
 				return true, fmt.Errorf("unexpected error: %v", err)
 			}
@@ -578,7 +578,7 @@ func TestNodeGroupDecreaseTargetSize(t *testing.T) {
 				return true, fmt.Errorf("expected %v, got %v", tc.initial+tc.targetSizeIncrement, currReplicas)
 			}
 
-			if err := ng.DecreaseTargetSize(tc.delta); (err != nil) != tc.expectedError {
+			if err := ng.DecreaseTargetSize(context.TODO(), tc.delta); (err != nil) != tc.expectedError {
 				return true, fmt.Errorf("expected error: %v, got: %v", tc.expectedError, err)
 			}
 
@@ -783,7 +783,7 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 		}
 
 		ng := nodegroups[0].(*nodegroup)
-		currReplicas, err := ng.TargetSize()
+		currReplicas, err := ng.TargetSize(context.TODO())
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -794,7 +794,7 @@ func TestNodeGroupDecreaseSizeErrors(t *testing.T) {
 
 		errors := len(tc.errorMsg) > 0
 
-		err = ng.DecreaseTargetSize(tc.delta)
+		err = ng.DecreaseTargetSize(context.TODO(), tc.delta)
 		if errors && err == nil {
 			t.Fatal("expected an error")
 		}
@@ -871,7 +871,7 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 		}
 
 		ng := nodegroups[0].(*nodegroup)
-		nodeNames, err := ng.Nodes()
+		nodeNames, err := ng.Nodes(context.TODO())
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -890,7 +890,7 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 			}
 		}
 
-		if err := ng.DeleteNodes(testConfig.nodes[5:]); err != nil {
+		if err := ng.DeleteNodes(context.TODO(), testConfig.nodes[5:]); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
 
@@ -1111,8 +1111,8 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		if len(nodeNames) <= expectedSize {
 			t.Fatalf("expected more nodes than the expected size: %d <= %d", len(nodeNames), expectedSize)
 		}
-		if ng.MinSize() >= expectedSize {
-			t.Fatalf("expected min size to be less than expected size: %d >= %d", ng.MinSize(), expectedSize)
+		if ng.MinSize(context.TODO()) >= expectedSize {
+			t.Fatalf("expected min size to be less than expected size: %d >= %d", ng.MinSize(context.TODO()), expectedSize)
 		}
 
 		if len(nodeNames) != len(testConfig.nodes) {
@@ -1282,8 +1282,8 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 		if len(nodeNames) <= expectedSize {
 			t.Fatalf("expected more nodes than the expected size: %d <= %d", len(nodeNames), expectedSize)
 		}
-		if ng.MinSize() >= expectedSize {
-			t.Fatalf("expected min size to be less than expected size: %d >= %d", ng.MinSize(), expectedSize)
+		if ng.MinSize(context.TODO()) >= expectedSize {
+			t.Fatalf("expected min size to be less than expected size: %d >= %d", ng.MinSize(context.TODO()), expectedSize)
 		}
 
 		if len(nodeNames) != len(testConfig.nodes) {

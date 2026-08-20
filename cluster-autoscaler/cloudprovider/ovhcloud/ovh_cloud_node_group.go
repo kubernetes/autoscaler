@@ -49,18 +49,18 @@ type NodeGroup struct {
 }
 
 // MaxSize returns maximum size of the node pool.
-func (ng *NodeGroup) MaxSize() int {
+func (ng *NodeGroup) MaxSize(ctx context.Context) int {
 	return int(ng.MaxNodes)
 }
 
 // MinSize returns minimum size of the node pool.
-func (ng *NodeGroup) MinSize() int {
+func (ng *NodeGroup) MinSize(ctx context.Context) int {
 	return int(ng.MinNodes)
 }
 
 // TargetSize returns the current TARGET size of the node pool. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (ng *NodeGroup) TargetSize() (int, error) {
+func (ng *NodeGroup) TargetSize(ctx context.Context) (int, error) {
 	// By default, fetch the API desired nodes before using target size from autoscaler
 	if ng.CurrentSize == -1 {
 		return int(ng.DesiredNodes), nil
@@ -70,7 +70,7 @@ func (ng *NodeGroup) TargetSize() (int, error) {
 }
 
 // IncreaseSize increases node pool size.
-func (ng *NodeGroup) IncreaseSize(delta int) error {
+func (ng *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	// Do not use node group which does not support autoscaling
 	if !ng.Autoscale {
 		return nil
@@ -83,13 +83,13 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("increase size node group delta must be positive")
 	}
 
-	size, err := ng.TargetSize()
+	size, err := ng.TargetSize(context.TODO())
 	if err != nil {
 		return fmt.Errorf("failed to get NodeGroup target size")
 	}
 
-	if size+delta > ng.MaxSize() {
-		return fmt.Errorf("node group size would be above minimum size - desired: %d, max: %d", size+delta, ng.MaxSize())
+	if size+delta > ng.MaxSize(context.TODO()) {
+		return fmt.Errorf("node group size would be above minimum size - desired: %d, max: %d", size+delta, ng.MaxSize(context.TODO()))
 	}
 
 	// Then, forge current size and parameters
@@ -112,12 +112,12 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (ng *NodeGroup) AtomicIncreaseSize(delta int) error {
+func (ng *NodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	// DeleteNodes is called in goroutine so it can run in parallel
 	// Goroutines created in: ScaleDown.scheduleDeleteEmptyNodes()
 	// Adding mutex to ensure CurrentSize attribute keeps consistency
@@ -132,13 +132,13 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	klog.V(4).Infof("Deleting %d node(s)", len(nodes))
 
 	// First, verify the NodeGroup can be decreased
-	size, err := ng.TargetSize()
+	size, err := ng.TargetSize(context.TODO())
 	if err != nil {
 		return fmt.Errorf("failed to get NodeGroup target size")
 	}
 
-	if size-len(nodes) < ng.MinSize() {
-		return fmt.Errorf("node group size would be below minimum size - desired: %d, max: %d", size-len(nodes), ng.MinSize())
+	if size-len(nodes) < ng.MinSize(context.TODO()) {
+		return fmt.Errorf("node group size would be below minimum size - desired: %d, max: %d", size-len(nodes), ng.MinSize(context.TODO()))
 	}
 
 	nodeProviderIds := make([]string, 0)
@@ -167,7 +167,7 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (ng *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (ng *NodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -176,7 +176,7 @@ func (ng *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
-func (ng *NodeGroup) DecreaseTargetSize(delta int) error {
+func (ng *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	// Cancellation of node provisioning is not supported yet
 	return cloudprovider.ErrNotImplemented
 }
@@ -187,13 +187,13 @@ func (ng *NodeGroup) Id() string {
 }
 
 // Debug returns a debug string for the NodeGroup.
-func (ng *NodeGroup) Debug() string {
+func (ng *NodeGroup) Debug(ctx context.Context) string {
 	// Printing name (target size - min size - max size)
-	return fmt.Sprintf("%s (%d:%d:%d)", ng.Id(), ng.CurrentSize, ng.MinSize(), ng.MaxSize())
+	return fmt.Sprintf("%s (%d:%d:%d)", ng.Id(), ng.CurrentSize, ng.MinSize(context.TODO()), ng.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *NodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	// Fetch all nodes contained in the node group
 	nodes, err := ng.Manager.Client.ListNodePoolNodes(context.Background(), ng.Manager.ProjectID, ng.Manager.ClusterID, ng.ID)
 	if err != nil {
@@ -220,7 +220,7 @@ func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ng *NodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	// Forge node template in a node group
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -263,19 +263,19 @@ func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (ng *NodeGroup) Exist() bool {
+func (ng *NodeGroup) Exist(ctx context.Context) bool {
 	return ng.Id() != ""
 }
 
 // Create creates the node group on the cloud provider side.
-func (ng *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ng *NodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	klog.V(4).Info("Creating a new NodeGroup")
 
 	// Forge create node pool parameters (defaulting b2-7 for now)
 	name := ng.Id()
 	size := uint32(ng.CurrentSize)
-	min := uint32(ng.MinSize())
-	max := uint32(ng.MaxSize())
+	min := uint32(ng.MinSize(context.TODO()))
+	max := uint32(ng.MaxSize(context.TODO()))
 
 	opts := sdk.CreateNodePoolOpts{
 		FlavorName:   "b2-7",
@@ -302,7 +302,7 @@ func (ng *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (ng *NodeGroup) Delete() error {
+func (ng *NodeGroup) Delete(ctx context.Context) error {
 	klog.V(4).Infof("Deleting NodeGroup %s", ng.Id())
 
 	// Call API to delete the node pool given its project and cluster
@@ -315,14 +315,14 @@ func (ng *NodeGroup) Delete() error {
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (ng *NodeGroup) Autoprovisioned() bool {
+func (ng *NodeGroup) Autoprovisioned(ctx context.Context) bool {
 	// This is not handled yet.
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	// If node group autoscaling options nil, return defaults
 	if ng.Autoscaling == nil {
 		return nil, nil

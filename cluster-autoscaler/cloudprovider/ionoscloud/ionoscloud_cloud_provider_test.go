@@ -17,6 +17,7 @@ limitations under the License.
 package ionoscloud
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -57,99 +58,99 @@ func (s *NodeGroupTestSuite) TestId() {
 }
 
 func (s *NodeGroupTestSuite) TestDebug() {
-	s.Equal("ID=test, Min=1, Max=3", s.nodePool.Debug())
+	s.Equal("ID=test, Min=1, Max=3", s.nodePool.Debug(context.TODO()))
 }
 
 func (s *NodeGroupTestSuite) TestMaxSize() {
-	s.Equal(3, s.nodePool.MaxSize())
+	s.Equal(3, s.nodePool.MaxSize(context.TODO()))
 }
 
 func (s *NodeGroupTestSuite) TestMinSize() {
-	s.Equal(1, s.nodePool.MinSize())
+	s.Equal(1, s.nodePool.MinSize(context.TODO()))
 }
 
 func (s *NodeGroupTestSuite) TestTemplateNodeInfo() {
-	nodeInfo, err := s.nodePool.TemplateNodeInfo()
+	nodeInfo, err := s.nodePool.TemplateNodeInfo(context.TODO())
 	s.Nil(nodeInfo)
 	s.Equal(cloudprovider.ErrNotImplemented, err)
 }
 
 func (s *NodeGroupTestSuite) TestExist() {
 	var nodePool *nodePool
-	s.True((nodePool).Exist())
+	s.True((nodePool).Exist(context.TODO()))
 }
 
 func (s *NodeGroupTestSuite) TestCreate() {
-	nodeGroup, err := s.nodePool.Create()
+	nodeGroup, err := s.nodePool.Create(context.TODO())
 	s.Nil(nodeGroup)
 	s.Equal(cloudprovider.ErrNotImplemented, err)
 }
 
 func (s *NodeGroupTestSuite) TestDelete() {
-	err := s.nodePool.Delete()
+	err := s.nodePool.Delete(context.TODO())
 	s.Equal(cloudprovider.ErrNotImplemented, err)
 }
 
 func (s *NodeGroupTestSuite) TestAutoprovisioned() {
 	var nodePool *nodePool
-	s.False(nodePool.Autoprovisioned())
+	s.False(nodePool.Autoprovisioned(context.TODO()))
 }
 
 func (s *NodeGroupTestSuite) TestTargetSize_Error() {
 	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(0, errors.New("error")).Once()
-	_, err := s.nodePool.TargetSize()
+	_, err := s.nodePool.TargetSize(context.TODO())
 	s.Error(err)
 }
 
 func (s *NodeGroupTestSuite) TestTargetSize_OK() {
 	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(3, nil).Once()
-	size, err := s.nodePool.TargetSize()
+	size, err := s.nodePool.TargetSize(context.TODO())
 	s.NoError(err)
 	s.Equal(3, size)
 }
 
 func (s *NodeGroupTestSuite) TestIncreaseSize_InvalidDelta() {
-	s.Error(s.nodePool.IncreaseSize(0))
+	s.Error(s.nodePool.IncreaseSize(context.TODO(), 0))
 }
 
 func (s *NodeGroupTestSuite) TestIncreaseSize_GetSizeError() {
 	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(0, errors.New("error")).Once()
-	s.Error(s.nodePool.IncreaseSize(2))
+	s.Error(s.nodePool.IncreaseSize(context.TODO(), 2))
 }
 
 func (s *NodeGroupTestSuite) TestIncreaseSize_SetSizeError() {
 	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(2, nil).Once()
 	s.manager.On("SetNodeGroupSize", s.nodePool, 3).Return(errors.New("error")).Once()
-	s.Error(s.nodePool.IncreaseSize(1))
+	s.Error(s.nodePool.IncreaseSize(context.TODO(), 1))
 }
 
 func (s *NodeGroupTestSuite) TestIncreaseSize_OK() {
 	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(2, nil).Once()
 	s.manager.On("SetNodeGroupSize", s.nodePool, 3).Return(nil).Once()
-	s.NoError(s.nodePool.IncreaseSize(1))
+	s.NoError(s.nodePool.IncreaseSize(context.TODO(), 1))
 }
 
 func (s *NodeGroupTestSuite) TestDeleteNodes_Locked() {
 	s.manager.On("TryLockNodeGroup", s.nodePool).Return(false).Once()
-	s.Error(s.nodePool.DeleteNodes(s.deleteNode))
+	s.Error(s.nodePool.DeleteNodes(context.TODO(), s.deleteNode))
 }
 
 func (s *NodeGroupTestSuite) TestDeleteNodes_DeleteError() {
 	s.manager.On("TryLockNodeGroup", s.nodePool).Return(true).Once()
 	s.manager.On("UnlockNodeGroup", s.nodePool).Return().Once()
 	s.manager.On("DeleteNode", s.nodePool, "testnode").Return(errors.New("error")).Once()
-	s.Error(s.nodePool.DeleteNodes(s.deleteNode))
+	s.Error(s.nodePool.DeleteNodes(context.TODO(), s.deleteNode))
 }
 
 func (s *NodeGroupTestSuite) TestDeleteNodes_OK() {
 	s.manager.On("TryLockNodeGroup", s.nodePool).Return(true).Once()
 	s.manager.On("UnlockNodeGroup", s.nodePool).Return().Once()
 	s.manager.On("DeleteNode", s.nodePool, "testnode").Return(nil).Once()
-	s.NoError(s.nodePool.DeleteNodes(s.deleteNode))
+	s.NoError(s.nodePool.DeleteNodes(context.TODO(), s.deleteNode))
 }
 
 func (s *NodeGroupTestSuite) TestDecreaseTargetSize_InvalidDelta() {
-	s.Error(s.nodePool.DecreaseTargetSize(0))
+	s.Error(s.nodePool.DecreaseTargetSize(context.TODO(), 0))
 }
 
 func (s *NodeGroupTestSuite) TestDecreaseTargetSize_GetTargetSizeError() {
@@ -186,19 +187,19 @@ func TestIonosCloudCloudProvider(t *testing.T) {
 
 func (s *CloudProviderTestSuite) TestName() {
 	var ionoscloud *IonosCloudCloudProvider
-	s.Equal(ProviderName, ionoscloud.Name())
+	s.Equal(ProviderName, ionoscloud.Name(context.TODO()))
 }
 
 func (s *CloudProviderTestSuite) TestNodeGroups() {
 	s.manager.On("GetNodeGroups").Return([]cloudprovider.NodeGroup{&nodePool{id: "test"}}).Once()
-	s.Equal([]cloudprovider.NodeGroup{&nodePool{id: "test"}}, s.provider.NodeGroups())
+	s.Equal([]cloudprovider.NodeGroup{&nodePool{id: "test"}}, s.provider.NodeGroups(context.TODO()))
 }
 
 func (s *CloudProviderTestSuite) TestNodeGroupForNode_CacheHit() {
 	node := newAPINode("test")
 	s.manager.On("GetNodeGroupForNode", node).Return(&nodePool{id: "test"}).Once()
 
-	nodeGroup, err := s.provider.NodeGroupForNode(node)
+	nodeGroup, err := s.provider.NodeGroupForNode(context.TODO(), node)
 	s.NoError(err)
 	s.Equal(&nodePool{id: "test"}, nodeGroup)
 }
@@ -210,7 +211,7 @@ func (s *CloudProviderTestSuite) TestNodeGroupForNode_Error() {
 	s.manager.On("GetNodeGroups").Return([]cloudprovider.NodeGroup{nodePool}).Once()
 	s.manager.On("GetInstancesForNodeGroup", nodePool).Return(nil, errors.New("error")).Once()
 
-	nodeGroup, err := s.provider.NodeGroupForNode(node)
+	nodeGroup, err := s.provider.NodeGroupForNode(context.TODO(), node)
 	s.Nil(nodeGroup)
 	s.Error(err)
 }
@@ -224,7 +225,7 @@ func (s *CloudProviderTestSuite) TestNodeGroupForNode_Found() {
 		newInstance("foo"), newInstance("test"),
 	}, nil).Once()
 
-	nodeGroup, err := s.provider.NodeGroupForNode(node)
+	nodeGroup, err := s.provider.NodeGroupForNode(context.TODO(), node)
 	s.Equal(nodePool, nodeGroup)
 	s.NoError(err)
 }
@@ -238,52 +239,52 @@ func (s *CloudProviderTestSuite) TestNodeGroupForNode_NotFound() {
 		newInstance("foo"), newInstance("bar"),
 	}, nil).Once()
 
-	nodeGroup, err := s.provider.NodeGroupForNode(node)
+	nodeGroup, err := s.provider.NodeGroupForNode(context.TODO(), node)
 	s.Nil(nodeGroup)
 	s.NoError(err)
 }
 
 func (s *CloudProviderTestSuite) TestPricing_NotImplemented() {
 	var ionoscloud *IonosCloudCloudProvider
-	pricingModel, err := ionoscloud.Pricing()
+	pricingModel, err := ionoscloud.Pricing(context.TODO())
 	s.Nil(pricingModel)
 	s.Equal(cloudprovider.ErrNotImplemented, err)
 }
 
 func (s *CloudProviderTestSuite) TestGetAvailableMachineTypes_NotImplemented() {
 	var ionoscloud *IonosCloudCloudProvider
-	machineTypes, err := ionoscloud.GetAvailableMachineTypes()
+	machineTypes, err := ionoscloud.GetAvailableMachineTypes(context.TODO())
 	s.Nil(machineTypes)
 	s.Equal(cloudprovider.ErrNotImplemented, err)
 }
 
 func (s *CloudProviderTestSuite) TestNewNodeGroup_NotImplemented() {
 	var ionoscloud *IonosCloudCloudProvider
-	nodeGroup, err := ionoscloud.NewNodeGroup("test", nil, nil, nil, nil)
+	nodeGroup, err := ionoscloud.NewNodeGroup(context.TODO(), "test", nil, nil, nil, nil)
 	s.Nil(nodeGroup)
 	s.Equal(cloudprovider.ErrNotImplemented, err)
 }
 
 func (s *CloudProviderTestSuite) TestGetResourceLimiter() {
-	rl, err := s.provider.GetResourceLimiter()
+	rl, err := s.provider.GetResourceLimiter(context.TODO())
 	s.NotNil(rl)
 	s.NoError(err)
 }
 
 func (s *CloudProviderTestSuite) TestGPULabel() {
 	var ionoscloud *IonosCloudCloudProvider
-	s.Equal(GPULabel, ionoscloud.GPULabel())
+	s.Equal(GPULabel, ionoscloud.GPULabel(context.TODO()))
 }
 
 func (s *CloudProviderTestSuite) TestGetAvailableGPUTypes() {
 	var ionoscloud *IonosCloudCloudProvider
-	s.Nil(ionoscloud.GetAvailableGPUTypes())
+	s.Nil(ionoscloud.GetAvailableGPUTypes(context.TODO()))
 }
 
 func (s *CloudProviderTestSuite) TestCleanup() {
-	s.NoError(s.provider.Cleanup())
+	s.NoError(s.provider.Cleanup(context.TODO()))
 }
 
 func (s *CloudProviderTestSuite) TestRefresh() {
-	s.NoError(s.provider.Refresh())
+	s.NoError(s.provider.Refresh(context.TODO()))
 }

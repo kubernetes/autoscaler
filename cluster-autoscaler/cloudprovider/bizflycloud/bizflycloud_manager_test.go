@@ -115,7 +115,7 @@ func TestBizflyCloudManager_RefreshWithNodeSpec(t *testing.T) {
 			nil,
 		).Once()
 		manager.client = client
-		err = manager.Refresh()
+		err = manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 		assert.Equal(t, len(manager.nodeGroups), 0, "number of node groups do not match")
 	})

@@ -19,6 +19,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -121,7 +122,7 @@ func CreateAwsManager(awsSDKProvider *awsSDKProvider, discoveryOpts cloudprovide
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (m *AwsManager) Refresh() error {
+func (m *AwsManager) Refresh(ctx context.Context) error {
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
@@ -144,8 +145,8 @@ func (m *AwsManager) GetAsgForInstance(instance AwsInstanceRef) *asg {
 }
 
 // Cleanup the ASG cache.
-func (m *AwsManager) Cleanup() {
-	m.asgCache.Cleanup()
+func (m *AwsManager) Cleanup(ctx context.Context) {
+	m.asgCache.Cleanup(context.TODO())
 }
 
 func (m *AwsManager) getAsgs() map[AwsRef]*asg {

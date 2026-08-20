@@ -430,9 +430,9 @@ func (m *ociManagerImpl) forceRefresh() error {
 		// compare the new and previous nodepool list to log the updates
 		for nodepoolId, nodepool := range m.staticNodePools {
 			if _, ok := staticNodePoolsCopy[nodepoolId]; !ok {
-				klog.Infof("New nodepool discovered. [id: %s ,minSize: %d, maxSize:%d]", nodepool.Id(), nodepool.MinSize(), nodepool.MaxSize())
-			} else if staticNodePoolsCopy[nodepoolId].MinSize() != nodepool.MinSize() || staticNodePoolsCopy[nodepoolId].MaxSize() != nodepool.MaxSize() {
-				klog.Infof("Nodepool min/max sizes are updated. [id: %s ,minSize: %d, maxSize:%d]", nodepool.Id(), nodepool.MinSize(), nodepool.MaxSize())
+				klog.Infof("New nodepool discovered. [id: %s ,minSize: %d, maxSize:%d]", nodepool.Id(), nodepool.MinSize(context.TODO()), nodepool.MaxSize(context.TODO()))
+			} else if staticNodePoolsCopy[nodepoolId].MinSize(context.TODO()) != nodepool.MinSize(context.TODO()) || staticNodePoolsCopy[nodepoolId].MaxSize(context.TODO()) != nodepool.MaxSize(context.TODO()) {
+				klog.Infof("Nodepool min/max sizes are updated. [id: %s ,minSize: %d, maxSize:%d]", nodepool.Id(), nodepool.MinSize(context.TODO()), nodepool.MaxSize(context.TODO()))
 			}
 		}
 

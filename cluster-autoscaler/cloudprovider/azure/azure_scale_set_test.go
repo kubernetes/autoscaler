@@ -161,8 +161,8 @@ func TestScaleSetMaxSize(t *testing.T) {
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-	assert.Equal(t, provider.NodeGroups()[0].MaxSize(), 5)
+	assert.Equal(t, len(provider.NodeGroups(context.TODO())), 1)
+	assert.Equal(t, provider.NodeGroups()[0].MaxSize(context.TODO()), 5)
 }
 
 func TestScaleSetMinSize(t *testing.T) {
@@ -170,8 +170,8 @@ func TestScaleSetMinSize(t *testing.T) {
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-	assert.Equal(t, provider.NodeGroups()[0].MinSize(), 1)
+	assert.Equal(t, len(provider.NodeGroups(context.TODO())), 1)
+	assert.Equal(t, provider.NodeGroups()[0].MinSize(context.TODO()), 1)
 }
 
 func TestScaleSetMinSizeZero(t *testing.T) {
@@ -179,8 +179,8 @@ func TestScaleSetMinSizeZero(t *testing.T) {
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSetMinSizeZero(provider.azureManager, testASG))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-	assert.Equal(t, provider.NodeGroups()[0].MinSize(), 0)
+	assert.Equal(t, len(provider.NodeGroups(context.TODO())), 1)
+	assert.Equal(t, provider.NodeGroups()[0].MinSize(context.TODO()), 0)
 }
 
 func TestScaleSetTargetSize(t *testing.T) {
@@ -233,13 +233,13 @@ func TestScaleSetTargetSize(t *testing.T) {
 		registered := provider.azureManager.RegisterNodeGroup(
 			newTestScaleSet(provider.azureManager, testASG))
 		assert.True(t, registered)
-		assert.Equal(t, len(provider.NodeGroups()), 1)
+		assert.Equal(t, len(provider.NodeGroups(context.TODO())), 1)
 
-		targetSize, err := provider.NodeGroups()[0].TargetSize()
+		targetSize, err := provider.NodeGroups(context.TODO())[0].TargetSize()
 		assert.NoError(t, err)
 		assert.Equal(t, 3, targetSize)
 
-		targetSize, err = provider.NodeGroups()[0].TargetSize()
+		targetSize, err = provider.NodeGroups(context.TODO())[0].TargetSize()
 		assert.NoError(t, err)
 		assert.Equal(t, 3, targetSize)
 
@@ -247,9 +247,9 @@ func TestScaleSetTargetSize(t *testing.T) {
 		spotNodeGroup := newTestScaleSet(provider.azureManager, "spot-vmss")
 		registered = provider.azureManager.RegisterNodeGroup(spotNodeGroup)
 		assert.True(t, registered)
-		assert.Equal(t, len(provider.NodeGroups()), 2)
+		assert.Equal(t, len(provider.NodeGroups(context.TODO())), 2)
 
-		targetSize, err = provider.NodeGroups()[1].TargetSize()
+		targetSize, err = provider.NodeGroups(context.TODO())[1].TargetSize()
 		assert.NoError(t, err)
 		assert.Equal(t, 1, targetSize)
 	}
@@ -265,7 +265,7 @@ func TestScaleSetTargetSizeReturnsErrorForCachedNegativeSize(t *testing.T) {
 	scaleSet.lastSizeRefresh = time.Now()
 	scaleSet.sizeRefreshPeriod = time.Hour
 
-	size, err := scaleSet.TargetSize()
+	size, err := scaleSet.TargetSize(context.TODO())
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cached size is -1 without provider error")
 	assert.Equal(t, -1, size)
@@ -327,17 +327,17 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 		assert.NoError(t, err)
 
 		ss := newTestScaleSet(provider.azureManager, "test-asg-doesnt-exist")
-		err = ss.IncreaseSize(100)
+		err = ss.IncreaseSize(context.TODO(), 100)
 		expectedErr := fmt.Errorf("could not find vmss: test-asg-doesnt-exist")
 		assert.Equal(t, expectedErr, err)
 
 		registered := provider.azureManager.RegisterNodeGroup(
 			newTestScaleSet(provider.azureManager, testASG))
 		assert.True(t, registered)
-		assert.Equal(t, len(provider.NodeGroups()), 1)
+		assert.Equal(t, len(provider.NodeGroups(context.TODO())), 1)
 
 		// Current target size is 3.
-		targetSize, err := provider.NodeGroups()[0].TargetSize()
+		targetSize, err := provider.NodeGroups(context.TODO())[0].TargetSize()
 		assert.NoError(t, err)
 		assert.Equal(t, 3, targetSize)
 
@@ -1576,8 +1576,8 @@ func TestScaleSetNodes(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, group, "Group should not be nil")
 		assert.Equal(t, group.Id(), testASG)
-		assert.Equal(t, group.MinSize(), 1)
-		assert.Equal(t, group.MaxSize(), 5)
+		assert.Equal(t, group.MinSize(context.TODO()), 1)
+		assert.Equal(t, group.MaxSize(context.TODO()), 5)
 
 		ss, ok := group.(*ScaleSet)
 		ss.lastInstanceRefresh = time.Now()

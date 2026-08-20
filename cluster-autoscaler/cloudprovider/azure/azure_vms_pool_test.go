@@ -151,7 +151,7 @@ func TestMinSize(t *testing.T) {
 		minSize: 1,
 	}
 
-	assert.Equal(t, 1, agentPool.MinSize())
+	assert.Equal(t, 1, agentPool.MinSize(context.TODO()))
 }
 
 func TestExist(t *testing.T) {
@@ -193,7 +193,7 @@ func TestMaxSize(t *testing.T) {
 		maxSize: 10,
 	}
 
-	assert.Equal(t, 10, agentPool.MaxSize())
+	assert.Equal(t, 10, agentPool.MaxSize(context.TODO()))
 }
 
 func TestDecreaseTargetSize(t *testing.T) {

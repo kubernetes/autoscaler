@@ -61,13 +61,13 @@ type brightboxNodeGroup struct {
 }
 
 // MaxSize returns maximum size of the node group.
-func (ng *brightboxNodeGroup) MaxSize() int {
+func (ng *brightboxNodeGroup) MaxSize(ctx context.Context) int {
 	klog.V(4).Info("MaxSize")
 	return ng.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (ng *brightboxNodeGroup) MinSize() int {
+func (ng *brightboxNodeGroup) MinSize(ctx context.Context) int {
 	klog.V(4).Info("MinSize")
 	return ng.minSize
 }
@@ -77,7 +77,7 @@ func (ng *brightboxNodeGroup) MinSize() int {
 // the moment but should be equal to Size() once everything stabilizes
 // (new nodes finish startup and registration or removed nodes are deleted
 // completely). Implementation required.
-func (ng *brightboxNodeGroup) TargetSize() (int, error) {
+func (ng *brightboxNodeGroup) TargetSize(ctx context.Context) (int, error) {
 	klog.V(4).Info("TargetSize")
 	group, err := ng.GetServerGroup(ng.Id())
 	if err != nil {
@@ -91,24 +91,24 @@ func (ng *brightboxNodeGroup) CurrentSize() (int, error) {
 	klog.V(4).Info("CurrentSize")
 	// The implementation is currently synchronous, so
 	// CurrentSize and TargetSize will be identical at all times
-	return ng.TargetSize()
+	return ng.TargetSize(context.TODO())
 }
 
 // IncreaseSize increases the size of the node group. To delete a node
 // you need to explicitly name it and use DeleteNode. This function should
 // wait until node group size is updated. Implementation required.
-func (ng *brightboxNodeGroup) IncreaseSize(delta int) error {
+func (ng *brightboxNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	klog.V(4).Infof("IncreaseSize: %v", delta)
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
-	size, err := ng.TargetSize()
+	size, err := ng.TargetSize(context.TODO())
 	if err != nil {
 		return err
 	}
 	desiredSize := size + delta
-	if desiredSize > ng.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", desiredSize, ng.MaxSize())
+	if desiredSize > ng.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", desiredSize, ng.MaxSize(context.TODO()))
 	}
 	err = ng.createServers(delta)
 	if err != nil {
@@ -118,14 +118,14 @@ func (ng *brightboxNodeGroup) IncreaseSize(delta int) error {
 		checkInterval,
 		checkTimeout,
 		func() (bool, error) {
-			size, err := ng.TargetSize()
+			size, err := ng.TargetSize(context.TODO())
 			return err == nil && size >= desiredSize, err
 		},
 	)
 }
 
 // AtomicIncreaseSize is not implemented.
-func (ng *brightboxNodeGroup) AtomicIncreaseSize(delta int) error {
+func (ng *brightboxNodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -133,7 +133,7 @@ func (ng *brightboxNodeGroup) AtomicIncreaseSize(delta int) error {
 // either on failure or if the given node doesn't belong to this
 // node group. This function should wait until node group size is
 // updated. Implementation required.
-func (ng *brightboxNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *brightboxNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	klog.V(4).Info("DeleteNodes")
 	klog.V(4).Infof("Nodes: %+v", nodes)
 	for _, node := range nodes {
@@ -141,7 +141,7 @@ func (ng *brightboxNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		if err != nil {
 			return err
 		}
-		if size <= ng.MinSize() {
+		if size <= ng.MinSize(context.TODO()) {
 			return fmt.Errorf("min size reached, no further nodes will be deleted")
 		}
 		serverID := k8ssdk.MapProviderIDToServerID(node.Spec.ProviderID)
@@ -154,7 +154,7 @@ func (ng *brightboxNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (ng *brightboxNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (ng *brightboxNodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -165,12 +165,12 @@ func (ng *brightboxNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // It is assumed that cloud provider will not delete the existing nodes
 // when there is an option to just decrease the target. Implementation
 // required.
-func (ng *brightboxNodeGroup) DecreaseTargetSize(delta int) error {
+func (ng *brightboxNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	klog.V(4).Infof("DecreaseTargetSize: %v", delta)
 	if delta >= 0 {
 		return fmt.Errorf("decrease size must be negative")
 	}
-	size, err := ng.TargetSize()
+	size, err := ng.TargetSize(context.TODO())
 	if err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func (ng *brightboxNodeGroup) Id() string {
 
 // Debug returns a string containing all information regarding this
 // node group.
-func (ng *brightboxNodeGroup) Debug() string {
+func (ng *brightboxNodeGroup) Debug(ctx context.Context) string {
 	klog.V(4).Info("Debug")
 	return fmt.Sprintf("brightboxNodeGroup %+v", *ng)
 }
@@ -202,7 +202,7 @@ func (ng *brightboxNodeGroup) Debug() string {
 // Nodes returns a list of all nodes that belong to this node group.
 // It is required that Instance objects returned by this method have Id
 // field set.  Other fields are optional.
-func (ng *brightboxNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *brightboxNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	klog.V(4).Info("Nodes")
 	group, err := ng.GetServerGroup(ng.Id())
 	if err != nil {
@@ -239,7 +239,7 @@ func (ng *brightboxNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // Exist checks if the node group really exists on the cloud provider
 // side. Allows to tell the theoretical node group from the real
 // one. Implementation required.
-func (ng *brightboxNodeGroup) Exist() bool {
+func (ng *brightboxNodeGroup) Exist(ctx context.Context) bool {
 	klog.V(4).Info("Exist")
 	_, err := ng.GetServerGroup(ng.Id())
 	return err == nil
@@ -251,7 +251,7 @@ func (ng *brightboxNodeGroup) Exist() bool {
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (ng *brightboxNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ng *brightboxNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	klog.V(4).Info("TemplateNodeInfo")
 	klog.V(4).Infof("Looking for server type %q", ng.serverOptions.ServerType)
 	serverType, err := ng.findServerType()
@@ -298,7 +298,7 @@ func resourceList(r *schedulerframework.Resource) v1.ResourceList {
 
 // Create creates the node group on the cloud provider
 // side. Implementation optional.
-func (ng *brightboxNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ng *brightboxNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	klog.V(4).Info("Create")
 	return nil, cloudprovider.ErrNotImplemented
 }
@@ -306,21 +306,21 @@ func (ng *brightboxNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once
 // their size drops to 0.  Implementation optional.
-func (ng *brightboxNodeGroup) Delete() error {
+func (ng *brightboxNodeGroup) Delete(ctx context.Context) error {
 	klog.V(4).Info("Delete")
 	return cloudprovider.ErrNotImplemented
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (ng *brightboxNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *brightboxNodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned. An
 // autoprovisioned group was created by CA and can be deleted when scaled
 // to 0.
-func (ng *brightboxNodeGroup) Autoprovisioned() bool {
+func (ng *brightboxNodeGroup) Autoprovisioned(ctx context.Context) bool {
 	klog.V(4).Info("Autoprovisioned")
 	return false
 }
@@ -386,7 +386,7 @@ func makeNodeGroupFromAPIDetails(
 		ServerGroups: mergeServerGroups(mapData),
 	}
 	ng.serverOptions = options
-	klog.V(4).Info(ng.Debug())
+	klog.V(4).Info(ng.Debug(context.TODO()))
 	return &ng, nil
 }
 

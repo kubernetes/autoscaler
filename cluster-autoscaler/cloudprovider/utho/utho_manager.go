@@ -99,8 +99,7 @@ func newManager(configReader io.Reader) (*Manager, error) {
 }
 
 // Refresh updates the state of the Utho Manager
-func (m *Manager) Refresh() error {
-	ctx := context.Background()
+func (m *Manager) Refresh(ctx context.Context) error {
 
 	nodePools, err := m.client.ListNodePools(ctx, m.clusterID)
 	if err != nil {

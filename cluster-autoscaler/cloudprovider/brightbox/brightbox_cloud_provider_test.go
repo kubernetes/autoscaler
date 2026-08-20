@@ -17,6 +17,7 @@ limitations under the License.
 package brightbox
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"os"
@@ -68,51 +69,51 @@ func TestMain(m *testing.M) {
 }
 
 func TestName(t *testing.T) {
-	assert.Equal(t, makeFakeCloudProvider(nil).Name(), ProviderName)
+	assert.Equal(t, makeFakeCloudProvider(context.TODO(), nil).Name(), ProviderName)
 }
 
 func TestGPULabel(t *testing.T) {
-	assert.Equal(t, makeFakeCloudProvider(nil).GPULabel(), GPULabel)
+	assert.Equal(t, makeFakeCloudProvider(context.TODO(), nil).GPULabel(), GPULabel)
 }
 
 func TestGetAvailableGPUTypes(t *testing.T) {
-	assert.Equal(t, makeFakeCloudProvider(nil).GetAvailableGPUTypes(), availableGPUTypes)
+	assert.Equal(t, makeFakeCloudProvider(context.TODO(), nil).GetAvailableGPUTypes(), availableGPUTypes)
 }
 
 func TestPricing(t *testing.T) {
-	obj, err := makeFakeCloudProvider(nil).Pricing()
+	obj, err := makeFakeCloudProvider(context.TODO(), nil).Pricing()
 	assert.Equal(t, err, cloudprovider.ErrNotImplemented)
 	assert.Nil(t, obj)
 }
 
 func TestGetAvailableMachineTypes(t *testing.T) {
-	obj, err := makeFakeCloudProvider(nil).GetAvailableMachineTypes()
+	obj, err := makeFakeCloudProvider(context.TODO(), nil).GetAvailableMachineTypes()
 	assert.Equal(t, err, cloudprovider.ErrNotImplemented)
 	assert.Nil(t, obj)
 }
 
 func TestNewNodeGroup(t *testing.T) {
-	obj, err := makeFakeCloudProvider(nil).NewNodeGroup("", nil, nil, nil, nil)
+	obj, err := makeFakeCloudProvider(context.TODO(), nil).NewNodeGroup("", nil, nil, nil, nil)
 	assert.Equal(t, err, cloudprovider.ErrNotImplemented)
 	assert.Nil(t, obj)
 }
 
 func TestCleanUp(t *testing.T) {
-	assert.Nil(t, makeFakeCloudProvider(nil).Cleanup())
+	assert.Nil(t, makeFakeCloudProvider(context.TODO(), nil).Cleanup())
 }
 
 func TestResourceLimiter(t *testing.T) {
 	client := makeFakeCloudProvider(nil)
-	obj, err := client.GetResourceLimiter()
+	obj, err := client.GetResourceLimiter(context.TODO())
 	assert.Equal(t, obj, client.resourceLimiter)
 	assert.NoError(t, err)
 }
 
 func TestNodeGroups(t *testing.T) {
 	client := makeFakeCloudProvider(nil)
-	assert.Zero(t, client.NodeGroups())
+	assert.Zero(t, client.NodeGroups(context.TODO()))
 	client.nodeGroups = make([]cloudprovider.NodeGroup, 0)
-	assert.NotZero(t, client.NodeGroups())
+	assert.NotZero(t, client.NodeGroups(context.TODO()))
 	assert.Empty(t, client.NodeGroups())
 	nodeGroup := &brightboxNodeGroup{}
 	client.nodeGroups = append(client.nodeGroups, nodeGroup)

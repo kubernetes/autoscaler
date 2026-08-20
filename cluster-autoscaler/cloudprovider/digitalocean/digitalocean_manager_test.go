@@ -133,7 +133,7 @@ func TestDigitalOceanManager_Refresh(t *testing.T) {
 		).Once()
 
 		manager.client = client
-		err = manager.Refresh()
+		err = manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 		assert.Equal(t, len(manager.nodeGroups), 4, "number of nodes do not match")
 	})
@@ -189,7 +189,7 @@ func TestDigitalOceanManager_RefreshWithNodeSpec(t *testing.T) {
 		).Once()
 
 		manager.client = client
-		err = manager.Refresh()
+		err = manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 		assert.Equal(t, len(manager.nodeGroups), 2, "number of node groups do not match")
 

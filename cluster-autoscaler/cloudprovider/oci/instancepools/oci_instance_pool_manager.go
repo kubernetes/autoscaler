@@ -398,9 +398,9 @@ func (m *InstancePoolManagerImpl) forceRefresh() error {
 
 		for instancePoolId, instancePool := range m.staticInstancePools {
 			if _, ok := staticInstancePoolsCopy[instancePoolId]; !ok {
-				klog.Infof("New instance pool discovered. [id: %s, minSize: %d, maxSize: %d]", instancePool.Id(), instancePool.MinSize(), instancePool.MaxSize())
-			} else if staticInstancePoolsCopy[instancePoolId].MinSize() != instancePool.MinSize() || staticInstancePoolsCopy[instancePoolId].MaxSize() != instancePool.MaxSize() {
-				klog.Infof("Instance pool min/max sizes are updated. [id: %s, minSize: %d, maxSize: %d]", instancePool.Id(), instancePool.MinSize(), instancePool.MaxSize())
+				klog.Infof("New instance pool discovered. [id: %s, minSize: %d, maxSize: %d]", instancePool.Id(), instancePool.MinSize(context.TODO()), instancePool.MaxSize(context.TODO()))
+			} else if staticInstancePoolsCopy[instancePoolId].MinSize(context.TODO()) != instancePool.MinSize(context.TODO()) || staticInstancePoolsCopy[instancePoolId].MaxSize(context.TODO()) != instancePool.MaxSize(context.TODO()) {
+				klog.Infof("Instance pool min/max sizes are updated. [id: %s, minSize: %d, maxSize: %d]", instancePool.Id(), instancePool.MinSize(context.TODO()), instancePool.MaxSize(context.TODO()))
 			}
 		}
 

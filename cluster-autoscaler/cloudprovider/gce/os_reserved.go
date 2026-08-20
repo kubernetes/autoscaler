@@ -16,6 +16,8 @@ limitations under the License.
 
 package gce
 
+import "context"
+
 // MigOsInfo store os parameters.
 type MigOsInfo interface {
 	// Os return operating system.
@@ -30,9 +32,9 @@ type MigOsInfo interface {
 type OsReservedCalculator interface {
 	// CalculateKernelReserved computes how much memory OS kernel will reserve.
 	// NodeVersion parameter is optional. If empty string is passed a result calculated using default node version will be returned.
-	CalculateKernelReserved(m MigOsInfo, physicalMemory int64) int64
+	CalculateKernelReserved(ctx context.Context, m MigOsInfo, physicalMemory int64) int64
 
 	// CalculateOSReservedEphemeralStorage estimates how much ephemeral storage OS will reserve and eviction threshold.
 	// NodeVersion parameter is optional. If empty string is passed a result calculated using default node version will be returned.
-	CalculateOSReservedEphemeralStorage(m MigOsInfo, diskSize int64) int64
+	CalculateOSReservedEphemeralStorage(ctx context.Context, m MigOsInfo, diskSize int64) int64
 }

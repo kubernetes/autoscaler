@@ -659,7 +659,7 @@ func (m *asgCache) buildInstanceRefFromAWS(instance autoscalingtypes.Instance) A
 }
 
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
-func (m *asgCache) Cleanup() {
+func (m *asgCache) Cleanup(ctx context.Context) {
 	close(m.interrupt)
 }
 

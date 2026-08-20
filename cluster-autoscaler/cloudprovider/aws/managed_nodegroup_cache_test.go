@@ -79,7 +79,7 @@ func TestGetManagedNodegroupWithError(t *testing.T) {
 	clusterName := "testCluster"
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -125,7 +125,7 @@ func TestGetManagedNodegroupNoTaintsOrLabels(t *testing.T) {
 	}
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -201,7 +201,7 @@ func TestGetManagedNodegroupWithTaintsAndLabels(t *testing.T) {
 	}
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -241,7 +241,7 @@ func TestGetManagedNodegroupInfoObjectWithError(t *testing.T) {
 	clusterName := "testCluster"
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -290,7 +290,7 @@ func TestGetManagedNodegroupInfoObjectWithCachedNodegroup(t *testing.T) {
 	assert.Equal(t, len(mngInfoObject.labels), 1)
 	assert.Equal(t, mngInfoObject.labels[labelKey], labelValue)
 	k.AssertNotCalled(t, "DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -332,7 +332,7 @@ func TestGetManagedNodegroupInfoObjectNoCachedNodegroup(t *testing.T) {
 	}
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -355,7 +355,7 @@ func TestGetManagedNodegroupInfoObjectNoCachedNodegroup(t *testing.T) {
 	assert.Equal(t, mngInfoObject.tags[tagKey1], tagValue1)
 	assert.Equal(t, mngInfoObject.tags[tagKey2], tagValue2)
 	k.AssertCalled(t, "DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -395,7 +395,7 @@ func TestGetManagedNodegroupLabelsWithCachedNodegroup(t *testing.T) {
 	assert.Equal(t, len(labelsMap), 1)
 	assert.Equal(t, labelsMap[labelKey], labelValue)
 	k.AssertNotCalled(t, "DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -432,7 +432,7 @@ func TestGetManagedNodegroupLabelsNoCachedNodegroup(t *testing.T) {
 	}
 
 	k.On("DescribeNodegroup",
-		mock.Anything, &eks.DescribeNodegroupInput{
+		context.TODO(), &eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
 		},
@@ -451,7 +451,7 @@ func TestGetManagedNodegroupLabelsNoCachedNodegroup(t *testing.T) {
 	assert.Equal(t, labelsMap["k8sVersion"], k8sVersion)
 	assert.Equal(t, labelsMap["eks.amazonaws.com/nodegroup"], nodegroupName)
 	k.AssertCalled(t, "DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -488,7 +488,7 @@ func TestGetManagedNodegroupLabelsWithCachedNodegroupThatExpires(t *testing.T) {
 	}
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -534,7 +534,7 @@ func TestGetManagedNodegroupLabelsWithCachedNodegroupThatExpires(t *testing.T) {
 	assert.Equal(t, len(labelsMap), 1)
 	assert.Equal(t, labelsMap[labelKey1], labelValue1)
 	k.AssertNotCalled(t, "DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -556,7 +556,7 @@ func TestGetManagedNodegroupLabelsWithCachedNodegroupThatExpires(t *testing.T) {
 	assert.Equal(t, newLabelsMap["k8sVersion"], k8sVersion)
 	assert.Equal(t, newLabelsMap["eks.amazonaws.com/nodegroup"], nodegroupName)
 	k.AssertCalled(t, "DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -595,7 +595,7 @@ func TestGetManagedNodegroupTaintsWithCachedNodegroup(t *testing.T) {
 	assert.Equal(t, taintsList[0].Key, taintKey)
 	assert.Equal(t, taintsList[0].Value, taintValue)
 	k.AssertNotCalled(t, "DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -646,7 +646,7 @@ func TestGetManagedNodegroupTaintsNoCachedNodegroup(t *testing.T) {
 	}
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -665,7 +665,7 @@ func TestGetManagedNodegroupTaintsNoCachedNodegroup(t *testing.T) {
 	assert.Equal(t, taintsList[1].Key, taintKey2)
 	assert.Equal(t, taintsList[1].Value, taintValue2)
 	k.AssertCalled(t, "DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -704,7 +704,7 @@ func TestGetManagedNodegroupTagsWithCachedNodegroup(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, len(tagsMap), 1)
 	assert.Equal(t, tagsMap[tagKey], tagValue)
-	k.AssertNotCalled(t, "DescribeNodegroup", mock.Anything,
+	k.AssertNotCalled(t, "DescribeNodegroup", context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -759,7 +759,7 @@ func TestGetManagedNodegroupTagsNoCachedNodegroup(t *testing.T) {
 	}
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -774,7 +774,7 @@ func TestGetManagedNodegroupTagsNoCachedNodegroup(t *testing.T) {
 	assert.Equal(t, tagsMap[tagKey1], tagValue1)
 	assert.Equal(t, tagsMap[tagKey2], tagValue2)
 	k.AssertCalled(t, "DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,

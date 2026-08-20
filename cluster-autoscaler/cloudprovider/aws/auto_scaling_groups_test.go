@@ -129,7 +129,7 @@ func TestCreatePlaceholders(t *testing.T) {
 			a := &autoScalingMock{}
 			if shouldCallDescribeScalingActivities {
 				a.On("DescribeScalingActivities",
-					mock.Anything,
+					context.TODO(),
 					&autoscaling.DescribeScalingActivitiesInput{
 						AutoScalingGroupName: asgName,
 					},

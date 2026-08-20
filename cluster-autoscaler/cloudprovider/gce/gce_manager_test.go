@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -491,7 +492,7 @@ func TestDeleteInstances(t *testing.T) {
 		},
 	}
 
-	err := g.DeleteInstances(instances)
+	err := g.DeleteInstances(context.TODO(), instances)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 
@@ -512,7 +513,7 @@ func TestDeleteInstances(t *testing.T) {
 		},
 	}
 
-	err = g.DeleteInstances(instances)
+	err = g.DeleteInstances(context.TODO(), instances)
 	assert.Error(t, err)
 	assert.Equal(t, "cannot delete instances which don't belong to the same MIG.", err.Error())
 	mock.AssertExpectationsForObjects(t, server)
@@ -569,17 +570,17 @@ func TestGetAndSetMigSize(t *testing.T) {
 		)).Once()
 
 	// getting size for defaultPoolMig should trigger listing all the InstanceGroupManagers
-	defaultPoolMigSize, err := g.GetMigSize(defaultPoolMig)
+	defaultPoolMigSize, err := g.GetMigSize(context.TODO(), defaultPoolMig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(7), defaultPoolMigSize)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// extra queries for defaultPoolMig and extraPoolMig should not result in any extra API calls
-	defaultPoolMigSize, err = g.GetMigSize(defaultPoolMig)
+	defaultPoolMigSize, err = g.GetMigSize(context.TODO(), defaultPoolMig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(7), defaultPoolMigSize)
 
-	extraPoolMigSize, err := g.GetMigSize(extraPoolMig)
+	extraPoolMigSize, err := g.GetMigSize(context.TODO(), extraPoolMig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(8), extraPoolMigSize)
 	mock.AssertExpectationsForObjects(t, server)
@@ -587,12 +588,12 @@ func TestGetAndSetMigSize(t *testing.T) {
 	// set target size for extraPoolMig; will require resize API call and API call for polling for resize operation
 	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%s/resize", extraPoolMigName)).Return(setMigSizeResponse).Once()
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505739408819-5597646964339-eb839c88-28805931/wait").Return(setMigSizeOperationResponse).Once()
-	err = g.SetMigSize(extraPoolMig, 4)
+	err = g.SetMigSize(context.TODO(), extraPoolMig, 4)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// query for size of resized extraPoolMig; no extra API calls
-	extraPoolMigSize, err = g.GetMigSize(extraPoolMig)
+	extraPoolMigSize, err = g.GetMigSize(context.TODO(), extraPoolMig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(4), extraPoolMigSize)
 	mock.AssertExpectationsForObjects(t, server)
@@ -603,20 +604,20 @@ func TestGetAndSetMigSize(t *testing.T) {
 	// query for size of resized extraPool2Mig; execting API call refreshing target size for this MIG
 	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-c/instanceGroupManagers/%s", extraPool2MigName)).Return(buildInstanceGroupManagerResponse(zoneC, extraPool2MigName, 9)).Once()
 
-	extraPool2MigSize, err := g.GetMigSize(extraPool2Mig)
+	extraPool2MigSize, err := g.GetMigSize(context.TODO(), extraPool2Mig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(9), extraPool2MigSize)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// another query for size of extraPool2Mig will not result in any API calls
-	extraPool2MigSize, err = g.GetMigSize(extraPool2Mig)
+	extraPool2MigSize, err = g.GetMigSize(context.TODO(), extraPool2Mig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(9), extraPool2MigSize)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// let's invalidate target size cache
 	// TODO we should probably call g.Refresh here but that imples more API calls. Leaving just partial cache invalidation for now
-	g.cache.InvalidateAllMigTargetSizes()
+	g.cache.InvalidateAllMigTargetSizes(context.TODO())
 
 	// now if w query size of any mig whole cache should be refreshed by listing InstanceGroupManagers; we expect two calls
 	// for zoneB and zoneC
@@ -630,7 +631,7 @@ func TestGetAndSetMigSize(t *testing.T) {
 			buildListInstanceGroupManagersResponsePart(extraPool2MigName, zoneC, 9),
 		)).Once()
 
-	extraPool2MigSize, err = g.GetMigSize(extraPool2Mig)
+	extraPool2MigSize, err = g.GetMigSize(context.TODO(), extraPool2Mig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(9), extraPool2MigSize)
 	mock.AssertExpectationsForObjects(t, server)
@@ -648,13 +649,13 @@ func TestGetMigSizeListCallFails(t *testing.T) {
 	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%s", defaultPoolMigName)).Return(buildInstanceGroupManagerResponse(zoneB, defaultPoolMigName, 7)).Once()
 
 	// getting size for defaultPoolMig should trigger listing all the InstanceGroupManagers
-	defaultPoolMigSize, err := g.GetMigSize(defaultPoolMig)
+	defaultPoolMigSize, err := g.GetMigSize(context.TODO(), defaultPoolMig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(7), defaultPoolMigSize)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// extra queries for defaultPoolMig and extraPoolMig should not result in any extra API calls
-	defaultPoolMigSize, err = g.GetMigSize(defaultPoolMig)
+	defaultPoolMigSize, err = g.GetMigSize(context.TODO(), defaultPoolMig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(7), defaultPoolMigSize)
 
@@ -662,7 +663,7 @@ func TestGetMigSizeListCallFails(t *testing.T) {
 	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%s", extraPoolMigName)).Return(buildInstanceGroupManagerResponse(zoneB, extraPoolMigName, 8)).Once()
 
 	// getting size for extraPoolMig should trigger get call for this MIG
-	extraPoolMigSize, err := g.GetMigSize(extraPoolMig)
+	extraPoolMigSize, err := g.GetMigSize(context.TODO(), extraPoolMig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(8), extraPoolMigSize)
 	mock.AssertExpectationsForObjects(t, server)
@@ -675,8 +676,8 @@ func TestGetMigForInstance(t *testing.T) {
 
 	setupTestDefaultPool(g, false)
 	g.cache.InvalidateAllMigBasenames()
-	g.cache.InvalidateAllInstancesToMig()
-	g.cache.InvalidateAllMigInstances()
+	g.cache.InvalidateAllInstancesToMig(context.TODO())
+	g.cache.InvalidateAllMigInstances(context.TODO())
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers").Return(
 		buildListInstanceGroupManagersResponse(
@@ -690,7 +691,7 @@ func TestGetMigForInstance(t *testing.T) {
 		Name:    "gke-cluster-1-default-pool-f7607aac-f1hm",
 	}
 
-	mig, err := g.GetMigForInstance(gceRef1)
+	mig, err := g.GetMigForInstance(context.TODO(), gceRef1)
 	assert.NoError(t, err)
 	assert.NotNil(t, mig)
 	assert.Equal(t, "gke-cluster-1-default-pool", mig.GceRef().Name)
@@ -700,7 +701,7 @@ func TestGetMigForInstance(t *testing.T) {
 		Zone:    zoneB,
 		Name:    "gke-cluster-1-default-pool-f7607aac-0000", // instance from unknown MIG
 	}
-	mig, err = g.GetMigForInstance(gceRef2)
+	mig, err = g.GetMigForInstance(context.TODO(), gceRef2)
 	assert.NoError(t, err)
 	assert.Nil(t, mig)
 	_, found := g.cache.instancesFromUnknownMig[gceRef2]
@@ -727,7 +728,7 @@ func TestGetMigNodesBasic(t *testing.T) {
 		maxSize:    1000,
 	}
 
-	nodes, err := g.GetMigNodes(mig)
+	nodes, err := g.GetMigNodes(context.TODO(), mig)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(nodes))
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g", nodes[0].Id)
@@ -1068,7 +1069,7 @@ func TestGetMigNodesComplex(t *testing.T) {
 		minSize:    0,
 		maxSize:    1000,
 	}
-	nodes, err := g.GetMigNodes(mig)
+	nodes, err := g.GetMigNodes(context.TODO(), mig)
 
 	assert.NoError(t, err)
 	assert.Equal(t, len(testCases), len(nodes))
@@ -1159,7 +1160,7 @@ func TestFetchAutoMigsZonal(t *testing.T) {
 		{Re: regexp.MustCompile("UNUSED"), MinSize: min, MaxSize: max},
 	}
 
-	assert.NoError(t, g.fetchAutoMigs())
+	assert.NoError(t, g.fetchAutoMigs(context.TODO()))
 
 	migs := g.GetMigs()
 	assert.Equal(t, 2, len(migs))
@@ -1199,9 +1200,9 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 		minSize:    1,
 		maxSize:    10,
 	}
-	assert.True(t, g.registerMig(unregister))
+	assert.True(t, g.registerMig(context.TODO(), unregister))
 
-	assert.NoError(t, g.fetchAutoMigs())
+	assert.NoError(t, g.fetchAutoMigs(context.TODO()))
 
 	migs := g.GetMigs()
 	assert.Equal(t, 1, len(migs))
@@ -1232,7 +1233,7 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 		{Re: regexp.MustCompile("UNUSED"), MinSize: min, MaxSize: max},
 	}
 
-	assert.NoError(t, g.fetchAutoMigs())
+	assert.NoError(t, g.fetchAutoMigs(context.TODO()))
 
 	migs := g.GetMigs()
 	assert.Equal(t, 2, len(migs))
@@ -1332,7 +1333,7 @@ func TestGetMigTemplateNode(t *testing.T) {
 		maxSize:    1000,
 	}
 
-	node, err := g.GetMigTemplateNode(mig)
+	node, err := g.GetMigTemplateNode(context.TODO(), mig)
 	assert.NoError(t, err)
 	assert.NotNil(t, node)
 	mock.AssertExpectationsForObjects(t, server)
@@ -1346,8 +1347,8 @@ func validateMigExists(t *testing.T, migs []Mig, zone string, name string, minSi
 	}
 	for _, mig := range migs {
 		if mig.GceRef() == ref {
-			assert.Equal(t, minSize, mig.MinSize())
-			assert.Equal(t, maxSize, mig.MaxSize())
+			assert.Equal(t, minSize, mig.MinSize(context.TODO()))
+			assert.Equal(t, maxSize, mig.MaxSize(context.TODO()))
 			return
 		}
 	}
@@ -1503,7 +1504,7 @@ func TestAppendInstances(t *testing.T) {
 	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
 	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%v/createInstances", defaultPoolMig.gceRef.Name)).Return(createInstancesResponse).Once()
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32/wait").Return(createInstancesOperationResponse).Once()
-	err := g.CreateInstances(defaultPoolMig, 2)
+	err := g.CreateInstances(context.TODO(), defaultPoolMig, 2)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -1542,7 +1543,7 @@ func TestCreateInstancesWithMultipleRequests(t *testing.T) {
 		t.Run(fmt.Sprintf("delta=%v", tt.delta), func(t *testing.T) {
 			server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%v/createInstances", mig.gceRef.Name)).Return(createInstancesResponse).Times(tt.wantRequests)
 			server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32/wait").Return(createInstancesOperationResponse).Times(tt.wantRequests)
-			err := g.CreateInstances(mig, int64(tt.delta))
+			err := g.CreateInstances(context.TODO(), mig, int64(tt.delta))
 			assert.NoError(t, err)
 		})
 	}
@@ -1612,7 +1613,7 @@ func TestGetMigOptions(t *testing.T) {
 			mgr := newTestGceManager(t, "", false)
 			mig := setupTestDefaultPool(mgr, true)
 			mgr.cache.SetAutoscalingOptions(mig.GceRef(), c.opts)
-			actual := mgr.GetMigOptions(mig, *defaultOptions)
+			actual := mgr.GetMigOptions(context.TODO(), mig, *defaultOptions)
 			assert.Equal(t, c.expected, actual)
 		})
 	}

@@ -76,22 +76,22 @@ func (ng *nodeGroup) Id() string {
 }
 
 // MinSize returns minimum size of the node group.
-func (ng *nodeGroup) MinSize() int {
+func (ng *nodeGroup) MinSize(ctx context.Context) int {
 	return ng.minSize
 }
 
 // MaxSize returns maximum size of the node group.
-func (ng *nodeGroup) MaxSize() int {
+func (ng *nodeGroup) MaxSize(ctx context.Context) int {
 	return ng.maxSize
 }
 
 // Debug returns a debug string for the node group.
-func (ng *nodeGroup) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", ng.Id(), ng.MinSize(), ng.MaxSize())
+func (ng *nodeGroup) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", ng.Id(), ng.MinSize(context.TODO()), ng.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (ng *nodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *nodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	nodes, err := ng.nodes()
 	if err != nil {
 		return nil, err
@@ -106,10 +106,10 @@ func (ng *nodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // DeleteNodes deletes the specified nodes from the node group.
-func (ng *nodeGroup) DeleteNodes(toDelete []*corev1.Node) error {
-	if ng.replicas-len(toDelete) < ng.MinSize() {
+func (ng *nodeGroup) DeleteNodes(ctx context.Context, toDelete []*corev1.Node) error {
+	if ng.replicas-len(toDelete) < ng.MinSize(context.TODO()) {
 		return fmt.Errorf("node group size would be below minimum size - desired: %d, min: %d",
-			ng.replicas-len(toDelete), ng.MinSize())
+			ng.replicas-len(toDelete), ng.MinSize(context.TODO()))
 	}
 
 	for _, del := range toDelete {
@@ -135,7 +135,7 @@ func (ng *nodeGroup) DeleteNodes(toDelete []*corev1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (ng *nodeGroup) ForceDeleteNodes(nodes []*corev1.Node) error {
+func (ng *nodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*corev1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -155,39 +155,39 @@ func (ng *nodeGroup) findNodeByProviderID(providerID string) (*node, error) {
 }
 
 // IncreaseSize increases NodeGroup size.
-func (ng *nodeGroup) IncreaseSize(delta int) error {
+func (ng *nodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
 
 	newSize := ng.replicas + delta
-	if newSize > ng.MaxSize() {
-		return fmt.Errorf("size increase too large, desired: %d max: %d", newSize, ng.MaxSize())
+	if newSize > ng.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase too large, desired: %d max: %d", newSize, ng.MaxSize(context.TODO()))
 	}
 
 	return ng.setSize(newSize)
 }
 
 // AtomicIncreaseSize is not implemented.
-func (ng *nodeGroup) AtomicIncreaseSize(delta int) error {
+func (ng *nodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (ng *nodeGroup) TargetSize() (int, error) {
+func (ng *nodeGroup) TargetSize(ctx context.Context) (int, error) {
 	return ng.replicas, nil
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
-func (ng *nodeGroup) DecreaseTargetSize(delta int) error {
+func (ng *nodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
 
-	nodes, err := ng.Nodes()
+	nodes, err := ng.Nodes(context.TODO())
 	if err != nil {
 		return fmt.Errorf("failed to get node group nodes: %w", err)
 	}
@@ -201,7 +201,7 @@ func (ng *nodeGroup) DecreaseTargetSize(delta int) error {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *nodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ng *nodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	node := &corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   fmt.Sprintf("%s-%s-%d", ng.provider.config.ClusterName, ng.Id(), rand.Int63()),
@@ -226,28 +226,28 @@ func (ng *nodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 }
 
 // Exist checks if the node group really exists on the cloud provider side.
-func (ng *nodeGroup) Exist() bool {
+func (ng *nodeGroup) Exist(ctx context.Context) bool {
 	return ng.Id() != ""
 }
 
 // Create creates the node group on the cloud provider side.
-func (ng *nodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ng *nodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
-func (ng *nodeGroup) Delete() error {
+func (ng *nodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (ng *nodeGroup) Autoprovisioned() bool {
+func (ng *nodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (ng *nodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *nodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

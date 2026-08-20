@@ -17,6 +17,7 @@ limitations under the License.
 package civo
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -120,7 +121,7 @@ func newManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDis
 
 // Refresh refreshes the cache holding the nodegroups. This is called by the CA
 // based on the `--scan-interval`. By default it's 10 seconds.
-func (m *Manager) Refresh() error {
+func (m *Manager) Refresh(ctx context.Context) error {
 	var (
 		minSize           int
 		maxSize           int

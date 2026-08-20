@@ -17,6 +17,7 @@ limitations under the License.
 package kamatera
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -77,7 +78,7 @@ cluster-name=aaabbb
 		"ng2": {id: "ng2"},
 	}
 	kcp := &kamateraCloudProvider{manager: m}
-	ng := kcp.NodeGroups()
+	ng := kcp.NodeGroups(context.TODO())
 	assert.Equal(t, 2, len(ng))
 	assert.Contains(t, ng, m.nodeGroups["ng1"])
 	assert.Contains(t, ng, m.nodeGroups["ng2"])
@@ -130,7 +131,7 @@ cluster-name=aaabbb
 			ProviderID: formatKamateraProviderID(defaultKamateraProviderIDPrefix, kamateraServerName1),
 		},
 	}
-	ng, err := kcp.NodeGroupForNode(node)
+	ng, err := kcp.NodeGroupForNode(context.TODO(), node)
 	assert.NoError(t, err)
 	assert.Equal(t, ng1, ng)
 
@@ -140,7 +141,7 @@ cluster-name=aaabbb
 			Name: kamateraServerName4,
 		},
 	}
-	ng, err = kcp.NodeGroupForNode(node)
+	ng, err = kcp.NodeGroupForNode(context.TODO(), node)
 	assert.NoError(t, err)
 	assert.Equal(t, ng2, ng)
 
@@ -153,7 +154,7 @@ cluster-name=aaabbb
 			ProviderID: "kamatera://---",
 		},
 	}
-	ng, err = kcp.NodeGroupForNode(node)
+	ng, err = kcp.NodeGroupForNode(context.TODO(), node)
 	assert.NoError(t, err)
 	assert.Nil(t, ng)
 }
@@ -171,17 +172,17 @@ cluster-name=aaabbb
 		manager:         m,
 		resourceLimiter: resourceLimiter,
 	}
-	assert.Equal(t, ProviderName, kcp.Name())
-	_, err := kcp.GetAvailableMachineTypes()
+	assert.Equal(t, ProviderName, kcp.Name(context.TODO()))
+	_, err := kcp.GetAvailableMachineTypes(context.TODO())
 	assert.Error(t, err)
-	_, err = kcp.NewNodeGroup("", nil, nil, nil, nil)
+	_, err = kcp.NewNodeGroup(context.TODO(), "", nil, nil, nil, nil)
 	assert.Error(t, err)
-	rl, err := kcp.GetResourceLimiter()
+	rl, err := kcp.GetResourceLimiter(context.TODO())
 	assert.Equal(t, resourceLimiter, rl)
-	assert.Equal(t, "", kcp.GPULabel())
-	assert.Nil(t, kcp.GetAvailableGPUTypes())
-	assert.Nil(t, kcp.Cleanup())
-	_, err2 := kcp.Pricing()
+	assert.Equal(t, "", kcp.GPULabel(context.TODO()))
+	assert.Nil(t, kcp.GetAvailableGPUTypes(context.TODO()))
+	assert.Nil(t, kcp.Cleanup(context.TODO()))
+	_, err2 := kcp.Pricing(context.TODO())
 	assert.Error(t, err2)
 }
 
@@ -200,7 +201,7 @@ cluster-name=aaabbb
 			ProviderID: mockKamateraServerName(),
 		},
 	}
-	hasInstance, err := kcp.HasInstance(node)
+	hasInstance, err := kcp.HasInstance(context.TODO(), node)
 	assert.True(t, hasInstance)
 	assert.Error(t, err)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
@@ -221,7 +222,7 @@ cluster-name=aaabbb
 			ProviderID: mockKamateraServerName(),
 		},
 	}
-	gpuConfig := kcp.GetNodeGpuConfig(node)
+	gpuConfig := kcp.GetNodeGpuConfig(context.TODO(), node)
 	assert.Nil(t, gpuConfig)
 }
 
@@ -257,7 +258,7 @@ max-size=2
 	serverName1 := "myprefix" + mockKamateraServerName()
 	serverName2 := "myprefix" + mockKamateraServerName()
 	client.On(
-		"ListServers", mock.Anything, m.instances, "myprefix", defaultKamateraProviderIDPrefix,
+		"ListServers", context.TODO(), m.instances, "myprefix", defaultKamateraProviderIDPrefix,
 	).Return(
 		[]Server{
 			{
@@ -283,12 +284,12 @@ max-size=2
 		ObjectMeta: metav1.ObjectMeta{Name: serverName1},
 		Spec:       apiv1.NodeSpec{ProviderID: formatKamateraProviderID(defaultKamateraProviderIDPrefix, serverName1)},
 	}))
-	err = kcp.Refresh()
+	err = kcp.Refresh(context.TODO())
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(m.nodeGroups))
 	assert.Equal(t, 2, len(m.nodeGroups["ng1"].instances))
 	// TargetSize is updated only after NodeGroupForNode is called with a related node
-	ng, err := kcp.NodeGroupForNode(&apiv1.Node{
+	ng, err := kcp.NodeGroupForNode(context.TODO(), &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: serverName1,
 		},
@@ -320,7 +321,7 @@ cluster-name=aaabbb
 	for i := 0; i < numGoroutines; i++ {
 		go func() {
 			defer wg.Done()
-			ng := kcp.NodeGroups()
+			ng := kcp.NodeGroups(context.TODO())
 			assert.Equal(t, 2, len(ng))
 		}()
 	}
@@ -373,7 +374,7 @@ cluster-name=aaabbb
 					ProviderID: kamateraCloudProviderID1,
 				},
 			}
-			ng, err := kcp.NodeGroupForNode(node)
+			ng, err := kcp.NodeGroupForNode(context.TODO(), node)
 			assert.NoError(t, err)
 			assert.Equal(t, ng1, ng)
 		}()
@@ -384,7 +385,7 @@ cluster-name=aaabbb
 					ProviderID: kamateraCloudProviderID2,
 				},
 			}
-			ng, err := kcp.NodeGroupForNode(node)
+			ng, err := kcp.NodeGroupForNode(context.TODO(), node)
 			assert.NoError(t, err)
 			assert.Equal(t, ng2, ng)
 		}()
@@ -414,7 +415,7 @@ cluster-name=aaabbb
 	for i := 0; i < numGoroutines; i++ {
 		go func() {
 			defer wg.Done()
-			_ = kcp.NodeGroups()
+			_ = kcp.NodeGroups(context.TODO())
 		}()
 		go func(idx int) {
 			defer wg.Done()
@@ -464,7 +465,7 @@ cluster-name=aaabbb
 					ProviderID: kamateraServerName1,
 				},
 			}
-			_, _ = kcp.NodeGroupForNode(node)
+			_, _ = kcp.NodeGroupForNode(context.TODO(), node)
 		}()
 		go func(idx int) {
 			defer wg.Done()
@@ -519,7 +520,7 @@ users:
 
 func kcpKClientOnListServers(kclient *kamateraClientMock, kcp *kamateraCloudProvider, servers []Server, err error) *mock.Call {
 	return kclient.On(
-		"ListServers", mock.Anything, kcp.manager.snapshotInstances(), "", kcp.manager.config.providerIDPrefix,
+		"ListServers", context.TODO(), kcp.manager.snapshotInstances(), "", kcp.manager.config.providerIDPrefix,
 	).Return(
 		servers, err,
 	)
@@ -548,10 +549,10 @@ func kcpAssertNodeGroup(
 ) *NodeGroup {
 	ng := kcpGetNodeGroup(kcp, ngID)
 	assert.NotNil(t, ng, "node group %s not found", ngID)
-	targetSize, err := ng.TargetSize()
+	targetSize, err := ng.TargetSize(context.TODO())
 	assert.NoError(t, err, "failed to get target size for node group %s", ngID)
 	assert.Equal(t, expectedTargetSize, targetSize, "target size for node group %s does not match", ngID)
-	nodes, err := ng.Nodes()
+	nodes, err := ng.Nodes(context.TODO())
 	assert.NoError(t, err, "failed to get nodes for node group %s", ngID)
 	assert.Equal(t, expectedNumNodes, len(nodes), "number of nodes in node group %s does not match", ngID)
 	assert.Equal(t, len(expectedInstances), len(ng.instances), "number of instances in node group %s does not match", ngID)
@@ -638,11 +639,11 @@ max-size=3
 			assert.Equal(t, kcp.manager.config.PoweroffOnScaleDown, tt.poweroffOnScaleDown)
 			// initial refresh - no servers, no instances in node group
 			kcpKClientOnListServers(kamateraClient, &kcp, []Server{}, nil).Once()
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			ng := kcpAssertNodeGroup(&kcp, t, "ng1", 0, 0, map[string]kcpExpectedInstance{})
 			// scale up to 3 instances
 			// 2 servers started creation, 1 server failed to start creation
-			kamateraClient.On("StartCreateServers", mock.Anything, 3, mock.Anything).Return(
+			kamateraClient.On("StartCreateServers", context.TODO(), 3, context.TODO()).Return(
 				map[string]string{
 					"server1": "create-server-command-id-1",
 					"server2": "",
@@ -650,7 +651,7 @@ max-size=3
 				},
 				nil,
 			).Once()
-			assert.NoError(t, ng.IncreaseSize(3))
+			assert.NoError(t, ng.IncreaseSize(context.TODO(), 3))
 			instanceCreating := cloudprovider.InstanceCreating
 			kcpAssertNodeGroup(&kcp, t, "ng1", 3, 3, map[string]kcpExpectedInstance{
 				"server1": {State: &instanceCreating, CommandId: "create-server-command-id-1", HasErrorInfo: false},
@@ -659,13 +660,13 @@ max-size=3
 			})
 			// server 3 finished creation with error, server 1 still creating
 			kcpKClientOnListServers(kamateraClient, &kcp, []Server{}, nil).Once()
-			kamateraClient.On("getCommandStatus", mock.Anything, "create-server-command-id-1").Return(
+			kamateraClient.On("getCommandStatus", context.TODO(), "create-server-command-id-1").Return(
 				CommandStatusPending, nil,
 			).Once()
-			kamateraClient.On("getCommandStatus", mock.Anything, "create-server-command-id-3").Return(
+			kamateraClient.On("getCommandStatus", context.TODO(), "create-server-command-id-3").Return(
 				CommandStatusError, nil,
 			).Once()
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			kcpAssertNodeGroup(&kcp, t, "ng1", 3, 3, map[string]kcpExpectedInstance{
 				"server1": {State: &instanceCreating, CommandId: "create-server-command-id-1", HasErrorInfo: false},
 				"server2": {State: &instanceCreating, CommandId: "", HasErrorInfo: false},
@@ -673,10 +674,10 @@ max-size=3
 			})
 			// server 1 create command completed successfully, but still server is not listed in Kamatera API
 			kcpKClientOnListServers(kamateraClient, &kcp, []Server{}, nil).Once()
-			kamateraClient.On("getCommandStatus", mock.Anything, "create-server-command-id-1").Return(
+			kamateraClient.On("getCommandStatus", context.TODO(), "create-server-command-id-1").Return(
 				CommandStatusComplete, nil,
 			).Once()
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			kcpAssertNodeGroup(&kcp, t, "ng1", 3, 3, map[string]kcpExpectedInstance{
 				"server1": {State: &instanceCreating, CommandId: "", HasErrorInfo: false},
 				"server2": {State: &instanceCreating, CommandId: "", HasErrorInfo: false},
@@ -686,7 +687,7 @@ max-size=3
 			kcpKClientOnListServers(kamateraClient, &kcp, []Server{
 				{Name: "server1", PowerOn: false, Tags: ng.serverConfig.Tags},
 			}, nil).Once()
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			kcpAssertNodeGroup(&kcp, t, "ng1", 3, 3, map[string]kcpExpectedInstance{
 				"server1": {State: &instanceCreating, CommandId: "", HasErrorInfo: false},
 				"server2": {State: &instanceCreating, CommandId: "", HasErrorInfo: false},
@@ -699,7 +700,7 @@ max-size=3
 				{Name: "server1", PowerOn: true, Tags: ng.serverConfig.Tags},
 				{Name: "server2", PowerOn: false, Tags: ng.serverConfig.Tags},
 			}, nil).Once()
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			kcpAssertNodeGroup(&kcp, t, "ng1", 3, 3, map[string]kcpExpectedInstance{
 				"server1": {State: &instanceRunning, CommandId: "", HasErrorInfo: false},
 				"server2": {State: &instanceCreating, CommandId: "", HasErrorInfo: false},
@@ -723,20 +724,20 @@ max-size=3
 				{Name: "server2", PowerOn: true, Tags: ng.serverConfig.Tags},
 				{Name: "server3", PowerOn: true, Tags: ng.serverConfig.Tags},
 			}, nil).Once()
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			kcpAssertNodeGroup(&kcp, t, "ng1", 3, 3, map[string]kcpExpectedInstance{
 				"server1": {State: &instanceRunning, CommandId: "", HasErrorInfo: false},
 				"server2": {State: &instanceRunning, CommandId: "", HasErrorInfo: false},
 				"server3": {State: &instanceRunning, CommandId: "", HasErrorInfo: false},
 			})
 			// scale down by 2 instances: server1 and server3
-			kamateraClient.On("StartServerRequest", mock.Anything, ServerRequestPoweroff, "server1").Return(
+			kamateraClient.On("StartServerRequest", context.TODO(), ServerRequestPoweroff, "server1").Return(
 				"server1-power-off", nil,
 			).Once()
-			kamateraClient.On("StartServerRequest", mock.Anything, ServerRequestPoweroff, "server3").Return(
+			kamateraClient.On("StartServerRequest", context.TODO(), ServerRequestPoweroff, "server3").Return(
 				"server3-power-off", nil,
 			).Once()
-			assert.NoError(t, ng.DeleteNodes([]*apiv1.Node{
+			assert.NoError(t, ng.DeleteNodes(context.TODO(), []*apiv1.Node{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "server1"},
 					Spec:       apiv1.NodeSpec{ProviderID: formatKamateraProviderID(kcp.manager.config.providerIDPrefix, "server1")},
@@ -758,11 +759,11 @@ max-size=3
 				{Name: "server2", PowerOn: true, Tags: ng.serverConfig.Tags},
 				{Name: "server3", PowerOn: true, Tags: ng.serverConfig.Tags},
 			}, nil).Once().On(
-				"getCommandStatus", mock.Anything, "server1-power-off",
+				"getCommandStatus", context.TODO(), "server1-power-off",
 			).Return(CommandStatusPending, nil).Once().On(
-				"getCommandStatus", mock.Anything, "server3-power-off",
+				"getCommandStatus", context.TODO(), "server3-power-off",
 			).Return(CommandStatusPending, nil).Once()
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			kcpAssertNodeGroup(&kcp, t, "ng1", 1, 3, map[string]kcpExpectedInstance{
 				"server1": {State: &instanceDeleting, CommandId: "server1-power-off", HasErrorInfo: false},
 				"server2": {State: &instanceRunning, CommandId: "", HasErrorInfo: false},
@@ -773,11 +774,11 @@ max-size=3
 				{Name: "server2", PowerOn: true, Tags: ng.serverConfig.Tags},
 				{Name: "server3", PowerOn: true, Tags: ng.serverConfig.Tags},
 			}, nil).Once().On(
-				"getCommandStatus", mock.Anything, "server1-power-off",
+				"getCommandStatus", context.TODO(), "server1-power-off",
 			).Return(CommandStatusPending, nil).Once().On(
-				"getCommandStatus", mock.Anything, "server3-power-off",
+				"getCommandStatus", context.TODO(), "server3-power-off",
 			).Return(CommandStatusPending, nil).Once()
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			kcpAssertNodeGroup(&kcp, t, "ng1", 1, 3, map[string]kcpExpectedInstance{
 				"server1": {State: &instanceDeleting, CommandId: "server1-power-off", HasErrorInfo: false},
 				"server2": {State: &instanceRunning, CommandId: "", HasErrorInfo: false},
@@ -790,17 +791,17 @@ max-size=3
 				{Name: "server2", PowerOn: false, Tags: ng.serverConfig.Tags},
 				{Name: "server3", PowerOn: true, Tags: ng.serverConfig.Tags},
 			}, nil).Once().On(
-				"getCommandStatus", mock.Anything, "server1-power-off",
+				"getCommandStatus", context.TODO(), "server1-power-off",
 			).Return(CommandStatusComplete, nil).Once().On(
-				"getCommandStatus", mock.Anything, "server3-power-off",
+				"getCommandStatus", context.TODO(), "server3-power-off",
 			).Return(CommandStatusError, nil).Once()
 			if !tt.poweroffOnScaleDown {
 				// continue to terminate
-				kamateraClient.On("StartServerTerminate", mock.Anything, "server1", true).Return(
+				kamateraClient.On("StartServerTerminate", context.TODO(), "server1", true).Return(
 					"server1-terminate", nil,
 				).Once()
 			}
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			if tt.poweroffOnScaleDown {
 				kcpAssertNodeGroup(&kcp, t, "ng1", 1, 2, map[string]kcpExpectedInstance{
 					"server1": {State: nil, CommandId: "", HasErrorInfo: false},
@@ -826,10 +827,10 @@ max-size=3
 				kcpKClientOnListServers(kamateraClient, &kcp, []Server{
 					{Name: "server2", PowerOn: true, Tags: ng.serverConfig.Tags},
 				}, nil).Once().On(
-					"getCommandStatus", mock.Anything, "server1-terminate",
+					"getCommandStatus", context.TODO(), "server1-terminate",
 				).Return(CommandStatusComplete, nil).Once()
 			}
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			if tt.poweroffOnScaleDown {
 				kcpAssertNodeGroup(&kcp, t, "ng1", 1, 1, map[string]kcpExpectedInstance{
 					"server1": {State: nil, CommandId: "", HasErrorInfo: false},
@@ -843,13 +844,13 @@ max-size=3
 			}
 			// scale up by 2 instances
 			if tt.poweronOnScaleUp && tt.poweroffOnScaleDown {
-				kamateraClient.On("StartServerRequest", mock.Anything, ServerRequestPoweron, "server1").Return(
+				kamateraClient.On("StartServerRequest", context.TODO(), ServerRequestPoweron, "server1").Return(
 					"server1-power-on", nil,
-				).Once().On("StartServerRequest", mock.Anything, ServerRequestPoweron, "server3").Return(
+				).Once().On("StartServerRequest", context.TODO(), ServerRequestPoweron, "server3").Return(
 					"server3-power-on", nil,
 				).Once()
 			} else {
-				kamateraClient.On("StartCreateServers", mock.Anything, 2, mock.Anything).Return(
+				kamateraClient.On("StartCreateServers", context.TODO(), 2, context.TODO()).Return(
 					map[string]string{
 						"server4": "create-server-command-id-4",
 						"server5": "create-server-command-id-5",
@@ -857,7 +858,7 @@ max-size=3
 					nil,
 				).Once()
 			}
-			assert.NoError(t, ng.IncreaseSize(2))
+			assert.NoError(t, ng.IncreaseSize(context.TODO(), 2))
 			if tt.poweronOnScaleUp && tt.poweroffOnScaleDown {
 				kcpAssertNodeGroup(&kcp, t, "ng1", 3, 3, map[string]kcpExpectedInstance{
 					"server2": {State: &instanceRunning, CommandId: "", HasErrorInfo: false},
@@ -886,9 +887,9 @@ max-size=3
 					{Name: "server1", PowerOn: false, Tags: ng.serverConfig.Tags},
 					{Name: "server2", PowerOn: true, Tags: ng.serverConfig.Tags},
 					{Name: "server3", PowerOn: false, Tags: ng.serverConfig.Tags},
-				}, nil).Once().On("getCommandStatus", mock.Anything, "server1-power-on").Return(
+				}, nil).Once().On("getCommandStatus", context.TODO(), "server1-power-on").Return(
 					CommandStatusComplete, nil,
-				).Once().On("getCommandStatus", mock.Anything, "server3-power-on").Return(
+				).Once().On("getCommandStatus", context.TODO(), "server3-power-on").Return(
 					CommandStatusError, nil,
 				).Once()
 			} else {
@@ -903,13 +904,13 @@ max-size=3
 						{Name: "server2", PowerOn: true, Tags: ng.serverConfig.Tags},
 					}, nil).Once()
 				}
-				kamateraClient.On("getCommandStatus", mock.Anything, "create-server-command-id-4").Return(
+				kamateraClient.On("getCommandStatus", context.TODO(), "create-server-command-id-4").Return(
 					CommandStatusComplete, nil,
-				).Once().On("getCommandStatus", mock.Anything, "create-server-command-id-5").Return(
+				).Once().On("getCommandStatus", context.TODO(), "create-server-command-id-5").Return(
 					CommandStatusError, nil,
 				).Once()
 			}
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			if tt.poweronOnScaleUp && tt.poweroffOnScaleDown {
 				kcpAssertNodeGroup(&kcp, t, "ng1", 3, 3, map[string]kcpExpectedInstance{
 					"server1": {State: &instanceCreating, CommandId: "", HasErrorInfo: false},
@@ -953,7 +954,7 @@ max-size=3
 					{Name: "server5", PowerOn: true, Tags: ng.serverConfig.Tags},
 				}, nil).Once()
 			}
-			assert.NoError(t, kcp.Refresh())
+			assert.NoError(t, kcp.Refresh(context.TODO()))
 			if tt.poweronOnScaleUp && tt.poweroffOnScaleDown {
 				// instances already registered in Kubernetes - once powered on, state changes to running
 				kcpAssertNodeGroup(&kcp, t, "ng1", 3, 3, map[string]kcpExpectedInstance{

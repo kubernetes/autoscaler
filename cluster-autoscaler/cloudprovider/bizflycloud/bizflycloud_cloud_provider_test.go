@@ -93,7 +93,7 @@ func TestBizflyCloudProvider_Name(t *testing.T) {
 	provider := testCloudProvider(t, nil)
 
 	t.Run("success", func(t *testing.T) {
-		name := provider.Name()
+		name := provider.Name(context.TODO())
 		assert.Equal(t, ProviderName, name, "provider name doesn't match")
 	})
 }
@@ -103,7 +103,7 @@ func TestBizflyCloudProvider_NodeGroups(t *testing.T) {
 
 	t.Run("zero groups", func(t *testing.T) {
 		provider.manager.nodeGroups = []*NodeGroup{}
-		nodes := provider.NodeGroups()
+		nodes := provider.NodeGroups(context.TODO())
 		assert.Equal(t, len(nodes), 0, "number of nodes do not match")
 	})
 }
@@ -127,7 +127,7 @@ func TestBizflyCloudProvider_NodeGroupForNode(t *testing.T) {
 				ProviderID: toProviderID("droplet-4"),
 			},
 		}
-		nodeGroup, err := provider.NodeGroupForNode(node)
+		nodeGroup, err := provider.NodeGroupForNode(context.TODO(), node)
 		assert.NoError(t, err)
 		assert.Nil(t, nodeGroup)
 	})
@@ -148,7 +148,7 @@ func TestBizflyCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		nodeGroup, err := provider.NodeGroupForNode(node)
+		nodeGroup, err := provider.NodeGroupForNode(context.TODO(), node)
 		assert.NoError(t, err)
 		assert.Nil(t, nodeGroup)
 	})

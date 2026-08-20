@@ -52,14 +52,14 @@ type unstructuredScalableResource struct {
 }
 
 func (r *unstructuredScalableResource) ID() string {
-	return path.Join(r.Kind(), r.Namespace(), r.Name())
+	return path.Join(r.Kind(), r.Namespace(), r.Name(context.TODO()))
 }
 
-func (r *unstructuredScalableResource) MaxSize() int {
+func (r *unstructuredScalableResource) MaxSize(ctx context.Context) int {
 	return r.maxSize
 }
 
-func (r *unstructuredScalableResource) MinSize() int {
+func (r *unstructuredScalableResource) MinSize(ctx context.Context) int {
 	return r.minSize
 }
 
@@ -80,7 +80,7 @@ func (r *unstructuredScalableResource) GroupVersionResource() (schema.GroupVersi
 	}
 }
 
-func (r *unstructuredScalableResource) Name() string {
+func (r *unstructuredScalableResource) Name(ctx context.Context) string {
 	return r.unstructured.GetName()
 }
 
@@ -103,13 +103,13 @@ func (r *unstructuredScalableResource) Replicas() (int, error) {
 		return 0, err
 	}
 
-	s, err := r.controller.managementScaleClient.Scales(r.Namespace()).Get(context.TODO(), gvr.GroupResource(), r.Name(), metav1.GetOptions{})
+	s, err := r.controller.managementScaleClient.Scales(r.Namespace()).Get(context.TODO(), gvr.GroupResource(), r.Name(context.TODO()), metav1.GetOptions{})
 	if err != nil {
 		return 0, err
 	}
 
 	if s == nil {
-		return 0, fmt.Errorf("failed to fetch resource scale: unknown %s %s/%s", r.Kind(), r.Namespace(), r.Name())
+		return 0, fmt.Errorf("failed to fetch resource scale: unknown %s %s/%s", r.Kind(), r.Namespace(), r.Name(context.TODO()))
 	}
 	return int(s.Spec.Replicas), nil
 }
@@ -138,7 +138,7 @@ func (r *unstructuredScalableResource) SetSize(nreplicas int) error {
 		return fmt.Errorf("could not marshal json patch for scaling: %w", err)
 	}
 
-	_, updateErr := r.controller.managementScaleClient.Scales(r.Namespace()).Patch(context.TODO(), gvr, r.Name(), types.MergePatchType, patch, metav1.PatchOptions{})
+	_, updateErr := r.controller.managementScaleClient.Scales(r.Namespace()).Patch(context.TODO(), gvr, r.Name(context.TODO()), types.MergePatchType, patch, metav1.PatchOptions{})
 
 	if updateErr == nil {
 		updateErr = unstructured.SetNestedField(r.unstructured.UnstructuredContent(), int64(nreplicas), "spec", "replicas")

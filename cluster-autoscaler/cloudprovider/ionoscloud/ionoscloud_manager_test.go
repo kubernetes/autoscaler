@@ -217,7 +217,7 @@ func (s *ManagerTestSuite) OnGetKubernetesNodePool(retval *ionos.KubernetesNodeP
 		statusCode = 500
 	}
 	return s.mockAPIClient.
-		On("K8sNodepoolsFindById", mock.Anything, s.manager.client.cfg.ClusterID, s.nodePool.id).Return(req).
+		On("K8sNodepoolsFindById", context.TODO(), s.manager.client.cfg.ClusterID, s.nodePool.id).Return(req).
 		On("K8sNodepoolsFindByIdExecute", req).Return(nodepool, newAPIResponse(statusCode), reterr)
 }
 
@@ -231,7 +231,7 @@ func (s *ManagerTestSuite) OnUpdateKubernetesNodePool(size int32, reterr error) 
 		statusCode = 500
 	}
 	return s.mockAPIClient.
-		On("K8sNodepoolsPut", mock.Anything, s.manager.client.cfg.ClusterID, s.nodePool.id).Return(origReq).
+		On("K8sNodepoolsPut", context.TODO(), s.manager.client.cfg.ClusterID, s.nodePool.id).Return(origReq).
 		On("K8sNodepoolsPutExecute", expect).Return(ionos.KubernetesNodePool{}, newAPIResponse(statusCode), reterr)
 }
 
@@ -247,7 +247,7 @@ func (s *ManagerTestSuite) OnListKubernetesNodes(retval *ionos.KubernetesNodes, 
 		statusCode = 500
 	}
 	return s.mockAPIClient.
-		On("K8sNodepoolsNodesGet", mock.Anything, s.manager.client.cfg.ClusterID, s.nodePool.id).Return(origReq).
+		On("K8sNodepoolsNodesGet", context.TODO(), s.manager.client.cfg.ClusterID, s.nodePool.id).Return(origReq).
 		On("K8sNodepoolsNodesGetExecute", req).Return(nodes, newAPIResponse(statusCode), reterr)
 }
 
@@ -258,7 +258,7 @@ func (s *ManagerTestSuite) OnDeleteKubernetesNode(id string, reterr error) *mock
 		statusCode = 500
 	}
 	return s.mockAPIClient.
-		On("K8sNodepoolsNodesDelete", mock.Anything, s.manager.client.cfg.ClusterID, s.nodePool.id, id).Return(req).
+		On("K8sNodepoolsNodesDelete", context.TODO(), s.manager.client.cfg.ClusterID, s.nodePool.id, id).Return(req).
 		On("K8sNodepoolsNodesDeleteExecute", req).Return(newAPIResponse(statusCode), reterr)
 }
 

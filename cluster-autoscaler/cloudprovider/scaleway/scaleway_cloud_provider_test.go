@@ -113,7 +113,7 @@ func TestScalewayCloudProvider_Name(t *testing.T) {
 		clusterID: "test-cluster",
 	}
 
-	assert.Equal(t, ProviderName, provider.Name())
+	assert.Equal(t, ProviderName, provider.Name(context.TODO()))
 }
 
 func TestScalewayCloudProvider_Refresh(t *testing.T) {
@@ -127,12 +127,12 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 		node2 := createTestNode("node-2", "pool-1", "scaleway://fr-par-1/instance-2", scalewaygo.NodeStatusReady)
 		node3 := createTestNode("node-3", "pool-2", "scaleway://fr-par-1/instance-3", scalewaygo.NodeStatusReady)
 
-		client.On("ListPools", mock.Anything, "test-cluster").Return(
+		client.On("ListPools", context.TODO(), "test-cluster").Return(
 			30*time.Second,
 			[]scalewaygo.Pool{pool1, pool2, pool3},
 			nil,
 		)
-		client.On("ListNodes", mock.Anything, "test-cluster").Return(
+		client.On("ListNodes", context.TODO(), "test-cluster").Return(
 			30*time.Second,
 			[]scalewaygo.Node{node1, node2, node3},
 			nil,
@@ -145,7 +145,7 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.TODO())
 		require.NoError(t, err)
 
 		// Verify node groups (only autoscaling pools)
@@ -170,12 +170,12 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 		node := createTestNode("node-1", "pool-1", "scaleway://fr-par-1/instance-1", scalewaygo.NodeStatusReady)
 
 		// First refresh
-		client.On("ListPools", mock.Anything, "test-cluster").Return(
+		client.On("ListPools", context.TODO(), "test-cluster").Return(
 			5*time.Second,
 			[]scalewaygo.Pool{pool},
 			nil,
 		).Once()
-		client.On("ListNodes", mock.Anything, "test-cluster").Return(
+		client.On("ListNodes", context.TODO(), "test-cluster").Return(
 			5*time.Second,
 			[]scalewaygo.Node{node},
 			nil,
@@ -188,12 +188,12 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.TODO())
 		require.NoError(t, err)
 		assert.NotZero(t, provider.lastRefresh)
 
 		// Second refresh immediately - should be skipped
-		err = provider.Refresh()
+		err = provider.Refresh(context.TODO())
 		require.NoError(t, err)
 
 		// Only one call to each method
@@ -206,12 +206,12 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 		node := createTestNode("node-1", "pool-1", "scaleway://fr-par-1/instance-1", scalewaygo.NodeStatusReady)
 
 		// First refresh
-		client.On("ListPools", mock.Anything, "test-cluster").Return(
+		client.On("ListPools", context.TODO(), "test-cluster").Return(
 			1*time.Millisecond,
 			[]scalewaygo.Pool{pool},
 			nil,
 		).Twice()
-		client.On("ListNodes", mock.Anything, "test-cluster").Return(
+		client.On("ListNodes", context.TODO(), "test-cluster").Return(
 			1*time.Millisecond,
 			[]scalewaygo.Node{node},
 			nil,
@@ -224,14 +224,14 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.TODO())
 		require.NoError(t, err)
 
 		// Wait for interval to elapse
 		time.Sleep(2 * time.Millisecond)
 
 		// Second refresh should execute
-		err = provider.Refresh()
+		err = provider.Refresh(context.TODO())
 		require.NoError(t, err)
 
 		client.AssertExpectations(t)
@@ -240,7 +240,7 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 	t.Run("error on ListPools", func(t *testing.T) {
 		client := new(mockClient)
 
-		client.On("ListPools", mock.Anything, "test-cluster").Return(
+		client.On("ListPools", context.TODO(), "test-cluster").Return(
 			time.Duration(0),
 			[]scalewaygo.Pool{},
 			fmt.Errorf("API error"),
@@ -253,7 +253,7 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.TODO())
 		assert.Error(t, err)
 		assert.Equal(t, err, provider.lastRefreshError)
 
@@ -264,12 +264,12 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 		client := new(mockClient)
 		pool := createTestPool("pool-1", true, 3, 1, 10)
 
-		client.On("ListPools", mock.Anything, "test-cluster").Return(
+		client.On("ListPools", context.TODO(), "test-cluster").Return(
 			30*time.Second,
 			[]scalewaygo.Pool{pool},
 			nil,
 		)
-		client.On("ListNodes", mock.Anything, "test-cluster").Return(
+		client.On("ListNodes", context.TODO(), "test-cluster").Return(
 			time.Duration(0),
 			[]scalewaygo.Node{},
 			fmt.Errorf("API error"),
@@ -282,7 +282,7 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.TODO())
 		assert.Error(t, err)
 		assert.Equal(t, err, provider.lastRefreshError)
 
@@ -295,12 +295,12 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 		node1 := createTestNode("node-1", "pool-1", "scaleway://fr-par-1/instance-1", scalewaygo.NodeStatusReady)
 		node2 := createTestNode("node-2", "pool-nonexistent", "scaleway://fr-par-1/instance-2", scalewaygo.NodeStatusReady)
 
-		client.On("ListPools", mock.Anything, "test-cluster").Return(
+		client.On("ListPools", context.TODO(), "test-cluster").Return(
 			30*time.Second,
 			[]scalewaygo.Pool{pool1},
 			nil,
 		)
-		client.On("ListNodes", mock.Anything, "test-cluster").Return(
+		client.On("ListNodes", context.TODO(), "test-cluster").Return(
 			30*time.Second,
 			[]scalewaygo.Node{node1, node2},
 			nil,
@@ -313,7 +313,7 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.TODO())
 		require.NoError(t, err)
 
 		// Only pool-1 should have nodes
@@ -351,7 +351,7 @@ func TestScalewayCloudProvider_NodeGroups(t *testing.T) {
 		provider.nodeGroups["pool-2"],
 	}
 
-	nodeGroups := provider.NodeGroups()
+	nodeGroups := provider.NodeGroups(context.TODO())
 	assert.Len(t, nodeGroups, 2)
 }
 
@@ -381,7 +381,7 @@ func TestScalewayCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		ng, err := provider.NodeGroupForNode(k8sNode)
+		ng, err := provider.NodeGroupForNode(context.TODO(), k8sNode)
 		require.NoError(t, err)
 		require.NotNil(t, ng)
 		assert.Equal(t, "pool-1", ng.Id())
@@ -409,7 +409,7 @@ func TestScalewayCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		ng, err := provider.NodeGroupForNode(k8sNode)
+		ng, err := provider.NodeGroupForNode(context.TODO(), k8sNode)
 		require.NoError(t, err)
 		assert.Nil(t, ng)
 	})
@@ -425,7 +425,7 @@ func TestScalewayCloudProvider_HasInstance(t *testing.T) {
 			},
 		}
 
-		hasInstance, err := provider.HasInstance(node)
+		hasInstance, err := provider.HasInstance(context.TODO(), node)
 		require.NoError(t, err)
 		assert.True(t, hasInstance)
 	})
@@ -437,7 +437,7 @@ func TestScalewayCloudProvider_HasInstance(t *testing.T) {
 			},
 		}
 
-		hasInstance, err := provider.HasInstance(node)
+		hasInstance, err := provider.HasInstance(context.TODO(), node)
 		require.NoError(t, err)
 		assert.False(t, hasInstance)
 	})
@@ -446,7 +446,7 @@ func TestScalewayCloudProvider_HasInstance(t *testing.T) {
 func TestScalewayCloudProvider_Pricing(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	pricingModel, err := provider.Pricing()
+	pricingModel, err := provider.Pricing(context.TODO())
 	require.NoError(t, err)
 	assert.NotNil(t, pricingModel)
 	assert.Equal(t, provider, pricingModel)
@@ -455,7 +455,7 @@ func TestScalewayCloudProvider_Pricing(t *testing.T) {
 func TestScalewayCloudProvider_GetAvailableMachineTypes(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	machineTypes, err := provider.GetAvailableMachineTypes()
+	machineTypes, err := provider.GetAvailableMachineTypes(context.TODO())
 	require.NoError(t, err)
 	assert.Empty(t, machineTypes)
 }
@@ -463,7 +463,7 @@ func TestScalewayCloudProvider_GetAvailableMachineTypes(t *testing.T) {
 func TestScalewayCloudProvider_NewNodeGroup(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	ng, err := provider.NewNodeGroup("DEV1-M", nil, nil, nil, nil)
+	ng, err := provider.NewNodeGroup(context.TODO(), "DEV1-M", nil, nil, nil, nil)
 	assert.Error(t, err)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 	assert.Nil(t, ng)
@@ -475,7 +475,7 @@ func TestScalewayCloudProvider_GetResourceLimiter(t *testing.T) {
 		resourceLimiter: limiter,
 	}
 
-	result, err := provider.GetResourceLimiter()
+	result, err := provider.GetResourceLimiter(context.TODO())
 	require.NoError(t, err)
 	assert.Equal(t, limiter, result)
 }
@@ -483,14 +483,14 @@ func TestScalewayCloudProvider_GetResourceLimiter(t *testing.T) {
 func TestScalewayCloudProvider_GPULabel(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	label := provider.GPULabel()
+	label := provider.GPULabel(context.TODO())
 	assert.Equal(t, "k8s.scw.cloud/gpu", label)
 }
 
 func TestScalewayCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	gpuTypes := provider.GetAvailableGPUTypes()
+	gpuTypes := provider.GetAvailableGPUTypes(context.TODO())
 	assert.Nil(t, gpuTypes)
 }
 
@@ -530,7 +530,7 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 		startTime := time.Now()
 		endTime := startTime.Add(2*time.Hour + 30*time.Minute)
 
-		price, err := provider.NodePrice(k8sNode, startTime, endTime)
+		price, err := provider.NodePrice(context.TODO(), k8sNode, startTime, endTime)
 		require.NoError(t, err)
 		// 2.5 hours rounds up to 3 hours at $0.10/hour = $0.30
 		assert.InDelta(t, 0.30, price, 0.001)
@@ -557,7 +557,7 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 		startTime := time.Now()
 		endTime := startTime.Add(1 * time.Hour)
 
-		price, err := provider.NodePrice(k8sNode, startTime, endTime)
+		price, err := provider.NodePrice(context.TODO(), k8sNode, startTime, endTime)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "does not have pool label")
 		assert.Equal(t, 0.0, price)
@@ -586,7 +586,7 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 		startTime := time.Now()
 		endTime := startTime.Add(1 * time.Hour)
 
-		price, err := provider.NodePrice(k8sNode, startTime, endTime)
+		price, err := provider.NodePrice(context.TODO(), k8sNode, startTime, endTime)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "not found")
 		assert.Equal(t, 0.0, price)
@@ -605,7 +605,7 @@ func TestScalewayCloudProvider_PodPrice(t *testing.T) {
 	startTime := time.Now()
 	endTime := startTime.Add(1 * time.Hour)
 
-	price, err := provider.PodPrice(pod, startTime, endTime)
+	price, err := provider.PodPrice(context.TODO(), pod, startTime, endTime)
 	require.NoError(t, err)
 	assert.Equal(t, 0.0, price)
 }
@@ -613,6 +613,6 @@ func TestScalewayCloudProvider_PodPrice(t *testing.T) {
 func TestScalewayCloudProvider_Cleanup(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	err := provider.Cleanup()
+	err := provider.Cleanup(context.TODO())
 	assert.NoError(t, err)
 }

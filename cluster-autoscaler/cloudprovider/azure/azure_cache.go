@@ -186,7 +186,7 @@ func (m *azureCache) setScaleSet(name string, vmss *armcompute.VirtualMachineSca
 }
 
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
-func (m *azureCache) Cleanup() {
+func (m *azureCache) Cleanup(ctx context.Context) {
 	close(m.interrupt)
 }
 
@@ -201,7 +201,7 @@ func (m *azureCache) regenerate() error {
 	newInstanceStates := make(map[azureRef]cloudprovider.InstanceState)
 	for _, ng := range m.registeredNodeGroups {
 		klog.V(4).Infof("regenerate: finding nodes for node group %s", ng.Id())
-		instances, err := ng.Nodes()
+		instances, err := ng.Nodes(context.TODO())
 		if err != nil {
 			return err
 		}
@@ -387,7 +387,7 @@ func (m *azureCache) Register(nodeGroup cloudprovider.NodeGroup) bool {
 
 	for i := range m.registeredNodeGroups {
 		if existing := m.registeredNodeGroups[i]; strings.EqualFold(existing.Id(), nodeGroup.Id()) {
-			if existing.MinSize() == nodeGroup.MinSize() && existing.MaxSize() == nodeGroup.MaxSize() {
+			if existing.MinSize(context.TODO()) == nodeGroup.MinSize(context.TODO()) && existing.MaxSize(context.TODO()) == nodeGroup.MaxSize(context.TODO()) {
 				// Node group is already registered and min/max size haven't changed, no action required.
 				return false
 			}
@@ -468,7 +468,7 @@ func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
 }
 
 // HasInstance returns if a given instance exists in the azure cache
-func (m *azureCache) HasInstance(providerID string) (bool, error) {
+func (m *azureCache) HasInstance(ctx context.Context, providerID string) (bool, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	resourceID, err := convertResourceGroupNameToLower(providerID)

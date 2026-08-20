@@ -292,12 +292,12 @@ func TestAgentPoolIncreaseSize(t *testing.T) {
 	assert.Equal(t, expectedErr, err)
 
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil).MaxTimes(2)
-	err = as.manager.Refresh()
+	err = as.manager.Refresh(context.TODO())
 	assert.NoError(t, err)
-	err = as.IncreaseSize(4)
+	err = as.IncreaseSize(context.TODO(), 4)
 	expectedErr = fmt.Errorf("size increase too large - desired:6 max:5")
 
-	err = as.IncreaseSize(2)
+	err = as.IncreaseSize(context.TODO(), 2)
 	assert.NoError(t, err)
 }
 
@@ -321,7 +321,7 @@ func TestAgentPoolDecreaseTargetSize(t *testing.T) {
 	assert.Equal(t, int64(2), as.curSize)
 
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil).MaxTimes(2)
-	err = as.manager.Refresh()
+	err = as.manager.Refresh(context.TODO())
 	assert.NoError(t, err)
 	err = as.DecreaseTargetSize(-1)
 	expectedErr := fmt.Errorf("attempt to delete existing nodes targetSize:2 delta:-1 existingNodes: 2")
@@ -420,7 +420,7 @@ func TestForceDeleteNodes(t *testing.T) {
 	mockSAClient := NewMockStorageAccountClient(ctrl)
 	as.manager.azClient.storageAccountsClient = mockSAClient
 
-	err := as.ForceDeleteNodes([]*apiv1.Node{})
+	err := as.ForceDeleteNodes(context.TODO(), []*apiv1.Node{})
 	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{
@@ -429,7 +429,7 @@ func TestForceDeleteNodes(t *testing.T) {
 			ObjectMeta: v1.ObjectMeta{Name: "node"},
 		},
 	}
-	err = as.ForceDeleteNodes(nodes)
+	err = as.ForceDeleteNodes(context.TODO(), nodes)
 	expectedErr := fmt.Errorf("resource name was missing from identifier")
 	assert.Equal(t, expectedErr, err)
 
@@ -439,7 +439,7 @@ func TestForceDeleteNodes(t *testing.T) {
 			ObjectMeta: v1.ObjectMeta{Name: "node1"},
 		},
 	}
-	err = as.ForceDeleteNodes(nodes)
+	err = as.ForceDeleteNodes(context.TODO(), nodes)
 	expectedErr = fmt.Errorf("node1 belongs to a different asg than as")
 	assert.Equal(t, expectedErr, err)
 }
@@ -462,7 +462,7 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 	assert.NoError(t, err)
 	as.manager.azureCache = ac
 
-	err = as.DeleteNodes([]*apiv1.Node{
+	err = as.DeleteNodes(context.TODO(), []*apiv1.Node{
 		{
 			Spec:       apiv1.NodeSpec{ProviderID: testInvalidProviderID},
 			ObjectMeta: v1.ObjectMeta{Name: "node"},
@@ -473,7 +473,7 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 
 	as1 := newTestAgentPool(newTestAzureManager(t), "as1")
 	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as1
-	err = as.DeleteNodes([]*apiv1.Node{
+	err = as.DeleteNodes(context.TODO(), []*apiv1.Node{
 		{
 			Spec:       apiv1.NodeSpec{ProviderID: testValidProviderID0},
 			ObjectMeta: v1.ObjectMeta{Name: "node"},
@@ -483,7 +483,7 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 	assert.Equal(t, expectedErr, err)
 
 	as.minSize = 3
-	err = as.DeleteNodes([]*apiv1.Node{})
+	err = as.DeleteNodes(context.TODO(), []*apiv1.Node{})
 	expectedErr = fmt.Errorf("min size reached, nodes will not be deleted")
 	assert.Equal(t, expectedErr, err)
 }
@@ -515,14 +515,14 @@ func TestAgentPoolNodes(t *testing.T) {
 	assert.NoError(t, err)
 	as.manager.azureCache = ac
 
-	nodes, err := as.Nodes()
+	nodes, err := as.Nodes(context.TODO())
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(nodes))
 	assert.Equal(t, cloudprovider.InstanceRunning, nodes[0].Status.State)
 
 	expectedVMs[1].Properties = &armcompute.VirtualMachineProperties{ProvisioningState: ptr.To(VMProvisioningStateDeleting)}
 	as.manager.azureCache.virtualMachines["as"] = expectedVMs
-	nodes, err = as.Nodes()
+	nodes, err = as.Nodes(context.TODO())
 	assert.NoError(t, err)
 	assert.Equal(t, cloudprovider.InstanceDeleting, nodes[0].Status.State)
 
@@ -535,7 +535,7 @@ func TestAgentPoolNodes(t *testing.T) {
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
 	err = as.manager.forceRefresh()
 	assert.NoError(t, err)
-	nodes, err = as.Nodes()
+	nodes, err = as.Nodes(context.TODO())
 	expectedErr := fmt.Errorf("\"azure://foo\" isn't in Azure resource ID format")
 	assert.Equal(t, expectedErr, err)
 	assert.Nil(t, nodes)
@@ -555,7 +555,7 @@ func TestAgentPoolDeleteInstancesProactivelyMarksDeletion(t *testing.T) {
 	assert.NoError(t, err)
 	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, vmName, nil).DoAndReturn(
 		func(ctx context.Context, resourceGroupName, vmName string, expand *string) (*armcompute.VirtualMachine, error) {
-			hasInstance, hasInstanceErr := as.manager.azureCache.HasInstance(testValidProviderID0)
+			hasInstance, hasInstanceErr := as.manager.azureCache.HasInstance(context.TODO(), testValidProviderID0)
 			assert.False(t, hasInstance)
 			assert.NoError(t, hasInstanceErr)
 			return &armcompute.VirtualMachine{
@@ -566,7 +566,7 @@ func TestAgentPoolDeleteInstancesProactivelyMarksDeletion(t *testing.T) {
 		})
 	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, vmName).Return(nil)
 
-	hasInstance, err := as.manager.azureCache.HasInstance(testValidProviderID0)
+	hasInstance, err := as.manager.azureCache.HasInstance(context.TODO(), testValidProviderID0)
 	assert.True(t, hasInstance)
 	assert.NoError(t, err)
 
@@ -589,7 +589,7 @@ func TestAgentPoolDeleteInstancesStrictCacheDoesNotProactivelyMarkDeletion(t *te
 	assert.NoError(t, err)
 	mockVMClient.EXPECT().Get(gomock.Any(), as.manager.config.ResourceGroup, vmName, nil).DoAndReturn(
 		func(ctx context.Context, resourceGroupName, vmName string, expand *string) (*armcompute.VirtualMachine, error) {
-			hasInstance, hasInstanceErr := as.manager.azureCache.HasInstance(testValidProviderID0)
+			hasInstance, hasInstanceErr := as.manager.azureCache.HasInstance(context.TODO(), testValidProviderID0)
 			assert.True(t, hasInstance)
 			assert.NoError(t, hasInstanceErr)
 			return &armcompute.VirtualMachine{
@@ -600,7 +600,7 @@ func TestAgentPoolDeleteInstancesStrictCacheDoesNotProactivelyMarkDeletion(t *te
 		})
 	mockVMClient.EXPECT().Delete(gomock.Any(), as.manager.config.ResourceGroup, vmName).Return(nil)
 
-	hasInstance, err := as.manager.azureCache.HasInstance(testValidProviderID0)
+	hasInstance, err := as.manager.azureCache.HasInstance(context.TODO(), testValidProviderID0)
 	assert.True(t, hasInstance)
 	assert.NoError(t, err)
 
@@ -609,7 +609,7 @@ func TestAgentPoolDeleteInstancesStrictCacheDoesNotProactivelyMarkDeletion(t *te
 
 	// Strict cache mode should not mutate instance state proactively; the instance
 	// remains present until the next refresh reflects Azure state.
-	hasInstance, err = as.manager.azureCache.HasInstance(testValidProviderID0)
+	hasInstance, err = as.manager.azureCache.HasInstance(context.TODO(), testValidProviderID0)
 	assert.True(t, hasInstance)
 	assert.NoError(t, err)
 }

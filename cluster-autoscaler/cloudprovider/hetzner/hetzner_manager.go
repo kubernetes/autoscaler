@@ -234,7 +234,7 @@ func newManager() (*hetznerManager, error) {
 
 // Refresh refreshes the cache holding the nodegroups. This is called by the CA
 // based on the `--scan-interval`. By default it's 10 seconds.
-func (m *hetznerManager) Refresh() error {
+func (m *hetznerManager) Refresh(ctx context.Context) error {
 	return nil
 }
 

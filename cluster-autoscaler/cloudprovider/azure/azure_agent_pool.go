@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -94,40 +95,40 @@ func (as *AgentPool) initialize() error {
 }
 
 // MinSize returns minimum size of the node group.
-func (as *AgentPool) MinSize() int {
+func (as *AgentPool) MinSize(ctx context.Context) int {
 	return as.minSize
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (as *AgentPool) Exist() bool {
+func (as *AgentPool) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (as *AgentPool) Create() (cloudprovider.NodeGroup, error) {
+func (as *AgentPool) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (as *AgentPool) Delete() error {
+func (as *AgentPool) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (as *AgentPool) Autoprovisioned() bool {
+func (as *AgentPool) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (as *AgentPool) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (as *AgentPool) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // MaxSize returns maximum size of the node group.
-func (as *AgentPool) MaxSize() int {
+func (as *AgentPool) MaxSize(ctx context.Context) int {
 	return as.maxSize
 }
 
@@ -209,7 +210,7 @@ func (as *AgentPool) getCurSize() (int64, error) {
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (as *AgentPool) TargetSize() (int, error) {
+func (as *AgentPool) TargetSize(ctx context.Context) (int, error) {
 	size, err := as.getCurSize()
 	if err != nil {
 		return -1, err
@@ -290,7 +291,7 @@ func (as *AgentPool) deleteOutdatedDeployments() (err error) {
 }
 
 // IncreaseSize increases agent pool size
-func (as *AgentPool) IncreaseSize(delta int) error {
+func (as *AgentPool) IncreaseSize(ctx context.Context, delta int) error {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
 
@@ -316,8 +317,8 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 	}
 
 	curSize := len(indexes)
-	if curSize+delta > as.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", curSize+delta, as.MaxSize())
+	if curSize+delta > as.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", curSize+delta, as.MaxSize(context.TODO()))
 	}
 
 	highestUsedIndex := indexes[len(indexes)-1]
@@ -356,7 +357,7 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (as *AgentPool) AtomicIncreaseSize(delta int) error {
+func (as *AgentPool) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -365,7 +366,7 @@ func (as *AgentPool) AtomicIncreaseSize(delta int) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
-func (as *AgentPool) DecreaseTargetSize(delta int) error {
+func (as *AgentPool) DecreaseTargetSize(ctx context.Context, delta int) error {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
 
@@ -455,22 +456,22 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
+func (as *AgentPool) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	klog.V(3).Infof("Delete nodes requested: %v\n", nodes)
 	indexes, _, err := as.GetVMIndexes()
 	if err != nil {
 		return err
 	}
 
-	if len(indexes) <= as.MinSize() {
+	if len(indexes) <= as.MinSize(context.TODO()) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
-	return as.ForceDeleteNodes(nodes)
+	return as.ForceDeleteNodes(context.TODO(), nodes)
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (as *AgentPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (as *AgentPool) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	refs := make([]*azureRef, 0, len(nodes))
 	for _, node := range nodes {
 		belongs, err := as.Belongs(node)
@@ -497,17 +498,17 @@ func (as *AgentPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // Debug returns a debug string for the agent pool.
-func (as *AgentPool) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", as.Name, as.MinSize(), as.MaxSize())
+func (as *AgentPool) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", as.Name, as.MinSize(context.TODO()), as.MaxSize(context.TODO()))
 }
 
 // TemplateNodeInfo returns a node template for this agent pool.
-func (as *AgentPool) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (as *AgentPool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
+func (as *AgentPool) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	instances, err := as.getVMsFromCache()
 	if err != nil {
 		return nil, err

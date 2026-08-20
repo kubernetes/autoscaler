@@ -140,6 +140,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 			// so we need to pass the older timestamp (previousRun) to trigger.Wait to run immediately if only one of the activities is productive.
 			lastRun := time.Now()
 			previousRun := time.Now()
+			iteration := 0
 			for {
 				select {
 				case <-ctx.Done():
@@ -149,10 +150,12 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 				default:
 					trigger.Wait(previousRun)
 					previousRun, lastRun = lastRun, time.Now()
-					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, lastRun)
+					iteration++
+					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, lastRun, iteration)
 				}
 			}
 		} else {
+			iteration := 0
 			for {
 				select {
 				case <-ctx.Done():
@@ -160,7 +163,8 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 					// iteration in progress will be interrupted and cleaned up there.
 					return nil
 				case <-time.After(autoscalingOpts.ScanInterval):
-					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, time.Now())
+					iteration++
+					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, time.Now(), iteration)
 				}
 			}
 		}
@@ -224,6 +228,12 @@ func main() {
 	kube_flag.InitFlags()
 
 	autoscalingOpts := flags.AutoscalingOptions()
+
+	if pflag.CommandLine.Changed("enable-contextual-logging") {
+		if err := featureGate.SetFromMap(map[string]bool{string(logsapi.ContextualLogging): autoscalingOpts.EnableContextualLogging}); err != nil {
+			klog.Fatalf("Failed to override ContextualLogging feature gate: %v", err)
+		}
+	}
 
 	// The DRA feature controls whether the DRA scheduler plugin is selected in scheduler framework. The local DRA flag controls whether
 	// DRA logic is enabled in Cluster Autoscaler. The 2 values should be in sync - enabling DRA logic in CA without selecting the DRA scheduler
