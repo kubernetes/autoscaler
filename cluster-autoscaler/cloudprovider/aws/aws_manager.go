@@ -38,7 +38,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
-	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
@@ -342,36 +341,14 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	return &node, nil
 }
 
-func (m *AwsManager) buildCSINodeFromTemplate(template *asgTemplate, nodeName string) *storagev1.CSINode {
+func (m *AwsManager) buildCSINodeFromTemplate(template *asgTemplate, _ string) *storagev1.CSINode {
 	if template == nil || template.InstanceType == nil {
 		return nil
 	}
 
-	driver := storagev1.CSINodeDriver{
-		Name:   "ebs.csi.aws.com",
-		NodeID: nodeName,
-	}
-	// Prefer a CSINode without Allocatable over nil when the attachment limit is
-	// unknown. Returning nil blocks CSI-aware scale-from-zero simulation.
-	if template.InstanceType.EBSVolumeLimit > 0 {
-		driver.Allocatable = &storagev1.VolumeNodeResources{
-			Count: ptr.To(int32(template.InstanceType.EBSVolumeLimit)),
-		}
-	} else {
-		klog.Errorf(
-			"EBS volume attachment limit unavailable for instance type %q",
-			template.InstanceType.InstanceType,
-		)
-	}
-
-	return &storagev1.CSINode{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: nodeName,
-		},
-		Spec: storagev1.CSINodeSpec{
-			Drivers: []storagev1.CSINodeDriver{driver},
-		},
-	}
+	// CSI drivers are optional per node group. EBSVolumeLimit is EC2 attachment
+	// capacity, not proof that ebs.csi.aws.com is installed.
+	return nil
 }
 
 func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]string, mngLabels map[string]string) map[string]string {

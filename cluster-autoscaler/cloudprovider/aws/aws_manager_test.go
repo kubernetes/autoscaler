@@ -964,15 +964,7 @@ func TestBuildCSINodeFromTemplate(t *testing.T) {
 
 	got := manager.buildCSINodeFromTemplate(template, "template-node")
 
-	require.NotNil(t, got)
-	require.Equal(t, "template-node", got.Name)
-	require.Len(t, got.Spec.Drivers, 1)
-
-	driver := got.Spec.Drivers[0]
-	require.Equal(t, "ebs.csi.aws.com", driver.Name)
-	require.Equal(t, "template-node", driver.NodeID)
-	require.NotNil(t, driver.Allocatable)
-	require.Equal(t, int32(39), *driver.Allocatable.Count)
+	require.Nil(t, got)
 }
 
 func TestBuildCSINodeFromTemplate_NoVolumeLimit(t *testing.T) {
@@ -987,14 +979,7 @@ func TestBuildCSINodeFromTemplate_NoVolumeLimit(t *testing.T) {
 
 	got := manager.buildCSINodeFromTemplate(template, "template-node")
 
-	require.NotNil(t, got)
-	require.Equal(t, "template-node", got.Name)
-	require.Len(t, got.Spec.Drivers, 1)
-
-	driver := got.Spec.Drivers[0]
-	require.Equal(t, "ebs.csi.aws.com", driver.Name)
-	require.Equal(t, "template-node", driver.NodeID)
-	require.Nil(t, driver.Allocatable)
+	require.Nil(t, got)
 }
 
 func TestBuildCSINodeFromTemplate_NilTemplate(t *testing.T) {
