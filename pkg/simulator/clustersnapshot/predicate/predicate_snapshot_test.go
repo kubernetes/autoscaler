@@ -262,6 +262,11 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 	largePod := BuildTestPod("largePod", 999, 999)
 	podWithClaims := BuildTestPod("podWithClaims", 1, 1,
 		WithResourceClaim("claim1", "sharedClaim", ""), WithResourceClaim("claim2", "podOwnedClaim", "podOwnedClaimTemplate"))
+	// podConsumesOwned references podWithClaims' auto-generated podOwnedClaim directly, without
+	// owning it. When both pods are on the same node, teardown removes the owner's claim first, so
+	// cleanup of this pod then finds that reference missing.
+	podConsumesOwned := BuildTestPod("podConsumesOwned", 1, 1,
+		WithResourceClaim("claim1", "podOwnedClaim", ""))
 
 	podOwnedClaim := drautils.TestClaimWithPodOwnership(podWithClaims,
 		&resourceapi.ResourceClaim{
@@ -749,6 +754,37 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 			// LocalResourceSlices for the removed Node should get removed from the DRA snapshot.
 			// The pod-owned claim referenced by a pod from the removed Node should get removed from the DRA snapshot.
 			// The shared claim referenced by a pod from the removed Node should stay in the DRA snapshot, but the pod's reservation should be removed.
+			modifiedState: snapshotState{
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(sharedClaim): drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc),
+					}, nil, nil, deviceClasses),
+			},
+		},
+		{
+			name: "remove nodeInfo where a later pod directly references an earlier pod's owned claim",
+			// Two pods on the same node: podWithClaims owns podOwnedClaim (and references sharedClaim),
+			// and podConsumesOwned references podOwnedClaim directly. Teardown removes the owner's claim
+			// while processing the first pod, so cleanup of the second pod must tolerate the now-missing
+			// reference instead of panicking. podOwnedClaim is allocated and reserved for both pods to
+			// model the scheduled state.
+			state: snapshotState{
+				nodes:       []*apiv1.Node{node},
+				csiSnapshot: createCSISnapshot(csiNode),
+				podsByNode:  map[string][]*apiv1.Pod{node.Name: {withNodeName(podWithClaims, node.Name), withNodeName(podConsumesOwned, node.Name)}},
+				draSnapshot: drasnapshot.NewSnapshot(
+					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{
+						drasnapshot.GetClaimId(podOwnedClaim): drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(podOwnedClaim, podOwnedClaimAlloc), podWithClaims, podConsumesOwned),
+						drasnapshot.GetClaimId(sharedClaim):   drautils.TestClaimWithPodReservations(drautils.TestClaimWithAllocation(sharedClaim, sharedClaimAlloc), podWithClaims),
+					},
+					map[string][]*resourceapi.ResourceSlice{node.Name: resourceSlices},
+					nil, deviceClasses),
+			},
+			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
+				return snapshot.RemoveNodeInfo(node.Name)
+			},
+			// Both pods leave with the node. The pod-owned claim is removed, and the shared claim
+			// stays with the owner's reservation cleared.
 			modifiedState: snapshotState{
 				draSnapshot: drasnapshot.NewSnapshot(
 					map[drasnapshot.ResourceClaimId]*resourceapi.ResourceClaim{

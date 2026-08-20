@@ -208,6 +208,47 @@ func TestSnapshotResourceClaims(t *testing.T) {
 			},
 		},
 		{
+			// pod1OwnClaim2 is absent from the snapshot, so findPodClaims skips it on the lenient
+			// path. Cleanup must still remove pod1OwnClaim1 and reach the shared claims that follow
+			// the skipped reference, clearing pod1's reservations there.
+			testName: "RemovePodOwnedClaims(): skips a claim missing from the snapshot and keeps cleaning up",
+			claims: map[ResourceClaimId]*resourceapi.ResourceClaim{
+				GetClaimId(pod1OwnClaim1): pod1OwnClaim1.DeepCopy(),
+				GetClaimId(sharedClaim1):  drautils.TestClaimWithPodReservations(sharedClaim1, pod1),
+				GetClaimId(sharedClaim2):  drautils.TestClaimWithPodReservations(sharedClaim2, pod1),
+			},
+			claimsModFun: func(snapshot *Snapshot) error {
+				snapshot.RemovePodOwnedClaims(pod1)
+				return nil
+			},
+			pod:              pod1,
+			wantPodClaimsErr: cmpopts.AnyError,
+			wantAllClaims: []*resourceapi.ResourceClaim{
+				sharedClaim1, // pod1 reservation removed
+				sharedClaim2, // pod1 reservation removed
+			},
+		},
+		{
+			// pod1's own claims are template-backed and resolve to an empty name once the status is
+			// gone, so findPodClaims skips them on the lenient path. Cleanup must still reach the
+			// directly referenced shared claims that follow, clearing pod1's reservations.
+			testName: "RemovePodOwnedClaims(): skips a claim with an unresolved template name and keeps cleaning up",
+			claims: map[ResourceClaimId]*resourceapi.ResourceClaim{
+				GetClaimId(sharedClaim1): drautils.TestClaimWithPodReservations(sharedClaim1, pod1NoClaimsInStatus),
+				GetClaimId(sharedClaim2): drautils.TestClaimWithPodReservations(sharedClaim2, pod1NoClaimsInStatus),
+			},
+			claimsModFun: func(snapshot *Snapshot) error {
+				snapshot.RemovePodOwnedClaims(pod1NoClaimsInStatus)
+				return nil
+			},
+			pod:              pod1NoClaimsInStatus,
+			wantPodClaimsErr: cmpopts.AnyError,
+			wantAllClaims: []*resourceapi.ResourceClaim{
+				sharedClaim1, // pod1 reservation removed
+				sharedClaim2, // pod1 reservation removed
+			},
+		},
+		{
 			testName: "ReservePodClaims(): missing claims are an error",
 			claims: map[ResourceClaimId]*resourceapi.ResourceClaim{
 				GetClaimId(sharedClaim1):  drautils.TestClaimWithPodReservations(sharedClaim1, pod2),
