@@ -3542,6 +3542,10 @@ func TestStaticAutoscalerWithNodeDeclaredFeatures(t *testing.T) {
 			onScaleDownMock := &onScaleDownMock{}
 
 			// Feature gate setup
+			if !tc.nodeDeclaredFeaturesEnabled {
+				// NodeDeclaredFeatures is locked to true at 1.37, so it can only be disabled under an earlier emulation version.
+				featuregatetesting.SetFeatureGateEmulationVersionDuringTest(t, utilfeature.DefaultFeatureGate, version.MustParse("1.36"))
+			}
 			featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.NodeDeclaredFeatures, tc.nodeDeclaredFeaturesEnabled)
 
 			if tc.nodeDeclaredFeaturesEnabled {

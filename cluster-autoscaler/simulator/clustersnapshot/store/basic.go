@@ -20,6 +20,8 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	schedulingv1alpha3 "k8s.io/api/scheduling/v1alpha3"
+	schedulingv1beta1 "k8s.io/api/scheduling/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
@@ -268,6 +270,9 @@ func (snapshot *BasicSnapshotStore) Clear() {
 type basicSnapshotStoreNodeLister BasicSnapshotStore
 type basicSnapshotStoreStorageLister BasicSnapshotStore
 type basicSnapshotStorePodGroupStateLister BasicSnapshotStore
+type basicSnapshotStoreCompositePodGroupStateLister BasicSnapshotStore
+type basicSnapshotStorePodGroupLister BasicSnapshotStore
+type basicSnapshotStoreCompositePodGroupLister BasicSnapshotStore
 
 // NodeInfos exposes snapshot as NodeInfoLister.
 func (snapshot *BasicSnapshotStore) NodeInfos() schedulerinterface.NodeInfoLister {
@@ -284,6 +289,21 @@ func (snapshot *BasicSnapshotStore) PodGroupStates() schedulerinterface.PodGroup
 	return (*basicSnapshotStorePodGroupStateLister)(snapshot)
 }
 
+// CompositePodGroupStates exposes snapshot as CompositePodGroupStateLister.
+func (snapshot *BasicSnapshotStore) CompositePodGroupStates() schedulerinterface.CompositePodGroupStateLister {
+	return (*basicSnapshotStoreCompositePodGroupStateLister)(snapshot)
+}
+
+// PodGroups exposes snapshot as PodGroupLister.
+func (snapshot *BasicSnapshotStore) PodGroups() schedulerinterface.PodGroupLister {
+	return (*basicSnapshotStorePodGroupLister)(snapshot)
+}
+
+// CompositePodGroups exposes snapshot as CompositePodGroupLister.
+func (snapshot *BasicSnapshotStore) CompositePodGroups() schedulerinterface.CompositePodGroupLister {
+	return (*basicSnapshotStoreCompositePodGroupLister)(snapshot)
+}
+
 // List returns the list of nodes in the snapshot.
 func (snapshot *basicSnapshotStoreNodeLister) List() ([]schedulerinterface.NodeInfo, error) {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfos(), nil
@@ -297,6 +317,18 @@ func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithAffinityList() ([]sche
 // HavePodsWithRequiredAntiAffinityList returns the list of NodeInfos of nodes with pods with required anti-affinity terms.
 func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithRequiredAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfosThatHavePodsWithRequiredAntiAffinityList()
+}
+
+// HavePodsWithRequiredNonHostScopedAntiAffinityList returns nodes containing pods with non-host-scoped required anti-affinity terms.
+func (snapshot *basicSnapshotStoreNodeLister) HavePodsWithRequiredNonHostScopedAntiAffinityList() ([]schedulerinterface.NodeInfo, error) {
+	nodeInfoList := (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfos()
+	result := make([]schedulerinterface.NodeInfo, 0, len(nodeInfoList))
+	for _, nodeInfo := range nodeInfoList {
+		if len(nodeInfo.GetPodsWithRequiredNonHostScopedAntiAffinity()) > 0 {
+			result = append(result, nodeInfo)
+		}
+	}
+	return result, nil
 }
 
 // Returns the NodeInfo of the given node name.
@@ -315,4 +347,17 @@ func (snapshot *basicSnapshotStoreStorageLister) IsPVCUsedByPods(key string) boo
 // as pod group states are not integrated with cluster autoscaler.
 func (snapshot *basicSnapshotStorePodGroupStateLister) Get(namespace string, podGroupName string) (schedulerinterface.PodGroupState, error) {
 	return nil, errorGettingPodGroupState
+}
+
+// Get returns an error because composite pod group state is not integrated with autoscaler simulations.
+func (snapshot *basicSnapshotStoreCompositePodGroupStateLister) Get(namespace string, compositePodGroupName string) (schedulerinterface.CompositePodGroupState, error) {
+	return nil, errorGettingCompositePodGroupState
+}
+
+func (snapshot *basicSnapshotStorePodGroupLister) Get(namespace, podGroupName string) (*schedulingv1beta1.PodGroup, error) {
+	return nil, errorGettingPodGroup
+}
+
+func (snapshot *basicSnapshotStoreCompositePodGroupLister) Get(namespace, compositePodGroupName string) (*schedulingv1alpha3.CompositePodGroup, error) {
+	return nil, errorGettingCompositePodGroup
 }
