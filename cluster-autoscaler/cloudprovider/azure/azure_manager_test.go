@@ -1132,14 +1132,56 @@ func TestVMSSNotFound(t *testing.T) {
 	t.Run("should not error when VMSS not found in cache", func(t *testing.T) {
 		manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfg), ngdo, &client)
 		assert.NoError(t, err)
-		// expect one nodegroup to be present
+		// The missing VMSS remains registered for reconciliation but is not exposed
+		// to the autoscaler until a backing VMSS appears.
 		nodeGroups := manager.getNodeGroups()
-		assert.Len(t, nodeGroups, 1)
-		assert.Equal(t, nodeGroups[0].Id(), testASG)
+		assert.Empty(t, nodeGroups)
+		registeredNodeGroups := manager.azureCache.getRegisteredNodeGroups()
+		assert.Len(t, registeredNodeGroups, 1)
+		assert.Equal(t, registeredNodeGroups[0].Id(), testASG)
 		// expect no scale sets to be present
 		scaleSets := manager.azureCache.getScaleSets()
 		assert.Len(t, scaleSets, 0)
 	})
+}
+
+func TestGetNodeGroupsFiltersPhantomScaleSet(t *testing.T) {
+	manager := newTestAzureManager(t)
+	scaleSet := newTestScaleSet(manager, "phantom-vmss")
+	assert.True(t, manager.RegisterNodeGroup(scaleSet))
+
+	assert.Empty(t, manager.getNodeGroups())
+	assert.Len(t, manager.azureCache.getRegisteredNodeGroups(), 1)
+}
+
+func TestGetNodeGroupsIncludesScaleSetWhenVMSSAppears(t *testing.T) {
+	manager := newTestAzureManager(t)
+	name := "new-vmss"
+	scaleSet := newTestScaleSet(manager, name)
+	assert.True(t, manager.RegisterNodeGroup(scaleSet))
+	manager.azureCache.setScaleSet(name, newTestVMSSList(0, name, testLocation, armcompute.OrchestrationModeUniform)[0])
+
+	nodeGroups := manager.getNodeGroups()
+	assert.Len(t, nodeGroups, 1)
+	assert.Equal(t, name, nodeGroups[0].Id())
+}
+
+func TestGetNodeGroupsFiltersPreviouslyObservedScaleSetOnCacheMiss(t *testing.T) {
+	manager := newTestAzureManager(t)
+	scaleSet := newTestScaleSet(manager, "temporarily-missing-vmss")
+	assert.True(t, manager.RegisterNodeGroup(scaleSet))
+
+	assert.Empty(t, manager.getNodeGroups())
+}
+
+func TestGetNodeGroupsDoesNotFilterVMsPool(t *testing.T) {
+	manager := newTestAzureManager(t)
+	vmPool := newTestVMsPool(manager)
+	assert.True(t, manager.RegisterNodeGroup(vmPool))
+
+	nodeGroups := manager.getNodeGroups()
+	assert.Len(t, nodeGroups, 1)
+	assert.Equal(t, vmPool.Id(), nodeGroups[0].Id())
 }
 
 func assertStructsMinimallyEqual(t *testing.T, struct1, struct2 interface{}) bool {
