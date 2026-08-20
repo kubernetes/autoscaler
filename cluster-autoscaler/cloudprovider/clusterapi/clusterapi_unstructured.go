@@ -115,11 +115,21 @@ func (r *unstructuredScalableResource) Replicas() (int, error) {
 }
 
 func (r *unstructuredScalableResource) SetSize(nreplicas int) error {
-	switch {
-	case nreplicas > r.maxSize:
-		return fmt.Errorf("size increase too large - desired:%d max:%d", nreplicas, r.maxSize)
-	case nreplicas < r.minSize:
+	if nreplicas < r.minSize {
 		return fmt.Errorf("size decrease too large - desired:%d min:%d", nreplicas, r.minSize)
+	}
+
+	currentSize, err := r.Replicas()
+	if err != nil {
+		return err
+	}
+
+	// Only enforce maxSize when scaling up. When scaling down (e.g. current
+	// replicas already exceed maxSize because the user lowered the annotation),
+	// we must allow the decrease so the autoscaler can converge toward the
+	// desired range.
+	if nreplicas > r.maxSize && nreplicas > currentSize {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", nreplicas, r.maxSize)
 	}
 
 	gvr, err := r.GroupVersionResource()
