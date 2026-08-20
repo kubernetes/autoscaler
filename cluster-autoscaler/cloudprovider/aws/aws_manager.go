@@ -38,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
@@ -52,6 +53,8 @@ const (
 	autoDiscovererTypeASG   = "asg"
 	asgAutoDiscovererKeyTag = "tag"
 	optionsTagsPrefix       = "k8s.io/cluster-autoscaler/node-template/autoscaling-options/"
+	csiDriverTagKey         = "k8s.io/cluster-autoscaler/node-template/csi-driver"
+	ebsCSIDriverName        = "ebs.csi.aws.com"
 	labelAwsCSITopologyZone = "topology.ebs.csi.aws.com/zone"
 )
 
@@ -341,14 +344,101 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	return &node, nil
 }
 
-func (m *AwsManager) buildCSINodeFromTemplate(template *asgTemplate, _ string) *storagev1.CSINode {
+func (m *AwsManager) buildCSINodeFromTemplate(template *asgTemplate, nodeName string) *storagev1.CSINode {
 	if template == nil || template.InstanceType == nil {
 		return nil
 	}
 
-	// CSI drivers are optional per node group. EBSVolumeLimit is EC2 attachment
-	// capacity, not proof that ebs.csi.aws.com is installed.
-	return nil
+	driverNames := parseCSIDriverTag(m.csiDriverTagValue(template))
+	if len(driverNames) == 0 {
+		return nil
+	}
+
+	drivers := make([]storagev1.CSINodeDriver, 0, len(driverNames))
+	for _, name := range driverNames {
+		driver := storagev1.CSINodeDriver{
+			Name:   name,
+			NodeID: nodeName,
+		}
+		if name == ebsCSIDriverName && template.InstanceType.EBSVolumeLimit > 0 {
+			driver.Allocatable = &storagev1.VolumeNodeResources{
+				Count: ptr.To(int32(template.InstanceType.EBSVolumeLimit)),
+			}
+		} else if name == ebsCSIDriverName {
+			klog.Errorf(
+				"EBS volume attachment limit unavailable for instance type %q",
+				template.InstanceType.InstanceType,
+			)
+		}
+		drivers = append(drivers, driver)
+	}
+
+	return &storagev1.CSINode{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: nodeName,
+		},
+		Spec: storagev1.CSINodeSpec{
+			Drivers: drivers,
+		},
+	}
+}
+
+// csiDriverTagValue returns the csi-driver tag value. ASG tags are used first.
+// If this ASG backs an EKS managed nodegroup and the same key is present on
+// DescribeNodegroup tags, the MNG value wins (same precedence as resource tags).
+func (m *AwsManager) csiDriverTagValue(template *asgTemplate) string {
+	value := extractCSIDriverTagFromAsg(template.Tags)
+	labels := extractLabelsFromAsg(template.Tags)
+	nodegroupName, clusterName := labels["nodegroup-name"], labels["cluster-name"]
+	if m.managedNodegroupCache == nil || nodegroupName == "" || clusterName == "" {
+		return value
+	}
+	mngTags, err := m.managedNodegroupCache.getManagedNodegroupTags(nodegroupName, clusterName)
+	if err != nil || mngTags == nil {
+		return value
+	}
+	if mngValue, found := mngTags[csiDriverTagKey]; found {
+		return mngValue
+	}
+	return value
+}
+
+func extractCSIDriverTagFromAsg(tags []autoscalingtypes.TagDescription) string {
+	for _, tag := range tags {
+		if aws.ToString(tag.Key) == csiDriverTagKey {
+			return aws.ToString(tag.Value)
+		}
+	}
+	return ""
+}
+
+// parseCSIDriverTag parses comma-separated CSI driver names.
+// Entries are trimmed and deduplicated in first-seen order. Empty entries are
+// ignored. Entries containing '=' or whitespace after trim are treated as
+// malformed and skipped so capacity is never read from the tag.
+func parseCSIDriverTag(value string) []string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil
+	}
+
+	seen := make(map[string]struct{})
+	var drivers []string
+	for _, part := range strings.Split(value, ",") {
+		name := strings.TrimSpace(part)
+		if name == "" {
+			continue
+		}
+		if strings.ContainsAny(name, "=\t ") {
+			continue
+		}
+		if _, exists := seen[name]; exists {
+			continue
+		}
+		seen[name] = struct{}{}
+		drivers = append(drivers, name)
+	}
+	return drivers
 }
 
 func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]string, mngLabels map[string]string) map[string]string {

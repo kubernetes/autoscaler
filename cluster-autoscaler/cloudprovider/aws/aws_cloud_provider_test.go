@@ -917,6 +917,54 @@ func TestAwsNodeGroupTemplateNodeInfoDoesNotSetCSINode(t *testing.T) {
 	assert.Nil(t, nodeInfo.CSINode)
 }
 
+func TestAwsNodeGroupTemplateNodeInfoSetsCSINodeWhenDeclared(t *testing.T) {
+	const instanceTypeName = "m5.large"
+
+	manager := &AwsManager{
+		instanceTypes: map[string]*InstanceType{
+			instanceTypeName: {
+				InstanceType:   instanceTypeName,
+				VCPU:           2,
+				MemoryMb:       8192,
+				Architecture:   "amd64",
+				EBSVolumeLimit: 39,
+			},
+		},
+	}
+
+	origGetInstanceTypeFunc := getInstanceTypeForAsg
+	defer func() { getInstanceTypeForAsg = origGetInstanceTypeFunc }()
+	getInstanceTypeForAsg = func(_ *asgCache, _ *asg) (string, error) {
+		return instanceTypeName, nil
+	}
+
+	ng := &AwsNodeGroup{
+		awsManager: manager,
+		asg: &asg{
+			AwsRef:            AwsRef{Name: "test-asg"},
+			AvailabilityZones: []string{"us-east-1a"},
+			minSize:           0,
+			maxSize:           5,
+			curSize:           0,
+			Tags: []autoscalingtypes.TagDescription{
+				{
+					Key:   aws.String(csiDriverTagKey),
+					Value: aws.String("ebs.csi.aws.com"),
+				},
+			},
+		},
+	}
+
+	nodeInfo, err := ng.TemplateNodeInfo()
+	assert.NoError(t, err)
+	assert.NotNil(t, nodeInfo)
+	assert.NotNil(t, nodeInfo.CSINode)
+	assert.Len(t, nodeInfo.CSINode.Spec.Drivers, 1)
+	assert.Equal(t, "ebs.csi.aws.com", nodeInfo.CSINode.Spec.Drivers[0].Name)
+	assert.NotNil(t, nodeInfo.CSINode.Spec.Drivers[0].Allocatable)
+	assert.Equal(t, int32(39), *nodeInfo.CSINode.Spec.Drivers[0].Allocatable.Count)
+}
+
 func TestEFSOnlyExistingNodeStaysReadyWhenAWSTemplateHasNoCSINode(t *testing.T) {
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{Name: "efs-only-node"},
