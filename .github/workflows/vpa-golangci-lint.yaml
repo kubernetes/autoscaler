@@ -36,3 +36,4 @@ jobs:
         with:
           args: --timeout=30m
           working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler/vertical-pod-autoscaler
+          version-file: .golangci-lint-version
