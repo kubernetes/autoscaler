@@ -2345,3 +2345,52 @@ func newTestClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, logR
 	nodeGroupConfigProcessor := nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 2 * time.Minute})
 	return NewNotifiedClusterStateRegistry(cloudProvider, logRecorder, newBackoff(), nodeGroupConfigProcessor, &emptyTemplateNodeInfoRegistry{}, opts...)
 }
+
+func failingTargetSizeNodeGroup(id string, targetSizeErr error) *mockprovider.NodeGroup {
+	ng := &mockprovider.NodeGroup{}
+	ng.On("Id").Return(id)
+	ng.On("TargetSize").Return(0, targetSizeErr)
+	ng.On("Nodes").Return([]cloudprovider.Instance{}, nil)
+	ng.On("Autoprovisioned").Return(false)
+	ng.On("GetOptions", mock.Anything).Return(&config.NodeGroupAutoscalingOptions{}, nil)
+	return ng
+}
+
+func TestGetTargetSizesContinuesOnPartialFailure(t *testing.T) {
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("healthy", 1, 10, 5)
+	provider.InsertNodeGroup(failingTargetSizeNodeGroup("broken", fmt.Errorf("could not find vmss: broken")))
+
+	sizes, err := getTargetSizes(provider)
+	assert.ErrorContains(t, err, "node group broken")
+	assert.Equal(t, map[string]int{"healthy": 5}, sizes)
+}
+
+func TestGetTargetSizesAllFail(t *testing.T) {
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.InsertNodeGroup(failingTargetSizeNodeGroup("broken", fmt.Errorf("could not find vmss: broken")))
+
+	sizes, err := getTargetSizes(provider)
+	assert.ErrorContains(t, err, "node group broken")
+	assert.Empty(t, sizes)
+}
+
+func TestUpdateNodesContinuesWhenOneNodeGroupTargetSizeFails(t *testing.T) {
+	now := time.Now()
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddNodeGroup("ng1", 1, 10, 5)
+	provider.AddNode("ng1", ng1_1)
+	provider.InsertNodeGroup(failingTargetSizeNodeGroup("broken", fmt.Errorf("could not find vmss: broken")))
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	clusterstate := newTestClusterStateRegistry(provider, fakeLogRecorder)
+
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, now)
+	assert.NoError(t, err)
+	_, targetSize := clusterstate.GetAutoscaledNodesCount()
+	assert.Equal(t, 5, targetSize)
+}

@@ -421,7 +421,10 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 	csr.updateNodeGroupMetrics()
 	targetSizes, err := getTargetSizes(csr.cloudProvider)
 	if err != nil {
-		return err
+		klog.Warningf("Failed to get target sizes for some node groups: %v", err)
+		if len(targetSizes) == 0 {
+			return err
+		}
 	}
 	metrics.UpdateNodeGroupTargetSize(targetSizes)
 
@@ -476,16 +479,22 @@ func (csr *ClusterStateRegistry) Recalculate() {
 }
 
 // getTargetSizes gets target sizes of node groups.
+// If TargetSize() fails for a node group, that group is skipped so healthy
+// groups can still be autoscaled. The returned error is a join of per-group
+// failures; the map contains sizes for groups that succeeded.
 func getTargetSizes(cp cloudprovider.CloudProvider) (map[string]int, error) {
 	result := make(map[string]int)
+	var errs []error
 	for _, ng := range cp.NodeGroups() {
 		size, err := ng.TargetSize()
 		if err != nil {
-			return map[string]int{}, err
+			klog.Warningf("Failed to get target size for node group %s: %v", ng.Id(), err)
+			errs = append(errs, fmt.Errorf("node group %s: %w", ng.Id(), err))
+			continue
 		}
 		result[ng.Id()] = size
 	}
-	return result, nil
+	return result, errors.Join(errs...)
 }
 
 // IsClusterHealthy returns true if the cluster health is within the acceptable limits
