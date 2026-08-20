@@ -72,7 +72,7 @@ Add a single optional field to `PodUpdatePolicy` (autoscaling.k8s.io/v1):
 InitialDelaySeconds *int32 `json:"initialDelaySeconds,omitempty"`
 ```
 
-Behaviour, in one sentence: **the Updater and the Admission Controller treat the VPA as if `updateMode` were `Off` until `now >= vpa.CreationTimestamp + spec.updatePolicy.initialDelaySeconds`.** After that, the configured `updateMode` takes effect.
+With the new `initialDelaySeconds`, the Updater and the Admission Controller treat the VPA as if `updateMode` were `Off` until `now >= vpa.CreationTimestamp + spec.updatePolicy.initialDelaySeconds`. After that, the configured `updateMode` takes effect.
 
 Modifying the VPA's spec does not reset the window. The gate is a pure function of the immutable `vpa.CreationTimestamp` and the current value of `initialDelaySeconds`, re-evaluated on every reconcile — there is no per-object state to reset. The full modification semantics are described in [Gate Evaluation](#gate-evaluation). While the gate is active, the [`InitialDelayActive` status condition](#status-condition) surfaces it on the VPA object.
 
@@ -362,9 +362,4 @@ Pods created during the first hour receive their `Deployment`-spec resources unc
 
 ## Implementation History
 
-- (issue filed) 2026-07-06 — Issue [kubernetes/autoscaler#9936](https://github.com/kubernetes/autoscaler/issues/9936) filed.
-- (triage accepted) 2026-07-07 — `/triage accepted` from SIG member.
-- (AEP PR opened) 2026-07-10 — PR [kubernetes/autoscaler#9962](https://github.com/kubernetes/autoscaler/pull/9962).
-- (initial implementation) TBD.
-- (alpha) TBD.
-- (beta) TBD.
+* 2026-07-10: Initial version.
