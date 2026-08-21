@@ -37,7 +37,7 @@ func TestClusterStateRegistryScaleUpWithDeletedNodes(t *testing.T) {
 		testName string
 		// nodeGroupForNodeWorksForDeletedNodes is used to test different supported behaviors of the CloudProvider.NodeGroupForNode() method.
 		nodeGroupForNodeWorksForDeletedNodes bool
-		// hasInstanceNotImplemented is used to test different supported behaviors of the CloudProvider.HasInstance(context.TODO(), ) method.
+		// hasInstanceNotImplemented is used to test different supported behaviors of the CloudProvider.HasInstance() method.
 		// Note that the behavior of HasInstance() returning still returning true for Nodes deleted via NodeGroup.DeleteNodes() is not supported
 		// and this test would not pass with it.
 		hasInstanceNotImplemented bool // The field is negated to match the parameter to ConfigureHasInstanceBehavior().

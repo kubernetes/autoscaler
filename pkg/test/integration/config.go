@@ -45,8 +45,8 @@ var DefaultAutoscalingOptions = config.AutoscalingOptions{
 	ScaleDownDelayTypeLocal:    true,
 	ScaleDownEnabled:           true,
 	MaxNodesTotal:              10000,
-	MaxCoresTotal:              100000,             // WARN: This setting isn't actually used by the fake CloudProvider.GetResourceLimiter(context.TODO()), there's a separate config there.
-	MaxMemoryTotal:             100000 * units.GiB, // WARN: This setting isn't actually used by the fake CloudProvider.GetResourceLimiter(context.TODO()), there's a separate config there.
+	MaxCoresTotal:              100000,             // WARN: This setting isn't actually used by the fake CloudProvider.GetResourceLimiter(), there's a separate config there.
+	MaxMemoryTotal:             100000 * units.GiB, // WARN: This setting isn't actually used by the fake CloudProvider.GetResourceLimiter(), there's a separate config there.
 	ExpanderNames:              "least-waste",
 	ScaleUpFromZero:            true,
 	FrequentLoopsEnabled:       true,

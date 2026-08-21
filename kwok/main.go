@@ -234,12 +234,6 @@ func main() {
 		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 
-	if pflag.CommandLine.Changed("enable-contextual-logging") {
-		if err := featureGate.SetFromMap(map[string]bool{string(logsapi.ContextualLogging): autoscalingOpts.EnableContextualLogging}); err != nil {
-			klog.Fatalf("Failed to override ContextualLogging feature gate: %v", err)
-		}
-	}
-
 	// The DRA feature controls whether the DRA scheduler plugin is selected in scheduler framework. The local DRA flag controls whether
 	// DRA logic is enabled in Cluster Autoscaler. The 2 values should be in sync - enabling DRA logic in CA without selecting the DRA scheduler
 	// plugin doesn't actually do anything, and selecting the DRA scheduler plugin without enabling DRA logic in CA means the plugin is not set up

@@ -219,7 +219,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(sharedClaim2):  drautils.TestClaimWithPodReservations(sharedClaim2, pod1),
 			},
 			claimsModFun: func(snapshot *Snapshot) error {
-				snapshot.RemovePodOwnedClaims(pod1)
+				snapshot.RemovePodOwnedClaims(context.TODO(), pod1)
 				return nil
 			},
 			pod:              pod1,
@@ -239,7 +239,7 @@ func TestSnapshotResourceClaims(t *testing.T) {
 				GetClaimId(sharedClaim2): drautils.TestClaimWithPodReservations(sharedClaim2, pod1NoClaimsInStatus),
 			},
 			claimsModFun: func(snapshot *Snapshot) error {
-				snapshot.RemovePodOwnedClaims(pod1NoClaimsInStatus)
+				snapshot.RemovePodOwnedClaims(context.TODO(), pod1NoClaimsInStatus)
 				return nil
 			},
 			pod:              pod1NoClaimsInStatus,

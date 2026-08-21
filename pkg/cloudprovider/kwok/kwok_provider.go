@@ -48,7 +48,7 @@ func init() {
 }
 
 // Name returns name of the cloud provider.
-func (kwok *KwokCloudProvider) Name(ctx context.Context) string {
+func (kwok *KwokCloudProvider) Name() string {
 	return ProviderName
 }
 

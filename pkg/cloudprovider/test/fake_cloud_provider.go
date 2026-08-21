@@ -53,7 +53,7 @@ type CloudProvider struct {
 	// - [default] If false, NodeGroupForNode() returns the NodeGroup based on the CloudProvider.nodeToGroup map, which means it doesn't work for deleted Nodes.
 	// - If true, NodeGroupForNode() returns the NodeGroup based on Node.ProviderID, which means it works for deleted Nodes.
 	nodeGroupForNodeWorksForDeletedNodes bool
-	// hasInstanceImplemented controls the behavior of CloudProvider.HasInstance(context.TODO(), ), so that different behaviors can be tested:
+	// hasInstanceImplemented controls the behavior of CloudProvider.HasInstance(), so that different behaviors can be tested:
 	// - [default] If false, HasInstance() is implemented and responds true for Nodes tracked by the fake CloudProvider until they're deleted via DeleteNodes().
 	// - If true, HasInstance() always returns the ErrNotImplemented error. This is supported by CA, HasInstance() is an optional method.
 	hasInstanceNotImplemented bool // The field is negated so that the default behavior with the field being false is "HasInstance() is implemented".
@@ -157,7 +157,7 @@ func (c *CloudProvider) Cleanup(ctx context.Context) error { return nil }
 func (c *CloudProvider) Refresh(ctx context.Context) error { return nil }
 
 // Name returns the name of the cloud provider.
-func (c *CloudProvider) Name(ctx context.Context) string { return "Provider" }
+func (c *CloudProvider) Name() string { return "Provider" }
 
 // Pricing returns the pricing model associated with the provider.
 func (c *CloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
@@ -292,7 +292,7 @@ func (c *CloudProvider) ConfigureNodeGroupForNodeBehavior(worksForDeletedNodes b
 	c.nodeGroupForNodeWorksForDeletedNodes = worksForDeletedNodes
 }
 
-// ConfigureHasInstanceBehavior configures the behavior of CloudProvider.HasInstance(context.TODO(), ). See the comment on CloudProvider.hasInstanceNotImplemented for more details.
+// ConfigureHasInstanceBehavior configures the behavior of CloudProvider.HasInstance(). See the comment on CloudProvider.hasInstanceNotImplemented for more details.
 func (c *CloudProvider) ConfigureHasInstanceBehavior(notImplemented bool) {
 	c.Lock()
 	defer c.Unlock()

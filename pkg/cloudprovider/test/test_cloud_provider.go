@@ -172,7 +172,7 @@ func (b *TestCloudProviderBuilder) Build() *TestCloudProvider {
 }
 
 // Name returns name of the cloud provider.
-func (tcp *TestCloudProvider) Name(ctx context.Context) string {
+func (tcp *TestCloudProvider) Name() string {
 	return "TestCloudProvider"
 }
 
@@ -386,7 +386,7 @@ func (tcp *TestCloudProvider) Cleanup(ctx context.Context) error {
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(context.TODO()).
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (tcp *TestCloudProvider) Refresh(ctx context.Context) error {
 	return nil
 }

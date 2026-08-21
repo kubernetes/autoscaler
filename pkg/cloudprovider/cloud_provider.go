@@ -51,7 +51,7 @@ func (gpu *GpuConfig) ExposedViaDra() bool {
 // cloud provider (GCE, AWS, etc).
 type CloudProvider interface {
 	// Name returns name of the cloud provider.
-	Name(context.Context) string
+	Name() string
 
 	// NodeGroups returns all node groups configured for this cloud provider.
 	NodeGroups(context.Context) []NodeGroup

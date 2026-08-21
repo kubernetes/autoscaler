@@ -18,6 +18,7 @@ package mocks
 
 import (
 	"context"
+
 	cloudprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	errors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 
@@ -141,7 +142,7 @@ func (_m *CloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider
 }
 
 // Name provides a mock function with given fields:
-func (_m *CloudProvider) Name(ctx context.Context) string {
+func (_m *CloudProvider) Name() string {
 	ret := _m.Called()
 
 	var r0 string

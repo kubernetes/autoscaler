@@ -782,7 +782,7 @@ func validTestCases(t *testing.T, snapshotName string) []modificationTestCase {
 					nil, deviceClasses),
 			},
 			op: func(snapshot clustersnapshot.ClusterSnapshot) error {
-				return snapshot.RemoveNodeInfo(node.Name)
+				return snapshot.RemoveNodeInfo(context.TODO(), node.Name)
 			},
 			// Both pods leave with the node. The pod-owned claim is removed, and the shared claim
 			// stays with the owner's reservation cleared.
