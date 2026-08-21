@@ -1,0 +1,12 @@
+image:
+  repository: cluster-autoscaler-kwok
+  tag: dev
+  pullPolicy: IfNotPresent
+
+tolerations: []
+
+extraArgs: {}
+
+commonLabels:
+  app: cluster-autoscaler
+  k8s-app: cluster-autoscaler
