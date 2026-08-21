@@ -65,6 +65,7 @@ this document:
   * [What events are emitted by CA?](#what-events-are-emitted-by-ca)
   * [My cluster is below minimum / above maximum number of nodes, but CA did not fix that! Why?](#my-cluster-is-below-minimum--above-maximum-number-of-nodes-but-ca-did-not-fix-that-why)
   * [What happens in scale-up when I have no more quota in the cloud provider?](#what-happens-in-scale-up-when-i-have-no-more-quota-in-the-cloud-provider)
+  * [Node scale-down after Job pods evicted or failed](#node-scale-down-after-job-pods-evicted-or-failed)
 * [Developer](#developer)
   * [What go version should be used to compile CA?](#what-go-version-should-be-used-to-compile-ca)
   * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
@@ -1362,6 +1363,16 @@ move back to the previous size until the quota arrives or the scale-up-triggerin
 
 From version 0.6.2, Cluster Autoscaler backs off from scaling up a node group after failure.
 Depending on how long scale-ups have been failing, it may wait up to 30 minutes before next attempt.
+
+### Node scale-down after Job pods evicted or failed
+
+When a Job's pods are evicted or fail, the controller enters an exponential backoff period that can
+last up to 6 minutes. Because no pending pods exist during this backoff, proactive scale-up does
+not trigger, potentially leading to the scale-down of nodes intended for replacement pods.
+This behavior is documented in [kubernetes/kubernetes#130881](https://github.com/kubernetes/kubernetes/issues/130881).
+
+Note that you can apply `safe-to-evict=false` on critical Job pods to prevent the eviction-induced
+backoff and subsequent premature scale-down.
 
 # Developer
 
