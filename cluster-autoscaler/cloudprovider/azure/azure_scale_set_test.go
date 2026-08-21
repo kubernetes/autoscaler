@@ -271,6 +271,94 @@ func TestScaleSetTargetSizeReturnsErrorForCachedNegativeSize(t *testing.T) {
 	assert.Equal(t, -1, size)
 }
 
+func TestGetCurSizeReturnsLastKnownSizeAndErrorOnCacheMiss(t *testing.T) {
+	provider := newTestProvider(t)
+	scaleSet := newTestScaleSet(provider.azureManager, "missing-vmss-with-known-size")
+	scaleSet.curSize = 3
+
+	size, err := scaleSet.getCurSize()
+
+	assert.NotNil(t, err)
+	assert.Equal(t, int64(3), size)
+}
+
+func TestGetCurSizeReturnsLastKnownSizeOnSpotNotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	provider := newTestProvider(t)
+	name := "missing-spot-vmss"
+	spotScaleSet := newTestVMSSList(3, name, testLocation, armcompute.OrchestrationModeUniform)[0]
+	priority := armcompute.VirtualMachinePriorityTypesSpot
+	spotScaleSet.Properties.VirtualMachineProfile = &armcompute.VirtualMachineScaleSetVMProfile{Priority: &priority}
+	provider.azureManager.azureCache.setScaleSet(name, spotScaleSet)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().Get(gomock.Any(), provider.azureManager.config.ResourceGroup, name, nil).
+		Return(nil, &azcore.ResponseError{StatusCode: http.StatusNotFound})
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	scaleSet := newTestScaleSet(provider.azureManager, name)
+	scaleSet.curSize = 3
+	size, err := scaleSet.getCurSize()
+
+	assert.Equal(t, int64(3), size)
+	assert.NotNil(t, err)
+	assert.True(t, err.notFound)
+}
+
+func TestTargetSizeReturnsLastKnownSizeOnCacheMiss(t *testing.T) {
+	provider := newTestProvider(t)
+	scaleSet := newTestScaleSet(provider.azureManager, "missing-vmss-with-known-size")
+	scaleSet.curSize = 3
+
+	size, err := scaleSet.TargetSize()
+
+	assert.NoError(t, err)
+	assert.Equal(t, 3, size)
+}
+
+func TestGetScaleSetSizeReturnsErrorOnCacheMiss(t *testing.T) {
+	provider := newTestProvider(t)
+	scaleSet := newTestScaleSet(provider.azureManager, "missing-vmss-with-known-size")
+	scaleSet.curSize = 3
+
+	size, err := scaleSet.getScaleSetSize()
+
+	assert.EqualError(t, err, "could not find vmss: missing-vmss-with-known-size")
+	assert.Equal(t, int64(3), size)
+}
+
+func TestDecreaseTargetSizeReturnsErrorOnCacheMiss(t *testing.T) {
+	provider := newTestProvider(t)
+	scaleSet := newTestScaleSet(provider.azureManager, "missing-vmss-with-known-size")
+	scaleSet.curSize = 3
+
+	err := scaleSet.DecreaseTargetSize(-1)
+
+	assert.EqualError(t, err, "could not find vmss: missing-vmss-with-known-size")
+}
+
+func TestNodesReturnsEmptyOnCacheMiss(t *testing.T) {
+	provider := newTestProvider(t)
+	scaleSet := newTestScaleSet(provider.azureManager, "missing-vmss-with-known-size")
+	scaleSet.curSize = 3
+
+	instances, err := scaleSet.Nodes()
+
+	assert.NoError(t, err)
+	assert.Empty(t, instances)
+}
+
+func TestGetCurSizeReturnsErrorWhenVMSSNeverObserved(t *testing.T) {
+	provider := newTestProvider(t)
+	scaleSet := newTestScaleSet(provider.azureManager, "never-observed-vmss")
+	scaleSet.curSize = -1
+
+	size, err := scaleSet.getCurSize()
+
+	assert.NotNil(t, err)
+	assert.Equal(t, int64(-1), size)
+}
+
 func TestScaleSetIncreaseSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -327,6 +415,7 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 		assert.NoError(t, err)
 
 		ss := newTestScaleSet(provider.azureManager, "test-asg-doesnt-exist")
+		ss.curSize = -1
 		err = ss.IncreaseSize(100)
 		expectedErr := fmt.Errorf("could not find vmss: test-asg-doesnt-exist")
 		assert.Equal(t, expectedErr, err)
