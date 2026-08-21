@@ -205,6 +205,10 @@ func (scaleSet *ScaleSet) getVMSSFromCache() (*armcompute.VirtualMachineScaleSet
 	return allVMSS[scaleSet.Name], nil
 }
 
+// getCurSize returns the current VMSS capacity together with Azure-specific lookup status.
+// It serializes access to the cached size and refresh timestamp. When the VMSS lookup fails,
+// it returns the last-known size (or -1 if no size was learned) plus GetVMSSFailedError so
+// callers can distinguish not-found from other failures without losing cached state.
 func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
@@ -249,7 +253,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 		set, err = scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name, nil)
 		if err != nil {
 			klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
-			return -1, newGetVMSSFailedError(err, azerrors.IsNotFoundErr(err))
+			return scaleSet.curSize, newGetVMSSFailedError(err, azerrors.IsNotFoundErr(err))
 		}
 		// Persist the freshly-fetched VMSS (including its ETag) so subsequent
 		// capacity updates send an up-to-date If-Match.
@@ -272,15 +276,14 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	return scaleSet.curSize, nil
 }
 
-// getScaleSetSize gets Scale Set size.
+// getScaleSetSize returns a VMSS size suitable for mutation decisions. Unlike read-only
+// callers that may interpret the typed result from getCurSize, this strict wrapper propagates
+// every provider error even when a last-known size is available. It also rejects -1 without
+// an accompanying provider error so mutations never proceed with unknown or stale capacity.
 func (scaleSet *ScaleSet) getScaleSetSize() (int64, error) {
 	// First, get the current size of the ScaleSet
 	size, getVMSSError := scaleSet.getCurSize()
 	if getVMSSError != nil {
-		if getVMSSError.notFound && size >= 0 {
-			klog.Warningf("VMSS %s not in cache; returning last-known size %d", scaleSet.Name, size)
-			return size, nil
-		}
 		klog.V(3).Infof("getScaleSetSize: error exists (actual err:%v)", getVMSSError.error)
 		return size, getVMSSError.error
 	}
@@ -319,8 +322,18 @@ func (scaleSet *ScaleSet) setScaleSetSize(size int64, delta int) error {
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
 func (scaleSet *ScaleSet) TargetSize() (int, error) {
-	size, err := scaleSet.getScaleSetSize()
-	return int(size), err
+	size, getVMSSError := scaleSet.getCurSize()
+	if getVMSSError != nil {
+		if getVMSSError.notFound && size >= 0 {
+			klog.Warningf("VMSS %s not in cache; returning last-known size %d", scaleSet.Name, size)
+			return int(size), nil
+		}
+		return int(size), getVMSSError.error
+	}
+	if size == -1 {
+		return -1, fmt.Errorf("failed to get scale set size for %s: cached size is -1 without provider error", scaleSet.Name)
+	}
+	return int(size), nil
 }
 
 // canIncreaseSize checks if the size increase is possible.
