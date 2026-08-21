@@ -1166,10 +1166,20 @@ func TestGetNodeGroupsIncludesScaleSetWhenVMSSAppears(t *testing.T) {
 	assert.Equal(t, name, nodeGroups[0].Id())
 }
 
-func TestGetNodeGroupsFiltersPreviouslyObservedScaleSetOnCacheMiss(t *testing.T) {
+func TestGetNodeGroupsFiltersScaleSetRemovedFromCache(t *testing.T) {
 	manager := newTestAzureManager(t)
-	scaleSet := newTestScaleSet(manager, "temporarily-missing-vmss")
+	name := "removed-vmss"
+	scaleSet := newTestScaleSet(manager, name)
 	assert.True(t, manager.RegisterNodeGroup(scaleSet))
+	manager.azureCache.setScaleSet(name, newTestVMSSList(1, name, testLocation, armcompute.OrchestrationModeUniform)[0])
+
+	nodeGroups := manager.getNodeGroups()
+	assert.Len(t, nodeGroups, 1)
+	assert.Equal(t, name, nodeGroups[0].Id())
+
+	manager.azureCache.mutex.Lock()
+	manager.azureCache.scaleSets = make(map[string]*armcompute.VirtualMachineScaleSet)
+	manager.azureCache.mutex.Unlock()
 
 	assert.Empty(t, manager.getNodeGroups())
 }
