@@ -1,0 +1,309 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "kwok-provider-config"
+  namespace: {{ .Release.Namespace }}
+data:
+  config: |-
+    # if you see '\n' everywhere, remove all the trailing spaces
+    apiVersion: v1alpha1
+    readNodesFrom: configmap # possible values: [cluster,configmap]
+    nodegroups:
+      # to specify how to group nodes into a nodegroup
+      # e.g., you want to treat nodes with same instance type as a nodegroup
+      # node1: m5.xlarge
+      # node2: c5.xlarge
+      # node3: m5.xlarge
+      # nodegroup1: [node1,node3]
+      # nodegroup2: [node2]
+      fromNodeLabelKey: "kwok-nodegroup"
+      # you can either specify fromNodeLabelKey OR fromNodeAnnotation
+      # (both are not allowed)
+      # fromNodeAnnotation: "eks.amazonaws.com/nodegroup"
+    nodes:
+      # gpuConfig:
+      #   # to tell kwok provider what label should be considered as GPU label
+      #   gpuLabelKey: "k8s.amazonaws.com/accelerator"
+      #   availableGPUTypes:
+      #     "nvidia-tesla-k80": {}
+      #     "nvidia-tesla-p100": {}
+    configmap:
+      name: kwok-provider-templates
+    kwok: {} # default: fetch latest release of kwok from github and install it
+    # # you can also manually specify which kwok release you want to install
+    # # for example:
+    # kwok:
+    #   release: v0.3.0
+    # # you can also disable installing kwok in CA code (and install your own kwok release)
+    # kwok:
+    #   install: false (true if not specified)
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kwok-provider-templates
+  namespace: {{ .Release.Namespace }}
+data:
+  templates: |-
+    # if you see '\n' everywhere, remove all the trailing spaces
+    apiVersion: v1
+    items:
+    - apiVersion: v1
+      kind: Node
+      metadata:
+        annotations:
+          kubeadm.alpha.kubernetes.io/cri-socket: unix:///run/containerd/containerd.sock
+          node.alpha.kubernetes.io/ttl: "0"
+          volumes.kubernetes.io/controller-managed-attach-detach: "true"
+        creationTimestamp: "2023-05-31T04:39:16Z"
+        labels:
+          beta.kubernetes.io/arch: amd64
+          beta.kubernetes.io/os: linux
+          kubernetes.io/arch: amd64
+          kubernetes.io/hostname: kind-control-plane
+          kwok-nodegroup: control-plane
+          kubernetes.io/os: linux
+          node-role.kubernetes.io/control-plane: ""
+          node.kubernetes.io/exclude-from-external-load-balancers: ""
+        name: kind-control-plane
+        resourceVersion: "506"
+        uid: 86716ec7-3071-4091-b055-77b4361d1dca
+      spec:
+        podCIDR: 10.244.0.0/24
+        podCIDRs:
+        - 10.244.0.0/24
+        providerID: kind://docker/kind/kind-control-plane
+        taints:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+      status:
+        addresses:
+        - address: 172.18.0.2
+          type: InternalIP
+        - address: kind-control-plane
+          type: Hostname
+        allocatable:
+          cpu: "12"
+          ephemeral-storage: 959786032Ki
+          hugepages-1Gi: "0"
+          hugepages-2Mi: "0"
+          memory: 32781516Ki
+          pods: "110"
+        capacity:
+          cpu: "12"
+          ephemeral-storage: 959786032Ki
+          hugepages-1Gi: "0"
+          hugepages-2Mi: "0"
+          memory: 32781516Ki
+          pods: "110"
+        conditions:
+        - lastHeartbeatTime: "2023-05-31T04:39:58Z"
+          lastTransitionTime: "2023-05-31T04:39:13Z"
+          message: kubelet has sufficient memory available
+          reason: KubeletHasSufficientMemory
+          status: "False"
+          type: MemoryPressure
+        - lastHeartbeatTime: "2023-05-31T04:39:58Z"
+          lastTransitionTime: "2023-05-31T04:39:13Z"
+          message: kubelet has no disk pressure
+          reason: KubeletHasNoDiskPressure
+          status: "False"
+          type: DiskPressure
+        - lastHeartbeatTime: "2023-05-31T04:39:58Z"
+          lastTransitionTime: "2023-05-31T04:39:13Z"
+          message: kubelet has sufficient PID available
+          reason: KubeletHasSufficientPID
+          status: "False"
+          type: PIDPressure
+        - lastHeartbeatTime: "2023-05-31T04:39:58Z"
+          lastTransitionTime: "2023-05-31T04:39:46Z"
+          message: kubelet is posting ready status
+          reason: KubeletReady
+          status: "True"
+          type: Ready
+        daemonEndpoints:
+          kubeletEndpoint:
+            Port: 10250
+        images: []
+        nodeInfo:
+          architecture: amd64
+          bootID: 2d71b318-5d07-4de2-9e61-2da28cf5bbf0
+          containerRuntimeVersion: containerd://1.6.19-46-g941215f49
+          kernelVersion: 5.15.0-72-generic
+          kubeProxyVersion: v1.26.3
+          kubeletVersion: v1.26.3
+          machineID: 96f8c8b8c8ae4600a3654341f207586e
+          operatingSystem: linux
+          osImage: Ubuntu 22.04.2 LTS
+          systemUUID: 111aa932-7f99-4bef-aaf7-36aa7fb9b012
+    - apiVersion: v1
+      kind: Node
+      metadata:
+        annotations:
+          kubeadm.alpha.kubernetes.io/cri-socket: unix:///run/containerd/containerd.sock
+          node.alpha.kubernetes.io/ttl: "0"
+          volumes.kubernetes.io/controller-managed-attach-detach: "true"
+        creationTimestamp: "2023-05-31T04:39:57Z"
+        labels:
+          beta.kubernetes.io/arch: amd64
+          beta.kubernetes.io/os: linux
+          kubernetes.io/arch: amd64
+          kubernetes.io/hostname: kind-worker
+          kwok-nodegroup: kind-worker
+          kubernetes.io/os: linux
+        name: kind-worker
+        resourceVersion: "577"
+        uid: 2ac0eb71-e5cf-4708-bbbf-476e8f19842b
+      spec:
+        podCIDR: 10.244.2.0/24
+        podCIDRs:
+        - 10.244.2.0/24
+        providerID: kind://docker/kind/kind-worker
+      status:
+        addresses:
+        - address: 172.18.0.3
+          type: InternalIP
+        - address: kind-worker
+          type: Hostname
+        allocatable:
+          cpu: "12"
+          ephemeral-storage: 959786032Ki
+          hugepages-1Gi: "0"
+          hugepages-2Mi: "0"
+          memory: 32781516Ki
+          pods: "110"
+        capacity:
+          cpu: "12"
+          ephemeral-storage: 959786032Ki
+          hugepages-1Gi: "0"
+          hugepages-2Mi: "0"
+          memory: 32781516Ki
+          pods: "110"
+        conditions:
+        - lastHeartbeatTime: "2023-05-31T04:40:17Z"
+          lastTransitionTime: "2023-05-31T04:39:57Z"
+          message: kubelet has sufficient memory available
+          reason: KubeletHasSufficientMemory
+          status: "False"
+          type: MemoryPressure
+        - lastHeartbeatTime: "2023-05-31T04:40:17Z"
+          lastTransitionTime: "2023-05-31T04:39:57Z"
+          message: kubelet has no disk pressure
+          reason: KubeletHasNoDiskPressure
+          status: "False"
+          type: DiskPressure
+        - lastHeartbeatTime: "2023-05-31T04:40:17Z"
+          lastTransitionTime: "2023-05-31T04:39:57Z"
+          message: kubelet has sufficient PID available
+          reason: KubeletHasSufficientPID
+          status: "False"
+          type: PIDPressure
+        - lastHeartbeatTime: "2023-05-31T04:40:17Z"
+          lastTransitionTime: "2023-05-31T04:40:05Z"
+          message: kubelet is posting ready status
+          reason: KubeletReady
+          status: "True"
+          type: Ready
+        daemonEndpoints:
+          kubeletEndpoint:
+            Port: 10250
+        images: []
+        nodeInfo:
+          architecture: amd64
+          bootID: 2d71b318-5d07-4de2-9e61-2da28cf5bbf0
+          containerRuntimeVersion: containerd://1.6.19-46-g941215f49
+          kernelVersion: 5.15.0-72-generic
+          kubeProxyVersion: v1.26.3
+          kubeletVersion: v1.26.3
+          machineID: a98a13ff474d476294935341f1ba9816
+          operatingSystem: linux
+          osImage: Ubuntu 22.04.2 LTS
+          systemUUID: 5f3c1af8-a385-4776-85e4-73d7f4252b44
+    - apiVersion: v1
+      kind: Node
+      metadata:
+        annotations:
+          kubeadm.alpha.kubernetes.io/cri-socket: unix:///run/containerd/containerd.sock
+          node.alpha.kubernetes.io/ttl: "0"
+          volumes.kubernetes.io/controller-managed-attach-detach: "true"
+        creationTimestamp: "2023-05-31T04:39:57Z"
+        labels:
+          beta.kubernetes.io/arch: amd64
+          beta.kubernetes.io/os: linux
+          kubernetes.io/arch: amd64
+          kubernetes.io/hostname: kind-worker2
+          kwok-nodegroup: kind-worker2
+          kubernetes.io/os: linux
+        name: kind-worker2
+        resourceVersion: "578"
+        uid: edc7df38-feb2-4089-9955-780562bdd21e
+      spec:
+        podCIDR: 10.244.1.0/24
+        podCIDRs:
+        - 10.244.1.0/24
+        providerID: kind://docker/kind/kind-worker2
+      status:
+        addresses:
+        - address: 172.18.0.4
+          type: InternalIP
+        - address: kind-worker2
+          type: Hostname
+        allocatable:
+          cpu: "12"
+          ephemeral-storage: 959786032Ki
+          hugepages-1Gi: "0"
+          hugepages-2Mi: "0"
+          memory: 32781516Ki
+          pods: "110"
+        capacity:
+          cpu: "12"
+          ephemeral-storage: 959786032Ki
+          hugepages-1Gi: "0"
+          hugepages-2Mi: "0"
+          memory: 32781516Ki
+          pods: "110"
+        conditions:
+        - lastHeartbeatTime: "2023-05-31T04:40:17Z"
+          lastTransitionTime: "2023-05-31T04:39:57Z"
+          message: kubelet has sufficient memory available
+          reason: KubeletHasSufficientMemory
+          status: "False"
+          type: MemoryPressure
+        - lastHeartbeatTime: "2023-05-31T04:40:17Z"
+          lastTransitionTime: "2023-05-31T04:39:57Z"
+          message: kubelet has no disk pressure
+          reason: KubeletHasNoDiskPressure
+          status: "False"
+          type: DiskPressure
+        - lastHeartbeatTime: "2023-05-31T04:40:17Z"
+          lastTransitionTime: "2023-05-31T04:39:57Z"
+          message: kubelet has sufficient PID available
+          reason: KubeletHasSufficientPID
+          status: "False"
+          type: PIDPressure
+        - lastHeartbeatTime: "2023-05-31T04:40:17Z"
+          lastTransitionTime: "2023-05-31T04:40:08Z"
+          message: kubelet is posting ready status
+          reason: KubeletReady
+          status: "True"
+          type: Ready
+        daemonEndpoints:
+          kubeletEndpoint:
+            Port: 10250
+        images: []
+        nodeInfo:
+          architecture: amd64
+          bootID: 2d71b318-5d07-4de2-9e61-2da28cf5bbf0
+          containerRuntimeVersion: containerd://1.6.19-46-g941215f49
+          kernelVersion: 5.15.0-72-generic
+          kubeProxyVersion: v1.26.3
+          kubeletVersion: v1.26.3
+          machineID: fa9f4cd3b3a743bc867b04e44941dcb2
+          operatingSystem: linux
+          osImage: Ubuntu 22.04.2 LTS
+          systemUUID: f36c0f00-8ba5-4c8c-88bc-2981c8d377b9
+    kind: List
+    metadata:
+      resourceVersion: ""
+
+

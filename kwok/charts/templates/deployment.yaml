@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- toYaml .Values.commonLabels | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- toYaml .Values.commonLabels | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- toYaml .Values.commonLabels | nindent 8 }}
+    spec:
+      priorityClassName: system-cluster-critical
+      hostNetwork: true
+      dnsPolicy: Default
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: {{ .Release.Name }}
+      containers:
+        - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          name: cluster-autoscaler
+          resources:
+            requests:
+              cpu: 100m
+              memory: 300Mi
+          command:
+            - /cluster-autoscaler-kwok
+            {{- range $key, $value := .Values.extraArgs }}
+            - --{{ $key }}={{ $value }}
+            {{- end }}
+          imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
