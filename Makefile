@@ -19,9 +19,13 @@ export PATH := $(GOBIN):$(PATH)
 # This will install all required tools into the local bin/ directory.
 
 .PHONY: install-dependencies
+install-dependencies: HELM_VERSION ?= v3.21.1
+install-dependencies: KIND_VERSION ?= v0.32.0
 install-dependencies: ENVTEST_VERSION ?= $(shell go list -m -f "{{ .Version }}" sigs.k8s.io/controller-runtime | awk -F'[v.]' '{printf "release-%d.%d", $$2, $$3}') # Pin the version to controller-runtime's one.
 install-dependencies:
 	@rm -Rf bin && mkdir -p $(GOBIN)
+	go install helm.sh/helm/v3/cmd/helm@$(HELM_VERSION)
+	go install sigs.k8s.io/kind@$(KIND_VERSION)
 	go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(ENVTEST_VERSION)
 	@$(MAKE) setup-envtest
 
@@ -63,3 +67,33 @@ clean:
 format:
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -d {} + | tee /dev/stderr)" || \
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -w {} + | tee /dev/stderr)"
+
+
+.PHONY: run-e2e
+run-e2e: e2e-kwok-cluster e2e-install-ca
+	@go test -tags e2e -v ./test/e2e/... -args -v=4
+	@$(MAKE) e2e-teardown
+
+E2E_CLUSTER_NAME ?= ca-e2e-kwok
+
+.PHONY: e2e-kwok-cluster
+e2e-kwok-cluster: E2E_KIND_CONFIG ?= kind-config.yaml
+e2e-kwok-cluster: KWOK_REPO_URL ?= https://kwok.sigs.k8s.io/charts/
+e2e-kwok-cluster:
+	kind create cluster --name $(E2E_CLUSTER_NAME) --config $(E2E_KIND_CONFIG)
+	helm repo add kwok-charts $(KWOK_REPO_URL)
+	helm upgrade --install kwok --namespace kube-system kwok-charts/kwok --set hostNetwork=true --wait
+	helm upgrade --install kwok-stage-fast --namespace kube-system kwok-charts/stage-fast --wait
+	kubectl apply -f pkg/apis/config/crd/
+
+.PHONY: e2e-install-ca
+e2e-install-ca: image-kwok
+	kind load docker-image cluster-autoscaler-kwok:dev --name $(E2E_CLUSTER_NAME)
+	helm upgrade --install cluster-autoscaler --namespace kube-system ./kwok/charts/ --wait \
+		--set tolerations[0].key=node-role.kubernetes.io/control-plane \
+		--set tolerations[0].operator=Exists \
+		--set tolerations[0].effect=NoSchedule \
+
+.PHONY: e2e-teardown
+e2e-teardown:
+	kind delete cluster --name $(E2E_CLUSTER_NAME)
