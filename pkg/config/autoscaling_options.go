@@ -61,6 +61,7 @@ type NodeGroupAutoscalingOptions struct {
 }
 
 // GCEOptions contain autoscaling options specific to GCE cloud provider.
+// TODO(Choraden): remove it once GCE cloud provider would be migrate to google managed repository.
 type GCEOptions struct {
 	// ConcurrentRefreshes is the maximum number of concurrently refreshed instance groups or instance templates or zones with mig instances
 	ConcurrentRefreshes int

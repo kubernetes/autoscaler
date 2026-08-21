@@ -84,7 +84,7 @@ func (p *AutoscalingFlags) AddFlags(fs *pflag.FlagSet) {
 	fs.IntVar(&p.o.KubeClientOpts.KubeClientBurst, "kube-client-burst", rest.DefaultBurst, "Burst value for kubernetes client.")
 	fs.Float64Var(&p.kubeClientQPS, "kube-client-qps", float64(rest.DefaultQPS), "QPS value for kubernetes client.")
 	fs.StringVar(&p.o.CloudConfig, "cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
-	fs.StringVar(&p.o.CloudProviderName, "cloud-provider", "gce", "Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders(), ",")+"]")
+	fs.StringVar(&p.o.CloudProviderName, "cloud-provider", cloudBuilder.DefaultCloudProvider(), "Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders(), ",")+"]")
 	fs.StringVar(&p.o.ConfigNamespace, "namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
 	fs.BoolVar(&p.o.EnforceNodeGroupMinSize, "enforce-node-group-min-size", false, "Should CA scale up the node group to the configured min size if needed.")
 	fs.BoolVar(&p.o.ScaleDownUnreadyEnabled, "scale-down-unready-enabled", true, "Should CA scale down unready nodes of the cluster")

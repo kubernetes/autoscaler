@@ -28,16 +28,8 @@ import (
 )
 
 const (
-	// AzureProviderName gets the provider name of azure
-	AzureProviderName = "azure"
-	// ClusterAPIProviderName gets the provider name of clusterapi
-	ClusterAPIProviderName = "clusterapi"
-	// GceProviderName gets the provider name of gce
-	GceProviderName = "gce"
 	// KwokProviderName gets the provider name of kwok
 	KwokProviderName = "kwok"
-	// ExternalGrpcProviderName gets the provider name of the external grpc provider
-	ExternalGrpcProviderName = "externalgrpc"
 )
 
 // GpuConfig contains the label, type and the resource name for a GPU.

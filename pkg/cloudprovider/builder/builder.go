@@ -72,5 +72,5 @@ func DefaultCloudProvider() string {
 	if def := GetDefaultCloudProvider(); def != "" {
 		return def
 	}
-	return cloudprovider.GceProviderName
+	return cloudprovider.KwokProviderName
 }
