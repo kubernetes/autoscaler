@@ -19,6 +19,7 @@ package autoscaling
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -41,6 +42,7 @@ import (
 	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
+	"k8s.io/utils/ptr"
 )
 
 func init() {
@@ -532,6 +534,111 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 				float64(currentMemory)/float64(oomReplicationControllerRequestLimit),
 				int64(customBumpMemory),
 				oomBumpUpRatio))
+	})
+
+	f.It("generates recommendations for native sidecar containers", framework.WithFeatureGate(features.NativeSidecar), func() {
+		ginkgo.By("Setting up a hamster deployment with native sidecar")
+		d := NewHamsterDeploymentWithNativeSidecar(f,
+			ParseQuantityOrDie("100m"),  /*main CPU*/
+			ParseQuantityOrDie("100Mi"), /*main memory*/
+			ParseQuantityOrDie("50m"),   /*sidecar CPU*/
+			ParseQuantityOrDie("50Mi"),  /*sidecar memory*/
+		)
+		initContainerRestartNever := d.Spec.Template.Spec.InitContainers[0].DeepCopy()
+		initContainerRestartNever.Name = "normal-init-container"
+		initContainerRestartNever.RestartPolicy = ptr.To(apiv1.ContainerRestartPolicyNever)
+		// A plain init container (RestartPolicy: Never) must terminate before the pod starts, so
+		// override the sidecar's infinite `yes` command with one that exits immediately.
+		initContainerRestartNever.Args = []string{"-c", "true"}
+		d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *initContainerRestartNever)
+		podList := utils.StartDeploymentPods(f, d)
+
+		// Verify native sidecar is present with original resources
+		for _, pod := range podList.Items {
+			gomega.Expect(len(pod.Spec.InitContainers)).To(gomega.Equal(2))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("50m")))
+			gomega.Expect(pod.Spec.InitContainers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("50Mi")))
+		}
+
+		ginkgo.By("Setting up a VPA CRD")
+		sidecarName := d.Spec.Template.Spec.InitContainers[0].Name
+
+		mainContainerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(mainContainerName).
+			WithContainer(sidecarName).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled for both containers")
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		// Should have recommendations for both main container and native sidecar but NOT the normal init container
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).To(gomega.HaveLen(2))
+
+		// Verify we have recommendations for both containers
+		var mainRec, sidecarRec *vpa_types.RecommendedContainerResources
+		for i := range vpa.Status.Recommendation.ContainerRecommendations {
+			rec := &vpa.Status.Recommendation.ContainerRecommendations[i]
+			if rec.ContainerName == mainContainerName {
+				mainRec = rec
+			} else if rec.ContainerName == sidecarName {
+				sidecarRec = rec
+			}
+		}
+
+		gomega.Expect(mainRec).NotTo(gomega.BeNil(), "Main container should have a recommendation")
+		gomega.Expect(sidecarRec).NotTo(gomega.BeNil(), "Native sidecar should have a recommendation")
+
+		// Verify recommendations are non-zero
+		mainCPUTarget := mainRec.Target[apiv1.ResourceCPU]
+		mainMemTarget := mainRec.Target[apiv1.ResourceMemory]
+		sidecarCPUTarget := sidecarRec.Target[apiv1.ResourceCPU]
+		sidecarMemTarget := sidecarRec.Target[apiv1.ResourceMemory]
+
+		gomega.Expect(mainCPUTarget.Value()).To(gomega.BeNumerically(">", 0))
+		gomega.Expect(mainMemTarget.Value()).To(gomega.BeNumerically(">", 0))
+		gomega.Expect(sidecarCPUTarget.Value()).To(gomega.BeNumerically(">", 0))
+		gomega.Expect(sidecarMemTarget.Value()).To(gomega.BeNumerically(">", 0))
+	})
+
+	f.It("doesn't generate recommendations for native sidecar containers when feature gate not enabled", func() {
+		if os.Getenv("TEST_WITH_FEATURE_GATES_ENABLED") == "true" {
+			ginkgo.Skip("only test when NativeSidecar feature gate is disabled")
+		}
+		ginkgo.By("Setting up a hamster deployment with native sidecar")
+		d := NewHamsterDeploymentWithNativeSidecar(f,
+			ParseQuantityOrDie("100m"),  /*main CPU*/
+			ParseQuantityOrDie("100Mi"), /*main memory*/
+			ParseQuantityOrDie("50m"),   /*sidecar CPU*/
+			ParseQuantityOrDie("50Mi"),  /*sidecar memory*/
+		)
+		utils.StartDeploymentPods(f, d)
+
+		ginkgo.By("Setting up a VPA CRD")
+		sidecarName := d.Spec.Template.Spec.InitContainers[0].Name
+		mainContainerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(mainContainerName).
+			WithContainer(sidecarName).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled for the main container")
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		// Only the main container should have a recommendation; the native sidecar must not,
+		// since the feature gate is disabled.
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).To(gomega.HaveLen(1))
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations[0].ContainerName).To(gomega.Equal(mainContainerName))
 	})
 })
 
