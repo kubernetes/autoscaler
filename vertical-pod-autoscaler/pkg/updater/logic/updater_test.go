@@ -36,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/fake"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
+	"k8s.io/utils/ptr"
 	"k8s.io/utils/set"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -195,6 +196,8 @@ func TestRunOnce_Mode(t *testing.T) {
 				tc.expectedInPlacedCount,
 				tc.canInPlaceUpdate,
 				tc.isCPUBoostTest,
+				false,
+				nil,
 			)
 		})
 	}
@@ -235,6 +238,64 @@ func TestRunOnce_Status(t *testing.T) {
 				tc.expectedInPlacedCount,
 				utils.InPlaceApproved,
 				false,
+				false,
+				nil,
+			)
+		})
+	}
+}
+
+func TestRunOnce_ObservedGeneration(t *testing.T) {
+	tests := []struct {
+		name                      string
+		requireObservedGeneration bool
+		observedGeneration        *int64
+		expectFetchCalls          bool
+		expectedEvictionCount     int
+	}{
+		{
+			name:                      "with an older generation observed and the requirement disabled",
+			requireObservedGeneration: false,
+			observedGeneration:        ptr.To(int64(0)),
+			expectFetchCalls:          true,
+			expectedEvictionCount:     5,
+		},
+		{
+			name:                      "with the current generation observed",
+			requireObservedGeneration: true,
+			observedGeneration:        ptr.To(int64(1)),
+			expectFetchCalls:          true,
+			expectedEvictionCount:     5,
+		},
+		{
+			name:                      "with an older generation observed",
+			requireObservedGeneration: true,
+			observedGeneration:        ptr.To(int64(0)),
+			expectFetchCalls:          false,
+			expectedEvictionCount:     0,
+		},
+		{
+			name:                      "with no generation observed",
+			requireObservedGeneration: true,
+			observedGeneration:        nil,
+			expectFetchCalls:          false,
+			expectedEvictionCount:     0,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			testRunOnceBase(
+				t,
+				vpa_types.UpdateModeRecreate,
+				false,
+				newFakeValidator(true),
+				tc.expectFetchCalls,
+				tc.expectedEvictionCount,
+				0,
+				utils.InPlaceApproved,
+				false,
+				tc.requireObservedGeneration,
+				tc.observedGeneration,
 			)
 		})
 	}
@@ -250,6 +311,8 @@ func testRunOnceBase(
 	expectedInPlacedCount int,
 	canInPlaceUpdate utils.InPlaceDecision,
 	isCPUBoostTest bool,
+	requireObservedGeneration bool,
+	observedGeneration *int64,
 ) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, true)
 	ctrl := gomock.NewController(t)
@@ -288,6 +351,8 @@ func testRunOnceBase(
 			APIVersion: rc.APIVersion,
 		}).
 		Get()
+	vpaObj.Generation = 1
+	vpaObj.Status.ObservedGeneration = observedGeneration
 
 	for i := range pods {
 		pods[i] = test.Pod().WithName("test_"+strconv.Itoa(i)).
@@ -360,6 +425,7 @@ func testRunOnceBase(
 		useAdmissionControllerStatus: true,
 		statusValidator:              statusValidator,
 		priorityProcessor:            priority.NewProcessor(),
+		requireObservedGeneration:    requireObservedGeneration,
 	}
 
 	if expectFetchCalls {
