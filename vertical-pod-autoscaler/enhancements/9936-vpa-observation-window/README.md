@@ -33,7 +33,7 @@
 
 Add an optional `initialDelaySeconds` field to `PodUpdatePolicy` that delays actuation of recommendations for a configurable duration after a VPA's creation. During the window the Recommender continues to compute and publish recommendations to `status.recommendation` normally, but nothing actuates them: the Updater performs no evictions or in-place resizes, and the Admission Controller does not apply recommendations to pods created during the window. The VPA behaves exactly as if `updateMode` were `Off`. Once the window elapses, the configured `updateMode` takes effect automatically with no operator action.
 
-The window is computed as a pure function of `vpa.CreationTimestamp` and the current spec value, evaluated on every reconcile. No status writes are required. Modifying an existing VPA's spec does not reset the window — the anchor (`CreationTimestamp`) is immutable, and changing `initialDelaySeconds` itself simply moves the expiry relative to that anchor (see [Gate Evaluation](#gate-evaluation) for the full modification semantics).
+The window is computed as a pure function of `vpa.CreationTimestamp` and the current spec value, evaluated on every reconcile. Modifying an existing VPA's spec does not reset the window — the anchor (`CreationTimestamp`) is immutable, and changing `initialDelaySeconds` itself simply moves the expiry relative to that anchor (see [Gate Evaluation](#gate-evaluation) for the full modification semantics).
 
 ## Motivation
 
