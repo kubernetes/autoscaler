@@ -177,6 +177,37 @@ func TestRecommendationToLimitCapping(t *testing.T) {
 				corev1.ResourceMemory: *resource.NewScaledQuantity(6000, 1),
 			},
 			expectedAnnotation: true,
+		}, {
+			// The kubelet rounds up fractional limits before passing them to the container runtime
+			// and reports the rounded up values back in the container status; we ensure that
+			// recommendations are limited to the limits in the Pod spec when using RequestsOnly
+			name: "capping for RequestsOnly policy for fractional limits rounded up in containerStatus",
+			pod: func() *corev1.Pod {
+				pod := test.Pod().WithName("pod1").AddContainer(
+					test.Container().WithName(containerName).
+						WithCPULimit(resource.MustParse("100500u")).
+						WithMemLimit(resource.MustParse("1024500m")).Get()).Get()
+				pod.Status.ContainerStatuses = []corev1.ContainerStatus{
+					test.ContainerStatus().WithName(containerName).
+						WithCPULimit(resource.MustParse("101m")).
+						WithMemLimit(resource.MustParse("1025")).Get()}
+				return pod
+			}(),
+			policy: vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
+					ContainerName:    vpa_types.DefaultContainerResourcePolicy,
+					ControlledValues: &requestsOnly,
+				}},
+			},
+			expectedTarget: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("100500u"),
+				corev1.ResourceMemory: resource.MustParse("1024500m"),
+			},
+			expectedUpperBound: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("100500u"),
+				corev1.ResourceMemory: resource.MustParse("1024500m"),
+			},
+			expectedAnnotation: true,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
