@@ -105,7 +105,7 @@ func allowPerVPAConfig(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	}
 	if oldObj.Spec.ResourcePolicy != nil && oldObj.Spec.ResourcePolicy.ContainerPolicies != nil {
 		for _, policy := range oldObj.Spec.ResourcePolicy.ContainerPolicies {
-			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil || policy.MemoryAggregationIntervalCount != nil || policy.MemoryAggregationIntervalSeconds != nil {
+			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil || policy.MemoryAggregationIntervalCount != nil || policy.MemoryAggregationIntervalSeconds != nil || policy.TargetCPUPercentile != nil || policy.TargetMemoryPercentile != nil {
 				return true
 			}
 		}
@@ -292,6 +292,28 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 				}
 			} else {
 				allErrs = append(allErrs, field.Forbidden(policyPath.Child("memoryAggregationIntervalCount"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+			}
+		}
+
+		if policy.TargetCPUPercentile != nil {
+			if opts.AllowPerVPAConfig {
+				percentile := float64(policy.TargetCPUPercentile.MilliValue()) / 1000.0
+				if percentile <= 0 || percentile > 1 {
+					allErrs = append(allErrs, field.Invalid(policyPath.Child("targetCPUPercentile"), percentile, "must be greater than 0 and less than or equal to 1"))
+				}
+			} else {
+				allErrs = append(allErrs, field.Forbidden(policyPath.Child("targetCPUPercentile"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+			}
+		}
+
+		if policy.TargetMemoryPercentile != nil {
+			if opts.AllowPerVPAConfig {
+				percentile := float64(policy.TargetMemoryPercentile.MilliValue()) / 1000.0
+				if percentile <= 0 || percentile > 1 {
+					allErrs = append(allErrs, field.Invalid(policyPath.Child("targetMemoryPercentile"), percentile, "must be greater than 0 and less than or equal to 1"))
+				}
+			} else {
+				allErrs = append(allErrs, field.Forbidden(policyPath.Child("targetMemoryPercentile"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
 			}
 		}
 

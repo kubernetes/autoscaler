@@ -319,6 +319,18 @@ type ContainerResourcePolicy struct {
 	// +kubebuilder:validation:Minimum=1
 	MemoryAggregationIntervalCount *int64 `json:"memoryAggregationIntervalCount,omitempty"`
 
+	// targetCPUPercentile is the CPU usage percentile used as the target for
+	// the recommendation, overriding the global --target-cpu-percentile flag
+	// for this container. Must be in (0, 1].
+	// +optional
+	TargetCPUPercentile *resource.Quantity `json:"targetCPUPercentile,omitempty"`
+
+	// targetMemoryPercentile is the memory usage percentile used as the
+	// target for the recommendation, overriding the global
+	// --target-memory-percentile flag for this container. Must be in (0, 1].
+	// +optional
+	TargetMemoryPercentile *resource.Quantity `json:"targetMemoryPercentile,omitempty"`
+
 	// startupBoost specifies the startup boost policy for the container.
 	// This overrides any pod-level startup boost policy.
 	// The startup boost policy takes precedence over the rest of the fields in
