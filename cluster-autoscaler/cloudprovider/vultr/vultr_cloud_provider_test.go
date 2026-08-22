@@ -177,6 +177,52 @@ func TestVultrCloudProvider_NodeGroupForNode(t *testing.T) {
 	require.Equal(t, nodeGroup.Id(), "a", "nodegroup IDs do not match")
 }
 
+func TestVultrCloudProvider_HasInstance(t *testing.T) {
+	config := `{"token": "123-456", "cluster_id": "abc"}`
+
+	manager, err := newManager(strings.NewReader(config))
+	require.NoError(t, err)
+
+	client := &vultrClientMock{}
+	ctx := context.Background()
+
+	client.On("ListNodePools", ctx, manager.clusterID, nil).Return(
+		[]govultr.NodePool{
+			{
+				ID:         "a",
+				AutoScaler: true,
+				Nodes:      []govultr.Node{{ID: "np-1234", Status: "Active"}},
+				MinNodes:   1,
+				MaxNodes:   2,
+			},
+		},
+		&govultr.Meta{},
+		nil,
+	).Once()
+
+	manager.client = client
+	provider := newVultrCloudProvider(manager, &cloudprovider.ResourceLimiter{})
+	err = provider.Refresh()
+	assert.NoError(t, err)
+
+	hasInstance, err := provider.HasInstance(&apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("np-1234")}})
+	require.NoError(t, err)
+	assert.True(t, hasInstance)
+
+	hasInstance, err = provider.HasInstance(&apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("missing")}})
+	require.NoError(t, err)
+	assert.False(t, hasInstance)
+}
+
+func TestToNodeID(t *testing.T) {
+	nodeID, err := toNodeID(toProviderID("np-1234"))
+	require.NoError(t, err)
+	assert.Equal(t, "np-1234", nodeID)
+
+	_, err = toNodeID("aws:///np-1234")
+	assert.Error(t, err)
+}
+
 func TestVultrCloudProvider_Name(t *testing.T) {
 	config := `{"token": "123-456", "cluster_id": "abc"}`
 
