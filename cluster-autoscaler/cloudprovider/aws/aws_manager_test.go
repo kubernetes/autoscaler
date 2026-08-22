@@ -513,8 +513,8 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 				Max: aws.Int32(8),
 			},
 			MemoryMiB: &ec2types.MemoryMiB{
-				Min: aws.Int32(4),
-				Max: aws.Int32(8),
+				Min: aws.Int32(8192),
+				Max: aws.Int32(16384),
 			},
 			AcceleratorTypes:         []ec2types.AcceleratorType{ec2types.AcceleratorTypeGpu},
 			AcceleratorManufacturers: []ec2types.AcceleratorManufacturer{ec2types.AcceleratorManufacturerNvidia},
@@ -530,7 +530,7 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 
 	assert.NoError(t, observedErr)
 	observedMemoryRequirement := observedNode.Status.Capacity[apiv1.ResourceMemory]
-	assert.Equal(t, int64(4*1024*1024), observedMemoryRequirement.Value())
+	assert.Equal(t, int64(8192*1024*1024), observedMemoryRequirement.Value())
 	observedVCpuRequirement := observedNode.Status.Capacity[apiv1.ResourceCPU]
 	assert.Equal(t, int64(4), observedVCpuRequirement.Value())
 	observedGpuRequirement := observedNode.Status.Capacity[gpu.ResourceNvidiaGPU]

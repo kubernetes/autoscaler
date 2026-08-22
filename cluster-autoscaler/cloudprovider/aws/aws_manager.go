@@ -372,7 +372,7 @@ func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.Res
 	}
 
 	if instanceRequirements.MemoryMiB != nil && instanceRequirements.MemoryMiB.Min != nil {
-		(*capacity)[apiv1.ResourceMemory] = *resource.NewQuantity(int64(*instanceRequirements.MemoryMiB.Min*1024*1024), resource.DecimalSI)
+		(*capacity)[apiv1.ResourceMemory] = *resource.NewQuantity(int64(*instanceRequirements.MemoryMiB.Min)*1024*1024, resource.DecimalSI)
 	}
 
 	for _, manufacturer := range instanceRequirements.AcceleratorManufacturers {
