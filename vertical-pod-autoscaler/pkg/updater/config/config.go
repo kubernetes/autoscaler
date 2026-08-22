@@ -52,6 +52,8 @@ type UpdaterConfig struct {
 	DefaultUpdateThreshold     float64
 	PodLifetimeUpdateThreshold time.Duration
 	EvictAfterOOMThreshold     time.Duration
+
+	ConcurrentCPUStartupBoostSyncs int
 }
 
 // DefaultUpdaterConfig returns a UpdaterConfig with default values
@@ -75,6 +77,8 @@ func DefaultUpdaterConfig() *UpdaterConfig {
 		DefaultUpdateThreshold:     0.1,
 		PodLifetimeUpdateThreshold: time.Hour * 12,
 		EvictAfterOOMThreshold:     10 * time.Minute,
+
+		ConcurrentCPUStartupBoostSyncs: 1,
 	}
 }
 
@@ -99,6 +103,7 @@ func InitUpdaterFlags() *UpdaterConfig {
 	flag.Float64Var(&config.DefaultUpdateThreshold, "pod-update-threshold", config.DefaultUpdateThreshold, "Ignore updates that have priority lower than the value of this flag")
 	flag.DurationVar(&config.PodLifetimeUpdateThreshold, "in-recommendation-bounds-eviction-lifetime-threshold", config.PodLifetimeUpdateThreshold, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
 	flag.DurationVar(&config.EvictAfterOOMThreshold, "evict-after-oom-threshold", config.EvictAfterOOMThreshold, `The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start.`)
+	flag.IntVar(&config.ConcurrentCPUStartupBoostSyncs, "concurrent-cpu-startup-boost-syncs", config.ConcurrentCPUStartupBoostSyncs, "The number of workers processing CPU startup boost unboosting concurrently.")
 
 	// These need to happen last. kube_flag.InitFlags() synchronizes and parses
 	// flags from the flag package to pflag, so feature gates must be added to
@@ -115,6 +120,11 @@ func InitUpdaterFlags() *UpdaterConfig {
 
 // ValidateUpdaterConfig performs validation of the updater flags
 func ValidateUpdaterConfig(config *UpdaterConfig) {
+	// TODO (omerap12): fill validation to all updater config flags.
+	if config.ConcurrentCPUStartupBoostSyncs <= 0 {
+		klog.ErrorS(nil, "--concurrent-cpu-startup-boost-syncs should be positive")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 	common.ValidateCommonConfig(config.CommonFlags)
 
 	if config.AdmissionControllerStatusLeaseTimeout <= 0 {
