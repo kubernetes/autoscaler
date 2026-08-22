@@ -133,10 +133,10 @@ Reasons and message format are described in [Status Condition](#status-condition
 Reference implementation, exposed from a shared package (`pkg/utils/vpa`) and consumed by both actuating components:
 
 ```go
-// inInitialDelayWindow returns true if the VPA is currently within its
+// InInitialDelayWindow returns true if the VPA is currently within its
 // declared observation window and the Updater and Admission Controller
 // should refrain from actuating recommendations.
-func inInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler, now time.Time) bool {
+func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler, now time.Time) bool {
     p := vpa.Spec.UpdatePolicy
     if p == nil || p.InitialDelaySeconds == nil || *p.InitialDelaySeconds < 1 {
         return false
@@ -153,7 +153,9 @@ Insertion points:
 - **Updater** — at the top of the eligibility check in `pkg/updater/logic/updater.go`, at the same call site where `UpdateModeOff` and `UpdateModeInitial` currently short-circuit the eviction path.
 - **Admission Controller** — at the existing `UpdateModeOff` short-circuits in `pkg/admission-controller/resource/vpa/matcher.go` and `pkg/admission-controller/resource/pod/recommendation/recommendation_provider.go`, so pods created during the window are admitted with their original spec resources.
 
-When `inInitialDelayWindow` returns `true`, both components take the same code path they take for `UpdateModeOff` today.
+When `InInitialDelayWindow` returns `true`, both components take the same code path they take for `UpdateModeOff` today.
+
+`InInitialDelayWindow` is exported from the shared `pkg/utils/vpa` package so both the Updater and the Admission Controller consume the identical implementation. Each call site first checks the `VPAInitialDelay` feature gate (`features.Enabled(features.VPAInitialDelay)`); when the gate is disabled the helper is not consulted and the component behaves exactly as it does today (fail-open).
 
 The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current spec value (mutable). No caching, no status writes.
 
@@ -208,11 +210,13 @@ This lets `kubectl describe vpa` surface the gate without an operator having to 
 
 Emit a new gauge from the Updater:
 
-```
+```text
 vpa_initial_delay_active{namespace, name} = 0 | 1
 ```
 
 Value is `1` while the gate is active for that VPA, `0` otherwise. Enables fleet-wide visibility into how many VPAs are currently gated, useful for dashboards and alerting on stuck windows.
+
+Both the `InitialDelayActive` condition and this gauge report the window state itself — a pure function of `CreationTimestamp` and `initialDelaySeconds` — independent of `updateMode`. Under `updateMode: Off` the window changes no behavior, but while it has not elapsed the condition and gauge still report it as active; they describe whether the window is open, not whether actuation is currently being suppressed.
 
 ### Feature Enablement and Rollback
 
@@ -254,6 +258,8 @@ The Recommender is unaffected by this feature. The gate is fully effective only 
 
 Neither skew causes errors or corrupted state; the failure mode is only that part of the gate is not honoured until the rollout completes. Operators who need strict gating should enable the feature gate only after all components are upgraded.
 
+**CRD schema skew.** `initialDelaySeconds` is added to the VPA CRD schema. Apply the updated CRD before or together with the controller upgrade. If a controller that supports the field runs against an older CRD that does not yet include it, the apiserver prunes the unknown field on write, so it is simply absent and the VPA behaves as if unset (fail-open) — no errors. Rolling the CRD back after the field is in use drops any stored values on the next write, again fail-open. The field carries no defaulting, so an absent field and an explicit unset are equivalent.
+
 ### Kubernetes Version Compatibility
 
 This feature is entirely internal to the VPA controllers and depends on no new Kubernetes APIs. It is compatible with any Kubernetes version supported by the corresponding VPA release.
@@ -262,9 +268,9 @@ This feature is entirely internal to the VPA controllers and depends on no new K
 
 **Updater tests:**
 
-- `inInitialDelayWindow` returns `true` when `now < CreationTimestamp + initialDelaySeconds`.
-- `inInitialDelayWindow` returns `false` when `now >= CreationTimestamp + initialDelaySeconds`.
-- `inInitialDelayWindow` returns `false` when `initialDelaySeconds` is `nil`, `0`, or absent.
+- `InInitialDelayWindow` returns `true` when `now < CreationTimestamp + initialDelaySeconds`.
+- `InInitialDelayWindow` returns `false` when `now >= CreationTimestamp + initialDelaySeconds`.
+- `InInitialDelayWindow` returns `false` when `initialDelaySeconds` is `nil`, `0`, or absent.
 - Gate short-circuits the eligibility path identically to `updateMode: Off` for `Recreate`, `InPlaceOrRecreate`, `InPlace`, `Initial`.
 - Gate has no effect when `updateMode: Off` — behavior matches plain `updateMode: Off` regardless of the field's value.
 - Metric and condition are set correctly on both sides of the transition.
