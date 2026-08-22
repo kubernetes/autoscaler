@@ -54,7 +54,7 @@ This feature moves the sequencing into the VPA API itself. Operators declare "wa
 
 - **Recommender-confidence-based gating.** This feature is a user-declared policy, not a recommender-computed signal.
 - **Reset semantics on modification of other fields.** Changing `resourcePolicy`, `targetRef`, or the target workload does not reset the window. The window is anchored on `vpa.CreationTimestamp`; users who need to re-observe a workload after a material change should delete and recreate the VPA.
-- **Cluster-wide default windows.** Out of scope for this AEP; operators can inject a default with a Mutating Admission Policy (see [Alternatives](#alternatives)).
+- **Cluster-wide default windows.** Out of scope for this AEP; operators can inject a default with a Mutating Admission Policy.
 
 ## Proposal
 
@@ -363,8 +363,6 @@ Pods created during the first hour receive their `Deployment`-spec resources unc
 **1. External tooling (today's status quo).** Without this feature, you get the same behavior by creating the VPA in `Off` mode and flipping it to an active mode after N hours — a CronJob or a small controller that patches `updateMode`. It works, but every team rebuilds the same automation, and there's no per-VPA declarative way to say "wait N hours before acting."
 
 **2. Extend `EvictionRequirements` with a time-based condition.** `EvictionRequirements` (AEP-4831) already gates eviction on conditions. A duration doesn't fit its enum, which compares the recommendation against requests (`TargetHigherThanRequests` / `TargetLowerThanRequests`), and it only covers eviction — not admission-time injection or in-place resize.
-
-**3. Default the field with a Mutating Admission Policy.** For a cluster-wide default, a [Mutating Admission Policy](https://kubernetes.io/docs/reference/access-authn-authz/mutating-admission-policy/) can set `initialDelaySeconds` on VPAs that don't specify it, using native Kubernetes with no VPA-side flag. This complements the field rather than replacing it.
 
 ## Implementation History
 
