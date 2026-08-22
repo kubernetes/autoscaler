@@ -23,6 +23,7 @@ DIR=$(dirname $0)
 git ls-files --full-name \
     | grep -v -e vendor \
     | grep -v cluster-autoscaler/cloudprovider/magnum/gophercloud \
+    | grep -v cluster-autoscaler/cloudprovider/vke/gophercloud \
     | grep -v cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3 \
     | grep -v cluster-autoscaler/cloudprovider/digitalocean/godo \
     | grep -v cluster-autoscaler/cloudprovider/hetzner/hcloud-go \
