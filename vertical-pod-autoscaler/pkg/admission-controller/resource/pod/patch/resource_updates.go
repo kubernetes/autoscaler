@@ -112,19 +112,27 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 
 func getContainerPatch(pod *corev1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]resource_admission.PatchRecord, string) {
 	var patches []resource_admission.PatchRecord
-	// Add empty resources object if missing.
 	requests, limits := resourcehelpers.ContainerRequestsAndLimits(pod.Spec.Containers[i].Name, pod)
-	if limits == nil && requests == nil {
-		patches = append(patches, GetPatchInitializingEmptyResources(i))
-	}
 
 	annotations, found := annotationsPerContainer[pod.Spec.Containers[i].Name]
 	if !found {
 		annotations = make([]string, 0)
 	}
 
-	patches, annotations = appendPatchesAndAnnotations(patches, annotations, requests, i, containerResources.Requests, "requests", "request")
-	patches, annotations = appendPatchesAndAnnotations(patches, annotations, limits, i, containerResources.Limits, "limits", "limit")
+	var resourcePatches []resource_admission.PatchRecord
+	resourcePatches, annotations = appendPatchesAndAnnotations(resourcePatches, annotations, requests, i, containerResources.Requests, "requests", "request")
+	resourcePatches, annotations = appendPatchesAndAnnotations(resourcePatches, annotations, limits, i, containerResources.Limits, "limits", "limit")
+
+	// Only initialize an empty resources object when we have recommendations to apply.
+	// Otherwise admission patches empty /resources and a useless vpaUpdates annotation
+	// even when there is no recommendation (see kubernetes/autoscaler#9795).
+	if len(resourcePatches) == 0 {
+		return nil, ""
+	}
+	if limits == nil && requests == nil {
+		patches = append(patches, GetPatchInitializingEmptyResources(i))
+	}
+	patches = append(patches, resourcePatches...)
 
 	updatesAnnotation := fmt.Sprintf("container %d: ", i) + strings.Join(annotations, ", ")
 	return patches, updatesAnnotation
