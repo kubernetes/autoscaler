@@ -4,7 +4,7 @@ WARNING: This chart is currently under development and is not ready for producti
 
 Automatically adjust resources for your workloads
 
-![Version: 0.11.0](https://img.shields.io/badge/Version-0.11.0-informational?style=flat-square)
+![Version: 0.12.0](https://img.shields.io/badge/Version-0.12.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.7.1](https://img.shields.io/badge/AppVersion-1.7.1-informational?style=flat-square)
 
@@ -70,16 +70,11 @@ By default, you must provide an existing `Issuer` or `ClusterIssuer` via `admiss
 
 ## Custom Resource Definitions
 
-Helm cannot upgrade CustomResourceDefinitions in the `<chart>/crds` folder [by design](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/#some-caveats-and-explanations). When upgrading the chart, the VPA CRDs will not be updated automatically.
+The VPA CRDs are managed as regular chart templates and are kept in sync automatically on `helm upgrade` (set `crds.enabled: false` if you manage CRDs separately, e.g. via Argo CD or Fleet).
 
-If you need to update the CRDs to a newer version, please use `kubectl` to upgrade them manually from the upstream project repo:
+By default, the CRDs are annotated with `helm.sh/resource-policy: keep`, so `helm uninstall` will not remove them, protecting any existing VPA objects from being deleted. Set `crds.keep: false` to disable this.
 
-```bash
-kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-<appVersion>/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
-
-# Eg. version v1.7.1
-kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-1.7.1/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
-```
+If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`), a pre-upgrade Job automatically patches the Helm ownership metadata onto your existing CRDs so the upgrade doesn't fail. It's idempotent and safe to leave enabled across repeated upgrades, but is only needed for the 0.12.0 transition and will be removed in a future release; set `crds.migrationJob.enabled: false` to skip it.
 
 ## Migration Guides
 
@@ -187,6 +182,13 @@ helm upgrade <release-name> <chart> \
 | admissionController.volumes[0].secret.secretName | string | `"vpa-tls-certs"` |  |
 | commonLabels | object | `{}` |  |
 | containerSecurityContext | object | `{}` |  |
+| crds.enabled | bool | `true` | Whether to install and manage the VPA CRDs. Disable if you manage CRDs separately. |
+| crds.keep | bool | `true` | Whether to add the helm.sh/resource-policy: keep annotation to the CRDs, so they are not removed by `helm uninstall`. |
+| crds.migrationJob.enabled | bool | `true` | Whether to run a pre-upgrade Job that patches Helm ownership labels/annotations onto CRDs installed by chart versions before 0.12.0 (when CRDs moved from crds/ to templates/). Without this, upgrading from an older release fails since Helm refuses to adopt resources it doesn't already own. Remove this once most users have upgraded past 0.12.0. |
+| crds.migrationJob.image.pullPolicy | string | `"IfNotPresent"` |  |
+| crds.migrationJob.image.registry | string | `"docker.io"` | registry.k8s.io/kubectl has no shell, so this uses alpine/k8s which bundles kubectl with a shell for the label/annotate commands. |
+| crds.migrationJob.image.repository | string | `"alpine/k8s"` |  |
+| crds.migrationJob.image.tag | string | `"1.31.4"` | Pinned kubectl version for the migration job. |
 | fullnameOverride | string | `nil` |  |
 | imagePullSecrets | list | `[]` |  |
 | nameOverride | string | `nil` |  |

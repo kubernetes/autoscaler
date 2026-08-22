@@ -67,16 +67,11 @@ By default, you must provide an existing `Issuer` or `ClusterIssuer` via `admiss
 
 ## Custom Resource Definitions
 
-Helm cannot upgrade CustomResourceDefinitions in the `<chart>/crds` folder [by design](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/#some-caveats-and-explanations). When upgrading the chart, the VPA CRDs will not be updated automatically.
+The VPA CRDs are managed as regular chart templates and are kept in sync automatically on `helm upgrade` (set `crds.enabled: false` if you manage CRDs separately, e.g. via Argo CD or Fleet).
 
-If you need to update the CRDs to a newer version, please use `kubectl` to upgrade them manually from the upstream project repo:
+By default, the CRDs are annotated with `helm.sh/resource-policy: keep`, so `helm uninstall` will not remove them, protecting any existing VPA objects from being deleted. Set `crds.keep: false` to disable this.
 
-```bash
-kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-<appVersion>/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
-
-# Eg. version v1.7.1
-kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-1.7.1/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
-```
+If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`), a pre-upgrade Job automatically patches the Helm ownership metadata onto your existing CRDs so the upgrade doesn't fail. It's idempotent and safe to leave enabled across repeated upgrades, but is only needed for the 0.12.0 transition and will be removed in a future release; set `crds.migrationJob.enabled: false` to skip it.
 
 ## Migration Guides
 
