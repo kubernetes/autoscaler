@@ -216,7 +216,7 @@ vpa_initial_delay_active{namespace, name} = 0 | 1
 
 Value is `1` while the gate is active for that VPA, `0` otherwise. Enables fleet-wide visibility into how many VPAs are currently gated, useful for dashboards and alerting on stuck windows.
 
-Both the `InitialDelayActive` condition and this gauge report the window state itself — a pure function of `CreationTimestamp` and `initialDelaySeconds` — independent of `updateMode`. Under `updateMode: Off` the window changes no behavior, but while it has not elapsed the condition and gauge still report it as active; they describe whether the window is open, not whether actuation is currently being suppressed.
+The condition and gauge report the window state, not effective suppression — so under `updateMode: Off` they still read active until the window elapses.
 
 ### Feature Enablement and Rollback
 
@@ -258,7 +258,7 @@ The Recommender is unaffected by this feature. The gate is fully effective only 
 
 Neither skew causes errors or corrupted state; the failure mode is only that part of the gate is not honoured until the rollout completes. Operators who need strict gating should enable the feature gate only after all components are upgraded.
 
-**CRD schema skew.** `initialDelaySeconds` is added to the VPA CRD schema. Apply the updated CRD before or together with the controller upgrade. If a controller that supports the field runs against an older CRD that does not yet include it, the apiserver prunes the unknown field on write, so it is simply absent and the VPA behaves as if unset (fail-open) — no errors. Rolling the CRD back after the field is in use drops any stored values on the next write, again fail-open. The field carries no defaulting, so an absent field and an explicit unset are equivalent.
+**CRD schema skew.** Apply the updated CRD with (or before) the controller upgrade; a newer controller against an older CRD simply has the field pruned by the apiserver and treats it as unset (fail-open).
 
 ### Kubernetes Version Compatibility
 
