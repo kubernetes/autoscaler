@@ -876,7 +876,7 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 	feeder := clusterStateFeeder{
 		clusterState: clusterState,
 	}
-	feeder.InitFromHistoryProvider(&provider)
+	feeder.InitFromHistoryProvider(context.Background(), &provider)
 	if !assert.Contains(t, feeder.clusterState.Pods(), pod1) {
 		return
 	}
@@ -897,6 +897,62 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 		return
 	}
 	assert.Equal(t, memAmount, containerState.GetMaxMemoryPeak())
+}
+
+// TestClusterStateFeeder_InitFromHistoryProviderMemorySaveMode verifies that,
+// with memory saver mode enabled, InitFromHistoryProvider only loads pods
+// matched by a VPA instead of unconditionally loading the whole cluster
+// history (which otherwise causes very high memory usage on large clusters,
+// see https://github.com/kubernetes/autoscaler/issues/5687).
+func TestClusterStateFeeder_InitFromHistoryProviderMemorySaveMode(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	targetRef := &autoscalingv1.CrossVersionObjectReference{
+		Kind:       kind,
+		Name:       name1,
+		APIVersion: apiVersion,
+	}
+	vpa := test.VerticalPodAutoscaler().WithName("test-vpa").WithNamespace(namespace).
+		WithContainer("container").WithTargetRef(targetRef).Get()
+
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpa}, nil)
+
+	targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+	targetSelectorFetcher.EXPECT().Fetch(vpa).Return(parseLabelSelector("app = test"), nil)
+
+	feeder := clusterStateFeeder{
+		vpaLister:       vpaLister,
+		clusterState:    model.NewClusterState(testGcPeriod),
+		selectorFetcher: targetSelectorFetcher,
+		memorySaveMode:  true,
+		recommenderName: DefaultRecommenderName,
+		controllerFetcher: &fakeControllerFetcher{
+			key: &controllerfetcher.ControllerKeyWithAPIVersion{
+				ControllerKey: controllerfetcher.ControllerKey{
+					Kind:      kind,
+					Name:      name1,
+					Namespace: namespace,
+				},
+				ApiVersion: apiVersion,
+			},
+		},
+	}
+
+	matchingPod := model.PodID{Namespace: namespace, PodName: "matching-pod"}
+	nonMatchingPod := model.PodID{Namespace: namespace, PodName: "non-matching-pod"}
+	provider := fakeHistoryProvider{
+		history: map[model.PodID]*history.PodHistory{
+			matchingPod:    {LastLabels: map[string]string{"app": "test"}, Samples: map[string][]model.ContainerUsageSample{}},
+			nonMatchingPod: {LastLabels: map[string]string{"app": "other"}, Samples: map[string][]model.ContainerUsageSample{}},
+		},
+	}
+
+	feeder.InitFromHistoryProvider(context.Background(), &provider)
+
+	assert.Contains(t, feeder.clusterState.Pods(), matchingPod)
+	assert.NotContains(t, feeder.clusterState.Pods(), nonMatchingPod)
 }
 
 func TestFilterVPAs(t *testing.T) {
