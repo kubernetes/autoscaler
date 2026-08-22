@@ -17,6 +17,7 @@ limitations under the License.
 package alicloud
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -36,24 +37,24 @@ type Asg struct {
 }
 
 // MaxSize returns maximum size of the node group.
-func (asg *Asg) MaxSize() int {
+func (asg *Asg) MaxSize(ctx context.Context) int {
 	return asg.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (asg *Asg) MinSize() int {
+func (asg *Asg) MinSize(ctx context.Context) int {
 	return asg.minSize
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (asg *Asg) TargetSize() (int, error) {
+func (asg *Asg) TargetSize(ctx context.Context) (int, error) {
 	size, err := asg.manager.GetAsgSize(asg)
 	return int(size), err
 }
 
 // IncreaseSize increases Asg size
-func (asg *Asg) IncreaseSize(delta int) error {
+func (asg *Asg) IncreaseSize(ctx context.Context, delta int) error {
 	klog.Infof("increase ASG:%s with %d nodes", asg.Id(), delta)
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
@@ -63,14 +64,14 @@ func (asg *Asg) IncreaseSize(delta int) error {
 		klog.Errorf("failed to get ASG size because of %s", err.Error())
 		return err
 	}
-	if int(size)+delta > asg.MaxSize() {
-		return fmt.Errorf("size increase is too large - desired:%d max:%d", int(size)+delta, asg.MaxSize())
+	if int(size)+delta > asg.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase is too large - desired:%d max:%d", int(size)+delta, asg.MaxSize(context.TODO()))
 	}
 	return asg.manager.SetAsgSize(asg, size+int64(delta))
 }
 
 // AtomicIncreaseSize is not implemented.
-func (asg *Asg) AtomicIncreaseSize(delta int) error {
+func (asg *Asg) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -79,7 +80,7 @@ func (asg *Asg) AtomicIncreaseSize(delta int) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
-func (asg *Asg) DecreaseTargetSize(delta int) error {
+func (asg *Asg) DecreaseTargetSize(ctx context.Context, delta int) error {
 	klog.V(4).Infof("Aliyun: DecreaseTargetSize() with args: %v", delta)
 	if delta >= 0 {
 		return fmt.Errorf("size decrease size must be negative")
@@ -121,13 +122,13 @@ func (asg *Asg) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *Asg) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	size, err := asg.manager.GetAsgSize(asg)
 	if err != nil {
 		klog.Errorf("failed to get ASG size because of %s", err.Error())
 		return err
 	}
-	if int(size) <= asg.MinSize() {
+	if int(size) <= asg.MinSize(context.TODO()) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 	nodeIds := make([]string, 0, len(nodes))
@@ -151,7 +152,7 @@ func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (asg *Asg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (asg *Asg) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -166,12 +167,12 @@ func (asg *Asg) RegionId() string {
 }
 
 // Debug returns a debug string for the Asg.
-func (asg *Asg) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", asg.Id(), asg.MinSize(), asg.MaxSize())
+func (asg *Asg) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", asg.Id(), asg.MinSize(context.TODO()), asg.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
+func (asg *Asg) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	instanceNames, err := asg.manager.GetAsgNodes(asg)
 	if err != nil {
 		return nil, err
@@ -184,7 +185,7 @@ func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (asg *Asg) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (asg *Asg) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	template, err := asg.manager.getAsgTemplate(asg.id)
 	if err != nil {
 		return nil, err
@@ -202,28 +203,28 @@ func (asg *Asg) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (asg *Asg) Exist() bool {
+func (asg *Asg) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (asg *Asg) Create() (cloudprovider.NodeGroup, error) {
+func (asg *Asg) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (asg *Asg) Autoprovisioned() bool {
+func (asg *Asg) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (asg *Asg) Delete() error {
+func (asg *Asg) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (asg *Asg) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (asg *Asg) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }

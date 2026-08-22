@@ -17,6 +17,7 @@ limitations under the License.
 package exoscale
 
 import (
+	"context"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	egoscale "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2"
@@ -49,7 +50,7 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_MaxSize() {
 		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
-	ts.Require().Equal(int(testComputeInstanceQuotaLimit), nodeGroup.MaxSize())
+	ts.Require().Equal(int(testComputeInstanceQuotaLimit), nodeGroup.MaxSize(context.TODO()))
 }
 
 func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_MinSize() {
@@ -67,7 +68,7 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_MinSize() {
 		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
-	ts.Require().Equal(int(testSKSNodepoolSize), nodeGroup.MinSize())
+	ts.Require().Equal(int(testSKSNodepoolSize), nodeGroup.MinSize(context.TODO()))
 }
 
 func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_TargetSize() {
@@ -84,7 +85,7 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_TargetSize() {
 		m: ts.p.manager,
 	}
 
-	actual, err := nodeGroup.TargetSize()
+	actual, err := nodeGroup.TargetSize(context.TODO())
 	ts.Require().NoError(err)
 	ts.Require().Equal(int(testInstancePoolSize), actual)
 }
@@ -106,9 +107,9 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_IncreaseSize() {
 			"ScaleSKSNodepool",
 			ts.p.manager.ctx,
 			ts.p.manager.zone,
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
+			context.TODO(),
+			context.TODO(),
+			context.TODO(),
 		).
 		Return(nil)
 
@@ -137,10 +138,10 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_IncreaseSize() {
 		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
-	ts.Require().NoError(nodeGroup.IncreaseSize(int(testInstancePoolSize + 1)))
+	ts.Require().NoError(nodeGroup.IncreaseSize(context.TODO(), int(testInstancePoolSize + 1)))
 
 	// Test size increase failure if beyond current limits:
-	ts.Require().Error(nodeGroup.IncreaseSize(1000))
+	ts.Require().Error(nodeGroup.IncreaseSize(context.TODO(), 1000))
 }
 
 func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_DeleteNodes() {
@@ -149,10 +150,10 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_DeleteNodes() {
 			"EvictSKSNodepoolMembers",
 			ts.p.manager.ctx,
 			ts.p.manager.zone,
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
+			context.TODO(),
+			context.TODO(),
+			context.TODO(),
+			context.TODO(),
 		).
 		Return(nil)
 
@@ -187,7 +188,7 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_DeleteNodes() {
 		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
-	ts.Require().NoError(nodeGroup.DeleteNodes([]*apiv1.Node{node}))
+	ts.Require().NoError(nodeGroup.DeleteNodes(context.TODO(), []*apiv1.Node{node}))
 }
 
 func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_Id() {
@@ -242,7 +243,7 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_Nodes() {
 		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
-	instances, err := nodeGroup.Nodes()
+	instances, err := nodeGroup.Nodes(context.TODO())
 	ts.Require().NoError(err)
 	ts.Require().Len(instances, 1)
 	ts.Require().Equal(testInstanceID, toNodeID(instances[0].Id))
@@ -264,5 +265,5 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_Exist() {
 		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
-	ts.Require().True(nodeGroup.Exist())
+	ts.Require().True(nodeGroup.Exist(context.TODO()))
 }

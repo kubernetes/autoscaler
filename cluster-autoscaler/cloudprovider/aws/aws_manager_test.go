@@ -630,7 +630,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 
 	a := &autoScalingMock{}
 	a.On("DescribeAutoScalingGroups",
-		mock.Anything,
+		context.TODO(),
 		&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: []string{groupname},
 			MaxRecords:            aws.Int32(1),
@@ -645,7 +645,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	)
 
 	a.On("DescribeAutoScalingGroups",
-		mock.Anything,
+		context.TODO(),
 		&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: []string{groupname},
 			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
@@ -665,7 +665,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	)
 
 	a.On("DescribeScalingActivities",
-		mock.Anything,
+		context.TODO(),
 		&autoscaling.DescribeScalingActivitiesInput{
 			AutoScalingGroupName: aws.String("coolasg"),
 		},
@@ -788,7 +788,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	// Describe the group to register it, then again to generate the instance
 	// cache.
 	a.On("DescribeAutoScalingGroups",
-		mock.Anything,
+		context.TODO(),
 		&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: []string{groupname},
 			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
@@ -813,7 +813,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 		MaxRecords: aws.Int32(maxRecordsReturnedByAPI),
 	}
 	a.On("DescribeAutoScalingGroups",
-		mock.Anything,
+		context.TODO(),
 		mock.MatchedBy(tagsMatcher(expectedGroupsInputWithTags)),
 	).Return(
 		&autoscaling.DescribeAutoScalingGroupsOutput{
@@ -828,7 +828,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	).Once()
 
 	a.On("DescribeScalingActivities",
-		mock.Anything,
+		context.TODO(),
 		&autoscaling.DescribeScalingActivitiesInput{
 			AutoScalingGroupName: aws.String("coolasg"),
 		},
@@ -850,7 +850,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 
 	// Simulate the previously discovered ASG disappearing
 	a.On("DescribeAutoScalingGroups",
-		mock.Anything,
+		context.TODO(),
 		mock.MatchedBy(tagsMatcher(expectedGroupsInputWithTags)),
 	).Return(
 		&autoscaling.DescribeAutoScalingGroupsOutput{

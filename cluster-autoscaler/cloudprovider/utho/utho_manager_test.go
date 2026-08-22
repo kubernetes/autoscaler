@@ -108,13 +108,13 @@ func TestManager_Refresh(t *testing.T) {
 		manager := createTestManager(t)
 		client := setupMockClient(t, manager, defaultNodePools)
 
-		err := manager.Refresh()
+		err := manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 		assert.Equal(t, 2, len(manager.nodeGroups), "should only include autoscaling pools")
 
 		// Verify first node group
 		assert.Equal(t, 1, manager.nodeGroups[0].minSize)
-		assert.Equal(t, 3, manager.nodeGroups[0].MaxSize())
+		assert.Equal(t, 3, manager.nodeGroups[0].MaxSize(context.TODO()))
 
 		// Verify second node group
 		assert.Equal(t, 2, manager.nodeGroups[1].minSize)
@@ -136,7 +136,7 @@ func TestManager_Refresh(t *testing.T) {
 		).Once()
 
 		manager.client = client
-		err := manager.Refresh()
+		err := manager.Refresh(context.TODO())
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
 		client.AssertExpectations(t)
@@ -148,7 +148,7 @@ func TestManager_ListNodePools(t *testing.T) {
 		manager := createTestManager(t)
 		client := setupMockClient(t, manager, defaultNodePools)
 
-		err := manager.Refresh()
+		err := manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 
 		assert.Equal(t, 2, len(manager.nodeGroups))
@@ -170,7 +170,7 @@ func TestManager_ListNodePools(t *testing.T) {
 		).Once()
 
 		manager.client = client
-		err := manager.Refresh()
+		err := manager.Refresh(context.TODO())
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
 		client.AssertExpectations(t)
@@ -180,7 +180,7 @@ func TestManager_ListNodePools(t *testing.T) {
 		manager := createTestManager(t)
 		client := setupMockClient(t, manager, defaultNodePools)
 
-		err := manager.Refresh()
+		err := manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 
 		assert.Equal(t, 2, len(manager.nodeGroups))
@@ -193,7 +193,7 @@ func TestManager_ListNodePools(t *testing.T) {
 		manager := createTestManager(t)
 		client := setupMockClient(t, manager, []utho.NodepoolDetails{})
 
-		err := manager.Refresh()
+		err := manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(manager.nodeGroups))
 		client.AssertExpectations(t)
@@ -206,7 +206,7 @@ func TestNodeGroup_Nodes_EmptyWorkers(t *testing.T) {
 		Workers: []utho.WorkerNode{},
 	})
 
-	nodes, err := nodeGroup.Nodes()
+	nodes, err := nodeGroup.Nodes(context.TODO())
 	assert.NoError(t, err)
 	assert.Empty(t, nodes, "nodes should be empty when no workers exist")
 }
@@ -220,7 +220,7 @@ func TestNodeGroup_Nodes_NilNodePool(t *testing.T) {
 		nodePool:  nil,
 	}
 
-	nodes, err := nodeGroup.Nodes()
+	nodes, err := nodeGroup.Nodes(context.TODO())
 	assert.Error(t, err)
 	assert.Nil(t, nodes)
 	assert.Contains(t, err.Error(), "node pool instance is not created")

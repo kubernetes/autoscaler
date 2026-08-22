@@ -120,7 +120,7 @@ func TestDigitalOceanCloudProvider_Name(t *testing.T) {
 	provider := testCloudProvider(t, nil)
 
 	t.Run("success", func(t *testing.T) {
-		name := provider.Name()
+		name := provider.Name(context.TODO())
 		assert.Equal(t, ProviderName, name, "provider name doesn't match")
 	})
 }
@@ -130,17 +130,17 @@ func TestDigitalOceanCloudProvider_NodeGroups(t *testing.T) {
 	c = setGetNodeTemplateMock(c, 3)
 
 	provider := testCloudProvider(t, c)
-	err := provider.manager.Refresh()
+	err := provider.manager.Refresh(context.TODO())
 	assert.NoError(t, err)
 
 	t.Run("success", func(t *testing.T) {
-		nodes := provider.NodeGroups()
+		nodes := provider.NodeGroups(context.TODO())
 		assert.Equal(t, len(nodes), 3, "number of nodes do not match")
 	})
 
 	t.Run("zero groups", func(t *testing.T) {
 		provider.manager.nodeGroups = []*NodeGroup{}
-		nodes := provider.NodeGroups()
+		nodes := provider.NodeGroups(context.TODO())
 		assert.Equal(t, len(nodes), 0, "number of nodes do not match")
 	})
 }
@@ -176,7 +176,7 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 		).Once()
 
 		provider := testCloudProvider(t, client)
-		err := provider.manager.Refresh()
+		err := provider.manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 
 		// let's get the nodeGroup for the node with ID 4
@@ -186,7 +186,7 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		nodeGroup, err := provider.NodeGroupForNode(node)
+		nodeGroup, err := provider.NodeGroupForNode(context.TODO(), node)
 		require.NoError(t, err)
 		require.NotNil(t, nodeGroup)
 		require.Equal(t, nodeGroup.Id(), "2", "node group ID does not match")
@@ -218,7 +218,7 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 		).Once()
 
 		provider := testCloudProvider(t, client)
-		err := provider.manager.Refresh()
+		err := provider.manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 
 		node := &apiv1.Node{
@@ -227,7 +227,7 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		nodeGroup, err := provider.NodeGroupForNode(node)
+		nodeGroup, err := provider.NodeGroupForNode(context.TODO(), node)
 		assert.NoError(t, err)
 		assert.Nil(t, nodeGroup)
 	})

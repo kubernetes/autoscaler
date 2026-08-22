@@ -107,10 +107,10 @@ func TestVultrCloudProvider_NewNodeGroup(t *testing.T) {
 	rl := &cloudprovider.ResourceLimiter{}
 
 	provider := newVultrCloudProvider(manager, rl)
-	err = provider.Refresh()
+	err = provider.Refresh(context.TODO())
 	assert.NoError(t, err)
 
-	nodes := provider.NodeGroups()
+	nodes := provider.NodeGroups(context.TODO())
 	assert.Equal(t, len(nodes), 2, "number of nodes do not match")
 
 }
@@ -165,12 +165,12 @@ func TestVultrCloudProvider_NodeGroupForNode(t *testing.T) {
 	rl := &cloudprovider.ResourceLimiter{}
 
 	provider := newVultrCloudProvider(manager, rl)
-	err = provider.Refresh()
+	err = provider.Refresh(context.TODO())
 	assert.NoError(t, err)
 
 	node := &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("np-1234")}}
 
-	nodeGroup, err := provider.NodeGroupForNode(node)
+	nodeGroup, err := provider.NodeGroupForNode(context.TODO(), node)
 	require.NoError(t, err)
 
 	require.NotNil(t, nodeGroup)
@@ -184,5 +184,5 @@ func TestVultrCloudProvider_Name(t *testing.T) {
 	require.NoError(t, err)
 
 	p := newVultrCloudProvider(manager, &cloudprovider.ResourceLimiter{})
-	assert.Equal(t, ProviderName, p.Name(), "provider name doesn't match")
+	assert.Equal(t, ProviderName, p.Name(context.TODO()), "provider name doesn't match")
 }

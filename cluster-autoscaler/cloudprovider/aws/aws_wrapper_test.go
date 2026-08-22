@@ -168,7 +168,7 @@ func TestGetManagedNodegroup(t *testing.T) {
 	}
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -226,7 +226,7 @@ func TestGetManagedNodegroupWithNilValues(t *testing.T) {
 	}
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -273,7 +273,7 @@ func TestGetManagedNodegroupWithEmptyValues(t *testing.T) {
 	}
 
 	k.On("DescribeNodegroup",
-		mock.Anything,
+		context.TODO(),
 		&eks.DescribeNodegroupInput{
 			ClusterName:   &clusterName,
 			NodegroupName: &nodegroupName,
@@ -307,7 +307,7 @@ func TestMoreThen100Groups(t *testing.T) {
 
 	// First batch, first 100 elements
 	a.On("DescribeAutoScalingGroups",
-		mock.Anything,
+		context.TODO(),
 		&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: names[:100],
 			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
@@ -316,7 +316,7 @@ func TestMoreThen100Groups(t *testing.T) {
 
 	// Second batch, element 101
 	a.On("DescribeAutoScalingGroups",
-		mock.Anything,
+		context.TODO(),
 		&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: []string{"asg-100"},
 			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
@@ -340,7 +340,7 @@ func TestGetInstanceTypesForAsgs(t *testing.T) {
 	a := &autoScalingMock{}
 	e := &ec2Mock{}
 	a.On("DescribeLaunchConfigurations",
-		mock.Anything,
+		context.TODO(),
 		&autoscaling.DescribeLaunchConfigurationsInput{
 			LaunchConfigurationNames: []string{ltName},
 			MaxRecords:               aws.Int32(50),
@@ -357,7 +357,7 @@ func TestGetInstanceTypesForAsgs(t *testing.T) {
 		nil,
 	)
 	e.On("DescribeLaunchTemplateVersions",
-		mock.Anything,
+		context.TODO(),
 		&ec2.DescribeLaunchTemplateVersionsInput{
 			LaunchTemplateName: aws.String(ltName),
 			Versions:           []string{ltVersion},
@@ -469,7 +469,7 @@ func TestGetInstanceTypesFromInstanceRequirementsOverrides(t *testing.T) {
 	}
 
 	e.On("DescribeLaunchTemplateVersions",
-		mock.Anything,
+		context.TODO(),
 		&ec2.DescribeLaunchTemplateVersionsInput{
 			LaunchTemplateName: aws.String("launchTemplateName"),
 			Versions:           []string{"1"},
@@ -488,7 +488,7 @@ func TestGetInstanceTypesFromInstanceRequirementsOverrides(t *testing.T) {
 	)
 
 	e.On("DescribeImages",
-		mock.Anything,
+		context.TODO(),
 		&ec2.DescribeImagesInput{
 			ImageIds: []string{"123"},
 		},
@@ -507,7 +507,7 @@ func TestGetInstanceTypesFromInstanceRequirementsOverrides(t *testing.T) {
 	requirements, err := awsWrapper.getRequirementsRequestFromAutoscaling(mixedInstancesPolicy.instanceRequirementsOverrides)
 	assert.NoError(t, err)
 	e.On("GetInstanceTypesFromInstanceRequirements",
-		mock.Anything,
+		context.TODO(),
 		&ec2.GetInstanceTypesFromInstanceRequirementsInput{
 			ArchitectureTypes:    []ec2types.ArchitectureType{ec2types.ArchitectureTypeX8664},
 			InstanceRequirements: requirements,
@@ -560,7 +560,7 @@ func TestGetInstanceTypesFromInstanceRequirementsInLaunchTemplate(t *testing.T) 
 	}
 
 	e.On("DescribeLaunchTemplateVersions",
-		mock.Anything,
+		context.TODO(),
 		&ec2.DescribeLaunchTemplateVersionsInput{
 			LaunchTemplateName: aws.String("launchTemplateName"),
 			Versions:           []string{"1"},
@@ -580,7 +580,7 @@ func TestGetInstanceTypesFromInstanceRequirementsInLaunchTemplate(t *testing.T) 
 	)
 
 	e.On("DescribeImages",
-		mock.Anything,
+		context.TODO(),
 		&ec2.DescribeImagesInput{
 			ImageIds: []string{"123"},
 		},
@@ -599,7 +599,7 @@ func TestGetInstanceTypesFromInstanceRequirementsInLaunchTemplate(t *testing.T) 
 	requirements, err := awsWrapper.getRequirementsRequestFromEC2(instanceRequirements)
 	assert.NoError(t, err)
 	e.On("GetInstanceTypesFromInstanceRequirements",
-		mock.Anything,
+		context.TODO(),
 		&ec2.GetInstanceTypesFromInstanceRequirementsInput{
 			ArchitectureTypes:    []ec2types.ArchitectureType{ec2types.ArchitectureTypeX8664},
 			InstanceRequirements: requirements,
@@ -680,7 +680,7 @@ func TestGetLaunchTemplateData(t *testing.T) {
 
 	for _, testCase := range testCases {
 		e.On("DescribeLaunchTemplateVersions",
-			mock.Anything,
+			context.TODO(),
 			describeTemplateInput,
 		).Return(
 			testCase.describeTemplateData,
@@ -763,7 +763,7 @@ func TestGetInstanceTypesFromInstanceRequirementsWithEmptyList(t *testing.T) {
 	requirements := &ec2types.InstanceRequirementsRequest{}
 
 	e.On("DescribeImages",
-		mock.Anything,
+		context.TODO(),
 		&ec2.DescribeImagesInput{
 			ImageIds: []string{"123"},
 		},
@@ -779,7 +779,7 @@ func TestGetInstanceTypesFromInstanceRequirementsWithEmptyList(t *testing.T) {
 		nil,
 	)
 	e.On("GetInstanceTypesFromInstanceRequirements",
-		mock.Anything,
+		context.TODO(),
 		&ec2.GetInstanceTypesFromInstanceRequirementsInput{
 			ArchitectureTypes:    []ec2types.ArchitectureType{ec2types.ArchitectureTypeX8664},
 			InstanceRequirements: requirements,

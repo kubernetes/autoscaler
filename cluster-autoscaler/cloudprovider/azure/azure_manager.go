@@ -19,6 +19,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -235,7 +236,7 @@ func (m *AzureManager) buildNodeGroupFromSpec(spec string) (cloudprovider.NodeGr
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (m *AzureManager) Refresh() error {
+func (m *AzureManager) Refresh(ctx context.Context) error {
 	if m.lastRefresh.Add(m.azureCache.refreshInterval).After(time.Now()) {
 		return nil
 	}
@@ -346,8 +347,8 @@ func (m *AzureManager) GetScaleSetOptions(scaleSetName string, defaults config.N
 }
 
 // Cleanup the cache.
-func (m *AzureManager) Cleanup() {
-	m.azureCache.Cleanup()
+func (m *AzureManager) Cleanup(ctx context.Context) {
+	m.azureCache.Cleanup(context.TODO())
 }
 
 func (m *AzureManager) getFilteredNodeGroups(filter []labelAutoDiscoveryConfig) (nodeGroups []cloudprovider.NodeGroup, err error) {

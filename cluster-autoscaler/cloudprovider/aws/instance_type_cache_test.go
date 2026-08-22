@@ -53,7 +53,7 @@ func TestLTVersionChange(t *testing.T) {
 
 	for i := 0; i < 2; i++ {
 		e.On("DescribeLaunchTemplateVersions",
-			mock.Anything,
+			context.TODO(),
 			&ec2.DescribeLaunchTemplateVersionsInput{
 				LaunchTemplateName: aws.String(ltName),
 				Versions:           []string{ltVersions[i]},

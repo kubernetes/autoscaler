@@ -17,6 +17,7 @@ limitations under the License.
 package civo
 
 import (
+	"context"
 	"bytes"
 	"errors"
 	"testing"
@@ -115,7 +116,7 @@ func TestCivoManager_Refresh(t *testing.T) {
 		).Times(10)
 
 		manager.client = client
-		err = manager.Refresh()
+		err = manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 		assert.Equal(t, 2, len(manager.nodeGroups), "number of node groups do not match")
 	})
@@ -181,7 +182,7 @@ func TestCivoManager_RefreshWithNodeSpec(t *testing.T) {
 		).Times(10)
 
 		manager.client = client
-		err = manager.Refresh()
+		err = manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 		assert.Equal(t, 2, len(manager.nodeGroups), "number of node groups do not match")
 		assert.Equal(t, 1, manager.nodeGroups[0].minSize, "minimum node for node group does not match")
@@ -249,7 +250,7 @@ func TestCivoManager_RefreshWithNodeSpecPool(t *testing.T) {
 		).Times(10)
 
 		manager.client = client
-		err = manager.Refresh()
+		err = manager.Refresh(context.TODO())
 		assert.NoError(t, err)
 		assert.Equal(t, 2, len(manager.nodeGroups), "number of node groups do not match")
 		assert.Equal(t, 1, manager.nodeGroups[0].minSize, "minimum node for node group does not match")

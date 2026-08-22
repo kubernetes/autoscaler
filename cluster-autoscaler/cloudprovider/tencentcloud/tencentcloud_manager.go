@@ -17,6 +17,7 @@ limitations under the License.
 package tencentcloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -179,7 +180,7 @@ func (m *tencentcloudManagerImpl) fetchExplicitAsgs(specs []string) error {
 
 // GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
 func (m *tencentcloudManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
-	return m.cache.GetResourceLimiter()
+	return m.cache.GetResourceLimiter(context.TODO())
 }
 
 // registerAsg registers asg in TencentcloudManager. Returns true if the node group didn't exist before or its config has changed.

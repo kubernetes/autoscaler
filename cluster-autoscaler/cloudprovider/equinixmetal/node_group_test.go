@@ -17,6 +17,7 @@ limitations under the License.
 package equinixmetal
 
 import (
+	"context"
 	"os"
 	"sync"
 	"testing"
@@ -103,7 +104,7 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	assert.Error(t, err)
 
 	// Now try to increase the pool3 size by 1, that should work
-	err = ngPool3.IncreaseSize(1)
+	err = ngPool3.IncreaseSize(context.TODO(), 1)
 	assert.NoError(t, err)
 
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
@@ -117,7 +118,7 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	assert.Equal(t, int(2), len(n2Pool3))
 
 	// Now try to increase the pool2 size by 1, that should work
-	err = ngPool2.IncreaseSize(1)
+	err = ngPool2.IncreaseSize(context.TODO(), 1)
 	assert.NoError(t, err)
 
 	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
@@ -144,10 +145,10 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 		}
 	}
 
-	err = ngPool2.DeleteNodes(nodesPool2)
+	err = ngPool2.DeleteNodes(context.TODO(), nodesPool2)
 	assert.NoError(t, err)
 
-	err = ngPool3.DeleteNodes(nodesPool3)
+	err = ngPool3.DeleteNodes(context.TODO(), nodesPool3)
 	assert.NoError(t, err)
 
 	// Wait a few seconds if talking to the actual Packet API

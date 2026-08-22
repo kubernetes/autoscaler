@@ -145,8 +145,7 @@ func newManager(configReader io.Reader) (*Manager, error) {
 
 // Refresh refreshes the cache holding the nodegroups. This is called by the CA
 // based on the `--scan-interval`. By default it's 10 seconds.
-func (m *Manager) Refresh() error {
-	ctx := context.Background()
+func (m *Manager) Refresh(ctx context.Context) error {
 	nodePools, err := m.client.Get(ctx, m.clusterID)
 	if err != nil {
 		return err

@@ -88,8 +88,7 @@ func newManager(config io.Reader) (*manager, error) {
 	return m, nil
 }
 
-func (m *manager) Refresh() error {
-	ctx := context.Background()
+func (m *manager) Refresh(ctx context.Context) error {
 
 	//todo do we want to set the paging options here?
 	nodePools, _, err := m.client.ListNodePools(ctx, m.clusterID, nil)

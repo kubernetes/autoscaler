@@ -17,6 +17,7 @@ limitations under the License.
 package magnum
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -78,7 +79,7 @@ type MagnumNodeTemplate struct {
 //
 // Takes precautions so that the cluster is not modified while in an UPDATE_IN_PROGRESS state.
 // Blocks until the cluster has reached UPDATE_COMPLETE.
-func (ng *magnumNodeGroup) IncreaseSize(delta int) error {
+func (ng *magnumNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	ng.clusterUpdateLock.Lock()
 	defer ng.clusterUpdateLock.Unlock()
 
@@ -87,8 +88,8 @@ func (ng *magnumNodeGroup) IncreaseSize(delta int) error {
 	}
 
 	size := ng.targetSize
-	if size+delta > ng.MaxSize() {
-		return fmt.Errorf("size increase too large, desired:%d max:%d", size+delta, ng.MaxSize())
+	if size+delta > ng.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase too large, desired:%d max:%d", size+delta, ng.MaxSize(context.TODO()))
 	}
 
 	klog.V(2).Infof("Increasing size by %d, %d->%d", delta, size, size+delta)
@@ -102,12 +103,12 @@ func (ng *magnumNodeGroup) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (ng *magnumNodeGroup) AtomicIncreaseSize(delta int) error {
+func (ng *magnumNodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // deleteNodes deletes a set of nodes chosen by the autoscaler.
-func (ng *magnumNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *magnumNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	ng.clusterUpdateLock.Lock()
 	defer ng.clusterUpdateLock.Unlock()
 
@@ -120,8 +121,8 @@ func (ng *magnumNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	klog.V(2).Infof("Deleting nodes: %v", nodeNames)
 
 	// Check that the total number of nodes to be deleted will not take the node group below its minimum size
-	if size-len(nodes) < ng.MinSize() {
-		return fmt.Errorf("size decrease too large, desired:%d min:%d", size-len(nodes), ng.MinSize())
+	if size-len(nodes) < ng.MinSize(context.TODO()) {
+		return fmt.Errorf("size decrease too large, desired:%d min:%d", size-len(nodes), ng.MinSize(context.TODO()))
 	}
 
 	var nodeRefs []NodeRef
@@ -153,12 +154,12 @@ func (ng *magnumNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (ng *magnumNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (ng *magnumNodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // DecreaseTargetSize decreases the cluster node_count in magnum.
-func (ng *magnumNodeGroup) DecreaseTargetSize(delta int) error {
+func (ng *magnumNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	ng.clusterUpdateLock.Lock()
 	defer ng.clusterUpdateLock.Unlock()
 
@@ -166,8 +167,8 @@ func (ng *magnumNodeGroup) DecreaseTargetSize(delta int) error {
 		return fmt.Errorf("size decrease must be negative")
 	}
 	size := ng.targetSize
-	if size+delta < ng.MinSize() {
-		return fmt.Errorf("size decrease too large, desired:%d min:%d", size+delta, ng.MinSize())
+	if size+delta < ng.MinSize(context.TODO()) {
+		return fmt.Errorf("size decrease too large, desired:%d min:%d", size+delta, ng.MinSize(context.TODO()))
 	}
 
 	klog.V(2).Infof("Decreasing target size by %d, %d->%d", delta, ng.targetSize, ng.targetSize+delta)
@@ -185,14 +186,14 @@ func (ng *magnumNodeGroup) Id() string {
 }
 
 // Debug returns a string formatted with the node group's min, max and target sizes.
-func (ng *magnumNodeGroup) Debug() string {
+func (ng *magnumNodeGroup) Debug(ctx context.Context) string {
 	ng.clusterUpdateLock.Lock()
 	defer ng.clusterUpdateLock.Unlock()
 	return fmt.Sprintf("%s min=%d max=%d target=%d", ng.id, ng.minSize, ng.maxSize, ng.targetSize)
 }
 
 // Nodes returns a list of nodes that belong to this node group.
-func (ng *magnumNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *magnumNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	ng.clusterUpdateLock.Lock()
 	defer ng.clusterUpdateLock.Unlock()
 
@@ -224,7 +225,7 @@ func (ng *magnumNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *magnumNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ng *magnumNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	node, err := ng.buildNodeFromTemplate(ng.Id(), ng.nodeTemplate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build node from template")
@@ -237,43 +238,43 @@ func (ng *magnumNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // Exist returns if this node group exists.
 // Currently always returns true.
-func (ng *magnumNodeGroup) Exist() bool {
+func (ng *magnumNodeGroup) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (ng *magnumNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ng *magnumNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
-func (ng *magnumNodeGroup) Delete() error {
+func (ng *magnumNodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns if the nodegroup is autoprovisioned.
-func (ng *magnumNodeGroup) Autoprovisioned() bool {
+func (ng *magnumNodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (ng *magnumNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *magnumNodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // MaxSize returns the maximum allowed size of the node group.
-func (ng *magnumNodeGroup) MaxSize() int {
+func (ng *magnumNodeGroup) MaxSize(ctx context.Context) int {
 	return ng.maxSize
 }
 
 // MinSize returns the minimum allowed size of the node group.
-func (ng *magnumNodeGroup) MinSize() int {
+func (ng *magnumNodeGroup) MinSize(ctx context.Context) int {
 	return ng.minSize
 }
 
 // TargetSize returns the target size of the node group.
-func (ng *magnumNodeGroup) TargetSize() (int, error) {
+func (ng *magnumNodeGroup) TargetSize(ctx context.Context) (int, error) {
 	return ng.targetSize, nil
 }
 

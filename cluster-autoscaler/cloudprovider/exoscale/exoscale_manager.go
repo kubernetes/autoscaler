@@ -112,7 +112,7 @@ func newManager(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*Manager
 
 // Refresh refreshes the cache holding the node groups. This is called by the CA
 // based on the `--scan-interval`. By default it's 10 seconds.
-func (m *Manager) Refresh() error {
+func (m *Manager) Refresh(ctx context.Context) error {
 	var nodeGroups []cloudprovider.NodeGroup
 	for _, ng := range m.nodeGroups {
 		if _, err := m.client.GetInstancePool(m.ctx, m.zone, ng.Id()); err != nil {

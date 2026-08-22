@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"strconv"
@@ -266,14 +267,14 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			var migOsInfo MigOsInfo
 			kubeEnv, err := ExtractKubeEnv(template)
 			if err == nil {
-				migOsInfo, err = tb.MigOsInfo(mig.Id(), kubeEnv)
+				migOsInfo, err = tb.MigOsInfo(context.TODO(), mig.Id(), kubeEnv)
 			}
 			if tc.expectedMigInfoErr {
 				assert.Error(t, err)
 				return
 			}
 			localSSDDiskSize := localssdsize.NewSimpleLocalSSDProvider()
-			node, err := tb.BuildNodeFromTemplate(mig, migOsInfo, template, kubeEnv, tc.physicalCpu, tc.physicalMemory, tc.pods, &GceReserved{}, localSSDDiskSize)
+			node, err := tb.BuildNodeFromTemplate(context.TODO(), mig, migOsInfo, template, kubeEnv, tc.physicalCpu, tc.physicalMemory, tc.pods, &GceReserved{}, localSSDDiskSize)
 			if tc.expectedNodeTemplateErr {
 				assert.Error(t, err)
 			} else {
@@ -304,7 +305,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 					physicalEphemeralStorageGiB = 0
 				}
 				migOsInfo := NewMigOsInfo(OperatingSystemLinux, OperatingSystemDistributionCOS, "")
-				capacity, err := tb.BuildCapacity(migOsInfo, tc.physicalCpu, tc.physicalMemory, tc.accelerators, physicalEphemeralStorageGiB*units.GiB, tc.ephemeralStorageLocalSSDCount, tc.pods, &GceReserved{}, tc.extendedResources)
+				capacity, err := tb.BuildCapacity(context.TODO(), migOsInfo, tc.physicalCpu, tc.physicalMemory, tc.accelerators, physicalEphemeralStorageGiB*units.GiB, tc.ephemeralStorageLocalSSDCount, tc.pods, &GceReserved{}, tc.extendedResources)
 				assert.NoError(t, err)
 				assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
 				if !tc.kubeReserved {
@@ -312,7 +313,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				} else {
 					reserved, err := makeResourceList(tc.reservedCpu, tc.reservedMemory, 0, tc.reservedEphemeralStorage)
 					assert.NoError(t, err)
-					allocatable := tb.CalculateAllocatable(capacity, reserved, ParseEvictionHardOrGetDefault(nil))
+					allocatable := tb.CalculateAllocatable(capacity, reserved, ParseEvictionHardOrGetDefault(context.TODO(), nil))
 					assertEqualResourceLists(t, "Allocatable", allocatable, node.Status.Allocatable)
 				}
 			}
@@ -437,7 +438,7 @@ func TestCalculateAllocatable(t *testing.T) {
 			assert.NoError(t, err)
 			expectedAllocatable, err := makeResourceList(tc.allocatableCpu, tc.allocatableMemory, 0, tc.allocatableEphemeralStorage)
 			assert.NoError(t, err)
-			allocatable := tb.CalculateAllocatable(capacity, reserved, ParseEvictionHardOrGetDefault(nil))
+			allocatable := tb.CalculateAllocatable(capacity, reserved, ParseEvictionHardOrGetDefault(context.TODO(), nil))
 			assertEqualResourceLists(t, "Allocatable", expectedAllocatable, allocatable)
 		})
 	}
@@ -485,7 +486,7 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 		var allocatable apiv1.ResourceList
 		kubeEnv, err := ParseKubeEnv("test", tc.kubeEnvValue)
 		if err == nil {
-			allocatable, err = tb.BuildAllocatableFromKubeEnv(capacity, kubeEnv, ParseEvictionHardOrGetDefault(nil))
+			allocatable, err = tb.BuildAllocatableFromKubeEnv(context.TODO(), capacity, kubeEnv, ParseEvictionHardOrGetDefault(context.TODO(), nil))
 		}
 		if tc.expectedErr {
 			assert.Error(t, err)
@@ -540,7 +541,7 @@ func TestParseEvictionHard(t *testing.T) {
 			MemoryEvictionHardTag:           tc.memory,
 			EphemeralStorageEvictionHardTag: tc.ephemeralStorage,
 		}
-		actualOutput := ParseEvictionHardOrGetDefault(test)
+		actualOutput := ParseEvictionHardOrGetDefault(context.TODO(), test)
 		assert.EqualValues(t, tc.memoryExpected, actualOutput.MemoryEvictionQuantity, "TestParseEviction Failed Memory. %v expected does not match %v actual.", tc.memoryExpected, actualOutput.MemoryEvictionQuantity)
 		assert.EqualValues(t, tc.ephemeralStorageRatioExpected, actualOutput.EphemeralStorageEvictionRatio, "TestParseEviction Failed Ephemeral Storage. %v expected does not match %v actual.", tc.memoryExpected, actualOutput.EphemeralStorageEvictionRatio)
 	}
@@ -616,7 +617,7 @@ func TestBuildCapacityMemory(t *testing.T) {
 			tb := GceTemplateBuilder{}
 			noAccelerators := make([]*gce.AcceleratorConfig, 0)
 			migOsInfo := NewMigOsInfo(tc.os, OperatingSystemDistributionCOS, "")
-			buildCapacity, err := tb.BuildCapacity(migOsInfo, tc.physicalCpu, tc.physicalMemory, noAccelerators, -1, 0, nil, &GceReserved{}, apiv1.ResourceList{})
+			buildCapacity, err := tb.BuildCapacity(context.TODO(), migOsInfo, tc.physicalCpu, tc.physicalMemory, noAccelerators, -1, 0, nil, &GceReserved{}, apiv1.ResourceList{})
 			assert.NoError(t, err)
 			expectedCapacity, err := makeResourceList2(tc.physicalCpu, tc.expectedCapacityMemory, 0, 110)
 			assert.NoError(t, err)
@@ -675,7 +676,7 @@ func TestExtractAutoscalingOptionsFromKubeEnv(t *testing.T) {
 			var value map[string]string
 			kubeEnv, err := ParseKubeEnv("test", c.kubeEnvValue)
 			if err == nil {
-				value, err = extractAutoscalingOptionsFromKubeEnv(kubeEnv)
+				value, err = extractAutoscalingOptionsFromKubeEnv(context.TODO(), kubeEnv)
 			}
 			assert.Equal(t, c.expectedValue, value)
 			if c.expectedErr {
@@ -743,7 +744,7 @@ func TestExtractAutoscalerVarFromKubeEnv(t *testing.T) {
 			var found bool
 			kubeEnv, err := ParseKubeEnv("test", c.kubeEnvValue)
 			if err == nil {
-				value, found, err = extractAutoscalerVarFromKubeEnv(kubeEnv, c.name)
+				value, found, err = extractAutoscalerVarFromKubeEnv(context.TODO(), kubeEnv, c.name)
 			}
 			assert.Equal(t, c.expectedValue, value)
 			assert.Equal(t, c.expectedFound, found)
@@ -798,7 +799,7 @@ func TestExtractLabelsFromKubeEnv(t *testing.T) {
 			var labels map[string]string
 			kubeEnv, err := ParseKubeEnv("test", c.kubeEnvValue)
 			if err == nil {
-				labels, err = extractLabelsFromKubeEnv(kubeEnv)
+				labels, err = extractLabelsFromKubeEnv(context.TODO(), kubeEnv)
 			}
 			assert.Equal(t, c.err, err)
 			if c.err != nil {
@@ -895,7 +896,7 @@ func TestExtractTaintsFromKubeEnv(t *testing.T) {
 			var taints []apiv1.Taint
 			kubeEnv, err := ParseKubeEnv("test", c.kubeEnvValue)
 			if err == nil {
-				taints, err = extractTaintsFromKubeEnv(kubeEnv)
+				taints, err = extractTaintsFromKubeEnv(context.TODO(), kubeEnv)
 			}
 			assert.Equal(t, c.err, err)
 			if c.err != nil {
@@ -993,7 +994,7 @@ func TestExtractKubeReservedFromKubeEnv(t *testing.T) {
 		var reserved string
 		kubeEnv, err := ParseKubeEnv("test", tc.kubeEnvValue)
 		if err == nil {
-			reserved, err = extractKubeReservedFromKubeEnv(kubeEnv)
+			reserved, err = extractKubeReservedFromKubeEnv(context.TODO(), kubeEnv)
 		}
 		assert.Equal(t, tc.expectedReserved, reserved)
 		if tc.expectedErr {
@@ -1081,7 +1082,7 @@ func TestExtractOperatingSystemFromKubeEnv(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			kubeEnv, err := ParseKubeEnv("test", tc.kubeEnvValue)
 			assert.NoError(t, err)
-			actualOperatingSystem := extractOperatingSystemFromKubeEnv(kubeEnv)
+			actualOperatingSystem := extractOperatingSystemFromKubeEnv(context.TODO(), kubeEnv)
 			assert.Equal(t, tc.expectedOperatingSystem, actualOperatingSystem)
 		})
 	}
@@ -1208,7 +1209,7 @@ func TestExtractOperatingSystemDistributionFromKubeEnv(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			kubeEnv, err := ParseKubeEnv("test", tc.kubeEnvValue)
 			assert.NoError(t, err)
-			actualOperatingSystem := extractOperatingSystemDistributionFromKubeEnv(kubeEnv)
+			actualOperatingSystem := extractOperatingSystemDistributionFromKubeEnv(context.TODO(), kubeEnv)
 			assert.Equal(t, tc.expectedOperatingSystemDistribution, actualOperatingSystem)
 		})
 	}
@@ -1323,7 +1324,7 @@ func TestExtractExtendedResourcesFromKubeEnv(t *testing.T) {
 			var extendedResources apiv1.ResourceList
 			kubeEnv, err := ParseKubeEnv("test", tc.kubeEnvValue)
 			if err == nil {
-				extendedResources, err = extractExtendedResourcesFromKubeEnv(kubeEnv)
+				extendedResources, err = extractExtendedResourcesFromKubeEnv(context.TODO(), kubeEnv)
 			}
 			assertEqualResourceLists(t, "Resources", tc.expectedExtendedResources, extendedResources)
 			if tc.expectedErr {
@@ -1361,7 +1362,7 @@ func TestParseKubeReserved(t *testing.T) {
 		expectedErr: true,
 	}}
 	for _, tc := range testCases {
-		resources, err := parseKubeReserved(tc.reserved)
+		resources, err := parseKubeReserved(context.TODO(), tc.reserved)
 		if tc.expectedErr {
 			assert.Error(t, err)
 			assert.Nil(t, resources)
@@ -1433,7 +1434,7 @@ func TestExtractSystemArchitectureFromKubeEnv(t *testing.T) {
 			var gotArch SystemArchitecture
 			kubeEnv, gotErr := ParseKubeEnv("test", tc.kubeEnvValue)
 			if gotErr == nil {
-				gotArch, gotErr = extractSystemArchitectureFromKubeEnv(kubeEnv)
+				gotArch, gotErr = extractSystemArchitectureFromKubeEnv(context.TODO(), kubeEnv)
 			}
 			if diff := cmp.Diff(tc.wantArch, gotArch); diff != "" {
 				t.Errorf("extractSystemArchitectureFromKubeEnv diff (-want +got):\n%s", diff)
@@ -1475,17 +1476,17 @@ func TestBuildNodeFromTemplateArch(t *testing.T) {
 			if gotErr != nil {
 				t.Fatalf("ExtractKubeEnv unexpected error: %v", gotErr)
 			}
-			migOsInfo, gotErr := tb.MigOsInfo(mig.Id(), kubeEnv)
+			migOsInfo, gotErr := tb.MigOsInfo(context.TODO(), mig.Id(), kubeEnv)
 			if gotErr != nil {
 				t.Fatalf("MigOsInfo unexpected error: %v", gotErr)
 			}
 			localSSDDiskSize := localssdsize.NewSimpleLocalSSDProvider()
-			gotNode, gotErr := tb.BuildNodeFromTemplate(mig, migOsInfo, template, kubeEnv, 16, 128, nil, &GceReserved{}, localSSDDiskSize)
+			gotNode, gotErr := tb.BuildNodeFromTemplate(context.TODO(), mig, migOsInfo, template, kubeEnv, 16, 128, nil, &GceReserved{}, localSSDDiskSize)
 			if gotErr != nil {
 				t.Fatalf("BuildNodeFromTemplate unexpected error: %v", gotErr)
 			}
 			gotArch := gotNode.Labels[apiv1.LabelArchStable]
-			if diff := cmp.Diff(tc.wantArch.Name(), gotArch); diff != "" {
+			if diff := cmp.Diff(tc.wantArch.Name(context.TODO()), gotArch); diff != "" {
 				t.Errorf("BuildNodeFromTemplate arch label diff (-want +got):\n%s", diff)
 			}
 		})

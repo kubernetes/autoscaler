@@ -873,7 +873,7 @@ func TestControllerMachineSetNodeNamesWithoutLinkage(t *testing.T) {
 	}
 
 	ng := nodegroups[0]
-	nodeNames, err := ng.Nodes()
+	nodeNames, err := ng.Nodes(context.TODO())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -915,7 +915,7 @@ func TestControllerMachineSetNodeNamesUsingProviderID(t *testing.T) {
 	}
 
 	ng := nodegroups[0]
-	nodeNames, err := ng.Nodes()
+	nodeNames, err := ng.Nodes(context.TODO())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

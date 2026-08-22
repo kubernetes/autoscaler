@@ -118,11 +118,11 @@ var (
 )
 
 func TestMaxSize(t *testing.T) {
-	assert.Equal(t, makeFakeNodeGroup(t, nil).MaxSize(), fakeMaxSize)
+	assert.Equal(t, makeFakeNodeGroup(t, nil).MaxSize(context.TODO()), fakeMaxSize)
 }
 
 func TestMinSize(t *testing.T) {
-	assert.Equal(t, makeFakeNodeGroup(t, nil).MinSize(), fakeMinSize)
+	assert.Equal(t, makeFakeNodeGroup(t, nil).MinSize(context.TODO()), fakeMinSize)
 }
 
 func TestSize(t *testing.T) {
@@ -198,7 +198,7 @@ func TestIncreaseSize(t *testing.T) {
 	t.Run("Fail to create one new server", func(t *testing.T) {
 		mockclient.On("ServerGroup", fakeNodeGroupID).
 			Return(fakeServerGroup, nil).Once()
-		mockclient.On("CreateServer", mock.Anything).
+		mockclient.On("CreateServer", context.TODO()).
 			Return(nil, ErrFake).Once()
 		err := nodeGroup.IncreaseSize(1)
 		assert.Error(t, err)
@@ -206,7 +206,7 @@ func TestIncreaseSize(t *testing.T) {
 	t.Run("Create one new server", func(t *testing.T) {
 		mockclient.On("ServerGroup", fakeNodeGroupID).
 			Return(fakeServerGroup, nil).Once()
-		mockclient.On("CreateServer", mock.Anything).
+		mockclient.On("CreateServer", context.TODO()).
 			Return(nil, nil).Once()
 		mockclient.On("ServerGroup", fakeNodeGroupID).
 			Return(&fakeServerGroupsPlusOne()[0], nil).Once()

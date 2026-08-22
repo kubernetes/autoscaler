@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -137,7 +138,7 @@ type normalizedProviderID string
 type SystemArchitecture string
 
 // Name returns the string value for SystemArchitecture
-func (s SystemArchitecture) Name() string {
+func (s SystemArchitecture) Name(ctx context.Context) string {
 	return string(s)
 }
 
@@ -407,11 +408,11 @@ func GetDefaultScaleFromZeroArchitecture() SystemArchitecture {
 	once.Do(func() {
 		archStr := os.Getenv(scaleUpFromZeroDefaultArchEnvVar)
 		arch := SystemArchitectureFromString(archStr)
-		klog.V(5).Infof("the default scale from zero architecture value is set to %s (%s)", archStr, arch.Name())
+		klog.V(5).Infof("the default scale from zero architecture value is set to %s (%s)", archStr, arch.Name(context.TODO()))
 		if arch == UnknownArch {
 			arch = DefaultArch
 			klog.Errorf("Unrecognized architecture '%s', falling back to %s",
-				archStr, DefaultArch.Name())
+				archStr, DefaultArch.Name(context.TODO()))
 		}
 		systemArchitecture = &arch
 	})

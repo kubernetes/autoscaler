@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"math"
 	"strconv"
 	"testing"
@@ -225,9 +226,9 @@ func TestGetNodePrice(t *testing.T) {
 			model := NewGcePriceModel(NewGcePriceInfo(), localssdsize.NewSimpleLocalSSDProvider())
 			now := time.Now()
 
-			price1, err := model.NodePrice(tc.cheaperNode, now, now.Add(time.Hour))
+			price1, err := model.NodePrice(context.TODO(), tc.cheaperNode, now, now.Add(time.Hour))
 			assert.NoError(t, err)
-			price2, err := model.NodePrice(tc.expensiveNode, now, now.Add(time.Hour))
+			price2, err := model.NodePrice(context.TODO(), tc.expensiveNode, now, now.Add(time.Hour))
 			assert.NoError(t, err)
 			if price1 >= tc.priceComparisonCoefficient*price2 {
 				t.Errorf("Failed price comparison, price1=%v price2=%v price2*coefficient=%v", price1, price2, price2*tc.priceComparisonCoefficient)
@@ -244,11 +245,11 @@ func TestGetPodPrice(t *testing.T) {
 	model := NewGcePriceModel(NewGcePriceInfo(), localssdsize.NewSimpleLocalSSDProvider())
 	now := time.Now()
 
-	price1, err := model.PodPrice(pod1, now, now.Add(time.Hour))
+	price1, err := model.PodPrice(context.TODO(), pod1, now, now.Add(time.Hour))
 	assert.NoError(t, err)
-	price2, err := model.PodPrice(pod2, now, now.Add(time.Hour))
+	price2, err := model.PodPrice(context.TODO(), pod2, now, now.Add(time.Hour))
 	assert.NoError(t, err)
-	price3, err := model.PodPrice(pod3, now, now.Add(time.Hour))
+	price3, err := model.PodPrice(context.TODO(), pod3, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 	// 2 times bigger pod should cost twice as much.
 	assert.True(t, math.Abs(price1*2-price2) < 0.001)

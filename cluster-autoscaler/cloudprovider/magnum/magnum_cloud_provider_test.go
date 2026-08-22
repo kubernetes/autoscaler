@@ -17,6 +17,7 @@ limitations under the License.
 package magnum
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -79,8 +80,8 @@ func TestRefreshNodeGroupsRace(t *testing.T) {
 		clusterUpdateLock:    &sync.Mutex{},
 	}
 
-	manager.On("autoDiscoverNodeGroups", mock.AnythingOfType("[]magnum.magnumAutoDiscoveryConfig")).Return(nil, nil)
-	manager.On("fetchNodeGroupStackIDs", mock.AnythingOfType("string")).Return(nodeGroupStacks{}, nil)
+	manager.On("autoDiscoverNodeGroups", context.TODO()OfType("[]magnum.magnumAutoDiscoveryConfig")).Return(nil, nil)
+	manager.On("fetchNodeGroupStackIDs", context.TODO()OfType("string")).Return(nodeGroupStacks{}, nil)
 
 	var wg sync.WaitGroup
 
@@ -99,7 +100,7 @@ func TestRefreshNodeGroupsRace(t *testing.T) {
 	// Continuously read from the node groups list.
 	go func() {
 		for time.Since(startTime) < 2*time.Second {
-			ngs := provider.NodeGroups()
+			ngs := provider.NodeGroups(context.TODO())
 			assert.NotNil(t, ngs)
 		}
 		wg.Done()
@@ -121,15 +122,15 @@ func TestNodeGroups(t *testing.T) {
 		clusterUpdateLock: clusterLock,
 	}
 
-	manager.On("updateNodeCount", mock.AnythingOfType("string"), mock.AnythingOfType("int")).Return(nil)
+	manager.On("updateNodeCount", context.TODO()OfType("string"), context.TODO()OfType("int")).Return(nil)
 
 	ng1 := &magnumNodeGroup{magnumManager: manager, id: "ng1", targetSize: 2, maxSize: 4, clusterUpdateLock: clusterLock}
 	ng2 := &magnumNodeGroup{magnumManager: manager, id: "ng2", targetSize: 2, maxSize: 4, clusterUpdateLock: clusterLock}
 
 	provider.nodeGroups = []*magnumNodeGroup{ng1, ng2}
 
-	for _, ng := range provider.NodeGroups() {
-		err := ng.IncreaseSize(1)
+	for _, ng := range provider.NodeGroups(context.TODO()) {
+		err := ng.IncreaseSize(context.TODO(), 1)
 		require.NoError(t, err)
 	}
 
@@ -167,7 +168,7 @@ func TestRefreshNodeGroupsAdd(t *testing.T) {
 	}
 
 	manager.On("autoDiscoverNodeGroups", []magnumAutoDiscoveryConfig{autoDiscoverySpec}).Return(initialNodeGroups, nil).Once()
-	manager.On("fetchNodeGroupStackIDs", mock.AnythingOfType("string")).Return(nodeGroupStacks{}, nil)
+	manager.On("fetchNodeGroupStackIDs", context.TODO()OfType("string")).Return(nodeGroupStacks{}, nil)
 
 	secondNodeGroups := []*nodegroups.NodeGroup{
 		{
@@ -248,9 +249,9 @@ func TestNodeInf(t *testing.T) {
 	manager.On("autoDiscoverNodeGroups", []magnumAutoDiscoveryConfig{autoDiscoverySpec}).Return(nodeGroupWithLabels, nil).Once()
 	manager.On("autoDiscoverNodeGroups", []magnumAutoDiscoveryConfig{autoDiscoverySpec}).Return(nodeGroupWithoutLabels, nil).Once()
 
-	manager.On("", mock.AnythingOfType("string")).Return(manager.getFlavorById("s1.small"))
-	manager.On("getFlavorById", mock.AnythingOfType("string")).Return(manager.getFlavorById("s1.small"))
-	manager.On("fetchNodeGroupStackIDs", mock.AnythingOfType("string")).Return(nodeGroupStacks{}, nil)
+	manager.On("", context.TODO()OfType("string")).Return(manager.getFlavorById("s1.small"))
+	manager.On("getFlavorById", context.TODO()OfType("string")).Return(manager.getFlavorById("s1.small"))
+	manager.On("fetchNodeGroupStackIDs", context.TODO()OfType("string")).Return(nodeGroupStacks{}, nil)
 
 	err = provider.refreshNodeGroups()
 	require.NoError(t, err)
@@ -317,7 +318,7 @@ func TestRefreshNodeGroupsRemove(t *testing.T) {
 	}
 
 	manager.On("autoDiscoverNodeGroups", []magnumAutoDiscoveryConfig{autoDiscoverySpec}).Return(initialNodeGroups, nil).Once()
-	manager.On("fetchNodeGroupStackIDs", mock.AnythingOfType("string")).Return(nodeGroupStacks{}, nil)
+	manager.On("fetchNodeGroupStackIDs", context.TODO()OfType("string")).Return(nodeGroupStacks{}, nil)
 
 	secondNodeGroups := []*nodegroups.NodeGroup{
 		{
@@ -382,7 +383,7 @@ func TestRefreshNodeGroupsReplace(t *testing.T) {
 	}
 
 	manager.On("autoDiscoverNodeGroups", []magnumAutoDiscoveryConfig{autoDiscoverySpec}).Return(initialNodeGroups, nil).Once()
-	manager.On("fetchNodeGroupStackIDs", mock.AnythingOfType("string")).Return(nodeGroupStacks{}, nil)
+	manager.On("fetchNodeGroupStackIDs", context.TODO()OfType("string")).Return(nodeGroupStacks{}, nil)
 
 	secondNodeGroups := []*nodegroups.NodeGroup{
 		{
@@ -449,7 +450,7 @@ func TestRefreshNodeGroupsUpdate(t *testing.T) {
 	}
 
 	manager.On("autoDiscoverNodeGroups", []magnumAutoDiscoveryConfig{autoDiscoverySpec}).Return(initialNodeGroups, nil).Once()
-	manager.On("fetchNodeGroupStackIDs", mock.AnythingOfType("string")).Return(nodeGroupStacks{}, nil)
+	manager.On("fetchNodeGroupStackIDs", context.TODO()OfType("string")).Return(nodeGroupStacks{}, nil)
 
 	secondNodeGroups := []*nodegroups.NodeGroup{
 		{
@@ -468,15 +469,15 @@ func TestRefreshNodeGroupsUpdate(t *testing.T) {
 	err = provider.refreshNodeGroups()
 	require.NoError(t, err)
 	require.Equal(t, 1, len(provider.nodeGroups), "wrong number of initial node groups")
-	require.Equal(t, 1, provider.nodeGroups[0].MinSize(), "wrong initial min node count")
-	require.Equal(t, 3, provider.nodeGroups[0].MaxSize(), "wrong initial max node count")
+	require.Equal(t, 1, provider.nodeGroups[0].MinSize(context.TODO()), "wrong initial min node count")
+	require.Equal(t, 3, provider.nodeGroups[0].MaxSize(context.TODO()), "wrong initial max node count")
 
 	// Update the node group
 	err = provider.refreshNodeGroups()
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(provider.nodeGroups), "wrong number of node groups after refresh")
-	assert.Equal(t, 2, provider.nodeGroups[0].MinSize(), "wrong updated min node count")
-	assert.Equal(t, 4, provider.nodeGroups[0].MaxSize(), "wrong updated max node count")
+	assert.Equal(t, 2, provider.nodeGroups[0].MinSize(context.TODO()), "wrong updated min node count")
+	assert.Equal(t, 4, provider.nodeGroups[0].MaxSize(context.TODO()), "wrong updated max node count")
 }
 
 // TestRefreshNodeGroupsEmpty checks that refreshNodeGroups correctly
@@ -498,7 +499,7 @@ func TestRefreshNodeGroupsEmpty(t *testing.T) {
 	initialNodeGroups := []*nodegroups.NodeGroup{}
 
 	manager.On("autoDiscoverNodeGroups", []magnumAutoDiscoveryConfig{autoDiscoverySpec}).Return(initialNodeGroups, nil).Once()
-	//manager.On("fetchNodeGroupStackIDs", mock.AnythingOfType("string")).Return(nodeGroupStacks{}, nil)
+	//manager.On("fetchNodeGroupStackIDs", context.TODO()OfType("string")).Return(nodeGroupStacks{}, nil)
 
 	secondNodeGroups := []*nodegroups.NodeGroup{}
 
@@ -567,25 +568,25 @@ func TestProviderNodeGroupForNode(t *testing.T) {
 	manager.On("nodeGroupForNode", node4).Return("", fmt.Errorf("manager error"))
 
 	t.Run("ng1", func(t *testing.T) {
-		ng, err := provider.NodeGroupForNode(node1)
+		ng, err := provider.NodeGroupForNode(context.TODO(), node1)
 		assert.NoError(t, err)
 		assert.Equal(t, nodegroup1, ng)
 	})
 
 	t.Run("ng2", func(t *testing.T) {
-		ng, err := provider.NodeGroupForNode(node2)
+		ng, err := provider.NodeGroupForNode(context.TODO(), node2)
 		assert.NoError(t, err)
 		assert.Equal(t, nodegroup2, ng)
 	})
 
 	t.Run("ng3", func(t *testing.T) {
-		ng, err := provider.NodeGroupForNode(node3)
+		ng, err := provider.NodeGroupForNode(context.TODO(), node3)
 		assert.NoError(t, err)
 		assert.Equal(t, nil, ng)
 	})
 
 	t.Run("error", func(t *testing.T) {
-		_, err := provider.NodeGroupForNode(node4)
+		_, err := provider.NodeGroupForNode(context.TODO(), node4)
 		assert.Error(t, err)
 	})
 }

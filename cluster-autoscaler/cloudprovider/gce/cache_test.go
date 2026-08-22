@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -135,16 +136,16 @@ func TestMigInstancesCache(t *testing.T) {
 	c.SetMigInstances(migRef, instances, time.Now())
 
 	// Then: can retrieve instances from cache by MIG reference
-	gotInstances, found := c.GetMigInstances(migRef)
+	gotInstances, found := c.GetMigInstances(context.TODO(), migRef)
 	assert.False(t, c.IsMigInstancesCacheEmpty(migRef), "Expected MIG instances cache to not be empty after SetMigInstances was called")
 	assert.True(t, found, "Expected MIG insatcnes cache to be populated")
 	assert.Equal(t, gotInstances, instances)
 
 	// When: Invalidate the cache
-	c.InvalidateAllMigInstances()
+	c.InvalidateAllMigInstances(context.TODO())
 
 	// Then: Cache is empty
-	_, found = c.GetMigInstances(migRef)
+	_, found = c.GetMigInstances(context.TODO(), migRef)
 	assert.False(t, found, "Expected MIG instances cache to be empty after InvalidateAllMigInstances was called")
 	assert.True(t, c.IsMigInstancesCacheEmpty(migRef))
 }

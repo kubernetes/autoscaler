@@ -77,33 +77,33 @@ var (
 // GceManager handles GCE communication and data caching.
 type GceManager interface {
 	// Refresh triggers refresh of cached resources.
-	Refresh() error
+	Refresh(context.Context) error
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-	Cleanup() error
+	Cleanup(context.Context) error
 
 	// GetMigs returns list of registered MIGs.
 	GetMigs() []Mig
 	// GetMigNodes returns mig nodes.
-	GetMigNodes(mig Mig) ([]GceInstance, error)
+	GetMigNodes(ctx context.Context, mig Mig) ([]GceInstance, error)
 	// GetMigForInstance returns MIG to which the given instance belongs.
-	GetMigForInstance(instance GceRef) (Mig, error)
+	GetMigForInstance(ctx context.Context, instance GceRef) (Mig, error)
 	// GetMigTemplateNode returns a template node for MIG.
-	GetMigTemplateNode(mig Mig) (*apiv1.Node, error)
+	GetMigTemplateNode(ctx context.Context, mig Mig) (*apiv1.Node, error)
 	// GetResourceLimiter returns resource limiter.
-	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
+	GetResourceLimiter(context.Context) (*cloudprovider.ResourceLimiter, error)
 	// GetMigSize gets MIG size.
-	GetMigSize(mig Mig) (int64, error)
+	GetMigSize(ctx context.Context, mig Mig) (int64, error)
 	// GetMigOptions returns MIG's NodeGroupAutoscalingOptions
-	GetMigOptions(mig Mig, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions
+	GetMigOptions(ctx context.Context, mig Mig, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions
 	// IsMigStable returns whether the MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
-	IsMigStable(mig Mig) (bool, error)
+	IsMigStable(ctx context.Context, mig Mig) (bool, error)
 
 	// SetMigSize sets MIG size.
-	SetMigSize(mig Mig, size int64) error
+	SetMigSize(ctx context.Context, mig Mig, size int64) error
 	// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
-	DeleteInstances(instances []GceRef) error
+	DeleteInstances(ctx context.Context, instances []GceRef) error
 	// CreateInstances creates delta new instances in a given mig.
-	CreateInstances(mig Mig, delta int64) error
+	CreateInstances(ctx context.Context, mig Mig, delta int64) error
 }
 
 type gceManagerImpl struct {
@@ -211,12 +211,12 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 		return nil, err
 	}
 
-	if err := manager.forceRefresh(); err != nil {
+	if err := manager.forceRefresh(context.TODO()); err != nil {
 		return nil, err
 	}
 
 	go wait.Until(func() {
-		if err := manager.migInfoProvider.RegenerateMigInstancesCache(); err != nil {
+		if err := manager.migInfoProvider.RegenerateMigInstancesCache(context.TODO()); err != nil {
 			klog.Errorf("Error while regenerating Mig cache: %v", err)
 		}
 	}, time.Hour, manager.interrupt)
@@ -225,40 +225,42 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 }
 
 // Cleanup closes the channel to stop the goroutine refreshing cache.
-func (m *gceManagerImpl) Cleanup() error {
+func (m *gceManagerImpl) Cleanup(ctx context.Context) error {
 	close(m.interrupt)
 	return nil
 }
 
 // registerMig registers mig in GceManager. Returns true if the node group didn't exist before or its config has changed.
-func (m *gceManagerImpl) registerMig(mig Mig) bool {
-	changed := m.cache.RegisterMig(mig)
+func (m *gceManagerImpl) registerMig(ctx context.Context, mig Mig) bool {
+	logger := klog.FromContext(ctx)
+	changed := m.cache.RegisterMig(ctx, mig)
 	if changed {
 		// Try to build a node from template to validate that this group
 		// can be scaled up from 0 nodes.
 		// We may never need to do it, so just log error if it fails.
-		if _, err := m.GetMigTemplateNode(mig); err != nil {
-			klog.Errorf("Can't build node from template for %s, won't be able to scale from 0: %v", mig.GceRef().String(), err)
+		if _, err := m.GetMigTemplateNode(ctx, mig); err != nil {
+			logger.Error(err, "Can't build node from template, won't be able to scale from 0", "mig", mig.GceRef().String())
 		}
 	}
 	return changed
 }
 
 // GetMigSize gets MIG size.
-func (m *gceManagerImpl) GetMigSize(mig Mig) (int64, error) {
-	return m.migInfoProvider.GetMigTargetSize(mig.GceRef())
+func (m *gceManagerImpl) GetMigSize(ctx context.Context, mig Mig) (int64, error) {
+	return m.migInfoProvider.GetMigTargetSize(ctx, mig.GceRef())
 }
 
 // IsMigStable returns whether the MIG is stable.
-func (m *gceManagerImpl) IsMigStable(mig Mig) (bool, error) {
-	return m.migInfoProvider.GetMigIsStable(mig.GceRef())
+func (m *gceManagerImpl) IsMigStable(ctx context.Context, mig Mig) (bool, error) {
+	return m.migInfoProvider.GetMigIsStable(ctx, mig.GceRef())
 }
 
 // SetMigSize sets MIG size.
-func (m *gceManagerImpl) SetMigSize(mig Mig, size int64) error {
-	klog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
-	m.cache.InvalidateMigTargetSize(mig.GceRef())
-	err := m.GceService.ResizeMig(mig.GceRef(), size)
+func (m *gceManagerImpl) SetMigSize(ctx context.Context, mig Mig, size int64) error {
+	logger := klog.FromContext(ctx)
+	logger.V(0).Info("Setting mig size", "mig", mig.Id(), "size", size)
+	m.cache.InvalidateMigTargetSize(ctx, mig.GceRef())
+	err := m.GceService.ResizeMig(ctx, mig.GceRef(), size)
 	if err != nil {
 		return err
 	}
@@ -267,16 +269,16 @@ func (m *gceManagerImpl) SetMigSize(mig Mig, size int64) error {
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
-func (m *gceManagerImpl) DeleteInstances(instances []GceRef) error {
+func (m *gceManagerImpl) DeleteInstances(ctx context.Context, instances []GceRef) error {
 	if len(instances) == 0 {
 		return nil
 	}
-	commonMig, err := m.GetMigForInstance(instances[0])
+	commonMig, err := m.GetMigForInstance(ctx, instances[0])
 	if err != nil {
 		return err
 	}
 	for _, instance := range instances {
-		mig, err := m.GetMigForInstance(instance)
+		mig, err := m.GetMigForInstance(ctx, instance)
 		if err != nil {
 			return err
 		}
@@ -284,9 +286,9 @@ func (m *gceManagerImpl) DeleteInstances(instances []GceRef) error {
 			return fmt.Errorf("cannot delete instances which don't belong to the same MIG.")
 		}
 	}
-	m.cache.InvalidateMigTargetSize(commonMig.GceRef())
-	m.cache.InvalidateMigInstances(commonMig.GceRef())
-	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
+	m.cache.InvalidateMigTargetSize(ctx, commonMig.GceRef())
+	m.cache.InvalidateMigInstances(ctx, commonMig.GceRef())
+	return m.GceService.DeleteInstances(ctx, commonMig.GceRef(), instances)
 }
 
 // GetMigs returns list of registered MIGs.
@@ -295,41 +297,42 @@ func (m *gceManagerImpl) GetMigs() []Mig {
 }
 
 // GetMigForInstance returns MIG to which the given instance belongs.
-func (m *gceManagerImpl) GetMigForInstance(instance GceRef) (Mig, error) {
-	return m.migInfoProvider.GetMigForInstance(instance)
+func (m *gceManagerImpl) GetMigForInstance(ctx context.Context, instance GceRef) (Mig, error) {
+	return m.migInfoProvider.GetMigForInstance(ctx, instance)
 }
 
 // GetMigNodes returns mig nodes.
-func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]GceInstance, error) {
-	return m.migInfoProvider.GetMigInstances(mig.GceRef())
+func (m *gceManagerImpl) GetMigNodes(ctx context.Context, mig Mig) ([]GceInstance, error) {
+	return m.migInfoProvider.GetMigInstances(ctx, mig.GceRef())
 }
 
 // Refresh triggers refresh of cached resources.
-func (m *gceManagerImpl) Refresh() error {
-	m.cache.InvalidateAllMigInstances()
-	m.cache.InvalidateAllMigTargetSizes()
-	m.cache.InvalidateAllMigIsStable()
+func (m *gceManagerImpl) Refresh(ctx context.Context) error {
+	m.cache.InvalidateAllMigInstances(ctx)
+	m.cache.InvalidateAllMigTargetSizes(ctx)
+	m.cache.InvalidateAllMigIsStable(ctx)
 	m.cache.InvalidateAllMigBasenames()
 	m.cache.InvalidateAllListManagedInstancesResults()
-	m.cache.InvalidateAllMigInstanceTemplateNames()
+	m.cache.InvalidateAllMigInstanceTemplateNames(ctx)
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
 
-	if err := m.forceRefresh(); err != nil {
+	if err := m.forceRefresh(ctx); err != nil {
 		return err
 	}
 
 	migs := m.migLister.GetMigs()
-	m.cache.DropInstanceTemplatesForMissingMigs(migs)
+	m.cache.DropInstanceTemplatesForMissingMigs(ctx, migs)
 	return nil
 }
 
-func (m *gceManagerImpl) CreateInstances(mig Mig, delta int64) error {
+func (m *gceManagerImpl) CreateInstances(ctx context.Context, mig Mig, delta int64) error {
+	logger := klog.FromContext(ctx)
 	if delta == 0 {
 		return nil
 	}
-	instances, err := m.GetMigNodes(mig)
+	instances, err := m.GetMigNodes(ctx, mig)
 	if err != nil {
 		return err
 	}
@@ -337,19 +340,19 @@ func (m *gceManagerImpl) CreateInstances(mig Mig, delta int64) error {
 	for _, ins := range instances {
 		instanceIds = append(instanceIds, ins.Id)
 	}
-	baseName, err := m.migInfoProvider.GetMigBasename(mig.GceRef())
+	baseName, err := m.migInfoProvider.GetMigBasename(ctx, mig.GceRef())
 	if err != nil {
 		return fmt.Errorf("can't upscale %s: failed to collect BaseInstanceName: %w", mig.GceRef(), err)
 	}
-	m.cache.InvalidateMigTargetSize(mig.GceRef())
+	m.cache.InvalidateMigTargetSize(ctx, mig.GceRef())
 	totalReqs := int((delta + createInstancesRequestLimit - 1) / createInstancesRequestLimit)
 	remaining := delta
 	for i := 0; i < totalReqs; i++ {
 		increment := min(remaining, createInstancesRequestLimit)
 		if totalReqs > 1 {
-			klog.Infof("Sending chunked GCE createInstances request. Request: %d/%d RequestSize: %v", i+1, totalReqs, increment)
+			logger.Info("Sending chunked GCE createInstances request", "requestNumber", i+1, "totalRequests", totalReqs, "requestSize", increment)
 		}
-		ids, err := m.GceService.CreateInstances(mig.GceRef(), baseName, increment, instanceIds)
+		ids, err := m.GceService.CreateInstances(ctx, mig.GceRef(), baseName, increment, instanceIds)
 		if err != nil {
 			return err
 		}
@@ -361,41 +364,43 @@ func (m *gceManagerImpl) CreateInstances(mig Mig, delta int64) error {
 	return nil
 }
 
-func (m *gceManagerImpl) forceRefresh() error {
-	m.clearMachinesCache()
-	if err := m.fetchAutoMigs(); err != nil {
-		klog.Errorf("Failed to fetch MIGs: %v", err)
+func (m *gceManagerImpl) forceRefresh(ctx context.Context) error {
+	logger := klog.FromContext(ctx)
+	m.clearMachinesCache(ctx)
+	if err := m.fetchAutoMigs(ctx); err != nil {
+		logger.Error(err, "Failed to fetch MIGs")
 		return err
 	}
-	m.refreshAutoscalingOptions()
+	m.refreshAutoscalingOptions(ctx)
 	m.lastRefresh = time.Now()
-	klog.V(2).Infof("Refreshed GCE resources, next refresh after %v", m.lastRefresh.Add(refreshInterval))
+	logger.V(2).Info("Refreshed GCE resources", "nextRefresh", m.lastRefresh.Add(refreshInterval))
 	return nil
 }
 
-func (m *gceManagerImpl) refreshAutoscalingOptions() {
+func (m *gceManagerImpl) refreshAutoscalingOptions(ctx context.Context) {
+	logger := klog.FromContext(ctx)
 	for _, mig := range m.migLister.GetMigs() {
-		template, err := m.migInfoProvider.GetMigInstanceTemplate(mig.GceRef())
+		template, err := m.migInfoProvider.GetMigInstanceTemplate(ctx, mig.GceRef())
 		if err != nil {
-			klog.Warningf("Not evaluating autoscaling options for %q MIG: failed to find corresponding instance template: %v", mig.GceRef(), err)
+			logger.Info("Not evaluating autoscaling options MIG: failed to find corresponding instance template", "mig", mig.GceRef().String(), "err", err)
 			continue
 		}
 		if template.Properties == nil {
-			klog.Warningf("Failed to extract autoscaling options from %q metadata: instance template is incomplete", template.Name)
+			logger.Info("Failed to extract autoscaling options metadata: instance template is incomplete", "template", template.Name)
 			continue
 		}
-		kubeEnv, err := m.migInfoProvider.GetMigKubeEnv(mig.GceRef())
+		kubeEnv, err := m.migInfoProvider.GetMigKubeEnv(ctx, mig.GceRef())
 		if err != nil {
-			klog.Warningf("Failed to extract autoscaling options from %q instance template's metadata: can't get KubeEnv: %v", template.Name, err)
+			logger.Info("Failed to extract autoscaling options instance template's metadata: can't get KubeEnv", "template", template.Name, "err", err)
 			continue
 		}
-		options, err := extractAutoscalingOptionsFromKubeEnv(kubeEnv)
+		options, err := extractAutoscalingOptionsFromKubeEnv(ctx, kubeEnv)
 		if err != nil {
-			klog.Warningf("Failed to extract autoscaling options from %q instance template's metadata: %v", template.Name, err)
+			logger.Info("Failed to extract autoscaling options instance template's metadata", "template", template.Name, "err", err)
 			continue
 		}
 		if !reflect.DeepEqual(m.cache.GetAutoscalingOptions(mig.GceRef()), options) {
-			klog.V(4).Infof("Extracted autoscaling options from %q instance template KubeEnv: %v", template.Name, options)
+			logger.V(4).Info("Extracted autoscaling options instance template KubeEnv", "template", template.Name, "options", options)
 		}
 		m.cache.SetAutoscalingOptions(mig.GceRef(), options)
 	}
@@ -410,14 +415,14 @@ func (m *gceManagerImpl) fetchExplicitMigs(specs []string) error {
 		if err != nil {
 			return err
 		}
-		if m.registerMig(mig) {
+		if m.registerMig(context.TODO(), mig) {
 			changed = true
 		}
 		m.explicitlyConfigured[mig.GceRef()] = true
 	}
 
 	if changed {
-		return m.migInfoProvider.RegenerateMigInstancesCache()
+		return m.migInfoProvider.RegenerateMigInstancesCache(context.TODO())
 	}
 	return nil
 }
@@ -464,13 +469,14 @@ func (m *gceManagerImpl) buildMigFromSpec(s *dynamic.NodeGroupSpec) (Mig, error)
 
 // Fetch automatically discovered MIGs. These MIGs should be unregistered if
 // they no longer exist in GCE.
-func (m *gceManagerImpl) fetchAutoMigs() error {
+func (m *gceManagerImpl) fetchAutoMigs(ctx context.Context) error {
+	logger := klog.FromContext(ctx)
 	exists := make(map[GceRef]bool)
 	var changed int32 = 0
 
 	toRegister := make([]Mig, 0)
 	for _, cfg := range m.migAutoDiscoverySpecs {
-		links, err := m.findMigsNamed(cfg.Re)
+		links, err := m.findMigsNamed(ctx, cfg.Re)
 		if err != nil {
 			return fmt.Errorf("cannot autodiscover managed instance groups: %v", err)
 		}
@@ -485,41 +491,42 @@ func (m *gceManagerImpl) fetchAutoMigs() error {
 				// This MIG was explicitly configured, but would also be
 				// autodiscovered. We want the explicitly configured min and max
 				// nodes to take precedence.
-				klog.V(3).Infof("Ignoring explicitly configured MIG %s in autodiscovery.", mig.GceRef().String())
+				logger.V(3).Info("Ignoring explicitly configured MIG in autodiscovery", "mig", mig.GceRef().String())
 				continue
 			}
 			toRegister = append(toRegister, mig)
 		}
 	}
 
-	workqueue.ParallelizeUntil(context.Background(), m.concurrentGceRefreshes, len(toRegister), func(piece int) {
+	workqueue.ParallelizeUntil(ctx, m.concurrentGceRefreshes, len(toRegister), func(piece int) {
 		mig := toRegister[piece]
-		if m.registerMig(mig) {
-			klog.V(3).Infof("Autodiscovered MIG %s", mig.GceRef().String())
+		if m.registerMig(ctx, mig) {
+			logger.V(3).Info("Autodiscovered MIG", "mig", mig.GceRef().String())
 			atomic.StoreInt32(&changed, int32(1))
 		}
 	}, workqueue.WithChunkSize(m.concurrentGceRefreshes))
 
 	for _, mig := range m.GetMigs() {
 		if !exists[mig.GceRef()] && !m.explicitlyConfigured[mig.GceRef()] {
-			m.cache.UnregisterMig(mig)
+			m.cache.UnregisterMig(ctx, mig)
 			atomic.StoreInt32(&changed, int32(1))
 		}
 	}
 
 	if atomic.LoadInt32(&changed) > 0 {
-		return m.migInfoProvider.RegenerateMigInstancesCache()
+		return m.migInfoProvider.RegenerateMigInstancesCache(ctx)
 	}
 
 	return nil
 }
 
 // GetResourceLimiter returns resource limiter from cache.
-func (m *gceManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
-	return m.cache.GetResourceLimiter()
+func (m *gceManagerImpl) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
+	return m.cache.GetResourceLimiter(ctx)
 }
 
-func (m *gceManagerImpl) clearMachinesCache() {
+func (m *gceManagerImpl) clearMachinesCache(ctx context.Context) {
+	logger := klog.FromContext(ctx)
 	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
 		return
 	}
@@ -527,7 +534,7 @@ func (m *gceManagerImpl) clearMachinesCache() {
 	m.cache.InvalidateAllMachines()
 	nextRefresh := time.Now()
 	m.machinesCacheLastRefresh = nextRefresh
-	klog.V(2).Infof("Cleared machine types cache, next clear after %v", nextRefresh)
+	logger.V(2).Info("Cleared machine types cache", "nextRefresh", nextRefresh)
 }
 
 // Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
@@ -554,32 +561,32 @@ func getProjectAndLocation(regional bool) (string, string, error) {
 	return projectID, location, nil
 }
 
-func (m *gceManagerImpl) findMigsNamed(name *regexp.Regexp) ([]string, error) {
+func (m *gceManagerImpl) findMigsNamed(ctx context.Context, name *regexp.Regexp) ([]string, error) {
 	if m.regional {
-		return m.findMigsInRegion(m.location, name)
+		return m.findMigsInRegion(ctx, m.location, name)
 	}
-	return m.GceService.FetchMigsWithName(m.location, name)
+	return m.GceService.FetchMigsWithName(ctx, m.location, name)
 }
 
-func (m *gceManagerImpl) getZones(region string) ([]string, error) {
-	zones, err := m.GceService.FetchZones(region)
+func (m *gceManagerImpl) getZones(ctx context.Context, region string) ([]string, error) {
+	zones, err := m.GceService.FetchZones(ctx, region)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get zones for GCE region %s: %v", region, err)
 	}
 	return zones, nil
 }
 
-func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([]string, error) {
+func (m *gceManagerImpl) findMigsInRegion(ctx context.Context, region string, name *regexp.Regexp) ([]string, error) {
 	links := make([]string, 0)
-	zones, err := m.getZones(region)
+	zones, err := m.getZones(ctx, region)
 	if err != nil {
 		return nil, err
 	}
 
 	zoneLinks := make([][]string, len(zones))
 	errors := make([]error, len(zones))
-	workqueue.ParallelizeUntil(context.Background(), len(zones), len(zones), func(piece int) {
-		zoneLinks[piece], errors[piece] = m.GceService.FetchMigsWithName(zones[piece], name)
+	workqueue.ParallelizeUntil(ctx, len(zones), len(zones), func(piece int) {
+		zoneLinks[piece], errors[piece] = m.GceService.FetchMigsWithName(ctx, zones[piece], name)
 	})
 
 	for _, err := range errors {
@@ -598,26 +605,26 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 }
 
 // GetMigOptions merges default options with user-provided options as specified in the MIG's instance template metadata
-func (m *gceManagerImpl) GetMigOptions(mig Mig, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions {
+func (m *gceManagerImpl) GetMigOptions(ctx context.Context, mig Mig, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions {
 	migRef := mig.GceRef()
 	options := m.cache.GetAutoscalingOptions(migRef)
 	if options == nil {
 		return &defaults
 	}
 
-	if opt, ok := getFloat64Option(options, migRef.Name, config.DefaultScaleDownUtilizationThresholdKey); ok {
+	if opt, ok := getFloat64Option(ctx, options, migRef.Name, config.DefaultScaleDownUtilizationThresholdKey); ok {
 		defaults.ScaleDownUtilizationThreshold = opt
 	}
-	if opt, ok := getFloat64Option(options, migRef.Name, config.DefaultScaleDownGpuUtilizationThresholdKey); ok {
+	if opt, ok := getFloat64Option(ctx, options, migRef.Name, config.DefaultScaleDownGpuUtilizationThresholdKey); ok {
 		defaults.ScaleDownGpuUtilizationThreshold = opt
 	}
-	if opt, ok := getDurationOption(options, migRef.Name, config.DefaultScaleDownUnneededTimeKey); ok {
+	if opt, ok := getDurationOption(ctx, options, migRef.Name, config.DefaultScaleDownUnneededTimeKey); ok {
 		defaults.ScaleDownUnneededTime = opt
 	}
-	if opt, ok := getDurationOption(options, migRef.Name, config.DefaultScaleDownUnreadyTimeKey); ok {
+	if opt, ok := getDurationOption(ctx, options, migRef.Name, config.DefaultScaleDownUnreadyTimeKey); ok {
 		defaults.ScaleDownUnreadyTime = opt
 	}
-	if opt, ok := getDurationOption(options, migRef.Name, config.DefaultMaxNodeProvisionTimeKey); ok {
+	if opt, ok := getDurationOption(ctx, options, migRef.Name, config.DefaultMaxNodeProvisionTimeKey); ok {
 		defaults.MaxNodeProvisionTime = opt
 	}
 
@@ -625,24 +632,24 @@ func (m *gceManagerImpl) GetMigOptions(mig Mig, defaults config.NodeGroupAutosca
 }
 
 // GetMigTemplateNode constructs a node from GCE instance template of the given MIG.
-func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
-	template, err := m.migInfoProvider.GetMigInstanceTemplate(mig.GceRef())
+func (m *gceManagerImpl) GetMigTemplateNode(ctx context.Context, mig Mig) (*apiv1.Node, error) {
+	template, err := m.migInfoProvider.GetMigInstanceTemplate(ctx, mig.GceRef())
 	if err != nil {
 		return nil, err
 	}
-	kubeEnv, err := m.migInfoProvider.GetMigKubeEnv(mig.GceRef())
+	kubeEnv, err := m.migInfoProvider.GetMigKubeEnv(ctx, mig.GceRef())
 	if err != nil {
 		return nil, err
 	}
-	machineType, err := m.migInfoProvider.GetMigMachineType(mig.GceRef())
+	machineType, err := m.migInfoProvider.GetMigMachineType(ctx, mig.GceRef())
 	if err != nil {
 		return nil, err
 	}
-	migOsInfo, err := m.templates.MigOsInfo(mig.Id(), kubeEnv)
+	migOsInfo, err := m.templates.MigOsInfo(ctx, mig.Id(), kubeEnv)
 	if err != nil {
 		return nil, err
 	}
-	return m.templates.BuildNodeFromTemplate(mig, migOsInfo, template, kubeEnv, machineType.CPU, machineType.Memory, nil, m.reserved, m.localSSDDiskSizeProvider)
+	return m.templates.BuildNodeFromTemplate(ctx, mig, migOsInfo, template, kubeEnv, machineType.CPU, machineType.Memory, nil, m.reserved, m.localSSDDiskSizeProvider)
 }
 
 // parseMIGAutoDiscoverySpecs returns any provided NodeGroupAutoDiscoverySpecs

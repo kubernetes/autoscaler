@@ -17,6 +17,7 @@ limitations under the License.
 package tencentcloud
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"sync"
@@ -301,7 +302,7 @@ func (tc *TencentcloudCache) SetResourceLimiter(resourceLimiter *cloudprovider.R
 }
 
 // GetResourceLimiter returns resource limiter.
-func (tc *TencentcloudCache) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (tc *TencentcloudCache) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	tc.cacheMutex.RLock()
 	defer tc.cacheMutex.RUnlock()
 
