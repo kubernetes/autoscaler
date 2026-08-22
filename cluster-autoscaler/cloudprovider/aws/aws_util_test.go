@@ -41,6 +41,9 @@ func TestInstanceTypeTransform(t *testing.T) {
 		MemoryInfo: &ec2types.MemoryInfo{
 			SizeInMiB: aws.Int64(7680),
 		},
+		EbsInfo: &ec2types.EbsInfo{
+			MaximumEbsAttachments: aws.Int32(39),
+		},
 	}
 
 	instanceType := transformInstanceType(&rawInstanceType)
@@ -50,6 +53,27 @@ func TestInstanceTypeTransform(t *testing.T) {
 	assert.Equal(t, int64(7680), instanceType.MemoryMb)
 	assert.Equal(t, int64(0), instanceType.GPU)
 	assert.Equal(t, "amd64", instanceType.Architecture)
+	assert.Equal(t, int64(39), instanceType.EBSVolumeLimit)
+}
+
+func TestInstanceTypeTransform_NilEbsInfo(t *testing.T) {
+	rawInstanceType := ec2types.InstanceTypeInfo{
+		InstanceType: ec2types.InstanceType("c4.xlarge"),
+		ProcessorInfo: &ec2types.ProcessorInfo{
+			SupportedArchitectures: []ec2types.ArchitectureType{ec2types.ArchitectureTypeX8664},
+		},
+		VCpuInfo: &ec2types.VCpuInfo{
+			DefaultVCpus: aws.Int32(4),
+		},
+		MemoryInfo: &ec2types.MemoryInfo{
+			SizeInMiB: aws.Int64(7680),
+		},
+	}
+
+	instanceType := transformInstanceType(&rawInstanceType)
+
+	assert.Equal(t, "c4.xlarge", instanceType.InstanceType)
+	assert.Equal(t, int64(0), instanceType.EBSVolumeLimit)
 }
 
 func TestInterpretEc2SupportedArchitecure(t *testing.T) {

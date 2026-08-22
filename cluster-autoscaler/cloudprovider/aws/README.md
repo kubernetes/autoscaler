@@ -232,6 +232,33 @@ Example tags:
 
 - `k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage`: `100G`
 
+When `--enable-csi-node-aware-scheduling` is enabled, scale-from-zero needs an
+explicit declaration of which CSI drivers a node group will register. CSI
+drivers are optional and are **not** inferred from instance type or
+`EBSVolumeLimit`. `EBSVolumeLimit` is EC2 hardware attachment capacity only; it
+does not mean `ebs.csi.aws.com` is installed.
+
+If the tag is omitted, Cluster Autoscaler advertises **no** synthetic CSI
+drivers for that node group.
+
+The tag key is:
+
+`k8s.io/cluster-autoscaler/node-template/csi-driver`
+
+The value is a comma-separated list of CSI driver names (applicability only).
+Do not encode volume limits in this tag. For EBS, attachment capacity still
+comes from the instance type's `EBSVolumeLimit`.
+
+Examples:
+
+- EBS only: `k8s.io/cluster-autoscaler/node-template/csi-driver`: `ebs.csi.aws.com`
+- EFS only: `k8s.io/cluster-autoscaler/node-template/csi-driver`: `efs.csi.aws.com`
+- Multiple: `k8s.io/cluster-autoscaler/node-template/csi-driver`: `ebs.csi.aws.com,efs.csi.aws.com`
+
+The same key may be set on an EKS managed node group. If both the ASG and the
+managed node group define it, the managed node group value is used (same
+precedence as `node-template/resources` tags).
+
 ASG labels can specify autoscaling options, overriding the global cluster-autoscaler
 settings for the labeled ASGs. Those labels takes the same values format as the
 cluster-autoscaler command line flags they override (a float or a duration, encoded

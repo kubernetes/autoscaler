@@ -75,6 +75,9 @@ func transformInstanceType(rawInstanceType *ec2types.InstanceTypeInfo) *Instance
 	if rawInstanceType.ProcessorInfo != nil && len(rawInstanceType.ProcessorInfo.SupportedArchitectures) > 0 {
 		instanceType.Architecture = interpretEc2SupportedArchitecure(string(rawInstanceType.ProcessorInfo.SupportedArchitectures[0]))
 	}
+	if rawInstanceType.EbsInfo != nil && rawInstanceType.EbsInfo.MaximumEbsAttachments != nil {
+		instanceType.EBSVolumeLimit = int64(*rawInstanceType.EbsInfo.MaximumEbsAttachments)
+	}
 	return instanceType
 }
 
