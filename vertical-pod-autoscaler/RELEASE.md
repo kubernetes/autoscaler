@@ -12,6 +12,8 @@
   - [Option 1: (Preferred) Automatic](#option-1-preferred-automatic)
   - [Option 2: Manual](#option-2-manual)
 - [Test the release](#test-the-release)
+  - [Option 1: Locally using kind](#option-1-locally-using-kind)
+  - [Option 2: On a GKE cluster](#option-2-on-a-gke-cluster)
 - [Promote image](#promote-image)
 - [Update Helm chart](#update-helm-chart)
 - [Finalize release](#finalize-release)
@@ -133,6 +135,33 @@ for component in recommender updater admission-controller ; do TAG=`grep 'const 
 
 ## Test the release
 
+You can test the release either locally using [kind](https://kind.sigs.k8s.io/) (Option 1) or on a
+GKE cluster (Option 2). In both cases the staged release images from
+`gcr.io/k8s-staging-autoscaling` are tested, not a local build.
+
+### Option 1: Locally using kind
+
+[hack/run-e2e-locally.sh](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/run-e2e-locally.sh)
+creates a kind cluster, deploys VPA and runs the e2e tests. Set `PULL_IMAGES=true` so the staged
+release images are pulled instead of building images from your local checkout.
+
+1.  [ ] Run all test suites against the staged images:
+
+    ```shell
+    export REGISTRY=gcr.io/k8s-staging-autoscaling
+    export TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2`
+    export PULL_IMAGES=true
+    ./hack/run-e2e-locally.sh full-vpa
+    ./hack/run-e2e-locally.sh actuation
+    ./hack/run-e2e-locally.sh admission-controller
+    ./hack/run-e2e-locally.sh updater
+    ./hack/run-e2e-locally.sh recommender
+    ```
+
+    Note: each invocation recreates the kind cluster, so the suites can be run back-to-back.
+
+### Option 2: On a GKE cluster
+
 1.  [ ] Create a Kubernetes cluster. If you're using GKE you can use the following command:
 
     ```shell
@@ -159,7 +188,6 @@ for component in recommender updater admission-controller ; do TAG=`grep 'const 
     ./hack/run-e2e-tests.sh admission-controller
     ./hack/run-e2e-tests.sh updater
     ./hack/run-e2e-tests.sh recommender
-
     ```
 
 ## Promote image

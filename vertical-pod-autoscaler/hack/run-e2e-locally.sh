@@ -30,6 +30,14 @@ function print_help {
   echo " - admission-controller"
   echo " - actuation"
   echo " - full-vpa"
+  echo ""
+  echo "Environment variables:"
+  echo "  REGISTRY                 - Container image registry (default: localhost:5001)"
+  echo "  TAG                      - Container image tag (default: latest)"
+  echo "  PULL_IMAGES              - Pull images from the registry instead of building them locally (default: false)"
+  echo "  ENABLE_ALL_FEATURE_GATES - Set to 'true' to enable all alpha/beta feature gates"
+  echo "  ARTIFACTS                - Directory to store test log artifacts (default: temp dir)"
+  echo "  NUMPROC                  - Test concurrency (default: 4)"
 }
 
 if [ $# -eq 0 ]; then
