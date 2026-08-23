@@ -208,6 +208,29 @@ func TestRecommendationToLimitCapping(t *testing.T) {
 				corev1.ResourceMemory: resource.MustParse("1024500m"),
 			},
 			expectedAnnotation: true,
+		}, {
+			// We pick limits that round up to the container's recommendation (upper bound) to
+			// validate the logic that determines whether to actually apply capping
+			name: "capping for RequestsOnly policy for limits within sub-milli precision of the recommendation",
+			pod: test.Pod().WithName("pod1").AddContainer(
+				test.Container().WithName(containerName).
+					WithCPULimit(resource.MustParse("19999500u")).
+					WithMemLimit(resource.MustParse("79999999500u")).Get()).Get(),
+			policy: vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
+					ContainerName:    vpa_types.DefaultContainerResourcePolicy,
+					ControlledValues: &requestsOnly,
+				}},
+			},
+			expectedTarget: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("19999500u"),
+				corev1.ResourceMemory: resource.MustParse("79999999500u"),
+			},
+			expectedUpperBound: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("19999500u"),
+				corev1.ResourceMemory: resource.MustParse("79999999500u"),
+			},
+			expectedAnnotation: true,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
