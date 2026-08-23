@@ -274,6 +274,11 @@ func ValidateRecommenderConfig(config *RecommenderConfig) {
 		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
 	}
 
+	if config.CheckpointsGCTimeout <= 0 {
+		klog.ErrorS(nil, "--checkpoints-gc-timeout must be a positive duration", "checkpoints-gc-timeout", config.CheckpointsGCTimeout)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
 	if config.PrometheusBearerToken != "" && config.PrometheusBearerTokenFile != "" && config.Username != "" {
 		klog.ErrorS(nil, "--bearer-token, --bearer-token-file and --username are mutually exclusive and can't be set together.")
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
