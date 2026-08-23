@@ -74,7 +74,6 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           args:
-            - --v=4
             - --stderrthreshold=info
           {{- if .Values.admissionController.registerWebhook }}
             - --register-webhook=true
@@ -83,6 +82,9 @@ spec:
           {{- end }}
             - --webhook-service={{ .Values.admissionController.service.name }}
             - --reload-cert=true
+          {{- with .Values.admissionController.logLevel }}
+            - --v={{ . }}
+          {{- end }}
           {{- with .Values.admissionController.extraArgs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
