@@ -1,5 +1,24 @@
 # VPA Release Instructions
 
+## Contents
+
+<!-- toc -->
+- [Release Schedule](#release-schedule)
+- [Open issue to track the release](#open-issue-to-track-the-release)
+- [Rollup all changes](#rollup-all-changes)
+  - [New minor release](#new-minor-release)
+  - [New patch release](#new-patch-release)
+- [Build and stage images](#build-and-stage-images)
+  - [Option 1: (Preferred) Automatic](#option-1-preferred-automatic)
+  - [Option 2: Manual](#option-2-manual)
+- [Test the release](#test-the-release)
+- [Promote image](#promote-image)
+- [Update Helm chart](#update-helm-chart)
+- [Finalize release](#finalize-release)
+- [Update dependabot](#update-dependabot)
+- [Permissions](#permissions)
+<!-- /toc -->
+
 These are instructions for releasing VPA. We aim to release a new VPA minor version after each minor Kubernetes release.
 We release patch versions as needed.
 
