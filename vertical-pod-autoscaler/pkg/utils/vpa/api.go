@@ -378,6 +378,35 @@ func getContainerCPUStartupBoostDuration(containerName string, vpa *vpa_types.Ve
 	return boostDuration
 }
 
+// GetBoostRemainingDuration returns the shortest remaining time until the next
+// container's startup boost expires. The caller should re-check after processing
+// in case other containers have longer durations still pending.
+// Returns 0 if all boosts have already expired or if the pod is not ready.
+func GetBoostRemainingDuration(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) time.Duration {
+	_, readyCond := GetPodCondition(&pod.Status, corev1.PodReady)
+	if readyCond == nil || readyCond.Status != corev1.ConditionTrue {
+		return 0
+	}
+	readyTime := readyCond.LastTransitionTime.Time
+
+	var minRemaining time.Duration
+	found := false
+	for k := range pod.Annotations {
+		if containerName, ok := strings.CutPrefix(k, annotations.StartupCPUBoostAnnotationPrefix); ok {
+			boostDuration := time.Duration(getContainerCPUStartupBoostDuration(containerName, vpa)) * time.Second
+			remaining := boostDuration - time.Since(readyTime)
+			if remaining <= 0 {
+				continue
+			}
+			if !found || remaining < minRemaining {
+				minRemaining = remaining
+				found = true
+			}
+		}
+	}
+	return minRemaining
+}
+
 // PodHasCPUBoostInProgressAnnotation returns true if the pod has any CPU boost in progress annotation.
 func PodHasCPUBoostInProgressAnnotation(pod *corev1.Pod) bool {
 	if pod.Annotations == nil {
