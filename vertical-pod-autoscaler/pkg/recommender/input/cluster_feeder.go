@@ -77,7 +77,7 @@ type ClusterStateFeeder interface {
 	DeleteRemovedPods()
 
 	// GarbageCollectCheckpoints removes historical checkpoints that don't have a matching VPA.
-	GarbageCollectCheckpoints(ctx context.Context)
+	GarbageCollectCheckpoints(ctx context.Context) error
 }
 
 // ClusterStateFeederFactory makes instances of ClusterStateFeeder.
@@ -310,15 +310,14 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 	}
 }
 
-func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context) {
+func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context) error {
 	klog.V(3).InfoS("Starting garbage collection of checkpoints")
 
 	allVPAKeys := map[model.VpaID]bool{}
 
 	allVpaResources, err := feeder.vpaLister.List(labels.Everything())
 	if err != nil {
-		klog.ErrorS(err, "Cannot list VPAs")
-		return
+		return fmt.Errorf("failed to list VPAs: %w", err)
 	}
 	for _, vpa := range allVpaResources {
 		vpaID := model.VpaID{
@@ -330,10 +329,10 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context)
 
 	namespaceList, err := feeder.coreClient.Namespaces().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		klog.ErrorS(err, "Cannot list namespaces")
-		return
+		return fmt.Errorf("failed to list namespaces: %w", err)
 	}
 
+	var errs error
 	for _, namespaceItem := range namespaceList.Items {
 		namespace := namespaceItem.Name
 		// Clean the namespace if any of the following conditions are true:
@@ -344,11 +343,11 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context)
 			klog.V(3).InfoS("Skipping namespace; it does not meet cleanup criteria", "namespace", namespace, "vpaObjectNamespace", feeder.vpaObjectNamespace, "ignoredNamespaces", feeder.ignoredNamespaces)
 			continue
 		}
-		err := feeder.cleanupCheckpointsForNamespace(ctx, namespace, allVPAKeys)
-		if err != nil {
-			klog.ErrorS(err, "error cleaning checkpoints")
+		if err := feeder.cleanupCheckpointsForNamespace(ctx, namespace, allVPAKeys); err != nil {
+			errs = errors.Join(errs, fmt.Errorf("error cleaning checkpoints in namespace %s: %w", namespace, err))
 		}
 	}
+	return errs
 }
 
 func (feeder *clusterStateFeeder) shouldIgnoreNamespace(namespace string) bool {

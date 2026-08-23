@@ -162,6 +162,7 @@ func NewRecommenderController(
 		},
 		RecommendationPostProcessors: postProcessors,
 		CheckpointsGCInterval:        config.CheckpointsGCInterval,
+		CheckpointsGCTimeout:         config.CheckpointsGCTimeout,
 		CheckpointsWriteTimeout:      config.CheckpointsWriteTimeout,
 		UseCheckpoints:               useCheckpoints,
 		UpdateWorkerCount:            config.UpdateWorkerCount,
