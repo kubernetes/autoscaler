@@ -17,6 +17,7 @@ limitations under the License.
 package routines
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -30,6 +31,7 @@ import (
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
@@ -346,4 +348,35 @@ func (k mockAggregateStateKey) Labels() labels.Labels {
 	// Should return empty on error
 	labels, _ := labels.ConvertSelectorToLabelsMap(k.labels)
 	return labels
+}
+
+type fakeClusterStateFeeder struct {
+	input.ClusterStateFeeder
+}
+
+// GarbageCollectCheckpoints fails iff ctx is already done
+func (f *fakeClusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context) error {
+	return ctx.Err()
+}
+
+type noopCheckpointWriter struct{}
+
+func (noopCheckpointWriter) StoreCheckpoints(context.Context, int) {}
+
+func TestMaintainCheckpointsGCUsesIndependentTimeout(t *testing.T) {
+	feeder := &fakeClusterStateFeeder{}
+
+	// Construct a recommender where checkpoint updates timeout straight away
+	r := &recommender{
+		clusterStateFeeder:      feeder,
+		checkpointWriter:        noopCheckpointWriter{},
+		useCheckpoints:          true,
+		checkpointsWriteTimeout: 0,
+		checkpointsGCTimeout:    time.Minute,
+	}
+
+	r.MaintainCheckpoints(context.Background())
+
+	// Ensure that garbage collection was invoked and succeeded
+	assert.False(t, r.lastCheckpointGC.IsZero())
 }
