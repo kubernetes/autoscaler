@@ -121,7 +121,6 @@ func NewRecommenderController(
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
 		OOMObserver:         oomObserver,
-		KubeClient:          kubeClient,
 		MetricsClient:       input_metrics.NewMetricsClient(source, commonFlags.VpaObjectNamespace, "default-metrics-client"),
 		VpaCheckpointClient: vpaClient.AutoscalingV1(),
 		VpaLister:           vpa_api_util.NewVpasLister(vpaClient, stopCh, commonFlags.VpaObjectNamespace),
