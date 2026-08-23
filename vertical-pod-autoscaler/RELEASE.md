@@ -151,10 +151,15 @@ for component in recommender updater admission-controller ; do TAG=`grep 'const 
     ```
 
 1.  [ ] [Run](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/run-e2e-tests.sh)
-    the `full-vpa` test suite:
+    on all test suites:
 
     ```shell
     ./hack/run-e2e-tests.sh full-vpa
+    ./hack/run-e2e-tests.sh actuation
+    ./hack/run-e2e-tests.sh admission-controller
+    ./hack/run-e2e-tests.sh updater
+    ./hack/run-e2e-tests.sh recommender
+
     ```
 
 ## Promote image
