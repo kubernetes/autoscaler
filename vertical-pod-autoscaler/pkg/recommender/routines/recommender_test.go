@@ -355,7 +355,7 @@ type fakeClusterStateFeeder struct {
 }
 
 // GarbageCollectCheckpoints fails iff ctx is already done
-func (f *fakeClusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context) error {
+func (*fakeClusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context) error {
 	return ctx.Err()
 }
 
