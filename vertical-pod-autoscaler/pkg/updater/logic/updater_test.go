@@ -223,6 +223,13 @@ func TestRunOnce_Status(t *testing.T) {
 			expectedEvictionCount: 0,
 			expectedInPlacedCount: 0,
 		},
+		{
+			name:                  "with status check error",
+			statusValidator:       newFakeValidatorErr(errors.New("failed to get status")),
+			expectFetchCalls:      false,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -415,14 +422,19 @@ func TestGetRateLimiter(t *testing.T) {
 
 type fakeValidator struct {
 	isValid bool
+	err     error
 }
 
 func newFakeValidator(isValid bool) status.Validator {
-	return &fakeValidator{isValid}
+	return &fakeValidator{isValid: isValid}
+}
+
+func newFakeValidatorErr(err error) status.Validator {
+	return &fakeValidator{err: err}
 }
 
 func (f *fakeValidator) IsStatusValid(ctx context.Context, statusTimeout time.Duration) (bool, error) {
-	return f.isValid, nil
+	return f.isValid, f.err
 }
 
 func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
