@@ -276,6 +276,16 @@ const (
 	PoolStatusUpgrading = PoolStatus("upgrading")
 )
 
+// Taint is the abstraction used to represent a taint on a node
+type Taint struct {
+	// Key: the key of the taint
+	Key string `json:"key"`
+	// Value: the value of the taint
+	Value string `json:"value"`
+	// Effect: the effect of the taint
+	Effect string `json:"effect"`
+}
+
 // Pool is the abstraction used to gather nodes with the same specs
 type Pool struct {
 	// ID: the ID of the pool
@@ -308,8 +318,8 @@ type Pool struct {
 	Allocatable map[string]int64 `json:"allocatable"`
 	// Labels: labels applied to each node of the pool
 	Labels map[string]string `json:"labels"`
-	// Taints: taints applied to each node of the pool
-	Taints map[string]string `json:"taints"`
+	// NodeTaints: taints applied to each node of the pool
+	NodeTaints []Taint `json:"node_taints"`
 	// CreatedAt: the date at which the pool was created
 	CreatedAt *time.Time `json:"created_at"`
 	// UpdatedAt: the date at which the pool was last updated
