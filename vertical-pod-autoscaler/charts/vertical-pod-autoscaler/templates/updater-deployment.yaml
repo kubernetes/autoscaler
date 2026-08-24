@@ -64,7 +64,6 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           args:
-            - --v=4
             - --stderrthreshold=info
             {{- if eq (include "vertical-pod-autoscaler.updater.leaderElectionEnabled" .) "true" }}
             - --leader-elect=true
