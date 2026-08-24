@@ -322,6 +322,8 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		return fmt.Errorf("can't delete instance %s, which is not part of an ASG", instances[0].Name)
 	}
 
+	instancesToTerminate := make([]*AwsInstanceRef, 0, len(instances))
+	instanceIdsToTerminate := make([]string, 0, len(instances))
 	for _, instance := range instances {
 		asg := m.findForInstance(*instance)
 
@@ -387,24 +389,42 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 			continue
 		}
 
+		instancesToTerminate = append(instancesToTerminate, instance)
+		instanceIdsToTerminate = append(instanceIdsToTerminate, instance.Name)
+	}
+
+	for start := 0; start < len(instancesToTerminate); start += 100 {
+		end := start + 100
+		if end > len(instancesToTerminate) {
+			end = len(instancesToTerminate)
+		}
+		batch := instancesToTerminate[start:end]
+		batchIds := instanceIdsToTerminate[start:end]
 		params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-			InstanceId:                     aws.String(instance.Name),
 			ShouldDecrementDesiredCapacity: aws.Bool(true),
 		}
-		start := time.Now()
-		resp, err := m.awsService.TerminateInstanceInAutoScalingGroup(context.Background(), params)
-		observeAWSRequest("TerminateInstanceInAutoScalingGroup", err, start)
+		if len(batchIds) == 1 {
+			params.InstanceId = aws.String(batchIds[0])
+		} else {
+			params.AutoScalingGroupName = aws.String(commonAsg.Name)
+			params.InstanceIds = batchIds
+		}
+		requestStart := time.Now()
+		_, err := m.awsService.TerminateInstanceInAutoScalingGroup(context.Background(), params)
+		observeAWSRequest("TerminateInstanceInAutoScalingGroup", err, requestStart)
 		if err != nil {
 			return err
 		}
-		klog.V(4).Infof("Terminated instance %s in autoscaling group: %s", instance.Name, aws.ToString(resp.Activity.Description))
+		klog.V(4).Infof("Terminated %d instance(s) in autoscaling group %s", len(batch), commonAsg.Name)
 
 		// Proactively decrement the size so autoscaler makes better decisions
-		commonAsg.curSize--
+		commonAsg.curSize -= len(batch)
 
 		// Mark the instance as terminating in the cache, so that HasInstance
 		// reports it as gone immediately, before the cache is regenerated
-		m.instanceLifecycle[*instance] = autoscalingtypes.LifecycleStateTerminating
+		for _, instance := range batch {
+			m.instanceLifecycle[*instance] = autoscalingtypes.LifecycleStateTerminating
+		}
 	}
 	return nil
 }
