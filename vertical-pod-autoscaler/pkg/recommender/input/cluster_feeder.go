@@ -340,7 +340,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context)
 		vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
 		if !allVPAKeys[vpaID] {
 			if err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(checkpoint.Namespace).Delete(ctx, checkpoint.Name, metav1.DeleteOptions{}); err != nil {
-				errs = errors.Join(errs, fmt.Errorf("Orphaned VPA checkpoint cleanup - failed to delete checkpoint %s: %w", klog.KObj(checkpoint), err))
+				errs = errors.Join(errs, fmt.Errorf("orphaned VPA checkpoint cleanup - failed to delete checkpoint %s: %w", klog.KObj(checkpoint), err))
 				continue
 			}
 			klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "checkpoint", klog.KObj(checkpoint))
