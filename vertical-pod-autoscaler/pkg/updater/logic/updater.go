@@ -200,10 +200,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 		isValid, err := u.statusValidator.IsStatusValid(ctx, u.statusTimeout)
 		if err != nil {
 			klog.ErrorS(err, "Error getting Admission Controller status. Skipping update loop")
+			metrics_updater.RecordAdmissionControllerStatusInvalid("error")
 			return
 		}
 		if !isValid {
 			klog.V(0).InfoS("Admission Controller status is not valid. Skipping update loop", "timeout", u.statusTimeout)
+			metrics_updater.RecordAdmissionControllerStatusInvalid("invalid")
 			return
 		}
 	}
