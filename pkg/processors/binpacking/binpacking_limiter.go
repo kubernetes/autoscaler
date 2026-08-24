@@ -17,6 +17,7 @@ limitations under the License.
 package binpacking
 
 import (
+	"context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
@@ -26,6 +27,6 @@ import (
 type BinpackingLimiter interface {
 	InitBinpacking(autoscalingCtx *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup)
 	MarkProcessed(autoscalingCtx *ca_context.AutoscalingContext, nodegroupId string)
-	StopBinpacking(autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool
+	StopBinpacking(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool
 	FinalizeBinpacking(autoscalingCtx *ca_context.AutoscalingContext, finalOptions []expander.Option)
 }

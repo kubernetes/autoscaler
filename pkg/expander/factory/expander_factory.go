@@ -17,6 +17,8 @@ limitations under the License.
 package factory
 
 import (
+	"context"
+
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
@@ -85,7 +87,7 @@ func (f *Factory) RegisterDefaultExpanders(cloudProvider cloudprovider.CloudProv
 	f.RegisterFilter(expander.LeastWasteExpanderName, waste.NewFilter)
 	f.RegisterFilter(expander.LeastNodesExpanderName, leastnodes.NewFilter)
 	f.RegisterFilter(expander.PriceBasedExpanderName, func() expander.Filter {
-		if _, err := cloudProvider.Pricing(); err != nil {
+		if _, err := cloudProvider.Pricing(context.TODO()); err != nil {
 			klog.Fatalf("Couldn't access cloud provider pricing for %s expander: %v", expander.PriceBasedExpanderName, err)
 		}
 		return price.NewFilter(cloudProvider, price.NewSimplePreferredNodeProvider(autoscalingKubeClients.AllNodeLister()), price.SimpleNodeUnfitness)

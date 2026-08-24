@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -121,7 +122,7 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 	}
 
 	klog.Infof("Starting scale-up for async created node groups. Scale ups: %v", scaleUpInfos)
-	err, failedNodeGroups := s.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, time.Now(), s.atomicScaleUp)
+	err, failedNodeGroups := s.scaleUpExecutor.ExecuteScaleUps(context.TODO(), scaleUpInfos, time.Now(), s.atomicScaleUp)
 	if err != nil {
 		var failedNodeGroupIds []string
 		for _, failedNodeGroup := range failedNodeGroups {
@@ -164,7 +165,7 @@ func (s *AsyncNodeGroupInitializer) prepareScaleUps(result nodegroups.AsyncNodeG
 				Group:       nodeGroup,
 				CurrentSize: int(currentSize),
 				NewSize:     int(targetSize),
-				MaxSize:     nodeGroup.MaxSize(),
+				MaxSize:     nodeGroup.MaxSize(context.TODO()),
 			}
 			scaleUpInfos = append(scaleUpInfos, scaleUpInfo)
 			s.processedTargetSizes[upcomingId] = targetSize
@@ -177,5 +178,5 @@ func (s *AsyncNodeGroupInitializer) emitScaleUpStatus(scaleUpStatus *status.Scal
 	if err != nil {
 		status.UpdateScaleUpError(scaleUpStatus, err)
 	}
-	s.scaleUpStatusProcessor.Process(s.autoscalingCtx, scaleUpStatus)
+	s.scaleUpStatusProcessor.Process(context.TODO(), s.autoscalingCtx, scaleUpStatus)
 }

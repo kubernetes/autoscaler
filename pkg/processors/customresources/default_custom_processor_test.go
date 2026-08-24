@@ -17,6 +17,7 @@ limitations under the License.
 package customresources
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -113,7 +114,7 @@ func TestDefaultProcessorFilterOut(t *testing.T) {
 					readyNodes = append(readyNodes, node)
 				}
 			}
-			resultedAllNodes, resultedReadyNodes := processor.FilterOutNodesWithUnreadyResources(nil, tc.allNodes, readyNodes, nil, nil)
+			resultedAllNodes, resultedReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.TODO(), nil, tc.allNodes, readyNodes, nil, nil)
 			assert.ElementsMatch(t, tc.allNodes, resultedAllNodes)
 			assert.True(t, len(resultedReadyNodes) == len(tc.expectedReadyNodes))
 			for _, node := range resultedReadyNodes {
@@ -163,7 +164,7 @@ func TestDefaultProcessorGetNodeResourceTargets(t *testing.T) {
 	}
 	for tcName, tc := range testCases {
 		t.Run(tcName, func(t *testing.T) {
-			customResourceTarget, _ := processor.GetNodeResourceTargets(nil, tc.node, nil)
+			customResourceTarget, _ := processor.GetNodeResourceTargets(context.TODO(), nil, tc.node, nil)
 			assert.ElementsMatch(t, customResourceTarget, tc.expectedResources)
 		})
 	}
@@ -175,7 +176,7 @@ type mockCustomResourcesProcessor struct {
 	customResourceTargetsQuantity int64
 }
 
-func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(_ *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx context.Context, _ *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, _ *drasnapshot.Snapshot, _ *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	filteredReadyNodes := []*apiv1.Node{}
 	for _, node := range readyNodes {
 		if !strings.Contains(node.Name, m.nodeMark) {
@@ -185,7 +186,7 @@ func (m *mockCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(_ *ca_
 	return allNodes, filteredReadyNodes
 }
 
-func (m *mockCustomResourcesProcessor) GetNodeResourceTargets(_ *ca_context.AutoscalingContext, node *apiv1.Node, _ cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+func (m *mockCustomResourcesProcessor) GetNodeResourceTargets(ctx context.Context, _ *ca_context.AutoscalingContext, node *apiv1.Node, _ cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
 	result := []CustomResourceTarget{}
 	if strings.Contains(node.Name, m.nodeMark) {
 		for _, rt := range m.customResourceTargetsToAdd {

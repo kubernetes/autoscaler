@@ -139,7 +139,7 @@ func (c *ProvisioningRequestClient) ProvisioningRequestNoCache(namespace, name s
 	if err != nil {
 		return nil, err
 	}
-	podTemplates, err := c.FetchPodTemplates(v1)
+	podTemplates, err := c.FetchPodTemplates(context.TODO(), v1)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func (c *ProvisioningRequestClient) ProvisioningRequestsNoCache() ([]*provreqwra
 	}
 	prs := make([]*provreqwrapper.ProvisioningRequest, 0, len(v1s.Items))
 	for _, v1 := range v1s.Items {
-		podTemplates, err := c.FetchPodTemplates(&v1)
+		podTemplates, err := c.FetchPodTemplates(context.TODO(), &v1)
 		if err != nil {
 			return nil, err
 		}

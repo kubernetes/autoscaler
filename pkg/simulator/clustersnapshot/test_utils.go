@@ -17,6 +17,7 @@ limitations under the License.
 package clustersnapshot
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"testing"
@@ -38,7 +39,7 @@ func InitializeClusterSnapshotOrDie(
 	pods []*apiv1.Pod) {
 	var err error
 
-	assert.NoError(t, snapshot.SetClusterState(nil, nil, nil, nil))
+	assert.NoError(t, snapshot.SetClusterState(context.TODO(), nil, nil, nil, nil))
 
 	for _, node := range nodes {
 		err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))

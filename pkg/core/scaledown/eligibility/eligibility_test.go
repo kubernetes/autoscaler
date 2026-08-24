@@ -17,6 +17,7 @@ limitations under the License.
 package eligibility
 
 import (
+	"context"
 	"strconv"
 	"testing"
 	"time"
@@ -314,11 +315,11 @@ func TestFilterOutUnremovable(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Could not create autoscaling context: %v", err)
 			}
-			if err := autoscalingCtx.ClusterSnapshot.SetClusterState(tc.nodes, tc.pods, drasnapshot.CloneTestSnapshot(tc.draSnapshot), nil); err != nil {
+			if err := autoscalingCtx.ClusterSnapshot.SetClusterState(context.TODO(), tc.nodes, tc.pods, drasnapshot.CloneTestSnapshot(tc.draSnapshot), nil); err != nil {
 				t.Fatalf("Could not SetClusterState: %v", err)
 			}
 			unremovableNodes := unremovable.NewNodes()
-			gotUnneeded, _, gotUnremovable := c.FilterOutUnremovable(&autoscalingCtx, tc.nodes, now, unremovableNodes)
+			gotUnneeded, _, gotUnremovable := c.FilterOutUnremovable(context.TODO(), &autoscalingCtx, tc.nodes, now, unremovableNodes)
 			if diff := cmp.Diff(tc.wantUnneeded, gotUnneeded); diff != "" {
 				t.Errorf("FilterOutUnremovable(): unexpected unneeded (-want +got): %s", diff)
 			}

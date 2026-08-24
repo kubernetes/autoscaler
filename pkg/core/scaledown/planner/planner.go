@@ -46,12 +46,12 @@ import (
 )
 
 type eligibilityChecker interface {
-	FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode)
+	FilterOutUnremovable(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode)
 }
 
 type removalSimulator interface {
 	DropOldHints()
-	SimulateNodeRemoval(node string, podDestinations map[string]bool, timestamp time.Time, remainingPdbTracker pdb.RemainingPdbTracker) (*simulator.NodeToBeRemoved, *simulator.UnremovableNode)
+	SimulateNodeRemoval(ctx context.Context, node string, podDestinations map[string]bool, timestamp time.Time, remainingPdbTracker pdb.RemainingPdbTracker) (*simulator.NodeToBeRemoved, *simulator.UnremovableNode)
 }
 
 // controllerReplicasCalculator calculates a number of target and expected replicas for a given controller.
@@ -118,7 +118,8 @@ func New(autoscalingCtx *ca_context.AutoscalingContext, processors *processors.A
 // UpdateClusterState needs to be periodically invoked to provide Planner with
 // up-to-date information about the cluster.
 // Planner will evaluate scaleDownCandidates in the order provided here.
-func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*apiv1.Node, as scaledown.ActuationStatus, currentTime time.Time) errors.AutoscalerError {
+func (p *Planner) UpdateClusterState(ctx context.Context, podDestinations, scaleDownCandidates []*apiv1.Node, as scaledown.ActuationStatus, currentTime time.Time) errors.AutoscalerError {
+	logger := klog.FromContext(ctx)
 	updateInterval := currentTime.Sub(p.latestUpdate)
 	if updateInterval < p.minUpdateInterval {
 		p.minUpdateInterval = updateInterval
@@ -130,12 +131,13 @@ func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*api
 	defer p.autoscalingCtx.ClusterSnapshot.Revert()
 	err := p.injectRecentlyEvictedPods()
 	if err != nil {
-		klog.Warningf("Not all recently evicted pods could be injected")
+		logger.Info("Not all recently evicted pods could be injected", "err", err)
+
 	}
 	deletions := asMap(merged(as.DeletionsInProgress()))
 	podDestinations = filterOutOngoingDeletions(podDestinations, deletions)
 	scaleDownCandidates = filterOutOngoingDeletions(scaleDownCandidates, deletions)
-	p.categorizeNodes(asMap(nodeNames(podDestinations)), scaleDownCandidates)
+	p.categorizeNodes(ctx, asMap(nodeNames(podDestinations)), scaleDownCandidates)
 	p.rs.DropOldHints()
 	p.actuationInjector.DropOldHints()
 	return nil
@@ -143,40 +145,41 @@ func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*api
 
 // CleanUpUnneededNodes forces Planner to forget about all nodes considered
 // unneeded so far.
-func (p *Planner) CleanUpUnneededNodes() {
-	p.unneededNodes.Clear()
+func (p *Planner) CleanUpUnneededNodes(ctx context.Context) {
+	p.unneededNodes.Clear(ctx)
 }
 
 // NodesToDelete returns all Nodes that could be removed right now, according
 // to the Planner.
-func (p *Planner) NodesToDelete(_ time.Time) (empty, needDrain []*apiv1.Node) {
+func (p *Planner) NodesToDelete(ctx context.Context, _ time.Time) (empty, needDrain []*apiv1.Node) {
+	logger := klog.FromContext(ctx)
 	empty, needDrain = []*apiv1.Node{}, []*apiv1.Node{}
 
 	nodes, err := allNodes(p.autoscalingCtx.ClusterSnapshot)
 	if err != nil {
-		klog.Errorf("Failed to list nodes for final limit check: %v", err)
+		logger.Error(err, "Failed to list nodes for final limit check")
 		return nil, nil
 	}
 
-	tracker, err := p.quotasTrackerFactory.NewMinQuotasTracker(p.autoscalingCtx, nodes)
+	tracker, err := p.quotasTrackerFactory.NewMinQuotasTracker(ctx, p.autoscalingCtx, nodes)
 	if err != nil {
-		klog.Errorf("Failed to create tracker for final limit check: %v", err)
+		logger.Error(err, "Failed to create tracker for final limit check")
 		return nil, nil
 	}
 	p.scaleDownContext.Tracker = tracker
 
-	emptyRemovableNodes, needDrainRemovableNodes, unremovableNodes := p.unneededNodes.RemovableAt(p.autoscalingCtx, *p.scaleDownContext, p.latestUpdate)
+	emptyRemovableNodes, needDrainRemovableNodes, unremovableNodes := p.unneededNodes.RemovableAt(ctx, p.autoscalingCtx, *p.scaleDownContext, p.latestUpdate)
 	p.addUnremovableNodes(unremovableNodes)
 
 	needDrainRemovableNodes = sortByRisk(needDrainRemovableNodes)
 	candidatesToBeRemoved := append(emptyRemovableNodes, needDrainRemovableNodes...)
 
-	nodesToRemove, unremovableNodes := p.scaleDownSetProcessor.FilterUnremovableNodes(p.autoscalingCtx, p.scaleDownContext, candidatesToBeRemoved)
+	nodesToRemove, unremovableNodes := p.scaleDownSetProcessor.FilterUnremovableNodes(ctx, p.autoscalingCtx, p.scaleDownContext, candidatesToBeRemoved)
 	p.addUnremovableNodes(unremovableNodes)
 
 	for _, nodeToRemove := range nodesToRemove {
 		if len(nodeToRemove.OnCompletionPods) > 0 {
-			klog.V(2).Infof("Node %s has active on-completion pods, delaying scale down", nodeToRemove.Node.Name)
+			logger.V(2).Info("Node has active on-completion pods, delaying scale down", "node", klog.KObj(nodeToRemove.Node))
 			p.addUnremovableNodes([]simulator.UnremovableNode{{
 				Node:   nodeToRemove.Node,
 				Reason: simulator.BlockedByOnCompletionPod,
@@ -285,13 +288,14 @@ func (p *Planner) injectPods(pods []*apiv1.Pod) error {
 
 // categorizeNodes determines, for each node, whether it can be eventually
 // removed or if there are reasons preventing that.
-func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCandidates []*apiv1.Node) {
+func (p *Planner) categorizeNodes(ctx context.Context, podDestinations map[string]bool, scaleDownCandidates []*apiv1.Node) {
+	logger := klog.FromContext(ctx)
 	unremovableTimeout := p.latestUpdate.Add(p.autoscalingCtx.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	unremovableCount := 0
 	var removableList []simulator.NodeToBeRemoved
 	atomicScaleDownNodesCount := 0
-	p.unremovableNodes.Update(p.autoscalingCtx.ClusterSnapshot, p.latestUpdate)
-	currentlyUnneededNodeNames, utilizationMap, ineligible := p.eligibilityChecker.FilterOutUnremovable(p.autoscalingCtx, scaleDownCandidates, p.latestUpdate, p.unremovableNodes)
+	p.unremovableNodes.Update(ctx, p.autoscalingCtx.ClusterSnapshot, p.latestUpdate)
+	currentlyUnneededNodeNames, utilizationMap, ineligible := p.eligibilityChecker.FilterOutUnremovable(ctx, p.autoscalingCtx, scaleDownCandidates, p.latestUpdate, p.unremovableNodes)
 	for _, n := range ineligible {
 		p.unremovableNodes.Add(n)
 	}
@@ -302,16 +306,16 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	for i, node := range currentlyUnneededNodeNames {
 		if timedOut(timer) {
 			skippedNodes = currentlyUnneededNodeNames[i:]
-			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
+			logger.Info("Some nodes skipped in scale down simulation due to timeout", "skippedNodesCount", len(currentlyUnneededNodeNames)-i, "nodesCount", len(currentlyUnneededNodeNames))
 			break
 		}
 		if len(removableList)-atomicScaleDownNodesCount >= p.unneededNodesLimit() {
 			skippedNodes = currentlyUnneededNodeNames[i:]
-			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more. Total atomic scale down nodes: %d", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList), atomicScaleDownNodesCount)
+			logger.V(4).Info("Some nodes skipped in scale down simulation: unneeded nodes count already exceeded limit so no point in looking for more.", "skippedNodesCount", len(currentlyUnneededNodeNames)-i, "nodesCount", len(currentlyUnneededNodeNames), "unneededNodesCount", len(removableList), "atomicScaleDownNodesCount", atomicScaleDownNodesCount)
 			break
 		}
 
-		removable, unremovable := p.rs.SimulateNodeRemoval(node, podDestinations, p.latestUpdate, p.autoscalingCtx.RemainingPdbTracker)
+		removable, unremovable := p.rs.SimulateNodeRemoval(ctx, node, podDestinations, p.latestUpdate, p.autoscalingCtx.RemainingPdbTracker)
 		if removable != nil {
 			_, inParallel, _ := p.autoscalingCtx.RemainingPdbTracker.CanRemovePods(removable.PodsToReschedule)
 			if !inParallel {
@@ -320,9 +324,9 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			delete(podDestinations, removable.Node.Name)
 			p.autoscalingCtx.RemainingPdbTracker.RemovePods(removable.PodsToReschedule)
 			removableList = append(removableList, *removable)
-			if p.atomicScaleDownNode(removable) {
+			if p.atomicScaleDownNode(ctx, removable) {
 				atomicScaleDownNodesCount++
-				klog.V(2).Infof("Considering node %s for atomic scale down. Total atomic scale down nodes count: %d", removable.Node.Name, atomicScaleDownNodesCount)
+				logger.V(2).Info("Considering node for atomic scale down", "node", klog.KObj(removable.Node), "atomicScaleDownNodesCount", atomicScaleDownNodesCount)
 			}
 		}
 		if unremovable != nil {
@@ -331,26 +335,27 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 		}
 	}
 	p.handleUnprocessedNodes(skippedNodes)
-	p.unneededNodes.Update(p.autoscalingCtx, removableList, p.latestUpdate)
+	p.unneededNodes.Update(ctx, p.autoscalingCtx, removableList, p.latestUpdate)
 	if unremovableCount > 0 {
-		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
+		logger.V(1).Info("Some nodes found to be unremovable in simulation, will re-check them within timeout", "unremovableNodesCount", unremovableCount, "timeout", unremovableTimeout)
 	}
 }
 
 // atomicScaleDownNode checks if the removable node would be considered for atomic scale down.
-func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
-	nodeGroup, err := p.autoscalingCtx.CloudProvider.NodeGroupForNode(node.Node)
+func (p *Planner) atomicScaleDownNode(ctx context.Context, node *simulator.NodeToBeRemoved) bool {
+	logger := klog.FromContext(ctx)
+	nodeGroup, err := p.autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node.Node)
 	if err != nil {
-		klog.Errorf("failed to get node info for %v: %s", node.Node.Name, err)
+		logger.Error(err, "Failed to get node info", "node", klog.KObj(node.Node))
 		return false
 	}
 	if nodeGroup == nil {
-		klog.Errorf("Node group for node %s not found", node.Node.Name)
+		logger.Error(nil, "Node group not found for node", "node", klog.KObj(node.Node))
 		return false
 	}
-	autoscalingOptions, err := nodeGroup.GetOptions(p.autoscalingCtx.NodeGroupDefaults)
+	autoscalingOptions, err := nodeGroup.GetOptions(ctx, p.autoscalingCtx.NodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
-		klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
+		logger.Error(err, "Failed to get autoscaling options for node group", "nodeGroupId", nodeGroup.Id())
 		return false
 	}
 	if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {

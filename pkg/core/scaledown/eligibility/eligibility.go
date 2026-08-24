@@ -17,6 +17,7 @@ limitations under the License.
 package eligibility
 
 import (
+	"context"
 	"time"
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
@@ -45,11 +46,11 @@ type Checker struct {
 
 type nodeGroupConfigGetter interface {
 	// GetScaleDownUtilizationThreshold returns ScaleDownUtilizationThreshold value that should be used for a given NodeGroup.
-	GetScaleDownUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error)
+	GetScaleDownUtilizationThreshold(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (float64, error)
 	// GetScaleDownGpuUtilizationThreshold returns ScaleDownGpuUtilizationThreshold value that should be used for a given NodeGroup.
-	GetScaleDownGpuUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error)
+	GetScaleDownGpuUtilizationThreshold(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (float64, error)
 	// GetIgnoreDaemonSetsUtilization returns IgnoreDaemonSetsUtilization value that should be used for a given NodeGroup.
-	GetIgnoreDaemonSetsUtilization(nodeGroup cloudprovider.NodeGroup) (bool, error)
+	GetIgnoreDaemonSetsUtilization(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (bool, error)
 }
 
 // NewChecker creates a new Checker object.
@@ -64,7 +65,8 @@ func NewChecker(configGetter nodeGroupConfigGetter) *Checker {
 // utilization info.
 // TODO(x13n): Node utilization could actually be calculated independently for
 // all nodes and just used here. Next refactor...
-func (c *Checker) FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode) {
+func (c *Checker) FilterOutUnremovable(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleDownCandidates []*apiv1.Node, timestamp time.Time, unremovableNodes *unremovable.Nodes) ([]string, map[string]utilization.Info, []*simulator.UnremovableNode) {
+	logger := klog.FromContext(ctx)
 	ineligible := []*simulator.UnremovableNode{}
 	skipped := 0
 	utilizationMap := make(map[string]utilization.Info)
@@ -74,7 +76,7 @@ func (c *Checker) FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingCon
 	for _, node := range scaleDownCandidates {
 		nodeInfo, err := autoscalingCtx.ClusterSnapshot.GetNodeInfo(node.Name)
 		if err != nil {
-			klog.Errorf("Can't retrieve scale-down candidate %s from snapshot, err: %v", node.Name, err)
+			logger.Error(err, "Can't retrieve scale-down candidate from snapshot", "node", klog.KObj(node))
 			ineligible = append(ineligible, &simulator.UnremovableNode{Node: node, Reason: simulator.UnexpectedError})
 			continue
 		}
@@ -86,7 +88,7 @@ func (c *Checker) FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingCon
 			continue
 		}
 
-		reason, utilInfo := c.unremovableReasonAndNodeUtilization(autoscalingCtx, timestamp, nodeInfo, utilLogsQuota)
+		reason, utilInfo := c.unremovableReasonAndNodeUtilization(ctx, autoscalingCtx, timestamp, nodeInfo, utilLogsQuota)
 		if utilInfo != nil {
 			utilizationMap[node.Name] = *utilInfo
 		}
@@ -100,47 +102,48 @@ func (c *Checker) FilterOutUnremovable(autoscalingCtx *ca_context.AutoscalingCon
 
 	klogx.V(4).Over(utilLogsQuota).Infof("Skipped logging utilization for %d other nodes", -utilLogsQuota.Left())
 	if skipped > 0 {
-		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, autoscalingCtx.AutoscalingOptions.UnremovableNodeRecheckTimeout)
+		logger.V(1).Info("Scale-down calculation: ignoring unremovable nodes", "nodesCount", skipped, "timeout", autoscalingCtx.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	}
 	return currentlyUnneededNodeNames, utilizationMap, ineligible
 }
 
-func (c *Checker) unremovableReasonAndNodeUtilization(autoscalingCtx *ca_context.AutoscalingContext, timestamp time.Time, nodeInfo *framework.NodeInfo, utilLogsQuota *klogx.Quota) (simulator.UnremovableReason, *utilization.Info) {
+func (c *Checker) unremovableReasonAndNodeUtilization(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, timestamp time.Time, nodeInfo *framework.NodeInfo, utilLogsQuota *klogx.Quota) (simulator.UnremovableReason, *utilization.Info) {
+	logger := klog.FromContext(ctx)
 	node := nodeInfo.Node()
 
 	if actuation.IsNodeBeingDeleted(node, timestamp) {
-		klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
+		logger.V(1).Info("Skipping node from delete consideration - it is currently being deleted", "node", klog.KObj(node))
 		return simulator.CurrentlyBeingDeleted, nil
 	}
 
 	// Skip nodes marked with no scale down annotation
 	if HasNoScaleDownAnnotation(node) {
-		klog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
+		logger.V(1).Info("Skipping node from delete consideration - it is marked as no scale down", "node", klog.KObj(node))
 		return simulator.ScaleDownDisabledAnnotation, nil
 	}
 
-	nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
+	nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 	if err != nil {
-		klog.Warningf("Node group not found for node %v: %v", node.Name, err)
+		logger.Info("Node group not found for node", "node", klog.KObj(node), "err", err)
 		return simulator.UnexpectedError, nil
 	}
 	if nodeGroup == nil {
 		// We should never get here as non-autoscaled nodes should not be included in scaleDownCandidates list
 		// (and the default PreFilteringScaleDownNodeProcessor would indeed filter them out).
-		klog.Warningf("Skipped %s from delete consideration - the node is not autoscaled", node.Name)
+		logger.Info("Skipped node from delete consideration - it is not autoscaled", "node", klog.KObj(node))
 		return simulator.NotAutoscaled, nil
 	}
 
-	ignoreDaemonSetsUtilization, err := c.configGetter.GetIgnoreDaemonSetsUtilization(nodeGroup)
+	ignoreDaemonSetsUtilization, err := c.configGetter.GetIgnoreDaemonSetsUtilization(ctx, nodeGroup)
 	if err != nil {
-		klog.Warningf("Couldn't retrieve `IgnoreDaemonSetsUtilization` option for node %v: %v", node.Name, err)
+		logger.Info("Couldn't retrieve `IgnoreDaemonSetsUtilization` option for node", "node", klog.KObj(node), "err", err)
 		return simulator.UnexpectedError, nil
 	}
 
-	gpuConfig := autoscalingCtx.CloudProvider.GetNodeGpuConfig(node)
-	utilInfo, err := utilization.Calculate(nodeInfo, ignoreDaemonSetsUtilization, autoscalingCtx.IgnoreMirrorPodsUtilization, autoscalingCtx.DynamicResourceAllocationEnabled, gpuConfig, timestamp)
+	gpuConfig := autoscalingCtx.CloudProvider.GetNodeGpuConfig(ctx, node)
+	utilInfo, err := utilization.Calculate(ctx, nodeInfo, ignoreDaemonSetsUtilization, autoscalingCtx.IgnoreMirrorPodsUtilization, autoscalingCtx.DynamicResourceAllocationEnabled, gpuConfig, timestamp)
 	if err != nil {
-		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
+		logger.Info("Failed to calculate utilization for node", "node", klog.KObj(node), "err", err)
 		return simulator.UnexpectedError, nil
 	}
 
@@ -148,18 +151,18 @@ func (c *Checker) unremovableReasonAndNodeUtilization(autoscalingCtx *ca_context
 	if !autoscalingCtx.ScaleDownUnreadyEnabled {
 		ready, _, _ := kube_util.GetReadinessState(node)
 		if !ready {
-			klog.V(4).Infof("Skipping unready node %s from delete consideration - scale-down of unready nodes is disabled", node.Name)
+			logger.V(4).Info("Skipping unready node from delete consideration - scale-down of unready nodes is disabled", "node", klog.KObj(node))
 			return simulator.ScaleDownUnreadyDisabled, nil
 		}
 	}
 
-	underutilized, err := c.isNodeAtOrBelowUtilizationThreshold(autoscalingCtx, node, nodeGroup, utilInfo)
+	underutilized, err := c.isNodeAtOrBelowUtilizationThreshold(ctx, autoscalingCtx, node, nodeGroup, utilInfo)
 	if err != nil {
-		klog.Warningf("Failed to check utilization thresholds for %s: %v", node.Name, err)
+		logger.Info("Failed to check utilization thresholds for node", "node", klog.KObj(node), "err", err)
 		return simulator.UnexpectedError, nil
 	}
 	if !underutilized {
-		klog.V(4).Infof("Node %s unremovable: %s requested (%.6g%% of allocatable) is above the scale-down utilization threshold", node.Name, utilInfo.ResourceName, utilInfo.Utilization*100)
+		logger.V(4).Info("Node unremovable: resource utilization is above the scale-down utilization threshold", "node", klog.KObj(node), "resource", utilInfo.ResourceName, "utilization", utilInfo.Utilization*100)
 		return simulator.NotUnderutilized, &utilInfo
 	}
 
@@ -169,17 +172,17 @@ func (c *Checker) unremovableReasonAndNodeUtilization(autoscalingCtx *ca_context
 }
 
 // isNodeAtOrBelowUtilizationThreshold determines if a given node utilization is at or below threshold.
-func (c *Checker) isNodeAtOrBelowUtilizationThreshold(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo utilization.Info) (bool, error) {
+func (c *Checker) isNodeAtOrBelowUtilizationThreshold(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, utilInfo utilization.Info) (bool, error) {
 	var threshold float64
 	var err error
-	gpuConfig := autoscalingCtx.CloudProvider.GetNodeGpuConfig(node)
+	gpuConfig := autoscalingCtx.CloudProvider.GetNodeGpuConfig(ctx, node)
 	if gpuConfig != nil {
-		threshold, err = c.configGetter.GetScaleDownGpuUtilizationThreshold(nodeGroup)
+		threshold, err = c.configGetter.GetScaleDownGpuUtilizationThreshold(ctx, nodeGroup)
 		if err != nil {
 			return false, err
 		}
 	} else {
-		threshold, err = c.configGetter.GetScaleDownUtilizationThreshold(nodeGroup)
+		threshold, err = c.configGetter.GetScaleDownUtilizationThreshold(ctx, nodeGroup)
 		if err != nil {
 			return false, err
 		}

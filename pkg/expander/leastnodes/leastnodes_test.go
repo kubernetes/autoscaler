@@ -17,6 +17,7 @@ limitations under the License.
 package leastnodes
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -106,7 +107,7 @@ func TestLeastNodes(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			e := NewFilter()
-			ret := e.BestOptions(tc.expansionOptions, nil)
+			ret := e.BestOptions(context.TODO(), tc.expansionOptions, nil)
 			assert.Equal(t, ret, tc.expectedExpansionOptions)
 		})
 	}

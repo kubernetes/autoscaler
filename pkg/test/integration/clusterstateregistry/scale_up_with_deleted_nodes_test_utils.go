@@ -183,7 +183,7 @@ type TestClusterStateRegistryScaleUpWithDeletedNodesSetupFactory func(*testing.T
 
 func assertNodeGroupSize(t *testing.T, ng cloudprovider.NodeGroup, k8s *fakek8s.Kubernetes, wantTargetSize, wantNodeCount int) {
 	t.Helper()
-	if gotSize, err := ng.TargetSize(); err != nil || wantTargetSize != gotSize {
+	if gotSize, err := ng.TargetSize(context.TODO()); err != nil || wantTargetSize != gotSize {
 		t.Fatalf("fakeNodeGroup.TargetSize(): want <%d, <nil>>, got <%d, %v>", wantTargetSize, gotSize, err)
 	}
 	if gotNodeCount := len(k8s.Nodes().Items); wantNodeCount != gotNodeCount {

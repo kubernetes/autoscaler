@@ -17,6 +17,7 @@ limitations under the License.
 package clustersnapshot
 
 import (
+	"context"
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -49,14 +50,14 @@ type ClusterSnapshot interface {
 	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
 	// The provided draSnapshot and csiSnapshot are treated as the source of truth and are
 	// eagerly loaded into the internal NodeInfo and PodInfo objects.
-	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error
+	SetClusterState(ctx context.Context, nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error
 
 	// AddNodeInfo adds the given NodeInfo to the snapshot without checking scheduler predicates.
 	// The Node and the Pods are added, as well as any DRA and CSI objects passed along them.
 	AddNodeInfo(nodeInfo *framework.NodeInfo) error
 	// RemoveNodeInfo removes the given NodeInfo from the snapshot.
 	// The Node and the Pods are removed, as well as any DRA and CSI objects owned by them.
-	RemoveNodeInfo(nodeName string) error
+	RemoveNodeInfo(ctx context.Context, nodeName string) error
 	// GetNodeInfo returns an internal NodeInfo for a given Node - all information about the Node tracked in the snapshot.
 	// The returned framework.NodeInfo is fully populated with DRA and CSI data.
 	// The internal NodeInfos obtained via this method should always be used in CA code instead of directly using *schedulerframework.NodeInfo.
@@ -121,7 +122,7 @@ type ClusterSnapshotStore interface {
 	StoreNodeInfo(nodeInfo *framework.NodeInfo) error
 	// RemoveNodeInfo removes the given *framework.NodeInfo from the snapshot.
 	// This shouldn't be used outside the clustersnapshot pkg, use ClusterSnapshot.RemoveNodeInfo() instead.
-	RemoveNodeInfo(nodeName string) error
+	RemoveNodeInfo(ctx context.Context, nodeName string) error
 
 	// Clear resets the snapshot to an empty, unforked state.
 	Clear()

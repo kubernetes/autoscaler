@@ -196,7 +196,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 			clusterSnapshot.Fork()
 
 			processor := NewFilterOutSchedulablePodListProcessor(tc.nodeFilter)
-			unschedulablePods, err := processor.filterOutSchedulableByPacking(&ca_context.AutoscalingContext{}, tc.unschedulableCandidates, clusterSnapshot)
+			unschedulablePods, err := processor.filterOutSchedulableByPacking(context.TODO(), &ca_context.AutoscalingContext{}, tc.unschedulableCandidates, clusterSnapshot)
 
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, unschedulablePods, tc.expectedUnscheduledPods, "unschedulable pods differ")
@@ -285,7 +285,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				}
 
 				clusterSnapshot := snapshotFactory()
-				if err := clusterSnapshot.SetClusterState(nodes, scheduledPods, nil, nil); err != nil {
+				if err := clusterSnapshot.SetClusterState(context.TODO(), nodes, scheduledPods, nil, nil); err != nil {
 					assert.NoError(b, err)
 				}
 
@@ -293,7 +293,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 
 				for i := 0; i < b.N; i++ {
 					processor := NewFilterOutSchedulablePodListProcessor(scheduling.ScheduleAnywhere)
-					if stillPending, err := processor.filterOutSchedulableByPacking(&ca_context.AutoscalingContext{}, pendingPods, clusterSnapshot); err != nil {
+					if stillPending, err := processor.filterOutSchedulableByPacking(context.TODO(), &ca_context.AutoscalingContext{}, pendingPods, clusterSnapshot); err != nil {
 						assert.NoError(b, err)
 					} else if len(stillPending) < tc.pendingPods {
 						assert.Equal(b, len(stillPending), tc.pendingPods)
@@ -412,7 +412,7 @@ func TestFilterOutSchedulable_GracefulDegradation(t *testing.T) {
 			autoscalingCtx.GracefulDegradationLoopCount = tc.initialLoopCount
 
 			processor := NewFilterOutSchedulablePodListProcessor(func(*framework.NodeInfo) bool { return true })
-			unschedulablePods, err := processor.filterOutSchedulableByPacking(autoscalingCtx, tc.unschedulableCandidates, clusterSnapshot)
+			unschedulablePods, err := processor.filterOutSchedulableByPacking(context.TODO(), autoscalingCtx, tc.unschedulableCandidates, clusterSnapshot)
 
 			assert.NoError(t, err, "filterOutSchedulableByPacking() should not return an error")
 			assert.ElementsMatch(t, tc.expectedUnscheduled, unschedulablePods, "Unexpected unscheduled pods")

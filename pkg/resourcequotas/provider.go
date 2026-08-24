@@ -17,6 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
+	"context"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
@@ -24,7 +25,7 @@ import (
 // Provider provides Quotas. Each Provider implementation acts as a different
 // source of Quotas.
 type Provider interface {
-	Quotas() ([]Quota, error)
+	Quotas(context.Context) ([]Quota, error)
 }
 
 // CloudQuotasProvider is an adapter for cloudprovider.ResourceLimiter.
@@ -35,8 +36,8 @@ type CloudQuotasProvider struct {
 // Quotas returns the cloud provider's ResourceLimiter, which implements Quota interface.
 //
 // This acts as a compatibility layer with the legacy resource LimitsVal system.
-func (p *CloudQuotasProvider) Quotas() ([]Quota, error) {
-	rl, err := p.cloudProvider.GetResourceLimiter()
+func (p *CloudQuotasProvider) Quotas(ctx context.Context) ([]Quota, error) {
+	rl, err := p.cloudProvider.GetResourceLimiter(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -63,10 +64,10 @@ func NewCombinedQuotasProvider(providers []Provider) *CombinedQuotasProvider {
 }
 
 // Quotas returns a union of quotas from all wrapped providers.
-func (p *CombinedQuotasProvider) Quotas() ([]Quota, error) {
+func (p *CombinedQuotasProvider) Quotas(ctx context.Context) ([]Quota, error) {
 	var allQuotas []Quota
 	for _, provider := range p.providers {
-		quotas, err := provider.Quotas()
+		quotas, err := provider.Quotas(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -111,8 +112,8 @@ type CloudMinProvider struct {
 }
 
 // Quotas returns the minimum quotas from the cloud provider.
-func (p *CloudMinProvider) Quotas() ([]Quota, error) {
-	rl, err := p.cloudProvider.GetResourceLimiter()
+func (p *CloudMinProvider) Quotas(ctx context.Context) ([]Quota, error) {
+	rl, err := p.cloudProvider.GetResourceLimiter(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -130,8 +131,8 @@ type CloudMaxProvider struct {
 }
 
 // Quotas returns the maximum quotas from the cloud provider.
-func (p *CloudMaxProvider) Quotas() ([]Quota, error) {
-	rl, err := p.cloudProvider.GetResourceLimiter()
+func (p *CloudMaxProvider) Quotas(ctx context.Context) ([]Quota, error) {
+	rl, err := p.cloudProvider.GetResourceLimiter(ctx)
 	if err != nil {
 		return nil, err
 	}

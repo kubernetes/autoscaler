@@ -17,6 +17,7 @@ limitations under the License.
 package conditions
 
 import (
+	"context"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -199,7 +200,7 @@ func TestBookCapacity(t *testing.T) {
 						Conditions: test.prConditions,
 					},
 				}, nil)
-			got := ShouldCapacityBeBooked(pr, test.checkCapacityProcessorInstance)
+			got := ShouldCapacityBeBooked(context.TODO(), pr, test.checkCapacityProcessorInstance)
 			if got != test.want {
 				t.Errorf("Want: %v, got: %v", test.want, got)
 			}
@@ -354,7 +355,7 @@ func TestSetCondition(t *testing.T) {
 						Conditions: test.oldConditions,
 					},
 				}, nil)
-			AddOrUpdateCondition(pr, test.newType, test.newStatus, "", "", metav1.Now())
+			AddOrUpdateCondition(context.TODO(), pr, test.newType, test.newStatus, "", "", metav1.Now())
 			got := pr.Status.Conditions
 			if len(got) > 2 || len(got) != len(test.want) || got[0].Type != test.want[0].Type || got[0].Status != test.want[0].Status {
 				t.Errorf("want %v, got: %v", test.want, got)

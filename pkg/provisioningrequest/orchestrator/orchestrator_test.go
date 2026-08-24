@@ -431,7 +431,7 @@ func TestScaleUp(t *testing.T) {
 			client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, testProvReqs...)
 			orchestrator, nodeInfos := setupTest(t, client, nodes, onScaleUpFunc, tc.autoprovisioning, tc.batchProcessing, tc.maxBatchSize, tc.batchTimebox)
 
-			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*appsv1.DaemonSet{}, nodeInfos, false)
+			st, err := orchestrator.ScaleUp(context.TODO(), prPods, []*apiv1.Node{}, []*appsv1.DaemonSet{}, nodeInfos, false)
 			if !tc.err {
 				assert.NoError(t, err)
 				if tc.scaleUpResult != st.Result && len(st.PodsRemainUnschedulable) > 0 {
@@ -500,7 +500,7 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 2}
 	}
-	err = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(&autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	err = autoscalingCtx.TemplateNodeInfoRegistry.Recompute(context.TODO(), &autoscalingCtx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	nodeInfos := autoscalingCtx.TemplateNodeInfoRegistry.GetNodeInfos()
 
@@ -513,7 +513,7 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 	)
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, autoscalingCtx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingCtx.NodeGroupDefaults), templateNodeInfoRegistry)
-	clusterState.UpdateNodes(nodes, now)
+	clusterState.UpdateNodes(context.TODO(), nodes, now)
 
 	var injector *provreq.ProvisioningRequestPodsInjector
 	if batchProcessing {

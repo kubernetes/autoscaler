@@ -17,6 +17,7 @@ limitations under the License.
 package filter
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -103,7 +104,7 @@ func TestCombinedAnyFilter(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			filter := NewCombinedAnyFilter(test.filters)
-			filtered, filteredOut := filter.Filter(test.buffers)
+			filtered, filteredOut := filter.Filter(context.TODO(), test.buffers)
 			assert.ElementsMatch(t, test.expectedFilteredBuffers, filtered)
 			assert.ElementsMatch(t, test.expectedFilteredOutBuffers, filteredOut)
 		})
@@ -118,7 +119,7 @@ type testGenerationFilter struct {
 	filerGeneration int64
 }
 
-func (f *testGenerationFilter) Filter(buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
+func (f *testGenerationFilter) Filter(ctx context.Context, buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
 	filteredBuffers := []*v1.CapacityBuffer{}
 	filteredOutBuffers := []*v1.CapacityBuffer{}
 	for _, buffer := range buffers {

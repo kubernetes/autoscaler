@@ -81,16 +81,18 @@ func (o *bestEffortAtomicProvClass) Initialize(
 
 // Provision returns success if there is, or has just been requested, sufficient capacity in the cluster for pods from ProvisioningRequest.
 func (o *bestEffortAtomicProvClass) Provision(
+	ctx context.Context,
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*framework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
+	logger := klog.FromContext(ctx)
 	if len(unschedulablePods) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
-	prs := provreqclient.ProvisioningRequestsForPods(o.client, unschedulablePods)
-	prs = provreqclient.FilterOutProvisioningClass(prs, v1.ProvisioningClassBestEffortAtomicScaleUp, "")
+	prs := provreqclient.ProvisioningRequestsForPods(ctx, o.client, unschedulablePods)
+	prs = provreqclient.FilterOutProvisioningClass(ctx, prs, v1.ProvisioningClassBestEffortAtomicScaleUp, "")
 	if len(prs) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
@@ -112,7 +114,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 			WithLastTransitionTime(metav1.Now())
 		prAC.WithStatus(v1ac.ProvisioningRequestStatus().WithConditions(condition))
 		if _, updateErr := o.client.ApplyProvisioningRequest(prAC, "cluster-autoscaler"); updateErr != nil {
-			klog.Errorf("failed to add Provisioned=false condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
+			logger.Error(updateErr, "failed to add Provisioned=false condition to ProvReq", "provReq", klog.KObj(pr))
 		}
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "error during ScaleUp: %s", err.Error()))
 	}
@@ -128,13 +130,13 @@ func (o *bestEffortAtomicProvClass) Provision(
 			WithLastTransitionTime(metav1.Now())
 		prAC.WithStatus(v1ac.ProvisioningRequestStatus().WithConditions(condition))
 		if _, updateErr := o.client.ApplyProvisioningRequest(prAC, "cluster-autoscaler"); updateErr != nil {
-			klog.Errorf("failed to add Provisioned=true condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
+			logger.Error(updateErr, "failed to add Provisioned=true condition to ProvReq", "provReq", klog.KObj(pr))
 			return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "capacity available, but failed to admit workload: %s", updateErr.Error()))
 		}
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotNeeded}, nil
 	}
 
-	st, err := o.scaleUpOrchestrator.ScaleUp(actuallyUnschedulablePods, nodes, daemonSets, nodeInfos, true)
+	st, err := o.scaleUpOrchestrator.ScaleUp(ctx, actuallyUnschedulablePods, nodes, daemonSets, nodeInfos, true)
 	if err == nil && st.Result == status.ScaleUpSuccessful {
 		// Happy path - all is well.
 		prAC := v1ac.ProvisioningRequest(pr.Name, pr.Namespace)
@@ -146,7 +148,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 			WithLastTransitionTime(metav1.Now())
 		prAC.WithStatus(v1ac.ProvisioningRequestStatus().WithConditions(condition))
 		if _, updateErr := o.client.ApplyProvisioningRequest(prAC, "cluster-autoscaler"); updateErr != nil {
-			klog.Errorf("failed to add Provisioned=true condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
+			logger.Error(updateErr, "failed to add Provisioned=true condition to ProvReq", "provReq", klog.KObj(pr))
 			return st, errors.NewAutoscalerErrorf(errors.InternalError, "scale up requested, but failed to admit workload: %s", updateErr.Error())
 		}
 		return st, nil
@@ -162,7 +164,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 		WithLastTransitionTime(metav1.Now())
 	prAC.WithStatus(v1ac.ProvisioningRequestStatus().WithConditions(condition))
 	if _, updateErr := o.client.ApplyProvisioningRequest(prAC, "cluster-autoscaler"); updateErr != nil {
-		klog.Errorf("failed to add Provisioned=false condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, updateErr)
+		logger.Error(updateErr, "failed to add Provisioned=false condition to ProvReq", "provReq", klog.KObj(pr))
 	}
 	if err != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerErrorf(errors.InternalError, "error during ScaleUp: %s", err.Error()))

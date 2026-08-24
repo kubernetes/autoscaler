@@ -17,6 +17,7 @@ limitations under the License.
 package waste
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -35,30 +36,32 @@ type FakeNodeGroup struct {
 	id string
 }
 
-func (f *FakeNodeGroup) MaxSize() int                       { return 2 }
-func (f *FakeNodeGroup) MinSize() int                       { return 1 }
-func (f *FakeNodeGroup) TargetSize() (int, error)           { return 2, nil }
-func (f *FakeNodeGroup) IncreaseSize(delta int) error       { return nil }
-func (f *FakeNodeGroup) AtomicIncreaseSize(delta int) error { return cloudprovider.ErrNotImplemented }
-func (f *FakeNodeGroup) DecreaseTargetSize(delta int) error { return nil }
-func (f *FakeNodeGroup) DeleteNodes([]*apiv1.Node) error    { return nil }
+func (f *FakeNodeGroup) MaxSize(ctx context.Context) int                   { return 2 }
+func (f *FakeNodeGroup) MinSize(ctx context.Context) int                   { return 1 }
+func (f *FakeNodeGroup) TargetSize(ctx context.Context) (int, error)       { return 2, nil }
+func (f *FakeNodeGroup) IncreaseSize(ctx context.Context, delta int) error { return nil }
+func (f *FakeNodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+func (f *FakeNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error { return nil }
+func (f *FakeNodeGroup) DeleteNodes(ctx context.Context, _ []*apiv1.Node) error  { return nil }
 
-func (f *FakeNodeGroup) ForceDeleteNodes([]*apiv1.Node) error { return nil }
-func (f *FakeNodeGroup) Id() string                           { return f.id }
-func (f *FakeNodeGroup) Debug() string                        { return f.id }
-func (f *FakeNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (f *FakeNodeGroup) ForceDeleteNodes(ctx context.Context, _ []*apiv1.Node) error { return nil }
+func (f *FakeNodeGroup) Id() string                                                  { return f.id }
+func (f *FakeNodeGroup) Debug(ctx context.Context) string                            { return f.id }
+func (f *FakeNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	return []cloudprovider.Instance{}, nil
 }
-func (f *FakeNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (f *FakeNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
-func (f *FakeNodeGroup) Exist() bool { return true }
-func (f *FakeNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (f *FakeNodeGroup) Exist(ctx context.Context) bool { return true }
+func (f *FakeNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
-func (f *FakeNodeGroup) Delete() error         { return cloudprovider.ErrNotImplemented }
-func (f *FakeNodeGroup) Autoprovisioned() bool { return false }
-func (f *FakeNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (f *FakeNodeGroup) Delete(ctx context.Context) error         { return cloudprovider.ErrNotImplemented }
+func (f *FakeNodeGroup) Autoprovisioned(ctx context.Context) bool { return false }
+func (f *FakeNodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -89,7 +92,7 @@ func TestLeastWaste(t *testing.T) {
 	balancedOption := expander.Option{NodeGroup: &FakeNodeGroup{"balanced"}, NodeCount: 1}
 
 	// Test without any pods, one node info
-	ret := e.BestOptions([]expander.Option{balancedOption}, nodeMap)
+	ret := e.BestOptions(context.TODO(), []expander.Option{balancedOption}, nodeMap)
 	assert.Equal(t, ret, []expander.Option{balancedOption})
 
 	pod := &apiv1.Pod{
@@ -109,20 +112,20 @@ func TestLeastWaste(t *testing.T) {
 
 	// Test with one pod, one node info
 	balancedOption.Pods = []*apiv1.Pod{pod}
-	ret = e.BestOptions([]expander.Option{balancedOption}, nodeMap)
+	ret = e.BestOptions(context.TODO(), []expander.Option{balancedOption}, nodeMap)
 	assert.Equal(t, ret, []expander.Option{balancedOption})
 
 	// Test with one pod, two node infos, one that has lots of RAM one that has less
 	highmemNodeInfo := makeNodeInfo(16*cpuPerPod, 32*memoryPerPod, 100)
 	nodeMap["highmem"] = highmemNodeInfo
 	highmemOption := expander.Option{NodeGroup: &FakeNodeGroup{"highmem"}, NodeCount: 1, Pods: []*apiv1.Pod{pod}}
-	ret = e.BestOptions([]expander.Option{balancedOption, highmemOption}, nodeMap)
+	ret = e.BestOptions(context.TODO(), []expander.Option{balancedOption, highmemOption}, nodeMap)
 	assert.Equal(t, ret, []expander.Option{balancedOption})
 
 	// Test with one pod, three node infos, one that has lots of RAM one that has less, and one that has less CPU
 	lowcpuNodeInfo := makeNodeInfo(8*cpuPerPod, 16*memoryPerPod, 100)
 	nodeMap["lowcpu"] = lowcpuNodeInfo
 	lowcpuOption := expander.Option{NodeGroup: &FakeNodeGroup{"lowcpu"}, NodeCount: 1, Pods: []*apiv1.Pod{pod}}
-	ret = e.BestOptions([]expander.Option{balancedOption, highmemOption, lowcpuOption}, nodeMap)
+	ret = e.BestOptions(context.TODO(), []expander.Option{balancedOption, highmemOption, lowcpuOption}, nodeMap)
 	assert.Equal(t, ret, []expander.Option{lowcpuOption})
 }

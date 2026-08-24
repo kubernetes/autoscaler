@@ -17,6 +17,7 @@ limitations under the License.
 package store
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -222,7 +223,7 @@ func (snapshot *BasicSnapshotStore) getInternalData() *internalBasicSnapshotData
 }
 
 // RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *BasicSnapshotStore) RemoveNodeInfo(nodeName string) error {
+func (snapshot *BasicSnapshotStore) RemoveNodeInfo(ctx context.Context, nodeName string) error {
 	return snapshot.getInternalData().removeNodeInfo(nodeName)
 }
 

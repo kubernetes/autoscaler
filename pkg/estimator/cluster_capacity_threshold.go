@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	"context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
@@ -28,7 +29,7 @@ type clusterCapacityThreshold struct {
 //   - -1 when cluster has no available capacity
 //   - 0 when estimationContext or cluster-wide node limit is not set. Return value of 0 means that there is no limit.
 //   - Any positive number representing maximum possible number of new nodes
-func (l *clusterCapacityThreshold) NodeLimit(_ cloudprovider.NodeGroup, estimationContext EstimationContext) NodeLimitResult {
+func (l *clusterCapacityThreshold) NodeLimit(ctx context.Context, _ cloudprovider.NodeGroup, estimationContext EstimationContext) NodeLimitResult {
 	if estimationContext == nil || estimationContext.ClusterMaxNodeLimit() == 0 {
 		return NodeLimitResult{Limit: 0}
 	}

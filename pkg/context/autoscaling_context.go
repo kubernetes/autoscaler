@@ -96,7 +96,7 @@ type TemplateNodeInfoRegistry interface {
 	// The results are cached until the next Recompute() call.
 	// The getters can be used by logic that happens before the Recompute() call in the main CA loop,
 	// but the caller has to handle no results during the first CA loop.
-	Recompute(autoscalingCtx *AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) errors.AutoscalerError
+	Recompute(ctx context.Context, autoscalingCtx *AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) errors.AutoscalerError
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,

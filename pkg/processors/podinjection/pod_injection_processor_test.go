@@ -17,6 +17,7 @@ limitations under the License.
 package podinjection
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -145,7 +146,7 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 				},
 				ClusterSnapshot: clusterSnapshot,
 			}
-			pods, err := p.Process(&autoscalingCtx, tc.unschedulablePods)
+			pods, err := p.Process(context.TODO(), &autoscalingCtx, tc.unschedulablePods)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, tc.wantPods, pods)
 		})
@@ -308,7 +309,7 @@ func TestGroupPods(t *testing.T) {
 					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
 				},
 			}
-			controllers := listControllers(&autoscalingCtx)
+			controllers := listControllers(context.TODO(), &autoscalingCtx)
 			groupedPods := groupPods(append(tc.scheduledPods, tc.unscheduledPods...), controllers)
 			assert.Equal(t, tc.wantGroupedPods, groupedPods)
 		})

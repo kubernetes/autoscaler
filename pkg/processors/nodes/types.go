@@ -17,6 +17,7 @@ limitations under the License.
 package nodes
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator"
@@ -29,7 +30,7 @@ type ScaleDownNodeProcessor interface {
 	// that would become unscheduled after a scale down.
 	GetPodDestinationCandidates(*ca_context.AutoscalingContext, []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError)
 	// GetScaleDownCandidates returns nodes that potentially could be scaled down.
-	GetScaleDownCandidates(*ca_context.AutoscalingContext, []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError)
+	GetScaleDownCandidates(context.Context, *ca_context.AutoscalingContext, []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError)
 	// CleanUp is called at CA termination
 	CleanUp()
 }
@@ -39,7 +40,7 @@ type ScaleDownSetProcessor interface {
 	// FilterUnremovableNodes divides all candidates into removable nodes and unremovable nodes with reason
 	// Note that len(removableNodes) + len(unremovableNode) should equal len(candidates)
 	// in other words, each candidate should end up in one and only one of the resulting node lists.
-	FilterUnremovableNodes(autoscalingCtx *ca_context.AutoscalingContext, scaleDownCtx *ScaleDownContext, candidates []simulator.NodeToBeRemoved) ([]simulator.NodeToBeRemoved, []simulator.UnremovableNode)
+	FilterUnremovableNodes(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, scaleDownCtx *ScaleDownContext, candidates []simulator.NodeToBeRemoved) ([]simulator.NodeToBeRemoved, []simulator.UnremovableNode)
 	// CleanUp is called at CA termination
 	CleanUp()
 }

@@ -69,7 +69,7 @@ func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fw
 // with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName or status.NominatedNodeName.
 // The provided draSnapshot and csiSnapshot are treated as the source of truth and are eagerly
 // loaded into the created NodeInfo/PodInfo objects.
-func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
+func (s *PredicateSnapshot) SetClusterState(ctx context.Context, nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) error {
 	s.ClusterSnapshotStore.Clear()
 
 	if draSnapshot == nil {
@@ -103,7 +103,7 @@ func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods [
 		nodeNameToIdx[node.Name] = i
 	}
 
-	if err := s.setClusterStatePods(nodeInfos, nodeNameToIdx, scheduledPods); err != nil {
+	if err := s.setClusterStatePods(ctx, nodeInfos, nodeNameToIdx, scheduledPods); err != nil {
 		return err
 	}
 
@@ -119,7 +119,7 @@ func (s *PredicateSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods [
 	return nil
 }
 
-func (s *PredicateSnapshot) setClusterStatePods(nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
+func (s *PredicateSnapshot) setClusterStatePods(ctx context.Context, nodeInfos []*framework.NodeInfo, nodeNameToIdx map[string]int, scheduledPods []*apiv1.Pod) error {
 	loggingQuota := klogx.PodsLoggingQuota()
 	podInfosForNode := make([][]*framework.PodInfo, len(nodeInfos))
 	for _, pod := range scheduledPods {
@@ -147,7 +147,7 @@ func (s *PredicateSnapshot) setClusterStatePods(nodeInfos []*framework.NodeInfo,
 	}
 
 	klogx.V(1).Over(loggingQuota).Warningf("Other %d pods were bound to or nominated non-existing node", -loggingQuota.Left())
-	ctx := context.Background()
+
 	workqueue.ParallelizeUntil(ctx, s.parallelism, len(nodeInfos), func(nodeIdx int) {
 		nodeInfo := nodeInfos[nodeIdx]
 		for _, pi := range podInfosForNode[nodeIdx] {
@@ -233,13 +233,13 @@ func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
 
 // RemoveNodeInfo removes a NodeInfo matching the provided nodeName from the snapshot.
 // The DRA slices and CSI data are removed from the underlying draSnapshot and csiSnapshot.
-func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
+func (s *PredicateSnapshot) RemoveNodeInfo(ctx context.Context, nodeName string) error {
 	nodeInfo, err := s.GetNodeInfo(nodeName)
 	if err != nil {
 		return err
 	}
 
-	if err := s.ClusterSnapshotStore.RemoveNodeInfo(nodeName); err != nil {
+	if err := s.ClusterSnapshotStore.RemoveNodeInfo(ctx, nodeName); err != nil {
 		return err
 	}
 
@@ -247,7 +247,7 @@ func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
 		s.draSnapshot.RemoveNodeResourceSlices(nodeName)
 
 		for _, pod := range nodeInfo.Pods() {
-			s.draSnapshot.RemovePodOwnedClaims(pod.Pod)
+			s.draSnapshot.RemovePodOwnedClaims(ctx, pod.Pod)
 		}
 	}
 	if s.enableCSINodeAwareScheduling {

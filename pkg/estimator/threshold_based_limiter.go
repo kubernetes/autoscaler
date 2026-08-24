@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	gocontext "context"
 	"fmt"
 	"strings"
 	"time"
@@ -34,14 +35,14 @@ type thresholdBasedEstimationLimiter struct {
 	debugStrings []string
 }
 
-func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []PodEquivalenceGroup, nodeGroup cloudprovider.NodeGroup, context EstimationContext) {
+func (tbel *thresholdBasedEstimationLimiter) StartEstimation(ctx gocontext.Context, _ []PodEquivalenceGroup, nodeGroup cloudprovider.NodeGroup, context EstimationContext) {
 	tbel.start = time.Now()
 	tbel.nodes = 0
 	tbel.maxNodes = 0
 	tbel.maxDuration = time.Duration(0)
 	tbel.debugStrings = make([]string, 0)
 	for _, threshold := range tbel.thresholds {
-		nodeLimitResult := threshold.NodeLimit(nodeGroup, context)
+		nodeLimitResult := threshold.NodeLimit(ctx, nodeGroup, context)
 		tbel.maxNodes = getMinLimit(tbel.maxNodes, nodeLimitResult.Limit)
 		if nodeLimitResult.Reason != "" {
 			tbel.debugStrings = append(tbel.debugStrings, fmt.Sprintf("%T(Node Limit): %s", threshold, nodeLimitResult.Reason))
@@ -66,14 +67,15 @@ func getMinLimit[V int | time.Duration](baseLimit V, targetLimit V) V {
 
 func (*thresholdBasedEstimationLimiter) EndEstimation() {}
 
-func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode() bool {
+func (tbel *thresholdBasedEstimationLimiter) PermissionToAddNode(ctx gocontext.Context) bool {
+	logger := klog.FromContext(ctx)
 	if tbel.maxNodes < 0 || (tbel.maxNodes > 0 && tbel.nodes >= tbel.maxNodes) {
-		klog.V(4).Infof("Capping binpacking after exceeding threshold of %d nodes. Debug: %s", tbel.maxNodes, strings.Join(tbel.debugStrings, ","))
+		logger.V(4).Info("Capping binpacking after exceeding threshold number of nodes", "maxNodes", tbel.maxNodes, "debugInfo", strings.Join(tbel.debugStrings, ","))
 		return false
 	}
 	timeDefined := tbel.maxDuration > 0 && tbel.start != time.Time{}
 	if tbel.maxDuration < 0 || (timeDefined && time.Now().After(tbel.start.Add(tbel.maxDuration))) {
-		klog.V(4).Infof("Capping binpacking after exceeding max duration of %v. Debug: %s", tbel.maxDuration, strings.Join(tbel.debugStrings, ","))
+		logger.V(4).Info("Capping binpacking after exceeding max duration", "maxDuration", tbel.maxDuration, "debugInfo", strings.Join(tbel.debugStrings, ","))
 		return false
 	}
 	tbel.nodes++

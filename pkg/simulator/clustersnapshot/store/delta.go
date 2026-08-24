@@ -17,6 +17,7 @@ limitations under the License.
 package store
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -474,7 +475,7 @@ func NewDeltaSnapshotStore() *DeltaSnapshotStore {
 }
 
 // RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *DeltaSnapshotStore) RemoveNodeInfo(nodeName string) error {
+func (snapshot *DeltaSnapshotStore) RemoveNodeInfo(ctx context.Context, nodeName string) error {
 	return snapshot.data.removeNodeInfo(nodeName)
 }
 

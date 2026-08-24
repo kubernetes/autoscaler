@@ -383,7 +383,7 @@ func (c *bufferController) reconcileNamespace(namespace string) error {
 
 	// Filter the desired provisioning strategy
 	// Note: We process ALL buffers in the namespace that match the strategy.
-	filteredBuffers, filteredOutBuffers := c.strategyFilter.Filter(buffers)
+	filteredBuffers, filteredOutBuffers := c.strategyFilter.Filter(context.TODO(), buffers)
 
 	// Update reconciliation time for filtered out buffers
 	c.updateReconciliationTimeCache(filteredOutBuffers)

@@ -17,6 +17,7 @@ limitations under the License.
 package binpacking
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -57,10 +58,11 @@ func (b *TimeLimiter) MarkProcessed(autoscalingCtx *ca_context.AutoscalingContex
 }
 
 // StopBinpacking returns true if the binpacking time exceeds maxBinpackingDuration.
-func (b *TimeLimiter) StopBinpacking(autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
+func (b *TimeLimiter) StopBinpacking(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
+	logger := klog.FromContext(ctx)
 	now := b.now()
 	if now.After(b.startTime.Add(b.maxBinpackingDuration)) {
-		klog.Infof("Binpacking is cut short after %v seconds due to exceeding maxBinpackingDuration", now.Sub(b.startTime).Seconds())
+		logger.Info("Binpacking is cut short due to exceeding maxBinpackingDuration", "duration", now.Sub(b.startTime), "maxDuration", b.maxBinpackingDuration)
 		return true
 	}
 	return false

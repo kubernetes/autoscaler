@@ -17,6 +17,7 @@ limitations under the License.
 package simulator
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 
@@ -37,20 +38,20 @@ import (
 
 type nodeGroupTemplateNodeInfoGetter interface {
 	Id() string
-	TemplateNodeInfo() (*framework.NodeInfo, error)
+	TemplateNodeInfo(context.Context) (*framework.NodeInfo, error)
 }
 
 // SanitizedTemplateNodeInfoFromNodeGroup returns a template NodeInfo object based on NodeGroup.TemplateNodeInfo(). The template is sanitized, and only
 // contains the pods that should appear on a new Node from the same node group (e.g. DaemonSet pods).
-func SanitizedTemplateNodeInfoFromNodeGroup(nodeGroup nodeGroupTemplateNodeInfoGetter, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig) (*framework.NodeInfo, errors.AutoscalerError) {
+func SanitizedTemplateNodeInfoFromNodeGroup(ctx context.Context, nodeGroup nodeGroupTemplateNodeInfoGetter, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig) (*framework.NodeInfo, errors.AutoscalerError) {
 	// TODO(DRA): Figure out how to handle TemplateNodeInfo() returning DaemonSet Pods using DRA. Currently, things only work correctly if such pods are
 	// already allocated by TemplateNodeInfo(). It might be better for TemplateNodeInfo() to return unallocated claims, and to run scheduler predicates and
 	// compute the allocations here.
-	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
+	baseNodeInfo, err := nodeGroup.TemplateNodeInfo(ctx)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to obtain template NodeInfo from node group %q: ", nodeGroup.Id())
 	}
-	sanitizedNodeInfo, aErr := SanitizedTemplateNodeInfoFromNodeInfo(baseNodeInfo, nodeGroup.Id(), daemonsets, true, taintConfig)
+	sanitizedNodeInfo, aErr := SanitizedTemplateNodeInfoFromNodeInfo(ctx, baseNodeInfo, nodeGroup.Id(), daemonsets, true, taintConfig)
 	if aErr != nil {
 		return nil, aErr
 	}
@@ -60,13 +61,13 @@ func SanitizedTemplateNodeInfoFromNodeGroup(nodeGroup nodeGroupTemplateNodeInfoG
 
 // SanitizedTemplateNodeInfoFromNodeInfo returns a template NodeInfo object based on a real example NodeInfo from the cluster. The template is sanitized, and only
 // contains the pods that should appear on a new Node from the same node group (e.g. DaemonSet pods).
-func SanitizedTemplateNodeInfoFromNodeInfo(example *framework.NodeInfo, nodeGroupId string, daemonsets []*appsv1.DaemonSet, forceDaemonSets bool, taintConfig taints.TaintConfig) (*framework.NodeInfo, errors.AutoscalerError) {
+func SanitizedTemplateNodeInfoFromNodeInfo(ctx context.Context, example *framework.NodeInfo, nodeGroupId string, daemonsets []*appsv1.DaemonSet, forceDaemonSets bool, taintConfig taints.TaintConfig) (*framework.NodeInfo, errors.AutoscalerError) {
 	randSuffix := fmt.Sprintf("%d", rand.Int63())
 	newNodeNameBase := fmt.Sprintf("template-node-for-%s", nodeGroupId)
 
 	// We need to sanitize the example before determining the DS pods, since taints are checked there, and
 	// we might need to filter some out during sanitization.
-	sanitizedExample, err := createSanitizedNodeInfo(example, newNodeNameBase, randSuffix, &taintConfig)
+	sanitizedExample, err := createSanitizedNodeInfo(ctx, example, newNodeNameBase, randSuffix, &taintConfig)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
@@ -90,14 +91,14 @@ func SanitizedTemplateNodeInfoFromNodeInfo(example *framework.NodeInfo, nodeGrou
 
 // SanitizedNodeInfo duplicates the provided template NodeInfo, returning a fresh NodeInfo that can be injected into the cluster snapshot.
 // The NodeInfo is sanitized (names, UIDs are changed, etc.), so that it can be injected along other copies created from the same template.
-func SanitizedNodeInfo(template *framework.NodeInfo, suffix string) (*framework.NodeInfo, error) {
+func SanitizedNodeInfo(ctx context.Context, template *framework.NodeInfo, suffix string) (*framework.NodeInfo, error) {
 	// Template node infos should already have taints and pods filtered, so not setting these parameters.
-	return createSanitizedNodeInfo(template, template.Node().Name, suffix, nil)
+	return createSanitizedNodeInfo(ctx, template, template.Node().Name, suffix, nil)
 }
 
-func createSanitizedNodeInfo(nodeInfo *framework.NodeInfo, newNodeNameBase string, namesSuffix string, taintConfig *taints.TaintConfig) (*framework.NodeInfo, error) {
+func createSanitizedNodeInfo(ctx context.Context, nodeInfo *framework.NodeInfo, newNodeNameBase string, namesSuffix string, taintConfig *taints.TaintConfig) (*framework.NodeInfo, error) {
 	freshNodeName := fmt.Sprintf("%s-%s", newNodeNameBase, namesSuffix)
-	freshNode := createSanitizedNode(nodeInfo.Node(), freshNodeName, taintConfig)
+	freshNode := createSanitizedNode(ctx, nodeInfo.Node(), freshNodeName, taintConfig)
 	freshResourceSlices, oldPoolNames, err := drautils.SanitizedNodeResourceSlices(nodeInfo.LocalResourceSlices, freshNode.Name, namesSuffix)
 	if err != nil {
 		return nil, err
@@ -119,7 +120,7 @@ func createSanitizedNodeInfo(nodeInfo *framework.NodeInfo, newNodeNameBase strin
 	return result, nil
 }
 
-func createSanitizedNode(node *apiv1.Node, newName string, taintConfig *taints.TaintConfig) *apiv1.Node {
+func createSanitizedNode(ctx context.Context, node *apiv1.Node, newName string, taintConfig *taints.TaintConfig) *apiv1.Node {
 	newNode := node.DeepCopy()
 	newNode.UID = uuid.NewUUID()
 
@@ -136,7 +137,7 @@ func createSanitizedNode(node *apiv1.Node, newName string, taintConfig *taints.T
 	}
 
 	if taintConfig != nil {
-		newNode.Spec.Taints = taints.SanitizeTaints(newNode.Spec.Taints, *taintConfig)
+		newNode.Spec.Taints = taints.SanitizeTaints(ctx, newNode.Spec.Taints, *taintConfig)
 	}
 	return newNode
 }

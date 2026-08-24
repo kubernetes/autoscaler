@@ -17,6 +17,8 @@ limitations under the License.
 package utils
 
 import (
+	"context"
+
 	apiv1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	klog "k8s.io/klog/v2"
@@ -25,12 +27,13 @@ import (
 )
 
 // GetNodeGroupSizeMap return a map of node group id and its target size
-func GetNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]int {
+func GetNodeGroupSizeMap(ctx context.Context, cloudProvider cloudprovider.CloudProvider) map[string]int {
+	logger := klog.FromContext(ctx)
 	nodeGroupSize := make(map[string]int)
-	for _, nodeGroup := range cloudProvider.NodeGroups() {
-		size, err := nodeGroup.TargetSize()
+	for _, nodeGroup := range cloudProvider.NodeGroups(ctx) {
+		size, err := nodeGroup.TargetSize(ctx)
 		if err != nil {
-			klog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
+			logger.Error(err, "Error while checking node group size", "nodeGroupId", nodeGroup.Id())
 			continue
 		}
 		nodeGroupSize[nodeGroup.Id()] = size

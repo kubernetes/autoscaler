@@ -17,6 +17,7 @@ limitations under the License.
 package random
 
 import (
+	"context"
 	"math/rand"
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
@@ -37,8 +38,8 @@ func NewStrategy() expander.Strategy {
 }
 
 // BestOptions selects from the expansion options at random
-func (r *random) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
-	best := r.BestOption(expansionOptions, nodeInfo)
+func (r *random) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
+	best := r.BestOption(ctx, expansionOptions, nodeInfo)
 	if best == nil {
 		return nil
 	}
@@ -46,7 +47,7 @@ func (r *random) BestOptions(expansionOptions []expander.Option, nodeInfo map[st
 }
 
 // BestOption selects from the expansion options at random
-func (r *random) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
+func (r *random) BestOption(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
 	if len(expansionOptions) <= 0 {
 		return nil
 	}

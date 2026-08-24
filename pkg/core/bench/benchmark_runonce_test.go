@@ -289,8 +289,8 @@ type fastScaleUpNodeGroup struct {
 	*testprovider.NodeGroup
 }
 
-func (f *fastScaleUpNodeGroup) IncreaseSize(delta int) error {
-	return f.DecreaseTargetSize(-delta)
+func (f *fastScaleUpNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
+	return f.DecreaseTargetSize(ctx, -delta)
 }
 
 // fastScaleUpCloudProvider is a wrapper around the fake cloud provider that uses
@@ -299,8 +299,8 @@ type fastScaleUpCloudProvider struct {
 	*testprovider.CloudProvider
 }
 
-func (f *fastScaleUpCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	groups := f.CloudProvider.NodeGroups()
+func (f *fastScaleUpCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
+	groups := f.CloudProvider.NodeGroups(ctx)
 	result := make([]cloudprovider.NodeGroup, len(groups))
 	for i, g := range groups {
 		ng := g.(*testprovider.NodeGroup)
@@ -701,7 +701,7 @@ func verifyTargetSize(expectedTargetSize int) func(*integration.FakeSet) error {
 		if ng == nil {
 			return fmt.Errorf("nodegroup %s not found", ngName)
 		}
-		targetSize, err := ng.TargetSize()
+		targetSize, err := ng.TargetSize(context.TODO())
 		if err != nil {
 			return err
 		}

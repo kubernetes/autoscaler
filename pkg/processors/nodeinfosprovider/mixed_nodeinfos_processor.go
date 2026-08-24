@@ -17,6 +17,7 @@ limitations under the License.
 package nodeinfosprovider
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -71,9 +72,10 @@ func (p *MixedTemplateNodeInfoProvider) CleanUp() {
 }
 
 // Process returns the nodeInfos set for this cluster
-func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, now time.Time) (map[string]*framework.NodeInfo, caerror.AutoscalerError) {
+func (p *MixedTemplateNodeInfoProvider) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, now time.Time) (map[string]*framework.NodeInfo, caerror.AutoscalerError) {
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 	// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
+	logger := klog.FromContext(ctx)
 	result := make(map[string]*framework.NodeInfo)
 	seenGroups := make(map[string]bool)
 
@@ -91,9 +93,9 @@ func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.Autos
 
 	// processNode returns information whether the nodeTemplate was generated and if there was an error.
 	processNode := func(node *apiv1.Node) (bool, string, caerror.AutoscalerError) {
-		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
-			klog.Warningf("Failed to find node group for %s: %v", node.Name, err)
+			logger.Info("Failed to find node group for node", "node", klog.KObj(node), "err", err)
 			return false, "", nil
 		}
 		if nodeGroup == nil {
@@ -105,7 +107,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.Autos
 			if err != nil {
 				return false, "", caerror.NewAutoscalerErrorf(caerror.InternalError, "error while retrieving node %s from cluster snapshot - this shouldn't happen: %v", node.Name, err)
 			}
-			templateNodeInfo, caErr := simulator.SanitizedTemplateNodeInfoFromNodeInfo(nodeInfo, id, daemonsets, p.forceDaemonSets, taintConfig)
+			templateNodeInfo, caErr := simulator.SanitizedTemplateNodeInfoFromNodeInfo(ctx, nodeInfo, id, daemonsets, p.forceDaemonSets, taintConfig)
 			if caErr != nil {
 				return false, "", caErr
 			}
@@ -125,7 +127,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.Autos
 			p.nodeInfoCache[id] = cacheItem{NodeInfo: nodeInfoCopy, added: now}
 		}
 	}
-	for _, nodeGroup := range autoscalingCtx.CloudProvider.NodeGroups() {
+	for _, nodeGroup := range autoscalingCtx.CloudProvider.NodeGroups(ctx) {
 		id := nodeGroup.Id()
 		seenGroups[id] = true
 		if _, found := result[id]; found {
@@ -146,10 +148,10 @@ func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.Autos
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		nodeInfo, err := simulator.SanitizedTemplateNodeInfoFromNodeGroup(nodeGroup, daemonsets, taintConfig)
+		nodeInfo, err := simulator.SanitizedTemplateNodeInfoFromNodeGroup(ctx, nodeGroup, daemonsets, taintConfig)
 		if err != nil {
 			if !errors.Is(err, cloudprovider.ErrNotImplemented) {
-				klog.Errorf("Unable to build proper template node for %s: %v", id, err)
+				logger.Error(err, "Unable to build proper template node for node group", "nodeGroupId", id)
 			}
 			continue
 		}
@@ -170,12 +172,12 @@ func (p *MixedTemplateNodeInfoProvider) Process(autoscalingCtx *ca_context.Autos
 			return map[string]*framework.NodeInfo{}, typedErr
 		}
 		if added {
-			nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(node)
+			nodeGroup, err := autoscalingCtx.CloudProvider.NodeGroupForNode(ctx, node)
 			if nodeGroup == nil || err != nil {
-				klog.Warningf("Failed to find node group for %s: %v", node.Name, err)
+				logger.Info("Failed to find node group for node", "node", klog.KObj(node), "err", err)
 				continue
 			}
-			klog.Warningf("Built template for %s based on unready/unschedulable node %s", nodeGroup.Id(), node.Name)
+			logger.Info("Built template based on unready/unschedulable node", "nodeGroupId", nodeGroup.Id(), "node", klog.KObj(node))
 		}
 	}
 

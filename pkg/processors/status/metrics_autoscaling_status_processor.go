@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"time"
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate"
@@ -39,13 +40,13 @@ type MetricsAutoscalingStatusProcessor struct {
 }
 
 // Process queries the health status and backoff situation of all node groups and updates metrics after each autoscaling iteration.
-func (p *MetricsAutoscalingStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error {
-	for _, nodeGroup := range autoscalingCtx.CloudProvider.NodeGroups() {
-		if !nodeGroup.Exist() {
+func (p *MetricsAutoscalingStatusProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error {
+	for _, nodeGroup := range autoscalingCtx.CloudProvider.NodeGroups(ctx) {
+		if !nodeGroup.Exist(ctx) {
 			continue
 		}
-		metrics.UpdateNodeGroupHealthStatus(nodeGroup.Id(), csr.IsNodeGroupHealthy(nodeGroup.Id()))
-		backoffStatus := csr.BackoffStatusForNodeGroup(nodeGroup, now)
+		metrics.UpdateNodeGroupHealthStatus(nodeGroup.Id(), csr.IsNodeGroupHealthy(ctx, nodeGroup.Id()))
+		backoffStatus := csr.BackoffStatusForNodeGroup(ctx, nodeGroup, now)
 		p.updateNodeGroupBackoffStatusMetrics(nodeGroup.Id(), backoffStatus)
 	}
 	return nil

@@ -17,6 +17,7 @@ limitations under the License.
 package nodeinfosprovider
 
 import (
+	"context"
 	"maps"
 	"sync"
 	"time"
@@ -48,8 +49,8 @@ func NewTemplateNodeInfoRegistry(provider TemplateNodeInfoProvider) *TemplateNod
 }
 
 // Recompute calls the embedded provider to update the cached node infos.
-func (r *TemplateNodeInfoRegistry) Recompute(autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) errors.AutoscalerError {
-	nodeInfos, err := r.provider.Process(autoscalingCtx, nodes, daemonsets, taintConfig, currentTime)
+func (r *TemplateNodeInfoRegistry) Recompute(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, currentTime time.Time) errors.AutoscalerError {
+	nodeInfos, err := r.provider.Process(ctx, autoscalingCtx, nodes, daemonsets, taintConfig, currentTime)
 	if err != nil {
 		return err
 	}

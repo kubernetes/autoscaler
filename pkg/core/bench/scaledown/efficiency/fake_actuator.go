@@ -75,7 +75,7 @@ func (f *fakeActuator) startDeletion(empty, needDrain []*apiv1.Node) (status.Sca
 
 	var scaledDownNodes []*status.ScaleDownNode
 	for _, node := range empty {
-		err := f.autoscalingCtx.ClusterSnapshot.RemoveNodeInfo(node.Name)
+		err := f.autoscalingCtx.ClusterSnapshot.RemoveNodeInfo(context.TODO(), node.Name)
 		if err != nil {
 			return status.ScaleDownError, nil, nil
 		}
@@ -99,7 +99,7 @@ func (f *fakeActuator) startDeletion(empty, needDrain []*apiv1.Node) (status.Sca
 			podsToReschedule = append(podsToReschedule, podInfo.Pod)
 		}
 
-		err = f.autoscalingCtx.ClusterSnapshot.RemoveNodeInfo(n.Name)
+		err = f.autoscalingCtx.ClusterSnapshot.RemoveNodeInfo(context.TODO(), n.Name)
 		if err != nil {
 			return status.ScaleDownError, nil, caerrors.ToAutoscalerError(caerrors.TransientError, err)
 		}

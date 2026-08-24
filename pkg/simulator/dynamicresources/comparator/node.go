@@ -17,6 +17,7 @@ limitations under the License.
 package comparator
 
 import (
+	"context"
 	"slices"
 
 	resourceapi "k8s.io/api/resource/v1"
@@ -108,14 +109,17 @@ func (c *NodeResourcesComparator) reset() {
 // Function assumes that nodeNames, templateSlices, and nodeSlices have the same length,
 // and aborts execution if they don't.
 func (c *NodeResourcesComparator) ReportResourceDiscrepancies(
+	ctx context.Context,
 	nodeNames []string,
 	templateSlices [][]*resourceapi.ResourceSlice,
 	nodeSlices [][]*resourceapi.ResourceSlice,
 ) {
+	logger := klog.FromContext(ctx)
 	c.reset()
 
 	if len(nodeNames) != len(templateSlices) || len(nodeNames) != len(nodeSlices) {
-		klog.Errorf("NodeResourcesComparator: nodeNames, templateSlices, and nodeSlices must have the same length")
+		logger.Error(nil, "NodeResourcesComparator: nodeNames, templateSlices, and nodeSlices must have the same length")
+
 		return
 	}
 

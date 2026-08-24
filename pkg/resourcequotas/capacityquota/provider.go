@@ -41,21 +41,22 @@ func NewCapacityQuotasProvider(kubeClient client.Client) *Provider {
 }
 
 // Quotas returns quotas built from CapacityQuota resources in the cluster.
-func (p *Provider) Quotas() ([]resourcequotas.Quota, error) {
+func (p *Provider) Quotas(ctx context.Context) ([]resourcequotas.Quota, error) {
+	logger := klog.FromContext(ctx)
 	capacityQuotas := &cqv1beta1.CapacityQuotaList{}
-	err := p.kubeClient.List(context.TODO(), capacityQuotas)
+	err := p.kubeClient.List(ctx, capacityQuotas)
 	if err != nil {
 		return nil, err
 	}
 	var quotas []resourcequotas.Quota
 	for _, cq := range capacityQuotas.Items {
 		if !meta.IsStatusConditionTrue(cq.Status.Conditions, ValidCondition) {
-			klog.V(5).Infof("CapacityQuota %q is not valid, skipping", cq.Name)
+			logger.V(5).Info("CapacityQuota is not valid, skipping", "capacityQuotaName", cq.Name)
 			continue
 		}
 		quota, err := newFromCapacityQuota(cq)
 		if err != nil {
-			klog.Errorf("Skipping CapacityQuota %q, err: %v", cq.Name, err)
+			logger.Error(err, "Skipping CapacityQuota", "capacityQuotaName", cq.Name)
 			continue
 		}
 		quotas = append(quotas, quota)

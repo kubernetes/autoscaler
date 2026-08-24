@@ -17,6 +17,8 @@ limitations under the License.
 package rules
 
 import (
+	"context"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaledown/pdb"
@@ -84,7 +86,8 @@ type Rules []Rule
 
 // Drainable determines whether a given pod is drainable according to the
 // specified set of rules.
-func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, nodeInfo *framework.NodeInfo) drainability.Status {
+func (rs Rules) Drainable(ctx context.Context, drainCtx *drainability.DrainContext, pod *apiv1.Pod, nodeInfo *framework.NodeInfo) drainability.Status {
+	logger := klog.FromContext(ctx)
 	if drainCtx == nil {
 		drainCtx = &drainability.DrainContext{}
 	}
@@ -103,7 +106,7 @@ func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, n
 		for _, candidate := range candidates {
 			for _, override := range candidate.status.Overrides {
 				if status.Outcome == override {
-					klog.V(5).Infof("Overriding pod %s/%s drainability rule %s with rule %s, outcome %v", pod.GetNamespace(), pod.GetName(), r.Name(), candidate.name, candidate.status.Outcome)
+					logger.V(5).Info("Overriding pod drainability rule", "pod", klog.KObj(pod), "overriddenRule", r.Name(), "overridingRule", candidate.name, "outcome", candidate.status.Outcome)
 					return candidate.status
 				}
 			}

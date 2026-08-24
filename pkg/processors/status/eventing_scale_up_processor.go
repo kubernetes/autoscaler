@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -35,17 +36,18 @@ type EventingScaleUpStatusProcessor struct{}
 
 // Process processes the state of the cluster after a scale-up by emitting
 // relevant events for pods depending on their post scale-up status.
-func (p *EventingScaleUpStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus) {
+func (p *EventingScaleUpStatusProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus) {
+	logger := klog.FromContext(ctx)
 	consideredNodeGroupsMap := cloudprovider.NodeGroupListToMapById(status.ConsideredNodeGroups)
 	if status.Result != ScaleUpSuccessful && status.Result != ScaleUpError {
 		for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
 			autoscalingCtx.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
 				fmt.Sprintf("pod didn't trigger scale-up: %s",
-					ReasonsMessage(status.Result, noScaleUpInfo, consideredNodeGroupsMap)))
+					ReasonsMessage(ctx, status.Result, noScaleUpInfo, consideredNodeGroupsMap)))
 		}
 	} else {
-		klog.V(4).Infof("Skipping event processing for unschedulable pods since there is a" +
-			" ScaleUp attempt this loop")
+		logger.V(4).Info("Skipping event processing for unschedulable pods since there is a scaleup attempt this loop")
+
 	}
 	if len(status.ScaleUpInfos) > 0 {
 		for _, pod := range status.PodsTriggeredScaleUp {
@@ -60,7 +62,7 @@ func (p *EventingScaleUpStatusProcessor) CleanUp() {
 }
 
 // ReasonsMessage aggregates reasons from NoScaleUpInfos.
-func ReasonsMessage(scaleUpStatus ScaleUpResult, noScaleUpInfo NoScaleUpInfo, consideredNodeGroups map[string]cloudprovider.NodeGroup) string {
+func ReasonsMessage(ctx context.Context, scaleUpStatus ScaleUpResult, noScaleUpInfo NoScaleUpInfo, consideredNodeGroups map[string]cloudprovider.NodeGroup) string {
 	if scaleUpStatus == ScaleUpLimitedByMaxNodesTotal {
 		return "max total nodes in cluster reached"
 	}
@@ -68,7 +70,7 @@ func ReasonsMessage(scaleUpStatus ScaleUpResult, noScaleUpInfo NoScaleUpInfo, co
 	messages := []string{}
 	aggregated := map[string]int{}
 	for nodeGroupId, reasons := range noScaleUpInfo.RejectedNodeGroups {
-		if nodeGroup, present := consideredNodeGroups[nodeGroupId]; !present || !nodeGroup.Exist() {
+		if nodeGroup, present := consideredNodeGroups[nodeGroupId]; !present || !nodeGroup.Exist(ctx) {
 			continue
 		}
 
@@ -78,7 +80,7 @@ func ReasonsMessage(scaleUpStatus ScaleUpResult, noScaleUpInfo NoScaleUpInfo, co
 	}
 
 	for nodeGroupId, reasons := range noScaleUpInfo.SkippedNodeGroups {
-		if nodeGroup, present := consideredNodeGroups[nodeGroupId]; !present || !nodeGroup.Exist() {
+		if nodeGroup, present := consideredNodeGroups[nodeGroupId]; !present || !nodeGroup.Exist(ctx) {
 			continue
 		}
 

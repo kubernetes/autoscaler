@@ -17,6 +17,7 @@ limitations under the License.
 package customresources
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
@@ -44,20 +45,20 @@ func NewDefaultCustomResourcesProcessor(draEnabled bool, csiEnabled bool) Custom
 }
 
 // FilterOutNodesWithUnreadyResources calls the corresponding method for internal custom resources processors in order.
-func (p *DefaultCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
+func (p *DefaultCustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, allNodes, readyNodes []*apiv1.Node, draSnapshot *drasnapshot.Snapshot, csiSnapshot *csisnapshot.Snapshot) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := allNodes
 	newReadyNodes := readyNodes
 	for _, processor := range p.customResourcesProcessors {
-		newAllNodes, newReadyNodes = processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, newAllNodes, newReadyNodes, draSnapshot, csiSnapshot)
+		newAllNodes, newReadyNodes = processor.FilterOutNodesWithUnreadyResources(ctx, autoscalingCtx, newAllNodes, newReadyNodes, draSnapshot, csiSnapshot)
 	}
 	return newAllNodes, newReadyNodes
 }
 
 // GetNodeResourceTargets calls the corresponding method for internal custom resources processors in order.
-func (p *DefaultCustomResourcesProcessor) GetNodeResourceTargets(autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
+func (p *DefaultCustomResourcesProcessor) GetNodeResourceTargets(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) ([]CustomResourceTarget, errors.AutoscalerError) {
 	customResourcesTargets := []CustomResourceTarget{}
 	for _, processor := range p.customResourcesProcessors {
-		targets, err := processor.GetNodeResourceTargets(autoscalingCtx, node, nodeGroup)
+		targets, err := processor.GetNodeResourceTargets(ctx, autoscalingCtx, node, nodeGroup)
 		if err != nil {
 			return nil, err
 		}

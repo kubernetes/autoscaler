@@ -17,6 +17,8 @@ limitations under the License.
 package capacitybufferpodlister
 
 import (
+	"context"
+	gocontext "context"
 	"strings"
 	"testing"
 
@@ -29,7 +31,6 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/fakepods"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
-	"sigs.k8s.io/cluster-autoscaler/pkg/context"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodegroupset"
 	"sigs.k8s.io/cluster-autoscaler/pkg/processors/status"
@@ -85,7 +86,7 @@ func TestProcess(t *testing.T) {
 			autoscalingCtx := &ca_context.AutoscalingContext{}
 
 			p := NewFakePodsScaleUpStatusProcessor(fakepods.NewRegistry(nil))
-			p.Process(autoscalingCtx, scaleUpStatus)
+			p.Process(context.TODO(), autoscalingCtx, scaleUpStatus)
 
 			assert.ElementsMatch(t, tc.expectedPodsRemainUnschedulable, extractPodsFromNoScaleUpInfo(scaleUpStatus.PodsRemainUnschedulable))
 			assert.ElementsMatch(t, tc.expectedPodsAwaitEvaluation, scaleUpStatus.PodsAwaitEvaluation)
@@ -102,13 +103,13 @@ func TestBuffersEvent(t *testing.T) {
 		Group:       nodeGroup1,
 		CurrentSize: 5,
 		NewSize:     6,
-		MaxSize:     nodeGroup1.MaxSize(),
+		MaxSize:     nodeGroup1.MaxSize(context.TODO()),
 	}
 	scaleUpInfo2 := nodegroupset.ScaleUpInfo{
 		Group:       nodeGroup2,
 		CurrentSize: 8,
 		NewSize:     9,
-		MaxSize:     nodeGroup1.MaxSize(),
+		MaxSize:     nodeGroup1.MaxSize(context.TODO()),
 	}
 	buffer1 := &v1beta1.CapacityBuffer{
 		ObjectMeta: metav1.ObjectMeta{
@@ -282,13 +283,13 @@ func TestBuffersEvent(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			fakeRecorder := kube_record.NewFakeRecorder(5)
-			ctx := &context.AutoscalingContext{
-				AutoscalingKubeClients: context.AutoscalingKubeClients{
+			ctx := &ca_context.AutoscalingContext{
+				AutoscalingKubeClients: ca_context.AutoscalingKubeClients{
 					Recorder: fakeRecorder,
 				},
 			}
 			p := NewFakePodsScaleUpStatusProcessor(tc.buffersRegistry)
-			p.Process(ctx, tc.state)
+			p.Process(gocontext.TODO(), ctx, tc.state)
 
 			triggeredScaleUp := 0
 			notTriggerScaleUp := 0

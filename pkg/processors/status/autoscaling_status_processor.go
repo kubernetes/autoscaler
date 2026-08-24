@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"time"
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate"
@@ -26,7 +27,7 @@ import (
 // AutoscalingStatusProcessor processes the status of the cluster after each autoscaling iteration.
 // It's triggered at the end of Autoscaler's RunOnce method.
 type AutoscalingStatusProcessor interface {
-	Process(autoscalingCtx *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error
+	Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error
 	CleanUp()
 }
 
@@ -41,7 +42,7 @@ func NewDefaultAutoscalingStatusProcessor() AutoscalingStatusProcessor {
 type NoOpAutoscalingStatusProcessor struct{}
 
 // Process processes the status of the cluster after an autoscaling iteration.
-func (p *NoOpAutoscalingStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error {
+func (p *NoOpAutoscalingStatusProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, now time.Time) error {
 	return nil
 }
 
