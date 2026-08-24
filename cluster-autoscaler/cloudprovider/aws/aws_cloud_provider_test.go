@@ -838,17 +838,6 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 		// only setting 2 instances to be terminated out of 3 active instances
 		if i < 2 {
 			nodes = append(nodes, node)
-			a.On("TerminateInstanceInAutoScalingGroup",
-				mock.Anything,
-				&autoscaling.TerminateInstanceInAutoScalingGroupInput{
-					InstanceId:                     aws.String(fmt.Sprintf("i-000%d", i)),
-					ShouldDecrementDesiredCapacity: aws.Bool(true),
-				},
-			).Return(
-				&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
-					Activity: &autoscalingtypes.Activity{Description: aws.String("Deleted instance")},
-				}, nil,
-			)
 		}
 		awsInstanceRef := AwsInstanceRef{
 			ProviderID: providerId,
@@ -857,6 +846,14 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 		awsInstanceRefs = append(awsInstanceRefs, awsInstanceRef)
 		instanceToAsg[awsInstanceRef] = commonAsg
 	}
+	a.On("TerminateInstanceInAutoScalingGroup",
+		mock.Anything,
+		&autoscaling.TerminateInstanceInAutoScalingGroupInput{
+			AutoScalingGroupName:           aws.String("test-asg"),
+			InstanceIds:                    []string{"i-0000", "i-0001"},
+			ShouldDecrementDesiredCapacity: aws.Bool(true),
+		},
+	).Return(&autoscaling.TerminateInstanceInAutoScalingGroupOutput{}, nil)
 
 	// modifying provider to bring disparity between ASG and cache
 	provider.awsManager.asgCache.asgToInstances[AwsRef{Name: "test-asg"}] = awsInstanceRefs
@@ -869,6 +866,6 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
 
 	// This ensures only 2 instances are terminated which are mocked in this unit test
-	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 2)
+	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 1)
 
 }
