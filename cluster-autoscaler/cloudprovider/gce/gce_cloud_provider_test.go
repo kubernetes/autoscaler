@@ -182,6 +182,20 @@ func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
 	gceManagerMock.AssertNotCalled(t, "GetMigForInstance", mock.Anything)
 }
 
+func TestNodeGroupForNodeWithUnrecognizedProviderId(t *testing.T) {
+	gceManagerMock := &gceManagerMock{}
+	gce := &GceCloudProvider{
+		gceManager: gceManagerMock,
+	}
+	n := BuildTestNode("n1", 1000, 1000)
+	n.Spec.ProviderID = "aws://project/zone/name"
+
+	nodeGroup, err := gce.NodeGroupForNode(n)
+	assert.NoError(t, err)
+	assert.Nil(t, nodeGroup)
+	gceManagerMock.AssertNotCalled(t, "GetMigForInstance", mock.Anything)
+}
+
 func TestGetResourceLimiter(t *testing.T) {
 	gceManagerMock := &gceManagerMock{}
 	resourceLimiter := cloudprovider.NewResourceLimiter(
