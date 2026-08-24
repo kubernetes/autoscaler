@@ -17,6 +17,7 @@ limitations under the License.
 package coreweave
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -105,14 +106,14 @@ func TestCoreWeaveCloudProvider_Name(t *testing.T) {
 
 func TestCoreWeaveCloudProvider_NodeGroups_ManagerNil(t *testing.T) {
 	cp := &CoreWeaveCloudProvider{manager: nil}
-	if got := cp.NodeGroups(); got != nil {
+	if got := cp.NodeGroups(context.Background()); got != nil {
 		t.Errorf("expected nil, got %v", got)
 	}
 }
 
 func TestCoreWeaveCloudProvider_NodeGroups_ListError(t *testing.T) {
 	cp := &CoreWeaveCloudProvider{manager: &fakeManager{nodegroups: nil}}
-	if got := cp.NodeGroups(); got != nil {
+	if got := cp.NodeGroups(context.Background()); got != nil {
 		t.Errorf("expected nil, got %v", got)
 	}
 }
@@ -122,7 +123,7 @@ func TestCoreWeaveCloudProvider_NodeGroups_Success(t *testing.T) {
 	// Create a test manager with the nodepool item
 	manager := makeTestManagerWithNodePools(nodes, item)
 	cp := &CoreWeaveCloudProvider{manager: manager}
-	groups := cp.NodeGroups()
+	groups := cp.NodeGroups(context.Background())
 	if len(groups) != 1 {
 		t.Errorf("expected 1 node group, got %d", len(groups))
 	}
@@ -131,7 +132,7 @@ func TestCoreWeaveCloudProvider_NodeGroups_Success(t *testing.T) {
 func TestCoreWeaveCloudProvider_NodeGroupForNode_ManagerNil(t *testing.T) {
 	cp := &CoreWeaveCloudProvider{manager: nil}
 	node := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1"}}
-	ng, err := cp.NodeGroupForNode(node)
+	ng, err := cp.NodeGroupForNode(context.Background(), node)
 	if ng != nil || err == nil {
 		t.Error("expected nil node group and error when manager is nil")
 	}
@@ -144,7 +145,7 @@ func TestCoreWeaveCloudProvider_NodeGroupForNode_GetNodePoolByNameError(t *testi
 	manager.UpdateNodeGroup()
 	cp := &CoreWeaveCloudProvider{manager: manager}
 	node := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1", Labels: map[string]string{coreWeaveNodePoolUID: "missing"}}}
-	nodeGroup, err := cp.NodeGroupForNode(node)
+	nodeGroup, err := cp.NodeGroupForNode(context.Background(), node)
 	if err != nil {
 		t.Errorf("unexpected error from NodeGroupForNode: %v", err)
 	}
@@ -160,7 +161,7 @@ func TestCoreWeaveCloudProvider_NodeGroupForNode_GetNodePoolByUIDError(t *testin
 	manager.UpdateNodeGroup()
 	cp := &CoreWeaveCloudProvider{manager: manager}
 	node := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1", Labels: map[string]string{coreWeaveNodePoolUID: "wrong-uid"}}}
-	nodeGroup, err := cp.NodeGroupForNode(node)
+	nodeGroup, err := cp.NodeGroupForNode(context.Background(), node)
 	if err != nil {
 		t.Errorf("unexpected error from NodeGroupForNode: %v", err)
 	}
@@ -177,7 +178,7 @@ func TestCoreWeaveCloudProvider_NodeGroupForNode_Success(t *testing.T) {
 	manager.UpdateNodeGroup()
 	cp := &CoreWeaveCloudProvider{manager: manager}
 
-	ng, err := cp.NodeGroupForNode(node)
+	ng, err := cp.NodeGroupForNode(context.Background(), node)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -188,28 +189,28 @@ func TestCoreWeaveCloudProvider_NodeGroupForNode_Success(t *testing.T) {
 
 func TestCoreWeaveCloudProvider_NotImplementedMethods(t *testing.T) {
 	cp := &CoreWeaveCloudProvider{}
-	_, err2 := cp.Pricing()
+	_, err2 := cp.Pricing(context.Background())
 	if !errors.Is(err2, cloudprovider.ErrNotImplemented) {
 		t.Error("expected ErrNotImplemented for Pricing")
 	}
-	_, err3 := cp.GetAvailableMachineTypes()
+	_, err3 := cp.GetAvailableMachineTypes(context.Background())
 	if !errors.Is(err3, cloudprovider.ErrNotImplemented) {
 		t.Error("expected ErrNotImplemented for GetAvailableMachineTypes")
 	}
-	_, err4 := cp.NewNodeGroup("", nil, nil, nil, nil)
+	_, err4 := cp.NewNodeGroup(context.Background(), "", nil, nil, nil, nil)
 	if !errors.Is(err4, cloudprovider.ErrNotImplemented) {
 		t.Error("expected ErrNotImplemented for NewNodeGroup")
 	}
-	if cp.GPULabel() != "" {
+	if cp.GPULabel(context.Background()) != "" {
 		t.Error("expected empty string for GPULabel")
 	}
-	if cp.GetAvailableGPUTypes() != nil {
+	if cp.GetAvailableGPUTypes(context.Background()) != nil {
 		t.Error("expected nil for GetAvailableGPUTypes")
 	}
-	if cp.GetNodeGpuConfig(&apiv1.Node{}) != nil {
+	if cp.GetNodeGpuConfig(context.Background(), &apiv1.Node{}) != nil {
 		t.Error("expected nil for GetNodeGpuConfig")
 	}
-	if cp.Cleanup() != nil {
+	if cp.Cleanup(context.Background()) != nil {
 		t.Error("expected nil for Cleanup")
 	}
 }
@@ -217,7 +218,7 @@ func TestCoreWeaveCloudProvider_NotImplementedMethods(t *testing.T) {
 func TestCoreWeaveCloudProvider_HasInstance_ManagerNil(t *testing.T) {
 	cp := &CoreWeaveCloudProvider{manager: nil}
 	node := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1"}}
-	ok, err := cp.HasInstance(node)
+	ok, err := cp.HasInstance(context.Background(), node)
 	if ok {
 		t.Error("expected false when manager is nil")
 	}
@@ -229,19 +230,19 @@ func TestCoreWeaveCloudProvider_HasInstance_ManagerNil(t *testing.T) {
 func TestCoreWeaveCloudProvider_HasInstance_NoLabels(t *testing.T) {
 	cp := &CoreWeaveCloudProvider{manager: &fakeManager{}}
 	node := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1", Labels: nil}}
-	ok, err := cp.HasInstance(node)
+	ok, err := cp.HasInstance(context.Background(), node)
 	if ok || err != nil {
 		t.Error("expected false, nil for node with nil labels")
 	}
 
 	node2 := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n2", Labels: map[string]string{}}}
-	ok2, err2 := cp.HasInstance(node2)
+	ok2, err2 := cp.HasInstance(context.Background(), node2)
 	if ok2 || err2 != nil {
 		t.Error("expected false, nil for node with empty labels")
 	}
 
 	node3 := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n3", Labels: map[string]string{"other": "value"}}}
-	ok3, err3 := cp.HasInstance(node3)
+	ok3, err3 := cp.HasInstance(context.Background(), node3)
 	if ok3 || err3 != nil {
 		t.Error("expected false, nil for node with unrelated labels")
 	}
@@ -250,7 +251,7 @@ func TestCoreWeaveCloudProvider_HasInstance_NoLabels(t *testing.T) {
 func TestCoreWeaveCloudProvider_HasInstance_NodeGroupError(t *testing.T) {
 	cp := &CoreWeaveCloudProvider{manager: &fakeManager{getNodeGroupErr: true}}
 	node := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1", Labels: map[string]string{coreWeaveNodePoolUID: "uid1"}}}
-	ok, err := cp.HasInstance(node)
+	ok, err := cp.HasInstance(context.Background(), node)
 	if ok || err != nil {
 		t.Error("expected false, nil when GetNodeGroup returns error")
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package cloudstack
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -70,7 +71,7 @@ func (provider *cloudStackCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (provider *cloudStackCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (provider *cloudStackCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	asg := provider.manager.asg
 	return []cloudprovider.NodeGroup{asg}
 }
@@ -78,7 +79,7 @@ func (provider *cloudStackCloudProvider) NodeGroups() []cloudprovider.NodeGroup 
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred.
-func (provider *cloudStackCloudProvider) NodeGroupForNode(node *v1.Node) (cloudprovider.NodeGroup, error) {
+func (provider *cloudStackCloudProvider) NodeGroupForNode(ctx context.Context, node *v1.Node) (cloudprovider.NodeGroup, error) {
 	ng, err := provider.manager.clusterForNode(node)
 	if err != nil {
 		return nil, err
@@ -90,54 +91,54 @@ func (provider *cloudStackCloudProvider) NodeGroupForNode(node *v1.Node) (cloudp
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (provider *cloudStackCloudProvider) HasInstance(node *v1.Node) (bool, error) {
+func (provider *cloudStackCloudProvider) HasInstance(ctx context.Context, node *v1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (provider *cloudStackCloudProvider) Cleanup() error {
+func (provider *cloudStackCloudProvider) Cleanup(ctx context.Context) error {
 	return provider.manager.cleanup()
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-func (provider *cloudStackCloudProvider) Refresh() error {
+func (provider *cloudStackCloudProvider) Refresh(ctx context.Context) error {
 	return provider.manager.refresh()
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
-func (provider *cloudStackCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (provider *cloudStackCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return availableMachineTypes, nil
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (provider *cloudStackCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (provider *cloudStackCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return provider.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (provider *cloudStackCloudProvider) GPULabel() string {
+func (provider *cloudStackCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (provider *cloudStackCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (provider *cloudStackCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (provider *cloudStackCloudProvider) GetNodeGpuConfig(node *v1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(provider, node)
+func (provider *cloudStackCloudProvider) GetNodeGpuConfig(ctx context.Context, node *v1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), provider, node)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (provider *cloudStackCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (provider *cloudStackCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (provider *cloudStackCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, taints []v1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (provider *cloudStackCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string, taints []v1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

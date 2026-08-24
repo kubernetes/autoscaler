@@ -17,6 +17,7 @@ limitations under the License.
 package tencentcloud
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -94,24 +95,24 @@ func (asg *tcAsg) SetScalingType(scalingType string) {
 }
 
 // MaxSize returns maximum size of the node group.
-func (asg *tcAsg) MaxSize() int {
+func (asg *tcAsg) MaxSize(ctx context.Context) int {
 	return asg.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (asg *tcAsg) MinSize() int {
+func (asg *tcAsg) MinSize(ctx context.Context) int {
 	return asg.minSize
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kuberentes.
-func (asg *tcAsg) TargetSize() (int, error) {
+func (asg *tcAsg) TargetSize(ctx context.Context) (int, error) {
 	size, err := asg.tencentcloudManager.GetAsgSize(asg)
 	return int(size), err
 }
 
 // IncreaseSize increases Asg size
-func (asg *tcAsg) IncreaseSize(delta int) error {
+func (asg *tcAsg) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -119,14 +120,14 @@ func (asg *tcAsg) IncreaseSize(delta int) error {
 	if err != nil {
 		return err
 	}
-	if int(size)+delta > asg.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, asg.MaxSize())
+	if int(size)+delta > asg.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, asg.MaxSize(context.TODO()))
 	}
 	return asg.tencentcloudManager.SetAsgSize(asg, size+int64(delta))
 }
 
 // AtomicIncreaseSize is not implemented.
-func (asg *tcAsg) AtomicIncreaseSize(delta int) error {
+func (asg *tcAsg) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -135,7 +136,7 @@ func (asg *tcAsg) AtomicIncreaseSize(delta int) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
-func (asg *tcAsg) DecreaseTargetSize(delta int) error {
+func (asg *tcAsg) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease size must be negative")
 	}
@@ -143,8 +144,8 @@ func (asg *tcAsg) DecreaseTargetSize(delta int) error {
 	if err != nil {
 		return err
 	}
-	if int(size)+delta < asg.MinSize() {
-		return fmt.Errorf("size increase too small - desired:%d min:%d", int(size)+delta, asg.MaxSize())
+	if int(size)+delta < asg.MinSize(context.TODO()) {
+		return fmt.Errorf("size increase too small - desired:%d min:%d", int(size)+delta, asg.MaxSize(context.TODO()))
 	}
 	nodes, err := asg.tencentcloudManager.GetAsgNodes(asg)
 	if err != nil {
@@ -181,34 +182,34 @@ func (asg *tcAsg) Belongs(node *apiv1.Node) (bool, error) {
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (asg *tcAsg) Exist() bool {
+func (asg *tcAsg) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (asg *tcAsg) Create() (cloudprovider.NodeGroup, error) {
+func (asg *tcAsg) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (asg *tcAsg) Delete() error {
+func (asg *tcAsg) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (asg *tcAsg) Autoprovisioned() bool {
+func (asg *tcAsg) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (asg *tcAsg) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *tcAsg) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	size, err := asg.tencentcloudManager.GetAsgSize(asg)
 	if err != nil {
 		return err
 	}
 
-	if int(size) <= asg.MinSize() {
+	if int(size) <= asg.MinSize(context.TODO()) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
@@ -232,7 +233,7 @@ func (asg *tcAsg) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (asg *tcAsg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (asg *tcAsg) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -242,17 +243,17 @@ func (asg *tcAsg) Id() string {
 }
 
 // Debug returns a debug string for the Asg.
-func (asg *tcAsg) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", asg.Id(), asg.MinSize(), asg.MaxSize())
+func (asg *tcAsg) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", asg.Id(), asg.MinSize(context.TODO()), asg.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (asg *tcAsg) Nodes() ([]cloudprovider.Instance, error) {
+func (asg *tcAsg) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	return asg.tencentcloudManager.GetAsgNodes(asg)
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (asg *tcAsg) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (asg *tcAsg) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	node, err := asg.tencentcloudManager.GetAsgTemplateNode(asg)
 	if err != nil {
 		return nil, err
@@ -265,6 +266,6 @@ func (asg *tcAsg) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (asg *tcAsg) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (asg *tcAsg) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, nil
 }

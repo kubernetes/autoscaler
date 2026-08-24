@@ -38,7 +38,7 @@ func TestNodeGroup_Debug(t *testing.T) {
 		MaxNodes: 10,
 	})
 
-	d := ng.Debug()
+	d := ng.Debug(context.Background())
 	exp := "node group ID: pool-123 (min:1 max:10)"
 	assert.Equal(t, exp, d, "debug string do not match")
 }
@@ -51,7 +51,7 @@ func TestNodeGroup_TargetSize(t *testing.T) {
 		Count: numberOfNodes,
 	})
 
-	size, err := ng.TargetSize()
+	size, err := ng.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, numberOfNodes, size, "target size is not correct")
 }
@@ -62,7 +62,7 @@ func TestNodeGroup_TargetSize_WithZeroCount(t *testing.T) {
 		Count: 0,
 	})
 
-	size, err := ng.TargetSize()
+	size, err := ng.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 0, size, "target size should be zero")
 }
@@ -94,7 +94,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 				MaxNodes: 3,
 			}, nil).Once()
 
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		assert.NoError(t, err)
 		client.AssertExpectations(t)
 	})
@@ -106,7 +106,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		ng := testNodeGroup(client, &utho.NodepoolDetails{
 			Count: numberOfNodes,
 		})
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 
 		exp := fmt.Errorf("delta must be positive, have: %d", delta)
 		assert.EqualError(t, err, exp.Error(), "size increase must be positive")
@@ -122,7 +122,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 
 		exp := fmt.Errorf("delta must be positive, have: %d", delta)
 
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size increase must be positive")
 	})
 
@@ -136,9 +136,9 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		})
 
 		exp := fmt.Errorf("size increase is too large. current: %d desired: %d max: %d",
-			nodes, nodes+delta, ng.MaxSize())
+			nodes, nodes+delta, ng.MaxSize(context.Background()))
 
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size increase is too large")
 	})
 }
@@ -165,7 +165,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 				Size:       strconv.Itoa(newQuant),
 			}).Return(&utho.UpdateKubernetesAutoscaleNodepoolResponse{Count: newQuant}, nil).Once()
 
-		err := ng.DecreaseTargetSize(delta)
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.NoError(t, err, "expected no error when decreasing target size")
 		assert.Equal(t, newQuant, ng.nodePool.Count, "node pool count should be updated")
 		client.AssertExpectations(t)
@@ -179,7 +179,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		})
 
 		delta := 1
-		err := ng.DecreaseTargetSize(delta)
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 
 		exp := fmt.Errorf("delta must be negative, have: %d", delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease must be negative")
@@ -196,8 +196,8 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		})
 
 		exp := fmt.Errorf("node group %s: size decrease is too small. current size: %d, desired size: %d, minimum size: %d",
-			"pool-123", numberOfNodes, numberOfNodes+delta, ng.MinSize())
-		err := ng.DecreaseTargetSize(delta)
+			"pool-123", numberOfNodes, numberOfNodes+delta, ng.MinSize(context.Background()))
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease is too small")
 	})
 }
@@ -224,7 +224,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 		},
 	}
 
-	nodes, err := ng.Nodes()
+	nodes, err := ng.Nodes(context.Background())
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, instances, nodes, "nodes do not match")
 }
@@ -247,7 +247,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			NodeId:    "123",
 		}).Return(&utho.DeleteResponse{}, nil).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(context.Background(), nodes)
 		assert.NoError(t, err)
 		client.AssertExpectations(t)
 	})
@@ -269,7 +269,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			NodeId:    "123",
 		}).Return(&utho.DeleteResponse{}, errors.New("delete error")).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(context.Background(), nodes)
 		assert.Error(t, err)
 		errMsg := err.Error()
 		assert.Contains(t, errMsg, "deleting node failed for cluster", "error should indicate node deletion failure")
@@ -292,7 +292,7 @@ func TestNodeGroup_DeleteNodes_WithMissingLabel(t *testing.T) {
 	nodes := []*apiv1.Node{
 		{ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{}}},
 	}
-	err := ng.DeleteNodes(nodes)
+	err := ng.DeleteNodes(context.Background(), nodes)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "node ID label is missing")
 }
@@ -301,7 +301,7 @@ func TestNodeGroup_Exist(t *testing.T) {
 	client := &uthoClientMock{}
 	nodeGroup := testNodeGroup(client, &utho.NodepoolDetails{MinNodes: 1, MaxNodes: 2})
 
-	assert.Equal(t, true, nodeGroup.Exist(), "nodegroup should exist")
+	assert.Equal(t, true, nodeGroup.Exist(context.Background()), "nodegroup should exist")
 
 }
 
@@ -322,7 +322,7 @@ func TestNodeGroup_IncreaseSize_WithUpdateFailure(t *testing.T) {
 				Count:      "3",
 			}).Return((*utho.UpdateKubernetesAutoscaleNodepoolResponse)(nil), expectedErr).Once()
 
-		err := nodeGroup.IncreaseSize(1)
+		err := nodeGroup.IncreaseSize(context.Background(), 1)
 		assert.Error(t, err)
 		assert.Equal(t, expectedErr, err)
 		client.AssertExpectations(t)
@@ -350,7 +350,7 @@ func TestNodeGroup_IncreaseSize_WithUpdateFailure(t *testing.T) {
 				MaxNodes: 5,
 			}, nil).Once()
 
-		err := nodeGroup.IncreaseSize(1)
+		err := nodeGroup.IncreaseSize(context.Background(), 1)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "couldn't increase size")
 		client.AssertExpectations(t)
@@ -397,7 +397,7 @@ func TestNodeGroup_DeleteNodes_MultipleNodes(t *testing.T) {
 			NodeId:    "456",
 		}).Return(&utho.DeleteResponse{}, nil).Once()
 
-		err := nodeGroup.DeleteNodes(nodes)
+		err := nodeGroup.DeleteNodes(context.Background(), nodes)
 		assert.NoError(t, err)
 		assert.Equal(t, 1, nodeGroup.nodePool.Count) // Should decrease by 2
 		client.AssertExpectations(t)
@@ -413,7 +413,7 @@ func TestNodeGroup_DecreaseTargetSize_WithValidation(t *testing.T) {
 			MaxNodes: 5,
 		})
 
-		err := nodeGroup.DecreaseTargetSize(-2)
+		err := nodeGroup.DecreaseTargetSize(context.Background(), -2)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "size decrease is too small")
 	})
@@ -435,7 +435,7 @@ func TestNodeGroup_DecreaseTargetSize_WithValidation(t *testing.T) {
 				Size:       "4",
 			}).Return(&utho.UpdateKubernetesAutoscaleNodepoolResponse{Count: 4}, nil).Once()
 
-		err := nodeGroup.DecreaseTargetSize(-1)
+		err := nodeGroup.DecreaseTargetSize(context.Background(), -1)
 		assert.NoError(t, err)
 		assert.Equal(t, 4, nodeGroup.nodePool.Count)
 		client.AssertExpectations(t)
@@ -451,7 +451,7 @@ func TestNodeGroup_Nodes_WithInvalidWorkers(t *testing.T) {
 		},
 	})
 
-	nodes, err := nodeGroup.Nodes()
+	nodes, err := nodeGroup.Nodes(context.Background())
 	assert.NoError(t, err)
 	for _, instance := range nodes {
 		assert.Contains(t, instance.Id, uthoProviderIDPrefix, "provider ID should contain prefix")
@@ -465,8 +465,8 @@ func TestNodeGroup_MinSize_Validation(t *testing.T) {
 		MaxNodes: 5,
 	})
 
-	assert.Equal(t, 2, ng.MinSize())
-	assert.Less(t, ng.MinSize(), ng.MaxSize(), "min size should be less than max size")
+	assert.Equal(t, 2, ng.MinSize(context.Background()))
+	assert.Less(t, ng.MinSize(context.Background()), ng.MaxSize(context.Background()), "min size should be less than max size")
 }
 
 func TestNodeGroup_DeleteNodes_WorkerStatus(t *testing.T) {
@@ -490,7 +490,7 @@ func TestNodeGroup_DeleteNodes_WorkerStatus(t *testing.T) {
 			NodeId:    "123",
 		}).Return(&utho.DeleteResponse{}, nil).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(context.Background(), nodes)
 		assert.NoError(t, err)
 		client.AssertExpectations(t)
 	})
@@ -505,7 +505,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 			},
 		})
 
-		nodeInfo, err := nodeGroup.TemplateNodeInfo()
+		nodeInfo, err := nodeGroup.TemplateNodeInfo(context.Background())
 		assert.NoError(t, err)
 		assert.NotNil(t, nodeInfo)
 
@@ -522,7 +522,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 			Workers: []utho.WorkerNode{},
 		})
 
-		nodeInfo, err := nodeGroup.TemplateNodeInfo()
+		nodeInfo, err := nodeGroup.TemplateNodeInfo(context.Background())
 		assert.Error(t, err)
 		assert.Nil(t, nodeInfo)
 		assert.Contains(t, err.Error(), "node pool pool-123 has no example worker")
@@ -532,7 +532,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 		client := &uthoClientMock{}
 		nodeGroup := testNodeGroup(client, nil)
 
-		nodeInfo, err := nodeGroup.TemplateNodeInfo()
+		nodeInfo, err := nodeGroup.TemplateNodeInfo(context.Background())
 		assert.Error(t, err)
 		assert.Nil(t, nodeInfo)
 		assert.Contains(t, err.Error(), fmt.Sprintf("node pool %s has no example worker to derive resources", nodeGroup.id))

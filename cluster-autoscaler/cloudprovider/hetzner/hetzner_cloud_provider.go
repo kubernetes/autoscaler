@@ -76,7 +76,7 @@ func (d *HetznerCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (d *HetznerCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (d *HetznerCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, 0, len(d.manager.nodeGroups))
 	for groupId := range d.manager.nodeGroups {
 		groups = append(groups, d.manager.nodeGroups[groupId])
@@ -87,7 +87,7 @@ func (d *HetznerCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (d *HetznerCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	server, err := d.manager.serverForNode(node)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check if server %s exists error: %v", node.Spec.ProviderID, err)
@@ -121,19 +121,19 @@ func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (d *HetznerCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (d *HetznerCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
-func (d *HetznerCloudProvider) Pricing() (cloudprovider.PricingModel, autoscalerErrors.AutoscalerError) {
+func (d *HetznerCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, autoscalerErrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from
 // the cloud provider. Implementation optional.
-func (d *HetznerCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (d *HetznerCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	serverTypes, err := d.manager.cachedServerType.getAllServerTypes()
 	if err != nil {
 		return nil, err
@@ -151,7 +151,7 @@ func (d *HetznerCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // provided. The node group is not automatically created on the cloud provider
 // side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (d *HetznerCloudProvider) NewNodeGroup(
+func (d *HetznerCloudProvider) NewNodeGroup(ctx context.Context,
 	machineType string,
 	labels map[string]string,
 	systemLabels map[string]string,
@@ -163,36 +163,36 @@ func (d *HetznerCloudProvider) NewNodeGroup(
 
 // GetResourceLimiter returns struct containing limits (max, min) for
 // resources (cores, memory etc.).
-func (d *HetznerCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (d *HetznerCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return d.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (d *HetznerCloudProvider) GPULabel() string {
+func (d *HetznerCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (d *HetznerCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (d *HetznerCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (d *HetznerCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(d, node)
+func (d *HetznerCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), d, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed,
 // i.e. go routines etc.
-func (d *HetznerCloudProvider) Cleanup() error {
+func (d *HetznerCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically
 // update cloud provider state. In particular the list of node groups returned
 // by NodeGroups() can change as a result of CloudProvider.Refresh().
-func (d *HetznerCloudProvider) Refresh() error {
+func (d *HetznerCloudProvider) Refresh(ctx context.Context) error {
 	for _, group := range d.manager.nodeGroups {
 		group.resetTargetSize(0)
 	}

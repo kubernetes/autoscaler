@@ -5,6 +5,7 @@ Copyright 2021-2023 Oracle and/or its affiliates.
 package instancepools
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -38,12 +39,12 @@ type nodeGroupAutoDiscovery struct {
 }
 
 // MaxSize returns maximum size of the instance-pool based node group.
-func (ip *InstancePoolNodeGroup) MaxSize() int {
+func (ip *InstancePoolNodeGroup) MaxSize(ctx context.Context) int {
 	return ip.maxSize
 }
 
 // MinSize returns minimum size of the instance-pool based node group.
-func (ip *InstancePoolNodeGroup) MinSize() int {
+func (ip *InstancePoolNodeGroup) MinSize(ctx context.Context) int {
 	return ip.minSize
 }
 
@@ -51,14 +52,14 @@ func (ip *InstancePoolNodeGroup) MinSize() int {
 // number of nodes in Kubernetes is different at the moment but should be equal
 // to Size() once everything stabilizes (new nodes finish startup and registration or
 // removed nodes are deleted completely). Implementation required.
-func (ip *InstancePoolNodeGroup) TargetSize() (int, error) {
+func (ip *InstancePoolNodeGroup) TargetSize(ctx context.Context) (int, error) {
 	return ip.manager.GetInstancePoolSize(*ip)
 }
 
 // IncreaseSize increases the size of the instance-pool based node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // instance-pool size is updated. Implementation required.
-func (ip *InstancePoolNodeGroup) IncreaseSize(delta int) error {
+func (ip *InstancePoolNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -68,15 +69,15 @@ func (ip *InstancePoolNodeGroup) IncreaseSize(delta int) error {
 		return err
 	}
 
-	if size+delta > ip.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", size+delta, ip.MaxSize())
+	if size+delta > ip.MaxSize(context.Background()) {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", size+delta, ip.MaxSize(context.Background()))
 	}
 
 	return ip.manager.SetInstancePoolSize(*ip, size+delta)
 }
 
 // AtomicIncreaseSize is not implemented.
-func (ip *InstancePoolNodeGroup) AtomicIncreaseSize(delta int) error {
+func (ip *InstancePoolNodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -106,7 +107,7 @@ func (ip *InstancePoolNodeGroup) deleteNodes(nodes []*apiv1.Node) error {
 // DeleteNodes deletes nodes from this instance-pool. Error is returned either on
 // failure or if the given node doesn't belong to this instance-pool. This function
 // should wait until instance-pool size is updated. Implementation required.
-func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ip *InstancePoolNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	// FYI, unregistered nodes come in as the provider id as node name.
 
 	klog.Infof("DeleteNodes called with %d node(s)", len(nodes))
@@ -116,7 +117,7 @@ func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		return err
 	}
 
-	if size <= ip.MinSize() {
+	if size <= ip.MinSize(context.Background()) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
@@ -124,7 +125,7 @@ func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (ip *InstancePoolNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (ip *InstancePoolNodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	// FYI, unregistered nodes come in as the provider id as node name.
 
 	klog.Infof("ForceDeleteNodes called with %d node(s) (ignoring min size constraint)", len(nodes))
@@ -137,7 +138,7 @@ func (ip *InstancePoolNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
-func (ip *InstancePoolNodeGroup) DecreaseTargetSize(delta int) error {
+func (ip *InstancePoolNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
@@ -185,15 +186,15 @@ func (ip *InstancePoolNodeGroup) Id() string {
 }
 
 // Debug returns a string containing all information regarding this instance-pool.
-func (ip *InstancePoolNodeGroup) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", ip.Id(), ip.MinSize(), ip.MaxSize())
+func (ip *InstancePoolNodeGroup) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", ip.Id(), ip.MinSize(context.Background()), ip.MaxSize(context.Background()))
 }
 
 // Nodes returns a list of all nodes that belong to this instance-pool.
 // It is required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
 // This list should include also instances that might have not become a kubernetes node yet.
-func (ip *InstancePoolNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ip *InstancePoolNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	return ip.manager.GetInstancePoolNodes(*ip)
 }
 
@@ -203,7 +204,7 @@ func (ip *InstancePoolNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (ip *InstancePoolNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ip *InstancePoolNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	node, err := ip.manager.GetInstancePoolTemplateNode(*ip)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to build node info template")
@@ -219,30 +220,30 @@ func (ip *InstancePoolNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error)
 
 // Exist checks if the instance-pool based node group really exists on the cloud provider side. Allows to tell the
 // theoretical instance-pool from the real one. Implementation required.
-func (ip *InstancePoolNodeGroup) Exist() bool {
+func (ip *InstancePoolNodeGroup) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the instance-pool based node group on the cloud provider side. Implementation optional.
-func (ip *InstancePoolNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ip *InstancePoolNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the instance-pool based node group on the cloud provider side.
 // This will be executed only for autoprovisioned instance-pools, once their size drops to 0.
 // Implementation optional.
-func (ip *InstancePoolNodeGroup) Delete() error {
+func (ip *InstancePoolNodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // InstancePoolNodeGroup. Returning a nil will result in using default options.
-func (ip *InstancePoolNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ip *InstancePoolNodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the instance-pool based node group is autoprovisioned. An autoprovisioned group
 // was created by CA and can be deleted when scaled to 0.
-func (ip *InstancePoolNodeGroup) Autoprovisioned() bool {
+func (ip *InstancePoolNodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }

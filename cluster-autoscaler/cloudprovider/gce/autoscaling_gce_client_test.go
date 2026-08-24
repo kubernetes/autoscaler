@@ -109,7 +109,7 @@ func TestWaitForOp(t *testing.T) {
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationRunningResponse).Times(3)
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationDoneResponse).Once()
 
-	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOp", projectId, zoneB)
+	err := g.WaitForOperation(context.Background(), "operation-1505728466148-d16f5197", "TestWaitForOp", projectId, zoneB)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -121,7 +121,7 @@ func TestWaitForOpError(t *testing.T) {
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationDoneResponseError).Once()
 
-	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOpError", projectId, zoneB)
+	err := g.WaitForOperation(context.Background(), "operation-1505728466148-d16f5197", "TestWaitForOpError", projectId, zoneB)
 	assert.Error(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -137,7 +137,7 @@ func TestWaitForOpTimeout(t *testing.T) {
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationRunningResponse).Once()
 
-	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOpTimeout", projectId, zoneB)
+	err := g.WaitForOperation(context.Background(), "operation-1505728466148-d16f5197", "TestWaitForOpTimeout", projectId, zoneB)
 	assert.Error(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -151,7 +151,7 @@ func TestWaitForOpContextTimeout(t *testing.T) {
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").After(time.Minute).Return(operationDoneResponse).Once()
 
-	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOpContextTimeout", projectId, zoneB)
+	err := g.WaitForOperation(context.Background(), "operation-1505728466148-d16f5197", "TestWaitForOpContextTimeout", projectId, zoneB)
 	assert.ErrorIs(t, err, context.DeadlineExceeded)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -282,7 +282,7 @@ func TestErrors(t *testing.T) {
 			b, err := json.Marshal(lmiResponse)
 			assert.NoError(t, err)
 			server.On("handle", "/projects/zones/instanceGroupManagers/listManagedInstances").Return(string(b)).Times(1)
-			instances, err := g.FetchMigInstances(GceRef{})
+			instances, err := g.FetchMigInstances(context.Background(), GceRef{})
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedErrorCode, instances[0].Status.ErrorInfo.ErrorCode)
 			assert.Equal(t, tc.expectedErrorClass, instances[0].Status.ErrorInfo.ErrorClass)
@@ -662,7 +662,7 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 				assert.NoError(t, err)
 				server.On("handle", "/projects/zones/instanceGroupManagers/listManagedInstances", token).Return(string(b)).Times(1)
 			}
-			gotInstances, err := g.FetchMigInstances(GceRef{})
+			gotInstances, err := g.FetchMigInstances(context.Background(), GceRef{})
 			assert.NoError(t, err)
 			if diff := cmp.Diff(tc.wantInstances, gotInstances, cmpopts.EquateErrors()); diff != "" {
 				t.Errorf("FetchMigInstances(...): err diff (-want +got):\n%s", diff)
@@ -698,7 +698,7 @@ func TestUserAgent(t *testing.T) {
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return("testuseragent", operationDoneResponse).Maybe()
 
-	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestUserAgent", projectId, zoneB)
+	err := g.WaitForOperation(context.Background(), "operation-1505728466148-d16f5197", "TestUserAgent", projectId, zoneB)
 
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
@@ -716,136 +716,136 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 	}{
 		"CreateInstances_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.CreateInstances(GceRef{}, "", 0, nil)
+				_, err := client.CreateInstances(context.Background(), GceRef{}, "", 0, nil)
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"DeleteInstances_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.DeleteInstances(GceRef{}, nil)
+				return client.DeleteInstances(context.Background(), GceRef{}, nil)
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"ResizeMig_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.ResizeMig(GceRef{}, 0)
+				return client.ResizeMig(context.Background(), GceRef{}, 0)
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchMachineType_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMachineType("", "")
+				_, err := client.FetchMachineType(context.Background(), "", "")
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchMigBasename_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigBasename(GceRef{})
+				_, err := client.FetchMigBasename(context.Background(), GceRef{})
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchMigTargetSize_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTargetSize(GceRef{})
+				_, err := client.FetchMigTargetSize(context.Background(), GceRef{})
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchMigTemplate_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTemplate(GceRef{}, "", false)
+				_, err := client.FetchMigTemplate(context.Background(), GceRef{}, "", false)
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchMigTemplateName_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTemplateName(GceRef{})
+				_, err := client.FetchMigTemplateName(context.Background(), GceRef{})
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchListManagedInstancesResults_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchListManagedInstancesResults(GceRef{})
+				_, err := client.FetchListManagedInstancesResults(context.Background(), GceRef{})
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchZones_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchZones("")
+				_, err := client.FetchZones(context.Background(), "")
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"CreateInstances_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.CreateInstances(GceRef{}, "", 0, nil)
+				_, err := client.CreateInstances(context.Background(), GceRef{}, "", 0, nil)
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"DeleteInstances_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.DeleteInstances(GceRef{}, nil)
+				return client.DeleteInstances(context.Background(), GceRef{}, nil)
 			},
 			httpTimeout: instantTimeout,
 		},
 		"ResizeMig_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.ResizeMig(GceRef{}, 0)
+				return client.ResizeMig(context.Background(), GceRef{}, 0)
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchMachineType_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMachineType("", "")
+				_, err := client.FetchMachineType(context.Background(), "", "")
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchMigBasename_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigBasename(GceRef{})
+				_, err := client.FetchMigBasename(context.Background(), GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchMigTargetSize_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTargetSize(GceRef{})
+				_, err := client.FetchMigTargetSize(context.Background(), GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchMigTemplate_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTemplate(GceRef{}, "", false)
+				_, err := client.FetchMigTemplate(context.Background(), GceRef{}, "", false)
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchMigTemplateName_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTemplateName(GceRef{})
+				_, err := client.FetchMigTemplateName(context.Background(), GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchListManagedInstancesResults_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchListManagedInstancesResults(GceRef{})
+				_, err := client.FetchListManagedInstancesResults(context.Background(), GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchZones_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchZones("")
+				_, err := client.FetchZones(context.Background(), "")
 				return err
 			},
 			httpTimeout: instantTimeout,
@@ -866,7 +866,7 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 		},
 		"FetchMigInstances_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigInstances(GceRef{})
+				_, err := client.FetchMigInstances(context.Background(), GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
@@ -887,7 +887,7 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 		},
 		"FetchMigsWithName_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigsWithName("", &regexp.Regexp{})
+				_, err := client.FetchMigsWithName(context.Background(), "", &regexp.Regexp{})
 				return err
 			},
 			httpTimeout: instantTimeout,
@@ -928,7 +928,7 @@ func TestCreateInstances(t *testing.T) {
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-2505728466148-216f5197/wait").Return(operationDoneResponse).Once()
 	client := newTestAutoscalingGceClientWithTimeout(t, "project", server.URL, "", time.Second)
 	migRef := GceRef{Project: "project1", Zone: "us-central1-b", Name: "igm1"}
-	createdIds, err := client.CreateInstances(migRef, migRef.Name, 10, nil)
+	createdIds, err := client.CreateInstances(context.Background(), migRef, migRef.Name, 10, nil)
 	assert.NoError(t, err)
 	assert.Len(t, createdIds, 10, "Expected 10 instance names in result")
 	for _, id := range createdIds {
@@ -1227,7 +1227,7 @@ func TestFetchAllInstances(t *testing.T) {
 				server.On("handle", "/projects/myprojid/zones/myzone/instances", token).Return(string(b)).Times(1)
 			}
 
-			got, err := gceInternalService.FetchAllInstances("myprojid", "myzone", "test-cluster")
+			got, err := gceInternalService.FetchAllInstances(context.Background(), "myprojid", "myzone", "test-cluster")
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("autoscalingInternalGceClient.FetchAllInstances() diff (-want +got): %s", diff)
 			}
@@ -1388,7 +1388,7 @@ func TestFetchMigTargetSize(t *testing.T) {
 			gceClient := newTestAutoscalingGceClient(t, "project1", server.URL, "")
 			b, _ := json.Marshal(tc.response)
 			server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/mig-1").Return(string(b)).Once()
-			size, err := gceClient.FetchMigTargetSize(mig)
+			size, err := gceClient.FetchMigTargetSize(context.Background(), mig)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.wantSize, size)
 			mock.AssertExpectationsForObjects(t, server)

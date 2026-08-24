@@ -17,6 +17,7 @@ limitations under the License.
 package magnum
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -93,23 +94,23 @@ func (mcp *magnumCloudProvider) Name() string {
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (mcp *magnumCloudProvider) GPULabel() string {
+func (mcp *magnumCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
-func (mcp *magnumCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (mcp *magnumCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (mcp *magnumCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(mcp, node)
+func (mcp *magnumCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), mcp, node)
 }
 
 // NodeGroups returns all node groups managed by this cloud provider.
-func (mcp *magnumCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (mcp *magnumCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	mcp.nodeGroupsLock.Lock()
 	defer mcp.nodeGroupsLock.Unlock()
 
@@ -129,7 +130,7 @@ func (mcp *magnumCloudProvider) AddNodeGroup(group *magnumNodeGroup) {
 }
 
 // NodeGroupForNode returns the node group that a given node belongs to.
-func (mcp *magnumCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (mcp *magnumCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	mcp.nodeGroupsLock.Lock()
 	defer mcp.nodeGroupsLock.Unlock()
 
@@ -160,28 +161,28 @@ func (mcp *magnumCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (mcp *magnumCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (mcp *magnumCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing is not implemented.
-func (mcp *magnumCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (mcp *magnumCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes is not implemented.
-func (mcp *magnumCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (mcp *magnumCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup is not implemented.
-func (mcp *magnumCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (mcp *magnumCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns resource constraints for the cloud provider
-func (mcp *magnumCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (mcp *magnumCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return mcp.resourceLimiter, nil
 }
 
@@ -190,10 +191,10 @@ func (mcp *magnumCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLim
 // Debug information for each node group is printed with logging level >= 5.
 // Every 60 seconds the node group state on the Magnum side is checked,
 // to see if there are any node groups that need to be added/removed/updated.
-func (mcp *magnumCloudProvider) Refresh() error {
+func (mcp *magnumCloudProvider) Refresh(ctx context.Context) error {
 	mcp.nodeGroupsLock.Lock()
 	for _, nodegroup := range mcp.nodeGroups {
-		klog.V(5).Info(nodegroup.Debug())
+		klog.V(5).Info(nodegroup.Debug(context.TODO()))
 	}
 	mcp.nodeGroupsLock.Unlock()
 
@@ -211,7 +212,7 @@ func (mcp *magnumCloudProvider) Refresh() error {
 }
 
 // Cleanup currently does nothing.
-func (mcp *magnumCloudProvider) Cleanup() error {
+func (mcp *magnumCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 

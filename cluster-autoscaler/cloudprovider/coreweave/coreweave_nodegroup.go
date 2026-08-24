@@ -17,6 +17,7 @@ limitations under the License.
 package coreweave
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -48,29 +49,29 @@ func NewCoreWeaveNodeGroup(nodepool *CoreWeaveNodePool) *CoreWeaveNodeGroup {
 }
 
 // MaxSize returns the maximum size of the node group.
-func (ng *CoreWeaveNodeGroup) MaxSize() int {
+func (ng *CoreWeaveNodeGroup) MaxSize(ctx context.Context) int {
 	return ng.nodepool.GetMaxSize()
 }
 
 // MinSize returns the minimum size of the node group.
-func (ng *CoreWeaveNodeGroup) MinSize() int {
+func (ng *CoreWeaveNodeGroup) MinSize(ctx context.Context) int {
 	return ng.nodepool.GetMinSize()
 }
 
 // TargetSize returns the current target size of the node group.
-func (ng *CoreWeaveNodeGroup) TargetSize() (int, error) {
+func (ng *CoreWeaveNodeGroup) TargetSize(ctx context.Context) (int, error) {
 	return ng.nodepool.GetTargetSize(), nil
 }
 
 // IncreaseSize increases the size of the node group by the specified delta.
-func (ng *CoreWeaveNodeGroup) IncreaseSize(delta int) error {
+func (ng *CoreWeaveNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	klog.V(4).Infof("Increasing size of node group %s by %d", ng.Name, delta)
 	return ng.nodepool.SetSize(ng.nodepool.GetTargetSize() + delta)
 }
 
 // AtomicIncreaseSize atomically increases the size of the node group by the specified delta.
 // This method is not implemented for CoreWeaveNodeGroup.
-func (ng *CoreWeaveNodeGroup) AtomicIncreaseSize(delta int) error {
+func (ng *CoreWeaveNodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -80,7 +81,7 @@ func (ng *CoreWeaveNodeGroup) AtomicIncreaseSize(delta int) error {
 // target size of the node group accordingly.
 // If any check fails, it returns an error with a descriptive message.
 // If the nodes are successfully marked for removal, it returns nil.
-func (ng *CoreWeaveNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *CoreWeaveNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	ng.mutex.Lock()
 	defer ng.mutex.Unlock()
 	// Validate that the nodes belong to this node group
@@ -97,12 +98,12 @@ func (ng *CoreWeaveNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 
 // ForceDeleteNodes is not implemented for CoreWeaveNodeGroup.
 // node groups in CoreWeave do not support force deletion of nodes.
-func (ng *CoreWeaveNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (ng *CoreWeaveNodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // DecreaseTargetSize decreases the target size of the node group by the specified delta.
-func (ng *CoreWeaveNodeGroup) DecreaseTargetSize(delta int) error {
+func (ng *CoreWeaveNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	klog.V(4).Infof("Decreasing target size of node group %s by %d", ng.Name, delta)
 	if delta < 0 {
 		delta = -delta
@@ -116,12 +117,12 @@ func (ng *CoreWeaveNodeGroup) Id() string {
 }
 
 // Debug returns a debug string for the node group.
-func (ng *CoreWeaveNodeGroup) Debug() string {
+func (ng *CoreWeaveNodeGroup) Debug(ctx context.Context) string {
 	return ""
 }
 
 // Nodes returns the list of nodes in the node group.
-func (ng *CoreWeaveNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *CoreWeaveNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	// Return empty slice to avoid "not registered" warnings
 	return []cloudprovider.Instance{}, nil
 }
@@ -129,7 +130,7 @@ func (ng *CoreWeaveNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // TemplateNodeInfo returns a template NodeInfo for the node group.
 // This is used by the autoscaler to simulate what a new node would look like
 // when scaling from zero or when no nodes currently exist in the node group.
-func (ng *CoreWeaveNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ng *CoreWeaveNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	instanceTypeName := ng.nodepool.GetInstanceType()
 	if instanceTypeName == "" {
 		return nil, fmt.Errorf("node pool %s has no instance type defined", ng.Name)
@@ -232,23 +233,23 @@ func (ng *CoreWeaveNodeGroup) buildNodeLabels(nodeName, instanceTypeName string,
 }
 
 // Exist checks if the node group exists.
-func (ng *CoreWeaveNodeGroup) Exist() bool { return true }
+func (ng *CoreWeaveNodeGroup) Exist(ctx context.Context) bool { return true }
 
 // Create is not implemented for CoreWeaveNodeGroup.
-func (ng *CoreWeaveNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ng *CoreWeaveNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete is not implemented for CoreWeaveNodeGroup.
-func (ng *CoreWeaveNodeGroup) Delete() error {
+func (ng *CoreWeaveNodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns whether the node group is autoprovisioned.
 // In CoreWeave, node groups are not autoprovisioned, so it returns false
-func (ng *CoreWeaveNodeGroup) Autoprovisioned() bool { return false }
+func (ng *CoreWeaveNodeGroup) Autoprovisioned(ctx context.Context) bool { return false }
 
 // GetOptions returns the autoscaling options for the node group.
-func (ng *CoreWeaveNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *CoreWeaveNodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }

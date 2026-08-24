@@ -17,6 +17,7 @@ limitations under the License.
 package ionoscloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -59,12 +60,12 @@ func init() {
 }
 
 // MaxSize returns maximum size of the node group.
-func (n *nodePool) MaxSize() int {
+func (n *nodePool) MaxSize(ctx context.Context) int {
 	return n.max
 }
 
 // MinSize returns minimum size of the node group.
-func (n *nodePool) MinSize() int {
+func (n *nodePool) MinSize(ctx context.Context) int {
 	return n.min
 }
 
@@ -72,7 +73,7 @@ func (n *nodePool) MinSize() int {
 // number of nodes in Kubernetes is different at the moment but should be equal
 // to Size() once everything stabilizes (new nodes finish startup and registration or
 // removed nodes are deleted completely). Implementation required.
-func (n *nodePool) TargetSize() (int, error) {
+func (n *nodePool) TargetSize(ctx context.Context) (int, error) {
 	size, err := n.manager.GetNodeGroupTargetSize(n)
 	return size, err
 }
@@ -80,7 +81,7 @@ func (n *nodePool) TargetSize() (int, error) {
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
-func (n *nodePool) IncreaseSize(delta int) error {
+func (n *nodePool) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return errors.New("size increase must be positive")
 	}
@@ -93,7 +94,7 @@ func (n *nodePool) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (n *nodePool) AtomicIncreaseSize(delta int) error {
+func (n *nodePool) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -101,7 +102,7 @@ func (n *nodePool) AtomicIncreaseSize(delta int) error {
 // of the node group with that). Error is returned either on failure or if the
 // given node doesn't belong to this node group. This function should wait
 // until node group size is updated. Implementation required.
-func (n *nodePool) DeleteNodes(nodes []*apiv1.Node) error {
+func (n *nodePool) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	if acquired := n.manager.TryLockNodeGroup(n); !acquired {
 		return errors.New("node deletion already in progress")
 	}
@@ -117,7 +118,7 @@ func (n *nodePool) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (n *nodePool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (n *nodePool) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -126,7 +127,7 @@ func (n *nodePool) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target size. Implementation required.
-func (n *nodePool) DecreaseTargetSize(delta int) error {
+func (n *nodePool) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return errors.New("size decrease must be negative")
 	}
@@ -147,7 +148,7 @@ func (n *nodePool) Id() string {
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (n *nodePool) Debug() string {
+func (n *nodePool) Debug(ctx context.Context) string {
 	return fmt.Sprintf("ID=%s, Min=%d, Max=%d", n.id, n.min, n.max)
 }
 
@@ -155,7 +156,7 @@ func (n *nodePool) Debug() string {
 // It is required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
 // This list should include also instances that might have not become a kubernetes node yet.
-func (n *nodePool) Nodes() ([]cloudprovider.Instance, error) {
+func (n *nodePool) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	return n.manager.GetInstancesForNodeGroup(n)
 }
 
@@ -166,37 +167,37 @@ func (n *nodePool) Nodes() ([]cloudprovider.Instance, error) {
 // all of the labels, capacity and allocatable information as well as all pods
 // that are started on the node by default, using manifest (most likely only
 // kube-proxy). Implementation optional.
-func (n *nodePool) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (n *nodePool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one. Implementation required.
-func (n *nodePool) Exist() bool {
+func (n *nodePool) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side. Implementation optional.
-func (n *nodePool) Create() (cloudprovider.NodeGroup, error) {
+func (n *nodePool) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 // Implementation optional.
-func (n *nodePool) Delete() error {
+func (n *nodePool) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
 // was created by CA and can be deleted when scaled to 0.
-func (n *nodePool) Autoprovisioned() bool {
+func (n *nodePool) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (n *nodePool) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (n *nodePool) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, nil
 }
 
@@ -219,14 +220,14 @@ func (ic *IonosCloudCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (ic *IonosCloudCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (ic *IonosCloudCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	return ic.manager.GetNodeGroups()
 }
 
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (ic *IonosCloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (ic *IonosCloudCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	providerID := node.Spec.ProviderID
 	if nodeGroup := ic.manager.GetNodeGroupForNode(node); nodeGroup != nil {
 		klog.V(5).Infof("Found cached node group entry %s for node %s", nodeGroup.Id(), providerID)
@@ -236,7 +237,7 @@ func (ic *IonosCloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 
 	for _, nodeGroup := range ic.manager.GetNodeGroups() {
 		klog.V(5).Infof("Checking node group %s", nodeGroup.Id())
-		nodes, err := nodeGroup.Nodes()
+		nodes, err := nodeGroup.Nodes(context.TODO())
 		if err != nil {
 			return nil, err
 		}
@@ -255,19 +256,19 @@ func (ic *IonosCloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (ic *IonosCloudCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (ic *IonosCloudCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
-func (ic *IonosCloudCloudProvider) Pricing() (cloudprovider.PricingModel, caerrors.AutoscalerError) {
+func (ic *IonosCloudCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, caerrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from
 // the cloud provider. Implementation optional.
-func (ic *IonosCloudCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (ic *IonosCloudCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -275,7 +276,7 @@ func (ic *IonosCloudCloudProvider) GetAvailableMachineTypes() ([]string, error) 
 // provided. The node group is not automatically created on the cloud provider
 // side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (ic *IonosCloudCloudProvider) NewNodeGroup(
+func (ic *IonosCloudCloudProvider) NewNodeGroup(ctx context.Context,
 	machineType string,
 	labels map[string]string,
 	systemLabels map[string]string,
@@ -287,36 +288,36 @@ func (ic *IonosCloudCloudProvider) NewNodeGroup(
 
 // GetResourceLimiter returns struct containing limits (max, min) for
 // resources (cores, memory etc.).
-func (ic *IonosCloudCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (ic *IonosCloudCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return ic.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (ic *IonosCloudCloudProvider) GPULabel() string {
+func (ic *IonosCloudCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (ic *IonosCloudCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (ic *IonosCloudCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (ic *IonosCloudCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(ic, node)
+func (ic *IonosCloudCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), ic, node)
 }
 
 // Cleanup cleans up read resources before the cloud provider is destroyed,
 // i.e. go routines etc.
-func (ic *IonosCloudCloudProvider) Cleanup() error {
+func (ic *IonosCloudCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically
 // update cloud provider state. In particular the list of node groups returned
 // by NodeGroups() can change as a result of CloudProvider.Refresh().
-func (ic *IonosCloudCloudProvider) Refresh() error {
+func (ic *IonosCloudCloudProvider) Refresh(ctx context.Context) error {
 	// Currently only static node groups are supported.
 	return nil
 }

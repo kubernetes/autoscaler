@@ -17,6 +17,7 @@ limitations under the License.
 package rancher
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
@@ -121,7 +122,7 @@ func TestNodeGroupNodes(t *testing.T) {
 
 			tc.nodeGroup.provider = provider
 
-			nodes, err := tc.nodeGroup.Nodes()
+			nodes, err := tc.nodeGroup.Nodes(context.Background())
 			if err != nil {
 				if tc.expectedErrContains == "" || !strings.Contains(err.Error(), tc.expectedErrContains) {
 					t.Fatalf("expected err to contain %q, got %q", tc.expectedErrContains, err)
@@ -214,20 +215,20 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 
 			tc.nodeGroup.provider = provider
 
-			if err := provider.Refresh(); err != nil {
+			if err := provider.Refresh(context.Background()); err != nil {
 				t.Fatal(err)
 			}
 
 			// store delta before deleting nodes
 			delta := tc.nodeGroup.replicas - tc.expectedTargetSize
 
-			if err := tc.nodeGroup.DeleteNodes(tc.toDelete); err != nil {
+			if err := tc.nodeGroup.DeleteNodes(context.Background(), tc.toDelete); err != nil {
 				if tc.expectedErrContains == "" || !strings.Contains(err.Error(), tc.expectedErrContains) {
 					t.Fatalf("expected err to contain %q, got %q", tc.expectedErrContains, err)
 				}
 			}
 
-			targetSize, err := tc.nodeGroup.TargetSize()
+			targetSize, err := tc.nodeGroup.TargetSize(context.Background())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -305,7 +306,7 @@ func TestIncreaseTargetSize(t *testing.T) {
 			}
 
 			tc.nodeGroup.provider = provider
-			if err := tc.nodeGroup.IncreaseSize(tc.delta); err != nil {
+			if err := tc.nodeGroup.IncreaseSize(context.Background(), tc.delta); err != nil {
 				if tc.expectedErrContains == "" || !strings.Contains(err.Error(), tc.expectedErrContains) {
 					t.Fatalf("expected err to contain %q, got %q", tc.expectedErrContains, err)
 				}
@@ -363,7 +364,7 @@ func TestDecreaseTargetSize(t *testing.T) {
 			}
 
 			tc.nodeGroup.provider = provider
-			if err := tc.nodeGroup.DecreaseTargetSize(tc.delta); err != nil {
+			if err := tc.nodeGroup.DecreaseTargetSize(context.Background(), tc.delta); err != nil {
 				if tc.expectedErrContains == "" || !strings.Contains(err.Error(), tc.expectedErrContains) {
 					t.Fatalf("expected err to contain %q, got %q", tc.expectedErrContains, err)
 				}
@@ -391,7 +392,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 		},
 	}
 
-	nodeInfo, err := ng.TemplateNodeInfo()
+	nodeInfo, err := ng.TemplateNodeInfo(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

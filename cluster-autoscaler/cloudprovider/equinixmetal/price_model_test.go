@@ -17,6 +17,7 @@ limitations under the License.
 package equinixmetal
 
 import (
+	"context"
 	"math"
 	"testing"
 	"time"
@@ -39,12 +40,12 @@ func TestGetNodePrice(t *testing.T) {
 
 	node1 := BuildTestNode("node1", plan1.CPU*1000, plan1.MemoryMb*1024*1024)
 	node1.Labels = labelsPool1
-	price1, err := model.NodePrice(node1, now, now.Add(time.Hour))
+	price1, err := model.NodePrice(context.Background(), node1, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 
 	node2 := BuildTestNode("node2", plan2.CPU*1000, plan2.MemoryMb*1024*1024)
 	node2.Labels = labelsPool2
-	price2, err := model.NodePrice(node2, now, now.Add(time.Hour))
+	price2, err := model.NodePrice(context.Background(), node2, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 
 	assert.True(t, price1 == 1.05)
@@ -58,9 +59,9 @@ func TestGetPodPrice(t *testing.T) {
 	model := &Price{}
 	now := time.Now()
 
-	price1, err := model.PodPrice(pod1, now, now.Add(time.Hour))
+	price1, err := model.PodPrice(context.Background(), pod1, now, now.Add(time.Hour))
 	assert.NoError(t, err)
-	price2, err := model.PodPrice(pod2, now, now.Add(time.Hour))
+	price2, err := model.PodPrice(context.Background(), pod2, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 	// 2 times bigger pod should cost twice as much.
 	assert.True(t, math.Abs(price1*2-price2) < 0.001)

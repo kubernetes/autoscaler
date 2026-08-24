@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	"context"
 	"fmt"
 	"path"
 
@@ -67,11 +68,11 @@ func (p *provider) Name() string {
 	return p.providerName
 }
 
-func (p *provider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (p *provider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return p.resourceLimiter, nil
 }
 
-func (p *provider) NodeGroups() []cloudprovider.NodeGroup {
+func (p *provider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	nodegroups, err := p.controller.nodeGroups()
 	if err != nil {
 		klog.Errorf("error getting node groups: %v", err)
@@ -80,7 +81,7 @@ func (p *provider) NodeGroups() []cloudprovider.NodeGroup {
 	return nodegroups
 }
 
-func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup, error) {
+func (p *provider) NodeGroupForNode(ctx context.Context, node *corev1.Node) (cloudprovider.NodeGroup, error) {
 	ng, err := p.controller.nodeGroupForNode(node)
 	if err != nil {
 		return nil, err
@@ -92,7 +93,7 @@ func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup,
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (p *provider) HasInstance(node *corev1.Node) (bool, error) {
+func (p *provider) HasInstance(ctx context.Context, node *corev1.Node) (bool, error) {
 	machineID := node.Annotations[machineAnnotationKey]
 	ns := node.Annotations[clusterNamespaceAnnotationKey]
 
@@ -104,15 +105,16 @@ func (p *provider) HasInstance(node *corev1.Node) (bool, error) {
 	return false, fmt.Errorf("machine not found for node %s: %v", node.Name, err)
 }
 
-func (*provider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (*provider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
-func (*provider) GetAvailableMachineTypes() ([]string, error) {
+func (*provider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 func (*provider) NewNodeGroup(
+	ctx context.Context,
 	machineType string,
 	labels map[string]string,
 	systemLabels map[string]string,
@@ -122,11 +124,11 @@ func (*provider) NewNodeGroup(
 	return nil, cloudprovider.ErrNotImplemented
 }
 
-func (*provider) Cleanup() error {
+func (*provider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
-func (p *provider) Refresh() error {
+func (p *provider) Refresh(ctx context.Context) error {
 	return nil
 }
 
@@ -136,20 +138,20 @@ func (p *provider) GetInstanceID(node *corev1.Node) string {
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (p *provider) GetAvailableGPUTypes() map[string]struct{} {
+func (p *provider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	// TODO: implement this
 	return nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (p *provider) GPULabel() string {
+func (p *provider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (p *provider) GetNodeGpuConfig(node *corev1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(p, node)
+func (p *provider) GetNodeGpuConfig(ctx context.Context, node *corev1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), p, node)
 }
 
 func newProvider(

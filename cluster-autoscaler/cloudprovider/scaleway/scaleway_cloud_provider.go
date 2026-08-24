@@ -129,7 +129,7 @@ func newScalewayCloudProvider(configFile io.Reader, defaultUserAgent string, rl 
 	}
 
 	// Perform initial refresh to populate node groups cache
-	if err := provider.Refresh(); err != nil {
+	if err := provider.Refresh(context.TODO()); err != nil {
 		klog.Errorf("Failed to perform initial refresh: %v", err)
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func (*scalewayCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (scw *scalewayCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (scw *scalewayCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	klog.V(4).Info("NodeGroups,ClusterID=", scw.clusterID)
 
 	return scw.providerNodeGroups
@@ -178,7 +178,7 @@ func (scw *scalewayCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (scw *scalewayCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (scw *scalewayCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	klog.V(4).Infof("NodeGroupForNode,NodeSpecProviderID=%s", node.Spec.ProviderID)
 
 	for _, ng := range scw.nodeGroups {
@@ -192,27 +192,27 @@ func (scw *scalewayCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 
 // HasInstance returns whether the node has corresponding instance in cloud provider,
 // true if the node has an instance, false if it no longer exists
-func (scw *scalewayCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (scw *scalewayCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return node.Spec.ProviderID != "", nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (scw *scalewayCloudProvider) Pricing() (cloudprovider.PricingModel, ca_errors.AutoscalerError) {
+func (scw *scalewayCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, ca_errors.AutoscalerError) {
 	klog.V(4).Info("Pricing,called")
 	return scw, nil
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (scw *scalewayCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (scw *scalewayCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (scw *scalewayCloudProvider) NewNodeGroup(
+func (scw *scalewayCloudProvider) NewNodeGroup(ctx context.Context,
 	machineType string,
 	labels map[string]string,
 	systemLabels map[string]string,
@@ -224,39 +224,39 @@ func (scw *scalewayCloudProvider) NewNodeGroup(
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (scw *scalewayCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (scw *scalewayCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	klog.V(4).Info("GetResourceLimiter,called")
 	return scw.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (scw *scalewayCloudProvider) GPULabel() string {
+func (scw *scalewayCloudProvider) GPULabel(ctx context.Context) string {
 	klog.V(6).Info("GPULabel,called")
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (scw *scalewayCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (scw *scalewayCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	klog.V(4).Info("GetAvailableGPUTypes,called")
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (scw *scalewayCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+func (scw *scalewayCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
 	klog.V(6).Info("GetNodeGpuConfig,called")
-	return gpu.GetNodeGPUFromCloudProvider(scw, node)
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), scw, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (scw *scalewayCloudProvider) Cleanup() error {
+func (scw *scalewayCloudProvider) Cleanup(ctx context.Context) error {
 	klog.V(4).Info("Cleanup,called")
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (scw *scalewayCloudProvider) Refresh() error {
+func (scw *scalewayCloudProvider) Refresh(ctx context.Context) error {
 	klog.V(4).Info("Refresh,ClusterID=", scw.clusterID)
 
 	// Only skip refresh if lastRefresh is non-zero and interval has not elapsed
@@ -331,7 +331,7 @@ func (scw *scalewayCloudProvider) Refresh() error {
 
 // NodePrice returns a price of running the given node for a given period of time.
 // All prices returned by the structure should be in the same currency.
-func (scw *scalewayCloudProvider) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
+func (scw *scalewayCloudProvider) NodePrice(ctx context.Context, node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	poolID, ok := node.Labels[PoolLabel]
 	if !ok {
 		return 0.0, fmt.Errorf("node %s does not have pool label %s", node.Name, PoolLabel)
@@ -350,6 +350,6 @@ func (scw *scalewayCloudProvider) NodePrice(node *apiv1.Node, startTime time.Tim
 
 // PodPrice returns a theoretical minimum price of running a pod for a given
 // period of time on a perfectly matching machine.
-func (scw *scalewayCloudProvider) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
+func (scw *scalewayCloudProvider) PodPrice(ctx context.Context, pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
 	return 0.0, nil
 }
