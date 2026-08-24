@@ -18,7 +18,6 @@ package input
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"slices"
 	"time"

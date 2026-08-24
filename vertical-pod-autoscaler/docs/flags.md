@@ -161,6 +161,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `admission-controller-status-lease-timeout` | duration | 1m0s | The time after which the admission controller status is considered stale and the updater stops evicting pods. Must be longer than the admission controller's --status-lease-update-interval flag. |
 | `alsologtostderr` | bool | false | log to standard error as well as files (no effect when -logtostderr=true) |
 | `alsologtostderrthreshold` | severity |  | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |
+| `concurrent-cpu-startup-boost-syncs` | int | 1 | The number of workers processing CPU startup boost unboosting concurrently. |
 | `evict-after-oom-threshold` | duration | 10m0s | The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start. |
 | `eviction-rate-burst` | int | 1 | Burst of pods that can be evicted. |
 | `eviction-rate-limit` | float | -1 | Number of pods that can be evicted per second. A rate limit set to 0 or -1 will disable the rate limiter. |

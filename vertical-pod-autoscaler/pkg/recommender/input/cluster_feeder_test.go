@@ -30,7 +30,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 	"k8s.io/klog/v2/ktesting"
 
@@ -1008,11 +1007,7 @@ func TestFilterVPAsIgnoreNamespaces(t *testing.T) {
 
 func TestCanCleanupCheckpoints(t *testing.T) {
 	_, tctx := ktesting.NewTestContext(t)
-	client := fake.NewClientset()
 	namespace := "testNamespace"
-
-	_, err := client.CoreV1().Namespaces().Create(tctx, &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}, metav1.CreateOptions{})
-	assert.NoError(t, err)
 
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("container").WithNamespace(namespace).WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
 		Kind:       kind,
@@ -1062,16 +1057,11 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 		return true, nil, nil
 	})
 
-	// Create namespace lister mock that will return the checkpoint list
-	checkpointNamespaceLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
-	checkpointNamespaceLister.On("List").Return(vpacheckpoints, nil)
-
-	// Create main checkpoint mock that will return the namespace lister
+	// Create checkpoint lister mock that will return the checkpoint list
 	checkpointLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
-	checkpointLister.On("VerticalPodAutoscalerCheckpoints", namespace).Return(checkpointNamespaceLister)
+	checkpointLister.On("List").Return(vpacheckpoints, nil)
 
 	feeder := clusterStateFeeder{
-		coreClient:          client.CoreV1(),
 		vpaLister:           vpaLister,
 		vpaCheckpointClient: checkpointClient,
 		vpaCheckpointLister: checkpointLister,
