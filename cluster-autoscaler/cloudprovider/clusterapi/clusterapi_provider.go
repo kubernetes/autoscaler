@@ -231,5 +231,5 @@ func BuildClusterAPI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeG
 		klog.Fatal(err)
 	}
 
-	return newProvider(cloudprovider.ClusterAPIProviderName, rl, controller)
+	return newProvider(ProviderName, rl, controller)
 }
