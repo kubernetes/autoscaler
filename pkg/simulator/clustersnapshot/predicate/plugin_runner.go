@@ -57,7 +57,7 @@ func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapsh
 func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts clustersnapshot.SchedulingOptions) (*apiv1.Node, *schedulerimpl.CycleState, clustersnapshot.SchedulingError) {
 	// Currently, the scheduler checks that verbosity threshold for logs is at least 4 before adding contextual data to the logger.
 	// We don't want scheduler to add contextual data to the logger, as it causes performance issues in CA.
-	// This line sets the verbosity threshold of scheduler's logs to match that specified by --scheduler-verbosity flag (0 by default).
+	// This line sets the verbosity threshold of scheduler's logs to match that specified by --scheduler-verbosity flag.
 	loggingCtx := klog.NewContext(context.TODO(), klog.Background().V(p.verbosityOffset))
 
 	nodeInfosList, err := p.snapshot.ListNodeInfos()
@@ -154,7 +154,9 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, opts 
 func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string) (*apiv1.Node, *schedulerimpl.CycleState, clustersnapshot.SchedulingError) {
 	// Currently, the scheduler checks that verbosity threshold for logs is at least 4 before adding contextual data to the logger.
 	// We don't want scheduler to add contextual data to the logger, as it causes performance issues in CA.
-	// This line sets the verbosity threshold of scheduler's logs to match that specified by --scheduler-verbosity flag (0 by default).
+	// The .V() method creates a new logger with a verbosity of the original logger + the provided offset value.
+	// klog.Background() has the verbosity of the globally initialized logger which comes from the --v flag.
+	// Verbosity offset is computed as the difference between --v and  --scheduler-verbosity flag values.
 	loggingCtx := klog.NewContext(context.TODO(), klog.Background().V(p.verbosityOffset))
 
 	nodeInfo, err := p.snapshot.GetNodeInfo(nodeName)
