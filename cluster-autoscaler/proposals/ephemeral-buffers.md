@@ -105,9 +105,19 @@ one-shot GKE `standby-capacity` buffer, not just active capacity.
   (fill or deadline) the consumer withdraws virtual pods. A `scalableRef` buffer manages capacity by
   scaling an existing resource rather than by emitting virtual pods, so its terminal behavior (does
   the consumer scale the referent down? leave it? by how much?) is undefined and materially
-  different. v1 one-shot therefore requires **`podTemplateRef` + `replicas`** (also the only shape
-  with an immutable target — see [snapshotting](#snapshotting-the-target-for-mutable-target-buffers)).
-  Defining `scalableRef`/`percentage` teardown is deferred to a follow-up.
+  different. Defining `scalableRef`/`percentage` teardown is deferred to a follow-up.
+* **Mutable / derived targets — out of v1 scope.** For v1 one-shot the target chunk count is
+  **exactly `spec.replicas`**, and it must be **fixed** for the cycle. Concretely v1 requires
+  **`podTemplateRef` + `replicas`** and additionally:
+  * **`limits` is not supported with `refillStrategy: none`.** The base API lets `limits` cap the
+    resolved target below `replicas` (a `replicas: 8` object can resolve to a target of 4), which
+    would make the `target − consumedReplicas` remainder ambiguous. A one-shot buffer that also sets
+    `limits` should be rejected (or `limits` ignored) in v1.
+  * **`spec.replicas` is treated as immutable for the cycle.** A one-shot buffer does not re-arm;
+    editing `replicas` mid-cycle is unsupported — recreate the object to start a new cycle.
+  Supporting `limits` or a mutable/derived target requires persisting a resolved-target snapshot; see
+  [snapshotting](#snapshotting-the-target-for-mutable-target-buffers). That is the forward path, not
+  v1.
 
 # Proposal
 
@@ -149,20 +159,24 @@ where the equivalent accounting is *non*-monotonic — freed capacity is recreat
 ### Snapshotting the target for mutable-target buffers
 
 The remainder is computed against the buffer's **target** chunk count, not its currently-provisioned
-count. For a `podTemplateRef` + `replicas` buffer the target is simply `spec.replicas` and is
-**immutable** for the lifetime of the one-shot cycle: consumption does *not* decrement it, so
-`replicas − consumedReplicas` stays correct (confirmed on KWOK — `status.replicas` remains the
-configured target as chunks are consumed). This is the only shape in v1 scope (see Non-Goals).
+count. The target is the *resolved* replica count the buffer controller reports in
+`status.replicas`. In v1 scope — `podTemplateRef` + `replicas`, no `limits`, immutable `replicas`
+(see Non-Goals) — this resolved target equals `spec.replicas` and is **fixed** for the cycle:
+consumption does *not* decrement it, so `replicas − consumedReplicas` stays correct (confirmed on
+KWOK — `status.replicas` remains the configured target as chunks are consumed). The reference
+implementation reads `status.replicas` as the target and advances `consumedReplicas` monotonically,
+clamped to it; a reconcile or controller restart therefore re-reads the same fixed value.
 
-For buffers whose target is **derived and can change** — `percentage` of a `scalableRef`, or
-`limits`-bounded sizing — the resolved target could drift mid-cycle, which would corrupt the
-`target − consumed` remainder (e.g. an 8→6 target with `consumed=2` would emit `6−2=4`,
-double-counting consumption). Such buffers MUST **snapshot the resolved target** when the one-shot
-cycle begins, compute the remainder and the `Fulfilled` check against that snapshot, and **clamp**
-`consumedReplicas` to it. **Snapshot lifecycle:** the snapshot is taken once per cycle; a one-shot
-buffer does not re-arm, so **recreating (delete + create) the `CapacityBuffer` starts a new cycle**
-with a fresh snapshot. (Since v1 scopes ephemeral to `podTemplateRef` + `replicas`, snapshotting is a
-forward-looking requirement for when mutable-target shapes are brought in scope.)
+Any shape whose target is **derived and can change** — `percentage` of a `scalableRef`, or a
+`limits`-capped target, or an edited `replicas` — is out of v1 scope precisely because the resolved
+target could drift mid-cycle and corrupt the `target − consumed` remainder (e.g. an 8→6 target with
+`consumed=2` would emit `6−2=4`, double-counting consumption; a restart could latch `Fulfilled`
+against the wrong target). To bring such shapes in scope, the consumer MUST **persist the resolved
+target snapshot** when the one-shot cycle begins and compute the remainder, the clamp, and the
+`Fulfilled` check against that snapshot. **Snapshot lifecycle:** the snapshot is taken once per
+cycle; a one-shot buffer does not re-arm, so **recreating (delete + create) the `CapacityBuffer`
+starts a new cycle** with a fresh snapshot. This is the forward path; v1 avoids the problem by
+fixing the target (rejecting `limits` and target edits) rather than persisting a snapshot.
 
 ## `fillDeadlineSeconds`
 
@@ -214,10 +228,10 @@ Summed requests are a `ResourceList` with several dimensions (CPU, memory, exten
 "divide by the per-chunk requests" has no single scalar answer — CPU alone might imply 2 chunks
 while memory implies 1. The rule, which every consumer MUST use so counts agree:
 
-```
+```text
 consumedChunks = min over each resource r in perChunk, with perChunk[r] > 0, of
                      floor( boundSum[r] / perChunk[r] )
-                 clamped to [0, replicas]
+                 clamped to [0, target]   // target = resolved replica count (see below)
 ```
 
 * **MIN, not MAX** — a chunk is a whole pod-shape and requires *all* its dimensions; the binding
@@ -325,13 +339,20 @@ type CapacityBufferSpec struct {
     // refillStrategy controls what happens to buffer capacity consumed by real workloads.
     // "recreate" maintains the buffer size; "recreateUpToLimit" is the capped behavior;
     // "none" is one-shot (consumed capacity is not recreated).
-    // An omitted/empty value defaults to "recreate" — i.e. existing objects (which have no
-    // refillStrategy) keep today's behavior, so this is a backward-compatible addition.
+    // An omitted/empty value MUST be treated as "recreate" by consumers — i.e. objects created
+    // before this field existed keep today's behavior, so this is a backward-compatible addition.
     // (Field name and values are under discussion; alt. name onCapacityConsumption.)
     // +optional
-    // +kubebuilder:validation:Enum=recreate;none        // recreateUpToLimit added by capped buffers
-    // +default="recreate"
+    // +kubebuilder:validation:Enum=recreate;recreateUpToLimit;none
+    // +kubebuilder:default=recreate
     RefillStrategy *string `json:"refillStrategy,omitempty" protobuf:"bytes,7,opt,name=refillStrategy"`
+    // NOTE ON THE ENUM: the enum above lists all three shared values. This proposal defines only
+    // "none"; "recreateUpToLimit" is defined by the capped-buffers proposal. If the two proposals
+    // land separately, each consumer's transitional schema validates the subset it implements
+    // (Karpenter's reference impl currently validates recreate;none) and the full enum is unioned
+    // once both merge. The default marker uses the +kubebuilder:default form to match the existing
+    // CapacityBuffer fields (e.g. provisioningStrategy). Consumers that do not server-side default
+    // (e.g. Karpenter, which treats a nil value as "recreate" in code) need no schema default.
 
     // fillDeadlineSeconds bounds, in seconds, how long a one-shot (refillStrategy=none) buffer
     // keeps trying to provision if it is never filled. On expiry the autoscaler withdraws
