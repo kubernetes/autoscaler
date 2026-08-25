@@ -96,7 +96,7 @@ type CloudProvider interface {
 	Cleanup(context.Context) error
 
 	// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(context.TODO()).
+	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 	Refresh(context.Context) error
 }
 

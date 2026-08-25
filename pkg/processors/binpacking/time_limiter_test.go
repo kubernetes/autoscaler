@@ -66,7 +66,7 @@ func TestTimeLimiter(t *testing.T) {
 			limiter.InitBinpacking(nil, nil)
 			fakeClock.Step(tc.timeAdvanced)
 
-			assert.Equal(t, tc.expectStop, limiter.StopBinpacking(context.TODO(), nil, nil))
+			assert.Equal(t, tc.expectStop, limiter.StopBinpacking(context.Background(), nil, nil))
 		})
 	}
 }

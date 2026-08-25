@@ -137,7 +137,7 @@ func TestProvider_Quotas(t *testing.T) {
 			fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithObjects(tc.existingCQs...).Build()
 			p := &Provider{kubeClient: fakeClient}
 
-			gotQuotas, err := p.Quotas(context.TODO())
+			gotQuotas, err := p.Quotas(context.Background())
 			if err != nil {
 				t.Fatalf("Provider.Quotas() unexpected error: %v", err)
 			}

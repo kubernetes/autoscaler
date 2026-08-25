@@ -37,7 +37,7 @@ func TestNodeLatencyTracker_Decorator(t *testing.T) {
 	mock := &mockStatusProcessor{}
 	tracker := NewNodeLatencyTracker(mock)
 
-	tracker.Process(context.TODO(), &ca_context.AutoscalingContext{}, &status.ScaleDownStatus{})
+	tracker.Process(context.Background(), &ca_context.AutoscalingContext{}, &status.ScaleDownStatus{})
 
 	if !mock.processCalled {
 		t.Errorf("Process() did not call wrapped.Process()")
@@ -210,7 +210,7 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 				stepTime := baseTime.Add(time.Duration(i+1) * testStepDuration)
 
 				candidates := candidatesFromNames(step.unneededList, step.thresholds)
-				tracker.UpdateScaleDownCandidates(context.TODO(), candidates, stepTime)
+				tracker.UpdateScaleDownCandidates(context.Background(), candidates, stepTime)
 
 				var sd *status.ScaleDownStatus
 				if step.unremovableReason != nil {
@@ -218,7 +218,7 @@ func TestNodeLatencyTracker_SimulationLoop(t *testing.T) {
 				} else {
 					sd = newScaleDownStatus(step.scaledDownList, step.unremovableList)
 				}
-				tracker.Process(context.TODO(), &ca_context.AutoscalingContext{}, sd)
+				tracker.Process(context.Background(), &ca_context.AutoscalingContext{}, sd)
 
 				gotTracked := tracker.getTrackedNodes()
 				gotSet := sets.New(gotTracked...)

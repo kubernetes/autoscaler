@@ -107,7 +107,7 @@ func TestLeastNodes(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			e := NewFilter()
-			ret := e.BestOptions(context.TODO(), tc.expansionOptions, nil)
+			ret := e.BestOptions(context.Background(), tc.expansionOptions, nil)
 			assert.Equal(t, ret, tc.expectedExpansionOptions)
 		})
 	}

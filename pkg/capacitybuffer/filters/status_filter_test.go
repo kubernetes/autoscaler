@@ -75,7 +75,7 @@ func TestStatusFilter(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			statusFilter := NewStatusFilter(test.conditionsToFilterOut)
-			filtered, filteredOut := statusFilter.Filter(context.TODO(), test.buffers)
+			filtered, filteredOut := statusFilter.Filter(context.Background(), test.buffers)
 			assert.ElementsMatch(t, test.expectedFilteredBuffers, filtered)
 			assert.ElementsMatch(t, test.expectedFilteredOutBuffers, filteredOut)
 		})

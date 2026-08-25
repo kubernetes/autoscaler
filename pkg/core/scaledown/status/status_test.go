@@ -62,7 +62,7 @@ func TestSetUnremovableNodesInfo(t *testing.T) {
 	}
 
 	s := &ScaleDownStatus{}
-	s.SetUnremovableNodesInfo(context.TODO(), unremovableNodes, nodeUtilizationMap, provider)
+	s.SetUnremovableNodesInfo(context.Background(), unremovableNodes, nodeUtilizationMap, provider)
 
 	assert.Equal(t, 1, len(s.UnremovableNodes))
 	assert.Equal(t, "n1", s.UnremovableNodes[0].Node.Name)

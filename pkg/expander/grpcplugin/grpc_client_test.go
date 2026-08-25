@@ -154,7 +154,7 @@ func TestValidTransformAndSanitizeOptionsFromGRPC(t *testing.T) {
 
 	expectedOptions := []expander.Option{eoT2Micro, eoT3Large, eoM44XLarge}
 
-	ret := transformAndSanitizeOptionsFromGRPC(context.TODO(), responseOptionsSlice, nodeGroupIDOptionMap)
+	ret := transformAndSanitizeOptionsFromGRPC(context.Background(), responseOptionsSlice, nodeGroupIDOptionMap)
 	assert.Equal(t, expectedOptions, ret)
 }
 
@@ -166,7 +166,7 @@ func TestAnInvalidTransformAndSanitizeOptionsFromGRPC(t *testing.T) {
 		eoT3Large.NodeGroup.Id(): eoT3Large,
 	}
 
-	ret := transformAndSanitizeOptionsFromGRPC(context.TODO(), responseOptionsSlice, nodeGroupIDOptionMap)
+	ret := transformAndSanitizeOptionsFromGRPC(context.Background(), responseOptionsSlice, nodeGroupIDOptionMap)
 	assert.Equal(t, []expander.Option{eoT2Micro, eoT3Large}, ret)
 }
 
@@ -190,7 +190,7 @@ func TestBestOptionsValid(t *testing.T) {
 		gomock.Any(), gomock.Eq(expectedBestOptionsReq),
 	).Return(&protos.BestOptionsResponse{Options: []*protos.Option{&grpcEoT3Large}}, nil)
 
-	resp := g.BestOptions(context.TODO(), options, nodeInfos)
+	resp := g.BestOptions(context.Background(), options, nodeInfos)
 
 	assert.Equal(t, resp, []expander.Option{eoT3Large})
 }
@@ -227,7 +227,7 @@ func TestBestOptionsEmpty(t *testing.T) {
 					Options:      []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
 					NodeBytesMap: grpcNodeBytesMap,
 				})).Return(&testCases[i].mockResponse, nil)
-		resp := g.BestOptions(context.TODO(), options, makeFakeNodeInfos())
+		resp := g.BestOptions(context.Background(), options, makeFakeNodeInfos())
 
 		assert.Nil(t, resp)
 	}
@@ -293,7 +293,7 @@ func TestBestOptionsErrors(t *testing.T) {
 						NodeBytesMap: grpcNodeBytesMap,
 					})).Return(&testCases[i].mockResponse, testCases[i].errResponse)
 		}
-		resp := testCases[i].client.BestOptions(context.TODO(), options, testCases[i].nodeInfo)
+		resp := testCases[i].client.BestOptions(context.Background(), options, testCases[i].nodeInfo)
 
 		assert.Equal(t, resp, options)
 	}

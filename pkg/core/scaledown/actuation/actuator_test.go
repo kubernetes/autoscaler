@@ -1283,9 +1283,9 @@ func runStartDeletionTest(t *testing.T, tc startDeletionTestCase, force bool) {
 	var gotScaleDownNodes []*status.ScaleDownNode
 	var gotErr error
 	if force {
-		gotResult, gotScaleDownNodes, gotErr = actuator.StartForceDeletion(context.TODO(), allEmptyNodes, allDrainNodes)
+		gotResult, gotScaleDownNodes, gotErr = actuator.StartForceDeletion(context.Background(), allEmptyNodes, allDrainNodes)
 	} else {
-		gotResult, gotScaleDownNodes, gotErr = actuator.StartDeletion(context.TODO(), allEmptyNodes, allDrainNodes)
+		gotResult, gotScaleDownNodes, gotErr = actuator.StartDeletion(context.Background(), allEmptyNodes, allDrainNodes)
 	}
 
 	if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
@@ -1557,7 +1557,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 			}
 
 			for _, nodes := range deleteNodes {
-				actuator.StartDeletion(context.TODO(), nodes, []*apiv1.Node{})
+				actuator.StartDeletion(context.Background(), nodes, []*apiv1.Node{})
 				time.Sleep(deleteInterval)
 			}
 			wantDeletedNodes := 0

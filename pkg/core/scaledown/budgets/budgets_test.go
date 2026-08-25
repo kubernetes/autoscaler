@@ -471,7 +471,7 @@ func TestCropNodesToBudgets(t *testing.T) {
 
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, allNodes, nil)
 			budgeter := NewScaleDownBudgetProcessor(&autoscalingCtx)
-			gotEmpty, gotDrain := budgeter.CropNodes(context.TODO(), ndt, emptyList, drainList)
+			gotEmpty, gotDrain := budgeter.CropNodes(context.Background(), ndt, emptyList, drainList)
 			if diff := cmp.Diff(tc.wantEmpty, gotEmpty, cmpopts.EquateEmpty(), transformNodeGroupView); diff != "" {
 				t.Errorf("cropNodesToBudgets empty nodes diff (-want +got):\n%s", diff)
 			}

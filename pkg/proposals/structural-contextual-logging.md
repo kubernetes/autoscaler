@@ -57,4 +57,4 @@ More about migration to structural logging can be read here: https://github.com/
 # CLI flags 
 We will add two flags:
 * `--scheduler-verbosity` &ndash; this is a workaround. Currently, enabling contxtual logging can cause performance regression. The main bottleneck are numerous calls to `klog.NewContext(...)` and `klog.LoggerWithValues(...)` in scheduler. This regression was also noticed in scheduler, that's why scheduler disables contextual logging if log verbosity is >= 4. Setting this flag to a value < 4 should mitigate the performance issues. 
-* `--enable-contextual-logging` &ndash; enables/disables contextual logging. This can be used if regression is noticed. This DOES NOT disable structural logging &ndash; the key-value pairs will still be appened at the end of the logs, but some key-value pairs might be missing.
+* `--feature-gates="ContextualLogging=true"/--feature-gates="ContextualLogging=false"` &ndash; enables/disables contextual logging. This can be used if regression is noticed. This DOES NOT disable structural logging &ndash; the key-value pairs will still be appened at the end of the logs, but some key-value pairs might be missing.

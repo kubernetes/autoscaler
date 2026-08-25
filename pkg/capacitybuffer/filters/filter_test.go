@@ -104,7 +104,7 @@ func TestCombinedAnyFilter(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			filter := NewCombinedAnyFilter(test.filters)
-			filtered, filteredOut := filter.Filter(context.TODO(), test.buffers)
+			filtered, filteredOut := filter.Filter(context.Background(), test.buffers)
 			assert.ElementsMatch(t, test.expectedFilteredBuffers, filtered)
 			assert.ElementsMatch(t, test.expectedFilteredOutBuffers, filteredOut)
 		})

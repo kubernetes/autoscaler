@@ -72,21 +72,21 @@ func TestCloudProviderNodeInstancesCache(t *testing.T) {
 	}
 
 	// Fetch stale instances.
-	results, err := cache.GetCloudProviderNodeInstances(context.TODO())
+	results, err := cache.GetCloudProviderNodeInstances(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, map[string][]cloudprovider.Instance{"ng1": {instanceNg1_1}, "ng2": {instanceNg2_1}, "ng3": {instanceNg3_1}}, results)
 	assert.Equal(t, 4, len(cache.cloudProviderNodeInstances))
 
 	// Invalidate entry in cache.
-	cache.InvalidateCacheEntry(context.TODO(), provider.GetNodeGroup("ng2"))
-	results, err = cache.GetCloudProviderNodeInstances(context.TODO())
+	cache.InvalidateCacheEntry(context.Background(), provider.GetNodeGroup("ng2"))
+	results, err = cache.GetCloudProviderNodeInstances(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, map[string][]cloudprovider.Instance{"ng1": {instanceNg1_1}, "ng2": {instanceNg2_2}, "ng3": {instanceNg3_1}}, results)
 	assert.Equal(t, 4, len(cache.cloudProviderNodeInstances))
 
 	// Refresh cache.
-	cache.Refresh(context.TODO())
-	results, err = cache.GetCloudProviderNodeInstances(context.TODO())
+	cache.Refresh(context.Background())
+	results, err = cache.GetCloudProviderNodeInstances(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, map[string][]cloudprovider.Instance{"ng1": {instanceNg1_1}, "ng2": {instanceNg2_2}, "ng3": {instanceNg3_2}}, results)
 	assert.Equal(t, 3, len(cache.cloudProviderNodeInstances))

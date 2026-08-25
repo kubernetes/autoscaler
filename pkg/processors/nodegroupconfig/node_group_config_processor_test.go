@@ -62,7 +62,7 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 	}
 
 	testUnneededTime := func(t *testing.T, p NodeGroupConfigProcessor, ng cloudprovider.NodeGroup, w Want, we error) {
-		res, err := p.GetScaleDownUnneededTime(context.TODO(), ng)
+		res, err := p.GetScaleDownUnneededTime(context.Background(), ng)
 		assert.Equal(t, err, we)
 		results := map[Want]time.Duration{
 			NIL:    time.Duration(0),
@@ -72,7 +72,7 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 		assert.Equal(t, res, results[w])
 	}
 	testUnreadyTime := func(t *testing.T, p NodeGroupConfigProcessor, ng cloudprovider.NodeGroup, w Want, we error) {
-		res, err := p.GetScaleDownUnreadyTime(context.TODO(), ng)
+		res, err := p.GetScaleDownUnreadyTime(context.Background(), ng)
 		assert.Equal(t, err, we)
 		results := map[Want]time.Duration{
 			NIL:    time.Duration(0),
@@ -82,7 +82,7 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 		assert.Equal(t, res, results[w])
 	}
 	testUtilizationThreshold := func(t *testing.T, p NodeGroupConfigProcessor, ng cloudprovider.NodeGroup, w Want, we error) {
-		res, err := p.GetScaleDownUtilizationThreshold(context.TODO(), ng)
+		res, err := p.GetScaleDownUtilizationThreshold(context.Background(), ng)
 		assert.Equal(t, err, we)
 		results := map[Want]float64{
 			NIL:    0.0,
@@ -92,7 +92,7 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 		assert.Equal(t, res, results[w])
 	}
 	testGpuThreshold := func(t *testing.T, p NodeGroupConfigProcessor, ng cloudprovider.NodeGroup, w Want, we error) {
-		res, err := p.GetScaleDownGpuUtilizationThreshold(context.TODO(), ng)
+		res, err := p.GetScaleDownGpuUtilizationThreshold(context.Background(), ng)
 		assert.Equal(t, err, we)
 		results := map[Want]float64{
 			NIL:    0.0,
@@ -102,7 +102,7 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 		assert.Equal(t, res, results[w])
 	}
 	testMaxNodeProvisionTime := func(t *testing.T, p NodeGroupConfigProcessor, ng cloudprovider.NodeGroup, w Want, we error) {
-		res, err := p.GetMaxNodeProvisionTime(context.TODO(), ng)
+		res, err := p.GetMaxNodeProvisionTime(context.Background(), ng)
 		assert.Equal(t, err, we)
 		results := map[Want]time.Duration{
 			NIL:    time.Duration(0),
@@ -113,7 +113,7 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 	}
 
 	testMaxNodeStartupTime := func(t *testing.T, p NodeGroupConfigProcessor, ng cloudprovider.NodeGroup, w Want, we error) {
-		res, err := p.GetMaxNodeStartupTime(context.TODO(), ng)
+		res, err := p.GetMaxNodeStartupTime(context.Background(), ng)
 		assert.Equal(t, err, we)
 		results := map[Want]time.Duration{
 			NIL:    15 * time.Minute,
@@ -125,7 +125,7 @@ func TestDelegatingNodeGroupConfigProcessor(t *testing.T) {
 
 	// for IgnoreDaemonSetsUtilization
 	testIgnoreDSUtilization := func(t *testing.T, p NodeGroupConfigProcessor, ng cloudprovider.NodeGroup, w Want, we error) {
-		res, err := p.GetIgnoreDaemonSetsUtilization(context.TODO(), ng)
+		res, err := p.GetIgnoreDaemonSetsUtilization(context.Background(), ng)
 		assert.Equal(t, err, we)
 		results := map[Want]bool{
 			NIL:    false,

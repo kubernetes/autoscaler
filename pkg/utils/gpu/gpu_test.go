@@ -231,7 +231,7 @@ func TestGetGpuInfoForMetrics(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			gpuResource, gpuType := gpu.GetGpuInfoForMetrics(context.TODO(), tc.gpuConfig, availableGPUTypes, tc.node, tc.nodeGroup)
+			gpuResource, gpuType := gpu.GetGpuInfoForMetrics(context.Background(), tc.gpuConfig, availableGPUTypes, tc.node, tc.nodeGroup)
 			assert.Equal(t, tc.expectedGpuResource, gpuResource)
 			assert.Equal(t, tc.expectedGpuType, gpuType)
 		})

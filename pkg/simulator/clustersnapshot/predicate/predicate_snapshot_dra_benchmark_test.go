@@ -334,7 +334,7 @@ func BenchmarkScheduleRevert(b *testing.B) {
 							draSnapshot.AddClaims(ownedClaims[nodeIndex])
 						}
 
-						err = snapshot.SetClusterState(context.TODO(), nil, nil, draSnapshot, nil)
+						err = snapshot.SetClusterState(context.Background(), nil, nil, draSnapshot, nil)
 						if err != nil {
 							b.Errorf("Failed to set cluster state: %v", err)
 						}

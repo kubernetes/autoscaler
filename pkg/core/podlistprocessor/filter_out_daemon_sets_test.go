@@ -70,7 +70,7 @@ func TestFilterOutDaemonSetPodListProcessor(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			processor := NewFilterOutDaemonSetPodListProcessor()
-			pods, err := processor.Process(context.TODO(), nil, tc.pods)
+			pods, err := processor.Process(context.Background(), nil, tc.pods)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.wantPods, pods)
 		})

@@ -275,7 +275,7 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, tc.nodes, tc.pods)
 
 			processor := NewCurrentlyDrainedNodesPodListProcessor()
-			pods, err := processor.Process(context.TODO(), &autoscalingCtx, tc.unschedulablePods)
+			pods, err := processor.Process(context.Background(), &autoscalingCtx, tc.unschedulablePods)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, tc.wantPods, pods)
 		})

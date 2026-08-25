@@ -65,7 +65,7 @@ func TestIncreaseSize(t *testing.T) {
 	}
 
 	// usual case
-	err := ng.IncreaseSize(context.TODO(), 1)
+	err := ng.IncreaseSize(context.Background(), 1)
 	assert.Nil(t, err)
 	assert.Len(t, nodes, 1)
 	assert.Equal(t, 3, ng.targetSize)
@@ -77,14 +77,14 @@ func TestIncreaseSize(t *testing.T) {
 
 	// delta is negative
 	nodes = []*apiv1.Node{}
-	err = ng.IncreaseSize(context.TODO(), -1)
+	err = ng.IncreaseSize(context.Background(), -1)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), sizeIncreaseMustBePositiveErr)
 	assert.Len(t, nodes, 0)
 
 	// delta is greater than max size
 	nodes = []*apiv1.Node{}
-	err = ng.IncreaseSize(context.TODO(), ng.maxSize+1)
+	err = ng.IncreaseSize(context.Background(), ng.maxSize+1)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), maxSizeReachedErr)
 	assert.Len(t, nodes, 0)
@@ -148,14 +148,14 @@ func TestDeleteNodes(t *testing.T) {
 	}
 
 	// usual case
-	err := ng.DeleteNodes(context.TODO(), []*apiv1.Node{nodeToDelete1})
+	err := ng.DeleteNodes(context.Background(), []*apiv1.Node{nodeToDelete1})
 	assert.Nil(t, err)
 	assert.True(t, deletedNodes[nodeToDelete1.GetName()])
 
 	// min size reached
 	deletedNodes = make(map[string]bool)
 	ng.targetSize = 0
-	err = ng.DeleteNodes(context.TODO(), []*apiv1.Node{nodeToDelete1})
+	err = ng.DeleteNodes(context.Background(), []*apiv1.Node{nodeToDelete1})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), minSizeReachedErr)
 	assert.False(t, deletedNodes[nodeToDelete1.GetName()])
@@ -163,7 +163,7 @@ func TestDeleteNodes(t *testing.T) {
 
 	// too many nodes to delete - goes below ng's minSize
 	deletedNodes = make(map[string]bool)
-	err = ng.DeleteNodes(context.TODO(), []*apiv1.Node{nodeToDelete1, nodeToDelete2})
+	err = ng.DeleteNodes(context.Background(), []*apiv1.Node{nodeToDelete1, nodeToDelete2})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), belowMinSizeErr)
 	assert.False(t, deletedNodes[nodeToDelete1.GetName()])
@@ -171,7 +171,7 @@ func TestDeleteNodes(t *testing.T) {
 
 	// kwok annotation is not present on the node to delete
 	deletedNodes = make(map[string]bool)
-	err = ng.DeleteNodes(context.TODO(), []*apiv1.Node{nodeWithoutKwokAnnotation})
+	err = ng.DeleteNodes(context.Background(), []*apiv1.Node{nodeWithoutKwokAnnotation})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "not managed by kwok")
 	assert.False(t, deletedNodes[nodeWithoutKwokAnnotation.GetName()])
@@ -209,26 +209,26 @@ func TestDecreaseTargetSize(t *testing.T) {
 	}
 
 	// usual case
-	err := ng.DecreaseTargetSize(context.TODO(), -1)
+	err := ng.DecreaseTargetSize(context.Background(), -1)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, ng.targetSize)
 
 	// delta is positive
 	ng.targetSize = 3
-	err = ng.DecreaseTargetSize(context.TODO(), 1)
+	err = ng.DecreaseTargetSize(context.Background(), 1)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), sizeDecreaseMustBeNegativeErr)
 	assert.Equal(t, 3, ng.targetSize)
 
 	// attempt to delete existing nodes
-	err = ng.DecreaseTargetSize(context.TODO(), -2)
+	err = ng.DecreaseTargetSize(context.Background(), -2)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), attemptToDeleteExistingNodesErr)
 	assert.Equal(t, 3, ng.targetSize)
 
 	// error from lister
 	ng.lister = &ErroneousNodeLister{}
-	err = ng.DecreaseTargetSize(context.TODO(), -1)
+	err = ng.DecreaseTargetSize(context.Background(), -1)
 	assert.NotNil(t, err)
 	assert.Equal(t, cloudprovider.ErrNotImplemented.Error(), err.Error())
 	assert.Equal(t, 3, ng.targetSize)
@@ -266,7 +266,7 @@ func TestNodes(t *testing.T) {
 	}
 
 	// usual case
-	cpInstances, err := ng.Nodes(context.TODO())
+	cpInstances, err := ng.Nodes(context.Background())
 	assert.Nil(t, err)
 	assert.Len(t, cpInstances, 2)
 	for i := range cpInstances {
@@ -279,7 +279,7 @@ func TestNodes(t *testing.T) {
 
 	// error from lister
 	ng.lister = &ErroneousNodeLister{}
-	cpInstances, err = ng.Nodes(context.TODO())
+	cpInstances, err = ng.Nodes(context.Background())
 	assert.NotNil(t, err)
 	assert.Len(t, cpInstances, 0)
 	assert.Equal(t, cloudprovider.ErrNotImplemented.Error(), err.Error())
@@ -304,7 +304,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	}
 
 	// usual case
-	ti, err := ng.TemplateNodeInfo(context.TODO())
+	ti, err := ng.TemplateNodeInfo(context.Background())
 	assert.Nil(t, err)
 	assert.NotNil(t, ti)
 	assert.Len(t, ti.Pods(), 1)
@@ -342,7 +342,7 @@ func TestGetOptions(t *testing.T) {
 	}
 
 	// usual case
-	opts, err := ng.GetOptions(context.TODO(), autoscalingOptions)
+	opts, err := ng.GetOptions(context.Background(), autoscalingOptions)
 	assert.Nil(t, err)
 	assert.Equal(t, autoscalingOptions, *opts)
 

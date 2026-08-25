@@ -100,7 +100,7 @@ func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			p := NewEnforceInjectedPodsLimitProcessor(tc.podLimit)
-			pods, _ := p.Process(context.TODO(), nil, tc.unschedulablePods)
+			pods, _ := p.Process(context.Background(), nil, tc.unschedulablePods)
 			assert.EqualValues(t, tc.expectedNumberOfResultedUnschedulablePods, len(pods))
 			numberOfFakePods := numberOfFakePods(pods)
 			assert.EqualValues(t, tc.expectedNumberOfResultedUnschedulableFakePods, numberOfFakePods)

@@ -70,7 +70,7 @@ func TestProcess(t *testing.T) {
 			autoscalingCtx := &ca_context.AutoscalingContext{}
 
 			p := NewFakePodsScaleUpStatusProcessor(podinjectionbackoff.NewFakePodControllerRegistry())
-			p.Process(context.TODO(), autoscalingCtx, scaleUpStatus)
+			p.Process(context.Background(), autoscalingCtx, scaleUpStatus)
 
 			assert.ElementsMatch(t, tc.expectedPodsRemainUnschedulable, extractPodsFromNoScaleUpInfo(scaleUpStatus.PodsRemainUnschedulable))
 			assert.ElementsMatch(t, tc.expectedPodsAwaitEvaluation, scaleUpStatus.PodsAwaitEvaluation)

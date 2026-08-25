@@ -365,7 +365,7 @@ func TestReportResourceDiscrepancies(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			fake := &fakeMetricsEmitter{}
 			c := NewNodeResourcesComparator(fake)
-			c.ReportResourceDiscrepancies(context.TODO(), nodeNamesArray(tc.data), templateSlicesArray(tc.data), nodeSlicesArray(tc.data))
+			c.ReportResourceDiscrepancies(context.Background(), nodeNamesArray(tc.data), templateSlicesArray(tc.data), nodeSlicesArray(tc.data))
 			if diff := cmp.Diff(tc.wantMetrics, fake.metrics); diff != "" {
 				t.Errorf("ReportResourceDiscrepancies() metrics diff (-want +got):\n%s", diff)
 			}
@@ -428,19 +428,19 @@ func TestMissingNodesGaugesAreReset(t *testing.T) {
 
 	fake := &fakeMetricsEmitter{}
 	c := NewNodeResourcesComparator(fake)
-	c.ReportResourceDiscrepancies(context.TODO(), nodeNames, templateSlices, nodeSlices)
+	c.ReportResourceDiscrepancies(context.Background(), nodeNames, templateSlices, nodeSlices)
 	if diff := cmp.Diff(wantMetricsBeforeScaleDown, fake.metrics); diff != "" {
 		t.Errorf("ReportResourceDiscrepancies() metrics diff (-want +got):\n%s", diff)
 	}
 
 	fake.Reset()
-	c.ReportResourceDiscrepancies(context.TODO(), []string{}, [][]*resourceapi.ResourceSlice{}, [][]*resourceapi.ResourceSlice{})
+	c.ReportResourceDiscrepancies(context.Background(), []string{}, [][]*resourceapi.ResourceSlice{}, [][]*resourceapi.ResourceSlice{})
 	if diff := cmp.Diff(wantMetricsAfterScaleDown, fake.metrics); diff != "" {
 		t.Errorf("ReportResourceDiscrepancies() metrics diff (-want +got):\n%s", diff)
 	}
 
 	fake.Reset()
-	c.ReportResourceDiscrepancies(context.TODO(), []string{}, [][]*resourceapi.ResourceSlice{}, [][]*resourceapi.ResourceSlice{})
+	c.ReportResourceDiscrepancies(context.Background(), []string{}, [][]*resourceapi.ResourceSlice{}, [][]*resourceapi.ResourceSlice{})
 	if len(fake.metrics) != 0 {
 		t.Errorf("Expected no metrics after second reset, while reported: %v", fake.metrics)
 	}
@@ -457,7 +457,7 @@ func BenchmarkReportResourceDiscrepancies_1Node_0Discrepancies(b *testing.B) {
 	}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(context.TODO(), nodeNames, templateSlices, nodeSlices)
+		comparator.ReportResourceDiscrepancies(context.Background(), nodeNames, templateSlices, nodeSlices)
 	}
 }
 
@@ -468,7 +468,7 @@ func BenchmarkReportResourceDiscrepancies_1Node_NoDRA(b *testing.B) {
 	nodeSlices := [][]*resourceapi.ResourceSlice{nil}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(context.TODO(), nodeNames, templateSlices, nodeSlices)
+		comparator.ReportResourceDiscrepancies(context.Background(), nodeNames, templateSlices, nodeSlices)
 	}
 }
 
@@ -484,7 +484,7 @@ func BenchmarkReportResourceDiscrepancies_1Node_10Discrepancies(b *testing.B) {
 	nodeSlices := [][]*resourceapi.ResourceSlice{{}}
 	templateSlices := [][]*resourceapi.ResourceSlice{templateSlice}
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(context.TODO(), nodeNames, templateSlices, nodeSlices)
+		comparator.ReportResourceDiscrepancies(context.Background(), nodeNames, templateSlices, nodeSlices)
 	}
 }
 
@@ -506,7 +506,7 @@ func BenchmarkReportResourceDiscrepancies_10Nodes_10DiscrepanciesEach(b *testing
 	}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(context.TODO(), nodeNames, templateSlices, nodeSlices)
+		comparator.ReportResourceDiscrepancies(context.Background(), nodeNames, templateSlices, nodeSlices)
 	}
 }
 
@@ -523,7 +523,7 @@ func BenchmarkReportResourceDiscrepancies_10Nodes_NoDRA(b *testing.B) {
 	}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(context.TODO(), nodeNames, templateSlices, nodeSlices)
+		comparator.ReportResourceDiscrepancies(context.Background(), nodeNames, templateSlices, nodeSlices)
 	}
 }
 
@@ -541,7 +541,7 @@ func BenchmarkReportResourceDiscrepancies_10Nodes_0Discrepancies(b *testing.B) {
 	}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(context.TODO(), names, tpl, nodes)
+		comparator.ReportResourceDiscrepancies(context.Background(), names, tpl, nodes)
 	}
 }
 func BenchmarkReportResourceDiscrepancies_1Node_10Drivers_10Discrepancies(b *testing.B) {
@@ -556,7 +556,7 @@ func BenchmarkReportResourceDiscrepancies_1Node_10Drivers_10Discrepancies(b *tes
 	nodes := [][]*resourceapi.ResourceSlice{nil}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(context.TODO(), names, tpl, nodes)
+		comparator.ReportResourceDiscrepancies(context.Background(), names, tpl, nodes)
 	}
 }
 
@@ -577,6 +577,6 @@ func BenchmarkReportResourceDiscrepancies_10Nodes_10Drivers_10DiscrepanciesEach(
 	}
 
 	for b.Loop() {
-		comparator.ReportResourceDiscrepancies(context.TODO(), names, tpl, nodes)
+		comparator.ReportResourceDiscrepancies(context.Background(), names, tpl, nodes)
 	}
 }

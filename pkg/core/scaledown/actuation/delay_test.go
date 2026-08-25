@@ -81,9 +81,9 @@ func TestWaitForDelayDeletion(t *testing.T) {
 			}
 			var err error
 			if test.addAnnotation {
-				err = WaitForDelayDeletion(context.TODO(), nodeWithAnnotation, allNodeLister, test.timeout)
+				err = WaitForDelayDeletion(context.Background(), nodeWithAnnotation, allNodeLister, test.timeout)
 			} else {
-				err = WaitForDelayDeletion(context.TODO(), node, allNodeLister, test.timeout)
+				err = WaitForDelayDeletion(context.Background(), node, allNodeLister, test.timeout)
 			}
 			assert.NoError(t, err)
 		})
