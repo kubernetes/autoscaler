@@ -348,7 +348,8 @@ func TestAnnotations(t *testing.T) {
 			Driver:   draDriver,
 			NodeName: &testNodeName,
 			Pool: resourceapi.ResourcePool{
-				Name: testNodeName,
+				Name:               testNodeName,
+				ResourceSliceCount: 1,
 			},
 			Devices: []resourceapi.Device{
 				{

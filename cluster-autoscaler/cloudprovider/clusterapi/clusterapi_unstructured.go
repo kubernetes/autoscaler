@@ -403,7 +403,8 @@ func (r *unstructuredScalableResource) InstanceResourceSlices(nodeName string) (
 				Driver:   driver,
 				NodeName: &nodeName,
 				Pool: resourceapi.ResourcePool{
-					Name: nodeName,
+					Name:               nodeName,
+					ResourceSliceCount: 1,
 				},
 			},
 		}
