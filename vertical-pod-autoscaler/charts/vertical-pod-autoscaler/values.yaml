@@ -68,6 +68,9 @@ admissionController:
   # Additional environment variables for the Admission Controller default container.
   extraEnv: []
 
+  # admissionController.logLevel -- Log verbosity for the Admission Controller (klog -v).
+  logLevel: 4
+
   # Additional args for the Admission Controller default container.
   extraArgs: []
 
@@ -264,6 +267,9 @@ recommender:
   # Additional environment variables for the Recommender default container.
   extraEnv: []
 
+  # recommender.logLevel -- Log verbosity for the Recommender (klog -v).
+  logLevel: 4
+
   # Additional args for the Recommender default container.
   extraArgs: []
 
@@ -332,6 +338,9 @@ updater:
 
   # Annotations to add to the Updater deployment.
   annotations: {}
+
+  # updater.logLevel -- Log verbosity for the Updater (klog -v).
+  logLevel: 4
 
   # Additional args for the updater
   extraArgs:

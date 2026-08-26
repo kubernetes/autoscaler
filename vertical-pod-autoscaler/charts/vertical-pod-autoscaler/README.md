@@ -143,6 +143,7 @@ helm upgrade <release-name> <chart> \
 | admissionController.image.pullPolicy | string | `"IfNotPresent"` |  |
 | admissionController.image.repository | string | `"registry.k8s.io/autoscaling/vpa-admission-controller"` |  |
 | admissionController.image.tag | string | `nil` |  |
+| admissionController.logLevel | int | `4` | Log verbosity for the Admission Controller (klog -v). |
 | admissionController.mutatingWebhookConfiguration.annotations | object | `{}` | Additional annotations for the MutatingWebhookConfiguration |
 | admissionController.mutatingWebhookConfiguration.failurePolicy | string | `"Ignore"` | The failurePolicy for the mutating webhook. Allowed values are: Ignore, Fail |
 | admissionController.mutatingWebhookConfiguration.namespaceSelector | object | `{}` | The namespaceSelector controls which namespaces are affected by the webhook |
@@ -212,6 +213,7 @@ helm upgrade <release-name> <chart> \
 | recommender.leaderElection.resourceName | string | `"vpa-recommender-lease"` |  |
 | recommender.leaderElection.resourceNamespace | string | `""` |  |
 | recommender.leaderElection.retryPeriod | string | `"2s"` |  |
+| recommender.logLevel | int | `4` | Log verbosity for the Recommender (klog -v). |
 | recommender.nodeSelector | object | `{}` |  |
 | recommender.podAnnotations | object | `{}` |  |
 | recommender.podDisruptionBudget.enabled | bool | `true` |  |
@@ -243,6 +245,7 @@ helm upgrade <release-name> <chart> \
 | updater.leaderElection.resourceName | string | `"vpa-updater-lease"` |  |
 | updater.leaderElection.resourceNamespace | string | `""` |  |
 | updater.leaderElection.retryPeriod | string | `"2s"` |  |
+| updater.logLevel | int | `4` | Log verbosity for the Updater (klog -v). |
 | updater.nodeSelector | object | `{}` |  |
 | updater.podAnnotations | object | `{}` |  |
 | updater.podDisruptionBudget.enabled | bool | `true` |  |
