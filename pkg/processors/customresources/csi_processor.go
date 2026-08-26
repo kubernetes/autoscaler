@@ -58,8 +58,7 @@ func (p *CSICustomResourcesProcessor) FilterOutNodesWithUnreadyResources(ctx con
 			continue
 		}
 
-		// TODO: Use TemplateNodeInfoRegistry after #8882 is merged
-		templateNodeInfo, err := ng.TemplateNodeInfo(ctx)
+		templateNodeInfo, err := getNodeInfo(ctx, autoscalingCtx, ng)
 		if err != nil {
 			newReadyNodes = append(newReadyNodes, node)
 			logger.Info("Failed to get template node info for node group", "nodeGroupId", ng.Id(), "err", err)

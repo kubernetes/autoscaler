@@ -37,6 +37,7 @@ func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {
 	testCases := map[string]struct {
 		nodeGroupsAllNodes         map[string][]*apiv1.Node
 		nodeGroupsTemplatesCSINode map[string]*storagev1.CSINode
+		registryNodeInfos          map[string]*framework.NodeInfo
 		nodesCSINode               map[string]*storagev1.CSINode
 		csiSnapshot                *csisnapshot.Snapshot
 		expectedNodesReadiness     map[string]bool
@@ -231,6 +232,42 @@ func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {
 				"node_2_CSI_Ready": true, // stays ready because error getting CSI node keeps it in ready list
 			},
 		},
+		"fallback to NodeGroup template when registry is missing": {
+			nodeGroupsAllNodes: map[string][]*apiv1.Node{
+				"ng1": {
+					buildTestNode("node_1", true),
+				},
+			},
+			nodeGroupsTemplatesCSINode: map[string]*storagev1.CSINode{
+				"ng1": createCSINode("ng1_template", []string{"driver1", "driver2"}),
+			},
+			registryNodeInfos: map[string]*framework.NodeInfo{},
+			nodesCSINode: map[string]*storagev1.CSINode{
+				"node_1": createCSINode("node_1", []string{"driver1"}),
+			},
+			expectedNodesReadiness: map[string]bool{
+				"node_1": false,
+			},
+		},
+		"registry preferred over NodeGroup template": {
+			nodeGroupsAllNodes: map[string][]*apiv1.Node{
+				"ng1": {
+					buildTestNode("node_1", true),
+				},
+			},
+			nodeGroupsTemplatesCSINode: map[string]*storagev1.CSINode{
+				"ng1": createCSINode("ng1_template", []string{"driver1"}),
+			},
+			registryNodeInfos: map[string]*framework.NodeInfo{
+				"ng1": framework.NewNodeInfo(buildTestNode("ng1_registry_template", true), nil).SetCSINode(createCSINode("ng1_registry_template", []string{"driver1", "driver2"})),
+			},
+			nodesCSINode: map[string]*storagev1.CSINode{
+				"node_1": createCSINode("node_1", []string{"driver1"}),
+			},
+			expectedNodesReadiness: map[string]bool{
+				"node_1": false,
+			},
+		},
 		"All together": {
 			nodeGroupsAllNodes: map[string][]*apiv1.Node{
 				"ng1": {
@@ -306,7 +343,11 @@ func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
 			clusterSnapshot.SetClusterState(context.TODO(), []*apiv1.Node{}, []*apiv1.Pod{}, nil, csiSnapshot)
 
-			autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider, ClusterSnapshot: clusterSnapshot}
+			autoscalingCtx := &ca_context.AutoscalingContext{
+				CloudProvider:            provider,
+				ClusterSnapshot:          clusterSnapshot,
+				TemplateNodeInfoRegistry: newMockTemplateNodeInfoRegistry(tc.registryNodeInfos),
+			}
 			processor := CSICustomResourcesProcessor{}
 			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.TODO(), autoscalingCtx, initialAllNodes, initialReadyNodes, nil, csiSnapshot)
 
