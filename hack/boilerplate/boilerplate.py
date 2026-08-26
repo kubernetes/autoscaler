@@ -140,8 +140,6 @@ skipped_names = [
     "test/e2e/generated/bindata.go",
     "hack/boilerplate/test",
     "hack/boilerplate/boilerplate.py",
-    "hack/scripts/break_mig.py",
-    "hack/scripts/ca_metrics_parser.py",
     "pkg/update_toc.py",
     "pkg/hack/list-owners.py",
     "pkg/expander/grpcplugin/protos",
