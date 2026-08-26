@@ -75,7 +75,7 @@ type externalGrpcCloudProvider struct {
 
 // Name returns name of the cloud provider.
 func (e *externalGrpcCloudProvider) Name() string {
-	return cloudprovider.ExternalGrpcProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
