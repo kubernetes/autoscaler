@@ -33,7 +33,7 @@
 
 Add an optional `initialDelaySeconds` field to `PodUpdatePolicy` that delays actuation of recommendations for a configurable duration after a VPA's creation. During the window the Recommender continues to compute and publish recommendations to `status.recommendation` normally, but nothing actuates them: the Updater performs no evictions or in-place resizes, and the Admission Controller does not apply recommendations to pods created during the window. The VPA behaves exactly as if `updateMode` were `Off`. Once the window elapses, the configured `updateMode` takes effect automatically with no operator action.
 
-The window is computed as a pure function of `vpa.CreationTimestamp` and the current spec value, evaluated on every reconcile. Modifying an existing VPA's spec does not reset the window — the anchor (`CreationTimestamp`) is immutable, and changing `initialDelaySeconds` itself simply moves the expiry relative to that anchor (see [Gate Evaluation](#gate-evaluation) for the full modification semantics).
+The window is computed as a pure function of `vpa.CreationTimestamp` and the current `initialDelaySeconds` value, evaluated on every reconcile. Modifying an existing VPA's spec does not reset the window — the anchor (`CreationTimestamp`) is immutable, and changing `initialDelaySeconds` itself simply moves the expiry relative to that anchor (see [Gate Evaluation](#gate-evaluation) for the full modification semantics).
 
 ## Motivation
 
@@ -157,7 +157,7 @@ When `InInitialDelayWindow` returns `true`, both components take the same code p
 
 `InInitialDelayWindow` is exported from the shared `pkg/utils/vpa` package so both the Updater and the Admission Controller consume the identical implementation. Each call site first checks the `VPAInitialDelay` feature gate (`features.Enabled(features.VPAInitialDelay)`); when the gate is disabled the helper is not consulted and the component behaves exactly as it does today (fail-open).
 
-The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current spec value (mutable). No caching, no status writes.
+The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current `initialDelaySeconds` value (mutable). No caching, no status writes.
 
 No VPA spec change affects the gate **except** modifying `initialDelaySeconds` itself: the new value simply moves the expiry (`CreationTimestamp + initialDelaySeconds`), so on the next reconcile the gate may open earlier (value shortened or removed) or stay closed longer (value extended). No other field — existing or added to the CRD in the future — participates in gate evaluation; `updateMode` changes only what happens once the gate opens.
 
