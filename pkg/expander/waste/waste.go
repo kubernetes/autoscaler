@@ -17,6 +17,8 @@ limitations under the License.
 package waste
 
 import (
+	"context"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	klog "k8s.io/klog/v2"
@@ -34,7 +36,8 @@ func NewFilter() expander.Filter {
 }
 
 // BestOption Finds the option that wastes the least fraction of CPU and Memory
-func (l *leastwaste) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
+func (l *leastwaste) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
+	logger := klog.FromContext(ctx)
 	var leastWastedScore float64
 	var leastWastedOptions []expander.Option
 
@@ -42,7 +45,7 @@ func (l *leastwaste) BestOptions(expansionOptions []expander.Option, nodeInfo ma
 		requestedCPU, requestedMemory := resourcesForPods(option.Pods)
 		node, found := nodeInfo[option.NodeGroup.Id()]
 		if !found {
-			klog.Errorf("No node info for: %s", option.NodeGroup.Id())
+			logger.Error(nil, "No node info for node group", "nodeGroupId", option.NodeGroup.Id())
 			continue
 		}
 
@@ -52,8 +55,7 @@ func (l *leastwaste) BestOptions(expansionOptions []expander.Option, nodeInfo ma
 		wastedCPU := float64(availCPU-requestedCPU.MilliValue()) / float64(availCPU)
 		wastedMemory := float64(availMemory-requestedMemory.Value()) / float64(availMemory)
 		wastedScore := wastedCPU + wastedMemory
-
-		klog.V(1).Infof("Expanding Node Group %s would waste %0.2f%% CPU, %0.2f%% Memory, %0.2f%% Blended\n", option.NodeGroup.Id(), wastedCPU*100.0, wastedMemory*100.0, wastedScore*50.0)
+		logger.V(1).Info("Expanding Node Group would waste resources", "nodeGroupId", option.NodeGroup.Id(), "wastedCpuPercent", wastedCPU*100.0, "wastedMemoryPercent", wastedMemory*100.0, "wastedResourcesMeanPercent", wastedScore*50.0)
 
 		if wastedScore == leastWastedScore {
 			leastWastedOptions = append(leastWastedOptions, option)

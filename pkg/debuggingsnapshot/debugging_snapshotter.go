@@ -73,15 +73,15 @@ type DebuggingSnapshotter interface {
 
 	// StartDataCollection will check the State(s) and enable data
 	// collection for the loop if applicable
-	StartDataCollection()
+	StartDataCollection(context.Context)
 	// SetClusterNodes is a setter to capture all the ClusterNode
-	SetClusterNodes([]*framework.NodeInfo)
+	SetClusterNodes(context.Context, []*framework.NodeInfo)
 	// SetUnscheduledPodsCanBeScheduled is a setter for all pods which are unscheduled
 	// but they can be scheduled. i.e. pods which aren't triggering scale-up
-	SetUnscheduledPodsCanBeScheduled([]*v1.Pod)
+	SetUnscheduledPodsCanBeScheduled(context.Context, []*v1.Pod)
 	// SetTemplateNodes is a setter for all the TemplateNodes present in the cluster
 	// incl. templates for which there are no nodes
-	SetTemplateNodes(map[string]*framework.NodeInfo)
+	SetTemplateNodes(context.Context, map[string]*framework.NodeInfo)
 	// ResponseHandler is the http response handler to manage incoming requests
 	ResponseHandler(http.ResponseWriter, *http.Request)
 	// IsDataCollectionAllowed checks the internal State of the snapshotter
@@ -89,7 +89,7 @@ type DebuggingSnapshotter interface {
 	// for the snapshot
 	IsDataCollectionAllowed() bool
 	// Flush triggers the flushing of the snapshot
-	Flush()
+	Flush(context.Context)
 	// Cleanup clears the internal data beans of the snapshot, readying for next request
 	Cleanup()
 }
@@ -185,26 +185,30 @@ func (d *DebuggingSnapshotterImpl) IsDataCollectionAllowedNoLock() bool {
 // StartDataCollection changes the State when the trigger has been enabled
 // to start data collection. To be done at the start of the runLoop to allow for consistency
 // as the trigger can be called mid-loop leading to partial data collection
-func (d *DebuggingSnapshotterImpl) StartDataCollection() {
+func (d *DebuggingSnapshotterImpl) StartDataCollection(ctx context.Context) {
+	logger := klog.FromContext(ctx)
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 	if *d.State == TRIGGER_ENABLED {
 		*d.State = START_DATA_COLLECTION
-		klog.Infof("Trigger Enabled for Debugging Snapshot, starting data collection")
+		logger.Info("Trigger Enabled for Debugging Snapshot, starting data collection")
+
 		d.DebuggingSnapshot.SetStartTimestamp(time.Now().In(time.UTC))
 	}
 }
 
 // Flush is the impl for DebuggingSnapshotter.Flush
 // It checks if any data has been collected or data collection failed
-func (d *DebuggingSnapshotterImpl) Flush() {
+func (d *DebuggingSnapshotterImpl) Flush(ctx context.Context) {
+	logger := klog.FromContext(ctx)
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 
 	// Case where Data Collection was started but no data was collected, needs to
 	// be stated as an error and reset to pre-trigger State
 	if *d.State == START_DATA_COLLECTION {
-		klog.Errorf("No data was collected for the snapshot in this loop. So no snapshot can be generated.")
+		logger.Error(nil, "No data was collected for the snapshot in this loop. So no snapshot can be generated.")
+
 		d.DebuggingSnapshot.SetErrorMessage("Unable to collect any data")
 		d.Trigger <- struct{}{}
 		return
@@ -217,37 +221,40 @@ func (d *DebuggingSnapshotterImpl) Flush() {
 
 // SetClusterNodes is the setter for Node Group Info
 // All filtering/prettifying of data should be done here.
-func (d *DebuggingSnapshotterImpl) SetClusterNodes(nodeInfos []*framework.NodeInfo) {
+func (d *DebuggingSnapshotterImpl) SetClusterNodes(ctx context.Context, nodeInfos []*framework.NodeInfo) {
+	logger := klog.FromContext(ctx)
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 	if !d.IsDataCollectionAllowedNoLock() {
 		return
 	}
-	klog.V(4).Infof("NodeGroupInfo is being set for the debugging snapshot")
+	logger.V(4).Info("NodeGroupInfo is being set for the debugging snapshot")
 	d.DebuggingSnapshot.SetClusterNodes(nodeInfos)
 	*d.State = DATA_COLLECTED
 }
 
 // SetUnscheduledPodsCanBeScheduled is the setter for UnscheduledPodsCanBeScheduled
-func (d *DebuggingSnapshotterImpl) SetUnscheduledPodsCanBeScheduled(podList []*v1.Pod) {
+func (d *DebuggingSnapshotterImpl) SetUnscheduledPodsCanBeScheduled(ctx context.Context, podList []*v1.Pod) {
+	logger := klog.FromContext(ctx)
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 	if !d.IsDataCollectionAllowedNoLock() {
 		return
 	}
-	klog.V(4).Infof("UnscheduledPodsCanBeScheduled is being set for the debugging snapshot")
+	logger.V(4).Info("UnscheduledPodsCanBeScheduled is being set for the debugging snapshot")
 	d.DebuggingSnapshot.SetUnscheduledPodsCanBeScheduled(podList)
 	*d.State = DATA_COLLECTED
 }
 
 // SetTemplateNodes is the setter for TemplateNodes
-func (d *DebuggingSnapshotterImpl) SetTemplateNodes(templates map[string]*framework.NodeInfo) {
+func (d *DebuggingSnapshotterImpl) SetTemplateNodes(ctx context.Context, templates map[string]*framework.NodeInfo) {
+	logger := klog.FromContext(ctx)
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 	if !d.IsDataCollectionAllowedNoLock() {
 		return
 	}
-	klog.V(4).Infof("TemplateNodes is being set for the debugging snapshot")
+	logger.V(4).Info("TemplateNodes is being set for the debugging snapshot")
 	d.DebuggingSnapshot.SetTemplateNodes(templates)
 }
 

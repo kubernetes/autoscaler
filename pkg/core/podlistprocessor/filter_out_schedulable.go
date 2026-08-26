@@ -18,7 +18,6 @@ package podlistprocessor
 
 import (
 	"context"
-	"fmt"
 	"sort"
 	"time"
 
@@ -51,7 +50,7 @@ func NewFilterOutSchedulablePodListProcessor(nodeFilter func(*framework.NodeInfo
 }
 
 // Process filters out pods which are schedulable from list of unschedulable pods.
-func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+func (p *filterOutSchedulablePodListProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	// We need to check whether pods marked as unschedulable are actually unschedulable.
 	// It's likely we added a new node and the scheduler just haven't managed to put the
 	// pod on in yet. In this situation we don't want to trigger another scale-up.
@@ -67,28 +66,28 @@ func (p *filterOutSchedulablePodListProcessor) Process(autoscalingCtx *ca_contex
 	//
 	// With the check enabled the last point won't happen because CA will ignore a pod
 	// which is supposed to schedule on an existing node.
-
-	klog.V(4).Infof("Filtering out schedulables")
+	logger := klog.FromContext(ctx)
+	logger.V(4).Info("Filtering out schedulables")
 	filterOutSchedulableStart := time.Now()
 
-	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(autoscalingCtx, unschedulablePods, autoscalingCtx.ClusterSnapshot)
+	unschedulablePodsToHelp, err := p.filterOutSchedulableByPacking(ctx, autoscalingCtx, unschedulablePods, autoscalingCtx.ClusterSnapshot)
 
 	if err != nil {
 		return nil, err
 	}
 
-	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
+	metrics.UpdateDurationFromStart(ctx, metrics.FilterOutSchedulable, filterOutSchedulableStart)
 
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
-		klog.V(2).Info("Schedulable pods present")
+		logger.V(2).Info("Schedulable pods present")
 
 		if autoscalingCtx.DebuggingSnapshotter.IsDataCollectionAllowed() {
 			schedulablePods := findSchedulablePods(unschedulablePods, unschedulablePodsToHelp)
-			autoscalingCtx.DebuggingSnapshotter.SetUnscheduledPodsCanBeScheduled(schedulablePods)
+			autoscalingCtx.DebuggingSnapshotter.SetUnscheduledPodsCanBeScheduled(ctx, schedulablePods)
 		}
 
 	} else {
-		klog.V(4).Info("No schedulable pods")
+		logger.V(4).Info("No schedulable pods")
 	}
 	return unschedulablePodsToHelp, nil
 }
@@ -100,14 +99,15 @@ func (p *filterOutSchedulablePodListProcessor) CleanUp() {
 // unschedulable can be scheduled on free capacity on existing nodes by trying to pack the pods. It
 // tries to pack the higher priority pods first. It takes into account pods that are bound to node
 // and will be scheduled after lower priority pod preemption.
-func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(autoscalingCtx *ca_context.AutoscalingContext, unschedulableCandidates []*apiv1.Pod, clusterSnapshot clustersnapshot.ClusterSnapshot) ([]*apiv1.Pod, error) {
+func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, unschedulableCandidates []*apiv1.Pod, clusterSnapshot clustersnapshot.ClusterSnapshot) ([]*apiv1.Pod, error) {
 	// Sort unschedulable pods by importance
+	logger := klog.FromContext(ctx)
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
 		return corev1helpers.PodPriority(unschedulableCandidates[i]) > corev1helpers.PodPriority(unschedulableCandidates[j])
 	})
 
 	var cancel context.CancelFunc
-	ctx := context.WithValue(context.Background(), scheduling.SimulationRequestorName, requestor)
+	ctx = context.WithValue(ctx, scheduling.SimulationRequestorName, requestor)
 	if autoscalingCtx.GracefulDegradationEnabled {
 		ctx, cancel = context.WithTimeout(ctx, autoscalingCtx.PendingPodsBatchingTimeout)
 		defer cancel()
@@ -140,11 +140,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(aut
 	}
 
 	metrics.UpdateOverflowingControllers(schedulingResult.OverflowingControllerCount)
-	skippedPodCountMsg := ""
-	if len(schedulingResult.UnprocessedPods) > 0 {
-		skippedPodCountMsg = fmt.Sprintf(" %v pods were skipped due to exceeding pending pod batching timeout.", len(schedulingResult.UnprocessedPods))
-	}
-	klog.V(4).Infof("%v pods marked as unschedulable can be scheduled.%s", len(unschedulableCandidates)-len(unschedulablePods)-len(schedulingResult.UnprocessedPods), skippedPodCountMsg)
+	logger.V(4).Info("Pods marked as unschedulable can be scheduled. Some pods could have been skipped due to exceeding pending pod batching timeout.", "unschedulableCandidatesCount", len(unschedulableCandidates)-len(unschedulablePods)-len(schedulingResult.UnprocessedPods), "skippedPodCount", len(schedulingResult.UnprocessedPods))
 
 	p.schedulingSimulator.DropOldHints()
 	return unschedulablePods, nil

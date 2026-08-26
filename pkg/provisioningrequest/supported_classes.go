@@ -17,6 +17,7 @@ limitations under the License.
 package provisioningrequest
 
 import (
+	"context"
 	"strings"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
@@ -32,7 +33,7 @@ const (
 )
 
 // SupportedProvisioningClass verifies if the ProvisioningRequest with the given checkCapacityProcessorInstance is supported.
-func SupportedProvisioningClass(pr *v1.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
+func SupportedProvisioningClass(ctx context.Context, pr *v1.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
 	if pr.Spec.ProvisioningClassName == v1.ProvisioningClassBestEffortAtomicScaleUp {
 		if checkCapacityProcessorInstance != "" {
 			// If processor instance is set, BestEffortAtomicScaleUp should not be processed.
@@ -41,11 +42,12 @@ func SupportedProvisioningClass(pr *v1.ProvisioningRequest, checkCapacityProcess
 		return true
 	}
 
-	return SupportedCheckCapacityClass(pr, checkCapacityProcessorInstance)
+	return SupportedCheckCapacityClass(ctx, pr, checkCapacityProcessorInstance)
 }
 
 // SupportedCheckCapacityClass verifies if the check capacity ProvisioningRequest with the given checkCapacityProcessorInstance is supported.
-func SupportedCheckCapacityClass(pr *v1.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
+func SupportedCheckCapacityClass(ctx context.Context, pr *v1.ProvisioningRequest, checkCapacityProcessorInstance string) bool {
+	logger := klog.FromContext(ctx)
 	provisioningClassName := pr.Spec.ProvisioningClassName
 	processorInstance := string(pr.Spec.Parameters[CheckCapacityProcessorInstanceKey])
 
@@ -67,7 +69,7 @@ func SupportedCheckCapacityClass(pr *v1.ProvisioningRequest, checkCapacityProces
 	if !strings.HasPrefix(provisioningClassName, checkCapacityProcessorInstance) {
 		return false
 	}
-	klog.Warningf("ProvReq %s/%s has prefixed provisioningClassName %q that is not recommended and will be removed in CA 1.35. Parameters should be used instead", pr.Namespace, pr.Name, provisioningClassName)
+	logger.Info("ProvReq has prefixed provisioningClassName that is not recommended and will be removed in CA 1.35. Parameters should be used instead", "provReq", klog.KObj(pr), "provisioningClassName", provisioningClassName)
 
 	return provisioningClassName[len(checkCapacityProcessorInstance):] == v1.ProvisioningClassCheckCapacity
 }

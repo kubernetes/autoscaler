@@ -198,7 +198,7 @@ func (p *AutoscalingFlags) AddFlags(fs *pflag.FlagSet) {
 	fs.DurationVar(&p.o.CheckCapacityProvisioningRequestBatchTimebox, "check-capacity-provisioning-request-batch-timebox", 10*time.Second, "Maximum time to process a batch of provisioning requests.")
 	fs.BoolVar(&p.o.ForceDeleteLongUnregisteredNodes, "force-delete-unregistered-nodes", false, "Whether to enable force deletion of long unregistered nodes, regardless of the min size of the node group the belong to.")
 	fs.BoolVar(&p.o.ForceDeleteFailedNodes, "force-delete-failed-nodes", false, "Whether to enable force deletion of failed nodes, regardless of the min size of the node group the belong to.")
-	fs.BoolVar(&p.o.CSINodeAwareSchedulingEnabled, "enable-csi-node-aware-scheduling", false, "Whether logic for handling CSINode objects is enabled.")
+	fs.BoolVar(&p.o.CSINodeAwareSchedulingEnabled, "enable-csi-node-aware-scheduling", true, "Whether logic for handling CSINode objects is enabled.")
 	fs.IntVar(&p.o.PredicateParallelism, "predicate-parallelism", 4, "Maximum parallelism of scheduler predicate checking.")
 	fs.StringVar(&p.o.CheckCapacityProcessorInstance, "check-capacity-processor-instance", "", "Name of the processor instance. Only ProvisioningRequests that define this name in their parameters with the key \"processorInstance\" will be processed by this CA instance. It only refers to check capacity ProvisioningRequests, but if not empty, best-effort atomic ProvisioningRequests processing is disabled in this instance. Not recommended: Until CA 1.35, ProvisioningRequests with this name as prefix in their class will be also processed.")
 	fs.DurationVar(&p.o.NodeDeletionCandidateTTL, "node-deletion-candidate-ttl", time.Duration(0), "Maximum time a node can be marked as removable before the marking becomes stale. This sets the TTL of Cluster-Autoscaler's state if the Cluste-Autoscaler deployment becomes inactive (default 0s)")
@@ -242,7 +242,7 @@ func (p *AutoscalingFlags) AddFlags(fs *pflag.FlagSet) {
 			"--max-graceful-termination-sec flag should not be set when this flag is set. Not setting this flag will use unordered evictor by default."+
 			"Priority evictor reuses the concepts of drain logic in kubelet(https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2712-pod-priority-based-graceful-node-shutdown#migration-from-the-node-graceful-shutdown-feature)."+
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
-	fs.IntVar(&p.schedulerVerbosity, "scheduler-verbosity", 0, "Specifies the verbosity threshold for logs produced by the scheduler.")
+	fs.IntVar(&p.schedulerVerbosity, "scheduler-verbosity", -1, "Specifies the verbosity threshold for logs produced by the scheduler. Should not be greater than -v flag value. If it's set to -1 the scheduler log verbosity will be equal to -v flag value.")
 }
 
 // Options builds AutoscalingOptions from the flags and returns them by value
@@ -309,15 +309,17 @@ func (p *AutoscalingFlags) Options() (config.AutoscalingOptions, error) {
 		p.o.MaxStartupTime = maxHealthCheckTimeout
 	}
 
-	var verbosity int = p.schedulerVerbosity
+	var verbosity int
 	if vFlag := flag.CommandLine.Lookup("v"); vFlag != nil {
 		if v, err := strconv.Atoi(vFlag.Value.String()); err == nil {
 			verbosity = v
 		}
 	}
-
 	if verbosity < p.schedulerVerbosity {
-		klog.Warningf("--scheduler-verbosity should be at most as high as -v flag, overriding it to: %d", verbosity)
+		klog.Warningf("--scheduler-verbosity should be at most as high as --v flag, overriding it to: %d", verbosity)
+		p.schedulerVerbosity = verbosity
+	}
+	if p.schedulerVerbosity < 0 {
 		p.schedulerVerbosity = verbosity
 	}
 

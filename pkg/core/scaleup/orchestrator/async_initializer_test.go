@@ -17,6 +17,8 @@ limitations under the License.
 package orchestrator
 
 import (
+	"context"
+	gocontext "context"
 	"fmt"
 	"testing"
 
@@ -69,7 +71,7 @@ func TestNodePoolAsyncInitialization(t *testing.T) {
 						Group:       successfulNodeGroup,
 						CurrentSize: 0,
 						NewSize:     scaleUpSize,
-						MaxSize:     successfulNodeGroup.MaxSize(),
+						MaxSize:     successfulNodeGroup.MaxSize(context.TODO()),
 					},
 				},
 				CreateNodeGroupResults: []nodegroups.CreateNodeGroupResult{
@@ -123,7 +125,7 @@ type fakeScaleUpStatusProcessor struct {
 	lastStatus *status.ScaleUpStatus
 }
 
-func (f *fakeScaleUpStatusProcessor) Process(_ *ca_context.AutoscalingContext, status *status.ScaleUpStatus) {
+func (f *fakeScaleUpStatusProcessor) Process(ctx gocontext.Context, _ *ca_context.AutoscalingContext, status *status.ScaleUpStatus) {
 	f.lastStatus = status
 }
 
@@ -154,7 +156,7 @@ func TestPrepareScaleUps(t *testing.T) {
 					Group:       createdNodeGroup,
 					CurrentSize: 0,
 					NewSize:     3,
-					MaxSize:     createdNodeGroup.MaxSize(),
+					MaxSize:     createdNodeGroup.MaxSize(gocontext.TODO()),
 				},
 			},
 			wantProcessedSize: 3,
@@ -168,7 +170,7 @@ func TestPrepareScaleUps(t *testing.T) {
 					Group:       createdNodeGroup,
 					CurrentSize: 3,
 					NewSize:     5,
-					MaxSize:     createdNodeGroup.MaxSize(),
+					MaxSize:     createdNodeGroup.MaxSize(gocontext.TODO()),
 				},
 			},
 			wantProcessedSize: 5,

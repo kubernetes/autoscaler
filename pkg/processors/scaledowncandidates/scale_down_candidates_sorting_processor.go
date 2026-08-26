@@ -17,6 +17,7 @@ limitations under the License.
 package scaledowncandidates
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
@@ -39,9 +40,9 @@ func (p *ScaleDownCandidatesSortingProcessor) GetPodDestinationCandidates(autosc
 }
 
 // GetScaleDownCandidates returns filter nodes and move previous scale down candidates to the beginning of the list.
-func (p *ScaleDownCandidatesSortingProcessor) GetScaleDownCandidates(autoscalingCtx *ca_context.AutoscalingContext,
+func (p *ScaleDownCandidatesSortingProcessor) GetScaleDownCandidates(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
-	candidates, err := p.preFilter.GetScaleDownCandidates(autoscalingCtx, nodes)
+	candidates, err := p.preFilter.GetScaleDownCandidates(ctx, autoscalingCtx, nodes)
 	if err != nil {
 		return candidates, err
 	}

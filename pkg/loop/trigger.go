@@ -73,7 +73,7 @@ func NewLoopTrigger(scalingTimesGetter scalingTimesGetter, provisioningRequestPr
 // Wait waits for the next autoscaling iteration
 func (t *LoopTrigger) Wait(lastRun time.Time) {
 	sleepStart := time.Now()
-	defer metrics.UpdateDurationFromStart(metrics.LoopWait, sleepStart)
+	defer metrics.UpdateDurationFromStart(context.TODO(), metrics.LoopWait, sleepStart)
 
 	// To improve scale-up throughput, Cluster Autoscaler starts new iteration
 	// immediately if the previous one was productive.

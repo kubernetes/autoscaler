@@ -17,6 +17,7 @@ limitations under the License.
 package orchestrator
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -58,9 +59,9 @@ func TestWrapperScaleUp(t *testing.T) {
 		pod.Annotations[v1.ProvisioningRequestPodAnnotationKey] = "true"
 	}
 	unschedulablePods := append(regularPods, provReqPods...)
-	_, err := o.ScaleUp(unschedulablePods, nil, nil, nil, false)
+	_, err := o.ScaleUp(context.TODO(), unschedulablePods, nil, nil, nil, false)
 	assert.Equal(t, err.Error(), provisioningRequestErrorMsg)
-	_, err = o.ScaleUp(unschedulablePods, nil, nil, nil, false)
+	_, err = o.ScaleUp(context.TODO(), unschedulablePods, nil, nil, nil, false)
 	assert.Equal(t, err.Error(), regularPodsErrorMsg)
 }
 
@@ -69,6 +70,7 @@ type fakeScaleUp struct {
 }
 
 func (f *fakeScaleUp) ScaleUp(
+	ctx context.Context,
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
@@ -82,6 +84,7 @@ func (f *fakeScaleUp) Initialize(autoscalingCtx *ca_context.AutoscalingContext, 
 }
 
 func (f *fakeScaleUp) ScaleUpToNodeGroupMinSize(
+	ctx context.Context,
 	nodes []*apiv1.Node,
 	nodeInfos map[string]*framework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {

@@ -17,6 +17,7 @@ limitations under the License.
 package resourcequotas
 
 import (
+	"context"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
@@ -44,6 +45,7 @@ func newNodeResourcesCache(crp customresources.CustomResourcesProcessor) *nodeRe
 // the resources will be calculated. If the node belongs to any node group,
 // the resources will be cached for the entire node group.
 func (nc *nodeResourcesCache) totalNodeResources(
+	ctx context.Context,
 	autoscalingCtx *cacontext.AutoscalingContext, node *corev1.Node, nodeGroup cloudprovider.NodeGroup,
 ) (resourceList, error) {
 	if nodeGroup != nil {
@@ -51,7 +53,7 @@ func (nc *nodeResourcesCache) totalNodeResources(
 			return resources, nil
 		}
 	}
-	resources, err := totalNodeResources(autoscalingCtx, nc.crp, node, nodeGroup)
+	resources, err := totalNodeResources(ctx, autoscalingCtx, nc.crp, node, nodeGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +64,7 @@ func (nc *nodeResourcesCache) totalNodeResources(
 }
 
 // totalNodeResources calculates the amount of resources that a node contains.
-func totalNodeResources(autoscalingCtx *cacontext.AutoscalingContext, crp customresources.CustomResourcesProcessor, node *corev1.Node, nodeGroup cloudprovider.NodeGroup) (resourceList, error) {
+func totalNodeResources(ctx context.Context, autoscalingCtx *cacontext.AutoscalingContext, crp customresources.CustomResourcesProcessor, node *corev1.Node, nodeGroup cloudprovider.NodeGroup) (resourceList, error) {
 	// TODO: storage?
 	nodeCPU, nodeMemory := utils.GetNodeCoresAndMemory(node)
 	nodeResources := resourceList{
@@ -71,7 +73,7 @@ func totalNodeResources(autoscalingCtx *cacontext.AutoscalingContext, crp custom
 		ResourceNodes:                 1,
 	}
 
-	resourceTargets, err := crp.GetNodeResourceTargets(autoscalingCtx, node, nodeGroup)
+	resourceTargets, err := crp.GetNodeResourceTargets(ctx, autoscalingCtx, node, nodeGroup)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get custom resources: %w", err)
 	}

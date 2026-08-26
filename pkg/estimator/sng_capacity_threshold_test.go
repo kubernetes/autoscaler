@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	gocontext "context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -82,10 +83,10 @@ func TestSngCapacityThreshold(t *testing.T) {
 				provider.AddNodeGroup(ng.name, 0, ng.maxNodes, ng.nodesCount)
 			}
 			// Context must be constructed first to exclude current node group passed from orchestrator
-			context := estimationContext{similarNodeGroups: provider.NodeGroups()}
+			context := estimationContext{similarNodeGroups: provider.NodeGroups(gocontext.TODO())}
 			provider.AddNodeGroup(tt.currentNodeGroup.name, 0, tt.currentNodeGroup.maxNodes, tt.currentNodeGroup.nodesCount)
 			currentNodeGroup := provider.GetNodeGroup(tt.currentNodeGroup.name)
-			assert.Equalf(t, tt.wantThreshold, NewSngCapacityThreshold().NodeLimit(currentNodeGroup, &context).Limit, "NewSngCapacityThreshold()")
+			assert.Equalf(t, tt.wantThreshold, NewSngCapacityThreshold().NodeLimit(gocontext.TODO(), currentNodeGroup, &context).Limit, "NewSngCapacityThreshold()")
 			assert.True(t, NewClusterCapacityThreshold().DurationLimit(currentNodeGroup, &context).Duration == 0)
 		})
 	}

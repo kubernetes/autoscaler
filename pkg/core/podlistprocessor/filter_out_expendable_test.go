@@ -17,6 +17,7 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -76,10 +77,10 @@ func TestFilterOutExpendable(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			processor := NewFilterOutExpendablePodListProcessor()
 			snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-			err := snapshot.SetClusterState(tc.nodes, nil, nil, nil)
+			err := snapshot.SetClusterState(context.TODO(), tc.nodes, nil, nil, nil)
 			assert.NoError(t, err)
 
-			pods, err := processor.Process(&ca_context.AutoscalingContext{
+			pods, err := processor.Process(context.TODO(), &ca_context.AutoscalingContext{
 				ClusterSnapshot: snapshot,
 				AutoscalingOptions: config.AutoscalingOptions{
 					ExpendablePodsPriorityCutoff: tc.priorityCutoff,

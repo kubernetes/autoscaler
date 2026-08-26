@@ -17,6 +17,8 @@ limitations under the License.
 package mocks
 
 import (
+	"context"
+
 	cloudprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	config "sigs.k8s.io/cluster-autoscaler/pkg/config"
 
@@ -33,7 +35,7 @@ type NodeGroup struct {
 }
 
 // Autoprovisioned provides a mock function with given fields:
-func (_m *NodeGroup) Autoprovisioned() bool {
+func (_m *NodeGroup) Autoprovisioned(ctx context.Context) bool {
 	ret := _m.Called()
 
 	var r0 bool
@@ -47,7 +49,7 @@ func (_m *NodeGroup) Autoprovisioned() bool {
 }
 
 // Create provides a mock function with given fields:
-func (_m *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (_m *NodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	ret := _m.Called()
 
 	var r0 cloudprovider.NodeGroup
@@ -70,7 +72,7 @@ func (_m *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
 }
 
 // Debug provides a mock function with given fields:
-func (_m *NodeGroup) Debug() string {
+func (_m *NodeGroup) Debug(ctx context.Context) string {
 	ret := _m.Called()
 
 	var r0 string
@@ -84,7 +86,7 @@ func (_m *NodeGroup) Debug() string {
 }
 
 // DecreaseTargetSize provides a mock function with given fields: delta
-func (_m *NodeGroup) DecreaseTargetSize(delta int) error {
+func (_m *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	ret := _m.Called(delta)
 
 	var r0 error
@@ -98,7 +100,7 @@ func (_m *NodeGroup) DecreaseTargetSize(delta int) error {
 }
 
 // Delete provides a mock function with given fields:
-func (_m *NodeGroup) Delete() error {
+func (_m *NodeGroup) Delete(ctx context.Context) error {
 	ret := _m.Called()
 
 	var r0 error
@@ -112,7 +114,7 @@ func (_m *NodeGroup) Delete() error {
 }
 
 // DeleteNodes provides a mock function with given fields: _a0
-func (_m *NodeGroup) DeleteNodes(_a0 []*v1.Node) error {
+func (_m *NodeGroup) DeleteNodes(ctx context.Context, _a0 []*v1.Node) error {
 	ret := _m.Called(_a0)
 
 	var r0 error
@@ -126,7 +128,7 @@ func (_m *NodeGroup) DeleteNodes(_a0 []*v1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (_m *NodeGroup) ForceDeleteNodes(_a0 []*v1.Node) error {
+func (_m *NodeGroup) ForceDeleteNodes(ctx context.Context, _a0 []*v1.Node) error {
 	ret := _m.Called(_a0)
 
 	var r0 error
@@ -140,7 +142,7 @@ func (_m *NodeGroup) ForceDeleteNodes(_a0 []*v1.Node) error {
 }
 
 // Exist provides a mock function with given fields:
-func (_m *NodeGroup) Exist() bool {
+func (_m *NodeGroup) Exist(ctx context.Context) bool {
 	ret := _m.Called()
 
 	var r0 bool
@@ -154,7 +156,7 @@ func (_m *NodeGroup) Exist() bool {
 }
 
 // GetOptions provides a mock function with given fields: defaults
-func (_m *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (_m *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	ret := _m.Called(defaults)
 
 	var r0 *config.NodeGroupAutoscalingOptions
@@ -191,7 +193,7 @@ func (_m *NodeGroup) Id() string {
 }
 
 // IncreaseSize provides a mock function with given fields: delta
-func (_m *NodeGroup) IncreaseSize(delta int) error {
+func (_m *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	ret := _m.Called(delta)
 
 	var r0 error
@@ -205,7 +207,7 @@ func (_m *NodeGroup) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize provides a mock function with given fields: delta
-func (_m *NodeGroup) AtomicIncreaseSize(delta int) error {
+func (_m *NodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	ret := _m.Called(delta)
 
 	var r0 error
@@ -219,7 +221,7 @@ func (_m *NodeGroup) AtomicIncreaseSize(delta int) error {
 }
 
 // MaxSize provides a mock function with given fields:
-func (_m *NodeGroup) MaxSize() int {
+func (_m *NodeGroup) MaxSize(ctx context.Context) int {
 	ret := _m.Called()
 
 	var r0 int
@@ -233,7 +235,7 @@ func (_m *NodeGroup) MaxSize() int {
 }
 
 // MinSize provides a mock function with given fields:
-func (_m *NodeGroup) MinSize() int {
+func (_m *NodeGroup) MinSize(ctx context.Context) int {
 	ret := _m.Called()
 
 	var r0 int
@@ -247,7 +249,7 @@ func (_m *NodeGroup) MinSize() int {
 }
 
 // Nodes provides a mock function with given fields:
-func (_m *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (_m *NodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	ret := _m.Called()
 
 	var r0 []cloudprovider.Instance
@@ -270,7 +272,7 @@ func (_m *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TargetSize provides a mock function with given fields:
-func (_m *NodeGroup) TargetSize() (int, error) {
+func (_m *NodeGroup) TargetSize(ctx context.Context) (int, error) {
 	ret := _m.Called()
 
 	var r0 int
@@ -291,7 +293,7 @@ func (_m *NodeGroup) TargetSize() (int, error) {
 }
 
 // TemplateNodeInfo provides a mock function with given fields:
-func (_m *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (_m *NodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	ret := _m.Called()
 
 	var r0 *framework.NodeInfo

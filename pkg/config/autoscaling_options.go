@@ -352,6 +352,8 @@ type AutoscalingOptions struct {
 	DebuggingSnapshotEnabled bool
 	// EnableProfiling is debug/pprof endpoint enabled.
 	EnableProfiling bool
+	// EnableContextualLogging configures whether contextual logging is enabled.
+	EnableContextualLogging bool
 	// Address is the address of an auxiliary endpoint exposing process information like metrics, health checks and profiling data.
 	Address string
 	// EmitPerNodeGroupMetrics is used to enable/disable emitting per node group metrics.

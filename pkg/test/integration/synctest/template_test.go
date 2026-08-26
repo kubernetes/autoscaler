@@ -66,7 +66,7 @@ func TestStaticAutoscaler_Template(t *testing.T) {
 		err = RunOnceAfter(t, autoscaler, unneededTime)
 		assert.NoError(t, err)
 		// Make assertions.
-		size, _ := fakes.CloudProvider.GetNodeGroup("ng").TargetSize()
+		size, _ := fakes.CloudProvider.GetNodeGroup("ng").TargetSize(context.TODO())
 		assert.Equal(t, 1, size)
 	})
 }

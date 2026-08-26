@@ -17,6 +17,7 @@ limitations under the License.
 package mostpods
 
 import (
+	"context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/expander"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
@@ -30,7 +31,7 @@ func NewFilter() expander.Filter {
 }
 
 // BestOptions selects the expansion option that schedules the most pods
-func (m *mostpods) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
+func (m *mostpods) BestOptions(ctx context.Context, expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
 	var maxPods int
 	var maxOptions []expander.Option
 

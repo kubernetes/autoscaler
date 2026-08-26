@@ -17,6 +17,8 @@ limitations under the License.
 package filter
 
 import (
+	"context"
+
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/klog/v2"
 	cbclient "sigs.k8s.io/cluster-autoscaler/pkg/capacitybuffer/client"
@@ -35,12 +37,12 @@ func NewPodTemplateGenerationChangedFilter(client *cbclient.CapacityBufferClient
 }
 
 // Filter filters the passed buffers based on buffer status conditions
-func (f *podTemplateGenerationChangedFilter) Filter(buffersToFilter []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
+func (f *podTemplateGenerationChangedFilter) Filter(ctx context.Context, buffersToFilter []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
 	var buffers []*v1.CapacityBuffer
 	var filteredOutBuffers []*v1.CapacityBuffer
 
 	for _, buffer := range buffersToFilter {
-		if f.podTemplateGenerationChanged(buffer) {
+		if f.podTemplateGenerationChanged(ctx, buffer) {
 			buffers = append(buffers, buffer)
 		} else {
 			filteredOutBuffers = append(filteredOutBuffers, buffer)
@@ -49,7 +51,8 @@ func (f *podTemplateGenerationChangedFilter) Filter(buffersToFilter []*v1.Capaci
 	return buffers, filteredOutBuffers
 }
 
-func (f *podTemplateGenerationChangedFilter) podTemplateGenerationChanged(buffer *v1.CapacityBuffer) bool {
+func (f *podTemplateGenerationChangedFilter) podTemplateGenerationChanged(ctx context.Context, buffer *v1.CapacityBuffer) bool {
+	logger := klog.FromContext(ctx)
 	if buffer.Status.PodTemplateRef == nil || buffer.Status.PodTemplateGeneration == nil {
 		return false
 	}
@@ -57,7 +60,7 @@ func (f *podTemplateGenerationChangedFilter) podTemplateGenerationChanged(buffer
 	podTemplate, err := f.client.GetPodTemplate(buffer.Namespace, buffer.Status.PodTemplateRef.Name)
 
 	if err != nil {
-		klog.Errorf("Couldn't get pod template defined in buffer %v, with error: %v", buffer.Name, err.Error())
+		logger.Error(err, "Couldn't get pod template defined in buffer", "buffer", buffer.Name)
 		return false
 	}
 	podTemplateGeneration := podTemplate.Generation

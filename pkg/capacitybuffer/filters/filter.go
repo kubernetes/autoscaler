@@ -17,12 +17,13 @@ limitations under the License.
 package filter
 
 import (
+	"context"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 )
 
 // Filter filters CapacityBuffer based on some criteria.
 type Filter interface {
-	Filter(buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer)
+	Filter(ctx context.Context, buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer)
 	CleanUp()
 }
 
@@ -42,10 +43,10 @@ func (f *combinedAnyFilter) AddFilter(filter Filter) {
 }
 
 // Filter runs sub-filters sequentially
-func (f *combinedAnyFilter) Filter(buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
+func (f *combinedAnyFilter) Filter(ctx context.Context, buffers []*v1.CapacityBuffer) ([]*v1.CapacityBuffer, []*v1.CapacityBuffer) {
 	var toBeProcessedBuffers []*v1.CapacityBuffer
 	for _, buffersFilter := range f.filters {
-		filteredToBeProcessed, filteredOut := buffersFilter.Filter(buffers)
+		filteredToBeProcessed, filteredOut := buffersFilter.Filter(ctx, buffers)
 		buffers = filteredOut
 		toBeProcessedBuffers = append(toBeProcessedBuffers, filteredToBeProcessed...)
 	}

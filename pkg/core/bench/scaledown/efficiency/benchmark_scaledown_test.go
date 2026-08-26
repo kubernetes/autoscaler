@@ -17,6 +17,7 @@ limitations under the License.
 package efficiency
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -142,8 +143,7 @@ func (scenario scaleDownScenario) run(b *testing.B) {
 			scaleDownCandidates = nodes
 			podDestinations = nodes
 		} else {
-			scaleDownCandidates, err = sdDeps.Processors.ScaleDownNodeProcessor.GetScaleDownCandidates(
-				sdDeps.AutoscalingCtx, nodes)
+			scaleDownCandidates, err = sdDeps.Processors.ScaleDownNodeProcessor.GetScaleDownCandidates(context.TODO(), sdDeps.AutoscalingCtx, nodes)
 			if err != nil {
 				b.Fatalf("error getting scale-down candidates: %s", err.Error())
 			}
@@ -154,15 +154,15 @@ func (scenario scaleDownScenario) run(b *testing.B) {
 		}
 
 		currentTime := time.Now()
-		err = sdDeps.Planner.UpdateClusterState(podDestinations, scaleDownCandidates, sdDeps.Actuator.actuationStatus, currentTime)
+		err = sdDeps.Planner.UpdateClusterState(context.TODO(), podDestinations, scaleDownCandidates, sdDeps.Actuator.actuationStatus, currentTime)
 		if err != nil {
 			b.Fatalf("error updating cluster state: %s", err.Error())
 		}
 
-		empty, needDrain := sdDeps.Planner.NodesToDelete(currentTime)
+		empty, needDrain := sdDeps.Planner.NodesToDelete(context.TODO(), currentTime)
 
 		budgetProcessor := budgets.NewScaleDownBudgetProcessor(sdDeps.AutoscalingCtx)
-		emptyGrouped, drainGrouped := budgetProcessor.CropNodes(sdDeps.Actuator.actuationStatus, empty, needDrain)
+		emptyGrouped, drainGrouped := budgetProcessor.CropNodes(context.TODO(), sdDeps.Actuator.actuationStatus, empty, needDrain)
 
 		empty = []*apiv1.Node{}
 		for _, group := range emptyGrouped {

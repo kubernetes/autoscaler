@@ -17,6 +17,7 @@ limitations under the License.
 package test
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"slices"
@@ -224,7 +225,7 @@ func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroupAsync(autoscalingC
 }
 
 func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(autoscalingCtx *ca_context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
-	newNodeGroup, err := nodeGroup.Create()
+	newNodeGroup, err := nodeGroup.Create(context.TODO())
 	assert.NoError(p.T, err)
 	metrics.RegisterNodeGroupCreation()
 	extraGroups := []cloudprovider.NodeGroup{}
@@ -239,7 +240,7 @@ func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(autoscalingCtx *c
 	for i := 0; i < p.ExtraGroups; i++ {
 		extraNodeGroup := testCloudProvider.BuildNodeGroup(fmt.Sprintf("autoprovisioned-%s-%d", testGroup.MachineType(), i+1), 0, 1000, 0, false, true, testGroup.MachineType(), nil)
 		assert.NoError(p.T, err)
-		extraGroup, err := extraNodeGroup.Create()
+		extraGroup, err := extraNodeGroup.Create(context.TODO())
 		assert.NoError(p.T, err)
 		metrics.RegisterNodeGroupCreation()
 		extraGroups = append(extraGroups, extraGroup)
@@ -252,24 +253,24 @@ func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(autoscalingCtx *c
 }
 
 // RemoveUnneededNodeGroups removes uneeded node groups
-func (p *MockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(autoscalingCtx *ca_context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
+func (p *MockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
 	removedNodeGroups = make([]cloudprovider.NodeGroup, 0)
-	nodeGroups := autoscalingCtx.CloudProvider.NodeGroups()
+	nodeGroups := autoscalingCtx.CloudProvider.NodeGroups(ctx)
 	for _, nodeGroup := range nodeGroups {
-		if !nodeGroup.Autoprovisioned() {
+		if !nodeGroup.Autoprovisioned(ctx) {
 			continue
 		}
-		targetSize, err := nodeGroup.TargetSize()
+		targetSize, err := nodeGroup.TargetSize(ctx)
 		assert.NoError(p.T, err)
 		if targetSize > 0 {
 			continue
 		}
-		nodes, err := nodeGroup.Nodes()
+		nodes, err := nodeGroup.Nodes(ctx)
 		assert.NoError(p.T, err)
 		if len(nodes) > 0 {
 			continue
 		}
-		err = nodeGroup.Delete()
+		err = nodeGroup.Delete(ctx)
 		assert.NoError(p.T, err)
 		removedNodeGroups = append(removedNodeGroups, nodeGroup)
 	}
@@ -286,17 +287,17 @@ type MockAutoprovisioningNodeGroupListProcessor struct {
 }
 
 // Process extends the list of node groups
-func (p *MockAutoprovisioningNodeGroupListProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*framework.NodeInfo,
+func (p *MockAutoprovisioningNodeGroupListProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*framework.NodeInfo,
 	unschedulablePods []*apiv1.Pod,
 ) ([]cloudprovider.NodeGroup, map[string]*framework.NodeInfo, error) {
-	machines, err := autoscalingCtx.CloudProvider.GetAvailableMachineTypes()
+	machines, err := autoscalingCtx.CloudProvider.GetAvailableMachineTypes(ctx)
 	assert.NoError(p.T, err)
 
 	bestLabels := labels.BestLabelSet(unschedulablePods)
 	for _, machineType := range machines {
-		nodeGroup, err := autoscalingCtx.CloudProvider.NewNodeGroup(machineType, bestLabels, map[string]string{}, []apiv1.Taint{}, map[string]resource.Quantity{})
+		nodeGroup, err := autoscalingCtx.CloudProvider.NewNodeGroup(ctx, machineType, bestLabels, map[string]string{}, []apiv1.Taint{}, map[string]resource.Quantity{})
 		assert.NoError(p.T, err)
-		nodeInfo, err := nodeGroup.TemplateNodeInfo()
+		nodeInfo, err := nodeGroup.TemplateNodeInfo(ctx)
 		assert.NoError(p.T, err)
 		nodeInfos[nodeGroup.Id()] = nodeInfo
 		nodeGroups = append(nodeGroups, nodeGroup)
@@ -323,7 +324,7 @@ func (p *MockBinpackingLimiter) MarkProcessed(autoscalingCtx *ca_context.Autosca
 }
 
 // StopBinpacking stops the binpacking early, if we already have requiredExpansionOptions i.e. 1.
-func (p *MockBinpackingLimiter) StopBinpacking(autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
+func (p *MockBinpackingLimiter) StopBinpacking(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
 	return len(evaluatedOptions) == p.requiredExpansionOptions
 }
 
@@ -372,10 +373,10 @@ func (r *MockReportingStrategy) LastInputOptions() []GroupSizeChange {
 // BestOption satisfies the Strategy interface. Picks the best option from those passed as an argument.
 // When parameter optionToChoose is defined, it's picked as the best one.
 // Otherwise, random option is used.
-func (r *MockReportingStrategy) BestOption(options []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
+func (r *MockReportingStrategy) BestOption(ctx context.Context, options []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
 	r.results.inputOptions = expanderOptionsToGroupSizeChanges(options)
 	if r.optionToChoose == nil {
-		return r.defaultStrategy.BestOption(options, nodeInfo)
+		return r.defaultStrategy.BestOption(ctx, options, nodeInfo)
 	}
 	for _, option := range options {
 		groupSizeChange := expanderOptionToGroupSizeChange(option)

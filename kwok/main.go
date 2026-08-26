@@ -132,6 +132,7 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 
 	err = mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
 		// Autoscale ad infinitum.
+		iteration := 0
 		if autoscalingOpts.FrequentLoopsEnabled {
 			// We need to have two timestamps because the scaleUp activity alternates between processing ProvisioningRequests,
 			// so we need to pass the older timestamp (previousRun) to trigger.Wait to run immediately if only one of the activities is productive.
@@ -146,7 +147,8 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 				default:
 					trigger.Wait(previousRun)
 					previousRun, lastRun = lastRun, time.Now()
-					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, lastRun)
+					iteration++
+					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, lastRun, iteration)
 				}
 			}
 		} else {
@@ -157,7 +159,8 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 					// iteration in progress will be interrupted and cleaned up there.
 					return nil
 				case <-time.After(autoscalingOpts.ScanInterval):
-					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, time.Now())
+					iteration++
+					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, time.Now(), iteration)
 				}
 			}
 		}

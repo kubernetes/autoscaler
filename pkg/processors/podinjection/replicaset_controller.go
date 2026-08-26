@@ -17,17 +17,20 @@ limitations under the License.
 package podinjection
 
 import (
+	"context"
+
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 )
 
-func createReplicaSetControllers(autoscalingCtx *ca_context.AutoscalingContext) []controller {
+func createReplicaSetControllers(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext) []controller {
+	logger := klog.FromContext(ctx)
 	var controllers []controller
 	replicaSets, err := autoscalingCtx.ListerRegistry.ReplicaSetLister().List(labels.Everything())
 	if err != nil {
-		klog.Errorf("Failed to list replicaSets: %v", err)
+		logger.Error(err, "Failed to list replicaSets")
 		return controllers
 	}
 	for _, replicaSet := range replicaSets {

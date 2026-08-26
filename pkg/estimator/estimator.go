@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	gocontext "context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -52,7 +53,7 @@ func (p *PodEquivalenceGroup) Exemplar() *apiv1.Pod {
 // to schedule on those nodes.
 type Estimator interface {
 	// Estimate estimates how many nodes are needed to provision pods coming from the given equivalence groups.
-	Estimate([]PodEquivalenceGroup, *framework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
+	Estimate(gocontext.Context, []PodEquivalenceGroup, *framework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
 }
 
 // EstimatorBuilder creates a new estimator object.
@@ -79,7 +80,7 @@ func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer Estimat
 // scale-up is limited by external factors.
 type EstimationLimiter interface {
 	// StartEstimation is called at the start of estimation.
-	StartEstimation([]PodEquivalenceGroup, cloudprovider.NodeGroup, EstimationContext)
+	StartEstimation(gocontext.Context, []PodEquivalenceGroup, cloudprovider.NodeGroup, EstimationContext)
 	// EndEstimation is called at the end of estimation.
 	EndEstimation()
 	// PermissionToAddNode is called by an estimator when it wants to add additional
@@ -87,7 +88,7 @@ type EstimationLimiter interface {
 	// not to add any more nodes in this simulation.
 	// There is no requirement for the Estimator to stop calculations, it's
 	// just not expected to add any more nodes.
-	PermissionToAddNode() bool
+	PermissionToAddNode(gocontext.Context) bool
 }
 
 // EstimationPodOrderer is an interface used to determine the order of the pods

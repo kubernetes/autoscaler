@@ -17,6 +17,7 @@ limitations under the License.
 package expander
 
 import (
+	"context"
 	apiv1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
@@ -53,10 +54,10 @@ type Option struct {
 
 // Strategy describes an interface for selecting the best option when scaling up
 type Strategy interface {
-	BestOption(options []Option, nodeInfo map[string]*framework.NodeInfo) *Option
+	BestOption(ctx context.Context, options []Option, nodeInfo map[string]*framework.NodeInfo) *Option
 }
 
 // Filter describes an interface for filtering to equally good options according to some criteria
 type Filter interface {
-	BestOptions(options []Option, nodeInfo map[string]*framework.NodeInfo) []Option
+	BestOptions(ctx context.Context, options []Option, nodeInfo map[string]*framework.NodeInfo) []Option
 }

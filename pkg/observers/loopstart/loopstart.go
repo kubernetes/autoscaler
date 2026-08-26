@@ -16,10 +16,12 @@ limitations under the License.
 
 package loopstart
 
+import "context"
+
 // Observer interface is used to store object that needed to be refreshed in each CA loop.
 // It returns error and a bool value whether the loop should be skipped.
 type Observer interface {
-	Refresh()
+	Refresh(context.Context)
 }
 
 // ObserversList interface is used to store objects that needed to be refreshed in each CA loop.
@@ -28,9 +30,9 @@ type ObserversList struct {
 }
 
 // Refresh refresh observers each CA loop.
-func (l *ObserversList) Refresh() {
+func (l *ObserversList) Refresh(ctx context.Context) {
 	for _, observer := range l.observers {
-		observer.Refresh()
+		observer.Refresh(ctx)
 	}
 }
 

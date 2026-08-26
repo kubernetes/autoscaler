@@ -65,6 +65,7 @@ this document:
   * [What events are emitted by CA?](#what-events-are-emitted-by-ca)
   * [My cluster is below minimum / above maximum number of nodes, but CA did not fix that! Why?](#my-cluster-is-below-minimum--above-maximum-number-of-nodes-but-ca-did-not-fix-that-why)
   * [What happens in scale-up when I have no more quota in the cloud provider?](#what-happens-in-scale-up-when-i-have-no-more-quota-in-the-cloud-provider)
+  * [Node scale-down after Job pods evicted or failed](#node-scale-down-after-job-pods-evicted-or-failed)
 * [Developer](#developer)
   * [What go version should be used to compile CA?](#what-go-version-should-be-used-to-compile-ca)
   * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
@@ -1027,7 +1028,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `drain-priority-config` | List of ',' separated pairs (priority:terminationGracePeriodSeconds) of integers separated by ':' enables priority evictor. Priority evictor groups pods into priority groups based on pod priority and evict pods in the ascending order of group priorities--max-graceful-termination-sec flag should not be set when this flag is set. Not setting this flag will use unordered evictor by default.Priority evictor reuses the concepts of drain logic in kubelet(https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2712-pod-priority-based-graceful-node-shutdown#migration-from-the-node-graceful-shutdown-feature).Eg. flag usage: '10000:20,1000:100,0:60' |  |
 | `dynamic-node-delete-delay-after-taint-enabled` | Enables dynamic adjustment of NodeDeleteDelayAfterTaint based of the latency between CA and api-server |  |
 | `emit-per-nodegroup-metrics` | If true, emit per node group metrics. |  |
-| `enable-csi-node-aware-scheduling` | Whether logic for handling CSINode objects is enabled. |  |
+| `enable-csi-node-aware-scheduling` | Whether logic for handling CSINode objects is enabled. | true |
 | `enable-dynamic-resource-allocation` | Handle DRA (Dynamic Resource Allocation) objects, locked to true. | true |
 | `enable-proactive-scaleup` | Whether to enable/disable proactive scale-ups, defaults to false |  |
 | `enable-provisioning-requests` | Whether the clusterautoscaler will be handling the ProvisioningRequest CRs. |  |
@@ -1362,6 +1363,16 @@ move back to the previous size until the quota arrives or the scale-up-triggerin
 
 From version 0.6.2, Cluster Autoscaler backs off from scaling up a node group after failure.
 Depending on how long scale-ups have been failing, it may wait up to 30 minutes before next attempt.
+
+### Node scale-down after Job pods evicted or failed
+
+When a Job's pods are evicted or fail, the controller enters an exponential backoff period that can
+last up to 6 minutes. Because no pending pods exist during this backoff, proactive scale-up does
+not trigger, potentially leading to the scale-down of nodes intended for replacement pods.
+This behavior is documented in [kubernetes/kubernetes#130881](https://github.com/kubernetes/kubernetes/issues/130881).
+
+Note that you can apply `safe-to-evict=false` on critical Job pods to prevent the eviction-induced
+backoff and subsequent premature scale-down.
 
 # Developer
 

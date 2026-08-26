@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -106,7 +107,7 @@ type Reasons interface {
 
 // ScaleUpStatusProcessor processes the status of the cluster after a scale-up.
 type ScaleUpStatusProcessor interface {
-	Process(autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus)
+	Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus)
 	CleanUp()
 }
 
@@ -119,7 +120,7 @@ func NewDefaultScaleUpStatusProcessor() ScaleUpStatusProcessor {
 type NoOpScaleUpStatusProcessor struct{}
 
 // Process processes the status of the cluster after a scale-up.
-func (p *NoOpScaleUpStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus) {
+func (p *NoOpScaleUpStatusProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus) {
 }
 
 // CleanUp cleans up the processor's internal structures.
@@ -150,9 +151,9 @@ func (p *CombinedScaleUpStatusProcessor) AddProcessor(processor ScaleUpStatusPro
 }
 
 // Process runs sub-processors sequentially in the same order of addition
-func (p *CombinedScaleUpStatusProcessor) Process(autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus) {
+func (p *CombinedScaleUpStatusProcessor) Process(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext, status *ScaleUpStatus) {
 	for _, processor := range p.processors {
-		processor.Process(autoscalingCtx, status)
+		processor.Process(ctx, autoscalingCtx, status)
 	}
 }
 

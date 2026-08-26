@@ -17,6 +17,7 @@ limitations under the License.
 package gpu
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -69,8 +70,9 @@ const (
 // GetGpuInfoForMetrics returns the name of the custom resource and the GPU used on the node or empty string if there's no GPU
 // if the GPU type is unknown, "generic" is returned
 // NOTE: current implementation is GKE/GCE-specific
-func GetGpuInfoForMetrics(gpuConfig *cloudprovider.GpuConfig, availableGPUTypes map[string]struct{}, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuResource string, gpuType string) {
+func GetGpuInfoForMetrics(ctx context.Context, gpuConfig *cloudprovider.GpuConfig, availableGPUTypes map[string]struct{}, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuResource string, gpuType string) {
 	// There is no sign of GPU
+	logger := klog.FromContext(ctx)
 	if gpuConfig == nil {
 		return "", MetricsNoGPU
 	}
@@ -95,18 +97,17 @@ func GetGpuInfoForMetrics(gpuConfig *cloudprovider.GpuConfig, availableGPUTypes 
 
 	// GKE-specific label present but no capacity (yet?) - check the node template
 	if nodeGroup != nil {
-		template, err := nodeGroup.TemplateNodeInfo()
+		template, err := nodeGroup.TemplateNodeInfo(ctx)
 		if err != nil {
-			klog.Warningf("Failed to build template for getting GPU metrics for node %v: %v", node.Name, err)
+			logger.Info("Failed to build template for getting GPU metrics", "node", klog.KObj(node), "err", err)
 			return resourceName.String(), MetricsErrorGPU
 		}
 
 		if _, found := template.Node().Status.Capacity[resourceName]; found {
 			return resourceName.String(), MetricsMissingGPU
 		}
-
 		// if template does not define GPUs we assume node will not have any even if it has gpu label
-		klog.Warningf("Template does not define GPUs even though node from its node group does; node=%v", node.Name)
+		logger.Info("Template does not define GPUs even though node from its node group does", "node", klog.KObj(node))
 		return resourceName.String(), MetricsUnexpectedLabelGPU
 	}
 
@@ -171,8 +172,8 @@ func DetectNodeGPUResourceName(node *apiv1.Node) apiv1.ResourceName {
 
 // GetNodeGPUFromCloudProvider returns the GPU the node has. Returned GPU has the GPU label of the
 // passed in cloud provider. If the node doesn't have a GPU, returns nil.
-func GetNodeGPUFromCloudProvider(provider cloudprovider.CloudProvider, node *apiv1.Node) *cloudprovider.GpuConfig {
-	gpuLabel := provider.GPULabel()
+func GetNodeGPUFromCloudProvider(ctx context.Context, provider cloudprovider.CloudProvider, node *apiv1.Node) *cloudprovider.GpuConfig {
+	gpuLabel := provider.GPULabel(ctx)
 	if NodeHasGpu(gpuLabel, node) {
 		return &cloudprovider.GpuConfig{
 			Label:                gpuLabel,

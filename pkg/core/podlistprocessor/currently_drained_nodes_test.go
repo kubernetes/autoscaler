@@ -17,6 +17,7 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -274,7 +275,7 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingCtx.ClusterSnapshot, tc.nodes, tc.pods)
 
 			processor := NewCurrentlyDrainedNodesPodListProcessor()
-			pods, err := processor.Process(&autoscalingCtx, tc.unschedulablePods)
+			pods, err := processor.Process(context.TODO(), &autoscalingCtx, tc.unschedulablePods)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, tc.wantPods, pods)
 		})
@@ -285,11 +286,11 @@ type mockActuator struct {
 	status *mockActuationStatus
 }
 
-func (m *mockActuator) StartDeletion(_, _ []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
+func (m *mockActuator) StartDeletion(ctx context.Context, _, _ []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
 	return status.ScaleDownError, []*status.ScaleDownNode{}, nil
 }
 
-func (m *mockActuator) StartForceDeletion(_, _ []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
+func (m *mockActuator) StartForceDeletion(_ context.Context, _, _ []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
 	return status.ScaleDownError, []*status.ScaleDownNode{}, nil
 }
 

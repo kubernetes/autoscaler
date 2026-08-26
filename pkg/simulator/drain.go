@@ -17,6 +17,7 @@ limitations under the License.
 package simulator
 
 import (
+	"context"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -46,7 +47,7 @@ type PodMoveInfo struct {
 // with dangling created-by annotation).
 // If listers is not nil it checks whether RC, DS, Jobs and RS that created
 // these pods still exist.
-func GetPodsToMove(nodeInfo *framework.NodeInfo, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, listers kube_util.ListerRegistry, remainingPdbTracker pdb.RemainingPdbTracker, timestamp time.Time) (PodMoveInfo, error) {
+func GetPodsToMove(ctx context.Context, nodeInfo *framework.NodeInfo, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, listers kube_util.ListerRegistry, remainingPdbTracker pdb.RemainingPdbTracker, timestamp time.Time) (PodMoveInfo, error) {
 	if drainabilityRules == nil {
 		drainabilityRules = rules.Default(deleteOptions)
 	}
@@ -64,7 +65,7 @@ func GetPodsToMove(nodeInfo *framework.NodeInfo, deleteOptions options.NodeDelet
 	for _, podInfo := range nodeInfo.Pods() {
 		pod := podInfo.Pod
 
-		status := drainabilityRules.Drainable(drainCtx, pod, nodeInfo)
+		status := drainabilityRules.Drainable(ctx, drainCtx, pod, nodeInfo)
 		switch status.Outcome {
 		case drainability.UndefinedOutcome, drainability.DrainOk:
 			if pod_util.IsDaemonSetPod(pod) {

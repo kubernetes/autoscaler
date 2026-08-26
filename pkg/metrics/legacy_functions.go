@@ -17,6 +17,7 @@ limitations under the License.
 package metrics
 
 import (
+	"context"
 	"time"
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator"
@@ -40,13 +41,13 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 
 // UpdateDurationFromStart records the duration of the step identified by the
 // label using start time
-func UpdateDurationFromStart(label FunctionLabel, start time.Time) {
-	DefaultMetrics.UpdateDurationFromStart(label, start)
+func UpdateDurationFromStart(ctx context.Context, label FunctionLabel, start time.Time) {
+	DefaultMetrics.UpdateDurationFromStart(ctx, label, start)
 }
 
 // UpdateDuration records the duration of the step identified by the label
-func UpdateDuration(label FunctionLabel, duration time.Duration) {
-	DefaultMetrics.UpdateDuration(label, duration)
+func UpdateDuration(ctx context.Context, label FunctionLabel, duration time.Duration) {
+	DefaultMetrics.UpdateDuration(ctx, label, duration)
 }
 
 // UpdateLastTime records the time the step identified by the label was started

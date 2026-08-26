@@ -17,6 +17,7 @@ limitations under the License.
 package nodegroupconfig
 
 import (
+	"context"
 	"time"
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
@@ -26,19 +27,19 @@ import (
 // NodeGroupConfigProcessor provides config values for a particular NodeGroup.
 type NodeGroupConfigProcessor interface {
 	// GetScaleDownUnneededTime returns ScaleDownUnneededTime value that should be used for a given NodeGroup.
-	GetScaleDownUnneededTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	GetScaleDownUnneededTime(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
 	// GetScaleDownUnreadyTime returns ScaleDownUnreadyTime value that should be used for a given NodeGroup.
-	GetScaleDownUnreadyTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	GetScaleDownUnreadyTime(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
 	// GetScaleDownUtilizationThreshold returns ScaleDownUtilizationThreshold value that should be used for a given NodeGroup.
-	GetScaleDownUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error)
+	GetScaleDownUtilizationThreshold(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (float64, error)
 	// GetScaleDownGpuUtilizationThreshold returns ScaleDownGpuUtilizationThreshold value that should be used for a given NodeGroup.
-	GetScaleDownGpuUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error)
+	GetScaleDownGpuUtilizationThreshold(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (float64, error)
 	// GetMaxNodeProvisionTime return MaxNodeProvisionTime value that should be used for a given NodeGroup.
-	GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	GetMaxNodeProvisionTime(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
 	// GetMaxNodeStartupTime return MaxNodeStartupTime value that should be used for a given NodeGroup.
-	GetMaxNodeStartupTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	GetMaxNodeStartupTime(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
 	// GetIgnoreDaemonSetsUtilization returns IgnoreDaemonSetsUtilization value that should be used for a given NodeGroup.
-	GetIgnoreDaemonSetsUtilization(nodeGroup cloudprovider.NodeGroup) (bool, error)
+	GetIgnoreDaemonSetsUtilization(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (bool, error)
 	// CleanUp cleans up processor's internal structures.
 	CleanUp()
 }
@@ -51,8 +52,8 @@ type DelegatingNodeGroupConfigProcessor struct {
 }
 
 // GetScaleDownUnneededTime returns ScaleDownUnneededTime value that should be used for a given NodeGroup.
-func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnneededTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
+func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnneededTime(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
+	ngConfig, err := nodeGroup.GetOptions(ctx, p.nodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return time.Duration(0), err
 	}
@@ -63,8 +64,8 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnneededTime(nodeGroup 
 }
 
 // GetScaleDownUnreadyTime returns ScaleDownUnreadyTime value that should be used for a given NodeGroup.
-func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnreadyTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
+func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnreadyTime(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
+	ngConfig, err := nodeGroup.GetOptions(ctx, p.nodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return time.Duration(0), err
 	}
@@ -75,8 +76,8 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUnreadyTime(nodeGroup c
 }
 
 // GetScaleDownUtilizationThreshold returns ScaleDownUtilizationThreshold value that should be used for a given NodeGroup.
-func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error) {
-	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
+func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUtilizationThreshold(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (float64, error) {
+	ngConfig, err := nodeGroup.GetOptions(ctx, p.nodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return 0.0, err
 	}
@@ -87,8 +88,8 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownUtilizationThreshold(no
 }
 
 // GetScaleDownGpuUtilizationThreshold returns ScaleDownGpuUtilizationThreshold value that should be used for a given NodeGroup.
-func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownGpuUtilizationThreshold(nodeGroup cloudprovider.NodeGroup) (float64, error) {
-	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
+func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownGpuUtilizationThreshold(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (float64, error) {
+	ngConfig, err := nodeGroup.GetOptions(ctx, p.nodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return 0.0, err
 	}
@@ -99,8 +100,8 @@ func (p *DelegatingNodeGroupConfigProcessor) GetScaleDownGpuUtilizationThreshold
 }
 
 // GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for a given NodeGroup.
-func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
+func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeProvisionTime(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
+	ngConfig, err := nodeGroup.GetOptions(ctx, p.nodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return time.Duration(0), err
 	}
@@ -111,8 +112,8 @@ func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeProvisionTime(nodeGroup c
 }
 
 // GetMaxNodeStartupTime returns MaxNodeStartupTime value that should be used for a given NodeGroup.
-func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeStartupTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
+func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeStartupTime(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
+	ngConfig, err := nodeGroup.GetOptions(ctx, p.nodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return p.nodeGroupDefaults.MaxNodeStartupTime, err
 	}
@@ -123,8 +124,8 @@ func (p *DelegatingNodeGroupConfigProcessor) GetMaxNodeStartupTime(nodeGroup clo
 }
 
 // GetIgnoreDaemonSetsUtilization returns IgnoreDaemonSetsUtilization value that should be used for a given NodeGroup.
-func (p *DelegatingNodeGroupConfigProcessor) GetIgnoreDaemonSetsUtilization(nodeGroup cloudprovider.NodeGroup) (bool, error) {
-	ngConfig, err := nodeGroup.GetOptions(p.nodeGroupDefaults)
+func (p *DelegatingNodeGroupConfigProcessor) GetIgnoreDaemonSetsUtilization(ctx context.Context, nodeGroup cloudprovider.NodeGroup) (bool, error) {
+	ngConfig, err := nodeGroup.GetOptions(ctx, p.nodeGroupDefaults)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		return false, err
 	}

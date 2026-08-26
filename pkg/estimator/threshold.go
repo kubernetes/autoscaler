@@ -17,6 +17,7 @@ limitations under the License.
 package estimator
 
 import (
+	"context"
 	"time"
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
@@ -25,7 +26,7 @@ import (
 // Threshold provides resources configuration for threshold based estimation limiter.
 // Return value of 0 means that no limit is set.
 type Threshold interface {
-	NodeLimit(cloudprovider.NodeGroup, EstimationContext) NodeLimitResult
+	NodeLimit(context.Context, cloudprovider.NodeGroup, EstimationContext) NodeLimitResult
 	DurationLimit(cloudprovider.NodeGroup, EstimationContext) DurationLimitResult
 }
 

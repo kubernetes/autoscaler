@@ -17,6 +17,7 @@ limitations under the License.
 package customresources
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -189,7 +190,7 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 	processor := GpuCustomResourcesProcessor{}
 	provider := testprovider.NewTestCloudProviderBuilder().Build()
 	autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider}
-	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(autoscalingCtx, initialAllNodes, initialReadyNodes, nil, nil)
+	newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.TODO(), autoscalingCtx, initialAllNodes, initialReadyNodes, nil, nil)
 
 	foundInReady := make(map[string]bool)
 	for _, node := range newReadyNodes {

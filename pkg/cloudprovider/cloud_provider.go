@@ -17,6 +17,7 @@ limitations under the License.
 package cloudprovider
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -53,50 +54,50 @@ type CloudProvider interface {
 	Name() string
 
 	// NodeGroups returns all node groups configured for this cloud provider.
-	NodeGroups() []NodeGroup
+	NodeGroups(context.Context) []NodeGroup
 
 	// NodeGroupForNode returns the node group for the given node, nil if the node
 	// should not be processed by cluster autoscaler, or non-nil error if such
 	// occurred. Must be implemented.
-	NodeGroupForNode(*apiv1.Node) (NodeGroup, error)
+	NodeGroupForNode(ctx context.Context, node *apiv1.Node) (NodeGroup, error)
 
 	// HasInstance returns whether the node has corresponding instance in cloud provider,
 	// true if the node has an instance, false if it no longer exists
-	HasInstance(*apiv1.Node) (bool, error)
+	HasInstance(ctx context.Context, node *apiv1.Node) (bool, error)
 
 	// Pricing returns pricing model for this cloud provider or error if not available.
 	// Implementation optional.
-	Pricing() (PricingModel, errors.AutoscalerError)
+	Pricing(context.Context) (PricingModel, errors.AutoscalerError)
 
 	// GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 	// Implementation optional.
-	GetAvailableMachineTypes() ([]string, error)
+	GetAvailableMachineTypes(context.Context) ([]string, error)
 
 	// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 	// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 	// Implementation optional.
-	NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+	NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 		taints []apiv1.Taint, extraResources map[string]resource.Quantity) (NodeGroup, error)
 
 	// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-	GetResourceLimiter() (*ResourceLimiter, error)
+	GetResourceLimiter(context.Context) (*ResourceLimiter, error)
 
 	// GPULabel returns the label added to nodes with GPU resource.
-	GPULabel() string
+	GPULabel(context.Context) string
 
 	// GetAvailableGPUTypes return all available GPU types cloud provider supports.
-	GetAvailableGPUTypes() map[string]struct{}
+	GetAvailableGPUTypes(context.Context) map[string]struct{}
 
 	// GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 	// any GPUs, it returns nil.
-	GetNodeGpuConfig(*apiv1.Node) *GpuConfig
+	GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *GpuConfig
 
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-	Cleanup() error
+	Cleanup(context.Context) error
 
 	// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-	Refresh() error
+	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(context.TODO()).
+	Refresh(context.Context) error
 }
 
 // ErrNotImplemented is returned if a method is not implemented.
@@ -113,21 +114,21 @@ var ErrIllegalConfiguration = errors.NewAutoscalerError(errors.InternalError, "C
 // of nodes that have the same capacity and set of labels.
 type NodeGroup interface {
 	// MaxSize returns maximum size of the node group.
-	MaxSize() int
+	MaxSize(context.Context) int
 
 	// MinSize returns minimum size of the node group.
-	MinSize() int
+	MinSize(context.Context) int
 
 	// TargetSize returns the current target size of the node group. It is possible that the
 	// number of nodes in Kubernetes is different at the moment but should be equal
 	// to Size() once everything stabilizes (new nodes finish startup and registration or
 	// removed nodes are deleted completely). Implementation required.
-	TargetSize() (int, error)
+	TargetSize(context.Context) (int, error)
 
 	// IncreaseSize increases the size of the node group. To delete a node you need
 	// to explicitly name it and use DeleteNode. This function should wait until
 	// node group size is updated. Implementation required.
-	IncreaseSize(delta int) error
+	IncreaseSize(ctx context.Context, delta int) error
 
 	// AtomicIncreaseSize tries to increase the size of the node group atomically.
 	// It returns error if requesting the entire delta fails. The method doesn't wait until the new instances appear.
@@ -135,37 +136,37 @@ type NodeGroup interface {
 	// for atomically requesting multiple instances. If implemented, CA will take advantage of the method while scaling up
 	// BestEffortAtomicScaleUp ProvisioningClass, guaranteeing that all instances required for such a
 	// ProvisioningRequest are provisioned atomically.
-	AtomicIncreaseSize(delta int) error
+	AtomicIncreaseSize(ctx context.Context, delta int) error
 
 	// DeleteNodes deletes nodes from this node group. Error is returned either on
 	// failure or if the given node doesn't belong to this node group. This function
 	// should wait until node group size is updated. Implementation required.
-	DeleteNodes([]*apiv1.Node) error
+	DeleteNodes(context.Context, []*apiv1.Node) error
 
 	// ForceDeleteNodes deletes nodes from this node group, without checking for
 	// constraints like minimal size validation etc. Error is returned either on
 	// failure or if the given node doesn't belong to this node group. This function
 	// should wait until node group size is updated.
-	ForceDeleteNodes([]*apiv1.Node) error
+	ForceDeleteNodes(context.Context, []*apiv1.Node) error
 
 	// DecreaseTargetSize decreases the target size of the node group. This function
 	// doesn't permit to delete any existing node and can be used only to reduce the
 	// request for new nodes that have not been yet fulfilled. Delta should be negative.
 	// It is assumed that cloud provider will not delete the existing nodes when there
 	// is an option to just decrease the target. Implementation required.
-	DecreaseTargetSize(delta int) error
+	DecreaseTargetSize(ctx context.Context, delta int) error
 
 	// Id returns an unique identifier of the node group.
 	Id() string
 
 	// Debug returns a string containing all information regarding this node group.
-	Debug() string
+	Debug(context.Context) string
 
 	// Nodes returns a list of all nodes that belong to this node group.
 	// It is required that Instance objects returned by this method have Id field set.
 	// Other fields are optional.
 	// This list should include also instances that might have not become a kubernetes node yet.
-	Nodes() ([]Instance, error)
+	Nodes(context.Context) ([]Instance, error)
 
 	// TemplateNodeInfo returns a framework.NodeInfo structure of an empty
 	// (as if just started) node. This will be used in scale-up simulations to
@@ -173,28 +174,28 @@ type NodeGroup interface {
 	// NodeInfo is expected to have a fully populated Node object, with all of the labels,
 	// capacity and allocatable information as well as all pods that are started on
 	// the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-	TemplateNodeInfo() (*framework.NodeInfo, error)
+	TemplateNodeInfo(context.Context) (*framework.NodeInfo, error)
 
 	// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 	// theoretical node group from the real one. Implementation required.
-	Exist() bool
+	Exist(context.Context) bool
 
 	// Create creates the node group on the cloud provider side. Implementation optional.
-	Create() (NodeGroup, error)
+	Create(context.Context) (NodeGroup, error)
 
 	// Delete deletes the node group on the cloud provider side.
 	// This will be executed only for autoprovisioned node groups, once their size drops to 0.
 	// Implementation optional.
-	Delete() error
+	Delete(context.Context) error
 
 	// Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
 	// was created by CA and can be deleted when scaled to 0.
-	Autoprovisioned() bool
+	Autoprovisioned(context.Context) bool
 
 	// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 	// NodeGroup. Returning a nil will result in using default options.
 	// Implementation optional. Callers MUST handle `cloudprovider.ErrNotImplemented`.
-	GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error)
+	GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error)
 }
 
 // Instance represents a cloud-provider node. The node does not necessarily map to k8s node
@@ -274,11 +275,11 @@ const (
 type PricingModel interface {
 	// NodePrice returns a price of running the given node for a given period of time.
 	// All prices returned by the structure should be in the same currency.
-	NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error)
+	NodePrice(ctx context.Context, node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error)
 
 	// PodPrice returns a theoretical minimum price of running a pod for a given
 	// period of time on a perfectly matching machine.
-	PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error)
+	PodPrice(ctx context.Context, pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error)
 }
 
 const (

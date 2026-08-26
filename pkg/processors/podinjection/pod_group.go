@@ -57,7 +57,9 @@ func updatePodGroups(pod *apiv1.Pod, ownerRef metav1.OwnerReference, podGroups m
 	if !found {
 		return podGroups
 	}
-	if group.sample == nil || pod.CreationTimestamp.After(group.sample.CreationTimestamp.Time) {
+	// only consider unscheduled pods to prevent continuous fake pods injection if real pods cannot
+	// be created e.g. due to ResourceQuota, see https://github.com/kubernetes/autoscaler/pull/7944#issuecomment-5368714300
+	if group.sample == nil && pod.Spec.NodeName == "" {
 		group.sample = pod
 		group.ownerUid = ownerRef.UID
 	}

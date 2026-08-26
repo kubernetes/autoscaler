@@ -175,6 +175,13 @@ func TestCreateAutoscalingOptions(t *testing.T) {
 			},
 		},
 		{
+			testName: "CSI node aware scheduling is enabled by default",
+			flags:    []string{},
+			wantOptionsAsserter: func(t *testing.T, gotOptions config.AutoscalingOptions) {
+				assert.True(t, gotOptions.CSINodeAwareSchedulingEnabled)
+			},
+		},
+		{
 			testName: "DrainPriorityConfig is parsed correctly when the flag passed",
 			flags:    []string{"--drain-priority-config", "5000:60,3000:50,0:40"},
 			wantOptionsAsserter: func(t *testing.T, gotOptions config.AutoscalingOptions) {
@@ -366,7 +373,7 @@ func TestAutoscalingFlagsAllPossible(t *testing.T) {
 				"--check-capacity-provisioning-request-batch-timebox=5s",
 				"--force-delete-unregistered-nodes=true",
 				"--force-delete-failed-nodes=true",
-				"--enable-csi-node-aware-scheduling=true",
+				"--enable-csi-node-aware-scheduling=false",
 				"--predicate-parallelism=8",
 				"--check-capacity-processor-instance=inst",
 				"--node-deletion-candidate-ttl=1m",
@@ -487,7 +494,7 @@ func TestAutoscalingFlagsAllPossible(t *testing.T) {
 				assert.Equal(t, 5*time.Second, opts.CheckCapacityProvisioningRequestBatchTimebox)
 				assert.True(t, opts.ForceDeleteLongUnregisteredNodes)
 				assert.True(t, opts.ForceDeleteFailedNodes)
-				assert.True(t, opts.CSINodeAwareSchedulingEnabled)
+				assert.False(t, opts.CSINodeAwareSchedulingEnabled)
 				assert.Equal(t, 8, opts.PredicateParallelism)
 				assert.Equal(t, "inst", opts.CheckCapacityProcessorInstance)
 				assert.Equal(t, 1*time.Minute, opts.NodeDeletionCandidateTTL)
@@ -537,31 +544,81 @@ func TestAutoscalingFlagsAllPossible(t *testing.T) {
 }
 
 func TestSchedulerVerbosityFlag(t *testing.T) {
-	fs := pflag.NewFlagSet("test", pflag.ContinueOnError)
 
-	// klog flags registration is required because we use -v flag
-	// value in order to resolve and validate scheduler verbosity value.
-	// Sadly this requires adding the global flag set to our test flag set
-	// due to the way how current --verbosity handles the flag lookup.
-	klog.InitFlags(flag.CommandLine)
-	fs.AddGoFlagSet(flag.CommandLine)
-
-	f := &AutoscalingFlags{}
-	f.AddFlags(fs)
-	err := fs.Parse([]string{"-v=5", "--scheduler-verbosity=1"})
-	if err != nil {
-		t.Fatalf("unexpected Parse error: %v", err)
+	testCases := []struct {
+		name                         string
+		flags                        []string
+		wantSchedulerVerbosityOffset int
+	}{
+		{
+			name:                         "empty input",
+			flags:                        []string{},
+			wantSchedulerVerbosityOffset: 0,
+		},
+		{
+			name:                         "scheduler verbosity is capped at CA verbosity",
+			flags:                        []string{"-v=3", "--scheduler-verbosity=10"},
+			wantSchedulerVerbosityOffset: 0,
+		},
+		{
+			name:                         "scheduler offset",
+			flags:                        []string{"-v=3", "--scheduler-verbosity=1"},
+			wantSchedulerVerbosityOffset: 2,
+		},
+		{
+			name:                         "scheduler verbosity is unset",
+			flags:                        []string{"-v=5"},
+			wantSchedulerVerbosityOffset: 0,
+		},
+		{
+			name:                         "verbosity is unset",
+			flags:                        []string{"--scheduler-verbosity=3"},
+			wantSchedulerVerbosityOffset: 0,
+		},
+		{
+			name:                         "scheduler verbosity is -1",
+			flags:                        []string{"-v=4", "--scheduler-verbosity=-1"},
+			wantSchedulerVerbosityOffset: 0,
+		},
 	}
 
-	opts, err := f.Options()
-	if err != nil {
-		t.Fatalf("unexpected Options error: %v", err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// klog flags registration is required because we use -v flag
+			// value in order to resolve and validate scheduler verbosity value.
+			// This requires adding the global flag set to our test flag set
+			// due to the way how current --verbosity handles the flag lookup.
+			klog.InitFlags(flag.CommandLine)
+
+			// Default verbosity value is 0 and it is set in the init() of k8s.io/klog/v2 module.
+			// It is a global variable in klog package. This means it leaks state, because imported packages are not re-initialized between tests.
+			// To avoid the state leak, we manually reset it to its default value before the test execution.
+			_ = flag.CommandLine.Lookup("v").Value.Set("0")
+
+			fs := pflag.NewFlagSet("test", pflag.ContinueOnError)
+
+			fs.AddGoFlagSet(flag.CommandLine)
+
+			f := &AutoscalingFlags{}
+
+			f.AddFlags(fs)
+			err := fs.Parse(tc.flags)
+			if err != nil {
+				t.Fatalf("unexpected Parse error: %v", err)
+			}
+
+			opts, err := f.Options()
+			if err != nil {
+				t.Fatalf("unexpected Options error: %v", err)
+			}
+
+			// Recreate global flag set so that race condition is shorter in time
+			flag.CommandLine = flag.NewFlagSet("", flag.ExitOnError)
+
+			assert.Equal(t, tc.wantSchedulerVerbosityOffset, opts.SchedulerVerbosityOffset)
+		})
 	}
 
-	// Recreate global flag set so that race condition is shorter in time
-	flag.CommandLine = flag.NewFlagSet("", flag.ExitOnError)
-
-	assert.Equal(t, 4, opts.SchedulerVerbosityOffset)
 }
 
 func TestAutoscalingFlagsValidationEdgeCases(t *testing.T) {
