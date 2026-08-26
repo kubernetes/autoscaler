@@ -99,9 +99,9 @@ func TestGetScaleDownCandidates(t *testing.T) {
 				ng3 := test.NewTestNodeGroup("ng-3", 0, 0, 0, false, false, "", nil, nil)
 
 				// in cool down
-				p.RegisterScaleUp(context.TODO(), ng2, 0, time.Now().Add(-time.Minute*5))
+				p.RegisterScaleUp(context.Background(), ng2, 0, time.Now().Add(-time.Minute*5))
 				// not in cool down anymore
-				p.RegisterScaleUp(context.TODO(), ng3, 0, time.Now().Add(-time.Minute*11))
+				p.RegisterScaleUp(context.Background(), ng3, 0, time.Now().Add(-time.Minute*11))
 				return p
 			},
 		},
@@ -143,7 +143,7 @@ func TestGetScaleDownCandidates(t *testing.T) {
 
 			testCase.autoscalingCtx.CloudProvider = provider
 
-			no, err := p.GetScaleDownCandidates(context.TODO(), &testCase.autoscalingCtx, testCase.candidates)
+			no, err := p.GetScaleDownCandidates(context.Background(), &testCase.autoscalingCtx, testCase.candidates)
 
 			assert.NoError(t, err)
 			assert.Equal(t, testCase.expected, no)

@@ -111,7 +111,7 @@ func TestNodeResourcesCache(t *testing.T) {
 			tc.setupCRPExpectations(&mockCRP.Mock)
 			nc := newNodeResourcesCache(mockCRP)
 			for _, call := range tc.calls {
-				resources, err := nc.totalNodeResources(gocontext.TODO(), autoscalingCtx, call.node, call.nodeGroup)
+				resources, err := nc.totalNodeResources(gocontext.Background(), autoscalingCtx, call.node, call.nodeGroup)
 				if err != nil {
 					t.Fatalf("totalNodeResources unexpected error: %v", err)
 				}
@@ -174,7 +174,7 @@ func TestNodeResources(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := &context.AutoscalingContext{}
-			delta, err := totalNodeResources(gocontext.TODO(), ctx, tc.crp, tc.node, nil)
+			delta, err := totalNodeResources(gocontext.Background(), ctx, tc.crp, tc.node, nil)
 			if err != nil {
 				t.Errorf("totalNodeResources: unexpected error: %v", err)
 			}

@@ -31,7 +31,7 @@ func TestDefaultUnschedulablePodListProcessor(t *testing.T) {
 	p1 := BuildTestPod("p1", 40, 0)
 	unschedulablePods := []*apiv1.Pod{p1}
 	podListProcessor := NewDefaultPodListProcessor()
-	gotUnschedulablePods, err := podListProcessor.Process(context.TODO(), autoscalingCtx, unschedulablePods)
+	gotUnschedulablePods, err := podListProcessor.Process(context.Background(), autoscalingCtx, unschedulablePods)
 	if len(gotUnschedulablePods) != 1 || err != nil {
 		t.Errorf("Error podListProcessor.Process() = %v,%v want %v, nil ",
 			gotUnschedulablePods, err, unschedulablePods)

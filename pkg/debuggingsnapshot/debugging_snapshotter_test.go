@@ -61,10 +61,10 @@ func TestBasicSnapshotRequest(t *testing.T) {
 	}()
 
 	for !snapshotter.IsDataCollectionAllowed() {
-		snapshotter.StartDataCollection(context.TODO())
+		snapshotter.StartDataCollection(context.Background())
 	}
-	snapshotter.SetClusterNodes(context.TODO(), nodeGroups)
-	snapshotter.Flush(context.TODO())
+	snapshotter.SetClusterNodes(context.Background(), nodeGroups)
+	snapshotter.Flush(context.Background())
 
 	wg.Wait()
 	resp := w.Result()
@@ -86,9 +86,9 @@ func TestFlushWithoutData(t *testing.T) {
 	}()
 
 	for !snapshotter.IsDataCollectionAllowed() {
-		snapshotter.StartDataCollection(context.TODO())
+		snapshotter.StartDataCollection(context.Background())
 	}
-	snapshotter.Flush(context.TODO())
+	snapshotter.Flush(context.Background())
 
 	wg.Wait()
 	resp := w.Result()
@@ -110,7 +110,7 @@ func TestRequestTerminationOnShutdown(t *testing.T) {
 	}()
 
 	for !snapshotter.IsDataCollectionAllowed() {
-		snapshotter.StartDataCollection(context.TODO())
+		snapshotter.StartDataCollection(context.Background())
 	}
 
 	go snapshotter.Cleanup()
@@ -133,7 +133,7 @@ func TestRejectParallelRequest(t *testing.T) {
 	}()
 
 	for !snapshotter.IsDataCollectionAllowed() {
-		snapshotter.StartDataCollection(context.TODO())
+		snapshotter.StartDataCollection(context.Background())
 	}
 
 	w1 := httptest.NewRecorder()
@@ -141,8 +141,8 @@ func TestRejectParallelRequest(t *testing.T) {
 	snapshotter.ResponseHandler(w1, req1)
 	assert.Equal(t, http.StatusTooManyRequests, w1.Code)
 
-	snapshotter.SetClusterNodes(context.TODO(), nil)
-	snapshotter.Flush(context.TODO())
+	snapshotter.SetClusterNodes(context.Background(), nil)
+	snapshotter.Flush(context.Background())
 	wg.Wait()
 
 	assert.Equal(t, http.StatusOK, w.Code)

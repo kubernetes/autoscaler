@@ -30,15 +30,15 @@ func TestMostPods(t *testing.T) {
 	e := NewFilter()
 
 	eo0 := expander.Option{Debug: "EO0"}
-	ret := e.BestOptions(context.TODO(), []expander.Option{eo0}, nil)
+	ret := e.BestOptions(context.Background(), []expander.Option{eo0}, nil)
 	assert.Equal(t, ret, []expander.Option{eo0})
 
 	eo1 := expander.Option{Debug: "EO1", Pods: []*apiv1.Pod{nil}}
-	ret = e.BestOptions(context.TODO(), []expander.Option{eo0, eo1}, nil)
+	ret = e.BestOptions(context.Background(), []expander.Option{eo0, eo1}, nil)
 	assert.Equal(t, ret, []expander.Option{eo1})
 
 	eo1b := expander.Option{Debug: "EO1b", Pods: []*apiv1.Pod{nil}}
-	ret = e.BestOptions(context.TODO(), []expander.Option{eo0, eo1, eo1b}, nil)
+	ret = e.BestOptions(context.Background(), []expander.Option{eo0, eo1, eo1b}, nil)
 	assert.NotEqual(t, ret, []expander.Option{eo0})
 	assert.ObjectsAreEqual(ret, []expander.Option{eo1, eo1b})
 }

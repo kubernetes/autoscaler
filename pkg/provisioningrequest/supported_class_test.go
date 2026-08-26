@@ -89,7 +89,7 @@ func TestSupportedProvisioningClass(t *testing.T) {
 					},
 				},
 			}
-			got := SupportedProvisioningClass(context.TODO(), pr, test.checkCapacityProcessorInstance)
+			got := SupportedProvisioningClass(context.Background(), pr, test.checkCapacityProcessorInstance)
 			if test.want != got {
 				t.Errorf("Expected SupportedProvisioningClass result: %v, got: %v", test.want, got)
 			}

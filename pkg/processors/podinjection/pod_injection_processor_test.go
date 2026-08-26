@@ -145,7 +145,7 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 				},
 				ClusterSnapshot: clusterSnapshot,
 			}
-			pods, err := p.Process(context.TODO(), &autoscalingCtx, tc.unschedulablePods)
+			pods, err := p.Process(context.Background(), &autoscalingCtx, tc.unschedulablePods)
 			assert.NoError(t, err)
 			assert.ElementsMatch(t, tc.wantPods, pods)
 		})
@@ -284,7 +284,7 @@ func TestGroupPods(t *testing.T) {
 					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),
 				},
 			}
-			controllers := listControllers(context.TODO(), &autoscalingCtx)
+			controllers := listControllers(context.Background(), &autoscalingCtx)
 			groupedPods := groupPods(append(tc.scheduledPods, tc.unscheduledPods...), controllers)
 			assert.Equal(t, tc.wantGroupedPods, groupedPods)
 		})

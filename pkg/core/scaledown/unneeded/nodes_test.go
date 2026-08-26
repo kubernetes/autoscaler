@@ -155,8 +155,8 @@ func TestUpdate(t *testing.T) {
 			nodes := NewNodes(fakeTimeGetter)
 			ctx := &ca_context.AutoscalingContext{CloudProvider: provider}
 
-			nodes.Update(context.TODO(), ctx, tc.initialNodes, initialTimestamp)
-			nodes.Update(context.TODO(), ctx, tc.finalNodes, finalTimestamp)
+			nodes.Update(context.Background(), ctx, tc.initialNodes, initialTimestamp)
+			nodes.Update(context.Background(), ctx, tc.finalNodes, finalTimestamp)
 
 			wantNodes := len(tc.wantTimestamps)
 			assert.Equal(t, wantNodes, len(nodes.AsList()))
@@ -270,7 +270,7 @@ func TestRemovableAt(t *testing.T) {
 			}
 			n := NewNodes(fakeTimeGetter)
 
-			n.Update(context.TODO(), &autoscalingCtx, removableNodes, time.Now().Add(-10*time.Minute)) //add -10 min to work correctly with unneeded time threshold
+			n.Update(context.Background(), &autoscalingCtx, removableNodes, time.Now().Add(-10*time.Minute)) //add -10 min to work correctly with unneeded time threshold
 
 			factory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
 				QuotaProvider:            resourcequotas.NewFakeProvider([]resourcequotas.Quota{}),
@@ -280,9 +280,9 @@ func TestRemovableAt(t *testing.T) {
 			for _, n := range removableNodes {
 				nodes = append(nodes, n.Node)
 			}
-			tracker, _ := factory.NewMinQuotasTracker(context.TODO(), &autoscalingCtx, nodes)
+			tracker, _ := factory.NewMinQuotasTracker(context.Background(), &autoscalingCtx, nodes)
 
-			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(context.TODO(), &autoscalingCtx, nodeprocessors.ScaleDownContext{
+			gotEmptyToRemove, gotDrainToRemove, _ := n.RemovableAt(context.Background(), &autoscalingCtx, nodeprocessors.ScaleDownContext{
 				ActuationStatus: as,
 				Tracker:         tracker,
 			}, time.Now())
@@ -469,7 +469,7 @@ func TestRemovableAt_UnremovableReasons(t *testing.T) {
 			}
 			n := NewNodes(timeGetter)
 
-			n.Update(context.TODO(), &autoscalingCtx, nodesToProcess, now.Add(tc.nodeConfig.sinceOffset))
+			n.Update(context.Background(), &autoscalingCtx, nodesToProcess, now.Add(tc.nodeConfig.sinceOffset))
 
 			sdCtx := nodeprocessors.ScaleDownContext{
 				ActuationStatus: &fakeActuationStatus{deletionCount: map[string]int{}},
@@ -479,10 +479,10 @@ func TestRemovableAt_UnremovableReasons(t *testing.T) {
 				QuotaProvider:            resourcequotas.NewFakeProvider(tc.quotas),
 				CustomResourcesProcessor: customresources.NewDefaultCustomResourcesProcessor(false, false),
 			})
-			tracker, _ := factory.NewMinQuotasTracker(context.TODO(), &autoscalingCtx, []*apiv1.Node{node})
+			tracker, _ := factory.NewMinQuotasTracker(context.Background(), &autoscalingCtx, []*apiv1.Node{node})
 
 			sdCtx.Tracker = tracker
-			gotEmptyToRemove, gotDrainToRemove, gotUnremovable := n.RemovableAt(context.TODO(), &autoscalingCtx, sdCtx, now)
+			gotEmptyToRemove, gotDrainToRemove, gotUnremovable := n.RemovableAt(context.Background(), &autoscalingCtx, sdCtx, now)
 
 			assert.Empty(t, gotEmptyToRemove, "Expected no empty nodes to be removable")
 			assert.Empty(t, gotDrainToRemove, "Expected no drain nodes to be removable")

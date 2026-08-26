@@ -200,7 +200,7 @@ func TestCalculateUsages(t *testing.T) {
 				nf = &fakeNodeFilter{NodeFilterFn: tc.nodeFilter}
 			}
 			calculator := newUsageCalculator(nf, newNodeResourcesCache(crp))
-			usages, err := calculator.calculateUsages(gocontext.TODO(), ctx, tc.nodes, tc.quotas)
+			usages, err := calculator.calculateUsages(gocontext.Background(), ctx, tc.nodes, tc.quotas)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

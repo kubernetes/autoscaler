@@ -565,7 +565,7 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 			draSnapshot := drasnapshot.NewSnapshot(nil, tc.nodesSlices, nil, nil)
 			clusterSnapshotStore := store.NewBasicSnapshotStore()
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
-			clusterSnapshot.SetClusterState(context.TODO(), []*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot, nil)
+			clusterSnapshot.SetClusterState(context.Background(), []*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot, nil)
 
 			autoscalingCtx := &ca_context.AutoscalingContext{
 				CloudProvider:            provider,
@@ -573,7 +573,7 @@ func TestFilterOutNodesWithUnreadyDRAResources(t *testing.T) {
 				TemplateNodeInfoRegistry: newMockTemplateNodeInfoRegistry(tc.registryNodeInfos),
 			}
 			processor := DraCustomResourcesProcessor{resourcesComparator: comparator.NewNodeResourcesComparator(noOpMetricsEmitter{})}
-			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.TODO(), autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot, nil)
+			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.Background(), autoscalingCtx, initialAllNodes, initialReadyNodes, draSnapshot, nil)
 
 			readyNodes := make(map[string]bool)
 			for _, node := range newReadyNodes {
@@ -1177,7 +1177,7 @@ func TestDraProcessorResourceComparator(t *testing.T) {
 			draSnapshot := drasnapshot.NewSnapshot(nil, nodeResourceSlices, nil, nil)
 			clusterSnapshotStore := store.NewBasicSnapshotStore()
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
-			clusterSnapshot.SetClusterState(context.TODO(), []*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot, nil)
+			clusterSnapshot.SetClusterState(context.Background(), []*apiv1.Node{}, []*apiv1.Pod{}, draSnapshot, nil)
 
 			autoscalingCtx := &ca_context.AutoscalingContext{
 				CloudProvider:   provider,
@@ -1190,7 +1190,7 @@ func TestDraProcessorResourceComparator(t *testing.T) {
 			mockComparator := &fakeResourceDiscrepancyReporter{}
 			processor := DraCustomResourcesProcessor{resourcesComparator: mockComparator}
 
-			processor.FilterOutNodesWithUnreadyResources(context.TODO(), autoscalingCtx, []*apiv1.Node{node}, []*apiv1.Node{node}, draSnapshot, nil)
+			processor.FilterOutNodesWithUnreadyResources(context.Background(), autoscalingCtx, []*apiv1.Node{node}, []*apiv1.Node{node}, draSnapshot, nil)
 
 			if tc.expectReported {
 				assert.Equal(t, []string{node.Name}, mockComparator.reportedNodeNames)

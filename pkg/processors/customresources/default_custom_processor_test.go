@@ -114,7 +114,7 @@ func TestDefaultProcessorFilterOut(t *testing.T) {
 					readyNodes = append(readyNodes, node)
 				}
 			}
-			resultedAllNodes, resultedReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.TODO(), nil, tc.allNodes, readyNodes, nil, nil)
+			resultedAllNodes, resultedReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.Background(), nil, tc.allNodes, readyNodes, nil, nil)
 			assert.ElementsMatch(t, tc.allNodes, resultedAllNodes)
 			assert.True(t, len(resultedReadyNodes) == len(tc.expectedReadyNodes))
 			for _, node := range resultedReadyNodes {
@@ -164,7 +164,7 @@ func TestDefaultProcessorGetNodeResourceTargets(t *testing.T) {
 	}
 	for tcName, tc := range testCases {
 		t.Run(tcName, func(t *testing.T) {
-			customResourceTarget, _ := processor.GetNodeResourceTargets(context.TODO(), nil, tc.node, nil)
+			customResourceTarget, _ := processor.GetNodeResourceTargets(context.Background(), nil, tc.node, nil)
 			assert.ElementsMatch(t, customResourceTarget, tc.expectedResources)
 		})
 	}

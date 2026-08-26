@@ -86,7 +86,7 @@ func TestProcess(t *testing.T) {
 			autoscalingCtx := &ca_context.AutoscalingContext{}
 
 			p := NewFakePodsScaleUpStatusProcessor(fakepods.NewRegistry(nil))
-			p.Process(context.TODO(), autoscalingCtx, scaleUpStatus)
+			p.Process(context.Background(), autoscalingCtx, scaleUpStatus)
 
 			assert.ElementsMatch(t, tc.expectedPodsRemainUnschedulable, extractPodsFromNoScaleUpInfo(scaleUpStatus.PodsRemainUnschedulable))
 			assert.ElementsMatch(t, tc.expectedPodsAwaitEvaluation, scaleUpStatus.PodsAwaitEvaluation)
@@ -103,13 +103,13 @@ func TestBuffersEvent(t *testing.T) {
 		Group:       nodeGroup1,
 		CurrentSize: 5,
 		NewSize:     6,
-		MaxSize:     nodeGroup1.MaxSize(context.TODO()),
+		MaxSize:     nodeGroup1.MaxSize(context.Background()),
 	}
 	scaleUpInfo2 := nodegroupset.ScaleUpInfo{
 		Group:       nodeGroup2,
 		CurrentSize: 8,
 		NewSize:     9,
-		MaxSize:     nodeGroup1.MaxSize(context.TODO()),
+		MaxSize:     nodeGroup1.MaxSize(context.Background()),
 	}
 	buffer1 := &v1beta1.CapacityBuffer{
 		ObjectMeta: metav1.ObjectMeta{
@@ -289,7 +289,7 @@ func TestBuffersEvent(t *testing.T) {
 				},
 			}
 			p := NewFakePodsScaleUpStatusProcessor(tc.buffersRegistry)
-			p.Process(gocontext.TODO(), ctx, tc.state)
+			p.Process(gocontext.Background(), ctx, tc.state)
 
 			triggeredScaleUp := 0
 			notTriggerScaleUp := 0

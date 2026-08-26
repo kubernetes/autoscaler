@@ -118,12 +118,12 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 		"ng1": ni1, "ng2": ni2,
 	}
 
-	ng1, _ := provider.NodeGroupForNode(context.TODO(), n1)
-	ng2, _ := provider.NodeGroupForNode(context.TODO(), n2)
+	ng1, _ := provider.NodeGroupForNode(context.Background(), n1)
+	ng2, _ := provider.NodeGroupForNode(context.Background(), n2)
 	autoscalingCtx.CloudProvider = provider
 
 	// Groups with different cpu and mem are not similar.
-	similar, err := processor.FindSimilarNodeGroups(context.TODO(), autoscalingCtx, ng1, nodeInfosForGroups)
+	similar, err := processor.FindSimilarNodeGroups(context.Background(), autoscalingCtx, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{})
 
@@ -132,7 +132,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	n2.ObjectMeta.Labels["agentpool"] = "foobar"
 	n1.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar"
 	n2.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar"
-	similar, err = processor.FindSimilarNodeGroups(context.TODO(), autoscalingCtx, ng1, nodeInfosForGroups)
+	similar, err = processor.FindSimilarNodeGroups(context.Background(), autoscalingCtx, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{ng2})
 
@@ -142,7 +142,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	provider.AddNode("ng3", n3)
 	ni3 := framework.NewTestNodeInfo(n3)
 	nodeInfosForGroups["ng3"] = ni3
-	ng3, _ := provider.NodeGroupForNode(context.TODO(), n3)
+	ng3, _ := provider.NodeGroupForNode(context.Background(), n3)
 
 	n1.ObjectMeta.Labels["agentpool"] = "foobar1"
 	n2.ObjectMeta.Labels["agentpool"] = "foobar2"
@@ -151,7 +151,7 @@ func TestFindSimilarNodeGroupsAzureByLabel(t *testing.T) {
 	n2.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar2"
 	n3.ObjectMeta.Labels["kubernetes.azure.com/agentpool"] = "foobar3"
 
-	similar, err = processor.FindSimilarNodeGroups(context.TODO(), autoscalingCtx, ng1, nodeInfosForGroups)
+	similar, err = processor.FindSimilarNodeGroups(context.Background(), autoscalingCtx, ng1, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{ng3})
 }

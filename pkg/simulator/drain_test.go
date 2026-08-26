@@ -839,7 +839,7 @@ func TestGetPodsToMove(t *testing.T) {
 			tracker := pdb.NewBasicRemainingPdbTracker()
 			tracker.SetPdbs(tc.pdbs)
 			ni := framework.NewTestNodeInfo(nil, tc.pods...)
-			podMoveInfo, err := GetPodsToMove(context.TODO(), ni, deleteOptions, rules, registry, tracker, testTime)
+			podMoveInfo, err := GetPodsToMove(context.Background(), ni, deleteOptions, rules, registry, tracker, testTime)
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {

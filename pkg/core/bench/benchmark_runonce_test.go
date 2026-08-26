@@ -701,7 +701,7 @@ func verifyTargetSize(expectedTargetSize int) func(*integration.FakeSet) error {
 		if ng == nil {
 			return fmt.Errorf("nodegroup %s not found", ngName)
 		}
-		targetSize, err := ng.TargetSize(context.TODO())
+		targetSize, err := ng.TargetSize(context.Background())
 		if err != nil {
 			return err
 		}

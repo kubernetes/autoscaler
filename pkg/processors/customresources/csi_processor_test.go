@@ -341,7 +341,7 @@ func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {
 
 			clusterSnapshotStore := store.NewBasicSnapshotStore()
 			clusterSnapshot, _, _ := testsnapshot.NewCustomTestSnapshotAndHandle(clusterSnapshotStore)
-			clusterSnapshot.SetClusterState(context.TODO(), []*apiv1.Node{}, []*apiv1.Pod{}, nil, csiSnapshot)
+			clusterSnapshot.SetClusterState(context.Background(), []*apiv1.Node{}, []*apiv1.Pod{}, nil, csiSnapshot)
 
 			autoscalingCtx := &ca_context.AutoscalingContext{
 				CloudProvider:            provider,
@@ -349,7 +349,7 @@ func TestFilterOutNodesWithUnreadyCSIResources(t *testing.T) {
 				TemplateNodeInfoRegistry: newMockTemplateNodeInfoRegistry(tc.registryNodeInfos),
 			}
 			processor := CSICustomResourcesProcessor{}
-			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.TODO(), autoscalingCtx, initialAllNodes, initialReadyNodes, nil, csiSnapshot)
+			newAllNodes, newReadyNodes := processor.FilterOutNodesWithUnreadyResources(context.Background(), autoscalingCtx, initialAllNodes, initialReadyNodes, nil, csiSnapshot)
 
 			readyNodes := make(map[string]bool)
 			for _, node := range newReadyNodes {

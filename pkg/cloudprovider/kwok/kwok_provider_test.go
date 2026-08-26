@@ -99,7 +99,7 @@ func TestNodeGroups(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, p)
 
-		ngs := p.NodeGroups(context.TODO())
+		ngs := p.NodeGroups(context.Background())
 		assert.NotNil(t, ngs)
 		assert.NotEmpty(t, ngs)
 		assert.Len(t, ngs, 1)
@@ -150,7 +150,7 @@ func TestNodeGroups(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, p)
 
-		ngs := p.NodeGroups(context.TODO())
+		ngs := p.NodeGroups(context.Background())
 		assert.NotNil(t, ngs)
 		assert.NotEmpty(t, ngs)
 		assert.Len(t, ngs, 1)
@@ -250,11 +250,11 @@ func TestRefresh(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, p)
 
-		err = p.Refresh(context.TODO())
+		err = p.Refresh(context.Background())
 		assert.Nil(t, err)
-		for _, ng := range p.NodeGroups(context.TODO()) {
+		for _, ng := range p.NodeGroups(context.Background()) {
 			if ng.Id() == ngName {
-				targetSize, err := ng.TargetSize(context.TODO())
+				targetSize, err := ng.TargetSize(context.Background())
 				assert.Nil(t, err)
 				assert.Equal(t, 3, targetSize)
 			}
@@ -320,7 +320,7 @@ func TestGetResourceLimiter(t *testing.T) {
 	assert.NotNil(t, p)
 
 	// usual case
-	cp, err := p.GetResourceLimiter(context.TODO())
+	cp, err := p.GetResourceLimiter(context.Background())
 	assert.Nil(t, err)
 	assert.NotNil(t, cp)
 
@@ -330,7 +330,7 @@ func TestGetResourceLimiter(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, p)
 
-	cp, err = p.GetResourceLimiter(context.TODO())
+	cp, err = p.GetResourceLimiter(context.Background())
 	assert.Nil(t, err)
 	assert.Nil(t, cp)
 
@@ -394,7 +394,7 @@ func TestGetAvailableGPUTypes(t *testing.T) {
 	assert.NotNil(t, p)
 
 	// usual case
-	l := p.GetAvailableGPUTypes(context.TODO())
+	l := p.GetAvailableGPUTypes(context.Background())
 	assert.NotNil(t, l)
 	assert.Equal(t, map[string]struct{}{
 		"nvidia-tesla-k80":  {},
@@ -403,14 +403,14 @@ func TestGetAvailableGPUTypes(t *testing.T) {
 	// kwok provider config is nil
 	kwokProviderConfigBackup := p.config
 	p.config = nil
-	l = p.GetAvailableGPUTypes(context.TODO())
+	l = p.GetAvailableGPUTypes(context.Background())
 	assert.Empty(t, l)
 
 	// kwok provider config.status is nil
 	p.config = kwokProviderConfigBackup
 	statusBackup := p.config.status
 	p.config.status = nil
-	l = p.GetAvailableGPUTypes(context.TODO())
+	l = p.GetAvailableGPUTypes(context.Background())
 	assert.Empty(t, l)
 	p.config.status = statusBackup
 }
@@ -484,7 +484,7 @@ func TestGetNodeGpuConfig(t *testing.T) {
 			},
 		},
 	}
-	l := p.GetNodeGpuConfig(context.TODO(), nodeWithGPU)
+	l := p.GetNodeGpuConfig(context.Background(), nodeWithGPU)
 	assert.NotNil(t, l)
 	assert.Equal(t, "k8s.amazonaws.com/accelerator", l.Label)
 	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ExtendedResourceName))
@@ -497,7 +497,7 @@ func TestGetNodeGpuConfig(t *testing.T) {
 			},
 		},
 	}
-	l = p.GetNodeGpuConfig(context.TODO(), nodeWithNoAllocatableGPU)
+	l = p.GetNodeGpuConfig(context.Background(), nodeWithNoAllocatableGPU)
 	assert.NotNil(t, l)
 	assert.Equal(t, "k8s.amazonaws.com/accelerator", l.Label)
 	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ExtendedResourceName))
@@ -513,7 +513,7 @@ func TestGetNodeGpuConfig(t *testing.T) {
 			},
 		},
 	}
-	l = p.GetNodeGpuConfig(context.TODO(), nodeWithNoGPULabel)
+	l = p.GetNodeGpuConfig(context.Background(), nodeWithNoGPULabel)
 	assert.NotNil(t, l)
 	assert.Equal(t, "k8s.amazonaws.com/accelerator", l.Label)
 	assert.Equal(t, gpu.ResourceNvidiaGPU, string(l.ExtendedResourceName))
@@ -579,20 +579,20 @@ func TestGPULabel(t *testing.T) {
 	assert.NotNil(t, p)
 
 	// usual case
-	l := p.GPULabel(context.TODO())
+	l := p.GPULabel(context.Background())
 	assert.Equal(t, "k8s.amazonaws.com/accelerator", l)
 
 	// kwok provider config is nil
 	kwokProviderConfigBackup := p.config
 	p.config = nil
-	l = p.GPULabel(context.TODO())
+	l = p.GPULabel(context.Background())
 	assert.Empty(t, l)
 
 	// kwok provider config.status is nil
 	p.config = kwokProviderConfigBackup
 	statusBackup := p.config.status
 	p.config.status = nil
-	l = p.GPULabel(context.TODO())
+	l = p.GPULabel(context.Background())
 	assert.Empty(t, l)
 	p.config.status = statusBackup
 
@@ -674,7 +674,7 @@ func TestNodeGroupForNode(t *testing.T) {
 				ProviderID: "kwok:kind-worker-m24xz",
 			},
 		}
-		ng, err := p.NodeGroupForNode(context.TODO(), testNode)
+		ng, err := p.NodeGroupForNode(context.Background(), testNode)
 		assert.NoError(t, err)
 		assert.NotNil(t, ng)
 		assert.Contains(t, ng.Id(), "kind-worker")
@@ -739,7 +739,7 @@ func TestNodeGroupForNode(t *testing.T) {
 				ProviderID: "kwok:kind-worker-m24xz",
 			},
 		}
-		ng, err := p.NodeGroupForNode(context.TODO(), testNode)
+		ng, err := p.NodeGroupForNode(context.Background(), testNode)
 		assert.NoError(t, err)
 		assert.NotNil(t, ng)
 		assert.Contains(t, ng.Id(), "kind-worker")
@@ -774,7 +774,7 @@ func TestNodeGroupForNode(t *testing.T) {
 				ProviderID: "kwok:random-instance-id",
 			},
 		}
-		ng, err := p.NodeGroupForNode(context.TODO(), testNode)
+		ng, err := p.NodeGroupForNode(context.Background(), testNode)
 		assert.NoError(t, err)
 		assert.Nil(t, ng)
 	})
@@ -1155,7 +1155,7 @@ func TestCleanup(t *testing.T) {
 		assert.NotNil(t, p)
 		assert.NotEmpty(t, p.nodeGroups)
 
-		err = p.Cleanup(context.TODO())
+		err = p.Cleanup(context.Background())
 		assert.NoError(t, err)
 		nodeList, err := fakeNodeLister.List(labels.NewSelector())
 		assert.NoError(t, err)
@@ -1195,7 +1195,7 @@ func TestCleanup(t *testing.T) {
 		assert.NotNil(t, p)
 		assert.NotEmpty(t, p.nodeGroups)
 
-		err = p.Cleanup(context.TODO())
+		err = p.Cleanup(context.Background())
 		assert.NoError(t, err)
 		nodeList, err := fakeNodeLister.List(labels.NewSelector())
 		assert.NoError(t, err)

@@ -121,7 +121,7 @@ func TestChainStrategy_BestOption(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			subject := newChainStrategy(tc.filters, tc.fallback)
-			actual := subject.BestOption(context.TODO(), tc.options, nil)
+			actual := subject.BestOption(context.Background(), tc.options, nil)
 			assert.Equal(t, tc.expected, actual)
 		})
 	}

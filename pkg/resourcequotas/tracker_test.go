@@ -229,7 +229,7 @@ func TestCheckQuota(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := cptest.NewTestCloudProviderBuilder().Build()
 			ctx := &context.AutoscalingContext{CloudProvider: provider}
-			gotResult, err := tc.tracker.CheckQuota(gocontext.TODO(), ctx, nil, tc.node, tc.nodeDelta)
+			gotResult, err := tc.tracker.CheckQuota(gocontext.Background(), ctx, nil, tc.node, tc.nodeDelta)
 			if (err != nil) != tc.wantErr {
 				t.Fatalf("CheckQuota() error = %v, wantErr %v", err, tc.wantErr)
 			}
@@ -361,7 +361,7 @@ func TestConsumeQuota(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := cptest.NewTestCloudProviderBuilder().Build()
 			ctx := &context.AutoscalingContext{CloudProvider: provider}
-			gotResult, err := tc.tracker.ConsumeQuota(gocontext.TODO(), ctx, nil, tc.node, tc.nodeDelta)
+			gotResult, err := tc.tracker.ConsumeQuota(gocontext.Background(), ctx, nil, tc.node, tc.nodeDelta)
 			if (err != nil) != tc.wantErr {
 				t.Fatalf("ConsumeQuota() error = %v, wantErr %v", err, tc.wantErr)
 			}

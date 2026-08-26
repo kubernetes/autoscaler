@@ -52,7 +52,7 @@ func TestTemplateNodeInfoRegistry(t *testing.T) {
 	registry := NewTemplateNodeInfoRegistry(mockProvider)
 
 	// Test Recompute
-	err := registry.Recompute(context.TODO(), nil, nil, nil, taints.TaintConfig{}, time.Now())
+	err := registry.Recompute(context.Background(), nil, nil, nil, taints.TaintConfig{}, time.Now())
 	assert.NoError(t, err)
 
 	// Test GetNodeInfo
@@ -76,7 +76,7 @@ func TestTemplateNodeInfoRegistry(t *testing.T) {
 		"ng1": framework.NewTestNodeInfo(BuildTestNode("node1", 1000, 1000)),
 		"ng2": framework.NewTestNodeInfo(BuildTestNode("node2", 1000, 1000)),
 	}
-	err = registry.Recompute(context.TODO(), nil, nil, nil, taints.TaintConfig{}, time.Now())
+	err = registry.Recompute(context.Background(), nil, nil, nil, taints.TaintConfig{}, time.Now())
 	assert.NoError(t, err)
 
 	info, found = registry.GetNodeInfo("ng2")
@@ -99,7 +99,7 @@ func TestTemplateNodeInfoRegistry_Concurrent(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 100; i++ {
-			err := registry.Recompute(context.TODO(), nil, nil, nil, taints.TaintConfig{}, time.Now())
+			err := registry.Recompute(context.Background(), nil, nil, nil, taints.TaintConfig{}, time.Now())
 			assert.NoError(t, err)
 		}
 	}()

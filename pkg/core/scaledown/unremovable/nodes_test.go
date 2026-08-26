@@ -74,7 +74,7 @@ func TestUpdate(t *testing.T) {
 		for name, timeout := range tc.unremovable {
 			n.AddTimeout(makeUnremovableNode(name), timeout)
 		}
-		n.Update(context.TODO(), niGetter, updateTime)
+		n.Update(context.Background(), niGetter, updateTime)
 		got := len(n.ttls)
 		if got != tc.want {
 			t.Errorf("%s: got %d nodes, want %d", desc, got, tc.want)
@@ -96,7 +96,7 @@ func TestContains(t *testing.T) {
 		}
 	}
 	//remove nodes
-	n.Update(context.TODO(), newFakeNodeInfoGetter(nodes), time.Now().Add(-1*time.Minute))
+	n.Update(context.Background(), newFakeNodeInfoGetter(nodes), time.Now().Add(-1*time.Minute))
 	for _, node := range nodes {
 		if n.Contains(node) {
 			t.Errorf("n.Contains(%s) return true, want false", node)

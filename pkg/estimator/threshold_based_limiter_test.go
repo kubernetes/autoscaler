@@ -28,16 +28,16 @@ import (
 type limiterOperation func(*testing.T, EstimationLimiter)
 
 func expectDeny(t *testing.T, l EstimationLimiter) {
-	assert.Equal(t, false, l.PermissionToAddNode(context.TODO()))
+	assert.Equal(t, false, l.PermissionToAddNode(context.Background()))
 }
 
 func expectAllow(t *testing.T, l EstimationLimiter) {
-	assert.Equal(t, true, l.PermissionToAddNode(context.TODO()))
+	assert.Equal(t, true, l.PermissionToAddNode(context.Background()))
 }
 
 func resetLimiter(_ *testing.T, l EstimationLimiter) {
 	l.EndEstimation()
-	l.StartEstimation(context.TODO(), []PodEquivalenceGroup{}, nil, nil)
+	l.StartEstimation(context.Background(), []PodEquivalenceGroup{}, nil, nil)
 }
 
 type dynamicThreshold struct {
@@ -173,7 +173,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			limiter := NewThresholdBasedEstimationLimiter(tc.thresholds).(*thresholdBasedEstimationLimiter)
-			limiter.StartEstimation(context.TODO(), []PodEquivalenceGroup{}, nil, nil)
+			limiter.StartEstimation(context.Background(), []PodEquivalenceGroup{}, nil, nil)
 
 			if tc.startDelta != time.Duration(0) {
 				limiter.start = limiter.start.Add(tc.startDelta)

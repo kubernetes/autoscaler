@@ -521,7 +521,7 @@ func TestUpdateClusterState(t *testing.T) {
 				p.rs = rs
 			}
 			// TODO(x13n): test subsets of nodes passed as podDestinations/scaleDownCandidates.
-			assert.NoError(t, p.UpdateClusterState(context.TODO(), tc.nodes, tc.nodes, tc.actuationStatus, time.Now()))
+			assert.NoError(t, p.UpdateClusterState(context.Background(), tc.nodes, tc.nodes, tc.actuationStatus, time.Now()))
 			wantUnneeded := asMap(tc.wantUnneeded)
 			wantUnremovable := asMap(tc.wantUnremovable)
 			for _, n := range tc.nodes {
@@ -712,8 +712,8 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			p := New(&autoscalingCtx, processors, deleteOptions, nil, factory)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
-			p.unneededNodes.Update(context.TODO(), &autoscalingCtx, previouslyUnneeded, time.Now())
-			assert.NoError(t, p.UpdateClusterState(context.TODO(), nodes, nodes, &fakeActuationStatus{}, time.Now()))
+			p.unneededNodes.Update(context.Background(), &autoscalingCtx, previouslyUnneeded, time.Now())
+			assert.NoError(t, p.UpdateClusterState(context.Background(), nodes, nodes, &fakeActuationStatus{}, time.Now()))
 			assert.Equal(t, tc.wantUnneeded, len(p.unneededNodes.AsList()))
 		})
 	}
@@ -1121,9 +1121,9 @@ func TestNodesToDelete(t *testing.T) {
 			}
 
 			p.scaleDownContext.ActuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-			p.unneededNodes.Update(context.TODO(), &autoscalingCtx, allRemovables, time.Now().Add(-1*time.Hour))
+			p.unneededNodes.Update(context.Background(), &autoscalingCtx, allRemovables, time.Now().Add(-1*time.Hour))
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(allNodes))}
-			empty, drain := p.NodesToDelete(context.TODO(), time.Now())
+			empty, drain := p.NodesToDelete(context.Background(), time.Now())
 			assert.ElementsMatch(t, tc.wantEmpty, empty)
 			assert.ElementsMatch(t, tc.wantDrain, drain)
 
@@ -1298,6 +1298,6 @@ func TestAtomicScaleDownNodeNilGroup(t *testing.T) {
 		Node: n1,
 	}
 
-	result := p.atomicScaleDownNode(context.TODO(), node)
+	result := p.atomicScaleDownNode(context.Background(), node)
 	assert.False(t, result)
 }
