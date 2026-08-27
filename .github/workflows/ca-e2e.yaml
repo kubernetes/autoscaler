@@ -1,5 +1,4 @@
-name: Cluster Autoscaler
-
+name: Cluster Autoscaler E2E (kwok)
 on:
   push:
     paths:
@@ -17,8 +16,8 @@ permissions:
   checks: write
 
 jobs:
-  test:
-    name: test
+  e2e:
+    name: CA E2E (kwok)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -29,14 +28,8 @@ jobs:
           go-version-file: go.mod
           cache-dependency-path: go.sum
 
-      - name: Apt-get
-        run: sudo apt-get install libseccomp-dev -qq
-
-      - name: Setup-envtest
+      - name: Install Dependencies
         run: make install-dependencies
 
       - name: Test
-        run: make test
-        env:
-          GO111MODULE: auto
-          PROJECT_NAMES: ""
+        run: make run-e2e

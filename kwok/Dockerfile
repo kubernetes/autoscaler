@@ -13,5 +13,5 @@
 # limitations under the License.
 
 FROM gcr.io/distroless/static:nonroot
-COPY cluster-autoscaler-kwok /cluster-autoscaler-kwok
+COPY --chmod=755 cluster-autoscaler-kwok /cluster-autoscaler-kwok
 CMD ["/cluster-autoscaler-kwok"]
