@@ -1,4 +1,4 @@
-{{- if and .Values.admissionController.enabled .Values.admissionController.podDisruptionBudget.enabled -}}
+{{- if and .Values.admissionController.enabled .Values.admissionController.podDisruptionBudget.enabled (gt (int .Values.admissionController.replicas) 1) -}}
 {{- if and (not (kindIs "invalid" .Values.admissionController.podDisruptionBudget.minAvailable)) (not (kindIs "invalid" .Values.admissionController.podDisruptionBudget.maxUnavailable)) }}
     {{- fail "Only one of admissionController.podDisruptionBudget.minAvailable or admissionController.podDisruptionBudget.maxUnavailable should be set." }}
 {{- end }}

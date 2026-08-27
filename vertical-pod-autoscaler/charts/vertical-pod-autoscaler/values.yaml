@@ -217,6 +217,7 @@ admissionController:
       readOnly: true
 
   podDisruptionBudget:
+    # Only created when the component runs more than one replica: at a single replica any budget would permit zero voluntary disruptions and block node drains.
     enabled: true
     # -- (int or string) Minimum number/percentage of pods that must be available after the eviction.
     # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
@@ -320,6 +321,7 @@ recommender:
 
   # PodDisruptionBudget for the Recommender.
   podDisruptionBudget:
+    # Only created when the component runs more than one replica: at a single replica any budget would permit zero voluntary disruptions and block node drains.
     enabled: true
     # -- (int or string) Minimum number/percentage of pods that must be available after the eviction.
     # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
@@ -411,6 +413,7 @@ updater:
 
   # PodDisruptionBudget for the Updater.
   podDisruptionBudget:
+    # Only created when the component runs more than one replica: at a single replica any budget would permit zero voluntary disruptions and block node drains.
     enabled: true
     # -- (int or string) Minimum number/percentage of pods that must be available after the eviction.
     # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.

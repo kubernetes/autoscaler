@@ -1,4 +1,4 @@
-{{- if and (.Values.recommender.enabled) .Values.recommender.podDisruptionBudget.enabled -}}
+{{- if and (.Values.recommender.enabled) .Values.recommender.podDisruptionBudget.enabled (gt (int .Values.recommender.replicas) 1) -}}
 {{- if and (not (kindIs "invalid" .Values.recommender.podDisruptionBudget.minAvailable)) (not (kindIs "invalid" .Values.recommender.podDisruptionBudget.maxUnavailable)) }}
     {{- fail "Only one of recommender.podDisruptionBudget.minAvailable or recommender.podDisruptionBudget.maxUnavailable should be set." }}
 {{- end }}

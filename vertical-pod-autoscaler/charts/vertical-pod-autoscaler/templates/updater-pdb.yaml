@@ -1,4 +1,4 @@
-{{- if and .Values.updater.enabled .Values.updater.podDisruptionBudget.enabled -}}
+{{- if and .Values.updater.enabled .Values.updater.podDisruptionBudget.enabled (gt (int .Values.updater.replicas) 1) -}}
 {{- if and (not (kindIs "invalid" .Values.updater.podDisruptionBudget.minAvailable)) (not (kindIs "invalid" .Values.updater.podDisruptionBudget.maxUnavailable)) }}
     {{- fail "Only one of updater.podDisruptionBudget.minAvailable or updater.podDisruptionBudget.maxUnavailable should be set." }}
 {{- end }}
