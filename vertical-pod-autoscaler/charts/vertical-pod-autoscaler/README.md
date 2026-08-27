@@ -162,6 +162,10 @@ helm upgrade <release-name> <chart> \
 | admissionController.image.repository | string | `"registry.k8s.io/autoscaling/vpa-admission-controller"` |  |
 | admissionController.image.tag | string | `nil` |  |
 | admissionController.logLevel | int | `4` | Log verbosity for the Admission Controller (klog -v). |
+| admissionController.metrics.service.annotations | object | `{}` | Annotations for the metrics Service. |
+| admissionController.metrics.service.enabled | bool | `true` | Create a ClusterIP Service in front of the Admission Controller's metrics port so it can be scraped. |
+| admissionController.metrics.service.labels | object | `{}` | Additional labels for the metrics Service. |
+| admissionController.metrics.service.port | int | `8944` | Port exposed by the metrics Service. Targets the container's named `prometheus` port (8944). |
 | admissionController.mutatingWebhookConfiguration.annotations | object | `{}` | Additional annotations for the MutatingWebhookConfiguration |
 | admissionController.mutatingWebhookConfiguration.failurePolicy | string | `"Ignore"` | The failurePolicy for the mutating webhook. Allowed values are: Ignore, Fail |
 | admissionController.mutatingWebhookConfiguration.namespaceSelector | object | `{}` | The namespaceSelector controls which namespaces are affected by the webhook |
@@ -232,6 +236,10 @@ helm upgrade <release-name> <chart> \
 | recommender.leaderElection.resourceNamespace | string | `""` |  |
 | recommender.leaderElection.retryPeriod | string | `"2s"` |  |
 | recommender.logLevel | int | `4` | Log verbosity for the Recommender (klog -v). |
+| recommender.metrics.service.annotations | object | `{}` | Annotations for the metrics Service. |
+| recommender.metrics.service.enabled | bool | `true` | Create a ClusterIP Service in front of the Recommender's metrics port so it can be scraped. |
+| recommender.metrics.service.labels | object | `{}` | Additional labels for the metrics Service. |
+| recommender.metrics.service.port | int | `8942` | Port exposed by the metrics Service. Targets the container's named `prometheus` port (8942). |
 | recommender.nodeSelector | object | `{}` |  |
 | recommender.podAnnotations | object | `{}` |  |
 | recommender.podDisruptionBudget.enabled | bool | `true` |  |
@@ -264,6 +272,10 @@ helm upgrade <release-name> <chart> \
 | updater.leaderElection.resourceNamespace | string | `""` |  |
 | updater.leaderElection.retryPeriod | string | `"2s"` |  |
 | updater.logLevel | int | `4` | Log verbosity for the Updater (klog -v). |
+| updater.metrics.service.annotations | object | `{}` | Annotations for the metrics Service. |
+| updater.metrics.service.enabled | bool | `true` | Create a ClusterIP Service in front of the Updater's metrics port so it can be scraped. |
+| updater.metrics.service.labels | object | `{}` | Additional labels for the metrics Service. |
+| updater.metrics.service.port | int | `8943` | Port exposed by the metrics Service. Targets the container's named `prometheus` port (8943). |
 | updater.nodeSelector | object | `{}` |  |
 | updater.podAnnotations | object | `{}` |  |
 | updater.podDisruptionBudget.enabled | bool | `true` |  |

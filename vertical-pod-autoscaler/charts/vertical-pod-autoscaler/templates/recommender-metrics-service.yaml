@@ -1,0 +1,25 @@
+{{- if and .Values.recommender.enabled .Values.recommender.metrics.service.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-metrics" (include "vertical-pod-autoscaler.recommender.fullname" .) | trunc 63 | trimSuffix "-" }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+    {{- with .Values.recommender.metrics.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.recommender.metrics.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: {{ .Values.recommender.metrics.service.port }}
+      protocol: TCP
+      targetPort: prometheus
+  selector:
+    {{- include "vertical-pod-autoscaler.recommender.selectorLabels" . | nindent 4 }}
+{{- end -}}

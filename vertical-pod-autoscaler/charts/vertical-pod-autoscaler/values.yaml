@@ -218,6 +218,18 @@ admissionController:
       mountPath: /etc/tls-certs
       readOnly: true
 
+  # Metrics for the Admission Controller.
+  metrics:
+    service:
+      # admissionController.metrics.service.enabled -- Create a ClusterIP Service in front of the Admission Controller's metrics port so it can be scraped.
+      enabled: true
+      # admissionController.metrics.service.port -- Port exposed by the metrics Service. Targets the container's named `prometheus` port (8944).
+      port: 8944
+      # admissionController.metrics.service.labels -- Additional labels for the metrics Service.
+      labels: {}
+      # admissionController.metrics.service.annotations -- Annotations for the metrics Service.
+      annotations: {}
+
   podDisruptionBudget:
     enabled: true
     # -- (int or string) Minimum number/percentage of pods that must be available after the eviction.
@@ -320,6 +332,18 @@ recommender:
     # Duration the clients should wait between attempting acquisition and renewal of a leadership.
     retryPeriod: "2s"
 
+  # Metrics for the Recommender.
+  metrics:
+    service:
+      # recommender.metrics.service.enabled -- Create a ClusterIP Service in front of the Recommender's metrics port so it can be scraped.
+      enabled: true
+      # recommender.metrics.service.port -- Port exposed by the metrics Service. Targets the container's named `prometheus` port (8942).
+      port: 8942
+      # recommender.metrics.service.labels -- Additional labels for the metrics Service.
+      labels: {}
+      # recommender.metrics.service.annotations -- Annotations for the metrics Service.
+      annotations: {}
+
   # PodDisruptionBudget for the Recommender.
   podDisruptionBudget:
     enabled: true
@@ -410,6 +434,18 @@ updater:
     renewDeadline: 10s
     # Duration the clients should wait between attempting acquisition and renewal of a leadership.
     retryPeriod: 2s
+
+  # Metrics for the Updater.
+  metrics:
+    service:
+      # updater.metrics.service.enabled -- Create a ClusterIP Service in front of the Updater's metrics port so it can be scraped.
+      enabled: true
+      # updater.metrics.service.port -- Port exposed by the metrics Service. Targets the container's named `prometheus` port (8943).
+      port: 8943
+      # updater.metrics.service.labels -- Additional labels for the metrics Service.
+      labels: {}
+      # updater.metrics.service.annotations -- Annotations for the metrics Service.
+      annotations: {}
 
   # PodDisruptionBudget for the Updater.
   podDisruptionBudget:
