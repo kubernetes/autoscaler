@@ -34,11 +34,39 @@ import (
 )
 
 // ProvisioningRequestInformer provides access to a shared informer and lister for
-// ProvisioningRequests.
+// ProvisioningRequests. Prefer using the type-safe variant (see [TypedProvisioningRequestInformer]).
 type ProvisioningRequestInformer interface {
 	Informer() cache.SharedIndexInformer
 	Lister() autoscalingxk8siov1.ProvisioningRequestLister
 }
+
+// TypedProvisioningRequestInformer provides access to a shared informer and lister for
+// ProvisioningRequests, including the type-safe TypedInformer variant.
+// It is a superset of ProvisioningRequestInformer.
+type TypedProvisioningRequestInformer interface {
+	Informer() cache.SharedIndexInformer
+	TypedInformer() ProvisioningRequestIndexInformer
+	Lister() autoscalingxk8siov1.ProvisioningRequestLister
+}
+
+// ProvisioningRequestIndexInformer is a wrapper around the underlying [cache.SharedIndexInformer]
+// with type-safe variants of several methods.
+type ProvisioningRequestIndexInformer cache.TypedSharedIndexInformer[*provisioningrequestautoscalingxk8siov1.ProvisioningRequest]
+
+// ProvisioningRequestHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerFuncs] for ProvisioningRequest.
+type ProvisioningRequestHandlerFuncs = cache.TypedResourceEventHandlerFuncs[*provisioningrequestautoscalingxk8siov1.ProvisioningRequest]
+
+// ProvisioningRequestDetailedHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerDetailedFuncs] for ProvisioningRequest.
+type ProvisioningRequestDetailedHandlerFuncs = cache.TypedResourceEventHandlerDetailedFuncs[*provisioningrequestautoscalingxk8siov1.ProvisioningRequest]
+
+// ProvisioningRequestFilteringHandler is a specialization of [cache.TypedFilteringResourceEventHandler] for ProvisioningRequest.
+type ProvisioningRequestFilteringHandler = cache.TypedFilteringResourceEventHandler[*provisioningrequestautoscalingxk8siov1.ProvisioningRequest]
+
+// ProvisioningRequestIndexers is a specialization of [cache.TypedIndexers] for ProvisioningRequest.
+type ProvisioningRequestIndexers = cache.TypedIndexers[*provisioningrequestautoscalingxk8siov1.ProvisioningRequest]
+
+// DeletedProvisioningRequest is a specialization of [cache.DeletedObject] for ProvisioningRequest.
+type DeletedProvisioningRequest = cache.DeletedObject[*provisioningrequestautoscalingxk8siov1.ProvisioningRequest]
 
 type provisioningRequestInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
@@ -49,25 +77,49 @@ type provisioningRequestInformer struct {
 // NewProvisioningRequestInformer constructs a new informer for ProvisioningRequest type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedProvisioningRequestInformer]).
 func NewProvisioningRequestInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewProvisioningRequestInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers})
+}
+
+// NewTypedProvisioningRequestInformer constructs a new informer for ProvisioningRequest type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedProvisioningRequestInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers ProvisioningRequestIndexers) ProvisioningRequestIndexInformer {
+	return NewTypedProvisioningRequestInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers)})
 }
 
 // NewFilteredProvisioningRequestInformer constructs a new informer for ProvisioningRequest type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedFilteredProvisioningRequestInformer]).
 func NewFilteredProvisioningRequestInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
-	return NewProvisioningRequestInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+	return NewTypedProvisioningRequestInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+}
+
+// NewTypedFilteredProvisioningRequestInformer constructs a new informer for ProvisioningRequest type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedFilteredProvisioningRequestInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers ProvisioningRequestIndexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) ProvisioningRequestIndexInformer {
+	return NewTypedProvisioningRequestInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers), TweakListOptions: tweakListOptions})
 }
 
 // NewProvisioningRequestInformerWithOptions constructs a new informer for ProvisioningRequest type with additional options.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedProvisioningRequestInformerWithOptions]).
 func NewProvisioningRequestInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) cache.SharedIndexInformer {
+	return NewTypedProvisioningRequestInformerWithOptions(client, namespace, options)
+}
+
+// NewTypedProvisioningRequestInformerWithOptions constructs a new informer for ProvisioningRequest type with additional options.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedProvisioningRequestInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) ProvisioningRequestIndexInformer {
 	gvr := schema.GroupVersionResource{Group: "autoscaling.x-k8s.io", Version: "v1", Resource: "provisioningrequests"}
 	identifier := options.InformerName.WithResource(gvr)
 	tweakListOptions := options.TweakListOptions
-	return cache.NewSharedIndexInformerWithOptions(
+	return cache.NewTypedSharedIndexInformer[*provisioningrequestautoscalingxk8siov1.ProvisioningRequest](cache.NewSharedIndexInformerWithOptions(
 		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
@@ -100,17 +152,57 @@ func NewProvisioningRequestInformerWithOptions(client versioned.Interface, names
 			Indexers:     options.Indexers,
 			Identifier:   identifier,
 		},
-	)
+	))
 }
 
 func (f *provisioningRequestInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewProvisioningRequestInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
+	return NewTypedProvisioningRequestInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
 }
 
 func (f *provisioningRequestInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&provisioningrequestautoscalingxk8siov1.ProvisioningRequest{}, f.defaultInformer)
+	return f.TypedInformer()
+}
+
+func (f *provisioningRequestInformer) TypedInformer() ProvisioningRequestIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*provisioningrequestautoscalingxk8siov1.ProvisioningRequest](f.factory.InformerFor(&provisioningrequestautoscalingxk8siov1.ProvisioningRequest{}, f.defaultInformer))
 }
 
 func (f *provisioningRequestInformer) Lister() autoscalingxk8siov1.ProvisioningRequestLister {
 	return autoscalingxk8siov1.NewProvisioningRequestLister(f.Informer().GetIndexer())
+}
+
+// ToTypedProvisioningRequestInformer converts an untyped informer into a TypedProvisioningRequestInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *ProvisioningRequest. If that is not the case, calling type-safe methods of the returned
+// TypedProvisioningRequestInformer leads to runtime panics. A safer alternative is to pass
+// around a TypedProvisioningRequestInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToTypedProvisioningRequestInformer(informer ProvisioningRequestInformer) TypedProvisioningRequestInformer {
+	if informer, ok := informer.(TypedProvisioningRequestInformer); ok {
+		return informer
+	}
+	return &provisioningRequestTypedInformerAdapter{informer}
+}
+
+type provisioningRequestTypedInformerAdapter struct {
+	ProvisioningRequestInformer
+}
+
+func (a *provisioningRequestTypedInformerAdapter) TypedInformer() ProvisioningRequestIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*provisioningrequestautoscalingxk8siov1.ProvisioningRequest](a.Informer())
+}
+
+// ToProvisioningRequestIndexInformer converts an untyped informer into a ProvisioningRequestIndexInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *ProvisioningRequest. If that is not the case, calling type-safe methods of the returned
+// ProvisioningRequestIndexInformer leads to runtime panics. A safer alternative is to pass
+// around a ProvisioningRequestIndexInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToProvisioningRequestIndexInformer(informer cache.SharedIndexInformer) ProvisioningRequestIndexInformer {
+	if informer, ok := informer.(ProvisioningRequestIndexInformer); ok {
+		return informer
+	}
+	return cache.NewTypedSharedIndexInformer[*provisioningrequestautoscalingxk8siov1.ProvisioningRequest](informer)
 }

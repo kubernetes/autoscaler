@@ -169,17 +169,29 @@ $(LOCALBIN):
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 #ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
 ENVTEST_VERSION ?= $(shell go list -m -f "{{ .Version }}" sigs.k8s.io/controller-runtime | awk -F'[v.]' '{printf "release-%d.%d", $$2, $$3}')
-#ENVTEST_K8S_VERSION is the version of Kubernetes to use for setting up ENVTEST binaries (i.e. 1.31)
-ENVTEST_K8S_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "1.%d", $$3}')
+#K8S_MINOR is the Kubernetes minor version of the k8s.io/api dependency (i.e. 31).
+K8S_MINOR := $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{print $$3}')
+#ENVTEST_K8S_VERSION selects the newest ENVTEST binaries no newer than the k8s.io/api minor (i.e. "<1.32").
+#envtest releases lag Kubernetes, so this falls back to an older minor until the matching one is published.
+ENVTEST_K8S_VERSION ?= <1.$(shell expr $(K8S_MINOR) + 1)
 
 
 .PHONY: setup-envtest
 setup-envtest: envtest ## Download the binaries required for ENVTEST in the local bin directory.
-	@echo "Setting up envtest binaries for Kubernetes version $(ENVTEST_K8S_VERSION)..."
-	@$(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path || { \
+	@echo "Setting up envtest binaries matching Kubernetes version $(ENVTEST_K8S_VERSION)..."
+	@assets=$$($(ENVTEST) use '$(ENVTEST_K8S_VERSION)' --bin-dir $(LOCALBIN) -p path) || { \
 		echo "Error: Failed to set up envtest binaries for version $(ENVTEST_K8S_VERSION)."; \
 		exit 1; \
-	}
+	}; \
+	envtest_version=$$(basename "$$assets" | sed 's/-.*//'); \
+	envtest_minor=$$(echo "$$envtest_version" | cut -d. -f2); \
+	echo "=================================================================="; \
+	echo "USING ENVTEST v$$envtest_version (k8s.io/api is v1.$(K8S_MINOR))"; \
+	if [ "$$envtest_minor" != "$(K8S_MINOR)" ]; then \
+		echo "WARNING: envtest is $$(( $(K8S_MINOR) - $$envtest_minor )) minor version(s) behind k8s.io/api."; \
+		echo "WARNING: the control plane under test does not match the compiled-in Kubernetes libraries."; \
+	fi; \
+	echo "=================================================================="
 
 .PHONY: envtest
 envtest: $(ENVTEST) ## Download setup-envtest locally if necessary.
