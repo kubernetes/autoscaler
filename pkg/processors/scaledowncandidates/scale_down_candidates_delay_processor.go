@@ -18,6 +18,7 @@ package scaledowncandidates
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -31,6 +32,7 @@ import (
 // ScaleDownCandidatesDelayProcessor is a processor to filter out
 // nodes according to scale down delay per nodegroup
 type ScaleDownCandidatesDelayProcessor struct {
+	mutex             sync.RWMutex
 	scaleUps          map[string]time.Time
 	scaleDowns        map[string]time.Time
 	scaleDownFailures map[string]time.Time
@@ -45,6 +47,8 @@ func (p *ScaleDownCandidatesDelayProcessor) GetPodDestinationCandidates(autoscal
 // GetScaleDownCandidates returns filter nodes based on if scale down is enabled or disabled per nodegroup.
 func (p *ScaleDownCandidatesDelayProcessor) GetScaleDownCandidates(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
+	p.mutex.RLock()
+	defer p.mutex.RUnlock()
 	logger := klog.FromContext(ctx)
 	result := []*apiv1.Node{}
 	alreadyLoggedGroups := make(map[string]bool)
@@ -98,12 +102,16 @@ func (p *ScaleDownCandidatesDelayProcessor) CleanUp() {
 // RegisterScaleUp records when the last scale up happened for a nodegroup.
 func (p *ScaleDownCandidatesDelayProcessor) RegisterScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup,
 	_ int, currentTime time.Time) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 	p.scaleUps[nodeGroup.Id()] = currentTime
 }
 
 // RegisterScaleDown records when the last scale down happened for a nodegroup.
 func (p *ScaleDownCandidatesDelayProcessor) RegisterScaleDown(nodeGroup cloudprovider.NodeGroup,
 	nodeName string, currentTime time.Time, _ time.Time) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 	p.scaleDowns[nodeGroup.Id()] = currentTime
 }
 
@@ -114,6 +122,8 @@ func (p *ScaleDownCandidatesDelayProcessor) RegisterFailedScaleUp(ctx context.Co
 // RegisterFailedScaleDown records failed scale-down for a nodegroup.
 func (p *ScaleDownCandidatesDelayProcessor) RegisterFailedScaleDown(nodeGroup cloudprovider.NodeGroup,
 	reason string, currentTime time.Time) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 	p.scaleDownFailures[nodeGroup.Id()] = currentTime
 }
 
