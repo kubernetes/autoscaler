@@ -53,6 +53,8 @@ Important: You are responsible for creating the TLS secret before or after insta
 If the secret is created after the Helm install, you must restart the admission controller pod to trigger webhook registration.
 
 ### cert-manager managed
+
+Using an existing `Issuer` or `ClusterIssuer`:
 ```yaml
 admissionController:
   registerWebhook: false
@@ -60,6 +62,21 @@ admissionController:
     enabled: false
   certManager:
     enabled: true
+    issuerRef:
+      name: my-issuer
+      kind: ClusterIssuer
+```
+
+Or letting the chart create a namespaced self-signed issuer:
+```yaml
+admissionController:
+  registerWebhook: false
+  certGen:
+    enabled: false
+  certManager:
+    enabled: true
+    createSelfSignedIssuer:
+      enabled: true
 ```
 In this mode:
 - Helm creates the MutatingWebhookConfiguration
