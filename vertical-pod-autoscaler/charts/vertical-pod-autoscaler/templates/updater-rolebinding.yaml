@@ -5,6 +5,8 @@ kind: RoleBinding
 metadata:
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-leader-locking-binding
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
