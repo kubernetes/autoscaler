@@ -18,10 +18,18 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534 # nobody
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: admission-controller
           image: registry.k8s.io/autoscaling/vpa-admission-controller:1.7.1
           imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: NAMESPACE
               valueFrom:
