@@ -120,6 +120,7 @@ helm upgrade <release-name> <chart> \
 | admissionController.certGen.image.tag | string | `"v20231011-8b53cabe0"` | An image tag for the admissionController.certGen.image.repository image. |
 | admissionController.certGen.nodeSelector | object | `{}` |  |
 | admissionController.certGen.podSecurityContext | object | `{"runAsNonRoot":true,"runAsUser":65534,"seccompProfile":{"type":"RuntimeDefault"}}` | The securityContext block for the certgen pod(s) |
+| admissionController.certGen.priorityClassName | string | `""` | Priority class name for the certgen job pods. These jobs gate the release as pre-install/pre-upgrade and post-install/post-upgrade hooks, so a priority class can help them schedule on a busy cluster. |
 | admissionController.certGen.resources | object | `{}` | The resources block for the certgen pod |
 | admissionController.certGen.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | The securityContext block for the certgen container(s) |
 | admissionController.certGen.tolerations | list | `[]` |  |
