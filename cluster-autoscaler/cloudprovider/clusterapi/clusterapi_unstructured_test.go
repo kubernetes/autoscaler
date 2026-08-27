@@ -30,6 +30,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/dynamic-resource-allocation/cel"
+	"k8s.io/dynamic-resource-allocation/structured"
 	"k8s.io/utils/ptr"
 )
 
@@ -449,6 +451,113 @@ func TestAnnotations(t *testing.T) {
 			Build()
 		test(t, testConfig, testConfig.machineDeployment)
 	})
+}
+
+// fakeDeviceClassLister is the minimal structured.DeviceClassLister needed to
+// drive the DRA allocator in TestInstanceResourceSlicesAreAllocatable.
+type fakeDeviceClassLister struct {
+	classes []*resourceapi.DeviceClass
+}
+
+func (f fakeDeviceClassLister) List() ([]*resourceapi.DeviceClass, error) {
+	return f.classes, nil
+}
+
+func (f fakeDeviceClassLister) Get(className string) (*resourceapi.DeviceClass, error) {
+	for _, class := range f.classes {
+		if class.Name == className {
+			return class, nil
+		}
+	}
+	return nil, fmt.Errorf("device class %q not found", className)
+}
+
+// TestInstanceResourceSlicesAreAllocatable is a regression test for #10199.
+// It feeds the ResourceSlice(s) returned by InstanceResourceSlices into the
+// real DRA structured allocator (k8s.io/dynamic-resource-allocation/structured)
+// and asserts that a matching claim can actually be allocated from them.
+//
+// Before the #10199 fix, ResourceSliceCount was left at its zero value, so the
+// allocator always treated the synthetic pool as incomplete and refused to
+// allocate from it, no matter how many devices it advertised. Asserting
+// ResourceSliceCount == 1 alone does not catch that: this test additionally
+// exercises the same allocator logic the scheduler relies on.
+func TestInstanceResourceSlicesAreAllocatable(t *testing.T) {
+	testNodeName := "test-node"
+	draDriver := "test-driver"
+	deviceClassName := "test-class"
+
+	annotations := map[string]string{
+		gpuCountKey:  "1",
+		draDriverKey: draDriver,
+	}
+
+	controller := NewTestMachineController(t)
+	defer controller.Stop()
+	testConfig := NewTestConfigBuilder().
+		ForMachineSet().
+		WithNodeCount(1).
+		WithAnnotations(annotations).
+		Build()
+	controller.AddTestConfigs(testConfig)
+
+	sr, err := newUnstructuredScalableResource(controller.machineController, testConfig.machineSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	slices, err := sr.InstanceResourceSlices(testNodeName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(slices) != 1 {
+		t.Fatalf("expected exactly one generated ResourceSlice, got %d", len(slices))
+	}
+
+	node := &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: testNodeName}}
+	class := &resourceapi.DeviceClass{ObjectMeta: metav1.ObjectMeta{Name: deviceClassName}}
+	claim := &resourceapi.ResourceClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: "test-claim", Namespace: "default", UID: "test-claim-uid"},
+		Spec: resourceapi.ResourceClaimSpec{
+			Devices: resourceapi.DeviceClaim{
+				Requests: []resourceapi.DeviceRequest{
+					{
+						Name: "gpu",
+						Exactly: &resourceapi.ExactDeviceRequest{
+							DeviceClassName: deviceClassName,
+							AllocationMode:  resourceapi.DeviceAllocationModeExactCount,
+							Count:           1,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	allocator, err := structured.NewAllocator(
+		context.Background(),
+		structured.Features{},
+		structured.AllocatedState{},
+		fakeDeviceClassLister{classes: []*resourceapi.DeviceClass{class}},
+		slices,
+		cel.NewCache(1, cel.Features{}),
+	)
+	if err != nil {
+		t.Fatalf("failed to construct DRA allocator: %v", err)
+	}
+
+	results, err := allocator.Allocate(context.Background(), node, []*resourceapi.ResourceClaim{claim})
+	if err != nil {
+		t.Fatalf("DRA allocator returned an unexpected error: %v", err)
+	}
+
+	// A nil/empty result means the allocator could not satisfy the claim. That is
+	// exactly what happens when the synthetic ResourcePool advertises the wrong
+	// ResourceSliceCount: the allocator treats the pool as incomplete and refuses
+	// to allocate from it, regardless of how many matching devices it contains.
+	if len(results) == 0 {
+		t.Fatal("DRA allocator could not allocate a device from the ClusterAPI-generated ResourceSlice; the synthetic pool is being treated as incomplete (regression of #10199)")
+	}
 }
 
 func TestCanScaleFromZero(t *testing.T) {
