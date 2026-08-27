@@ -18,6 +18,7 @@ package nodegroupchange
 
 import (
 	"context"
+	"slices"
 	"sync"
 	"time"
 
@@ -51,20 +52,23 @@ type NodeGroupChangeObserver interface {
 type NodeGroupChangeObserversList struct {
 	observers []NodeGroupChangeObserver
 	// TODO(vadasambar): consider using separate mutexes for functions not related to each other
-	mutex sync.Mutex
+	mutex sync.RWMutex
 }
 
 // Register adds new observer to the list.
 func (l *NodeGroupChangeObserversList) Register(o NodeGroupChangeObserver) {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
 	l.observers = append(l.observers, o)
 }
 
 // RegisterScaleUp calls RegisterScaleUp for each observer.
 func (l *NodeGroupChangeObserversList) RegisterScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup,
 	delta int, currentTime time.Time) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
-	for _, observer := range l.observers {
+	l.mutex.RLock()
+	observers := slices.Clone(l.observers)
+	l.mutex.RUnlock()
+	for _, observer := range observers {
 		observer.RegisterScaleUp(ctx, nodeGroup, delta, currentTime)
 	}
 }
@@ -72,18 +76,20 @@ func (l *NodeGroupChangeObserversList) RegisterScaleUp(ctx context.Context, node
 // RegisterScaleDown calls RegisterScaleDown for each observer.
 func (l *NodeGroupChangeObserversList) RegisterScaleDown(nodeGroup cloudprovider.NodeGroup,
 	nodeName string, currentTime time.Time, expectedDeleteTime time.Time) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
-	for _, observer := range l.observers {
+	l.mutex.RLock()
+	observers := slices.Clone(l.observers)
+	l.mutex.RUnlock()
+	for _, observer := range observers {
 		observer.RegisterScaleDown(nodeGroup, nodeName, currentTime, expectedDeleteTime)
 	}
 }
 
 // RegisterFailedScaleUp calls RegisterFailedScaleUp for each observer.
 func (l *NodeGroupChangeObserversList) RegisterFailedScaleUp(ctx context.Context, nodeGroup cloudprovider.NodeGroup, delta int, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
-	for _, observer := range l.observers {
+	l.mutex.RLock()
+	observers := slices.Clone(l.observers)
+	l.mutex.RUnlock()
+	for _, observer := range observers {
 		observer.RegisterFailedScaleUp(ctx, nodeGroup, delta, errorInfo, currentTime)
 	}
 }
@@ -91,9 +97,10 @@ func (l *NodeGroupChangeObserversList) RegisterFailedScaleUp(ctx context.Context
 // RegisterFailedScaleDown records failed scale-down for a nodegroup.
 func (l *NodeGroupChangeObserversList) RegisterFailedScaleDown(nodeGroup cloudprovider.NodeGroup,
 	reason string, currentTime time.Time) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
-	for _, observer := range l.observers {
+	l.mutex.RLock()
+	observers := slices.Clone(l.observers)
+	l.mutex.RUnlock()
+	for _, observer := range observers {
 		observer.RegisterFailedScaleDown(nodeGroup, reason, currentTime)
 	}
 }
