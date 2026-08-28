@@ -214,6 +214,33 @@ func TestAggregateContainerStateIsExpired(t *testing.T) {
 	assert.True(t, csEmpty.isExpired(testTimestamp.Add(8*24*time.Hour)))
 }
 
+func TestAggregateContainerStateIsEmptyMemoryOnly(t *testing.T) {
+	cs := NewAggregateContainerState()
+	assert.True(t, cs.isEmpty())
+
+	cs.AddSample(&ContainerUsageSample{
+		MeasureStart: testTimestamp,
+		Usage:        MemoryAmountFromBytes(32 * 1024 * 1024),
+		Resource:     ResourceMemory,
+	})
+	assert.False(t, cs.isEmpty())
+	assert.Equal(t, 0, cs.TotalSamplesCount)
+	assert.Equal(t, testTimestamp, cs.FirstSampleStart)
+	assert.Equal(t, testTimestamp, cs.LastSampleStart)
+}
+
+func TestAggregateContainerStateIsExpiredMemoryOnly(t *testing.T) {
+	cs := NewAggregateContainerState()
+	cs.CreationTime = testTimestamp.Add(-9 * 24 * time.Hour)
+	cs.AddSample(&ContainerUsageSample{
+		MeasureStart: testTimestamp,
+		Usage:        MemoryAmountFromBytes(64 * 1024 * 1024),
+		Resource:     ResourceMemory,
+	})
+	assert.False(t, cs.isExpired(testTimestamp.Add(7*24*time.Hour)))
+	assert.True(t, cs.isExpired(testTimestamp.Add(8*24*time.Hour)))
+}
+
 func TestUpdateFromPolicyScalingMode(t *testing.T) {
 	scalingModeAuto := vpa_types.ContainerScalingModeAuto
 	scalingModeOff := vpa_types.ContainerScalingModeOff

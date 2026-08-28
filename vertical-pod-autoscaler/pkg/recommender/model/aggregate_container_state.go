@@ -104,7 +104,8 @@ type AggregateContainerState struct {
 	// AggregateMemoryPeaks is a distribution of memory peaks from all containers:
 	// each container should add one peak per memory aggregation interval (e.g. once every 24h).
 	AggregateMemoryPeaks util.Histogram
-	// Note: first/last sample timestamps as well as the sample count are based only on CPU samples.
+	// TotalSamplesCount is CPU-only (checkpoint field). First/LastSampleStart
+	// also follow memory samples so memory-only aggregates age correctly.
 	FirstSampleStart  time.Time
 	LastSampleStart   time.Time
 	TotalSamplesCount int
@@ -229,6 +230,7 @@ func (a *AggregateContainerState) AddSample(sample *ContainerUsageSample) {
 		a.addCPUSample(sample)
 	case ResourceMemory:
 		a.AggregateMemoryPeaks.AddSample(BytesFromMemoryAmount(sample.Usage), 1.0, sample.MeasureStart)
+		a.observeSampleTime(sample.MeasureStart)
 	default:
 		panic(fmt.Sprintf("AddSample doesn't support resource '%s'", sample.Resource))
 	}
@@ -252,13 +254,17 @@ func (a *AggregateContainerState) addCPUSample(sample *ContainerUsageSample) {
 	cpuUsageCores := CoresFromCPUAmount(sample.Usage)
 	a.AggregateCPUUsage.AddSample(
 		cpuUsageCores, minSampleWeight, sample.MeasureStart)
-	if sample.MeasureStart.After(a.LastSampleStart) {
-		a.LastSampleStart = sample.MeasureStart
-	}
-	if a.FirstSampleStart.IsZero() || sample.MeasureStart.Before(a.FirstSampleStart) {
-		a.FirstSampleStart = sample.MeasureStart
-	}
+	a.observeSampleTime(sample.MeasureStart)
 	a.TotalSamplesCount++
+}
+
+func (a *AggregateContainerState) observeSampleTime(t time.Time) {
+	if t.After(a.LastSampleStart) {
+		a.LastSampleStart = t
+	}
+	if a.FirstSampleStart.IsZero() || t.Before(a.FirstSampleStart) {
+		a.FirstSampleStart = t
+	}
 }
 
 // SaveToCheckpoint serializes AggregateContainerState as VerticalPodAutoscalerCheckpointStatus.
@@ -311,7 +317,11 @@ func (a *AggregateContainerState) isExpired(now time.Time) bool {
 }
 
 func (a *AggregateContainerState) isEmpty() bool {
-	return a.TotalSamplesCount == 0
+	// TotalSamplesCount only tracks CPU; a memory histogram still counts.
+	if a.TotalSamplesCount != 0 {
+		return false
+	}
+	return a.AggregateMemoryPeaks == nil || a.AggregateMemoryPeaks.IsEmpty()
 }
 
 func (*AggregateContainerState) convertQuantityToFloat64(quantity *resource.Quantity) float64 {
