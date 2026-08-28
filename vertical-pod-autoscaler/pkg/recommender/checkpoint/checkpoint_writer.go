@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
@@ -90,7 +91,7 @@ func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) {
 			},
 			Status: *containerCheckpoint,
 		}
-		err = api_util.CreateOrUpdateVpaCheckpoint(writer.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(vpa.ID.Namespace), &vpaCheckpoint)
+		err = api_util.CreateOrUpdateVpaCheckpoint(writer.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(vpa.ID.Namespace), &vpaCheckpoint, common.FieldManagerRecommender)
 		if err != nil {
 			klog.ErrorS(err, "Cannot save checkpoint for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName)
 		} else {

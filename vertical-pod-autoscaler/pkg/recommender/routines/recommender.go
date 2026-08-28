@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/klog/v2"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
@@ -103,7 +104,7 @@ func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *vpaautoscalin
 	}
 
 	_, err := vpa_utils.UpdateVpaStatusIfNeeded(
-		r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status)
+		r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status, common.FieldManagerRecommender)
 	if err != nil {
 		klog.ErrorS(err, "Cannot update VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
 	}

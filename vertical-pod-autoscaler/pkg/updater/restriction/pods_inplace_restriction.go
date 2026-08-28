@@ -31,6 +31,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	resource_updates "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -255,7 +256,7 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *corev1.Pod, vpa
 		return err
 	}
 
-	res, err := ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{}, "resize")
+	res, err := ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{FieldManager: common.FieldManagerUpdater}, "resize")
 	if err != nil {
 		return err
 	}
@@ -266,7 +267,7 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *corev1.Pod, vpa
 		if err != nil {
 			return err
 		}
-		res, err = ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{})
+		res, err = ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{FieldManager: common.FieldManagerUpdater})
 		if err != nil {
 			klog.V(4).ErrorS(err, "Failed to patch pod annotations", "pod", klog.KObj(res), "patches", string(patch))
 		} else {
