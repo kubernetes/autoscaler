@@ -105,7 +105,10 @@ func (ng *NodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
 func (ng *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
-	ctx2 := context.Background()
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
 	klog.V(4).Infof("DeleteNodes: %d nodes to reclaim", len(nodes))
 	for _, n := range nodes {
 		node, ok := ng.nodes[n.Spec.ProviderID]
@@ -114,7 +117,7 @@ func (ng *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error
 			continue
 		}
 
-		deletedNode, err := ng.DeleteNode(ctx2, node.ID)
+		deletedNode, err := ng.DeleteNode(emptyCtx, node.ID)
 		if err != nil {
 			return err
 		}
@@ -156,8 +159,11 @@ func (ng *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 		return fmt.Errorf("size decrease is too large. current: %d desired: %d min: %d", ng.pool.Size, targetSize, ng.MinSize(context.TODO()))
 	}
 
-	ctx2 := context.Background()
-	updatedNode, err := ng.UpdatePool(ctx2, ng.pool.ID, targetSize)
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
+	updatedNode, err := ng.UpdatePool(emptyCtx, ng.pool.ID, targetSize)
 	if err != nil {
 		return err
 	}

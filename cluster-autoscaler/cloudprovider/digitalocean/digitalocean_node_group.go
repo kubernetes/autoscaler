@@ -97,8 +97,11 @@ func (n *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 		Count: &targetSize,
 	}
 
-	ctx2 := context.Background()
-	updatedNodePool, _, err := n.client.UpdateNodePool(ctx2, n.clusterID, n.id, req)
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
+	updatedNodePool, _, err := n.client.UpdateNodePool(emptyCtx, n.clusterID, n.id, req)
 	if err != nil {
 		return err
 	}
@@ -123,7 +126,10 @@ func (n *NodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 // given node doesn't belong to this node group. This function should wait
 // until node group size is updated. Implementation required.
 func (n *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
-	ctx2 := context.Background()
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
 	for _, node := range nodes {
 		nodeID, ok := node.Labels[nodeIDLabel]
 		if !ok {
@@ -133,7 +139,7 @@ func (n *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error 
 			return fmt.Errorf("cannot delete node %q with provider ID %q on node pool %q: node ID label %q is missing", node.Name, node.Spec.ProviderID, n.id, nodeIDLabel)
 		}
 
-		_, err := n.client.DeleteNode(ctx2, n.clusterID, n.id, nodeID, nil)
+		_, err := n.client.DeleteNode(emptyCtx, n.clusterID, n.id, nodeID, nil)
 		if err != nil {
 			return fmt.Errorf("deleting node failed for cluster: %q node pool: %q node: %q: %s",
 				n.clusterID, n.id, nodeID, err)
@@ -171,8 +177,11 @@ func (n *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 		Count: &targetSize,
 	}
 
-	ctx2 := context.Background()
-	updatedNodePool, _, err := n.client.UpdateNodePool(ctx2, n.clusterID, n.id, req)
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
+	updatedNodePool, _, err := n.client.UpdateNodePool(emptyCtx, n.clusterID, n.id, req)
 	if err != nil {
 		return err
 	}

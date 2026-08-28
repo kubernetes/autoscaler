@@ -69,8 +69,8 @@ func (ip *InstancePoolNodeGroup) IncreaseSize(ctx context.Context, delta int) er
 		return err
 	}
 
-	if size+delta > ip.MaxSize(context.Background()) {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", size+delta, ip.MaxSize(context.Background()))
+	if size+delta > ip.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", size+delta, ip.MaxSize(context.TODO()))
 	}
 
 	return ip.manager.SetInstancePoolSize(*ip, size+delta)
@@ -117,7 +117,7 @@ func (ip *InstancePoolNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1
 		return err
 	}
 
-	if size <= ip.MinSize(context.Background()) {
+	if size <= ip.MinSize(context.TODO()) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
@@ -187,7 +187,7 @@ func (ip *InstancePoolNodeGroup) Id() string {
 
 // Debug returns a string containing all information regarding this instance-pool.
 func (ip *InstancePoolNodeGroup) Debug(ctx context.Context) string {
-	return fmt.Sprintf("%s (%d:%d)", ip.Id(), ip.MinSize(context.Background()), ip.MaxSize(context.Background()))
+	return fmt.Sprintf("%s (%d:%d)", ip.Id(), ip.MinSize(context.TODO()), ip.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this instance-pool.

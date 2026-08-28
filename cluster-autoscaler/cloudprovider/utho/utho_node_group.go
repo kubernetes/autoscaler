@@ -100,15 +100,18 @@ func (n *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 		NodePoolId: n.id,
 		Count:      strconv.Itoa(targetSize),
 	}
-	ctx2 := context.Background()
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
 	klog.V(4).Infof("IncreaseSize: calling UpdateNodePool with targetSize=%d for node group %s", targetSize, n.id)
-	_, err := n.client.UpdateNodePool(ctx2, param)
+	_, err := n.client.UpdateNodePool(emptyCtx, param)
 	if err != nil {
 		klog.Errorf("IncreaseSize: UpdateNodePool API error for node group %s: %v", n.id, err)
 		return err
 	}
 
-	nodePool, err := n.client.ReadNodePool(ctx, n.clusterID, n.id)
+	nodePool, err := n.client.ReadNodePool(emptyCtx, n.clusterID, n.id)
 	if err != nil {
 		klog.Errorf("IncreaseSize: ReadNodePool API error for node group %s: %v", n.id, err)
 		return fmt.Errorf("failed to read node pool after update for node group %s: %w", n.id, err)
@@ -139,7 +142,10 @@ func (n *NodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 func (n *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	klog.V(4).Infof("DeleteNodes: requested deletion of %d nodes from pool %s", len(nodes), n.id)
 
-	ctx2 := context.Background()
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
 
 	for _, node := range nodes {
 		// Find the node ID label
@@ -164,7 +170,7 @@ func (n *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error 
 		klog.V(4).Infof("DeleteNodes: calling DeleteNode(cluster=%d, pool=%s, node=%s)",
 			n.clusterID, n.id, nodeID)
 
-		if _, err := n.client.DeleteNode(ctx2, param); err != nil {
+		if _, err := n.client.DeleteNode(emptyCtx, param); err != nil {
 			klog.Errorf("DeleteNodes: API error for cluster %d pool %s node %s: %v",
 				n.clusterID, n.id, nodeID, err)
 			return fmt.Errorf("deleting node failed for cluster %d node pool %q node %q: %w",
@@ -214,9 +220,12 @@ func (n *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 		Label:      uthoLabel,
 		Size:       strconv.Itoa(targetSize),
 	}
-	ctx2 := context.Background()
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
 	klog.V(4).Infof("DecreaseTargetSize: calling UpdateNodePool with targetSize=%d for node group %s", targetSize, n.id)
-	updatedNodePool, err := n.client.UpdateNodePool(ctx2, req)
+	updatedNodePool, err := n.client.UpdateNodePool(emptyCtx, req)
 	if err != nil {
 		klog.Errorf("DecreaseTargetSize: UpdateNodePool API error for node group %s: %v", n.id, err)
 		return err
