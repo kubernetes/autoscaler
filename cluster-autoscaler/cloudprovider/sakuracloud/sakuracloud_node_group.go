@@ -105,9 +105,12 @@ func (n *sakuracloudNodeGroup) AtomicIncreaseSize(delta int) error {
 // DeleteNodes deletes the given nodes (and their servers) from the group.
 func (n *sakuracloudNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	for _, node := range nodes {
-		serverName, err := serverNameFromProviderID(node.Spec.ProviderID)
+		zone, serverName, err := parseProviderID(node.Spec.ProviderID)
 		if err != nil {
 			return fmt.Errorf("cannot delete node %s: %w", node.Name, err)
+		}
+		if zone != n.manager.zone {
+			return fmt.Errorf("cannot delete node %s: zone %q does not match managed zone %q", node.Name, zone, n.manager.zone)
 		}
 		server := n.manager.serverByName(serverName)
 		if server == nil {
@@ -158,7 +161,10 @@ func (n *sakuracloudNodeGroup) Id() string {
 
 // Debug returns a debug string for the node group.
 func (n *sakuracloudNodeGroup) Debug() string {
-	return fmt.Sprintf("cluster ID: %s (min:%d max:%d target:%d)", n.id, n.MinSize(), n.MaxSize(), n.targetSize)
+	n.mu.Lock()
+	target := n.targetSize
+	n.mu.Unlock()
+	return fmt.Sprintf("cluster ID: %s (min:%d max:%d target:%d)", n.id, n.MinSize(), n.MaxSize(), target)
 }
 
 // Nodes returns instances that belong to this node group.

@@ -57,17 +57,20 @@ func providerIDForServer(zone, serverName string) string {
 	return fmt.Sprintf("%s%s/%s", providerIDPrefix, zone, serverName)
 }
 
-// serverNameFromProviderID extracts the server name from a providerID.
-func serverNameFromProviderID(providerID string) (string, error) {
+// parseProviderID splits a providerID into its zone and server name. The
+// zone must not be discarded: a foreign node in a different zone can share a
+// server name with a cached server in the configured zone, and mapping it to
+// a node group would let scale-down act through the wrong group.
+func parseProviderID(providerID string) (zone, serverName string, err error) {
 	rest, ok := strings.CutPrefix(providerID, providerIDPrefix)
 	if !ok {
-		return "", fmt.Errorf("providerID %q does not have prefix %q", providerID, providerIDPrefix)
+		return "", "", fmt.Errorf("providerID %q does not have prefix %q", providerID, providerIDPrefix)
 	}
 	parts := strings.SplitN(rest, "/", 2)
-	if len(parts) != 2 || parts[1] == "" {
-		return "", fmt.Errorf("providerID %q: expected format %szone/serverName", providerID, providerIDPrefix)
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("providerID %q: expected format %szone/serverName", providerID, providerIDPrefix)
 	}
-	return parts[1], nil
+	return parts[0], parts[1], nil
 }
 
 // sakuracloudCloudProvider implements cloudprovider.CloudProvider for
@@ -96,9 +99,13 @@ func (d *sakuracloudCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // other clouds) are not managed by this provider and yield nil, per the
 // CloudProvider contract.
 func (d *sakuracloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	serverName, err := serverNameFromProviderID(node.Spec.ProviderID)
+	zone, serverName, err := parseProviderID(node.Spec.ProviderID)
 	if err != nil {
 		klog.V(4).Infof("sakuracloud: node %s has foreign providerID %q, treating as unmanaged", node.Name, node.Spec.ProviderID)
+		return nil, nil
+	}
+	if zone != d.manager.zone {
+		klog.V(4).Infof("sakuracloud: node %s is in zone %q, not the managed zone %q, treating as unmanaged", node.Name, zone, d.manager.zone)
 		return nil, nil
 	}
 	server := d.manager.serverByName(serverName)

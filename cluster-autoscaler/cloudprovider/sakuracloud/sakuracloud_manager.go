@@ -130,6 +130,9 @@ func newManager() (*sakuracloudManager, error) {
 		return nil, fmt.Errorf("SAKURACLOUD_CLUSTER_CONFIG: at least one node group is required")
 	}
 	for name, ng := range cfg.NodeGroups {
+		if ng.MinSize < 0 || ng.MaxSize <= 0 || ng.MinSize > ng.MaxSize {
+			return nil, fmt.Errorf("node group %q: require 0 <= minSize <= maxSize and maxSize > 0, have min %d max %d", name, ng.MinSize, ng.MaxSize)
+		}
 		if ng.Core <= 0 || ng.MemoryGB <= 0 || ng.DiskGB <= 0 {
 			return nil, fmt.Errorf("node group %q: core, memoryGB and diskGB must be positive", name)
 		}
@@ -364,9 +367,31 @@ func (m *sakuracloudManager) createServer(group string, cfg *nodeGroupConfig) er
 	}
 	serverID := serverResp.Server.ID.String()
 
+	// cleanupServer tears the half-provisioned server down again so a
+	// post-create failure does not leave a billable, group-tagged server
+	// behind (it would be counted by later refreshes). withDisk deletes the
+	// attached disk in the same call; before attachment the disk is removed
+	// separately via cleanupDisk.
+	cleanupServer := func(withDisk bool) {
+		if derr := m.doRequest(http.MethodDelete, "/server/"+serverID+"/power", map[string]interface{}{"Force": true}, nil); derr != nil && !strings.Contains(derr.Error(), "status 409") {
+			klog.Warningf("sakuracloud: cleanup power off of server %s failed: %v", serverID, derr)
+		}
+		payload := map[string]interface{}{}
+		if withDisk {
+			payload["WithDisk"] = []string{diskID}
+		}
+		if derr := m.doRequest(http.MethodDelete, "/server/"+serverID, payload, nil); derr != nil {
+			klog.Errorf("sakuracloud: failed to clean up server %s after provisioning failure: %v", serverID, derr)
+			return
+		}
+		if !withDisk {
+			cleanupDisk()
+		}
+	}
+
 	// 3. attach disk and inject hostname + startup note
 	if err := m.doRequest(http.MethodPut, "/disk/"+diskID+"/to/server/"+serverID, nil, nil); err != nil {
-		cleanupDisk()
+		cleanupServer(false)
 		return fmt.Errorf("disk attach failed: %w", err)
 	}
 	err = m.doRequest(http.MethodPut, "/disk/"+diskID+"/config", map[string]interface{}{
@@ -376,6 +401,7 @@ func (m *sakuracloudManager) createServer(group string, cfg *nodeGroupConfig) er
 		"Notes":         []map[string]interface{}{{"ID": cfg.StartupNoteID}},
 	}, nil)
 	if err != nil {
+		cleanupServer(true)
 		return fmt.Errorf("disk config failed: %w", err)
 	}
 
@@ -383,11 +409,13 @@ func (m *sakuracloudManager) createServer(group string, cfg *nodeGroupConfig) er
 	// modifying state; powering on before it settles fails with 409
 	// disk_is_not_available (observed). Wait for it to become available again.
 	if err := m.waitDiskAvailable(diskID); err != nil {
+		cleanupServer(true)
 		return err
 	}
 
 	// 4. power on
 	if err := m.doRequest(http.MethodPut, "/server/"+serverID+"/power", nil, nil); err != nil {
+		cleanupServer(true)
 		return fmt.Errorf("power on failed: %w", err)
 	}
 	klog.V(2).Infof("sakuracloud: server %s (id %s) powered on", name, serverID)

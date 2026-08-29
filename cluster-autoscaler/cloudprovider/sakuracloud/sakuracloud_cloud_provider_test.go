@@ -35,12 +35,13 @@ func testNode(name, providerID string) *apiv1.Node {
 func TestProviderIDHelpers(t *testing.T) {
 	assert.Equal(t, "sakuracloud://is1a/pool-abc12", providerIDForServer("is1a", "pool-abc12"))
 
-	name, err := serverNameFromProviderID("sakuracloud://is1a/pool-abc12")
+	zone, name, err := parseProviderID("sakuracloud://is1a/pool-abc12")
 	assert.NoError(t, err)
+	assert.Equal(t, "is1a", zone)
 	assert.Equal(t, "pool-abc12", name)
 
-	for _, invalid := range []string{"", "k3s://node-1", "aws:///us-east-1a/i-abc", "sakuracloud://zoneonly"} {
-		_, err := serverNameFromProviderID(invalid)
+	for _, invalid := range []string{"", "k3s://node-1", "aws:///us-east-1a/i-abc", "sakuracloud://zoneonly", "sakuracloud:///name-only"} {
+		_, _, err := parseProviderID(invalid)
 		assert.Error(t, err, invalid)
 	}
 }
@@ -69,6 +70,12 @@ func TestNodeGroupForNode(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Nil(t, group)
 	}
+
+	// A matching server name in a different zone is unmanaged: the zone in
+	// the providerID must match the managed zone.
+	group, err = provider.NodeGroupForNode(testNode("pool-abc12", "sakuracloud://tk1a/pool-abc12"))
+	assert.NoError(t, err)
+	assert.Nil(t, group)
 
 	// A sakuracloud node without a group tag is unmanaged too.
 	group, err = provider.NodeGroupForNode(testNode("untagged-1", "sakuracloud://is1a/untagged-1"))
@@ -101,6 +108,8 @@ func TestNewManagerConfigValidation(t *testing.T) {
 		"missing zone": `{"nodeGroups":{"a":{"minSize":0,"maxSize":1,"core":1,"memoryGB":1,"diskGB":20,"sourceArchiveID":"1","startupNoteID":"2"}}}`,
 		"no groups":    `{"zone":"is1a","nodeGroups":{}}`,
 		"bad sizes":    `{"zone":"is1a","nodeGroups":{"a":{"minSize":0,"maxSize":1,"core":0,"memoryGB":1,"diskGB":20,"sourceArchiveID":"1","startupNoteID":"2"}}}`,
+		"min over max": `{"zone":"is1a","nodeGroups":{"a":{"minSize":3,"maxSize":1,"core":1,"memoryGB":1,"diskGB":20,"sourceArchiveID":"1","startupNoteID":"2"}}}`,
+		"negative min": `{"zone":"is1a","nodeGroups":{"a":{"minSize":-1,"maxSize":1,"core":1,"memoryGB":1,"diskGB":20,"sourceArchiveID":"1","startupNoteID":"2"}}}`,
 		"missing ids":  `{"zone":"is1a","nodeGroups":{"a":{"minSize":0,"maxSize":1,"core":1,"memoryGB":1,"diskGB":20}}}`,
 	} {
 		t.Setenv("SAKURACLOUD_CLUSTER_CONFIG", cfg)
