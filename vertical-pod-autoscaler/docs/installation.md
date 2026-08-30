@@ -3,6 +3,7 @@
 ## Contents
 
 <!-- toc -->
+- [Supported versions](#supported-versions)
 - [Compatibility](#compatibility)
 - [Notice on CRD update (&gt;=1.0.0)](#notice-on-crd-update-100)
 - [Notice on deprecation of v1beta2 version (&gt;=0.13.0)](#notice-on-deprecation-of-v1beta2-version-0130)
@@ -15,27 +16,19 @@
 
 The current default version is Vertical Pod Autoscaler 1.7.1
 
+## Supported versions
+
+The Vertical Pod Autoscaler project maintains release branches for the most recent three minor releases (1.7, 1.6, 1.5).
+
+Vertical Pod Autoscaler versions are expressed as x.y.z, where x is the major version, y is the minor version, and z is the patch version, following [Semantic Versioning](https://semver.org) terminology.
+
 ## Compatibility
 
-| VPA version     | Kubernetes version                                                          |
-| --------------- | --------------------------------------------------------------------------- |
-| 1.7.x           | 1.28+ (`InPlace`, `InPlaceOrRecreate`, and `CPUStartupBoost` require 1.33+) |
-| 1.6.x           | 1.28+ (`InPlaceOrRecreate` requires 1.33+)                                  |
-| 1.5.x           | 1.28+ (`InPlaceOrRecreate` requires 1.33+)                                  |
-| 1.4.x           | 1.28+ (`InPlaceOrRecreate` alpha feature gate requires 1.33+)               |
-| 1.3.x           | 1.28+                                                                       |
-| 1.2.x           | 1.27+                                                                       |
-| 1.1.x           | 1.25+                                                                       |
-| 1.0             | 1.25+                                                                       |
-| 0.14            | 1.25+                                                                       |
-| 0.13            | 1.25+                                                                       |
-| 0.12            | 1.25+                                                                       |
-| 0.11            | 1.22–1.24                                                                   |
-| 0.10            | 1.22+                                                                       |
-| 0.9             | 1.16+                                                                       |
-| 0.8             | 1.13+                                                                       |
-| 0.4–0.7         | 1.11+                                                                       |
-| 0.3.x and lower | 1.7+                                                                        |
+| VPA version     | Kubernetes version |
+| --------------- | ------------------ |
+| 1.7.x           | 1.35 – 1.37        |
+| 1.6.x           | 1.34 – 1.36        |
+| 1.5.x           | 1.33 – 1.35        |
 
 ## Notice on CRD update (>=1.0.0)
 
