@@ -21,7 +21,41 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
 )
+
+func TestBuildServerCreateFirewalls(t *testing.T) {
+	global := &hcloud.Firewall{ID: 1}
+	poolA := &hcloud.Firewall{ID: 2}
+	poolB := &hcloud.Firewall{ID: 3}
+
+	idsOf := func(firewalls []*hcloud.ServerCreateFirewall) []int64 {
+		ids := make([]int64, 0, len(firewalls))
+		for _, f := range firewalls {
+			ids = append(ids, f.Firewall.ID)
+		}
+		return ids
+	}
+
+	t.Run("none", func(t *testing.T) {
+		assert.Empty(t, buildServerCreateFirewalls(nil, nil))
+	})
+	t.Run("global only", func(t *testing.T) {
+		assert.Equal(t, []int64{1}, idsOf(buildServerCreateFirewalls(global, nil)))
+	})
+	t.Run("per-pool only", func(t *testing.T) {
+		assert.Equal(t, []int64{2, 3}, idsOf(buildServerCreateFirewalls(nil, []*hcloud.Firewall{poolA, poolB})))
+	})
+	t.Run("global plus per-pool", func(t *testing.T) {
+		assert.Equal(t, []int64{1, 2, 3}, idsOf(buildServerCreateFirewalls(global, []*hcloud.Firewall{poolA, poolB})))
+	})
+	t.Run("dedups the global firewall listed per-pool", func(t *testing.T) {
+		assert.Equal(t, []int64{1, 2}, idsOf(buildServerCreateFirewalls(global, []*hcloud.Firewall{global, poolA})))
+	})
+	t.Run("dedups repeats within per-pool", func(t *testing.T) {
+		assert.Equal(t, []int64{2}, idsOf(buildServerCreateFirewalls(nil, []*hcloud.Firewall{poolA, poolA})))
+	})
+}
 
 func TestFindImageWithPerNodepoolConfig(t *testing.T) {
 	// Test case 1: Nodepool with specific imagesForArch should use those images

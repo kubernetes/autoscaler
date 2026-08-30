@@ -21,7 +21,8 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
-	"sort"
+	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -90,6 +91,7 @@ type PrometheusHistoryProviderConfig struct {
 	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel string
 	CadvisorMetricsJobName                           string
 	Namespace                                        string
+	CPUMetricName, MemoryMetricName                  string
 
 	Authentication PrometheusCredentials
 }
@@ -150,6 +152,17 @@ func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (Histo
 			Username: config.Authentication.Username,
 			Password: config.Authentication.Password,
 			Base:     prometheusTransport,
+		}
+	} else {
+		// check if env vars for credentials are set
+		prometheusUsername := os.Getenv("PROMETHEUS_USERNAME")
+		prometheusPassword := os.Getenv("PROMETHEUS_PASSWORD")
+		if prometheusUsername != "" && prometheusPassword != "" {
+			prometheusTransport = &PrometheusBasicAuthTransport{
+				Username: prometheusUsername,
+				Password: prometheusPassword,
+				Base:     prometheusTransport,
+			}
 		}
 	}
 
@@ -355,14 +368,14 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 	if p.config.Namespace != "" {
 		podSelector = fmt.Sprintf("%s, %s=\"%s\"", podSelector, p.config.CtrNamespaceLabel, p.config.Namespace)
 	}
-	historicalCpuQuery := fmt.Sprintf("rate(container_cpu_usage_seconds_total{%s}[%s])", podSelector, p.config.HistoryResolution)
+	historicalCpuQuery := fmt.Sprintf("rate(%s{%s}[%s])", p.config.CPUMetricName, podSelector, p.config.HistoryResolution)
 	klog.V(4).InfoS("Historical CPU usage query", "query", historicalCpuQuery)
 	err := p.readResourceHistory(res, historicalCpuQuery, model.ResourceCPU)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}
 
-	historicalMemoryQuery := fmt.Sprintf("container_memory_working_set_bytes{%s}", podSelector)
+	historicalMemoryQuery := fmt.Sprintf("%s{%s}", p.config.MemoryMetricName, podSelector)
 	klog.V(4).InfoS("Historical memory usage query", "query", historicalMemoryQuery)
 	err = p.readResourceHistory(res, historicalMemoryQuery, model.ResourceMemory)
 	if err != nil {
@@ -370,7 +383,9 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 	}
 	for _, podHistory := range res {
 		for _, samples := range podHistory.Samples {
-			sort.Slice(samples, func(i, j int) bool { return samples[i].MeasureStart.Before(samples[j].MeasureStart) })
+			slices.SortFunc(samples, func(a, b model.ContainerUsageSample) int {
+				return a.MeasureStart.Compare(b.MeasureStart)
+			})
 		}
 	}
 	err = p.readLastLabels(res, p.config.PodLabelsMetricName)

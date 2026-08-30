@@ -23,13 +23,25 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "alicloud"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildAlicloud(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
@@ -97,7 +109,7 @@ func (ali *aliCloudProvider) addAsg(asg *Asg) {
 }
 
 func (ali *aliCloudProvider) Name() string {
-	return cloudprovider.AlicloudProviderName
+	return ProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
@@ -135,7 +147,14 @@ func (ali *aliCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 		klog.Errorf("failed to get instance Id from provider Id:%s,because of %s", node.Spec.ProviderID, err.Error())
 		return nil, err
 	}
-	return ali.manager.GetAsgForInstance(instanceId)
+	asg, err := ali.manager.GetAsgForInstance(instanceId)
+	if err != nil {
+		return nil, err
+	}
+	if asg == nil {
+		return nil, nil
+	}
+	return asg, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
@@ -220,7 +239,7 @@ func buildAsg(manager *AliCloudManager, minSize int, maxSize int, id string, reg
 }
 
 // BuildAlicloud returns alicloud provider
-func BuildAlicloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildAlicloud(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var aliManager *AliCloudManager
 	var aliError error
 	if opts.CloudConfig != "" {

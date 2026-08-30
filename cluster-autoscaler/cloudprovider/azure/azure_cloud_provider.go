@@ -24,12 +24,25 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodegroupset"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "azure"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildAzure(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
@@ -120,21 +133,17 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 	}
 
 	klog.V(6).Infof("NodeGroupForNode: ref.Name %s", ref.Name)
-	return azure.azureManager.GetNodeGroupForInstance(ref)
+	ng, err := azure.azureManager.GetNodeGroupForInstance(ref)
+	if err != nil {
+		return nil, err
+	}
+	if ng == nil {
+		return nil, nil
+	}
+	return ng, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider.
-//
-// Used to prevent undercount of existing VMs (taint-based overcount of deleted VMs),
-// and so should not return false, nil (no instance) if uncertain; return error instead.
-// (Think "has instance for sure, else error".) Returning an error causes fallback to taint-based
-// determination; use ErrNotImplemented for silent fallback, any other error will be logged.
-//
-// Expected behavior (should work for VMSS Uniform/Flex, and VMs):
-// -  exists            : return true, nil
-// - !exists            : return *,    ErrNotImplemented (could use custom error for autoscaled nodes)
-// - unimplemented case : return *,    ErrNotImplemented
-// - any other error    : return *,    error
 func (azure *AzureCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	if node.Spec.ProviderID == "" {
 		return false, fmt.Errorf("ProviderID for node: %s is empty, skipped", node.Name)
@@ -190,7 +199,7 @@ func (m *azureRef) String() string {
 }
 
 // BuildAzure builds Azure cloud provider, manager etc.
-func BuildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildAzure(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
 		klog.Infof("Creating Azure Manager using cloud-config file: %v", opts.CloudConfig)
@@ -211,5 +220,13 @@ func BuildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscov
 	if err != nil {
 		klog.Fatalf("Failed to create Azure cloud provider: %v", err)
 	}
+
+	// Configure Azure specific NodeInfoComparator
+	if opts.Processors != nil {
+		opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+			Comparator: nodegroupset.CreateAzureNodeInfoComparator(opts.AutoscalingOptions.BalancingExtraIgnoredLabels, opts.AutoscalingOptions.NodeGroupSetRatios),
+		}
+	}
+
 	return provider
 }

@@ -19,29 +19,32 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
 	admissionv1 "k8s.io/api/admission/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 )
 
 const (
-	vpaGroup               = "autoscaling.k8s.io"
-	vpaResource            = "verticalpodautoscalers"
-	autoDeprecationWarning = `UpdateMode "Auto" is deprecated and will be removed in a future API version. ` +
-		`Use explicit update modes like "Recreate", "Initial", or "InPlaceOrRecreate" instead. ` +
-		`See https://github.com/kubernetes/autoscaler/issues/8424 for more details.`
+	// maxAdmissionPayloadSize limits the size of the incoming admission request payload
+	// to prevent OOM (Denial of Service) attacks. A typical AdmissionReview is well under 100KB,
+	// and etcd limits objects to 1.5MB. With updates including both the new and old object,
+	// 5MB is an extremely safe upper bound that leaves a comfortable margin.
+	maxAdmissionPayloadSize = 1024 * 1024 * 5 // 5MB
 )
 
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
@@ -67,38 +70,6 @@ func (s *AdmissionServer) RegisterResourceHandler(resourceHandler resource.Handl
 	s.resourceHandlers[resourceHandler.GroupResource()] = resourceHandler
 }
 
-// addDeprecationWarnings adds deprecation warnings to the admission response for VPA objects using deprecated modes
-func (s *AdmissionServer) addDeprecationWarnings(req *admissionv1.AdmissionRequest, resp *admissionv1.AdmissionResponse) {
-	if req.Object.Raw == nil {
-		return
-	}
-
-	// Check if this is a VPA object
-	admittedGroupResource := metav1.GroupResource{
-		Group:    req.Resource.Group,
-		Resource: req.Resource.Resource,
-	}
-
-	if admittedGroupResource.Group != vpaGroup || admittedGroupResource.Resource != vpaResource {
-		return
-	}
-
-	var vpa vpa_types.VerticalPodAutoscaler
-	if err := json.Unmarshal(req.Object.Raw, &vpa); err != nil {
-		klog.V(4).InfoS("Failed to unmarshal VPA object for deprecation warning check", "err", err)
-		return
-	}
-
-	if vpa.Spec.UpdatePolicy != nil && vpa.Spec.UpdatePolicy.UpdateMode != nil &&
-		*vpa.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeAuto {
-
-		if resp.Warnings == nil {
-			resp.Warnings = []string{}
-		}
-		resp.Warnings = append(resp.Warnings, autoDeprecationWarning)
-	}
-}
-
 func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.AdmissionResponse, metrics_admission.AdmissionStatus, metrics_admission.AdmissionResource) {
 	// we don't block the admission by default, even on unparsable JSON
 	response := admissionv1.AdmissionResponse{}
@@ -113,24 +84,35 @@ func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.
 	response.UID = ar.Request.UID
 
 	var patches []resource.PatchRecord
+	var warnings []string
 	var err error
+	var allErrs field.ErrorList
 	resource := metrics_admission.Unknown
 
 	admittedGroupResource := metav1.GroupResource{
 		Group:    ar.Request.Resource.Group,
 		Resource: ar.Request.Resource.Resource,
 	}
+	kind := ar.Request.RequestKind.Kind
+	name := ar.Request.Name
 
 	handler, ok := s.resourceHandlers[admittedGroupResource]
 	if ok {
-		patches, err = handler.GetPatches(ctx, ar.Request)
+		patches, warnings, allErrs = handler.GetPatches(ctx, ar.Request)
 		resource = handler.AdmissionResource()
+		response.Warnings = append(response.Warnings, warnings...)
 
-		if handler.DisallowIncorrectObjects() && err != nil {
+		if handler.DisallowIncorrectObjects() && len(allErrs) > 0 {
 			// we don't let in problematic objects - late validation
-			status := metav1.Status{}
-			status.Status = "Failure"
-			status.Message = err.Error()
+			err := apierrors.NewInvalid(
+				schema.GroupKind{
+					Group: admittedGroupResource.Group,
+					Kind:  kind,
+				},
+				name,
+				allErrs,
+			)
+			status := err.ErrStatus
 			response.Result = &status
 			response.Allowed = false
 		}
@@ -165,9 +147,6 @@ func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.
 		metrics_admission.OnAdmittedPod(status == metrics_admission.Applied)
 	}
 
-	// Add deprecation warnings for VPA objects using deprecated modes
-	s.addDeprecationWarnings(ar.Request, &response)
-
 	return &response, status, resource
 }
 
@@ -179,18 +158,28 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 	defer executionTimer.ObserveTotal()
 	admissionLatency := metrics_admission.NewAdmissionLatency()
 
-	var body []byte
-	if r.Body != nil {
-		if data, err := io.ReadAll(r.Body); err == nil {
-			body = data
-		}
-	}
 	// verify the content type is accurate
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		klog.Errorf("contentType=%s, expect application/json", contentType)
 		admissionLatency.Observe(metrics_admission.Error, metrics_admission.Unknown)
 		return
+	}
+
+	var body []byte
+	if r.Body != nil {
+		if data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxAdmissionPayloadSize)); err == nil {
+			body = data
+		} else {
+			var maxBytesErr *http.MaxBytesError
+			if errors.As(err, &maxBytesErr) {
+				klog.ErrorS(err, "Admission request body exceeds size limit", "limit", maxAdmissionPayloadSize)
+				http.Error(w, "request payload too large", http.StatusRequestEntityTooLarge)
+				admissionLatency.Observe(metrics_admission.Error, metrics_admission.Unknown)
+				return
+			}
+			klog.ErrorS(err, "Failed to read admission request body")
+		}
 	}
 	executionTimer.ObserveStep("read_request")
 

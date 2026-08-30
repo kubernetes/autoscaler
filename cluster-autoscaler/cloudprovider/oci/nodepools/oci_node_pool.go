@@ -16,21 +16,19 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/client-go/kubernetes"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 )
 
-var (
-	// This mutex guarantees that multiple node pool actions aren't happening at the same time
-	// Note that the actual wait for nodes to come up or delete is asynchronous.
-	// This mutex is only around the api operations.
-	nodePoolDeleteMutex sync.Mutex
-)
+// This mutex guarantees that multiple node pool actions aren't happening at the same time
+// Note that the actual wait for nodes to come up or delete is asynchronous.
+// This mutex is only around the api operations.
+var nodePoolDeleteMutex sync.Mutex
 
 // NodePool implements the NodeGroup interface via an OCI Node Pool
 type NodePool interface {
@@ -124,6 +122,58 @@ func (np *nodePool) AtomicIncreaseSize(delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
+// deleteNodes performs the actual node deletion logic, converting nodes to OCI refs
+// and deleting them. It does not check min size constraints.
+func (np *nodePool) deleteNodes(nodes []*apiv1.Node) error {
+	refs := make([]ocicommon.OciRef, 0, len(nodes))
+	nodesWithRefs := make([]*apiv1.Node, 0, len(nodes))
+	nodesWithoutInstanceID := 0
+
+	// even though the nodes param is an array, in reality, nodes only contains a single node
+	// Each node is deleted in its own DeleteNodes call, and all the calls are in parallel
+	// we will still loop through just to future proof this function
+	for _, node := range nodes {
+		ociRef, err := ocicommon.NodeToOciRef(node)
+		if err != nil {
+			return err
+		}
+		if ociRef.InstanceID == "" {
+			if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeCreateError {
+				nodesWithoutInstanceID++
+				continue
+			}
+			return fmt.Errorf("node %s doesn't have an instance id so it can't be deleted", node.Name)
+		}
+		belongs, err := np.Belongs(node)
+		if err != nil {
+			return err
+		}
+		if !belongs {
+			return fmt.Errorf("%s belong to a different nodepool than %s", node.Name, np.Id())
+		}
+
+		refs = append(refs, ociRef)
+		nodesWithRefs = append(nodesWithRefs, node)
+	}
+
+	if len(refs) > 0 {
+		deleteInstancesErr := np.manager.DeleteInstances(np, refs)
+		if deleteInstancesErr == nil {
+			// this will add taints to all the nodes. For now, we have only a single node deleted in a given call, but the implementation might change in the future
+			np.manager.TaintToPreventFurtherSchedulingOnRestart(nodesWithRefs, np.kubeClient)
+		} else {
+			klog.Warning("Error deleting instances", deleteInstancesErr)
+			return deleteInstancesErr
+		}
+	}
+	if nodesWithoutInstanceID > 0 {
+		klog.Warningf("%d node(s) in node pool %s have no instance ID. Falling back to DecreaseTargetSize to clean up failed node creation.", nodesWithoutInstanceID, np.Id())
+		return np.DecreaseTargetSize(-nodesWithoutInstanceID)
+	}
+
+	return nil
+}
+
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
@@ -148,43 +198,22 @@ func (np *nodePool) DeleteNodes(nodes []*apiv1.Node) (err error) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
-	refs := make([]ocicommon.OciRef, 0, len(nodes))
-
-	// even though the nodes param is an array, in reality, nodes only contains a single node
-	// Each node is deleted in its own DeleteNodes call, and all the calls are in parallel
-	// we will still loop through just to future proof this function
-	for _, node := range nodes {
-		belongs, err := np.Belongs(node)
-		if err != nil {
-			return err
-		}
-		if !belongs {
-			return fmt.Errorf("%s belong to a different nodepool than %s", node.Name, np.Id())
-		}
-		ociRef, err := ocicommon.NodeToOciRef(node)
-		if err != nil {
-			return err
-		}
-
-		refs = append(refs, ociRef)
-	}
-
-	if len(refs) == 0 {
-		return nil
-	}
-	deleteInstancesErr := np.manager.DeleteInstances(np, refs)
-	if deleteInstancesErr == nil {
-		// this will add taints to all the nodes. For now, we have only a single node deleted in a given call, but the implementation might change in the future
-		np.manager.TaintToPreventFurtherSchedulingOnRestart(nodes, np.kubeClient)
-	} else {
-		klog.Warning("Error deleting instances", deleteInstancesErr)
-	}
-	return deleteInstancesErr
+	return np.deleteNodes(nodes)
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
 func (np *nodePool) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	return cloudprovider.ErrNotImplemented
+	// Unregistered nodes come in as the provider id as node name.
+
+	// although technically we only need the mutex around the api calls, we should wrap the mutex
+	// around when we mark the node to be deleted as well. That way we don't mark a bunch of nodes
+	// to be deleted, but have the scale down calls potentially happen seconds later.
+	nodePoolDeleteMutex.Lock()
+	defer nodePoolDeleteMutex.Unlock()
+
+	klog.Infof("ForceDeleteNodes called with %d nodes (ignoring min size constraint)", len(nodes))
+
+	return np.deleteNodes(nodes)
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function
@@ -222,7 +251,7 @@ func (np *nodePool) DecreaseTargetSize(delta int) error {
 	}
 	// We do not have an OCI API that allows us to delete a node with a compute instance. So we rely on
 	// the below approach to determine the number running instance in a nodepool from the compute API and
-	//update the size of the nodepool accordingly. We should move away from this approach once we have an API
+	// update the size of the nodepool accordingly. We should move away from this approach once we have an API
 	// to delete a specific node without a compute instance.
 	if !decreaseTargetCheckViaComputeBool {
 		for _, node := range nodes {
@@ -307,9 +336,9 @@ func (np *nodePool) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 	nodeInfo := framework.NewNodeInfo(
 		node, nil,
-		&framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(np.id)},
-		&framework.PodInfo{Pod: ocicommon.BuildFlannelPod()},
-		&framework.PodInfo{Pod: ocicommon.BuildProxymuxClientPod()},
+		framework.NewPodInfo(cloudprovider.BuildKubeProxy(np.id), nil),
+		framework.NewPodInfo(ocicommon.BuildFlannelPod(), nil),
+		framework.NewPodInfo(ocicommon.BuildProxymuxClientPod(), nil),
 	)
 	return nodeInfo, nil
 }

@@ -10,6 +10,9 @@
     - [Container Policy Parameters](#container-policy-parameters)
     - [Update Policy Parameters](#update-policy-parameters)
 - [Design Details](#design-details)
+  - [Configuration Level Considerations](#configuration-level-considerations)
+    - [Parameter Level Analysis](#parameter-level-analysis)
+    - [Parameter Precedence: Per-VPA vs Global Configuration](#parameter-precedence-per-vpa-vs-global-configuration)
   - [API Changes](#api-changes)
     - [Phase 1 (Current Proposal)](#phase-1-current-proposal)
     - [Future Extensions](#future-extensions)
@@ -27,7 +30,7 @@
 
 ## Summary
 
-Currently, VPA components (recommender, updater, admission controller) are configured through global flags. This makes it challenging to support different workloads with varying resource optimization needs within the same cluster. This proposal introduces the ability to specify configuration parameters at the individual VPA object level, allowing for workload-specific optimization strategies.
+Currently, VPA components (recommender, updater, admission controller) are configured through global flags. This makes it challenging to support different workloads with varying resource optimization needs within the same cluster. This proposal introduces the ability to specify configuration parameters at the individual VPA object level, allowing for workload-specific optimization strategies. The goal is not to introduce new configuration options but rather to make existing internal configurations accessible and customizable per VPA object.
 
 ## Motivation
 
@@ -48,7 +51,7 @@ Currently, supporting these different needs requires running multiple VPA compon
   - oomMinBumpUp
   - memoryAggregationInterval
   - memoryAggregationIntervalCount
-  - evictAfterOOMThreshold
+  - evictAfterOOMSeconds
 
 ### Non-Goals
 
@@ -64,15 +67,15 @@ The configuration will be split into two sections: container-specific recommenda
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
 metadata:
-  name: oom-test-vpa
+  name: simple-vpa
 spec:
   targetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: oom-test
+    name: my-app
   updatePolicy:
     updateMode: Auto
-    evictAfterOOMThreshold: "5m"
+    evictAfterOOMSeconds: 300
   resourcePolicy:
     containerPolicies:
     - containerName: "*"
@@ -85,19 +88,44 @@ spec:
 ### Parameter Descriptions
 
 #### Container Policy Parameters
-#### Container Policy Parameters
-* `oomBumpUpRatio` (Quantity):
-  - Multiplier applied to memory recommendations after OOM events
-  - Represented as a Quantity (e.g., "1.5")
-  - Must be greater than or equal to 1
-  - Setting to 1 effectively disables the OOM ratio-based increase
-  - Controls how aggressively memory is increased after container crashes
 
-* `oomMinBumpUp` (bytes): 
-  - Minimum absolute memory increase after OOM events
-  - Setting to 0 effectively disables the OOM minimum increase
-  - When both `oomBumpUpRatio` = 1 and `oomMinBumpUp` = 0, OOM-based memory increases are completely disabled
-  - Ensures meaningful increases even for small containers
+* `oomBumpUpRatio` and `oomMinBumpUp`:
+  These parameters work together to determine memory increases after OOM events.
+  The VPA selects the larger of:
+    - The absolute increase specified by `oomMinBumpUp`
+    - A relative increase calculated using `oomBumpUpRatio`
+    - If both are unset or set to their neutral values (`oomBumpUpRatio = 1`, `oomMinBumpUp = 0`), OOM-based increases are disabled.
+
+  This ensures:
+    - Small containers receive a guaranteed minimum bump (via `oomMinBumpUp`, e.g., +100MB).
+    - Larger containers receive proportional scaling (via `oomBumpUpRatio`, e.g., ×1.5).
+
+  Implementation logic:
+
+  ```golang
+    memoryNeeded := ResourceAmountMax(
+      memoryUsed + MemoryAmountFromBytes(GetAggregationsConfig().OOMMinBumpUp),
+      ScaleResource(memoryUsed, GetAggregationsConfig().OOMBumpUpRatio)
+    )
+  ```
+  Example: with oomBumpUpRatio: "1.5" and oomMinBumpUp: 104857600 (100MB):
+    - For a container using 50MB: max(50MB + 100MB, 50MB * 1.5) = 150MB
+    - For a container using 1GB: max(1GB + 100MB, 1GB * 1.5) = 1.5GB
+
+  Note: Using a single field approach (e.g., a unified `oomBumpUp` field) would not provide sufficient flexibility for users who need both a minimum absolute increase and a proportional ratio.
+  For example, if a user wants to ensure a minimum increase of 100MB while also applying a 1.5x ratio for larger containers, a single field cannot express this combined behavior. The current dual-field design allows users to specify both constraints independently, ensuring small containers get a guaranteed minimum bump while larger containers receive appropriate proportional scaling. This approach provides more precise control over memory recommendation adjustments after OOM events than a simplified single-field model could offer.
+
+
+  - `oomBumpUpRatio` (Quantity):
+    - Multiplier applied to memory recommendations after OOM events
+    - Represented as a Quantity (e.g., "1.5")
+    - Must be greater than or equal to 1
+    - Setting to 1 effectively disables the OOM ratio-based increase
+    - Controls how aggressively memory is increased after container crashes
+
+  - `oomMinBumpUp` (bytes):
+    - Minimum absolute memory increase after OOM events
+    - Setting to 0 effectively disables the OOM minimum increase
 
 * `memoryAggregationInterval` (duration):
   - Time window for aggregating memory usage data
@@ -109,13 +137,62 @@ spec:
   - Total window length = memoryAggregationInterval * memoryAggregationIntervalCount
 
 #### Update Policy Parameters
-* `evictAfterOOMThreshold` (duration):
-  - Time to wait after OOM before considering pod eviction
+* `evictAfterOOMSeconds` (int32):
+  - Time in seconds to wait after OOM before considering pod eviction
   - Helps prevent rapid eviction cycles while maintaining stability
 
 Each parameter can be configured independently, falling back to global defaults if not specified. Values should be chosen based on workload characteristics and stability requirements.
 
 ## Design Details
+
+### Configuration Level Considerations
+
+When designing the configuration parameters, we analyzed each parameter to determine the most appropriate configuration level:
+
+#### Parameter Level Analysis
+
+1. **OOM-Related Parameters (`oomBumpUpRatio`, `oomMinBumpUp`)**
+- **Recommended Level**: Container-level
+- **Rationale**:
+  - Different containers in the same pod may have different memory requirements and OOM patterns
+  - Memory recommendations in VPA are already handled at container level
+  - Consistent with how VPA handles other resource-related configurations
+  - While these parameters are container-level, VPA-wide configuration can still be achieved using the wildcard container name "*"
+
+2. **Memory Aggregation Parameters (`memoryAggregationInterval`, `memoryAggregationIntervalCount`)**
+- **Recommended Level**: Container-level
+- **Rationale**:
+  - Different containers may have different memory usage patterns
+  - Some containers might need faster reaction times to memory changes
+  - Consistent with existing VPA container-level resource policies
+  - While `memoryAggregationInterval` and `memoryAggregationIntervalCount` are container-level, VPA-wide configuration can still be achieved using the wildcard container name "*"
+
+3. **Eviction Parameters (`evictAfterOOMSeconds`)**
+- **Recommended Level**: VPA-level
+- **Rationale**:
+  - Eviction decisions affect the entire pod
+  - Pod-level operation that shouldn't vary by container
+  - Simpler operational model for pod lifecycle management
+  - Consistent with how Kubernetes handles pod evictions
+
+#### Parameter Precedence: Per-VPA vs Global Configuration
+
+The per-VPA configuration parameters introduced in this proposal are designed to **override** the corresponding global flags when specified in a VPA object. If a parameter is not defined at the VPA level, the VPA components will fall back to using the value set via global flags.
+
+This approach ensures backward compatibility and allows users to adopt per-VPA configuration incrementally, without requiring changes to existing setups. Users can continue relying on global defaults while gradually introducing workload-specific tuning where needed.
+
+For example:
+- If `oomBumpUpRatio` is set in a VPA's `containerPolicy`, that value will be used for recommendations for that container.
+- If it is omitted, the global flag value (e.g., from the recommender component) will apply.
+
+This override behavior applies to all parameters introduced in this AEP:
+- `oomBumpUpRatio`
+- `oomMinBumpUp`
+- `memoryAggregationInterval`
+- `memoryAggregationIntervalCount`
+- `evictAfterOOMSeconds`
+
+Validation and error handling will ensure that invalid or conflicting values are caught early, either through CEL rules or admission controller logic.
 
 ### API Changes
 
@@ -128,7 +205,7 @@ Extend `ContainerResourcePolicy` with:
 * `memoryAggregationIntervalCount`
 
 Extend `PodUpdatePolicy` with:
-* `evictAfterOOMThreshold`
+* `evictAfterOOMSeconds`
 
 #### Future Extensions
 
@@ -143,7 +220,7 @@ This AEP will be updated as additional parameters are identified for per-object 
 #### How can this feature be enabled / disabled in a live cluster?
 
 - Feature gate name: `PerVPAConfig`
-- Default: Off (Alpha) 
+- Default: Off (Alpha)
 - Components depending on the feature gate:
   - admission-controller
   - recommender
@@ -177,8 +254,8 @@ The `PerVPAConfig` feature requires VPA version 1.5.0 or higher. The feature is 
 Initial validation rules (CEL):
 * `oomMinBumpUp` >= 0
 * `memoryAggregationInterval` > 0
-* `evictAfterOOMThreshold` > 0
 * `memoryAggregationIntervalCount` > 0
+* `evictAfterOOMSeconds` > 0
 
 Validation via Admission Controller:
 Some components cann't be validated using Common Expression Language (CEL). This validation is performed within the admission controller.
@@ -201,6 +278,7 @@ E2E tests will be included to verify:
 ## Implementation History
 
 - 2025-04-12: Initial proposal
+- 2025-09-06: Specify `oomBumpUpRatio` and `oomMinBumpUp` as container-level parameters
 - Future: Additional parameters will be added based on user feedback and requirements
 
 ## Future Work

@@ -17,7 +17,7 @@ limitations under the License.
 package test
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -27,7 +27,7 @@ import (
 type RecommendationBuilder interface {
 	WithContainer(containerName string) RecommendationBuilder
 	WithTarget(cpu, memory string) RecommendationBuilder
-	WithTargetResource(resource apiv1.ResourceName, value string) RecommendationBuilder
+	WithTargetResource(resource corev1.ResourceName, value string) RecommendationBuilder
 	WithLowerBound(cpu, memory string) RecommendationBuilder
 	WithUpperBound(cpu, memory string) RecommendationBuilder
 	Get() *vpa_types.RecommendedPodResources
@@ -43,9 +43,9 @@ func Recommendation() RecommendationBuilder {
 
 type recommendationBuilder struct {
 	containerName string
-	target        apiv1.ResourceList
-	lowerBound    apiv1.ResourceList
-	upperBound    apiv1.ResourceList
+	target        corev1.ResourceList
+	lowerBound    corev1.ResourceList
+	upperBound    corev1.ResourceList
 }
 
 func (b *recommendationBuilder) WithContainer(containerName string) RecommendationBuilder {
@@ -60,10 +60,10 @@ func (b *recommendationBuilder) WithTarget(cpu, memory string) RecommendationBui
 	return &c
 }
 
-func (b *recommendationBuilder) WithTargetResource(resource apiv1.ResourceName, value string) RecommendationBuilder {
+func (b *recommendationBuilder) WithTargetResource(resource corev1.ResourceName, value string) RecommendationBuilder {
 	c := *b
 	if c.target == nil {
-		c.target = apiv1.ResourceList{}
+		c.target = corev1.ResourceList{}
 	}
 	addResource(c.target, resource, value)
 	return &c
@@ -108,10 +108,10 @@ func (b *recommendationBuilder) GetContainerResources() vpa_types.RecommendedCon
 }
 
 // addResource add a resource to the given resource list
-func addResource(rl apiv1.ResourceList, resourceName apiv1.ResourceName, value string) apiv1.ResourceList {
+func addResource(rl corev1.ResourceList, resourceName corev1.ResourceName, value string) corev1.ResourceList {
 	val, _ := resource.ParseQuantity(value)
 	if rl == nil {
-		rl = apiv1.ResourceList{}
+		rl = corev1.ResourceList{}
 	}
 	rl[resourceName] = val
 	return rl

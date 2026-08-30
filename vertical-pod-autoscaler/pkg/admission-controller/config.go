@@ -28,6 +28,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
 	"k8s.io/klog/v2"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/config"
 )
 
 const (
@@ -36,7 +38,7 @@ const (
 )
 
 // MutatingWebhookConfigurationInterface
-func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struct{}, mutatingWebhookClient typedadmregv1.MutatingWebhookConfigurationInterface) *tls.Config {
+func configTLS(cfg config.CertsConfig, minTlsVersion, ciphers string, stop <-chan struct{}, mutatingWebhookClient typedadmregv1.MutatingWebhookConfigurationInterface) *tls.Config {
 	var tlsVersion uint16
 	var ciphersuites []uint16
 	reverseCipherMap := make(map[string]uint16)
@@ -44,7 +46,7 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 	for _, c := range tls.CipherSuites() {
 		reverseCipherMap[c.Name] = c.ID
 	}
-	for _, c := range strings.Split(strings.ReplaceAll(ciphers, ",", ":"), ":") {
+	for c := range strings.SplitSeq(strings.ReplaceAll(ciphers, ",", ":"), ":") {
 		cipher, ok := reverseCipherMap[c]
 		if ok {
 			ciphersuites = append(ciphersuites, cipher)
@@ -55,9 +57,7 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 	}
 
 	switch minTlsVersion {
-	case "":
-		fallthrough
-	case "tls1_2":
+	case "", "tls1_2":
 		tlsVersion = tls.VersionTLS12
 	case "tls1_3":
 		tlsVersion = tls.VersionTLS13
@@ -69,11 +69,11 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 		MinVersion:   tlsVersion,
 		CipherSuites: ciphersuites,
 	}
-	if *cfg.reload {
+	if cfg.Reload {
 		cr := certReloader{
-			tlsCertPath:           *cfg.tlsCertFile,
-			tlsKeyPath:            *cfg.tlsPrivateKey,
-			clientCaPath:          *cfg.clientCaFile,
+			tlsCertPath:           cfg.TlsCertFile,
+			tlsKeyPath:            cfg.TlsPrivateKey,
+			clientCaPath:          cfg.ClientCaFile,
 			mutatingWebhookClient: mutatingWebhookClient,
 		}
 		if err := cr.load(); err != nil {
@@ -84,7 +84,7 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 		}
 		config.GetCertificate = cr.getCertificate
 	} else {
-		cert, err := tls.LoadX509KeyPair(*cfg.tlsCertFile, *cfg.tlsPrivateKey)
+		cert, err := tls.LoadX509KeyPair(cfg.TlsCertFile, cfg.TlsPrivateKey)
 		if err != nil {
 			klog.Fatal(err)
 		}
@@ -104,14 +104,14 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 			klog.Fatal(err2)
 		}
 	}
-	RegisterClientConfig := admissionregistration.WebhookClientConfig{}
+	registerClientConfig := admissionregistration.WebhookClientConfig{}
 	if !registerByURL {
-		RegisterClientConfig.Service = &admissionregistration.ServiceReference{
+		registerClientConfig.Service = &admissionregistration.ServiceReference{
 			Namespace: namespace,
 			Name:      serviceName,
 		}
 	} else {
-		RegisterClientConfig.URL = &url
+		registerClientConfig.URL = &url
 	}
 	sideEffects := admissionregistration.SideEffectClassNone
 
@@ -122,7 +122,7 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 		failurePolicy = admissionregistration.Ignore
 	}
 
-	RegisterClientConfig.CABundle = caCert
+	registerClientConfig.CABundle = caCert
 
 	var namespaceSelector metav1.LabelSelector
 	if len(ignoredNamespaces) > 0 {
@@ -179,7 +179,7 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 					},
 				},
 				FailurePolicy:     &failurePolicy,
-				ClientConfig:      RegisterClientConfig,
+				ClientConfig:      registerClientConfig,
 				SideEffects:       &sideEffects,
 				TimeoutSeconds:    &timeoutSeconds,
 				NamespaceSelector: &namespaceSelector,
@@ -202,8 +202,8 @@ func convertLabelsToMap(labels string) (map[string]string, error) {
 		return m, nil
 	}
 	labels = strings.Trim(labels, "\"")
-	s := strings.Split(labels, ",")
-	for _, tag := range s {
+	s := strings.SplitSeq(labels, ",")
+	for tag := range s {
 		kv := strings.SplitN(tag, ":", 2)
 		if len(kv) != 2 {
 			return map[string]string{}, fmt.Errorf("labels '%s' are invalid, the format should be: 'key1:value1,key2:value2'", labels)

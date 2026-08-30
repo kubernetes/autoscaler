@@ -28,10 +28,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	provisioningv1 "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/rancher/provisioning.cattle.io/v1"
 	fakedynamic "k8s.io/client-go/dynamic/fake"
 	"k8s.io/utils/pointer"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 const (
@@ -396,19 +396,19 @@ func TestTemplateNodeInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if nodeInfo.ToScheduler().Allocatable.MilliCPU != ng.resources.Cpu().MilliValue() {
+	if nodeInfo.GetAllocatable().GetMilliCPU() != ng.resources.Cpu().MilliValue() {
 		t.Fatalf("expected nodeInfo to have %v MilliCPU, got %v",
-			ng.resources.Cpu().MilliValue(), nodeInfo.ToScheduler().Allocatable.MilliCPU)
+			ng.resources.Cpu().MilliValue(), nodeInfo.GetAllocatable().GetMilliCPU())
 	}
 
-	if nodeInfo.ToScheduler().Allocatable.Memory != ng.resources.Memory().Value() {
+	if nodeInfo.GetAllocatable().GetMemory() != ng.resources.Memory().Value() {
 		t.Fatalf("expected nodeInfo to have %v Memory, got %v",
-			ng.resources.Memory().Value(), nodeInfo.ToScheduler().Allocatable.Memory)
+			ng.resources.Memory().Value(), nodeInfo.GetAllocatable().GetMemory())
 	}
 
-	if nodeInfo.ToScheduler().Allocatable.EphemeralStorage != ng.resources.StorageEphemeral().Value() {
+	if nodeInfo.GetAllocatable().GetEphemeralStorage() != ng.resources.StorageEphemeral().Value() {
 		t.Fatalf("expected nodeInfo to have %v ephemeral storage, got %v",
-			ng.resources.StorageEphemeral().Value(), nodeInfo.ToScheduler().Allocatable.EphemeralStorage)
+			ng.resources.StorageEphemeral().Value(), nodeInfo.GetAllocatable().GetEphemeralStorage())
 	}
 }
 

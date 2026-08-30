@@ -284,9 +284,14 @@ rules:
 
 #### Pre-defined labels and taints on nodes scaled from zero
 
-To provide labels or taint information for scale from zero, the optional
-capacity annotations may be supplied as a comma separated list, as
-demonstrated in the example below:
+Taints for scale from zero can be configured in two ways, listed below in
+order of precedence (highest first):
+
+**1. Capacity annotation (highest priority)**
+
+The `capacity.cluster-autoscaler.kubernetes.io/taints` annotation accepts a
+comma-separated list of taints and always takes precedence over taints defined
+in the scalable resource spec.
 
 ```yaml
 apiVersion: cluster.x-k8s.io/v1alpha4
@@ -301,11 +306,72 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/taints: "key1=value1:NoSchedule,key2=value2:NoExecute"
 ```
 
-> Note: The labels supplied through the capacity annotation will be combined
-> with the labels to be propagated from the scalable Cluster API resource.
-> The annotation does not override the labels in the scalable resource.
-> Please see the [Cluster API Book chapter on Metadata propagation](https://cluster-api.sigs.k8s.io/reference/api/metadata-propagation)
+**2. Scalable resource spec (requires CAPI v1.12+ with `MachineTaintPropagation` feature gate enabled)**
+
+When the `MachineTaintPropagation` feature gate is enabled in Cluster API,
+taints defined in `spec.template.spec.taints` of a MachineSet, MachineDeployment,
+or MachinePool are read directly by the cluster autoscaler. If an annotation
+taint has the same key and effect as a spec taint, the annotation value takes
+precedence.
+
+```yaml
+apiVersion: cluster.x-k8s.io/v1beta2
+kind: MachineDeployment
+metadata:
+  annotations:
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "5"
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "0"
+    capacity.cluster-autoscaler.kubernetes.io/memory: "128G"
+    capacity.cluster-autoscaler.kubernetes.io/cpu: "16"
+    # Override the value of the "dedicated" taint defined in spec below.
+    capacity.cluster-autoscaler.kubernetes.io/taints: "dedicated=gpu-override:NoSchedule"
+spec:
+  template:
+    spec:
+      taints:
+        - key: dedicated
+          value: gpu
+          effect: NoSchedule
+          propagation: Always
+        - key: node-setup
+          value: "true"
+          effect: NoSchedule
+          propagation: Always
+```
+
+> Note: For **labels**, the capacity annotation values are merged with the labels
+> propagated from the scalable Cluster API resource. If the same label key is
+> defined in both, the annotation value takes precedence. Please see the
+> [Cluster API Book chapter on Metadata propagation](https://cluster-api.sigs.k8s.io/reference/api/metadata-propagation)
 > for more information.
+>
+> For **taints**, annotation taints are merged with spec taints. If the same
+> key and effect is defined in both, the annotation value takes precedence.
+> Spec taints without a matching annotation taint are preserved.
+
+
+#### Pre-defined csi driver information on nodes scaled from zero
+
+To provide CSI driver information for scale from zero, the optional
+capacity annotation may be supplied as a comma separated list of driver name
+and volume limit key/value pairs, as demonstrated in the example below:
+
+```yaml
+apiVersion: cluster.x-k8s.io/v1alpha4
+kind: MachineDeployment
+metadata:
+  annotations:
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-max-size: "5"
+    cluster.x-k8s.io/cluster-api-autoscaler-node-group-min-size: "0"
+    capacity.cluster-autoscaler.kubernetes.io/memory: "128G"
+    capacity.cluster-autoscaler.kubernetes.io/cpu: "16"
+    capacity.cluster-autoscaler.kubernetes.io/csi-driver: "ebs.csi.aws.com=25,efs.csi.aws.com=16"
+```
+
+> Note: The CSI driver information supplied through the capacity annotation
+> specifies which CSI drivers will be installed on nodes scaled from zero, along
+> with their respective volume limits. The format is `driver-name=volume-limit`
+> with multiple drivers separated by commas.
 
 #### Per-NodeGroup autoscaling options
 
@@ -326,16 +392,18 @@ metadata:
     cluster.x-k8s.io/autoscaling-options-scaledownunreadytime: "20m0s"
     # overrides --max-node-provision-time global value for that specific MachineDeployment
     cluster.x-k8s.io/autoscaling-options-maxnodeprovisiontime: "20m0s"
+    # overrides --max-node-startup-time global value for that specific MachineDeployment
+    cluster.x-k8s.io/autoscaling-options-maxnodestartuptime: "20m0s"
 ```
 
-#### CPU Architecture awareness for single-arch clusters 
+#### CPU Architecture awareness for single-arch clusters
 
-Users of single-arch non-amd64 clusters who are using scale from zero 
+Users of single-arch non-amd64 clusters who are using scale from zero
 support should also set the `CAPI_SCALE_ZERO_DEFAULT_ARCH` environment variable
 to set the architecture of the nodes they want to default the node group templates to.
-The autoscaler will default to `amd64` if it is not set, and the node 
-group templates may not match the nodes' architecture, specifically when 
-the workload triggering the scale-up uses a node affinity predicate checking 
+The autoscaler will default to `amd64` if it is not set, and the node
+group templates may not match the nodes' architecture, specifically when
+the workload triggering the scale-up uses a node affinity predicate checking
 for the node's architecture.
 
 ## Specifying a Custom Resource Group

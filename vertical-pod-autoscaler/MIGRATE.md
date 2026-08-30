@@ -62,9 +62,101 @@ Note that VerticalPodAutoscaler does not require full implementation
 of scale subresource - it will not use it to modify the replica count.
 The only thing retrieved is a label selector matching pods grouped by this controller.
 
-See complete examples:
-* [v1beta2](./examples/hamster.yaml)
-* [v1beta1](./examples/hamster-deprecated.yaml)
+### Complete Deployment and VPA Examples
+
+#### [RECOMMENDED] Modern v1 Configuration
+
+This complete configuration creates a deployment with two pods alongside a modern `v1` Vertical Pod Autoscaler using `targetRef`.
+
+```yaml
+apiVersion: "autoscaling.k8s.io/v1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: hamster-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: hamster
+  resourcePolicy:
+    containerPolicies:
+      - containerName: '*'
+        minAllowed:
+          cpu: 100m
+          memory: 50Mi
+        maxAllowed:
+          cpu: 1
+          memory: 500Mi
+        controlledResources: ["cpu", "memory"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hamster
+spec:
+  selector:
+    matchLabels:
+      app: hamster
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: hamster
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # nobody
+      containers:
+        - name: hamster
+          image: registry.k8s.io/ubuntu-slim:0.14
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - "while true; do timeout 0.5s yes >/dev/null; sleep 0.5s; done"
+```
+
+#### [DEPRECATED] Legacy v1beta1 Configuration
+
+```yaml
+apiVersion: "autoscaling.k8s.io/v1beta1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: hamster-vpa-deprecated
+spec:
+  selector:
+    matchLabels:
+      app: hamster
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hamster
+spec:
+  selector:
+    matchLabels:
+      app: hamster
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: hamster
+    spec:
+      containers:
+        - name: hamster
+          image: registry.k8s.io/ubuntu-slim:0.14
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - "while true; do timeout 0.5s yes >/dev/null; sleep 0.5s; done"
+```
 
 You can perform a 0.3 to 0.4 upgrade without losing your VPA objects.
 The recommended way is as follows:

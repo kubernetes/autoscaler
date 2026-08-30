@@ -26,15 +26,15 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	brightbox "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/gobrightbox"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/gobrightbox/status"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/k8ssdk"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
 	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 const (
@@ -274,7 +274,7 @@ func (ng *brightboxNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 			Conditions:  cloudprovider.BuildReadyConditions(),
 		},
 	}
-	nodeInfo := framework.NewNodeInfo(&node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.Id())})
+	nodeInfo := framework.NewNodeInfo(&node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.Id()), nil))
 	return nodeInfo, nil
 }
 

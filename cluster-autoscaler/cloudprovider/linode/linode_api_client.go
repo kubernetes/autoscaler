@@ -23,12 +23,10 @@ import (
 
 	"golang.org/x/oauth2"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode/linodego"
-	"k8s.io/autoscaler/cluster-autoscaler/version"
+	"sigs.k8s.io/cluster-autoscaler/pkg/version"
 )
 
-const (
-	userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
-)
+var userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 
 // linodeAPIClient is the interface used to call linode API
 type linodeAPIClient interface {

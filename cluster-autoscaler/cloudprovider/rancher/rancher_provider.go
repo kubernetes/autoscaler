@@ -27,17 +27,29 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	autoscalererrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	autoscalererrors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 
 	provisioningv1 "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/rancher/provisioning.cattle.io/v1"
 	klog "k8s.io/klog/v2"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "rancher"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildRancher(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 const (
 	// providerName is the cloud provider name for rancher
@@ -64,7 +76,7 @@ type RancherCloudProvider struct {
 }
 
 // BuildRancher builds rancher cloud provider.
-func BuildRancher(opts config.AutoscalingOptions, _ cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildRancher(opts *coreoptions.AutoscalerOptions, _ cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	provider, err := newRancherCloudProvider(opts.CloudConfig, rl)
 	if err != nil {
 		klog.Fatalf("failed to create rancher cloud provider: %v", err)

@@ -30,21 +30,35 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 	"sigs.k8s.io/yaml"
 )
 
 const (
 	defaultGRPCTimeout = 5 * time.Second
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "externalgrpc"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildExternalGrpc(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 // externalGrpcCloudProvider implements CloudProvider interface.
 type externalGrpcCloudProvider struct {
@@ -61,7 +75,7 @@ type externalGrpcCloudProvider struct {
 
 // Name returns name of the cloud provider.
 func (e *externalGrpcCloudProvider) Name() string {
-	return cloudprovider.ExternalGrpcProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
@@ -111,6 +125,9 @@ func (e *externalGrpcCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpro
 	// lookup cache
 	if ng, ok := e.nodeGroupForNodeCache[nodeID]; ok {
 		klog.V(5).Infof("Returning cached information for NodeGroupForNode for node %v - %v", node.Name, node.Spec.ProviderID)
+		if ng == nil {
+			return nil, nil
+		}
 		return ng, nil
 	}
 	// perform grpc call
@@ -156,12 +173,11 @@ func (m *pricingModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime 
 	ctx, cancel := context.WithTimeout(context.Background(), m.grpcTimeout)
 	defer cancel()
 	klog.V(5).Infof("Performing gRPC call PricingNodePrice for node %v", node.Name)
-	start := metav1.NewTime(startTime)
-	end := metav1.NewTime(endTime)
 	res, err := m.client.PricingNodePrice(ctx, &protos.PricingNodePriceRequest{
-		Node:      externalGrpcNode(node),
-		StartTime: &start,
-		EndTime:   &end,
+		Node: externalGrpcNode(node),
+
+		StartTimestamp: timestamppb.New(startTime),
+		EndTimestamp:   timestamppb.New(endTime),
 	})
 	if err != nil {
 		st, ok := status.FromError(err)
@@ -180,12 +196,16 @@ func (m *pricingModel) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime tim
 	ctx, cancel := context.WithTimeout(context.Background(), m.grpcTimeout)
 	defer cancel()
 	klog.V(5).Infof("Performing gRPC call PricingPodPrice for pod %v", pod.Name)
-	start := metav1.NewTime(startTime)
-	end := metav1.NewTime(endTime)
+
+	podBytes, err := pod.Marshal()
+	if err != nil {
+		return 0, err
+	}
+
 	res, err := m.client.PricingPodPrice(ctx, &protos.PricingPodPriceRequest{
-		Pod:       pod,
-		StartTime: &start,
-		EndTime:   &end,
+		PodBytes:       podBytes,
+		StartTimestamp: timestamppb.New(startTime),
+		EndTimestamp:   timestamppb.New(endTime),
 	})
 	if err != nil {
 		st, ok := status.FromError(err)
@@ -318,7 +338,7 @@ func (e *externalGrpcCloudProvider) Refresh() error {
 
 // BuildExternalGrpc builds the externalgrpc cloud provider.
 func BuildExternalGrpc(
-	opts config.AutoscalingOptions,
+	opts *coreoptions.AutoscalerOptions,
 	do cloudprovider.NodeGroupDiscoveryOptions,
 	rl *cloudprovider.ResourceLimiter,
 ) cloudprovider.CloudProvider {

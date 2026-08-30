@@ -8,12 +8,17 @@ import (
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
-	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	caerrors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
+	"strings"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "oci"
 
 // OciCloudProvider creates a cloud provider object that is compatible with node pools
 type OciCloudProvider struct {
@@ -31,7 +36,7 @@ func NewOciCloudProvider(manager NodePoolManager, rl *cloudprovider.ResourceLimi
 
 // Name returns name of the cloud provider.
 func (ocp *OciCloudProvider) Name() string {
-	return cloudprovider.OracleCloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
@@ -64,7 +69,13 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 	if errors.Cause(err) == errInstanceNodePoolNotFound {
 		return nil, nil
 	}
-	return ng, err
+	if err != nil {
+		return nil, err
+	}
+	if ng == nil {
+		return nil, nil
+	}
+	return ng, nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
@@ -85,6 +96,10 @@ func (ocp *OciCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	np, err := ocp.manager.GetNodePoolForInstance(instance)
 	if err != nil {
 		return true, err
+	}
+	// Properly handle virtual nodes and missing node pool IDs to prevent crashes
+	if np == nil || np.Id() == "" || strings.Contains(instance.InstanceID, npconsts.OciVirtualNodeResourceIdent) {
+		return false, cloudprovider.ErrNotImplemented
 	}
 	nodes, err := ocp.manager.GetNodePoolNodes(np)
 	if err != nil {

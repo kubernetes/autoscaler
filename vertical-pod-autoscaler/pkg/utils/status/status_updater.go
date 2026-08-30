@@ -63,7 +63,7 @@ func (su *Updater) Run(stopCh <-chan struct{}) {
 }
 
 func (su *Updater) updateStatus() {
-	// The lease renewal has timeout of the given update interval (10s).
+	// The lease renewal has timeout of the given update interval.
 	// If the lease cannot be renewed in the allotted time (for example due to client-side throttling),
 	// the vpa-updater will consider that vpa-admission-controller as unhealthy and won't evict Pods in endless loop.
 	ctx, cancel := context.WithTimeout(context.Background(), su.updateInterval)

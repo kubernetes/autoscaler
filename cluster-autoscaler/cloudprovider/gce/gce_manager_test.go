@@ -23,10 +23,10 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -253,7 +253,7 @@ const listInstanceGroupManagerResponsePartTemplate = `
      }
     }
    ],
-   "instanceGroup": "https://www.googleapis.com/compute/v1/projects/lukaszos-gke-dev2/zones/%v/instanceGroups/%v",
+   "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project1/zones/%v/instanceGroups/%v",
    "baseInstanceName": "%s",
    "fingerprint": "ASJwTpesjDI=",
    "currentActions": {
@@ -271,7 +271,7 @@ const listInstanceGroupManagerResponsePartTemplate = `
     "isStable": true
    },
    "targetSize": %v,
-   "selfLink": "https://www.googleapis.com/compute/v1/projects/lukaszos-gke-dev2/zones/us-west1-b/instanceGroupManagers/gke-blah-default-pool-67b773a0-grp",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/instanceGroupManagers/gke-blah-default-pool-67b773a0-grp",
    "updatePolicy": {
     "type": "OPPORTUNISTIC",
     "minimalAction": "REPLACE",
@@ -335,6 +335,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		instances:               make(map[GceRef][]GceInstance),
 		instancesUpdateTime:     make(map[GceRef]time.Time),
 		instancesToMig:          make(map[GceRef]GceRef),
+		migIsStableCache:        make(map[GceRef]bool),
 		instancesFromUnknownMig: make(map[GceRef]bool),
 		autoscalingOptionsCache: map[GceRef]map[string]string{},
 		machinesCache: map[MachineTypeKey]MachineType{
@@ -354,7 +355,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 	manager := &gceManagerImpl{
 		cache:                  cache,
 		migLister:              migLister,
-		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1, 0*time.Second, false),
+		migInfoProvider:        NewCachingMigInfoProvider(cache, migLister, gceService, projectId, 1, 0*time.Second, false, false),
 		GceService:             gceService,
 		projectId:              projectId,
 		regional:               regional,
@@ -599,16 +600,8 @@ func TestGetAndSetMigSize(t *testing.T) {
 	// register another pool: extraPool2; pool uses mig in different zone
 	extraPool2Mig := setupTestExtraPool2(g, true)
 
-	// query for size of resized extraPool2Mig; execting API call refreshing target sizes
-	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers").Return(
-		buildListInstanceGroupManagersResponse(
-			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
-			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 8),
-		)).Once()
-	server.On("handle", "/projects/project1/zones/us-central1-c/instanceGroupManagers").Return(
-		buildListInstanceGroupManagersResponse(
-			buildListInstanceGroupManagersResponsePart(extraPool2MigName, zoneC, 9)),
-	).Once()
+	// query for size of resized extraPool2Mig; execting API call refreshing target size for this MIG
+	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-c/instanceGroupManagers/%s", extraPool2MigName)).Return(buildInstanceGroupManagerResponse(zoneC, extraPool2MigName, 9)).Once()
 
 	extraPool2MigSize, err := g.GetMigSize(extraPool2Mig)
 	assert.NoError(t, err)
@@ -665,14 +658,10 @@ func TestGetMigSizeListCallFails(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(7), defaultPoolMigSize)
 
-	// Querying another mig will yet again try to list all migs
-	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers").Return(
-		buildListInstanceGroupManagersResponse(
-			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
-			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 8),
-		)).Once()
+	// Querying another mig will execute a Get for this mig
+	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%s", extraPoolMigName)).Return(buildInstanceGroupManagerResponse(zoneB, extraPoolMigName, 8)).Once()
 
-	// getting size for defaultPoolMig should trigger listing all the InstanceGroupManagers
+	// getting size for extraPoolMig should trigger get call for this MIG
 	extraPoolMigSize, err := g.GetMigSize(extraPoolMig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(8), extraPoolMigSize)
@@ -686,13 +675,15 @@ func TestGetMigForInstance(t *testing.T) {
 
 	setupTestDefaultPool(g, false)
 	g.cache.InvalidateAllMigBasenames()
+	g.cache.InvalidateAllInstancesToMig()
+	g.cache.InvalidateAllMigInstances()
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers").Return(
 		buildListInstanceGroupManagersResponse(
 			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
 			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 8),
 		)).Once()
-	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Twice()
+	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
 	gceRef1 := GceRef{
 		Project: projectId,
 		Zone:    zoneB,
@@ -1515,6 +1506,46 @@ func TestAppendInstances(t *testing.T) {
 	err := g.CreateInstances(defaultPoolMig, 2)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestCreateInstancesWithMultipleRequests(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+	g := newTestGceManager(t, server.URL, false)
+	mig := setupTestDefaultPool(g, true)
+	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildListInstanceGroupManagersResponse(
+		buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 3),
+	)).Once()
+
+	tests := []struct {
+		delta        int
+		wantRequests int
+	}{
+		{
+			delta:        100,
+			wantRequests: 1,
+		},
+		{
+			delta:        1000,
+			wantRequests: 1,
+		},
+		{
+			delta:        1001,
+			wantRequests: 2,
+		},
+		{
+			delta:        3000,
+			wantRequests: 3,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("delta=%v", tt.delta), func(t *testing.T) {
+			server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%v/createInstances", mig.gceRef.Name)).Return(createInstancesResponse).Times(tt.wantRequests)
+			server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32/wait").Return(createInstancesOperationResponse).Times(tt.wantRequests)
+			err := g.CreateInstances(mig, int64(tt.delta))
+			assert.NoError(t, err)
+		})
+	}
 }
 
 func TestGetMigOptions(t *testing.T) {

@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,16 +26,12 @@ import (
 
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure"
 	"k8s.io/klog/v2"
-	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
+	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
-	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
@@ -52,7 +49,7 @@ const (
 // Contains both general Azure cloud provider configuration (i.e., in azure.json) and CAS configurations/options specifically for Azure provider.
 type Config struct {
 	// Azure cloud provider configuration, which is generally shared with other Azure components.
-	providerazure.Config `json:",inline" yaml:",inline"`
+	providerazureconfig.Config `json:",inline" yaml:",inline"`
 
 	// Legacy fields, which are only here for backward compatibility. To be deprecated.
 	legacyConfig `json:",inline" yaml:",inline"`
@@ -64,6 +61,15 @@ type Config struct {
 	// ARMBaseURLForAPClient is the URL to use for operations for the VMs pool.
 	// It can override the default public ARM endpoint for VMs pool scale operations.
 	ARMBaseURLForAPClient string `json:"armBaseURLForAPClient" yaml:"armBaseURLForAPClient"`
+
+	// Hosted (on-behalf-of) system pool configuration for automatic cluster.
+	// HostedSubscriptionID is the subscription ID of the hosted resources under AKS internal tenant.
+	HostedSubscriptionID string `json:"hostedSubscriptionID" yaml:"hostedSubscriptionID"`
+	// HostedResourceGroup is the resource group of the hosted resources under AKS internal tenant.
+	HostedResourceGroup string `json:"hostedResourceGroup" yaml:"hostedResourceGroup"`
+	// HostedResourceProxyURL is the URL to use for retrieving hosted resources under AKS internal tenant.
+	// It can override the default public ARM endpoint for operations like VM/SKU GET.
+	HostedResourceProxyURL string `json:"hostedResourceProxyURL" yaml:"hostedResourceProxyURL"`
 
 	// AuthMethod determines how to authorize requests for the Azure
 	// cloud. Valid options are "principal" (= the traditional
@@ -106,6 +112,11 @@ type Config struct {
 
 	// EnableLabelPredictionsOnTemplate defines whether to enable label predictions on the template when scaling from zero
 	EnableLabelPredictionsOnTemplate bool `json:"enableLabelPredictionsOnTemplate,omitempty" yaml:"enableLabelPredictionsOnTemplate,omitempty"`
+
+	// EnableVMSSEtag sends the cached VMSS ETag as If-Match on capacity-changing
+	// VMSS PUTs so concurrent modifications are rejected with 412 instead of overwritten.
+	// Disabled by default; set to true to opt in.
+	EnableVMSSEtag bool `json:"enableVMSSEtag,omitempty" yaml:"enableVMSSEtag,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -137,6 +148,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	cfg.MaxDeploymentsCount = int64(defaultMaxDeploymentsCount)
 	cfg.StrictCacheUpdates = false
 	cfg.EnableLabelPredictionsOnTemplate = true
+	cfg.EnableVMSSEtag = false
 
 	// Config file overrides defaults
 	if configReader != nil {
@@ -223,6 +235,15 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	if _, err = assignFromEnvIfExists(&cfg.SubscriptionID, "ARM_SUBSCRIPTION_ID"); err != nil {
 		return nil, err
 	}
+	if _, err = assignFromEnvIfExists(&cfg.HostedResourceProxyURL, "HOSTED_RESOURCE_PROXY_URL"); err != nil {
+		return nil, err
+	}
+	if _, err = assignFromEnvIfExists(&cfg.HostedSubscriptionID, "HOSTED_SUBSCRIPTION_ID"); err != nil {
+		return nil, err
+	}
+	if _, err = assignFromEnvIfExists(&cfg.HostedResourceGroup, "HOSTED_RESOURCE_GROUP"); err != nil {
+		return nil, err
+	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.UseManagedIdentityExtension, "ARM_USE_MANAGED_IDENTITY_EXTENSION"); err != nil {
 		return nil, err
 	}
@@ -266,6 +287,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		return nil, err
 	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableVMsAgentPool, "AZURE_ENABLE_VMS_AGENT_POOLS"); err != nil {
+		return nil, err
+	}
+	if _, err = assignBoolFromEnvIfExists(&cfg.EnableVMSSEtag, "AZURE_ENABLE_VMSS_ETAG"); err != nil {
 		return nil, err
 	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableDynamicInstanceList, "AZURE_ENABLE_DYNAMIC_INSTANCE_LIST"); err != nil {
@@ -329,7 +353,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			return nil, err
 		}
 
-		metadata, err := metadataService.GetMetadata(0)
+		metadata, err := metadataService.GetMetadata(context.Background(), azcache.CacheReadTypeDefault)
 		if err != nil {
 			return nil, err
 		}
@@ -346,48 +370,13 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 
 		cfg.DeploymentParameters = parameters
 	}
-	providerazureconfig.InitializeCloudProviderRateLimitConfig(&cfg.CloudProviderRateLimitConfig)
+	// Note: InitializeCloudProviderRateLimitConfig was removed in cloud-provider-azure v1.32.0
+	// Rate limit configuration is now handled via the embedded ratelimit.CloudProviderRateLimitConfig
 
 	if err := cfg.validate(); err != nil {
 		return nil, err
 	}
 	return cfg, nil
-}
-
-// A "fork" of az.getAzureClientConfig with BYO authorizer (e.g., for CLI auth) and custom polling delay support
-func (cfg *Config) getAzureClientConfig(authorizer autorest.Authorizer, env *azure.Environment) *azclients.ClientConfig {
-	pollingDelay := 30 * time.Second
-	azClientConfig := &azclients.ClientConfig{
-		CloudName:               cfg.Cloud,
-		Location:                cfg.Location,
-		SubscriptionID:          cfg.SubscriptionID,
-		ResourceManagerEndpoint: env.ResourceManagerEndpoint,
-		Authorizer:              authorizer,
-		Backoff:                 &retry.Backoff{Steps: 1},
-		RestClientConfig: azclients.RestClientConfig{
-			PollingDelay: &pollingDelay,
-		},
-		DisableAzureStackCloud: cfg.DisableAzureStackCloud,
-		UserAgent:              cfg.UserAgent,
-	}
-
-	if cfg.CloudProviderBackoff {
-		azClientConfig.Backoff = &retry.Backoff{
-			Steps:    cfg.CloudProviderBackoffRetries,
-			Factor:   cfg.CloudProviderBackoffExponent,
-			Duration: time.Duration(cfg.CloudProviderBackoffDuration) * time.Second,
-			Jitter:   cfg.CloudProviderBackoffJitter,
-		}
-	}
-
-	if cfg.HasExtendedLocation() {
-		azClientConfig.ExtendedLocation = &azclients.ExtendedLocation{
-			Name: cfg.ExtendedLocationName,
-			Type: cfg.ExtendedLocationType,
-		}
-	}
-
-	return azClientConfig
 }
 
 func (cfg *Config) validate() error {

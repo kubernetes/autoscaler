@@ -19,33 +19,15 @@ package vpa
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
-	v1 "k8s.io/api/admission/v1"
-	corev1 "k8s.io/api/core/v1"
-	apires "k8s.io/apimachinery/pkg/api/resource"
+	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
-)
-
-var (
-	possibleUpdateModes = map[vpa_types.UpdateMode]interface{}{
-		vpa_types.UpdateModeOff:               struct{}{},
-		vpa_types.UpdateModeInitial:           struct{}{},
-		vpa_types.UpdateModeRecreate:          struct{}{},
-		vpa_types.UpdateModeAuto:              struct{}{},
-		vpa_types.UpdateModeInPlaceOrRecreate: struct{}{},
-	}
-
-	possibleScalingModes = map[vpa_types.ContainerScalingMode]interface{}{
-		vpa_types.ContainerScalingModeAuto: struct{}{},
-		vpa_types.ContainerScalingModeOff:  struct{}{},
-	}
 )
 
 // resourceHandler builds patches for VPAs.
@@ -59,36 +41,48 @@ func NewResourceHandler(preProcessor PreProcessor) resource.Handler {
 }
 
 // AdmissionResource returns resource type this handler accepts.
-func (h *resourceHandler) AdmissionResource() admission.AdmissionResource {
+func (*resourceHandler) AdmissionResource() admission.AdmissionResource {
 	return admission.Vpa
 }
 
 // GroupResource returns Group and Resource type this handler accepts.
-func (h *resourceHandler) GroupResource() metav1.GroupResource {
+func (*resourceHandler) GroupResource() metav1.GroupResource {
 	return metav1.GroupResource{Group: "autoscaling.k8s.io", Resource: "verticalpodautoscalers"}
 }
 
 // DisallowIncorrectObjects decides whether incorrect objects (eg. unparsable, not passing validations) should be disallowed by Admission Server.
-func (h *resourceHandler) DisallowIncorrectObjects() bool {
+func (*resourceHandler) DisallowIncorrectObjects() bool {
 	return true
 }
 
 // GetPatches builds patches for VPA in given admission request.
-func (h *resourceHandler) GetPatches(_ context.Context, ar *v1.AdmissionRequest) ([]resource.PatchRecord, error) {
-	raw, isCreate := ar.Object.Raw, ar.Operation == v1.Create
+func (h *resourceHandler) GetPatches(_ context.Context, ar *admissionv1.AdmissionRequest) ([]resource.PatchRecord, []string, field.ErrorList) {
+	raw, isCreate := ar.Object.Raw, ar.Operation == admissionv1.Create
 	vpa, err := parseVPA(raw)
 	if err != nil {
-		return nil, err
+		return nil, nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 	}
+
+	oldVPA := &vpa_types.VerticalPodAutoscaler{}
+
+	if ar.Operation == admissionv1.Update {
+		oldRaw := ar.OldObject.Raw
+		oldVPA, err = parseVPA(oldRaw)
+		if err != nil {
+			return nil, nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
+		}
+	}
+
+	opts := getValidationOptionsForVPA(oldVPA)
 
 	vpa, err = h.preProcessor.Process(vpa, isCreate)
 	if err != nil {
-		return nil, err
+		return nil, nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 	}
 
-	err = ValidateVPA(vpa, isCreate)
-	if err != nil {
-		return nil, err
+	warnings, allErrs := validateVPA(vpa, opts)
+	if len(allErrs) > 0 {
+		return nil, warnings, allErrs
 	}
 
 	klog.V(4).InfoS("Processing vpa", "vpa", vpa)
@@ -102,7 +96,7 @@ func (h *resourceHandler) GetPatches(_ context.Context, ar *v1.AdmissionRequest)
 			Path:  "/spec/updatePolicy",
 			Value: vpa_types.PodUpdatePolicy{UpdateMode: &defaultUpdateMode}})
 	}
-	return patches, nil
+	return patches, warnings, nil
 }
 
 func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
@@ -111,93 +105,4 @@ func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
 		return nil, err
 	}
 	return &vpa, nil
-}
-
-// ValidateVPA checks the correctness of VPA Spec and returns an error if there is a problem.
-func ValidateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
-	if vpa.Spec.UpdatePolicy != nil {
-		mode := vpa.Spec.UpdatePolicy.UpdateMode
-		if mode == nil {
-			return fmt.Errorf("updateMode is required if UpdatePolicy is used")
-		}
-		if _, found := possibleUpdateModes[*mode]; !found {
-			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
-		}
-		if (*mode == vpa_types.UpdateModeInPlaceOrRecreate) && !features.Enabled(features.InPlaceOrRecreate) && isCreate {
-			return fmt.Errorf("in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlaceOrRecreate, features.InPlaceOrRecreate)
-		}
-
-		if minReplicas := vpa.Spec.UpdatePolicy.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
-			return fmt.Errorf("minReplicas has to be positive, got %v", *minReplicas)
-		}
-	}
-
-	if vpa.Spec.ResourcePolicy != nil {
-		for _, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
-			if policy.ContainerName == "" {
-				return fmt.Errorf("containerPolicies.ContainerName is required")
-			}
-			mode := policy.Mode
-			if mode != nil {
-				if _, found := possibleScalingModes[*mode]; !found {
-					return fmt.Errorf("unexpected Mode value %s", *mode)
-				}
-			}
-			for resource, min := range policy.MinAllowed {
-				if err := validateResourceResolution(resource, min); err != nil {
-					return fmt.Errorf("minAllowed: %v", err)
-				}
-				max, found := policy.MaxAllowed[resource]
-				if found && max.Cmp(min) < 0 {
-					return fmt.Errorf("max resource for %v is lower than min", resource)
-				}
-			}
-
-			for resource, max := range policy.MaxAllowed {
-				if err := validateResourceResolution(resource, max); err != nil {
-					return fmt.Errorf("maxAllowed: %v", err)
-				}
-			}
-			ControlledValues := policy.ControlledValues
-			if mode != nil && ControlledValues != nil {
-				if *mode == vpa_types.ContainerScalingModeOff && *ControlledValues == vpa_types.ContainerControlledValuesRequestsAndLimits {
-					return fmt.Errorf("controlledValues shouldn't be specified if container scaling mode is off")
-				}
-			}
-		}
-	}
-
-	if isCreate && vpa.Spec.TargetRef == nil {
-		return fmt.Errorf("targetRef is required. If you're using v1beta1 version of the API, please migrate to v1")
-	}
-
-	if len(vpa.Spec.Recommenders) > 1 {
-		return fmt.Errorf("the current version of VPA object shouldn't specify more than one recommenders")
-	}
-
-	return nil
-}
-
-func validateResourceResolution(name corev1.ResourceName, val apires.Quantity) error {
-	switch name {
-	case corev1.ResourceCPU:
-		return validateCPUResolution(val)
-	case corev1.ResourceMemory:
-		return validateMemoryResolution(val)
-	}
-	return nil
-}
-
-func validateCPUResolution(val apires.Quantity) error {
-	if _, precissionPreserved := val.AsScale(apires.Milli); !precissionPreserved {
-		return fmt.Errorf("CPU [%s] must be a whole number of milli CPUs", val.String())
-	}
-	return nil
-}
-
-func validateMemoryResolution(val apires.Quantity) error {
-	if _, precissionPreserved := val.AsScale(0); !precissionPreserved {
-		return fmt.Errorf("memory [%v] must be a whole number of bytes", val)
-	}
-	return nil
 }

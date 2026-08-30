@@ -6,18 +6,24 @@ package nodepools
 
 import (
 	"context"
+	"fmt"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	"net/http"
 	"reflect"
 	"testing"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
+)
+
+const (
+	autoDiscoveryCompartment = "ocid1.compartment.oc1.test-region.test"
 )
 
 func TestNodePoolFromArgs(t *testing.T) {
@@ -90,6 +96,16 @@ func TestGetNodePoolForInstance(t *testing.T) {
 
 	if np.Id() != "ocid2" {
 		t.Fatalf("got unexpected ocid %q ; wanted \"ocid2\"", np.Id())
+	}
+
+	// now verify node pool can be found via lookup up by instance id in cache
+	np, err = manager.GetNodePoolForInstance(ocicommon.OciRef{InstanceID: "virtualnode"})
+	if err != nil {
+		t.Fatalf("unexpected error: %+v", err)
+	}
+
+	if np != nil {
+		t.Fatalf("got unexpected ocid %q ; wanted nil", np.Id())
 	}
 }
 
@@ -254,6 +270,89 @@ func TestGetNodePoolAvailabilityDomain(t *testing.T) {
 	}
 }
 
+func TestGetNodePoolFaultDomain(t *testing.T) {
+	testCases := map[string]struct {
+		np     *oke.NodePool
+		result string
+	}{
+		"single fault domain": {
+			np: &oke.NodePool{
+				Id: common.String("id"),
+				NodeConfigDetails: &oke.NodePoolNodeConfigDetails{
+					PlacementConfigs: []oke.NodePoolPlacementConfigDetails{
+						{FaultDomains: []string{"FAULT-DOMAIN-1"}},
+					},
+				},
+			},
+			result: "FAULT-DOMAIN-1",
+		},
+		"multiple fault domains": {
+			np: &oke.NodePool{
+				Id: common.String("id"),
+				NodeConfigDetails: &oke.NodePoolNodeConfigDetails{
+					PlacementConfigs: []oke.NodePoolPlacementConfigDetails{
+						{FaultDomains: []string{"FAULT-DOMAIN-2", "FAULT-DOMAIN-3"}},
+					},
+				},
+			},
+			result: "FAULT-DOMAIN-2",
+		},
+		"no fault domain": {
+			np: &oke.NodePool{
+				Id: common.String("id"),
+				NodeConfigDetails: &oke.NodePoolNodeConfigDetails{
+					PlacementConfigs: []oke.NodePoolPlacementConfigDetails{{}},
+				},
+			},
+		},
+		"no placement config": {
+			np: &oke.NodePool{
+				Id:                common.String("id"),
+				NodeConfigDetails: &oke.NodePoolNodeConfigDetails{},
+			},
+		},
+		"nil node pool": {},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			if result := getNodePoolFaultDomain(tc.np); result != tc.result {
+				t.Errorf("got %q ; wanted %q", result, tc.result)
+			}
+		})
+	}
+}
+
+func TestBuildNodeFromTemplateIncludesFaultDomain(t *testing.T) {
+	nodePool := &oke.NodePool{
+		Id:        common.String("ocid1.nodepool.oc1.yul.test"),
+		NodeShape: common.String("VM.Standard.E4.Flex"),
+		NodeShapeConfig: &oke.NodeShapeConfig{
+			Ocpus:       common.Float32(1),
+			MemoryInGBs: common.Float32(16),
+		},
+		NodeConfigDetails: &oke.NodePoolNodeConfigDetails{
+			PlacementConfigs: []oke.NodePoolPlacementConfigDetails{{
+				AvailabilityDomain: common.String("hash:CA-MONTREAL-1-AD-1"),
+				FaultDomains:       []string{"FAULT-DOMAIN-1"},
+			}},
+		},
+	}
+	manager := &ociManagerImpl{
+		ociShapeGetter:         ocicommon.CreateShapeGetter(nil),
+		ociTagsGetter:          ocicommon.CreateTagsGetter(),
+		registeredTaintsGetter: CreateRegisteredTaintsGetter(),
+	}
+
+	node, err := manager.buildNodeFromTemplate(nodePool)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result := node.Labels[ociFaultDomainLabel]; result != "FAULT-DOMAIN-1" {
+		t.Errorf("got fault domain label %q ; wanted %q", result, "FAULT-DOMAIN-1")
+	}
+}
+
 func TestBuildGenericLabels(t *testing.T) {
 
 	shape := "VM.Standard1.2"
@@ -321,8 +420,15 @@ func TestBuildGenericLabels(t *testing.T) {
 
 type mockOKEClient struct{}
 
-func (c mockOKEClient) GetNodePool(context.Context, oke.GetNodePoolRequest) (oke.GetNodePoolResponse, error) {
-	return oke.GetNodePoolResponse{}, nil
+func (c mockOKEClient) GetNodePool(ctx context.Context, req oke.GetNodePoolRequest) (oke.GetNodePoolResponse, error) {
+	return oke.GetNodePoolResponse{
+		NodePool: oke.NodePool{
+			Id: req.NodePoolId,
+			NodeConfigDetails: &oke.NodePoolNodeConfigDetails{
+				Size: common.Int(1),
+			},
+		},
+	}, nil
 }
 func (c mockOKEClient) UpdateNodePool(context.Context, oke.UpdateNodePoolRequest) (oke.UpdateNodePoolResponse, error) {
 	return oke.UpdateNodePoolResponse{}, nil
@@ -336,7 +442,39 @@ func (c mockOKEClient) DeleteNode(context.Context, oke.DeleteNodeRequest) (oke.D
 	}, nil
 }
 
-func (c mockOKEClient) ListNodePools(context.Context, oke.ListNodePoolsRequest) (oke.ListNodePoolsResponse, error) {
+func (c mockOKEClient) ListNodePools(ctx context.Context, req oke.ListNodePoolsRequest) (oke.ListNodePoolsResponse, error) {
+	// below test data added for auto-discovery tests
+	if req.CompartmentId != nil && *req.CompartmentId == autoDiscoveryCompartment {
+		freeformTags1 := map[string]string{
+			"ca-managed": "true",
+		}
+		freeformTags2 := map[string]string{
+			"ca-managed": "true",
+			"minSize":    "4",
+			"maxSize":    "10",
+		}
+		definedTags := map[string]map[string]interface{}{
+			"namespace": {
+				"foo": "bar",
+			},
+		}
+		resp := oke.ListNodePoolsResponse{
+			Items: []oke.NodePoolSummary{
+				{
+					Id:           common.String("node-pool-1"),
+					FreeformTags: freeformTags1,
+					DefinedTags:  definedTags,
+				},
+				{
+					Id:           common.String("node-pool-2"),
+					FreeformTags: freeformTags2,
+					DefinedTags:  definedTags,
+				},
+			},
+		}
+		return resp, nil
+	}
+
 	return oke.ListNodePoolsResponse{}, nil
 }
 
@@ -393,8 +531,41 @@ func TestRemoveInstance(t *testing.T) {
 	}
 }
 
+func TestNodeGroupAutoDiscovery(t *testing.T) {
+	var nodeGroupArg = fmt.Sprintf("clusterId:ocid1.cluster.oc1.test-region.test,compartmentId:%s,nodepoolTags:ca-managed=true&namespace.foo=bar,min:1,max:5", autoDiscoveryCompartment)
+	nodeGroup, err := nodeGroupFromArg(nodeGroupArg)
+	if err != nil {
+		t.Errorf("Error: #{err}")
+	}
+	nodePoolCache := newNodePoolCache(nil)
+	nodePoolCache.okeClient = mockOKEClient{}
+
+	cloudConfig := &ocicommon.CloudConfig{}
+	cloudConfig.Global.RefreshInterval = 5 * time.Minute
+	cloudConfig.Global.CompartmentID = autoDiscoveryCompartment
+
+	manager := &ociManagerImpl{
+		nodePoolCache:   nodePoolCache,
+		nodeGroups:      []nodeGroupAutoDiscovery{*nodeGroup},
+		okeClient:       mockOKEClient{},
+		cfg:             cloudConfig,
+		staticNodePools: map[string]NodePool{},
+	}
+	// test data to use as initial nodepools
+	nodepool2 := &nodePool{
+		id: "node-pool-2", minSize: 1, maxSize: 5,
+	}
+	manager.staticNodePools[nodepool2.id] = nodepool2
+	nodepool3 := &nodePool{
+		id: "node-pool-3", minSize: 2, maxSize: 5,
+	}
+	manager.staticNodePools[nodepool3.id] = nodepool3
+
+	manager.forceRefresh()
+}
+
 func TestNodeGroupFromArg(t *testing.T) {
-	var nodeGroupArg = "clusterId:ocid1.cluster.oc1.test-region.test,compartmentId:ocid1.compartment.oc1.test-region.test,nodepoolTags:ca-managed=true&namespace.foo=bar,min:1,max:5"
+	var nodeGroupArg = fmt.Sprintf("clusterId:ocid1.cluster.oc1.test-region.test,compartmentId:%s,nodepoolTags:ca-managed=true&namespace.foo=bar,min:1,max:5", autoDiscoveryCompartment)
 	nodeGroupAutoDiscovery, err := nodeGroupFromArg(nodeGroupArg)
 	if err != nil {
 		t.Errorf("Error: #{err}")

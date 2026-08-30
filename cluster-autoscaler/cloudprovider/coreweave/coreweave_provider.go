@@ -21,12 +21,25 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "coreweave"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildCoreWeave(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 // CoreWeaveCloudProvider implements the CloudProvider interface for CoreWeave.
 type CoreWeaveCloudProvider struct {
@@ -64,7 +77,7 @@ func NewCoreWeaveCloudProvider(rl *cloudprovider.ResourceLimiter, opts config.Au
 
 // Name returns the name of the cloud provider.
 func (c *CoreWeaveCloudProvider) Name() string {
-	return cloudprovider.CoreWeaveProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
@@ -182,7 +195,7 @@ func (c *CoreWeaveCloudProvider) Refresh() error {
 }
 
 // BuildCoreWeave builds the CoreWeave cloud provider with the given options and returns it.
-func BuildCoreWeave(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	klog.V(4).Infof("Building CoreWeave cloud provider with options: %+v", opts)
-	return NewCoreWeaveCloudProvider(rl, opts)
+func BuildCoreWeave(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	klog.V(4).Infof("Building CoreWeave cloud provider with options: %+v", opts.AutoscalingOptions)
+	return NewCoreWeaveCloudProvider(rl, opts.AutoscalingOptions)
 }

@@ -41,9 +41,12 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
 
@@ -82,6 +85,12 @@ type ContainerStateAggregator interface {
 	// GetUpdateMode returns the update mode of VPA controlling this aggregator,
 	// nil if aggregator is not autoscaled.
 	GetUpdateMode() *vpa_types.UpdateMode
+	// GetOOMBumpUpRatio returns the OOM bump up ratio for this container
+	GetOOMBumpUpRatio() float64
+	// GetOOMMinBumpUp returns the minimum OOM bump up value for this container
+	GetOOMMinBumpUp() float64
+	// GetMemoryAggregationIntervalDuration returns the memory aggregation interval for this container.
+	GetMemoryAggregationIntervalDuration() time.Duration
 }
 
 // AggregateContainerState holds input signals aggregated from a set of containers.
@@ -106,11 +115,15 @@ type AggregateContainerState struct {
 	// we want to know if it needs recommendation, if the recommendation
 	// is present and if the automatic updates are on (are we able to
 	// apply the recommendation to the pods).
-	lastRecommendation  corev1.ResourceList
-	IsUnderVPA          bool
-	UpdateMode          *vpa_types.UpdateMode
-	ScalingMode         *vpa_types.ContainerScalingMode
-	ControlledResources *[]ResourceName
+	lastRecommendation                corev1.ResourceList
+	IsUnderVPA                        bool
+	UpdateMode                        *vpa_types.UpdateMode
+	ScalingMode                       *vpa_types.ContainerScalingMode
+	OOMBumpUpRatio                    float64
+	OOMMinBumpUp                      float64
+	MemoryAggregationIntervalDuration time.Duration
+	MemoryAggregationIntervalCount    int64
+	ControlledResources               *[]ResourceName
 
 	mutex sync.RWMutex
 }
@@ -155,6 +168,21 @@ func (a *AggregateContainerState) GetControlledResources() []ResourceName {
 	return DefaultControlledResources
 }
 
+// GetOOMBumpUpRatio returns the ratio by which to increase the memory recommendation in case of OOM
+func (a *AggregateContainerState) GetOOMBumpUpRatio() float64 {
+	return a.OOMBumpUpRatio
+}
+
+// GetOOMMinBumpUp returns the minimum absolute increase in memory recommendation in case of OOM
+func (a *AggregateContainerState) GetOOMMinBumpUp() float64 {
+	return a.OOMMinBumpUp
+}
+
+// GetMemoryAggregationIntervalDuration returns the memory aggregation interval for this container state.
+func (a *AggregateContainerState) GetMemoryAggregationIntervalDuration() time.Duration {
+	return a.MemoryAggregationIntervalDuration
+}
+
 // MarkNotAutoscaled registers that this container state is not controlled by
 // a VPA object.
 func (a *AggregateContainerState) MarkNotAutoscaled() {
@@ -184,9 +212,13 @@ func (a *AggregateContainerState) MergeContainerState(other *AggregateContainerS
 func NewAggregateContainerState() *AggregateContainerState {
 	config := GetAggregationsConfig()
 	return &AggregateContainerState{
-		AggregateCPUUsage:    util.NewDecayingHistogram(config.CPUHistogramOptions, config.CPUHistogramDecayHalfLife),
-		AggregateMemoryPeaks: util.NewDecayingHistogram(config.MemoryHistogramOptions, config.MemoryHistogramDecayHalfLife),
-		CreationTime:         time.Now(),
+		AggregateCPUUsage:                 util.NewDecayingHistogram(config.CPUHistogramOptions, config.CPUHistogramDecayHalfLife),
+		AggregateMemoryPeaks:              util.NewDecayingHistogram(config.MemoryHistogramOptions, config.MemoryHistogramDecayHalfLife),
+		CreationTime:                      time.Now(),
+		OOMBumpUpRatio:                    config.OOMBumpUpRatio,
+		OOMMinBumpUp:                      config.OOMMinBumpUp,
+		MemoryAggregationIntervalDuration: config.MemoryAggregationIntervalDuration,
+		MemoryAggregationIntervalCount:    config.MemoryAggregationIntervalCount,
 	}
 }
 
@@ -273,13 +305,25 @@ func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.Verti
 
 func (a *AggregateContainerState) isExpired(now time.Time) bool {
 	if a.isEmpty() {
-		return now.Sub(a.CreationTime) >= GetAggregationsConfig().GetMemoryAggregationWindowLength()
+		return now.Sub(a.CreationTime) >= a.getMemoryAggregationWindowLength()
 	}
-	return now.Sub(a.LastSampleStart) >= GetAggregationsConfig().GetMemoryAggregationWindowLength()
+	return now.Sub(a.LastSampleStart) >= a.getMemoryAggregationWindowLength()
 }
 
 func (a *AggregateContainerState) isEmpty() bool {
 	return a.TotalSamplesCount == 0
+}
+
+func (*AggregateContainerState) convertQuantityToFloat64(quantity *resource.Quantity) float64 {
+	if quantity == nil {
+		return 0.0
+	}
+	return float64(quantity.MilliValue()) / 1000.0
+}
+
+// getMemoryAggregationWindowLength returns the total length of the memory usage history aggregated by VPA.
+func (a *AggregateContainerState) getMemoryAggregationWindowLength() time.Duration {
+	return a.MemoryAggregationIntervalDuration * time.Duration(a.MemoryAggregationIntervalCount)
 }
 
 // UpdateFromPolicy updates container state scaling mode and controlled resources based on resource
@@ -294,6 +338,41 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 	a.ControlledResources = &DefaultControlledResources
 	if resourcePolicy != nil && resourcePolicy.ControlledResources != nil {
 		a.ControlledResources = ResourceNamesApiToModel(*resourcePolicy.ControlledResources)
+	}
+
+	// Per VPA components - feature flag "PerVPAConfig" must be enabled
+	if resourcePolicy != nil {
+		if resourcePolicy.OOMBumpUpRatio != nil {
+			if features.Enabled(features.PerVPAConfig) {
+				a.OOMBumpUpRatio = a.convertQuantityToFloat64(resourcePolicy.OOMBumpUpRatio)
+			} else {
+				klog.InfoS("oomBumpUpRatio is set but PerVPAConfig feature gate is disabled, falling back to default value")
+			}
+		}
+
+		if resourcePolicy.OOMMinBumpUp != nil {
+			if features.Enabled(features.PerVPAConfig) {
+				a.OOMMinBumpUp = a.convertQuantityToFloat64(resourcePolicy.OOMMinBumpUp)
+			} else {
+				klog.InfoS("oomMinBumpUp is set but PerVPAConfig feature gate is disabled, falling back to default value")
+			}
+		}
+
+		if resourcePolicy.MemoryAggregationIntervalSeconds != nil {
+			if features.Enabled(features.PerVPAConfig) {
+				a.MemoryAggregationIntervalDuration = time.Second * time.Duration(*resourcePolicy.MemoryAggregationIntervalSeconds)
+			} else {
+				klog.InfoS("memoryAggregationIntervalSeconds is set but %s feature gate is disabled, falling back to default value", features.PerVPAConfig)
+			}
+		}
+
+		if resourcePolicy.MemoryAggregationIntervalCount != nil {
+			if features.Enabled(features.PerVPAConfig) {
+				a.MemoryAggregationIntervalCount = *resourcePolicy.MemoryAggregationIntervalCount
+			} else {
+				klog.InfoS("memoryAggregationIntervalCount is set but %s feature gate is disabled, falling back to default value", features.PerVPAConfig)
+			}
+		}
 	}
 }
 
@@ -362,4 +441,24 @@ func (p *ContainerStateAggregatorProxy) GetUpdateMode() *vpa_types.UpdateMode {
 func (p *ContainerStateAggregatorProxy) GetScalingMode() *vpa_types.ContainerScalingMode {
 	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
 	return aggregator.GetScalingMode()
+}
+
+// GetOOMMinBumpUp returns the minimum amount to bump up resources when OOM is detected.
+// This implementation returns 0 to satisfy the interface requirement.
+func (p *ContainerStateAggregatorProxy) GetOOMMinBumpUp() float64 {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	return aggregator.GetOOMMinBumpUp()
+}
+
+// GetOOMBumpUpRatio returns the ratio to increase resources when OOM is detected.
+// This implementation returns 0 to satisfy the interface requirement.
+func (p *ContainerStateAggregatorProxy) GetOOMBumpUpRatio() float64 {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	return aggregator.GetOOMBumpUpRatio()
+}
+
+// GetMemoryAggregationIntervalDuration returns the memory aggregation interval from the underlying aggregate container state.
+func (p *ContainerStateAggregatorProxy) GetMemoryAggregationIntervalDuration() time.Duration {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	return aggregator.GetMemoryAggregationIntervalDuration()
 }

@@ -29,6 +29,7 @@ import (
 // +genclient
 // +kubebuilder:storageversions
 // +kubebuilder:resource:shortName=provreq;provreqs
+// +k8s:prerelease-lifecycle-gen=true
 
 // ProvisioningRequest is a way to express additional capacity
 // that we would like to provision in the cluster. Cluster Autoscaler
@@ -38,6 +39,10 @@ import (
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.29.0
+// +k8s:prerelease-lifecycle-gen:deprecated=1.34.0
+// +k8s:prerelease-lifecycle-gen:replacement=autoscaling,v1,ProvisioningRequest
+// +kubebuilder:deprecatedversion:warning=autoscaling.k8s.io/v1beta1 API is deprecated
 type ProvisioningRequest struct {
 	metav1.TypeMeta `json:",inline"`
 	// Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
@@ -86,11 +91,11 @@ type ProvisioningRequestSpec struct {
 	// ProvisioningClassName describes the different modes of provisioning the resources.
 	// Currently there is no support for 'ProvisioningClass' objects.
 	// Supported values:
-	// * check-capacity.kubernetes.io - check if current cluster state can fullfil this request,
+	// * check-capacity.autoscaling.x-k8s.io - check if current cluster state can fullfil this request,
 	//   do not reserve the capacity. Users should provide a reference to a valid PodTemplate object.
 	//   CA will check if there is enough capacity in cluster to fulfill the request and put
 	//   the answer in 'CapacityAvailable' condition.
-	// * atomic-scale-up.kubernetes.io - provision the resources in an atomic manner.
+	// * best-effort-atomic-scale-up.autoscaling.x-k8s.io - provision the resources in an atomic manner.
 	//   Users should provide a reference to a valid PodTemplate object.
 	//   CA will try to create the VMs in an atomic manner, clean any partially provisioned VMs
 	//   and re-try the operation in a exponential back-off manner. Users can configure the timeout
@@ -106,7 +111,7 @@ type ProvisioningRequestSpec struct {
 	ProvisioningClassName string `json:"provisioningClassName"`
 
 	// Parameters contains all other parameters classes may require.
-	// 'atomic-scale-up.kubernetes.io' supports 'ValidUntilSeconds' parameter, which should contain
+	// 'best-effort-atomic-scale-up.autoscaling.x-k8s.io' supports 'ValidUntilSeconds' parameter, which should contain
 	//  a string denoting duration for which we should retry (measured since creation fo the CR).
 	//
 	// +optional

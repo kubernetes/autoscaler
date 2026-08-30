@@ -22,6 +22,8 @@ REPOSITORY_ROOT=$(realpath $(dirname ${BASH_SOURCE})/..)
 CRD_OPTS=crd:allowDangerousTypes=true
 APIS_PATH=${REPOSITORY_ROOT}/pkg/apis
 OUTPUT=${REPOSITORY_ROOT}/deploy/vpa-v1-crd-gen.yaml
+CHARTS_CRD_DIR=${REPOSITORY_ROOT}/charts/vertical-pod-autoscaler/crds
+CONTROLLER_GEN_VERSION=v0.21.0
 WORKSPACE=$(mktemp -d)
 
 function cleanup() {
@@ -29,10 +31,10 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-if [[ -z $(which controller-gen) ]]; then
+if [[ -z $(which controller-gen) || "$(controller-gen --version 2>/dev/null)" != "Version: ${CONTROLLER_GEN_VERSION}" ]]; then
     (
         cd $WORKSPACE
-	      go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.16.5
+	      go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
     )
     CONTROLLER_GEN=${GOBIN:-$(go env GOPATH)/bin}/controller-gen
 else
@@ -46,3 +48,7 @@ grep -v -e 'map keys must be strings, not int' -e 'not all generators ran succes
 
 cat "${WORKSPACE}/autoscaling.k8s.io_verticalpodautoscalercheckpoints.yaml" > ${OUTPUT}
 cat "${WORKSPACE}/autoscaling.k8s.io_verticalpodautoscalers.yaml" >> ${OUTPUT}
+
+# Copy the generated CRD to the charts directory
+cp ${OUTPUT} ${CHARTS_CRD_DIR}/vpa-v1-crd-gen.yaml
+echo "CRD copied to ${CHARTS_CRD_DIR}/vpa-v1-crd-gen.yaml"

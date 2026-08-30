@@ -25,10 +25,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // How long to sleep after deleting nodes, to ensure that multiple requests arrive in order.
@@ -230,7 +230,7 @@ func (ng *magnumNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		return nil, fmt.Errorf("failed to build node from template")
 	}
 	klog.V(5).Infof("TemplateNodeInfo: built template for nodegroup: %s", ng.Id())
-	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.Id())})
+	nodeInfo := framework.NewNodeInfo(node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.Id()), nil))
 
 	return nodeInfo, nil
 }

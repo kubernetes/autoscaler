@@ -1,7 +1,39 @@
 # VPA Release Instructions
 
+## Contents
+
+<!-- toc -->
+- [Release Schedule](#release-schedule)
+- [Open issue to track the release](#open-issue-to-track-the-release)
+- [Rollup all changes](#rollup-all-changes)
+  - [New minor release](#new-minor-release)
+  - [New patch release](#new-patch-release)
+- [Build and stage images](#build-and-stage-images)
+  - [Option 1: (Preferred) Automatic](#option-1-preferred-automatic)
+  - [Option 2: Manual](#option-2-manual)
+- [Test the release](#test-the-release)
+  - [Option 1: Locally using kind](#option-1-locally-using-kind)
+  - [Option 2: On a GKE cluster](#option-2-on-a-gke-cluster)
+- [Promote image](#promote-image)
+- [Update Helm chart](#update-helm-chart)
+- [Finalize release](#finalize-release)
+- [Update dependabot](#update-dependabot)
+- [Permissions](#permissions)
+<!-- /toc -->
+
 These are instructions for releasing VPA. We aim to release a new VPA minor version after each minor Kubernetes release.
 We release patch versions as needed.
+
+## Release Schedule
+
+VPA minor releases are aligned with Kubernetes (k/k) minor releases:
+
+- **Code freeze**: 2 weeks after the corresponding Kubernetes release.
+  No new features are merged after this point; only bug fixes and release-related changes.
+- **VPA release**: roughly 4 weeks after the corresponding Kubernetes release.
+
+This gives maintainers 2 weeks to land remaining changes after a Kubernetes release, followed by
+2 weeks of stabilization before cutting the VPA release.
 
 Before doing the release for the first time check if you have all the necessary permissions (see
 [Permissions](#permissions) section below).
@@ -13,7 +45,8 @@ There are the following steps of the release process:
 3. [ ] Build and stage images.
 4. [ ] Test the release.
 5. [ ] Promote image.
-6. [ ] Finalize release.
+6. [ ] Update Helm chart.
+7. [ ] Finalize release.
 
 ## Open issue to track the release
 
@@ -50,9 +83,6 @@ We use the issue to communicate what is state of the release.
 Select either the Automatic and Manual process below.
 
 ### Option 1: (Preferred) Automatic
-
-NOTE: Currently this process can only be used for new minor releases. Patch
-releases need to follow the manual process below.
 
 Images are continuously built as part of the PR release process and are listed
 in the following repository:
@@ -95,6 +125,9 @@ git switch vpa-release-1.${minor}
 
 Once in the freshly cloned repo, build and stage the images.
 
+> [!NOTE]
+> Ensure you have run the following before building the images: `gcloud auth login` and `gcloud auth configure-docker -q`.
+
 ```sh
 cd vertical-pod-autoscaler/
 for component in recommender updater admission-controller ; do TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2` REGISTRY=gcr.io/k8s-staging-autoscaling make release --directory=pkg/${component}; done
@@ -102,10 +135,37 @@ for component in recommender updater admission-controller ; do TAG=`grep 'const 
 
 ## Test the release
 
+You can test the release either locally using [kind](https://kind.sigs.k8s.io/) (Option 1) or on a
+GKE cluster (Option 2). In both cases the staged release images from
+`gcr.io/k8s-staging-autoscaling` are tested, not a local build.
+
+### Option 1: Locally using kind
+
+[hack/run-e2e-locally.sh](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/run-e2e-locally.sh)
+creates a kind cluster, deploys VPA and runs the e2e tests. Set `PULL_IMAGES=true` so the staged
+release images are pulled instead of building images from your local checkout.
+
+1.  [ ] Run all test suites against the staged images:
+
+    ```shell
+    export REGISTRY=gcr.io/k8s-staging-autoscaling
+    export TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2`
+    export PULL_IMAGES=true
+    ./hack/run-e2e-locally.sh full-vpa
+    ./hack/run-e2e-locally.sh actuation
+    ./hack/run-e2e-locally.sh admission-controller
+    ./hack/run-e2e-locally.sh updater
+    ./hack/run-e2e-locally.sh recommender
+    ```
+
+    Note: each invocation recreates the kind cluster, so the suites can be run back-to-back.
+
+### Option 2: On a GKE cluster
+
 1.  [ ] Create a Kubernetes cluster. If you're using GKE you can use the following command:
 
     ```shell
-    gcloud container clusters create e2e-test --machine-type=n1-standard-2 --image-type=COS_CONTAINERD --num-nodes=3
+    gcloud container clusters create e2e-test --machine-type=n1-standard-2 --image-type=COS_CONTAINERD --num-nodes=3 --release-channel=rapid
     ```
 
 1. [ ]  Create clusterrole. If you're using GKE you can use the following command:
@@ -120,10 +180,14 @@ for component in recommender updater admission-controller ; do TAG=`grep 'const 
     ```
 
 1.  [ ] [Run](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/run-e2e-tests.sh)
-    the `full-vpa` test suite:
+    on all test suites:
 
     ```shell
     ./hack/run-e2e-tests.sh full-vpa
+    ./hack/run-e2e-tests.sh actuation
+    ./hack/run-e2e-tests.sh admission-controller
+    ./hack/run-e2e-tests.sh updater
+    ./hack/run-e2e-tests.sh recommender
     ```
 
 ## Promote image
@@ -144,6 +208,17 @@ To verify if the promoter finished its job one can use gcloud. E.g.:
 ```sh
 gcloud container images describe registry.k8s.io/autoscaling/vpa-recommender:[*vpa-version*]
 ```
+
+## Update Helm chart
+
+1.  [ ] Update `appVersion` in
+    [charts/vertical-pod-autoscaler/Chart.yaml](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/charts/vertical-pod-autoscaler/Chart.yaml)
+    to match the new VPA version.
+
+1.  [ ] Bump the chart `version` in
+    [charts/vertical-pod-autoscaler/Chart.yaml](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/charts/vertical-pod-autoscaler/Chart.yaml).
+
+1.  [ ] Commit and merge the chart changes.
 
 ## Finalize release
 
@@ -198,15 +273,48 @@ sure nothing we care about will break if we do.
     git push git@github.com:kubernetes/autoscaler.git vertical-pod-autoscaler/v[*vpa-version*]
     ```
 
-8.  [ ] Create and publish a github release from pushed tag go to
+8.  [ ] Generate release notes using the
+    [release-notes](https://github.com/kubernetes/release/tree/master/cmd/release-notes) tool.
+    The `--start-sha` should be the last commit of the previous VPA release and `--end-sha` should
+    be the last commit included in the current release.
+
+    ```sh
+    release-notes --org kubernetes \
+      --repo autoscaler \
+      --branch master \
+      --repo-path $PWD/autoscaler/ \
+      --start-sha [*start-sha*] \
+      --end-sha [*end-sha*] \
+      --markdown-links \
+      --output notes.md \
+      --dependencies=false
+    ```
+
+    After generating, remove entries unrelated to VPA from `notes.md`.
+
+9.  [ ] Create and publish a github release from pushed tag go to
     https://github.com/kubernetes/autoscaler/releases/tag/vertical-pod-autoscaler-[*vpa-version*],
     press `Create release from tag`, complete release title and release notes and press `Publish release`.
 
-9.  Repeat steps 2-5 above in the **main branch**.
+10. Repeat steps 2-5 above in the **master branch**.
 
     After submitting, users who use `vpa-up.sh` will now start using the latest version.
 
-    IMPORTANT: Make sure the tags created above exist before merging into the main branch!
+    IMPORTANT: Make sure the tags created above exist before merging into the master branch!
+
+11. [ ] Send a release announcement to the
+    [kubernetes-sig-autoscaling mailing list](https://groups.google.com/g/kubernetes-sig-autoscaling).
+
+12. [ ] Update the [VPA documentation in kubernetes/website](https://github.com/kubernetes/website/blob/main/content/en/docs/concepts/workloads/autoscaling/vertical-pod-autoscale.md)
+    if any user-facing changes were made in this release.
+
+## Update dependabot
+
+1. [ ] Update `.github/dependabot.yml` to add the new release branch, keeping the latest 3 minor releases:
+
+    ```sh
+    sed -i "s/vpa-release-1.${oldest-minor}/vpa-release-1.${next-minor}/g" ../.github/dependabot.yml
+    ```
 
 ## Permissions
 

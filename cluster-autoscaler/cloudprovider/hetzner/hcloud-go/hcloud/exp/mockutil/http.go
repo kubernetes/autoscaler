@@ -25,9 +25,12 @@ type Request struct {
 	Status  int
 	JSON    any
 	JSONRaw string
+	TextRaw string
 }
 
 // Handler is using a [Server] to mock http requests provided by the user.
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 func Handler(t *testing.T, requests []Request) http.HandlerFunc {
 	t.Helper()
 
@@ -38,6 +41,8 @@ func Handler(t *testing.T, requests []Request) http.HandlerFunc {
 }
 
 // NewServer returns a new mock server that closes itself at the end of the test.
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 func NewServer(t *testing.T, requests []Request) *Server {
 	t.Helper()
 
@@ -56,6 +61,8 @@ func NewServer(t *testing.T, requests []Request) *Server {
 // iterated over.
 //
 // A Server must be created using the [NewServer] function.
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 type Server struct {
 	*httptest.Server
 
@@ -66,6 +73,8 @@ type Server struct {
 }
 
 // Expect adds requests to the list of requests expected by the [Server].
+//
+// Experimental: `exp` package is experimental, breaking changes may occur within minor releases.
 func (m *Server) Expect(requests []Request) {
 	m.requests = append(m.requests, requests...)
 }
@@ -75,7 +84,7 @@ func (m *Server) close() {
 
 	m.Server.Close()
 
-	assert.EqualValues(m.t, len(m.requests), m.index, "expected more calls")
+	assert.Equal(m.t, len(m.requests), m.index, "expected more calls")
 }
 
 func (m *Server) handler(w http.ResponseWriter, r *http.Request) {
@@ -112,6 +121,13 @@ func (m *Server) handler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(expected.Status)
 		_, err := w.Write([]byte(expected.JSONRaw))
+		if err != nil {
+			m.t.Fatal(err)
+		}
+	case expected.TextRaw != "":
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(expected.Status)
+		_, err := w.Write([]byte(expected.TextRaw))
 		if err != nil {
 			m.t.Fatal(err)
 		}

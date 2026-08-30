@@ -25,13 +25,25 @@ import (
 	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "volcengine"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildVolcengine(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 // volcengineCloudProvider implements CloudProvider interface.
 type volcengineCloudProvider struct {
@@ -42,7 +54,7 @@ type volcengineCloudProvider struct {
 
 // Name returns name of the cloud provider.
 func (v *volcengineCloudProvider) Name() string {
-	return cloudprovider.VolcengineProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
@@ -66,7 +78,14 @@ func (v *volcengineCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 		klog.Warningf("Node %v has no providerId", node.Name)
 		return nil, fmt.Errorf("provider id missing from node: %s", node.Name)
 	}
-	return v.volcengineManager.GetAsgForInstance(instanceId)
+	asg, err := v.volcengineManager.GetAsgForInstance(instanceId)
+	if err != nil {
+		return nil, err
+	}
+	if asg == nil {
+		return nil, nil
+	}
+	return asg, nil
 }
 
 // HasInstance returns whether the node has corresponding instance in cloud provider,
@@ -160,7 +179,7 @@ func buildScalingGroupFromSpec(manager VolcengineManager, spec string) (*AutoSca
 }
 
 // BuildVolcengine builds CloudProvider implementation for Volcengine
-func BuildVolcengine(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildVolcengine(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	if opts.CloudConfig == "" {
 		klog.Fatalf("The path to the cloud provider configuration file must be set via the --cloud-config command line parameter")
 	}

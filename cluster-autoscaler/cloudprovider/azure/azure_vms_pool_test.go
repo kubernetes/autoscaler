@@ -23,19 +23,18 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/utils/ptr"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
 )
 
 const (
@@ -59,22 +58,22 @@ func newTestVMsPool(manager *AzureManager) *VMPool {
 	}
 }
 
-func newTestVMsPoolVMList(count int) []compute.VirtualMachine {
-	var vmList []compute.VirtualMachine
+func newTestVMsPoolVMList(count int) []*armcompute.VirtualMachine {
+	var vmList []*armcompute.VirtualMachine
 
 	for i := 0; i < count; i++ {
-		vm := compute.VirtualMachine{
-			ID: to.StringPtr(fmt.Sprintf(fakeVMsPoolVMID, i)),
-			VirtualMachineProperties: &compute.VirtualMachineProperties{
-				VMID: to.StringPtr(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
-				HardwareProfile: &compute.HardwareProfile{
-					VMSize: compute.VirtualMachineSizeTypes(vmSku),
+		vm := &armcompute.VirtualMachine{
+			ID: ptr.To(fmt.Sprintf(fakeVMsPoolVMID, i)),
+			Properties: &armcompute.VirtualMachineProperties{
+				VMID: ptr.To(fmt.Sprintf("123E4567-E89B-12D3-A456-426655440000-%d", i)),
+				HardwareProfile: &armcompute.HardwareProfile{
+					VMSize: ptr.To(armcompute.VirtualMachineSizeTypes(vmSku)),
 				},
-				ProvisioningState: to.StringPtr("Succeeded"),
+				ProvisioningState: ptr.To("Succeeded"),
 			},
 			Tags: map[string]*string{
-				agentpoolTypeTag: to.StringPtr("VirtualMachines"),
-				agentpoolNameTag: to.StringPtr(vmsAgentPoolName),
+				agentpoolTypeTag: ptr.To("VirtualMachines"),
+				agentpoolNameTag: ptr.To(vmsAgentPoolName),
 			},
 		}
 		vmList = append(vmList, vm)
@@ -100,7 +99,7 @@ func getTestVMsAgentPool(isSystemPool bool) armcontainerservice.AgentPool {
 	}
 	vmsPoolType := armcontainerservice.AgentPoolTypeVirtualMachines
 	return armcontainerservice.AgentPool{
-		Name: to.StringPtr(vmsAgentPoolName),
+		Name: ptr.To(vmsAgentPoolName),
 		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
 			Type: &vmsPoolType,
 			Mode: &mode,
@@ -108,16 +107,16 @@ func getTestVMsAgentPool(isSystemPool bool) armcontainerservice.AgentPool {
 				Scale: &armcontainerservice.ScaleProfile{
 					Manual: []*armcontainerservice.ManualScaleProfile{
 						{
-							Count: to.Int32Ptr(3),
-							Sizes: []*string{to.StringPtr(vmSku)},
+							Count: ptr.To[int32](3),
+							Size:  ptr.To(vmSku),
 						},
 					},
 				},
 			},
 			VirtualMachineNodesStatus: []*armcontainerservice.VirtualMachineNodes{
 				{
-					Count: to.Int32Ptr(3),
-					Size:  to.StringPtr(vmSku),
+					Count: ptr.To[int32](3),
+					Size:  ptr.To(vmSku),
 				},
 			},
 		},
@@ -249,72 +248,214 @@ func TestTemplateNodeInfo(t *testing.T) {
 }
 
 func TestAtomicIncreaseSize(t *testing.T) {
-	agentPool := &VMPool{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	manager := newTestAzureManager(t)
 
-	err := agentPool.AtomicIncreaseSize(1)
-	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+	ap := newTestVMsPool(manager)
+	expectedVMs := newTestVMsPoolVMList(3)
+
+	mockVMClient := NewMockInterface(ctrl)
+	ap.manager.azClient.virtualMachinesClient = mockVMClient
+	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+
+	ap.manager.config.EnableVMsAgentPool = true
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
+	agentpool := getTestVMsAgentPool(false)
+	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
+		Return(fakeAPListPager)
+
+	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
+	assert.NoError(t, err)
+	ap.manager.azureCache = ac
+
+	resp := &http.Response{
+		Header: map[string][]string{
+			"Fake-Poller-Status": {"Done"},
+		},
+	}
+	fakePoller, pollerErr := runtime.NewPoller(resp, runtime.Pipeline{},
+		&runtime.NewPollerOptions[armcontainerservice.AgentPoolsClientCreateOrUpdateResponse]{
+			Handler: &fakehandler[armcontainerservice.AgentPoolsClientCreateOrUpdateResponse]{},
+		})
+	assert.NoError(t, pollerErr)
+
+	mockAgentpoolclient.EXPECT().BeginCreateOrUpdate(
+		gomock.Any(), manager.config.ClusterResourceGroup,
+		manager.config.ClusterName,
+		vmsAgentPoolName,
+		gomock.Any(), gomock.Any()).Return(fakePoller, nil)
+
+	// Before scale-up, target size matches the initial VM count.
+	targetSize, err := ap.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, targetSize)
+
+	err = ap.AtomicIncreaseSize(1)
+	assert.NoError(t, err)
+
+	// Simulate Azure having created the new VM by seeding the cache with the
+	// post-scale VM list, then assert the pool reports the new target size.
+	ap.manager.azureCache.virtualMachines[vmsAgentPoolName] = newTestVMsPoolVMList(4)
+	targetSize, err = ap.TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 4, targetSize)
+}
+
+func TestAtomicIncreaseSizeNegativeDelta(t *testing.T) {
+	ap := newTestVMsPool(newTestAzureManager(t))
+
+	err := ap.AtomicIncreaseSize(-1)
+	assert.Equal(t, fmt.Errorf("size increase must be positive, current delta: -1"), err)
+}
+
+func TestAtomicIncreaseSizePollerFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	manager := newTestAzureManager(t)
+
+	ap := newTestVMsPool(manager)
+	expectedVMs := newTestVMsPoolVMList(3)
+
+	mockVMClient := NewMockInterface(ctrl)
+	ap.manager.azClient.virtualMachinesClient = mockVMClient
+	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+
+	ap.manager.config.EnableVMsAgentPool = true
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
+	agentpool := getTestVMsAgentPool(false)
+	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
+		Return(fakeAPListPager)
+
+	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
+	assert.NoError(t, err)
+	ap.manager.azureCache = ac
+
+	// Poller that returns an error from PollUntilDone.
+	failingPoller, pollerErr := runtime.NewPoller(&http.Response{Header: http.Header{}}, runtime.Pipeline{},
+		&runtime.NewPollerOptions[armcontainerservice.AgentPoolsClientCreateOrUpdateResponse]{
+			Handler: &fakeErrorPollerHandler[armcontainerservice.AgentPoolsClientCreateOrUpdateResponse]{
+				pollErr: fmt.Errorf("long running operation failed"),
+			},
+		})
+	assert.NoError(t, pollerErr)
+
+	mockAgentpoolclient.EXPECT().BeginCreateOrUpdate(
+		gomock.Any(), manager.config.ClusterResourceGroup,
+		manager.config.ClusterName,
+		vmsAgentPoolName,
+		gomock.Any(), gomock.Any()).Return(failingPoller, nil)
+
+	err = ap.AtomicIncreaseSize(1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "long running operation failed")
 }
 
 func TestGetVMsFromCache(t *testing.T) {
-	manager := &AzureManager{
-		azureCache: &azureCache{
-			virtualMachines: make(map[string][]compute.VirtualMachine),
-			vmsPoolMap:      make(map[string]armcontainerservice.AgentPool),
+	tests := []struct {
+		name            string
+		setupVMList     func() []*armcompute.VirtualMachine
+		agentPoolName   string
+		skipOption      skipOption
+		expectedVMCount int
+	}{
+		{
+			name:            "vms pool not found in cache",
+			setupVMList:     nil,
+			agentPoolName:   vmsAgentPoolName,
+			skipOption:      skipOption{},
+			expectedVMCount: 0,
+		},
+		{
+			name: "vms pool found in cache but has no VMs",
+			setupVMList: func() []*armcompute.VirtualMachine {
+				return []*armcompute.VirtualMachine{}
+			},
+			agentPoolName:   vmsAgentPoolName,
+			skipOption:      skipOption{},
+			expectedVMCount: 0,
+		},
+		{
+			name: "vms pool found in cache with VMs",
+			setupVMList: func() []*armcompute.VirtualMachine {
+				return newTestVMsPoolVMList(3)
+			},
+			agentPoolName:   vmsAgentPoolName,
+			skipOption:      skipOption{},
+			expectedVMCount: 3,
+		},
+		{
+			name: "should skip failed VMs",
+			setupVMList: func() []*armcompute.VirtualMachine {
+				vmList := newTestVMsPoolVMList(3)
+				vmList[0].Properties.ProvisioningState = ptr.To("Failed")
+				return vmList
+			},
+			agentPoolName:   vmsAgentPoolName,
+			skipOption:      skipOption{skipFailed: true},
+			expectedVMCount: 2,
+		},
+		{
+			name: "should skip deleting VMs",
+			setupVMList: func() []*armcompute.VirtualMachine {
+				vmList := newTestVMsPoolVMList(3)
+				vmList[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
+				return vmList
+			},
+			agentPoolName:   vmsAgentPoolName,
+			skipOption:      skipOption{skipDeleting: true},
+			expectedVMCount: 2,
+		},
+		{
+			name: "should not skip deleting VMs when only skipFailed is set",
+			setupVMList: func() []*armcompute.VirtualMachine {
+				vmList := newTestVMsPoolVMList(3)
+				vmList[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
+				return vmList
+			},
+			agentPoolName:   vmsAgentPoolName,
+			skipOption:      skipOption{skipFailed: true},
+			expectedVMCount: 3,
+		},
+		{
+			name: "vms pool found in cache with VMs but empty agent pool name",
+			setupVMList: func() []*armcompute.VirtualMachine {
+				return newTestVMsPoolVMList(3)
+			},
+			agentPoolName:   "",
+			skipOption:      skipOption{},
+			expectedVMCount: 0,
 		},
 	}
-	agentPool := &VMPool{
-		manager:       manager,
-		agentPoolName: vmsAgentPoolName,
-		sku:           vmSku,
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			manager := &AzureManager{
+				azureCache: &azureCache{
+					virtualMachines: make(map[string][]*armcompute.VirtualMachine),
+					vmsPoolMap:      make(map[string]armcontainerservice.AgentPool),
+				},
+			}
+			agentPool := &VMPool{
+				manager:       manager,
+				agentPoolName: tt.agentPoolName,
+				sku:           vmSku,
+			}
+
+			if tt.setupVMList != nil {
+				manager.azureCache.virtualMachines[vmsAgentPoolName] = tt.setupVMList()
+			}
+
+			vms, err := agentPool.getVMsFromCache(tt.skipOption)
+			assert.NoError(t, err)
+			assert.Len(t, vms, tt.expectedVMCount)
+		})
 	}
-
-	// Test case 1 - when the vms pool is not found in the cache
-	vms, err := agentPool.getVMsFromCache(skipOption{})
-	assert.Nil(t, err)
-	assert.Len(t, vms, 0)
-
-	// Test case 2 - when the vms pool is found in the cache but has no VMs
-	manager.azureCache.virtualMachines[vmsAgentPoolName] = []compute.VirtualMachine{}
-	vms, err = agentPool.getVMsFromCache(skipOption{})
-	assert.NoError(t, err)
-	assert.Len(t, vms, 0)
-
-	// Test case 3 - when the vms pool is found in the cache and has VMs
-	manager.azureCache.virtualMachines[vmsAgentPoolName] = newTestVMsPoolVMList(3)
-	vms, err = agentPool.getVMsFromCache(skipOption{})
-	assert.NoError(t, err)
-	assert.Len(t, vms, 3)
-
-	// Test case 4 - should skip failed VMs
-	vmList := newTestVMsPoolVMList(3)
-	vmList[0].VirtualMachineProperties.ProvisioningState = to.StringPtr("Failed")
-	manager.azureCache.virtualMachines[vmsAgentPoolName] = vmList
-	vms, err = agentPool.getVMsFromCache(skipOption{skipFailed: true})
-	assert.NoError(t, err)
-	assert.Len(t, vms, 2)
-
-	// Test case 5 - should skip deleting VMs
-	vmList = newTestVMsPoolVMList(3)
-	vmList[0].VirtualMachineProperties.ProvisioningState = to.StringPtr("Deleting")
-	manager.azureCache.virtualMachines[vmsAgentPoolName] = vmList
-	vms, err = agentPool.getVMsFromCache(skipOption{skipDeleting: true})
-	assert.NoError(t, err)
-	assert.Len(t, vms, 2)
-
-	// Test case 6 - should not skip deleting VMs
-	vmList = newTestVMsPoolVMList(3)
-	vmList[0].VirtualMachineProperties.ProvisioningState = to.StringPtr("Deleting")
-	manager.azureCache.virtualMachines[vmsAgentPoolName] = vmList
-	vms, err = agentPool.getVMsFromCache(skipOption{skipFailed: true})
-	assert.NoError(t, err)
-	assert.Len(t, vms, 3)
-
-	// Test case 7 - when the vms pool is found in the cache and has VMs with no name
-	manager.azureCache.virtualMachines[vmsAgentPoolName] = newTestVMsPoolVMList(3)
-	agentPool.agentPoolName = ""
-	vms, err = agentPool.getVMsFromCache(skipOption{})
-	assert.NoError(t, err)
-	assert.Len(t, vms, 0)
 }
 
 func TestGetVMsFromCacheForVMsPool(t *testing.T) {
@@ -324,7 +465,7 @@ func TestGetVMsFromCacheForVMsPool(t *testing.T) {
 	ap := newTestVMsPool(newTestAzureManager(t))
 
 	expectedVMs := newTestVMsPoolVMList(2)
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockInterface(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
@@ -353,7 +494,7 @@ func TestNodes(t *testing.T) {
 	ap := newTestVMsPool(newTestAzureManager(t))
 	expectedVMs := newTestVMsPoolVMList(2)
 
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockInterface(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
 
@@ -381,7 +522,7 @@ func TestGetCurSizeForVMsPool(t *testing.T) {
 	ap := newTestVMsPool(newTestAzureManager(t))
 	expectedVMs := newTestVMsPoolVMList(3)
 
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockInterface(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
 
@@ -410,7 +551,7 @@ func TestVMsPoolIncreaseSize(t *testing.T) {
 	ap := newTestVMsPool(manager)
 	expectedVMs := newTestVMsPoolVMList(3)
 
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockInterface(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
 
@@ -467,7 +608,7 @@ func TestDeleteVMsPoolNodes_Failed(t *testing.T) {
 	node := newVMsNode(0)
 
 	expectedVMs := newTestVMsPoolVMList(3)
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockInterface(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
@@ -496,7 +637,7 @@ func TestDeleteVMsPoolNodes_Success(t *testing.T) {
 	ap := newTestVMsPool(newTestAzureManager(t))
 
 	expectedVMs := newTestVMsPoolVMList(5)
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := NewMockInterface(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
@@ -533,6 +674,148 @@ func TestDeleteVMsPoolNodes_Success(t *testing.T) {
 	node := newVMsNode(0)
 	derr := ap.DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, derr)
+}
+
+func TestVMsPoolNodesReportsProvisioningState(t *testing.T) {
+	manager := newTestAzureManager(t)
+	ap := newTestVMsPool(manager)
+
+	vms := newTestVMsPoolVMList(3)
+	vms[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
+	manager.azureCache.virtualMachines[vmsAgentPoolName] = vms
+
+	instances, err := ap.Nodes()
+	assert.NoError(t, err)
+	assert.Len(t, instances, 3)
+
+	statesByID := make(map[string]cloudprovider.InstanceState)
+	for _, instance := range instances {
+		if instance.Status != nil {
+			statesByID[instance.Id] = instance.Status.State
+		}
+	}
+
+	deletingID, err := convertResourceGroupNameToLower("azure://" + fmt.Sprintf(fakeVMsPoolVMID, 0))
+	assert.NoError(t, err)
+	runningID, err := convertResourceGroupNameToLower("azure://" + fmt.Sprintf(fakeVMsPoolVMID, 1))
+	assert.NoError(t, err)
+
+	// The VM in the Deleting provisioning state is surfaced as InstanceDeleting,
+	// while healthy VMs are surfaced as InstanceRunning.
+	assert.Equal(t, cloudprovider.InstanceDeleting, statesByID[deletingID])
+	assert.Equal(t, cloudprovider.InstanceRunning, statesByID[runningID])
+}
+
+func TestDeleteVMsPoolNodesProactivelyMarksDeletion(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ap := newTestVMsPool(newTestAzureManager(t))
+
+	expectedVMs := newTestVMsPoolVMList(5)
+	mockVMClient := NewMockInterface(ctrl)
+	ap.manager.azClient.virtualMachinesClient = mockVMClient
+	ap.manager.config.EnableVMsAgentPool = true
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	agentpool := getTestVMsAgentPool(false)
+	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
+	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).Return(fakeAPListPager)
+	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+
+	ap.manager.azureCache.enableVMsAgentPool = true
+	registered := ap.manager.RegisterNodeGroup(ap)
+	assert.True(t, registered)
+	ap.manager.explicitlyConfigured[vmsNodeGroupName] = true
+	assert.NoError(t, ap.manager.forceRefresh())
+
+	deletingNode := newVMsNode(0)
+	survivingNode := newVMsNode(1)
+
+	// Before the delete, both nodes are reported as present.
+	hasInstance, err := ap.manager.azureCache.HasInstance(deletingNode.Spec.ProviderID)
+	assert.True(t, hasInstance)
+	assert.NoError(t, err)
+
+	resp := &http.Response{
+		Header: map[string][]string{
+			"Fake-Poller-Status": {"Done"},
+		},
+	}
+	fakePoller, pollerErr := runtime.NewPoller(resp, runtime.Pipeline{},
+		&runtime.NewPollerOptions[armcontainerservice.AgentPoolsClientDeleteMachinesResponse]{
+			Handler: &fakehandler[armcontainerservice.AgentPoolsClientDeleteMachinesResponse]{},
+		})
+	assert.NoError(t, pollerErr)
+	mockAgentpoolclient.EXPECT().BeginDeleteMachines(
+		gomock.Any(), ap.manager.config.ClusterResourceGroup,
+		ap.manager.config.ClusterName,
+		vmsAgentPoolName,
+		gomock.Any(), gomock.Any()).Return(fakePoller, nil)
+
+	assert.NoError(t, ap.DeleteNodes([]*apiv1.Node{deletingNode}))
+
+	// The deleted node is proactively reported as gone (false, nil), while other
+	// nodes remain reported as present.
+	hasInstance, err = ap.manager.azureCache.HasInstance(deletingNode.Spec.ProviderID)
+	assert.False(t, hasInstance)
+	assert.NoError(t, err)
+
+	hasInstance, err = ap.manager.azureCache.HasInstance(survivingNode.Spec.ProviderID)
+	assert.True(t, hasInstance)
+	assert.NoError(t, err)
+}
+
+func TestDeleteVMsPoolNodesStrictCacheDoesNotProactivelyMarkDeletion(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ap := newTestVMsPool(newTestAzureManager(t))
+	ap.manager.config.StrictCacheUpdates = true
+
+	expectedVMs := newTestVMsPoolVMList(5)
+	mockVMClient := NewMockInterface(ctrl)
+	ap.manager.azClient.virtualMachinesClient = mockVMClient
+	ap.manager.config.EnableVMsAgentPool = true
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	agentpool := getTestVMsAgentPool(false)
+	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
+	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).Return(fakeAPListPager)
+	mockVMClient.EXPECT().List(gomock.Any(), ap.manager.config.ResourceGroup).Return(expectedVMs, nil)
+
+	ap.manager.azureCache.enableVMsAgentPool = true
+	registered := ap.manager.RegisterNodeGroup(ap)
+	assert.True(t, registered)
+	ap.manager.explicitlyConfigured[vmsNodeGroupName] = true
+	assert.NoError(t, ap.manager.forceRefresh())
+
+	deletingNode := newVMsNode(0)
+
+	hasInstance, err := ap.manager.azureCache.HasInstance(deletingNode.Spec.ProviderID)
+	assert.True(t, hasInstance)
+	assert.NoError(t, err)
+
+	resp := &http.Response{
+		Header: map[string][]string{
+			"Fake-Poller-Status": {"Done"},
+		},
+	}
+	fakePoller, pollerErr := runtime.NewPoller(resp, runtime.Pipeline{},
+		&runtime.NewPollerOptions[armcontainerservice.AgentPoolsClientDeleteMachinesResponse]{
+			Handler: &fakehandler[armcontainerservice.AgentPoolsClientDeleteMachinesResponse]{},
+		})
+	assert.NoError(t, pollerErr)
+	mockAgentpoolclient.EXPECT().BeginDeleteMachines(
+		gomock.Any(), ap.manager.config.ClusterResourceGroup,
+		ap.manager.config.ClusterName,
+		vmsAgentPoolName,
+		gomock.Any(), gomock.Any()).Return(fakePoller, nil)
+
+	assert.NoError(t, ap.DeleteNodes([]*apiv1.Node{deletingNode}))
+
+	// Strict cache mode should not mark deleting nodes as gone before a refresh.
+	hasInstance, err = ap.manager.azureCache.HasInstance(deletingNode.Spec.ProviderID)
+	assert.True(t, hasInstance)
+	assert.NoError(t, err)
 }
 
 type fakehandler[T any] struct{}

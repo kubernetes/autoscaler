@@ -24,8 +24,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud/sdk"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func newTestProvider(t *testing.T) *OVHCloudProvider {
@@ -127,7 +127,7 @@ func TestOVHCloudProvider_Name(t *testing.T) {
 	t.Run("check OVHcloud provider name", func(t *testing.T) {
 		name := provider.Name()
 
-		assert.Equal(t, cloudprovider.OVHcloudProviderName, name)
+		assert.Equal(t, ProviderName, name)
 	})
 }
 

@@ -22,11 +22,15 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
         "arm64": "",
         "amd64": ""
     },
+    "defaultSubnetIPRange": "10.0.0.0/16", // Optional, if not set the hetzner cloud default will be used - make sure this subnet exists within you private network and to use the cidr notation
     "nodeConfigs": {
         "pool1": { // This equals the pool name. Required for each pool that you have
             "cloudInit": "", // HCLOUD_CLOUD_INIT make sure it isn't base64 encoded twice ;]
             "labels": {
                 "node.kubernetes.io/role": "autoscaler-node"
+            },
+            "serverLabels": {
+                "my-label": "my-value"
             },
             "taints":
             [
@@ -35,7 +39,9 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
                     "value": "autoscaler-node",
                     "effect": "NoExecute"
                 }
-            ]
+            ],
+            "subnetIPRange": "10.0.0.0/24", // Optional, if not set the defaultSubnetIPRange will be used - make sure this subnet exists within you private network and to use the cidr notation
+            "firewalls": ["my-pool1-firewall"] // Optional, firewall ids or names attached to this pool's servers in addition to HCLOUD_FIREWALL
         }
     }
 }
@@ -54,6 +60,19 @@ The image selection logic works as follows:
 1. If a nodepool has its own `imagesForArch` configuration, it will be used for that specific nodepool
 1. If a nodepool doesn't have `imagesForArch` configured, the global `imagesForArch` configuration will be used as a fallback
 1. If neither is configured, the legacy `HCLOUD_IMAGE` environment variable will be used
+
+
+The `defaultSubnetIPRange` and `subnetIPRange` configuration can be used to place nodes within a specific IP range.
+This only applies to private networks. Make sure that the subnet exists within your private network.
+If you do not set this value, the default setting from Hetzner Cloud will be used.
+
+The global `defaultSubnetIPRange` can be overridden on a per-nodepool basis by adding a `subnetIPRange` field to individual nodepool configurations.
+
+The `labels` field in a `nodeConfig` specifies key-value pairs used to simulate Kubernetes node labels for autoscaler scheduling decisions.
+
+The `serverLabels` field specifies key-value pairs applied directly to the Hetzner Cloud server at creation time (via the Hetzner API). They are merged with the mandatory internal label `cluster.autoscaler.nodeGroupLabel` (which identifies the node group) before being sent to the API. This allows you to tag servers with metadata visible in the Hetzner Cloud Console, usable for filtering via the Hetzner API, or required by cluster bootstrappers that authenticate nodes via Hetzner server labels (e.g. kops).
+
+The `firewalls` field specifies firewall ids or names attached to that nodepool's servers, in addition to the cluster-wide `HCLOUD_FIREWALL`. The cluster firewall and the per-nodepool firewalls are merged (deduplicated by id), so a pool can carry extra rules without relaxing the firewall on the rest of the cluster. Only available with the `nodeConfigs` format.
 
 `HCLOUD_NETWORK` Default empty , The id or name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
 

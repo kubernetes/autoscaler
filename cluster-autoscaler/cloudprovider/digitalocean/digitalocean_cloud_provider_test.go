@@ -26,8 +26,72 @@ import (
 	"github.com/stretchr/testify/require"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
+
+func defaultDOClientMock(clusterID string) *doClientMock {
+	client := &doClientMock{}
+	ctx := context.Background()
+
+	client.On("ListNodePools", ctx, clusterID, nil).Return(
+		[]*godo.KubernetesNodePool{
+			{
+				ID: "1",
+				Nodes: []*godo.KubernetesNode{
+					{ID: "1", Status: &godo.KubernetesNodeStatus{State: "running"}},
+					{ID: "2", Status: &godo.KubernetesNodeStatus{State: "running"}},
+				},
+				AutoScale: true,
+			},
+			{
+				ID: "2",
+				Nodes: []*godo.KubernetesNode{
+					{ID: "3", Status: &godo.KubernetesNodeStatus{State: "deleting"}},
+					{ID: "4", Status: &godo.KubernetesNodeStatus{State: "running"}},
+				},
+				AutoScale: true,
+			},
+			{
+				ID: "3",
+				Nodes: []*godo.KubernetesNode{
+					{ID: "5", Status: &godo.KubernetesNodeStatus{State: "provisioning"}},
+					{ID: "6", Status: &godo.KubernetesNodeStatus{State: "running"}},
+				},
+				AutoScale: true,
+			},
+			{
+				ID: "4",
+				Nodes: []*godo.KubernetesNode{
+					{ID: "7", Status: &godo.KubernetesNodeStatus{State: "draining"}},
+					{ID: "8", Status: &godo.KubernetesNodeStatus{State: "running"}},
+				},
+				AutoScale: false,
+			},
+		},
+		&godo.Response{},
+		nil,
+	).Once()
+	return client
+}
+
+func setGetNodeTemplateMock(c *doClientMock, times int) *doClientMock {
+	c.On("GetNodePoolTemplate", context.Background(), "123456", "").Return(&godo.KubernetesNodePoolTemplate{
+		Template: &godo.KubernetesNodeTemplate{
+			Labels: make(map[string]string),
+			Capacity: &godo.KubernetesNodePoolResources{
+				CPU:    1,
+				Memory: "2048Mi",
+				Pods:   110,
+			},
+			Allocatable: &godo.KubernetesNodePoolResources{
+				CPU:    380,
+				Memory: "1024MI",
+				Pods:   110,
+			},
+		},
+	}, &godo.Response{}, nil).Times(times)
+	return c
+}
 
 func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudProvider {
 	cfg := `{"cluster_id": "123456", "token": "123-123-123", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
@@ -38,47 +102,7 @@ func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudPro
 
 	// fill the test provider with some example
 	if client == nil {
-		client = &doClientMock{}
-		ctx := context.Background()
-
-		client.On("ListNodePools", ctx, manager.clusterID, nil).Return(
-			[]*godo.KubernetesNodePool{
-				{
-					ID: "1",
-					Nodes: []*godo.KubernetesNode{
-						{ID: "1", Status: &godo.KubernetesNodeStatus{State: "running"}},
-						{ID: "2", Status: &godo.KubernetesNodeStatus{State: "running"}},
-					},
-					AutoScale: true,
-				},
-				{
-					ID: "2",
-					Nodes: []*godo.KubernetesNode{
-						{ID: "3", Status: &godo.KubernetesNodeStatus{State: "deleting"}},
-						{ID: "4", Status: &godo.KubernetesNodeStatus{State: "running"}},
-					},
-					AutoScale: true,
-				},
-				{
-					ID: "3",
-					Nodes: []*godo.KubernetesNode{
-						{ID: "5", Status: &godo.KubernetesNodeStatus{State: "provisioning"}},
-						{ID: "6", Status: &godo.KubernetesNodeStatus{State: "running"}},
-					},
-					AutoScale: true,
-				},
-				{
-					ID: "4",
-					Nodes: []*godo.KubernetesNode{
-						{ID: "7", Status: &godo.KubernetesNodeStatus{State: "draining"}},
-						{ID: "8", Status: &godo.KubernetesNodeStatus{State: "running"}},
-					},
-					AutoScale: false,
-				},
-			},
-			&godo.Response{},
-			nil,
-		).Once()
+		client = defaultDOClientMock(manager.clusterID)
 	}
 
 	manager.client = client
@@ -97,12 +121,15 @@ func TestDigitalOceanCloudProvider_Name(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		name := provider.Name()
-		assert.Equal(t, cloudprovider.DigitalOceanProviderName, name, "provider name doesn't match")
+		assert.Equal(t, ProviderName, name, "provider name doesn't match")
 	})
 }
 
 func TestDigitalOceanCloudProvider_NodeGroups(t *testing.T) {
-	provider := testCloudProvider(t, nil)
+	c := defaultDOClientMock("123456")
+	c = setGetNodeTemplateMock(c, 3)
+
+	provider := testCloudProvider(t, c)
 	err := provider.manager.Refresh()
 	assert.NoError(t, err)
 
@@ -124,7 +151,7 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &doClientMock{}
 		ctx := context.Background()
-
+		client = setGetNodeTemplateMock(client, 2)
 		client.On("ListNodePools", ctx, clusterID, nil).Return(
 			[]*godo.KubernetesNodePool{
 				{

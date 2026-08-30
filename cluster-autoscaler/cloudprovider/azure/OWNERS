@@ -1,18 +1,18 @@
 approvers:
-- feiskyer
-- nilo19
 - tallaxes
-- bryce-soghigian
 - comtalyst
 - jackfrancis
+- rakechill
+- matthchr
 reviewers:
-- feiskyer
-- nilo19
 - tallaxes
-- bryce-soghigian
 - comtalyst
 - jackfrancis
+- rakechill
+- matthchr
 emeritus_approvers:
+- nilo19 # 2026-04-16
+- feisker #2026-04-16
 - marwanad
 
 labels:

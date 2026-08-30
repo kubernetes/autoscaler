@@ -22,13 +22,19 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "huaweicloud"
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
@@ -42,6 +48,13 @@ var (
 		"nvidia-tesla-v100": {},
 	}
 )
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildHuaweiCloud(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 // huaweicloudCloudProvider implements CloudProvider interface defined in autoscaler/cluster-autoscaler/cloudprovider/cloud_provider.go
 type huaweicloudCloudProvider struct {
@@ -90,7 +103,7 @@ func newCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroup
 
 // Name returns the name of the cloud provider.
 func (hcp *huaweicloudCloudProvider) Name() string {
-	return cloudprovider.HuaweicloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups managed by this cloud provider.
@@ -118,10 +131,17 @@ func (hcp *huaweicloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpr
 	instanceID := node.Spec.ProviderID
 	if len(instanceID) == 0 {
 		klog.Warningf("Node %v has no providerId", node.Name)
-		return nil, fmt.Errorf("provider id missing from node: %s", node.Name)
+		return nil, nil
 	}
 
-	return hcp.cloudServiceManager.GetAsgForInstance(instanceID)
+	asg, err := hcp.cloudServiceManager.GetAsgForInstance(instanceID)
+	if err != nil {
+		return nil, err
+	}
+	if asg == nil {
+		return nil, nil
+	}
+	return asg, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
@@ -212,12 +232,12 @@ func (hcp *huaweicloudCloudProvider) addAsg(asg *AutoScalingGroup) {
 }
 
 // BuildHuaweiCloud is called by the autoscaler/cluster-autoscaler/builder to build a huaweicloud cloud provider.
-func BuildHuaweiCloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildHuaweiCloud(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	if len(opts.CloudConfig) == 0 {
 		klog.Fatalf("cloud config is missing.")
 	}
 
-	return newCloudProvider(opts, do, rl)
+	return newCloudProvider(opts.AutoscalingOptions, do, rl)
 }
 
 func buildAsgFromSpec(specStr string, asgs []AutoScalingGroup, manager CloudServiceManager) (*AutoScalingGroup, error) {

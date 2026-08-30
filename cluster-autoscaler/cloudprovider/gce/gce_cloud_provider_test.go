@@ -23,9 +23,9 @@ import (
 	"regexp"
 	"testing"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	. "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
 
@@ -41,6 +41,11 @@ type gceManagerMock struct {
 func (m *gceManagerMock) GetMigSize(mig Mig) (int64, error) {
 	args := m.Called(mig)
 	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *gceManagerMock) IsMigStable(mig Mig) (bool, error) {
+	args := m.Called(mig)
+	return args.Get(0).(bool), args.Error(1)
 }
 
 func (m *gceManagerMock) SetMigSize(mig Mig, size int64) error {

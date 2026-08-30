@@ -4,7 +4,7 @@
 # Introduction
 
 Cluster Autoscaler is a tool that automatically adjusts the size of the Kubernetes cluster when one of the following conditions is true:
-* there are pods that failed to run in the cluster due to insufficient
+* there are pods that failed to be scheduled in the cluster due to insufficient
   resources.
 * there are nodes in the cluster that have been underutilized for an extended period of time and their pods can be placed on other existing nodes.
 
@@ -25,8 +25,8 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [ClusterAPI](./cloudprovider/clusterapi/README.md)
 * [CoreWeave](./cloudprovider/coreweave/README.md)
 * [DigitalOcean](./cloudprovider/digitalocean/README.md)
-* [Exoscale](./cloudprovider/exoscale/README.md)
 * [Equinix Metal](cloudprovider/equinixmetal/README.md#notes)
+* [Exoscale](./cloudprovider/exoscale/README.md)
 * [External gRPC](./cloudprovider/externalgrpc/README.md)
 * [Hetzner](./cloudprovider/hetzner/README.md)
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
@@ -40,8 +40,8 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [Rancher](./cloudprovider/rancher/README.md)
 * [Scaleway](./cloudprovider/scaleway/README.md)
 * [TencentCloud](./cloudprovider/tencentcloud/README.md)
-* [Vultr](./cloudprovider/vultr/README.md)
 * [Utho](./cloudprovider/utho/README.md)
+* [Vultr](./cloudprovider/vultr/README.md)
 
 # Releases
 
@@ -51,6 +51,7 @@ Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes
 
 | Kubernetes Version | CA Version               | Chart Version |
 |--------------------|--------------------------|---------------|
+| 1.34.x             | 1.34.x                   |9.51.0+|
 | 1.33.x             | 1.33.x                   |9.47.0+|
 | 1.32.x             | 1.32.x                   |9.45.0+|
 | 1.31.x             | 1.31.x                   |9.38.0+|
@@ -86,24 +87,40 @@ Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes
 
 ## Schedule
 
-Cluster Autoscaler releases new minor versions shortly after OSS Kubernetes release
-and patches for versions corresponding to currently
-supported [Kubernetes versions](https://kubernetes.io/releases/) on a roughly 2
-month cadence. Currently planned schedule is below. Please note that target
-dates listed below are approximate and we expect up to a week difference between
-target ETA and the actual releases.
+Cluster Autoscaler synchronizes its releases with the [Kubernetes release schedule](https://kubernetes.io/releases/).
 
-| Date       | Maintainer Preparing Release | Backup Maintainer | Type  |
-|------------|------------------------------|-------------------|-------|
-| 2025-06-11 | jackfrancis                  | gjtempleton       | 1.33  |
-| 2025-07-16 | gjtempleton                  | towca             | patch |
-| 2025-08-20 | towca                        | BigDarkClown      | patch |
-| 2025-09-17 | BigDarkClown                 | x13n              | 1.34  |
-| 2025-10-22 | x13n                         | jackfrancis       | patch |
-| 2025-11-19 | jackfrancis                  | gjtempleton       | patch |
+For Cluster Autoscaler releases of new minor versions, expect a release date of up to
+one month after the corresponding Kubernetes release. This is due the fact that upstream
+integrations of Kubernetes into Cluster Autoscaler can't be finalized until the Kubernetes
+release is official, and the time required to test and validate those integrations.
 
-Additional patch releases may happen outside of the schedule in case of critical
-bugs or vulnerabilities.
+Cluster Autoscaler will also release patch versions in accordance with Kubernetes patch
+releases to ensure rapid integration of upstream Kubernetes fixes. The overhead to integrate
+and validate Kubernetes patch releases is less costly, and thus the Cluster Autoscaler
+release date should follow the corresponding Kubernetes release by no more than 1-2 weeks.
+
+Bug fixes and Cloud Provider features to Cluster Autoscaler itself will be continually
+backported into the supported release branches (n - 3, where n is the latest release).
+Backporting into older release branches can be requested as an exception by filing an issue
+and bringing the request [to the official SIG Autoscaling Community](https://github.com/kubernetes/community/blob/master/sig-autoscaling/README.md).
+
+Finally, additional Cluster Autoscaler patch releases may happen outside of the above schedule
+in case of critical bugs or vulnerabilities.
+
+In summary, users should not be guided by a strict patch version equivalency between Kubernetes
+and Cluster Autoscaler (for example, there is no strict requirement to use Cluster Autoscaler v1.34.1 w/ a Kubernetes v1.34.1 cluster). Rather, we recommend that users always use the _latest_
+Cluster Autoscaler release that corresponds to the minor version of Kubernetes that their cluster
+is running.
+
+For example, if the latest (hypothetical) Cluster Autoscaler releases are
+`v1.100.1`, `v1.99.5`, `v1.98.10`, and `v1.97.16`, any of the below scenarios follows the recommended guidance:
+
+| Kubernetes Version  | CA Version               |
+|---------------------|--------------------------|
+| 1.100.0             | 1.100.1                  |
+| 1.99.4              | 1.99.5                   |
+| 1.98.4              | 1.98.10                  |
+| 1.97.16             | 1.97.16                  |
 
 # Notable changes
 
@@ -199,11 +216,9 @@ on them) and set a `priorityClassName: system-cluster-critical` property on your
 (to prevent your pod from being evicted).
 
 Supported cloud providers:
-* GCE https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/
-* GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
+* AliCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/alicloud/README.md
 * AWS https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
 * Azure https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md
-* AliCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/alicloud/README.md
 * BaiduCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/baiducloud/README.md
 * BizflyCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/bizflycloud/README.md
 * Brightbox https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/brightbox/README.md
@@ -212,9 +227,11 @@ Supported cloud providers:
 * CloudStack https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/cloudstack/README.md
 * ClusterAPI https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md
 * DigitalOcean https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/digitalocean/README.md
-* Exoscale https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md
 * Equinix Metal https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/equinixmetal/README.md
+* Exoscale https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md
 * External gRPC https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/externalgrpc/README.md
+* GCE https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/
+* GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
 * Hetzner https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md
 * HuaweiCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/huaweicloud/README.md
 * IonosCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/ionoscloud/README.md
@@ -226,5 +243,5 @@ Supported cloud providers:
 * Rancher https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/rancher/README.md
 * Scaleway https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/scaleway/README.md
 * TencentCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/tencentcloud/README.md
-* Vultr https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/vultr/README.md
 * Utho https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/utho/README.md
+* Vultr https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/vultr/README.md

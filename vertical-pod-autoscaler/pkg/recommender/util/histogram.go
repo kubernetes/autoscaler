@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -227,14 +228,14 @@ func (h *histogram) SaveToChekpoint() (*vpa_types.HistogramCheckpoint, error) {
 	}
 	result.TotalWeight = h.totalWeight
 	// Find max
-	max := 0.
+	maxWeight := 0.
 	for bucket := h.minBucket; bucket <= h.maxBucket; bucket++ {
-		if h.bucketWeight[bucket] > max {
-			max = h.bucketWeight[bucket]
+		if h.bucketWeight[bucket] > maxWeight {
+			maxWeight = h.bucketWeight[bucket]
 		}
 	}
 	// Compute ratio
-	ratio := float64(MaxCheckpointWeight) / max
+	ratio := float64(MaxCheckpointWeight) / maxWeight
 	// Convert weights and drop near-zero weights
 	for bucket := h.minBucket; bucket <= h.maxBucket; bucket++ {
 		newWeight := uint32(round(h.bucketWeight[bucket] * ratio))
@@ -248,7 +249,7 @@ func (h *histogram) SaveToChekpoint() (*vpa_types.HistogramCheckpoint, error) {
 
 func (h *histogram) LoadFromCheckpoint(checkpoint *vpa_types.HistogramCheckpoint) error {
 	if checkpoint == nil {
-		return fmt.Errorf("cannot load from empty checkpoint")
+		return errors.New("cannot load from empty checkpoint")
 	}
 	if checkpoint.TotalWeight < 0.0 {
 		return fmt.Errorf("cannot load checkpoint with negative weight %v", checkpoint.TotalWeight)

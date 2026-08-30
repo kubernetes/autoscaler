@@ -23,10 +23,10 @@ import (
 	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	egoscale "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // instancePoolNodeGroup implements cloudprovider.NodeGroup interface for Exoscale Instance Pools.
@@ -35,6 +35,9 @@ type instancePoolNodeGroup struct {
 
 	m *Manager
 
+	minSize int
+	maxSize int
+
 	sync.Mutex
 }
 
@@ -42,6 +45,9 @@ var errNoInstancePool = errors.New("not an Instance Pool member")
 
 // MaxSize returns maximum size of the node group.
 func (n *instancePoolNodeGroup) MaxSize() int {
+	if n.maxSize > 0 {
+		return n.maxSize
+	}
 	limit, err := n.m.computeInstanceQuota()
 	if err != nil {
 		return 0
@@ -52,7 +58,14 @@ func (n *instancePoolNodeGroup) MaxSize() int {
 
 // MinSize returns minimum size of the node group.
 func (n *instancePoolNodeGroup) MinSize() int {
-	return 1
+
+	// NOTE: minSize is expected to be >= 1.
+	// Update this check to allow 0 if scale-from-zero support is added.
+	if n.minSize <= 0 {
+		return 1
+	}
+
+	return n.minSize
 }
 
 // TargetSize returns the current target size of the node group. It is possible that the

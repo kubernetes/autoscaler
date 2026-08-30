@@ -28,12 +28,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	provisioningv1 "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/rancher/provisioning.cattle.io/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
 	"k8s.io/utils/pointer"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // nodeGroup implements nodeGroup for rancher machine pools.
@@ -221,7 +221,7 @@ func (ng *nodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	node.Status.Allocatable = node.Status.Capacity
 
 	// Setup node info template
-	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.Id())})
+	nodeInfo := framework.NewNodeInfo(node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.Id()), nil))
 	return nodeInfo, nil
 }
 

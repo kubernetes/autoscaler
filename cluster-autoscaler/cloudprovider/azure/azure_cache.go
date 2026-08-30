@@ -19,18 +19,18 @@ package azure
 import (
 	"context"
 	"errors"
+	"maps"
 	"reflect"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/Azure/skewer"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
+	skewer "github.com/Azure/skewer/v2"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 
 	"k8s.io/klog/v2"
 )
@@ -83,10 +83,10 @@ type azureCache struct {
 
 	// scaleSets keeps the set of all known scalesets in the resource group, populated/refreshed via VMSS.List() call.
 	// It is only used/populated if vmType is vmTypeVMSS (default).
-	scaleSets map[string]compute.VirtualMachineScaleSet
+	scaleSets map[string]*armcompute.VirtualMachineScaleSet
 	// virtualMachines keeps the set of all VMs in the resource group.
 	// It is only used/populated if vmType is vmTypeStandard.
-	virtualMachines map[string][]compute.VirtualMachine
+	virtualMachines map[string][]*armcompute.VirtualMachine
 
 	// registeredNodeGroups represents all known NodeGroups.
 	registeredNodeGroups []cloudprovider.NodeGroup
@@ -96,6 +96,12 @@ type azureCache struct {
 	// It is used (together with unownedInstances) when looking up the nodegroup
 	// for a given instance id (see FindForInstance).
 	instanceToNodeGroup map[azureRef]cloudprovider.NodeGroup
+
+	// instanceStates maintains a mapping from instance Ids to their last known
+	// cloudprovider.InstanceState. It is populated alongside instanceToNodeGroup
+	// from the results of calling Nodes() on each nodegroup. It is used by
+	// HasInstance to not include instances in an active state of deletion.
+	instanceStates map[azureRef]cloudprovider.InstanceState
 
 	// unownedInstance maintains a set of instance ids not belonging to any nodegroup.
 	// It is used (together with instanceToNodeGroup) when looking up the nodegroup for a given instance id.
@@ -107,20 +113,27 @@ type azureCache struct {
 }
 
 func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*azureCache, error) {
+	nodeResourceGroup := config.ResourceGroup
+	// Hosted (on-behalf-of) system pool node resources are in the AKS internal resource group within AME tenants,
+	// which differs from the MC_* resource group found in the customer subscription.
+	if config.HostedResourceGroup != "" {
+		nodeResourceGroup = config.HostedResourceGroup
+	}
 	cache := &azureCache{
 		interrupt:            make(chan struct{}),
 		azClient:             client,
 		refreshInterval:      cacheTTL,
-		resourceGroup:        config.ResourceGroup,
+		resourceGroup:        nodeResourceGroup,
 		clusterResourceGroup: config.ClusterResourceGroup,
 		clusterName:          config.ClusterName,
 		enableVMsAgentPool:   config.EnableVMsAgentPool,
 		vmType:               config.VMType,
 		vmsPoolMap:           make(map[string]armcontainerservice.AgentPool),
-		scaleSets:            make(map[string]compute.VirtualMachineScaleSet),
-		virtualMachines:      make(map[string][]compute.VirtualMachine),
+		scaleSets:            make(map[string]*armcompute.VirtualMachineScaleSet),
+		virtualMachines:      make(map[string][]*armcompute.VirtualMachine),
 		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
 		instanceToNodeGroup:  make(map[azureRef]cloudprovider.NodeGroup),
+		instanceStates:       make(map[azureRef]cloudprovider.InstanceState),
 		unownedInstances:     make(map[azureRef]bool),
 		autoscalingOptions:   make(map[azureRef]map[string]string),
 		skus:                 &skewer.Cache{}, // populated iff config.EnableDynamicInstanceList
@@ -146,18 +159,30 @@ func (m *azureCache) getVMsPoolMap() map[string]armcontainerservice.AgentPool {
 	return m.vmsPoolMap
 }
 
-func (m *azureCache) getVirtualMachines() map[string][]compute.VirtualMachine {
+func (m *azureCache) getVirtualMachines() map[string][]*armcompute.VirtualMachine {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	return m.virtualMachines
 }
 
-func (m *azureCache) getScaleSets() map[string]compute.VirtualMachineScaleSet {
+func (m *azureCache) getScaleSets() map[string]*armcompute.VirtualMachineScaleSet {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	return m.scaleSets
+}
+
+// setScaleSet replaces the cached entry for a single VMSS, e.g. after a fresh GET.
+// It copies the map before mutating it so readers that obtained the map via
+// getScaleSets() are not exposed to a concurrent map write.
+func (m *azureCache) setScaleSet(name string, vmss *armcompute.VirtualMachineScaleSet) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	scaleSets := maps.Clone(m.scaleSets)
+	scaleSets[name] = vmss
+	m.scaleSets = scaleSets
 }
 
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
@@ -173,6 +198,7 @@ func (m *azureCache) regenerate() error {
 
 	// Regenerate instance to node groups mapping.
 	newInstanceToNodeGroupCache := make(map[azureRef]cloudprovider.NodeGroup)
+	newInstanceStates := make(map[azureRef]cloudprovider.InstanceState)
 	for _, ng := range m.registeredNodeGroups {
 		klog.V(4).Infof("regenerate: finding nodes for node group %s", ng.Id())
 		instances, err := ng.Nodes()
@@ -184,12 +210,15 @@ func (m *azureCache) regenerate() error {
 		for _, instance := range instances {
 			ref := azureRef{Name: instance.Id}
 			newInstanceToNodeGroupCache[ref] = ng
+			if instance.Status != nil {
+				newInstanceStates[ref] = instance.Status.State
+			}
 		}
 	}
 
 	// Regenerate VMSS to autoscaling options mapping.
 	newAutoscalingOptions := make(map[azureRef]map[string]string)
-	for _, vmss := range m.scaleSets {
+	for _, vmss := range m.getScaleSets() {
 		ref := azureRef{Name: *vmss.Name}
 		options := extractAutoscalingOptionsFromScaleSetTags(vmss.Tags)
 		if !reflect.DeepEqual(m.getAutoscalingOptions(ref), options) {
@@ -202,6 +231,7 @@ func (m *azureCache) regenerate() error {
 	defer m.mutex.Unlock()
 
 	m.instanceToNodeGroup = newInstanceToNodeGroupCache
+	m.instanceStates = newInstanceStates
 	m.autoscalingOptions = newAutoscalingOptions
 
 	// Reset unowned instances cache.
@@ -267,17 +297,17 @@ const (
 )
 
 // fetchVirtualMachines returns the updated list of virtual machines in the config resource group using the Azure API.
-func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine, error) {
+func (m *azureCache) fetchVirtualMachines() (map[string][]*armcompute.VirtualMachine, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
 	result, err := m.azClient.virtualMachinesClient.List(ctx, m.resourceGroup)
 	if err != nil {
 		klog.Errorf("VirtualMachinesClient.List in resource group %q failed: %v", m.resourceGroup, err)
-		return nil, err.Error()
+		return nil, err
 	}
 
-	instances := make(map[string][]compute.VirtualMachine)
+	instances := make(map[string][]*armcompute.VirtualMachine)
 	for _, instance := range result {
 		if instance.Tags == nil {
 			continue
@@ -289,12 +319,11 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine
 		if vmPoolName == nil {
 			vmPoolName = tags[legacyAgentpoolNameTag]
 		}
-		if vmPoolName == nil {
-			continue
+		if vmPoolName != nil {
+			instances[*vmPoolName] = append(instances[*vmPoolName], instance)
 		}
-
-		instances[to.String(vmPoolName)] = append(instances[to.String(vmPoolName)], instance)
 	}
+
 	return instances, nil
 }
 
@@ -334,17 +363,17 @@ func (m *azureCache) fetchVMsPools() (map[string]armcontainerservice.AgentPool, 
 }
 
 // fetchScaleSets returns the updated list of scale sets in the config resource group using the Azure API.
-func (m *azureCache) fetchScaleSets() (map[string]compute.VirtualMachineScaleSet, error) {
+func (m *azureCache) fetchScaleSets() (map[string]*armcompute.VirtualMachineScaleSet, error) {
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
 	result, err := m.azClient.virtualMachineScaleSetsClient.List(ctx, m.resourceGroup)
 	if err != nil {
 		klog.Errorf("VirtualMachineScaleSetsClient.List in resource group %q failed: %v", m.resourceGroup, err)
-		return nil, err.Error()
+		return nil, err
 	}
 
-	sets := make(map[string]compute.VirtualMachineScaleSet)
+	sets := make(map[string]*armcompute.VirtualMachineScaleSet)
 	for _, vmss := range result {
 		sets[*vmss.Name] = vmss
 	}
@@ -450,9 +479,21 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 		return false, err
 	}
 
-	if m.getInstanceFromCache(resourceID) != nil {
+	// A single pass over instanceToNodeGroup locates the instance. The matched key
+	// also indexes instanceStates, which setInstanceStateByProviderID keeps aligned
+	// with instanceToNodeGroup, so the state can be retrieved with a direct lookup.
+	for instanceID := range m.instanceToNodeGroup {
+		if !strings.EqualFold(instanceID.GetKey(), resourceID) {
+			continue
+		}
+		// An instance that is actively being deleted is reported as gone so that
+		// ClusterStateRegistry stops counting it as an upcoming node.
+		if state, found := m.instanceStates[instanceID]; found && state == cloudprovider.InstanceDeleting {
+			return false, nil
+		}
 		return true, nil
 	}
+
 	// couldn't find instance in the cache, assume it's deleted
 	return false, cloudprovider.ErrNotImplemented
 }
@@ -509,9 +550,11 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 }
 
 // isAllScaleSetsAreUniform determines if all the scale set autoscaler is monitoring are Uniform or not.
+// Should be called with lock, as it reads m.scaleSets directly.
 func (m *azureCache) areAllScaleSetsUniform() bool {
 	for _, scaleSet := range m.scaleSets {
-		if scaleSet.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Flexible {
+		if scaleSet.Properties != nil && scaleSet.Properties.OrchestrationMode != nil &&
+			*scaleSet.Properties.OrchestrationMode == armcompute.OrchestrationModeFlexible {
 			return false
 		}
 	}
@@ -528,4 +571,24 @@ func (m *azureCache) getInstanceFromCache(providerID string) cloudprovider.NodeG
 	}
 
 	return nil
+}
+
+// setInstanceStateByProviderID records the last known InstanceState for the given
+// providerID.
+func (m *azureCache) setInstanceStateByProviderID(providerID string, state cloudprovider.InstanceState) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	resourceID, err := convertResourceGroupNameToLower(providerID)
+	if err != nil {
+		klog.Errorf("setInstanceStateByProviderID: error converting providerID %s: %v", providerID, err)
+		return
+	}
+
+	for instanceID := range m.instanceToNodeGroup {
+		if strings.EqualFold(instanceID.GetKey(), resourceID) {
+			m.instanceStates[instanceID] = state
+			return
+		}
+	}
 }

@@ -39,7 +39,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	klog "k8s.io/klog/v2"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 const (
@@ -66,6 +66,8 @@ const (
 	autoDiscovererTypeClusterAPI  = "clusterapi"
 	autoDiscovererClusterNameKey  = "clusterName"
 	autoDiscovererNamespaceKey    = "namespace"
+
+	machinePhaseFailed = "Failed"
 )
 
 // machineController watches for Nodes, Machines, MachinePools, MachineSets, and
@@ -611,6 +613,36 @@ func getAPIGroupPreferredVersion(client discovery.DiscoveryInterface, APIGroup s
 	return "", fmt.Errorf("failed to find API group %q", APIGroup)
 }
 
+// getKindPreferredVersion returns the first version in apiGroup that serves the given Kind.
+// In CAPI v1beta2, infrastructureRef only carries apiGroup (no apiVersion), so the
+// group-level preferred version may not match what the infra provider actually serves.
+func getKindPreferredVersion(client discovery.DiscoveryInterface, apiGroup, kind string) (string, error) {
+	groupList, err := client.ServerGroups()
+	if err != nil {
+		return "", fmt.Errorf("failed to get ServerGroups: %v", err)
+	}
+
+	for _, group := range groupList.Groups {
+		if group.Name != apiGroup {
+			continue
+		}
+		for _, v := range group.Versions {
+			resourceList, err := client.ServerResourcesForGroupVersion(v.GroupVersion)
+			if err != nil {
+				return "", fmt.Errorf("failed to get resources for %s: %v", v.GroupVersion, err)
+			}
+			for _, r := range resourceList.APIResources {
+				if r.Kind == kind {
+					return v.Version, nil
+				}
+			}
+		}
+		return "", fmt.Errorf("kind %q not found in any version of group %q", kind, apiGroup)
+	}
+
+	return "", fmt.Errorf("failed to find API group %q", apiGroup)
+}
+
 func (c *machineController) scalableResourceProviderIDs(scalableResource *unstructured.Unstructured) ([]string, error) {
 	if scalableResource.GetKind() == machinePoolKind {
 		return c.findMachinePoolProviderIDs(scalableResource)
@@ -655,14 +687,24 @@ func (c *machineController) findScalableResourceProviderIDs(scalableResource *un
 		}
 
 		if found {
-			// Provide a normalized ID to allow the autoscaler to track machines that will never
-			// become nodes and mark the nodegroup unhealthy after maxNodeProvisionTime.
-			// Fake ID needs to be recognised later and converted into a machine key.
-			// Use an underscore as a separator between namespace and name as it is not a
-			// valid character within a namespace name.
-			klog.V(4).Infof("Status.FailureMessage of machine %q is %q", machine.GetName(), failureMessage)
-			providerIDs = append(providerIDs, createFailedMachineNormalizedProviderID(machine.GetNamespace(), machine.GetName()))
-			continue
+			machinePhase, found, err := unstructured.NestedString(machine.UnstructuredContent(), "status", "phase")
+			if err != nil {
+				return nil, err
+			}
+
+			if found && machinePhase == machinePhaseFailed {
+				// Provide a normalized ID to allow the autoscaler to track machines that will never
+				// become nodes and mark the nodegroup unhealthy after maxNodeProvisionTime.
+				// Fake ID needs to be recognised later and converted into a machine key.
+				// Use an underscore as a separator between namespace and name as it is not a
+				// valid character within a namespace name.
+
+				// TODO(LucasAndFlores): once we moved to the version 1.15, we should exclude the check for failed machine (lines 684-708), since this state was deprecated.
+				// Ref: https://cluster-api.sigs.k8s.io/developer/providers/migrations/v1.10-to-v1.11#deprecations
+				klog.V(4).Infof("Status.FailureMessage of machine %q is %q", machine.GetName(), failureMessage)
+				providerIDs = append(providerIDs, createFailedMachineNormalizedProviderID(machine.GetNamespace(), machine.GetName()))
+				continue
+			}
 		}
 
 		// Deleting Machines
@@ -766,6 +808,13 @@ func (c *machineController) nodeGroups() ([]cloudprovider.NodeGroup, error) {
 		}
 
 		if ng != nil {
+			if isScalableResourceAndPaused(*r) {
+				// if the resource is paused from reconciling by cluster api controllers, we don't want to include it
+				// as an active node group.
+				klog.V(4).Infof("discovered a paused node group: %s", ng.Debug())
+				continue
+			}
+
 			nodegroups = append(nodegroups, ng)
 			klog.V(4).Infof("discovered node group: %s", ng.Debug())
 		}
@@ -779,6 +828,13 @@ func (c *machineController) nodeGroupForNode(node *corev1.Node) (*nodegroup, err
 		return nil, err
 	}
 	if scalableResource == nil {
+		return nil, nil
+	}
+
+	// if the scalable resource associated with this node is paused, we do not want to associate
+	// the node with a node group as the group will also be paused. we return nil here to ensure
+	// that the core autoscaler does not try to remove the node while it is paused.
+	if isScalableResourceAndPaused(*scalableResource) {
 		return nil, nil
 	}
 
@@ -847,6 +903,27 @@ func (c *machineController) listMachinesForScalableResource(r *unstructured.Unst
 	default:
 		return nil, fmt.Errorf("unknown scalable resource kind %s", r.GetKind())
 	}
+}
+
+func (c *machineController) listMachineSetsForMachineDeployment(r *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
+	selector := labels.SelectorFromSet(map[string]string{
+		machineDeploymentNameLabel: r.GetName(),
+	})
+	objs, err := c.machineSetInformer.Lister().ByNamespace(r.GetNamespace()).List(selector)
+	if err != nil {
+		return nil, fmt.Errorf("unable to list MachineSets for MachineDeployment %s: %w", r.GetName(), err)
+	}
+
+	results := make([]*unstructured.Unstructured, 0, len(objs))
+	for _, x := range objs {
+		u, ok := x.(*unstructured.Unstructured)
+		if !ok {
+			return nil, fmt.Errorf("expected unstructured resource from lister, not %T", x)
+		}
+		results = append(results, u.DeepCopy())
+	}
+
+	return results, nil
 }
 
 func (c *machineController) listScalableResources() ([]*unstructured.Unstructured, error) {

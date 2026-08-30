@@ -7,14 +7,14 @@
 <!-- toc -->
 - [Summary](#summary)
 - [Motivation](#motivation)
-   - [Goals](#goals)
-   - [Non-Goals](#non-goals)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
-   - [Test Plan](#test-plan)
+  - [Test Plan](#test-plan)
 - [Implementation History](#implementation-history)
 - [Alternatives](#alternatives)
-   - [Update the eviction API](#update-the-eviction-api)
+  - [Update the eviction API](#update-the-eviction-api)
 <!-- /toc -->
 
 ## Summary

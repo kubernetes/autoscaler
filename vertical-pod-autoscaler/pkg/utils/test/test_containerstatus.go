@@ -17,7 +17,7 @@ limitations under the License.
 package test
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -64,25 +64,25 @@ func (cs *containerStatusBuilder) WithMemLimit(memLimit resource.Quantity) *cont
 	return &r
 }
 
-func (cs *containerStatusBuilder) Get() apiv1.ContainerStatus {
-	containerStatus := apiv1.ContainerStatus{
+func (cs *containerStatusBuilder) Get() corev1.ContainerStatus {
+	containerStatus := corev1.ContainerStatus{
 		Name: cs.name,
-		Resources: &apiv1.ResourceRequirements{
-			Requests: apiv1.ResourceList{},
-			Limits:   apiv1.ResourceList{},
+		Resources: &corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{},
+			Limits:   corev1.ResourceList{},
 		},
 	}
 	if cs.cpuRequest != nil {
-		containerStatus.Resources.Requests[apiv1.ResourceCPU] = *cs.cpuRequest
+		containerStatus.Resources.Requests[corev1.ResourceCPU] = *cs.cpuRequest
 	}
 	if cs.memRequest != nil {
-		containerStatus.Resources.Requests[apiv1.ResourceMemory] = *cs.memRequest
+		containerStatus.Resources.Requests[corev1.ResourceMemory] = *cs.memRequest
 	}
 	if cs.cpuLimit != nil {
-		containerStatus.Resources.Limits[apiv1.ResourceCPU] = *cs.cpuLimit
+		containerStatus.Resources.Limits[corev1.ResourceCPU] = *cs.cpuLimit
 	}
 	if cs.memLimit != nil {
-		containerStatus.Resources.Limits[apiv1.ResourceMemory] = *cs.memLimit
+		containerStatus.Resources.Limits[corev1.ResourceMemory] = *cs.memLimit
 	}
 	return containerStatus
 }

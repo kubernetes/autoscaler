@@ -24,14 +24,27 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "baiducloud"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildBaiducloud(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
@@ -56,7 +69,7 @@ type baiducloudCloudProvider struct {
 }
 
 // BuildBaiducloud builds baiducloud cloud provider, manager etc.
-func BuildBaiducloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildBaiducloud(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var cfg io.ReadCloser
 	if opts.CloudConfig != "" {
 		var err error
@@ -147,7 +160,7 @@ func (baiducloud *baiducloudCloudProvider) addAsg(asg *Asg) {
 
 // Name returns name of the cloud provider.
 func (baiducloud *baiducloudCloudProvider) Name() string {
-	return cloudprovider.BaiducloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
@@ -184,7 +197,13 @@ func (baiducloud *baiducloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (c
 		return nil, fmt.Errorf("parse ProviderID failed: %v", node.Spec.ProviderID)
 	}
 	asg, err := baiducloud.baiducloudManager.GetAsgForInstance(splitted[1])
-	return asg, err
+	if err != nil {
+		return nil, err
+	}
+	if asg == nil {
+		return nil, nil
+	}
+	return asg, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
@@ -385,7 +404,7 @@ func (asg *Asg) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(asg.Name)})
+	nodeInfo := framework.NewNodeInfo(node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(asg.Name), nil))
 	return nodeInfo, nil
 }
 

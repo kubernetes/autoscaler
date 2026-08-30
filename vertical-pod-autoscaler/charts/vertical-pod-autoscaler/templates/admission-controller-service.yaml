@@ -1,0 +1,19 @@
+{{- if .Values.admissionController.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.admissionController.service.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+  {{- with .Values.admissionController.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  ports:
+    {{- toYaml .Values.admissionController.service.ports | nindent 4 }}
+  selector:
+    {{- include "vertical-pod-autoscaler.admissionController.selectorLabels" . | nindent 4 }}
+{{- end -}}

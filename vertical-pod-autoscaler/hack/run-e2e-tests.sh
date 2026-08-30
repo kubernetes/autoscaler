@@ -43,21 +43,49 @@ fi
 SUITE=$1
 
 export GO111MODULE=on
+# todo(adrianmoisey): Make the setting of GOBIN nicer
+ABSOLUTE_PATH=$(realpath "${SCRIPT_ROOT}")
+export GOBIN="${ABSOLUTE_PATH}/test/e2e/_output/bin"
 
-export WORKSPACE=${WORKSPACE:-/workspace/_artifacts}
+export ARTIFACTS=${ARTIFACTS:-/workspace/_artifacts}
+
+SKIP="--ginkgo.skip=\[Feature\:OffByDefault\]"
+
+if [ "${TEST_WITH_FEATURE_GATES_ENABLED:-}" == "true" ]; then
+  SKIP=""
+fi
+
+NUMPROC=${NUMPROC:-10}
+
+# Dump logs of all VPA component pods into ARTIFACTS so CI uploads them.
+function dump_vpa_logs {
+  local ns="kube-system"
+  mkdir -p "${ARTIFACTS}"
+  local component pod name
+  for component in admission-controller recommender updater; do
+    for pod in $(kubectl get pods -n "${ns}" -l "app.kubernetes.io/component=${component}" -o name 2>/dev/null); do
+      name="${pod#pod/}"
+      echo "Dumping $component logs for pod $pod ..."
+      kubectl logs -n "${ns}" "${name}" --request-timeout=5s --tail=-1 > "${ARTIFACTS}/${name}.log" 2>/dev/null || true
+      kubectl logs -n "${ns}" "${name}" --request-timeout=5s --tail=-1 --previous > "${ARTIFACTS}/${name}-previous.log" 2>/dev/null \
+        || rm -f "${ARTIFACTS}/${name}-previous.log"
+    done
+  done
+}
 
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
-    pushd ${SCRIPT_ROOT}/e2e
-    go test ./v1/*go -v --test.timeout=150m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=150m
+    pushd ${SCRIPT_ROOT}/test/e2e
+    go install github.com/onsi/ginkgo/v2/ginkgo
+    ${GOBIN}/ginkgo build v1/ && ${GOBIN}/ginkgo --nodes=$NUMPROC --focus="\[VPA\] \[${SUITE}\]" v1/v1.test -- --report-dir=${ARTIFACTS} --disable-log-dump ${SKIP}
     V1_RESULT=$?
     popd
+    echo "Copying VPA logs to ${ARTIFACTS}"
+    dump_vpa_logs
     echo v1 test result: ${V1_RESULT}
     if [ $V1_RESULT -gt 0 ]; then
       echo "Please check v1 \"go test\" logs!"
-    fi
-    if [ $V1_RESULT -gt 0 ]; then
       echo "Tests failed"
       exit 1
     fi

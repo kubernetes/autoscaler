@@ -19,7 +19,6 @@ package clusterapi
 import (
 	"fmt"
 	"path"
-	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -32,11 +31,24 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	klog "k8s.io/klog/v2"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/scaledowncandidates"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "clusterapi"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildClusterAPI(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
@@ -73,7 +85,7 @@ func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup,
 	if err != nil {
 		return nil, err
 	}
-	if ng == nil || reflect.ValueOf(ng).IsNil() {
+	if ng == nil {
 		return nil, nil
 	}
 	return ng, nil
@@ -153,7 +165,7 @@ func newProvider(
 }
 
 // BuildClusterAPI builds CloudProvider implementation for machine api.
-func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildClusterAPI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	managementKubeconfig := opts.CloudConfig
 	if managementKubeconfig == "" && !opts.ClusterAPICloudConfigAuthoritative {
 		managementKubeconfig = opts.KubeClientOpts.KubeConfigPath
@@ -178,7 +190,7 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 	// Grab a dynamic interface that we can create informers from
 	managementClient, err := dynamic.NewForConfig(managementConfig)
 	if err != nil {
-		klog.Fatalf("could not generate dynamic client for config")
+		klog.Fatalf("could not generate dynamic client for config: %v", err)
 	}
 
 	workloadClient, err := kubernetes.NewForConfig(workloadConfig)
@@ -210,9 +222,14 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 		klog.Fatal(err)
 	}
 
+	scaleDownUpgradeProcessor := NewScaleDownNodeUpgradeProcessor(controller)
+	if err := scaledowncandidates.RegisterCombinedScaleDownCandidateProcessor(opts.Processors.ScaleDownNodeProcessor, scaleDownUpgradeProcessor); err != nil {
+		klog.Fatalf("unable to register scale down upgrade processor: %v", err)
+	}
+
 	if err := controller.run(); err != nil {
 		klog.Fatal(err)
 	}
 
-	return newProvider(cloudprovider.ClusterAPIProviderName, rl, controller)
+	return newProvider(ProviderName, rl, controller)
 }

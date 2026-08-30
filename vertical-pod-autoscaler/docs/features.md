@@ -2,11 +2,33 @@
 
 ## Contents
 
+<!-- toc -->
 - [Limits control](#limits-control)
 - [Memory Value Humanization](#memory-value-humanization)
 - [CPU Recommendation Rounding](#cpu-recommendation-rounding)
 - [Memory Recommendation Rounding](#memory-recommendation-rounding)
-- [In-Place Updates](#in-place-updates-inplaceorrecreate)
+- [In-Place Updates (<code>InPlaceOrRecreate</code>)](#in-place-updates-inplaceorrecreate)
+  - [Usage](#usage)
+  - [Behavior](#behavior)
+  - [Skipping Disruption Budget for Non-Disruptive Updates](#skipping-disruption-budget-for-non-disruptive-updates)
+    - [When Disruption Budgets Are Still Respected](#when-disruption-budgets-are-still-respected)
+  - [Requirements:](#requirements)
+  - [Limitations](#limitations)
+  - [Fallback Behavior](#fallback-behavior)
+  - [Monitoring](#monitoring)
+- [Eviction-Free In-Place Updates (<code>InPlace</code>)](#eviction-free-in-place-updates-inplace)
+  - [Usage](#usage-1)
+  - [Behavior](#behavior-1)
+  - [Infeasible Attempt Tracking](#infeasible-attempt-tracking)
+  - [Requirements](#requirements-1)
+  - [Limitations](#limitations-1)
+  - [Monitoring](#monitoring-1)
+- [CPU Startup Boost](#cpu-startup-boost)
+  - [Usage](#usage-2)
+  - [Behavior](#behavior-2)
+  - [Requirements](#requirements-2)
+  - [Configuration](#configuration)
+<!-- /toc -->
 
 ## Limits control
 
@@ -80,9 +102,11 @@ To enable this feature, set the `--round-memory-bytes` flag when running the VPA
 
 ## In-Place Updates (`InPlaceOrRecreate`)
 
-> [!WARNING] 
-> FEATURE STATE: VPA v1.4.0 [alpha]
-> FEATURE STATE: VPA v1.5.0 [beta]
+> [!NOTE]
+> FEATURE STATE:
+> - VPA v1.4.0 [alpha]
+> - VPA v1.5.0 [beta]
+> - VPA v1.6.0 [ga]
 
 VPA supports in-place updates to reduce disruption when applying resource recommendations. This feature leverages Kubernetes' in-place update capabilities (which is in beta as of Kubernetes 1.33) to modify container resources without requiring pod recreation.
 For more information, see [AEP-4016: Support for in place updates in VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support)
@@ -114,18 +138,23 @@ Important Notes
 
 * Memory Limit Downscaling: In the beta version, memory limit downscaling is not supported for pods with resizePolicy: PreferNoRestart. In such cases, VPA will fall back to pod recreation.
 
+### Skipping Disruption Budget for Non-Disruptive Updates
+
+By default, VPA respects disruption budgets (eviction tolerance, min replicas) even for in-place updates. However, when an in-place update doesn't require container restarts, it's truly non-disruptive and these checks may be unnecessarily restrictive.
+
+The `--in-place-skip-disruption-budget` flag (default: `false`) allows VPA to skip disruption budget checks for in-place updates when all containers in the pod have `NotRequired` resize policy for both CPU and memory or no resize policy is defined.
+
+#### When Disruption Budgets Are Still Respected
+
+Even with this flag enabled, disruption budgets are enforced when:
+* Any container has `RestartContainer` resize policy for any resource
+* The update would result in pod eviction/recreation (fallback scenarios)
+
+
 ### Requirements:
 
 * Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
-* VPA version 1.4.0+ with `InPlaceOrRecreate` feature gate enabled
-
-### Configuration
-
-Enable the feature by setting the following flags in VPA components ( for both updater and admission-controller ):
-
-```bash
---feature-gates=InPlaceOrRecreate=true
-``` 
+* VPA version 1.4.0 requires the `InPlaceOrRecreate` feature gate to be enabled. Starting from VPA version 1.5.0, the feature gate is enabled by default, and in VPA version 1.7.0, the feature gate was removed.
 
 ### Limitations
 
@@ -148,8 +177,141 @@ VPA will fall back to pod recreation in the following scenarios:
 
 VPA provides metrics to track in-place update operations:
 
-* `vpa_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
-* `vpa_in_place_updated_pods_total`: Number of pods successfully updated in-place
-* `vpa_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
-* `vpa_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
+* `vpa_updater_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
+* `vpa_updater_in_place_updated_pods_total`: Number of pods successfully updated in-place
+* `vpa_updater_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
+* `vpa_updater_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
 * `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place.
+
+## Eviction-Free In-Place Updates (`InPlace`)
+
+> [!WARNING]
+> FEATURE STATE: VPA v1.7.0 [alpha]
+
+VPA supports an eviction-free in-place update mode for workloads where any disruption is unacceptable. Unlike `InPlaceOrRecreate`, this mode will never evict pods — it only attempts in-place updates and retries when cluster conditions change.
+For more information, see [AEP-8818: Eviction-Free In-Place Updates in VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/8818-in-place-only)
+
+### Usage
+
+To use eviction-free in-place updates, enable the `InPlace` feature gate and set the VPA's `updateMode` to `InPlace`:
+
+```bash
+--feature-gates=InPlace=true
+```
+
+```yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: my-vpa
+spec:
+  updatePolicy:
+    updateMode: "InPlace"
+```
+
+### Behavior
+
+When using `InPlace` mode, VPA will attempt to apply resource updates in-place and never fall back to pod eviction. If an update cannot be applied, VPA defers and retries in subsequent reconciliation loops.
+
+The updater evaluates each pod through the `CanInPlaceUpdate` function, which returns one of the following decisions:
+
+| Decision | Meaning |
+|---|---|
+| `InPlaceApproved` | Pod can be in-place updated |
+| `InPlaceDeferred` | Pod cannot be updated right now; will retry next loop |
+| `InPlaceInfeasible` | Update is infeasible; stores the attempt for tracking |
+| `InPlaceInfeasibleCached` | Previously cached infeasibility; skips without re-checking |
+
+When a pod is currently undergoing a resize, VPA checks the resize status reported by kubelet:
+
+| Resize Status | Action |
+|---|---|
+| `ResizeDeferred` | Wait for kubelet to proceed |
+| `ResizeInProgress` | Wait for completion |
+| `ResizeInfeasible` | Store as infeasible, skip pod |
+| `ResizeError` | Transient kubelet error; defer and retry next loop |
+| `ResizeNone` | No resize pending, proceed with update evaluation |
+
+### Infeasible Attempt Tracking
+
+VPA tracks infeasible resize attempts to prevent infinite retry loops. When an update is determined to be infeasible (either via kubelet resize status or API server patch rejection), VPA stores the attempted resource values. The pod is only retried when the recommendation changes to have at least one resource value lower than the stored infeasible attempt.
+
+### Requirements
+
+* Kubernetes 1.33+ with `InPlacePodVerticalScaling` feature gate enabled
+* VPA version 1.7.0+ with `InPlace` feature gate enabled
+
+### Limitations
+
+* Resizes are never guaranteed to succeed — node capacity constraints may prevent in-place resizes indefinitely
+* Memory limit downsizing carries a risk of OOMKill if current usage exceeds the new limit (this is inherent to in-place updates, not VPA-specific)
+* The infeasible attempts map is stored in-memory; updater restarts will cause one retry of previously-infeasible attempts
+
+### Monitoring
+
+The same in-place update metrics used for `InPlaceOrRecreate` apply to `InPlace` mode:
+
+* `vpa_updater_in_place_updatable_pods_total`: Number of pods matching in-place update criteria
+* `vpa_updater_in_place_updated_pods_total`: Number of pods successfully updated in-place
+* `vpa_updater_vpas_with_in_place_updatable_pods_total`: Number of VPAs with pods eligible for in-place updates
+* `vpa_updater_vpas_with_in_place_updated_pods_total`: Number of VPAs with successfully in-place updated pods
+* `vpa_updater_failed_in_place_update_attempts_total`: Number of failed attempts to update pods in-place
+
+## CPU Startup Boost
+
+> [!WARNING]
+> FEATURE STATE: VPA v1.7.0 [alpha]
+
+The CPU Startup Boost feature allows VPA to temporarily increase CPU requests and limits for containers during pod startup. This can help workloads that have high CPU demands during their initialization phase, such as Java applications, to start faster. Once the pod is considered `Ready` and an optional duration has passed, VPA scales the CPU resources back down to their normal levels using an in-place resize.
+
+For more details, see [AEP-7862: CPU Startup Boost](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/7862-cpu-startup-boost).
+
+### Usage
+
+CPU Startup Boost is configured via the `startupBoost` field in the `VerticalPodAutoscalerSpec` or within the per-container `containerPolicies`. This allows for both global and per-container boost configurations.
+
+This example enables a startup boost for all containers in the targeted deployment. The CPU will be multiplied by a factor of 3 for 10 seconds after the pod becomes ready.
+
+```yaml
+apiVersion: "autoscaling.k8s.io/v1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: example-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: example
+  updatePolicy:
+    updateMode: "Recreate"
+  startupBoost:
+    cpu:
+      type: "Factor"
+      factor: 3
+      durationSeconds: 10
+```
+
+### Behavior
+
+1.  When a pod managed by the VPA is created, the VPA Admission Controller applies the CPU boost.
+2.  The VPA Updater monitors the pod. Once the pod's condition is `Ready` and the `startupBoost.cpu.durationSeconds` has elapsed, it scales the CPU resources down in-place.
+3.  The scale-down/unboost target is either the VPA recommendation (if VPA is enabled for the container) or the original CPU resources defined in the pod spec.
+
+### Requirements
+
+*   Kubernetes 1.33+ with the `InPlacePodVerticalScaling` feature gate enabled.
+*   VPA version 1.7.0+ with the `CPUStartupBoost` feature gate enabled.
+
+### Configuration
+
+Enable the feature by setting the `CPUStartupBoost` feature gate in the VPA admission-controller and updater components:
+
+```bash
+--feature-gates=CPUStartupBoost=true
+```
+
+The `startupBoost` field contains a `cpu` field with the following sub-fields:
+*   `type`: (Required) The type of boost. Can be `Factor` to multiply the CPU, or `Quantity` to add a specific CPU value.
+*   `factor`: (Optional) The multiplier to apply if `type` is `Factor` (e.g., 2 for 2x CPU). Required if `type` is `Factor`.
+*   `quantity`: (Optional) The amount of CPU to add if `type` is `Quantity` (e.g., "500m"). Required if `type` is `Quantity`.
+*   `durationSeconds`: (Optional) How long to keep the boost active *after* the pod becomes `Ready`. Defaults to `0`.

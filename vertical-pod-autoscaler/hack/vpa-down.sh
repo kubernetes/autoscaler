@@ -22,4 +22,43 @@ SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
 $SCRIPT_ROOT/hack/vpa-process-yamls.sh delete $*
 
-$SCRIPT_ROOT/hack/warn-obsolete-vpa-objects.sh
+function check_obsolete_cluster_role()
+{
+    kubectl get clusterrole system:admission-controller &> /dev/null
+    OBSOLETE_CLUSTERROLE_EXISTS=$?
+    if [[ $ret -eq 0 ]]; then
+        kubectl get clusterrole system:admission-controller -o yaml 2>&1 | grep verticalpodautoscalers &> /dev/null
+        OBSOLETE_CLUSTERROLE_EXISTS=$?
+    fi
+
+    kubectl get clusterrolebinding system:admission-controller &> /dev/null
+    OBSOLETE_CLUSTERROLE_BINDING_EXISTS=$?
+}
+
+check_obsolete_cluster_role
+
+if [[ ${OBSOLETE_CLUSTERROLE_EXISTS} -eq 0 ]]; then
+    echo
+    echo "Older version of vpa-up.sh creates a ClusterRole object named system:admission-controller"
+    echo "that is now renamed to system:vpa-admission-controller to avoid confusion.  A ClusterRole"
+    echo "object of the same name still exists in the cluster and it appears to be created by vpa-up.sh."
+    echo "Please inspect the object and delete manually if it is created by vpa-up.sh"
+    echo
+    echo "You can inspect the object content by running"
+    echo
+    echo "kubectl get clusterrole system:admission-controller -o yaml"
+    echo
+fi
+
+if [[ ${OBSOLETE_CLUSTERROLE_BINDING_EXISTS} -eq 0 ]]; then
+    echo
+    echo "Older version of vpa-up.sh creates a ClusterRoleBinding object named system:admission-controller"
+    echo "that is now renamed to system:vpa-admission-controller to avoid confusion.  A ClusterRoleBinding"
+    echo "object of the same name still exists in the cluster."
+    echo "Please inspect the object and delete manually if it is created by vpa-up.sh"
+    echo
+    echo "You can inspect the object content by running"
+    echo
+    echo "kubectl get clusterrolebinding system:admission-controller -o yaml"
+    echo
+fi
