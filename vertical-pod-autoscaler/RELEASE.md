@@ -238,8 +238,8 @@ sure nothing we care about will break if we do.
     git switch vpa-release-1.${minor}
     ```
 
-2.  [ ] Update information about newest version and K8s compatibility in
-    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/installation.md#compatibility).
+2.  [ ] Update information about newest version, supported versions and K8s compatibility in
+    [the installation section of README](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/installation.md).
 
 3.  [ ] Update the yaml and sh files:
 
