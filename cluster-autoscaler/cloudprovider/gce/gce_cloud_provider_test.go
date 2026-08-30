@@ -154,6 +154,34 @@ func TestNodeGroupForNode(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 
+func TestNodeGroupForNodeWithForeignProviderId(t *testing.T) {
+	gceManagerMock := &gceManagerMock{}
+	gce := &GceCloudProvider{
+		gceManager: gceManagerMock,
+	}
+	for _, providerId := range []string{
+		"k3s://control-plane-1",
+		"azure:///subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/vmss/virtualMachines/0",
+		"",
+		// Short foreign ID that would panic on a bare id[6:] slice.
+		"x",
+		// Foreign ID with three path components: without an explicit gce://
+		// prefix check it would be misparsed as a GCE reference.
+		"aws://project/zone/name",
+		// gce:// scheme but with a missing/empty component.
+		"gce://project/zone",
+		"gce:///zone/name",
+	} {
+		n := BuildTestNode("n1", 1000, 1000)
+		n.Spec.ProviderID = providerId
+
+		nodeGroup, err := gce.NodeGroupForNode(context.Background(), n)
+		assert.NoError(t, err)
+		assert.Nil(t, nodeGroup)
+	}
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+}
+
 func TestGetResourceLimiter(t *testing.T) {
 	gceManagerMock := &gceManagerMock{}
 	resourceLimiter := cloudprovider.NewResourceLimiter(
