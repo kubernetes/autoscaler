@@ -104,8 +104,8 @@ type AggregateContainerState struct {
 	// AggregateMemoryPeaks is a distribution of memory peaks from all containers:
 	// each container should add one peak per memory aggregation interval (e.g. once every 24h).
 	AggregateMemoryPeaks util.Histogram
-	// TotalSamplesCount is CPU-only (checkpoint field). First/LastSampleStart
-	// also follow memory samples so memory-only aggregates age correctly.
+	// TotalSamplesCount is CPU-only (checkpoint field)
+	// First/LastSampleStart also follow memory samples so memory-only aggregates age correctly.
 	FirstSampleStart  time.Time
 	LastSampleStart   time.Time
 	TotalSamplesCount int
@@ -229,8 +229,7 @@ func (a *AggregateContainerState) AddSample(sample *ContainerUsageSample) {
 	case ResourceCPU:
 		a.addCPUSample(sample)
 	case ResourceMemory:
-		a.AggregateMemoryPeaks.AddSample(BytesFromMemoryAmount(sample.Usage), 1.0, sample.MeasureStart)
-		a.observeSampleTime(sample.MeasureStart)
+		a.addMemorySample(sample)
 	default:
 		panic(fmt.Sprintf("AddSample doesn't support resource '%s'", sample.Resource))
 	}
@@ -256,6 +255,11 @@ func (a *AggregateContainerState) addCPUSample(sample *ContainerUsageSample) {
 		cpuUsageCores, minSampleWeight, sample.MeasureStart)
 	a.observeSampleTime(sample.MeasureStart)
 	a.TotalSamplesCount++
+}
+
+func (a *AggregateContainerState) addMemorySample(sample *ContainerUsageSample) {
+	a.AggregateMemoryPeaks.AddSample(BytesFromMemoryAmount(sample.Usage), 1.0, sample.MeasureStart)
+	a.observeSampleTime(sample.MeasureStart)
 }
 
 func (a *AggregateContainerState) observeSampleTime(t time.Time) {
@@ -305,6 +309,19 @@ func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.Verti
 	err = a.AggregateCPUUsage.LoadFromCheckpoint(&checkpoint.CPUHistogram)
 	if err != nil {
 		return err
+	}
+	// Older checkpoints only stamped First/LastSampleStart from CPU samples.
+	// A memory-only histogram would then look non-empty but expire immediately
+	// because LastSampleStart is still zero.
+	if a.LastSampleStart.IsZero() && a.AggregateMemoryPeaks != nil && !a.AggregateMemoryPeaks.IsEmpty() {
+		if !checkpoint.LastUpdateTime.Time.IsZero() {
+			a.LastSampleStart = checkpoint.LastUpdateTime.Time
+		} else if !a.CreationTime.IsZero() {
+			a.LastSampleStart = a.CreationTime
+		}
+		if a.FirstSampleStart.IsZero() {
+			a.FirstSampleStart = a.LastSampleStart
+		}
 	}
 	return nil
 }
