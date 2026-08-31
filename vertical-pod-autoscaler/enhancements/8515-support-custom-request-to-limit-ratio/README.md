@@ -6,23 +6,22 @@
 - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
-    - [API Changes](#api-changes)
-    - [Behavior](#behavior)
-      - [Current behavior of VPA 1.4.2](#current-behavior-of-vpa-142)
-      - [Proposed feature behavior](#proposed-feature-behavior)
-    - [Notes/Constraints/Caveats](#notesconstraintscaveats)
-    - [Validation](#validation)
-      - [Static Validation via CRD Rules](#static-validation-via-crd-rules)
-      - [Dynamic Validation via Admission Controller](#dynamic-validation-via-admission-controller)
-    - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
-      - [Enabling or Disabling the Feature in a Live Cluster](#enabling-or-disabling-the-feature-in-a-live-cluster)
-      - [When Enabled](#when-enabled)
-      - [When Disabled](#when-disabled)
-    - [Kubernetes Version Compatibility](#kubernetes-version-compatibility)
-    - [Test Plan](#test-plan)
-      - [E2E](#e2e)
-    - [Examples](#examples)
-  - [Implementation History](#implementation-history)
+  - [API Changes](#api-changes)
+  - [Behavior](#behavior)
+    - [Current behavior of VPA 1.5.0](#current-behavior-of-vpa-150)
+    - [Proposed feature behavior](#proposed-feature-behavior)
+  - [Validation](#validation)
+    - [Static Validation via CRD Rules](#static-validation-via-crd-rules)
+    - [Dynamic Validation via Admission Controller](#dynamic-validation-via-admission-controller)
+  - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
+    - [Enabling or Disabling the Feature in a Live Cluster](#enabling-or-disabling-the-feature-in-a-live-cluster)
+    - [When Enabled](#when-enabled)
+    - [When Disabled](#when-disabled)
+  - [Kubernetes Version Compatibility](#kubernetes-version-compatibility)
+  - [Test Plan](#test-plan)
+    - [E2E](#e2e)
+  - [Examples](#examples)
+- [Implementation History](#implementation-history)
 <!-- /toc -->
 
 ## Summary
@@ -69,16 +68,81 @@ A new `RequestToLimitRatio` field will be added, with the following sub-fields:
   * `Quantity`: Adds an absolute value on top of the requests to determine the new limit.  
     * Example: for memory, a value of `100Mi` means the new limit will be: calculated memory request + `100Mi`. 
 
-* [Optional] `RequestToLimitRatio.CPU.Factor` (type `float`): The factor to apply to the CPU request.
+* [Optional] `RequestToLimitRatio.CPU.Factor` (type `resource.Quantity`): The factor to apply to the CPU request.
   * If `Type` is `Factor` a value of `3` will triple the CPU limits.  
   * If `Type` is `Quantity`, this field is not allowed.
 
-* [Optional] `RequestToLimitRatio.CPU.Quantity` (type `Quantity`): The value specified in this field is added to the request to calculate the new limit.
+* [Optional] `RequestToLimitRatio.CPU.Quantity` (type `resource.Quantity`): The value specified in this field is added to the request to calculate the new limit.
   * If `Type` is `Factor`, this field is not allowed.  
   * If `Type` is `Quantity` a CPU resource quantity added. For example, if the value is `200m`, the CPU limit will be calculated as the CPU request plus 200 millicores.
 
-* [Optional] `RequestToLimitRatio.Memory.Factor` (type `float`): Same as `CPU.Factor`.
-* [Optional] `RequestToLimitRatio.Memory.Quantity` (type `Quantity`): Similar to `CPU.Quantity` except that for `Quantity` the units are memory-based (e.g., `Mi`, `Gi`) rather than CPU millicores (`m`).
+* [Optional] `RequestToLimitRatio.Memory.Factor` (type `resource.Quantity`): Same as `CPU.Factor`.
+* [Optional] `RequestToLimitRatio.Memory.Quantity` (type `resource.Quantity`): Similar to `CPU.Quantity` except that for `Quantity` the units are memory-based (e.g., `Mi`, `Gi`) rather than CPU millicores (`m`).
+
+The `Factor` field should support fractional and decimal values to accommodate use cases such as increasing the recommended request by 20%. In this case, Factor should be set to "1.2". The resource.Quantity type supports this representation and also provides the arithmetic operations needed to apply the factor. For example:
+
+```go
+resourceRequest := resource.MustParse("100Mi")
+// limit should be 120Mi
+factor := resource.MustParse("1.2")
+resourceRequestDec := resourceRequest.AsDec()
+resourceRequestDec.Mul(resourceRequestDec, factor.AsDec())
+```
+
+Here is the Go struct definition for `RequestToLimitRatio`:
+
+```go
+// RequestToLimitRatioType defines the type of request-to-limit ratio policy.
+// +kubebuilder:validation:Enum=Factor;Quantity
+type RequestToLimitRatioType string
+
+const (
+    // FactorRequestToLimitRatioType specifies that a factor is used to determine the limit.
+    FactorRequestToLimitRatioType   RequestToLimitRatioType = "Factor"
+    // QuantityRequestToLimitRatioType specifies that a fixed quantity is used to determine the limit.
+    QuantityRequestToLimitRatioType RequestToLimitRatioType = "Quantity"
+)
+
+// RequestToLimitRatio defines the request-to-limit policy.
+type RequestToLimitRatio struct {
+    // CPU specifies the request-to-limit ratio policy for the CPU resource.
+    // If this field is not set, the request-to-limit ratio for CPU is determined
+    // from the Pod spec.
+    // +optional
+    CPU *RequestToLimitRatioPolicy `json:"cpu,omitempty"`
+
+    // Memory specifies the request-to-limit ratio policy for the memory resource.
+    // If this field is not set, the request-to-limit ratio for memory is determined
+    // from the Pod spec.
+    // +optional
+    Memory *RequestToLimitRatioPolicy `json:"memory,omitempty"`
+}
+
+// RequestToLimitRatio defines the request-to-limit ratio policy for CPU and memory resources.
+// +union
+// +kubebuilder:validation:XValidation:rule="(self.type == 'Factor') == has(self.factor)",message="factor is required when type is Factor and forbidden otherwise"
+// +kubebuilder:validation:XValidation:rule="(self.type == 'Quantity') == has(self.quantity)",message="quantity is required when type is Quantity and forbidden otherwise"
+type RequestToLimitRatioPolicy struct {
+    // Type specifies the type of request-to-limit ratio policy to apply.
+    // +unionDiscriminator
+    // +required
+    Type RequestToLimitRatioType `json:"type"`
+
+    // Factor specifies the factor by which the recommended resource request
+    // is multiplied to determine the new limit.
+    // This field is required when Type is "Factor".
+    // +unionMember=Factor
+    // +optional
+    Factor *resource.Quantity `json:"factor,omitempty"`
+
+    // Quantity specifies the absolute resource quantity
+    // to add to the recommended resource request to determine the new limit.
+    // This field is required when Type is "Quantity".
+    // +unionMember=Quantity
+    // +optional
+    Quantity *resource.Quantity `json:"quantity,omitempty"`
+}
+```
 
 ### Behavior
 
@@ -190,10 +254,10 @@ spec:
       - containerName: app
         controlledResources: ["cpu", "memory"]
         controlledValues: RequestsAndLimits
-        RequestToLimitRatio:
+        requestToLimitRatio:
           cpu:
             type: Factor
-            factor: 2
+            factor: "2"
           memory:
             type: Quantity
             quantity: 200Mi
@@ -218,10 +282,10 @@ spec:
       - containerName: app
         controlledResources: ["cpu"]
         controlledValues: RequestsAndLimits
-        RequestToLimitRatio:
+        requestToLimitRatio:
           cpu:
             type: Factor
-            factor: 1.2
+            factor: "1.2"
 ```
 
 ## Implementation History
