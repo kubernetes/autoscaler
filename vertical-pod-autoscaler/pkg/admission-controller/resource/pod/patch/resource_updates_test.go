@@ -146,6 +146,7 @@ func addAnnotationRequest(updateResources [][]string, kind string) resource_admi
 }
 
 func TestCalculatePatches_ResourceUpdates(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
 	tests := []struct {
 		name                 string
 		pod                  *corev1.Pod
@@ -185,7 +186,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			name: "new init cpu recommendation",
 			pod: &corev1.Pod{
 				Spec: corev1.PodSpec{
-					InitContainers: []corev1.Container{{}},
+					InitContainers: []corev1.Container{{RestartPolicy: &always}},
 				},
 			},
 			namespace: "default",
@@ -202,6 +203,51 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 				addInitRequestsPatch(0),
 				addInitResourceRequestPatch(0, cpu, "1"),
 				addInitAnnotationRequest([][]string{{cpu}}, request),
+			},
+		},
+		{
+			name: "plain init container excluded when native sidecar enabled",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name: "app",
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								cpu: resource.MustParse("0"),
+							},
+						},
+					}},
+					InitContainers: []corev1.Container{
+						{Name: "plain-init"},
+						{Name: "sidecar", RestartPolicy: &always},
+					},
+				},
+			},
+			namespace: "default",
+			// plain-init is zeroed out by the recommendation provider, only the
+			// native sidecar carries a recommendation.
+			initResources: []vpa_api_util.ContainerResources{
+				{},
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches: []resource_admission.PatchRecord{
+				addInitResourcesPatch(1),
+				addInitRequestsPatch(1),
+				addInitResourceRequestPatch(1, cpu, "1"),
+				addResourceRequestPatch(0, cpu, "1"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: init-sidecar 1: cpu request; container 0: cpu request"),
 			},
 		},
 		{
@@ -373,6 +419,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			pod: &corev1.Pod{
 				Spec: corev1.PodSpec{
 					InitContainers: []corev1.Container{{
+						RestartPolicy: &always,
 						Resources: corev1.ResourceRequirements{
 							Requests: corev1.ResourceList{
 								cpu: resource.MustParse("0"),
