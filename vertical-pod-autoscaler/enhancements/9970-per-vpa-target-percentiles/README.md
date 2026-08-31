@@ -26,7 +26,7 @@
 
 ## Summary
 
-Add two optional per-container fields to `ContainerResourcePolicy` — `targetCPUPercentile` and `targetMemoryPercentile` — that override the Recommender's global `--target-cpu-percentile` and `--target-memory-percentile` flags for that container. This extends the per-VPA configuration mechanism introduced by [AEP-8026](../8026-per-vpa-component-configuration/README.md) to the target recommendation percentiles, following the same conventions: fields live on `ContainerResourcePolicy`, use `resource.Quantity` values, are gated behind the `PerVPAConfig` feature gate, and fall back to the corresponding global flag when unset.
+Add two optional per-container fields to `ContainerResourcePolicy` — `targetCPUPercentile` and `targetMemoryPercentile` — that override the Recommender's global `--target-cpu-percentile` and `--target-memory-percentile` flags for that container. This extends the per-VPA configuration mechanism introduced by [AEP-8026](../8026-per-vpa-component-configuration/README.md) to the target recommendation percentiles, following the same conventions: fields live on `ContainerResourcePolicy`, are gated behind the `PerVPAConfig` feature gate, and fall back to the corresponding global flag when unset.
 
 ## Motivation
 
@@ -53,20 +53,24 @@ Add two optional fields to `ContainerResourcePolicy` (autoscaling.k8s.io/v1):
 // TargetCPUPercentile, when set, overrides the global
 // --target-cpu-percentile flag for this container: the CPU usage
 // percentile used as the base for the CPU target recommendation.
-// Expressed as a Quantity in (0, 1], e.g. "0.95" or "950m" for p95.
+// Expressed as an integer percentile in [1, 100], e.g. 95 for p95.
 // Falls back to the global flag when unset.
 // Only honored when the PerVPAConfig feature gate is enabled.
 // +optional
-TargetCPUPercentile *resource.Quantity `json:"targetCPUPercentile,omitempty"`
+// +kubebuilder:validation:Minimum=1
+// +kubebuilder:validation:Maximum=100
+TargetCPUPercentile *int32 `json:"targetCPUPercentile,omitempty"`
 
 // TargetMemoryPercentile, when set, overrides the global
 // --target-memory-percentile flag for this container: the memory usage
 // percentile used as the base for the memory target recommendation.
-// Expressed as a Quantity in (0, 1], e.g. "0.95" or "950m" for p95.
+// Expressed as an integer percentile in [1, 100], e.g. 95 for p95.
 // Falls back to the global flag when unset.
 // Only honored when the PerVPAConfig feature gate is enabled.
 // +optional
-TargetMemoryPercentile *resource.Quantity `json:"targetMemoryPercentile,omitempty"`
+// +kubebuilder:validation:Minimum=1
+// +kubebuilder:validation:Maximum=100
+TargetMemoryPercentile *int32 `json:"targetMemoryPercentile,omitempty"`
 ```
 
 Behaviour, in one sentence: **when set, the Recommender reads the target recommendation for that container at the declared percentile instead of the global flag's percentile; everything else about the recommendation pipeline is unchanged.**
@@ -77,7 +81,7 @@ Behaviour, in one sentence: **when set, the Recommender reads the target recomme
 
 Only `ContainerResourcePolicy` changes, as shown in [Proposal](#proposal). No status, condition, or metric changes: the effective percentile is fully determined by the spec and the Recommender flags, and the resulting recommendation is already observable in `status.recommendation`.
 
-`resource.Quantity` is used instead of a float for consistency with `oomBumpUpRatio`.
+Each field is a plain integer percentile (`*int32`, `[1, 100]`) rather than a `resource.Quantity` — it's a unit, not a resource quantity. This keeps validation to a simple `Minimum`/`Maximum` on the CRD. The Recommender divides the value by 100 to get the `(0, 1]` fraction its estimators use, matching the global flags.
 
 ### Effective-Value Resolution
 
@@ -105,13 +109,14 @@ The admission controller therefore emits a warning (not a rejection) when a decl
 
 ### Validation
 
-Each field must be greater than `0` and at most `1` (`(0, 1]`), matching the value range the global flags accept. The bound is enforced at the CRD level with a CEL validation rule:
+Each field is an integer in `[1, 100]`, enforced directly by the CRD schema:
 
 ```go
-// +kubebuilder:validation:XValidation:rule="self > quantity('0') && self <= quantity('1')",message="percentile must be in (0, 1]"
+// +kubebuilder:validation:Minimum=1
+// +kubebuilder:validation:Maximum=100
 ```
 
-The admission controller's VPA validation (`pkg/admission-controller/resource/vpa/validation.go`) validates the same range to return more descriptive error messages, and is also where the fields are rejected when the `PerVPAConfig` feature gate is disabled — matching the Phase 1 fields' handling.
+Because the type is a plain integer, no CEL rule is needed. The admission controller's VPA validation (`pkg/admission-controller/resource/vpa/validation.go`) still rejects the fields when the `PerVPAConfig` feature gate is disabled, matching the Phase 1 fields' handling.
 
 ### Feature Enablement and Rollback
 
@@ -134,11 +139,11 @@ The feature is entirely internal to the VPA controllers and depends on no new Ku
 
 - Effective-value resolution: named-container policy wins over `"*"`, which wins over the global flag; each field resolves independently.
 - Estimator behaviour: target estimation uses the per-container percentile when present on the `AggregateContainerState` and the global value otherwise; bound estimations are unaffected by the fields.
-- Validation: values outside `(0, 1]` rejected; fields rejected when the feature gate is disabled; warning emitted when a target percentile lies outside the global bound percentiles.
+- Validation: values outside `[1, 100]` rejected; fields rejected when the feature gate is disabled; warning emitted when a target percentile lies outside the global bound percentiles.
 
 **Integration tests** (Recommender):
 
-- Two VPAs targeting identical workloads with identical usage histories, one with `targetCPUPercentile: "0.5"` and one unset — the first receives a lower CPU target; memory targets are identical.
+- Two VPAs targeting identical workloads with identical usage histories, one with `targetCPUPercentile: 50` and one unset — the first receives a lower CPU target; memory targets are identical.
 - The equivalent scenario for `targetMemoryPercentile`.
 - A VPA setting the fields via `containerName: "*"` applies them to all containers not covered by a named policy.
 - Feature-gate-disabled path: fields present on an existing object are ignored and the global flags apply.
@@ -160,7 +165,7 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: gateway
-      targetCPUPercentile: "0.95"
+      targetCPUPercentile: 95
 ```
 
 The `gateway` container's CPU target is read at p95 instead of the cluster default (p90 unless the flag is changed); its memory target and all bounds are unchanged.
@@ -180,8 +185,8 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: "*"
-      targetCPUPercentile: "0.5"
-      targetMemoryPercentile: "0.5"
+      targetCPUPercentile: 50
+      targetMemoryPercentile: 50
 ```
 
 Every container in the job is targeted at the median, trading headroom for density on a throughput-insensitive workload.
