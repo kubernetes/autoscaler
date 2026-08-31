@@ -341,7 +341,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 	})
 
 	// Sets up a lease object updated periodically to signal - requires WithSerial()
-	framework.It("updates pods with recommendation from a VPA with `UpdateMode: InPlace` when a VPA with `UpdateMode: Off` also matches the pod", framework.WithSerial(), framework.WithFeatureGate(features.InPlace), func() {
+	framework.It("updates pods with recommendation from a VPA with `UpdateMode: InPlaceOrRecreate` when a VPA with `UpdateMode: Off` also matches the pod", framework.WithSerial(), func() {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")
@@ -362,85 +362,30 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		}()
 		statusUpdater.Run(stopCh)
 
-		controller := &autoscaling.CrossVersionObjectReference{
-			APIVersion: "apps/v1",
-			Kind:       "Deployment",
-			Name:       "hamster-deployment",
-		}
-		ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
-		setupHamsterController(f, controller.Kind, "100m", "100Mi", utils.DefaultHamsterReplicas)
+		ginkgo.By("Setting up a hamster deployment")
+		setupHamsterController(f, utils.HamsterTargetRef.Kind, "100m", "100Mi", utils.DefaultHamsterReplicas)
 		podList, err := GetHamsterPods(f)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		initialPods := podList.DeepCopy()
 
-		containerName := utils.GetHamsterContainerNameByIndex(0)
 		targetCPU := "200m"
 		targetMemory := "200Mi"
 
-		// VPA creation order and names are so that if there was some future
-		// change that changes the multi-VPA behaviour, it is more likely to get
-		// caught.
+		// VPA creation order and names are chosen so that a future change to the
+		// multi-VPA selection logic is more likely to be caught:
 		// https://github.com/kubernetes/autoscaler/blob/8624d41d09317cc6d716b8b3e4d73dd7424a4f1c/vertical-pod-autoscaler/pkg/utils/vpa/api.go#L189
 		ginkgo.By("Setting up a VPA CRD with UpdateMode: Off")
-		offVpaCRD := test.VerticalPodAutoscaler().
-			WithName("1-hamster-vpa-off").
-			WithNamespace(f.Namespace.Name).
-			WithTargetRef(controller).
-			WithUpdateMode(vpa_types.UpdateModeOff).
-			WithContainer(containerName).
-			AppendRecommendation(
-				test.Recommendation().
-					WithContainer(containerName).
-					WithTarget("500m", "500Mi").
-					WithLowerBound("500m", "500Mi").
-					WithUpperBound("500m", "500Mi").
-					GetContainerResources()).
-			Get()
-		utils.InstallVPA(f, offVpaCRD)
-		ginkgo.By("Setting up a VPA CRD with UpdateMode: Initial")
-		vpaCRD := test.VerticalPodAutoscaler().
-			WithName("2-hamster-vpa").
-			WithNamespace(f.Namespace.Name).
-			WithTargetRef(controller).
-			WithUpdateMode(vpa_types.UpdateModeInPlace).
-			WithContainer(containerName).
-			AppendRecommendation(
-				test.Recommendation().
-					WithContainer(containerName).
-					WithTarget(targetCPU, targetMemory).
-					WithLowerBound(targetCPU, targetMemory).
-					WithUpperBound(targetCPU, targetMemory).
-					GetContainerResources()).
-			Get()
+		installHamsterVPA(f, "1-hamster-vpa-off", vpa_types.UpdateModeOff, "500m", "500Mi")
 
-		utils.InstallVPA(f, vpaCRD)
+		ginkgo.By("Setting up a VPA CRD with UpdateMode: InPlaceOrRecreate")
+		installHamsterVPA(f, "2-hamster-vpa", vpa_types.UpdateModeInPlaceOrRecreate, targetCPU, targetMemory)
 
 		ginkgo.By("Checking that resources were modified due to in-place update, not due to evictions")
 		err = WaitForPodsUpdatedWithoutEviction(f, initialPods)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		ginkgo.By("Checking that container resources were updated with the recommendation from the active VPA")
-		gomega.Eventually(func() error {
-			updatedPodList, err := GetHamsterPods(f)
-			if err != nil {
-				return err
-			}
-			for _, pod := range updatedPodList.Items {
-				for _, container := range pod.Status.ContainerStatuses {
-					cpuRequest := container.Resources.Requests[apiv1.ResourceCPU]
-					memoryRequest := container.Resources.Requests[apiv1.ResourceMemory]
-					if cpuRequest.Cmp(ParseQuantityOrDie(targetCPU)) != 0 {
-						framework.Logf("%v/%v has not been updated to %v yet: currently=%v", pod.Name, container.Name, targetCPU, cpuRequest.String())
-						return fmt.Errorf("%s CPU request not updated", container.Name)
-					}
-					if memoryRequest.Cmp(ParseQuantityOrDie(targetMemory)) != 0 {
-						framework.Logf("%v/%v has not been updated to %v yet: currently=%v", pod.Name, container.Name, targetMemory, memoryRequest.String())
-						return fmt.Errorf("%s Memory request not updated", container.Name)
-					}
-				}
-			}
-			return nil
-		}, VpaInPlaceTimeout*3, 15*time.Second).Should(gomega.Succeed())
+		CheckHamsterPodsResourcesUpdated(f, targetCPU, targetMemory)
 	})
 })
 
@@ -604,6 +549,29 @@ func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory stri
 	utils.InstallVPA(f, vpaCRD)
 
 	return podList
+}
+
+// installHamsterVPA installs a VPA targeting the hamster deployment with the
+// given name and update mode, and a flat recommendation (target, lower and upper
+// bound all equal) for the first hamster container.
+func installHamsterVPA(f *framework.Framework, name string, updateMode vpa_types.UpdateMode, targetCPU, targetMemory string) *vpa_types.VerticalPodAutoscaler {
+	containerName := utils.GetHamsterContainerNameByIndex(0)
+	vpaCRD := test.VerticalPodAutoscaler().
+		WithName(name).
+		WithNamespace(f.Namespace.Name).
+		WithTargetRef(utils.HamsterTargetRef).
+		WithUpdateMode(updateMode).
+		WithContainer(containerName).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(containerName).
+				WithTarget(targetCPU, targetMemory).
+				WithLowerBound(targetCPU, targetMemory).
+				WithUpperBound(targetCPU, targetMemory).
+				GetContainerResources()).
+		Get()
+	utils.InstallVPA(f, vpaCRD)
+	return vpaCRD
 }
 
 func setupPodsForUpscalingInPlace(f *framework.Framework, updateMode vpa_types.UpdateMode) *apiv1.PodList {

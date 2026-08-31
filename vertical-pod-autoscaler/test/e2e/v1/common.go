@@ -537,3 +537,29 @@ func WaitForPodsUpdatedWithoutEviction(f *framework.Framework, initialPods *apiv
 	framework.Logf("finished waiting for at least one pod to be updated without eviction")
 	return err
 }
+
+// CheckHamsterPodsResourcesUpdated waits until every hamster container's CPU and
+// memory requests (as reported in the pod status) match the given targets.
+func CheckHamsterPodsResourcesUpdated(f *framework.Framework, targetCPU, targetMemory string) {
+	gomega.Eventually(func() error {
+		updatedPodList, err := GetHamsterPods(f)
+		if err != nil {
+			return err
+		}
+		for _, pod := range updatedPodList.Items {
+			for _, container := range pod.Status.ContainerStatuses {
+				cpuRequest := container.Resources.Requests[apiv1.ResourceCPU]
+				memoryRequest := container.Resources.Requests[apiv1.ResourceMemory]
+				if cpuRequest.Cmp(ParseQuantityOrDie(targetCPU)) != 0 {
+					framework.Logf("%v/%v has not been updated to %v yet: currently=%v", pod.Name, container.Name, targetCPU, cpuRequest.String())
+					return fmt.Errorf("%s CPU request not updated", container.Name)
+				}
+				if memoryRequest.Cmp(ParseQuantityOrDie(targetMemory)) != 0 {
+					framework.Logf("%v/%v has not been updated to %v yet: currently=%v", pod.Name, container.Name, targetMemory, memoryRequest.String())
+					return fmt.Errorf("%s Memory request not updated", container.Name)
+				}
+			}
+		}
+		return nil
+	}, VpaInPlaceTimeout*3, 15*time.Second).Should(gomega.Succeed())
+}
