@@ -87,6 +87,11 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 	updatesAnnotation := []string{}
 	if features.Enabled(features.NativeSidecar) {
 		for i, containerResources := range initContainersResources {
+			// Only native sidecars are eligible; plain init containers must never be patched.
+			initContainer := pod.Spec.InitContainers[i]
+			if initContainer.RestartPolicy == nil || *initContainer.RestartPolicy != corev1.ContainerRestartPolicyAlways {
+				continue
+			}
 			newPatches, newUpdatesAnnotation := getContainerPatch(pod, i, annotationsPerContainer, containerResources, model.ContainerTypeInitSidecar)
 			if len(newPatches) > 0 {
 				result = append(result, newPatches...)
