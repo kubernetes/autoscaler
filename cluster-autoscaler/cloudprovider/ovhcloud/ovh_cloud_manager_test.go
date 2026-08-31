@@ -78,6 +78,26 @@ func newTestManager(t *testing.T) *OvhCloudManager {
 	return manager
 }
 
+func TestOvhCloudManager_validateConfig(t *testing.T) {
+	tests := []struct {
+		name                 string
+		configContent        string
+		expectedErrorMessage string
+	}{
+		{
+			name:                 "New entry",
+			configContent:        "{}",
+			expectedErrorMessage: "config content validation failed: `cluster_id` not found in config file",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewManager(bytes.NewBufferString(tt.configContent))
+			assert.ErrorContains(t, err, tt.expectedErrorMessage)
+		})
+	}
+}
+
 func TestOvhCloudManager_getFlavorsByName(t *testing.T) {
 	expectedFlavorsByNameFromAPICall := map[string]sdk.Flavor{
 		"b2-7": {
@@ -172,14 +192,14 @@ func TestOvhCloudManager_getFlavorByName(t *testing.T) {
 	})
 }
 
-func TestOvhCloudManager_setNodeGroupPerProviderID(t *testing.T) {
+func TestOvhCloudManager_setNodeGroupPerName(t *testing.T) {
 	manager := newTestManager(t)
 	ng1 := NodeGroup{
 		CurrentSize: 1,
 	}
 
 	type fields struct {
-		NodeGroupPerProviderID map[string]*NodeGroup
+		NodeGroupPerName map[string]*NodeGroup
 	}
 	type args struct {
 		providerID string
@@ -194,7 +214,7 @@ func TestOvhCloudManager_setNodeGroupPerProviderID(t *testing.T) {
 		{
 			name: "New entry",
 			fields: fields{
-				NodeGroupPerProviderID: map[string]*NodeGroup{},
+				NodeGroupPerName: map[string]*NodeGroup{},
 			},
 			args: args{
 				providerID: "providerID1",
@@ -206,7 +226,7 @@ func TestOvhCloudManager_setNodeGroupPerProviderID(t *testing.T) {
 		}, {
 			name: "Replace entry",
 			fields: fields{
-				NodeGroupPerProviderID: map[string]*NodeGroup{
+				NodeGroupPerName: map[string]*NodeGroup{
 					"providerID1": {},
 				},
 			},
@@ -221,23 +241,23 @@ func TestOvhCloudManager_setNodeGroupPerProviderID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			manager.NodeGroupPerProviderID = tt.fields.NodeGroupPerProviderID
+			manager.NodeGroupPerName = tt.fields.NodeGroupPerName
 
-			manager.setNodeGroupPerProviderID(tt.args.providerID, tt.args.nodeGroup)
+			manager.setNodeGroupPerName(tt.args.providerID, tt.args.nodeGroup)
 
-			assert.Equal(t, tt.wantCache, manager.NodeGroupPerProviderID)
+			assert.Equal(t, tt.wantCache, manager.NodeGroupPerName)
 		})
 	}
 }
 
-func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
+func TestOvhCloudManager_GetNodeGroupPerName(t *testing.T) {
 	manager := newTestManager(t)
 	ng1 := NodeGroup{
 		CurrentSize: 1,
 	}
 
 	type fields struct {
-		NodeGroupPerProviderID map[string]*NodeGroup
+		NodeGroupPerName map[string]*NodeGroup
 	}
 	type args struct {
 		providerID string
@@ -251,7 +271,7 @@ func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
 		{
 			name: "Node group found",
 			fields: fields{
-				NodeGroupPerProviderID: map[string]*NodeGroup{
+				NodeGroupPerName: map[string]*NodeGroup{
 					"providerID1": &ng1,
 				},
 			},
@@ -263,7 +283,7 @@ func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
 		{
 			name: "Node group not found",
 			fields: fields{
-				NodeGroupPerProviderID: map[string]*NodeGroup{},
+				NodeGroupPerName: map[string]*NodeGroup{},
 			},
 			args: args{
 				providerID: "providerID1",
@@ -273,9 +293,9 @@ func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			manager.NodeGroupPerProviderID = tt.fields.NodeGroupPerProviderID
+			manager.NodeGroupPerName = tt.fields.NodeGroupPerName
 
-			assert.Equalf(t, tt.want, manager.getNodeGroupPerProviderID(tt.args.providerID), "getNodeGroupPerProviderID(%v)", tt.args.providerID)
+			assert.Equalf(t, tt.want, manager.GetNodeGroupPerName(tt.args.providerID), "GetNodeGroupPerName(%v)", tt.args.providerID)
 		})
 	}
 }
@@ -283,10 +303,104 @@ func TestOvhCloudManager_getNodeGroupPerProviderID(t *testing.T) {
 func TestOvhCloudManager_cacheConcurrency(t *testing.T) {
 	manager := newTestManager(t)
 
-	t.Run("Check NodeGroupPerProviderID cache is safe for concurrency (needs to be run with -race)", func(t *testing.T) {
+	t.Run("Check NodeGroupPerName cache is safe for concurrency (needs to be run with -race)", func(t *testing.T) {
 		go func() {
-			manager.setNodeGroupPerProviderID("", &NodeGroup{})
+			manager.setNodeGroupPerName("", &NodeGroup{})
 		}()
-		manager.getNodeGroupPerProviderID("")
+		manager.GetNodeGroupPerName("")
 	})
+}
+
+func TestOvhCloudManager_setNodePoolsState(t *testing.T) {
+	manager := newTestManager(t)
+	np1 := sdk.NodePool{Name: "np1", DesiredNodes: 1}
+	np2 := sdk.NodePool{Name: "np2", DesiredNodes: 2}
+	np3 := sdk.NodePool{Name: "np3", DesiredNodes: 3}
+
+	type fields struct {
+		NodePoolsPerName map[string]*sdk.NodePool
+		NodeGroupPerName map[string]*NodeGroup
+	}
+	type args struct {
+		poolsList []sdk.NodePool
+
+		NodePoolsPerName map[string]*sdk.NodePool
+		NodeGroupPerName map[string]*NodeGroup
+	}
+	tests := []struct {
+		name                 string
+		fields               fields
+		args                 args
+		wantNodePoolsPerName map[string]uint32 // ID => desired nodes
+		wantNodeGroupPerName map[string]uint32 // ID => desired nodes
+	}{
+		{
+			name: "NodePoolsPerName and NodeGroupPerName empty",
+			fields: fields{
+				NodePoolsPerName: map[string]*sdk.NodePool{},
+				NodeGroupPerName: map[string]*NodeGroup{},
+			},
+			args: args{
+				poolsList: []sdk.NodePool{
+					np1,
+				},
+				NodePoolsPerName: map[string]*sdk.NodePool{},
+			},
+			wantNodePoolsPerName: map[string]uint32{"np1": 1},
+			wantNodeGroupPerName: map[string]uint32{},
+		},
+		{
+			name: "NodePoolsPerName and NodeGroupPerName empty",
+			fields: fields{
+				NodePoolsPerName: map[string]*sdk.NodePool{
+					"np2": &np2,
+					"np3": &np3,
+				},
+				NodeGroupPerName: map[string]*NodeGroup{
+					"np2-node-id": {NodePool: &np2},
+					"np3-node-id": {NodePool: &np3},
+				},
+			},
+			args: args{
+				poolsList: []sdk.NodePool{
+					{
+						Name:         "np1",
+						DesiredNodes: 1,
+					},
+					{
+						Name:         "np2",
+						DesiredNodes: 20,
+					},
+				},
+				NodeGroupPerName: map[string]*NodeGroup{},
+			},
+			wantNodePoolsPerName: map[string]uint32{
+				"np1": 1,  // np1 added
+				"np2": 20, // np2 updated
+				// np3 removed
+			},
+			wantNodeGroupPerName: map[string]uint32{
+				"np2-node-id": 20,
+				"np3-node-id": 3, // Node reference that eventually stays in cache must not crash
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			manager.NodePoolsPerName = tt.fields.NodePoolsPerName
+			manager.NodeGroupPerName = tt.fields.NodeGroupPerName
+
+			manager.setNodePoolsState(tt.args.poolsList)
+
+			assert.Len(t, manager.NodePoolsPerName, len(tt.wantNodePoolsPerName))
+			for name, desiredNodes := range tt.wantNodePoolsPerName {
+				assert.Equal(t, desiredNodes, manager.NodePoolsPerName[name].DesiredNodes)
+			}
+
+			assert.Len(t, manager.NodeGroupPerName, len(tt.wantNodeGroupPerName))
+			for nodeID, desiredNodes := range tt.wantNodeGroupPerName {
+				assert.Equal(t, desiredNodes, manager.NodeGroupPerName[nodeID].DesiredNodes)
+			}
+		})
+	}
 }

@@ -22,7 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"slices"
 	"sync"
 	"time"
 
@@ -62,9 +62,9 @@ type OvhCloudManager struct {
 	ClusterID string
 	ProjectID string
 
-	NodePools                  []sdk.NodePool
-	NodeGroupPerProviderID     map[string]*NodeGroup
-	NodeGroupPerProviderIDLock sync.RWMutex
+	NodePoolsPerName     map[string]*sdk.NodePool
+	NodeGroupPerName     map[string]*NodeGroup
+	NodeGroupPerNameLock sync.RWMutex
 
 	FlavorsCache               map[string]sdk.Flavor
 	FlavorsCacheExpirationTime time.Time
@@ -88,6 +88,10 @@ type Config struct {
 	OpenStackPassword string `json:"openstack_password"`
 	OpenStackDomain   string `json:"openstack_domain"`
 
+	// OpenStack application credentials if authentication type is set to openstack_application.
+	OpenStackApplicationCredentialID     string `json:"openstack_application_credential_id"`
+	OpenStackApplicationCredentialSecret string `json:"openstack_application_credential_secret"`
+
 	// Application credentials if CA is run as API consumer without using OpenStack keystone.
 	// Tokens can be created here: https://api.ovh.com/createToken/
 	ApplicationEndpoint    string `json:"application_endpoint"`
@@ -100,6 +104,9 @@ type Config struct {
 const (
 	// OpenStackAuthenticationType to request a keystone token credentials.
 	OpenStackAuthenticationType = "openstack"
+
+	// OpenStackApplicationCredentialsAuthenticationType to request a keystone token credentials using keystone application credentials.
+	OpenStackApplicationCredentialsAuthenticationType = "openstack_application"
 
 	// ApplicationConsumerAuthenticationType to consume an application key credentials.
 	ApplicationConsumerAuthenticationType = "consumer"
@@ -131,6 +138,13 @@ func NewManager(configFile io.Reader) (*OvhCloudManager, error) {
 		}
 
 		client, err = sdk.NewDefaultClientWithToken(openStackProvider.AuthUrl, openStackProvider.Token)
+	case OpenStackApplicationCredentialsAuthenticationType:
+		openStackProvider, err = sdk.NewOpenstackApplicationProvider(cfg.OpenStackAuthUrl, cfg.OpenStackApplicationCredentialID, cfg.OpenStackApplicationCredentialSecret, cfg.OpenStackDomain)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create OpenStack provider: %w", err)
+		}
+
+		client, err = sdk.NewDefaultClientWithToken(openStackProvider.AuthUrl, openStackProvider.Token)
 	case ApplicationConsumerAuthenticationType:
 		client, err = sdk.NewClient(cfg.ApplicationEndpoint, cfg.ApplicationKey, cfg.ApplicationSecret, cfg.ApplicationConsumerKey)
 	default:
@@ -148,9 +162,9 @@ func NewManager(configFile io.Reader) (*OvhCloudManager, error) {
 		ProjectID: cfg.ProjectID,
 		ClusterID: cfg.ClusterID,
 
-		NodePools:                  make([]sdk.NodePool, 0),
-		NodeGroupPerProviderID:     make(map[string]*NodeGroup),
-		NodeGroupPerProviderIDLock: sync.RWMutex{},
+		NodePoolsPerName:     make(map[string]*sdk.NodePool),
+		NodeGroupPerName:     make(map[string]*NodeGroup),
+		NodeGroupPerNameLock: sync.RWMutex{},
 
 		FlavorsCache:               make(map[string]sdk.Flavor),
 		FlavorsCacheExpirationTime: time.Time{},
@@ -195,20 +209,20 @@ func (m *OvhCloudManager) getFlavorByName(flavorName string) (sdk.Flavor, error)
 	return sdk.Flavor{}, fmt.Errorf("flavor %s not found in available flavors", flavorName)
 }
 
-// setNodeGroupPerProviderID stores the association provider ID => node group in cache for future reference
-func (m *OvhCloudManager) setNodeGroupPerProviderID(providerID string, nodeGroup *NodeGroup) {
-	m.NodeGroupPerProviderIDLock.Lock()
-	defer m.NodeGroupPerProviderIDLock.Unlock()
+// setNodeGroupPerName stores the node group in cache for future reference
+func (m *OvhCloudManager) setNodeGroupPerName(nodepoolName string, nodeGroup *NodeGroup) {
+	m.NodeGroupPerNameLock.Lock()
+	defer m.NodeGroupPerNameLock.Unlock()
 
-	m.NodeGroupPerProviderID[providerID] = nodeGroup
+	m.NodeGroupPerName[nodepoolName] = nodeGroup
 }
 
-// getNodeGroupPerProviderID gets from cache the node group associated to the given provider ID
-func (m *OvhCloudManager) getNodeGroupPerProviderID(providerID string) *NodeGroup {
-	m.NodeGroupPerProviderIDLock.RLock()
-	defer m.NodeGroupPerProviderIDLock.RUnlock()
+// GetNodeGroupPerName gets from cache the node group using its name
+func (m *OvhCloudManager) GetNodeGroupPerName(nodepoolName string) *NodeGroup {
+	m.NodeGroupPerNameLock.RLock()
+	defer m.NodeGroupPerNameLock.RUnlock()
 
-	return m.NodeGroupPerProviderID[providerID]
+	return m.NodeGroupPerName[nodepoolName]
 }
 
 // ReAuthenticate allows OpenStack keystone token to be revoked and re-created to call API
@@ -232,11 +246,45 @@ func (m *OvhCloudManager) ReAuthenticate() error {
 	return nil
 }
 
+// setNodePoolsState updates nodepool local informations based on given list
+// Updates NodePoolsPerName by modifying data so the reference in NodeGroupPerName can access refreshed data
+//
+// - Updates fields on already referenced nodepool
+// - Adds nodepool if not referenced yet
+// - Deletes from map if nodepool is not in the given list (it doesn't exist anymore)
+func (m *OvhCloudManager) setNodePoolsState(pools []sdk.NodePool) {
+	m.NodeGroupPerNameLock.Lock()
+	defer m.NodeGroupPerNameLock.Unlock()
+
+	poolNamesToKeep := []string{}
+	for _, pool := range pools {
+		poolNamesToKeep = append(poolNamesToKeep, pool.Name)
+	}
+
+	// Update nodepools state
+	for _, pool := range pools {
+		poolRef, ok := m.NodePoolsPerName[pool.Name]
+		if ok {
+			*poolRef = pool // Update existing value
+		} else {
+			poolCopy := pool
+			m.NodePoolsPerName[pool.Name] = &poolCopy
+		}
+	}
+
+	// Remove nodepools that doesn't exist anymore
+	for poolName := range m.NodePoolsPerName {
+		if !slices.Contains(poolNamesToKeep, poolName) {
+			delete(m.NodePoolsPerName, poolName)
+		}
+	}
+}
+
 // readConfig read cloud provider configuration file into a struct
 func readConfig(configFile io.Reader) (*Config, error) {
 	cfg := &Config{}
 	if configFile != nil {
-		body, err := ioutil.ReadAll(configFile)
+		body, err := io.ReadAll(configFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read content: %w", err)
 		}
@@ -260,8 +308,8 @@ func validatePayload(cfg *Config) error {
 		return fmt.Errorf("`project_id` not found in config file")
 	}
 
-	if cfg.AuthenticationType != OpenStackAuthenticationType && cfg.AuthenticationType != ApplicationConsumerAuthenticationType {
-		return fmt.Errorf("`authentication_type` should only be `openstack` or `consumer`")
+	if cfg.AuthenticationType != OpenStackAuthenticationType && cfg.AuthenticationType != OpenStackApplicationCredentialsAuthenticationType && cfg.AuthenticationType != ApplicationConsumerAuthenticationType {
+		return fmt.Errorf("`authentication_type` should only be `openstack`, `openstack_application` or `consumer`")
 	}
 
 	if cfg.AuthenticationType == OpenStackAuthenticationType {
@@ -279,6 +327,20 @@ func validatePayload(cfg *Config) error {
 
 		if cfg.OpenStackDomain == "" {
 			return fmt.Errorf("`openstack_domain` not found in config file")
+		}
+	}
+
+	if cfg.AuthenticationType == OpenStackApplicationCredentialsAuthenticationType {
+		if cfg.OpenStackAuthUrl == "" {
+			return fmt.Errorf("`openstack_auth_url` not found in config file")
+		}
+
+		if cfg.OpenStackApplicationCredentialID == "" {
+			return fmt.Errorf("`openstack_application_credential_id` not found in config file")
+		}
+
+		if cfg.OpenStackApplicationCredentialSecret == "" {
+			return fmt.Errorf("`openstack_application_credential_secret` not found in config file")
 		}
 	}
 
