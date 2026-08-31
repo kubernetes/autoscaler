@@ -342,7 +342,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 		if (updateMode == vpa_types.UpdateModeInPlaceOrRecreate) || (updateMode == vpa_types.UpdateModeInPlace && inPlaceFeatureEnabled) {
 			// EvictionRequirements apply to eviction only, not in-place resize.
-			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter, vpa, len(livePods), u.infeasibleAttempts, u.eventRecorder), vpa, nil)
+			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter, vpa, len(livePods), u.infeasibleAttempts, u.eventRecorder), vpa, priority.NewDefaultPodEvictionAdmission())
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
 			if len(podsForInPlace) > 0 {
 				withInPlaceUpdatable = true
@@ -688,8 +688,8 @@ func getRateLimiter(rateLimit float64, rateLimitBurst int) *rate.Limiter {
 }
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority.
-// admission is applied when non-nil (eviction path). In-place candidates pass nil so
-// EvictionRequirements do not block a resize.
+// In-place candidates pass a default (admit-all) admission so EvictionRequirements
+// do not block a resize; eviction paths pass u.evictionAdmission.
 func (u *updater) getPodsUpdateOrder(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, admission priority.PodEvictionAdmission) []*corev1.Pod {
 	updateconfig := priority.UpdateConfig{
 		MinChangePriority:          u.defaultUpdateThreshold,
@@ -706,9 +706,6 @@ func (u *updater) getPodsUpdateOrder(pods []*corev1.Pod, vpa *vpa_types.Vertical
 		priorityCalculator.AddPod(pod, time.Now(), u.infeasibleAttempts)
 	}
 
-	if admission == nil {
-		admission = priority.NewDefaultPodEvictionAdmission()
-	}
 	return priorityCalculator.GetSortedPods(admission)
 }
 
