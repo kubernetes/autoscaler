@@ -88,7 +88,23 @@ The VPA CRDs are managed as regular chart templates and are kept in sync automat
 
 By default, the CRDs are annotated with `helm.sh/resource-policy: keep`, so `helm uninstall` will not remove them, protecting any existing VPA objects from being deleted. Set `crds.keep: false` to disable this.
 
-If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`), a pre-upgrade Job automatically patches the Helm ownership metadata onto your existing CRDs so the upgrade doesn't fail. It's idempotent and safe to leave enabled across repeated upgrades, but is only needed for the 0.12.0 transition and will be removed in a future release; set `crds.migrationJob.enabled: false` to skip it.
+If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`), the upgrade will fail with an "invalid ownership metadata" error. This is because Helm never took ownership of CRDs installed via the old `crds/` folder, so it refuses to adopt them. This is a one time issue, you only need to deal with it on the first upgrade past 0.12.0.
+
+If you're on Helm 3.17+, pass `--take-ownership` on that upgrade:
+
+````bash
+helm upgrade <release-name> <chart> --take-ownership
+````
+
+On older Helm versions `--take-ownership` isn't available, so add the ownership metadata manually first:
+
+````bash
+kubectl label crd verticalpodautoscalercheckpoints.autoscaling.k8s.io app.kubernetes.io/managed-by=Helm --overwrite
+kubectl annotate crd verticalpodautoscalercheckpoints.autoscaling.k8s.io meta.helm.sh/release-name=<release-name> meta.helm.sh/release-namespace=<namespace> --overwrite
+
+kubectl label crd verticalpodautoscalers.autoscaling.k8s.io app.kubernetes.io/managed-by=Helm --overwrite
+kubectl annotate crd verticalpodautoscalers.autoscaling.k8s.io meta.helm.sh/release-name=<release-name> meta.helm.sh/release-namespace=<namespace> --overwrite
+```
 
 ## Migration Guides
 

@@ -175,12 +175,3 @@ app.kubernetes.io/component: recommender
 {{- define "vertical-pod-autoscaler.recommender.image" -}}
 {{- printf "%s:%s" .Values.recommender.image.repository (default .Chart.AppVersion .Values.recommender.image.tag) }}
 {{- end }}
-
-{{- define "vertical-pod-autoscaler.crds.migrationJob.fullname" -}}
-{{- printf "%s-crd-ownership-fix" (include "vertical-pod-autoscaler.fullname" .) | trunc 63 | trimSuffix "-" -}}
-{{- end }}
-
-{{- define "vertical-pod-autoscaler.crds.migrationJob.labels" -}}
-{{ include "vertical-pod-autoscaler.labels" . }}
-app.kubernetes.io/component: crd-ownership-fix
-{{- end }}
