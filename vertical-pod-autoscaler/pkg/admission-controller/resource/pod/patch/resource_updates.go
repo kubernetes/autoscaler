@@ -92,6 +92,12 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 			if initContainer.RestartPolicy == nil || *initContainer.RestartPolicy != corev1.ContainerRestartPolicyAlways {
 				continue
 			}
+			// Skip empty recommendations (e.g. no recommendation yet, or cleared by
+			// UpdateModeOff) so the sidecar doesn't get a resources: {} patch and an
+			// empty vpaUpdates entry.
+			if len(containerResources.Requests) == 0 && len(containerResources.Limits) == 0 {
+				continue
+			}
 			newPatches, newUpdatesAnnotation := getContainerPatch(pod, i, annotationsPerContainer, containerResources, model.ContainerTypeInitSidecar)
 			if len(newPatches) > 0 {
 				result = append(result, newPatches...)

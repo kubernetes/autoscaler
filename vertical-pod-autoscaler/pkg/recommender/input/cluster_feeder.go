@@ -243,13 +243,13 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 		klog.ErrorS(err, "Cannot get cluster history")
 	}
 	for podID, podHistory := range clusterHistory {
-		// no need to load history if the pod no longer exists
-		podSpec, ok := pods[podID]
-		if !ok {
-			continue
+		podSpec := pods[podID]
+		phase := corev1.PodUnknown
+		if podSpec != nil {
+			phase = podSpec.Phase
 		}
 		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
-		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, podSpec.Phase)
+		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, phase)
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
 				PodID:         podID,
@@ -257,13 +257,13 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 			}
 			klog.V(4).InfoS("Adding", "container", containerID)
 
-			containerSpec := podSpec.GetContainerSpec(containerName)
-			if containerSpec == nil {
-				klog.V(4).InfoS("Container spec not found, skipping", "container", containerID)
-				continue
-			}
-			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil, containerSpec.ContainerType); err != nil {
+			containerType := historyContainerType(podSpec, containerName)
+			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil, containerType); err != nil {
 				klog.V(0).InfoS("Failed to add container", "container", containerID, "error", err)
+			}
+			if containerType == model.ContainerTypeInit {
+				// Plain init containers only have their name recorded, no state for samples.
+				continue
 			}
 			klog.V(4).InfoS("Adding samples for container", "sampleCount", len(sampleList), "container", containerID)
 			for _, sample := range sampleList {
@@ -277,6 +277,23 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 			}
 		}
 	}
+}
+
+// historyContainerType classifies a container from the live pod spec, defaulting to a regular
+// container when the pod or container is gone so its history still loads. Native sidecars follow
+// the feature gate, matching LoadPods.
+func historyContainerType(podSpec *spec.BasicPodSpec, containerName string) model.ContainerType {
+	if podSpec == nil {
+		return model.ContainerTypeStandard
+	}
+	containerSpec := podSpec.GetContainerSpec(containerName)
+	if containerSpec == nil {
+		return model.ContainerTypeStandard
+	}
+	if containerSpec.ContainerType == model.ContainerTypeInitSidecar && !features.Enabled(features.NativeSidecar) {
+		return model.ContainerTypeInit
+	}
+	return containerSpec.ContainerType
 }
 
 func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {

@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"sync"
 	"time"
 
@@ -245,7 +246,9 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 		// Plain init containers run once and don't have ongoing usage worth tracking, so only
 		// their name is recorded (for VPA container-recommendation matching/status display);
 		// they're never added to the aggregate-container-state map below.
-		pod.InitContainers = append(pod.InitContainers, containerID.ContainerName)
+		if !slices.Contains(pod.InitContainers, containerID.ContainerName) {
+			pod.InitContainers = append(pod.InitContainers, containerID.ContainerName)
+		}
 		return nil
 	}
 
