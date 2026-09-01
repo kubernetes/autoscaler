@@ -253,6 +253,18 @@ The recommender's main loop gains three new steps when the `VPASlice` feature ga
    VPASlice, persisting per-container histogram data. On startup, checkpoints are loaded back via
    `InitFromCheckpointSlices`.
 
+**Pods on nodes without the slice label**: When a matched DaemonSet pod runs on a node that does
+not have the `sliceByNodeLabel` label at all, no VPASlice exists for that pod. The recommender
+skips the pod during slice aggregation (it is not included in any slice's recommendation
+computation) and emits a Kubernetes event on the parent VPA warning that the pod was unmatched.
+For example: `Warning UnmatchedPod Pod test-daemonset-abc on node "unlabeled-node" has no value
+for label "node.kubernetes.io/instance-type"; skipping VPASlice recommendation`. This event is
+also logged at `WARNING` level in the recommender logs. The pod continues running with its
+existing resource requests — neither the updater nor the admission controller modifies it, since
+there is no slice recommendation to apply. The parent VPA's `status.recommendation` remains empty
+(as it does for all sliced VPAs). Operators should ensure all nodes targeted by the DaemonSet
+carry the configured label to receive per-group recommendations.
+
 The cluster state model is extended with:
 - `VpaSlice` model type holding aggregation state, conditions, and recommendation per slice.
 - `VpaSliceID` type for indexing slices.
@@ -517,6 +529,8 @@ scheduling simulation) to enable eviction-based update modes.
   - DaemonSet with heterogeneous nodes receives per-node-group recommendations.
   - VPASlice objects are created and garbage collected with the parent VPA.
   - In-place updates apply the correct slice recommendation per pod.
+  - Pods on nodes missing the `sliceByNodeLabel` label are skipped (no recommendation applied)
+    and the recommender emits a warning event on the parent VPA.
 
 ### Feature Enablement and Rollback
 
