@@ -413,9 +413,9 @@ func TestRunOnce_MultipleVPAs(t *testing.T) {
 			WithMemRequest(resource.MustParse("100M")).
 			WithCPULimit(resource.MustParse("1")).
 			WithMemLimit(resource.MustParse("100M")).Get()).
+		WithLabels(podLabels).
 		WithCreator(&rs.ObjectMeta, &rs.TypeMeta).
 		Get()
-	pod.Labels = podLabels
 
 	targetRef := &autoscalingv1.CrossVersionObjectReference{
 		Kind:       rs.Kind,
