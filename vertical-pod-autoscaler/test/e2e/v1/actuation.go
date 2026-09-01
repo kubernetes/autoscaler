@@ -22,7 +22,6 @@ import (
 	"os"
 	"time"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/utils/ptr"
 

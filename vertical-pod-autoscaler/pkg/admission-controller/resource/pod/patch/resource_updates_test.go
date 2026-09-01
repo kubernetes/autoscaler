@@ -440,6 +440,43 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
 			expectPatches:        []resource_admission.PatchRecord{},
 		},
+		{
+			name: "native sidecar without recommendation is not patched",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					InitContainers: []corev1.Container{{
+						RestartPolicy: &always,
+					}},
+				},
+			},
+			namespace: "default",
+			initResources: []vpa_api_util.ContainerResources{
+				{},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches:        []resource_admission.PatchRecord{},
+		},
+		{
+			name: "resourceless native sidecar not patched when update mode is off",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					InitContainers: []corev1.Container{{
+						RestartPolicy: &always,
+					}},
+				},
+			},
+			namespace:  "default",
+			updateMode: vpa_types.UpdateModeOff,
+			initResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches:        []resource_admission.PatchRecord{},
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

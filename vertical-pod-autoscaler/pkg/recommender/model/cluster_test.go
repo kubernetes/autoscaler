@@ -360,6 +360,16 @@ func TestSetInitContainers(t *testing.T) {
 	assert.Equal(t, []string{"init-container-3"}, cluster.Pods()[testPodID].InitContainers)
 }
 
+func TestAddOrUpdateContainer_InitContainerDeduplicates(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	cluster.AddOrUpdatePod(testPodID, testLabels, corev1.PodRunning)
+
+	initContainerID := ContainerID{PodID: testPodID, ContainerName: "init-container-1"}
+	assert.NoError(t, cluster.AddOrUpdateContainer(initContainerID, nil, ContainerTypeInit))
+	assert.NoError(t, cluster.AddOrUpdateContainer(initContainerID, nil, ContainerTypeInit))
+	assert.Equal(t, []string{"init-container-1"}, cluster.Pods()[testPodID].InitContainers)
+}
+
 func addVpa(cluster ClusterState, id VpaID, annotations vpaAnnotationsMap, selector string, targetRef *autoscalingv1.CrossVersionObjectReference) *Vpa {
 	apiObject := test.VerticalPodAutoscaler().WithNamespace(id.Namespace).
 		WithName(id.VpaName).WithContainer(testContainerID.ContainerName).WithAnnotations(annotations).WithTargetRef(targetRef).Get()
