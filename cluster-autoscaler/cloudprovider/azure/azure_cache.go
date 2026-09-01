@@ -48,7 +48,7 @@ var (
 //   - limit repetitive Azure API calls.
 //
 // It backs efficient responds to
-//   - cloudprovider.NodeGroups() (= registeredNodeGroups)
+//   - cloudprovider.NodeGroups() (the cloud-backed subset of registeredNodeGroups)
 //   - cloudprovider.NodeGroupForNode (via azureManager.GetNodeGroupForInstance => FindForInstance,
 //     using instanceToNodeGroup and unownedInstances)
 //
@@ -88,7 +88,10 @@ type azureCache struct {
 	// It is only used/populated if vmType is vmTypeStandard.
 	virtualMachines map[string][]*armcompute.VirtualMachine
 
-	// registeredNodeGroups represents all known NodeGroups.
+	// registeredNodeGroups is the provider's configured node-group inventory. A group is
+	// registered from an explicit node-group spec or from tag-based autodiscovery; registration
+	// does not guarantee that its backing Azure resource currently exists. AzureManager.getNodeGroups
+	// filters this inventory before exposing it through cloudprovider.NodeGroups().
 	registeredNodeGroups []cloudprovider.NodeGroup
 
 	// instanceToNodeGroup maintains a mapping from instance Ids to nodegroups.
@@ -453,6 +456,9 @@ func (m *azureCache) GetSKU(ctx context.Context, skuName, location string) (skew
 	return cache.Get(ctx, skuName, skewer.VirtualMachines, location)
 }
 
+// getRegisteredNodeGroups returns the complete configured node-group inventory, including
+// groups whose backing Azure resource is currently absent. Internal reconciliation uses this
+// unfiltered view so hidden groups can still be updated or unregistered.
 func (m *azureCache) getRegisteredNodeGroups() []cloudprovider.NodeGroup {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()

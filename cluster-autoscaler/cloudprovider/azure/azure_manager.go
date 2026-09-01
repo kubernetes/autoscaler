@@ -262,8 +262,11 @@ func (m *AzureManager) invalidateCache() {
 	klog.V(2).Infof("Invalidated Azure cache")
 }
 
-// Fetch automatically discovered NodeGroups. These NodeGroups should be unregistered if
-// they no longer exist in Azure.
+// fetchAutoNodeGroups reconciles tag-based node-group discovery with the registered inventory.
+// It registers VMSS resources matching autoDiscoverySpecs, updates their configuration, and
+// unregisters groups that no longer match. Explicitly configured groups are retained because
+// their configuration takes precedence over autodiscovery. Reconciliation must inspect all
+// registered groups, including ones filtered from the public NodeGroups view.
 func (m *AzureManager) fetchAutoNodeGroups() error {
 	groups, err := m.getFilteredNodeGroups(m.autoDiscoverySpecs)
 	if err != nil {
@@ -288,7 +291,7 @@ func (m *AzureManager) fetchAutoNodeGroups() error {
 		}
 	}
 
-	for _, nodeGroup := range m.getNodeGroups() {
+	for _, nodeGroup := range m.azureCache.getRegisteredNodeGroups() {
 		nodeGroupID := nodeGroup.Id()
 		if !exists[nodeGroupID] && !m.explicitlyConfigured[nodeGroupID] {
 			m.UnregisterNodeGroup(nodeGroup)
@@ -303,8 +306,28 @@ func (m *AzureManager) fetchAutoNodeGroups() error {
 	return nil
 }
 
+// getNodeGroups returns the operational node groups exposed through
+// cloudprovider.CloudProvider.NodeGroups. Unlike getRegisteredNodeGroups, this view excludes
+// ScaleSets without a backing VMSS in the current Azure cache snapshot, preventing core
+// autoscaler callers from querying a configured but unavailable group. Non-ScaleSet groups
+// are unaffected by this VMSS-specific filter.
 func (m *AzureManager) getNodeGroups() []cloudprovider.NodeGroup {
-	return m.azureCache.getRegisteredNodeGroups()
+	registered := m.azureCache.getRegisteredNodeGroups()
+	scaleSets := m.azureCache.getScaleSets()
+	nodeGroups := make([]cloudprovider.NodeGroup, 0, len(registered))
+
+	for _, nodeGroup := range registered {
+		scaleSet, ok := nodeGroup.(*ScaleSet)
+		if ok {
+			if _, exists := scaleSets[scaleSet.Name]; !exists {
+				klog.V(4).Infof("getNodeGroups: excluding %s: no backing VMSS in cache", scaleSet.Name)
+				continue
+			}
+		}
+		nodeGroups = append(nodeGroups, nodeGroup)
+	}
+
+	return nodeGroups
 }
 
 // RegisterNodeGroup registers an a NodeGroup.
