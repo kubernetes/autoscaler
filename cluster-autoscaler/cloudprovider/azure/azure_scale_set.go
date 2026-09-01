@@ -260,6 +260,12 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	curSize := *set.SKU.Capacity
 	vmssSizeMutex.Unlock()
 
+	// Azure VMSS API will return SKU.Capacity = 0 (known anomaly). This added check ensures scale down does not occur.
+	if curSize == 0 && scaleSet.curSize > 0 {
+		klog.Infof("VMSS: %s, API returned size 0, while in memory size is %d, ignoring drastic value and keeping in memory size", scaleSet.Name, scaleSet.curSize)
+		return scaleSet.curSize, nil
+	}
+
 	if scaleSet.curSize != curSize {
 		// Invalidate the instance cache if the capacity has changed.
 		klog.V(5).Infof("VMSS %q size changed from: %d to %d, invalidating instance cache", scaleSet.Name, scaleSet.curSize, curSize)
