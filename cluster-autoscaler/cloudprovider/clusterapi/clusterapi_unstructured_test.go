@@ -29,9 +29,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/dynamic-resource-allocation/cel"
 	"k8s.io/dynamic-resource-allocation/structured"
+	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/dynamicresources"
+	plfeature "k8s.io/kubernetes/pkg/scheduler/framework/plugins/feature"
 	"k8s.io/utils/ptr"
 )
 
@@ -472,6 +475,9 @@ func (f fakeDeviceClassLister) Get(className string) (*resourceapi.DeviceClass, 
 	return nil, fmt.Errorf("device class %q not found", className)
 }
 
+// TODO: Move this allocator validation to a shared test helper or centralized
+// template validation once one exists, rather than duplicating it across providers.
+// See #7799.
 // TestInstanceResourceSlicesAreAllocatable is a regression test for #10199.
 // It feeds the ResourceSlice(s) returned by InstanceResourceSlices into the
 // real DRA structured allocator (k8s.io/dynamic-resource-allocation/structured)
@@ -534,9 +540,13 @@ func TestInstanceResourceSlicesAreAllocatable(t *testing.T) {
 		},
 	}
 
+	features := dynamicresources.AllocatorFeatures(
+		plfeature.NewSchedulerFeaturesFromGates(utilfeature.DefaultFeatureGate),
+	)
+
 	allocator, err := structured.NewAllocator(
 		context.Background(),
-		structured.Features{},
+		features,
 		structured.AllocatedState{},
 		fakeDeviceClassLister{classes: []*resourceapi.DeviceClass{class}},
 		slices,
