@@ -19,7 +19,7 @@
   - [Design Decisions](#design-decisions)
     - [Why separate VPASlice CRDs instead of embedding in VPA status](#why-separate-vpaslice-crds-instead-of-embedding-in-vpa-status)
     - [Why separate VPASliceCheckpoint CRDs instead of reusing VPA checkpoints](#why-separate-vpaslicecheckpoint-crds-instead-of-reusing-vpa-checkpoints)
-    - [Why InPlace-only](#why-inplace-only)
+    - [Why InPlace and Off only](#why-inplace-and-off-only)
   - [Test Plan](#test-plan)
   - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
   - [Graduation Criteria](#graduation-criteria)
@@ -81,10 +81,11 @@ Without per-node-group recommendations, cluster operators must choose between:
 
 - Support for workload types other than DaemonSet. While the VPASlice mechanism could
   conceptually apply to other controllers, this AEP restricts scope to DaemonSets only.
-- Support for update modes other than `InPlace`. VPASlice currently requires
-  `spec.updatePolicy.updateMode: InPlace` because DaemonSet pods scheduled via node affinity may
-  not have `NodeName` set at admission time, preventing the admission controller from matching
-  them to the correct slice. InPlace mode avoids eviction loops caused by this limitation.
+- Support for update modes other than `Off` and `InPlace`. VPASlice currently requires
+  `spec.updatePolicy.updateMode` to be either `Off` (recommendation-only, no automatic updates)
+  or `InPlace`. Eviction-based modes (`Recreate`, `InPlaceOrRecreate`) are not supported because
+  DaemonSet pods may not have `NodeName` set at admission time, preventing the admission
+  controller from matching them to the correct slice.
 - CPU startup boost for VPASlice-managed pods.
 - Multi-label slicing (slicing by more than one label key simultaneously).
 - Automatic node pool discovery or integration with cloud provider node group APIs.
@@ -100,13 +101,19 @@ set and the VPA targets a DaemonSet:
    garbage collection). It then computes independent recommendations for each slice and writes
    them to the slice's `status.recommendation`.
 
-2. The **updater** reads VPASlice objects and matches each pod to its correct slice by looking up
-   the pod's node labels. It applies in-place updates using the slice-specific recommendation
-   rather than the parent VPA's (now empty) recommendation.
+2. The **updater** (when `updateMode` is `InPlace`) reads VPASlice objects and matches each pod
+   to its correct slice by looking up the pod's node labels. It applies in-place updates using
+   the slice-specific recommendation rather than the parent VPA's (now empty) recommendation.
+   When `updateMode` is `Off`, the updater takes no action — recommendations are available on
+   the VPASlice objects for external consumers to read.
 
-3. The **admission controller** similarly matches incoming pods to their VPASlice by resolving the
-   pod's node and checking the slice's `nodeSelector`. It injects the slice-specific
-   recommendation into the pod's resource requests.
+3. The **admission controller** does not mutate pods for VPASlice-enabled VPAs. At admission time
+   the pod has not yet been scheduled, so `pod.spec.nodeName` is empty and the correct slice
+   cannot be determined. Instead, the admission controller performs validation only (see
+   [Admission Controller](#admission-controller)). For `InPlace` mode, after the pod is
+   scheduled and its node is known, the **updater** matches it to the correct VPASlice and
+   applies the slice-specific recommendation via in-place update. For `Off` mode, no automatic
+   updates are applied.
 
 When `spec.sliceByNodeLabel` is set, the parent VPA's `status.recommendation` is intentionally
 left empty. Consumers should read per-group recommendations from the associated VPASlice objects.
@@ -142,7 +149,7 @@ type VerticalPodAutoscalerSpec struct {
 The admission controller validates that:
 - The feature gate `VPASlice` is enabled.
 - `targetRef.Kind` is `DaemonSet`.
-- `updatePolicy.updateMode` is `InPlace`.
+- `updatePolicy.updateMode` is `Off` or `InPlace`.
 
 #### New CRD: VerticalPodAutoscalerSlice
 
@@ -273,32 +280,35 @@ The updater is extended to:
 The admission controller currently supports **validation only** for VPASlice-enabled VPAs. It
 does not mutate (inject recommendations into) newly admitted pods because at admission time the
 pod has not yet been scheduled — `NodeName` is empty — so there is no way to determine which
-node the pod will land on and therefore which VPASlice recommendation to apply. This is the
-primary reason `sliceByNodeLabel` requires `InPlace` update mode: once the pod is scheduled and
-its `NodeName` is known, the updater applies the correct slice-specific recommendation via
-in-place update.
+node the pod will land on and therefore which VPASlice recommendation to apply. This is why
+`sliceByNodeLabel` is restricted to `Off` and `InPlace` update modes: in `Off` mode no
+automatic updates are applied at all, and in `InPlace` mode the pod is scheduled first — once
+its `NodeName` is known, the updater applies the correct slice-specific recommendation in place
+without restarting the pod.
 
 A follow-up effort will explore solving this gap — for example, by simulating the scheduler's
 node selection to predict the target node at admission time — which could enable support for
-additional update modes beyond `InPlace`.
+eviction-based update modes (`Recreate`, `InPlaceOrRecreate`).
 
 The admission controller is extended with validation only:
 
 1. Reject VPA objects that set `sliceByNodeLabel` unless the target is a DaemonSet.
-2. Reject VPA objects that set `sliceByNodeLabel` unless the update mode is `InPlace`.
+2. Reject VPA objects that set `sliceByNodeLabel` unless the update mode is `Off` or `InPlace`.
 3. Reject VPA objects that set `sliceByNodeLabel` unless the `VPASlice` feature gate is enabled.
 
 ### VPASlice Lifecycle
 
 1. User creates a VPA with `spec.sliceByNodeLabel: "node.kubernetes.io/instance-type"` targeting
-   a DaemonSet, with `updateMode: InPlace`.
+   a DaemonSet, with `updateMode: Off` or `updateMode: InPlace`.
 2. The recommender's `ensureVPASlices` discovers all distinct values of the label across nodes
    running matched pods (e.g. `m5.xlarge`, `c5.2xlarge`) and creates VPASlice objects:
    - `my-vpa-m5-xlarge` with `nodeSelector: {"node.kubernetes.io/instance-type": "m5.xlarge"}`
    - `my-vpa-c5-2xlarge` with `nodeSelector: {"node.kubernetes.io/instance-type": "c5.2xlarge"}`
 3. Each recommender iteration computes independent recommendations per slice and writes them to
    the slice's `status.recommendation`.
-4. The updater matches each DaemonSet pod to its slice and applies in-place resource updates.
+4. When `updateMode` is `InPlace`, the updater matches each DaemonSet pod to its slice and
+   applies in-place resource updates. When `updateMode` is `Off`, recommendations are available
+   on the VPASlice objects for external consumers.
 5. If a new node pool is added with a new instance type, the recommender creates a new VPASlice
    on its next iteration.
 6. If the parent VPA is deleted, all VPASlice objects are garbage collected via `ownerReferences`.
@@ -473,7 +483,7 @@ single slice into one object (a `containerCheckpoints` list), yielding exactly o
 VPASlice regardless of container count. This keeps checkpoint count proportional to the number of
 slices (N) rather than N × M.
 
-#### Why InPlace-only
+#### Why InPlace and Off only
 
 When a new DaemonSet pod is admitted, the scheduler has not yet assigned it to a node —
 `pod.spec.nodeName` is empty. Without knowing which node the pod will run on, the admission
@@ -482,10 +492,16 @@ update modes (`Recreate`, `InPlaceOrRecreate`) would cause eviction loops: the u
 pod, the replacement arrives without the correct recommendation (because the admission controller
 cannot match it to a slice), and the cycle repeats.
 
-Restricting to `InPlace` avoids this: the pod is scheduled first, and once its `NodeName` is
-known the updater applies the correct slice-specific recommendation in place without restarting
-the pod. A follow-up effort will explore predicting the target node at admission time (e.g. via
-scheduling simulation) to lift this restriction.
+The two supported modes avoid this problem in different ways:
+- **`Off`**: No automatic updates are applied. The recommender populates VPASlice recommendations
+  for external consumers to read, but neither the updater nor the admission controller acts on
+  them. This is useful for observability — operators can see per-node-group recommendations
+  without enabling automated resource changes.
+- **`InPlace`**: The pod is scheduled first, and once its `NodeName` is known the updater applies
+  the correct slice-specific recommendation in place without restarting the pod.
+
+A follow-up effort will explore predicting the target node at admission time (e.g. via
+scheduling simulation) to enable eviction-based update modes.
 
 ### Test Plan
 
@@ -495,7 +511,7 @@ scheduling simulation) to lift this restriction.
   - Cluster state slice management (`AddOrUpdateVpaSlice`, `DeleteVpaSlice`, aggregation
     matching).
   - Admission controller slice matching (`matchVPASlice`).
-  - Validation rules (DaemonSet-only, InPlace-only).
+  - Validation rules (DaemonSet-only, Off/InPlace-only).
   - Checkpoint slice writer and reader.
 - **E2E tests**: Scenarios to cover:
   - DaemonSet with heterogeneous nodes receives per-node-group recommendations.
@@ -530,7 +546,7 @@ scheduling simulation) to lift this restriction.
   - Address known limitations (admission controller NodeName gap).
 - **Beta → GA**:
   - Feature has been stable in beta for at least 2 releases.
-  - Consider expanding support beyond DaemonSet and InPlace-only.
+  - Consider expanding support beyond DaemonSet and Off/InPlace-only.
 
 ### Version Skew
 
@@ -553,9 +569,12 @@ crashes or data corruption) but results in sliced VPAs being effectively inactiv
 
 ### Kubernetes Version Compatibility
 
-This feature requires Kubernetes 1.27+ with the `InPlacePodVerticalScaling` feature gate enabled
-(alpha in 1.27, beta in 1.33). When running on an older Kubernetes version that does not support
-in-place pod updates, the `InPlace` update mode (which is a prerequisite for `sliceByNodeLabel`)
+When using `updateMode: Off`, VPASlice works on any Kubernetes version — no in-place update
+support is required since no automatic resource changes are applied.
+
+When using `updateMode: InPlace`, this feature requires Kubernetes 1.27+ with the
+`InPlacePodVerticalScaling` feature gate enabled (alpha in 1.27, beta in 1.33). When running on
+an older Kubernetes version that does not support in-place pod updates, the `InPlace` update mode
 will not function, and the admission controller will reject VPA objects that specify both
 `sliceByNodeLabel` and `InPlace` mode if the `InPlace` feature gate is not enabled.
 
