@@ -797,6 +797,66 @@ func TestScaleSetIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 	}
 }
 
+// A zero from List must be confirmed without preventing legitimate scale-to-zero.
+func TestGetCurSizeConfirmsZeroCapacity(t *testing.T) {
+	testCases := map[string]struct {
+		cachedCapacity int64
+		inMemorySize   int64
+		getCapacity    int64
+		getError       error
+		spot           bool
+		wantGet        bool
+		expectedSize   int64
+	}{
+		"cached zero corrected by GET":             {cachedCapacity: 0, inMemorySize: 90, getCapacity: 90, wantGet: true, expectedSize: 90},
+		"GET capacity replaces previous target":    {cachedCapacity: 0, inMemorySize: 90, getCapacity: 3, wantGet: true, expectedSize: 3},
+		"confirmed scale to zero":                  {cachedCapacity: 0, inMemorySize: 90, getCapacity: 0, wantGet: true, expectedSize: 0},
+		"already empty":                            {cachedCapacity: 0, inMemorySize: 0, expectedSize: 0},
+		"initial zero":                             {cachedCapacity: 0, inMemorySize: -1, expectedSize: 0},
+		"normal scale down":                        {cachedCapacity: 3, inMemorySize: 90, expectedSize: 3},
+		"confirmation fails":                       {cachedCapacity: 0, inMemorySize: 90, wantGet: true, getError: errors.New("GET failed"), expectedSize: -1},
+		"Spot accepts confirmed zero with one GET": {cachedCapacity: 0, inMemorySize: 90, getCapacity: 0, spot: true, wantGet: true, expectedSize: 0},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			provider := newTestProvider(t)
+			vmssName := "vmss-test"
+			vmss := newTestVMSSList(tc.cachedCapacity, vmssName, "eastus", armcompute.OrchestrationModeUniform)[0]
+			if tc.spot {
+				vmss.Properties.VirtualMachineProfile = &armcompute.VirtualMachineScaleSetVMProfile{Priority: ptr.To(armcompute.VirtualMachinePriorityTypesSpot)}
+			}
+			provider.azureManager.azureCache.setScaleSet(vmssName, vmss)
+			client := mock_virtualmachinescalesetclient.NewMockInterface(gomock.NewController(t))
+			provider.azureManager.azClient.virtualMachineScaleSetsClient = client
+			if tc.wantGet {
+				fresh := newTestVMSSList(tc.getCapacity, vmssName, "eastus", armcompute.OrchestrationModeUniform)[0]
+				client.EXPECT().Get(gomock.Any(), provider.azureManager.config.ResourceGroup, vmssName, nil).Return(fresh, tc.getError)
+			}
+
+			scaleSet := newTestScaleSetMinSizeZero(provider.azureManager, vmssName)
+			scaleSet.curSize = tc.inMemorySize
+			scaleSet.sizeRefreshPeriod = time.Hour
+
+			size, err := scaleSet.getCurSize()
+			assert.Equal(t, tc.expectedSize, size)
+			if tc.getError != nil {
+				if assert.NotNil(t, err) {
+					assert.ErrorIs(t, err.error, tc.getError)
+				}
+				assert.Equal(t, tc.inMemorySize, scaleSet.curSize)
+				assert.True(t, scaleSet.lastSizeRefresh.IsZero())
+				return
+			}
+			assert.Nil(t, err)
+			assert.Equal(t, tc.expectedSize, scaleSet.curSize)
+			assert.False(t, scaleSet.lastSizeRefresh.IsZero())
+			cached, cacheErr := scaleSet.getVMSSFromCache()
+			assert.NoError(t, cacheErr)
+			assert.Equal(t, tc.expectedSize, *cached.SKU.Capacity)
+		})
+	}
+}
+
 func TestIncreaseSizeOnVMProvisioningFailedWithFastDelete(t *testing.T) {
 	testCases := map[string]struct {
 		expectInstanceRunning    bool

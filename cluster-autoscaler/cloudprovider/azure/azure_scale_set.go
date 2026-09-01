@@ -76,7 +76,7 @@ type ScaleSet struct {
 	// curSize tracks (and caches) the number of VMs in this ScaleSet.
 	// It is periodically updated from vmss.Sku.Capacity, with VMSS itself coming
 	// either from azure.Cache (which periodically does VMSS.List)
-	// or from direct VMSS.Get (always used for Spot).
+	// or from direct VMSS.Get (for Spot and to confirm transitions to zero).
 	curSize int64
 	// sizeRefreshPeriod is how often curSize is refreshed from vmss.Sku.Capacity.
 	// (Set from azureCache.refreshInterval = VmssCacheTTL or [defaultMetadataCache]refreshInterval = 1min)
@@ -240,8 +240,14 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 		return scaleSet.curSize, nil
 	}
 
-	// If the scale set is on Spot, make a GET VMSS call to fetch more updated fresh info
-	if isSpot(set) {
+	vmssSizeMutex.Lock()
+	curSize := *set.SKU.Capacity
+	vmssSizeMutex.Unlock()
+
+	// Spot capacity always needs a fresh GET. Also confirm a cached transition
+	// to zero: a stale List response must not override a positive target size,
+	// but a zero confirmed by GET is a valid capacity and must be accepted.
+	if isSpot(set) || (curSize == 0 && scaleSet.curSize > 0) {
 		ctx, cancel := getContextWithCancel()
 		defer cancel()
 
@@ -257,7 +263,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	}
 
 	vmssSizeMutex.Lock()
-	curSize := *set.SKU.Capacity
+	curSize = *set.SKU.Capacity
 	vmssSizeMutex.Unlock()
 
 	if scaleSet.curSize != curSize {
