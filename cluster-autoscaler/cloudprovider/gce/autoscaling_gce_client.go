@@ -95,6 +95,10 @@ const (
 	// node group couldn't be scaled up because of invalid TPU configuration.
 	ErrorUnsupportedTpuConfiguration = "UNSUPPORTED_TPU_CONFIGURATION"
 
+	// ErrorCodeCloudKms is an error code used in InstanceErrorInfo if there were
+	// Cloud Key Management Service (KMS) issues.
+	ErrorCodeCloudKms = "CLOUD_KMS_ERROR"
+
 	// ErrorCodeOther is an error code used in InstanceErrorInfo if other error occurs.
 	ErrorCodeOther = "OTHER"
 
@@ -641,6 +645,11 @@ func GetErrorInfo(errorCode, errorMessage, instanceStatus string, previousErrorI
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorAutomaticReservationsNoCapacity,
 		}
+	} else if isCloudKmsError(errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorCodeCloudKms,
+		}
 	} else if isInstanceStatusNotRunningYet(instanceStatus) {
 		if previousErrorInfo != nil {
 			// keep the current error
@@ -711,6 +720,10 @@ func isVmExternalIpAccessPolicyConstraintError(errorCode, errorMessage string) b
 func isTpuConfigurationInvalidError(errorCode, errorMessage string) bool {
 	return strings.Contains(errorCode, "CONDITION_NOT_MET") &&
 		strings.Contains(errorMessage, "Unsupported TPU configuration")
+}
+
+func isCloudKmsError(errorMessage string) bool {
+	return strings.Contains(errorMessage, "Cloud KMS error")
 }
 
 func isInstanceStatusNotRunningYet(instanceStatus string) bool {
