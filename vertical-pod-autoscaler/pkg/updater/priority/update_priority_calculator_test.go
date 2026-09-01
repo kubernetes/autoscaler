@@ -300,8 +300,8 @@ func TestDontUpdatePodWithStaleQuickOOM(t *testing.T) {
 			LastTerminationState: corev1.ContainerState{
 				Terminated: &corev1.ContainerStateTerminated{
 					Reason:     "OOMKilled",
-					FinishedAt: metav1.NewTime(timestampNow.Add(-1 * 20 * time.Minute)),
-					StartedAt:  metav1.NewTime(timestampNow.Add(-1 * 22 * time.Minute)),
+					FinishedAt: metav1.NewTime(timestampNow.Add(-20 * time.Minute)),
+					StartedAt:  metav1.NewTime(timestampNow.Add(-22 * time.Minute)),
 				},
 			},
 		},
