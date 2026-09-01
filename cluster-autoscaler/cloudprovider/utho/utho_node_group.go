@@ -57,12 +57,12 @@ type NodeGroup struct {
 }
 
 // MaxSize returns maximum size of the node group.
-func (n *NodeGroup) MaxSize() int {
+func (n *NodeGroup) MaxSize(ctx context.Context) int {
 	return n.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (n *NodeGroup) MinSize() int {
+func (n *NodeGroup) MinSize(ctx context.Context) int {
 	return n.minSize
 }
 
@@ -71,14 +71,14 @@ func (n *NodeGroup) MinSize() int {
 // be equal to Size() once everything stabilizes (new nodes finish startup and
 // registration or removed nodes are deleted completely). Implementation
 // required.
-func (n *NodeGroup) TargetSize() (int, error) {
+func (n *NodeGroup) TargetSize(ctx context.Context) (int, error) {
 	return n.nodePool.Count, nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
-func (n *NodeGroup) IncreaseSize(delta int) error {
+func (n *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	klog.V(4).Infof("IncreaseSize: requested delta=%d for node group %s", delta, n.id)
 
 	if delta <= 0 {
@@ -88,11 +88,11 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 
 	targetSize := n.nodePool.Count + delta
 
-	if targetSize > n.MaxSize() {
+	if targetSize > n.MaxSize(context.TODO()) {
 		klog.Errorf("IncreaseSize: size increase too large for node group %s. current: %d, desired: %d, max: %d",
-			n.id, n.nodePool.Count, targetSize, n.MaxSize())
+			n.id, n.nodePool.Count, targetSize, n.MaxSize(context.TODO()))
 		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d",
-			n.nodePool.Count, targetSize, n.MaxSize())
+			n.nodePool.Count, targetSize, n.MaxSize(context.TODO()))
 	}
 
 	param := utho.UpdateKubernetesAutoscaleNodepool{
@@ -100,15 +100,18 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		NodePoolId: n.id,
 		Count:      strconv.Itoa(targetSize),
 	}
-	ctx := context.Background()
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
 	klog.V(4).Infof("IncreaseSize: calling UpdateNodePool with targetSize=%d for node group %s", targetSize, n.id)
-	_, err := n.client.UpdateNodePool(ctx, param)
+	_, err := n.client.UpdateNodePool(emptyCtx, param)
 	if err != nil {
 		klog.Errorf("IncreaseSize: UpdateNodePool API error for node group %s: %v", n.id, err)
 		return err
 	}
 
-	nodePool, err := n.client.ReadNodePool(ctx, n.clusterID, n.id)
+	nodePool, err := n.client.ReadNodePool(emptyCtx, n.clusterID, n.id)
 	if err != nil {
 		klog.Errorf("IncreaseSize: ReadNodePool API error for node group %s: %v", n.id, err)
 		return fmt.Errorf("failed to read node pool after update for node group %s: %w", n.id, err)
@@ -128,7 +131,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (n *NodeGroup) AtomicIncreaseSize(delta int) error {
+func (n *NodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -136,10 +139,13 @@ func (n *NodeGroup) AtomicIncreaseSize(delta int) error {
 // of the node group with that). Error is returned either on failure or if the
 // given node doesn't belong to this node group. This function should wait
 // until node group size is updated. Implementation required.
-func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (n *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	klog.V(4).Infof("DeleteNodes: requested deletion of %d nodes from pool %s", len(nodes), n.id)
 
-	ctx := context.Background()
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
 
 	for _, node := range nodes {
 		// Find the node ID label
@@ -164,7 +170,7 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		klog.V(4).Infof("DeleteNodes: calling DeleteNode(cluster=%d, pool=%s, node=%s)",
 			n.clusterID, n.id, nodeID)
 
-		if _, err := n.client.DeleteNode(ctx, param); err != nil {
+		if _, err := n.client.DeleteNode(emptyCtx, param); err != nil {
 			klog.Errorf("DeleteNodes: API error for cluster %d pool %s node %s: %v",
 				n.clusterID, n.id, nodeID, err)
 			return fmt.Errorf("deleting node failed for cluster %d node pool %q node %q: %w",
@@ -182,7 +188,7 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (n *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (n *NodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -191,7 +197,7 @@ func (n *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
-func (n *NodeGroup) DecreaseTargetSize(delta int) error {
+func (n *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	klog.V(4).Infof("DecreaseTargetSize: requested delta=%d for node group %s", delta, n.id)
 
 	if delta >= 0 {
@@ -200,11 +206,11 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 	}
 
 	targetSize := n.nodePool.Count + delta
-	if targetSize < n.MinSize() {
+	if targetSize < n.MinSize(context.TODO()) {
 		klog.Errorf("DecreaseTargetSize: size decrease too small for node group %s. current: %d, desired: %d, min: %d",
-			n.Id(), n.nodePool.Count, targetSize, n.MinSize())
+			n.Id(), n.nodePool.Count, targetSize, n.MinSize(context.TODO()))
 		return fmt.Errorf("node group %s: size decrease is too small. current size: %d, desired size: %d, minimum size: %d",
-			n.Id(), n.nodePool.Count, targetSize, n.MinSize())
+			n.Id(), n.nodePool.Count, targetSize, n.MinSize(context.TODO()))
 	}
 
 	req := utho.UpdateKubernetesAutoscaleNodepool{
@@ -214,9 +220,12 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 		Label:      uthoLabel,
 		Size:       strconv.Itoa(targetSize),
 	}
-	ctx := context.Background()
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
 	klog.V(4).Infof("DecreaseTargetSize: calling UpdateNodePool with targetSize=%d for node group %s", targetSize, n.id)
-	updatedNodePool, err := n.client.UpdateNodePool(ctx, req)
+	updatedNodePool, err := n.client.UpdateNodePool(emptyCtx, req)
 	if err != nil {
 		klog.Errorf("DecreaseTargetSize: UpdateNodePool API error for node group %s: %v", n.id, err)
 		return err
@@ -241,14 +250,14 @@ func (n *NodeGroup) Id() string {
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (n *NodeGroup) Debug() string {
-	return fmt.Sprintf("node group ID: %s (min:%d max:%d)", n.Id(), n.MinSize(), n.MaxSize())
+func (n *NodeGroup) Debug(ctx context.Context) string {
+	return fmt.Sprintf("node group ID: %s (min:%d max:%d)", n.Id(), n.MinSize(context.TODO()), n.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.  It is
 // required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
-func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (n *NodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	klog.V(5).Infof("Checking nodes for node group %s", n.Id())
 
 	if n.nodePool == nil {
@@ -286,7 +295,7 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // all of the labels, capacity and allocatable information as well as all pods
 // that are started on the node by default, using manifest (most likely only
 // kube-proxy). Implementation optional.
-func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (n *NodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	klog.V(4).Infof("TemplateNodeInfo: start for node-group %s", n.id)
 
 	if n.nodePool == nil {
@@ -342,31 +351,31 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 // Exist checks if the node group really exists on the cloud provider side.
 // Allows to tell the theoretical node group from the real one. Implementation
 // required.
-func (n *NodeGroup) Exist() bool {
+func (n *NodeGroup) Exist(ctx context.Context) bool {
 	return n.nodePool != nil
 }
 
 // Create creates the node group on the cloud provider side. Implementation
 // optional.
-func (n *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (n *NodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.  This will be
 // executed only for autoprovisioned node groups, once their size drops to 0.
 // Implementation optional.
-func (n *NodeGroup) Delete() error {
+func (n *NodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned. An
 // autoprovisioned group was created by CA and can be deleted when scaled to 0.
-func (n *NodeGroup) Autoprovisioned() bool {
+func (n *NodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (n *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package cherryservers
 
 import (
+	"context"
 	"io"
 	"os"
 	"regexp"
@@ -86,23 +87,23 @@ func (ccp *cherryCloudProvider) Name() string {
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (ccp *cherryCloudProvider) GPULabel() string {
+func (ccp *cherryCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
-func (ccp *cherryCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (ccp *cherryCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (ccp *cherryCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(ccp, node)
+func (ccp *cherryCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), ccp, node)
 }
 
 // NodeGroups returns all node groups managed by this cloud provider.
-func (ccp *cherryCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (ccp *cherryCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, len(ccp.nodeGroups))
 	for i := range ccp.nodeGroups {
 		groups[i] = &ccp.nodeGroups[i]
@@ -118,7 +119,7 @@ func (ccp *cherryCloudProvider) AddNodeGroup(group cherryNodeGroup) {
 // NodeGroupForNode returns the node group that a given node belongs to.
 //
 // Since only a single node group is currently supported, the first node group is always returned.
-func (ccp *cherryCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (ccp *cherryCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	// ignore control plane nodes
 	if _, found := node.ObjectMeta.Labels[ccp.controllerNodeLabel]; found {
 		return nil, nil
@@ -139,43 +140,43 @@ func (ccp *cherryCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (ccp *cherryCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (ccp *cherryCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (ccp *cherryCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (ccp *cherryCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes is not implemented.
-func (ccp *cherryCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (ccp *cherryCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup is not implemented.
-func (ccp *cherryCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (ccp *cherryCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns resource constraints for the cloud provider
-func (ccp *cherryCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (ccp *cherryCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return ccp.resourceLimiter, nil
 }
 
 // Refresh is called before every autoscaler main loop.
 //
 // Currently only prints debug information.
-func (ccp *cherryCloudProvider) Refresh() error {
+func (ccp *cherryCloudProvider) Refresh(ctx context.Context) error {
 	for _, nodegroup := range ccp.nodeGroups {
-		klog.V(3).Info(nodegroup.Debug())
+		klog.V(3).Info(nodegroup.Debug(context.TODO()))
 	}
 	return nil
 }
 
 // Cleanup currently does nothing.
-func (ccp *cherryCloudProvider) Cleanup() error {
+func (ccp *cherryCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 

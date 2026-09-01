@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	"context"
 	"reflect"
 	"slices"
 	"testing"
@@ -38,7 +39,7 @@ func TestProviderConstructorProperties(t *testing.T) {
 		t.Errorf("expected %q, got %q", ProviderName, actual)
 	}
 
-	rl, err := provider.GetResourceLimiter()
+	rl, err := provider.GetResourceLimiter(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -47,11 +48,11 @@ func TestProviderConstructorProperties(t *testing.T) {
 		t.Errorf("expected %+v, got %+v", resourceLimits, rl)
 	}
 
-	if _, err := provider.Pricing(); err != cloudprovider.ErrNotImplemented {
+	if _, err := provider.Pricing(context.Background()); err != cloudprovider.ErrNotImplemented {
 		t.Errorf("expected an error")
 	}
 
-	machineTypes, err := provider.GetAvailableMachineTypes()
+	machineTypes, err := provider.GetAvailableMachineTypes(context.Background())
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -59,25 +60,25 @@ func TestProviderConstructorProperties(t *testing.T) {
 		t.Errorf("expected 0, got %v", len(machineTypes))
 	}
 
-	if _, err := provider.NewNodeGroup("foo", nil, nil, nil, nil); err == nil {
+	if _, err := provider.NewNodeGroup(context.Background(), "foo", nil, nil, nil, nil); err == nil {
 		t.Error("expected an error")
 	}
 
-	if err := provider.Cleanup(); err != nil {
+	if err := provider.Cleanup(context.Background()); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	if err := provider.Refresh(); err != nil {
+	if err := provider.Refresh(context.Background()); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	nodegroups := provider.NodeGroups()
+	nodegroups := provider.NodeGroups(context.Background())
 
 	if len(nodegroups) != 0 {
 		t.Errorf("expected 0, got %v", len(nodegroups))
 	}
 
-	ng, err := provider.NodeGroupForNode(&corev1.Node{
+	ng, err := provider.NodeGroupForNode(context.Background(), &corev1.Node{
 		TypeMeta: v1.TypeMeta{
 			Kind: "Node",
 		},
@@ -94,11 +95,11 @@ func TestProviderConstructorProperties(t *testing.T) {
 		t.Fatalf("unexpected nodegroup: %v", ng.Id())
 	}
 
-	if got := provider.GPULabel(); got != GPULabel {
+	if got := provider.GPULabel(context.Background()); got != GPULabel {
 		t.Fatalf("expected %q, got %q", GPULabel, got)
 	}
 
-	if got := len(provider.GetAvailableGPUTypes()); got != 0 {
+	if got := len(provider.GetAvailableGPUTypes(context.Background())); got != 0 {
 		t.Fatalf("expected 0 GPU types, got %d", got)
 	}
 }
@@ -131,7 +132,7 @@ func BenchmarkNodeGroups(b *testing.B) {
 	b.ResetTimer()
 	b.Run("NodeGroups", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			provider.NodeGroups()
+			provider.NodeGroups(context.Background())
 		}
 	})
 }
@@ -265,7 +266,7 @@ func TestNodeGroups(t *testing.T) {
 			t.Errorf("expected %q, got %q", ProviderName, actual)
 		}
 
-		observed := provider.NodeGroups()
+		observed := provider.NodeGroups(context.Background())
 		if len(observed) != tc.expectedNodeGroupCount {
 			t.Fatalf("unexpected node group length, expected: %d, observed %d", tc.expectedNodeGroupCount, observed)
 		}

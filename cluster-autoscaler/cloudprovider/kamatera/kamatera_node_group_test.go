@@ -90,16 +90,16 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			}
 
 			// test error on bad delta values
-			err := ng.IncreaseSize(0)
+			err := ng.IncreaseSize(context.Background(), 0)
 			assert.Error(t, err)
 			assert.Equal(t, "delta must be positive, have: 0", err.Error())
 
-			err = ng.IncreaseSize(-1)
+			err = ng.IncreaseSize(context.Background(), -1)
 			assert.Error(t, err)
 			assert.Equal(t, "delta must be positive, have: -1", err.Error())
 
 			// test error on a too large increase of nodes
-			err = ng.IncreaseSize(5)
+			err = ng.IncreaseSize(context.Background(), 5)
 			assert.Error(t, err)
 			assert.Equal(t, "size increase is too large. current: 3 desired: 8 max: 7", err.Error())
 
@@ -110,7 +110,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			).Return(
 				map[string]string{createdServerName1: "cmd-1"}, nil,
 			).Once()
-			err = ng.IncreaseSize(1)
+			err = ng.IncreaseSize(context.Background(), 1)
 			assert.NoError(t, err)
 			assert.Equal(t, 4, len(ng.instances))
 
@@ -123,7 +123,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			).Return(
 				map[string]string{createdServerName2: "cmd-2", createdServerName3: "cmd-3"}, nil,
 			).Once()
-			err = ng.IncreaseSize(2)
+			err = ng.IncreaseSize(context.Background(), 2)
 			assert.NoError(t, err)
 			assert.Equal(t, 6, len(ng.instances))
 
@@ -135,7 +135,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			).Return(
 				map[string]string{}, fmt.Errorf("error on API call"),
 			).Once()
-			err = ng.IncreaseSize(1)
+			err = ng.IncreaseSize(context.Background(), 1)
 			assert.Error(t, err, "no error on injected API call error")
 			assert.Equal(t, "error on API call", err.Error())
 		})
@@ -250,7 +250,7 @@ func TestNodeGroup_IncreaseSize_withPoweredOffServers(t *testing.T) {
 					map[string]string{createdServerName1: "cmd-create-1"}, nil,
 				).Once()
 			}
-			err := ng.IncreaseSize(1)
+			err := ng.IncreaseSize(context.Background(), 1)
 			assert.NoError(t, err)
 			assert.Equal(t, 4, len(ng.instances))
 
@@ -281,7 +281,7 @@ func TestNodeGroup_IncreaseSize_withPoweredOffServers(t *testing.T) {
 					map[string]string{createdServerName2: "cmd-create-2", createdServerName3: "cmd-create-3"}, nil,
 				).Once()
 			}
-			err = ng.IncreaseSize(2)
+			err = ng.IncreaseSize(context.Background(), 2)
 			assert.NoError(t, err)
 			assert.Equal(t, 6, len(ng.instances))
 
@@ -296,7 +296,7 @@ func TestNodeGroup_IncreaseSize_withPoweredOffServers(t *testing.T) {
 			).Return(
 				map[string]string{}, fmt.Errorf("error on API call"),
 			).Once()
-			err = ng.IncreaseSize(1)
+			err = ng.IncreaseSize(context.Background(), 1)
 			assert.Error(t, err, "no error on injected API call error")
 			assert.Equal(t, "error on API call", err.Error())
 		})
@@ -305,7 +305,7 @@ func TestNodeGroup_IncreaseSize_withPoweredOffServers(t *testing.T) {
 
 func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 	ng := &NodeGroup{}
-	err := ng.DecreaseTargetSize(-1)
+	err := ng.DecreaseTargetSize(context.Background(), -1)
 	assert.Error(t, err)
 	assert.Equal(t, "Not implemented", err.Error())
 }
@@ -373,7 +373,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 				"StartServerRequest", ctx, ServerRequestPoweroff, serverName6,
 			).Return("cmd-poweroff-6", nil).Once()
 
-			err := ng.DeleteNodes([]*apiv1.Node{
+			err := ng.DeleteNodes(context.Background(), []*apiv1.Node{
 				{Spec: apiv1.NodeSpec{ProviderID: serverProviderID1}},
 				{Spec: apiv1.NodeSpec{ProviderID: serverProviderID2}},
 				{Spec: apiv1.NodeSpec{ProviderID: serverProviderID6}},
@@ -381,7 +381,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, 6, len(ng.instances))
-			targetSize, err := ng.TargetSize()
+			targetSize, err := ng.TargetSize(context.Background())
 			assert.Equal(t, 3, targetSize)
 			assert.Equal(t, cloudprovider.InstanceDeleting, ng.instances[serverProviderID1].Status.State)
 			assert.Equal(t, cloudprovider.InstanceDeleting, ng.instances[serverProviderID2].Status.State)
@@ -391,7 +391,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			assert.Equal(t, cloudprovider.InstanceRunning, ng.instances[serverProviderID5].Status.State)
 
 			// test error on deleting a node we are not managing
-			err = ng.DeleteNodes([]*apiv1.Node{{Spec: apiv1.NodeSpec{ProviderID: mockKamateraServerName()}}})
+			err = ng.DeleteNodes(context.Background(), []*apiv1.Node{{Spec: apiv1.NodeSpec{ProviderID: mockKamateraServerName()}}})
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "cannot find this node in the node group")
 
@@ -399,7 +399,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			client.On(
 				"StartServerRequest", ctx, ServerRequestPoweroff, serverName4,
 			).Return("", fmt.Errorf("error on API call")).Once()
-			err = ng.DeleteNodes([]*apiv1.Node{
+			err = ng.DeleteNodes(context.Background(), []*apiv1.Node{
 				{Spec: apiv1.NodeSpec{ProviderID: serverProviderID4}},
 			})
 			assert.Error(t, err)
@@ -479,7 +479,7 @@ func TestNodeGroup_DeleteNodes_PoweroffBehavior(t *testing.T) {
 				"StartServerRequest", ctx, ServerRequestPoweroff, serverName,
 			).Return("cmd-poweroff", nil).Once()
 
-			err := ng.DeleteNodes([]*apiv1.Node{{Spec: apiv1.NodeSpec{ProviderID: serverProviderID}}})
+			err := ng.DeleteNodes(context.Background(), []*apiv1.Node{{Spec: apiv1.NodeSpec{ProviderID: serverProviderID}}})
 			assert.NoError(t, err)
 
 			instance := ng.instances[serverProviderID]
@@ -545,7 +545,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 
 	// test nodes returned from Nodes() are only the ones we are expecting
 	// Instance.Id should be prefixed with the configured provider ID prefix to match node.Spec.ProviderID
-	instancesList, err := ng.Nodes()
+	instancesList, err := ng.Nodes(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(instancesList))
 	var serverIds []string
@@ -602,7 +602,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 			Disks: []string{"size=50"},
 		},
 	}
-	nodeInfo, err := ng.TemplateNodeInfo()
+	nodeInfo, err := ng.TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, nodeInfo.Node().Status.Capacity, apiv1.ResourceList{
 		apiv1.ResourcePods:    *resource.NewQuantity(110, resource.DecimalSI),
@@ -614,7 +614,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 
 	// test with template labels
 	ng.templateLabels = []string{"disktype=ssd", "kubernetes.io/os=linux"}
-	nodeInfo, err = ng.TemplateNodeInfo()
+	nodeInfo, err = ng.TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]string{
 		"disktype":         "ssd",
@@ -623,7 +623,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 
 	// test with invalid label format (missing =)
 	ng.templateLabels = []string{"invalidlabel", "valid=label"}
-	nodeInfo, err = ng.TemplateNodeInfo()
+	nodeInfo, err = ng.TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]string{
 		"valid": "label",
@@ -631,7 +631,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 
 	// test with label containing = in value
 	ng.templateLabels = []string{"key=value=with=equals"}
-	nodeInfo, err = ng.TemplateNodeInfo()
+	nodeInfo, err = ng.TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]string{
 		"key": "value=with=equals",
@@ -658,39 +658,39 @@ func TestNodeGroup_Others(t *testing.T) {
 		},
 		manager: &mgr,
 	}
-	assert.Equal(t, 1, ng.MinSize())
-	assert.Equal(t, 7, ng.MaxSize())
-	ts, err := ng.TargetSize()
+	assert.Equal(t, 1, ng.MinSize(context.Background()))
+	assert.Equal(t, 7, ng.MaxSize(context.Background()))
+	ts, err := ng.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, ts)
 	assert.Equal(t, "ng1", ng.Id())
-	assert.Equal(t, "node group ID: ng1 (min:1 max:7)", ng.Debug())
+	assert.Equal(t, "node group ID: ng1 (min:1 max:7)", ng.Debug(context.Background()))
 	extendedDebug := strings.Split(ng.extendedDebug(), "\n")
 	assert.Equal(t, 4, len(extendedDebug))
 	assert.Contains(t, extendedDebug, "node group ID: ng1 (min:1 max:7)")
 	for _, serverName := range []string{serverName1, serverName2, serverName3} {
 		assert.Contains(t, extendedDebug, fmt.Sprintf("instance ID: %s state: Running powerOn: false commandID: ", serverName))
 	}
-	assert.Equal(t, true, ng.Exist())
-	assert.Equal(t, false, ng.Autoprovisioned())
-	_, err = ng.Create()
+	assert.Equal(t, true, ng.Exist(context.Background()))
+	assert.Equal(t, false, ng.Autoprovisioned(context.Background()))
+	_, err = ng.Create(context.Background())
 	assert.Error(t, err)
 	assert.Equal(t, "Not implemented", err.Error())
-	err = ng.Delete()
+	err = ng.Delete(context.Background())
 	assert.Error(t, err)
 	assert.Equal(t, "Not implemented", err.Error())
 }
 
 func TestNodeGroup_AtomicIncreaseSize(t *testing.T) {
 	ng := &NodeGroup{}
-	err := ng.AtomicIncreaseSize(1)
+	err := ng.AtomicIncreaseSize(context.Background(), 1)
 	assert.Error(t, err)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
 
 func TestNodeGroup_ForceDeleteNodes(t *testing.T) {
 	ng := &NodeGroup{}
-	err := ng.ForceDeleteNodes([]*apiv1.Node{})
+	err := ng.ForceDeleteNodes(context.Background(), []*apiv1.Node{})
 	assert.Error(t, err)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
@@ -705,7 +705,7 @@ func TestNodeGroup_GetOptions(t *testing.T) {
 		ZeroOrMaxNodeScaling:             true,
 		IgnoreDaemonSetsUtilization:      true,
 	}
-	opts, err := ng.GetOptions(defaults)
+	opts, err := ng.GetOptions(context.Background(), defaults)
 	assert.NoError(t, err)
 	assert.NotNil(t, opts)
 	assert.Equal(t, defaults.ScaleDownUtilizationThreshold, opts.ScaleDownUtilizationThreshold)

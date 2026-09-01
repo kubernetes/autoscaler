@@ -17,6 +17,7 @@ limitations under the License.
 package brightbox
 
 import (
+	"context"
 	"errors"
 	"strconv"
 	"strings"
@@ -118,11 +119,11 @@ var (
 )
 
 func TestMaxSize(t *testing.T) {
-	assert.Equal(t, makeFakeNodeGroup(t, nil).MaxSize(), fakeMaxSize)
+	assert.Equal(t, makeFakeNodeGroup(t, nil).MaxSize(context.Background()), fakeMaxSize)
 }
 
 func TestMinSize(t *testing.T) {
-	assert.Equal(t, makeFakeNodeGroup(t, nil).MinSize(), fakeMinSize)
+	assert.Equal(t, makeFakeNodeGroup(t, nil).MinSize(context.Background()), fakeMinSize)
 }
 
 func TestSize(t *testing.T) {
@@ -133,14 +134,14 @@ func TestSize(t *testing.T) {
 	t.Run("TargetSize", func(t *testing.T) {
 		mockclient.On("ServerGroup", fakeNodeGroupID).
 			Return(fakeServerGroup, nil).Once()
-		size, err := nodeGroup.TargetSize()
+		size, err := nodeGroup.TargetSize(context.Background())
 		assert.Equal(t, 2, size)
 		assert.NoError(t, err)
 	})
 	t.Run("TargetSizeFail", func(t *testing.T) {
 		mockclient.On("ServerGroup", fakeNodeGroupID).
 			Return(nil, ErrFake).Once()
-		size, err := nodeGroup.TargetSize()
+		size, err := nodeGroup.TargetSize(context.Background())
 		assert.Error(t, err)
 		assert.Zero(t, size)
 	})
@@ -161,11 +162,11 @@ func TestSize(t *testing.T) {
 	mockclient.On("ServerGroup", fakeNodeGroupID).
 		Return(fakeServerGroup, nil)
 	t.Run("DecreaseTargetSizePositive", func(t *testing.T) {
-		err := nodeGroup.DecreaseTargetSize(0)
+		err := nodeGroup.DecreaseTargetSize(context.Background(), 0)
 		assert.Error(t, err)
 	})
 	t.Run("DecreaseTargetSizeFail", func(t *testing.T) {
-		err := nodeGroup.DecreaseTargetSize(-1)
+		err := nodeGroup.DecreaseTargetSize(context.Background(), -1)
 		assert.Error(t, err)
 	})
 	mockclient.AssertExpectations(t)
@@ -185,14 +186,14 @@ func TestIncreaseSize(t *testing.T) {
 		assert.Equal(t, fakeNodeGroupUserData, *nodeGroup.serverOptions.UserData)
 	})
 	t.Run("Require positive delta", func(t *testing.T) {
-		err := nodeGroup.IncreaseSize(0)
+		err := nodeGroup.IncreaseSize(context.Background(), 0)
 		assert.Error(t, err)
 	})
 	fakeServerGroup := &fakeGroups()[0]
 	t.Run("Don't exceed max size", func(t *testing.T) {
 		mockclient.On("ServerGroup", fakeNodeGroupID).
 			Return(fakeServerGroup, nil).Once()
-		err := nodeGroup.IncreaseSize(4)
+		err := nodeGroup.IncreaseSize(context.Background(), 4)
 		assert.Error(t, err)
 	})
 	t.Run("Fail to create one new server", func(t *testing.T) {
@@ -200,7 +201,7 @@ func TestIncreaseSize(t *testing.T) {
 			Return(fakeServerGroup, nil).Once()
 		mockclient.On("CreateServer", mock.Anything).
 			Return(nil, ErrFake).Once()
-		err := nodeGroup.IncreaseSize(1)
+		err := nodeGroup.IncreaseSize(context.Background(), 1)
 		assert.Error(t, err)
 	})
 	t.Run("Create one new server", func(t *testing.T) {
@@ -210,7 +211,7 @@ func TestIncreaseSize(t *testing.T) {
 			Return(nil, nil).Once()
 		mockclient.On("ServerGroup", fakeNodeGroupID).
 			Return(&fakeServerGroupsPlusOne()[0], nil).Once()
-		err := nodeGroup.IncreaseSize(1)
+		err := nodeGroup.IncreaseSize(context.Background(), 1)
 		assert.NoError(t, err)
 	})
 }
@@ -225,11 +226,11 @@ func TestDeleteNodes(t *testing.T) {
 		On("Server", fakeServer).
 		Return(fakeServertesty(), nil)
 	t.Run("Empty Nodes", func(t *testing.T) {
-		err := nodeGroup.DeleteNodes(nil)
+		err := nodeGroup.DeleteNodes(context.Background(), nil)
 		assert.NoError(t, err)
 	})
 	t.Run("Foreign Node", func(t *testing.T) {
-		err := nodeGroup.DeleteNodes([]*v1.Node{makeNode(fakeServer)})
+		err := nodeGroup.DeleteNodes(context.Background(), []*v1.Node{makeNode(fakeServer)})
 		assert.Error(t, err)
 	})
 	t.Run("Delete Node", func(t *testing.T) {
@@ -240,7 +241,7 @@ func TestDeleteNodes(t *testing.T) {
 			Once().
 			On("DestroyServer", "srv-rp897").
 			Return(nil).Once()
-		err := nodeGroup.DeleteNodes([]*v1.Node{makeNode("srv-rp897")})
+		err := nodeGroup.DeleteNodes(context.Background(), []*v1.Node{makeNode("srv-rp897")})
 		assert.NoError(t, err)
 	})
 	t.Run("Delete All Nodes", func(t *testing.T) {
@@ -252,7 +253,7 @@ func TestDeleteNodes(t *testing.T) {
 			Once().
 			On("DestroyServer", "srv-rp897").
 			Return(nil).Once().Run(truncateServers)
-		err := nodeGroup.DeleteNodes([]*v1.Node{
+		err := nodeGroup.DeleteNodes(context.Background(), []*v1.Node{
 			makeNode("srv-rp897"),
 			makeNode("srv-lv426"),
 		})
@@ -269,12 +270,12 @@ func TestExist(t *testing.T) {
 	t.Run("Find Group", func(t *testing.T) {
 		mockclient.On("ServerGroup", nodeGroup.Id()).
 			Return(fakeServerGroup, nil).Once()
-		assert.True(t, nodeGroup.Exist())
+		assert.True(t, nodeGroup.Exist(context.Background()))
 	})
 	t.Run("Fail to Find Group", func(t *testing.T) {
 		mockclient.On("ServerGroup", nodeGroup.Id()).
 			Return(nil, serverNotFoundError(nodeGroup.Id()))
-		assert.False(t, nodeGroup.Exist())
+		assert.False(t, nodeGroup.Exist(context.Background()))
 	})
 	mockclient.AssertExpectations(t)
 }
@@ -289,21 +290,21 @@ func TestNodes(t *testing.T) {
 	t.Run("Both Active", func(t *testing.T) {
 		fakeServerGroup.Servers[0].Status = "active"
 		fakeServerGroup.Servers[1].Status = "active"
-		nodes, err := nodeGroup.Nodes()
+		nodes, err := nodeGroup.Nodes(context.Background())
 		require.NoError(t, err)
 		assert.ElementsMatch(t, fakeInstances, nodes)
 	})
 	t.Run("Creating and Deleting", func(t *testing.T) {
 		fakeServerGroup.Servers[0].Status = "creating"
 		fakeServerGroup.Servers[1].Status = "deleting"
-		nodes, err := nodeGroup.Nodes()
+		nodes, err := nodeGroup.Nodes(context.Background())
 		require.NoError(t, err)
 		assert.ElementsMatch(t, fakeTransitionInstances, nodes)
 	})
 	t.Run("Inactive and Unavailable", func(t *testing.T) {
 		fakeServerGroup.Servers[0].Status = "inactive"
 		fakeServerGroup.Servers[1].Status = "unavailable"
-		nodes, err := nodeGroup.Nodes()
+		nodes, err := nodeGroup.Nodes(context.Background())
 		require.NoError(t, err)
 		assert.ElementsMatch(t, ErrFakeInstances, nodes)
 	})
@@ -314,7 +315,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	testclient := k8ssdk.MakeTestClient(mockclient, nil)
 	mockclient.On("ServerType", fakeNodeGroupServerTypeID).
 		Return(fakeServerTypezx45f(), nil)
-	obj, err := makeFakeNodeGroup(t, testclient).TemplateNodeInfo()
+	obj, err := makeFakeNodeGroup(t, testclient).TemplateNodeInfo(context.Background())
 	require.NoError(t, err)
 	assert.Equal(t, fakeResource(), obj.GetAllocatable())
 }
@@ -414,17 +415,17 @@ func TestMultipleGroups(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	obj, err := makeFakeNodeGroup(t, nil).Create()
+	obj, err := makeFakeNodeGroup(t, nil).Create(context.Background())
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 	assert.Nil(t, obj)
 }
 
 func TestDelete(t *testing.T) {
-	assert.Equal(t, cloudprovider.ErrNotImplemented, makeFakeNodeGroup(t, nil).Delete())
+	assert.Equal(t, cloudprovider.ErrNotImplemented, makeFakeNodeGroup(t, nil).Delete(context.Background()))
 }
 
 func TestAutoprovisioned(t *testing.T) {
-	assert.False(t, makeFakeNodeGroup(t, nil).Autoprovisioned())
+	assert.False(t, makeFakeNodeGroup(t, nil).Autoprovisioned(context.Background()))
 }
 
 func fakeResource() *schedulerframework.Resource {

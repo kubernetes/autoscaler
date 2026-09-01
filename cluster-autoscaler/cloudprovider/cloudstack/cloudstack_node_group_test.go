@@ -17,6 +17,7 @@ limitations under the License.
 package cloudstack
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -43,18 +44,18 @@ func createASG() *asg {
 
 func TestMaxSize(t *testing.T) {
 	asg := createASG()
-	assert.Equal(t, testConfig.maxSize, asg.MaxSize())
+	assert.Equal(t, testConfig.maxSize, asg.MaxSize(context.Background()))
 }
 
 func TestMinSize(t *testing.T) {
 	asg := createASG()
-	assert.Equal(t, testConfig.minSize, asg.MinSize())
+	assert.Equal(t, testConfig.minSize, asg.MinSize(context.Background()))
 }
 
 func TestTargetSize(t *testing.T) {
 	clusterDetails := createClusterDetails()
 	asg := createASG()
-	targetSize, err := asg.TargetSize()
+	targetSize, err := asg.TargetSize(context.Background())
 	assert.Equal(t, clusterDetails.WorkerCount, targetSize)
 	assert.Equal(t, nil, err)
 }
@@ -67,7 +68,7 @@ func TestId(t *testing.T) {
 func TestNodes(t *testing.T) {
 	clusterDetails := createClusterDetails()
 	asg := createASG()
-	nodes, err := asg.Nodes()
+	nodes, err := asg.Nodes(context.Background())
 	assert.Equal(t, len(clusterDetails.VirtualMachines), len(nodes))
 	for i, node := range nodes {
 		assert.Equal(t, clusterDetails.VirtualMachines[i].ID, node.Id)
@@ -77,28 +78,28 @@ func TestNodes(t *testing.T) {
 
 func TestExist(t *testing.T) {
 	asg := createASG()
-	assert.Equal(t, true, asg.Exist())
+	assert.Equal(t, true, asg.Exist(context.Background()))
 }
 
 func TestAutoprovisioned(t *testing.T) {
 	asg := createASG()
-	assert.Equal(t, false, asg.Autoprovisioned())
+	assert.Equal(t, false, asg.Autoprovisioned(context.Background()))
 }
 
 func TestCreate(t *testing.T) {
 	asg := createASG()
-	_, err := asg.Create()
+	_, err := asg.Create(context.Background())
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
 
 func TestDelete(t *testing.T) {
 	asg := createASG()
-	assert.Equal(t, cloudprovider.ErrNotImplemented, asg.Delete())
+	assert.Equal(t, cloudprovider.ErrNotImplemented, asg.Delete(context.Background()))
 }
 
 func TestTemplateNodeInfo(t *testing.T) {
 	asg := createASG()
-	_, err := asg.TemplateNodeInfo()
+	_, err := asg.TemplateNodeInfo(context.Background())
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
 
@@ -107,12 +108,12 @@ func testIncreaseSizeError(t *testing.T) {
 
 	// Above the max size
 	asg := createASG()
-	err := asg.IncreaseSize(100)
+	err := asg.IncreaseSize(context.Background(), 100)
 	assert.Equal(t, clusterDetails, asg.cluster)
 	assert.NotEqual(t, nil, err)
 
 	// Delta must be positive
-	err = asg.IncreaseSize(-1)
+	err = asg.IncreaseSize(context.Background(), -1)
 	assert.Equal(t, clusterDetails, asg.cluster)
 	assert.NotEqual(t, nil, err)
 }
@@ -124,7 +125,7 @@ func testIncreaseSizeSuccess(t *testing.T) {
 	delta := clusterDetails.WorkerCount - scaleDownClusterDetails.WorkerCount
 	asg := createASG()
 	fmt.Println(asg.cluster.WorkerCount)
-	err := asg.IncreaseSize(delta)
+	err := asg.IncreaseSize(context.Background(), delta)
 	assert.Equal(t, scaleUpClusterDetails, asg.cluster)
 	assert.Equal(t, nil, err)
 }
@@ -136,7 +137,7 @@ func TestIncreaseSize(t *testing.T) {
 
 func TestDecreaseTargetSize(t *testing.T) {
 	asg := createASG()
-	err := asg.DecreaseTargetSize(1)
+	err := asg.DecreaseTargetSize(context.Background(), 1)
 	assert.NotEqual(t, nil, err)
 }
 
@@ -170,7 +171,7 @@ func testDeleteNodesError(t *testing.T) {
 
 	// Can't go below minSize
 	asg := createASG()
-	err := asg.DeleteNodes(nodes)
+	err := asg.DeleteNodes(context.Background(), nodes)
 	clusterDetails := createClusterDetails()
 	assert.Equal(t, clusterDetails, asg.cluster)
 	assert.NotEqual(t, nil, err)
@@ -178,7 +179,7 @@ func testDeleteNodesError(t *testing.T) {
 
 func testDeleteNodesSuccess(t *testing.T) {
 	asg := createASG()
-	err := asg.DeleteNodes([]*apiv1.Node{
+	err := asg.DeleteNodes(context.Background(), []*apiv1.Node{
 		{
 			Status: v1.NodeStatus{
 				NodeInfo: v1.NodeSystemInfo{

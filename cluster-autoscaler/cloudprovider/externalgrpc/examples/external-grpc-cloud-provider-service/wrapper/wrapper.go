@@ -67,9 +67,9 @@ func apiv1Node(pbNode *protos.ExternalGrpcNode) *apiv1.Node {
 func pbNodeGroup(ng cloudprovider.NodeGroup) *protos.NodeGroup {
 	return &protos.NodeGroup{
 		Id:      ng.Id(),
-		MaxSize: int32(ng.MaxSize()),
-		MinSize: int32(ng.MinSize()),
-		Debug:   ng.Debug(),
+		MaxSize: int32(ng.MaxSize(context.TODO())),
+		MinSize: int32(ng.MinSize(context.TODO())),
+		Debug:   ng.Debug(context.TODO()),
 	}
 }
 
@@ -82,7 +82,7 @@ func (w *Wrapper) NodeGroups(_ context.Context, req *protos.NodeGroupsRequest) (
 	debug(req)
 
 	pbNgs := make([]*protos.NodeGroup, 0)
-	for _, ng := range w.provider.NodeGroups() {
+	for _, ng := range w.provider.NodeGroups(context.TODO()) {
 		pbNgs = append(pbNgs, pbNodeGroup(ng))
 	}
 	return &protos.NodeGroupsResponse{
@@ -99,7 +99,7 @@ func (w *Wrapper) NodeGroupForNode(_ context.Context, req *protos.NodeGroupForNo
 		return nil, fmt.Errorf("request fields were nil")
 	}
 	node := apiv1Node(pbNode)
-	ng, err := w.provider.NodeGroupForNode(node)
+	ng, err := w.provider.NodeGroupForNode(context.TODO(), node)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (w *Wrapper) NodeGroupForNode(_ context.Context, req *protos.NodeGroupForNo
 func (w *Wrapper) PricingNodePrice(_ context.Context, req *protos.PricingNodePriceRequest) (*protos.PricingNodePriceResponse, error) {
 	debug(req)
 
-	model, err := w.provider.Pricing()
+	model, err := w.provider.Pricing(context.TODO())
 	if err != nil {
 		if err == cloudprovider.ErrNotImplemented {
 			return nil, status.Error(codes.Unimplemented, err.Error())
@@ -141,7 +141,7 @@ func (w *Wrapper) PricingNodePrice(_ context.Context, req *protos.PricingNodePri
 	if reqNode == nil || reqStartTime == nil || reqEndTime == nil {
 		return nil, fmt.Errorf("request fields were nil")
 	}
-	price, nodePriceErr := model.NodePrice(apiv1Node(reqNode), reqStartTime.Time, reqEndTime.Time)
+	price, nodePriceErr := model.NodePrice(context.TODO(), apiv1Node(reqNode), reqStartTime.Time, reqEndTime.Time)
 	if nodePriceErr != nil {
 		return nil, nodePriceErr
 	}
@@ -154,7 +154,7 @@ func (w *Wrapper) PricingNodePrice(_ context.Context, req *protos.PricingNodePri
 func (w *Wrapper) PricingPodPrice(_ context.Context, req *protos.PricingPodPriceRequest) (*protos.PricingPodPriceResponse, error) {
 	debug(req)
 
-	model, err := w.provider.Pricing()
+	model, err := w.provider.Pricing(context.TODO())
 	if err != nil {
 		if err == cloudprovider.ErrNotImplemented {
 			return nil, status.Error(codes.Unimplemented, err.Error())
@@ -187,7 +187,7 @@ func (w *Wrapper) PricingPodPrice(_ context.Context, req *protos.PricingPodPrice
 	if reqPod == nil || reqStartTime == nil || reqEndTime == nil {
 		return nil, fmt.Errorf("request fields were nil")
 	}
-	price, podPriceErr := model.PodPrice(reqPod, reqStartTime.Time, reqEndTime.Time)
+	price, podPriceErr := model.PodPrice(context.TODO(), reqPod, reqStartTime.Time, reqEndTime.Time)
 	if podPriceErr != nil {
 		return nil, podPriceErr
 	}
@@ -200,7 +200,7 @@ func (w *Wrapper) PricingPodPrice(_ context.Context, req *protos.PricingPodPrice
 func (w *Wrapper) GPULabel(_ context.Context, req *protos.GPULabelRequest) (*protos.GPULabelResponse, error) {
 	debug(req)
 
-	label := w.provider.GPULabel()
+	label := w.provider.GPULabel(context.TODO())
 	return &protos.GPULabelResponse{
 		Label: label,
 	}, nil
@@ -210,7 +210,7 @@ func (w *Wrapper) GPULabel(_ context.Context, req *protos.GPULabelRequest) (*pro
 func (w *Wrapper) GetAvailableGPUTypes(_ context.Context, req *protos.GetAvailableGPUTypesRequest) (*protos.GetAvailableGPUTypesResponse, error) {
 	debug(req)
 
-	types := w.provider.GetAvailableGPUTypes()
+	types := w.provider.GetAvailableGPUTypes(context.TODO())
 	pbGpuTypes := make(map[string]*anypb.Any)
 	for t := range types {
 		pbGpuTypes[t] = nil
@@ -224,7 +224,7 @@ func (w *Wrapper) GetAvailableGPUTypes(_ context.Context, req *protos.GetAvailab
 func (w *Wrapper) Cleanup(_ context.Context, req *protos.CleanupRequest) (*protos.CleanupResponse, error) {
 	debug(req)
 
-	err := w.provider.Cleanup()
+	err := w.provider.Cleanup(context.TODO())
 	return &protos.CleanupResponse{}, err
 }
 
@@ -232,13 +232,13 @@ func (w *Wrapper) Cleanup(_ context.Context, req *protos.CleanupRequest) (*proto
 func (w *Wrapper) Refresh(_ context.Context, req *protos.RefreshRequest) (*protos.RefreshResponse, error) {
 	debug(req)
 
-	err := w.provider.Refresh()
+	err := w.provider.Refresh(context.TODO())
 	return &protos.RefreshResponse{}, err
 }
 
 // getNodeGroup retrieves the NodeGroup giving its id.
 func (w *Wrapper) getNodeGroup(id string) cloudprovider.NodeGroup {
-	for _, n := range w.provider.NodeGroups() {
+	for _, n := range w.provider.NodeGroups(context.TODO()) {
 		if n.Id() == id {
 			return n
 		}
@@ -255,7 +255,7 @@ func (w *Wrapper) NodeGroupTargetSize(_ context.Context, req *protos.NodeGroupTa
 	if ng == nil {
 		return nil, fmt.Errorf("NodeGroup %q, not found", id)
 	}
-	size, err := ng.TargetSize()
+	size, err := ng.TargetSize(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ func (w *Wrapper) NodeGroupIncreaseSize(_ context.Context, req *protos.NodeGroup
 	if ng == nil {
 		return nil, fmt.Errorf("NodeGroup %q, not found", id)
 	}
-	err := ng.IncreaseSize(int(req.GetDelta()))
+	err := ng.IncreaseSize(context.TODO(), int(req.GetDelta()))
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +293,7 @@ func (w *Wrapper) NodeGroupDeleteNodes(_ context.Context, req *protos.NodeGroupD
 	for _, n := range req.GetNodes() {
 		nodes = append(nodes, apiv1Node(n))
 	}
-	err := ng.DeleteNodes(nodes)
+	err := ng.DeleteNodes(context.TODO(), nodes)
 	if err != nil {
 		return nil, err
 	}
@@ -309,7 +309,7 @@ func (w *Wrapper) NodeGroupDecreaseTargetSize(_ context.Context, req *protos.Nod
 	if ng == nil {
 		return nil, fmt.Errorf("NodeGroup %q, not found", id)
 	}
-	err := ng.DecreaseTargetSize(int(req.GetDelta()))
+	err := ng.DecreaseTargetSize(context.TODO(), int(req.GetDelta()))
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +325,7 @@ func (w *Wrapper) NodeGroupNodes(_ context.Context, req *protos.NodeGroupNodesRe
 	if ng == nil {
 		return nil, fmt.Errorf("NodeGroup %q, not found", id)
 	}
-	instances, err := ng.Nodes()
+	instances, err := ng.Nodes(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +367,7 @@ func (w *Wrapper) NodeGroupTemplateNodeInfo(_ context.Context, req *protos.NodeG
 	if ng == nil {
 		return nil, fmt.Errorf("NodeGroup %q, not found", id)
 	}
-	info, err := ng.TemplateNodeInfo()
+	info, err := ng.TemplateNodeInfo(context.TODO())
 	if err != nil {
 		if err == cloudprovider.ErrNotImplemented {
 			return nil, status.Error(codes.Unimplemented, err.Error())
@@ -421,7 +421,7 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 		ZeroOrMaxNodeScaling:             pbDefaults.GetZeroOrMaxNodeScaling(),
 		IgnoreDaemonSetsUtilization:      pbDefaults.GetIgnoreDaemonSetsUtilization(),
 	}
-	opts, err := ng.GetOptions(defaults)
+	opts, err := ng.GetOptions(context.TODO(), defaults)
 	if err != nil {
 		if err == cloudprovider.ErrNotImplemented {
 			return nil, status.Error(codes.Unimplemented, err.Error())

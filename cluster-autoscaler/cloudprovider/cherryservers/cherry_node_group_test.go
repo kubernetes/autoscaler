@@ -17,6 +17,7 @@ limitations under the License.
 package cherryservers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -181,12 +182,12 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 
 	// Try to increase pool3 with negative size, this should return an error
 	// calls: (should error before any calls)
-	err = ngPool3.IncreaseSize(-1)
+	err = ngPool3.IncreaseSize(context.Background(), -1)
 	assert.Error(t, err)
 
 	// Now try to increase the pool3 size by 1, that should work
 	// calls: listServers, createServer
-	err = ngPool3.IncreaseSize(1)
+	err = ngPool3.IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 
 	if useRealEndpoint {
@@ -207,7 +208,7 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 
 	// Now try to increase the pool2 size by 1, that should work
 	// calls: listServers, createServer
-	err = ngPool2.IncreaseSize(1)
+	err = ngPool2.IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 
 	if useRealEndpoint {
@@ -244,10 +245,10 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 		}
 	}
 
-	err = ngPool2.DeleteNodes(nodesPool2)
+	err = ngPool2.DeleteNodes(context.Background(), nodesPool2)
 	assert.NoError(t, err)
 
-	err = ngPool3.DeleteNodes(nodesPool3)
+	err = ngPool3.DeleteNodes(context.Background(), nodesPool3)
 	assert.NoError(t, err)
 
 	// Wait a few seconds if talking to the actual Cherry API

@@ -17,6 +17,7 @@ limitations under the License.
 package linode
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -54,7 +55,7 @@ func (l *linodeCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (l *linodeCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (l *linodeCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	nodeGroups := make([]cloudprovider.NodeGroup, len(l.manager.nodeGroups))
 	i := 0
 	for _, ng := range l.manager.nodeGroups {
@@ -67,7 +68,7 @@ func (l *linodeCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (l *linodeCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (l *linodeCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	for _, ng := range l.manager.nodeGroups {
 		pool, err := ng.findLKEPoolForNode(node)
 		if err != nil {
@@ -81,53 +82,53 @@ func (l *linodeCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (l *linodeCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (l *linodeCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (l *linodeCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (l *linodeCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (l *linodeCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (l *linodeCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (l *linodeCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (l *linodeCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (l *linodeCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (l *linodeCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return l.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (l *linodeCloudProvider) GPULabel() string {
+func (l *linodeCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (l *linodeCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (l *linodeCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (l *linodeCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(l, node)
+func (l *linodeCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), l, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (l *linodeCloudProvider) Cleanup() error {
+func (l *linodeCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
@@ -159,7 +160,7 @@ func BuildLinode(
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (l *linodeCloudProvider) Refresh() error {
+func (l *linodeCloudProvider) Refresh(ctx context.Context) error {
 	return l.manager.refresh()
 }
 

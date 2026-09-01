@@ -109,7 +109,7 @@ func newTestProvider(t *testing.T) *OVHCloudProvider {
 		resourceLimiter: cloudprovider.NewResourceLimiter(minLimits, maxLimits),
 	}
 
-	err = provider.Refresh()
+	err = provider.Refresh(context.Background())
 	assert.NoError(t, err)
 
 	return provider
@@ -135,14 +135,14 @@ func TestOVHCloudProvider_NodeGroups(t *testing.T) {
 	provider := newTestProvider(t)
 
 	t.Run("check default node groups length", func(t *testing.T) {
-		groups := provider.NodeGroups()
+		groups := provider.NodeGroups(context.Background())
 
 		assert.Equal(t, 2, len(groups))
 	})
 
 	t.Run("check empty node groups length after reset", func(t *testing.T) {
 		provider.manager.NodePools = []sdk.NodePool{}
-		groups := provider.NodeGroups()
+		groups := provider.NodeGroups(context.Background())
 
 		assert.Equal(t, 0, len(groups))
 	})
@@ -180,13 +180,13 @@ func TestOVHCloudProvider_NodeGroupForNode(t *testing.T) {
 			provider.manager.NodeGroupPerProviderID = make(map[string]*NodeGroup)
 		}()
 
-		group, err := provider.NodeGroupForNode(node)
+		group, err := provider.NodeGroupForNode(context.Background(), node)
 		assert.NoError(t, err)
 		assert.NotNil(t, group)
 
 		assert.Equal(t, ng.Name, group.Id())
-		assert.Equal(t, ng.MinNodes, uint32(group.MinSize()))
-		assert.Equal(t, ng.MaxNodes, uint32(group.MaxSize()))
+		assert.Equal(t, ng.MinNodes, uint32(group.MinSize(context.Background())))
+		assert.Equal(t, ng.MaxNodes, uint32(group.MaxSize(context.Background())))
 	})
 
 	t.Run("find node group with label on node", func(t *testing.T) {
@@ -202,13 +202,13 @@ func TestOVHCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		group, err := provider.NodeGroupForNode(node)
+		group, err := provider.NodeGroupForNode(context.Background(), node)
 		assert.NoError(t, err)
 		assert.NotNil(t, group)
 
 		assert.Equal(t, "pool-1", group.Id())
-		assert.Equal(t, 1, group.MinSize())
-		assert.Equal(t, 5, group.MaxSize())
+		assert.Equal(t, 1, group.MinSize(context.Background()))
+		assert.Equal(t, 5, group.MaxSize(context.Background()))
 	})
 
 	t.Run("find node group by listing nodes", func(t *testing.T) {
@@ -244,13 +244,13 @@ func TestOVHCloudProvider_NodeGroupForNode(t *testing.T) {
 			provider.manager.NodeGroupPerProviderID = make(map[string]*NodeGroup)
 		}()
 
-		group, err := provider.NodeGroupForNode(node)
+		group, err := provider.NodeGroupForNode(context.Background(), node)
 		assert.NoError(t, err)
 		assert.NotNil(t, group)
 
 		assert.Equal(t, "pool-1", group.Id())
-		assert.Equal(t, 1, group.MinSize())
-		assert.Equal(t, 5, group.MaxSize())
+		assert.Equal(t, 1, group.MinSize(context.Background()))
+		assert.Equal(t, 5, group.MaxSize(context.Background()))
 	})
 
 	t.Run("fail to find node group with empty providerID", func(t *testing.T) {
@@ -260,7 +260,7 @@ func TestOVHCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		group, err := provider.NodeGroupForNode(node)
+		group, err := provider.NodeGroupForNode(context.Background(), node)
 		assert.NoError(t, err)
 		assert.Nil(t, group)
 	})
@@ -286,7 +286,7 @@ func TestOVHCloudProvider_NodeGroupForNode(t *testing.T) {
 			[]sdk.Node{}, nil,
 		)
 
-		group, err := provider.NodeGroupForNode(node)
+		group, err := provider.NodeGroupForNode(context.Background(), node)
 		assert.NoError(t, err)
 		assert.Nil(t, group)
 	})
@@ -310,7 +310,7 @@ func TestOVHCloudProvider_NodeGroupForNode(t *testing.T) {
 			[]sdk.Node{}, nil,
 		).Once()
 
-		group, err := provider.NodeGroupForNode(node)
+		group, err := provider.NodeGroupForNode(context.Background(), node)
 		assert.NoError(t, err)
 		assert.Nil(t, group)
 	})
@@ -320,7 +320,7 @@ func TestOVHCloudProvider_Pricing(t *testing.T) {
 	provider := newTestProvider(t)
 
 	t.Run("not implemented", func(t *testing.T) {
-		_, err := provider.Pricing()
+		_, err := provider.Pricing(context.Background())
 		assert.Error(t, err)
 	})
 }
@@ -329,7 +329,7 @@ func TestOVHCloudProvider_GetAvailableMachineTypes(t *testing.T) {
 	provider := newTestProvider(t)
 
 	t.Run("check available machine types", func(t *testing.T) {
-		flavors, err := provider.GetAvailableMachineTypes()
+		flavors, err := provider.GetAvailableMachineTypes(context.Background())
 		assert.NoError(t, err)
 
 		assert.Equal(t, 2, len(flavors))
@@ -340,12 +340,12 @@ func TestOVHCloudProvider_NewNodeGroup(t *testing.T) {
 	provider := newTestProvider(t)
 
 	t.Run("check new node group default values", func(t *testing.T) {
-		group, err := provider.NewNodeGroup("b2-7", nil, nil, nil, nil)
+		group, err := provider.NewNodeGroup(context.Background(), "b2-7", nil, nil, nil, nil)
 		assert.NoError(t, err)
 
 		assert.Contains(t, group.Id(), "b2-7")
-		assert.Equal(t, 0, group.MinSize())
-		assert.Equal(t, 100, group.MaxSize())
+		assert.Equal(t, 0, group.MinSize(context.Background()))
+		assert.Equal(t, 100, group.MaxSize(context.Background()))
 	})
 }
 
@@ -353,7 +353,7 @@ func TestOVHCloudProvider_GetResourceLimiter(t *testing.T) {
 	provider := newTestProvider(t)
 
 	t.Run("check default resource limiter values", func(t *testing.T) {
-		rl, err := provider.GetResourceLimiter()
+		rl, err := provider.GetResourceLimiter(context.Background())
 		assert.NoError(t, err)
 
 		minCpu := rl.GetMin(cloudprovider.ResourceNameCores)
@@ -373,7 +373,7 @@ func TestOVHCloudProvider_GPULabel(t *testing.T) {
 	provider := newTestProvider(t)
 
 	t.Run("check gpu label annotation", func(t *testing.T) {
-		label := provider.GPULabel()
+		label := provider.GPULabel(context.Background())
 
 		assert.Equal(t, GPULabel, label)
 	})
@@ -383,7 +383,7 @@ func TestOVHCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 	provider := newTestProvider(t)
 
 	t.Run("check available gpu machine types", func(t *testing.T) {
-		flavors := provider.GetAvailableGPUTypes()
+		flavors := provider.GetAvailableGPUTypes(context.Background())
 
 		assert.Equal(t, 1, len(flavors))
 		assert.Equal(t, struct{}{}, flavors["t1-45"])
@@ -394,7 +394,7 @@ func TestOVHCloudProvider_Cleanup(t *testing.T) {
 	provider := newTestProvider(t)
 
 	t.Run("check return nil", func(t *testing.T) {
-		err := provider.Cleanup()
+		err := provider.Cleanup(context.Background())
 		assert.NoError(t, err)
 	})
 }
@@ -404,14 +404,14 @@ func TestOVHCloudProvider_Refresh(t *testing.T) {
 
 	t.Run("check refresh reset node groups correctly", func(t *testing.T) {
 		provider.manager.NodePools = []sdk.NodePool{}
-		groups := provider.NodeGroups()
+		groups := provider.NodeGroups(context.Background())
 
 		assert.Equal(t, 0, len(groups))
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.Background())
 		assert.NoError(t, err)
 
-		groups = provider.NodeGroups()
+		groups = provider.NodeGroups(context.Background())
 		assert.Equal(t, 2, len(groups))
 	})
 }

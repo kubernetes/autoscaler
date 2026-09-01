@@ -94,7 +94,7 @@ func TestManager_Refresh(t *testing.T) {
 	assert.Equal(t, len(manager.nodeGroups), 2, "number of nodepools do not match")
 
 	assert.Equal(t, manager.nodeGroups[0].minSize, 1, "minimum node for first group does not match")
-	assert.Equal(t, manager.nodeGroups[0].MaxSize(), 2, "minimum node for first group does not match")
+	assert.Equal(t, manager.nodeGroups[0].MaxSize(context.Background()), 2, "minimum node for first group does not match")
 	//
 	assert.Equal(t, manager.nodeGroups[1].minSize, 5, "minimum node for first group does not match")
 	assert.Equal(t, manager.nodeGroups[1].maxSize, 8, "minimum node for first group does not match")

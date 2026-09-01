@@ -17,6 +17,7 @@ limitations under the License.
 package coreweave
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -81,7 +82,7 @@ func (c *CoreWeaveCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (c *CoreWeaveCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (c *CoreWeaveCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	// Check if the manager is nil
 	if c.manager == nil {
 		klog.Error("CoreWeave manager is nil, cannot retrieve node groups")
@@ -98,7 +99,7 @@ func (c *CoreWeaveCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (c *CoreWeaveCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (c *CoreWeaveCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	klog.V(4).Infof("Getting node group for node %s", node.Name)
 	// Check if the manager is nil before proceeding
 	if c.manager == nil {
@@ -115,7 +116,7 @@ func (c *CoreWeaveCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 }
 
 // HasInstance checks if a given node has a corresponding instance in this cloud provider.
-func (c *CoreWeaveCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (c *CoreWeaveCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	// Check if the manager is nil
 	if c.manager == nil {
 		return false, fmt.Errorf("CoreWeave manager is nil")
@@ -143,54 +144,54 @@ func (c *CoreWeaveCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 
 // Pricing returns the pricing model for this cloud provider.
 // This method is not implemented for CoreWeave.
-func (c *CoreWeaveCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (c *CoreWeaveCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes returns a list of available machine types for this cloud provider.
 // This method is not implemented for CoreWeave.
-func (c *CoreWeaveCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (c *CoreWeaveCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup creates a new node group with the specified machine type, labels, system labels, taints, and extra resources.
 // This method is not implemented for CoreWeave.
-func (c *CoreWeaveCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (c *CoreWeaveCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns the resource limiter for this cloud provider.
-func (c *CoreWeaveCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (c *CoreWeaveCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return c.resourceLimiter, nil
 }
 
 // GPULabel returns the label used to identify GPU nodes.
 // This method is not implemented for CoreWeave, so it returns an empty string.
-func (c *CoreWeaveCloudProvider) GPULabel() string {
+func (c *CoreWeaveCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes returns a map of available GPU types for this cloud provider.
 // This method is not implemented for CoreWeave, so it returns nil.
-func (c *CoreWeaveCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (c *CoreWeaveCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the GPU configuration for a given node.
 // This method is not implemented for CoreWeave, so it returns nil.
-func (c *CoreWeaveCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+func (c *CoreWeaveCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
 	return nil
 }
 
 // Cleanup performs any necessary cleanup for the cloud provider.
 // This method is not implemented for CoreWeave, so it returns nil.
-func (c *CoreWeaveCloudProvider) Cleanup() error {
+func (c *CoreWeaveCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh refreshes the state of the cloud provider.
-func (c *CoreWeaveCloudProvider) Refresh() error {
+func (c *CoreWeaveCloudProvider) Refresh(ctx context.Context) error {
 	return c.manager.Refresh()
 }
 

@@ -17,6 +17,7 @@ limitations under the License.
 package linode
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -60,7 +61,7 @@ lke-cluster-id=456456
 		"g6-standard-2": {id: "g6-standard-2"},
 	}
 	lcp := &linodeCloudProvider{manager: m}
-	ng := lcp.NodeGroups()
+	ng := lcp.NodeGroups(context.Background())
 	assert.Equal(t, 2, len(ng))
 	assert.Contains(t, ng, m.nodeGroups["g6-standard-1"])
 	assert.Contains(t, ng, m.nodeGroups["g6-standard-2"])
@@ -126,7 +127,7 @@ lke-cluster-id=456456
 			ProviderID: "linode://555",
 		},
 	}
-	ng, err := lcp.NodeGroupForNode(node)
+	ng, err := lcp.NodeGroupForNode(context.Background(), node)
 	assert.NoError(t, err)
 	assert.Equal(t, ng1, ng)
 
@@ -136,7 +137,7 @@ lke-cluster-id=456456
 			ProviderID: "linode://666",
 		},
 	}
-	ng, err = lcp.NodeGroupForNode(node)
+	ng, err = lcp.NodeGroupForNode(context.Background(), node)
 	assert.NoError(t, err)
 	assert.Equal(t, ng2, ng)
 
@@ -146,7 +147,7 @@ lke-cluster-id=456456
 			ProviderID: "linode://999",
 		},
 	}
-	ng, err = lcp.NodeGroupForNode(node)
+	ng, err = lcp.NodeGroupForNode(context.Background(), node)
 	assert.NoError(t, err)
 	assert.Nil(t, ng)
 
@@ -156,7 +157,7 @@ lke-cluster-id=456456
 			ProviderID: "linode://aaa",
 		},
 	}
-	ng, err = lcp.NodeGroupForNode(node)
+	ng, err = lcp.NodeGroupForNode(context.Background(), node)
 	assert.Error(t, err)
 
 }
@@ -174,15 +175,15 @@ lke-cluster-id=456456
 		resourceLimiter: resourceLimiter,
 	}
 	assert.Equal(t, ProviderName, lcp.Name())
-	_, err := lcp.GetAvailableMachineTypes()
+	_, err := lcp.GetAvailableMachineTypes(context.Background())
 	assert.Error(t, err)
-	_, err = lcp.NewNodeGroup("", nil, nil, nil, nil)
+	_, err = lcp.NewNodeGroup(context.Background(), "", nil, nil, nil, nil)
 	assert.Error(t, err)
-	rl, err := lcp.GetResourceLimiter()
+	rl, err := lcp.GetResourceLimiter(context.Background())
 	assert.Equal(t, resourceLimiter, rl)
-	assert.Equal(t, "", lcp.GPULabel())
-	assert.Nil(t, lcp.GetAvailableGPUTypes())
-	assert.Nil(t, lcp.Cleanup())
-	_, err2 := lcp.Pricing()
+	assert.Equal(t, "", lcp.GPULabel(context.Background()))
+	assert.Nil(t, lcp.GetAvailableGPUTypes(context.Background()))
+	assert.Nil(t, lcp.Cleanup(context.Background()))
+	_, err2 := lcp.Pricing(context.Background())
 	assert.Error(t, err2)
 }
