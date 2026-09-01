@@ -80,11 +80,13 @@ E2E_CLUSTER_NAME ?= ca-e2e-kwok
 e2e-kwok-cluster: E2E_KIND_CONFIG ?= kind-config.yaml
 e2e-kwok-cluster: KWOK_REPO_URL ?= https://kwok.sigs.k8s.io/charts/
 e2e-kwok-cluster:
-	kind create cluster --name $(E2E_CLUSTER_NAME) --config $(E2E_KIND_CONFIG)
+	@kind get clusters 2>/dev/null | grep -q "^$(E2E_CLUSTER_NAME)$$" || kind create cluster --name $(E2E_CLUSTER_NAME) --config $(E2E_KIND_CONFIG)
 	helm repo add kwok-charts $(KWOK_REPO_URL)
 	helm upgrade --install kwok --namespace kube-system kwok-charts/kwok --set hostNetwork=true --wait
 	helm upgrade --install kwok-stage-fast --namespace kube-system kwok-charts/stage-fast --wait
 	kubectl apply -f pkg/apis/config/crd/
+	kubectl -n kube-system patch ds kindnet -p '{"spec":{"template":{"spec":{"nodeSelector":{"node-role.kubernetes.io/control-plane":""}}}}}'
+	kubectl -n kube-system patch ds kube-proxy -p '{"spec":{"template":{"spec":{"nodeSelector":{"node-role.kubernetes.io/control-plane":""}}}}}'
 
 .PHONY: e2e-install-ca
 e2e-install-ca: image-kwok
@@ -93,6 +95,23 @@ e2e-install-ca: image-kwok
 		--set tolerations[0].key=node-role.kubernetes.io/control-plane \
 		--set tolerations[0].operator=Exists \
 		--set tolerations[0].effect=NoSchedule \
+		--set extraArgs.scan-interval=5s \
+		--set extraArgs.scale-down-unneeded-time=10s \
+		--set extraArgs.scale-down-unready-time=10s \
+		--set extraArgs.scale-down-unready-enabled=true \
+		--set extraArgs.scale-down-delay-after-add=10s \
+		--set extraArgs.scale-down-delay-after-delete=10s \
+		--set extraArgs.scale-down-delay-after-failure=10s \
+		--set extraArgs.scale-down-delay-type-local=true \
+		--set extraArgs.unremovable-node-recheck-timeout=5s \
+		--set extraArgs.max-node-provision-time=15s \
+		--set extraArgs.max-node-startup-time=15s \
+		--set extraArgs.scale-down-enabled=true \
+		--set extraArgs.enable-csi-node-aware-scheduling=false \
+		--set extraArgs.expendable-pods-priority-cutoff=-10 \
+		--set extraArgs.v=5
+	kubectl rollout restart deployment/cluster-autoscaler -n kube-system
+	kubectl rollout status deployment/cluster-autoscaler -n kube-system --timeout=60s
 
 .PHONY: e2e-teardown
 e2e-teardown:

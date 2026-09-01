@@ -140,6 +140,7 @@ data:
       kind: Node
       metadata:
         annotations:
+          kwok.x-k8s.io/node: fake
           kubeadm.alpha.kubernetes.io/cri-socket: unix:///run/containerd/containerd.sock
           node.alpha.kubernetes.io/ttl: "0"
           volumes.kubernetes.io/controller-managed-attach-detach: "true"
@@ -223,6 +224,7 @@ data:
       kind: Node
       metadata:
         annotations:
+          kwok.x-k8s.io/node: fake
           kubeadm.alpha.kubernetes.io/cri-socket: unix:///run/containerd/containerd.sock
           node.alpha.kubernetes.io/ttl: "0"
           volumes.kubernetes.io/controller-managed-attach-detach: "true"

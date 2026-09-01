@@ -172,8 +172,9 @@ func createNodegroups(nodes []*apiv1.Node, kubeClient kubernetes.Interface, kc *
 		prepareNode(nodes[i], ng.name)
 		ng.nodeTemplate = nodes[i]
 
+		targetNgName := ngName
 		filterFn := func(no *apiv1.Node) bool {
-			return no.GetAnnotations()[NGNameAnnotation] == ng.name
+			return no.GetAnnotations()[NGNameAnnotation] == targetNgName
 		}
 
 		ng.kubeClient = kubeClient
