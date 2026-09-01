@@ -34,6 +34,8 @@ import (
 )
 
 func TestClusterAutoscaling(t *testing.T) {
+	t.Parallel()
+
 	newPod := func(namespace string) *corev1.Pod {
 		return &corev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
