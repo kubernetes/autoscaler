@@ -14,7 +14,7 @@ vendor:
 	sh vendor.sh $(UPCLOUD_SDK_PACKAGE) $(UPCLOUD_SDK_VERSION) 
 
 test:
-	go test -v -trace k8s.io/autoscaler/cloudprovider/upcloud
+	go test -v -race k8s.io/autoscaler/cluster-autoscaler/cloudprovider/upcloud
 
 lint:
 	golangci-lint run

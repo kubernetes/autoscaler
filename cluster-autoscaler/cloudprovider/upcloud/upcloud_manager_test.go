@@ -81,7 +81,7 @@ func TestManager(t *testing.T) {
 	require.Equal(t, upCfg.ClusterID, m.clusterID.String())
 	require.Equal(t, dynamic.NodeGroupSpec{Name: "one", MinSize: 1, MaxSize: 2}, m.nodeGroupSpecs["one"])
 	require.Equal(t, dynamic.NodeGroupSpec{Name: "two", MinSize: 11, MaxSize: 20}, m.nodeGroupSpecs["two"])
-	require.NoError(t, m.refresh())
+	require.NoError(t, m.refresh(t.Context()))
 	require.Positive(t, len(m.nodeGroups))
 	require.Equal(t, len(svc.Clusters[clusterID.String()].NodeGroups), len(m.nodeGroups))
 }

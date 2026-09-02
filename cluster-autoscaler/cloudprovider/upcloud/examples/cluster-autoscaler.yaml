@@ -15,6 +15,12 @@ spec:
       labels:
         app: cluster-autoscaler
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # Nobody.
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: cluster-autoscaler
       priorityClassName: system-cluster-critical
       containers:
@@ -55,6 +61,12 @@ spec:
                   name: upcloud-autoscaler
                   key: password
                   optional: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
           volumeMounts:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt

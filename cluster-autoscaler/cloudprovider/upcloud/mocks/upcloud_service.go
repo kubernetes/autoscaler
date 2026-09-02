@@ -55,6 +55,7 @@ func (s *UpCloudService) ModifyKubernetesNodeGroup(ctx context.Context, r *reque
 	for i := range cluster.NodeGroups {
 		if cluster.NodeGroups[i].Name == r.Name {
 			cluster.NodeGroups[i].Count = r.NodeGroup.Count
+			s.Clusters[r.ClusterUUID] = *cluster
 			return &cluster.NodeGroups[i], nil
 		}
 	}
@@ -90,6 +91,7 @@ func (s *UpCloudService) DeleteKubernetesNodeGroupNode(ctx context.Context, r *r
 			break
 		}
 	}
+	s.Clusters[r.ClusterUUID] = *cluster
 	s.nodes[r.ClusterUUID] = n
 	return nil
 }

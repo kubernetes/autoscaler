@@ -55,10 +55,10 @@ type manager struct {
 }
 
 // refresh updates manager's node group cache
-func (m *manager) refresh() error {
+func (m *manager) refresh(ctx context.Context) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutGetRequest)
+	ctx, cancel := context.WithTimeout(ctx, timeoutGetRequest)
 	defer cancel()
 	groups := make([]*upCloudNodeGroup, 0)
 	upcloudNodeGroups, err := m.svc.GetKubernetesNodeGroups(ctx, &request.GetKubernetesNodeGroupsRequest{
@@ -68,10 +68,10 @@ func (m *manager) refresh() error {
 		return err
 	}
 	for _, g := range upcloudNodeGroups {
-		nodes, err := nodeGroupNodes(m.svc, m.clusterID, g.Name)
+		nodes, err := nodeGroupNodes(ctx, m.svc, m.clusterID, g.Name)
 		if err != nil {
 			klog.ErrorS(err, "failed to get node group nodes")
-			continue
+			return err
 		}
 		group := upCloudNodeGroup{
 			clusterID: m.clusterID,
@@ -154,6 +154,7 @@ func clusterMaxNodes(ctx context.Context, svc upCloudService, clusterID uuid.UUI
 		if p.Status == http.StatusNotFound {
 			return requestedMaxNodesTotal, fmt.Errorf("cluster %s not found", clusterID.String())
 		}
+		return requestedMaxNodesTotal, err
 	}
 
 	plan, err := clusterPlanByName(ctx, svc, cluster.Plan)
@@ -183,8 +184,8 @@ func clusterPlanByName(ctx context.Context, svc upCloudService, name string) (up
 	return upcloud.KubernetesPlan{}, fmt.Errorf("can't get cluster plan by name '%s'", name)
 }
 
-func nodeGroupNodes(svc upCloudService, clusterID uuid.UUID, name string) ([]cloudprovider.Instance, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutGetRequest)
+func nodeGroupNodes(ctx context.Context, svc upCloudService, clusterID uuid.UUID, name string) ([]cloudprovider.Instance, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeoutGetRequest)
 	defer cancel()
 	instances := make([]cloudprovider.Instance, 0)
 	klog.V(logInfo).Infof("fetching node group %s/%s details", clusterID.String(), name)

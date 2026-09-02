@@ -162,6 +162,7 @@ resource "kubernetes_cluster_role" "autoscaler" {
       "csinodes",
       "csistoragecapacities",
       "csidrivers",
+      "volumeattachments",
     ]
     verbs = [
       "watch",
@@ -208,6 +209,21 @@ resource "kubernetes_cluster_role" "autoscaler" {
     verbs = [
       "get",
       "update",
+    ]
+  }
+  rule {
+    api_groups = [
+      "resource.k8s.io",
+    ]
+    resources = [
+      "resourceslices",
+      "deviceclasses",
+      "resourceclaims",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
     ]
   }
 }

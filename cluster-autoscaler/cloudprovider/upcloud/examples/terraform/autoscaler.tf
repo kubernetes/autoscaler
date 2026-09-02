@@ -11,9 +11,8 @@ resource "kubernetes_secret" "autoscaler" {
     namespace = "kube-system"
   }
   data = {
-    token    = var.autoscaler_token != null ? var.autoscaler_token : ""
-    username = var.autoscaler_username != null ? var.autoscaler_username : ""
-    password = var.autoscaler_password != null ? var.autoscaler_password : ""
+    username = var.autoscaler_username
+    password = var.autoscaler_password
   }
 }
 
@@ -40,6 +39,14 @@ resource "kubernetes_deployment" "autoscaler" {
         }
       }
       spec {
+        security_context {
+          run_as_non_root = true
+          run_as_user     = 65534
+          fs_group        = 65534
+          seccomp_profile {
+            type = "RuntimeDefault"
+          }
+        }
         service_account_name = "cluster-autoscaler"
         priority_class_name  = "system-cluster-critical"
         container {
@@ -67,15 +74,6 @@ resource "kubernetes_deployment" "autoscaler" {
             value = resource.upcloud_kubernetes_cluster.autoscaler.id
           }
           env {
-            name = "UPCLOUD_TOKEN"
-            value_from {
-              secret_key_ref {
-                key  = "token"
-                name = "upcloud-autoscaler"
-              }
-            }
-          }
-          env {
             name = "UPCLOUD_USERNAME"
             value_from {
               secret_key_ref {
@@ -92,6 +90,13 @@ resource "kubernetes_deployment" "autoscaler" {
                 name = "upcloud-autoscaler"
               }
             }
+          }
+          security_context {
+            allow_privilege_escalation = false
+            capabilities {
+              drop = ["ALL"]
+            }
+            read_only_root_filesystem = true
           }
           volume_mount {
             name       = "ssl-certs"

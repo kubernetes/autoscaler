@@ -11,6 +11,7 @@ resource "upcloud_router" "autoscaler" {
 resource "upcloud_gateway" "autoscaler" {
   name     = "autoscaler-demo"
   zone     = var.cluster_zone
+  plan     = "essentials"
   features = ["nat"]
   router {
     id = upcloud_router.autoscaler.id
@@ -34,7 +35,8 @@ resource "upcloud_kubernetes_cluster" "autoscaler" {
   network                 = upcloud_network.autoscaler.id
   zone                    = var.cluster_zone
   private_node_groups     = true
-  control_plane_ip_filter = ["0.0.0.0/0"]
+  control_plane_ip_filter = [var.api_access_cidr_range]
+  plan                    = "dev-md"
 }
 
 resource "upcloud_kubernetes_node_group" "autoscaler" {

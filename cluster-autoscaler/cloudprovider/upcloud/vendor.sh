@@ -28,7 +28,10 @@ mkdir -p $sdk_dir/client $sdk_dir/service $sdk_dir/request
 
 sdk_download () {
     echo "${2} => ${1}"
-    curl -sO --output-dir $1 $2
+    curl --fail -sSO --output-dir $1 $2 || {
+        echo "Unable to download file(s) $2"
+        exit 1
+    }
 }
 
 sdk_download $sdk_dir "${sdk_url}/upcloud/{kubernetes.go,problem.go,utils.go,label.go,ip_address.go,network.go,storage.go}"

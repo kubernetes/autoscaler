@@ -146,7 +146,7 @@ func (u *upCloudCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (u *upCloudCloudProvider) Refresh(ctx context.Context) error {
 	klog.V(logDebug).Info("UpCloud CloudProvider.Refresh called")
-	return u.manager.refresh()
+	return u.manager.refresh(ctx)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.

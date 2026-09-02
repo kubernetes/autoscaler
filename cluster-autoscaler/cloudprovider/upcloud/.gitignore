@@ -1,4 +1,2 @@
 .env*
-.terraform*
-terraform.*
 __debug_bin*

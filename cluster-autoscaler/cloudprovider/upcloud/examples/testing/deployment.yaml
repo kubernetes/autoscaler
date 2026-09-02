@@ -21,6 +21,12 @@ spec:
       labels:
         run: nginx
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534 # Nobody.
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: nginx
           image: nginx
@@ -31,3 +37,8 @@ spec:
               cpu: 500m
             requests:
               cpu: 200m
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
