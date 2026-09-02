@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -52,19 +53,19 @@ import (
 )
 
 const (
-	defaultTimeout         = 3 * time.Minute
-	scaleUpTimeout         = 5 * time.Minute
-	scaleUpTriggerTimeout  = 2 * time.Minute
-	scaleDownTimeout       = 20 * time.Minute
+	defaultTimeout         = 2 * time.Minute
+	scaleUpTimeout         = 4 * time.Minute
+	scaleUpTriggerTimeout  = 1 * time.Minute
+	scaleDownTimeout       = 4 * time.Minute
 	podTimeout             = 2 * time.Minute
-	rcCreationRetryTimeout = 4 * time.Minute
-	rcCreationRetryDelay   = 20 * time.Second
-	makeSchedulableTimeout = 10 * time.Minute
-	makeSchedulableDelay   = 20 * time.Second
-	nodeCountStableFor     = 20 * time.Second
-	nodeCountPollInterval  = 5 * time.Second
-	freshStatusLimit       = 20 * time.Second
-	cacheRefreshTimeout    = 30 * time.Second
+	rcCreationRetryTimeout = 2 * time.Minute
+	rcCreationRetryDelay   = 5 * time.Second
+	makeSchedulableTimeout = 3 * time.Minute
+	makeSchedulableDelay   = 5 * time.Second
+	nodeCountStableFor     = 6 * time.Second
+	nodeCountPollInterval  = 2 * time.Second
+	freshStatusLimit       = 10 * time.Second
+	cacheRefreshTimeout    = 15 * time.Second
 
 	disabledTaint           = "DisabledForAutoscalingTest"
 	criticalAddonsOnlyTaint = "CriticalAddonsOnly"
@@ -82,6 +83,107 @@ const (
 	draDeviceClassName = "gpu"
 )
 
+// getWorkerSlot returns the test slot identifier corresponding to the parallel Ginkgo worker.
+func getWorkerSlot() string {
+	proc := ginkgo.GinkgoParallelProcess()
+	if proc <= 0 {
+		return "mig-1"
+	}
+	return fmt.Sprintf("mig-%d", proc)
+}
+
+// getWorkerNodeSelector returns the NodeSelector targeting the worker's assigned MIG / slot.
+func getWorkerNodeSelector() map[string]string {
+	if ginkgo.GinkgoParallelProcess() > 0 {
+		return map[string]string{"test-slot": getWorkerSlot()}
+	}
+	return nil
+}
+
+// getWorkerTolerations returns the Tolerations allowing scheduling on the worker's assigned MIG / slot.
+func getWorkerTolerations() []v1.Toleration {
+	if ginkgo.GinkgoParallelProcess() > 0 {
+		return []v1.Toleration{
+			{
+				Key:      "test-slot",
+				Operator: v1.TolerationOpEqual,
+				Value:    getWorkerSlot(),
+				Effect:   v1.TaintEffectNoSchedule,
+			},
+		}
+	}
+	return nil
+}
+
+// filterNodesByWorkerSlot scopes a node list to the current Ginkgo parallel worker's assigned MIG.
+func filterNodesByWorkerSlot(nodes *v1.NodeList) {
+	if nodes == nil || len(nodes.Items) == 0 {
+		return
+	}
+	slot := getWorkerSlot()
+
+	// 1. Check if nodes have explicit test-slot label
+	hasSlotLabel := false
+	for _, n := range nodes.Items {
+		if _, ok := n.Labels["test-slot"]; ok {
+			hasSlotLabel = true
+			break
+		}
+	}
+	if hasSlotLabel {
+		e2enode.Filter(nodes, func(node v1.Node) bool {
+			return node.Labels["test-slot"] == slot
+		})
+		return
+	}
+
+	// 2. Check if node name contains the slot identifier (e.g. mig-1, mig-2, ...)
+	hasMigMatch := false
+	for _, n := range nodes.Items {
+		if strings.Contains(n.Name, slot) {
+			hasMigMatch = true
+			break
+		}
+	}
+	if hasMigMatch {
+		e2enode.Filter(nodes, func(node v1.Node) bool {
+			return strings.Contains(node.Name, slot)
+		})
+		return
+	}
+
+	// 3. Fallback: If cluster has multiple distinct MIG prefixes, partition deterministically across workers
+	prefixMap := make(map[string]bool)
+	for _, n := range nodes.Items {
+		if !isNodeTainted(&n) {
+			parts := strings.Split(n.Name, "-")
+			if len(parts) > 1 {
+				migPrefix := strings.Join(parts[:len(parts)-1], "-")
+				prefixMap[migPrefix] = true
+			}
+		}
+	}
+	if len(prefixMap) > 1 {
+		var prefixes []string
+		for p := range prefixMap {
+			prefixes = append(prefixes, p)
+		}
+		sort.Strings(prefixes)
+		proc := ginkgo.GinkgoParallelProcess()
+		migIndex := 0
+		if proc > 0 {
+			migIndex = (proc - 1) % len(prefixes)
+		}
+		targetPrefix := prefixes[migIndex]
+		e2enode.Filter(nodes, func(node v1.Node) bool {
+			return strings.HasPrefix(node.Name, targetPrefix)
+		})
+		return
+	}
+
+	// 4. Default: single MIG / unpartitioned cluster, keep all ready schedulable nodes
+}
+
 // Test assumes that the cluster has a minimum number of nodes at the start of the test.
 // Example command to start the test cluster:
 // kubetest2 gce -v 2   --repo-root <k/k repo root>   --gcp-project <projct_name>   \
@@ -96,7 +198,7 @@ const (
 // * scale-down-unneeded-time
 // * scale-down-delay-after-add
 
-var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.WithSerial(), func() {
+var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 	f := framework.NewDefaultFramework("autoscaling")
 	f.NamespacePodSecurityLevel = admissionapi.LevelPrivileged
 	var c clientset.Interface
@@ -119,19 +221,21 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 			nodes, err = e2enode.GetReadySchedulableNodes(ctx, c)
 			framework.ExpectNoError(err)
 
-			// Guard the same number of schedulable nodes in every test case.
+			filterNodesByWorkerSlot(nodes)
+
+			// Guard the same number of schedulable nodes in every test case for this worker's MIG.
 			nodeCount = len(nodes.Items)
 			gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty(), "Initial cluster must have at least one schedulable node")
 			nodeCountSet = true
-			ginkgo.By(fmt.Sprintf("Captured initial cluster size: %v", nodeCount))
+			ginkgo.By(fmt.Sprintf("Captured initial worker %d MIG size: %v", ginkgo.GinkgoParallelProcess(), nodeCount))
 		} else {
-			ginkgo.By(fmt.Sprintf("Waiting for initial cluster size to be stable at %v ready schedulable nodes", nodeCount))
+			ginkgo.By(fmt.Sprintf("Waiting for initial worker %d MIG size to be stable at %v ready schedulable nodes", ginkgo.GinkgoParallelProcess(), nodeCount))
 			nodes, err = waitForStableReadySchedulableNodeCount(ctx, c, nodeCount, scaleDownTimeout)
 			framework.ExpectNoError(err)
 		}
 
 		gomega.Expect(nodes.Items).To(gomega.HaveLen(nodeCount), "Cluster size should match the initial baseline size (test isolation failure)")
-		ginkgo.By(fmt.Sprintf("Initial number of schedulable nodes: %v", nodeCount))
+		ginkgo.By(fmt.Sprintf("Initial number of schedulable nodes in worker MIG: %v", nodeCount))
 
 		mem := nodes.Items[0].Status.Allocatable[v1.ResourceMemory]
 		memAllocatableMb = int((&mem).Value() / 1024 / 1024)
@@ -142,6 +246,8 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 		framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool { return size == nodeCount }, scaleDownTimeout))
 		nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 		framework.ExpectNoError(err)
+
+		filterNodesByWorkerSlot(nodes)
 
 		s := time.Now()
 	makeSchedulableLoop:
@@ -547,6 +653,8 @@ func runDrainTest(ctx context.Context, f *framework.Framework, c clientset.Inter
 		return !isNodeTainted(&node)
 	})
 
+	filterNodesByWorkerSlot(nodes)
+
 	// There should be only increasedCount nodes after filtration.
 	gomega.Expect(nodes.Items).To(gomega.HaveLen(increasedCount))
 
@@ -583,6 +691,16 @@ func runDrainTest(ctx context.Context, f *framework.Framework, c clientset.Inter
 func reserveMemory(ctx context.Context, f *framework.Framework, id string, replicas, megabytes int, expectRunning bool, timeout time.Duration, selector map[string]string, tolerations []v1.Toleration, priorityClassName, schedulerName string) func() error {
 	ginkgo.By(fmt.Sprintf("Running RC which reserves %v MB of memory", megabytes))
 	request := int64(1024 * 1024 * megabytes / replicas)
+
+	if selector == nil {
+		selector = getWorkerNodeSelector()
+	} else if workerSel := getWorkerNodeSelector(); workerSel != nil {
+		for k, v := range workerSel {
+			selector[k] = v
+		}
+	}
+	tolerations = append(tolerations, getWorkerTolerations()...)
+
 	config := &testutils.RCConfig{
 		Client:            f.ClientSet,
 		Name:              id,
@@ -638,7 +756,7 @@ func WaitForClusterSizeFunc(ctx context.Context, c clientset.Interface, sizeFunc
 
 // WaitForClusterSizeFuncWithUnready waits until the cluster size matches the given function and assumes some unready nodes.
 func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interface, sizeFunc func(int) bool, timeout time.Duration, expectedUnready int) error {
-	for start := time.Now(); time.Since(start) < timeout && ctx.Err() == nil; time.Sleep(20 * time.Second) {
+	for start := time.Now(); time.Since(start) < timeout && ctx.Err() == nil; time.Sleep(nodeCountPollInterval) {
 		nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{FieldSelector: fields.Set{
 			"spec.unschedulable": "false",
 		}.AsSelector().String()})
@@ -652,6 +770,8 @@ func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interfac
 			return !isNodeTainted(&node)
 		})
 
+		filterNodesByWorkerSlot(nodes)
+
 		numNodes := len(nodes.Items)
 
 		// Filter out not-ready nodes.
@@ -661,10 +781,10 @@ func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interfac
 		numReady := len(nodes.Items)
 
 		if numNodes == numReady+expectedUnready && sizeFunc(numNodes) {
-			klog.Infof("Cluster has reached the desired size. Current size %d, not ready nodes %d", numNodes, numNodes-numReady)
+			klog.Infof("MIG/Slot for worker %d has reached the desired size. Current size %d, not ready nodes %d", ginkgo.GinkgoParallelProcess(), numNodes, numNodes-numReady)
 			return nil
 		}
-		klog.Infof("Waiting for cluster with func, current size %d, not ready nodes %d", numNodes, numNodes-numReady)
+		klog.Infof("Waiting for MIG/slot for worker %d with func, current size %d, not ready nodes %d", ginkgo.GinkgoParallelProcess(), numNodes, numNodes-numReady)
 	}
 	return fmt.Errorf("timeout waiting %v for appropriate cluster size", timeout)
 }
@@ -681,28 +801,30 @@ func waitForStableReadySchedulableNodeCount(ctx context.Context, c clientset.Int
 			return false, nil
 		}
 
+		filterNodesByWorkerSlot(currentNodes)
+
 		nodes = currentNodes
 		current := len(currentNodes.Items)
 		if current != expected {
 			stableSince = time.Time{}
-			klog.Infof("Waiting for %d ready schedulable nodes, current size %d", expected, current)
+			klog.Infof("Waiting for %d ready schedulable nodes in worker %d slot, current size %d", expected, ginkgo.GinkgoParallelProcess(), current)
 			return false, nil
 		}
 
 		if stableSince.IsZero() {
 			stableSince = time.Now()
-			klog.Infof("Cluster has %d ready schedulable nodes, waiting %s for stability", expected, nodeCountStableFor)
+			klog.Infof("Worker %d slot has %d ready schedulable nodes, waiting %s for stability", ginkgo.GinkgoParallelProcess(), expected, nodeCountStableFor)
 			return false, nil
 		}
 
 		if time.Since(stableSince) >= nodeCountStableFor {
-			klog.Infof("Cluster stayed at %d ready schedulable nodes for %s", expected, nodeCountStableFor)
+			klog.Infof("Worker %d slot stayed at %d ready schedulable nodes for %s", ginkgo.GinkgoParallelProcess(), expected, nodeCountStableFor)
 			return true, nil
 		}
 		return false, nil
 	})
 	if err != nil {
-		return nodes, fmt.Errorf("timeout waiting %v for %d stable ready schedulable nodes", timeout, expected)
+		return nodes, fmt.Errorf("timeout waiting %v for %d stable ready schedulable nodes in worker slot", timeout, expected)
 	}
 	return nodes, nil
 }
@@ -822,14 +944,16 @@ func makeNodeSchedulable(ctx context.Context, c clientset.Interface, node *v1.No
 // Create an RC running a given number of pods with anti-affinity
 func runAntiAffinityPods(ctx context.Context, f *framework.Framework, namespace string, pods int, id string, podLabels, antiAffinityLabels map[string]string) error {
 	config := &testutils.RCConfig{
-		Affinity:  buildAntiAffinity(antiAffinityLabels),
-		Client:    f.ClientSet,
-		Name:      id,
-		Namespace: namespace,
-		Timeout:   scaleUpTimeout,
-		Image:     imageutils.GetPauseImageName(),
-		Replicas:  pods,
-		Labels:    podLabels,
+		Affinity:     buildAntiAffinity(antiAffinityLabels),
+		Client:       f.ClientSet,
+		Name:         id,
+		Namespace:    namespace,
+		Timeout:      scaleUpTimeout,
+		Image:        imageutils.GetPauseImageName(),
+		Replicas:     pods,
+		Labels:       podLabels,
+		NodeSelector: getWorkerNodeSelector(),
+		Tolerations:  getWorkerTolerations(),
 	}
 	err := e2erc.RunRC(ctx, *config)
 	if err != nil {
@@ -844,15 +968,17 @@ func runAntiAffinityPods(ctx context.Context, f *framework.Framework, namespace 
 
 func runVolumeAntiAffinityPods(ctx context.Context, f *framework.Framework, namespace string, pods int, id string, podLabels, antiAffinityLabels map[string]string, volumes []v1.Volume) error {
 	config := &testutils.RCConfig{
-		Affinity:  buildAntiAffinity(antiAffinityLabels),
-		Volumes:   volumes,
-		Client:    f.ClientSet,
-		Name:      id,
-		Namespace: namespace,
-		Timeout:   scaleUpTimeout,
-		Image:     imageutils.GetPauseImageName(),
-		Replicas:  pods,
-		Labels:    podLabels,
+		Affinity:     buildAntiAffinity(antiAffinityLabels),
+		Volumes:      volumes,
+		Client:       f.ClientSet,
+		Name:         id,
+		Namespace:    namespace,
+		Timeout:      scaleUpTimeout,
+		Image:        imageutils.GetPauseImageName(),
+		Replicas:     pods,
+		Labels:       podLabels,
+		NodeSelector: getWorkerNodeSelector(),
+		Tolerations:  getWorkerTolerations(),
 	}
 	err := e2erc.RunRC(ctx, *config)
 	if err != nil {
@@ -1217,6 +1343,8 @@ func ReserveDRA(ctx context.Context, f *framework.Framework, id string, replicas
 					Labels: map[string]string{"name": id},
 				},
 				Spec: v1.PodSpec{
+					NodeSelector: getWorkerNodeSelector(),
+					Tolerations:  getWorkerTolerations(),
 					SecurityContext: &v1.PodSecurityContext{
 						RunAsNonRoot:   func(b bool) *bool { return &b }(true),
 						SeccompProfile: &v1.SeccompProfile{Type: v1.SeccompProfileTypeRuntimeDefault},

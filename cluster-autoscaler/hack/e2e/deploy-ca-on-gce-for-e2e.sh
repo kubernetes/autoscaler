@@ -70,29 +70,47 @@ PROJECT="$(echo ${PROVIDER_ID} | cut -d/ -f3)"
 ZONE="$(echo ${PROVIDER_ID} | cut -d/ -f4)"
 echo "Identified GCE Project: ${PROJECT}, Zone: ${ZONE}"
 
-# Find a worker node to guess the MIG name
-WORKER_NODE="$(kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name | grep -v -E 'master|control-plane' | head -n 1)"
-# MIG name is the worker node name without the last random segment
-MIG_NAME="$(echo ${WORKER_NODE} | sed 's/-[^-]*$//')"
-echo "Identified MIG name: ${MIG_NAME}"
+# Discover all distinct worker MIGs from existing nodes, or accept comma-separated MIG_NAMES
+if [[ -n "${MIG_NAMES:-}" ]]; then
+    IFS=',' read -ra MIG_LIST <<< "${MIG_NAMES}"
+else
+    MIG_LIST=($(kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name | grep -v -E 'master|control-plane' | sed 's/-[^-]*$//' | sort -u))
+fi
 
-# 3:6 limits are the defaults used in job configs
-MIN_NODES="${MIN_NODES:-3}"
-MAX_NODES="${MAX_NODES:-6}"
+if [[ ${#MIG_LIST[@]} -eq 0 ]]; then
+    WORKER_NODE="$(kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name | grep -v -E 'master|control-plane' | head -n 1)"
+    MIG_NAME="$(echo ${WORKER_NODE} | sed 's/-[^-]*$//')"
+    MIG_LIST=("${MIG_NAME}")
+fi
+echo "Identified MIGs (${#MIG_LIST[@]}): ${MIG_LIST[*]}"
+
+# Default limits per MIG for parallel workers (e.g. 1 to 5 nodes per MIG)
+MIN_NODES="${MIN_NODES:-1}"
+MAX_NODES="${MAX_NODES:-5}"
 # Extra cluster-autoscaler flags.
 EXTRA_CA_FLAGS="${EXTRA_CA_FLAGS:-""}"
 
-# Construct the full URL as requested
-NODES_SPEC="${MIN_NODES}:${MAX_NODES}:https://www.googleapis.com/compute/v1/projects/${PROJECT}/zones/${ZONE}/instanceGroups/${MIG_NAME}"
-echo "Nodes spec: ${NODES_SPEC}"
+# Primary MIG specification
+PRIMARY_NODES_SPEC="${MIN_NODES}:${MAX_NODES}:https://www.googleapis.com/compute/v1/projects/${PROJECT}/zones/${ZONE}/instanceGroups/${MIG_LIST[0]}"
+echo "Primary nodes spec: ${PRIMARY_NODES_SPEC}"
+
+# Additional MIG specifications for parallel workers
+EXTRA_NODES_FLAGS=()
+for ((i=1; i<${#MIG_LIST[@]}; i++)); do
+    mig="${MIG_LIST[$i]}"
+    EXTRA_NODES_FLAGS+=("--nodes=${MIN_NODES}:${MAX_NODES}:https://www.googleapis.com/compute/v1/projects/${PROJECT}/zones/${ZONE}/instanceGroups/${mig}")
+done
 
 sed -e "s|{{CA_IMAGE}}|${CA_IMAGE}|g" \
     -e "s|{{CONTROL_PLANE_NODE}}|${CONTROL_PLANE_NODE}|g" \
     -e "s|{{KUBERNETES_SERVICE_HOST}}|${KUBERNETES_SERVICE_HOST}|g" \
     -e "s|{{KUBERNETES_SERVICE_PORT}}|${KUBERNETES_SERVICE_PORT}|g" \
-    -e "s|{{NODES_SPEC}}|${NODES_SPEC}|g" \
+    -e "s|{{NODES_SPEC}}|${PRIMARY_NODES_SPEC}|g" \
     ${CA_ROOT}/hack/e2e/gce-deployment-template.yaml | while IFS= read -r line; do
     if [[ "${line}" == *"{{EXTRA_CA_FLAGS}}"* ]]; then
+        for node_flag in "${EXTRA_NODES_FLAGS[@]}"; do
+            echo "            - ${node_flag}"
+        done
         for flag in ${EXTRA_CA_FLAGS}; do
             echo "            - ${flag}"
         done

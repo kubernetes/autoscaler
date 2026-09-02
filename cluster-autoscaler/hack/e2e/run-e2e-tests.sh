@@ -77,8 +77,9 @@ go install github.com/onsi/ginkgo/v2/ginkgo
 echo "Building e2e tests..."
 "${GOBIN}/ginkgo" build .
 
-echo "Running e2e tests with focus: ${FOCUS}"
-"${GOBIN}/ginkgo" -v --timeout="${TIMEOUT}" --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" "${REPORT_PREFIX_FLAG[@]}" --disable-log-dump ${SKIP:-}
+PARALLEL_PROCS="${PARALLEL_PROCS:-4}"
+echo "Running e2e tests in parallel (${PARALLEL_PROCS} workers) with focus: ${FOCUS}"
+"${GOBIN}/ginkgo" -v --procs="${PARALLEL_PROCS}" --timeout="${TIMEOUT}" --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" "${REPORT_PREFIX_FLAG[@]}" --disable-log-dump ${SKIP:-}
 RESULT=$?
 
 popd >/dev/null

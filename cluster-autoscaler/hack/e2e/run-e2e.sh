@@ -26,7 +26,7 @@ REMAINING_ARGS=()
 while [[ $# -gt 0 ]]; do
   case $1 in
     --presubmit)
-      export EXTRA_CA_FLAGS="${EXTRA_CA_FLAGS:-} --unremovable-node-recheck-timeout=1m --scale-down-unneeded-time=1m --scale-down-delay-after-add=1m"
+      export EXTRA_CA_FLAGS="${EXTRA_CA_FLAGS:-} --unremovable-node-recheck-timeout=15s --scale-down-unneeded-time=15s --scale-down-delay-after-add=15s --scan-interval=2s --scale-down-unready-time=15s"
       shift
       ;;
     *)
@@ -35,6 +35,9 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Default aggressive cooldown flags for Branch 3 (sept2-test-3)
+export EXTRA_CA_FLAGS="${EXTRA_CA_FLAGS:- --unremovable-node-recheck-timeout=15s --scale-down-unneeded-time=15s --scale-down-delay-after-add=15s --scan-interval=2s --scale-down-unready-time=15s}"
 
 # Build and push image once to be used in both steps.
 echo "### STEP 0: Building and pushing Cluster Autoscaler image..."
