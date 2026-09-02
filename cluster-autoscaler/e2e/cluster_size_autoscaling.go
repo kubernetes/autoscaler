@@ -198,8 +198,9 @@ func discoverOrAssignMig(ctx context.Context, c clientset.Interface) string {
 	sort.Strings(migList)
 
 	if len(migList) == 0 {
-		klog.Warningf("[Process %d] No worker MIGs found in cluster", proc)
-		return ""
+		fallback := fmt.Sprintf("mig-%d", proc)
+		klog.Warningf("[Process %d] No worker MIGs found in cluster; using fallback %s", proc, fallback)
+		return fallback
 	}
 
 	chosen := migList[(proc-1)%len(migList)]
