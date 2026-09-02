@@ -126,7 +126,6 @@ func (gce *GceCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.Nod
 
 // NodeGroupForNode returns the node group for the given node.
 func (gce *GceCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	logger := klog.FromContext(ctx)
 	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		klog.V(6).Infof("Node %v has unrecognized providerId: %v", node.Name, node.Spec.ProviderID)
