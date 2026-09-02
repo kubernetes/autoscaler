@@ -550,11 +550,11 @@ func CheckHamsterPodsResourcesUpdated(f *framework.Framework, targetCPU, targetM
 			for _, container := range pod.Status.ContainerStatuses {
 				cpuRequest := container.Resources.Requests[apiv1.ResourceCPU]
 				memoryRequest := container.Resources.Requests[apiv1.ResourceMemory]
-				if cpuRequest.Cmp(ParseQuantityOrDie(targetCPU)) != 0 {
+				if !cpuRequest.Equal(ParseQuantityOrDie(targetCPU)) {
 					framework.Logf("%v/%v has not been updated to %v yet: currently=%v", pod.Name, container.Name, targetCPU, cpuRequest.String())
 					return fmt.Errorf("%s CPU request not updated", container.Name)
 				}
-				if memoryRequest.Cmp(ParseQuantityOrDie(targetMemory)) != 0 {
+				if !memoryRequest.Equal(ParseQuantityOrDie(targetMemory)) {
 					framework.Logf("%v/%v has not been updated to %v yet: currently=%v", pod.Name, container.Name, targetMemory, memoryRequest.String())
 					return fmt.Errorf("%s Memory request not updated", container.Name)
 				}
