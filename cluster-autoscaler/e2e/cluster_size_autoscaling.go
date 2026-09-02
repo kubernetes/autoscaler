@@ -20,6 +20,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -42,7 +44,6 @@ import (
 	e2enode "k8s.io/kubernetes/test/e2e/framework/node"
 	e2erc "k8s.io/kubernetes/test/e2e/framework/rc"
 	e2eskipper "k8s.io/kubernetes/test/e2e/framework/skipper"
-	"k8s.io/kubernetes/test/e2e/scheduling"
 	testutils "k8s.io/kubernetes/test/utils"
 	imageutils "k8s.io/kubernetes/test/utils/image"
 	admissionapi "k8s.io/pod-security-admission/api"
@@ -96,7 +97,117 @@ const (
 // * scale-down-unneeded-time
 // * scale-down-delay-after-add
 
-var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.WithSerial(), func() {
+var assignedMig string
+
+func isControlPlaneNode(node *v1.Node) bool {
+	if _, ok := node.Labels["node-role.kubernetes.io/control-plane"]; ok {
+		return true
+	}
+	if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
+		return true
+	}
+	if strings.Contains(node.Name, "master") || strings.Contains(node.Name, "control-plane") {
+		return true
+	}
+	return false
+}
+
+func isNodeInMig(node *v1.Node, migName string) bool {
+	if migName == "" {
+		return true
+	}
+	if isControlPlaneNode(node) {
+		return false
+	}
+	if pool, ok := node.Labels["cloud.google.com/gke-nodepool"]; ok && pool == migName {
+		return true
+	}
+	if slot, ok := node.Labels["test-slot"]; ok && slot == migName {
+		return true
+	}
+	if strings.HasPrefix(node.Name, migName+"-") {
+		return true
+	}
+	if strings.Contains(node.Spec.ProviderID, "/"+migName+"/") || strings.HasSuffix(node.Spec.ProviderID, "/"+migName) {
+		return true
+	}
+	return false
+}
+
+func filterNodesByMig(nodes *v1.NodeList, migName string) *v1.NodeList {
+	if migName == "" {
+		return nodes
+	}
+	filtered := &v1.NodeList{}
+	for _, n := range nodes.Items {
+		if isNodeInMig(&n, migName) {
+			filtered.Items = append(filtered.Items, n)
+		}
+	}
+	return filtered
+}
+
+func discoverOrAssignMig(ctx context.Context, c clientset.Interface) string {
+	proc := ginkgo.GinkgoParallelProcess()
+	if migEnv := os.Getenv("E2E_MIG_NAMES"); migEnv != "" {
+		migs := strings.Split(migEnv, ",")
+		var cleanMigs []string
+		for _, m := range migs {
+			m = strings.TrimSpace(m)
+			if m != "" {
+				cleanMigs = append(cleanMigs, m)
+			}
+		}
+		if len(cleanMigs) > 0 {
+			chosen := cleanMigs[(proc-1)%len(cleanMigs)]
+			klog.Infof("[Process %d] Assigned MIG from E2E_MIG_NAMES: %s", proc, chosen)
+			return chosen
+		}
+	}
+
+	nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil || len(nodes.Items) == 0 {
+		klog.Warningf("[Process %d] Could not list nodes to discover MIGs: %v", proc, err)
+		return ""
+	}
+
+	migSet := make(map[string]struct{})
+	for _, n := range nodes.Items {
+		if isControlPlaneNode(&n) {
+			continue
+		}
+		if pool, ok := n.Labels["cloud.google.com/gke-nodepool"]; ok && pool != "" {
+			migSet[pool] = struct{}{}
+		} else if slot, ok := n.Labels["test-slot"]; ok && slot != "" {
+			migSet[slot] = struct{}{}
+		} else {
+			name := n.Name
+			lastDash := strings.LastIndex(name, "-")
+			if lastDash > 0 {
+				migSet[name[:lastDash]] = struct{}{}
+			} else {
+				migSet[name] = struct{}{}
+			}
+		}
+	}
+
+	var migList []string
+	for m := range migSet {
+		migList = append(migList, m)
+	}
+	sort.Strings(migList)
+
+	if len(migList) == 0 {
+		klog.Warningf("[Process %d] No worker MIGs found in cluster", proc)
+		return ""
+	}
+
+	chosen := migList[(proc-1)%len(migList)]
+	klog.Infof("[Process %d] Assigned MIG from %d discovered MIGs (%v): %s", proc, len(migList), migList, chosen)
+	return chosen
+}
+
+var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 	f := framework.NewDefaultFramework("autoscaling")
 	f.NamespacePodSecurityLevel = admissionapi.LevelPrivileged
 	var c clientset.Interface
@@ -113,32 +224,38 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 
 		framework.ExpectNoError(addKubeSystemPdbs(ctx, f))
 
+		if assignedMig == "" {
+			assignedMig = discoverOrAssignMig(ctx, c)
+		}
+
 		var nodes *v1.NodeList
 
 		if !nodeCountSet {
-			nodes, err = e2enode.GetReadySchedulableNodes(ctx, c)
+			allNodes, err := e2enode.GetReadySchedulableNodes(ctx, c)
 			framework.ExpectNoError(err)
+
+			nodes = filterNodesByMig(allNodes, assignedMig)
 
 			// Guard the same number of schedulable nodes in every test case.
 			nodeCount = len(nodes.Items)
-			gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty(), "Initial cluster must have at least one schedulable node")
+			gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty(), fmt.Sprintf("Initial cluster must have at least one schedulable node in MIG %s", assignedMig))
 			nodeCountSet = true
-			ginkgo.By(fmt.Sprintf("Captured initial cluster size: %v", nodeCount))
+			ginkgo.By(fmt.Sprintf("[%s] Captured initial MIG size: %v", assignedMig, nodeCount))
 		} else {
-			ginkgo.By(fmt.Sprintf("Waiting for initial cluster size to be stable at %v ready schedulable nodes", nodeCount))
+			ginkgo.By(fmt.Sprintf("[%s] Waiting for initial MIG size to be stable at %v ready schedulable nodes", assignedMig, nodeCount))
 			nodes, err = waitForStableReadySchedulableNodeCount(ctx, c, nodeCount, scaleDownTimeout)
 			framework.ExpectNoError(err)
 		}
 
-		gomega.Expect(nodes.Items).To(gomega.HaveLen(nodeCount), "Cluster size should match the initial baseline size (test isolation failure)")
-		ginkgo.By(fmt.Sprintf("Initial number of schedulable nodes: %v", nodeCount))
+		gomega.Expect(nodes.Items).To(gomega.HaveLen(nodeCount), fmt.Sprintf("MIG %s size should match the initial baseline size (test isolation failure)", assignedMig))
+		ginkgo.By(fmt.Sprintf("[%s] Initial number of schedulable nodes: %v", assignedMig, nodeCount))
 
 		mem := nodes.Items[0].Status.Allocatable[v1.ResourceMemory]
 		memAllocatableMb = int((&mem).Value() / 1024 / 1024)
 	}
 
 	cleanupAutoscalingTest := func(ctx context.Context) {
-		ginkgo.By("Restoring the state after test")
+		ginkgo.By(fmt.Sprintf("[%s] Restoring the state after test on MIG %s", assignedMig, assignedMig))
 		framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool { return size == nodeCount }, scaleDownTimeout))
 		nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 		framework.ExpectNoError(err)
@@ -148,16 +265,19 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 		for start := time.Now(); time.Since(start) < makeSchedulableTimeout; time.Sleep(makeSchedulableDelay) {
 			var criticalAddonsOnlyErrorType *CriticalAddonsOnlyError
 			for _, n := range nodes.Items {
+				if !isNodeInMig(&n, assignedMig) {
+					continue
+				}
 				err = makeNodeSchedulable(ctx, c, &n, true)
 				if err != nil && errors.As(err, &criticalAddonsOnlyErrorType) {
 					continue makeSchedulableLoop
 				} else if err != nil {
-					klog.Infof("Error during cleanup: %v", err)
+					klog.Infof("[%s] Error during cleanup: %v", assignedMig, err)
 				}
 			}
 			break
 		}
-		klog.Infof("Made nodes schedulable again in %v", time.Since(s).String())
+		klog.Infof("[%s] Made nodes schedulable again in %v", assignedMig, time.Since(s).String())
 	}
 
 	f.Context("Standard Autoscaling", func() {
@@ -235,7 +355,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 		})
 
 		f.It("should increase cluster size if pods are pending due to host port conflict", feature.ClusterSizeAutoscalingScaleUp, func(ctx context.Context) {
-			scheduling.CreateHostPortPods(ctx, f, "host-port", nodeCount+2, false)
+			createHostPortPods(ctx, f, "host-port", nodeCount+2, false)
 			ginkgo.DeferCleanup(e2erc.DeleteRCAndWaitForGC, f.ClientSet, f.Namespace.Name, "host-port")
 
 			framework.ExpectNoError(WaitForClusterSizeFunc(ctx, f.ClientSet,
@@ -309,6 +429,9 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 				time.Sleep(scaleDownTimeout)
 				nodes, err := e2enode.GetReadySchedulableNodes(ctx, f.ClientSet)
 				framework.ExpectNoError(err)
+				if assignedMig != "" {
+					nodes = filterNodesByMig(nodes, assignedMig)
+				}
 				gomega.Expect(nodes.Items).To(gomega.HaveLen(increasedSize))
 			})
 		})
@@ -547,6 +670,12 @@ func runDrainTest(ctx context.Context, f *framework.Framework, c clientset.Inter
 		return !isNodeTainted(&node)
 	})
 
+	if assignedMig != "" {
+		e2enode.Filter(nodes, func(node v1.Node) bool {
+			return isNodeInMig(&node, assignedMig)
+		})
+	}
+
 	// There should be only increasedCount nodes after filtration.
 	gomega.Expect(nodes.Items).To(gomega.HaveLen(increasedCount))
 
@@ -581,8 +710,15 @@ func runDrainTest(ctx context.Context, f *framework.Framework, c clientset.Inter
 }
 
 func reserveMemory(ctx context.Context, f *framework.Framework, id string, replicas, megabytes int, expectRunning bool, timeout time.Duration, selector map[string]string, tolerations []v1.Toleration, priorityClassName, schedulerName string) func() error {
-	ginkgo.By(fmt.Sprintf("Running RC which reserves %v MB of memory", megabytes))
+	ginkgo.By(fmt.Sprintf("[%s] Running RC which reserves %v MB of memory", assignedMig, megabytes))
 	request := int64(1024 * 1024 * megabytes / replicas)
+	migSelector := make(map[string]string)
+	if assignedMig != "" {
+		migSelector["cloud.google.com/gke-nodepool"] = assignedMig
+	}
+	for k, v := range selector {
+		migSelector[k] = v
+	}
 	config := &testutils.RCConfig{
 		Client:            f.ClientSet,
 		Name:              id,
@@ -591,7 +727,7 @@ func reserveMemory(ctx context.Context, f *framework.Framework, id string, repli
 		Image:             imageutils.GetPauseImageName(),
 		Replicas:          replicas,
 		MemRequest:        request,
-		NodeSelector:      selector,
+		NodeSelector:      migSelector,
 		Tolerations:       tolerations,
 		PriorityClassName: priorityClassName,
 		SchedulerName:     schedulerName,
@@ -599,7 +735,7 @@ func reserveMemory(ctx context.Context, f *framework.Framework, id string, repli
 	for start := time.Now(); time.Since(start) < rcCreationRetryTimeout; time.Sleep(rcCreationRetryDelay) {
 		err := e2erc.RunRC(ctx, *config)
 		if err != nil && strings.Contains(err.Error(), "Error creating replication controller") {
-			klog.Warningf("Failed to create memory reservation: %v", err)
+			klog.Warningf("[%s] Failed to create memory reservation: %v", assignedMig, err)
 			continue
 		}
 		if expectRunning {
@@ -611,6 +747,28 @@ func reserveMemory(ctx context.Context, f *framework.Framework, id string, repli
 	}
 	framework.Failf("Failed to reserve memory within timeout")
 	return nil
+}
+
+func createHostPortPods(ctx context.Context, f *framework.Framework, id string, replicas int, expectRunning bool) {
+	ginkgo.By(fmt.Sprintf("[%s] Running RC which reserves host port", assignedMig))
+	migSelector := make(map[string]string)
+	if assignedMig != "" {
+		migSelector["cloud.google.com/gke-nodepool"] = assignedMig
+	}
+	config := &testutils.RCConfig{
+		Client:       f.ClientSet,
+		Name:         id,
+		Namespace:    f.Namespace.Name,
+		Timeout:      defaultTimeout,
+		Image:        imageutils.GetPauseImageName(),
+		Replicas:     replicas,
+		HostPorts:    map[string]int{"port1": 4321},
+		NodeSelector: migSelector,
+	}
+	err := e2erc.RunRC(ctx, *config)
+	if expectRunning {
+		framework.ExpectNoError(err)
+	}
 }
 
 // ReserveMemoryWithPriority creates a replication controller with pods with priority that, in summation,
@@ -638,7 +796,12 @@ func WaitForClusterSizeFunc(ctx context.Context, c clientset.Interface, sizeFunc
 
 // WaitForClusterSizeFuncWithUnready waits until the cluster size matches the given function and assumes some unready nodes.
 func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interface, sizeFunc func(int) bool, timeout time.Duration, expectedUnready int) error {
-	for start := time.Now(); time.Since(start) < timeout && ctx.Err() == nil; time.Sleep(20 * time.Second) {
+	return WaitForMigSizeFuncWithUnready(ctx, c, assignedMig, sizeFunc, timeout, expectedUnready)
+}
+
+// WaitForMigSizeFuncWithUnready waits until the specified MIG size matches the given function.
+func WaitForMigSizeFuncWithUnready(ctx context.Context, c clientset.Interface, migName string, sizeFunc func(int) bool, timeout time.Duration, expectedUnready int) error {
+	for start := time.Now(); time.Since(start) < timeout && ctx.Err() == nil; time.Sleep(nodeCountPollInterval) {
 		nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{FieldSelector: fields.Set{
 			"spec.unschedulable": "false",
 		}.AsSelector().String()})
@@ -652,6 +815,13 @@ func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interfac
 			return !isNodeTainted(&node)
 		})
 
+		// Filter by assigned MIG
+		if migName != "" {
+			e2enode.Filter(nodes, func(node v1.Node) bool {
+				return isNodeInMig(&node, migName)
+			})
+		}
+
 		numNodes := len(nodes.Items)
 
 		// Filter out not-ready nodes.
@@ -661,12 +831,12 @@ func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interfac
 		numReady := len(nodes.Items)
 
 		if numNodes == numReady+expectedUnready && sizeFunc(numNodes) {
-			klog.Infof("Cluster has reached the desired size. Current size %d, not ready nodes %d", numNodes, numNodes-numReady)
+			klog.Infof("[%s] MIG has reached the desired size. Current size %d, not ready nodes %d", migName, numNodes, numNodes-numReady)
 			return nil
 		}
-		klog.Infof("Waiting for cluster with func, current size %d, not ready nodes %d", numNodes, numNodes-numReady)
+		klog.Infof("[%s] Waiting for MIG with func, current size %d, not ready nodes %d", migName, numNodes, numNodes-numReady)
 	}
-	return fmt.Errorf("timeout waiting %v for appropriate cluster size", timeout)
+	return fmt.Errorf("timeout waiting %v for appropriate MIG %s size", timeout, migName)
 }
 
 func waitForStableReadySchedulableNodeCount(ctx context.Context, c clientset.Interface, expected int, timeout time.Duration) (*v1.NodeList, error) {
@@ -681,28 +851,32 @@ func waitForStableReadySchedulableNodeCount(ctx context.Context, c clientset.Int
 			return false, nil
 		}
 
+		if assignedMig != "" {
+			currentNodes = filterNodesByMig(currentNodes, assignedMig)
+		}
+
 		nodes = currentNodes
 		current := len(currentNodes.Items)
 		if current != expected {
 			stableSince = time.Time{}
-			klog.Infof("Waiting for %d ready schedulable nodes, current size %d", expected, current)
+			klog.Infof("[%s] Waiting for %d ready schedulable nodes, current size %d", assignedMig, expected, current)
 			return false, nil
 		}
 
 		if stableSince.IsZero() {
 			stableSince = time.Now()
-			klog.Infof("Cluster has %d ready schedulable nodes, waiting %s for stability", expected, nodeCountStableFor)
+			klog.Infof("[%s] MIG has %d ready schedulable nodes, waiting %s for stability", assignedMig, expected, nodeCountStableFor)
 			return false, nil
 		}
 
 		if time.Since(stableSince) >= nodeCountStableFor {
-			klog.Infof("Cluster stayed at %d ready schedulable nodes for %s", expected, nodeCountStableFor)
+			klog.Infof("[%s] MIG stayed at %d ready schedulable nodes for %s", assignedMig, expected, nodeCountStableFor)
 			return true, nil
 		}
 		return false, nil
 	})
 	if err != nil {
-		return nodes, fmt.Errorf("timeout waiting %v for %d stable ready schedulable nodes", timeout, expected)
+		return nodes, fmt.Errorf("timeout waiting %v for %d stable ready schedulable nodes in MIG %s", timeout, expected, assignedMig)
 	}
 	return nodes, nil
 }
@@ -821,15 +995,20 @@ func makeNodeSchedulable(ctx context.Context, c clientset.Interface, node *v1.No
 
 // Create an RC running a given number of pods with anti-affinity
 func runAntiAffinityPods(ctx context.Context, f *framework.Framework, namespace string, pods int, id string, podLabels, antiAffinityLabels map[string]string) error {
+	migSelector := make(map[string]string)
+	if assignedMig != "" {
+		migSelector["cloud.google.com/gke-nodepool"] = assignedMig
+	}
 	config := &testutils.RCConfig{
-		Affinity:  buildAntiAffinity(antiAffinityLabels),
-		Client:    f.ClientSet,
-		Name:      id,
-		Namespace: namespace,
-		Timeout:   scaleUpTimeout,
-		Image:     imageutils.GetPauseImageName(),
-		Replicas:  pods,
-		Labels:    podLabels,
+		Affinity:     buildAntiAffinity(antiAffinityLabels),
+		Client:       f.ClientSet,
+		Name:         id,
+		Namespace:    namespace,
+		Timeout:      scaleUpTimeout,
+		Image:        imageutils.GetPauseImageName(),
+		Replicas:     pods,
+		Labels:       podLabels,
+		NodeSelector: migSelector,
 	}
 	err := e2erc.RunRC(ctx, *config)
 	if err != nil {
@@ -843,16 +1022,21 @@ func runAntiAffinityPods(ctx context.Context, f *framework.Framework, namespace 
 }
 
 func runVolumeAntiAffinityPods(ctx context.Context, f *framework.Framework, namespace string, pods int, id string, podLabels, antiAffinityLabels map[string]string, volumes []v1.Volume) error {
+	migSelector := make(map[string]string)
+	if assignedMig != "" {
+		migSelector["cloud.google.com/gke-nodepool"] = assignedMig
+	}
 	config := &testutils.RCConfig{
-		Affinity:  buildAntiAffinity(antiAffinityLabels),
-		Volumes:   volumes,
-		Client:    f.ClientSet,
-		Name:      id,
-		Namespace: namespace,
-		Timeout:   scaleUpTimeout,
-		Image:     imageutils.GetPauseImageName(),
-		Replicas:  pods,
-		Labels:    podLabels,
+		Affinity:     buildAntiAffinity(antiAffinityLabels),
+		Volumes:      volumes,
+		Client:       f.ClientSet,
+		Name:         id,
+		Namespace:    namespace,
+		Timeout:      scaleUpTimeout,
+		Image:        imageutils.GetPauseImageName(),
+		Replicas:     pods,
+		Labels:       podLabels,
+		NodeSelector: migSelector,
 	}
 	err := e2erc.RunRC(ctx, *config)
 	if err != nil {
@@ -1248,6 +1432,12 @@ func ReserveDRA(ctx context.Context, f *framework.Framework, id string, replicas
 				},
 			},
 		},
+	}
+
+	if assignedMig != "" {
+		rc.Spec.Template.Spec.NodeSelector = map[string]string{
+			"cloud.google.com/gke-nodepool": assignedMig,
+		}
 	}
 
 	if onePodPerNode {

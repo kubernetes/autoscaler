@@ -40,15 +40,15 @@ EXTRACT="ci/latest-${K8S_VERSION}"
 echo "### Detected Kubernetes version: ${K8S_VERSION} (branch: ${PULL_BASE_REF:-master})"
 echo "### Using --extract=${EXTRACT}"
 
-# Call kubernetes_e2e.py with the correct --extract flag.
+# Call kubernetes_e2e.py with the correct --extract flag and 8 nodes for 8 parallel workers/MIGs.
 exec /workspace/scenarios/kubernetes_e2e.py \
   --cluster=ca \
   --extract="${EXTRACT}" \
   --gcp-node-image=gci \
-  --gcp-nodes=3 \
+  --gcp-nodes=8 \
   --gcp-zone=us-central1-b \
   --provider=gce \
   --test=false \
   --test-cmd="${CA_ROOT}/hack/e2e/run-e2e.sh" \
   --test-cmd-args=--presubmit \
-  --timeout=400m
+  --timeout=60m
