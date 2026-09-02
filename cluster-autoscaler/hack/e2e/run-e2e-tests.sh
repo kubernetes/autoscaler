@@ -79,7 +79,7 @@ echo "Building e2e tests..."
 
 PARALLEL_PROCS="${PARALLEL_PROCS:-4}"
 echo "Running e2e tests in parallel (${PARALLEL_PROCS} workers) with focus: ${FOCUS}"
-"${GOBIN}/ginkgo" -v --procs="${PARALLEL_PROCS}" --timeout="${TIMEOUT}" --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" "${REPORT_PREFIX_FLAG[@]}" --disable-log-dump ${SKIP:-}
+"${GOBIN}/ginkgo" -v --procs="${PARALLEL_PROCS}" --timeout="${TIMEOUT}" --focus="${FOCUS}" ./e2e.test -- --kubeconfig="${KUBECONFIG}" --report-dir="${ARTIFACTS}" "${REPORT_PREFIX_FLAG[@]}" --disable-log-dump ${SKIP:-}
 RESULT=$?
 
 popd >/dev/null
