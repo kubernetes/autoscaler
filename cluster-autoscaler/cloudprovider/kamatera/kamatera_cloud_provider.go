@@ -17,6 +17,7 @@ limitations under the License.
 package kamatera
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -60,7 +61,7 @@ func (k *kamateraCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (k *kamateraCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (k *kamateraCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	k.manager.nodeGroupsMu.RLock()
 	nodeGroups := make([]cloudprovider.NodeGroup, 0, len(k.manager.nodeGroups))
 	for _, ng := range k.manager.nodeGroups {
@@ -73,7 +74,7 @@ func (k *kamateraCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (k *kamateraCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (k *kamateraCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	k.manager.nodeGroupsMu.RLock()
 	nodeGroups := make([]*NodeGroup, 0, len(k.manager.nodeGroups))
 	for _, ng := range k.manager.nodeGroups {
@@ -96,59 +97,59 @@ func (k *kamateraCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (k *kamateraCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (k *kamateraCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (k *kamateraCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (k *kamateraCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (k *kamateraCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (k *kamateraCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (k *kamateraCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (k *kamateraCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (k *kamateraCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (k *kamateraCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return k.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (k *kamateraCloudProvider) GPULabel() string {
+func (k *kamateraCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (k *kamateraCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (k *kamateraCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (k *kamateraCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(k, node)
+func (k *kamateraCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), k, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (k *kamateraCloudProvider) Cleanup() error {
+func (k *kamateraCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (k *kamateraCloudProvider) Refresh() error {
+func (k *kamateraCloudProvider) Refresh(ctx context.Context) error {
 	klog.V(4).Infof("Refreshing Kamatera node groups")
 	err := k.manager.refresh()
 	if err != nil {

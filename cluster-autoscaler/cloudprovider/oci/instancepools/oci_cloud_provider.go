@@ -5,6 +5,7 @@ Copyright 2021-2023 Oracle and/or its affiliates.
 package instancepools
 
 import (
+	"context"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -52,7 +53,7 @@ func (ocp *OciCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (ocp *OciCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (ocp *OciCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	nodePools := ocp.poolManager.GetInstancePools()
 	result := make([]cloudprovider.NodeGroup, 0, len(nodePools))
 	for _, nodePool := range nodePools {
@@ -64,7 +65,7 @@ func (ocp *OciCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (ocp *OciCloudProvider) NodeGroupForNode(ctx context.Context, n *apiv1.Node) (cloudprovider.NodeGroup, error) {
 
 	ociRef, err := ocicommon.NodeToOciRef(n)
 	if err != nil {
@@ -91,7 +92,7 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (ocp *OciCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (ocp *OciCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	instance, err := ocicommon.NodeToOciRef(node)
 	if err != nil {
 		klog.V(4).Infof("HasInstance: ref conversion for node %s failed: %v", node.Name, err)
@@ -113,14 +114,14 @@ func (ocp *OciCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (ocp *OciCloudProvider) Pricing() (cloudprovider.PricingModel, caerrors.AutoscalerError) {
+func (ocp *OciCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, caerrors.AutoscalerError) {
 	klog.Info("Pricing called")
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes getInstancePool all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (ocp *OciCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (ocp *OciCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	klog.Info("GetAvailableMachineTypes called")
 	return nil, cloudprovider.ErrNotImplemented
 }
@@ -128,7 +129,7 @@ func (ocp *OciCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (ocp *OciCloudProvider) NewNodeGroup(machineType string,
+func (ocp *OciCloudProvider) NewNodeGroup(ctx context.Context, machineType string,
 	labels map[string]string,
 	systemLabels map[string]string,
 	taints []apiv1.Taint,
@@ -138,35 +139,35 @@ func (ocp *OciCloudProvider) NewNodeGroup(machineType string,
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (ocp *OciCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (ocp *OciCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return ocp.rl, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (ocp *OciCloudProvider) GPULabel() string {
+func (ocp *OciCloudProvider) GPULabel(ctx context.Context) string {
 	// No labels, only taint: nvidia.com/gpu:NoSchedule
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (ocp *OciCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (ocp *OciCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return map[string]struct{}{}
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (ocp *OciCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(ocp, node)
+func (ocp *OciCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), ocp, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (ocp *OciCloudProvider) Cleanup() error {
+func (ocp *OciCloudProvider) Cleanup(ctx context.Context) error {
 	return ocp.poolManager.Cleanup()
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (ocp *OciCloudProvider) Refresh() error {
+func (ocp *OciCloudProvider) Refresh(ctx context.Context) error {
 	return ocp.poolManager.Refresh()
 }
 

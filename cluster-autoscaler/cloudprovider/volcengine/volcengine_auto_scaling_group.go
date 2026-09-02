@@ -17,6 +17,7 @@ limitations under the License.
 package volcengine
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -35,12 +36,12 @@ type AutoScalingGroup struct {
 }
 
 // MaxSize returns maximum size of the node group.
-func (asg *AutoScalingGroup) MaxSize() int {
+func (asg *AutoScalingGroup) MaxSize(ctx context.Context) int {
 	return asg.maxInstanceNumber
 }
 
 // MinSize returns minimum size of the node group.
-func (asg *AutoScalingGroup) MinSize() int {
+func (asg *AutoScalingGroup) MinSize(ctx context.Context) int {
 	return asg.minInstanceNumber
 }
 
@@ -48,14 +49,14 @@ func (asg *AutoScalingGroup) MinSize() int {
 // number of nodes in Kubernetes is different at the moment but should be equal
 // to Size() once everything stabilizes (new nodes finish startup and registration or
 // removed nodes are deleted completely). Implementation required.
-func (asg *AutoScalingGroup) TargetSize() (int, error) {
+func (asg *AutoScalingGroup) TargetSize(ctx context.Context) (int, error) {
 	return asg.manager.GetAsgDesireCapacity(asg.asgId)
 }
 
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
-func (asg *AutoScalingGroup) IncreaseSize(delta int) error {
+func (asg *AutoScalingGroup) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -63,27 +64,27 @@ func (asg *AutoScalingGroup) IncreaseSize(delta int) error {
 	if err != nil {
 		return err
 	}
-	if size+delta > asg.MaxSize() {
-		return fmt.Errorf("size increase is too large - desired:%d max:%d", size+delta, asg.MaxSize())
+	if size+delta > asg.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase is too large - desired:%d max:%d", size+delta, asg.MaxSize(context.TODO()))
 	}
 	return asg.manager.SetAsgTargetSize(asg.asgId, size+delta)
 }
 
 // AtomicIncreaseSize is not implemented.
-func (asg *AutoScalingGroup) AtomicIncreaseSize(delta int) error {
+func (asg *AutoScalingGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
-func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *AutoScalingGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	size, err := asg.manager.GetAsgDesireCapacity(asg.asgId)
 	if err != nil {
 		klog.Errorf("Failed to get desire capacity for %s: %v", asg.asgId, err)
 		return err
 	}
-	if size <= asg.MinSize() {
+	if size <= asg.MinSize(context.TODO()) {
 		klog.Errorf("Failed to delete nodes from %s: min size reached", asg.asgId)
 		return fmt.Errorf("asg min size reached")
 	}
@@ -107,7 +108,7 @@ func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (asg *AutoScalingGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (asg *AutoScalingGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -131,7 +132,7 @@ func (asg *AutoScalingGroup) belongs(node *apiv1.Node) (bool, error) {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
-func (asg *AutoScalingGroup) DecreaseTargetSize(delta int) error {
+func (asg *AutoScalingGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease size must be negative")
 	}
@@ -158,15 +159,15 @@ func (asg *AutoScalingGroup) Id() string {
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (asg *AutoScalingGroup) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", asg.Id(), asg.MinSize(), asg.MaxSize())
+func (asg *AutoScalingGroup) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", asg.Id(), asg.MinSize(context.TODO()), asg.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
 // It is required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
 // This list should include also instances that might have not become a kubernetes node yet.
-func (asg *AutoScalingGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (asg *AutoScalingGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	nodes, err := asg.manager.GetAsgNodes(asg.asgId)
 	if err != nil {
 		return nil, err
@@ -180,7 +181,7 @@ func (asg *AutoScalingGroup) Nodes() ([]cloudprovider.Instance, error) {
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (asg *AutoScalingGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (asg *AutoScalingGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	template, err := asg.manager.getAsgTemplate(asg.asgId)
 	if err != nil {
 		return nil, err
@@ -195,31 +196,31 @@ func (asg *AutoScalingGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one. Implementation required.
-func (asg *AutoScalingGroup) Exist() bool {
+func (asg *AutoScalingGroup) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side. Implementation optional.
-func (asg *AutoScalingGroup) Create() (cloudprovider.NodeGroup, error) {
+func (asg *AutoScalingGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 // Implementation optional.
-func (asg *AutoScalingGroup) Delete() error {
+func (asg *AutoScalingGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
 // was created by CA and can be deleted when scaled to 0.
-func (asg *AutoScalingGroup) Autoprovisioned() bool {
+func (asg *AutoScalingGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 // Implementation optional.
-func (asg *AutoScalingGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (asg *AutoScalingGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }

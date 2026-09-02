@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -52,11 +53,11 @@ type nodegroup struct {
 
 var _ cloudprovider.NodeGroup = (*nodegroup)(nil)
 
-func (ng *nodegroup) MinSize() int {
+func (ng *nodegroup) MinSize(ctx context.Context) int {
 	return ng.scalableResource.MinSize()
 }
 
-func (ng *nodegroup) MaxSize() int {
+func (ng *nodegroup) MaxSize(ctx context.Context) int {
 	return ng.scalableResource.MaxSize()
 }
 
@@ -65,7 +66,7 @@ func (ng *nodegroup) MaxSize() int {
 // moment but should be equal to Size() once everything stabilizes
 // (new nodes finish startup and registration or removed nodes are
 // deleted completely). Implementation required.
-func (ng *nodegroup) TargetSize() (int, error) {
+func (ng *nodegroup) TargetSize(ctx context.Context) (int, error) {
 	replicas, found, err := unstructured.NestedInt64(ng.scalableResource.unstructured.Object, "spec", "replicas")
 	if err != nil {
 		return 0, errors.Wrap(err, "error getting replica count")
@@ -80,7 +81,7 @@ func (ng *nodegroup) TargetSize() (int, error) {
 // you need to explicitly name it and use DeleteNode. This function
 // should wait until node group size is updated. Implementation
 // required.
-func (ng *nodegroup) IncreaseSize(delta int) error {
+func (ng *nodegroup) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -94,7 +95,7 @@ func (ng *nodegroup) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (ng *nodegroup) AtomicIncreaseSize(delta int) error {
+func (ng *nodegroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -102,7 +103,7 @@ func (ng *nodegroup) AtomicIncreaseSize(delta int) error {
 // either on failure or if the given node doesn't belong to this node
 // group. This function should wait until node group size is updated.
 // Implementation required.
-func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
+func (ng *nodegroup) DeleteNodes(ctx context.Context, nodes []*corev1.Node) error {
 	ng.machineController.accessLock.Lock()
 	defer ng.machineController.accessLock.Unlock()
 
@@ -112,7 +113,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	}
 
 	// if we are at minSize already we fail early.
-	if replicas <= ng.MinSize() {
+	if replicas <= ng.MinSize(context.TODO()) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
@@ -138,8 +139,8 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	// Step 2: if deleting len(nodes) would make the replica count
 	// < minSize, then the request to delete that many nodes is bogus
 	// and we fail fast.
-	if replicas-len(nodes) < ng.MinSize() {
-		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %d, minSize is %d", len(nodes), ng.Id(), replicas, ng.MinSize())
+	if replicas-len(nodes) < ng.MinSize(context.TODO()) {
+		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %d, minSize is %d", len(nodes), ng.Id(), replicas, ng.MinSize(context.TODO()))
 	}
 
 	// Step 3: when a backing Machine exists, mark it as a deletion candidate
@@ -221,7 +222,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (ng *nodegroup) ForceDeleteNodes(nodes []*corev1.Node) error {
+func (ng *nodegroup) ForceDeleteNodes(ctx context.Context, nodes []*corev1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -231,7 +232,7 @@ func (ng *nodegroup) ForceDeleteNodes(nodes []*corev1.Node) error {
 // yet fulfilled. Delta should be negative. It is assumed that cloud
 // nodegroup will not delete the existing nodes when there is an option
 // to just decrease the target. Implementation required.
-func (ng *nodegroup) DecreaseTargetSize(delta int) error {
+func (ng *nodegroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
@@ -241,7 +242,7 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 		return err
 	}
 
-	nodes, err := ng.Nodes()
+	nodes, err := ng.Nodes(context.TODO())
 	if err != nil {
 		return err
 	}
@@ -275,17 +276,17 @@ func (ng *nodegroup) Id() string {
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (ng *nodegroup) Debug() string {
+func (ng *nodegroup) Debug(ctx context.Context) string {
 	replicas, err := ng.scalableResource.Replicas()
 	if err != nil {
-		return fmt.Sprintf("%s (min: %d, max: %d, replicas: %v)", ng.Id(), ng.MinSize(), ng.MaxSize(), err)
+		return fmt.Sprintf("%s (min: %d, max: %d, replicas: %v)", ng.Id(), ng.MinSize(context.TODO()), ng.MaxSize(context.TODO()), err)
 	}
-	return fmt.Sprintf(debugFormat, ng.Id(), ng.MinSize(), ng.MaxSize(), replicas)
+	return fmt.Sprintf(debugFormat, ng.Id(), ng.MinSize(context.TODO()), ng.MaxSize(context.TODO()), replicas)
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
 // This includes instances that might have not become a kubernetes node yet.
-func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *nodegroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	providerIDs, err := ng.scalableResource.ProviderIDs()
 	if err != nil {
 		return nil, err
@@ -386,7 +387,7 @@ func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 // allocatable information as well as all pods that are started on the
 // node by default, using manifest (most likely only kube-proxy).
 // Implementation optional.
-func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ng *nodegroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	if !ng.scalableResource.CanScaleFromZero() {
 		return nil, cloudprovider.ErrNotImplemented
 	}
@@ -446,7 +447,7 @@ func (ng *nodegroup) buildTemplateLabels(nodeName string, nsi *corev1.NodeSystem
 	// - Generic/default labels set in the environment of the cluster autoscaler
 	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), nsiLabels, ng.scalableResource.Labels())
 
-	nodes, err := ng.Nodes()
+	nodes, err := ng.Nodes(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -467,14 +468,14 @@ func (ng *nodegroup) buildTemplateLabels(nodeName string, nsi *corev1.NodeSystem
 // Exist checks if the node group really exists on the cloud nodegroup
 // side. Allows to tell the theoretical node group from the real one.
 // Implementation required.
-func (ng *nodegroup) Exist() bool {
+func (ng *nodegroup) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud nodegroup side.
 // Implementation optional.
-func (ng *nodegroup) Create() (cloudprovider.NodeGroup, error) {
-	if ng.Exist() {
+func (ng *nodegroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	if ng.Exist(context.TODO()) {
 		return nil, cloudprovider.ErrAlreadyExist
 	}
 	return nil, cloudprovider.ErrNotImplemented
@@ -483,20 +484,20 @@ func (ng *nodegroup) Create() (cloudprovider.NodeGroup, error) {
 // Delete deletes the node group on the cloud nodegroup side. This will
 // be executed only for autoprovisioned node groups, once their size
 // drops to 0. Implementation optional.
-func (ng *nodegroup) Delete() error {
+func (ng *nodegroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
 // An autoprovisioned group was created by CA and can be deleted when
 // scaled to 0.
-func (ng *nodegroup) Autoprovisioned() bool {
+func (ng *nodegroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (ng *nodegroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *nodegroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	options := ng.scalableResource.autoscalingOptions
 	if options == nil || len(options) == 0 {
 		return &defaults, nil

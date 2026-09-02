@@ -17,6 +17,7 @@ limitations under the License.
 package civo
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -43,7 +44,7 @@ func TestNodeGroup_TargetSize(t *testing.T) {
 			Count: numberOfNodes,
 		}, 1, 10)
 
-		size, err := ng.TargetSize()
+		size, err := ng.TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, numberOfNodes, size, "target size is not correct")
 	})
@@ -79,7 +80,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			nil,
 		).Once()
 
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		assert.NoError(t, err)
 	})
 
@@ -115,7 +116,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			nil,
 		).Once()
 
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		assert.NoError(t, err)
 	})
 
@@ -134,7 +135,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		}, 1, 10)
 
 		delta := -1
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		exp := fmt.Errorf("delta must be positive, have: %d", delta)
 		assert.EqualError(t, err, exp.Error(), "size increase must be positive")
 	})
@@ -154,7 +155,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		}, 1, 10)
 
 		delta := 0
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		exp := fmt.Errorf("delta must be positive, have: %d", delta)
 		assert.EqualError(t, err, exp.Error(), "size increase must be positive")
 	})
@@ -176,8 +177,8 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		}, 1, maxNodes)
 
 		exp := fmt.Errorf("size increase is too large. current: %d desired: %d max: %d",
-			numberOfNodes, numberOfNodes+delta, ng.MaxSize())
-		err := ng.IncreaseSize(delta)
+			numberOfNodes, numberOfNodes+delta, ng.MaxSize(context.Background()))
+		err := ng.IncreaseSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size increase is too large")
 	})
 }
@@ -213,7 +214,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			nil,
 		).Once()
 
-		err := ng.DecreaseTargetSize(delta)
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.NoError(t, err)
 	})
 
@@ -232,7 +233,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		}, 1, 10)
 
 		delta := 1
-		err := ng.DecreaseTargetSize(delta)
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 
 		exp := fmt.Errorf("delta must be negative, have: %d", delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease must be negative")
@@ -255,7 +256,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		delta := 0
 		exp := fmt.Errorf("delta must be negative, have: %d", delta)
 
-		err := ng.DecreaseTargetSize(delta)
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease must be negative")
 	})
 
@@ -275,8 +276,8 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		}, 1, 5)
 
 		exp := fmt.Errorf("size decrease is too small. current: %d desired: %d min: %d",
-			numberOfNodes, numberOfNodes+delta, ng.MinSize())
-		err := ng.DecreaseTargetSize(delta)
+			numberOfNodes, numberOfNodes+delta, ng.MinSize(context.Background()))
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease is too small")
 	})
 }
@@ -327,7 +328,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			nil,
 		).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(context.Background(), nodes)
 		assert.NoError(t, err)
 	})
 
@@ -370,7 +371,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			errors.New("random error"),
 		).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(context.Background(), nodes)
 		assert.Error(t, err)
 	})
 }
@@ -449,7 +450,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 			},
 		}
 
-		nodes, err := ng.Nodes()
+		nodes, err := ng.Nodes(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, exp, nodes, "nodes do not match")
 	})
@@ -458,7 +459,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 		client := &civoClientMock{}
 		ng := testNodeGroup(client, nil, 1, 10)
 
-		_, err := ng.Nodes()
+		_, err := ng.Nodes(context.Background())
 		assert.Error(t, err, "Nodes() should return an error")
 	})
 }
@@ -474,7 +475,7 @@ func TestNodeGroup_Debug(t *testing.T) {
 		).Once()
 
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{Count: 2}, 1, 200)
-		d := ng.Debug()
+		d := ng.Debug(context.Background())
 		exp := "id: 1 (min:1 max:200)"
 		assert.Equal(t, exp, d, "debug string do not match")
 	})
@@ -491,7 +492,7 @@ func TestNodeGroup_Exist(t *testing.T) {
 		).Once()
 
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{Count: 3}, 1, 200)
-		exist := ng.Exist()
+		exist := ng.Exist(context.Background())
 		assert.Equal(t, true, exist, "node group should exist")
 	})
 
@@ -505,7 +506,7 @@ func TestNodeGroup_Exist(t *testing.T) {
 		).Once()
 
 		ng := testNodeGroup(client, nil, 1, 200)
-		exist := ng.Exist()
+		exist := ng.Exist(context.Background())
 		assert.Equal(t, false, exist, "node group should not exist")
 	})
 }
@@ -538,7 +539,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 			Region: "test",
 		}, 1, 10)
 
-		nodeInfo, err := ng.TemplateNodeInfo()
+		nodeInfo, err := ng.TemplateNodeInfo(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, len(nodeInfo.Pods()), 1, "should have one template pod")
 		assert.Equal(t, nodeInfo.Node().Status.Capacity.Cpu().ToDec().Value(), int64(1000), "should match cpu capacity ")

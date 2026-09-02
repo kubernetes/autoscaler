@@ -66,35 +66,35 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 	).Once()
 
 	// test error on bad delta value
-	err := ng.IncreaseSize(0)
+	err := ng.IncreaseSize(context.Background(), 0)
 	assert.Error(t, err)
 
 	// test error on bad delta value
-	err = ng.IncreaseSize(-1)
+	err = ng.IncreaseSize(context.Background(), -1)
 	assert.Error(t, err)
 
 	// test error on a too large increase of nodes
-	err = ng.IncreaseSize(5)
+	err = ng.IncreaseSize(context.Background(), 5)
 	assert.Error(t, err)
 
 	// test ok to add a node
-	err = ng.IncreaseSize(1)
+	err = ng.IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(ng.lkePools))
 
 	// test ok to add multiple nodes
-	err = ng.IncreaseSize(2)
+	err = ng.IncreaseSize(context.Background(), 2)
 	assert.NoError(t, err)
 	assert.Equal(t, 6, len(ng.lkePools))
 
 	// test error on linode API call error
-	err = ng.IncreaseSize(1)
+	err = ng.IncreaseSize(context.Background(), 1)
 	assert.Error(t, err, "no error on injected API call error")
 }
 
 func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 	ng := &NodeGroup{}
-	err := ng.DecreaseTargetSize(-1)
+	err := ng.DecreaseTargetSize(context.Background(), -1)
 	assert.Error(t, err)
 }
 
@@ -139,7 +139,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 	}
 
 	// test of on deleting nodes
-	err := ng.DeleteNodes(nodes)
+	err := ng.DeleteNodes(context.Background(), nodes)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(ng.lkePools))
 	assert.NotNil(t, ng.lkePools[3])
@@ -149,21 +149,21 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 	nodes = []*apiv1.Node{
 		{Spec: apiv1.NodeSpec{ProviderID: "linode://aaa"}},
 	}
-	err = ng.DeleteNodes(nodes)
+	err = ng.DeleteNodes(context.Background(), nodes)
 	assert.Error(t, err)
 
 	// test error on deleting a node we are not managing
 	nodes = []*apiv1.Node{
 		{Spec: apiv1.NodeSpec{ProviderID: "linode://555"}},
 	}
-	err = ng.DeleteNodes(nodes)
+	err = ng.DeleteNodes(context.Background(), nodes)
 	assert.Error(t, err)
 
 	// test error on deleting a node when the linode API call fails
 	nodes = []*apiv1.Node{
 		{Spec: apiv1.NodeSpec{ProviderID: "linode://423"}},
 	}
-	err = ng.DeleteNodes(nodes)
+	err = ng.DeleteNodes(context.Background(), nodes)
 	assert.Error(t, err)
 }
 
@@ -236,7 +236,7 @@ func TestNosdeGroup_Nodes(t *testing.T) {
 	}
 
 	// test nodes returned from Nodes() are only the ones we are expecting
-	instancesList, err := ng.Nodes()
+	instancesList, err := ng.Nodes(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(instancesList))
 	assert.Contains(t, instancesList, cloudprovider.Instance{Id: "linode://423"})
@@ -264,19 +264,19 @@ func TestNodeGroup_Others(t *testing.T) {
 		maxSize:      7,
 		id:           "g6-standard-1",
 	}
-	assert.Equal(t, 1, ng.MinSize())
-	assert.Equal(t, 7, ng.MaxSize())
-	ts, err := ng.TargetSize()
+	assert.Equal(t, 1, ng.MinSize(context.Background()))
+	assert.Equal(t, 7, ng.MaxSize(context.Background()))
+	ts, err := ng.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, ts)
 	assert.Equal(t, "g6-standard-1", ng.Id())
-	assert.Equal(t, "node group ID: g6-standard-1 (min:1 max:7)", ng.Debug())
-	assert.Equal(t, true, ng.Exist())
-	assert.Equal(t, false, ng.Autoprovisioned())
-	_, err = ng.TemplateNodeInfo()
+	assert.Equal(t, "node group ID: g6-standard-1 (min:1 max:7)", ng.Debug(context.Background()))
+	assert.Equal(t, true, ng.Exist(context.Background()))
+	assert.Equal(t, false, ng.Autoprovisioned(context.Background()))
+	_, err = ng.TemplateNodeInfo(context.Background())
 	assert.Error(t, err)
-	_, err = ng.Create()
+	_, err = ng.Create(context.Background())
 	assert.Error(t, err)
-	err = ng.Delete()
+	err = ng.Delete(context.Background())
 	assert.Error(t, err)
 }

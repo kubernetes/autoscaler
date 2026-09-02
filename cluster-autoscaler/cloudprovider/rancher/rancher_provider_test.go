@@ -17,6 +17,7 @@ limitations under the License.
 package rancher
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -109,14 +110,14 @@ func TestNodeGroups(t *testing.T) {
 				config: config,
 			}
 
-			if err := provider.Refresh(); err != nil {
+			if err := provider.Refresh(context.Background()); err != nil {
 				if tc.expectedErrContains == "" || !strings.Contains(err.Error(), tc.expectedErrContains) {
 					t.Fatalf("expected err to contain %q, got %q", tc.expectedErrContains, err)
 				}
 			}
 
-			if len(provider.NodeGroups()) != tc.expectedGroups {
-				t.Fatalf("expected %d groups, got %d", tc.expectedGroups, len(provider.NodeGroups()))
+			if len(provider.NodeGroups(context.Background())) != tc.expectedGroups {
+				t.Fatalf("expected %d groups, got %d", tc.expectedGroups, len(provider.NodeGroups(context.Background())))
 			}
 		})
 	}
@@ -128,7 +129,7 @@ func TestNodeGroupForNode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := provider.Refresh(); err != nil {
+	if err := provider.Refresh(context.Background()); err != nil {
 		t.Fatal(err)
 	}
 
@@ -178,7 +179,7 @@ func TestNodeGroupForNode(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ng, err := provider.NodeGroupForNode(tc.node)
+			ng, err := provider.NodeGroupForNode(context.Background(), tc.node)
 			if err != nil {
 				t.Fatal(err)
 			}

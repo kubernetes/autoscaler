@@ -37,7 +37,6 @@ import (
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/equinixmetal"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc"
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud"
@@ -57,10 +56,10 @@ import (
 )
 
 import (
-	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
 )
 
 func init() {
-	builder.SetDefaultCloudProvider(cloudprovider.GceProviderName)
+	builder.SetDefaultCloudProvider(gce.ProviderName)
 }

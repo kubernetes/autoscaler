@@ -17,6 +17,7 @@ limitations under the License.
 package cloudstack
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -81,11 +82,11 @@ func TestName(t *testing.T) {
 }
 
 func TestNodeGroups(t *testing.T) {
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 	assert.Equal(t, 1, len(asgs))
 	assert.Equal(t, testConfig.clusterID, asgs[0].Id())
-	assert.Equal(t, testConfig.maxSize, asgs[0].MaxSize())
-	assert.Equal(t, testConfig.minSize, asgs[0].MinSize())
+	assert.Equal(t, testConfig.maxSize, asgs[0].MaxSize(context.Background()))
+	assert.Equal(t, testConfig.minSize, asgs[0].MinSize(context.Background()))
 }
 
 func testNodeExistsWithName(t *testing.T) {
@@ -94,11 +95,11 @@ func testNodeExistsWithName(t *testing.T) {
 			Name: "vm1",
 		},
 	}
-	asg, err := provider.NodeGroupForNode(node)
+	asg, err := provider.NodeGroupForNode(context.Background(), node)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, testConfig.clusterID, asg.Id())
-	assert.Equal(t, testConfig.maxSize, asg.MaxSize())
-	assert.Equal(t, testConfig.minSize, asg.MinSize())
+	assert.Equal(t, testConfig.maxSize, asg.MaxSize(context.Background()))
+	assert.Equal(t, testConfig.minSize, asg.MinSize(context.Background()))
 }
 
 func testNodeExistsWithoutName(t *testing.T) {
@@ -107,11 +108,11 @@ func testNodeExistsWithoutName(t *testing.T) {
 			Name: "vm1",
 		},
 	}
-	asg, err := provider.NodeGroupForNode(node)
+	asg, err := provider.NodeGroupForNode(context.Background(), node)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, testConfig.clusterID, asg.Id())
-	assert.Equal(t, testConfig.maxSize, asg.MaxSize())
-	assert.Equal(t, testConfig.minSize, asg.MinSize())
+	assert.Equal(t, testConfig.maxSize, asg.MaxSize(context.Background()))
+	assert.Equal(t, testConfig.minSize, asg.MinSize(context.Background()))
 }
 
 func testNodeNotExistWithName(t *testing.T) {
@@ -120,7 +121,7 @@ func testNodeNotExistWithName(t *testing.T) {
 			Name: "vm5",
 		},
 	}
-	_, err := provider.NodeGroupForNode(node)
+	_, err := provider.NodeGroupForNode(context.Background(), node)
 	fmt.Println(provider.manager.asg.cluster)
 	fmt.Println(err)
 	assert.NotEqual(t, nil, err)
@@ -134,7 +135,7 @@ func testNodeNotExistWithoutName(t *testing.T) {
 			},
 		},
 	}
-	_, err := provider.NodeGroupForNode(node)
+	_, err := provider.NodeGroupForNode(context.Background(), node)
 	fmt.Println(provider.manager.asg.cluster)
 	fmt.Println(err)
 	assert.NotEqual(t, nil, err)
@@ -148,35 +149,35 @@ func TestNodeGroupForNode(t *testing.T) {
 }
 
 func TestGetAvailableMachineTypes(t *testing.T) {
-	types, err := provider.GetAvailableMachineTypes()
+	types, err := provider.GetAvailableMachineTypes(context.Background())
 	assert.Equal(t, availableMachineTypes, types)
 	assert.Equal(t, nil, err)
 }
 
 func TestGPULabel(t *testing.T) {
-	assert.Equal(t, GPULabel, provider.GPULabel())
+	assert.Equal(t, GPULabel, provider.GPULabel(context.Background()))
 }
 
 func TestGetAvailableGPUTypes(t *testing.T) {
-	assert.Equal(t, availableGPUTypes, provider.GetAvailableGPUTypes())
+	assert.Equal(t, availableGPUTypes, provider.GetAvailableGPUTypes(context.Background()))
 }
 
 func TestPricing(t *testing.T) {
-	_, err := provider.Pricing()
+	_, err := provider.Pricing(context.Background())
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
 
 func TestNewNodeGroup(t *testing.T) {
-	_, err := provider.NewNodeGroup("machineType", map[string]string{}, map[string]string{}, []v1.Taint{}, map[string]resource.Quantity{})
+	_, err := provider.NewNodeGroup(context.Background(), "machineType", map[string]string{}, map[string]string{}, []v1.Taint{}, map[string]resource.Quantity{})
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
 
 func TestCleanup(t *testing.T) {
-	assert.Equal(t, nil, provider.Cleanup())
+	assert.Equal(t, nil, provider.Cleanup(context.Background()))
 }
 
 func TestGetResourceLimiter(t *testing.T) {
-	rl, err := provider.GetResourceLimiter()
+	rl, err := provider.GetResourceLimiter(context.Background())
 	assert.Equal(t, &cloudprovider.ResourceLimiter{}, rl)
 	assert.Equal(t, nil, err)
 }
@@ -184,6 +185,6 @@ func TestGetResourceLimiter(t *testing.T) {
 func TestRefresh(t *testing.T) {
 	asg := provider.manager.asg
 	asg.cluster = createScaleUpClusterDetails()
-	assert.Equal(t, nil, provider.Refresh())
+	assert.Equal(t, nil, provider.Refresh(context.Background()))
 	assert.Equal(t, createClusterDetails(), asg.cluster)
 }

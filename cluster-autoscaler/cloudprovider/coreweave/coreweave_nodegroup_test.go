@@ -128,13 +128,13 @@ func TestId(t *testing.T) {
 
 func TestMinMaxTargetSize(t *testing.T) {
 	ng := makeTestNodeGroup("ng-1", "uid-1", 2, 10, 5)
-	if ng.MinSize() != 2 {
-		t.Errorf("expected min size 2, got %d", ng.MinSize())
+	if ng.MinSize(context.Background()) != 2 {
+		t.Errorf("expected min size 2, got %d", ng.MinSize(context.Background()))
 	}
-	if ng.MaxSize() != 10 {
-		t.Errorf("expected max size 10, got %d", ng.MaxSize())
+	if ng.MaxSize(context.Background()) != 10 {
+		t.Errorf("expected max size 10, got %d", ng.MaxSize(context.Background()))
 	}
-	size, err := ng.TargetSize()
+	size, err := ng.TargetSize(context.Background())
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -145,7 +145,7 @@ func TestMinMaxTargetSize(t *testing.T) {
 
 func TestIncreaseSize(t *testing.T) {
 	ng := makeTestNodeGroup("ng-1", "uid-1", 1, 5, 3)
-	err := ng.IncreaseSize(2)
+	err := ng.IncreaseSize(context.Background(), 2)
 	if err != nil && err != cloudprovider.ErrNotImplemented {
 		t.Errorf("expected ErrNotImplemented or nil, got %v", err)
 	}
@@ -199,7 +199,7 @@ func TestDeleteNodes(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ng := makeTestNodeGroup("ng-1", "uid-1", 0, 5, initialTargetSize)
 
-			err := ng.DeleteNodes(tc.nodesToDelete)
+			err := ng.DeleteNodes(context.Background(), tc.nodesToDelete)
 			if tc.expectedError != nil {
 				require.Equal(t, tc.expectedError, err)
 				return
@@ -230,7 +230,7 @@ func TestDecreaseTargetSize(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ng := makeTestNodeGroup("ng-1", "uid-1", 1, 5, 3)
 
-			err := ng.DecreaseTargetSize(tc.delta)
+			err := ng.DecreaseTargetSize(context.Background(), tc.delta)
 			if tc.expectedError != nil {
 				require.Error(t, err)
 				require.Equal(t, tc.expectedError, err)
@@ -584,7 +584,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			ng := NewCoreWeaveNodeGroup(tc.nodePool)
-			nodeInfo, err := ng.TemplateNodeInfo()
+			nodeInfo, err := ng.TemplateNodeInfo(context.Background())
 
 			if tc.expectedError != "" {
 				require.Error(t, err)

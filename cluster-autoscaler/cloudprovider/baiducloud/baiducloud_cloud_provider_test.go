@@ -17,6 +17,7 @@ limitations under the License.
 package baiducloud
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -62,27 +63,27 @@ func TestName(t *testing.T) {
 func TestNodeGroups(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
 
-	nodeGroups := provider.NodeGroups()
+	nodeGroups := provider.NodeGroups(context.Background())
 	assert.Equal(t, len(nodeGroups), 1)
 	assert.Equal(t, nodeGroups[0].Id(), "k8s-worker-asg-1")
-	assert.Equal(t, nodeGroups[0].MinSize(), 1)
-	assert.Equal(t, nodeGroups[0].MaxSize(), 10)
+	assert.Equal(t, nodeGroups[0].MinSize(context.Background()), 1)
+	assert.Equal(t, nodeGroups[0].MaxSize(context.Background()), 10)
 }
 
 func TestGPULabel(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	GPULabel := provider.GPULabel()
+	GPULabel := provider.GPULabel(context.Background())
 	assert.Equal(t, GPULabel, "baidu/nvidia_name")
 }
 
 func TestCleanup(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	err := provider.Cleanup()
+	err := provider.Cleanup(context.Background())
 	assert.NoError(t, err)
 }
 
 func TestRefresh(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	err := provider.Refresh()
+	err := provider.Refresh(context.Background())
 	assert.NoError(t, err)
 }

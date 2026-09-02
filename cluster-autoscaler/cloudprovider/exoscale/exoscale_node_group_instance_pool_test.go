@@ -17,6 +17,8 @@ limitations under the License.
 package exoscale
 
 import (
+	"context"
+
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	egoscale "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2"
@@ -43,7 +45,7 @@ func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_MaxSize() {
 		m: ts.p.manager,
 	}
 
-	ts.Require().Equal(int(testComputeInstanceQuotaLimit), nodeGroup.MaxSize())
+	ts.Require().Equal(int(testComputeInstanceQuotaLimit), nodeGroup.MaxSize(context.Background()))
 }
 
 func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_MinSize() {
@@ -56,7 +58,7 @@ func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_MinSize() {
 		minSize: 1,
 	}
 
-	ts.Require().Equal(1, nodeGroup.MinSize())
+	ts.Require().Equal(1, nodeGroup.MinSize(context.Background()))
 }
 
 func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_TargetSize() {
@@ -69,7 +71,7 @@ func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_TargetSize() {
 		m: ts.p.manager,
 	}
 
-	actual, err := nodeGroup.TargetSize()
+	actual, err := nodeGroup.TargetSize(context.Background())
 	ts.Require().NoError(err)
 	ts.Require().Equal(int(testInstancePoolSize), actual)
 }
@@ -108,10 +110,10 @@ func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_IncreaseSize() {
 		m: ts.p.manager,
 	}
 
-	ts.Require().NoError(nodeGroup.IncreaseSize(int(testInstancePoolSize + 1)))
+	ts.Require().NoError(nodeGroup.IncreaseSize(context.Background(), int(testInstancePoolSize+1)))
 
 	// Test size increase failure if beyond current limits:
-	ts.Require().Error(nodeGroup.IncreaseSize(1000))
+	ts.Require().Error(nodeGroup.IncreaseSize(context.Background(), 1000))
 }
 
 func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_DeleteNodes() {
@@ -150,7 +152,7 @@ func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_DeleteNodes() {
 		m: ts.p.manager,
 	}
 
-	ts.Require().NoError(nodeGroup.DeleteNodes([]*apiv1.Node{node}))
+	ts.Require().NoError(nodeGroup.DeleteNodes(context.Background(), []*apiv1.Node{node}))
 }
 
 func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_Id() {
@@ -184,7 +186,7 @@ func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_Nodes() {
 		m: ts.p.manager,
 	}
 
-	instances, err := nodeGroup.Nodes()
+	instances, err := nodeGroup.Nodes(context.Background())
 	ts.Require().NoError(err)
 	ts.Require().Len(instances, 1)
 	ts.Require().Equal(testInstanceID, toNodeID(instances[0].Id))
@@ -199,7 +201,7 @@ func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_Exist() {
 		m: ts.p.manager,
 	}
 
-	ts.Require().True(nodeGroup.Exist())
+	ts.Require().True(nodeGroup.Exist(context.Background()))
 }
 
 func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_MinSize_Custom() {
@@ -212,5 +214,5 @@ func (ts *cloudProviderTestSuite) TestInstancePoolNodeGroup_MinSize_Custom() {
 		minSize: 3,
 	}
 
-	ts.Require().Equal(3, nodeGroup.MinSize())
+	ts.Require().Equal(3, nodeGroup.MinSize(context.Background()))
 }

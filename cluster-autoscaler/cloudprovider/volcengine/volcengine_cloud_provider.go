@@ -17,6 +17,7 @@ limitations under the License.
 package volcengine
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -58,7 +59,7 @@ func (v *volcengineCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (v *volcengineCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (v *volcengineCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	result := make([]cloudprovider.NodeGroup, 0, len(v.scalingGroups))
 	for _, ng := range v.scalingGroups {
 		result = append(result, ng)
@@ -69,7 +70,7 @@ func (v *volcengineCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (v *volcengineCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (v *volcengineCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	instanceId, err := ecsInstanceFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return nil, err
@@ -90,59 +91,59 @@ func (v *volcengineCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 
 // HasInstance returns whether the node has corresponding instance in cloud provider,
 // true if the node has an instance, false if it no longer exists
-func (v *volcengineCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (v *volcengineCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (v *volcengineCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (v *volcengineCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (v *volcengineCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (v *volcengineCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (v *volcengineCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (v *volcengineCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (v *volcengineCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (v *volcengineCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return v.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (v *volcengineCloudProvider) GPULabel() string {
+func (v *volcengineCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (v *volcengineCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (v *volcengineCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return map[string]struct{}{}
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (v *volcengineCloudProvider) Cleanup() error {
+func (v *volcengineCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (v *volcengineCloudProvider) Refresh() error {
+func (v *volcengineCloudProvider) Refresh(ctx context.Context) error {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (v *volcengineCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(v, node)
+func (v *volcengineCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), v, node)
 }
 
 func (v *volcengineCloudProvider) addNodeGroup(spec string) error {

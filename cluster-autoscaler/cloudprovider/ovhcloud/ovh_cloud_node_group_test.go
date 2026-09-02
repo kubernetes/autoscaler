@@ -197,7 +197,7 @@ func TestOVHCloudNodeGroup_MaxSize(t *testing.T) {
 	ng := newTestNodeGroup(t, "b2-7")
 
 	t.Run("check default node group max size", func(t *testing.T) {
-		max := ng.MaxSize()
+		max := ng.MaxSize(context.Background())
 
 		assert.Equal(t, 5, max)
 	})
@@ -207,7 +207,7 @@ func TestOVHCloudNodeGroup_MinSize(t *testing.T) {
 	ng := newTestNodeGroup(t, "b2-7")
 
 	t.Run("check default node group min size", func(t *testing.T) {
-		min := ng.MinSize()
+		min := ng.MinSize(context.Background())
 
 		assert.Equal(t, 1, min)
 	})
@@ -217,7 +217,7 @@ func TestOVHCloudNodeGroup_TargetSize(t *testing.T) {
 	ng := newTestNodeGroup(t, "b2-7")
 
 	t.Run("check default node group target size", func(t *testing.T) {
-		targetSize, err := ng.TargetSize()
+		targetSize, err := ng.TargetSize(context.Background())
 		assert.NoError(t, err)
 
 		assert.Equal(t, 3, targetSize)
@@ -230,22 +230,22 @@ func TestOVHCloudNodeGroup_IncreaseSize(t *testing.T) {
 	t.Run("check increase size below max size", func(t *testing.T) {
 		ng.mockCallUpdateNodePool(4, nil)
 
-		err := ng.IncreaseSize(1)
+		err := ng.IncreaseSize(context.Background(), 1)
 		assert.NoError(t, err)
 
-		targetSize, err := ng.TargetSize()
+		targetSize, err := ng.TargetSize(context.Background())
 		assert.NoError(t, err)
 
 		assert.Equal(t, 4, targetSize)
 	})
 
 	t.Run("check increase size above max size", func(t *testing.T) {
-		err := ng.IncreaseSize(5)
+		err := ng.IncreaseSize(context.Background(), 5)
 		assert.Error(t, err)
 	})
 
 	t.Run("check increase size with negative delta", func(t *testing.T) {
-		err := ng.IncreaseSize(-1)
+		err := ng.IncreaseSize(context.Background(), -1)
 		assert.Error(t, err)
 	})
 }
@@ -256,7 +256,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 	t.Run("check delete nodes above min size", func(t *testing.T) {
 		ng.mockCallUpdateNodePool(2, []string{"openstack:///instance-1"})
 
-		err := ng.DeleteNodes([]*v1.Node{
+		err := ng.DeleteNodes(context.Background(), []*v1.Node{
 			{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "node-1",
@@ -271,7 +271,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		targetSize, err := ng.TargetSize()
+		targetSize, err := ng.TargetSize(context.Background())
 		assert.NoError(t, err)
 
 		assert.Equal(t, 2, targetSize)
@@ -280,17 +280,17 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 	t.Run("check delete nodes empty nodes array", func(t *testing.T) {
 		ng.mockCallUpdateNodePool(2, []string{})
 
-		err := ng.DeleteNodes(nil)
+		err := ng.DeleteNodes(context.Background(), nil)
 		assert.NoError(t, err)
 
-		targetSize, err := ng.TargetSize()
+		targetSize, err := ng.TargetSize(context.Background())
 		assert.NoError(t, err)
 
 		assert.Equal(t, 2, targetSize)
 	})
 
 	t.Run("check delete nodes below min size", func(t *testing.T) {
-		err := ng.DeleteNodes([]*v1.Node{
+		err := ng.DeleteNodes(context.Background(), []*v1.Node{
 			{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "node-1",
@@ -322,7 +322,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 
 func TestOVHCloudNodeGroup_DecreaseTargetSize(t *testing.T) {
 	ng := newTestNodeGroup(t, "b2-7")
-	err := ng.DecreaseTargetSize(-1)
+	err := ng.DecreaseTargetSize(context.Background(), -1)
 	assert.Error(t, err)
 }
 
@@ -340,7 +340,7 @@ func TestOVHCloudNodeGroup_Debug(t *testing.T) {
 	ng := newTestNodeGroup(t, "b2-7")
 
 	t.Run("check node group debug print", func(t *testing.T) {
-		debug := ng.Debug()
+		debug := ng.Debug(context.Background())
 
 		assert.Equal(t, "pool-b2-7 (3:1:5)", debug)
 	})
@@ -352,7 +352,7 @@ func TestOVHCloudNodeGroup_Nodes(t *testing.T) {
 	t.Run("check nodes list in node group", func(t *testing.T) {
 		ng.mockCallListNodePoolNodes()
 
-		nodes, err := ng.Nodes()
+		nodes, err := ng.Nodes(context.Background())
 		assert.NoError(t, err)
 
 		assert.Equal(t, 3, len(nodes))
@@ -372,7 +372,7 @@ func TestOVHCloudNodeGroup_Nodes(t *testing.T) {
 func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 	t.Run("template for b2-7 flavor", func(t *testing.T) {
 		ng := newTestNodeGroup(t, "b2-7")
-		template, err := ng.TemplateNodeInfo()
+		template, err := ng.TemplateNodeInfo(context.Background())
 		assert.NoError(t, err)
 
 		node := template.Node()
@@ -392,7 +392,7 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 
 	t.Run("template for t1-45 flavor", func(t *testing.T) {
 		ng := newTestNodeGroup(t, "t1-45")
-		template, err := ng.TemplateNodeInfo()
+		template, err := ng.TemplateNodeInfo(context.Background())
 		assert.NoError(t, err)
 
 		node := template.Node()
@@ -431,7 +431,7 @@ func TestOVHCloudNodeGroup_TemplateNodeInfo(t *testing.T) {
 			},
 		}
 
-		template, err := ng.TemplateNodeInfo()
+		template, err := ng.TemplateNodeInfo(context.Background())
 		assert.NoError(t, err)
 
 		node := template.Node()
@@ -454,7 +454,7 @@ func TestOVHCloudNodeGroup_Exist(t *testing.T) {
 	ng := newTestNodeGroup(t, "b2-7")
 
 	t.Run("check exist is true", func(t *testing.T) {
-		exist := ng.Exist()
+		exist := ng.Exist(context.Background())
 
 		assert.True(t, exist)
 	})
@@ -466,16 +466,16 @@ func TestOVHCloudNodeGroup_Create(t *testing.T) {
 	t.Run("check create node group", func(t *testing.T) {
 		ng.mockCallCreateNodePool()
 
-		newGroup, err := ng.Create()
+		newGroup, err := ng.Create(context.Background())
 		assert.NoError(t, err)
 
-		targetSize, err := newGroup.TargetSize()
+		targetSize, err := newGroup.TargetSize(context.Background())
 		assert.NoError(t, err)
 
 		assert.Equal(t, "pool-b2-7", newGroup.Id())
 		assert.Equal(t, 3, targetSize)
-		assert.Equal(t, 1, newGroup.MinSize())
-		assert.Equal(t, 5, newGroup.MaxSize())
+		assert.Equal(t, 1, newGroup.MinSize(context.Background()))
+		assert.Equal(t, 5, newGroup.MaxSize(context.Background()))
 	})
 }
 
@@ -485,7 +485,7 @@ func TestOVHCloudNodeGroup_Delete(t *testing.T) {
 	t.Run("check delete node group", func(t *testing.T) {
 		ng.mockCallDeleteNodePool()
 
-		err := ng.Delete()
+		err := ng.Delete(context.Background())
 		assert.NoError(t, err)
 	})
 }
@@ -494,7 +494,7 @@ func TestOVHCloudNodeGroup_Autoprovisioned(t *testing.T) {
 	ng := newTestNodeGroup(t, "b2-7")
 
 	t.Run("check auto-provisioned is false", func(t *testing.T) {
-		provisioned := ng.Autoprovisioned()
+		provisioned := ng.Autoprovisioned(context.Background())
 		assert.False(t, provisioned)
 	})
 }
@@ -530,7 +530,7 @@ func TestOVHCloudNodeGroup_IsGpu(t *testing.T) {
 func TestOVHCloudNodeGroup_GetOptions(t *testing.T) {
 	t.Run("check get autoscaling options", func(t *testing.T) {
 		ng := newTestNodeGroup(t, "b2-7")
-		opts, err := ng.GetOptions(config.NodeGroupAutoscalingOptions{})
+		opts, err := ng.GetOptions(context.Background(), config.NodeGroupAutoscalingOptions{})
 
 		assert.NoError(t, err)
 		assert.Equal(t, fmt.Sprintf("%.1f", 3.2), fmt.Sprintf("%.1f", opts.ScaleDownUtilizationThreshold))
@@ -541,7 +541,7 @@ func TestOVHCloudNodeGroup_GetOptions(t *testing.T) {
 
 	t.Run("check get autoscaling options on gpu machine", func(t *testing.T) {
 		ng := newTestNodeGroup(t, "t1-45")
-		opts, err := ng.GetOptions(config.NodeGroupAutoscalingOptions{})
+		opts, err := ng.GetOptions(context.Background(), config.NodeGroupAutoscalingOptions{})
 
 		assert.NoError(t, err)
 		assert.Equal(t, float64(0), opts.ScaleDownUtilizationThreshold)

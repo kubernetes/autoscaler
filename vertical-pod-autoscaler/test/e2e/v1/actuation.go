@@ -34,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	restriction "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 
@@ -752,6 +753,135 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		podSet := MakePodSet(podList)
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, podSet)
+	})
+})
+
+var _ = ActuationSuiteE2eDescribe("Pods under VPA with CPUStartupBoost", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
+
+	hamsterListOptions := metav1.ListOptions{LabelSelector: "app=hamster"}
+
+	ginkgo.Describe("have CPU startup boost recommendation applied", func() {
+		ginkgo.BeforeEach(func() {
+			waitForVpaWebhookRegistration(f)
+		})
+
+		f.It("to a subset of containers in a pod", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+			ginkgo.By("Setting up a VPA CRD with CPUStartupBoost for one container")
+			container1Name := utils.GetHamsterContainerNameByIndex(0)
+			factor := int32(20)
+			vpaCRD := test.VerticalPodAutoscaler().
+				WithName("hamster-vpa").
+				WithNamespace(f.Namespace.Name).
+				WithTargetRef(utils.HamsterTargetRef).
+				WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+				WithContainer(container1Name).
+				WithContainerCPUStartupBoost(container1Name, vpa_types.FactorStartupBoostType, &factor, nil, 65).
+				AppendRecommendation(
+					test.Recommendation().
+						WithContainer(container1Name).
+						WithTarget("10m", "").
+						WithLowerBound("10m", "").
+						WithUpperBound("10m", "").
+						GetContainerResources()).
+				Get()
+
+			utils.InstallVPA(f, vpaCRD)
+
+			ginkgo.By("Setting up a hamster deployment with 2 containers")
+			d := utils.NewNHamstersDeployment(f, 2)
+			d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+				apiv1.ResourceCPU: ParseQuantityOrDie("10m"),
+			}
+			d.Spec.Template.Spec.Containers[1].Resources.Requests = apiv1.ResourceList{
+				apiv1.ResourceCPU: ParseQuantityOrDie("20m"),
+			}
+			utils.StartDeploymentPods(f, d)
+
+			ginkgo.By("Verifying only the targeted container is boosted")
+			// Boosted CPU is recommendation * factor (10m * 20 = 200m).
+			err := waitForResourceRequestsInRangeInPods(f, utils.PollTimeout, hamsterListOptions, []containerExpectation{
+				{Index: 0, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("200m"), UpperBound: ParseQuantityOrDie("200m")},
+				{Index: 1, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("20m"), UpperBound: ParseQuantityOrDie("20m")},
+			})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+			ginkgo.By("Verifying pods are unboosted in-place")
+			// Pods should be scaled back down to the recommendation in-place after
+			// they become Ready and StartupBoost.CPU.DurationSeconds has elapsed.
+			err = waitForResourceRequestsInRangeInPods(f, utils.PollTimeout, hamsterListOptions, []containerExpectation{
+				{Index: 0, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("10m"), UpperBound: ParseQuantityOrDie("10m")},
+				{Index: 1, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("20m"), UpperBound: ParseQuantityOrDie("20m")},
+			})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		})
+
+		f.It("with different durations for different containers in a pod", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+			ginkgo.By("Setting up a VPA CRD with CPUStartupBoost with different durations")
+			container1Name := utils.GetHamsterContainerNameByIndex(0)
+			container2Name := utils.GetHamsterContainerNameByIndex(1)
+			factor := int32(20)
+			vpaCRD := test.VerticalPodAutoscaler().
+				WithName("hamster-vpa").
+				WithNamespace(f.Namespace.Name).
+				WithTargetRef(utils.HamsterTargetRef).
+				WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).
+				WithContainer(container1Name).
+				WithContainer(container2Name).
+				WithContainerCPUStartupBoost(container1Name, vpa_types.FactorStartupBoostType, &factor, nil, 65).  // Short duration
+				WithContainerCPUStartupBoost(container2Name, vpa_types.FactorStartupBoostType, &factor, nil, 185). // Long duration
+				AppendRecommendation(
+					test.Recommendation().
+						WithContainer(container1Name).
+						WithTarget("10m", "").
+						WithLowerBound("10m", "").
+						WithUpperBound("10m", "").
+						GetContainerResources()).
+				AppendRecommendation(
+					test.Recommendation().
+						WithContainer(container2Name).
+						WithTarget("20m", "").
+						WithLowerBound("20m", "").
+						WithUpperBound("20m", "").
+						GetContainerResources()).
+				Get()
+
+			utils.InstallVPA(f, vpaCRD)
+
+			ginkgo.By("Setting up a hamster deployment with 2 containers")
+			d := utils.NewNHamstersDeployment(f, 2)
+			d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+				apiv1.ResourceCPU: ParseQuantityOrDie("10m"),
+			}
+			d.Spec.Template.Spec.Containers[1].Resources.Requests = apiv1.ResourceList{
+				apiv1.ResourceCPU: ParseQuantityOrDie("20m"),
+			}
+			utils.StartDeploymentPods(f, d)
+
+			ginkgo.By("Verifying both containers are initially boosted")
+			err := waitForResourceRequestsInRangeInPods(f, utils.PollTimeout, hamsterListOptions, []containerExpectation{
+				{Index: 0, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("200m"), UpperBound: ParseQuantityOrDie("200m")}, // 10m * 20
+				{Index: 1, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("400m"), UpperBound: ParseQuantityOrDie("400m")}, // 20m * 20
+			})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+			ginkgo.By("Verifying container 1 is unboosted first")
+			// Wait for the VPA updater to unboost container1 while container2 remains boosted.
+			err = waitForResourceRequestsInRangeInPods(f, utils.PollTimeout, hamsterListOptions, []containerExpectation{
+				{Index: 0, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("10m"), UpperBound: ParseQuantityOrDie("10m")},   // Unboosted
+				{Index: 1, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("400m"), UpperBound: ParseQuantityOrDie("400m")}, // Still boosted
+			})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+			ginkgo.By("Verifying container 2 is unboosted later")
+			// At some point when duration of container2 passes, both containers will be unboosted.
+			err = waitForResourceRequestsInRangeInPods(f, utils.PollTimeout, hamsterListOptions, []containerExpectation{
+				{Index: 0, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("10m"), UpperBound: ParseQuantityOrDie("10m")},
+				{Index: 1, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("20m"), UpperBound: ParseQuantityOrDie("20m")},
+			})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		})
 	})
 })
 

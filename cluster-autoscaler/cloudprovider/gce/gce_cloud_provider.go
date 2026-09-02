@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -76,7 +77,7 @@ func BuildGceCloudProvider(gceManager GceManager, resourceLimiter *cloudprovider
 }
 
 // Cleanup cleans up all resources before the cloud provider is removed
-func (gce *GceCloudProvider) Cleanup() error {
+func (gce *GceCloudProvider) Cleanup(ctx context.Context) error {
 	gce.gceManager.Cleanup()
 	return nil
 }
@@ -87,19 +88,19 @@ func (gce *GceCloudProvider) Name() string {
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (gce *GceCloudProvider) GPULabel() string {
+func (gce *GceCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
-func (gce *GceCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (gce *GceCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil. If node has GPU attached using DRA - populates the according field in GpuConfig
-func (gce *GceCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	gpuConfig := gpu.GetNodeGPUFromCloudProvider(gce, node)
+func (gce *GceCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	gpuConfig := gpu.GetNodeGPUFromCloudProvider(ctx, gce, node)
 
 	// If GPU devices are exposed using DRA - extended resource
 	// won't be present in the node alloctable or capacity
@@ -114,7 +115,7 @@ func (gce *GceCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.G
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (gce *GceCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	migs := gce.gceManager.GetMigs()
 	result := make([]cloudprovider.NodeGroup, 0, len(migs))
 	for _, mig := range migs {
@@ -124,13 +125,14 @@ func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (gce *GceCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	logger := klog.FromContext(ctx)
 	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		klog.V(6).Infof("Node %v has unrecognized providerId: %v", node.Name, node.Spec.ProviderID)
 		return nil, nil
 	}
-	mig, err := gce.gceManager.GetMigForInstance(ref)
+	mig, err := gce.gceManager.GetMigForInstance(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -141,29 +143,29 @@ func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (gce *GceCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (gce *GceCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (gce *GceCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (gce *GceCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return gce.pricingModel, nil
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
-func (gce *GceCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (gce *GceCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (gce *GceCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (gce *GceCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (gce *GceCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	resourceLimiter, err := gce.gceManager.GetResourceLimiter()
 	if err != nil {
 		return nil, err
@@ -176,8 +178,8 @@ func (gce *GceCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimite
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (gce *GceCloudProvider) Refresh() error {
-	return gce.gceManager.Refresh()
+func (gce *GceCloudProvider) Refresh(ctx context.Context) error {
+	return gce.gceManager.Refresh(ctx)
 }
 
 // GceRef contains s reference to some entity in GCE world.
@@ -244,54 +246,54 @@ func (mig *gceMig) IsStable() (bool, error) {
 }
 
 // MaxSize returns maximum size of the node group.
-func (mig *gceMig) MaxSize() int {
+func (mig *gceMig) MaxSize(ctx context.Context) int {
 	return mig.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (mig *gceMig) MinSize() int {
+func (mig *gceMig) MinSize(ctx context.Context) int {
 	return mig.minSize
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (mig *gceMig) TargetSize() (int, error) {
-	size, err := mig.gceManager.GetMigSize(mig)
+func (mig *gceMig) TargetSize(ctx context.Context) (int, error) {
+	size, err := mig.gceManager.GetMigSize(ctx, mig)
 	return int(size), err
 }
 
 // IncreaseSize increases Mig size
-func (mig *gceMig) IncreaseSize(delta int) error {
+func (mig *gceMig) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
-	size, err := mig.gceManager.GetMigSize(mig)
+	size, err := mig.gceManager.GetMigSize(ctx, mig)
 	if err != nil {
 		return err
 	}
-	if int(size)+delta > mig.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, mig.MaxSize())
+	if int(size)+delta > mig.MaxSize(ctx) {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, mig.MaxSize(ctx))
 	}
-	return mig.gceManager.CreateInstances(mig, int64(delta))
+	return mig.gceManager.CreateInstances(ctx, mig, int64(delta))
 }
 
 // AtomicIncreaseSize is not implemented.
-func (mig *gceMig) AtomicIncreaseSize(delta int) error {
+func (mig *gceMig) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
-func (mig *gceMig) DecreaseTargetSize(delta int) error {
+func (mig *gceMig) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
-	size, err := mig.gceManager.GetMigSize(mig)
+	size, err := mig.gceManager.GetMigSize(ctx, mig)
 	if err != nil {
 		return err
 	}
-	nodes, err := mig.gceManager.GetMigNodes(mig)
+	nodes, err := mig.gceManager.GetMigNodes(ctx, mig)
 	if err != nil {
 		return err
 	}
@@ -299,16 +301,16 @@ func (mig *gceMig) DecreaseTargetSize(delta int) error {
 		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
 			size, delta, len(nodes))
 	}
-	return mig.gceManager.SetMigSize(mig, size+int64(delta))
+	return mig.gceManager.SetMigSize(ctx, mig, size+int64(delta))
 }
 
 // Belongs returns true if the given node belongs to the NodeGroup.
-func (mig *gceMig) Belongs(node *apiv1.Node) (bool, error) {
+func (mig *gceMig) Belongs(ctx context.Context, node *apiv1.Node) (bool, error) {
 	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return false, err
 	}
-	targetMig, err := mig.gceManager.GetMigForInstance(ref)
+	targetMig, err := mig.gceManager.GetMigForInstance(ctx, ref)
 	if err != nil {
 		return false, err
 	}
@@ -322,23 +324,23 @@ func (mig *gceMig) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (mig *gceMig) DeleteNodes(nodes []*apiv1.Node) error {
-	size, err := mig.gceManager.GetMigSize(mig)
+func (mig *gceMig) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	size, err := mig.gceManager.GetMigSize(ctx, mig)
 	if err != nil {
 		return err
 	}
-	if int(size) <= mig.MinSize() {
+	if int(size) <= mig.MinSize(ctx) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
-	return mig.ForceDeleteNodes(nodes)
+	return mig.ForceDeleteNodes(ctx, nodes)
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (mig *gceMig) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (mig *gceMig) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	refs := make([]GceRef, 0, len(nodes))
 	for _, node := range nodes {
 
-		belongs, err := mig.Belongs(node)
+		belongs, err := mig.Belongs(ctx, node)
 		if err != nil {
 			return err
 		}
@@ -351,7 +353,7 @@ func (mig *gceMig) ForceDeleteNodes(nodes []*apiv1.Node) error {
 		}
 		refs = append(refs, gceref)
 	}
-	return mig.gceManager.DeleteInstances(refs)
+	return mig.gceManager.DeleteInstances(ctx, refs)
 }
 
 // Id returns mig url.
@@ -360,13 +362,13 @@ func (mig *gceMig) Id() string {
 }
 
 // Debug returns a debug string for the Mig.
-func (mig *gceMig) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", mig.Id(), mig.MinSize(), mig.MaxSize())
+func (mig *gceMig) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", mig.Id(), mig.MinSize(ctx), mig.MaxSize(ctx))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (mig *gceMig) Nodes() ([]cloudprovider.Instance, error) {
-	gceInstances, err := mig.gceManager.GetMigNodes(mig)
+func (mig *gceMig) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
+	gceInstances, err := mig.gceManager.GetMigNodes(ctx, mig)
 	if err != nil {
 		return nil, err
 	}
@@ -378,34 +380,34 @@ func (mig *gceMig) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // Exist checks if the node group really exists on the cloud provider side.
-func (mig *gceMig) Exist() bool {
+func (mig *gceMig) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (mig *gceMig) Create() (cloudprovider.NodeGroup, error) {
+func (mig *gceMig) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
-func (mig *gceMig) Delete() error {
+func (mig *gceMig) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (mig *gceMig) Autoprovisioned() bool {
+func (mig *gceMig) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (mig *gceMig) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return mig.gceManager.GetMigOptions(mig, defaults), nil
+func (mig *gceMig) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return mig.gceManager.GetMigOptions(ctx, mig, defaults), nil
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (mig *gceMig) TemplateNodeInfo() (*framework.NodeInfo, error) {
-	node, err := mig.gceManager.GetMigTemplateNode(mig)
+func (mig *gceMig) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
+	node, err := mig.gceManager.GetMigTemplateNode(ctx, mig)
 	if err != nil {
 		return nil, err
 	}

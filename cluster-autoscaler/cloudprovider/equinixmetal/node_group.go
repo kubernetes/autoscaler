@@ -17,6 +17,7 @@ limitations under the License.
 package equinixmetal
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -70,7 +71,7 @@ const (
 //
 // Takes precautions so that the cluster is not modified while in an UPDATE_IN_PROGRESS state.
 // Blocks until the cluster has reached UPDATE_COMPLETE.
-func (ng *equinixMetalNodeGroup) IncreaseSize(delta int) error {
+func (ng *equinixMetalNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	ng.clusterUpdateMutex.Lock()
 	defer ng.clusterUpdateMutex.Unlock()
 
@@ -82,8 +83,8 @@ func (ng *equinixMetalNodeGroup) IncreaseSize(delta int) error {
 	if err != nil {
 		return fmt.Errorf("could not check current nodegroup size: %v", err)
 	}
-	if size+delta > ng.MaxSize() {
-		return fmt.Errorf("size increase too large, desired:%d max:%d", size+delta, ng.MaxSize())
+	if size+delta > ng.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase too large, desired:%d max:%d", size+delta, ng.MaxSize(context.TODO()))
 	}
 
 	klog.V(0).Infof("Increasing size by %d, %d->%d", delta, *ng.targetSize, *ng.targetSize+delta)
@@ -98,7 +99,7 @@ func (ng *equinixMetalNodeGroup) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (ng *equinixMetalNodeGroup) AtomicIncreaseSize(delta int) error {
+func (ng *equinixMetalNodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -109,7 +110,7 @@ func (ng *equinixMetalNodeGroup) AtomicIncreaseSize(delta int) error {
 //   - simultaneous but separate calls from the autoscaler are batched together
 //   - does not allow scaling while the cluster is already in an UPDATE_IN_PROGRESS state
 //   - after scaling down, blocks until the cluster has reached UPDATE_COMPLETE
-func (ng *equinixMetalNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *equinixMetalNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	klog.V(1).Infof("Locking nodesToDeleteMutex")
 
 	// Batch simultaneous deletes on individual nodes
@@ -135,7 +136,7 @@ func (ng *equinixMetalNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	// Check that these nodes would not make the batch delete more nodes than the minimum would allow
-	if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize() {
+	if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize(context.TODO()) {
 		ng.nodesToDeleteMutex.Unlock()
 		klog.V(1).Infof("UnLocking nodesToDeleteMutex")
 		return fmt.Errorf("deleting nodes would take nodegroup below minimum size %d", ng.minSize)
@@ -187,8 +188,8 @@ func (ng *equinixMetalNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	klog.V(0).Infof("Deleting nodes: %v", nodeNames)
 
 	// Double check that the total number of batched nodes for deletion will not take the node group below its minimum size
-	if cachedSize-len(nodes) < ng.MinSize() {
-		return fmt.Errorf("size decrease too large, desired:%d min:%d", cachedSize-len(nodes), ng.MinSize())
+	if cachedSize-len(nodes) < ng.MinSize(context.TODO()) {
+		return fmt.Errorf("size decrease too large, desired:%d min:%d", cachedSize-len(nodes), ng.MinSize(context.TODO()))
 	}
 
 	var nodeRefs []NodeRef
@@ -227,12 +228,12 @@ func (ng *equinixMetalNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (ng *equinixMetalNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (ng *equinixMetalNodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // DecreaseTargetSize decreases the cluster node_count in Equinix Metal.
-func (ng *equinixMetalNodeGroup) DecreaseTargetSize(delta int) error {
+func (ng *equinixMetalNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
@@ -247,12 +248,12 @@ func (ng *equinixMetalNodeGroup) Id() string {
 }
 
 // Debug returns a string formatted with the node group's min, max and target sizes.
-func (ng *equinixMetalNodeGroup) Debug() string {
+func (ng *equinixMetalNodeGroup) Debug(ctx context.Context) string {
 	return fmt.Sprintf("%s min=%d max=%d target=%d", ng.id, ng.minSize, ng.maxSize, *ng.targetSize)
 }
 
 // Nodes returns a list of nodes that belong to this node group.
-func (ng *equinixMetalNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *equinixMetalNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	nodes, err := ng.equinixMetalManager.getNodes(ng.id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get nodes: %v", err)
@@ -265,48 +266,48 @@ func (ng *equinixMetalNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *equinixMetalNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ng *equinixMetalNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	return ng.equinixMetalManager.templateNodeInfo(ng.id)
 }
 
 // Exist returns if this node group exists.
 // Currently always returns true.
-func (ng *equinixMetalNodeGroup) Exist() bool {
+func (ng *equinixMetalNodeGroup) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (ng *equinixMetalNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ng *equinixMetalNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
-func (ng *equinixMetalNodeGroup) Delete() error {
+func (ng *equinixMetalNodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns if the nodegroup is autoprovisioned.
-func (ng *equinixMetalNodeGroup) Autoprovisioned() bool {
+func (ng *equinixMetalNodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // MaxSize returns the maximum allowed size of the node group.
-func (ng *equinixMetalNodeGroup) MaxSize() int {
+func (ng *equinixMetalNodeGroup) MaxSize(ctx context.Context) int {
 	return ng.maxSize
 }
 
 // MinSize returns the minimum allowed size of the node group.
-func (ng *equinixMetalNodeGroup) MinSize() int {
+func (ng *equinixMetalNodeGroup) MinSize(ctx context.Context) int {
 	return ng.minSize
 }
 
 // TargetSize returns the target size of the node group.
-func (ng *equinixMetalNodeGroup) TargetSize() (int, error) {
+func (ng *equinixMetalNodeGroup) TargetSize(ctx context.Context) (int, error) {
 	return *ng.targetSize, nil
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (ng *equinixMetalNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *equinixMetalNodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }

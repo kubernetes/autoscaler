@@ -17,6 +17,7 @@ limitations under the License.
 package huaweicloud
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -107,7 +108,7 @@ func (hcp *huaweicloudCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups managed by this cloud provider.
-func (hcp *huaweicloudCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (hcp *huaweicloudCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	hcp.lock.RLock()
 	defer hcp.lock.RUnlock()
 
@@ -123,7 +124,7 @@ func (hcp *huaweicloudCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (hcp *huaweicloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (hcp *huaweicloudCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	if _, found := node.ObjectMeta.Labels["node-role.kubernetes.io/master"]; found {
 		return nil, nil
 	}
@@ -145,57 +146,57 @@ func (hcp *huaweicloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpr
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (hcp *huaweicloudCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (hcp *huaweicloudCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available. Not implemented.
-func (hcp *huaweicloudCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (hcp *huaweicloudCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider. Not implemented.
-func (hcp *huaweicloudCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (hcp *huaweicloudCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created. Not implemented.
-func (hcp *huaweicloudCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (hcp *huaweicloudCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (hcp *huaweicloudCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (hcp *huaweicloudCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return hcp.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (hcp *huaweicloudCloudProvider) GPULabel() string {
+func (hcp *huaweicloudCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes returns all available GPU types cloud provider supports.
-func (hcp *huaweicloudCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (hcp *huaweicloudCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (hcp *huaweicloudCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(hcp, node)
+func (hcp *huaweicloudCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), hcp, node)
 }
 
 // Cleanup currently does nothing.
-func (hcp *huaweicloudCloudProvider) Cleanup() error {
+func (hcp *huaweicloudCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 // Currently does nothing.
-func (hcp *huaweicloudCloudProvider) Refresh() error {
+func (hcp *huaweicloudCloudProvider) Refresh(ctx context.Context) error {
 	return nil
 }
 

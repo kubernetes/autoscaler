@@ -17,6 +17,7 @@ limitations under the License.
 package civo
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -75,7 +76,7 @@ func (d *civoCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (d *civoCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (d *civoCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	nodeGroups := make([]cloudprovider.NodeGroup, len(d.manager.nodeGroups))
 	for i, ng := range d.manager.nodeGroups {
 		nodeGroups[i] = ng
@@ -86,14 +87,14 @@ func (d *civoCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (d *civoCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (d *civoCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	providerID := node.Spec.ProviderID
 	nodeID := toNodeID(providerID)
 
 	klog.V(5).Infof("checking nodegroup for node ID: %q", nodeID)
 	for _, group := range d.manager.nodeGroups {
 		klog.V(5).Infof("iterating over node group %q", group.Id())
-		nodes, err := group.Nodes()
+		nodes, err := group.Nodes(context.TODO())
 		if err != nil {
 			return nil, err
 		}
@@ -116,19 +117,19 @@ func (d *civoCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.No
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (d *civoCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (d *civoCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
-func (d *civoCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (d *civoCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from
 // the cloud provider. Implementation optional.
-func (d *civoCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (d *civoCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
@@ -136,7 +137,7 @@ func (d *civoCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // provided. The node group is not automatically created on the cloud provider
 // side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (d *civoCloudProvider) NewNodeGroup(
+func (d *civoCloudProvider) NewNodeGroup(ctx context.Context,
 	machineType string,
 	labels map[string]string,
 	systemLabels map[string]string,
@@ -148,36 +149,36 @@ func (d *civoCloudProvider) NewNodeGroup(
 
 // GetResourceLimiter returns struct containing limits (max, min) for
 // resources (cores, memory etc.).
-func (d *civoCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (d *civoCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return d.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (d *civoCloudProvider) GPULabel() string {
+func (d *civoCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (d *civoCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (d *civoCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (d *civoCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(d, node)
+func (d *civoCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), d, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed,
 // i.e. go routines etc.
-func (d *civoCloudProvider) Cleanup() error {
+func (d *civoCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically
 // update cloud provider state. In particular the list of node groups returned
 // by NodeGroups() can change as a result of CloudProvider.Refresh().
-func (d *civoCloudProvider) Refresh() error {
+func (d *civoCloudProvider) Refresh(ctx context.Context) error {
 	klog.V(4).Info("Refreshing node group cache")
 	return d.manager.Refresh()
 }
