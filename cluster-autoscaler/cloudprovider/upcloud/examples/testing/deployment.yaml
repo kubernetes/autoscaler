@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cluster-autoscale-test
+  labels:
+    name: cluster-autoscale-test
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: cluster-autoscale-test
+spec:
+  selector:
+    matchLabels:
+      run: nginx
+  replicas: 10
+  template:
+    metadata:
+      labels:
+        run: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: 500m
+            requests:
+              cpu: 200m
