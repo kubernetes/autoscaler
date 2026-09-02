@@ -70,11 +70,14 @@ PROJECT="$(echo ${PROVIDER_ID} | cut -d/ -f3)"
 ZONE="$(echo ${PROVIDER_ID} | cut -d/ -f4)"
 echo "Identified GCE Project: ${PROJECT}, Zone: ${ZONE}"
 
-# Find a worker node to guess the MIG name
-WORKER_NODE="$(kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name | grep -v -E 'master|control-plane' | head -n 1)"
-# MIG name is the worker node name without the last random segment
-MIG_NAME="$(echo ${WORKER_NODE} | sed 's/-[^-]*$//')"
-echo "Identified MIG name: ${MIG_NAME}"
+# Identify all distinct MIG names from worker nodes (or override via MIG_NAMES)
+if [[ -z "${MIG_NAMES:-}" ]]; then
+    WORKER_NODES="$(kubectl get nodes --no-headers -o custom-columns=NAME:.metadata.name | grep -v -E 'master|control-plane')"
+    MIG_NAMES=($(echo "${WORKER_NODES}" | sed 's/-[^-]*$//' | sort -u))
+else
+    IFS=',' read -r -a MIG_NAMES <<< "${MIG_NAMES}"
+fi
+echo "Identified MIG name(s): ${MIG_NAMES[*]}"
 
 # 3:6 limits are the defaults used in job configs
 MIN_NODES="${MIN_NODES:-3}"
@@ -82,17 +85,29 @@ MAX_NODES="${MAX_NODES:-6}"
 # Extra cluster-autoscaler flags.
 EXTRA_CA_FLAGS="${EXTRA_CA_FLAGS:-""}"
 
-# Construct the full URL as requested
-NODES_SPEC="${MIN_NODES}:${MAX_NODES}:https://www.googleapis.com/compute/v1/projects/${PROJECT}/zones/${ZONE}/instanceGroups/${MIG_NAME}"
-echo "Nodes spec: ${NODES_SPEC}"
+# Construct NODES_FLAGS list for all MIGs
+NODES_FLAGS=()
+for mig in "${MIG_NAMES[@]}"; do
+    NODES_FLAGS+=("--nodes=${MIN_NODES}:${MAX_NODES}:https://www.googleapis.com/compute/v1/projects/${PROJECT}/zones/${ZONE}/instanceGroups/${mig}")
+done
+echo "Configured node specs:"
+printf "  %s\n" "${NODES_FLAGS[@]}"
+
+# Publish discovered MIG names into a ConfigMap in kube-system so E2E test workers can discover them
+kubectl create configmap e2e-mig-config -n kube-system \
+    --from-literal=mig_names="$(IFS=,; echo "${MIG_NAMES[*]}")" \
+    --dry-run=client -o yaml | kubectl apply -f -
 
 sed -e "s|{{CA_IMAGE}}|${CA_IMAGE}|g" \
     -e "s|{{CONTROL_PLANE_NODE}}|${CONTROL_PLANE_NODE}|g" \
     -e "s|{{KUBERNETES_SERVICE_HOST}}|${KUBERNETES_SERVICE_HOST}|g" \
     -e "s|{{KUBERNETES_SERVICE_PORT}}|${KUBERNETES_SERVICE_PORT}|g" \
-    -e "s|{{NODES_SPEC}}|${NODES_SPEC}|g" \
     ${CA_ROOT}/hack/e2e/gce-deployment-template.yaml | while IFS= read -r line; do
-    if [[ "${line}" == *"{{EXTRA_CA_FLAGS}}"* ]]; then
+    if [[ "${line}" == *"--nodes={{NODES_SPEC}}"* ]]; then
+        for flag in "${NODES_FLAGS[@]}"; do
+            echo "            - ${flag}"
+        done
+    elif [[ "${line}" == *"{{EXTRA_CA_FLAGS}}"* ]]; then
         for flag in ${EXTRA_CA_FLAGS}; do
             echo "            - ${flag}"
         done

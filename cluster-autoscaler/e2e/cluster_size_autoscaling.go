@@ -20,6 +20,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -55,7 +57,7 @@ const (
 	defaultTimeout         = 3 * time.Minute
 	scaleUpTimeout         = 5 * time.Minute
 	scaleUpTriggerTimeout  = 2 * time.Minute
-	scaleDownTimeout       = 20 * time.Minute
+	scaleDownTimeout       = 6 * time.Minute // Reduced from 20m for moderate cooldown tuning (1m unneeded time)
 	podTimeout             = 2 * time.Minute
 	rcCreationRetryTimeout = 4 * time.Minute
 	rcCreationRetryDelay   = 20 * time.Second
@@ -96,13 +98,14 @@ const (
 // * scale-down-unneeded-time
 // * scale-down-delay-after-add
 
-var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.WithSerial(), func() {
+var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), func() {
 	f := framework.NewDefaultFramework("autoscaling")
 	f.NamespacePodSecurityLevel = admissionapi.LevelPrivileged
 	var c clientset.Interface
 	var nodeCountSet bool
 	var nodeCount int
 	var memAllocatableMb int
+	var targetMIG string
 
 	setupAutoscalingTest := func(ctx context.Context) {
 		c = f.ClientSet
@@ -113,32 +116,34 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 
 		framework.ExpectNoError(addKubeSystemPdbs(ctx, f))
 
+		targetMIG, _ = getTargetMIG(ctx, c)
+
 		var nodes *v1.NodeList
 
 		if !nodeCountSet {
-			nodes, err = e2enode.GetReadySchedulableNodes(ctx, c)
+			nodes, err = getReadySchedulableNodesForMIG(ctx, c, targetMIG)
 			framework.ExpectNoError(err)
 
 			// Guard the same number of schedulable nodes in every test case.
 			nodeCount = len(nodes.Items)
-			gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty(), "Initial cluster must have at least one schedulable node")
+			gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty(), fmt.Sprintf("Initial MIG %q must have at least one schedulable node", targetMIG))
 			nodeCountSet = true
-			ginkgo.By(fmt.Sprintf("Captured initial cluster size: %v", nodeCount))
+			ginkgo.By(fmt.Sprintf("Captured initial cluster size for MIG %q: %v", targetMIG, nodeCount))
 		} else {
-			ginkgo.By(fmt.Sprintf("Waiting for initial cluster size to be stable at %v ready schedulable nodes", nodeCount))
+			ginkgo.By(fmt.Sprintf("Waiting for initial cluster size to be stable at %v ready schedulable nodes for MIG %q", nodeCount, targetMIG))
 			nodes, err = waitForStableReadySchedulableNodeCount(ctx, c, nodeCount, scaleDownTimeout)
 			framework.ExpectNoError(err)
 		}
 
-		gomega.Expect(nodes.Items).To(gomega.HaveLen(nodeCount), "Cluster size should match the initial baseline size (test isolation failure)")
-		ginkgo.By(fmt.Sprintf("Initial number of schedulable nodes: %v", nodeCount))
+		gomega.Expect(nodes.Items).To(gomega.HaveLen(nodeCount), fmt.Sprintf("Cluster size for MIG %q should match the initial baseline size (test isolation failure)", targetMIG))
+		ginkgo.By(fmt.Sprintf("Initial number of schedulable nodes for MIG %q: %v", targetMIG, nodeCount))
 
 		mem := nodes.Items[0].Status.Allocatable[v1.ResourceMemory]
 		memAllocatableMb = int((&mem).Value() / 1024 / 1024)
 	}
 
 	cleanupAutoscalingTest := func(ctx context.Context) {
-		ginkgo.By("Restoring the state after test")
+		ginkgo.By(fmt.Sprintf("Restoring the state after test for MIG %q", targetMIG))
 		framework.ExpectNoError(WaitForClusterSizeFunc(ctx, c, func(size int) bool { return size == nodeCount }, scaleDownTimeout))
 		nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 		framework.ExpectNoError(err)
@@ -148,6 +153,9 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 		for start := time.Now(); time.Since(start) < makeSchedulableTimeout; time.Sleep(makeSchedulableDelay) {
 			var criticalAddonsOnlyErrorType *CriticalAddonsOnlyError
 			for _, n := range nodes.Items {
+				if !isNodeInMIG(&n, targetMIG) {
+					continue
+				}
 				err = makeNodeSchedulable(ctx, c, &n, true)
 				if err != nil && errors.As(err, &criticalAddonsOnlyErrorType) {
 					continue makeSchedulableLoop
@@ -229,7 +237,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 			gomega.Expect(status.timestamp.Add(freshStatusLimit)).To(gomega.BeTemporally(">=", time.Now()))
 			gomega.Expect(status.status).To(gomega.Equal(caNoScaleUpStatus))
 			gomega.Expect(status.ready).To(gomega.Equal(status.target))
-			nodes, err := e2enode.GetReadySchedulableNodes(ctx, f.ClientSet)
+			nodes, err := getReadySchedulableNodesForMIG(ctx, f.ClientSet, targetMIG)
 			framework.ExpectNoError(err)
 			gomega.Expect(nodes.Items).To(gomega.HaveLen(status.target + unmanagedNodes))
 		})
@@ -307,7 +315,7 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 			runDrainTest(ctx, f, c, nodeCount, f.Namespace.Name, 1, 0, func(increasedSize int) {
 				ginkgo.By("No nodes should be removed")
 				time.Sleep(scaleDownTimeout)
-				nodes, err := e2enode.GetReadySchedulableNodes(ctx, f.ClientSet)
+				nodes, err := getReadySchedulableNodesForMIG(ctx, f.ClientSet, targetMIG)
 				framework.ExpectNoError(err)
 				gomega.Expect(nodes.Items).To(gomega.HaveLen(increasedSize))
 			})
@@ -542,9 +550,10 @@ func runDrainTest(ctx context.Context, f *framework.Framework, c clientset.Inter
 	}.AsSelector().String()})
 	framework.ExpectNoError(err)
 
-	// Filter out tainted nodes (e.g. master)
+	// Filter out tainted nodes (e.g. master) and nodes outside target MIG
+	mig, _ := getTargetMIG(ctx, c)
 	e2enode.Filter(nodes, func(node v1.Node) bool {
-		return !isNodeTainted(&node)
+		return !isNodeTainted(&node) && isNodeInMIG(&node, mig)
 	})
 
 	// There should be only increasedCount nodes after filtration.
@@ -583,6 +592,10 @@ func runDrainTest(ctx context.Context, f *framework.Framework, c clientset.Inter
 func reserveMemory(ctx context.Context, f *framework.Framework, id string, replicas, megabytes int, expectRunning bool, timeout time.Duration, selector map[string]string, tolerations []v1.Toleration, priorityClassName, schedulerName string) func() error {
 	ginkgo.By(fmt.Sprintf("Running RC which reserves %v MB of memory", megabytes))
 	request := int64(1024 * 1024 * megabytes / replicas)
+	mig, _ := getTargetMIG(ctx, f.ClientSet)
+	if selector == nil && mig != "" && len(getAllMIGs(ctx, f.ClientSet)) > 1 {
+		selector = map[string]string{"cloud.google.com/gke-nodepool": mig}
+	}
 	config := &testutils.RCConfig{
 		Client:            f.ClientSet,
 		Name:              id,
@@ -638,6 +651,7 @@ func WaitForClusterSizeFunc(ctx context.Context, c clientset.Interface, sizeFunc
 
 // WaitForClusterSizeFuncWithUnready waits until the cluster size matches the given function and assumes some unready nodes.
 func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interface, sizeFunc func(int) bool, timeout time.Duration, expectedUnready int) error {
+	mig, _ := getTargetMIG(ctx, c)
 	for start := time.Now(); time.Since(start) < timeout && ctx.Err() == nil; time.Sleep(20 * time.Second) {
 		nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{FieldSelector: fields.Set{
 			"spec.unschedulable": "false",
@@ -647,9 +661,9 @@ func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interfac
 			continue
 		}
 
-		// Filter out tainted nodes (e.g. master)
+		// Filter out tainted nodes (e.g. master) and nodes outside target MIG
 		e2enode.Filter(nodes, func(node v1.Node) bool {
-			return !isNodeTainted(&node)
+			return !isNodeTainted(&node) && isNodeInMIG(&node, mig)
 		})
 
 		numNodes := len(nodes.Items)
@@ -661,23 +675,24 @@ func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interfac
 		numReady := len(nodes.Items)
 
 		if numNodes == numReady+expectedUnready && sizeFunc(numNodes) {
-			klog.Infof("Cluster has reached the desired size. Current size %d, not ready nodes %d", numNodes, numNodes-numReady)
+			klog.Infof("MIG %q has reached the desired size. Current size %d, not ready nodes %d", mig, numNodes, numNodes-numReady)
 			return nil
 		}
-		klog.Infof("Waiting for cluster with func, current size %d, not ready nodes %d", numNodes, numNodes-numReady)
+		klog.Infof("Waiting for MIG %q with func, current size %d, not ready nodes %d", mig, numNodes, numNodes-numReady)
 	}
-	return fmt.Errorf("timeout waiting %v for appropriate cluster size", timeout)
+	return fmt.Errorf("timeout waiting %v for appropriate cluster size in MIG %q", timeout, mig)
 }
 
 func waitForStableReadySchedulableNodeCount(ctx context.Context, c clientset.Interface, expected int, timeout time.Duration) (*v1.NodeList, error) {
+	mig, _ := getTargetMIG(ctx, c)
 	var nodes *v1.NodeList
 	var stableSince time.Time
 
 	err := wait.PollUntilContextTimeout(ctx, nodeCountPollInterval, timeout, true, func(ctx context.Context) (bool, error) {
-		currentNodes, err := e2enode.GetReadySchedulableNodes(ctx, c)
+		currentNodes, err := getReadySchedulableNodesForMIG(ctx, c, mig)
 		if err != nil {
 			stableSince = time.Time{}
-			klog.Warningf("Failed to list ready schedulable nodes: %v", err)
+			klog.Warningf("Failed to list ready schedulable nodes for MIG %q: %v", mig, err)
 			return false, nil
 		}
 
@@ -685,25 +700,134 @@ func waitForStableReadySchedulableNodeCount(ctx context.Context, c clientset.Int
 		current := len(currentNodes.Items)
 		if current != expected {
 			stableSince = time.Time{}
-			klog.Infof("Waiting for %d ready schedulable nodes, current size %d", expected, current)
+			klog.Infof("Waiting for %d ready schedulable nodes in MIG %q, current size %d", expected, mig, current)
 			return false, nil
 		}
 
 		if stableSince.IsZero() {
 			stableSince = time.Now()
-			klog.Infof("Cluster has %d ready schedulable nodes, waiting %s for stability", expected, nodeCountStableFor)
+			klog.Infof("MIG %q has %d ready schedulable nodes, waiting %s for stability", mig, expected, nodeCountStableFor)
 			return false, nil
 		}
 
 		if time.Since(stableSince) >= nodeCountStableFor {
-			klog.Infof("Cluster stayed at %d ready schedulable nodes for %s", expected, nodeCountStableFor)
+			klog.Infof("MIG %q stayed at %d ready schedulable nodes for %s", mig, expected, nodeCountStableFor)
 			return true, nil
 		}
 		return false, nil
 	})
 	if err != nil {
-		return nodes, fmt.Errorf("timeout waiting %v for %d stable ready schedulable nodes", timeout, expected)
+		return nodes, fmt.Errorf("timeout waiting %v for %d stable ready schedulable nodes in MIG %q", timeout, expected, mig)
 	}
+	return nodes, nil
+}
+
+// getTargetMIG returns the MIG name assigned to the current Ginkgo parallel process.
+// If multiple MIGs exist (from E2E_MIG_NAMES env, e2e-mig-config ConfigMap, or discovered from worker nodes),
+// it partitions them round-robin based on GinkgoParallelProcess().
+func getTargetMIG(ctx context.Context, c clientset.Interface) (string, error) {
+	migs := getAllMIGs(ctx, c)
+	if len(migs) == 0 {
+		return "", nil
+	}
+	procIdx := ginkgo.GinkgoParallelProcess() - 1
+	if procIdx < 0 {
+		procIdx = 0
+	}
+	return migs[procIdx%len(migs)], nil
+}
+
+// getAllMIGs discovers all configured MIGs in the cluster.
+func getAllMIGs(ctx context.Context, c clientset.Interface) []string {
+	// 1. Check E2E_MIG_NAMES env var
+	if env := os.Getenv("E2E_MIG_NAMES"); env != "" {
+		parts := strings.Split(env, ",")
+		var res []string
+		for _, p := range parts {
+			if s := strings.TrimSpace(p); s != "" {
+				res = append(res, s)
+			}
+		}
+		if len(res) > 0 {
+			return res
+		}
+	}
+
+	// 2. Check e2e-mig-config ConfigMap in kube-system
+	if c != nil {
+		cm, err := c.CoreV1().ConfigMaps("kube-system").Get(ctx, "e2e-mig-config", metav1.GetOptions{})
+		if err == nil && cm.Data != nil && cm.Data["mig_names"] != "" {
+			parts := strings.Split(cm.Data["mig_names"], ",")
+			var res []string
+			for _, p := range parts {
+				if s := strings.TrimSpace(p); s != "" {
+					res = append(res, s)
+				}
+			}
+			if len(res) > 0 {
+				return res
+			}
+		}
+
+		// 3. Discover from worker nodes by stripping the last hyphen segment
+		nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+		if err == nil {
+			migSet := make(map[string]struct{})
+			for _, n := range nodes.Items {
+				if isNodeTainted(&n) {
+					continue
+				}
+				lastHyphen := strings.LastIndex(n.Name, "-")
+				if lastHyphen > 0 {
+					migSet[n.Name[:lastHyphen]] = struct{}{}
+				}
+			}
+			var res []string
+			for m := range migSet {
+				res = append(res, m)
+			}
+			sort.Strings(res)
+			if len(res) > 0 {
+				return res
+			}
+		}
+	}
+	return nil
+}
+
+// isNodeInMIG checks whether a node belongs to the target MIG.
+// If targetMIG is empty, all nodes match.
+func isNodeInMIG(node *v1.Node, targetMIG string) bool {
+	if targetMIG == "" {
+		return true
+	}
+	// GCE MIG nodes have names starting with <mig-name>-
+	if strings.HasPrefix(node.Name, targetMIG+"-") || node.Name == targetMIG {
+		return true
+	}
+	if strings.Contains(node.Spec.ProviderID, "/"+targetMIG+"/") || strings.Contains(node.Spec.ProviderID, "/"+targetMIG+"-") {
+		return true
+	}
+	for _, v := range node.Labels {
+		if v == targetMIG {
+			return true
+		}
+	}
+	return false
+}
+
+// getReadySchedulableNodesForMIG returns all ready schedulable nodes for the specified MIG.
+func getReadySchedulableNodesForMIG(ctx context.Context, c clientset.Interface, mig string) (*v1.NodeList, error) {
+	nodes, err := e2enode.GetReadySchedulableNodes(ctx, c)
+	if err != nil {
+		return nil, err
+	}
+	if mig == "" {
+		return nodes, nil
+	}
+	e2enode.Filter(nodes, func(node v1.Node) bool {
+		return isNodeInMIG(&node, mig)
+	})
 	return nodes, nil
 }
 
