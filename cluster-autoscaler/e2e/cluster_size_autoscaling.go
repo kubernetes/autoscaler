@@ -1293,7 +1293,7 @@ func addKubeSystemPdbs(ctx context.Context, f *framework.Framework) error {
 		for _, newPdbName := range newPdbs {
 			ginkgo.By(fmt.Sprintf("Delete PodDisruptionBudget %v", newPdbName))
 			err := f.ClientSet.PolicyV1().PodDisruptionBudgets("kube-system").Delete(ctx, newPdbName, metav1.DeleteOptions{})
-			if err != nil {
+			if err != nil && !apierrors.IsNotFound(err) {
 				// log error, but attempt to remove other pdbs
 				klog.Errorf("Failed to delete PodDisruptionBudget %v, err: %v", newPdbName, err)
 				finalErr = err
@@ -1337,9 +1337,9 @@ func addKubeSystemPdbs(ctx context.Context, f *framework.Framework) error {
 			},
 		}
 		_, err := f.ClientSet.PolicyV1().PodDisruptionBudgets("kube-system").Create(ctx, pdb, metav1.CreateOptions{})
-		newPdbs = append(newPdbs, pdbName)
-
-		if err != nil {
+		if err == nil {
+			newPdbs = append(newPdbs, pdbName)
+		} else if !apierrors.IsAlreadyExists(err) {
 			return err
 		}
 	}
@@ -1364,7 +1364,7 @@ func createPriorityClasses(ctx context.Context, f *framework.Framework) {
 	ginkgo.DeferCleanup(func(ctx context.Context) {
 		for className := range priorityClasses {
 			err := f.ClientSet.SchedulingV1().PriorityClasses().Delete(ctx, className, metav1.DeleteOptions{})
-			if err != nil {
+			if err != nil && !apierrors.IsNotFound(err) {
 				klog.Errorf("Error deleting priority class: %v", err)
 			}
 		}
