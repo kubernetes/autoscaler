@@ -49,7 +49,7 @@ func TestDeletePastMinSize(t *testing.T) {
 		}
 		nodesToDelete = append(nodesToDelete, node)
 	}
-	err := np.DeleteNodes(nodesToDelete)
+	err := np.DeleteNodes(context.Background(), nodesToDelete)
 	if err == nil {
 		t.Fatalf("expected to have an error because node pool is at the min size")
 	}
@@ -92,7 +92,7 @@ func TestDeleteCreateErrorNodeWithoutInstanceIDDecreasesTargetSize(t *testing.T)
 		},
 	}
 
-	if err := np.DeleteNodes([]*apiv1.Node{nodeWithoutInstanceID}); err != nil {
+	if err := np.DeleteNodes(context.Background(), []*apiv1.Node{nodeWithoutInstanceID}); err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 	if manager.deleteInstancesCalled != 0 {
@@ -172,7 +172,7 @@ func (m *mockManager) GetNodePoolSize(np NodePool) (int, error) {
 	if m.size != 0 {
 		return m.size, nil
 	}
-	return np.MinSize() + 1, nil
+	return np.MinSize(context.Background()) + 1, nil
 }
 
 func (m *mockManager) SetNodePoolSize(np NodePool, size int) error {

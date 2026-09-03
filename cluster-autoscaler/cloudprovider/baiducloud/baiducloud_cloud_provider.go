@@ -17,6 +17,7 @@ limitations under the License.
 package baiducloud
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -164,7 +165,7 @@ func (baiducloud *baiducloudCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (baiducloud *baiducloudCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (baiducloud *baiducloudCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	result := make([]cloudprovider.NodeGroup, 0, len(baiducloud.asgs))
 	for _, asg := range baiducloud.asgs {
 		result = append(result, asg)
@@ -173,25 +174,25 @@ func (baiducloud *baiducloudCloudProvider) NodeGroups() []cloudprovider.NodeGrou
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (baiducloud *baiducloudCloudProvider) GPULabel() string {
+func (baiducloud *baiducloudCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes returns all available GPU types cloud provider supports.
-func (baiducloud *baiducloudCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (baiducloud *baiducloudCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (baiducloud *baiducloudCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(baiducloud, node)
+func (baiducloud *baiducloudCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), baiducloud, node)
 }
 
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (baiducloud *baiducloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (baiducloud *baiducloudCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	splitted := strings.Split(node.Spec.ProviderID, "//")
 	if len(splitted) != 2 {
 		return nil, fmt.Errorf("parse ProviderID failed: %v", node.Spec.ProviderID)
@@ -207,43 +208,43 @@ func (baiducloud *baiducloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (c
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (baiducloud *baiducloudCloudProvider) HasInstance(*apiv1.Node) (bool, error) {
+func (baiducloud *baiducloudCloudProvider) HasInstance(context.Context, *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (baiducloud *baiducloudCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (baiducloud *baiducloudCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (baiducloud *baiducloudCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (baiducloud *baiducloudCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (baiducloud *baiducloudCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (baiducloud *baiducloudCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (baiducloud *baiducloudCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (baiducloud *baiducloudCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return baiducloud.resourceLimiter, nil
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (baiducloud *baiducloudCloudProvider) Cleanup() error {
+func (baiducloud *baiducloudCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (baiducloud *baiducloudCloudProvider) Refresh() error {
+func (baiducloud *baiducloudCloudProvider) Refresh(ctx context.Context) error {
 	return nil
 }
 
@@ -262,12 +263,12 @@ type Asg struct {
 }
 
 // MaxSize returns maximum size of the node group.
-func (asg *Asg) MaxSize() int {
+func (asg *Asg) MaxSize(ctx context.Context) int {
 	return asg.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (asg *Asg) MinSize() int {
+func (asg *Asg) MinSize(ctx context.Context) int {
 	return asg.minSize
 }
 
@@ -275,7 +276,7 @@ func (asg *Asg) MinSize() int {
 // number of nodes in Kubernetes is different at the moment but should be equal
 // to Size() once everything stabilizes (new nodes finish startup and registration or
 // removed nodes are deleted completely). Implementation required.
-func (asg *Asg) TargetSize() (int, error) {
+func (asg *Asg) TargetSize(ctx context.Context) (int, error) {
 	size, err := asg.baiducloudManager.GetAsgSize(asg)
 	return int(size), err
 }
@@ -283,7 +284,7 @@ func (asg *Asg) TargetSize() (int, error) {
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
-func (asg *Asg) IncreaseSize(delta int) error {
+func (asg *Asg) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -291,26 +292,26 @@ func (asg *Asg) IncreaseSize(delta int) error {
 	if err != nil {
 		return err
 	}
-	if int(size)+delta > asg.MaxSize() {
-		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, asg.MaxSize())
+	if int(size)+delta > asg.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, asg.MaxSize(context.TODO()))
 	}
 	return asg.baiducloudManager.ScaleUpCluster(delta, asg.Name)
 }
 
 // AtomicIncreaseSize is not implemented.
-func (asg *Asg) AtomicIncreaseSize(delta int) error {
+func (asg *Asg) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
-func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *Asg) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	size, err := asg.baiducloudManager.GetAsgSize(asg)
 	if err != nil {
 		return err
 	}
-	if int(size) <= asg.MinSize() {
+	if int(size) <= asg.MinSize(context.TODO()) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 	nodeID := make([]string, len(nodes))
@@ -335,7 +336,7 @@ func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (asg *Asg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (asg *Asg) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -359,7 +360,7 @@ func (asg *Asg) Belongs(instanceID string) (bool, error) {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
-func (asg *Asg) DecreaseTargetSize(delta int) error {
+func (asg *Asg) DecreaseTargetSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -369,14 +370,14 @@ func (asg *Asg) Id() string {
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (asg *Asg) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", asg.Id(), asg.MinSize(), asg.MaxSize())
+func (asg *Asg) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", asg.Id(), asg.MinSize(context.TODO()), asg.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
 // It is required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
-func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
+func (asg *Asg) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	asgNodes, err := asg.baiducloudManager.GetAsgNodes(asg)
 	if err != nil {
 		return nil, err
@@ -395,7 +396,7 @@ func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (asg *Asg) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (asg *Asg) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	template, err := asg.baiducloudManager.getAsgTemplate(asg.Name)
 	if err != nil {
 		return nil, err
@@ -410,30 +411,30 @@ func (asg *Asg) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one. Implementation required.
-func (asg *Asg) Exist() bool {
+func (asg *Asg) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side. Implementation optional.
-func (asg *Asg) Create() (cloudprovider.NodeGroup, error) {
+func (asg *Asg) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 // Implementation optional.
-func (asg *Asg) Delete() error {
+func (asg *Asg) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
 // was created by CA and can be deleted when scaled to 0.
-func (asg *Asg) Autoprovisioned() bool {
+func (asg *Asg) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (asg *Asg) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (asg *Asg) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }

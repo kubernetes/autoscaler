@@ -17,6 +17,7 @@ limitations under the License.
 package utho
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -65,7 +66,7 @@ func (u *uthoCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (u *uthoCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (u *uthoCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	nodeGroups := make([]cloudprovider.NodeGroup, len(u.manager.nodeGroups))
 	for i, ng := range u.manager.nodeGroups {
 		nodeGroups[i] = ng
@@ -76,7 +77,7 @@ func (u *uthoCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (u *uthoCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (u *uthoCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	rawID := node.Spec.ProviderID
 	if rawID == "" {
 		if lbl, exists := node.Labels["node_id"]; exists {
@@ -93,7 +94,7 @@ func (u *uthoCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.No
 
 	for _, group := range u.manager.nodeGroups {
 		klog.V(5).Infof("iterating over node group %q", group.Id())
-		nodes, err := group.Nodes()
+		nodes, err := group.Nodes(context.TODO())
 		if err != nil {
 			return nil, fmt.Errorf("failed to list nodes for group %q: %w", group.Id(), err)
 		}
@@ -114,19 +115,19 @@ func (u *uthoCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.No
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (u *uthoCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (u *uthoCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (u *uthoCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (u *uthoCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (u *uthoCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (u *uthoCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
@@ -134,7 +135,7 @@ func (u *uthoCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // provided. The node group is not automatically created on the cloud provider
 // side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (u *uthoCloudProvider) NewNodeGroup(
+func (u *uthoCloudProvider) NewNodeGroup(ctx context.Context,
 	machineType string,
 	labels map[string]string,
 	systemLabels map[string]string,
@@ -145,34 +146,34 @@ func (u *uthoCloudProvider) NewNodeGroup(
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (u *uthoCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (u *uthoCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return u.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (u *uthoCloudProvider) GPULabel() string {
+func (u *uthoCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (u *uthoCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (u *uthoCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (u *uthoCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(u, node)
+func (u *uthoCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), u, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (u *uthoCloudProvider) Cleanup() error {
+func (u *uthoCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (u *uthoCloudProvider) Refresh() error {
+func (u *uthoCloudProvider) Refresh(ctx context.Context) error {
 	klog.V(4).Info("Refreshing node group cache")
 	return u.manager.Refresh()
 }

@@ -205,7 +205,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_Ins
 			nil,
 		)
 
-	nodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
+	nodeGroup, err := ts.p.NodeGroupForNode(context.Background(), &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(testInstanceID),
 		},
@@ -276,7 +276,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_SKS
 			nil,
 		)
 
-	nodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
+	nodeGroup, err := ts.p.NodeGroupForNode(context.Background(), &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(testInstanceID),
 		},
@@ -303,7 +303,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_Sta
 			nil,
 		)
 
-	nodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
+	nodeGroup, err := ts.p.NodeGroupForNode(context.Background(), &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(testInstanceID),
 		},
@@ -367,7 +367,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroups() {
 			nil,
 		)
 
-	instancePoolNodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
+	instancePoolNodeGroup, err := ts.p.NodeGroupForNode(context.Background(), &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(instancePoolInstanceID),
 		},
@@ -425,7 +425,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroups() {
 			nil,
 		)
 
-	sksNodepoolNodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
+	sksNodepoolNodeGroup, err := ts.p.NodeGroupForNode(context.Background(), &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(sksNodepoolInstanceID),
 		},
@@ -440,7 +440,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroups() {
 
 	// ---------------------------------------------------------------
 
-	ts.Require().Len(ts.p.NodeGroups(), 2)
+	ts.Require().Len(ts.p.NodeGroups(context.Background()), 2)
 }
 
 func TestSuiteExoscaleCloudProvider(t *testing.T) {

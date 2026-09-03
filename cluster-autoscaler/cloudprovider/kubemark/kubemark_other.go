@@ -66,67 +66,67 @@ func BuildKubemarkCloudProvider(kubemarkController interface{}, specs []string, 
 func (kubemark *KubemarkCloudProvider) Name() string { return "" }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (kubemark *KubemarkCloudProvider) GPULabel() string {
+func (kubemark *KubemarkCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
-func (kubemark *KubemarkCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (kubemark *KubemarkCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (kubemark *KubemarkCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+func (kubemark *KubemarkCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
 	return gpu.GetNodeGPUFromCloudProvider(kubemark, node)
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (kubemark *KubemarkCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (kubemark *KubemarkCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	return []cloudprovider.NodeGroup{}
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (kubemark *KubemarkCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (kubemark *KubemarkCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (kubemark *KubemarkCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (kubemark *KubemarkCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (kubemark *KubemarkCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (kubemark *KubemarkCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided.
-func (kubemark *KubemarkCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (kubemark *KubemarkCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint,
 	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (kubemark *KubemarkCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (kubemark *KubemarkCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (kubemark *KubemarkCloudProvider) Refresh() error {
+func (kubemark *KubemarkCloudProvider) Refresh(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Cleanup cleans up all resources before the cloud provider is removed
-func (kubemark *KubemarkCloudProvider) Cleanup() error {
+func (kubemark *KubemarkCloudProvider) Cleanup(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 

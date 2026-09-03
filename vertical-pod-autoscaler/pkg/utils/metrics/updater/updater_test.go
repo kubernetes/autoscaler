@@ -261,6 +261,33 @@ func TestRecordFailedInPlaceUpdate(t *testing.T) {
 	}
 }
 
+func TestRecordAdmissionControllerStatusInvalid(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		reason string
+	}{
+		{
+			desc:   "error reason",
+			reason: "error",
+		},
+		{
+			desc:   "invalid reason",
+			reason: "invalid",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			t.Cleanup(admissionControllerStatusInvalidCount.Reset)
+			RecordAdmissionControllerStatusInvalid(tc.reason)
+			val := testutil.ToFloat64(admissionControllerStatusInvalidCount.WithLabelValues(tc.reason))
+			if val != 1 {
+				t.Errorf("Unexpected value for admissionControllerStatusInvalidCount metric with label %s: got %v, want 1", tc.reason, val)
+			}
+		})
+	}
+}
+
 func TestUpdateModeAndSizeBasedGauge(t *testing.T) {
 	type addition struct {
 		vpaSize int

@@ -151,18 +151,18 @@ func TestMinSize(t *testing.T) {
 		minSize: 1,
 	}
 
-	assert.Equal(t, 1, agentPool.MinSize())
+	assert.Equal(t, 1, agentPool.MinSize(context.Background()))
 }
 
 func TestExist(t *testing.T) {
 	agentPool := &VMPool{}
 
-	assert.True(t, agentPool.Exist())
+	assert.True(t, agentPool.Exist(context.Background()))
 }
 func TestCreate(t *testing.T) {
 	agentPool := &VMPool{}
 
-	nodeGroup, err := agentPool.Create()
+	nodeGroup, err := agentPool.Create(context.Background())
 	assert.Nil(t, nodeGroup)
 	assert.Equal(t, cloudprovider.ErrAlreadyExist, err)
 }
@@ -170,21 +170,21 @@ func TestCreate(t *testing.T) {
 func TestDelete(t *testing.T) {
 	agentPool := &VMPool{}
 
-	err := agentPool.Delete()
+	err := agentPool.Delete(context.Background())
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
 
 func TestAutoprovisioned(t *testing.T) {
 	agentPool := &VMPool{}
 
-	assert.False(t, agentPool.Autoprovisioned())
+	assert.False(t, agentPool.Autoprovisioned(context.Background()))
 }
 
 func TestGetOptions(t *testing.T) {
 	agentPool := &VMPool{}
 	defaults := config.NodeGroupAutoscalingOptions{}
 
-	options, err := agentPool.GetOptions(defaults)
+	options, err := agentPool.GetOptions(context.Background(), defaults)
 	assert.Nil(t, options)
 	assert.Nil(t, err)
 }
@@ -193,13 +193,13 @@ func TestMaxSize(t *testing.T) {
 		maxSize: 10,
 	}
 
-	assert.Equal(t, 10, agentPool.MaxSize())
+	assert.Equal(t, 10, agentPool.MaxSize(context.Background()))
 }
 
 func TestDecreaseTargetSize(t *testing.T) {
 	agentPool := newTestVMsPool(newTestAzureManager(t))
 
-	err := agentPool.DecreaseTargetSize(1)
+	err := agentPool.DecreaseTargetSize(context.Background(), 1)
 	assert.Nil(t, err)
 }
 
@@ -223,7 +223,7 @@ func TestDebug(t *testing.T) {
 	}
 
 	expectedDebugString := "test-debug (1:5)"
-	assert.Equal(t, expectedDebugString, agentPool.Debug())
+	assert.Equal(t, expectedDebugString, agentPool.Debug(context.Background()))
 }
 func TestTemplateNodeInfo(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -242,7 +242,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	assert.NoError(t, err)
 	ap.manager.azureCache = ac
 
-	nodeInfo, err := ap.TemplateNodeInfo()
+	nodeInfo, err := ap.TemplateNodeInfo(context.Background())
 	assert.NotNil(t, nodeInfo)
 	assert.Nil(t, err)
 }
@@ -289,17 +289,17 @@ func TestAtomicIncreaseSize(t *testing.T) {
 		gomock.Any(), gomock.Any()).Return(fakePoller, nil)
 
 	// Before scale-up, target size matches the initial VM count.
-	targetSize, err := ap.TargetSize()
+	targetSize, err := ap.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, targetSize)
 
-	err = ap.AtomicIncreaseSize(1)
+	err = ap.AtomicIncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 
 	// Simulate Azure having created the new VM by seeding the cache with the
 	// post-scale VM list, then assert the pool reports the new target size.
 	ap.manager.azureCache.virtualMachines[vmsAgentPoolName] = newTestVMsPoolVMList(4)
-	targetSize, err = ap.TargetSize()
+	targetSize, err = ap.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 4, targetSize)
 }
@@ -307,7 +307,7 @@ func TestAtomicIncreaseSize(t *testing.T) {
 func TestAtomicIncreaseSizeNegativeDelta(t *testing.T) {
 	ap := newTestVMsPool(newTestAzureManager(t))
 
-	err := ap.AtomicIncreaseSize(-1)
+	err := ap.AtomicIncreaseSize(context.Background(), -1)
 	assert.Equal(t, fmt.Errorf("size increase must be positive, current delta: -1"), err)
 }
 
@@ -350,7 +350,7 @@ func TestAtomicIncreaseSizePollerFailure(t *testing.T) {
 		vmsAgentPoolName,
 		gomock.Any(), gomock.Any()).Return(failingPoller, nil)
 
-	err = ap.AtomicIncreaseSize(1)
+	err = ap.AtomicIncreaseSize(context.Background(), 1)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "long running operation failed")
 }
@@ -510,7 +510,7 @@ func TestNodes(t *testing.T) {
 	assert.NoError(t, err)
 	ap.manager.azureCache = ac
 
-	vms, err := ap.Nodes()
+	vms, err := ap.Nodes(context.Background())
 	assert.Equal(t, 2, len(vms))
 	assert.NoError(t, err)
 }
@@ -568,12 +568,12 @@ func TestVMsPoolIncreaseSize(t *testing.T) {
 	ap.manager.azureCache = ac
 
 	// failure case 1
-	err1 := ap.IncreaseSize(-1)
+	err1 := ap.IncreaseSize(context.Background(), -1)
 	expectedErr := fmt.Errorf("size increase must be positive, current delta: -1")
 	assert.Equal(t, expectedErr, err1)
 
 	// failure case 2
-	err2 := ap.IncreaseSize(8)
+	err2 := ap.IncreaseSize(context.Background(), 8)
 	expectedErr = fmt.Errorf("size-increasing request of 11 is bigger than max size 10")
 	assert.Equal(t, expectedErr, err2)
 
@@ -597,7 +597,7 @@ func TestVMsPoolIncreaseSize(t *testing.T) {
 		vmsAgentPoolName,
 		gomock.Any(), gomock.Any()).Return(fakePoller, nil)
 
-	err3 := ap.IncreaseSize(1)
+	err3 := ap.IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err3)
 }
 
@@ -626,7 +626,7 @@ func TestDeleteVMsPoolNodes_Failed(t *testing.T) {
 	ap.manager.forceRefresh()
 
 	// failure case
-	deleteErr := ap.DeleteNodes([]*apiv1.Node{node})
+	deleteErr := ap.DeleteNodes(context.Background(), []*apiv1.Node{node})
 	assert.Error(t, deleteErr)
 	assert.Contains(t, deleteErr.Error(), "cannot delete nodes as minimum size of 3 has been reached")
 }
@@ -672,7 +672,7 @@ func TestDeleteVMsPoolNodes_Success(t *testing.T) {
 		vmsAgentPoolName,
 		gomock.Any(), gomock.Any()).Return(fakePoller, nil)
 	node := newVMsNode(0)
-	derr := ap.DeleteNodes([]*apiv1.Node{node})
+	derr := ap.DeleteNodes(context.Background(), []*apiv1.Node{node})
 	assert.NoError(t, derr)
 }
 
@@ -684,7 +684,7 @@ func TestVMsPoolNodesReportsProvisioningState(t *testing.T) {
 	vms[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
 	manager.azureCache.virtualMachines[vmsAgentPoolName] = vms
 
-	instances, err := ap.Nodes()
+	instances, err := ap.Nodes(context.Background())
 	assert.NoError(t, err)
 	assert.Len(t, instances, 3)
 
@@ -752,7 +752,7 @@ func TestDeleteVMsPoolNodesProactivelyMarksDeletion(t *testing.T) {
 		vmsAgentPoolName,
 		gomock.Any(), gomock.Any()).Return(fakePoller, nil)
 
-	assert.NoError(t, ap.DeleteNodes([]*apiv1.Node{deletingNode}))
+	assert.NoError(t, ap.DeleteNodes(context.Background(), []*apiv1.Node{deletingNode}))
 
 	// The deleted node is proactively reported as gone (false, nil), while other
 	// nodes remain reported as present.
@@ -810,7 +810,7 @@ func TestDeleteVMsPoolNodesStrictCacheDoesNotProactivelyMarkDeletion(t *testing.
 		vmsAgentPoolName,
 		gomock.Any(), gomock.Any()).Return(fakePoller, nil)
 
-	assert.NoError(t, ap.DeleteNodes([]*apiv1.Node{deletingNode}))
+	assert.NoError(t, ap.DeleteNodes(context.Background(), []*apiv1.Node{deletingNode}))
 
 	// Strict cache mode should not mark deleting nodes as gone before a refresh.
 	hasInstance, err = ap.manager.azureCache.HasInstance(deletingNode.Spec.ProviderID)

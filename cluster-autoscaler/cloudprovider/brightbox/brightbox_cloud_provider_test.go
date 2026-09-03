@@ -17,6 +17,7 @@ limitations under the License.
 package brightbox
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"os"
@@ -72,51 +73,51 @@ func TestName(t *testing.T) {
 }
 
 func TestGPULabel(t *testing.T) {
-	assert.Equal(t, makeFakeCloudProvider(nil).GPULabel(), GPULabel)
+	assert.Equal(t, makeFakeCloudProvider(nil).GPULabel(context.Background()), GPULabel)
 }
 
 func TestGetAvailableGPUTypes(t *testing.T) {
-	assert.Equal(t, makeFakeCloudProvider(nil).GetAvailableGPUTypes(), availableGPUTypes)
+	assert.Equal(t, makeFakeCloudProvider(nil).GetAvailableGPUTypes(context.Background()), availableGPUTypes)
 }
 
 func TestPricing(t *testing.T) {
-	obj, err := makeFakeCloudProvider(nil).Pricing()
+	obj, err := makeFakeCloudProvider(nil).Pricing(context.Background())
 	assert.Equal(t, err, cloudprovider.ErrNotImplemented)
 	assert.Nil(t, obj)
 }
 
 func TestGetAvailableMachineTypes(t *testing.T) {
-	obj, err := makeFakeCloudProvider(nil).GetAvailableMachineTypes()
+	obj, err := makeFakeCloudProvider(nil).GetAvailableMachineTypes(context.Background())
 	assert.Equal(t, err, cloudprovider.ErrNotImplemented)
 	assert.Nil(t, obj)
 }
 
 func TestNewNodeGroup(t *testing.T) {
-	obj, err := makeFakeCloudProvider(nil).NewNodeGroup("", nil, nil, nil, nil)
+	obj, err := makeFakeCloudProvider(nil).NewNodeGroup(context.Background(), "", nil, nil, nil, nil)
 	assert.Equal(t, err, cloudprovider.ErrNotImplemented)
 	assert.Nil(t, obj)
 }
 
 func TestCleanUp(t *testing.T) {
-	assert.Nil(t, makeFakeCloudProvider(nil).Cleanup())
+	assert.Nil(t, makeFakeCloudProvider(nil).Cleanup(context.Background()))
 }
 
 func TestResourceLimiter(t *testing.T) {
 	client := makeFakeCloudProvider(nil)
-	obj, err := client.GetResourceLimiter()
+	obj, err := client.GetResourceLimiter(context.Background())
 	assert.Equal(t, obj, client.resourceLimiter)
 	assert.NoError(t, err)
 }
 
 func TestNodeGroups(t *testing.T) {
 	client := makeFakeCloudProvider(nil)
-	assert.Zero(t, client.NodeGroups())
+	assert.Zero(t, client.NodeGroups(context.Background()))
 	client.nodeGroups = make([]cloudprovider.NodeGroup, 0)
-	assert.NotZero(t, client.NodeGroups())
-	assert.Empty(t, client.NodeGroups())
+	assert.NotZero(t, client.NodeGroups(context.Background()))
+	assert.Empty(t, client.NodeGroups(context.Background()))
 	nodeGroup := &brightboxNodeGroup{}
 	client.nodeGroups = append(client.nodeGroups, nodeGroup)
-	newGroups := client.NodeGroups()
+	newGroups := client.NodeGroups(context.Background())
 	assert.Len(t, newGroups, 1)
 	assert.Same(t, newGroups[0], client.nodeGroups[0])
 }
@@ -125,10 +126,10 @@ func TestNodeGroupForNode(t *testing.T) {
 	client := makeFakeCloudProvider(nil)
 	client.nodeGroups = fakeNodeGroups
 	client.nodeMap = fakeNodeMap
-	nodeGroup, err := client.NodeGroupForNode(makeNode(fakeServer))
+	nodeGroup, err := client.NodeGroupForNode(context.Background(), makeNode(fakeServer))
 	assert.Equal(t, fakeNodeGroup, nodeGroup)
 	assert.NoError(t, err)
-	nodeGroup, err = client.NodeGroupForNode(makeNode(missingServer))
+	nodeGroup, err = client.NodeGroupForNode(context.Background(), makeNode(missingServer))
 	assert.Nil(t, nodeGroup)
 	assert.NoError(t, err)
 }
@@ -147,7 +148,7 @@ func TestBuildBrightBox(t *testing.T) {
 	}
 	cloud := BuildBrightbox(opts, do, rl)
 	assert.Equal(t, cloud.Name(), ProviderName)
-	obj, err := cloud.GetResourceLimiter()
+	obj, err := cloud.GetResourceLimiter(context.Background())
 	assert.Equal(t, rl, obj)
 	assert.NoError(t, err)
 }
@@ -190,15 +191,15 @@ func TestRefresh(t *testing.T) {
 	mockclient.On("ServerGroup", "grp-sda44").Return(fakeServerGroupsda44(), nil)
 	mockclient.On("ConfigMaps").Return(fakeConfigMaps(), nil)
 	mockclient.On("ConfigMap", "cfg-502vh").Return(fakeConfigMap502vh(), nil)
-	err := provider.Refresh()
+	err := provider.Refresh(context.Background())
 	require.NoError(t, err)
 	assert.Len(t, provider.nodeGroups, 1)
 	assert.NotEmpty(t, provider.nodeMap)
-	node, err := provider.NodeGroupForNode(makeNode("srv-lv426"))
+	node, err := provider.NodeGroupForNode(context.Background(), makeNode("srv-lv426"))
 	assert.NoError(t, err)
 	require.NotNil(t, node)
 	assert.Equal(t, node.Id(), groups[0].Id)
-	node, err = provider.NodeGroupForNode(makeNode("srv-rp897"))
+	node, err = provider.NodeGroupForNode(context.Background(), makeNode("srv-rp897"))
 	assert.NoError(t, err)
 	require.NotNil(t, node)
 	assert.Equal(t, node.Id(), groups[0].Id)

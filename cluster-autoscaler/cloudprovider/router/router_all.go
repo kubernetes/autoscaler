@@ -31,11 +31,12 @@ import (
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/cherryservers"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/cloudstack"
+	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/clusterapi"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/coreweave"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/equinixmetal"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale"
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
+	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud"
@@ -51,16 +52,14 @@ import (
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/volcengine"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/vultr"
-	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/clusterapi"
-	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/externalgrpc"
 	_ "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/kwok"
 )
 
 import (
-	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
 )
 
 func init() {
-	builder.SetDefaultCloudProvider(cloudprovider.GceProviderName)
+	builder.SetDefaultCloudProvider(gce.ProviderName)
 }

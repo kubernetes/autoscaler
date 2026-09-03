@@ -145,7 +145,7 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.Background())
 		require.NoError(t, err)
 
 		// Verify node groups (only autoscaling pools)
@@ -188,12 +188,12 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.Background())
 		require.NoError(t, err)
 		assert.NotZero(t, provider.lastRefresh)
 
 		// Second refresh immediately - should be skipped
-		err = provider.Refresh()
+		err = provider.Refresh(context.Background())
 		require.NoError(t, err)
 
 		// Only one call to each method
@@ -224,14 +224,14 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.Background())
 		require.NoError(t, err)
 
 		// Wait for interval to elapse
 		time.Sleep(2 * time.Millisecond)
 
 		// Second refresh should execute
-		err = provider.Refresh()
+		err = provider.Refresh(context.Background())
 		require.NoError(t, err)
 
 		client.AssertExpectations(t)
@@ -253,7 +253,7 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.Background())
 		assert.Error(t, err)
 		assert.Equal(t, err, provider.lastRefreshError)
 
@@ -282,7 +282,7 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.Background())
 		assert.Error(t, err)
 		assert.Equal(t, err, provider.lastRefreshError)
 
@@ -313,7 +313,7 @@ func TestScalewayCloudProvider_Refresh(t *testing.T) {
 			nodeGroups:      make(map[string]*NodeGroup),
 		}
 
-		err := provider.Refresh()
+		err := provider.Refresh(context.Background())
 		require.NoError(t, err)
 
 		// Only pool-1 should have nodes
@@ -351,7 +351,7 @@ func TestScalewayCloudProvider_NodeGroups(t *testing.T) {
 		provider.nodeGroups["pool-2"],
 	}
 
-	nodeGroups := provider.NodeGroups()
+	nodeGroups := provider.NodeGroups(context.Background())
 	assert.Len(t, nodeGroups, 2)
 }
 
@@ -381,7 +381,7 @@ func TestScalewayCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		ng, err := provider.NodeGroupForNode(k8sNode)
+		ng, err := provider.NodeGroupForNode(context.Background(), k8sNode)
 		require.NoError(t, err)
 		require.NotNil(t, ng)
 		assert.Equal(t, "pool-1", ng.Id())
@@ -409,7 +409,7 @@ func TestScalewayCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		ng, err := provider.NodeGroupForNode(k8sNode)
+		ng, err := provider.NodeGroupForNode(context.Background(), k8sNode)
 		require.NoError(t, err)
 		assert.Nil(t, ng)
 	})
@@ -425,7 +425,7 @@ func TestScalewayCloudProvider_HasInstance(t *testing.T) {
 			},
 		}
 
-		hasInstance, err := provider.HasInstance(node)
+		hasInstance, err := provider.HasInstance(context.Background(), node)
 		require.NoError(t, err)
 		assert.True(t, hasInstance)
 	})
@@ -437,7 +437,7 @@ func TestScalewayCloudProvider_HasInstance(t *testing.T) {
 			},
 		}
 
-		hasInstance, err := provider.HasInstance(node)
+		hasInstance, err := provider.HasInstance(context.Background(), node)
 		require.NoError(t, err)
 		assert.False(t, hasInstance)
 	})
@@ -446,7 +446,7 @@ func TestScalewayCloudProvider_HasInstance(t *testing.T) {
 func TestScalewayCloudProvider_Pricing(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	pricingModel, err := provider.Pricing()
+	pricingModel, err := provider.Pricing(context.Background())
 	require.NoError(t, err)
 	assert.NotNil(t, pricingModel)
 	assert.Equal(t, provider, pricingModel)
@@ -455,7 +455,7 @@ func TestScalewayCloudProvider_Pricing(t *testing.T) {
 func TestScalewayCloudProvider_GetAvailableMachineTypes(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	machineTypes, err := provider.GetAvailableMachineTypes()
+	machineTypes, err := provider.GetAvailableMachineTypes(context.Background())
 	require.NoError(t, err)
 	assert.Empty(t, machineTypes)
 }
@@ -463,7 +463,7 @@ func TestScalewayCloudProvider_GetAvailableMachineTypes(t *testing.T) {
 func TestScalewayCloudProvider_NewNodeGroup(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	ng, err := provider.NewNodeGroup("DEV1-M", nil, nil, nil, nil)
+	ng, err := provider.NewNodeGroup(context.Background(), "DEV1-M", nil, nil, nil, nil)
 	assert.Error(t, err)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 	assert.Nil(t, ng)
@@ -475,7 +475,7 @@ func TestScalewayCloudProvider_GetResourceLimiter(t *testing.T) {
 		resourceLimiter: limiter,
 	}
 
-	result, err := provider.GetResourceLimiter()
+	result, err := provider.GetResourceLimiter(context.Background())
 	require.NoError(t, err)
 	assert.Equal(t, limiter, result)
 }
@@ -483,14 +483,14 @@ func TestScalewayCloudProvider_GetResourceLimiter(t *testing.T) {
 func TestScalewayCloudProvider_GPULabel(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	label := provider.GPULabel()
+	label := provider.GPULabel(context.Background())
 	assert.Equal(t, "k8s.scw.cloud/gpu", label)
 }
 
 func TestScalewayCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	gpuTypes := provider.GetAvailableGPUTypes()
+	gpuTypes := provider.GetAvailableGPUTypes(context.Background())
 	assert.Nil(t, gpuTypes)
 }
 
@@ -530,7 +530,7 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 		startTime := time.Now()
 		endTime := startTime.Add(2*time.Hour + 30*time.Minute)
 
-		price, err := provider.NodePrice(k8sNode, startTime, endTime)
+		price, err := provider.NodePrice(context.Background(), k8sNode, startTime, endTime)
 		require.NoError(t, err)
 		// 2.5 hours rounds up to 3 hours at $0.10/hour = $0.30
 		assert.InDelta(t, 0.30, price, 0.001)
@@ -557,7 +557,7 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 		startTime := time.Now()
 		endTime := startTime.Add(1 * time.Hour)
 
-		price, err := provider.NodePrice(k8sNode, startTime, endTime)
+		price, err := provider.NodePrice(context.Background(), k8sNode, startTime, endTime)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "does not have pool label")
 		assert.Equal(t, 0.0, price)
@@ -586,7 +586,7 @@ func TestScalewayCloudProvider_NodePrice(t *testing.T) {
 		startTime := time.Now()
 		endTime := startTime.Add(1 * time.Hour)
 
-		price, err := provider.NodePrice(k8sNode, startTime, endTime)
+		price, err := provider.NodePrice(context.Background(), k8sNode, startTime, endTime)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "not found")
 		assert.Equal(t, 0.0, price)
@@ -605,7 +605,7 @@ func TestScalewayCloudProvider_PodPrice(t *testing.T) {
 	startTime := time.Now()
 	endTime := startTime.Add(1 * time.Hour)
 
-	price, err := provider.PodPrice(pod, startTime, endTime)
+	price, err := provider.PodPrice(context.Background(), pod, startTime, endTime)
 	require.NoError(t, err)
 	assert.Equal(t, 0.0, price)
 }
@@ -613,6 +613,6 @@ func TestScalewayCloudProvider_PodPrice(t *testing.T) {
 func TestScalewayCloudProvider_Cleanup(t *testing.T) {
 	provider := &scalewayCloudProvider{}
 
-	err := provider.Cleanup()
+	err := provider.Cleanup(context.Background())
 	assert.NoError(t, err)
 }

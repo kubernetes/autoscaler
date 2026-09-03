@@ -17,6 +17,7 @@ limitations under the License.
 package equinixmetal
 
 import (
+	"context"
 	"math"
 	"time"
 
@@ -53,7 +54,7 @@ var instancePrices = map[string]float64{
 
 // NodePrice returns a price of running the given node for a given period of time.
 // All prices are in USD.
-func (model *Price) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
+func (model *Price) NodePrice(ctx context.Context, node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0
 	if node.Labels != nil {
 		if machineType, found := node.Labels[apiv1.LabelInstanceType]; found {
@@ -73,7 +74,7 @@ func getHours(startTime time.Time, endTime time.Time) float64 {
 
 // PodPrice returns a theoretical minimum price of running a pod for a given
 // period of time on a perfectly matching machine.
-func (model *Price) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
+func (model *Price) PodPrice(ctx context.Context, pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
 	podRequests := podutils.PodRequests(pod)
 	return getBasePrice(podRequests, startTime, endTime), nil
 }

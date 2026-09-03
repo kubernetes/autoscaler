@@ -129,24 +129,24 @@ func (provider *RancherCloudProvider) Name() string {
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (provider *RancherCloudProvider) GPULabel() string {
+func (provider *RancherCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
-func (provider *RancherCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (provider *RancherCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	// TODO: implement GPU support
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (provider *RancherCloudProvider) GetNodeGpuConfig(node *corev1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(provider, node)
+func (provider *RancherCloudProvider) GetNodeGpuConfig(ctx context.Context, node *corev1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), provider, node)
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (provider *RancherCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (provider *RancherCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	nodeGroups := make([]cloudprovider.NodeGroup, len(provider.nodeGroups))
 	for i, ng := range provider.nodeGroups {
 		nodeGroups[i] = ng
@@ -155,12 +155,12 @@ func (provider *RancherCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (provider *RancherCloudProvider) Pricing() (cloudprovider.PricingModel, autoscalererrors.AutoscalerError) {
+func (provider *RancherCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, autoscalererrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (provider *RancherCloudProvider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup, error) {
+func (provider *RancherCloudProvider) NodeGroupForNode(ctx context.Context, node *corev1.Node) (cloudprovider.NodeGroup, error) {
 	machineName, ok := node.Annotations[machineNodeAnnotationKey]
 	if !ok {
 		klog.V(4).Infof("skipping NodeGroupForNode %q as the annotation %q is missing", node.Name, machineNodeAnnotationKey)
@@ -192,31 +192,31 @@ func (provider *RancherCloudProvider) NodeGroupForNode(node *corev1.Node) (cloud
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (provider *RancherCloudProvider) HasInstance(node *corev1.Node) (bool, error) {
+func (provider *RancherCloudProvider) HasInstance(ctx context.Context, node *corev1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (provider *RancherCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (provider *RancherCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided.
-func (provider *RancherCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (provider *RancherCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []corev1.Taint,
 	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (provider *RancherCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (provider *RancherCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return provider.resourceLimiter, nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (provider *RancherCloudProvider) Refresh() error {
+func (provider *RancherCloudProvider) Refresh(ctx context.Context) error {
 	nodeGroups, err := provider.scalableNodeGroups()
 	if err != nil {
 		return fmt.Errorf("unable to get node groups from cluster: %w", err)
@@ -227,7 +227,7 @@ func (provider *RancherCloudProvider) Refresh() error {
 }
 
 // Cleanup cleans up all resources before the cloud provider is removed
-func (provider *RancherCloudProvider) Cleanup() error {
+func (provider *RancherCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
@@ -250,7 +250,7 @@ func (provider *RancherCloudProvider) scalableNodeGroups() ([]*nodeGroup, error)
 			return nil, fmt.Errorf("error getting node group from machine pool: %w", err)
 		}
 
-		klog.V(4).Infof("scalable node group found: %s", nodeGroup.Debug())
+		klog.V(4).Infof("scalable node group found: %s", nodeGroup.Debug(context.TODO()))
 
 		result = append(result, nodeGroup)
 	}

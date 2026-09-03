@@ -17,6 +17,7 @@ limitations under the License.
 package cherryservers
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -86,7 +87,7 @@ func newCherryNodeGroup(manager cherryManager, name string, minSize, maxSize, ta
 //
 // Takes precautions so that the cluster is not modified while in an UPDATE_IN_PROGRESS state.
 // Blocks until the cluster has reached UPDATE_COMPLETE.
-func (ng *cherryNodeGroup) IncreaseSize(delta int) error {
+func (ng *cherryNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	ng.clusterUpdateMutex.Lock()
 	defer ng.clusterUpdateMutex.Unlock()
 
@@ -98,8 +99,8 @@ func (ng *cherryNodeGroup) IncreaseSize(delta int) error {
 	if err != nil {
 		return fmt.Errorf("could not check current nodegroup size: %v", err)
 	}
-	if size+delta > ng.MaxSize() {
-		return fmt.Errorf("size increase too large, desired:%d max:%d", size+delta, ng.MaxSize())
+	if size+delta > ng.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase too large, desired:%d max:%d", size+delta, ng.MaxSize(context.TODO()))
 	}
 
 	klog.V(0).Infof("Increasing size by %d, %d->%d", delta, ng.targetSize, ng.targetSize+delta)
@@ -114,12 +115,12 @@ func (ng *cherryNodeGroup) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (ng *cherryNodeGroup) AtomicIncreaseSize(delta int) error {
+func (ng *cherryNodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes a set of nodes chosen by the autoscaler.
-func (ng *cherryNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *cherryNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	// Batch simultaneous deletes on individual nodes
 	if err := ng.addNodesToDelete(nodes); err != nil {
 		return err
@@ -150,8 +151,8 @@ func (ng *cherryNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	// Double check that the total number of batched nodes for deletion will not take the node group below its minimum size
-	if cachedSize-len(nodes) < ng.MinSize() {
-		return fmt.Errorf("size decrease too large, desired:%d min:%d", cachedSize-len(nodes), ng.MinSize())
+	if cachedSize-len(nodes) < ng.MinSize(context.TODO()) {
+		return fmt.Errorf("size decrease too large, desired:%d min:%d", cachedSize-len(nodes), ng.MinSize(context.TODO()))
 	}
 	klog.V(0).Infof("Deleting nodes: %v", nodeNames)
 
@@ -190,7 +191,7 @@ func (ng *cherryNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (ng *cherryNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (ng *cherryNodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -231,7 +232,7 @@ func (ng *cherryNodeGroup) addNodesToDelete(nodes []*v1.Node) error {
 	}
 
 	// Check that these nodes would not make the batch delete more nodes than the minimum would allow
-	if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize() {
+	if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize(context.TODO()) {
 		return fmt.Errorf("deleting nodes would take nodegroup below minimum size %d", ng.minSize)
 	}
 	// otherwise, add the nodes to the batch and release the lock
@@ -241,7 +242,7 @@ func (ng *cherryNodeGroup) addNodesToDelete(nodes []*v1.Node) error {
 }
 
 // DecreaseTargetSize decreases the cluster node_count in Cherry Servers.
-func (ng *cherryNodeGroup) DecreaseTargetSize(delta int) error {
+func (ng *cherryNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
@@ -256,12 +257,12 @@ func (ng *cherryNodeGroup) Id() string {
 }
 
 // Debug returns a string formatted with the node group's min, max and target sizes.
-func (ng *cherryNodeGroup) Debug() string {
+func (ng *cherryNodeGroup) Debug(ctx context.Context) string {
 	return fmt.Sprintf("%s min=%d max=%d target=%d", ng.id, ng.minSize, ng.maxSize, ng.targetSize)
 }
 
 // Nodes returns a list of nodes that belong to this node group.
-func (ng *cherryNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *cherryNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	nodes, err := ng.cherryManager.getNodes(ng.id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get nodes: %v", err)
@@ -274,48 +275,48 @@ func (ng *cherryNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *cherryNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ng *cherryNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	return ng.cherryManager.templateNodeInfo(ng.id)
 }
 
 // Exist returns if this node group exists.
 // Currently always returns true.
-func (ng *cherryNodeGroup) Exist() bool {
+func (ng *cherryNodeGroup) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (ng *cherryNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ng *cherryNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
-func (ng *cherryNodeGroup) Delete() error {
+func (ng *cherryNodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns if the nodegroup is autoprovisioned.
-func (ng *cherryNodeGroup) Autoprovisioned() bool {
+func (ng *cherryNodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // MaxSize returns the maximum allowed size of the node group.
-func (ng *cherryNodeGroup) MaxSize() int {
+func (ng *cherryNodeGroup) MaxSize(ctx context.Context) int {
 	return ng.maxSize
 }
 
 // MinSize returns the minimum allowed size of the node group.
-func (ng *cherryNodeGroup) MinSize() int {
+func (ng *cherryNodeGroup) MinSize(ctx context.Context) int {
 	return ng.minSize
 }
 
 // TargetSize returns the target size of the node group.
-func (ng *cherryNodeGroup) TargetSize() (int, error) {
+func (ng *cherryNodeGroup) TargetSize(ctx context.Context) (int, error) {
 	return ng.targetSize, nil
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (ng *cherryNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *cherryNodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }

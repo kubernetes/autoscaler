@@ -17,6 +17,7 @@ limitations under the License.
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -36,7 +37,7 @@ func TestNodeGroup_MaxSize(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, 10, ng.MaxSize())
+	assert.Equal(t, 10, ng.MaxSize(context.Background()))
 }
 
 func TestNodeGroup_MinSize(t *testing.T) {
@@ -46,7 +47,7 @@ func TestNodeGroup_MinSize(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, 2, ng.MinSize())
+	assert.Equal(t, 2, ng.MinSize(context.Background()))
 }
 
 func TestNodeGroup_TargetSize(t *testing.T) {
@@ -56,7 +57,7 @@ func TestNodeGroup_TargetSize(t *testing.T) {
 		},
 	}
 
-	size, err := ng.TargetSize()
+	size, err := ng.TargetSize(context.Background())
 	require.NoError(t, err)
 	assert.Equal(t, 5, size)
 }
@@ -85,7 +86,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			nodes:  make(map[string]*scalewaygo.Node),
 		}
 
-		err := ng.IncreaseSize(2)
+		err := ng.IncreaseSize(context.Background(), 2)
 		require.NoError(t, err)
 		assert.Equal(t, 5, ng.pool.Size)
 		assert.Equal(t, scalewaygo.PoolStatusScaling, ng.pool.Status)
@@ -102,7 +103,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			},
 		}
 
-		err := ng.IncreaseSize(0)
+		err := ng.IncreaseSize(context.Background(), 0)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "delta must be strictly positive")
 	})
@@ -116,7 +117,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			},
 		}
 
-		err := ng.IncreaseSize(-1)
+		err := ng.IncreaseSize(context.Background(), -1)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "delta must be strictly positive")
 	})
@@ -130,7 +131,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			},
 		}
 
-		err := ng.IncreaseSize(5)
+		err := ng.IncreaseSize(context.Background(), 5)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "size increase is too large")
 	})
@@ -145,7 +146,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		}
 
 		// Starting from negative size (corrupted state)
-		err := ng.IncreaseSize(2)
+		err := ng.IncreaseSize(context.Background(), 2)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "size cannot be negative")
 	})
@@ -171,7 +172,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			nodes:  make(map[string]*scalewaygo.Node),
 		}
 
-		err := ng.IncreaseSize(2)
+		err := ng.IncreaseSize(context.Background(), 2)
 		assert.Error(t, err)
 
 		client.AssertExpectations(t)
@@ -202,7 +203,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			nodes:  make(map[string]*scalewaygo.Node),
 		}
 
-		err := ng.DecreaseTargetSize(-2)
+		err := ng.DecreaseTargetSize(context.Background(), -2)
 		require.NoError(t, err)
 		assert.Equal(t, 3, ng.pool.Size)
 		assert.Equal(t, scalewaygo.PoolStatusScaling, ng.pool.Status)
@@ -219,7 +220,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			},
 		}
 
-		err := ng.DecreaseTargetSize(0)
+		err := ng.DecreaseTargetSize(context.Background(), 0)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "delta must be strictly negative")
 	})
@@ -233,7 +234,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			},
 		}
 
-		err := ng.DecreaseTargetSize(1)
+		err := ng.DecreaseTargetSize(context.Background(), 1)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "delta must be strictly negative")
 	})
@@ -248,7 +249,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		}
 
 		// 5 + (-3) = 2, which is below min (3) but not negative
-		err := ng.DecreaseTargetSize(-3)
+		err := ng.DecreaseTargetSize(context.Background(), -3)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "size decrease is too large")
 	})
@@ -264,7 +265,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 
 		// Attempting to decrease by more than current size would result in negative
 		// 2 + (-5) = -3
-		err := ng.DecreaseTargetSize(-5)
+		err := ng.DecreaseTargetSize(context.Background(), -5)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "size cannot be negative")
 	})
@@ -290,7 +291,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			nodes:  make(map[string]*scalewaygo.Node),
 		}
 
-		err := ng.DecreaseTargetSize(-2)
+		err := ng.DecreaseTargetSize(context.Background(), -2)
 		assert.Error(t, err)
 
 		client.AssertExpectations(t)
@@ -328,7 +329,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			{Spec: apiv1.NodeSpec{ProviderID: "scaleway://fr-par-1/instance-2"}},
 		}
 
-		err := ng.DeleteNodes(k8sNodes)
+		err := ng.DeleteNodes(context.Background(), k8sNodes)
 		require.NoError(t, err)
 		assert.Equal(t, 3, ng.pool.Size)
 		assert.Equal(t, scalewaygo.NodeStatusDeleting, ng.nodes["scaleway://fr-par-1/instance-1"].Status)
@@ -353,7 +354,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			{Spec: apiv1.NodeSpec{ProviderID: "scaleway://fr-par-1/instance-nonexistent"}},
 		}
 
-		err := ng.DeleteNodes(k8sNodes)
+		err := ng.DeleteNodes(context.Background(), k8sNodes)
 		// Should not error, just log and continue
 		require.NoError(t, err)
 		assert.Equal(t, 3, ng.pool.Size) // Size unchanged
@@ -385,7 +386,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			{Spec: apiv1.NodeSpec{ProviderID: "scaleway://fr-par-1/instance-1"}},
 		}
 
-		err := ng.DeleteNodes(k8sNodes)
+		err := ng.DeleteNodes(context.Background(), k8sNodes)
 		assert.Error(t, err)
 
 		client.AssertExpectations(t)
@@ -395,14 +396,14 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 func TestNodeGroup_ForceDeleteNodes(t *testing.T) {
 	ng := &NodeGroup{}
 
-	err := ng.ForceDeleteNodes([]*apiv1.Node{})
+	err := ng.ForceDeleteNodes(context.Background(), []*apiv1.Node{})
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
 
 func TestNodeGroup_AtomicIncreaseSize(t *testing.T) {
 	ng := &NodeGroup{}
 
-	err := ng.AtomicIncreaseSize(1)
+	err := ng.AtomicIncreaseSize(context.Background(), 1)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
 
@@ -429,7 +430,7 @@ func TestNodeGroup_Debug(t *testing.T) {
 		},
 	}
 
-	debug := ng.Debug()
+	debug := ng.Debug(context.Background())
 	assert.Contains(t, debug, "pool-123")
 	assert.Contains(t, debug, "ready")
 	assert.Contains(t, debug, "1.27.0")
@@ -456,7 +457,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 			},
 		}
 
-		instances, err := ng.Nodes()
+		instances, err := ng.Nodes(context.Background())
 		require.NoError(t, err)
 		assert.Len(t, instances, 3)
 
@@ -480,7 +481,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 			nodes: make(map[string]*scalewaygo.Node),
 		}
 
-		instances, err := ng.Nodes()
+		instances, err := ng.Nodes(context.Background())
 		require.NoError(t, err)
 		assert.Empty(t, instances)
 	})
@@ -514,7 +515,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 		},
 	}
 
-	nodeInfo, err := ng.TemplateNodeInfo()
+	nodeInfo, err := ng.TemplateNodeInfo(context.Background())
 	require.NoError(t, err)
 	require.NotNil(t, nodeInfo)
 
@@ -568,13 +569,13 @@ func TestNodeGroup_Exist(t *testing.T) {
 	}
 
 	// Always returns true in current implementation
-	assert.True(t, ng.Exist())
+	assert.True(t, ng.Exist(context.Background()))
 }
 
 func TestNodeGroup_Create(t *testing.T) {
 	ng := &NodeGroup{}
 
-	newNg, err := ng.Create()
+	newNg, err := ng.Create(context.Background())
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 	assert.Nil(t, newNg)
 }
@@ -582,21 +583,21 @@ func TestNodeGroup_Create(t *testing.T) {
 func TestNodeGroup_Delete(t *testing.T) {
 	ng := &NodeGroup{}
 
-	err := ng.Delete()
+	err := ng.Delete(context.Background())
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
 
 func TestNodeGroup_Autoprovisioned(t *testing.T) {
 	ng := &NodeGroup{}
 
-	assert.False(t, ng.Autoprovisioned())
+	assert.False(t, ng.Autoprovisioned(context.Background()))
 }
 
 func TestNodeGroup_GetOptions(t *testing.T) {
 	ng := &NodeGroup{}
 
 	defaults := config.NodeGroupAutoscalingOptions{}
-	opts, err := ng.GetOptions(defaults)
+	opts, err := ng.GetOptions(context.Background(), defaults)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 	assert.Nil(t, opts)
 }

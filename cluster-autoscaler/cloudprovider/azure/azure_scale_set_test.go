@@ -161,8 +161,8 @@ func TestScaleSetMaxSize(t *testing.T) {
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-	assert.Equal(t, provider.NodeGroups()[0].MaxSize(), 5)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 1)
+	assert.Equal(t, provider.NodeGroups(context.Background())[0].MaxSize(context.Background()), 5)
 }
 
 func TestScaleSetMinSize(t *testing.T) {
@@ -170,8 +170,8 @@ func TestScaleSetMinSize(t *testing.T) {
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-	assert.Equal(t, provider.NodeGroups()[0].MinSize(), 1)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 1)
+	assert.Equal(t, provider.NodeGroups(context.Background())[0].MinSize(context.Background()), 1)
 }
 
 func TestScaleSetMinSizeZero(t *testing.T) {
@@ -179,8 +179,8 @@ func TestScaleSetMinSizeZero(t *testing.T) {
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSetMinSizeZero(provider.azureManager, testASG))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-	assert.Equal(t, provider.NodeGroups()[0].MinSize(), 0)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 1)
+	assert.Equal(t, provider.NodeGroups(context.Background())[0].MinSize(context.Background()), 0)
 }
 
 func TestScaleSetTargetSize(t *testing.T) {
@@ -233,13 +233,13 @@ func TestScaleSetTargetSize(t *testing.T) {
 		registered := provider.azureManager.RegisterNodeGroup(
 			newTestScaleSet(provider.azureManager, testASG))
 		assert.True(t, registered)
-		assert.Equal(t, len(provider.NodeGroups()), 1)
+		assert.Equal(t, len(provider.NodeGroups(context.Background())), 1)
 
-		targetSize, err := provider.NodeGroups()[0].TargetSize()
+		targetSize, err := provider.NodeGroups(context.Background())[0].TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 3, targetSize)
 
-		targetSize, err = provider.NodeGroups()[0].TargetSize()
+		targetSize, err = provider.NodeGroups(context.Background())[0].TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 3, targetSize)
 
@@ -247,9 +247,9 @@ func TestScaleSetTargetSize(t *testing.T) {
 		spotNodeGroup := newTestScaleSet(provider.azureManager, "spot-vmss")
 		registered = provider.azureManager.RegisterNodeGroup(spotNodeGroup)
 		assert.True(t, registered)
-		assert.Equal(t, len(provider.NodeGroups()), 2)
+		assert.Equal(t, len(provider.NodeGroups(context.Background())), 2)
 
-		targetSize, err = provider.NodeGroups()[1].TargetSize()
+		targetSize, err = provider.NodeGroups(context.Background())[1].TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 1, targetSize)
 	}
@@ -265,7 +265,7 @@ func TestScaleSetTargetSizeReturnsErrorForCachedNegativeSize(t *testing.T) {
 	scaleSet.lastSizeRefresh = time.Now()
 	scaleSet.sizeRefreshPeriod = time.Hour
 
-	size, err := scaleSet.TargetSize()
+	size, err := scaleSet.TargetSize(context.Background())
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cached size is -1 without provider error")
 	assert.Equal(t, -1, size)
@@ -327,26 +327,26 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 		assert.NoError(t, err)
 
 		ss := newTestScaleSet(provider.azureManager, "test-asg-doesnt-exist")
-		err = ss.IncreaseSize(100)
+		err = ss.IncreaseSize(context.Background(), 100)
 		expectedErr := fmt.Errorf("could not find vmss: test-asg-doesnt-exist")
 		assert.Equal(t, expectedErr, err)
 
 		registered := provider.azureManager.RegisterNodeGroup(
 			newTestScaleSet(provider.azureManager, testASG))
 		assert.True(t, registered)
-		assert.Equal(t, len(provider.NodeGroups()), 1)
+		assert.Equal(t, len(provider.NodeGroups(context.Background())), 1)
 
 		// Current target size is 3.
-		targetSize, err := provider.NodeGroups()[0].TargetSize()
+		targetSize, err := provider.NodeGroups(context.Background())[0].TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 3, targetSize)
 
 		// Increase 2 nodes.
-		err = provider.NodeGroups()[0].IncreaseSize(2)
+		err = provider.NodeGroups(context.Background())[0].IncreaseSize(context.Background(), 2)
 		assert.NoError(t, err)
 
 		// New target size should be 5.
-		targetSize, err = provider.NodeGroups()[0].TargetSize()
+		targetSize, err = provider.NodeGroups(context.Background())[0].TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 5, targetSize)
 
@@ -354,18 +354,18 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 		registeredForEdgeZone := provider.azureManager.RegisterNodeGroup(
 			newTestScaleSet(provider.azureManager, "edgezone-vmss"))
 		assert.True(t, registeredForEdgeZone)
-		assert.Equal(t, len(provider.NodeGroups()), 2)
+		assert.Equal(t, len(provider.NodeGroups(context.Background())), 2)
 
-		targetSizeForEdgeZone, err := provider.NodeGroups()[1].TargetSize()
+		targetSizeForEdgeZone, err := provider.NodeGroups(context.Background())[1].TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 3, targetSizeForEdgeZone)
 
 		mockVMSSClient.EXPECT().CreateOrUpdate(gomock.Any(), provider.azureManager.config.ResourceGroup,
 			"edgezone-vmss", gomock.Any()).Return(nil, nil).AnyTimes()
-		err = provider.NodeGroups()[1].IncreaseSize(2)
+		err = provider.NodeGroups(context.Background())[1].IncreaseSize(context.Background(), 2)
 		assert.NoError(t, err)
 
-		targetSizeForEdgeZone, err = provider.NodeGroups()[1].TargetSize()
+		targetSizeForEdgeZone, err = provider.NodeGroups(context.Background())[1].TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 5, targetSizeForEdgeZone)
 
@@ -373,20 +373,20 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 		registeredForEdgeZoneMinZero := provider.azureManager.RegisterNodeGroup(
 			newTestScaleSetMinSizeZero(provider.azureManager, "edgezone-minzero-vmss"))
 		assert.True(t, registeredForEdgeZoneMinZero)
-		assert.Equal(t, len(provider.NodeGroups()), 3)
+		assert.Equal(t, len(provider.NodeGroups(context.Background())), 3)
 
 		// Current target size is 0.
-		targetSizeForEdgeZoneMinZero, err := provider.NodeGroups()[2].TargetSize()
+		targetSizeForEdgeZoneMinZero, err := provider.NodeGroups(context.Background())[2].TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 0, targetSizeForEdgeZoneMinZero)
 
 		mockVMSSClient.EXPECT().CreateOrUpdate(gomock.Any(), provider.azureManager.config.ResourceGroup,
 			"edgezone-minzero-vmss", gomock.Any()).Return(nil, nil).AnyTimes()
-		err = provider.NodeGroups()[2].IncreaseSize(2)
+		err = provider.NodeGroups(context.Background())[2].IncreaseSize(context.Background(), 2)
 		assert.NoError(t, err)
 
 		// New target size should be 2.
-		targetSizeForEdgeZoneMinZero, err = provider.NodeGroups()[2].TargetSize()
+		targetSizeForEdgeZoneMinZero, err = provider.NodeGroups(context.Background())[2].TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 2, targetSizeForEdgeZoneMinZero)
 	}
@@ -442,12 +442,12 @@ func TestScaleSetIncreaseSizeRaceCondition(t *testing.T) {
 		newTestScaleSet(provider.azureManager, testASG))
 	assert.True(t, registered)
 
-	ng := provider.NodeGroups()[0]
+	ng := provider.NodeGroups(context.Background())[0]
 
 	// Kick off the writer (non-atomic IncreaseSize -> createOrUpdateInstances).
 	increaseDone := make(chan error, 1)
 	go func() {
-		increaseDone <- ng.IncreaseSize(2)
+		increaseDone <- ng.IncreaseSize(context.Background(), 2)
 	}()
 
 	// Wait until createOrUpdateInstances is parked inside BeginCreateOrUpdate
@@ -469,7 +469,7 @@ func TestScaleSetIncreaseSizeRaceCondition(t *testing.T) {
 				case <-stop:
 					return
 				default:
-					_, _ = ng.TargetSize()
+					_, _ = ng.TargetSize(context.Background())
 				}
 			}
 		}()
@@ -527,7 +527,7 @@ func TestScaleSetAtomicIncreaseSize(t *testing.T) {
 
 	// Error: non-existent scale set
 	ss := newTestScaleSet(provider.azureManager, "test-asg-doesnt-exist")
-	err = ss.AtomicIncreaseSize(1)
+	err = ss.AtomicIncreaseSize(context.Background(), 1)
 	expectedErr := fmt.Errorf("could not find vmss: test-asg-doesnt-exist")
 	assert.Equal(t, expectedErr, err)
 
@@ -536,31 +536,31 @@ func TestScaleSetAtomicIncreaseSize(t *testing.T) {
 	assert.True(t, registered)
 
 	// Error: negative delta
-	err = provider.NodeGroups()[0].AtomicIncreaseSize(-1)
+	err = provider.NodeGroups(context.Background())[0].AtomicIncreaseSize(context.Background(), -1)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "size increase must be positive")
 
 	// Error: zero delta
-	err = provider.NodeGroups()[0].AtomicIncreaseSize(0)
+	err = provider.NodeGroups(context.Background())[0].AtomicIncreaseSize(context.Background(), 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "size increase must be positive")
 
 	// Error: exceeds max size (max is 5, current is 3, delta 3 = 6 > 5)
-	err = provider.NodeGroups()[0].AtomicIncreaseSize(3)
+	err = provider.NodeGroups(context.Background())[0].AtomicIncreaseSize(context.Background(), 3)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "size increase too large")
 
 	// Current target size is 3.
-	targetSize, err := provider.NodeGroups()[0].TargetSize()
+	targetSize, err := provider.NodeGroups(context.Background())[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, targetSize)
 
 	// Success: atomic increase by 2 (blocks until complete, nil poller = immediate).
-	err = provider.NodeGroups()[0].AtomicIncreaseSize(2)
+	err = provider.NodeGroups(context.Background())[0].AtomicIncreaseSize(context.Background(), 2)
 	assert.NoError(t, err)
 
 	// New target size should be 5.
-	targetSize, err = provider.NodeGroups()[0].TargetSize()
+	targetSize, err = provider.NodeGroups(context.Background())[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 5, targetSize)
 }
@@ -606,12 +606,12 @@ func TestScaleSetAtomicIncreaseSizeFailure(t *testing.T) {
 	assert.True(t, registered)
 
 	// BeginCreateOrUpdate fails — size should NOT be updated.
-	err = provider.NodeGroups()[0].AtomicIncreaseSize(2)
+	err = provider.NodeGroups(context.Background())[0].AtomicIncreaseSize(context.Background(), 2)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "azure capacity unavailable")
 
 	// Target size should remain 3 (not updated on failure).
-	targetSize, err := provider.NodeGroups()[0].TargetSize()
+	targetSize, err := provider.NodeGroups(context.Background())[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, targetSize)
 }
@@ -686,17 +686,17 @@ func TestScaleSetAtomicIncreaseSizePollerFailure(t *testing.T) {
 	assert.True(t, registered)
 
 	// Current target size is 3.
-	targetSize, err := provider.NodeGroups()[0].TargetSize()
+	targetSize, err := provider.NodeGroups(context.Background())[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, targetSize)
 
 	// PollUntilDone fails — size should NOT be updated.
-	err = provider.NodeGroups()[0].AtomicIncreaseSize(2)
+	err = provider.NodeGroups(context.Background())[0].AtomicIncreaseSize(context.Background(), 2)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "long running operation failed")
 
 	// Target size should remain 3 (not updated on poller failure).
-	targetSize, err = provider.NodeGroups()[0].TargetSize()
+	targetSize, err = provider.NodeGroups(context.Background())[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, targetSize)
 }
@@ -775,14 +775,14 @@ func TestScaleSetIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 			provider, err := BuildAzureCloudProvider(manager, nil)
 			assert.NoError(t, err)
 
-			scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+			scaleSet, ok := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 			assert.True(t, ok)
 
 			// Increase size by one, but the new node fails provisioning
-			err = scaleSet.IncreaseSize(1)
+			err = scaleSet.IncreaseSize(context.Background(), 1)
 			assert.NoError(t, err)
 
-			nodes, err := scaleSet.Nodes()
+			nodes, err := scaleSet.Nodes(context.Background())
 			assert.NoError(t, err)
 
 			assert.Equal(t, 3, len(nodes))
@@ -869,14 +869,14 @@ func TestIncreaseSizeOnVMProvisioningFailedWithFastDelete(t *testing.T) {
 			provider, err := BuildAzureCloudProvider(manager, nil)
 			assert.NoError(t, err)
 
-			scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+			scaleSet, ok := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 			assert.True(t, ok)
 
 			// Increase size by one, but the new node fails provisioning
-			err = scaleSet.IncreaseSize(1)
+			err = scaleSet.IncreaseSize(context.Background(), 1)
 			assert.NoError(t, err)
 
-			nodes, err := scaleSet.Nodes()
+			nodes, err := scaleSet.Nodes(context.Background())
 			assert.NoError(t, err)
 
 			assert.Equal(t, 3, len(nodes))
@@ -938,9 +938,9 @@ func TestScaleSetIncreaseSizeOnVMSSUpdating(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Scaling should continue even VMSS is under updating.
-	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+	scaleSet, ok := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 	assert.True(t, ok)
-	err = scaleSet.IncreaseSize(1)
+	err = scaleSet.IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 }
 
@@ -976,7 +976,7 @@ func TestScaleSetBelongs(t *testing.T) {
 			newTestScaleSet(provider.azureManager, testASG))
 		assert.True(t, registered)
 
-		scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+		scaleSet, ok := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 		assert.True(t, ok)
 		provider.azureManager.explicitlyConfigured["test-asg"] = true
 		err := provider.azureManager.forceRefresh()
@@ -1084,10 +1084,10 @@ func TestScaleSetDeleteNodes(t *testing.T) {
 		err = manager.forceRefresh()
 		assert.NoError(t, err)
 
-		scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+		scaleSet, ok := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 		assert.True(t, ok)
 
-		targetSize, err := scaleSet.TargetSize()
+		targetSize, err := scaleSet.TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 3, targetSize)
 
@@ -1096,7 +1096,7 @@ func TestScaleSetDeleteNodes(t *testing.T) {
 			newApiNode(orchMode, 0),
 			newApiNode(orchMode, 2),
 		}
-		err = scaleSet.DeleteNodes(nodesToDelete)
+		err = scaleSet.DeleteNodes(context.Background(), nodesToDelete)
 		assert.NoError(t, err)
 
 		// create scale set with vmss capacity 1
@@ -1118,7 +1118,7 @@ func TestScaleSetDeleteNodes(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Ensure the the cached size has been proactively decremented by 2
-		targetSize, err = scaleSet.TargetSize()
+		targetSize, err = scaleSet.TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 1, targetSize)
 
@@ -1183,10 +1183,10 @@ func TestScaleSetForceDeleteNodesDoesNotPublishNegativeCachedSize(t *testing.T) 
 	err = manager.forceRefresh()
 	assert.NoError(t, err)
 
-	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+	scaleSet, ok := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 	assert.True(t, ok)
 
-	targetSize, err := scaleSet.TargetSize()
+	targetSize, err := scaleSet.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, targetSize)
 
@@ -1198,7 +1198,7 @@ func TestScaleSetForceDeleteNodesDoesNotPublishNegativeCachedSize(t *testing.T) 
 		newApiNode(orchMode, 0),
 		newApiNode(orchMode, 2),
 	}
-	err = scaleSet.ForceDeleteNodes(nodesToDelete)
+	err = scaleSet.ForceDeleteNodes(context.Background(), nodesToDelete)
 	assert.NoError(t, err)
 
 	scaleSet.sizeMutex.Lock()
@@ -1208,7 +1208,7 @@ func TestScaleSetForceDeleteNodesDoesNotPublishNegativeCachedSize(t *testing.T) 
 	assert.Equal(t, int64(1), curSize)
 	assert.True(t, lastSizeRefresh.IsZero())
 
-	targetSize, err = scaleSet.TargetSize()
+	targetSize, err = scaleSet.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, targetSize)
 }
@@ -1296,11 +1296,11 @@ func TestScaleSetDeleteNodeUnregistered(t *testing.T) {
 		err = manager.forceRefresh()
 		assert.NoError(t, err)
 
-		scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+		scaleSet, ok := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 		assert.True(t, ok)
 		scaleSet.instancesRefreshPeriod = defaultVmssInstancesRefreshPeriod
 
-		targetSize, err := scaleSet.TargetSize()
+		targetSize, err := scaleSet.TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 2, targetSize)
 
@@ -1313,11 +1313,11 @@ func TestScaleSetDeleteNodeUnregistered(t *testing.T) {
 		}
 		nodesToDelete[0].ObjectMeta.Annotations = annotations
 
-		err = scaleSet.DeleteNodes(nodesToDelete)
+		err = scaleSet.DeleteNodes(context.Background(), nodesToDelete)
 		assert.NoError(t, err)
 
 		// Ensure the the cached size has NOT been proactively decremented
-		targetSize, err = scaleSet.TargetSize()
+		targetSize, err = scaleSet.TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, 2, targetSize)
 
@@ -1387,10 +1387,10 @@ func TestScaleSetDeleteInstancesWithForceDeleteEnabled(t *testing.T) {
 	err = manager.forceRefresh()
 	assert.NoError(t, err)
 
-	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+	scaleSet, ok := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 	assert.True(t, ok)
 
-	targetSize, err := scaleSet.TargetSize()
+	targetSize, err := scaleSet.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, targetSize)
 
@@ -1407,7 +1407,7 @@ func TestScaleSetDeleteInstancesWithForceDeleteEnabled(t *testing.T) {
 			},
 		},
 	}
-	err = scaleSet.DeleteNodes(nodesToDelete)
+	err = scaleSet.DeleteNodes(context.Background(), nodesToDelete)
 	assert.NoError(t, err)
 	vmssCapacity = 1
 	orchMode = armcompute.OrchestrationModeUniform
@@ -1430,7 +1430,7 @@ func TestScaleSetDeleteInstancesWithForceDeleteEnabled(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Ensure the the cached size has been proactively decremented by 2
-	targetSize, err = scaleSet.TargetSize()
+	targetSize, err = scaleSet.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 1, targetSize)
 
@@ -1507,10 +1507,10 @@ func TestScaleSetDeleteNoConflictRequest(t *testing.T) {
 		},
 	}
 
-	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+	scaleSet, ok := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 	assert.True(t, ok)
 
-	err = scaleSet.DeleteNodes([]*apiv1.Node{node})
+	err = scaleSet.DeleteNodes(context.Background(), []*apiv1.Node{node})
 }
 
 func TestScaleSetId(t *testing.T) {
@@ -1518,8 +1518,8 @@ func TestScaleSetId(t *testing.T) {
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-	assert.Equal(t, provider.NodeGroups()[0].Id(), "test-asg")
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 1)
+	assert.Equal(t, provider.NodeGroups(context.Background())[0].Id(), "test-asg")
 }
 
 func TestAgentPoolDebug(t *testing.T) {
@@ -1529,7 +1529,7 @@ func TestAgentPoolDebug(t *testing.T) {
 		maxSize: 55,
 	}
 	asg.Name = "test-scale-set"
-	assert.Equal(t, asg.Debug(), "test-scale-set (5:55)")
+	assert.Equal(t, asg.Debug(context.Background()), "test-scale-set (5:55)")
 }
 
 func TestScaleSetNodes(t *testing.T) {
@@ -1569,21 +1569,21 @@ func TestScaleSetNodes(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.True(t, registered)
-		assert.Equal(t, len(provider.NodeGroups()), 1)
+		assert.Equal(t, len(provider.NodeGroups(context.Background())), 1)
 
 		node := newApiNode(orchMode, 0)
-		group, err := provider.NodeGroupForNode(node)
+		group, err := provider.NodeGroupForNode(context.Background(), node)
 		assert.NoError(t, err)
 		assert.NotNil(t, group, "Group should not be nil")
 		assert.Equal(t, group.Id(), testASG)
-		assert.Equal(t, group.MinSize(), 1)
-		assert.Equal(t, group.MaxSize(), 5)
+		assert.Equal(t, group.MinSize(context.Background()), 1)
+		assert.Equal(t, group.MaxSize(context.Background()), 5)
 
 		ss, ok := group.(*ScaleSet)
 		ss.lastInstanceRefresh = time.Now()
 		assert.True(t, ok)
 		assert.NotNil(t, ss)
-		instances, err := group.Nodes()
+		instances, err := group.Nodes(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, len(instances), 3)
 
@@ -1650,7 +1650,7 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 1)
 
 	asg := ScaleSet{
 		manager: provider.azureManager,
@@ -1666,7 +1666,7 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 	t.Run("Checking fallback to static because dynamic list is empty", func(t *testing.T) {
 		asg.enableDynamicInstanceList = true
 
-		nodeInfo, err := asg.TemplateNodeInfo()
+		nodeInfo, err := asg.TemplateNodeInfo(context.Background())
 		assert.NoError(t, err)
 		assert.NotNil(t, nodeInfo)
 		assert.NotEmpty(t, nodeInfo.Pods())
@@ -1687,7 +1687,7 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 			vmssType.MemoryMb = 3
 			return vmssType, nil
 		}
-		nodeInfo, err := asg.TemplateNodeInfo()
+		nodeInfo, err := asg.TemplateNodeInfo(context.Background())
 		assert.Equal(t, *nodeInfo.Node().Status.Capacity.Cpu(), *resource.NewQuantity(1, resource.DecimalSI))
 		assert.Equal(t, *nodeInfo.Node().Status.Capacity.Memory(), *resource.NewQuantity(3*1024*1024, resource.DecimalSI))
 		assert.NoError(t, err)
@@ -1708,7 +1708,7 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 			vmssType.MemoryMb = 3
 			return &vmssType, nil
 		}
-		nodeInfo, err := asg.TemplateNodeInfo()
+		nodeInfo, err := asg.TemplateNodeInfo(context.Background())
 		assert.Equal(t, *nodeInfo.Node().Status.Capacity.Cpu(), *resource.NewQuantity(1, resource.DecimalSI))
 		assert.Equal(t, *nodeInfo.Node().Status.Capacity.Memory(), *resource.NewQuantity(3*1024*1024, resource.DecimalSI))
 		assert.NoError(t, err)
@@ -1725,7 +1725,7 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 		GetInstanceTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
 			return &InstanceType{}, fmt.Errorf("static error exists")
 		}
-		nodeInfo, err := asg.TemplateNodeInfo()
+		nodeInfo, err := asg.TemplateNodeInfo(context.Background())
 		assert.Empty(t, nodeInfo)
 		assert.Equal(t, err, fmt.Errorf("static error exists"))
 	})
@@ -1742,7 +1742,7 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 			vmssType.MemoryMb = 3
 			return &vmssType, nil
 		}
-		nodeInfo, err := asg.TemplateNodeInfo()
+		nodeInfo, err := asg.TemplateNodeInfo(context.Background())
 		assert.Equal(t, *nodeInfo.Node().Status.Capacity.Cpu(), *resource.NewQuantity(1, resource.DecimalSI))
 		assert.Equal(t, *nodeInfo.Node().Status.Capacity.Memory(), *resource.NewQuantity(3*1024*1024, resource.DecimalSI))
 		assert.NoError(t, err)
@@ -1753,7 +1753,7 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 	t.Run("Checking static-only workflow with built-in SKU list", func(t *testing.T) {
 		asg.enableDynamicInstanceList = false
 
-		nodeInfo, err := asg.TemplateNodeInfo()
+		nodeInfo, err := asg.TemplateNodeInfo(context.Background())
 		assert.NoError(t, err)
 		assert.NotNil(t, nodeInfo)
 		assert.NotEmpty(t, nodeInfo.Pods())
@@ -1792,7 +1792,7 @@ func TestScaleSetCseErrors(t *testing.T) {
 	manager.RegisterNodeGroup(
 		newTestScaleSet(manager, "test-asg"))
 	manager.explicitlyConfigured["test-asg"] = true
-	scaleSet, _ := provider.NodeGroups()[0].(*ScaleSet)
+	scaleSet, _ := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 
 	t.Run("getCSEErrorMessages test with CSE error in VM extensions", func(t *testing.T) {
 		expectedCSEWErrorMessage := "Error Message Test"
@@ -2089,7 +2089,7 @@ func TestWaitForDeleteInstancesNoRetryOnOtherErrors(t *testing.T) {
 			// Assert: BeginDeleteInstances was never called. gomock.Times(0) enforces this.
 			// Assert: caches were invalidated so TargetSize refreshes from VMSS capacity.
 			assert.False(t, scaleSet.lastInstanceRefresh.IsZero())
-			targetSize, err := scaleSet.TargetSize()
+			targetSize, err := scaleSet.TargetSize(context.Background())
 			assert.NoError(t, err)
 			assert.Equal(t, 3, targetSize)
 		})
@@ -2307,9 +2307,9 @@ func TestScaleSetIncreaseSizeWithETag(t *testing.T) {
 
 			provider, err := BuildAzureCloudProvider(manager, nil)
 			assert.NoError(t, err)
-			scaleSet := provider.NodeGroups()[0].(*ScaleSet)
+			scaleSet := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 
-			err = scaleSet.IncreaseSize(1)
+			err = scaleSet.IncreaseSize(context.Background(), 1)
 			assert.NoError(t, err)
 
 			if tc.expectIfMatch == nil {
@@ -2375,7 +2375,7 @@ func TestScaleSetETagPreconditionFailureInvalidatesSizeCache(t *testing.T) {
 	scaleSet := newTestScaleSet(manager, vmssName)
 	scaleSet.sizeRefreshPeriod = manager.azureCache.refreshInterval
 
-	err := scaleSet.IncreaseSize(1)
+	err := scaleSet.IncreaseSize(context.Background(), 1)
 	assert.Error(t, err)
 
 	// Simulate an out-of-band capacity change observed on the next cache fetch.
@@ -2388,7 +2388,7 @@ func TestScaleSetETagPreconditionFailureInvalidatesSizeCache(t *testing.T) {
 		Etag: ptr.To(`W/"new"`),
 	})
 
-	target, err := scaleSet.TargetSize()
+	target, err := scaleSet.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 5, target)
 }
@@ -2440,12 +2440,12 @@ func TestScaleSetETagPreconditionFailureRollsBackCapacity(t *testing.T) {
 	scaleSet := newTestScaleSet(manager, vmssName)
 	scaleSet.sizeRefreshPeriod = manager.azureCache.refreshInterval
 
-	err := scaleSet.IncreaseSize(1)
+	err := scaleSet.IncreaseSize(context.Background(), 1)
 	assert.Error(t, err)
 
 	// Without the rejected mutation, TargetSize must still report the prior size (3),
 	// not the desired size (4) that was never accepted.
-	target, err := scaleSet.TargetSize()
+	target, err := scaleSet.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, target)
 }
@@ -2508,7 +2508,7 @@ func TestScaleSetETagRetrySucceedsAfterPreconditionFailure(t *testing.T) {
 	scaleSet := newTestScaleSet(manager, vmssName)
 	scaleSet.sizeRefreshPeriod = manager.azureCache.refreshInterval
 
-	err := scaleSet.IncreaseSize(1)
+	err := scaleSet.IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 
 	if assert.Len(t, ifMatches, 2) {
@@ -2576,7 +2576,7 @@ func TestScaleSetETagRetrySkippedWhenAlreadyAtTarget(t *testing.T) {
 	scaleSet := newTestScaleSet(manager, vmssName)
 	scaleSet.sizeRefreshPeriod = manager.azureCache.refreshInterval
 
-	err := scaleSet.IncreaseSize(1)
+	err := scaleSet.IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, putCalls, "expected no second PUT when VMSS already at target")
 }
@@ -2713,7 +2713,7 @@ func TestScaleSetETagReconcilesConcurrentWriter(t *testing.T) {
 	scaleSet := newTestScaleSet(manager, vmssName)
 	scaleSet.sizeRefreshPeriod = manager.azureCache.refreshInterval
 
-	err := scaleSet.IncreaseSize(1)
+	err := scaleSet.IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 
 	if assert.Len(t, ifMatches, 2) {
@@ -2866,7 +2866,7 @@ func TestScaleSetETagRetrySkipPublishesFreshCapacity(t *testing.T) {
 	scaleSet := newTestScaleSet(manager, vmssName)
 	scaleSet.sizeRefreshPeriod = manager.azureCache.refreshInterval
 
-	err := scaleSet.IncreaseSize(1)
+	err := scaleSet.IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, putCalls, "expected no second PUT when VMSS already above target")
 
@@ -2988,9 +2988,9 @@ func TestAtomicIncreaseSizeWithETag(t *testing.T) {
 
 			provider, err := BuildAzureCloudProvider(manager, nil)
 			assert.NoError(t, err)
-			scaleSet := provider.NodeGroups()[0].(*ScaleSet)
+			scaleSet := provider.NodeGroups(context.Background())[0].(*ScaleSet)
 
-			err = scaleSet.AtomicIncreaseSize(1)
+			err = scaleSet.AtomicIncreaseSize(context.Background(), 1)
 			assert.NoError(t, err)
 
 			if tc.expectIfMatch == nil {

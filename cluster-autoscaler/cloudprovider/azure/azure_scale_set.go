@@ -146,35 +146,35 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 }
 
 // MinSize returns minimum size of the node group.
-func (scaleSet *ScaleSet) MinSize() int {
+func (scaleSet *ScaleSet) MinSize(ctx context.Context) int {
 	return scaleSet.minSize
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (scaleSet *ScaleSet) Exist() bool {
+func (scaleSet *ScaleSet) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (scaleSet *ScaleSet) Create() (cloudprovider.NodeGroup, error) {
+func (scaleSet *ScaleSet) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (scaleSet *ScaleSet) Delete() error {
+func (scaleSet *ScaleSet) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (scaleSet *ScaleSet) Autoprovisioned() bool {
+func (scaleSet *ScaleSet) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (scaleSet *ScaleSet) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (scaleSet *ScaleSet) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	template, err := scaleSet.getVMSSFromCache()
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s", scaleSet.Name)
@@ -188,7 +188,7 @@ func (scaleSet *ScaleSet) GetOptions(defaults config.NodeGroupAutoscalingOptions
 }
 
 // MaxSize returns maximum size of the node group.
-func (scaleSet *ScaleSet) MaxSize() int {
+func (scaleSet *ScaleSet) MaxSize(ctx context.Context) int {
 	return scaleSet.maxSize
 }
 
@@ -314,7 +314,7 @@ func (scaleSet *ScaleSet) setScaleSetSize(size int64, delta int) error {
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (scaleSet *ScaleSet) TargetSize() (int, error) {
+func (scaleSet *ScaleSet) TargetSize(ctx context.Context) (int, error) {
 	size, err := scaleSet.getScaleSetSize()
 	return int(size), err
 }
@@ -336,15 +336,15 @@ func (scaleSet *ScaleSet) canIncreaseSize(delta int) (int64, error) {
 		return size, fmt.Errorf("the scale set %s is under initialization, skipping IncreaseSize", scaleSet.Name)
 	}
 
-	if int(size)+delta > scaleSet.MaxSize() {
-		return size, fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
+	if int(size)+delta > scaleSet.MaxSize(context.TODO()) {
+		return size, fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize(context.TODO()))
 	}
 
 	return size, nil
 }
 
 // IncreaseSize increases Scale Set size
-func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
+func (scaleSet *ScaleSet) IncreaseSize(ctx context.Context, delta int) error {
 	size, err := scaleSet.canIncreaseSize(delta)
 	if err != nil {
 		return err
@@ -365,7 +365,7 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 // "doesn't wait until the new instances appear" — the blocking behavior is required
 // for atomic-scale-up ProvisioningRequest support to provide a capacity guarantee
 // before workloads are admitted.
-func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
+func (scaleSet *ScaleSet) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	size, err := scaleSet.canIncreaseSize(delta)
 	if err != nil {
 		return err
@@ -480,7 +480,7 @@ func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]*armcompute.VirtualMachine
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
-func (scaleSet *ScaleSet) DecreaseTargetSize(delta int) error {
+func (scaleSet *ScaleSet) DecreaseTargetSize(ctx context.Context, delta int) error {
 	// VMSS size should be changed automatically after the Node deletion, hence this operation is not required.
 	// To prevent some unreproducible bugs, an extra refresh of cache is needed.
 	scaleSet.invalidateInstanceCache()
@@ -883,7 +883,7 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompu
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
+func (scaleSet *ScaleSet) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	klog.V(3).Infof("Delete nodes requested: %q\n", nodes)
 	size, err := scaleSet.getScaleSetSize()
 	if err != nil {
@@ -893,14 +893,14 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 	// This only catches callers already at min size. A future change should also reject
 	// batches that would go below min size; create-error cleanup fallback is the only
 	// currently known path that can reach this check without regular scale-down filtering.
-	if int(size) <= scaleSet.MinSize() {
+	if int(size) <= scaleSet.MinSize(context.TODO()) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
-	return scaleSet.ForceDeleteNodes(nodes)
+	return scaleSet.ForceDeleteNodes(context.TODO(), nodes)
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (scaleSet *ScaleSet) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (scaleSet *ScaleSet) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	klog.V(3).Infof("Delete nodes requested: %q\n", nodes)
 	refs := make([]*azureRef, 0, len(nodes))
 	hasUnregisteredNodes := false
@@ -932,12 +932,12 @@ func (scaleSet *ScaleSet) Id() string {
 }
 
 // Debug returns a debug string for the Scale Set.
-func (scaleSet *ScaleSet) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", scaleSet.Id(), scaleSet.MinSize(), scaleSet.MaxSize())
+func (scaleSet *ScaleSet) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", scaleSet.Id(), scaleSet.MinSize(context.TODO()), scaleSet.MaxSize(context.TODO()))
 }
 
 // TemplateNodeInfo returns a node template for this scale set.
-func (scaleSet *ScaleSet) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (scaleSet *ScaleSet) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	vmss, err := scaleSet.getVMSSFromCache()
 	if err != nil {
 		return nil, err
@@ -959,7 +959,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*framework.NodeInfo, error) {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
+func (scaleSet *ScaleSet) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	curSize, getVMSSError := scaleSet.getCurSize()
 	if getVMSSError != nil {
 		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, getVMSSError.error)

@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 )
 
 // UpdaterConfig holds all configuration for the admission controller component
@@ -44,9 +45,15 @@ type UpdaterConfig struct {
 	UseAdmissionControllerStatus bool
 	InPlaceSkipDisruptionBudget  bool
 
+	AdmissionControllerStatusLeaseName      string
+	AdmissionControllerStatusLeaseNamespace string
+	AdmissionControllerStatusLeaseTimeout   time.Duration
+
 	DefaultUpdateThreshold     float64
 	PodLifetimeUpdateThreshold time.Duration
 	EvictAfterOOMThreshold     time.Duration
+
+	ConcurrentCPUStartupBoostSyncs int
 }
 
 // DefaultUpdaterConfig returns a UpdaterConfig with default values
@@ -63,9 +70,15 @@ func DefaultUpdaterConfig() *UpdaterConfig {
 		UseAdmissionControllerStatus: true,
 		InPlaceSkipDisruptionBudget:  false,
 
+		AdmissionControllerStatusLeaseName:      status.AdmissionControllerStatusName,
+		AdmissionControllerStatusLeaseNamespace: "",
+		AdmissionControllerStatusLeaseTimeout:   status.AdmissionControllerStatusTimeout,
+
 		DefaultUpdateThreshold:     0.1,
 		PodLifetimeUpdateThreshold: time.Hour * 12,
 		EvictAfterOOMThreshold:     10 * time.Minute,
+
+		ConcurrentCPUStartupBoostSyncs: 1,
 	}
 }
 
@@ -77,15 +90,20 @@ func InitUpdaterFlags() *UpdaterConfig {
 	flag.DurationVar(&config.UpdaterInterval, "updater-interval", config.UpdaterInterval, "How often updater should run")
 	flag.IntVar(&config.MinReplicas, "min-replicas", config.MinReplicas, "Minimum number of replicas to perform update")
 	flag.Float64Var(&config.EvictionToleranceFraction, "eviction-tolerance", config.EvictionToleranceFraction, "Fraction of replica count that can be evicted for update, if more than one pod can be evicted.")
-	flag.Float64Var(&config.EvictionRateLimit, "eviction-rate-limit", config.EvictionRateLimit, "Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable the rate limiter.")
+	flag.Float64Var(&config.EvictionRateLimit, "eviction-rate-limit", config.EvictionRateLimit, "Number of pods that can be evicted per second. A rate limit set to 0 or -1 will disable the rate limiter.")
 	flag.IntVar(&config.EvictionRateBurst, "eviction-rate-burst", config.EvictionRateBurst, "Burst of pods that can be evicted.")
 	flag.StringVar(&config.Address, "address", config.Address, "The address to expose Prometheus metrics.")
 	flag.BoolVar(&config.UseAdmissionControllerStatus, "use-admission-controller-status", config.UseAdmissionControllerStatus, "If true, updater will only evict pods when admission controller status is valid.")
 	flag.BoolVar(&config.InPlaceSkipDisruptionBudget, "in-place-skip-disruption-budget", config.InPlaceSkipDisruptionBudget, "[BETA] If true, VPA updater skips disruption budget checks for in-place pod updates when all containers have NotRequired resize policy (or no policy defined) for both CPU and memory resources. Disruption budgets are still respected when any container has RestartContainer resize policy for any resource.")
 
+	flag.StringVar(&config.AdmissionControllerStatusLeaseName, "admission-controller-status-lease-name", config.AdmissionControllerStatusLeaseName, "The name of the Lease object used to check the admission controller status. Must match the admission controller's --status-lease-name flag.")
+	flag.StringVar(&config.AdmissionControllerStatusLeaseNamespace, "admission-controller-status-lease-namespace", config.AdmissionControllerStatusLeaseNamespace, "The namespace of the Lease object used to check the admission controller status. Defaults to the value of the NAMESPACE environment variable, or "+status.AdmissionControllerStatusNamespace+" if that is also unset. Must match the admission controller's --status-lease-namespace flag.")
+	flag.DurationVar(&config.AdmissionControllerStatusLeaseTimeout, "admission-controller-status-lease-timeout", config.AdmissionControllerStatusLeaseTimeout, "The time after which the admission controller status is considered stale and the updater stops evicting pods. Must be longer than the admission controller's --status-lease-update-interval flag.")
+
 	flag.Float64Var(&config.DefaultUpdateThreshold, "pod-update-threshold", config.DefaultUpdateThreshold, "Ignore updates that have priority lower than the value of this flag")
 	flag.DurationVar(&config.PodLifetimeUpdateThreshold, "in-recommendation-bounds-eviction-lifetime-threshold", config.PodLifetimeUpdateThreshold, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
 	flag.DurationVar(&config.EvictAfterOOMThreshold, "evict-after-oom-threshold", config.EvictAfterOOMThreshold, `The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start.`)
+	flag.IntVar(&config.ConcurrentCPUStartupBoostSyncs, "concurrent-cpu-startup-boost-syncs", config.ConcurrentCPUStartupBoostSyncs, "The number of workers processing CPU startup boost unboosting concurrently.")
 
 	// These need to happen last. kube_flag.InitFlags() synchronizes and parses
 	// flags from the flag package to pflag, so feature gates must be added to
@@ -102,5 +120,15 @@ func InitUpdaterFlags() *UpdaterConfig {
 
 // ValidateUpdaterConfig performs validation of the updater flags
 func ValidateUpdaterConfig(config *UpdaterConfig) {
+	// TODO (omerap12): fill validation to all updater config flags.
+	if config.ConcurrentCPUStartupBoostSyncs <= 0 {
+		klog.ErrorS(nil, "--concurrent-cpu-startup-boost-syncs should be positive")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 	common.ValidateCommonConfig(config.CommonFlags)
+
+	if config.AdmissionControllerStatusLeaseTimeout <= 0 {
+		klog.ErrorS(nil, "--admission-controller-status-lease-timeout must be positive.")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 }

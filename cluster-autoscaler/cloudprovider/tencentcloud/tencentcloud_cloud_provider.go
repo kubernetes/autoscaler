@@ -17,6 +17,7 @@ limitations under the License.
 package tencentcloud
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -80,7 +81,7 @@ func buildStaticallyDiscoveringProvider(tencentcloudManager TencentcloudManager,
 }
 
 // Cleanup ...
-func (tencentcloud *tencentCloudProvider) Cleanup() error {
+func (tencentcloud *tencentCloudProvider) Cleanup(ctx context.Context) error {
 	tencentcloud.tencentcloudManager.Cleanup()
 	return nil
 }
@@ -91,7 +92,7 @@ func (tencentcloud *tencentCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (tencentcloud *tencentCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (tencentcloud *tencentCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	asgs := tencentcloud.tencentcloudManager.GetAsgs()
 	result := make([]cloudprovider.NodeGroup, 0, len(asgs))
 	for _, asg := range asgs {
@@ -101,7 +102,7 @@ func (tencentcloud *tencentCloudProvider) NodeGroups() []cloudprovider.NodeGroup
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (tencentcloud *tencentCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (tencentcloud *tencentCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	if node.Spec.ProviderID == "" {
 		return nil, nil
 	}
@@ -123,45 +124,45 @@ func (tencentcloud *tencentCloudProvider) NodeGroupForNode(node *apiv1.Node) (cl
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (tencentcloud *tencentCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (tencentcloud *tencentCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (tencentcloud *tencentCloudProvider) GPULabel() string {
+func (tencentcloud *tencentCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes returns all available GPU types cloud provider supports.
-func (tencentcloud *tencentCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (tencentcloud *tencentCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (tencentcloud *tencentCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(tencentcloud, node)
+func (tencentcloud *tencentCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), tencentcloud, node)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (tencentcloud *tencentCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (tencentcloud *tencentCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
-func (tencentcloud *tencentCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (tencentcloud *tencentCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (tencentcloud *tencentCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (tencentcloud *tencentCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (tencentcloud *tencentCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (tencentcloud *tencentCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	resourceLimiter, err := tencentcloud.tencentcloudManager.GetResourceLimiter()
 	if err != nil {
 		return nil, err
@@ -174,7 +175,7 @@ func (tencentcloud *tencentCloudProvider) GetResourceLimiter() (*cloudprovider.R
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (tencentcloud *tencentCloudProvider) Refresh() error {
+func (tencentcloud *tencentCloudProvider) Refresh(ctx context.Context) error {
 
 	klog.V(4).Infof("Refresh loop")
 

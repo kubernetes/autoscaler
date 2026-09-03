@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -71,52 +72,52 @@ func NewVMPool(spec *dynamic.NodeGroupSpec, am *AzureManager, agentPoolName stri
 
 // MinSize returns the minimum size the vmPool is allowed to scaled down
 // to as provided by the node spec in --node parameter.
-func (vmPool *VMPool) MinSize() int {
+func (vmPool *VMPool) MinSize(ctx context.Context) int {
 	return vmPool.minSize
 }
 
 // Exist is always true since we are initialized with an existing vmPool
-func (vmPool *VMPool) Exist() bool {
+func (vmPool *VMPool) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (vmPool *VMPool) Create() (cloudprovider.NodeGroup, error) {
+func (vmPool *VMPool) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
-func (vmPool *VMPool) Delete() error {
+func (vmPool *VMPool) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (vmPool *VMPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (vmPool *VMPool) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned is always false since we are initialized with an existing agentpool
-func (vmPool *VMPool) Autoprovisioned() bool {
+func (vmPool *VMPool) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (vmPool *VMPool) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (vmPool *VMPool) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	// TODO(wenxuan): implement this method when vmPool can fully support GPU nodepool
 	return nil, nil
 }
 
 // MaxSize returns the maximum size scale limit provided by --node
 // parameter to the autoscaler main
-func (vmPool *VMPool) MaxSize() int {
+func (vmPool *VMPool) MaxSize(ctx context.Context) int {
 	return vmPool.maxSize
 }
 
 // TargetSize returns the current target size of the node group. This value represents
 // the desired number of nodes in the VMPool, which may differ from the actual number
 // of nodes currently present.
-func (vmPool *VMPool) TargetSize() (int, error) {
+func (vmPool *VMPool) TargetSize(ctx context.Context) (int, error) {
 	// VMs in the "Deleting" state are not counted towards the target size.
 	size, err := vmPool.getCurSize(skipOption{skipDeleting: true, skipFailed: false})
 	return int(size), err
@@ -124,7 +125,7 @@ func (vmPool *VMPool) TargetSize() (int, error) {
 
 // IncreaseSize increases the size of the VMPool by sending a PUT request to update the agent pool.
 // This method waits until the asynchronous PUT operation completes or the client-side timeout is reached.
-func (vmPool *VMPool) IncreaseSize(delta int) error {
+func (vmPool *VMPool) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive, current delta: %d", delta)
 	}
@@ -135,8 +136,8 @@ func (vmPool *VMPool) IncreaseSize(delta int) error {
 		return err
 	}
 
-	if int(currentSize)+delta > vmPool.MaxSize() {
-		return fmt.Errorf("size-increasing request of %d is bigger than max size %d", int(currentSize)+delta, vmPool.MaxSize())
+	if int(currentSize)+delta > vmPool.MaxSize(context.TODO()) {
+		return fmt.Errorf("size-increasing request of %d is bigger than max size %d", int(currentSize)+delta, vmPool.MaxSize(context.TODO()))
 	}
 
 	updateCtx, cancel := getContextWithTimeout(vmsAsyncContextTimeout)
@@ -225,15 +226,15 @@ func buildRequestBodyForScaleUp(agentpool armcontainerservice.AgentPool, count i
 // and performing the appropriate delete or deallocate operation based on the agent pool's
 // scale-down policy. This method waits for the asynchronous delete operation to complete,
 // with a client-side timeout.
-func (vmPool *VMPool) DeleteNodes(nodes []*apiv1.Node) error {
+func (vmPool *VMPool) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	// Ensure we don't scale below the minimum size by excluding VMs in the "Deleting" state.
 	currentSize, err := vmPool.getCurSize(skipOption{skipDeleting: true, skipFailed: false})
 	if err != nil {
 		return fmt.Errorf("unable to retrieve current size: %w", err)
 	}
 
-	if int(currentSize) <= vmPool.MinSize() {
-		return fmt.Errorf("cannot delete nodes as minimum size of %d has been reached", vmPool.MinSize())
+	if int(currentSize) <= vmPool.MinSize(context.TODO()) {
+		return fmt.Errorf("cannot delete nodes as minimum size of %d has been reached", vmPool.MinSize(context.TODO()))
 	}
 
 	providerIDs, err := vmPool.getProviderIDsForNodes(nodes)
@@ -335,7 +336,7 @@ func (vmPool *VMPool) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DecreaseTargetSize decreases the target size of the node group.
-func (vmPool *VMPool) DecreaseTargetSize(delta int) error {
+func (vmPool *VMPool) DecreaseTargetSize(ctx context.Context, delta int) error {
 	// The TargetSize of a VMPool is automatically adjusted after node deletions.
 	// This method is invoked in scenarios such as (see details in clusterstate.go):
 	// - len(readiness.Registered) > acceptableRange.CurrentTarget
@@ -359,8 +360,8 @@ func (vmPool *VMPool) Id() string {
 }
 
 // Debug returns a string with basic details of the agentPool
-func (vmPool *VMPool) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", vmPool.Id(), vmPool.MinSize(), vmPool.MaxSize())
+func (vmPool *VMPool) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", vmPool.Id(), vmPool.MinSize(context.TODO()), vmPool.MaxSize(context.TODO()))
 }
 
 func isSpotAgentPool(ap armcontainerservice.AgentPool) bool {
@@ -454,7 +455,7 @@ func (vmPool *VMPool) getVMsFromCache(op skipOption) ([]*armcompute.VirtualMachi
 }
 
 // Nodes returns the list of nodes in the vms agentPool.
-func (vmPool *VMPool) Nodes() ([]cloudprovider.Instance, error) {
+func (vmPool *VMPool) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	vms, err := vmPool.getVMsFromCache(skipOption{}) // no skip option, get all VMs
 	if err != nil {
 		return nil, err
@@ -485,7 +486,7 @@ func (vmPool *VMPool) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a NodeInfo object that can be used to create a new node in the vmPool.
-func (vmPool *VMPool) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (vmPool *VMPool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	ap, err := vmPool.getAgentpoolFromCache()
 	if err != nil {
 		return nil, err
@@ -537,6 +538,6 @@ func (vmPool *VMPool) getAgentpoolFromAzure() (armcontainerservice.AgentPool, er
 // before returning. This blocking behavior is required for atomic-scale-up
 // ProvisioningRequest support to provide a capacity guarantee before workloads
 // are admitted.
-func (vmPool *VMPool) AtomicIncreaseSize(delta int) error {
-	return vmPool.IncreaseSize(delta)
+func (vmPool *VMPool) AtomicIncreaseSize(ctx context.Context, delta int) error {
+	return vmPool.IncreaseSize(context.TODO(), delta)
 }

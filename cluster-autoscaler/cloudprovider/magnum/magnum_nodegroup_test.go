@@ -17,6 +17,7 @@ limitations under the License.
 package magnum
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -105,21 +106,21 @@ func TestIncreaseSize(t *testing.T) {
 	// Test all working normally
 	t.Run("success", func(t *testing.T) {
 		manager.On("updateNodeCount", testNodeGroupUUID, 2).Return(nil).Once()
-		err := ng.IncreaseSize(1)
+		err := ng.IncreaseSize(context.Background(), 1)
 		assert.NoError(t, err)
 		assert.Equal(t, 2, ng.targetSize, "target size not updated")
 	})
 
 	// Test negative increase
 	t.Run("negative increase", func(t *testing.T) {
-		err := ng.IncreaseSize(-1)
+		err := ng.IncreaseSize(context.Background(), -1)
 		assert.Error(t, err)
 		assert.Equal(t, "size increase must be positive", err.Error())
 	})
 
 	// Test zero increase
 	t.Run("zero increase", func(t *testing.T) {
-		err := ng.IncreaseSize(0)
+		err := ng.IncreaseSize(context.Background(), 0)
 		assert.Error(t, err)
 		assert.Equal(t, "size increase must be positive", err.Error())
 	})
@@ -127,7 +128,7 @@ func TestIncreaseSize(t *testing.T) {
 	// Test increase too large
 	t.Run("increase too large", func(t *testing.T) {
 		ng.targetSize = 1
-		err := ng.IncreaseSize(10)
+		err := ng.IncreaseSize(context.Background(), 10)
 		assert.Error(t, err)
 		assert.Equal(t, "size increase too large, desired:11 max:10", err.Error())
 	})
@@ -136,7 +137,7 @@ func TestIncreaseSize(t *testing.T) {
 	t.Run("update node count fails", func(t *testing.T) {
 		ng.targetSize = 1
 		manager.On("updateNodeCount", testNodeGroupUUID, 2).Return(errors.New("manager error")).Once()
-		err := ng.IncreaseSize(1)
+		err := ng.IncreaseSize(context.Background(), 1)
 		assert.Error(t, err)
 		assert.Equal(t, "could not increase cluster size: manager error", err.Error())
 	})
@@ -150,21 +151,21 @@ func TestDecreaseSize(t *testing.T) {
 	// Test all working normally
 	t.Run("success", func(t *testing.T) {
 		manager.On("updateNodeCount", testNodeGroupUUID, 2).Return(nil).Once()
-		err := ng.DecreaseTargetSize(-1)
+		err := ng.DecreaseTargetSize(context.Background(), -1)
 		assert.NoError(t, err)
 		assert.Equal(t, 2, ng.targetSize, "target size not updated")
 	})
 
 	// Test positive decrease
 	t.Run("positive decrease", func(t *testing.T) {
-		err := ng.DecreaseTargetSize(1)
+		err := ng.DecreaseTargetSize(context.Background(), 1)
 		assert.Error(t, err)
 		assert.Equal(t, "size decrease must be negative", err.Error())
 	})
 
 	// Test zero decrease
 	t.Run("zero decrease", func(t *testing.T) {
-		err := ng.DecreaseTargetSize(0)
+		err := ng.DecreaseTargetSize(context.Background(), 0)
 		assert.Error(t, err)
 		assert.Equal(t, "size decrease must be negative", err.Error())
 	})
@@ -172,7 +173,7 @@ func TestDecreaseSize(t *testing.T) {
 	// Test decrease too large
 	t.Run("decrease too large", func(t *testing.T) {
 		ng.targetSize = 3
-		err := ng.DecreaseTargetSize(-4)
+		err := ng.DecreaseTargetSize(context.Background(), -4)
 		assert.Error(t, err)
 		assert.Equal(t, "size decrease too large, desired:-1 min:1", err.Error())
 	})
@@ -181,7 +182,7 @@ func TestDecreaseSize(t *testing.T) {
 	t.Run("update node count fails", func(t *testing.T) {
 		ng.targetSize = 3
 		manager.On("updateNodeCount", testNodeGroupUUID, 2).Return(errors.New("manager error")).Once()
-		err := ng.DecreaseTargetSize(-1)
+		err := ng.DecreaseTargetSize(context.Background(), -1)
 		assert.Error(t, err)
 		assert.Equal(t, "could not decrease target size: manager error", err.Error())
 	})
@@ -241,7 +242,7 @@ func TestDeleteNodes(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		ng.targetSize = 10
 		manager.On("deleteNodes", testNodeGroupUUID, nodeRefs, 5).Return(nil).Once()
-		err := ng.DeleteNodes(nodesToDelete)
+		err := ng.DeleteNodes(context.Background(), nodesToDelete)
 		assert.NoError(t, err)
 		assert.Equal(t, 5, ng.targetSize)
 	})
@@ -250,7 +251,7 @@ func TestDeleteNodes(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		ng.targetSize = 10
 		manager.On("deleteNodes", testNodeGroupUUID, nodeRefs, 5).Return(errors.New("manager error")).Once()
-		err := ng.DeleteNodes(nodesToDelete)
+		err := ng.DeleteNodes(context.Background(), nodesToDelete)
 		assert.Error(t, err)
 		assert.Equal(t, "manager error deleting nodes: manager error", err.Error())
 	})
@@ -294,7 +295,7 @@ func TestNodes(t *testing.T) {
 	}
 
 	manager.On("deleteNodes", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-	err := ng.DeleteNodes(nodesToDelete)
+	err := ng.DeleteNodes(context.Background(), nodesToDelete)
 	require.NoError(t, err)
 
 	allNodes := append(runningNodes, deletingNodes...)
@@ -302,7 +303,7 @@ func TestNodes(t *testing.T) {
 
 	manager.On("getNodes", testNodeGroupUUID).Return(allNodes, nil).Once()
 
-	nodes, err := ng.Nodes()
+	nodes, err := ng.Nodes(context.Background())
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, expectedNodes, nodes)
 
@@ -315,7 +316,7 @@ func TestNodes(t *testing.T) {
 
 	manager.On("getNodes", testNodeGroupUUID).Return(runningNodes, nil).Once()
 
-	nodes, err = ng.Nodes()
+	nodes, err = ng.Nodes(context.Background())
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, runningNodes, nodes)
 	assert.Equalf(t, 0, len(ng.deletedNodes), "node group deletedNodes map was not cleaned")

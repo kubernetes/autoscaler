@@ -18,6 +18,7 @@ package civo
 
 import (
 	"bytes"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -141,16 +142,16 @@ func TestCivoCloudProvider_NodeGroups(t *testing.T) {
 	provider := testCloudProvider(t, nil)
 
 	t.Run("success", func(t *testing.T) {
-		nodegroups := provider.NodeGroups()
+		nodegroups := provider.NodeGroups(context.Background())
 		assert.Equal(t, len(nodegroups), 2, "number of node groups does not match")
-		nodes, _ := nodegroups[0].Nodes()
+		nodes, _ := nodegroups[0].Nodes(context.Background())
 		assert.Equal(t, len(nodes), 2, "number of nodes in workers node group does not match")
 
 	})
 
 	t.Run("zero groups", func(t *testing.T) {
 		provider.manager.nodeGroups = []*NodeGroup{}
-		nodes := provider.NodeGroups()
+		nodes := provider.NodeGroups(context.Background())
 		assert.Equal(t, len(nodes), 0, "number of nodes do not match")
 	})
 }
@@ -219,7 +220,7 @@ func TestCivoCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		nodeGroup, err := provider.NodeGroupForNode(node)
+		nodeGroup, err := provider.NodeGroupForNode(context.Background(), node)
 		require.NoError(t, err)
 		require.NotNil(t, nodeGroup)
 		require.Equal(t, nodeGroup.Id(), "1", "node group ID does not match")
@@ -280,7 +281,7 @@ func TestCivoCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		nodeGroup, err := provider.NodeGroupForNode(node)
+		nodeGroup, err := provider.NodeGroupForNode(context.Background(), node)
 		require.NoError(t, err)
 		require.Nil(t, nodeGroup)
 	})

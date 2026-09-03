@@ -23,6 +23,7 @@ limitations under the License.
 package kubemark
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -108,23 +109,23 @@ func (kubemark *KubemarkCloudProvider) Name() string {
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (kubemark *KubemarkCloudProvider) GPULabel() string {
+func (kubemark *KubemarkCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
-func (kubemark *KubemarkCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (kubemark *KubemarkCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (kubemark *KubemarkCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(kubemark, node)
+func (kubemark *KubemarkCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), kubemark, node)
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (kubemark *KubemarkCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (kubemark *KubemarkCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	result := make([]cloudprovider.NodeGroup, 0, len(kubemark.nodeGroups))
 	for _, nodegroup := range kubemark.nodeGroups {
 		result = append(result, nodegroup)
@@ -133,12 +134,12 @@ func (kubemark *KubemarkCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (kubemark *KubemarkCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (kubemark *KubemarkCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (kubemark *KubemarkCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (kubemark *KubemarkCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	// Skip nodes that are not managed by Kubemark Cloud Provider.
 	if !strings.HasPrefix(node.Spec.ProviderID, ProviderName) {
 		return nil, nil
@@ -156,36 +157,36 @@ func (kubemark *KubemarkCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloud
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (kubemark *KubemarkCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (kubemark *KubemarkCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided.
-func (kubemark *KubemarkCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (kubemark *KubemarkCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint,
 	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (kubemark *KubemarkCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (kubemark *KubemarkCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return kubemark.resourceLimiter, nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (kubemark *KubemarkCloudProvider) Refresh() error {
+func (kubemark *KubemarkCloudProvider) Refresh(ctx context.Context) error {
 	return nil
 }
 
 // Cleanup cleans up all resources before the cloud provider is removed
-func (kubemark *KubemarkCloudProvider) Cleanup() error {
+func (kubemark *KubemarkCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
@@ -203,22 +204,22 @@ func (nodeGroup *NodeGroup) Id() string {
 }
 
 // MinSize returns minimum size of the node group.
-func (nodeGroup *NodeGroup) MinSize() int {
+func (nodeGroup *NodeGroup) MinSize(ctx context.Context) int {
 	return nodeGroup.minSize
 }
 
 // MaxSize returns maximum size of the node group.
-func (nodeGroup *NodeGroup) MaxSize() int {
+func (nodeGroup *NodeGroup) MaxSize(ctx context.Context) int {
 	return nodeGroup.maxSize
 }
 
 // Debug returns a debug string for the nodegroup.
-func (nodeGroup *NodeGroup) Debug() string {
-	return fmt.Sprintf("%s (%d:%d)", nodeGroup.Id(), nodeGroup.MinSize(), nodeGroup.MaxSize())
+func (nodeGroup *NodeGroup) Debug(ctx context.Context) string {
+	return fmt.Sprintf("%s (%d:%d)", nodeGroup.Id(), nodeGroup.MinSize(context.TODO()), nodeGroup.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (nodeGroup *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (nodeGroup *NodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	instances := make([]cloudprovider.Instance, 0)
 	nodes, err := nodeGroup.kubemarkController.GetNodeNamesForNodeGroup(nodeGroup.Name)
 	if err != nil {
@@ -231,12 +232,12 @@ func (nodeGroup *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // DeleteNodes deletes the specified nodes from the node group.
-func (nodeGroup *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (nodeGroup *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	size, err := nodeGroup.kubemarkController.GetNodeGroupTargetSize(nodeGroup.Name)
 	if err != nil {
 		return err
 	}
-	if size <= nodeGroup.MinSize() {
+	if size <= nodeGroup.MinSize(context.TODO()) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 	for _, node := range nodes {
@@ -248,12 +249,12 @@ func (nodeGroup *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (nodeGroup *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (nodeGroup *NodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // IncreaseSize increases NodeGroup size.
-func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
+func (nodeGroup *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -262,20 +263,20 @@ func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
 		return err
 	}
 	newSize := int(size) + delta
-	if newSize > nodeGroup.MaxSize() {
-		return fmt.Errorf("size increase too large, desired: %d max: %d", newSize, nodeGroup.MaxSize())
+	if newSize > nodeGroup.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase too large, desired: %d max: %d", newSize, nodeGroup.MaxSize(context.TODO()))
 	}
 	return nodeGroup.kubemarkController.SetNodeGroupSize(nodeGroup.Name, newSize)
 }
 
 // AtomicIncreaseSize is not implemented.
-func (nodeGroup *NodeGroup) AtomicIncreaseSize(delta int) error {
+func (nodeGroup *NodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (nodeGroup *NodeGroup) TargetSize() (int, error) {
+func (nodeGroup *NodeGroup) TargetSize(ctx context.Context) (int, error) {
 	size, err := nodeGroup.kubemarkController.GetNodeGroupTargetSize(nodeGroup.Name)
 	return int(size), err
 }
@@ -283,7 +284,7 @@ func (nodeGroup *NodeGroup) TargetSize() (int, error) {
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
-func (nodeGroup *NodeGroup) DecreaseTargetSize(delta int) error {
+func (nodeGroup *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
@@ -304,33 +305,33 @@ func (nodeGroup *NodeGroup) DecreaseTargetSize(delta int) error {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (nodeGroup *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (nodeGroup *NodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Exist checks if the node group really exists on the cloud provider side.
-func (nodeGroup *NodeGroup) Exist() bool {
+func (nodeGroup *NodeGroup) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side.
-func (nodeGroup *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (nodeGroup *NodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
-func (nodeGroup *NodeGroup) Delete() error {
+func (nodeGroup *NodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (nodeGroup *NodeGroup) Autoprovisioned() bool {
+func (nodeGroup *NodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (nodeGroup *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (nodeGroup *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

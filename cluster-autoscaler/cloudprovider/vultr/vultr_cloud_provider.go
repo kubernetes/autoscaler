@@ -18,6 +18,7 @@ package vultr
 
 import (
 	"errors"
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -65,7 +66,7 @@ func (v *vultrCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (v *vultrCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (v *vultrCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	nodeGroups := make([]cloudprovider.NodeGroup, len(v.manager.nodeGroups))
 	for i, ng := range v.manager.nodeGroups {
 		nodeGroups[i] = ng
@@ -76,7 +77,7 @@ func (v *vultrCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (v *vultrCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (v *vultrCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	nodeID, err := nodeIDFromNode(node)
 	if err != nil {
 		if errors.Is(err, errMissingNodeID) {
@@ -95,7 +96,7 @@ func (v *vultrCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (v *vultrCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (v *vultrCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	ng, err := v.NodeGroupForNode(node)
 	if err != nil {
 		return false, err
@@ -105,13 +106,13 @@ func (v *vultrCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (v *vultrCloudProvider) Pricing() (cloudprovider.PricingModel, autoscaler_errors.AutoscalerError) {
+func (v *vultrCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (v *vultrCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (v *vultrCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
@@ -119,39 +120,39 @@ func (v *vultrCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // provided. The node group is not automatically created on the cloud provider
 // side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (v *vultrCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (v *vultrCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (v *vultrCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (v *vultrCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return v.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (v *vultrCloudProvider) GPULabel() string {
+func (v *vultrCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (v *vultrCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (v *vultrCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (v *vultrCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(v, node)
+func (v *vultrCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), v, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (v *vultrCloudProvider) Cleanup() error {
+func (v *vultrCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (v *vultrCloudProvider) Refresh() error {
+func (v *vultrCloudProvider) Refresh(ctx context.Context) error {
 	klog.V(4).Info("Refreshing node group cache")
 	return v.manager.Refresh()
 }

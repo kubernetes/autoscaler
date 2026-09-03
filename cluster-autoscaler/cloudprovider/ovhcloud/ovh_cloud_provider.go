@@ -109,7 +109,7 @@ func (provider *OVHCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (provider *OVHCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (provider *OVHCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, 0)
 
 	// Cast API node pools into CA node groups
@@ -135,7 +135,7 @@ func (provider *OVHCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (provider *OVHCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (provider *OVHCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	// If the provider ID is empty (only the prefix), it means that we are processing an UnregisteredNode retrieved
 	// from OVHCloud APIs, which has just started being created, and the OpenStack instance ID is not yet set.
 	// We won't be able to determine the node group of the node with the information at hand.
@@ -166,7 +166,7 @@ func (provider *OVHCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (provider *OVHCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (provider *OVHCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
@@ -189,7 +189,7 @@ func (provider *OVHCloudProvider) findNodeGroupFromLabel(node *apiv1.Node) cloud
 	}
 
 	// Find in the node groups stored in cache the one with the same name
-	for _, ng := range provider.NodeGroups() {
+	for _, ng := range provider.NodeGroups(context.TODO()) {
 		if ng.Id() == label {
 			return ng
 		}
@@ -200,9 +200,9 @@ func (provider *OVHCloudProvider) findNodeGroupFromLabel(node *apiv1.Node) cloud
 
 // findNodeGroupByListingNodes finds the associated node group from by listing all nodes under autoscaled node pools
 func (provider *OVHCloudProvider) findNodeGroupByListingNodes(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	for _, ng := range provider.NodeGroups() {
+	for _, ng := range provider.NodeGroups(context.TODO()) {
 		// This calls OVHCloud APIs and refreshes the cache
-		instances, err := ng.Nodes()
+		instances, err := ng.Nodes(context.TODO())
 		if err != nil {
 			return nil, fmt.Errorf("failed to list nodes in node group %s: %w", ng.Id(), err)
 		}
@@ -219,14 +219,14 @@ func (provider *OVHCloudProvider) findNodeGroupByListingNodes(node *apiv1.Node) 
 
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
-func (provider *OVHCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (provider *OVHCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	// This is not implemented in API
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from
 // the cloud provider. Implementation optional.
-func (provider *OVHCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (provider *OVHCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	klog.V(4).Info("Getting available machine types")
 
 	flavorsByName, err := provider.manager.getFlavorsByName()
@@ -249,7 +249,7 @@ func (provider *OVHCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // provided. The node group is not automatically created on the cloud provider
 // side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (provider *OVHCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (provider *OVHCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	ng := &NodeGroup{
 		NodePool: sdk.NodePool{
 			Name:     fmt.Sprintf("%s-%d", machineType, rand.Int63()),
@@ -266,17 +266,17 @@ func (provider *OVHCloudProvider) NewNodeGroup(machineType string, labels map[st
 
 // GetResourceLimiter returns struct containing limits (max, min) for
 // resources (cores, memory etc.).
-func (provider *OVHCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (provider *OVHCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return provider.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (provider *OVHCloudProvider) GPULabel() string {
+func (provider *OVHCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (provider *OVHCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (provider *OVHCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	klog.V(4).Info("Getting available GPU types")
 
 	flavorsByName, err := provider.manager.getFlavorsByName()
@@ -298,20 +298,20 @@ func (provider *OVHCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (provider *OVHCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(provider, node)
+func (provider *OVHCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), provider, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed,
 // i.e. go routines etc.
-func (provider *OVHCloudProvider) Cleanup() error {
+func (provider *OVHCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically
 // update cloud provider state. In particular the list of node groups returned
 // by NodeGroups() can change as a result of CloudProvider.Refresh().
-func (provider *OVHCloudProvider) Refresh() error {
+func (provider *OVHCloudProvider) Refresh(ctx context.Context) error {
 	klog.V(4).Info("Listing node pools to refresh NodeGroups")
 
 	// Check if OpenStack keystone token need to be revoke and re-create

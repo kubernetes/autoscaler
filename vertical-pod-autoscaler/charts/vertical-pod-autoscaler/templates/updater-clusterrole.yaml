@@ -19,6 +19,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-actor
+  labels:
+    {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
 rules:
   - apiGroups:
       - ""
@@ -63,6 +65,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-evictioner
+  labels:
+    {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
 rules:
   - apiGroups:
       - "apps"
@@ -82,6 +86,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-target-reader
+  labels:
+    {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
 rules:
   - apiGroups:
       - '*'
@@ -123,6 +129,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-status-reader
+  labels:
+    {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
 rules:
   - apiGroups:
       - "coordination.k8s.io"

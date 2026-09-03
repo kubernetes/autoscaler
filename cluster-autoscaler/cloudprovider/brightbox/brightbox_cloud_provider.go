@@ -71,7 +71,7 @@ func (b *brightboxCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (b *brightboxCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (b *brightboxCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	klog.V(4).Info("NodeGroups")
 	// Duplicate the stored nodegroup elements and return it
 	//return append(b.nodeGroups[:0:0], b.nodeGroups...)
@@ -82,7 +82,7 @@ func (b *brightboxCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if
 // the node should not be processed by cluster autoscaler, or non-nil
 // error if such occurred. Must be implemented.
-func (b *brightboxCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (b *brightboxCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	klog.V(4).Info("NodeGroupForNode")
 	klog.V(4).Infof("Looking for %v", node.Spec.ProviderID)
 	groupID, ok := b.nodeMap[k8ssdk.MapProviderIDToServerID(node.Spec.ProviderID)]
@@ -95,7 +95,7 @@ func (b *brightboxCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (b *brightboxCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (b *brightboxCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
@@ -103,7 +103,7 @@ func (b *brightboxCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 // update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can
 // change as a result of CloudProvider.Refresh().
-func (b *brightboxCloudProvider) Refresh() error {
+func (b *brightboxCloudProvider) Refresh(ctx context.Context) error {
 	klog.V(4).Info("Refresh")
 	configmaps, err := b.GetConfigMaps()
 	if err != nil {
@@ -174,7 +174,7 @@ func (b *brightboxCloudProvider) Refresh() error {
 // Pricing returns pricing model for this cloud provider or error if
 // not available.
 // Implementation optional.
-func (b *brightboxCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (b *brightboxCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	klog.V(4).Info("Pricing")
 	return nil, cloudprovider.ErrNotImplemented
 }
@@ -182,7 +182,7 @@ func (b *brightboxCloudProvider) Pricing() (cloudprovider.PricingModel, errors.A
 // GetAvailableMachineTypes get all machine types that can be requested
 // from the cloud provider.
 // Implementation optional.
-func (b *brightboxCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (b *brightboxCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	klog.V(4).Info("GetAvailableMachineTypes")
 	return nil, cloudprovider.ErrNotImplemented
 }
@@ -192,41 +192,41 @@ func (b *brightboxCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // the cloud provider side. The node group is not returned by NodeGroups()
 // until it is created.
 // Implementation optional.
-func (b *brightboxCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (b *brightboxCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	klog.V(4).Info("newNodeGroup")
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for
 // resources (cores, memory etc.).
-func (b *brightboxCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (b *brightboxCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	klog.V(4).Info("GetResourceLimiter")
 	return b.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (b *brightboxCloudProvider) GPULabel() string {
+func (b *brightboxCloudProvider) GPULabel(ctx context.Context) string {
 	klog.V(4).Info("GPULabel")
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider
 // supports.
-func (b *brightboxCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (b *brightboxCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	klog.V(4).Info("GetAvailableGPUTypes")
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (b *brightboxCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
+func (b *brightboxCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
 	klog.V(4).Info("GetNodeGpuConfig")
-	return gpu.GetNodeGPUFromCloudProvider(b, node)
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), b, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is
 // destroyed, i.e. go routines etc.
-func (b *brightboxCloudProvider) Cleanup() error {
+func (b *brightboxCloudProvider) Cleanup(ctx context.Context) error {
 	klog.V(4).Info("Cleanup")
 	return nil
 }

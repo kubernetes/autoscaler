@@ -59,7 +59,6 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           args:
-            - --v=4
             - --stderrthreshold=info
             {{- /* Smart auto-enable: if enabled is null, auto-enable when replicas > 1 */ -}}
             {{- $leaderElectionEnabled := .Values.recommender.leaderElection.enabled }}
@@ -74,6 +73,9 @@ spec:
             - --leader-elect-renew-deadline={{ .Values.recommender.leaderElection.renewDeadline }}
             - --leader-elect-retry-period={{ .Values.recommender.leaderElection.retryPeriod }}
             {{- end }}
+          {{- with .Values.recommender.logLevel }}
+            - --v={{ . }}
+          {{- end }}
           {{- with .Values.recommender.extraArgs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -114,6 +116,10 @@ spec:
       {{- end }}
       {{- with .Values.recommender.tolerations }}
       tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.recommender.topologySpreadConstraints }}
+      topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 {{- end -}}

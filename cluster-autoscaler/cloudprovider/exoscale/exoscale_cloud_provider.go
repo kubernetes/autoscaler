@@ -17,6 +17,7 @@ limitations under the License.
 package exoscale
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -63,14 +64,14 @@ func (e *exoscaleCloudProvider) Name() string {
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (e *exoscaleCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (e *exoscaleCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	return e.manager.nodeGroups
 }
 
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (e *exoscaleCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (e *exoscaleCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	instancePool, err := e.instancePoolFromNode(node)
 	if err != nil {
 		if err == errNoInstancePool {
@@ -204,26 +205,26 @@ func (e *exoscaleCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (e *exoscaleCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (e *exoscaleCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (e *exoscaleCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (e *exoscaleCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (e *exoscaleCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (e *exoscaleCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (e *exoscaleCloudProvider) NewNodeGroup(
+func (e *exoscaleCloudProvider) NewNodeGroup(ctx context.Context,
 	_ string,
 	_,
 	_ map[string]string,
@@ -234,34 +235,34 @@ func (e *exoscaleCloudProvider) NewNodeGroup(
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (e *exoscaleCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (e *exoscaleCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return e.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (e *exoscaleCloudProvider) GPULabel() string {
+func (e *exoscaleCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (e *exoscaleCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (e *exoscaleCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (e *exoscaleCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(e, node)
+func (e *exoscaleCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), e, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (e *exoscaleCloudProvider) Cleanup() error {
+func (e *exoscaleCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (e *exoscaleCloudProvider) Refresh() error {
+func (e *exoscaleCloudProvider) Refresh(ctx context.Context) error {
 	debugf("refreshing node groups cache")
 	return e.manager.Refresh()
 }

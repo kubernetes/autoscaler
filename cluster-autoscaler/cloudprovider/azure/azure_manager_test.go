@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"reflect"
@@ -805,8 +806,8 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 		asgs := manager.azureCache.getRegisteredNodeGroups()
 		assert.Equal(t, 1, len(asgs))
 		assert.Equal(t, name, asgs[0].Id())
-		assert.Equal(t, min, asgs[0].MinSize())
-		assert.Equal(t, max, asgs[0].MaxSize())
+		assert.Equal(t, min, asgs[0].MinSize(context.Background()))
+		assert.Equal(t, max, asgs[0].MaxSize(context.Background()))
 	}
 
 	// test vmTypeStandard
@@ -1020,8 +1021,8 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	asgs = manager.azureCache.getRegisteredNodeGroups()
 	assert.Equal(t, 1, len(asgs))
 	assert.Equal(t, vmssName, asgs[0].Id())
-	assert.Equal(t, minVal, asgs[0].MinSize())
-	assert.Equal(t, maxVal, asgs[0].MaxSize())
+	assert.Equal(t, minVal, asgs[0].MinSize(context.Background()))
+	assert.Equal(t, maxVal, asgs[0].MaxSize(context.Background()))
 
 	// test explicitlyConfigured
 	manager.explicitlyConfigured[vmssName] = true
