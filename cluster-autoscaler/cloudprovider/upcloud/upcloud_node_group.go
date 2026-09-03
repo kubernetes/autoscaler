@@ -110,10 +110,10 @@ func (u *upCloudNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) er
 func (u *upCloudNodeGroup) scaleNodeGroup(ctx context.Context, size int) error {
 	u.mu.Lock()
 	defer u.mu.Unlock()
-	ctx, cancel := context.WithTimeout(ctx, timeoutModifyNodeGroup)
+	svcCtx, cancel := context.WithTimeout(ctx, timeoutModifyNodeGroup)
 	defer cancel()
 	klog.V(logInfo).Infof("scaling node group %s from %d to %d", u.Id(), u.size, size)
-	_, err := u.svc.ModifyKubernetesNodeGroup(ctx, &request.ModifyKubernetesNodeGroupRequest{
+	_, err := u.svc.ModifyKubernetesNodeGroup(svcCtx, &request.ModifyKubernetesNodeGroupRequest{
 		ClusterUUID: u.clusterID.String(),
 		Name:        u.name,
 		NodeGroup: request.ModifyKubernetesNodeGroup{
@@ -135,22 +135,29 @@ func (u *upCloudNodeGroup) waitNodeGroupState(ctx context.Context, state upcloud
 	deadline := time.Now().Add(timeout)
 	i := 1
 	klog.V(logInfo).Infof("waiting node group %s state %s", u.Id(), state)
-	for time.Now().Before(deadline) {
-		ctx, cancel := context.WithTimeout(ctx, timeoutGetRequest)
-		defer cancel()
 
-		g, err := u.svc.GetKubernetesNodeGroup(ctx, &request.GetKubernetesNodeGroupRequest{
-			ClusterUUID: u.clusterID.String(),
-			Name:        u.name,
-		})
-		if err != nil {
-			return g, fmt.Errorf("failed to fetch node group %s, %w", u.Id(), err)
+	ticker := time.NewTicker(3 * time.Second)
+	defer ticker.Stop()
+
+	for time.Now().Before(deadline) {
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("waiting node group %s state %s cancelled; %w", u.Id(), state, ctx.Err())
+		case <-ticker.C:
+			svcCtx, cancel := context.WithTimeout(ctx, timeoutGetRequest)
+			g, err := u.svc.GetKubernetesNodeGroup(svcCtx, &request.GetKubernetesNodeGroupRequest{
+				ClusterUUID: u.clusterID.String(),
+				Name:        u.name,
+			})
+			cancel()
+			if err != nil {
+				return g, fmt.Errorf("failed to fetch node group %s, %w", u.Id(), err)
+			}
+			if g.State == state {
+				return g, nil
+			}
+			klog.V(logInfo).Infof("waiting(%d) node group %s state %s (%s)", i, u.Id(), state, g.State)
 		}
-		if g.State == state {
-			return g, nil
-		}
-		klog.V(logInfo).Infof("waiting(%d) node group %s state %s (%s)", i, u.Id(), state, g.State)
-		time.Sleep(3 * time.Second)
 		i++
 	}
 	return nil, fmt.Errorf("node group %s state check (%d) timed out", u.Id(), i)
