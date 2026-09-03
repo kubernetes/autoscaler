@@ -202,14 +202,14 @@ func TestVultrCloudProvider_HasInstance(t *testing.T) {
 
 	manager.client = client
 	provider := newVultrCloudProvider(manager, &cloudprovider.ResourceLimiter{})
-	err = provider.Refresh()
+	err = provider.Refresh(ctx)
 	assert.NoError(t, err)
 
-	hasInstance, err := provider.HasInstance(&apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("np-1234")}})
+	hasInstance, err := provider.HasInstance(ctx, &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("np-1234")}})
 	require.NoError(t, err)
 	assert.True(t, hasInstance)
 
-	hasInstance, err = provider.HasInstance(&apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("missing")}})
+	hasInstance, err = provider.HasInstance(ctx, &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("missing")}})
 	require.NoError(t, err)
 	assert.False(t, hasInstance)
 }

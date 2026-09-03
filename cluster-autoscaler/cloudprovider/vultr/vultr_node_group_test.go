@@ -171,7 +171,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			Nodes:        []govultr.Node{{ID: "a"}, {ID: "b"}, {ID: "c"}},
 		})
 
-		err := ng.DecreaseTargetSize(-1)
+		err := ng.DecreaseTargetSize(context.Background(), -1)
 		assert.EqualError(t, err, "cannot decrease target size below existing nodes. current target: 3 desired: 2 existing nodes: 3")
 	})
 }
@@ -275,7 +275,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 
 		client.On("DeleteNodePoolInstance", ctx, ng.clusterID, ng.id, "a").Return(nil).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(context.Background(), nodes)
 		assert.NoError(t, err)
 	})
 
@@ -287,7 +287,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 			{Spec: apiv1.NodeSpec{ProviderID: toProviderID("b")}},
 		}
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(context.Background(), nodes)
 		assert.EqualError(t, err, "cannot delete node \"\" (\"b\"): node does not belong to node pool \"a\"")
 	})
 }

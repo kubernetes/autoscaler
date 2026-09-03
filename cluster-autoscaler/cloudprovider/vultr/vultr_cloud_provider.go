@@ -17,8 +17,8 @@ limitations under the License.
 package vultr
 
 import (
-	"errors"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -30,7 +30,7 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
 	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
-	autoscaler_errors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	autoscalererrors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
@@ -97,7 +97,7 @@ func (v *vultrCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.N
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (v *vultrCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
-	ng, err := v.NodeGroupForNode(node)
+	ng, err := v.NodeGroupForNode(ctx, node)
 	if err != nil {
 		return false, err
 	}
@@ -106,7 +106,7 @@ func (v *vultrCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) 
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (v *vultrCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (v *vultrCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, autoscalererrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -142,7 +142,7 @@ func (v *vultrCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[strin
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
 func (v *vultrCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), v, node)
+	return gpu.GetNodeGPUFromCloudProvider(ctx, v, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
