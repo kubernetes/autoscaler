@@ -402,8 +402,10 @@ func (r *unstructuredScalableResource) InstanceResourceSlices(nodeName string) (
 			Spec: resourceapi.ResourceSliceSpec{
 				Driver:   driver,
 				NodeName: &nodeName,
+				// TODO: Derive ResourceSliceCount from the number of generated ResourceSlices instead of hard-coding it.
 				Pool: resourceapi.ResourcePool{
-					Name: nodeName,
+					Name:               nodeName,
+					ResourceSliceCount: 1,
 				},
 			},
 		}
