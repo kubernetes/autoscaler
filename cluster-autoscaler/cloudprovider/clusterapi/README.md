@@ -95,6 +95,12 @@ To specify the kubeconfig path for the management cluster to monitor, use the
 `--cloud-config` option is not specified it will fall back to using the kubeconfig
 that was provided with the `--kubeconfig` option.
 
+> [!NOTE]
+> The status configmap (`--write-status-configmap`) is written using the same
+> client as Nodes and Pods, ie the cluster pointed at by `--kubeconfig` (the
+> workload cluster, when management and workload clusters are separate). It is
+> not written to the cluster pointed at by `--cloud-config`.
+
 ### Autoscaler running in a joined cluster using service account credentials
 ```
 +-----------------+
