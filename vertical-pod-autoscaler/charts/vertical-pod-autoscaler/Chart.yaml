@@ -2,6 +2,7 @@ apiVersion: v2
 name: vertical-pod-autoscaler
 description: Automatically adjust resources for your workloads
 
+
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
