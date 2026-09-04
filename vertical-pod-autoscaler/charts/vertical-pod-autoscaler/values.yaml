@@ -19,8 +19,15 @@ rbac:
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 65534
+  seccompProfile:
+    type: RuntimeDefault
 
-containerSecurityContext: {}
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
 
 admissionController:
   enabled: true
