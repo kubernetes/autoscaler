@@ -80,7 +80,7 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 	})
 
 	ginkgo.It("starts recommender with --pod-recommendation-min-memory-mb parameter", func() {
-		const minMemoryMb = 250
+		const minMemoryMb = 500
 
 		ginkgo.By("Setting up VPA deployment")
 		f.Namespace.Name = utils.VpaNamespace
