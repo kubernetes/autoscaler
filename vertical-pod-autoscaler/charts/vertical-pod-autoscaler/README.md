@@ -91,17 +91,18 @@ The VPA CRDs are managed as regular chart templates and are kept in sync automat
 
 By default, the CRDs are annotated with `helm.sh/resource-policy: keep`, so `helm uninstall` will not remove them, protecting any existing VPA objects from being deleted. Set `crds.keep: false` to disable this.
 
-If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`), the upgrade will fail with an "invalid ownership metadata" error. This is because Helm never took ownership of CRDs installed via the old `crds/` folder, so it refuses to adopt them. This is a one time issue, you only need to deal with it on the first upgrade past 0.12.0.
+> [!WARNING]
+> If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`) and `crds.enabled` is `true`, the upgrade will fail with an "invalid ownership metadata" error unless you use `--take-ownership` or apply the manual fix below first. If `crds.enabled` is `false`, these CRDs are not rendered by the chart. This is because Helm never took ownership of CRDs installed via the old `crds/` folder, so it refuses to adopt them without one of these steps. This only needs to be done once, on your first upgrade past 0.12.0.
 
 If you're on Helm 3.17+, pass `--take-ownership` on that upgrade:
 
-````bash
-helm upgrade <release-name> <chart> --take-ownership
-````
+```bash
+helm upgrade <release-name> <chart> --namespace <namespace> --take-ownership
+```
 
 On older Helm versions `--take-ownership` isn't available, so add the ownership metadata manually first:
 
-````bash
+```bash
 kubectl label crd verticalpodautoscalercheckpoints.autoscaling.k8s.io app.kubernetes.io/managed-by=Helm --overwrite
 kubectl annotate crd verticalpodautoscalercheckpoints.autoscaling.k8s.io meta.helm.sh/release-name=<release-name> meta.helm.sh/release-namespace=<namespace> --overwrite
 
