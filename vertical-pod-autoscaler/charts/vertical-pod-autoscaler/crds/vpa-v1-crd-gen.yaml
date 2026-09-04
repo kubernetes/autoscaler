@@ -469,6 +469,26 @@ spec:
                                   and forbidden otherwise
                                 rule: (self.type == 'Quantity') == has(self.quantity)
                           type: object
+                        targetCPUPercentile:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          description: |-
+                            targetCPUPercentile is the CPU usage percentile used as the target for
+                            the recommendation, overriding the global --target-cpu-percentile flag
+                            for this container. Must be in (0, 1].
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        targetMemoryPercentile:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          description: |-
+                            targetMemoryPercentile is the memory usage percentile used as the
+                            target for the recommendation, overriding the global
+                            --target-memory-percentile flag for this container. Must be in (0, 1].
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
                       type: object
                     type: array
                 type: object

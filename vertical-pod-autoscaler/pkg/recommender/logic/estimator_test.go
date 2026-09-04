@@ -62,6 +62,50 @@ func TestPercentileEstimator(t *testing.T) {
 	assert.InEpsilon(t, 2e9, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]), maxRelativeError)
 }
 
+// Verifies that the target percentile estimators honor the per-container
+// override on AggregateContainerState, that bound estimators ignore it, and
+// that the target estimator falls back to the global percentile when unset.
+func TestTargetPercentileEstimatorOverride(t *testing.T) {
+	config := model.GetAggregationsConfig()
+	cpuHistogram := util.NewHistogram(config.CPUHistogramOptions)
+	memHistogram := util.NewHistogram(config.MemoryHistogramOptions)
+	for _, v := range []float64{1, 2, 3, 4, 5} {
+		cpuHistogram.AddSample(v, 1.0, anyTime)
+		memHistogram.AddSample(v*1e9, 1.0, anyTime)
+	}
+
+	globalPercentile := 0.5
+	overridePercentile := 0.9
+
+	targetCPU := NewTargetPercentileCPUEstimator(globalPercentile)
+	boundCPU := NewPercentileCPUEstimator(globalPercentile)
+	targetMem := NewTargetPercentileMemoryEstimator(globalPercentile)
+	boundMem := NewPercentileMemoryEstimator(globalPercentile)
+
+	withOverride := &model.AggregateContainerState{
+		AggregateCPUUsage:      cpuHistogram,
+		AggregateMemoryPeaks:   memHistogram,
+		TargetCPUPercentile:    overridePercentile,
+		TargetMemoryPercentile: overridePercentile,
+	}
+	noOverride := &model.AggregateContainerState{
+		AggregateCPUUsage:    cpuHistogram,
+		AggregateMemoryPeaks: memHistogram,
+	}
+
+	// Target estimator honors the override: a higher percentile yields a higher estimate.
+	assert.Greater(t, targetCPU.GetCPUEstimation(withOverride), targetCPU.GetCPUEstimation(noOverride))
+	assert.Greater(t, targetMem.GetMemoryEstimation(withOverride), targetMem.GetMemoryEstimation(noOverride))
+
+	// Bound estimator ignores the override entirely.
+	assert.Equal(t, boundCPU.GetCPUEstimation(noOverride), boundCPU.GetCPUEstimation(withOverride))
+	assert.Equal(t, boundMem.GetMemoryEstimation(noOverride), boundMem.GetMemoryEstimation(withOverride))
+
+	// Target estimator with no override falls back to the global percentile (matches the bound estimator).
+	assert.Equal(t, boundCPU.GetCPUEstimation(noOverride), targetCPU.GetCPUEstimation(noOverride))
+	assert.Equal(t, boundMem.GetMemoryEstimation(noOverride), targetMem.GetMemoryEstimation(noOverride))
+}
+
 // Verifies that the confidenceMultiplier calculates the internal
 // confidence based on the amount of historical samples and scales the resources
 // returned by the base estimator according to the formula, using the calculated

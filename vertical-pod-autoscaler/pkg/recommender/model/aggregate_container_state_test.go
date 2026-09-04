@@ -22,9 +22,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
+	"k8s.io/utils/ptr"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
@@ -390,6 +392,79 @@ func TestUpdateFromPolicyMemoryAggregationIntervalCount(t *testing.T) {
 			assert.Equal(t, tc.expectedCount, cs.MemoryAggregationIntervalCount)
 		})
 	}
+}
+
+func TestUpdateFromPolicyTargetPercentile(t *testing.T) {
+	testCases := []struct {
+		name           string
+		policy         *vpa_types.ContainerResourcePolicy
+		featureEnabled bool
+		expectedCPU    float64
+		expectedMemory float64
+	}{
+		{
+			name: "Custom target percentiles with feature enabled",
+			policy: &vpa_types.ContainerResourcePolicy{
+				TargetCPUPercentile:    ptr.To(resource.MustParse("0.95")),
+				TargetMemoryPercentile: ptr.To(resource.MustParse("0.8")),
+			},
+			featureEnabled: true,
+			expectedCPU:    0.95,
+			expectedMemory: 0.8,
+		},
+		{
+			name: "Custom target percentiles with feature disabled - stay unset (0)",
+			policy: &vpa_types.ContainerResourcePolicy{
+				TargetCPUPercentile:    ptr.To(resource.MustParse("0.95")),
+				TargetMemoryPercentile: ptr.To(resource.MustParse("0.8")),
+			},
+			featureEnabled: false,
+			expectedCPU:    0,
+			expectedMemory: 0,
+		},
+		{
+			name:           "Nil target percentiles - stay unset (0)",
+			policy:         &vpa_types.ContainerResourcePolicy{},
+			featureEnabled: true,
+			expectedCPU:    0,
+			expectedMemory: 0,
+		},
+		{
+			name:           "Nil policy - stay unset (0)",
+			policy:         nil,
+			featureEnabled: true,
+			expectedCPU:    0,
+			expectedMemory: 0,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, tc.featureEnabled)
+			cs := NewAggregateContainerState()
+			cs.UpdateFromPolicy(tc.policy)
+			assert.Equal(t, tc.expectedCPU, cs.GetTargetCPUPercentile())
+			assert.Equal(t, tc.expectedMemory, cs.GetTargetMemoryPercentile())
+		})
+	}
+}
+
+func TestUpdateFromPolicyTargetPercentileReset(t *testing.T) {
+	// AggregateContainerState is reused across reconciles, so removing a per-VPA
+	// override must reset the field back to 0 (global fallback), not keep the old value.
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, true)
+	cs := NewAggregateContainerState()
+
+	cs.UpdateFromPolicy(&vpa_types.ContainerResourcePolicy{
+		TargetCPUPercentile:    ptr.To(resource.MustParse("0.95")),
+		TargetMemoryPercentile: ptr.To(resource.MustParse("0.8")),
+	})
+	assert.Equal(t, 0.95, cs.GetTargetCPUPercentile())
+	assert.Equal(t, 0.8, cs.GetTargetMemoryPercentile())
+
+	// Re-applying a policy without the fields must clear the previous override.
+	cs.UpdateFromPolicy(&vpa_types.ContainerResourcePolicy{})
+	assert.Equal(t, float64(0), cs.GetTargetCPUPercentile())
+	assert.Equal(t, float64(0), cs.GetTargetMemoryPercentile())
 }
 
 func TestAggregateContainerStateIsExpiredWithCustomIntervalCount(t *testing.T) {
