@@ -1,5 +1,6 @@
 version: 2
 updates:
+
 ### VPA master branch
 - package-ecosystem: gomod
   directories:
@@ -45,6 +46,7 @@ updates:
       update-types:
         - "minor"
         - "patch"
+
 ### VPA release 1.7 branch
 - package-ecosystem: gomod
   target-branch: vpa-release-1.7
@@ -85,8 +87,8 @@ updates:
   groups:
     actions:
       update-types:
-        - "minor"
         - "patch"
+
 ### Addon-resizer
 - package-ecosystem: gomod
   directory: "/addon-resizer"
@@ -107,6 +109,7 @@ updates:
     - "area/dependency"
     - "release-note-none"
     - "ok-to-test"
+
 # Go - Cluster Autoscaler
 - directory: "/cluster-autoscaler"
   package-ecosystem: "gomod"
