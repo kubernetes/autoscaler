@@ -100,3 +100,41 @@ func TestManager_Refresh(t *testing.T) {
 	assert.Equal(t, manager.nodeGroups[1].maxSize, 8, "minimum node for first group does not match")
 
 }
+
+func TestManager_RefreshPreservesInFlightTargetSize(t *testing.T) {
+	config := `{"token": "123-456", "cluster_id": "abc"}`
+
+	manager, err := newManager(strings.NewReader(config))
+	require.NoError(t, err)
+
+	client := &vultrClientMock{}
+	ctx := context.Background()
+
+	manager.nodeGroups = []*NodeGroup{
+		{
+			id:       "1234",
+			nodePool: &govultr.NodePool{ID: "1234", NodeQuantity: 3, Nodes: []govultr.Node{{ID: "a"}}},
+		},
+	}
+
+	client.On("ListNodePools", ctx, manager.clusterID, nil).Return(
+		[]govultr.NodePool{
+			{
+				ID:           "1234",
+				AutoScaler:   true,
+				NodeQuantity: 1,
+				Nodes:        []govultr.Node{{ID: "a"}},
+				MinNodes:     1,
+				MaxNodes:     5,
+			},
+		},
+		&govultr.Meta{},
+		nil,
+	).Once()
+
+	manager.client = client
+
+	err = manager.Refresh()
+	require.NoError(t, err)
+	assert.Equal(t, 3, manager.nodeGroups[0].nodePool.NodeQuantity)
+}
