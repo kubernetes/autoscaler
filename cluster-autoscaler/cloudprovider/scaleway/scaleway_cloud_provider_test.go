@@ -85,7 +85,7 @@ func createTestPool(id string, autoscaling bool, size, minSize, maxSize int) sca
 		Labels: map[string]string{
 			"kubernetes.io/hostname": "node-1",
 		},
-		Taints:           map[string]string{},
+		NodeTaints:       []scalewaygo.Taint{},
 		NodePricePerHour: 0.05,
 		CreatedAt:        &now,
 		UpdatedAt:        &now,

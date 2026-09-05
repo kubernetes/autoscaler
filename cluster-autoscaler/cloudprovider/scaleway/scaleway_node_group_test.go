@@ -508,9 +508,9 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 				"kubernetes.io/hostname":           "test-node",
 				"node.kubernetes.io/instance-type": "DEV1-M",
 			},
-			Taints: map[string]string{
-				"key1": "value1:NoSchedule",
-				"key2": "NoExecute",
+			NodeTaints: []scalewaygo.Taint{
+				{Key: "key1", Value: "value1", Effect: "NoSchedule"},
+				{Key: "key2", Effect: "NoExecute"},
 			},
 		},
 	}
@@ -692,17 +692,17 @@ func TestFromScwStatus(t *testing.T) {
 	}
 }
 
-func TestParseTaints(t *testing.T) {
-	t.Run("parse various taint formats", func(t *testing.T) {
-		taints := map[string]string{
-			"key1": "value1:NoSchedule",
-			"key2": "value2:NoExecute",
-			"key3": "value3:PreferNoSchedule",
-			"key4": "NoSchedule",
-			"key5": "invalid:InvalidEffect",
+func TestConvertTaints(t *testing.T) {
+	t.Run("convert various taint effects", func(t *testing.T) {
+		taints := []scalewaygo.Taint{
+			{Key: "key1", Value: "value1", Effect: "NoSchedule"},
+			{Key: "key2", Value: "value2", Effect: "NoExecute"},
+			{Key: "key3", Value: "value3", Effect: "PreferNoSchedule"},
+			{Key: "key4", Effect: "NoSchedule"},
+			{Key: "key5", Value: "invalid", Effect: "InvalidEffect"},
 		}
 
-		k8sTaints := parseTaints(taints)
+		k8sTaints := convertTaints(taints)
 		assert.Len(t, k8sTaints, 4) // key5 should be skipped
 
 		taintMap := make(map[string]apiv1.Taint)
@@ -732,22 +732,34 @@ func TestParseTaints(t *testing.T) {
 	})
 
 	t.Run("empty taints", func(t *testing.T) {
-		taints := map[string]string{}
-		k8sTaints := parseTaints(taints)
+		k8sTaints := convertTaints(nil)
+		assert.Empty(t, k8sTaints)
+
+		k8sTaints = convertTaints([]scalewaygo.Taint{})
 		assert.Empty(t, k8sTaints)
 	})
 
-	t.Run("taint with multiple colons has no value", func(t *testing.T) {
-		// parseTaints only extracts value if there are exactly 2 parts (value:Effect)
-		// With multiple colons, the value is not extracted
-		taints := map[string]string{
-			"key1": "value:with:colons:NoSchedule",
+	t.Run("value is kept as-is", func(t *testing.T) {
+		taints := []scalewaygo.Taint{
+			{Key: "key1", Value: "value:with:colons", Effect: "NoSchedule"},
 		}
 
-		k8sTaints := parseTaints(taints)
+		k8sTaints := convertTaints(taints)
 		assert.Len(t, k8sTaints, 1)
 		assert.Equal(t, "key1", k8sTaints[0].Key)
-		assert.Equal(t, "", k8sTaints[0].Value) // No value extracted for multiple colons
+		assert.Equal(t, "value:with:colons", k8sTaints[0].Value)
 		assert.Equal(t, apiv1.TaintEffectNoSchedule, k8sTaints[0].Effect)
+	})
+
+	t.Run("duplicated keys are all converted", func(t *testing.T) {
+		taints := []scalewaygo.Taint{
+			{Key: "key1", Value: "value1", Effect: "NoSchedule"},
+			{Key: "key1", Value: "value1", Effect: "NoExecute"},
+		}
+
+		k8sTaints := convertTaints(taints)
+		require.Len(t, k8sTaints, 2)
+		assert.Equal(t, apiv1.TaintEffectNoSchedule, k8sTaints[0].Effect)
+		assert.Equal(t, apiv1.TaintEffectNoExecute, k8sTaints[1].Effect)
 	})
 }
