@@ -59,7 +59,7 @@ const (
 	// Version id should be incremented on every non incompatible change, i.e. if the new
 	// version of the recommender binary can't initialize from the old checkpoint format or the
 	// previous version of the recommender binary can't initialize from the new checkpoint format.
-	SupportedCheckpointVersion = "v3"
+	SupportedCheckpointVersion = "v4"
 )
 
 var (
