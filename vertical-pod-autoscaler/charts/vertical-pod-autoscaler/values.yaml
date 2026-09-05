@@ -442,3 +442,10 @@ updater:
   # name of priorityclass for scheduling
   priorityClassName:
   # priorityClassName : high-priority
+
+crds:
+  # crds.enabled -- Whether to install and manage the VPA CRDs. Disable if you manage CRDs separately.
+  enabled: true
+  # crds.keep -- Whether to add the helm.sh/resource-policy: keep annotation to the CRDs,
+  # so they are not removed by `helm uninstall`.
+  keep: true
