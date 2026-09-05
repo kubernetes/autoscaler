@@ -258,6 +258,12 @@ func TestErrors(t *testing.T) {
 			expectedErrorCode:  ErrorAutomaticReservationsNoCapacity,
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "Instance 'bad-instance-creation' creation failed: Cloud KMS error when using key projects/my-project/locations/us-central1/keyRings/my-keyring/cryptoKeys/my-key: Permission 'cloudkms.cryptoKeyVersions.useToEncrypt' denied",
+			expectedErrorCode:  "CLOUD_KMS_ERROR",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
 	}
 	for _, tc := range testCases {
 		for _, errorCode := range tc.errorCodes {
