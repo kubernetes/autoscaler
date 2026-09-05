@@ -30,6 +30,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	admissionregistrationv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
 	"k8s.io/klog/v2"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 )
 
 func readFile(filePath string) []byte {
@@ -154,7 +156,7 @@ func (cr *certReloader) reloadWebhookCA() error {
 	}
 	klog.V(2).InfoS("New client CA found, reloading and patching webhook")
 	patch := fmt.Appendf(nil, `{"webhooks":[{"name":"%s","clientConfig":{"caBundle":"%s"}}]}`, webhookName, base64NewBundle)
-	_, err = client.Patch(context.TODO(), webhookConfigName, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	_, err = client.Patch(context.TODO(), webhookConfigName, types.StrategicMergePatchType, patch, metav1.PatchOptions{FieldManager: common.FieldManagerAdmissionController})
 	if err == nil {
 		klog.V(2).InfoS("Successfully patched webhook with new client CA")
 	}

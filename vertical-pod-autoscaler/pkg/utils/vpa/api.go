@@ -75,19 +75,21 @@ type patchRecord struct {
 	Value any    `json:"value"`
 }
 
-func patchVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) (result *vpa_types.VerticalPodAutoscaler, err error) {
+func patchVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord, fieldManager string) (result *vpa_types.VerticalPodAutoscaler, err error) {
 	bytes, err := json.Marshal(patches)
 	if err != nil {
 		klog.ErrorS(err, "Cannot marshal VPA status patches", "patches", patches)
 		return nil, err
 	}
 
-	return vpaClient.Patch(context.TODO(), vpaName, types.JSONPatchType, bytes, metav1.PatchOptions{}, "status")
+	return vpaClient.Patch(context.TODO(), vpaName, types.JSONPatchType, bytes, metav1.PatchOptions{FieldManager: fieldManager}, "status")
 }
 
 // UpdateVpaStatusIfNeeded updates the status field of the VPA API object.
+// fieldManager identifies the component performing the write, so that the API
+// server can attribute field ownership to it.
 func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, newStatus,
-	oldStatus *vpa_types.VerticalPodAutoscalerStatus) (result *vpa_types.VerticalPodAutoscaler, err error) {
+	oldStatus *vpa_types.VerticalPodAutoscalerStatus, fieldManager string) (result *vpa_types.VerticalPodAutoscaler, err error) {
 	patches := []patchRecord{{
 		Op:    "add",
 		Path:  "/status",
@@ -95,7 +97,7 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 	}}
 
 	if !apiequality.Semantic.DeepEqual(*oldStatus, *newStatus) {
-		return patchVpaStatus(vpaClient, vpaName, patches)
+		return patchVpaStatus(vpaClient, vpaName, patches, fieldManager)
 	}
 	return nil, nil
 }
@@ -319,8 +321,10 @@ func GetContainerControlledValues(name string, vpaResourcePolicy *vpa_types.PodR
 
 // CreateOrUpdateVpaCheckpoint updates the status field of the VPA Checkpoint API object.
 // If object doesn't exits it is created.
+// fieldManager identifies the component performing the write, so that the API
+// server can attribute field ownership to it.
 func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointInterface,
-	vpaCheckpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
+	vpaCheckpoint *vpa_types.VerticalPodAutoscalerCheckpoint, fieldManager string) error {
 	patches := make([]patchRecord, 0)
 	patches = append(patches, patchRecord{
 		Op:    "replace",
@@ -331,9 +335,9 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 	if err != nil {
 		return fmt.Errorf("cannot marshal VPA checkpoint status patches %+v. Reason: %+v", patches, err)
 	}
-	_, err = vpaCheckpointClient.Patch(context.TODO(), vpaCheckpoint.Name, types.JSONPatchType, bytes, metav1.PatchOptions{})
+	_, err = vpaCheckpointClient.Patch(context.TODO(), vpaCheckpoint.Name, types.JSONPatchType, bytes, metav1.PatchOptions{FieldManager: fieldManager})
 	if err != nil && strings.Contains(err.Error(), fmt.Sprintf("\"%s\" not found", vpaCheckpoint.Name)) {
-		_, err = vpaCheckpointClient.Create(context.TODO(), vpaCheckpoint, metav1.CreateOptions{})
+		_, err = vpaCheckpointClient.Create(context.TODO(), vpaCheckpoint, metav1.CreateOptions{FieldManager: fieldManager})
 	}
 	if err != nil {
 		return fmt.Errorf("cannot save checkpoint for vpa %s/%s container %s. Reason: %+v", vpaCheckpoint.Namespace, vpaCheckpoint.Name, vpaCheckpoint.Spec.ContainerName, err)

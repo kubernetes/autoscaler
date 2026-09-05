@@ -29,6 +29,7 @@ import (
 	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
 	"k8s.io/klog/v2"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/config"
 )
 
@@ -186,7 +187,7 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 			},
 		},
 	}
-	if _, err := client.Create(context.TODO(), webhookConfig, metav1.CreateOptions{}); err != nil {
+	if _, err := client.Create(context.TODO(), webhookConfig, metav1.CreateOptions{FieldManager: common.FieldManagerAdmissionController}); err != nil {
 		klog.Fatal(err)
 	} else {
 		klog.V(3).Info("Self registration as MutatingWebhook succeeded.")

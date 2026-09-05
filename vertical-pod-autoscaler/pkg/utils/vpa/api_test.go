@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/utils/ptr"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -99,7 +100,7 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 		t.Run(tc.caseName, func(t *testing.T) {
 			fakeClient := vpa_fake.NewSimpleClientset(&vpa_types.VerticalPodAutoscalerList{Items: []vpa_types.VerticalPodAutoscaler{*tc.observedVpa}}) //nolint:staticcheck // https://github.com/kubernetes/autoscaler/issues/8954
 			_, err := UpdateVpaStatusIfNeeded(fakeClient.AutoscalingV1().VerticalPodAutoscalers(tc.updatedVpa.Namespace),
-				tc.updatedVpa.Name, &tc.updatedVpa.Status, &tc.observedVpa.Status)
+				tc.updatedVpa.Name, &tc.updatedVpa.Status, &tc.observedVpa.Status, common.FieldManagerRecommender)
 			assert.NoError(t, err, "Unexpected error occurred.")
 			actions := fakeClient.Actions()
 			if tc.expectedUpdate {
