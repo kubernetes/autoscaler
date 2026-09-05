@@ -18,6 +18,7 @@ package test
 
 import (
 	"errors"
+	"testing"
 	"time"
 
 	"github.com/stretchr/testify/mock"
@@ -74,6 +75,27 @@ func Resources(cpu, mem string) corev1.ResourceList {
 		result[corev1.ResourceMemory] = memVal
 	}
 	return result
+}
+
+// AssertResourceListEqual asserts that two resource lists are equal.
+func AssertResourceListEqual(t testing.TB, listName string, want, got corev1.ResourceList) {
+	t.Helper()
+	t.Log("Asserting", listName)
+	for resourceName, wantQuantity := range want {
+		gotQuantity, ok := got[resourceName]
+		if !ok {
+			t.Errorf("%s: expected %s to be %s, but it is missing", listName, resourceName, wantQuantity.String())
+			continue
+		}
+		if !wantQuantity.Equal(gotQuantity) {
+			t.Errorf("%s: expected %s to be %s, got %s", listName, resourceName, wantQuantity.String(), gotQuantity.String())
+		}
+	}
+	for resourceName, gotQuantity := range got {
+		if _, ok := want[resourceName]; !ok {
+			t.Errorf("%s: unexpected %s with value %s", listName, resourceName, gotQuantity.String())
+		}
+	}
 }
 
 // RecommenderAPIMock is a mock of RecommenderAPI
