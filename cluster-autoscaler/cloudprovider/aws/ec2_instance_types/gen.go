@@ -32,6 +32,8 @@ import (
 	"k8s.io/klog/v2"
 )
 
+// EBSVolumeLimit stays on InstanceType for runtime EC2 metadata, but is omitted
+// from static map literals until the list is regenerated with DescribeInstanceTypes.
 var packageTemplate = template.Must(template.New("").Parse(`/*
 Copyright The Kubernetes Authors.
 
@@ -59,6 +61,7 @@ type InstanceType struct {
 	MemoryMb     int64
 	GPU          int64
 	Architecture string
+	EBSVolumeLimit int64
 }
 
 // StaticListLastUpdateTime is a string declaring the last time the static list was updated.
@@ -73,6 +76,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     {{ .MemoryMb }},
 		GPU:          {{ .GPU }},
 		Architecture: "{{ .Architecture }}",
+		EBSVolumeLimit: {{ .EBSVolumeLimit }},
 	},
 {{- end }}
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -30,6 +31,7 @@ import (
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -950,4 +952,314 @@ func TestParseASGAutoDiscoverySpecs(t *testing.T) {
 			assert.True(t, assert.ObjectsAreEqualValues(tc.want, got), "\ngot: %#v\nwant: %#v", got, tc.want)
 		})
 	}
+}
+
+func csiDriverASGTags(value string) []autoscalingtypes.TagDescription {
+	return []autoscalingtypes.TagDescription{
+		{
+			Key:   aws.String(csiDriverTagKey),
+			Value: aws.String(value),
+		},
+	}
+}
+
+func TestParseCSIDriverTag(t *testing.T) {
+	tests := []struct {
+		name  string
+		value string
+		want  []string
+	}{
+		{name: "empty", value: "", want: nil},
+		{name: "whitespace", value: "   ", want: nil},
+		{name: "single ebs", value: "ebs.csi.aws.com", want: []string{"ebs.csi.aws.com"}},
+		{name: "single efs", value: "efs.csi.aws.com", want: []string{"efs.csi.aws.com"}},
+		{name: "multiple", value: "ebs.csi.aws.com,efs.csi.aws.com", want: []string{"ebs.csi.aws.com", "efs.csi.aws.com"}},
+		{name: "whitespace and duplicates", value: " ebs.csi.aws.com, ebs.csi.aws.com ", want: []string{"ebs.csi.aws.com"}},
+		{name: "empty entries", value: ",ebs.csi.aws.com,,", want: []string{"ebs.csi.aws.com"}},
+		{name: "equals capacity is malformed", value: "ebs.csi.aws.com=39", want: nil},
+		{name: "mixed valid and equals", value: "efs.csi.aws.com,ebs.csi.aws.com=39", want: []string{"efs.csi.aws.com"}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, parseCSIDriverTag(tc.value))
+		})
+	}
+}
+
+func TestBuildCSINodeFromTemplate(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_NoVolumeLimit(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 0,
+		},
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_EBSDeclared(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags("ebs.csi.aws.com"),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Equal(t, "template-node", got.Name)
+	require.Len(t, got.Spec.Drivers, 1)
+	driver := got.Spec.Drivers[0]
+	require.Equal(t, "ebs.csi.aws.com", driver.Name)
+	require.Equal(t, "template-node", driver.NodeID)
+	require.NotNil(t, driver.Allocatable)
+	require.Equal(t, int32(39), *driver.Allocatable.Count)
+}
+
+func TestBuildCSINodeFromTemplate_EBSDeclaredNoVolumeLimit(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 0,
+		},
+		Tags: csiDriverASGTags("ebs.csi.aws.com"),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	driver := got.Spec.Drivers[0]
+	require.Equal(t, "ebs.csi.aws.com", driver.Name)
+	require.Nil(t, driver.Allocatable)
+}
+
+func TestBuildCSINodeFromTemplate_EFSOnly(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags("efs.csi.aws.com"),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	require.Equal(t, "efs.csi.aws.com", got.Spec.Drivers[0].Name)
+	require.Nil(t, got.Spec.Drivers[0].Allocatable)
+}
+
+func TestBuildCSINodeFromTemplate_MultipleDrivers(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags("ebs.csi.aws.com,efs.csi.aws.com"),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 2)
+	require.Equal(t, "ebs.csi.aws.com", got.Spec.Drivers[0].Name)
+	require.NotNil(t, got.Spec.Drivers[0].Allocatable)
+	require.Equal(t, int32(39), *got.Spec.Drivers[0].Allocatable.Count)
+	require.Equal(t, "efs.csi.aws.com", got.Spec.Drivers[1].Name)
+	require.Nil(t, got.Spec.Drivers[1].Allocatable)
+}
+
+func TestBuildCSINodeFromTemplate_DuplicatesAndWhitespace(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags(" ebs.csi.aws.com, ebs.csi.aws.com "),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	require.Equal(t, "ebs.csi.aws.com", got.Spec.Drivers[0].Name)
+}
+
+func TestBuildCSINodeFromTemplate_MalformedTag(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags("ebs.csi.aws.com=39"),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_EmptyTag(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags("  "),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_NilTemplate(t *testing.T) {
+	manager := &AwsManager{}
+
+	got := manager.buildCSINodeFromTemplate(nil, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_NilInstanceType(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
+
+func mngCSITemplate(asgCSIDriver string) *asgTemplate {
+	return &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: []autoscalingtypes.TagDescription{
+			{
+				Key:   aws.String("eks:nodegroup-name"),
+				Value: aws.String("ng1"),
+			},
+			{
+				Key:   aws.String("eks:cluster-name"),
+				Value: aws.String("cluster1"),
+			},
+			{
+				Key:   aws.String(csiDriverTagKey),
+				Value: aws.String(asgCSIDriver),
+			},
+		},
+	}
+}
+
+func TestCSIDriverTagMNGOverridesASGEBSWithEFS(t *testing.T) {
+	mngCache := newManagedNodeGroupCache(nil)
+	require.NoError(t, mngCache.Add(managedNodegroupCachedObject{
+		name:        "ng1",
+		clusterName: "cluster1",
+		tags:        map[string]string{csiDriverTagKey: "efs.csi.aws.com"},
+	}))
+	manager := &AwsManager{managedNodegroupCache: mngCache}
+	template := mngCSITemplate("ebs.csi.aws.com")
+
+	assert.Equal(t, "efs.csi.aws.com", manager.csiDriverTagValue(template))
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	assert.Equal(t, "efs.csi.aws.com", got.Spec.Drivers[0].Name)
+}
+
+func TestCSIDriverTagMNGOverridesASGEFSWithEBS(t *testing.T) {
+	mngCache := newManagedNodeGroupCache(nil)
+	require.NoError(t, mngCache.Add(managedNodegroupCachedObject{
+		name:        "ng1",
+		clusterName: "cluster1",
+		tags:        map[string]string{csiDriverTagKey: "ebs.csi.aws.com"},
+	}))
+	manager := &AwsManager{managedNodegroupCache: mngCache}
+	template := mngCSITemplate("efs.csi.aws.com")
+
+	assert.Equal(t, "ebs.csi.aws.com", manager.csiDriverTagValue(template))
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	assert.Equal(t, "ebs.csi.aws.com", got.Spec.Drivers[0].Name)
+	require.NotNil(t, got.Spec.Drivers[0].Allocatable)
+	assert.Equal(t, int32(39), *got.Spec.Drivers[0].Allocatable.Count)
+}
+
+func TestCSIDriverTagASGKeptWhenMNGOmitsKey(t *testing.T) {
+	mngCache := newManagedNodeGroupCache(nil)
+	require.NoError(t, mngCache.Add(managedNodegroupCachedObject{
+		name:        "ng1",
+		clusterName: "cluster1",
+		tags:        map[string]string{"unrelated": "tag"},
+	}))
+	manager := &AwsManager{managedNodegroupCache: mngCache}
+	template := mngCSITemplate("ebs.csi.aws.com")
+
+	assert.Equal(t, "ebs.csi.aws.com", manager.csiDriverTagValue(template))
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	assert.Equal(t, "ebs.csi.aws.com", got.Spec.Drivers[0].Name)
+}
+
+func TestCSIDriverTagASGKeptWhenMNGLookupFails(t *testing.T) {
+	k := &eksMock{}
+	k.On("DescribeNodegroup",
+		mock.Anything,
+		&eks.DescribeNodegroupInput{
+			ClusterName:   aws.String("cluster1"),
+			NodegroupName: aws.String("ng1"),
+		},
+	).Return(nil, errors.New("AccessDenied"))
+
+	manager := &AwsManager{managedNodegroupCache: newManagedNodeGroupCache(&awsWrapper{nil, nil, k})}
+	template := mngCSITemplate("ebs.csi.aws.com")
+
+	assert.Equal(t, "ebs.csi.aws.com", manager.csiDriverTagValue(template))
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	assert.Equal(t, "ebs.csi.aws.com", got.Spec.Drivers[0].Name)
 }
