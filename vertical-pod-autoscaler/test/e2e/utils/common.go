@@ -32,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -173,27 +174,34 @@ type VPAComponentConfig struct {
 	// MetricsPort is the port serving prometheus metrics and health checks,
 	// e.g. 8942 for the recommender. Must be within 1-65535. Required.
 	MetricsPort int32
+	// Flags are the command line flags of the component,
+	// e.g. "--recommender-interval=10s".
+	Flags []string
 }
 
 // RecommenderComponentConfig returns a VPAComponentConfig for deploying the
 // VPA recommender in e2e tests, mirroring deploy/recommender-deployment.yaml.
-func RecommenderComponentConfig() VPAComponentConfig {
+func RecommenderComponentConfig(flags ...string) VPAComponentConfig {
 	return VPAComponentConfig{
 		ComponentName: recommenderComponent,
 		Image:         "localhost:5001/vpa-recommender",
 		MetricsPort:   8942,
+		Flags:         flags,
 	}
 }
 
-// NewVPAComponentDeployment creates a deployment of a VPA component with the
-// provided command line flags, for e2e test purposes.
-func NewVPAComponentDeployment(f *framework.Framework, config VPAComponentConfig, flags []string) *appsv1.Deployment {
-	gomega.Expect(config.ComponentName).NotTo(gomega.BeEmpty(), "VPAComponentConfig.ComponentName must be set")
+// NewVPAComponentDeployment creates a deployment of a VPA component for e2e
+// test purposes.
+func NewVPAComponentDeployment(f *framework.Framework, config VPAComponentConfig) *appsv1.Deployment {
+	gomega.Expect(utilvalidation.IsDNS1123Label(config.ComponentName)).To(gomega.BeEmpty(),
+		"VPAComponentConfig.ComponentName must be a valid DNS-1123 label (got %q)", config.ComponentName)
+	deploymentName := fmt.Sprintf("vpa-%s", config.ComponentName)
+	gomega.Expect(utilvalidation.IsDNS1123Label(deploymentName)).To(gomega.BeEmpty(),
+		"deployment name %q derived from ComponentName must be a valid DNS-1123 label", deploymentName)
 	gomega.Expect(config.Image).NotTo(gomega.BeEmpty(), "VPAComponentConfig.Image must be set")
 	gomega.Expect(config.MetricsPort).Should(gomega.SatisfyAll(gomega.BeNumerically(">=", 1), gomega.BeNumerically("<=", 65535)),
 		"VPAComponentConfig.MetricsPort must be set to a valid port number (1-65535)")
 
-	deploymentName := fmt.Sprintf("vpa-%s", config.ComponentName)
 	d := framework_deployment.NewDeployment(
 		deploymentName,                           /*deploymentName*/
 		1,                                        /*replicas*/
@@ -206,7 +214,7 @@ func NewVPAComponentDeployment(f *framework.Framework, config VPAComponentConfig
 	d.Spec.Template.Spec.Containers[0].ImagePullPolicy = apiv1.PullNever // Image must be loaded first
 	d.Spec.Template.Spec.ServiceAccountName = deploymentName
 	d.Spec.Template.Spec.Containers[0].Command = []string{fmt.Sprintf("/%s", config.ComponentName)}
-	d.Spec.Template.Spec.Containers[0].Args = flags
+	d.Spec.Template.Spec.Containers[0].Args = config.Flags
 
 	runAsNonRoot := true
 	var runAsUser int64 = 65534 // nobody
