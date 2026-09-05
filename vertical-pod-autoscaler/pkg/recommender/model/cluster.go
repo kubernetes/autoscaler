@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"sync"
 	"time"
 
@@ -48,7 +49,7 @@ type ClusterState interface {
 	SetInitContainers(podID PodID, initContainers []string) error
 	GetContainer(containerID ContainerID) *ContainerState
 	DeletePod(podID PodID)
-	AddOrUpdateContainer(containerID ContainerID, request Resources) error
+	AddOrUpdateContainer(containerID ContainerID, request Resources, containerType ContainerType) error
 	AddSample(sample *ContainerUsageSampleWithKey) error
 	RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount) error
 	AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAutoscaler, selector labels.Selector) error
@@ -120,7 +121,9 @@ type PodState struct {
 	ID PodID
 	// Set of labels attached to the Pod.
 	labelSetKey labelSetKey
-	// Containers that belong to the Pod, keyed by the container name.
+	// Containers that belong to the Pod, keyed by the container name. Native
+	// sidecars (init containers with restartPolicy: Always) are tracked here too,
+	// as they are scaled and aggregated exactly like standard containers.
 	Containers map[string]*ContainerState
 	// InitContainers is a list of init containers names which belong to the Pod.
 	InitContainers []string
@@ -172,7 +175,6 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 			containerID := ContainerID{PodID: podID, ContainerName: containerName}
 			container.aggregator = cluster.findOrCreateAggregateContainerState(containerID)
 		}
-
 		cluster.addPodToItsVpa(pod)
 	}
 	pod.Phase = phase
@@ -214,8 +216,7 @@ func (cluster *clusterState) removePodFromItsVpa(pod *PodState) {
 func (cluster *clusterState) GetContainer(containerID ContainerID) *ContainerState {
 	pod, podExists := cluster.pods[containerID.PodID]
 	if podExists {
-		container, containerExists := pod.Containers[containerID.ContainerName]
-		if containerExists {
+		if container, containerExists := pod.Containers[containerID.ContainerName]; containerExists {
 			return container
 		}
 	}
@@ -235,11 +236,24 @@ func (cluster *clusterState) DeletePod(podID PodID) {
 // adds it to the parent pod in the clusterState object, if not yet present.
 // Requires the pod to be added to the clusterState first. Otherwise an error is
 // returned.
-func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, request Resources) error {
+func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, request Resources, containerType ContainerType) error {
 	pod, podExists := cluster.pods[containerID.PodID]
 	if !podExists {
 		return NewKeyError(containerID.PodID)
 	}
+
+	if containerType == ContainerTypeInit {
+		// Plain init containers run once and don't have ongoing usage worth tracking, so only
+		// their name is recorded (for VPA container-recommendation matching/status display);
+		// they're never added to the aggregate-container-state map below.
+		if !slices.Contains(pod.InitContainers, containerID.ContainerName) {
+			pod.InitContainers = append(pod.InitContainers, containerID.ContainerName)
+		}
+		return nil
+	}
+
+	// Native sidecars are scaled and aggregated exactly like standard containers,
+	// so they share the same container map (names are unique within a pod).
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
 		cluster.findOrCreateAggregateContainerState(containerID)
 		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))

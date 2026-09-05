@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -60,7 +61,7 @@ func (*resourcesUpdatesPatchCalculator) PatchResourceTarget() PatchResourceTarge
 func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	result := []resource_admission.PatchRecord{}
 
-	containersResources, annotationsPerContainer, err := c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
+	initContainersResources, containersResources, annotationsPerContainer, err := c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
 	if err != nil {
 		return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
 	}
@@ -72,6 +73,10 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 			containersResources[i].Requests = nil
 			containersResources[i].Limits = nil
 		}
+		for i := range initContainersResources {
+			initContainersResources[i].Requests = nil
+			initContainersResources[i].Limits = nil
+		}
 		annotationsPerContainer = vpa_api_util.ContainerToAnnotationsMap{}
 	}
 
@@ -80,6 +85,27 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 	}
 
 	updatesAnnotation := []string{}
+	if features.Enabled(features.NativeSidecar) {
+		for i, containerResources := range initContainersResources {
+			// Only native sidecars are eligible; plain init containers must never be patched.
+			initContainer := pod.Spec.InitContainers[i]
+			if initContainer.RestartPolicy == nil || *initContainer.RestartPolicy != corev1.ContainerRestartPolicyAlways {
+				continue
+			}
+			// Skip empty recommendations (e.g. no recommendation yet, or cleared by
+			// UpdateModeOff) so the sidecar doesn't get a resources: {} patch and an
+			// empty vpaUpdates entry.
+			if len(containerResources.Requests) == 0 && len(containerResources.Limits) == 0 {
+				continue
+			}
+			newPatches, newUpdatesAnnotation := getContainerPatch(pod, i, annotationsPerContainer, containerResources, model.ContainerTypeInitSidecar)
+			if len(newPatches) > 0 {
+				result = append(result, newPatches...)
+				updatesAnnotation = append(updatesAnnotation, newUpdatesAnnotation)
+			}
+		}
+	}
+
 	cpuStartupBoostEnabled := features.Enabled(features.CPUStartupBoost)
 	for i := range containersResources {
 		// Apply startup boost if configured
@@ -96,7 +122,7 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 			result = append(result, boostPatches...)
 		}
 
-		newPatches, newUpdatesAnnotation := getContainerPatch(pod, i, annotationsPerContainer, containersResources[i])
+		newPatches, newUpdatesAnnotation := getContainerPatch(pod, i, annotationsPerContainer, containersResources[i], model.ContainerTypeStandard)
 		if len(newPatches) > 0 {
 			result = append(result, newPatches...)
 			updatesAnnotation = append(updatesAnnotation, newUpdatesAnnotation)
@@ -110,33 +136,40 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 	return result, nil
 }
 
-func getContainerPatch(pod *corev1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]resource_admission.PatchRecord, string) {
+func getContainerPatch(pod *corev1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources, containerType model.ContainerType) ([]resource_admission.PatchRecord, string) {
 	var patches []resource_admission.PatchRecord
 	// Add empty resources object if missing.
-	requests, limits := resourcehelpers.ContainerRequestsAndLimits(pod.Spec.Containers[i].Name, pod)
-	if limits == nil && requests == nil {
-		patches = append(patches, GetPatchInitializingEmptyResources(i))
+	var container *corev1.Container
+	if containerType == model.ContainerTypeStandard {
+		container = &pod.Spec.Containers[i]
+	} else {
+		container = &pod.Spec.InitContainers[i]
 	}
 
-	annotations, found := annotationsPerContainer[pod.Spec.Containers[i].Name]
+	requests, limits := resourcehelpers.ContainerRequestsAndLimits(container.Name, pod)
+	if limits == nil && requests == nil {
+		patches = append(patches, GetPatchInitializingEmptyResources(i, containerType))
+	}
+
+	annotations, found := annotationsPerContainer[container.Name]
 	if !found {
 		annotations = make([]string, 0)
 	}
 
-	patches, annotations = appendPatchesAndAnnotations(patches, annotations, requests, i, containerResources.Requests, "requests", "request")
-	patches, annotations = appendPatchesAndAnnotations(patches, annotations, limits, i, containerResources.Limits, "limits", "limit")
+	patches, annotations = appendPatchesAndAnnotations(patches, annotations, requests, i, containerResources.Requests, "requests", "request", containerType)
+	patches, annotations = appendPatchesAndAnnotations(patches, annotations, limits, i, containerResources.Limits, "limits", "limit", containerType)
 
-	updatesAnnotation := fmt.Sprintf("container %d: ", i) + strings.Join(annotations, ", ")
+	updatesAnnotation := fmt.Sprintf("%s %d: ", containerType, i) + strings.Join(annotations, ", ")
 	return patches, updatesAnnotation
 }
 
-func appendPatchesAndAnnotations(patches []resource_admission.PatchRecord, annotations []string, current corev1.ResourceList, containerIndex int, resources corev1.ResourceList, fieldName, resourceName string) ([]resource_admission.PatchRecord, []string) {
+func appendPatchesAndAnnotations(patches []resource_admission.PatchRecord, annotations []string, current corev1.ResourceList, containerIndex int, resources corev1.ResourceList, fieldName, resourceName string, containerType model.ContainerType) ([]resource_admission.PatchRecord, []string) {
 	// Add empty object if it's missing and we're about to fill it.
 	if current == nil && len(resources) > 0 {
-		patches = append(patches, GetPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))
+		patches = append(patches, GetPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName, containerType))
 	}
 	for resource, request := range resources {
-		patches = append(patches, GetAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request))
+		patches = append(patches, GetAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request, containerType))
 		annotations = append(annotations, fmt.Sprintf("%s %s", resource, resourceName))
 	}
 	return patches, annotations

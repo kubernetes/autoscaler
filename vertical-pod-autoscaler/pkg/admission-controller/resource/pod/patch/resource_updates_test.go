@@ -43,13 +43,14 @@ const (
 )
 
 type fakeRecommendationProvider struct {
+	initResources          []vpa_api_util.ContainerResources
 	resources              []vpa_api_util.ContainerResources
 	containerToAnnotations vpa_api_util.ContainerToAnnotationsMap
 	e                      error
 }
 
-func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
-	return frp.resources, frp.containerToAnnotations, frp.e
+func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (initResources, resources []vpa_api_util.ContainerResources, annotations vpa_api_util.ContainerToAnnotationsMap, err error) {
+	return frp.initResources, frp.resources, frp.containerToAnnotations, frp.e
 }
 
 func addResourcesPatch(idx int) resource_admission.PatchRecord {
@@ -92,6 +93,44 @@ func addResourceLimitPatch(index int, res, amount string) resource_admission.Pat
 	}
 }
 
+func addInitResourcesPatch(idx int) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/initContainers/%d/resources", idx),
+		Value: corev1.ResourceRequirements{},
+	}
+}
+
+func addInitRequestsPatch(idx int) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/initContainers/%d/resources/requests", idx),
+		Value: corev1.ResourceList{},
+	}
+}
+
+func addInitResourceRequestPatch(index int, res, amount string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/initContainers/%d/resources/requests/%s", index, res),
+		Value: resource.MustParse(amount),
+	}
+}
+
+func addInitAnnotationRequest(updateResources [][]string, kind string) resource_admission.PatchRecord {
+	requests := make([]string, 0)
+	for idx, podResources := range updateResources {
+		podRequests := make([]string, 0)
+		for _, resource := range podResources {
+			podRequests = append(podRequests, resource+" "+kind)
+		}
+		requests = append(requests, fmt.Sprintf("init-sidecar %d: %s", idx, strings.Join(podRequests, ", ")))
+	}
+
+	vpaUpdates := fmt.Sprintf("Pod resources updated by name: %s", strings.Join(requests, "; "))
+	return GetAddAnnotationPatch(ResourceUpdatesAnnotation, vpaUpdates)
+}
+
 func addAnnotationRequest(updateResources [][]string, kind string) resource_admission.PatchRecord {
 	requests := make([]string, 0)
 	for idx, podResources := range updateResources {
@@ -107,10 +146,13 @@ func addAnnotationRequest(updateResources [][]string, kind string) resource_admi
 }
 
 func TestCalculatePatches_ResourceUpdates(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
 	tests := []struct {
 		name                 string
 		pod                  *corev1.Pod
 		namespace            string
+		updateMode           vpa_types.UpdateMode
+		initResources        []vpa_api_util.ContainerResources
 		recommendResources   []vpa_api_util.ContainerResources
 		recommendAnnotations vpa_api_util.ContainerToAnnotationsMap
 		recommendError       error
@@ -138,6 +180,74 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 				addRequestsPatch(0),
 				addResourceRequestPatch(0, cpu, "1"),
 				addAnnotationRequest([][]string{{cpu}}, request),
+			},
+		},
+		{
+			name: "new init cpu recommendation",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					InitContainers: []corev1.Container{{RestartPolicy: &always}},
+				},
+			},
+			namespace: "default",
+			initResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches: []resource_admission.PatchRecord{
+				addInitResourcesPatch(0),
+				addInitRequestsPatch(0),
+				addInitResourceRequestPatch(0, cpu, "1"),
+				addInitAnnotationRequest([][]string{{cpu}}, request),
+			},
+		},
+		{
+			name: "plain init container excluded when native sidecar enabled",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name: "app",
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								cpu: resource.MustParse("0"),
+							},
+						},
+					}},
+					InitContainers: []corev1.Container{
+						{Name: "plain-init"},
+						{Name: "sidecar", RestartPolicy: &always},
+					},
+				},
+			},
+			namespace: "default",
+			// plain-init is zeroed out by the recommendation provider, only the
+			// native sidecar carries a recommendation.
+			initResources: []vpa_api_util.ContainerResources{
+				{},
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches: []resource_admission.PatchRecord{
+				addInitResourcesPatch(1),
+				addInitRequestsPatch(1),
+				addInitResourceRequestPatch(1, cpu, "1"),
+				addResourceRequestPatch(0, cpu, "1"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: init-sidecar 1: cpu request; container 0: cpu request"),
 			},
 		},
 		{
@@ -304,12 +414,80 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
 			expectPatches:        []resource_admission.PatchRecord{},
 		},
+		{
+			name: "native sidecar recommendation not applied when update mode is off",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					InitContainers: []corev1.Container{{
+						RestartPolicy: &always,
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								cpu: resource.MustParse("0"),
+							},
+						},
+					}},
+				},
+			},
+			namespace:  "default",
+			updateMode: vpa_types.UpdateModeOff,
+			initResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches:        []resource_admission.PatchRecord{},
+		},
+		{
+			name: "native sidecar without recommendation is not patched",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					InitContainers: []corev1.Container{{
+						RestartPolicy: &always,
+					}},
+				},
+			},
+			namespace: "default",
+			initResources: []vpa_api_util.ContainerResources{
+				{},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches:        []resource_admission.PatchRecord{},
+		},
+		{
+			name: "resourceless native sidecar not patched when update mode is off",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					InitContainers: []corev1.Container{{
+						RestartPolicy: &always,
+					}},
+				},
+			},
+			namespace:  "default",
+			updateMode: vpa_types.UpdateModeOff,
+			initResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches:        []resource_admission.PatchRecord{},
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+			frp := fakeRecommendationProvider{tc.initResources, tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
 			c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
-			patches, err := c.CalculatePatches(tc.pod, test.VerticalPodAutoscaler().WithContainer("test").WithName("name").Get())
+			vpaBuilder := test.VerticalPodAutoscaler().WithContainer("test").WithName("name")
+			if tc.updateMode != "" {
+				vpaBuilder = vpaBuilder.WithUpdateMode(tc.updateMode)
+			}
+			patches, err := c.CalculatePatches(tc.pod, vpaBuilder.Get())
 			if tc.expectError == nil {
 				assert.NoError(t, err)
 			} else {
@@ -349,7 +527,7 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 		},
 	}
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
-	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, nil}
+	frp := fakeRecommendationProvider{nil, recommendResources, recommendAnnotations, nil}
 	c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
 	patches, err := c.CalculatePatches(pod, test.VerticalPodAutoscaler().WithName("name").WithContainer("test").Get())
 	assert.NoError(t, err)
@@ -908,7 +1086,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, tc.featureGateEnabled)
 
-			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
+			frp := fakeRecommendationProvider{nil, tc.recommendResources, tc.recommendAnnotations, tc.recommendError}
 			c := NewResourceUpdatesCalculator(&frp, tc.maxAllowedCpu)
 			patches, err := c.CalculatePatches(tc.pod, tc.vpa)
 			if tc.expectError == nil {

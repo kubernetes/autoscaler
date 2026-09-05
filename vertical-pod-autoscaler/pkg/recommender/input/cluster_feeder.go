@@ -36,6 +36,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
@@ -104,6 +105,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		vpaCheckpointClient: m.VpaCheckpointClient,
 		vpaCheckpointLister: m.VpaCheckpointLister,
 		vpaLister:           m.VpaLister,
+		podLister:           m.PodLister,
 		clusterState:        m.ClusterState,
 		specClient:          spec.NewSpecClient(m.PodLister),
 		selectorFetcher:     m.SelectorFetcher,
@@ -217,6 +219,7 @@ type clusterStateFeeder struct {
 	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	vpaCheckpointLister vpa_lister.VerticalPodAutoscalerCheckpointLister
 	vpaLister           vpa_lister.VerticalPodAutoscalerLister
+	podLister           listersv1.PodLister
 	clusterState        model.ClusterState
 	selectorFetcher     target.VpaTargetSelectorFetcher
 	memorySaveMode      bool
@@ -228,21 +231,39 @@ type clusterStateFeeder struct {
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
+	// Prometheus history doesn't carry container type, so a live pod spec lookup is needed to
+	// classify each container (standard/init/init-sidecar) when rebuilding cluster state from history.
+	pods, err := feeder.podSpecLookup()
+	if err != nil {
+		klog.ErrorS(err, "Cannot get SimplePodSpecs")
+	}
 	klog.V(3).InfoS("Initializing VPA from history provider")
 	clusterHistory, err := historyProvider.GetClusterHistory()
 	if err != nil {
 		klog.ErrorS(err, "Cannot get cluster history")
 	}
 	for podID, podHistory := range clusterHistory {
+		podSpec := pods[podID]
+		phase := corev1.PodUnknown
+		if podSpec != nil {
+			phase = podSpec.Phase
+		}
 		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
-		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, corev1.PodUnknown)
+		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, phase)
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
 				PodID:         podID,
 				ContainerName: containerName,
 			}
-			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil); err != nil {
+			klog.V(4).InfoS("Adding", "container", containerID)
+
+			containerType := historyContainerType(podSpec, containerName)
+			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil, containerType); err != nil {
 				klog.V(0).InfoS("Failed to add container", "container", containerID, "error", err)
+			}
+			if containerType == model.ContainerTypeInit {
+				// Plain init containers only have their name recorded, no state for samples.
+				continue
 			}
 			klog.V(4).InfoS("Adding samples for container", "sampleCount", len(sampleList), "container", containerID)
 			for _, sample := range sampleList {
@@ -256,6 +277,23 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 			}
 		}
 	}
+}
+
+// historyContainerType classifies a container from the live pod spec, defaulting to a regular
+// container when the pod or container is gone so its history still loads. Native sidecars follow
+// the feature gate, matching LoadPods.
+func historyContainerType(podSpec *spec.BasicPodSpec, containerName string) model.ContainerType {
+	if podSpec == nil {
+		return model.ContainerTypeStandard
+	}
+	containerSpec := podSpec.GetContainerSpec(containerName)
+	if containerSpec == nil {
+		return model.ContainerTypeStandard
+	}
+	if containerSpec.ContainerType == model.ContainerTypeInitSidecar && !features.Enabled(features.NativeSidecar) {
+		return model.ContainerTypeInit
+	}
+	return containerSpec.ContainerType
 }
 
 func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
@@ -455,14 +493,10 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 
 // LoadPods loads pod into the cluster state.
 func (feeder *clusterStateFeeder) LoadPods() {
-	podSpecs, err := feeder.specClient.GetPodSpecs()
+	pods, err := feeder.podSpecLookup()
 	if err != nil {
 		klog.ErrorS(err, "Cannot get SimplePodSpecs, skipping LoadPods cycle")
 		return
-	}
-	pods := make(map[model.PodID]*spec.BasicPodSpec)
-	for _, spec := range podSpecs {
-		pods[spec.ID] = spec
 	}
 	feeder.podsToDelete = nil
 	for key := range feeder.clusterState.Pods() {
@@ -478,13 +512,19 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		}
 		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
-			if err = feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request); err != nil {
+			if err := feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request, container.ContainerType); err != nil {
 				klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
 			}
 		}
 		initContainerNames := make([]string, 0, len(pod.InitContainers))
 		for _, initContainer := range pod.InitContainers {
-			initContainerNames = append(initContainerNames, initContainer.ID.ContainerName)
+			if features.Enabled(features.NativeSidecar) && initContainer.ContainerType == model.ContainerTypeInitSidecar {
+				if err := feeder.clusterState.AddOrUpdateContainer(initContainer.ID, initContainer.Request, initContainer.ContainerType); err != nil {
+					klog.V(0).InfoS("Failed to add initContainer", "container", initContainer.ID, "error", err)
+				}
+			} else {
+				initContainerNames = append(initContainerNames, initContainer.ID.ContainerName)
+			}
 		}
 		if err = feeder.clusterState.SetInitContainers(pod.ID, initContainerNames); err != nil {
 			klog.V(0).InfoS("Failed to set init containers", "pod", klog.KRef(pod.ID.Namespace, pod.ID.PodName), "error", err)
@@ -545,6 +585,18 @@ Loop:
 		}
 	}
 	metrics_recommender.RecordAggregateContainerStatesCount(feeder.clusterState.StateMapSize())
+}
+
+func (feeder *clusterStateFeeder) podSpecLookup() (map[model.PodID]*spec.BasicPodSpec, error) {
+	podSpecs, err := feeder.specClient.GetPodSpecs()
+	if err != nil {
+		return nil, err
+	}
+	pods := make(map[model.PodID]*spec.BasicPodSpec)
+	for _, spec := range podSpecs {
+		pods[spec.ID] = spec
+	}
+	return pods, nil
 }
 
 func (feeder *clusterStateFeeder) matchesVPA(pod *spec.BasicPodSpec) bool {
