@@ -46,10 +46,9 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_typ
 	recommendation *vpa_types.RecommendedPodResources) PodPriority {
 	outsideRecommendedRange := false
 	scaleUp := false
-	// Sum of requests over all containers, per resource type.
-	totalRequestPerResource := make(map[corev1.ResourceName]int64)
-	// Sum of recommendations over all containers, per resource type.
-	totalRecommendedPerResource := make(map[corev1.ResourceName]int64)
+	// Maximum relative diff across all (container, resource) pairs.
+	// Using max per-container ensures that a single container with a large change reflects in the pod resource diff.
+	maxResourceDiff := 0.0
 
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
 
@@ -62,19 +61,23 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_typ
 		if recommendedRequest == nil {
 			continue
 		}
+		requests, _ := resourcehelpers.ContainerRequestsAndLimits(podContainer.Name, pod)
 		for resourceName, recommended := range recommendedRequest.Target {
-			totalRecommendedPerResource[resourceName] += recommended.MilliValue()
 			lowerBound, hasLowerBound := recommendedRequest.LowerBound[resourceName]
 			upperBound, hasUpperBound := recommendedRequest.UpperBound[resourceName]
-			requests, _ := resourcehelpers.ContainerRequestsAndLimits(podContainer.Name, pod)
 			if request, hasRequest := requests[resourceName]; hasRequest {
-				totalRequestPerResource[resourceName] += request.MilliValue()
 				if recommended.MilliValue() > request.MilliValue() {
 					scaleUp = true
 				}
 				if (hasLowerBound && request.Cmp(lowerBound) < 0) ||
 					(hasUpperBound && request.Cmp(upperBound) > 0) {
 					outsideRecommendedRange = true
+				}
+				// Per-container relative diff for this resource.
+				requestFloat := math.Max(float64(request.MilliValue()), 1.0)
+				containerDiff := math.Abs(float64(request.MilliValue())-float64(recommended.MilliValue())) / requestFloat
+				if containerDiff > maxResourceDiff {
+					maxResourceDiff = containerDiff
 				}
 			} else {
 				// Note: if the request is not specified, the container will use the
@@ -83,17 +86,18 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_typ
 				// be to always calculate the 'effective' request.
 				scaleUp = true
 				outsideRecommendedRange = true
+				// No current request; treat as 100% diff if there is a recommendation.
+				if recommended.MilliValue() > 0 {
+					if 1.0 > maxResourceDiff {
+						maxResourceDiff = 1.0
+					}
+				}
 			}
 		}
-	}
-	resourceDiff := 0.0
-	for resource, totalRecommended := range totalRecommendedPerResource {
-		totalRequest := math.Max(float64(totalRequestPerResource[resource]), 1.0)
-		resourceDiff += math.Abs(totalRequest-float64(totalRecommended)) / totalRequest
 	}
 	return PodPriority{
 		OutsideRecommendedRange: outsideRecommendedRange,
 		ScaleUp:                 scaleUp,
-		ResourceDiff:            resourceDiff,
+		ResourceDiff:            maxResourceDiff,
 	}
 }
