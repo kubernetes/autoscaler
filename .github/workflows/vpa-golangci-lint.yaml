@@ -32,7 +32,7 @@ jobs:
              ${{ env.GOPATH}}/src/k8s.io/autoscaler/vertical-pod-autoscaler/e2e/go.sum
 
       - name: golangci-lint - vertical-pod-autoscaler
-        uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9.2.1
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           args: --timeout=30m
           working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler/vertical-pod-autoscaler
