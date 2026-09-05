@@ -42,6 +42,7 @@ type RecommenderConfig struct {
 	RecommenderName         string
 	MetricsFetcherInterval  time.Duration
 	CheckpointsGCInterval   time.Duration
+	CheckpointsGCTimeout    time.Duration
 	CheckpointsWriteTimeout time.Duration
 	Address                 string
 	Storage                 string
@@ -114,6 +115,7 @@ func DefaultRecommenderConfig() *RecommenderConfig {
 		RecommenderName:         input.DefaultRecommenderName,
 		MetricsFetcherInterval:  1 * time.Minute,
 		CheckpointsGCInterval:   10 * time.Minute,
+		CheckpointsGCTimeout:    time.Minute,
 		CheckpointsWriteTimeout: time.Minute,
 		Address:                 ":8942",
 		Storage:                 "",
@@ -186,6 +188,7 @@ func InitRecommenderFlags() *RecommenderConfig {
 	flag.StringVar(&config.RecommenderName, "recommender-name", config.RecommenderName, "Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster.")
 	flag.DurationVar(&config.MetricsFetcherInterval, "recommender-interval", config.MetricsFetcherInterval, `How often metrics should be fetched`)
 	flag.DurationVar(&config.CheckpointsGCInterval, "checkpoints-gc-interval", config.CheckpointsGCInterval, `How often orphaned checkpoints should be garbage collected`)
+	flag.DurationVar(&config.CheckpointsGCTimeout, "checkpoints-gc-timeout", config.CheckpointsGCTimeout, `Timeout for garbage collecting orphaned checkpoints`)
 	flag.DurationVar(&config.CheckpointsWriteTimeout, "checkpoints-timeout", config.CheckpointsWriteTimeout, `Timeout for writing checkpoints since the start of the recommender's main loop`)
 	flag.StringVar(&config.Address, "address", config.Address, "The address to expose Prometheus metrics.")
 	flag.StringVar(&config.Storage, "storage", config.Storage, `Specifies storage mode. Supported values: prometheus, checkpoint (default: checkpoint)`)
@@ -269,6 +272,11 @@ func ValidateRecommenderConfig(config *RecommenderConfig) {
 
 	if config.MinCheckpointsPerRun != 10 { // Default value is 10
 		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
+	}
+
+	if config.CheckpointsGCTimeout <= 0 {
+		klog.ErrorS(nil, "--checkpoints-gc-timeout must be a positive duration", "checkpoints-gc-timeout", config.CheckpointsGCTimeout)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
 	if config.PrometheusBearerToken != "" && config.PrometheusBearerTokenFile != "" && config.Username != "" {

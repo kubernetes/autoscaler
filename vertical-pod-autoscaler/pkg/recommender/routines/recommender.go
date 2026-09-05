@@ -55,6 +55,7 @@ type recommender struct {
 	clusterStateFeeder            input.ClusterStateFeeder
 	checkpointWriter              checkpoint.CheckpointWriter
 	checkpointsGCInterval         time.Duration
+	checkpointsGCTimeout          time.Duration
 	checkpointsWriteTimeout       time.Duration
 	controllerFetcher             controllerfetcher.ControllerFetcher
 	lastCheckpointGC              time.Time
@@ -153,11 +154,18 @@ func (r *recommender) UpdateVPAs() {
 
 func (r *recommender) MaintainCheckpoints(ctx context.Context) {
 	if r.useCheckpoints {
-		r.checkpointWriter.StoreCheckpoints(ctx, r.updateWorkerCount)
+		writeCtx, cancelWrite := context.WithTimeout(ctx, r.checkpointsWriteTimeout)
+		defer cancelWrite()
+		r.checkpointWriter.StoreCheckpoints(writeCtx, r.updateWorkerCount)
 
 		if time.Since(r.lastCheckpointGC) > r.checkpointsGCInterval {
-			r.lastCheckpointGC = time.Now()
-			r.clusterStateFeeder.GarbageCollectCheckpoints(ctx)
+			gcCtx, cancelGC := context.WithTimeout(ctx, r.checkpointsGCTimeout)
+			defer cancelGC()
+			if err := r.clusterStateFeeder.GarbageCollectCheckpoints(gcCtx); err != nil {
+				klog.ErrorS(err, "Checkpoint garbage collection failed to complete, will retry next run")
+			} else {
+				r.lastCheckpointGC = time.Now()
+			}
 		}
 	}
 }
@@ -187,9 +195,7 @@ func (r *recommender) RunOnce() {
 	r.UpdateVPAs()
 	timer.ObserveStep("UpdateVPAs")
 
-	stepCtx, cancelFunc := context.WithDeadline(ctx, time.Now().Add(r.checkpointsWriteTimeout))
-	defer cancelFunc()
-	r.MaintainCheckpoints(stepCtx)
+	r.MaintainCheckpoints(ctx)
 	timer.ObserveStep("MaintainCheckpoints")
 
 	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(ctx, time.Now(), r.controllerFetcher)
@@ -211,6 +217,7 @@ type RecommenderFactory struct {
 	RecommendationPostProcessors []RecommendationPostProcessor
 
 	CheckpointsGCInterval   time.Duration
+	CheckpointsGCTimeout    time.Duration
 	CheckpointsWriteTimeout time.Duration
 	UseCheckpoints          bool
 	UpdateWorkerCount       int
@@ -224,6 +231,7 @@ func (c RecommenderFactory) Make() Recommender {
 		clusterStateFeeder:            c.ClusterStateFeeder,
 		checkpointWriter:              c.CheckpointWriter,
 		checkpointsGCInterval:         c.CheckpointsGCInterval,
+		checkpointsGCTimeout:          c.CheckpointsGCTimeout,
 		checkpointsWriteTimeout:       c.CheckpointsWriteTimeout,
 		controllerFetcher:             c.ControllerFetcher,
 		useCheckpoints:                c.UseCheckpoints,
