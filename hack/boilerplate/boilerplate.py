@@ -156,6 +156,7 @@ skipped_names = [
     "cluster-autoscaler/cloudprovider/magnum/gophercloud",
     "cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go",
     "cluster-autoscaler/cloudprovider/hetzner/hcloud-go",
+    "cluster-autoscaler/cloudprovider/upcloud/pkg",
     "cluster-autoscaler/cloudprovider/oci",
     "cluster-autoscaler/cloudprovider/volcengine/volcengine-go-sdk",
     "cluster-autoscaler/cloudprovider/aws/ec2_instance_types/gen.go",
