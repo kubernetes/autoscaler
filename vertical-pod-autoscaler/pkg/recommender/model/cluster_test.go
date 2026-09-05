@@ -469,6 +469,72 @@ func TestUpdatePodSelector(t *testing.T) {
 	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(testContainerID))
 }
 
+// TestAddOrUpdateVpaKeepsSelectorOnEmptyFlip covers kubernetes/autoscaler#9891:
+// a transient targetRef failure yields labels.Nothing() (empty string). That
+// must not recreate the VPA or drop checkpointed aggregate state.
+func TestAddOrUpdateVpaKeepsSelectorOnEmptyFlip(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	vpa := addTestVpa(cluster)
+	cs := NewAggregateContainerState()
+	vpa.ContainersInitialAggregateState[testContainerID.ContainerName] = cs
+
+	apiObject := test.VerticalPodAutoscaler().WithNamespace(testVpaID.Namespace).
+		WithName(testVpaID.VpaName).WithContainer(testContainerID.ContainerName).
+		WithAnnotations(testAnnotations).WithTargetRef(testTargetRef).Get()
+
+	// Simulate getSelector failure: labels.Nothing().
+	err := cluster.AddOrUpdateVpa(apiObject, labels.Nothing())
+	assert.NoError(t, err)
+
+	stored := cluster.VPAs()[testVpaID]
+	assert.False(t, isEmptySelector(stored.PodSelector),
+		"previous non-empty selector must be retained when update uses empty selector")
+	assert.Equal(t, vpa.PodSelector.String(), stored.PodSelector.String())
+	assert.Same(t, cs, stored.ContainersInitialAggregateState[testContainerID.ContainerName],
+		"checkpointed initial aggregate state must not be discarded")
+}
+
+// TestAddOrUpdateVpaPreservesInitialStateOnRealSelectorChange covers the
+// InitFromCheckpoints race: VPA created with empty selector, checkpoint loaded,
+// then selector becomes real — history must survive the recreate.
+func TestAddOrUpdateVpaPreservesInitialStateOnRealSelectorChange(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	apiObject := test.VerticalPodAutoscaler().WithNamespace(testVpaID.Namespace).
+		WithName(testVpaID.VpaName).WithContainer(testContainerID.ContainerName).
+		WithAnnotations(testAnnotations).WithTargetRef(testTargetRef).Get()
+
+	// First load: empty selector (target not yet resolvable).
+	err := cluster.AddOrUpdateVpa(apiObject, labels.Nothing())
+	assert.NoError(t, err)
+	vpa := cluster.VPAs()[testVpaID]
+	cs := NewAggregateContainerState()
+	vpa.ContainersInitialAggregateState[testContainerID.ContainerName] = cs
+
+	// Second load: real selector (controllers now available).
+	labelSelector, _ := metav1.ParseToLabelSelector(testSelectorStr)
+	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
+	err = cluster.AddOrUpdateVpa(apiObject, parsedSelector)
+	assert.NoError(t, err)
+
+	stored := cluster.VPAs()[testVpaID]
+	assert.Equal(t, parsedSelector.String(), stored.PodSelector.String())
+	assert.Same(t, cs, stored.ContainersInitialAggregateState[testContainerID.ContainerName],
+		"ContainersInitialAggregateState must survive empty→real selector recreate")
+}
+
+// TestIsEmptySelector verifies isEmptySelector only matches labels.Nothing(),
+// not labels.Everything() — both stringify to "" but must be told apart
+// (see PR #10095 review discussion).
+func TestIsEmptySelector(t *testing.T) {
+	assert.True(t, isEmptySelector(nil))
+	assert.True(t, isEmptySelector(labels.Nothing()))
+	assert.False(t, isEmptySelector(labels.Everything()))
+
+	realSelector, err := labels.Parse(testSelectorStr)
+	assert.NoError(t, err)
+	assert.False(t, isEmptySelector(realSelector))
+}
+
 // Test setting ResourcePolicy and UpdatePolicy on adding or updating VPA object
 func TestAddOrUpdateVPAPolicies(t *testing.T) {
 	testVpaBuilder := test.VerticalPodAutoscaler().WithName(testVpaID.VpaName).
