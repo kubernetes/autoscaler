@@ -146,7 +146,7 @@ helm upgrade <release-name> <chart> \
 | admissionController.certGen.env | object | `{}` | Additional environment variables to be added to the certgen container. Format is KEY: Value format |
 | admissionController.certGen.image.pullPolicy | string | `"IfNotPresent"` | The pull policy for the certgen image. Recommend not changing this |
 | admissionController.certGen.image.repository | string | `"registry.k8s.io/ingress-nginx/kube-webhook-certgen"` | An image that contains certgen for creating certificates. |
-| admissionController.certGen.image.tag | string | `"v20231011-8b53cabe0"` | An image tag for the admissionController.certGen.image.repository image. |
+| admissionController.certGen.image.tag | string | `"v1.6.9"` | An image tag for the admissionController.certGen.image.repository image. |
 | admissionController.certGen.nodeSelector | object | `{}` |  |
 | admissionController.certGen.podSecurityContext | object | `{"runAsNonRoot":true,"runAsUser":65534,"seccompProfile":{"type":"RuntimeDefault"}}` | The securityContext block for the certgen pod(s) |
 | admissionController.certGen.priorityClassName | string | `""` | Priority class name for the certgen job pods. These jobs gate the release as pre-install/pre-upgrade and post-install/post-upgrade hooks, so a priority class can help them schedule on a busy cluster. |
