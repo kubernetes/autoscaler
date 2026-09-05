@@ -159,35 +159,20 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 }
 
 // VPAComponentConfig describes a VPA component to deploy for e2e test
-// purposes. It currently covers what the recommender deployment needs;
-// extend it when a component requires extra wiring, such as the TLS
-// volumes of the admission controller.
+// purposes. Extend it when a component requires extra wiring, such as the
+// TLS volumes of the admission controller.
 type VPAComponentConfig struct {
 	// ComponentName is the short name of the component, e.g. "recommender".
-	// It is used as the container name and to build defaults for the fields
-	// left empty.
+	// The deployment name and service account are "vpa-" + ComponentName,
+	// the container name and command are "/" + ComponentName, mirroring the
+	// manifests in deploy/.
 	ComponentName string
-	// DeploymentName is the name of the deployment, e.g. "vpa-recommender".
-	// Defaults to "vpa-" + ComponentName.
-	DeploymentName string
 	// Image is the container image to run, e.g. "localhost:5001/vpa-recommender".
 	// Required.
 	Image string
-	// Command is the container command, e.g. []string{"/recommender"}.
-	// Defaults to []string{"/" + ComponentName}.
-	Command []string
-	// ServiceAccountName is the service account to run the component with.
-	// Defaults to "vpa-" + ComponentName.
-	ServiceAccountName string
-	// MetricsPortName is the name of the port serving prometheus metrics and
-	// health checks. Defaults to "prometheus".
-	MetricsPortName string
 	// MetricsPort is the port serving prometheus metrics and health checks,
 	// e.g. 8942 for the recommender. Must be within 1-65535. Required.
 	MetricsPort int32
-	// ProbePath is the HTTP path of the liveness and readiness probes.
-	// Defaults to "/health-check".
-	ProbePath string
 }
 
 // RecommenderComponentConfig returns a VPAComponentConfig for deploying the
@@ -205,43 +190,22 @@ func RecommenderComponentConfig() VPAComponentConfig {
 func NewVPAComponentDeployment(f *framework.Framework, config VPAComponentConfig, flags []string) *appsv1.Deployment {
 	gomega.Expect(config.ComponentName).NotTo(gomega.BeEmpty(), "VPAComponentConfig.ComponentName must be set")
 	gomega.Expect(config.Image).NotTo(gomega.BeEmpty(), "VPAComponentConfig.Image must be set")
-	gomega.Expect(config.MetricsPort).Should(gomega.BeNumerically(">=", 1), "VPAComponentConfig.MetricsPort must be set to a valid port number (1-65535)")
-	gomega.Expect(config.MetricsPort).Should(gomega.BeNumerically("<=", 65535), "VPAComponentConfig.MetricsPort must be set to a valid port number (1-65535)")
+	gomega.Expect(config.MetricsPort).Should(gomega.SatisfyAll(gomega.BeNumerically(">=", 1), gomega.BeNumerically("<=", 65535)),
+		"VPAComponentConfig.MetricsPort must be set to a valid port number (1-65535)")
 
-	deploymentName := config.DeploymentName
-	if deploymentName == "" {
-		deploymentName = fmt.Sprintf("vpa-%s", config.ComponentName)
-	}
-	labels := map[string]string{"app": deploymentName}
-	serviceAccountName := config.ServiceAccountName
-	if serviceAccountName == "" {
-		serviceAccountName = fmt.Sprintf("vpa-%s", config.ComponentName)
-	}
-	command := config.Command
-	if len(command) == 0 {
-		command = []string{fmt.Sprintf("/%s", config.ComponentName)}
-	}
-	metricsPortName := config.MetricsPortName
-	if metricsPortName == "" {
-		metricsPortName = "prometheus"
-	}
-	probePath := config.ProbePath
-	if probePath == "" {
-		probePath = "/health-check"
-	}
-
+	deploymentName := fmt.Sprintf("vpa-%s", config.ComponentName)
 	d := framework_deployment.NewDeployment(
-		deploymentName,       /*deploymentName*/
-		1,                    /*replicas*/
-		labels,               /*podLabels*/
-		config.ComponentName, /*imageName*/
-		config.Image,         /*image*/
+		deploymentName,                           /*deploymentName*/
+		1,                                        /*replicas*/
+		map[string]string{"app": deploymentName}, /*podLabels*/
+		config.ComponentName,                     /*imageName*/
+		config.Image,                             /*image*/
 		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
 	)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].ImagePullPolicy = apiv1.PullNever // Image must be loaded first
-	d.Spec.Template.Spec.ServiceAccountName = serviceAccountName
-	d.Spec.Template.Spec.Containers[0].Command = command
+	d.Spec.Template.Spec.ServiceAccountName = deploymentName
+	d.Spec.Template.Spec.Containers[0].Command = []string{fmt.Sprintf("/%s", config.ComponentName)}
 	d.Spec.Template.Spec.Containers[0].Args = flags
 
 	runAsNonRoot := true
@@ -264,15 +228,15 @@ func NewVPAComponentDeployment(f *framework.Framework, config VPAComponentConfig
 	}
 
 	d.Spec.Template.Spec.Containers[0].Ports = []apiv1.ContainerPort{{
-		Name:          metricsPortName,
+		Name:          "prometheus",
 		ContainerPort: config.MetricsPort,
 	}}
 
 	d.Spec.Template.Spec.Containers[0].LivenessProbe = &apiv1.Probe{
 		ProbeHandler: apiv1.ProbeHandler{
 			HTTPGet: &apiv1.HTTPGetAction{
-				Path:   probePath,
-				Port:   intstr.FromString(metricsPortName),
+				Path:   "/health-check",
+				Port:   intstr.FromString("prometheus"),
 				Scheme: apiv1.URISchemeHTTP,
 			},
 		},
@@ -283,8 +247,8 @@ func NewVPAComponentDeployment(f *framework.Framework, config VPAComponentConfig
 	d.Spec.Template.Spec.Containers[0].ReadinessProbe = &apiv1.Probe{
 		ProbeHandler: apiv1.ProbeHandler{
 			HTTPGet: &apiv1.HTTPGetAction{
-				Path:   probePath,
-				Port:   intstr.FromString(metricsPortName),
+				Path:   "/health-check",
+				Port:   intstr.FromString("prometheus"),
 				Scheme: apiv1.URISchemeHTTP,
 			},
 		},
