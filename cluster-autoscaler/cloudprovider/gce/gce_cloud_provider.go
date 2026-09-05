@@ -126,11 +126,10 @@ func (gce *GceCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.Nod
 
 // NodeGroupForNode returns the node group for the given node.
 func (gce *GceCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	logger := klog.FromContext(ctx)
 	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
-		logger.Error(err, "Error extracting node.Spec.ProviderID for node", "node", klog.KObj(node))
-		return nil, err
+		klog.V(6).Infof("Node %v has unrecognized providerId: %v", node.Name, node.Spec.ProviderID)
+		return nil, nil
 	}
 	mig, err := gce.gceManager.GetMigForInstance(ctx, ref)
 	if err != nil {
@@ -201,14 +200,13 @@ func (ref GceRef) ToProviderId() string {
 // GceRefFromProviderId creates InstanceConfig object
 // from provider id which must be in format:
 // gce://<project-id>/<zone>/<name>
-// TODO(piosz): add better check whether the id is correct
 func GceRefFromProviderId(id string) (GceRef, error) {
-	if len(id) == 0 {
-		return GceRef{}, fmt.Errorf("wrong id: expected format gce://<project-id>/<zone>/<name>, got nil")
+	const prefix = "gce://"
+	if !strings.HasPrefix(id, prefix) {
+		return GceRef{}, fmt.Errorf("wrong id: expected format gce://<project-id>/<zone>/<name>, got %v", id)
 	}
-
-	splitted := strings.Split(id[6:], "/")
-	if len(splitted) != 3 {
+	splitted := strings.Split(strings.TrimPrefix(id, prefix), "/")
+	if len(splitted) != 3 || splitted[0] == "" || splitted[1] == "" || splitted[2] == "" {
 		return GceRef{}, fmt.Errorf("wrong id: expected format gce://<project-id>/<zone>/<name>, got %v", id)
 	}
 	return GceRef{

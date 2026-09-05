@@ -154,6 +154,49 @@ func TestNodeGroupForNode(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 
+func TestNodeGroupForNodeWithMigError(t *testing.T) {
+	gceManagerMock := &gceManagerMock{}
+	gce := &GceCloudProvider{
+		gceManager: gceManagerMock,
+	}
+	n := BuildTestNode("n1", 1000, 1000)
+	n.Spec.ProviderID = "gce://project1/us-central1-b/n1"
+	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("gce.GceRef")).Return((*gceMig)(nil), fmt.Errorf("mig lookup failed")).Once()
+
+	nodeGroup, err := gce.NodeGroupForNode(context.Background(), n)
+	assert.Error(t, err)
+	assert.Nil(t, nodeGroup)
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+}
+
+func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
+	gceManagerMock := &gceManagerMock{}
+	gce := &GceCloudProvider{
+		gceManager: gceManagerMock,
+	}
+	n := BuildTestNode("n1", 1000, 1000)
+	n.Spec.ProviderID = ""
+
+	nodeGroup, err := gce.NodeGroupForNode(context.Background(), n)
+	assert.NoError(t, err)
+	assert.Nil(t, nodeGroup)
+	gceManagerMock.AssertNotCalled(t, "GetMigForInstance", mock.Anything)
+}
+
+func TestNodeGroupForNodeWithUnrecognizedProviderId(t *testing.T) {
+	gceManagerMock := &gceManagerMock{}
+	gce := &GceCloudProvider{
+		gceManager: gceManagerMock,
+	}
+	n := BuildTestNode("n1", 1000, 1000)
+	n.Spec.ProviderID = "aws://project/zone/name"
+
+	nodeGroup, err := gce.NodeGroupForNode(context.Background(), n)
+	assert.NoError(t, err)
+	assert.Nil(t, nodeGroup)
+	gceManagerMock.AssertNotCalled(t, "GetMigForInstance", mock.Anything)
+}
+
 func TestGetResourceLimiter(t *testing.T) {
 	gceManagerMock := &gceManagerMock{}
 	resourceLimiter := cloudprovider.NewResourceLimiter(
@@ -464,6 +507,18 @@ func TestGceRefFromProviderId(t *testing.T) {
 	ref, err := GceRefFromProviderId("gce://project1/us-central1-b/name1")
 	assert.NoError(t, err)
 	assert.Equal(t, GceRef{"project1", "us-central1-b", "name1"}, ref)
+
+	for _, id := range []string{
+		"",
+		"x",
+		"aws://project/zone/name",
+		"gce://project1/us-central1-b/",
+		"gce:///us-central1-b/name1",
+		"gce://project1//name1",
+	} {
+		_, err := GceRefFromProviderId(id)
+		assert.Error(t, err, "id=%q", id)
+	}
 }
 
 func createString(s string) *string {
