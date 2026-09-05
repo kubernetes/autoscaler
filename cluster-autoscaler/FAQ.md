@@ -896,6 +896,14 @@ CA stops all operations until the situation improves. If there are fewer unready
 but they are concentrated in a particular node group,
 then this node group may be excluded from future scale-ups.
 
+By default this check looks at every node in the cluster, including nodes that belong to no
+autoscaled node group. On clusters that mix autoscaled node groups with an externally managed
+node fleet, `--unready-nodes-scope=autoscaled` restricts the check to nodes in autoscaled node
+groups, so unready nodes CA does not manage no longer stop it from acting on the ones it does.
+The per-node-group check is unaffected either way, and the status ConfigMap keeps reporting
+cluster-wide node counts, so under `autoscaled` those counts can exceed the configured
+thresholds while the cluster is still reported healthy.
+
 ### How fast is Cluster Autoscaler?
 
 By default, scale-up is considered up to 10 seconds after pod is marked as unschedulable, and scale-down 10 minutes after a node becomes unneeded.
@@ -1145,6 +1153,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `status-config-map-name` | Status configmap name | "cluster-autoscaler-status" |
 | `status-taint` | Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready | [] |
 | `stderrthreshold` | logs at or above this threshold go to stderr when writing to files and stderr (no effect when -logtostderr=true or -alsologtostderr=true) | 2 |
+| `unready-nodes-scope` | Which nodes the cluster-wide unready check gating autoscaling counts. Available values: [cluster,autoscaled]. "cluster" counts every node in the cluster, "autoscaled" counts only nodes belonging to an autoscaled node group. | "cluster" |
 | `unremovable-node-recheck-timeout` | The timeout before we check again a node that couldn't be removed before | 5m0s |
 | `user-agent` | User agent used for HTTP calls. | "cluster-autoscaler" |
 | `v` | number for the log level verbosity |  |
