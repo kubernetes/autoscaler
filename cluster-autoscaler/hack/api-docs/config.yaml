@@ -1,0 +1,2 @@
+render:
+  kubernetesVersion: 1.36
