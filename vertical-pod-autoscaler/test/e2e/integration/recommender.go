@@ -55,7 +55,7 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		f.Namespace.Name = utils.VpaNamespace
-		vpaDeployment := utils.NewVPADeployment(f, []string{
+		vpaDeployment := utils.NewVPAComponentDeployment(f, utils.RecommenderComponentConfig(), []string{
 			"--recommender-interval=10s",
 			fmt.Sprintf("--vpa-object-namespace=%s", hamsterNamespace),
 		})
@@ -70,7 +70,7 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		f.Namespace.Name = utils.VpaNamespace
-		vpaDeployment := utils.NewVPADeployment(f, []string{
+		vpaDeployment := utils.NewVPAComponentDeployment(f, utils.RecommenderComponentConfig(), []string{
 			"--recommender-interval=10s",
 			fmt.Sprintf("--ignored-vpa-object-namespaces=%s", ignoredNamespace.Name),
 		})
@@ -84,7 +84,7 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 
 		ginkgo.By("Setting up VPA deployment")
 		f.Namespace.Name = utils.VpaNamespace
-		vpaDeployment := utils.NewVPADeployment(f, []string{
+		vpaDeployment := utils.NewVPAComponentDeployment(f, utils.RecommenderComponentConfig(), []string{
 			"--recommender-interval=10s",
 			fmt.Sprintf("--pod-recommendation-min-memory-mb=%d", minMemoryMb),
 		})

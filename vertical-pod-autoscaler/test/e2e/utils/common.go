@@ -75,9 +75,6 @@ var HamsterTargetRef = &autoscaling.CrossVersionObjectReference{
 	Name:       "hamster-deployment",
 }
 
-// RecommenderLabels are labels of VPA recommender
-var RecommenderLabels = map[string]string{"app": "vpa-recommender"}
-
 // HamsterLabels are labels of hamster app
 var HamsterLabels = map[string]string{"app": "hamster"}
 
@@ -161,21 +158,88 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch VPA.")
 }
 
-// NewVPADeployment creates a VPA deployment with n containers
-// for e2e test purposes.
-func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment {
+// VPAComponentConfig describes a VPA component (recommender, updater or
+// admission controller) to deploy for e2e test purposes.
+type VPAComponentConfig struct {
+	// ComponentName is the short name of the component, e.g. "recommender".
+	// It is used as the container name and to build defaults for the fields
+	// left empty.
+	ComponentName string
+	// DeploymentName is the name of the deployment, e.g. "vpa-recommender".
+	// Defaults to "vpa-" + ComponentName.
+	DeploymentName string
+	// Image is the container image to run, e.g. "localhost:5001/vpa-recommender".
+	// Required.
+	Image string
+	// Command is the container command, e.g. []string{"/recommender"}.
+	// Defaults to []string{"/" + ComponentName}.
+	Command []string
+	// ServiceAccountName is the service account to run the component with.
+	// Defaults to "vpa-" + ComponentName.
+	ServiceAccountName string
+	// MetricsPortName is the name of the port serving prometheus metrics and
+	// health checks. Defaults to "prometheus".
+	MetricsPortName string
+	// MetricsPort is the port serving prometheus metrics and health checks,
+	// e.g. 8942 for the recommender. Required.
+	MetricsPort int32
+	// ProbePath is the HTTP path of the liveness and readiness probes.
+	// Defaults to "/health-check".
+	ProbePath string
+}
+
+// RecommenderComponentConfig returns a VPAComponentConfig for deploying the
+// VPA recommender in e2e tests, mirroring deploy/recommender-deployment.yaml.
+func RecommenderComponentConfig() VPAComponentConfig {
+	return VPAComponentConfig{
+		ComponentName: recommenderComponent,
+		Image:         "localhost:5001/vpa-recommender",
+		MetricsPort:   8942,
+	}
+}
+
+// NewVPAComponentDeployment creates a deployment of a VPA component
+// (recommender, updater or admission controller) with the provided command
+// line flags, for e2e test purposes.
+func NewVPAComponentDeployment(f *framework.Framework, config VPAComponentConfig, flags []string) *appsv1.Deployment {
+	gomega.Expect(config.ComponentName).NotTo(gomega.BeEmpty(), "VPAComponentConfig.ComponentName must be set")
+	gomega.Expect(config.Image).NotTo(gomega.BeEmpty(), "VPAComponentConfig.Image must be set")
+	gomega.Expect(config.MetricsPort).NotTo(gomega.BeZero(), "VPAComponentConfig.MetricsPort must be set")
+
+	deploymentName := config.DeploymentName
+	if deploymentName == "" {
+		deploymentName = fmt.Sprintf("vpa-%s", config.ComponentName)
+	}
+	labels := map[string]string{"app": deploymentName}
+	serviceAccountName := config.ServiceAccountName
+	if serviceAccountName == "" {
+		serviceAccountName = fmt.Sprintf("vpa-%s", config.ComponentName)
+	}
+	command := config.Command
+	if len(command) == 0 {
+		command = []string{fmt.Sprintf("/%s", config.ComponentName)}
+	}
+	metricsPortName := config.MetricsPortName
+	if metricsPortName == "" {
+		metricsPortName = "prometheus"
+	}
+	probePath := config.ProbePath
+	if probePath == "" {
+		probePath = "/health-check"
+	}
+
 	d := framework_deployment.NewDeployment(
-		RecommenderDeploymentName,        /*deploymentName*/
-		1,                                /*replicas*/
-		RecommenderLabels,                /*podLabels*/
-		"recommender",                    /*imageName*/
-		"localhost:5001/vpa-recommender", /*image*/
+		deploymentName,       /*deploymentName*/
+		1,                    /*replicas*/
+		labels,               /*podLabels*/
+		config.ComponentName, /*imageName*/
+		config.Image,         /*image*/
 		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
 	)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].ImagePullPolicy = apiv1.PullNever // Image must be loaded first
-	d.Spec.Template.Spec.ServiceAccountName = "vpa-recommender"
-	d.Spec.Template.Spec.Containers[0].Command = []string{"/recommender"}
+	d.Spec.Template.Spec.ServiceAccountName = serviceAccountName
+	d.Spec.Template.Spec.Containers[0].Command = command
 	d.Spec.Template.Spec.Containers[0].Args = flags
 
 	runAsNonRoot := true
@@ -185,7 +249,7 @@ func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment
 		RunAsUser:    &runAsUser,
 	}
 
-	// Same as deploy/recommender-deployment.yaml
+	// Same as deploy/recommender-deployment.yaml and deploy/updater-deployment.yaml
 	d.Spec.Template.Spec.Containers[0].Resources = apiv1.ResourceRequirements{
 		Limits: apiv1.ResourceList{
 			apiv1.ResourceCPU:    resource.MustParse("200m"),
@@ -198,15 +262,15 @@ func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment
 	}
 
 	d.Spec.Template.Spec.Containers[0].Ports = []apiv1.ContainerPort{{
-		Name:          "prometheus",
-		ContainerPort: 8942,
+		Name:          metricsPortName,
+		ContainerPort: config.MetricsPort,
 	}}
 
 	d.Spec.Template.Spec.Containers[0].LivenessProbe = &apiv1.Probe{
 		ProbeHandler: apiv1.ProbeHandler{
 			HTTPGet: &apiv1.HTTPGetAction{
-				Path:   "/health-check",
-				Port:   intstr.FromString("prometheus"),
+				Path:   probePath,
+				Port:   intstr.FromString(metricsPortName),
 				Scheme: apiv1.URISchemeHTTP,
 			},
 		},
@@ -217,8 +281,8 @@ func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment
 	d.Spec.Template.Spec.Containers[0].ReadinessProbe = &apiv1.Probe{
 		ProbeHandler: apiv1.ProbeHandler{
 			HTTPGet: &apiv1.HTTPGetAction{
-				Path:   "/health-check",
-				Port:   intstr.FromString("prometheus"),
+				Path:   probePath,
+				Port:   intstr.FromString(metricsPortName),
 				Scheme: apiv1.URISchemeHTTP,
 			},
 		},
