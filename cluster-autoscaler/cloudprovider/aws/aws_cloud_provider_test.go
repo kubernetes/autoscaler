@@ -697,6 +697,16 @@ func TestHasInstance(t *testing.T) {
 					ProviderID: "aws:///us-east-1a/test-instance-id",
 					Name:       "test-instance-id",
 				}: &nodeStatus,
+				{
+					ProviderID: "aws:///us-east-1a/terminating-instance-id",
+					Name:       "terminating-instance-id",
+				}: &nodeStatus,
+			},
+			instanceLifecycle: map[AwsInstanceRef]autoscalingtypes.LifecycleState{
+				{
+					ProviderID: "aws:///us-east-1a/terminating-instance-id",
+					Name:       "terminating-instance-id",
+				}: autoscalingtypes.LifecycleStateTerminating,
 			},
 		},
 		awsService: testAwsService,
@@ -757,6 +767,118 @@ func TestHasInstance(t *testing.T) {
 	present, err = provider.HasInstance(context.Background(), node4)
 	assert.NoError(t, err)
 	assert.False(t, present)
+
+	// Case 5: node with a terminating instance - not present in AWS,
+	// even though the instance still has a status in the cache
+	node5 := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "node-3",
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: "aws:///us-east-1a/terminating-instance-id",
+		},
+	}
+	present, err = provider.HasInstance(node5)
+	assert.NoError(t, err)
+	assert.False(t, present)
+}
+
+func TestHasInstanceAfterDeleteNodes(t *testing.T) {
+	a := &autoScalingMock{}
+	m := newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"})
+	provider := testProvider(t, m)
+	asgs := provider.NodeGroups()
+
+	markHealthy := func(out *autoscaling.DescribeAutoScalingGroupsOutput) *autoscaling.DescribeAutoScalingGroupsOutput {
+		for i := range out.AutoScalingGroups[0].Instances {
+			out.AutoScalingGroups[0].Instances[i].HealthStatus = aws.String("Healthy")
+		}
+		return out
+	}
+
+	a.On("TerminateInstanceInAutoScalingGroup",
+		mock.Anything,
+		&autoscaling.TerminateInstanceInAutoScalingGroupInput{
+			InstanceId:                     aws.String("test-instance-id"),
+			ShouldDecrementDesiredCapacity: aws.Bool(true),
+		},
+	).Return(&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
+		Activity: &autoscalingtypes.Activity{Description: aws.String("Deleted instance")},
+	}, nil)
+
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
+		&autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
+		},
+	).Return(markHealthy(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id")), nil).Once()
+
+	err := provider.Refresh()
+	assert.NoError(t, err)
+
+	node := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: "aws:///us-east-1a/test-instance-id",
+		},
+	}
+	remainingNode := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: "aws:///us-east-1a/second-test-instance-id",
+		},
+	}
+
+	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	assert.NoError(t, err)
+
+	// The instance must be reported as gone right after DeleteNodes(),
+	// before the cache is regenerated
+	present, err := provider.HasInstance(node)
+	assert.NoError(t, err)
+	assert.False(t, present)
+
+	// An eventually consistent API response may still report the terminated
+	// instance as InService - it must not flip the instance back to present
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
+		&autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
+		},
+	).Return(markHealthy(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id")), nil).Once()
+
+	err = m.forceRefresh()
+	assert.NoError(t, err)
+
+	present, err = provider.HasInstance(node)
+	assert.NoError(t, err)
+	assert.False(t, present)
+
+	// Until its termination completes, the instance keeps showing up in
+	// the ASG API responses in the Terminating lifecycle state
+	terminatingOutput := markHealthy(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id", "second-test-instance-id"))
+	terminatingOutput.AutoScalingGroups[0].Instances[0].LifecycleState = autoscalingtypes.LifecycleStateTerminating
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
+		&autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: []string{"test-asg"},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
+		},
+	).Return(terminatingOutput, nil)
+
+	err = m.forceRefresh()
+	assert.NoError(t, err)
+
+	// The instance must still be reported as gone after the regenerated
+	// cache picked it up from the API in the Terminating state
+	present, err = provider.HasInstance(node)
+	assert.NoError(t, err)
+	assert.False(t, present)
+
+	// The remaining instance is unaffected
+	present, err = provider.HasInstance(remainingNode)
+	assert.NoError(t, err)
+	assert.True(t, present)
 }
 
 func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
