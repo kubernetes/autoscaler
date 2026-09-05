@@ -158,8 +158,10 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch VPA.")
 }
 
-// VPAComponentConfig describes a VPA component (recommender, updater or
-// admission controller) to deploy for e2e test purposes.
+// VPAComponentConfig describes a VPA component to deploy for e2e test
+// purposes. It currently covers what the recommender deployment needs;
+// extend it when a component requires extra wiring, such as the TLS
+// volumes of the admission controller.
 type VPAComponentConfig struct {
 	// ComponentName is the short name of the component, e.g. "recommender".
 	// It is used as the container name and to build defaults for the fields
@@ -181,7 +183,7 @@ type VPAComponentConfig struct {
 	// health checks. Defaults to "prometheus".
 	MetricsPortName string
 	// MetricsPort is the port serving prometheus metrics and health checks,
-	// e.g. 8942 for the recommender. Required.
+	// e.g. 8942 for the recommender. Must be within 1-65535. Required.
 	MetricsPort int32
 	// ProbePath is the HTTP path of the liveness and readiness probes.
 	// Defaults to "/health-check".
@@ -198,13 +200,13 @@ func RecommenderComponentConfig() VPAComponentConfig {
 	}
 }
 
-// NewVPAComponentDeployment creates a deployment of a VPA component
-// (recommender, updater or admission controller) with the provided command
-// line flags, for e2e test purposes.
+// NewVPAComponentDeployment creates a deployment of a VPA component with the
+// provided command line flags, for e2e test purposes.
 func NewVPAComponentDeployment(f *framework.Framework, config VPAComponentConfig, flags []string) *appsv1.Deployment {
 	gomega.Expect(config.ComponentName).NotTo(gomega.BeEmpty(), "VPAComponentConfig.ComponentName must be set")
 	gomega.Expect(config.Image).NotTo(gomega.BeEmpty(), "VPAComponentConfig.Image must be set")
-	gomega.Expect(config.MetricsPort).NotTo(gomega.BeZero(), "VPAComponentConfig.MetricsPort must be set")
+	gomega.Expect(config.MetricsPort).Should(gomega.BeNumerically(">=", 1), "VPAComponentConfig.MetricsPort must be set to a valid port number (1-65535)")
+	gomega.Expect(config.MetricsPort).Should(gomega.BeNumerically("<=", 65535), "VPAComponentConfig.MetricsPort must be set to a valid port number (1-65535)")
 
 	deploymentName := config.DeploymentName
 	if deploymentName == "" {
