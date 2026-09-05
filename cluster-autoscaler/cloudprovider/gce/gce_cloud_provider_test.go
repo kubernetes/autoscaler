@@ -154,6 +154,40 @@ func TestNodeGroupForNode(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 
+func TestNodeGroupForNodeWithNonGceProviderId(t *testing.T) {
+	gceManagerMock := &gceManagerMock{}
+	gce := &GceCloudProvider{
+		gceManager: gceManagerMock,
+	}
+
+	// Hybrid / foreign provider node (e.g. k3s)
+	hybridNode := BuildTestNode("hybrid-node", 1000, 1000)
+	hybridNode.Spec.ProviderID = "k3s://raspberrypi-0"
+
+	nodeGroup, err := gce.NodeGroupForNode(context.Background(), hybridNode)
+	assert.NoError(t, err)
+	assert.Nil(t, nodeGroup)
+
+	// Node with empty providerID
+	emptyIdNode := BuildTestNode("no-provider-node", 1000, 1000)
+	emptyIdNode.Spec.ProviderID = ""
+
+	nodeGroup, err = gce.NodeGroupForNode(context.Background(), emptyIdNode)
+	assert.NoError(t, err)
+	assert.Nil(t, nodeGroup)
+
+	// Node with another cloud provider ID
+	awsNode := BuildTestNode("aws-node", 1000, 1000)
+	awsNode.Spec.ProviderID = "aws:///us-east-1a/i-0123456789abcdef0"
+
+	nodeGroup, err = gce.NodeGroupForNode(context.Background(), awsNode)
+	assert.NoError(t, err)
+	assert.Nil(t, nodeGroup)
+
+	// Ensure gceManagerMock was never called for unmanaged nodes
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+}
+
 func TestGetResourceLimiter(t *testing.T) {
 	gceManagerMock := &gceManagerMock{}
 	resourceLimiter := cloudprovider.NewResourceLimiter(
@@ -464,6 +498,24 @@ func TestGceRefFromProviderId(t *testing.T) {
 	ref, err := GceRefFromProviderId("gce://project1/us-central1-b/name1")
 	assert.NoError(t, err)
 	assert.Equal(t, GceRef{"project1", "us-central1-b", "name1"}, ref)
+
+	invalidIds := []string{
+		"",
+		"abc",
+		"gce://",
+		"gce://project1",
+		"gce://project1/us-central1-b",
+		"gce://project1/us-central1-b/name1/extra",
+		"gce:////",
+		"k3s://raspberrypi-0",
+		"aws:///us-east-1a/i-0123456789abcdef0",
+		"azure:///subscriptions/subid/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/vmss/virtualMachines/0",
+	}
+
+	for _, invalidId := range invalidIds {
+		_, err := GceRefFromProviderId(invalidId)
+		assert.Error(t, err, "Expected error for providerID %q", invalidId)
+	}
 }
 
 func createString(s string) *string {
