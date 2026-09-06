@@ -46,6 +46,9 @@ from the Prometheus Adapter.  With that configuration, it runs the standard `rec
 
 ## Running integration tests
 
-Separate from the e2e suite above, `test/e2e/integration` contains Ginkgo tests that start a component with specific flags and verify its behavior directly, without going through the full deployment manifests in `deploy/`. These are useful for covering flags that the e2e suite's default deployments don't exercise.
+There are two different test suites in this repository referred to as "integration" tests, and they are not the same kind of test:
 
-They can be run using the `./hack/run-integration-locally.sh <suite>` helper script, for example `./hack/run-integration-locally.sh recommender`. Like `run-e2e-locally.sh`, this deletes any existing local [kind](https://kind.sigs.k8s.io) cluster before creating a fresh one.
+* `test/e2e/integration` contains Ginkgo tests that, despite the directory name, are e2e style: they start a component with specific flags against a real Kubernetes cluster and verify its behavior directly, without going through the full deployment manifests in `deploy/`. This is useful for covering flags that the e2e suite's default deployments don't exercise. These tests are heavy to run and, unlike the e2e suite, cannot run in parallel.
+* `test/integration/recommender` contains standard Go tests, closer to how Kubernetes itself writes integration tests: the component runs inside the test process, against an in-process API server and etcd, rather than as a separate deployment against a real cluster. `test/` is its own Go module, so run them from that directory: `cd test && go test ./integration/...`.
+
+The `test/e2e/integration` suite can be run using the `./hack/run-integration-locally.sh recommender` helper script. `recommender` is currently the only supported suite. Like `run-e2e-locally.sh`, this deletes any existing local [kind](https://kind.sigs.k8s.io) cluster before creating a fresh one.
