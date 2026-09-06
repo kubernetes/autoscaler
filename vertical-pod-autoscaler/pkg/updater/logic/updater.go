@@ -86,7 +86,7 @@ type Updater interface {
 
 type updater struct {
 	vpaLister                    vpa_lister.VerticalPodAutoscalerLister
-	vpaClient                    *vpa_clientset.Clientset
+	vpaClient                    vpa_clientset.Interface
 	podLister                    listersv1.PodLister
 	eventRecorder                record.EventRecorder
 	restrictionFactory           restriction.PodsRestrictionFactory
