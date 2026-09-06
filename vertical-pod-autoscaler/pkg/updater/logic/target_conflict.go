@@ -19,7 +19,6 @@ package logic
 import (
 	"fmt"
 	"slices"
-	"sort"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -43,15 +42,18 @@ const noTargetConflictReason = "NoConflictingActiveVPATargets"
 // actually controls a pod (see vpa_api_util.Stronger for that logic).
 func (u *updater) reconcileTargetConflicts(vpaList []*vpa_types.VerticalPodAutoscaler) {
 	groups := make(map[string][]*vpa_types.VerticalPodAutoscaler)
+	var ineligible []*vpa_types.VerticalPodAutoscaler
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
 			continue
 		}
 		if vpa.Spec.TargetRef == nil {
+			ineligible = append(ineligible, vpa)
 			continue
 		}
 		// "Off" VPAs don't update pods at all, so they can't conflict.
 		if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeOff {
+			ineligible = append(ineligible, vpa)
 			continue
 		}
 		key := vpa_api_util.TargetRefIndexKey(vpa.Namespace, vpa.Spec.TargetRef.Kind, vpa.Spec.TargetRef.Name)
@@ -66,12 +68,21 @@ func (u *updater) reconcileTargetConflicts(vpaList []*vpa_types.VerticalPodAutos
 			for _, vpa := range group {
 				names = append(names, vpa.Name)
 			}
-			sort.Strings(names)
+			slices.Sort(names)
 			message = fmt.Sprintf("Conflict: multiple active VPAs target the same object: %s", strings.Join(names, ", "))
 		}
 		for _, vpa := range group {
 			u.updateTargetConflictCondition(vpa, conflicting, message)
 		}
+	}
+
+	// VPAs that became ineligible (e.g. switched to Off, or dropped their
+	// targetRef) may still be carrying a stale TargetConflict=True condition
+	// from a previous run. Clear it since they can no longer be part of a
+	// conflict. updateTargetConflictCondition is a no-op if there was never
+	// a condition to begin with.
+	for _, vpa := range ineligible {
+		u.updateTargetConflictCondition(vpa, false, "")
 	}
 }
 
