@@ -36,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -562,4 +563,27 @@ func CheckHamsterPodsResourcesUpdated(f *framework.Framework, targetCPU, targetM
 		}
 		return nil
 	}, VpaInPlaceTimeout*3, 15*time.Second).Should(gomega.Succeed())
+}
+
+// installHamsterVPA installs a VPA targeting the hamster deployment with the
+// given name and update mode, and a flat recommendation (target, lower and upper
+// bound all equal) for the first hamster container.
+func installHamsterVPA(f *framework.Framework, name string, updateMode vpa_types.UpdateMode, targetCPU, targetMemory string) *vpa_types.VerticalPodAutoscaler {
+	containerName := utils.GetHamsterContainerNameByIndex(0)
+	vpaCRD := test.VerticalPodAutoscaler().
+		WithName(name).
+		WithNamespace(f.Namespace.Name).
+		WithTargetRef(utils.HamsterTargetRef).
+		WithUpdateMode(updateMode).
+		WithContainer(containerName).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(containerName).
+				WithTarget(targetCPU, targetMemory).
+				WithLowerBound(targetCPU, targetMemory).
+				WithUpperBound(targetCPU, targetMemory).
+				GetContainerResources()).
+		Get()
+	utils.InstallVPA(f, vpaCRD)
+	return vpaCRD
 }

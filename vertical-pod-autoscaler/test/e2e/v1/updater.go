@@ -371,9 +371,6 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		targetCPU := "200m"
 		targetMemory := "200Mi"
 
-		// VPA creation order and names are chosen so that a future change to the
-		// multi-VPA selection logic is more likely to be caught:
-		// https://github.com/kubernetes/autoscaler/blob/8624d41d09317cc6d716b8b3e4d73dd7424a4f1c/vertical-pod-autoscaler/pkg/utils/vpa/api.go#L189
 		ginkgo.By("Setting up a VPA CRD with UpdateMode: Off")
 		installHamsterVPA(f, "1-hamster-vpa-off", vpa_types.UpdateModeOff, "500m", "500Mi")
 
@@ -549,29 +546,6 @@ func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory stri
 	utils.InstallVPA(f, vpaCRD)
 
 	return podList
-}
-
-// installHamsterVPA installs a VPA targeting the hamster deployment with the
-// given name and update mode, and a flat recommendation (target, lower and upper
-// bound all equal) for the first hamster container.
-func installHamsterVPA(f *framework.Framework, name string, updateMode vpa_types.UpdateMode, targetCPU, targetMemory string) *vpa_types.VerticalPodAutoscaler {
-	containerName := utils.GetHamsterContainerNameByIndex(0)
-	vpaCRD := test.VerticalPodAutoscaler().
-		WithName(name).
-		WithNamespace(f.Namespace.Name).
-		WithTargetRef(utils.HamsterTargetRef).
-		WithUpdateMode(updateMode).
-		WithContainer(containerName).
-		AppendRecommendation(
-			test.Recommendation().
-				WithContainer(containerName).
-				WithTarget(targetCPU, targetMemory).
-				WithLowerBound(targetCPU, targetMemory).
-				WithUpperBound(targetCPU, targetMemory).
-				GetContainerResources()).
-		Get()
-	utils.InstallVPA(f, vpaCRD)
-	return vpaCRD
 }
 
 func setupPodsForUpscalingInPlace(f *framework.Framework, updateMode vpa_types.UpdateMode) *apiv1.PodList {

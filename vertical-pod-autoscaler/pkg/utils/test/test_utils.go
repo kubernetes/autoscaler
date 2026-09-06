@@ -80,7 +80,6 @@ func Resources(cpu, mem string) corev1.ResourceList {
 // AssertResourceListEqual asserts that two resource lists are equal.
 func AssertResourceListEqual(t testing.TB, listName string, want, got corev1.ResourceList) {
 	t.Helper()
-	t.Log("Asserting", listName)
 	for resourceName, wantQuantity := range want {
 		gotQuantity, ok := got[resourceName]
 		if !ok {

@@ -420,47 +420,12 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 
 	ginkgo.It("applies recommendation from a VPA with `UpdateMode: Initial` when a VPA with `UpdateMode: Off` also matches the target", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
-		containerName := utils.GetHamsterContainerNameByIndex(0)
 
 		ginkgo.By("Setting up VPA CRD with updateMode: Off")
-		// VPA creation order and names are so that if there was some future
-		// change that changes the multi-VPA behaviour, it is more likely to get
-		// caught.
-		// https://github.com/kubernetes/autoscaler/blob/8624d41d09317cc6d716b8b3e4d73dd7424a4f1c/vertical-pod-autoscaler/pkg/utils/vpa/api.go#L189
-		offVpaCRD := test.VerticalPodAutoscaler().
-			WithName("1-hamster-vpa-off").
-			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
-			WithUpdateMode(vpa_types.UpdateModeOff).
-			WithContainer(containerName).
-			AppendRecommendation(
-				test.Recommendation().
-					WithContainer(containerName).
-					WithTarget("500m", "500Mi").
-					WithLowerBound("500m", "500Mi").
-					WithUpperBound("500m", "500Mi").
-					GetContainerResources()).
-			Get()
-
-		utils.InstallVPA(f, offVpaCRD)
+		installHamsterVPA(f, "1-hamster-vpa-off", vpa_types.UpdateModeOff, "500m", "500Mi")
 
 		ginkgo.By("Setting up a VPA CRD with updateMode: Initial")
-		vpaCRD := test.VerticalPodAutoscaler().
-			WithName("2-hamster-vpa").
-			WithNamespace(f.Namespace.Name).
-			WithTargetRef(utils.HamsterTargetRef).
-			WithUpdateMode(vpa_types.UpdateModeInitial).
-			WithContainer(containerName).
-			AppendRecommendation(
-				test.Recommendation().
-					WithContainer(containerName).
-					WithTarget("250m", "200Mi").
-					WithLowerBound("250m", "200Mi").
-					WithUpperBound("250m", "200Mi").
-					GetContainerResources()).
-			Get()
-
-		utils.InstallVPA(f, vpaCRD)
+		installHamsterVPA(f, "2-hamster-vpa", vpa_types.UpdateModeInitial, "250m", "200Mi")
 
 		ginkgo.By("Setting up a hamster deployment")
 		podList := utils.StartDeploymentPods(f, d)
