@@ -188,7 +188,7 @@ func TestReconcileTargetConflicts_ClearsOnResolution(t *testing.T) {
 	require.NotNil(t, cond)
 	assert.Equal(t, corev1.ConditionFalse, cond.Status)
 	assert.Equal(t, noTargetConflictReason, cond.Reason)
-	assert.True(t, cond.LastTransitionTime.Time.After(past), "LastTransitionTime should be bumped on status change")
+	assert.True(t, cond.LastTransitionTime.After(past), "LastTransitionTime should be bumped on status change")
 }
 
 func TestReconcileTargetConflicts_NoEventOnRepeatedConflict(t *testing.T) {
@@ -215,4 +215,40 @@ func TestReconcileTargetConflicts_NoEventOnRepeatedConflict(t *testing.T) {
 	default:
 		// expected: no event
 	}
+}
+
+func TestReconcileTargetConflicts_ClearsOnIneligibleTransition(t *testing.T) {
+	past := time.Now().Add(-time.Hour)
+
+	// vpa1 flips from Recreate to Off. It was previously flagged as
+	// conflicting and should have that condition cleared even though it no
+	// longer participates in grouping.
+	vpaTurnedOff := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
+		WithUpdateMode(vpa_types.UpdateModeOff).WithTargetRef(deploymentRef("app")).
+		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
+			"Conflict: multiple active VPAs target the same object: vpa-1, vpa-2", past).Get()
+
+	// vpa2 drops its targetRef entirely. Same expectation: stale condition
+	// should be cleared.
+	vpaNoTargetRef := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
+		WithUpdateMode(vpa_types.UpdateModeRecreate).
+		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
+			"Conflict: multiple active VPAs target the same object: vpa-1, vpa-2", past).Get()
+	vpaNoTargetRef.Spec.TargetRef = nil
+
+	client := vpa_fake.NewSimpleClientset(vpaTurnedOff, vpaNoTargetRef)
+	u := newConflictTestUpdater(client)
+
+	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpaTurnedOff, vpaNoTargetRef})
+
+	got1 := getVpa(t, client, "default", "vpa-1")
+	cond1 := findCondition(got1, vpa_types.TargetConflict)
+	require.NotNil(t, cond1, "Off-mode VPA should still have its stale condition updated, not left dangling")
+	assert.Equal(t, corev1.ConditionFalse, cond1.Status, "condition should be cleared once VPA turns Off")
+	assert.Equal(t, noTargetConflictReason, cond1.Reason)
+
+	got2 := getVpa(t, client, "default", "vpa-2")
+	cond2 := findCondition(got2, vpa_types.TargetConflict)
+	require.NotNil(t, cond2, "VPA with no targetRef should still have its stale condition updated, not left dangling")
+	assert.Equal(t, corev1.ConditionFalse, cond2.Status, "condition should be cleared once targetRef is removed")
 }
