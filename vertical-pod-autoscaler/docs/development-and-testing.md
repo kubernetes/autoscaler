@@ -8,6 +8,7 @@
   - [Feature gates](#feature-gates)
   - [Parallelism](#parallelism)
   - [External Metrics Tests](#external-metrics-tests)
+- [Running integration tests](#running-integration-tests)
 <!-- /toc -->
 
 ## Introduction
@@ -42,3 +43,9 @@ use a stack of 4 additional programs to support testing:
 
 The External Metrics tests run by configuring a `recommender` to use the External Metrics interface
 from the Prometheus Adapter.  With that configuration, it runs the standard `recommender` test suite.
+
+## Running integration tests
+
+Separate from the e2e suite above, `test/e2e/integration` contains Ginkgo tests that start a component with specific flags and verify its behavior directly, without going through the full deployment manifests in `deploy/`. These are useful for covering flags that the e2e suite's default deployments don't exercise.
+
+They can be run using the `./hack/run-integration-locally.sh <suite>` helper script, for example `./hack/run-integration-locally.sh recommender`. Like `run-e2e-locally.sh`, this deletes any existing local [kind](https://kind.sigs.k8s.io) cluster before creating a fresh one.
