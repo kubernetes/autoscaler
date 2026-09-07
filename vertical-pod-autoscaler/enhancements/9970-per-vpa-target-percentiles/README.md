@@ -42,7 +42,7 @@ The three percentiles for a resource are configured as a group. A per-VPA target
 
 ### Non-Goals
 
-- **Per-VPA overrides for other recommender parameters** (histogram decay, confidence, and similar) are out of scope.
+- **Per-VPA overrides for other recommender parameters** are out of scope.
 - **Changing the recommendation model.** The histogram, decay, and confidence computations are untouched; only the percentiles at which the recommendations are read change.
 
 ## Proposal
@@ -96,7 +96,7 @@ Each field is a plain integer percentile (`*int32`, `[1, 100]`) rather than a `r
 
 ### Effective-Value Resolution
 
-Percentiles resolve per resource, with the standard Phase 1 precedence:
+Percentiles resolve per resource:
 
 1. `containerPolicies` entry matching the container's name, if it sets the resource's percentiles.
 2. `containerPolicies` entry with `containerName: "*"`, if it sets them.
