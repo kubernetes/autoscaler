@@ -218,6 +218,12 @@ Unlike `VerticalPodAutoscalerCheckpoint` (which stores one container per object)
 checkpoint packs all containers into a single object, yielding one checkpoint per VPASlice
 regardless of container count.
 
+The naming convention for `VPASliceCheckpoint` objects is `{vpaslice-name}`, matching the
+VPASlice's own deterministic name one-to-one. Similiar to how `VerticalPodAutoscalerCheckpoint` works, 
+the recommender will use this name for create/update operations.
+`VPASliceCheckpoint` objects will carry a label `autoscaling.k8s.io/vpaslice-name` to support
+list-by-slice queries. 
+
 ### Component Changes
 
 #### Recommender
