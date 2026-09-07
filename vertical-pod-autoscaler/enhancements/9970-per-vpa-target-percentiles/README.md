@@ -18,7 +18,7 @@
 - [Test Plan](#test-plan)
 - [Examples](#examples)
   - [Latency-sensitive service: aggressive CPU target](#latency-sensitive-service-aggressive-cpu-target)
-  - [Batch workload: relaxed targets for all containers](#batch-workload-relaxed-targets-for-all-containers)
+  - [Batch workload: relaxed range for all containers](#batch-workload-relaxed-range-for-all-containers)
 - [Future Work](#future-work)
 - [Alternatives Considered](#alternatives-considered)
 - [Implementation History](#implementation-history)
@@ -26,97 +26,111 @@
 
 ## Summary
 
-Add two optional per-container fields to `ContainerResourcePolicy` — `targetCPUPercentile` and `targetMemoryPercentile` — that override the Recommender's global `--target-cpu-percentile` and `--target-memory-percentile` flags for that container. This extends the per-VPA configuration mechanism introduced by [AEP-8026](../8026-per-vpa-component-configuration/README.md) to the target recommendation percentiles, following the same conventions: fields live on `ContainerResourcePolicy`, are gated behind the `PerVPAConfig` feature gate, and fall back to the corresponding global flag when unset.
+Add optional per-container percentile overrides to `ContainerResourcePolicy`: the lower-bound, target, and upper-bound percentiles for CPU and memory, each overriding the Recommender's corresponding global `--*-percentile` flag for that container. This extends the per-VPA configuration mechanism of [AEP-8026](../8026-per-vpa-component-configuration/README.md) to the recommendation percentiles: the fields live on `ContainerResourcePolicy`, are gated behind the `PerVPAConfig` feature gate, and fall back to the global flags when unset. For a resource, the three percentiles are set together so the admission controller can enforce `lower ≤ target ≤ upper`.
 
 ## Motivation
 
-The target percentiles are among the most workload-dependent knobs the Recommender has: a latency-sensitive service may want an aggressive p95 CPU target, while a batch job on the same cluster is happy at p50. Today both values are cluster-wide Recommender flags (defaulting to 0.9), so operators either pick compromise values for the whole cluster or run separate Recommender instances per profile via [AEP-3919](../3919-customized-recommender-vpa/README.md) — differing percentiles being the canonical motivation for running multiple recommenders, with all the operational overhead that brings.
+The recommendation percentiles are among the most workload-dependent knobs the Recommender has: a latency-sensitive service may want an aggressive p95 CPU target, while a batch job on the same cluster is happy at p50. The lower- and upper-bound percentiles matter just as much — they set the range the Updater treats as acceptable, i.e. how much drift a workload tolerates before it is resized. Today all of these are cluster-wide Recommender flags, so operators either pick compromise values for the whole cluster or run separate Recommender instances per profile via [AEP-3919](../3919-customized-recommender-vpa/README.md), with all the operational overhead that brings.
 
-Per [SIG discussion on the tracking issue](https://github.com/kubernetes/autoscaler/issues/9970), the scope is deliberately limited to the two target percentiles. The lower- and upper-bound percentiles (which drive the Updater's eviction decisions) are deferred until there is user feedback on the target fields — see [Future Work](#future-work).
+The three percentiles for a resource are configured as a group. A per-VPA target on its own could drift outside the cluster-wide bounds, which the Updater then cannot act on coherently; setting lower/target/upper together keeps the range consistent and lets admission validate it.
 
 ### Goals
 
-- Allow overriding `--target-cpu-percentile` and `--target-memory-percentile` per container via `ContainerResourcePolicy`, with per-VPA configuration expressible through `containerName: "*"`.
-- Match the global flags' semantics exactly: the CPU target percentile affects only the CPU target recommendation (not CPU bounds, not memory), and likewise for memory.
-- Each field independently falls back to its global flag when unset, keeping the feature additive and off by default.
+- Override the lower-bound, target, and upper-bound percentiles per container (CPU and memory) via `ContainerResourcePolicy`, including through `containerName: "*"`.
+- Match the global flags' semantics: each percentile affects only its own resource and role.
+- Keep the feature additive and off by default: a resource whose percentiles are unset falls back to the global flags.
 
 ### Non-Goals
 
-- **Other per-VPA recommender parameters** (such as lower/upper bound percentiles) are out of scope.
-- **Changing the recommendation model.** The histogram, decay, and confidence computations are untouched; only the percentile at which the target is read changes.
+- **Per-VPA overrides for other recommender parameters** (histogram decay, confidence, and similar) are out of scope.
+- **Changing the recommendation model.** The histogram, decay, and confidence computations are untouched; only the percentiles at which the recommendations are read change.
 
 ## Proposal
 
-Add two optional fields to `ContainerResourcePolicy` (autoscaling.k8s.io/v1):
+Add six optional fields to `ContainerResourcePolicy` (autoscaling.k8s.io/v1) — the lower-bound, target, and upper-bound percentiles for CPU and memory:
 
 ```go
-// TargetCPUPercentile, when set, overrides the global
-// --target-cpu-percentile flag for this container: the CPU usage
-// percentile used as the base for the CPU target recommendation.
-// Expressed as an integer percentile in [1, 100], e.g. 95 for p95.
-// Falls back to the global flag when unset.
-// Only honored when the PerVPAConfig feature gate is enabled.
+// The six fields below override this container's recommendation percentiles.
+// When set, each overrides the Recommender's corresponding global
+// --*-percentile flag. Values are integer percentiles in [1, 100] (e.g. 95
+// for p95). Only honored when the PerVPAConfig feature gate is enabled.
+// For a resource, the lower-bound, target, and upper-bound percentiles must
+// be set together and satisfy lower <= target <= upper.
+
+// +optional
+// +kubebuilder:validation:Minimum=1
+// +kubebuilder:validation:Maximum=100
+LowerBoundCPUPercentile *int32 `json:"lowerBoundCPUPercentile,omitempty"`
 // +optional
 // +kubebuilder:validation:Minimum=1
 // +kubebuilder:validation:Maximum=100
 TargetCPUPercentile *int32 `json:"targetCPUPercentile,omitempty"`
+// +optional
+// +kubebuilder:validation:Minimum=1
+// +kubebuilder:validation:Maximum=100
+UpperBoundCPUPercentile *int32 `json:"upperBoundCPUPercentile,omitempty"`
 
-// TargetMemoryPercentile, when set, overrides the global
-// --target-memory-percentile flag for this container: the memory usage
-// percentile used as the base for the memory target recommendation.
-// Expressed as an integer percentile in [1, 100], e.g. 95 for p95.
-// Falls back to the global flag when unset.
-// Only honored when the PerVPAConfig feature gate is enabled.
+// +optional
+// +kubebuilder:validation:Minimum=1
+// +kubebuilder:validation:Maximum=100
+LowerBoundMemoryPercentile *int32 `json:"lowerBoundMemoryPercentile,omitempty"`
 // +optional
 // +kubebuilder:validation:Minimum=1
 // +kubebuilder:validation:Maximum=100
 TargetMemoryPercentile *int32 `json:"targetMemoryPercentile,omitempty"`
+// +optional
+// +kubebuilder:validation:Minimum=1
+// +kubebuilder:validation:Maximum=100
+UpperBoundMemoryPercentile *int32 `json:"upperBoundMemoryPercentile,omitempty"`
 ```
 
-Behaviour, in one sentence: **when set, the Recommender reads the target recommendation for that container at the declared percentile instead of the global flag's percentile; everything else about the recommendation pipeline is unchanged.**
+When set, the Recommender reads each recommendation (lower bound, target, upper bound) for that container at the declared percentile instead of the global flag's; the rest of the pipeline is unchanged.
 
 ## Design Details
 
 ### API Changes
 
-Only `ContainerResourcePolicy` changes, as shown in [Proposal](#proposal). No status, condition, or metric changes: the effective percentile is fully determined by the spec and the Recommender flags, and the resulting recommendation is already observable in `status.recommendation`.
+Only `ContainerResourcePolicy` changes. No status, condition, or metric changes: the effective percentiles are fully determined by the spec and the Recommender flags, and the resulting recommendation is already observable in `status.recommendation`.
 
-Each field is a plain integer percentile (`*int32`, `[1, 100]`) rather than a `resource.Quantity` — it's a unit, not a resource quantity. This keeps validation to a simple `Minimum`/`Maximum` on the CRD. The Recommender divides the value by 100 to get the `(0, 1]` fraction its estimators use, matching the global flags.
+Each field is a plain integer percentile (`*int32`, `[1, 100]`) rather than a `resource.Quantity` — it's a unit, not a resource quantity. This keeps per-field validation to a simple `Minimum`/`Maximum` on the CRD. The Recommender divides the value by 100 to get the `(0, 1]` fraction its estimators use, matching the global flags.
 
 ### Effective-Value Resolution
 
-The effective percentile for a container is resolved with the standard Phase 1 precedence:
+Percentiles resolve per resource, with the standard Phase 1 precedence:
 
-1. `containerPolicies` entry matching the container's name, if it sets the field.
-2. `containerPolicies` entry with `containerName: "*"`, if it sets the field.
-3. The corresponding global Recommender flag.
+1. `containerPolicies` entry matching the container's name, if it sets the resource's percentiles.
+2. `containerPolicies` entry with `containerName: "*"`, if it sets them.
+3. The corresponding global Recommender flags.
 
-Each field resolves independently: a policy may set only `targetMemoryPercentile` and inherit the global CPU percentile, or vice versa.
+CPU and memory resolve independently: a policy may set the CPU triple and inherit the global memory percentiles, or vice versa.
 
 ### Recommender Integration
 
-Today the percentile estimators are constructed once, at Recommender startup, with the global flag values baked in (`NewPercentileCPUEstimator(config.TargetCPUPercentile)` in `pkg/recommender/logic/recommender.go`). A single construction-time value cannot express per-container percentiles.
+Today the percentile estimators are constructed once, at Recommender startup, with the global flag values baked in (e.g. `NewPercentileCPUEstimator(config.TargetCPUPercentile)` in `pkg/recommender/logic/recommender.go`). A single construction-time value cannot express per-container percentiles.
 
-The target estimators become parameterized: the effective target percentile is carried on the `AggregateContainerState` — the same vehicle Phase 1 uses for `OOMBumpUpRatio` — and the CPU/memory target estimators read it at estimation time from the state passed to `GetResourceEstimation`, using the construction-time global value as the fallback when no per-container override is present. The lower- and upper-bound estimators are untouched and keep their construction-time global percentiles.
+The estimators become parameterized: the effective percentiles are carried on the `AggregateContainerState` — the same vehicle Phase 1 uses for `OOMBumpUpRatio` — and the lower-bound, target, and upper-bound estimators for each resource read their percentile at estimation time, falling back to the construction-time global value when no per-container override is present.
 
-The `AggregateContainerState` already receives the VPA's `ContainerResourcePolicy` during aggregation, so populating the two effective percentiles alongside `OOMBumpUpRatio` requires no new plumbing between the API layer and the model layer.
+`AggregateContainerState` already receives the VPA's `ContainerResourcePolicy` during aggregation, so populating the effective percentiles alongside `OOMBumpUpRatio` needs no new plumbing between the API and model layers.
 
 ### Interaction with Lower and Upper Bounds
 
-The bound percentiles remain global, so a per-VPA target percentile can be configured above the global upper-bound percentile (or below the lower-bound one), producing a target outside the `[lowerBound, upperBound]` interval. This is not a new failure mode — the global flags permit the same misordering today, and no ordering validation exists between them — but per-VPA configuration makes it easier to reach accidentally.
-
-The admission controller therefore emits a warning (not a rejection) when a declared target percentile is above the global upper-bound percentile or below the global lower-bound percentile at validation time.
+The lower- and upper-bound percentiles drive the lower/upper bound recommendations, which define the range the Updater treats as acceptable: current usage outside it triggers a resize. Making them per-VPA lets a workload pick its own eviction sensitivity — a wide range for a tolerant batch job, a tight one for a latency-sensitive service. Because the admission controller enforces `lower ≤ target ≤ upper` (see [Validation](#validation)), a container's percentiles are always internally consistent.
 
 ### Validation
 
-Each field is an integer in `[1, 100]`, enforced directly by the CRD schema:
+Each field is an integer in `[1, 100]`, enforced by the CRD schema:
 
 ```go
 // +kubebuilder:validation:Minimum=1
 // +kubebuilder:validation:Maximum=100
 ```
 
-Because the type is a plain integer, no CEL rule is needed. The admission controller's VPA validation (`pkg/admission-controller/resource/vpa/validation.go`) still rejects the fields when the `PerVPAConfig` feature gate is disabled, matching the Phase 1 fields' handling.
+The admission webhook (`pkg/admission-controller/resource/vpa/validation.go`) enforces the cross-field rules the CRD schema cannot express:
+
+- For each resource (CPU, memory), the lower-bound, target, and upper-bound percentiles are either all set or all unset.
+- When set, `lower ≤ target ≤ upper`.
+
+Requiring the three together lets admission validate the ordering without knowing the Recommender's global flag values. The webhook also rejects the fields when the `PerVPAConfig` gate is disabled, matching the Phase 1 fields.
 
 ### Feature Enablement and Rollback
 
@@ -137,16 +151,16 @@ The feature is entirely internal to the VPA controllers and depends on no new Ku
 
 **Unit tests:**
 
-- Effective-value resolution: named-container policy wins over `"*"`, which wins over the global flag; each field resolves independently.
-- Estimator behaviour: target estimation uses the per-container percentile when present on the `AggregateContainerState` and the global value otherwise; bound estimations are unaffected by the fields.
-- Validation: values outside `[1, 100]` rejected; fields rejected when the feature gate is disabled; warning emitted when a target percentile lies outside the global bound percentiles.
+- Effective-value resolution: named-container policy wins over `"*"`, which wins over the global flags; CPU and memory resolve independently.
+- Estimator behaviour: each of the lower/target/upper estimators uses the per-container percentile when present on the `AggregateContainerState` and the global value otherwise.
+- Validation: values outside `[1, 100]` rejected; a partially-set resource triple rejected; `lower > target` or `target > upper` rejected; fields rejected when the gate is disabled.
 
 **Integration tests** (Recommender):
 
-- Two VPAs targeting identical workloads with identical usage histories, one with `targetCPUPercentile: 50` and one unset — the first receives a lower CPU target; memory targets are identical.
-- The equivalent scenario for `targetMemoryPercentile`.
-- A VPA setting the fields via `containerName: "*"` applies them to all containers not covered by a named policy.
-- Feature-gate-disabled path: fields present on an existing object are ignored and the global flags apply.
+- Two VPAs with identical usage histories, one setting the CPU triple with a low target and one unset — the first receives a lower CPU target; memory is unchanged.
+- The equivalent scenario for the memory triple.
+- Fields set via `containerName: "*"` apply to all containers not covered by a named policy.
+- Gate-disabled path: fields on an existing object are ignored and the global flags apply.
 
 ## Examples
 
@@ -165,12 +179,14 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: gateway
+      lowerBoundCPUPercentile: 60
       targetCPUPercentile: 95
+      upperBoundCPUPercentile: 98
 ```
 
-The `gateway` container's CPU target is read at p95 instead of the cluster default (p90 unless the flag is changed); its memory target and all bounds are unchanged.
+The `gateway` container's CPU recommendations are read at these percentiles instead of the cluster defaults; its memory percentiles are unchanged.
 
-### Batch workload: relaxed targets for all containers
+### Batch workload: relaxed range for all containers
 
 ```yaml
 apiVersion: autoscaling.k8s.io/v1
@@ -185,23 +201,27 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: "*"
+      lowerBoundCPUPercentile: 25
       targetCPUPercentile: 50
+      upperBoundCPUPercentile: 75
+      lowerBoundMemoryPercentile: 25
       targetMemoryPercentile: 50
+      upperBoundMemoryPercentile: 75
 ```
 
-Every container in the job is targeted at the median, trading headroom for density on a throughput-insensitive workload.
+Every container targets the median with a wide bound range, trading headroom for density and tolerating more drift before a resize.
 
 ## Future Work
 
-- **Lower/upper bound percentiles per-VPA** (`lowerBoundCPUPercentile`, `upperBoundCPUPercentile`, and memory equivalents): the natural completion of this work, enabling per-workload eviction sensitivity. Deferred pending user feedback on the target fields, per SIG discussion on [#9970](https://github.com/kubernetes/autoscaler/issues/9970). Adding them also makes cross-field ordering validation (`lowerBound <= target <= upperBound`) meaningful.
+- **Loosen the all-set requirement.** The three percentiles for a resource must currently be set together so admission can validate `lower ≤ target ≤ upper` without reading the Recommender's flags. If a safe way to validate a partially-set triple against the global flags emerges, this could be relaxed.
 
 ## Alternatives Considered
 
-**1. Multiple Recommender instances (AEP-3919).** The status quo escape hatch: run one Recommender per percentile profile and point each VPA at one. Works, but each additional Recommender is another deployment to size, monitor, and upgrade, and workloads must be partitioned into a small number of static profiles. Differing percentiles are the canonical reason operators end up here; making the percentile declarative removes the most common need for the pattern.
+**1. Multiple Recommender instances (AEP-3919).** The status quo escape hatch: run one Recommender per percentile profile and point each VPA at one. Works, but each additional Recommender is another deployment to size, monitor, and upgrade, and workloads must be partitioned into a small number of static profiles. Differing percentiles are the canonical reason operators end up here; making the percentiles declarative removes the most common need for the pattern.
 
 ## Implementation History
 
 - (issue filed) 2026-07-11 — Issue [kubernetes/autoscaler#9970](https://github.com/kubernetes/autoscaler/issues/9970).
-- (scope agreed) 2026-07-14 — SIG feedback on the issue: limit to the two target percentiles.
-- (AEP PR opened) TBD.
+- (scope agreed) 2026-07-14 — SIG feedback on the issue: start with the target percentiles.
+- (scope expanded) 2026-08-28 — PR review: include the lower-bound, target, and upper-bound percentiles as a required set per resource.
 - (initial implementation) TBD.
