@@ -1033,7 +1033,7 @@ func TestValidateVPA(t *testing.T) {
 			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].oomBumpUpRatio: Invalid value: 0.5: must be greater than or equal to 1.0"),
 		},
 		{
-			name: "Valid target percentiles",
+			name: "Valid percentile triples",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
 					TargetRef: &autoscalingv1.CrossVersionObjectReference{
@@ -1046,10 +1046,14 @@ func TestValidateVPA(t *testing.T) {
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
-								ContainerName:          "*",
-								Mode:                   &validScalingMode,
-								TargetCPUPercentile:    resource.NewMilliQuantity(950, resource.DecimalSI),
-								TargetMemoryPercentile: resource.NewQuantity(1, resource.DecimalSI),
+								ContainerName:              "*",
+								Mode:                       &validScalingMode,
+								LowerBoundCPUPercentile:    ptr.To(int32(50)),
+								TargetCPUPercentile:        ptr.To(int32(95)),
+								UpperBoundCPUPercentile:    ptr.To(int32(98)),
+								LowerBoundMemoryPercentile: ptr.To(int32(40)),
+								TargetMemoryPercentile:     ptr.To(int32(80)),
+								UpperBoundMemoryPercentile: ptr.To(int32(90)),
 							},
 						},
 					},
@@ -1058,7 +1062,7 @@ func TestValidateVPA(t *testing.T) {
 			opts: VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
 		},
 		{
-			name: "Invalid targetCPUPercentile (greater than 1)",
+			name: "Invalid CPU percentile ordering (target > upper)",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
 					TargetRef: &autoscalingv1.CrossVersionObjectReference{
@@ -1071,16 +1075,18 @@ func TestValidateVPA(t *testing.T) {
 					ResourcePolicy: &vpa_types.PodResourcePolicy{
 						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 							{
-								ContainerName:       "*",
-								Mode:                &validScalingMode,
-								TargetCPUPercentile: resource.NewMilliQuantity(1500, resource.DecimalSI),
+								ContainerName:           "*",
+								Mode:                    &validScalingMode,
+								LowerBoundCPUPercentile: ptr.To(int32(50)),
+								TargetCPUPercentile:     ptr.To(int32(95)),
+								UpperBoundCPUPercentile: ptr.To(int32(90)),
 							},
 						},
 					},
 				},
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
-			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].targetCPUPercentile: Invalid value: 1.5: must be greater than 0 and less than or equal to 1"),
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].targetCPUPercentile: Invalid value: 95: percentiles must satisfy lowerBound (50) <= target (95) <= upperBound (90)"),
 		},
 		{
 			name: "targetMemoryPercentile set but PerVPAConfig disabled",
@@ -1098,7 +1104,7 @@ func TestValidateVPA(t *testing.T) {
 							{
 								ContainerName:          "*",
 								Mode:                   &validScalingMode,
-								TargetMemoryPercentile: resource.NewMilliQuantity(900, resource.DecimalSI),
+								TargetMemoryPercentile: ptr.To(int32(90)),
 							},
 						},
 					},
@@ -1106,6 +1112,32 @@ func TestValidateVPA(t *testing.T) {
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: false},
 			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].targetMemoryPercentile: Forbidden: not supported when feature flag PerVPAConfig is disabled"),
+		},
+		{
+			name: "Partial CPU triple rejected (upper missing)",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName:           "*",
+								Mode:                    &validScalingMode,
+								LowerBoundCPUPercentile: ptr.To(int32(50)),
+								TargetCPUPercentile:     ptr.To(int32(95)),
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].upperBoundCPUPercentile: Required value: must be set together with the other percentiles for this resource"),
 		},
 		{
 			name: "Invalid oomMinBumpUp (negative value)",

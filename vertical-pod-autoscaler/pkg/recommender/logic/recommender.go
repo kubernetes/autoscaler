@@ -130,13 +130,13 @@ func FilterControlledResources(estimation model.Resources, controlledResources [
 // CreatePodResourceRecommender returns the primary recommender.
 func CreatePodResourceRecommender(config RecommendationConfig) PodResourceRecommender {
 	targetCPU := NewTargetPercentileCPUEstimator(config.TargetCPUPercentile)
-	lowerBoundCPU := NewPercentileCPUEstimator(config.LowerBoundCPUPercentile)
-	upperBoundCPU := NewPercentileCPUEstimator(config.UpperBoundCPUPercentile)
+	lowerBoundCPU := NewLowerBoundPercentileCPUEstimator(config.LowerBoundCPUPercentile)
+	upperBoundCPU := NewUpperBoundPercentileCPUEstimator(config.UpperBoundCPUPercentile)
 
 	// Create base memory estimators
 	targetMemory := NewTargetPercentileMemoryEstimator(config.TargetMemoryPercentile)
-	lowerBoundMemory := NewPercentileMemoryEstimator(config.LowerBoundMemoryPercentile)
-	upperBoundMemory := NewPercentileMemoryEstimator(config.UpperBoundMemoryPercentile)
+	lowerBoundMemory := NewLowerBoundPercentileMemoryEstimator(config.LowerBoundMemoryPercentile)
+	upperBoundMemory := NewUpperBoundPercentileMemoryEstimator(config.UpperBoundMemoryPercentile)
 
 	// Apply safety margins
 	targetCPU = WithCPUMargin(config.SafetyMarginFraction, targetCPU)

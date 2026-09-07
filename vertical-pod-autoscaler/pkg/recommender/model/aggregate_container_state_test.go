@@ -22,7 +22,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
@@ -395,46 +394,44 @@ func TestUpdateFromPolicyMemoryAggregationIntervalCount(t *testing.T) {
 }
 
 func TestUpdateFromPolicyTargetPercentile(t *testing.T) {
+	fullPolicy := &vpa_types.ContainerResourcePolicy{
+		LowerBoundCPUPercentile:    ptr.To(int32(50)),
+		TargetCPUPercentile:        ptr.To(int32(95)),
+		UpperBoundCPUPercentile:    ptr.To(int32(98)),
+		LowerBoundMemoryPercentile: ptr.To(int32(40)),
+		TargetMemoryPercentile:     ptr.To(int32(80)),
+		UpperBoundMemoryPercentile: ptr.To(int32(90)),
+	}
 	testCases := []struct {
 		name           string
 		policy         *vpa_types.ContainerResourcePolicy
 		featureEnabled bool
-		expectedCPU    float64
-		expectedMemory float64
+		// expected (0,1] fractions: lowerCPU, targetCPU, upperCPU, lowerMem, targetMem, upperMem.
+		expected [6]float64
 	}{
 		{
-			name: "Custom target percentiles with feature enabled",
-			policy: &vpa_types.ContainerResourcePolicy{
-				TargetCPUPercentile:    ptr.To(resource.MustParse("0.95")),
-				TargetMemoryPercentile: ptr.To(resource.MustParse("0.8")),
-			},
+			name:           "Custom percentiles with feature enabled",
+			policy:         fullPolicy,
 			featureEnabled: true,
-			expectedCPU:    0.95,
-			expectedMemory: 0.8,
+			expected:       [6]float64{0.5, 0.95, 0.98, 0.4, 0.8, 0.9},
 		},
 		{
-			name: "Custom target percentiles with feature disabled - stay unset (0)",
-			policy: &vpa_types.ContainerResourcePolicy{
-				TargetCPUPercentile:    ptr.To(resource.MustParse("0.95")),
-				TargetMemoryPercentile: ptr.To(resource.MustParse("0.8")),
-			},
+			name:           "Custom percentiles with feature disabled - stay unset (0)",
+			policy:         fullPolicy,
 			featureEnabled: false,
-			expectedCPU:    0,
-			expectedMemory: 0,
+			expected:       [6]float64{},
 		},
 		{
-			name:           "Nil target percentiles - stay unset (0)",
+			name:           "Nil percentiles - stay unset (0)",
 			policy:         &vpa_types.ContainerResourcePolicy{},
 			featureEnabled: true,
-			expectedCPU:    0,
-			expectedMemory: 0,
+			expected:       [6]float64{},
 		},
 		{
 			name:           "Nil policy - stay unset (0)",
 			policy:         nil,
 			featureEnabled: true,
-			expectedCPU:    0,
-			expectedMemory: 0,
+			expected:       [6]float64{},
 		},
 	}
 	for _, tc := range testCases {
@@ -442,8 +439,11 @@ func TestUpdateFromPolicyTargetPercentile(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, tc.featureEnabled)
 			cs := NewAggregateContainerState()
 			cs.UpdateFromPolicy(tc.policy)
-			assert.Equal(t, tc.expectedCPU, cs.GetTargetCPUPercentile())
-			assert.Equal(t, tc.expectedMemory, cs.GetTargetMemoryPercentile())
+			got := [6]float64{
+				cs.GetLowerBoundCPUPercentile(), cs.GetTargetCPUPercentile(), cs.GetUpperBoundCPUPercentile(),
+				cs.GetLowerBoundMemoryPercentile(), cs.GetTargetMemoryPercentile(), cs.GetUpperBoundMemoryPercentile(),
+			}
+			assert.Equal(t, tc.expected, got)
 		})
 	}
 }
@@ -455,16 +455,22 @@ func TestUpdateFromPolicyTargetPercentileReset(t *testing.T) {
 	cs := NewAggregateContainerState()
 
 	cs.UpdateFromPolicy(&vpa_types.ContainerResourcePolicy{
-		TargetCPUPercentile:    ptr.To(resource.MustParse("0.95")),
-		TargetMemoryPercentile: ptr.To(resource.MustParse("0.8")),
+		LowerBoundCPUPercentile:    ptr.To(int32(50)),
+		TargetCPUPercentile:        ptr.To(int32(95)),
+		UpperBoundCPUPercentile:    ptr.To(int32(98)),
+		LowerBoundMemoryPercentile: ptr.To(int32(40)),
+		TargetMemoryPercentile:     ptr.To(int32(80)),
+		UpperBoundMemoryPercentile: ptr.To(int32(90)),
 	})
+	assert.Equal(t, 0.5, cs.GetLowerBoundCPUPercentile())
 	assert.Equal(t, 0.95, cs.GetTargetCPUPercentile())
-	assert.Equal(t, 0.8, cs.GetTargetMemoryPercentile())
+	assert.Equal(t, 0.9, cs.GetUpperBoundMemoryPercentile())
 
-	// Re-applying a policy without the fields must clear the previous override.
+	// Re-applying a policy without the fields must clear the previous overrides.
 	cs.UpdateFromPolicy(&vpa_types.ContainerResourcePolicy{})
+	assert.Equal(t, float64(0), cs.GetLowerBoundCPUPercentile())
 	assert.Equal(t, float64(0), cs.GetTargetCPUPercentile())
-	assert.Equal(t, float64(0), cs.GetTargetMemoryPercentile())
+	assert.Equal(t, float64(0), cs.GetUpperBoundMemoryPercentile())
 }
 
 func TestAggregateContainerStateIsExpiredWithCustomIntervalCount(t *testing.T) {

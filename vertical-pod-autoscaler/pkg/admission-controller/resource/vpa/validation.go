@@ -105,7 +105,9 @@ func allowPerVPAConfig(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	}
 	if oldObj.Spec.ResourcePolicy != nil && oldObj.Spec.ResourcePolicy.ContainerPolicies != nil {
 		for _, policy := range oldObj.Spec.ResourcePolicy.ContainerPolicies {
-			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil || policy.MemoryAggregationIntervalCount != nil || policy.MemoryAggregationIntervalSeconds != nil || policy.TargetCPUPercentile != nil || policy.TargetMemoryPercentile != nil {
+			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil || policy.MemoryAggregationIntervalCount != nil || policy.MemoryAggregationIntervalSeconds != nil ||
+				policy.LowerBoundCPUPercentile != nil || policy.TargetCPUPercentile != nil || policy.UpperBoundCPUPercentile != nil ||
+				policy.LowerBoundMemoryPercentile != nil || policy.TargetMemoryPercentile != nil || policy.UpperBoundMemoryPercentile != nil {
 				return true
 			}
 		}
@@ -295,27 +297,14 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 			}
 		}
 
-		if policy.TargetCPUPercentile != nil {
-			if opts.AllowPerVPAConfig {
-				percentile := float64(policy.TargetCPUPercentile.MilliValue()) / 1000.0
-				if percentile <= 0 || percentile > 1 {
-					allErrs = append(allErrs, field.Invalid(policyPath.Child("targetCPUPercentile"), percentile, "must be greater than 0 and less than or equal to 1"))
-				}
-			} else {
-				allErrs = append(allErrs, field.Forbidden(policyPath.Child("targetCPUPercentile"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
-			}
-		}
-
-		if policy.TargetMemoryPercentile != nil {
-			if opts.AllowPerVPAConfig {
-				percentile := float64(policy.TargetMemoryPercentile.MilliValue()) / 1000.0
-				if percentile <= 0 || percentile > 1 {
-					allErrs = append(allErrs, field.Invalid(policyPath.Child("targetMemoryPercentile"), percentile, "must be greater than 0 and less than or equal to 1"))
-				}
-			} else {
-				allErrs = append(allErrs, field.Forbidden(policyPath.Child("targetMemoryPercentile"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
-			}
-		}
+		allErrs = append(allErrs, validatePercentileTriple(
+			policy.LowerBoundCPUPercentile, policy.TargetCPUPercentile, policy.UpperBoundCPUPercentile,
+			"lowerBoundCPUPercentile", "targetCPUPercentile", "upperBoundCPUPercentile",
+			opts.AllowPerVPAConfig, policyPath)...)
+		allErrs = append(allErrs, validatePercentileTriple(
+			policy.LowerBoundMemoryPercentile, policy.TargetMemoryPercentile, policy.UpperBoundMemoryPercentile,
+			"lowerBoundMemoryPercentile", "targetMemoryPercentile", "upperBoundMemoryPercentile",
+			opts.AllowPerVPAConfig, policyPath)...)
 
 		if policy.StartupBoost != nil {
 			allErrs = append(allErrs, validateVPASpecStartupBoost(policy.StartupBoost, policyPath.Child("startupBoost"), opts)...)
@@ -323,6 +312,47 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 	}
 
 	return warnings, allErrs
+}
+
+// validatePercentileTriple validates a resource's per-VPA lower/target/upper
+// percentiles. When the PerVPAConfig gate is disabled, any set field is rejected.
+// When enabled, the three must be set together and satisfy lower <= target <= upper.
+func validatePercentileTriple(lower, target, upper *int32, lowerName, targetName, upperName string, allowPerVPAConfig bool, policyPath *field.Path) field.ErrorList {
+	var allErrs field.ErrorList
+	if lower == nil && target == nil && upper == nil {
+		return allErrs
+	}
+	if !allowPerVPAConfig {
+		forbidden := fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)
+		if lower != nil {
+			allErrs = append(allErrs, field.Forbidden(policyPath.Child(lowerName), forbidden))
+		}
+		if target != nil {
+			allErrs = append(allErrs, field.Forbidden(policyPath.Child(targetName), forbidden))
+		}
+		if upper != nil {
+			allErrs = append(allErrs, field.Forbidden(policyPath.Child(upperName), forbidden))
+		}
+		return allErrs
+	}
+	if lower == nil || target == nil || upper == nil {
+		const msg = "must be set together with the other percentiles for this resource"
+		if lower == nil {
+			allErrs = append(allErrs, field.Required(policyPath.Child(lowerName), msg))
+		}
+		if target == nil {
+			allErrs = append(allErrs, field.Required(policyPath.Child(targetName), msg))
+		}
+		if upper == nil {
+			allErrs = append(allErrs, field.Required(policyPath.Child(upperName), msg))
+		}
+		return allErrs
+	}
+	if *lower > *target || *target > *upper {
+		allErrs = append(allErrs, field.Invalid(policyPath.Child(targetName), *target,
+			fmt.Sprintf("percentiles must satisfy lowerBound (%d) <= target (%d) <= upperBound (%d)", *lower, *target, *upper)))
+	}
+	return allErrs
 }
 
 func validateVPASpecStartupBoost(startupBoost *vpa_types.StartupBoost, fldPath *field.Path, opts VPAValidationOptions) field.ErrorList {

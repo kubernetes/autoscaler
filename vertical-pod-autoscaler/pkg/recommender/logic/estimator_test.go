@@ -106,6 +106,51 @@ func TestTargetPercentileEstimatorOverride(t *testing.T) {
 	assert.Equal(t, boundMem.GetMemoryEstimation(noOverride), targetMem.GetMemoryEstimation(noOverride))
 }
 
+func TestBoundPercentileEstimatorOverride(t *testing.T) {
+	config := model.GetAggregationsConfig()
+	cpuHistogram := util.NewHistogram(config.CPUHistogramOptions)
+	memHistogram := util.NewHistogram(config.MemoryHistogramOptions)
+	for _, v := range []float64{1, 2, 3, 4, 5} {
+		cpuHistogram.AddSample(v, 1.0, anyTime)
+		memHistogram.AddSample(v*1e9, 1.0, anyTime)
+	}
+
+	globalPercentile := 0.5
+	overridePercentile := 0.9
+
+	lowerCPU := NewLowerBoundPercentileCPUEstimator(globalPercentile)
+	upperCPU := NewUpperBoundPercentileCPUEstimator(globalPercentile)
+	lowerMem := NewLowerBoundPercentileMemoryEstimator(globalPercentile)
+	upperMem := NewUpperBoundPercentileMemoryEstimator(globalPercentile)
+
+	noOverride := &model.AggregateContainerState{
+		AggregateCPUUsage:    cpuHistogram,
+		AggregateMemoryPeaks: memHistogram,
+	}
+	withOverride := &model.AggregateContainerState{
+		AggregateCPUUsage:          cpuHistogram,
+		AggregateMemoryPeaks:       memHistogram,
+		LowerBoundCPUPercentile:    overridePercentile,
+		UpperBoundCPUPercentile:    overridePercentile,
+		LowerBoundMemoryPercentile: overridePercentile,
+		UpperBoundMemoryPercentile: overridePercentile,
+	}
+
+	// Each bound estimator honors its own per-container override.
+	assert.Greater(t, lowerCPU.GetCPUEstimation(withOverride), lowerCPU.GetCPUEstimation(noOverride))
+	assert.Greater(t, upperCPU.GetCPUEstimation(withOverride), upperCPU.GetCPUEstimation(noOverride))
+	assert.Greater(t, lowerMem.GetMemoryEstimation(withOverride), lowerMem.GetMemoryEstimation(noOverride))
+	assert.Greater(t, upperMem.GetMemoryEstimation(withOverride), upperMem.GetMemoryEstimation(noOverride))
+
+	// A target-only override does not leak into the bound estimators.
+	targetOnly := &model.AggregateContainerState{
+		AggregateCPUUsage:    cpuHistogram,
+		AggregateMemoryPeaks: memHistogram,
+		TargetCPUPercentile:  overridePercentile,
+	}
+	assert.Equal(t, lowerCPU.GetCPUEstimation(noOverride), lowerCPU.GetCPUEstimation(targetOnly))
+}
+
 // Verifies that the confidenceMultiplier calculates the internal
 // confidence based on the amount of historical samples and scales the resources
 // returned by the base estimator according to the formula, using the calculated
