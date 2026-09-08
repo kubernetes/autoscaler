@@ -469,7 +469,7 @@ recommendations reflect this: `323522422` bytes (~308Mi) on `kind-worker` vs `25
 
 The `kubectl get vpaslice` output confirms the per-node recommendations at a glance:
 
-```
+```bash
 NAMESPACE   NAME                              VPA                  NODESELECTOR                                CPU   MEM         PROVIDED   AGE
 default     test-daemonset-vpa-kind-worker    test-daemonset-vpa   {"kubernetes.io/hostname":"kind-worker"}    25m   323522422   True       3h16m
 default     test-daemonset-vpa-kind-worker2   test-daemonset-vpa   {"kubernetes.io/hostname":"kind-worker2"}   25m   250Mi       True       3h16m
