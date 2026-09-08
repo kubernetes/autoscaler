@@ -240,6 +240,4 @@ const (
 	ContainerTypeInit ContainerType = "init"
 	// ContainerTypeInitSidecar represents an init with restartPolicy set to always.
 	ContainerTypeInitSidecar ContainerType = "init-sidecar"
-	// ContainerTypeUnknown represents an unknown container type.
-	ContainerTypeUnknown ContainerType = "unknown"
 )

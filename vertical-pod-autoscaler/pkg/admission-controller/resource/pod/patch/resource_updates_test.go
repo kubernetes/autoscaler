@@ -251,6 +251,18 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			},
 		},
 		{
+			name: "container without recommendation is not patched",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{}},
+				},
+			},
+			namespace:            "default",
+			recommendResources:   make([]vpa_api_util.ContainerResources, 1),
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches:        []resource_admission.PatchRecord{},
+		},
+		{
 			name: "replacement cpu recommendation",
 			pod: &corev1.Pod{
 				Spec: corev1.PodSpec{

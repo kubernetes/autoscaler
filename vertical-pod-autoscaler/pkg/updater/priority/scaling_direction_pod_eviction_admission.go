@@ -61,7 +61,7 @@ func (s *scalingDirectionPodEvictionAdmission) Admit(pod *corev1.Pod, resources 
 	}
 	if features.Enabled(features.NativeSidecar) {
 		for _, container := range pod.Spec.InitContainers {
-			if container.RestartPolicy == nil || *container.RestartPolicy != corev1.ContainerRestartPolicyAlways {
+			if !resourcehelpers.IsNativeSidecar(&container) {
 				continue
 			}
 			recommendedResources := vpa_utils.GetRecommendationForContainer(container.Name, resources)
