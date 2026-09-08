@@ -222,7 +222,7 @@ checkpoint packs all containers into a single object, yielding one checkpoint pe
 regardless of container count.
 
 The naming convention for `VPASliceCheckpoint` objects is `{vpaslice-name}`, matching the
-VPASlice's own deterministic name one-to-one. Similiar to how `VerticalPodAutoscalerCheckpoint` works, 
+VPASlice's own deterministic name one-to-one. Similar to how `VerticalPodAutoscalerCheckpoint` works, 
 the recommender will use this name for create/update operations.
 `VPASliceCheckpoint` objects will carry a label `autoscaling.k8s.io/vpaslice-name` to support
 list-by-slice queries. 
@@ -497,7 +497,7 @@ objects, each well within etcd limits regardless of how many slices exist. This 
 - Separate RBAC — operators can grant read access to slices without granting access to the
   parent VPA.
 - Automatic garbage collection via `ownerReferences`.
-- A pattern consistent with how Kubernetes handles similiar fan-out (EndpointSlice).
+- A pattern consistent with how Kubernetes handles Similar fan-out (EndpointSlice).
 
 #### Why separate VPASliceCheckpoint CRDs instead of reusing VPA checkpoints
 
