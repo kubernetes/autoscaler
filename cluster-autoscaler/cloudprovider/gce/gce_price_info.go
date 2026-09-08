@@ -89,6 +89,7 @@ var (
 		"z3":  0.0496531,
 		"e4":  0.02181159,
 		"z4d": 0.00875,
+		"z4m": 0.032578,
 	}
 	predefinedMemoryPricePerHourPerGb = map[string]float64{
 		"a2":  0.004237,
@@ -111,6 +112,7 @@ var (
 		"z3":  0.0066553,
 		"e4":  0.00292353,
 		"z4d": 0.01,
+		"z4m": 0.3,
 	}
 	predefinedPreemptibleDiscount = map[string]float64{
 		"a2":  0.009483 / 0.031611,
@@ -133,6 +135,7 @@ var (
 		"z3":  0.0165 / 0.0496531,
 		"e4":  0.0130312 / 0.02181159,
 		"z4d": 0.4,
+		"z4m": 0.0130312 / 0.032578,
 	}
 	customCpuPricePerHour = map[string]float64{
 		"e2":  0.022890,
@@ -397,6 +400,12 @@ var (
 		"z4d-highmem-32-highlssd":      4.345376,
 		"z4d-highmem-48-highlssd":      6.518065,
 		"z4d-highmem-96-highlssd":      13.036129,
+		"z4m-highmem-16":               39.422618,
+		"z4m-highmem-32":               78.845236,
+		"z4m-highmem-48":               118.267854,
+		"z4m-highmem-96":               240.135707,
+		"z4m-highmem-192":              480.271414,
+		"z4m-highmem-192-cd":           480.271414,
 	}
 	preemptiblePrices = map[string]float64{
 		"a2-highgpu-1g":                1.102016,
@@ -605,6 +614,12 @@ var (
 		"z4d-highmem-32-highlssd":      1.738151,
 		"z4d-highmem-48-highlssd":      2.607226,
 		"z4d-highmem-96-highlssd":      5.214452,
+		"z4m-highmem-16":               15.454413,
+		"z4m-highmem-32":               30.908826,
+		"z4m-highmem-48":               46.363240,
+		"z4m-highmem-96":               94.166479,
+		"z4m-highmem-192":              188.332958,
+		"z4m-highmem-192-cd":           188.332958,
 	}
 	gpuPrices = map[string]float64{
 		"nvidia-tesla-t4":   0.35,
