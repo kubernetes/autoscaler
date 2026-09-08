@@ -360,6 +360,9 @@ func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]st
 	return result
 }
 
+// updateCapacityWithRequirementsOverrides fills the template node's capacity from an
+// ASG's attribute-based InstanceRequirements. Every requirement is optional, so each
+// is read only when present.
 func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.ResourceList, policy *mixedInstancesPolicy) {
 	if policy == nil || len(policy.instanceTypesOverrides) > 0 || policy.instanceRequirements == nil {
 		return
