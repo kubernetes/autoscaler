@@ -1,4 +1,3 @@
-
 UPCLOUD_SDK_PACKAGE ?= github.com/upcloudltd/upcloud-go-api/v8
 UPCLOUD_SDK_VERSION ?= v8.35.0
 
@@ -13,6 +12,7 @@ image:
 vendor:
 	sh vendor.sh $(UPCLOUD_SDK_PACKAGE) $(UPCLOUD_SDK_VERSION) 
 
+.PHONY: test
 test:
 	go test -v -race k8s.io/autoscaler/cluster-autoscaler/cloudprovider/upcloud
 

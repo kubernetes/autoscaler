@@ -204,7 +204,7 @@ func (r *CreateKubernetesNodeGroupRequest) RequestURL() string {
 }
 
 type ModifyKubernetesNodeGroup struct {
-	Count int `json:"count,omitempty"`
+	Count int `json:"count"`
 }
 
 type ModifyKubernetesNodeGroupRequest struct {

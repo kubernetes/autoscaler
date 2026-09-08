@@ -50,11 +50,22 @@ func shouldRetryOnError(err error, retryOnErrorCount int) bool {
 func retry[T any](ctx context.Context, operation func(int, context.Context) (*T, error), config *retryConfig) (*T, error) {
 	config = fillDefaults(config)
 
+	value, err := operation(0, ctx)
+	if err != nil && !shouldRetryOnError(err, 0) {
+		return value, err
+	}
+	if !config.inverse && value != nil {
+		return value, nil
+	}
+	if config.inverse && value == nil {
+		return nil, nil
+	}
+
 	ticker := time.NewTicker(config.interval)
 	defer ticker.Stop()
 
-	retryOnErrorCount := 0
-	for i := 0; ; i++ {
+	retryOnErrorCount := 1
+	for i := 1; ; i++ {
 		select {
 		case <-ticker.C:
 			value, err := operation(i, ctx)
