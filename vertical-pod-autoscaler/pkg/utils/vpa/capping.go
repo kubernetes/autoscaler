@@ -314,9 +314,11 @@ func getContainer(containerName string, pod *corev1.Pod) *corev1.Container {
 			return &pod.Spec.Containers[i]
 		}
 	}
-	for i, container := range pod.Spec.InitContainers {
-		if container.Name == containerName {
-			return &pod.Spec.InitContainers[i]
+	if features.Enabled(features.NativeSidecar) {
+		for i, container := range pod.Spec.InitContainers {
+			if container.Name == containerName {
+				return &pod.Spec.InitContainers[i]
+			}
 		}
 	}
 	return nil
@@ -406,8 +408,7 @@ func zipContainersWithRecommendations(resources []vpa_types.RecommendedContainer
 	}
 	if features.Enabled(features.NativeSidecar) {
 		for _, container := range pod.Spec.InitContainers {
-			if container.RestartPolicy == nil ||
-				*container.RestartPolicy != corev1.ContainerRestartPolicyAlways {
+			if !resourcehelpers.IsNativeSidecar(&container) {
 				continue
 			}
 			recommendation := getRecommendationForContainer(container.Name, resources)
@@ -528,7 +529,7 @@ func insertRequestsForMissingRecommendations(containerRecommendations []vpa_type
 	if features.Enabled(features.NativeSidecar) {
 		for _, container := range pod.Spec.InitContainers {
 			// Only native sidecars are scaled; plain init containers must not surface as recommendations.
-			if container.RestartPolicy == nil || *container.RestartPolicy != corev1.ContainerRestartPolicyAlways {
+			if !resourcehelpers.IsNativeSidecar(&container) {
 				continue
 			}
 			if recommendationForContainerExists(container.Name, containerRecommendations) {

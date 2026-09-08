@@ -78,22 +78,28 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_typ
 					outsideRecommendedRange = true
 				}
 			} else {
+				// Note: if the request is not specified, the container will use the
+				// namespace default request. Currently we ignore it and treat such
+				// containers as if they had 0 request. A more correct approach would
+				// be to always calculate the 'effective' request.
 				scaleUp = true
 				outsideRecommendedRange = true
 			}
 		}
 	}
 
-	for _, podContainer := range pod.Spec.Containers {
-		processContainer(podContainer)
-	}
+	containers := pod.Spec.Containers
 	if features.Enabled(features.NativeSidecar) {
-		for _, initContainer := range pod.Spec.InitContainers {
-			if initContainer.RestartPolicy == nil || *initContainer.RestartPolicy != corev1.ContainerRestartPolicyAlways {
-				continue
+		containers = make([]corev1.Container, 0, len(pod.Spec.Containers)+len(pod.Spec.InitContainers))
+		containers = append(containers, pod.Spec.Containers...)
+		for i := range pod.Spec.InitContainers {
+			if resourcehelpers.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
+				containers = append(containers, pod.Spec.InitContainers[i])
 			}
-			processContainer(initContainer)
 		}
+	}
+	for _, podContainer := range containers {
+		processContainer(podContainer)
 	}
 
 	resourceDiff := 0.0

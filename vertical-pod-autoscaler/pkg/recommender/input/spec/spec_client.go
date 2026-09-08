@@ -119,7 +119,7 @@ func newContainerSpecs(pod *corev1.Pod, containers []corev1.Container, isInitCon
 		var containerType model.ContainerType
 		if !isInitContainer {
 			containerType = model.ContainerTypeStandard
-		} else if container.RestartPolicy != nil && *container.RestartPolicy == corev1.ContainerRestartPolicyAlways {
+		} else if resourcehelpers.IsNativeSidecar(&container) {
 			containerType = model.ContainerTypeInitSidecar
 		} else {
 			containerType = model.ContainerTypeInit

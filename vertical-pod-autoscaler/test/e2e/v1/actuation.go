@@ -827,6 +827,10 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		plainInit := d.Spec.Template.Spec.InitContainers[0].DeepCopy()
 		plainInit.Name = "plain-init"
 		plainInit.RestartPolicy = ptr.To(apiv1.ContainerRestartPolicyNever)
+		// A plain init container must terminate before the pod starts; the sidecar's pause
+		// image never exits, so swap to a shell that exits immediately.
+		plainInit.Image = "registry.k8s.io/ubuntu-slim:0.14"
+		plainInit.Command = []string{"/bin/sh"}
 		plainInit.Args = []string{"-c", "true"}
 		d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *plainInit)
 		podList := utils.StartDeploymentPods(f, d)

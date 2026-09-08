@@ -548,7 +548,9 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		initContainerRestartNever.Name = "normal-init-container"
 		initContainerRestartNever.RestartPolicy = ptr.To(apiv1.ContainerRestartPolicyNever)
 		// A plain init container (RestartPolicy: Never) must terminate before the pod starts, so
-		// override the sidecar's infinite `yes` command with one that exits immediately.
+		// swap the never-exiting pause image for a shell that exits immediately.
+		initContainerRestartNever.Image = "registry.k8s.io/ubuntu-slim:0.14"
+		initContainerRestartNever.Command = []string{"/bin/sh"}
 		initContainerRestartNever.Args = []string{"-c", "true"}
 		d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, *initContainerRestartNever)
 		podList := utils.StartDeploymentPods(f, d)

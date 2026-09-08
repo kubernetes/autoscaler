@@ -105,7 +105,6 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		vpaCheckpointClient: m.VpaCheckpointClient,
 		vpaCheckpointLister: m.VpaCheckpointLister,
 		vpaLister:           m.VpaLister,
-		podLister:           m.PodLister,
 		clusterState:        m.ClusterState,
 		specClient:          spec.NewSpecClient(m.PodLister),
 		selectorFetcher:     m.SelectorFetcher,
@@ -219,7 +218,6 @@ type clusterStateFeeder struct {
 	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	vpaCheckpointLister vpa_lister.VerticalPodAutoscalerCheckpointLister
 	vpaLister           vpa_lister.VerticalPodAutoscalerLister
-	podLister           listersv1.PodLister
 	clusterState        model.ClusterState
 	selectorFetcher     target.VpaTargetSelectorFetcher
 	memorySaveMode      bool

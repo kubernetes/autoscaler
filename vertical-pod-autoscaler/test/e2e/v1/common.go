@@ -549,10 +549,8 @@ func NewHamsterDeploymentWithNativeSidecar(f *framework.Framework, mainCPU, main
 	// Add native sidecar as initContainer with RestartPolicy=Always
 	restartPolicy := apiv1.ContainerRestartPolicyAlways
 	sidecar := apiv1.Container{
-		Name:    "native-sidecar",
-		Image:   "ubuntu:latest",
-		Command: []string{"/bin/sh"},
-		Args:    []string{"-c", "/usr/bin/yes >/dev/null"},
+		Name:  "native-sidecar",
+		Image: "registry.k8s.io/pause:3.9",
 		Resources: apiv1.ResourceRequirements{
 			Requests: apiv1.ResourceList{
 				apiv1.ResourceCPU:    sidecarCPU,
@@ -570,36 +568,14 @@ func NewHamsterDeploymentWithNativeSidecar(f *framework.Framework, mainCPU, main
 func NewHamsterDeploymentWithNativeSidecarAndLimits(f *framework.Framework,
 	mainCPURequest, mainMemoryRequest, mainCPULimit, mainMemoryLimit resource.Quantity,
 	sidecarCPURequest, sidecarMemoryRequest, sidecarCPULimit, sidecarMemoryLimit resource.Quantity) *appsv1.Deployment {
-	d := NewHamsterDeployment(f)
-	d.Spec.Template.Spec.Containers[0].Resources = apiv1.ResourceRequirements{
-		Requests: apiv1.ResourceList{
-			apiv1.ResourceCPU:    mainCPURequest,
-			apiv1.ResourceMemory: mainMemoryRequest,
-		},
-		Limits: apiv1.ResourceList{
-			apiv1.ResourceCPU:    mainCPULimit,
-			apiv1.ResourceMemory: mainMemoryLimit,
-		},
+	d := NewHamsterDeploymentWithNativeSidecar(f, mainCPURequest, mainMemoryRequest, sidecarCPURequest, sidecarMemoryRequest)
+	d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
+		apiv1.ResourceCPU:    mainCPULimit,
+		apiv1.ResourceMemory: mainMemoryLimit,
 	}
-
-	// Add native sidecar as initContainer with RestartPolicy=Always
-	restartPolicy := apiv1.ContainerRestartPolicyAlways
-	sidecar := apiv1.Container{
-		Name:  "native-sidecar",
-		Image: "registry.k8s.io/pause:3.9",
-		Resources: apiv1.ResourceRequirements{
-			Requests: apiv1.ResourceList{
-				apiv1.ResourceCPU:    sidecarCPURequest,
-				apiv1.ResourceMemory: sidecarMemoryRequest,
-			},
-			Limits: apiv1.ResourceList{
-				apiv1.ResourceCPU:    sidecarCPULimit,
-				apiv1.ResourceMemory: sidecarMemoryLimit,
-			},
-		},
-		RestartPolicy: &restartPolicy,
+	d.Spec.Template.Spec.InitContainers[0].Resources.Limits = apiv1.ResourceList{
+		apiv1.ResourceCPU:    sidecarCPULimit,
+		apiv1.ResourceMemory: sidecarMemoryLimit,
 	}
-	d.Spec.Template.Spec.InitContainers = append(d.Spec.Template.Spec.InitContainers, sidecar)
-
 	return d
 }
