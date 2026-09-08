@@ -541,6 +541,8 @@ with the correct slice-specific recommendation from the start, avoiding eviction
     matching).
   - Admission controller slice matching (`matchVPASlice`).
   - Admission controller node name extraction from DaemonSet node affinity `matchFields`.
+  - Admission controller skips resource mutation and logs a warning when the target node
+    cannot be determined (absent `matchFields`, empty `values`, malformed node affinity etc).
   - Validation rules (DaemonSet-only).
   - Checkpoint slice writer and reader.
 - **E2E tests**: Scenarios to cover:
