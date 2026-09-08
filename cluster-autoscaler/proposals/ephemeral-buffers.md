@@ -90,10 +90,10 @@ one-shot GKE `standby-capacity` buffer, not just active capacity.
   annotation. Note this proposal *does* define the **consumption-tracking result** — the monotonic
   `consumedReplicas` high-water and the shrink/latch semantics built on it — since those are what
   distinguish one-shot from capped; only the *selector input* defers to capped. The **exclusive
-  pod-ownership rule** (one bound pod fills exactly one buffer, deterministically) is part of that
-  shared selector contract and likewise defers to capped; the interim requirement until it lands is
-  that annotation selector values do not overlap within a namespace (see
-  [Ownership and the readiness boundary](#ownership-and-the-readiness-boundary)).
+  pod-ownership rule** (one bound pod fills exactly one buffer, deterministically) is **defined in
+  this proposal**, not deferred: because selector overlap cannot be detected up front, this proposal
+  specifies a deterministic fill order across all refill strategies rather than forbidding overlap
+  (see [Deterministic fill order](#deterministic-fill-order-overlapping-selectors)).
 * **Reserving/guaranteeing capacity for specific pods.** Exclusivity remains out-of-band (node
   taints) until the scheduler offers capacity reservation — same as the base proposal.
 * **Gang pod scheduling.** This provisions *nodes*; all-or-nothing binding stays with the gang
@@ -246,24 +246,60 @@ consumedChunks = min over each resource r in perChunk, with perChunk[r] > 0, of
 The shared spec field for the selector is expected from capped buffers (`matchingPodSelector`);
 until it lands, the reference implementation uses an interim `karpenter.sh/*` annotation.
 
-### Ownership and the readiness boundary
+### Deterministic fill order (overlapping selectors)
 
-Because the selector contract is deferred, two measurement rules are specified here so fill counting
-is well-defined in the interim:
+A bound pod MUST advance at most one buffer's `consumedReplicas`; otherwise a pod matched by two
+buffers double-counts. An earlier draft tried to guarantee this by forbidding overlapping selectors
+within a namespace. That rule is **not enforceable**: overlap is a property of *pods*, not of
+selectors, and cannot be detected when the buffers are created. Two buffers matching `animal=cow`
+and `sound=moo` respectively are disjoint until a pod carrying *both* labels appears — and requiring
+users to enumerate every label so selectors stay disjoint is unusable (two workloads that share some
+labels but differ in others may legitimately want to share a buffer). Overlap is therefore
+**allowed**, and instead the pod→buffer assignment is made deterministic at measurement time.
 
-* **Exclusive ownership.** A bound pod must advance at most one buffer's `consumedReplicas`;
-  otherwise a single pod matched by two buffers double-counts. The general deterministic
-  "one pod fills exactly one buffer" assignment is part of the shared selector contract and is
-  deferred to capped buffers. **Interim requirement:** `matchingPodSelector` (annotation) values
-  MUST NOT overlap within a namespace.
-* **Readiness boundary.** Only pods that became scheduled **at or after** the buffer went
-  `ReadyForProvisioning` count toward its fill — concretely, a pod counts when its `PodScheduled`
-  condition `lastTransitionTime` is not before the buffer's `ReadyForProvisioning`
-  `lastTransitionTime` (falling back to the pod's creation time when that condition is absent; when
-  neither is known the pod is counted rather than under-reporting real capacity). This prevents pods
-  that were already bound when the buffer became ready — capacity the buffer did not provision — from
-  consuming it. It is an *observable* rule, stronger than merely assuming the buffer is created
-  before its workload.
+**Rule.** A bound pod (past the readiness boundary below) is credited to exactly one buffer: the
+first buffer, under the total order below, among all buffers in the pod's namespace whose selector
+matches it and which are **still filling** (non-terminal, `consumedReplicas < target`). Every other
+matching buffer ignores that pod. Every consumer MUST use this order so counts agree:
+
+1. **Refill strategy** — `none` (one-shot) before `recreateUpToLimit` (capped) before `recreate`.
+2. **Age** — older `creationTimestamp` first.
+3. **Name** — lexicographic `namespace/name` as the final tiebreak (`creationTimestamp` has
+   one-second resolution, so it alone is not a total order).
+
+**Why one-shot fills first.** The buffers that can reach a terminal state must be credited before the
+ones that cannot. A `recreate` buffer refills whatever is consumed regardless of who is credited;
+if it were credited for a pod that also matched a one-shot buffer, the `recreate` buffer would
+re-provision that capacity anyway *and* the one-shot buffer would never fill — it would hold its
+full empty size until `fillDeadline`, defeating its completion semantics and double-provisioning.
+Crediting the latching buffer first is the only assignment under which `refillStrategy: none` works
+in the presence of overlap. The same argument places capped (bounded, can latch) before `recreate`
+(unbounded, never latches), and it makes the latching buffers' credit independent of a steady-state
+buffer's lifecycle — deleting a `recreate` or capped buffer never changes what a one-shot buffer has
+already been credited.
+
+**Stickiness.** Ownership is decided once, when the pod first crosses the readiness boundary, and
+does not change thereafter. In particular, a pod counted toward a buffer that then latches terminal
+**stays counted there** — it contributed to the latch — and is not re-credited to a lower-priority
+buffer. Since `consumedReplicas` is a monotonic high-water, this is the only assignment under which
+the per-buffer sums stay stable across reconciles and controller restarts (a consumer recomputing
+ownership from scratch must therefore exclude pods already credited to a terminal buffer, e.g. by
+treating terminal buffers as still-matching for pods bound before their terminal transition).
+
+**Interaction with capped buffers.** This order is defined here for all three refill values so the
+capped buffers proposal inherits it rather than inventing a second one; it is the shared exclusive
+ownership rule for the `matchingPodSelector` field.
+
+### Readiness boundary
+
+Only pods that became scheduled **at or after** the buffer went `ReadyForProvisioning` count toward
+its fill — concretely, a pod counts when its `PodScheduled` condition `lastTransitionTime` is not
+before the buffer's `ReadyForProvisioning` `lastTransitionTime` (falling back to the pod's creation
+time when that condition is absent; when neither is known the pod is counted rather than
+under-reporting real capacity). This prevents pods that were already bound when the buffer became
+ready — capacity the buffer did not provision — from consuming it. It is an *observable* rule,
+stronger than merely assuming the buffer is created before its workload. A buffer that does not pass
+this boundary for a pod is not a candidate in the fill order above.
 
 ## Interaction with gang scheduling
 
@@ -456,4 +492,8 @@ maintenance and cost drawbacks the base proposal already documents.
    re-armable by spec edit.
 5. **Dependency on consumption tracking:** this proposal assumes the capped buffers proposal lands
    the fill-measurement mechanism (`matchingPodSelector`). If capped stalls, does one-shot need a
-   minimal fill surface of its own, or wait?
+   minimal fill surface of its own, or wait? (The exclusive-ownership / fill-order rule is no longer
+   part of this dependency — it is defined here for all refill strategies.)
+6. **Fill-order priority:** the order `none` → `recreateUpToLimit` → `recreate` (then age, then name)
+   is proposed here per review discussion. Confirm with the capped buffers work that capped is
+   comfortable being credited *after* one-shot when both match a pod.
