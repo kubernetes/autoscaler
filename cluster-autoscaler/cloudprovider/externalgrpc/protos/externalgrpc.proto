@@ -351,6 +351,12 @@ message NodeGroupAutoscalingOptions {
 
   // MaxNodeProvisionDuration time CA waits for node to be provisioned
   google.protobuf.Duration MaxNodeProvisionDuration = 10;
+
+  // MaxNodeStartupDuration time CA waits for a node to become ready before treating it as unready.
+  google.protobuf.Duration maxNodeStartupDuration = 11;
+
+  // AllowNonAtomicScaleUpToMax allows non-atomic scale-up to the max size of the node group when zeroOrMaxNodeScaling is set.
+  bool allowNonAtomicScaleUpToMax = 12;
 }
 
 message NodeGroupAutoscalingOptionsRequest {
