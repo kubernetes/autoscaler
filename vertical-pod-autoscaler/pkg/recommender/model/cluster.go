@@ -175,6 +175,7 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 			containerID := ContainerID{PodID: podID, ContainerName: containerName}
 			container.aggregator = cluster.findOrCreateAggregateContainerState(containerID)
 		}
+
 		cluster.addPodToItsVpa(pod)
 	}
 	pod.Phase = phase
@@ -216,7 +217,8 @@ func (cluster *clusterState) removePodFromItsVpa(pod *PodState) {
 func (cluster *clusterState) GetContainer(containerID ContainerID) *ContainerState {
 	pod, podExists := cluster.pods[containerID.PodID]
 	if podExists {
-		if container, containerExists := pod.Containers[containerID.ContainerName]; containerExists {
+		container, containerExists := pod.Containers[containerID.ContainerName]
+		if containerExists {
 			return container
 		}
 	}

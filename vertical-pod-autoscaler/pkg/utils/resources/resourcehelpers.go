@@ -46,7 +46,7 @@ func ContainerRequestsAndLimits(containerName string, pod *corev1.Pod) (requests
 		return cs.Resources.Requests.DeepCopy(), cs.Resources.Limits.DeepCopy()
 	}
 
-	klog.V(6).InfoS("Container resources not found in containerStatus for container. Falling back to resources defined in the pod spec. This is expected for clusters with in-place pod updates feature disabled.", "container", containerName, "containerStatus", cs)
+	klog.V(6).InfoS("Container resources not found in container status, falling back to resources defined in the pod spec. This is expected for clusters with in-place pod updates feature disabled.", "container", containerName, "statusSource", containerStatusSource, "containerStatus", cs)
 	container := findContainer(containerName, containers)
 	if container != nil {
 		metrics_resources.RecordGetResourcesCount(containerSource)
@@ -81,6 +81,12 @@ func isInitContainer(containerName string, pod *corev1.Pod) bool {
 		}
 	}
 	return false
+}
+
+// IsNativeSidecar returns true if the container is a native sidecar, i.e. an init
+// container with restartPolicy Always.
+func IsNativeSidecar(container *corev1.Container) bool {
+	return container.RestartPolicy != nil && *container.RestartPolicy == corev1.ContainerRestartPolicyAlways
 }
 
 // RecommendationHasLowerResource returns true if recommendation b has at least one

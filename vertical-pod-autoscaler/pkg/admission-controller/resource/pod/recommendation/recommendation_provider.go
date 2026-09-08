@@ -54,13 +54,13 @@ func NewProvider(calculator limitrange.LimitRangeCalculator,
 func GetContainersResources(pod *corev1.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources, limitRange *corev1.LimitRangeItem,
 	addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) (initResources, containerResources []vpa_api_util.ContainerResources) {
 	initResources = getResourcesForPodContainers(pod.Spec.InitContainers, pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
-	// Only native sidecars (restartPolicy: Always) are eligible for recommendations; plain init
-	// containers run once and must never be patched, even if a recommendation happens to exist.
-	for i, initContainer := range pod.Spec.InitContainers {
-		isNativeSidecar := features.Enabled(features.NativeSidecar) &&
-			initContainer.RestartPolicy != nil && *initContainer.RestartPolicy == corev1.ContainerRestartPolicyAlways
-		if !isNativeSidecar {
-			initResources[i] = vpa_api_util.ContainerResources{}
+	// Only native sidecars are eligible for recommendations; plain init containers run once
+	// and must never be patched, even if a recommendation happens to exist.
+	if features.Enabled(features.NativeSidecar) {
+		for i := range pod.Spec.InitContainers {
+			if !resourcehelpers.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
+				initResources[i] = vpa_api_util.ContainerResources{}
+			}
 		}
 	}
 	containerResources = getResourcesForPodContainers(pod.Spec.Containers, pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
