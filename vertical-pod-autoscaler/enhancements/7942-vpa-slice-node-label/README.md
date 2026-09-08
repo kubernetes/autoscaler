@@ -16,6 +16,8 @@
     - [Updater](#updater)
     - [Admission Controller](#admission-controller)
   - [VPASlice Lifecycle](#vpaslice-lifecycle)
+    - [Open Questions](#open-questions)
+    - [Example](#example)
   - [Design Decisions](#design-decisions)
     - [Why separate VPASlice CRDs instead of embedding in VPA status](#why-separate-vpaslice-crds-instead-of-embedding-in-vpa-status)
     - [Why separate VPASliceCheckpoint CRDs instead of reusing VPA checkpoints](#why-separate-vpaslicecheckpoint-crds-instead-of-reusing-vpa-checkpoints)
@@ -27,6 +29,7 @@
   - [Kubernetes Version Compatibility](#kubernetes-version-compatibility)
 - [Implementation History](#implementation-history)
 - [Alternatives](#alternatives)
+  - [One DaemonSet and VPA per node pool](#one-daemonset-and-vpa-per-node-pool)
 <!-- /toc -->
 
 ## Summary
