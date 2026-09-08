@@ -462,7 +462,8 @@ status:
 ```
 
 In this example, the pod on `kind-worker` was given an additional `stress --vm-bytes 200M`
-workload, driving its memory usage higher than the pod on `kind-worker2`. The VPASlice
+workload via `kubectl exec` to simulate higher resource consumption, driving its memory usage
+higher than the pod on `kind-worker2`. The VPASlice
 recommendations reflect this: `323522422` bytes (~308Mi) on `kind-worker` vs `250Mi` on
 `kind-worker2`.
 
