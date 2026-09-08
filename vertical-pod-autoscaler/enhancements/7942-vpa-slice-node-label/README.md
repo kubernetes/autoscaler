@@ -497,7 +497,7 @@ objects, each well within etcd limits regardless of how many slices exist. This 
 - Separate RBAC — operators can grant read access to slices without granting access to the
   parent VPA.
 - Automatic garbage collection via `ownerReferences`.
-- A pattern consistent with how Kubernetes handles similar fan-out (EndpointSlice).
+- A pattern consistent with how Kubernetes handles similiar fan-out (EndpointSlice).
 
 #### Why separate VPASliceCheckpoint CRDs instead of reusing VPA checkpoints
 
