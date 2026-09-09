@@ -143,15 +143,36 @@ func TestNodeGroupForNode(t *testing.T) {
 	gce := &GceCloudProvider{
 		gceManager: gceManagerMock,
 	}
-	n := BuildTestNode("n1", 1000, 1000)
-	n.Spec.ProviderID = "gce://project1/us-central1-b/n1"
+	n1 := BuildTestNode("n1", 1000, 1000)
+	n1.Spec.ProviderID = "gce://project1/us-central1-b/n1"
 	mig := gceMig{gceRef: GceRef{Name: "ng1"}}
 	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("gce.GceRef")).Return(&mig, nil).Once()
 
-	nodeGroup, err := gce.NodeGroupForNode(context.Background(), n)
+	nodeGroup, err := gce.NodeGroupForNode(context.Background(), n1)
 	assert.NoError(t, err)
 	assert.Equal(t, mig, *reflect.ValueOf(nodeGroup).Interface().(*gceMig))
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
+
+	// Node with empty providerID should return nil, nil.
+	n2 := BuildTestNode("n2", 1000, 1000)
+	n2.Spec.ProviderID = ""
+	nodeGroup, err = gce.NodeGroupForNode(context.Background(), n2)
+	assert.NoError(t, err)
+	assert.Nil(t, nodeGroup)
+
+	// Node without GCE providerID should return nil, nil.
+	n3 := BuildTestNode("n3", 1000, 1000)
+	n3.Spec.ProviderID = "k3s://node-3"
+	nodeGroup, err = gce.NodeGroupForNode(context.Background(), n3)
+	assert.NoError(t, err)
+	assert.Nil(t, nodeGroup)
+
+	// Malformed GCE providerID should return an error.
+	n4 := BuildTestNode("n4", 1000, 1000)
+	n4.Spec.ProviderID = "gce://invalid"
+	nodeGroup, err = gce.NodeGroupForNode(context.Background(), n4)
+	assert.Error(t, err)
+	assert.Nil(t, nodeGroup)
 }
 
 func TestGetResourceLimiter(t *testing.T) {
@@ -389,6 +410,13 @@ func TestMig(t *testing.T) {
 	assert.False(t, belongs)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
+	// Test Belongs - non-GCE node.
+	foreignNode := BuildTestNode("foreign-node", 1000, 1000)
+	foreignNode.Spec.ProviderID = "k3s://foreign-node"
+	belongs, err = mig1.Belongs(context.Background(), foreignNode)
+	assert.NoError(t, err)
+	assert.False(t, belongs)
+
 	// Test DeleteNodes.
 	n1 := BuildTestNode("gke-cluster-1-default-pool-f7607aac-9j4g", 1000, 1000)
 	n1.Spec.ProviderID = "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g"
@@ -461,9 +489,62 @@ func TestMig(t *testing.T) {
 }
 
 func TestGceRefFromProviderId(t *testing.T) {
-	ref, err := GceRefFromProviderId("gce://project1/us-central1-b/name1")
-	assert.NoError(t, err)
-	assert.Equal(t, GceRef{"project1", "us-central1-b", "name1"}, ref)
+	testCases := []struct {
+		desc      string
+		id        string
+		expectErr bool
+		expectRef GceRef
+	}{
+		{
+			desc:      "valid provider id",
+			id:        "gce://project1/us-central1-b/name1",
+			expectErr: false,
+			expectRef: GceRef{Project: "project1", Zone: "us-central1-b", Name: "name1"},
+		},
+		{
+			desc:      "empty id",
+			id:        "",
+			expectErr: true,
+		},
+		{
+			desc:      "short id",
+			id:        "x",
+			expectErr: true,
+		},
+		{
+			desc:      "foreign prefix",
+			id:        "k3s://project1/us-central1-b/name1",
+			expectErr: true,
+		},
+		{
+			desc:      "too few parts",
+			id:        "gce://project1/us-central1-b",
+			expectErr: true,
+		},
+		{
+			desc:      "too many parts",
+			id:        "gce://project1/us-central1-b/name1/extra",
+			expectErr: true,
+		},
+		{
+			desc:      "empty component",
+			id:        "gce:///us-central1-b/name1",
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			ref, err := GceRefFromProviderId(tc.id)
+			if tc.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectRef, ref)
+				assert.Equal(t, tc.id, ref.ToProviderId())
+			}
+		})
+	}
 }
 
 func createString(s string) *string {
