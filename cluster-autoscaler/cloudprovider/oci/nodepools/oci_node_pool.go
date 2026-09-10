@@ -5,6 +5,7 @@ Copyright 2020-2023 Oracle and/or its affiliates.
 package nodepools
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -334,6 +336,10 @@ func (np *nodePool) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		return nil, errors.Wrap(err, "unable to build node pool template")
 	}
 
+	if err := np.setEphemeralStorageFromRegisteredNode(node); err != nil {
+		return nil, errors.Wrap(err, "unable to get ephemeral storage from registered node")
+	}
+
 	nodeInfo := framework.NewNodeInfo(
 		node, nil,
 		framework.NewPodInfo(cloudprovider.BuildKubeProxy(np.id), nil),
@@ -341,6 +347,31 @@ func (np *nodePool) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		framework.NewPodInfo(ocicommon.BuildProxymuxClientPod(), nil),
 	)
 	return nodeInfo, nil
+}
+
+func (np *nodePool) setEphemeralStorageFromRegisteredNode(node *apiv1.Node) error {
+	nodes, err := np.kubeClient.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, registeredNode := range nodes.Items {
+		if registeredNode.Annotations["oci.oraclecloud.com/node-pool-id"] != np.id {
+			continue
+		}
+
+		ephemeralStorage, ok := registeredNode.Status.Capacity[apiv1.ResourceEphemeralStorage]
+		if !ok {
+			return nil
+		}
+
+		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = ephemeralStorage
+		node.Status.Allocatable[apiv1.ResourceEphemeralStorage] = ephemeralStorage
+
+		return nil
+	}
+
+	return nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
