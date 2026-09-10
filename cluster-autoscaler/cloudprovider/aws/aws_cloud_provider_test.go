@@ -573,27 +573,13 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
 	asgs := provider.NodeGroups(context.Background())
 
-	a.On("SetDesiredCapacity",
-		mock.Anything,
-		&autoscaling.SetDesiredCapacityInput{
-			AutoScalingGroupName: aws.String(asgs[0].Id()),
-			DesiredCapacity:      aws.Int32(1),
-			HonorCooldown:        aws.Bool(false),
-		},
-	).Return(&autoscaling.SetDesiredCapacityOutput{}, nil)
-
-	// Look up the current number of instances...
-	var expectedInstancesCount int32 = 2
 	a.On("DescribeAutoScalingGroups",
 		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: []string{"test-asg"},
 			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-	).Run(func(args mock.Arguments) {
-		// we expect the instance count to be 1 after the call to DeleteNodes
-		expectedInstancesCount = 1
-	}).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id"), nil)
+	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id"), nil)
 
 	a.On("DescribeScalingActivities",
 		mock.Anything,
@@ -618,12 +604,13 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 	}
 	err = asgs[0].DeleteNodes(context.Background(), []*apiv1.Node{node})
 	assert.NoError(t, err)
-	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
+
+	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 0)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
 	newSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
-	assert.Equal(t, 1, newSize)
+	assert.Equal(t, 2, newSize)
 }
 
 func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {
@@ -774,16 +761,6 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 		maxSize: asgs[0].MaxSize(context.Background()),
 	}
 
-	// desired capacity will be set as 6 as ASG has 4 placeholders
-	a.On("SetDesiredCapacity",
-		mock.Anything,
-		&autoscaling.SetDesiredCapacityInput{
-			AutoScalingGroupName: aws.String(asgs[0].Id()),
-			DesiredCapacity:      aws.Int32(6),
-			HonorCooldown:        aws.Bool(false),
-		},
-	).Return(&autoscaling.SetDesiredCapacityOutput{}, nil)
-
 	// Look up the current number of instances...
 	var expectedInstancesCount int32 = 10
 	a.On("DescribeAutoScalingGroups",
@@ -866,8 +843,7 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 	// calling delete nodes 2 nodes and remaining placeholders
 	err = asgs[0].DeleteNodes(context.Background(), nodes)
 	assert.NoError(t, err)
-	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
 	// This ensures only 2 instances are terminated which are mocked in this unit test
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 2)
