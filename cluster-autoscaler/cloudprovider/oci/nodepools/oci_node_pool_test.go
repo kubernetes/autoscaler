@@ -212,7 +212,16 @@ func TestSetEphemeralStorageFromRegisteredNode(t *testing.T) {
 		},
 		Status: apiv1.NodeStatus{
 			Capacity: apiv1.ResourceList{
-				apiv1.ResourceEphemeralStorage: *resource.NewQuantity(30*1024*1024*1024, resource.BinarySI),
+				apiv1.ResourceEphemeralStorage: *resource.NewQuantity(
+					30*1024*1024*1024,
+					resource.BinarySI,
+				),
+			},
+			Allocatable: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: *resource.NewQuantity(
+					25*1024*1024*1024,
+					resource.BinarySI,
+				),
 			},
 		},
 	}
@@ -250,10 +259,15 @@ func TestSetEphemeralStorageFromRegisteredNode(t *testing.T) {
 		t.Fatalf("expected ephemeral-storage %s, got %s", expected.String(), got.String())
 	}
 
+	expectedAllocatable := registeredNode.Status.Allocatable[apiv1.ResourceEphemeralStorage]
 	gotAllocatable := templateNode.Status.Allocatable[apiv1.ResourceEphemeralStorage]
 
-	if !gotAllocatable.Equal(expected) {
-		t.Fatalf("expected allocatable ephemeral-storage %s, got %s", expected.String(), gotAllocatable.String())
+	if !gotAllocatable.Equal(expectedAllocatable) {
+		t.Fatalf(
+			"expected allocatable ephemeral-storage %s, got %s",
+			expectedAllocatable.String(),
+			gotAllocatable.String(),
+		)
 	}
 }
 
