@@ -366,7 +366,9 @@ func (np *nodePool) setEphemeralStorageFromRegisteredNode(node *apiv1.Node) erro
 		}
 
 		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = ephemeralStorage
-		node.Status.Allocatable[apiv1.ResourceEphemeralStorage] = ephemeralStorage
+
+		node.Status.Allocatable[apiv1.ResourceEphemeralStorage] =
+			registeredNode.Status.Allocatable[apiv1.ResourceEphemeralStorage]
 
 		return nil
 	}
