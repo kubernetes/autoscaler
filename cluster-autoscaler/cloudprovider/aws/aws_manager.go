@@ -382,15 +382,13 @@ func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.Res
 	// AWS documents both as "no minimum limit" when unset. Requesting any NVIDIA
 	// GPU without pinning a count is an ordinary configuration, so guard both
 	// before dereferencing, the same way VCpuCount and MemoryMiB are guarded above.
-	if instanceRequirements.AcceleratorCount == nil || instanceRequirements.AcceleratorCount.Min == nil {
-		return
-	}
-
-	for _, manufacturer := range instanceRequirements.AcceleratorManufacturers {
-		if manufacturer == ec2types.AcceleratorManufacturerNvidia {
-			for _, acceleratorType := range instanceRequirements.AcceleratorTypes {
-				if acceleratorType == ec2types.AcceleratorTypeGpu {
-					(*capacity)[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(int64(*instanceRequirements.AcceleratorCount.Min), resource.DecimalSI)
+	if instanceRequirements.AcceleratorCount != nil && instanceRequirements.AcceleratorCount.Min != nil {
+		for _, manufacturer := range instanceRequirements.AcceleratorManufacturers {
+			if manufacturer == ec2types.AcceleratorManufacturerNvidia {
+				for _, acceleratorType := range instanceRequirements.AcceleratorTypes {
+					if acceleratorType == ec2types.AcceleratorTypeGpu {
+						(*capacity)[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(int64(*instanceRequirements.AcceleratorCount.Min), resource.DecimalSI)
+					}
 				}
 			}
 		}
