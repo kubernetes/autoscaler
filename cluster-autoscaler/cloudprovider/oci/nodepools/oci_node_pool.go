@@ -349,6 +349,8 @@ func (np *nodePool) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return nodeInfo, nil
 }
 
+// setEphemeralStorageFromRegisteredNode copies ephemeral-storage capacity and
+// allocatable values from a registered node in the node pool to the template node.
 func (np *nodePool) setEphemeralStorageFromRegisteredNode(node *apiv1.Node) error {
 	nodes, err := np.kubeClient.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
