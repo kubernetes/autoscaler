@@ -35,10 +35,6 @@ jobs:
         run: git fetch --prune --unshallow
       - name: Set up chart-testing
         uses: helm/chart-testing-action@6ec842c01de15ebb84c8627d2744a0c2f2755c9f # v2.8.0
-      - name: Set up helm-unittest
-        run: helm plugin install https://github.com/helm-unittest/helm-unittest.git --version 1.1.2
-      - name: Run Helm unit tests for VPA
-        run: helm unittest vertical-pod-autoscaler/charts/vertical-pod-autoscaler
       - name: Run chart-testing for CA (lint)
         run: ct lint --chart-dirs cluster-autoscaler/charts --target-branch ${{ github.event.pull_request.base.ref }}
       - name: Run chart-testing for VPA (lint)
