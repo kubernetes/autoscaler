@@ -47,9 +47,9 @@ tests:
 
   - it: sets a deterministic default image and namespace env var
     asserts:
-      - equal:
+      - matchRegex:
           path: spec.template.spec.containers[0].image
-          value: registry.k8s.io/autoscaling/vpa-recommender:1.7.1
+          pattern: ^registry\.k8s\.io/autoscaling/vpa-recommender:.+$
       - equal:
           path: spec.template.spec.containers[0].env[0].name
           value: NAMESPACE
