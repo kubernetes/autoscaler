@@ -1,0 +1,46 @@
+suite: recommender deployment - leader election
+templates:
+  - recommender-deployment.yaml
+tests:
+  - it: enables leader election automatically when replicas > 1 and enabled is unset
+    set:
+      recommender.replicas: 2
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+
+  - it: does not enable leader election when replicas is 1 and enabled is unset
+    set:
+      recommender.replicas: 1
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+
+  - it: respects an explicit false even with replicas > 1
+    set:
+      recommender.replicas: 3
+      recommender.leaderElection.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+
+  - it: respects an explicit true even with replicas = 1
+    set:
+      recommender.replicas: 1
+      recommender.leaderElection.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+
+  - it: sets a deterministic default image and namespace env var
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: registry.k8s.io/autoscaling/vpa-recommender:1.7.1
+      - equal:
+          path: spec.template.spec.containers[0].env[0].name
+          value: NAMESPACE
