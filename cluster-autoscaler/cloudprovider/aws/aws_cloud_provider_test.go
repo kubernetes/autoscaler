@@ -755,11 +755,7 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:10:test-asg"}))
 	asgs := provider.NodeGroups(context.Background())
-	commonAsg := &asg{
-		AwsRef:  AwsRef{Name: asgs[0].Id()},
-		minSize: asgs[0].MinSize(context.Background()),
-		maxSize: asgs[0].MaxSize(context.Background()),
-	}
+	commonAsg := asgs[0].(*AwsNodeGroup).asg
 
 	// Look up the current number of instances...
 	var expectedInstancesCount int32 = 10
@@ -847,5 +843,7 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 
 	// This ensures only 2 instances are terminated which are mocked in this unit test
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 2)
+
+	assert.Equal(t, 8, commonAsg.curSize)
 
 }
