@@ -57,7 +57,7 @@ const (
 // ClusterStateFeeder can update state of clusterState object.
 type ClusterStateFeeder interface {
 	// InitFromHistoryProvider loads historical pod spec into clusterState.
-	InitFromHistoryProvider(historyProvider history.HistoryProvider)
+	InitFromHistoryProvider(ctx context.Context, historyProvider history.HistoryProvider)
 
 	// InitFromCheckpoints loads historical checkpoints into clusterState.
 	InitFromCheckpoints(ctx context.Context)
@@ -227,13 +227,23 @@ type clusterStateFeeder struct {
 	podsToDelete        []model.PodID
 }
 
-func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
+func (feeder *clusterStateFeeder) InitFromHistoryProvider(ctx context.Context, historyProvider history.HistoryProvider) {
 	klog.V(3).InfoS("Initializing VPA from history provider")
+	if feeder.memorySaveMode {
+		// VPAs must be loaded first so that pods not matched by any VPA can be
+		// skipped below, otherwise the whole cluster history (potentially years
+		// of usage and label data for every pod) is loaded into memory upfront,
+		// defeating the purpose of memory saver mode.
+		feeder.LoadVPAs(ctx)
+	}
 	clusterHistory, err := historyProvider.GetClusterHistory()
 	if err != nil {
 		klog.ErrorS(err, "Cannot get cluster history")
 	}
 	for podID, podHistory := range clusterHistory {
+		if feeder.memorySaveMode && !feeder.matchesAnyVPA(podID.Namespace, podHistory.LastLabels) {
+			continue
+		}
 		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
 		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, corev1.PodUnknown)
 		for containerName, sampleList := range podHistory.Samples {
@@ -548,9 +558,15 @@ Loop:
 }
 
 func (feeder *clusterStateFeeder) matchesVPA(pod *spec.BasicPodSpec) bool {
+	return feeder.matchesAnyVPA(pod.ID.Namespace, pod.PodLabels)
+}
+
+// matchesAnyVPA returns true if any known VPA object in the given namespace
+// selects a pod with the given labels.
+func (feeder *clusterStateFeeder) matchesAnyVPA(namespace string, podLabels map[string]string) bool {
+	ls := labels.Set(podLabels)
 	for vpaKey, vpa := range feeder.clusterState.VPAs() {
-		podLabels := labels.Set(pod.PodLabels)
-		if vpaKey.Namespace == pod.ID.Namespace && vpa.PodSelector.Matches(podLabels) {
+		if vpaKey.Namespace == namespace && vpa.PodSelector.Matches(ls) {
 			return true
 		}
 	}
