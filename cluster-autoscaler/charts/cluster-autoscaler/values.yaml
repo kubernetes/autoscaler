@@ -29,7 +29,7 @@ autoDiscovery:
   roles:
     - worker
 
-  # autoDiscovery.labels -- Cluster-API labels to match  https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery
+  # autoDiscovery.labels -- Cluster-API labels to match  https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery
   labels: []
     # - color: green
     # - shape: circle
@@ -153,7 +153,7 @@ clusterAPIConfigMapsNamespace: ""
 # Required if `cloudProvider=clusterapi` and `clusterAPIMode=kubeconfig-kubeconfig,kubeconfig-incluster or incluster-kubeconfig`
 clusterAPIKubeconfigSecret: ""
 
-# clusterAPIMode --  Cluster API mode, see https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#connecting-cluster-autoscaler-to-cluster-api-management-and-workload-clusters
+# clusterAPIMode --  Cluster API mode, see https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/cloudprovider/clusterapi/README.md#connecting-cluster-autoscaler-to-cluster-api-management-and-workload-clusters
 # Syntax: workloadClusterMode-ManagementClusterMode
 # for `kubeconfig-kubeconfig`, `incluster-kubeconfig` and `single-kubeconfig` you always must mount the external kubeconfig using either `extraVolumeSecrets` or `extraMounts` and `extraVolumes`
 # if you dont set `clusterAPIKubeconfigSecret`and thus use an in-cluster config or want to use a non capi generated kubeconfig you must do so for the workload kubeconfig as well
