@@ -284,6 +284,48 @@ func TestDontUpdatePodWithQuickOOMNoResourceChange(t *testing.T) {
 	assert.Exactly(t, []*corev1.Pod{}, result, "Pod should not be updated")
 }
 
+func TestDontUpdatePodWithStaleQuickOOM(t *testing.T) {
+	pod := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).Get()
+
+	// Pretend that the test pod started 11 hours ago.
+	timestampNow := pod.Status.StartTime.Add(time.Hour * 11)
+
+	// The container OOMed quickly after starting (2 minutes), but that
+	// happened 20 minutes ago, i.e. longer than EvictAfterOOMThreshold.
+	// This simulates InPlace update mode, where the pod is never recreated
+	// and containerStatuses.lastState keeps reporting the same stale OOM
+	// on every update cycle.
+	pod.Status.ContainerStatuses = []corev1.ContainerStatus{
+		{
+			LastTerminationState: corev1.ContainerState{
+				Terminated: &corev1.ContainerStateTerminated{
+					Reason:     "OOMKilled",
+					FinishedAt: metav1.NewTime(timestampNow.Add(-20 * time.Minute)),
+					StartedAt:  metav1.NewTime(timestampNow.Add(-22 * time.Minute)),
+				},
+			},
+		},
+	}
+
+	// Pod is within the recommended range.
+	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
+		WithTarget("5", "").
+		WithLowerBound("1", "").
+		WithUpperBound("6", "").Get()
+
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {OutsideRecommendedRange: false, ScaleUp: true, ResourceDiff: 0.05},
+	})
+
+	updateconfig := UpdateConfig{MinChangePriority: 0.5, PodLifetimeUpdateThreshold: time.Hour * 12, EvictAfterOOMThreshold: 10 * time.Minute}
+	calculator := NewUpdatePriorityCalculator(
+		vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
+
+	calculator.AddPod(pod, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	assert.Exactly(t, []*corev1.Pod{}, result, "Pod shouldn't be updated because of the stale OOM")
+}
+
 func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 	pod := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).Get()
 
