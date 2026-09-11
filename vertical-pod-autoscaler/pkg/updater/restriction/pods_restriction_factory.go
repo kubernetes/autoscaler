@@ -148,10 +148,10 @@ func (f *PodsRestrictionFactoryImpl) getReplicaCount(creator podReplicaCreator) 
 		if !ok {
 			return 0, errors.New("failed to parse DaemonSet")
 		}
-		if ds.Status.NumberReady == 0 {
-			return 0, fmt.Errorf("daemon set %s/%s has no number ready pods", creator.Namespace, creator.Name)
+		if ds.Status.DesiredNumberScheduled == 0 {
+			return 0, fmt.Errorf("daemon set %s/%s has no desired scheduled pods", creator.Namespace, creator.Name)
 		}
-		return int(ds.Status.NumberReady), nil
+		return int(ds.Status.DesiredNumberScheduled), nil
 	}
 	return 0, nil
 }
