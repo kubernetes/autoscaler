@@ -1,0 +1,25 @@
+name: VPA Helm Unit Tests
+
+on:
+  pull_request:
+    paths:
+      - 'vertical-pod-autoscaler/charts/**'
+
+permissions:
+  contents: read
+
+jobs:
+  helm-unittest:
+    name: Run Helm unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up Helm
+        uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
+      - name: Set up helm-unittest
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest.git --version 1.1.2 --verify=false
+      - name: Run Helm unit tests for VPA
+        run: helm unittest vertical-pod-autoscaler/charts/vertical-pod-autoscaler
