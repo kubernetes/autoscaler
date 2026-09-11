@@ -5,6 +5,7 @@ jobs:
   ca-release:
     permissions:
       contents: write  # for helm/chart-releaser-action to push chart release and create a release
+      packages: write  # for pushing charts to GHCR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,7 +21,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
         with:
-          version: v3.4.0
+          version: v3.19.2
 
       - env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -29,9 +30,25 @@ jobs:
         uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
         with:
           charts_dir: cluster-autoscaler/charts
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push charts to GHCR
+        run: |
+          set -e
+          shopt -s nullglob
+          for pkg in .cr-release-packages/*; do
+            helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts"
+          done
   vpa-release:
     permissions:
       contents: write  # for helm/chart-releaser-action to push chart release and create a release
+      packages: write  # for pushing charts to GHCR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -47,7 +64,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
         with:
-          version: v3.4.0
+          version: v3.19.2
 
       - env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,8 +74,24 @@ jobs:
         with:
           charts_dir: vertical-pod-autoscaler/charts
           skip_existing: true
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push charts to GHCR
+        run: |
+          set -e
+          shopt -s nullglob
+          for pkg in .cr-release-packages/*; do
+            helm push "${pkg}" "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts"
+          done
 name: Release Charts
 on:
   push:
     branches:
       - master
+  workflow_dispatch:
