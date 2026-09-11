@@ -1,5 +1,12 @@
 # Helm Chart Unit Tests
 
+<!-- toc -->
+- [1. Installing helm-unittest](#1-installing-helm-unittest)
+- [2. Running the tests](#2-running-the-tests)
+- [3. Writing new test cases](#3-writing-new-test-cases)
+- [4. Troubleshooting](#4-troubleshooting)
+<!-- /toc -->
+
 The `vertical-pod-autoscaler` chart uses [helm-unittest](https://github.com/helm-unittest/helm-unittest)
 to test template rendering logic, for example, the recommender's automatic
 leader-election defaults based on replica count.
