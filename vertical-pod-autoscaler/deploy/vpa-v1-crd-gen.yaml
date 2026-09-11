@@ -351,6 +351,16 @@ spec:
                           - RequestsAndLimits
                           - RequestsOnly
                           type: string
+                        lowerBoundCPUPercentile:
+                          format: int32
+                          maximum: 100
+                          minimum: 1
+                          type: integer
+                        lowerBoundMemoryPercentile:
+                          format: int32
+                          maximum: 100
+                          minimum: 1
+                          type: integer
                         maxAllowed:
                           additionalProperties:
                             anyOf:
@@ -469,6 +479,26 @@ spec:
                                   and forbidden otherwise
                                 rule: (self.type == 'Quantity') == has(self.quantity)
                           type: object
+                        targetCPUPercentile:
+                          format: int32
+                          maximum: 100
+                          minimum: 1
+                          type: integer
+                        targetMemoryPercentile:
+                          format: int32
+                          maximum: 100
+                          minimum: 1
+                          type: integer
+                        upperBoundCPUPercentile:
+                          format: int32
+                          maximum: 100
+                          minimum: 1
+                          type: integer
+                        upperBoundMemoryPercentile:
+                          format: int32
+                          maximum: 100
+                          minimum: 1
+                          type: integer
                       type: object
                     type: array
                 type: object

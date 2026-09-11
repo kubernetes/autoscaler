@@ -319,6 +319,38 @@ type ContainerResourcePolicy struct {
 	// +kubebuilder:validation:Minimum=1
 	MemoryAggregationIntervalCount *int64 `json:"memoryAggregationIntervalCount,omitempty"`
 
+	// The six fields below override this container's recommendation percentiles,
+	// each replacing the corresponding global Recommender flag. Values are integer
+	// percentiles in [1, 100] (e.g. 95 for p95). Only honored when the PerVPAConfig
+	// feature gate is enabled. For a resource, the lower-bound, target, and
+	// upper-bound percentiles must be set together and satisfy lower <= target <= upper.
+
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	LowerBoundCPUPercentile *int32 `json:"lowerBoundCPUPercentile,omitempty"`
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	TargetCPUPercentile *int32 `json:"targetCPUPercentile,omitempty"`
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	UpperBoundCPUPercentile *int32 `json:"upperBoundCPUPercentile,omitempty"`
+
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	LowerBoundMemoryPercentile *int32 `json:"lowerBoundMemoryPercentile,omitempty"`
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	TargetMemoryPercentile *int32 `json:"targetMemoryPercentile,omitempty"`
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	UpperBoundMemoryPercentile *int32 `json:"upperBoundMemoryPercentile,omitempty"`
+
 	// startupBoost specifies the startup boost policy for the container.
 	// This overrides any pod-level startup boost policy.
 	// The startup boost policy takes precedence over the rest of the fields in
