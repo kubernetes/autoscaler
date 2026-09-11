@@ -797,6 +797,62 @@ func TestScaleSetIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 	}
 }
 
+// Related to #9452. Tests Azure API anomaly, where SKU.Capacity can return 0 which then causes drastic scale down of nodes.
+func TestGetCurSizeDoesNotScaleDownWhenAzureAPIReturnsZero(t *testing.T) {
+	testCases := map[string]struct {
+		apiCapacity             int64 // SKU.Capacity from Azure
+		inMemorySize            int64 // scaleSet.curSize before API call
+		expectedSize            int64
+		expectedRefreshAdvanced bool // should lastSizeRefresh continue
+	}{
+		"drastic zero is ignored, in memory size kept": {
+			apiCapacity:             0,
+			inMemorySize:            90,
+			expectedSize:            90,
+			expectedRefreshAdvanced: false,
+		},
+		"empty scale set still accepts zeros": {
+			apiCapacity:             0,
+			inMemorySize:            0,
+			expectedSize:            0,
+			expectedRefreshAdvanced: true,
+		},
+		"normal scale down is accepted": {
+			apiCapacity:             3,
+			inMemorySize:            90,
+			expectedSize:            3,
+			expectedRefreshAdvanced: true,
+		},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			provider := newTestProvider(t)
+			vmssName := "vmss-test"
+
+			vmss := newTestVMSSList(tc.apiCapacity, vmssName, "eastus", armcompute.OrchestrationModeUniform)[0]
+			provider.azureManager.azureCache.setScaleSet(vmssName, vmss)
+
+			scaleSet := newTestScaleSet(provider.azureManager, vmssName)
+			scaleSet.curSize = tc.inMemorySize
+
+			scaleSet.lastSizeRefresh = time.Time{}
+			scaleSet.sizeRefreshPeriod = time.Hour
+
+			size, err := scaleSet.getCurSize()
+			assert.Nil(t, err)
+			assert.Equal(t, tc.expectedSize, size)
+
+			if tc.expectedRefreshAdvanced {
+				assert.False(t, scaleSet.lastSizeRefresh.IsZero(), "lastSizeRefresh should continue when value is accepted")
+			} else {
+				assert.True(t, scaleSet.lastSizeRefresh.IsZero(), "lastSizeRefresh should not continue on the VMSS drastic scale down")
+			}
+
+		})
+	}
+
+}
+
 func TestIncreaseSizeOnVMProvisioningFailedWithFastDelete(t *testing.T) {
 	testCases := map[string]struct {
 		expectInstanceRunning    bool
