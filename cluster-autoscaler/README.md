@@ -38,6 +38,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [OracleCloud](./cloudprovider/oci/README.md)
 * [OVHcloud](./cloudprovider/ovhcloud/README.md)
 * [Rancher](./cloudprovider/rancher/README.md)
+* [SakuraCloud](./cloudprovider/sakuracloud/README.md)
 * [Scaleway](./cloudprovider/scaleway/README.md)
 * [TencentCloud](./cloudprovider/tencentcloud/README.md)
 * [Utho](./cloudprovider/utho/README.md)
@@ -242,6 +243,7 @@ Supported cloud providers:
 * OracleCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/oci/README.md
 * OVHcloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/ovhcloud/README.md
 * Rancher https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/rancher/README.md
+* SakuraCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/sakuracloud/README.md
 * Scaleway https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/scaleway/README.md
 * TencentCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/tencentcloud/README.md
 * Utho https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/utho/README.md
