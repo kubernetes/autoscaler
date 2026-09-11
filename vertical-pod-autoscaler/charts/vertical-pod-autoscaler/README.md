@@ -131,6 +131,11 @@ helm upgrade <release-name> <chart> \
   --set admissionController.registerWebhook=false \
   --set admissionController.certGen.enabled=true
 ```
+
+## Testing
+
+This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unittest) test suites under `tests/` that validate template rendering logic (e.g. recommender leader-election defaults). See [TESTING.md](./TESTING.md) for setup instructions, how to run the tests, and how to add new ones.
+
 ## Values
 
 | Key | Type | Default | Description |
