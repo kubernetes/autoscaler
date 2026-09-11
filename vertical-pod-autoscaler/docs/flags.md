@@ -189,6 +189,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `one-output` | bool | false | If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
 | `pod-update-threshold` | float | 0.1 | Ignore updates that have priority lower than the value of this flag |
 | `profiling` | bool | false | Enable the debug/pprof endpoint |
+| `require-observed-generation` | bool | false | If true, updater will only act on a VPA once its status.observedGeneration matches its metadata.generation; this ensures that recommendations computed from an older spec are not applied. Note that the updater will never act on a VPA whose recommender does not set status.observedGeneration. |
 | `skip-headers` | bool | false | If true, avoid header prefixes in the log messages |
 | `skip-log-headers` | bool | false | If true, avoid headers when opening log files (no effect when -logtostderr=true) |
 | `stderrthreshold` | severity | info | set the log level threshold for writing to standard error |

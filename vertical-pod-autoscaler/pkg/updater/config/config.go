@@ -44,6 +44,7 @@ type UpdaterConfig struct {
 	Address                      string
 	UseAdmissionControllerStatus bool
 	InPlaceSkipDisruptionBudget  bool
+	RequireObservedGeneration    bool
 
 	AdmissionControllerStatusLeaseName      string
 	AdmissionControllerStatusLeaseNamespace string
@@ -69,6 +70,7 @@ func DefaultUpdaterConfig() *UpdaterConfig {
 		Address:                      ":8943",
 		UseAdmissionControllerStatus: true,
 		InPlaceSkipDisruptionBudget:  false,
+		RequireObservedGeneration:    false,
 
 		AdmissionControllerStatusLeaseName:      status.AdmissionControllerStatusName,
 		AdmissionControllerStatusLeaseNamespace: "",
@@ -95,6 +97,7 @@ func InitUpdaterFlags() *UpdaterConfig {
 	flag.StringVar(&config.Address, "address", config.Address, "The address to expose Prometheus metrics.")
 	flag.BoolVar(&config.UseAdmissionControllerStatus, "use-admission-controller-status", config.UseAdmissionControllerStatus, "If true, updater will only evict pods when admission controller status is valid.")
 	flag.BoolVar(&config.InPlaceSkipDisruptionBudget, "in-place-skip-disruption-budget", config.InPlaceSkipDisruptionBudget, "[BETA] If true, VPA updater skips disruption budget checks for in-place pod updates when all containers have NotRequired resize policy (or no policy defined) for both CPU and memory resources. Disruption budgets are still respected when any container has RestartContainer resize policy for any resource.")
+	flag.BoolVar(&config.RequireObservedGeneration, "require-observed-generation", config.RequireObservedGeneration, "If true, updater will only act on a VPA once its status.observedGeneration matches its metadata.generation; this ensures that recommendations computed from an older spec are not applied. Note that the updater will never act on a VPA whose recommender does not set status.observedGeneration.")
 
 	flag.StringVar(&config.AdmissionControllerStatusLeaseName, "admission-controller-status-lease-name", config.AdmissionControllerStatusLeaseName, "The name of the Lease object used to check the admission controller status. Must match the admission controller's --status-lease-name flag.")
 	flag.StringVar(&config.AdmissionControllerStatusLeaseNamespace, "admission-controller-status-lease-namespace", config.AdmissionControllerStatusLeaseNamespace, "The namespace of the Lease object used to check the admission controller status. Defaults to the value of the NAMESPACE environment variable, or "+status.AdmissionControllerStatusNamespace+" if that is also unset. Must match the admission controller's --status-lease-namespace flag.")
