@@ -1,0 +1,10 @@
+approvers:
+# - peknur
+# - Koozu1
+# - nate-droid
+reviewers:
+# - peknur
+# - Koozu1
+# - nate-droid
+labels:
+  - area/provider/upcloud
