@@ -27,9 +27,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/customresources"
+	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 var testAwsManager = &AwsManager{
@@ -872,4 +878,123 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 	// This ensures only 2 instances are terminated which are mocked in this unit test
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 2)
 
+}
+
+func TestAwsNodeGroupTemplateNodeInfoDoesNotSetCSINode(t *testing.T) {
+	const instanceTypeName = "m5.large"
+
+	manager := &AwsManager{
+		instanceTypes: map[string]*InstanceType{
+			instanceTypeName: {
+				InstanceType:   instanceTypeName,
+				VCPU:           2,
+				MemoryMb:       8192,
+				Architecture:   "amd64",
+				EBSVolumeLimit: 39,
+			},
+		},
+	}
+
+	origGetInstanceTypeFunc := getInstanceTypeForAsg
+	defer func() { getInstanceTypeForAsg = origGetInstanceTypeFunc }()
+	getInstanceTypeForAsg = func(_ *asgCache, _ *asg) (string, error) {
+		return instanceTypeName, nil
+	}
+
+	ng := &AwsNodeGroup{
+		awsManager: manager,
+		asg: &asg{
+			AwsRef:            AwsRef{Name: "test-asg"},
+			AvailabilityZones: []string{"us-east-1a"},
+			minSize:           0,
+			maxSize:           5,
+			curSize:           0,
+		},
+	}
+
+	nodeInfo, err := ng.TemplateNodeInfo()
+	assert.NoError(t, err)
+	assert.NotNil(t, nodeInfo)
+	assert.Nil(t, nodeInfo.CSINode)
+}
+
+func TestAwsNodeGroupTemplateNodeInfoSetsCSINodeWhenDeclared(t *testing.T) {
+	const instanceTypeName = "m5.large"
+
+	manager := &AwsManager{
+		instanceTypes: map[string]*InstanceType{
+			instanceTypeName: {
+				InstanceType:   instanceTypeName,
+				VCPU:           2,
+				MemoryMb:       8192,
+				Architecture:   "amd64",
+				EBSVolumeLimit: 39,
+			},
+		},
+	}
+
+	origGetInstanceTypeFunc := getInstanceTypeForAsg
+	defer func() { getInstanceTypeForAsg = origGetInstanceTypeFunc }()
+	getInstanceTypeForAsg = func(_ *asgCache, _ *asg) (string, error) {
+		return instanceTypeName, nil
+	}
+
+	ng := &AwsNodeGroup{
+		awsManager: manager,
+		asg: &asg{
+			AwsRef:            AwsRef{Name: "test-asg"},
+			AvailabilityZones: []string{"us-east-1a"},
+			minSize:           0,
+			maxSize:           5,
+			curSize:           0,
+			Tags: []autoscalingtypes.TagDescription{
+				{
+					Key:   aws.String(csiDriverTagKey),
+					Value: aws.String("ebs.csi.aws.com"),
+				},
+			},
+		},
+	}
+
+	nodeInfo, err := ng.TemplateNodeInfo()
+	assert.NoError(t, err)
+	assert.NotNil(t, nodeInfo)
+	assert.NotNil(t, nodeInfo.CSINode)
+	assert.Len(t, nodeInfo.CSINode.Spec.Drivers, 1)
+	assert.Equal(t, "ebs.csi.aws.com", nodeInfo.CSINode.Spec.Drivers[0].Name)
+	assert.NotNil(t, nodeInfo.CSINode.Spec.Drivers[0].Allocatable)
+	assert.Equal(t, int32(39), *nodeInfo.CSINode.Spec.Drivers[0].Allocatable.Count)
+}
+
+func TestEFSOnlyExistingNodeStaysReadyWhenAWSTemplateHasNoCSINode(t *testing.T) {
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{Name: "efs-only-node"},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{{Type: apiv1.NodeReady, Status: apiv1.ConditionTrue}},
+		},
+	}
+	efsCSINode := &storagev1.CSINode{
+		ObjectMeta: metav1.ObjectMeta{Name: node.Name},
+		Spec: storagev1.CSINodeSpec{
+			Drivers: []storagev1.CSINodeDriver{{Name: "efs.csi.aws.com", NodeID: node.Name}},
+		},
+	}
+	template := framework.NewTestNodeInfo(&apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "template"}})
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddAutoprovisionedNodeGroup("ng1", 0, 5, 1, "template")
+	provider.AddNode("ng1", node)
+	provider.SetMachineTemplates(map[string]*framework.NodeInfo{"template": template})
+
+	processor := &customresources.CSICustomResourcesProcessor{}
+	_, readyNodes := processor.FilterOutNodesWithUnreadyResources(
+		&ca_context.AutoscalingContext{CloudProvider: provider},
+		[]*apiv1.Node{node}, []*apiv1.Node{node}, nil,
+		csisnapshot.NewSnapshot(map[string]*storagev1.CSINode{node.Name: efsCSINode}),
+	)
+
+	assert.Nil(t, template.CSINode)
+	assert.Equal(t, "efs.csi.aws.com", efsCSINode.Spec.Drivers[0].Name)
+	assert.Len(t, readyNodes, 1)
+	assert.Equal(t, apiv1.ConditionTrue, readyNodes[0].Status.Conditions[0].Status)
 }
