@@ -114,6 +114,42 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 		gomega.Expect(memoryMb).Should(gomega.BeNumerically(">=", minMemoryMb),
 			"recommended memory should respect the --pod-recommendation-min-memory-mb floor even though actual usage is far below it")
 	})
+
+	ginkgo.It("starts recommender with --pod-recommendation-min-cpu-millicores parameter", func() {
+		const minCPUMillicores = 500
+
+		ginkgo.By("Setting up VPA deployment")
+		f.Namespace.Name = utils.VpaNamespace
+		vpaDeployment := utils.NewVPADeployment(f, []string{
+			"--recommender-interval=10s",
+			fmt.Sprintf("--pod-recommendation-min-cpu-millicores=%d", minCPUMillicores),
+		})
+		utils.StartDeploymentPods(f, vpaDeployment)
+
+		ginkgo.By("Setting up a hamster deployment")
+		f.Namespace.Name = hamsterNamespace
+		d := utils.NewNHamstersDeployment(f, 1)
+		_ = utils.StartDeploymentPods(f, d)
+
+		ginkgo.By("Setting up VPA")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(hamsterNamespace).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled")
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
+
+		cpuMillicores := vpa.Status.Recommendation.ContainerRecommendations[0].Target.Cpu().MilliValue()
+		gomega.Expect(cpuMillicores).Should(gomega.BeNumerically(">=", minCPUMillicores),
+			"recommended CPU should respect the --pod-recommendation-min-cpu-millicores floor even though actual usage is far below it")
+	})
 })
 
 // Create VPA and deployment in 2 namespaces, 1 should be ignored
