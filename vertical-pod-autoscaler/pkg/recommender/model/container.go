@@ -53,6 +53,12 @@ type ContainerState struct {
 	memoryPeak ResourceAmount
 	// Max memory usage estimated from an OOM event in the current aggregation interval.
 	oomPeak ResourceAmount
+	// Last synthetic OOM sample value successfully added to the histogram.
+	// Survives aggregation window shifts (unlike oomPeak). Used to avoid
+	// re-seeding the histogram with a non-increasing OOM sample on every
+	// subsequent kill when the request is stuck (e.g. at maxAllowed).
+	// See kubernetes/autoscaler#9521.
+	lastRecordedOOMSample ResourceAmount
 	// End time of the current memory aggregation interval (not inclusive).
 	WindowEnd time.Time
 	// Start of the latest memory usage sample that was aggregated.
@@ -219,6 +225,14 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(container.GetOOMMinBumpUp()),
 		ScaleResource(memoryUsed, container.GetOOMBumpUpRatio()))
 
+	// Skip re-inserting a non-increasing synthetic OOM sample. The first bump
+	// still enters the histogram (so uncappedTarget can exceed maxAllowed), but
+	// repeated OOMs at the same capped request must not re-seed the decaying
+	// histogram every aggregation interval (#9521).
+	if container.lastRecordedOOMSample > 0 && memoryNeeded <= container.lastRecordedOOMSample {
+		return nil
+	}
+
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
 		Usage:        memoryNeeded,
@@ -227,6 +241,7 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	if !container.addMemorySample(&oomMemorySample, true) {
 		return errors.New("adding OOM sample failed")
 	}
+	container.lastRecordedOOMSample = memoryNeeded
 	return nil
 }
 
