@@ -951,3 +951,69 @@ func TestParseASGAutoDiscoverySpecs(t *testing.T) {
 		})
 	}
 }
+
+// AcceleratorCount and its Min are both optional in InstanceRequirements. AWS
+// documents each as "no minimum limit" when unset, so an ASG that asks for any
+// NVIDIA GPU without pinning a count is a valid configuration. Dereferencing
+// them unguarded crashed the autoscaler while building the template node.
+func TestUpdateCapacityWithRequirementsOverridesOptionalAcceleratorCount(t *testing.T) {
+	baseRequirements := func() *ec2types.InstanceRequirements {
+		return &ec2types.InstanceRequirements{
+			VCpuCount: &ec2types.VCpuCountRange{Min: aws.Int32(4)},
+			// Kept under 2048 MiB so this test does not also depend on the
+			// separate int32 overflow fix for MemoryMiB (#10167).
+			MemoryMiB:                &ec2types.MemoryMiB{Min: aws.Int32(1024)},
+			AcceleratorManufacturers: []ec2types.AcceleratorManufacturer{ec2types.AcceleratorManufacturerNvidia},
+			AcceleratorTypes:         []ec2types.AcceleratorType{ec2types.AcceleratorTypeGpu},
+		}
+	}
+
+	for _, tc := range []struct {
+		name             string
+		acceleratorCount *ec2types.AcceleratorCount
+		expectGPU        bool
+		expectedGPUCount int64
+	}{
+		{
+			name:             "count omitted entirely",
+			acceleratorCount: nil,
+		},
+		{
+			name:             "count present but Min unset",
+			acceleratorCount: &ec2types.AcceleratorCount{Max: aws.Int32(8)},
+		},
+		{
+			name:             "count with Min set",
+			acceleratorCount: &ec2types.AcceleratorCount{Min: aws.Int32(2), Max: aws.Int32(8)},
+			expectGPU:        true,
+			expectedGPUCount: 2,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			requirements := baseRequirements()
+			requirements.AcceleratorCount = tc.acceleratorCount
+
+			awsManager := &AwsManager{}
+			capacity := apiv1.ResourceList{}
+			require.NotPanics(t, func() {
+				awsManager.updateCapacityWithRequirementsOverrides(
+					&capacity,
+					&mixedInstancesPolicy{instanceRequirements: requirements},
+				)
+			})
+
+			observedGPU, gpuPresent := capacity[gpu.ResourceNvidiaGPU]
+			assert.Equal(t, tc.expectGPU, gpuPresent)
+			if tc.expectGPU {
+				assert.Equal(t, tc.expectedGPUCount, observedGPU.Value())
+			}
+
+			// CPU and memory are resolved before the accelerator block, so they
+			// must survive regardless of whether the count was supplied.
+			observedCPU := capacity[apiv1.ResourceCPU]
+			assert.Equal(t, int64(4), observedCPU.Value())
+			observedMemory := capacity[apiv1.ResourceMemory]
+			assert.Equal(t, int64(1024)*1024*1024, observedMemory.Value())
+		})
+	}
+}

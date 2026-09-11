@@ -360,6 +360,9 @@ func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]st
 	return result
 }
 
+// updateCapacityWithRequirementsOverrides fills the template node's capacity from an
+// ASG's attribute-based InstanceRequirements. Every requirement is optional, so each
+// is read only when present.
 func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.ResourceList, policy *mixedInstancesPolicy) {
 	if policy == nil || len(policy.instanceTypesOverrides) > 0 || policy.instanceRequirements == nil {
 		return
@@ -375,11 +378,17 @@ func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.Res
 		(*capacity)[apiv1.ResourceMemory] = *resource.NewQuantity(int64(*instanceRequirements.MemoryMiB.Min)*1024*1024, resource.DecimalSI)
 	}
 
-	for _, manufacturer := range instanceRequirements.AcceleratorManufacturers {
-		if manufacturer == ec2types.AcceleratorManufacturerNvidia {
-			for _, acceleratorType := range instanceRequirements.AcceleratorTypes {
-				if acceleratorType == ec2types.AcceleratorTypeGpu {
-					(*capacity)[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(int64(*instanceRequirements.AcceleratorCount.Min), resource.DecimalSI)
+	// AcceleratorCount is optional in InstanceRequirements, and so is its Min:
+	// AWS documents both as "no minimum limit" when unset. Requesting any NVIDIA
+	// GPU without pinning a count is an ordinary configuration, so guard both
+	// before dereferencing, the same way VCpuCount and MemoryMiB are guarded above.
+	if instanceRequirements.AcceleratorCount != nil && instanceRequirements.AcceleratorCount.Min != nil {
+		for _, manufacturer := range instanceRequirements.AcceleratorManufacturers {
+			if manufacturer == ec2types.AcceleratorManufacturerNvidia {
+				for _, acceleratorType := range instanceRequirements.AcceleratorTypes {
+					if acceleratorType == ec2types.AcceleratorTypeGpu {
+						(*capacity)[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(int64(*instanceRequirements.AcceleratorCount.Min), resource.DecimalSI)
+					}
 				}
 			}
 		}
