@@ -418,6 +418,24 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		AnnotatePod(f, podName, "someAnnotation", "someValue")
 	})
 
+	ginkgo.It("applies recommendation from a VPA with `UpdateMode: Initial` when a VPA with `UpdateMode: Off` also matches the target", func() {
+		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
+
+		ginkgo.By("Setting up VPA CRD with updateMode: Off")
+		installHamsterVPA(f, "1-hamster-vpa-off", vpa_types.UpdateModeOff, "500m", "500Mi")
+
+		ginkgo.By("Setting up a VPA CRD with updateMode: Initial")
+		installHamsterVPA(f, "2-hamster-vpa", vpa_types.UpdateModeInitial, "250m", "200Mi")
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := utils.StartDeploymentPods(f, d)
+
+		for _, pod := range podList.Items {
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("250m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+		}
+	})
+
 	ginkgo.It("keeps limits equal to request", func() {
 		d := NewHamsterDeploymentWithGuaranteedResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
