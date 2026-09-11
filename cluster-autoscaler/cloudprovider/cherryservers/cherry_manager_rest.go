@@ -394,7 +394,6 @@ func (mgr *cherryManagerRest) nodeGroupSize(nodegroup string) (int, error) {
 
 func randString8() string {
 	n := 8
-	rand.Seed(time.Now().UnixNano())
 	letterRunes := []rune("acdefghijklmnopqrstuvwxyz")
 	b := make([]rune, n)
 	for i := range b {
