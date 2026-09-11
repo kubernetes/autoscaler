@@ -29,7 +29,6 @@ import (
 	"path"
 	"strings"
 	"text/template"
-	"time"
 
 	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -460,7 +459,6 @@ func (mgr *equinixMetalManagerRest) nodeGroupSize(nodegroup string) (int, error)
 
 func randString8() string {
 	n := 8
-	rand.Seed(time.Now().UnixNano())
 	letterRunes := []rune("acdefghijklmnopqrstuvwxyz")
 	b := make([]rune, n)
 	for i := range b {
