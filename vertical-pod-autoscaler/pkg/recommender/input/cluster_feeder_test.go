@@ -31,10 +31,12 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	core "k8s.io/client-go/testing"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/klog/v2/ktesting"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
@@ -837,6 +839,8 @@ func (fhp *fakeHistoryProvider) GetClusterHistory() (map[model.PodID]*history.Po
 }
 
 func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+
 	pod1 := model.PodID{
 		Namespace: "ns",
 		PodName:   "a-pod",
@@ -845,6 +849,37 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 	t0 := time.Date(2021, time.August, 30, 10, 21, 0, 0, time.UTC)
 	containerCpu := "containerCpu"
 	containerMem := "containerMem"
+	containerInit := "containerinit"
+
+	client := &testSpecClient{pods: []*spec.BasicPodSpec{{
+		ID: pod1,
+		Containers: []spec.BasicContainerSpec{
+			{
+				ID: model.ContainerID{
+					PodID:         pod1,
+					ContainerName: containerCpu,
+				},
+				ContainerType: model.ContainerTypeStandard,
+			},
+		},
+		InitContainers: []spec.BasicContainerSpec{
+			{
+				ID: model.ContainerID{
+					PodID:         pod1,
+					ContainerName: containerMem,
+				},
+				ContainerType: model.ContainerTypeInitSidecar,
+			},
+			{
+				ID: model.ContainerID{
+					PodID:         pod1,
+					ContainerName: containerInit,
+				},
+				ContainerType: model.ContainerTypeInit,
+			},
+		},
+	}}}
+
 	pod1History := history.PodHistory{
 		LastLabels: map[string]string{},
 		LastSeen:   t0,
@@ -863,6 +898,13 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 					Resource:     model.ResourceMemory,
 				},
 			},
+			containerInit: {
+				{
+					MeasureStart: t0,
+					Usage:        memAmount,
+					Resource:     model.ResourceMemory,
+				},
+			},
 		},
 	}
 	provider := fakeHistoryProvider{
@@ -873,6 +915,7 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 
 	clusterState := model.NewClusterState(testGcPeriod)
 	feeder := clusterStateFeeder{
+		specClient:   client,
 		clusterState: clusterState,
 	}
 	feeder.InitFromHistoryProvider(&provider)
@@ -888,7 +931,11 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 		return
 	}
 	assert.Equal(t, t0, containerState.LastCPUSampleStart)
-	if !assert.Contains(t, pod1State.Containers, containerMem) {
+	if !assert.Contains(t, pod1State.InitContainers, containerInit) {
+		return
+	}
+	containerInitState := pod1State.Containers[containerMem]
+	if !assert.NotNil(t, containerInitState) {
 		return
 	}
 	containerState = pod1State.Containers[containerMem]
@@ -896,6 +943,107 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 		return
 	}
 	assert.Equal(t, memAmount, containerState.GetMaxMemoryPeak())
+}
+
+func TestClusterStateFeeder_InitFromHistoryProvider_NativeSidecarGateDisabled(t *testing.T) {
+	// With NativeSidecar disabled, a native sidecar must be treated as a plain init
+	// container during history restoration, matching LoadPods: name recorded, no
+	// aggregate container state, no samples.
+	pod1 := model.PodID{
+		Namespace: "ns",
+		PodName:   "a-pod",
+	}
+	t0 := time.Date(2021, time.August, 30, 10, 21, 0, 0, time.UTC)
+	containerSidecar := "containersidecar"
+
+	client := &testSpecClient{pods: []*spec.BasicPodSpec{{
+		ID: pod1,
+		InitContainers: []spec.BasicContainerSpec{
+			{
+				ID: model.ContainerID{
+					PodID:         pod1,
+					ContainerName: containerSidecar,
+				},
+				ContainerType: model.ContainerTypeInitSidecar,
+			},
+		},
+	}}}
+	provider := fakeHistoryProvider{
+		history: map[model.PodID]*history.PodHistory{
+			pod1: {
+				LastLabels: map[string]string{},
+				LastSeen:   t0,
+				Samples: map[string][]model.ContainerUsageSample{
+					containerSidecar: {
+						{
+							MeasureStart: t0,
+							Usage:        10,
+							Resource:     model.ResourceCPU,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	clusterState := model.NewClusterState(testGcPeriod)
+	feeder := clusterStateFeeder{
+		specClient:   client,
+		clusterState: clusterState,
+	}
+	feeder.InitFromHistoryProvider(&provider)
+	if !assert.Contains(t, feeder.clusterState.Pods(), pod1) {
+		return
+	}
+	pod1State := feeder.clusterState.Pods()[pod1]
+	assert.Contains(t, pod1State.InitContainers, containerSidecar)
+	assert.NotContains(t, pod1State.Containers, containerSidecar)
+}
+
+func TestClusterStateFeeder_InitFromHistoryProvider_NonLivePod(t *testing.T) {
+	// Pod exists in history but not in the live pod lookup (e.g. its deployment rolled
+	// while the recommender was down). Its history must still be loaded, with containers
+	// treated as regular containers since there is no live spec to classify them.
+	gonePod := model.PodID{
+		Namespace: "ns",
+		PodName:   "rolled-pod",
+	}
+	t0 := time.Date(2021, time.August, 30, 10, 21, 0, 0, time.UTC)
+	containerCpu := "containerCpu"
+
+	client := &testSpecClient{pods: []*spec.BasicPodSpec{}}
+	provider := fakeHistoryProvider{
+		history: map[model.PodID]*history.PodHistory{
+			gonePod: {
+				LastLabels: map[string]string{},
+				LastSeen:   t0,
+				Samples: map[string][]model.ContainerUsageSample{
+					containerCpu: {
+						{
+							MeasureStart: t0,
+							Usage:        10,
+							Resource:     model.ResourceCPU,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	clusterState := model.NewClusterState(testGcPeriod)
+	feeder := clusterStateFeeder{
+		specClient:   client,
+		clusterState: clusterState,
+	}
+	feeder.InitFromHistoryProvider(&provider)
+	if !assert.Contains(t, feeder.clusterState.Pods(), gonePod) {
+		return
+	}
+	podState := feeder.clusterState.Pods()[gonePod]
+	if !assert.Contains(t, podState.Containers, containerCpu) {
+		return
+	}
+	assert.Equal(t, t0, podState.Containers[containerCpu].LastCPUSampleStart)
 }
 
 func TestFilterVPAs(t *testing.T) {

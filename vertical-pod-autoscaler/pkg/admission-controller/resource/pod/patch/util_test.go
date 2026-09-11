@@ -22,6 +22,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
 func TestGetAddResourceRequirementValuePatch(t *testing.T) {
@@ -74,7 +76,7 @@ func TestGetAddResourceRequirementValuePatch(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			patch := GetAddResourceRequirementValuePatch(tc.index, tc.kind, tc.resource, tc.quantity)
+			patch := GetAddResourceRequirementValuePatch(tc.index, tc.kind, tc.resource, tc.quantity, model.ContainerTypeStandard)
 			assert.Equal(t, "add", patch.Op)
 			assert.Equal(t, tc.expectedPath, patch.Path)
 			assert.Equal(t, tc.expectedValue, patch.Value)
