@@ -286,6 +286,8 @@ func (n *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAut
 			MaxNodeProvisionDuration:         durationpb.New(defaults.MaxNodeProvisionTime),
 			ZeroOrMaxNodeScaling:             defaults.ZeroOrMaxNodeScaling,
 			IgnoreDaemonSetsUtilization:      defaults.IgnoreDaemonSetsUtilization,
+			MaxNodeStartupDuration:           durationpb.New(defaults.MaxNodeStartupTime),
+			AllowNonAtomicScaleUpToMax:       defaults.AllowNonAtomicScaleUpToMax,
 		},
 	})
 	if err != nil {
@@ -316,6 +318,11 @@ func (n *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAut
 		maxNodeProvisionTime = d.AsDuration()
 	}
 
+	var maxNodeStartupTime time.Duration
+	if d := pbOpts.GetMaxNodeStartupDuration(); d != nil {
+		maxNodeStartupTime = d.AsDuration()
+	}
+
 	opts := &config.NodeGroupAutoscalingOptions{
 		ScaleDownUtilizationThreshold:    pbOpts.GetScaleDownUtilizationThreshold(),
 		ScaleDownGpuUtilizationThreshold: pbOpts.GetScaleDownGpuUtilizationThreshold(),
@@ -324,6 +331,8 @@ func (n *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAut
 		MaxNodeProvisionTime:             maxNodeProvisionTime,
 		ZeroOrMaxNodeScaling:             pbOpts.GetZeroOrMaxNodeScaling(),
 		IgnoreDaemonSetsUtilization:      pbOpts.GetIgnoreDaemonSetsUtilization(),
+		MaxNodeStartupTime:               maxNodeStartupTime,
+		AllowNonAtomicScaleUpToMax:       pbOpts.GetAllowNonAtomicScaleUpToMax(),
 	}
 	return opts, nil
 }
