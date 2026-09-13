@@ -126,12 +126,12 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 
 	// Query the apiserver for the number of nodes.
 	num, err := k8s.CountNodes()
-	if num == 0 {
-		log.V(2).Info("No nodes found, probably listers have not synced yet. Skipping current check.")
-		return noChange
-	}
 	if err != nil {
 		log.Error(err)
+		return noChange
+	}
+	if num == 0 {
+		log.V(2).Info("No nodes found, probably listers have not synced yet. Skipping current check.")
 		return noChange
 	}
 	log.V(4).Infof("The number of nodes is %d", num)
