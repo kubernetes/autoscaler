@@ -8,8 +8,8 @@
 {{- if and .Values.admissionController.certManager.enabled .Values.admissionController.registerWebhook }}
 {{- fail "admissionController.certManager.enabled and admissionController.registerWebhook cannot both be true. Set admissionController.registerWebhook: false when using cert-manager." }}
 {{- end }}
-{{- if and .Values.admissionController.certManager.enabled .Values.admissionController.tls.create }}
-{{- fail "admissionController.certManager.enabled and admissionController.tls.create cannot both be true. Set admissionController.tls.create: false when using cert-manager." }}
+{{- if and (not .Values.admissionController.registerWebhook) (not .Values.admissionController.certGen.enabled) (not .Values.admissionController.certManager.enabled) }}
+{{- fail "admissionController requires a TLS certificate source. Enable certGen, certManager, or registerWebhook." }}
 {{- end }}
 {{- if .Values.admissionController.certManager.enabled }}
 {{- range .Values.admissionController.extraArgs }}
