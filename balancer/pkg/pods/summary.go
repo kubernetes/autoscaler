@@ -32,7 +32,7 @@ type Summary struct {
 	// Running is the number of running pods.
 	Running int32
 	// NotStartedWithinDeadline is the number of pods that not only has not
-	// fully stared (not scheduled or not fully started, in phase PodPending)
+	// fully started (not scheduled or not fully started, in phase PodPending)
 	// but also has been in the not started phase for a while.
 	NotStartedWithinDeadline int32
 }
