@@ -157,6 +157,9 @@ Here you should see the flags that you set for the VPA recommender and you shoul
 
 This means that the VPA recommender is now using Prometheus as the history provider.
 
+If the recommender cannot reach `--prometheus-address` at startup, it logs `Cannot get cluster history` and continues with no historical data for that run instead of failing. This history load only happens once at startup, so it will not retry until the recommender is restarted.
+
+By default the recommender looks up pod labels from the `up{job="kubernetes-pods"}` metric with the `pod_label_` prefix, which matches how cadvisor scrape jobs label metrics. If you use [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics) instead, its `kube_pod_labels` metric uses a `label_` prefix, so set `--metric-for-pod-labels=kube_pod_labels{job="kube-state-metrics"}[8d]` and `--pod-label-prefix=label_` to match it. This lookup is what lets the recommender find historical metrics for pods that no longer exist.
 
 For authentication to Prometheus, you can provide credentials in following ways:
 
