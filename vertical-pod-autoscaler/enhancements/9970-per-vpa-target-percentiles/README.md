@@ -8,6 +8,7 @@
 - [Proposal](#proposal)
 - [Design Details](#design-details)
   - [API Changes](#api-changes)
+  - [Why Three Percentiles Per Resource](#why-three-percentiles-per-resource)
   - [Effective-Value Resolution](#effective-value-resolution)
   - [Recommender Integration](#recommender-integration)
   - [Interaction with Lower and Upper Bounds](#interaction-with-lower-and-upper-bounds)
@@ -93,6 +94,22 @@ When set, the Recommender reads each recommendation (lower bound, target, upper 
 Only `ContainerResourcePolicy` changes. No status, condition, or metric changes: the effective percentiles are fully determined by the spec and the Recommender flags, and the resulting recommendation is already observable in `status.recommendation`.
 
 Each field is a plain integer percentile (`*int32`, `[1, 100]`) rather than a `resource.Quantity` — it's a unit, not a resource quantity. This keeps per-field validation to a simple `Minimum`/`Maximum` on the CRD. The Recommender divides the value by 100 to get the `(0, 1]` fraction its estimators use, matching the global flags.
+
+### Why three percentiles per resource
+
+The Recommender already computes three separate values for each resource, each read at its own percentile from a distinct global flag:
+
+| Recommendation | Global flag | Default | Drives |
+|---|---|---|---|
+| lower bound | `--recommendation-lower-bound-{cpu,memory}-percentile` | 0.5 | bottom of the range the Updater tolerates |
+| target | `--target-{cpu,memory}-percentile` | 0.9 | the request injected at admission and aimed for by the Updater |
+| upper bound | `--recommendation-upper-bound-{cpu,memory}-percentile` | 0.95 | top of the range the Updater tolerates |
+
+These are three independent knobs, not a min/max pair around one value. The target is what actually gets applied; the lower and upper bounds define the range the Updater treats as acceptable — it evicts a pod whose current request falls below the lower bound or above the upper bound (`pkg/updater/priority/priority_processor.go`). So the per-VPA API mirrors the three existing flags: one override each.
+
+Overriding only the target is not enough, and can produce an incoherent config. With the bounds left at their global percentiles, a per-VPA target can land outside them: e.g. a target at the 99th percentile while the global upper bound stays at the 95th gives `target > upperBound`. The Updater then reads every pod's request (set from the target) as above the upper bound and evicts it on every pass.
+
+Exposing all three lets an operator shift the whole range together, and lets the admission controller reject inconsistent configs. For a resource the three are set as a group and must satisfy `lower ≤ target ≤ upper` (see [Validation](#validation)); a resource whose triple is unset falls back entirely to the global flags.
 
 ### Effective-Value Resolution
 
