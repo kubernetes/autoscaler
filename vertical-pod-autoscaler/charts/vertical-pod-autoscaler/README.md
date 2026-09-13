@@ -206,7 +206,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.certManager.createSelfSignedIssuer.duration | string | `"8760h"` | Lifetime of the intermediate CA certificate. |
 | admissionController.certManager.createSelfSignedIssuer.renewBefore | string | `"720h"` | Time before expiry to renew the CA certificate. |
 | admissionController.certManager.duration | string | `"168h"` | Lifetime of the webhook TLS certificate. |
-| admissionController.certManager.enabled | bool | `false` | If true, cert-manager manages the webhook certificate lifecycle. cert-manager must be installed in the cluster, see https://cert-manager.io/docs/installation. Mutually exclusive with certGen.enabled, registerWebhook, and tls.create. |
+| admissionController.certManager.enabled | bool | `false` | If true, cert-manager manages the webhook certificate lifecycle. cert-manager must be installed in the cluster, see https://cert-manager.io/docs/installation. Mutually exclusive with certGen.enabled and registerWebhook. |
 | admissionController.certManager.issuerRef | object | `{"group":"cert-manager.io","kind":"ClusterIssuer","name":""}` | Reference to an existing issuer for signing the webhook TLS certificate. Required when createSelfSignedIssuer.enabled is false. |
 | admissionController.certManager.issuerRef.group | string | `"cert-manager.io"` | API group of the issuer. |
 | admissionController.certManager.issuerRef.kind | string | `"ClusterIssuer"` | Kind of the issuer (ClusterIssuer or Issuer). |
@@ -248,10 +248,6 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.serviceAccount.create | bool | `true` |  |
 | admissionController.serviceAccount.labels | object | `{}` |  |
 | admissionController.strategy | object | `{}` |  |
-| admissionController.tls.caCert | string | `""` |  |
-| admissionController.tls.cert | string | `""` |  |
-| admissionController.tls.create | bool | `false` |  |
-| admissionController.tls.key | string | `""` |  |
 | admissionController.tls.secretName | string | `"vpa-tls-certs"` |  |
 | admissionController.tolerations | list | `[]` |  |
 | admissionController.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Admission Controller, used to spread replicas across failure domains such as zones. |
