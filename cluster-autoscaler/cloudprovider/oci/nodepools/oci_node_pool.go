@@ -367,10 +367,15 @@ func (np *nodePool) setEphemeralStorageFromRegisteredNode(node *apiv1.Node) erro
 			return nil
 		}
 
+		allocatable, ok := registeredNode.Status.Allocatable[apiv1.ResourceEphemeralStorage]
+		if !ok {
+			return nil
+		}
+
 		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = ephemeralStorage
 
-		node.Status.Allocatable[apiv1.ResourceEphemeralStorage] =
-			registeredNode.Status.Allocatable[apiv1.ResourceEphemeralStorage]
+		node.Status.Allocatable = node.Status.Allocatable.DeepCopy()
+		node.Status.Allocatable[apiv1.ResourceEphemeralStorage] = allocatable
 
 		return nil
 	}
