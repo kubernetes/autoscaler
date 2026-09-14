@@ -17,10 +17,15 @@ limitations under the License.
 package nanny
 
 import (
+	"bytes"
+	"errors"
+	"io"
+	"os"
 	"reflect"
 	"testing"
 	"time"
 
+	log "github.com/golang/glog"
 	api "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -290,8 +295,42 @@ func TestUpdateResources(t *testing.T) {
 	}
 }
 
+func TestUpdateResourcesCountNodesError(t *testing.T) {
+	k8s := newFakeKubernetesClient(10, standard, standard)
+	// A real CountNodes failure returns the zero value alongside the error.
+	k8s.nodes = 0
+	k8s.nodesErr = errors.New("apiserver unavailable")
+	est := newFakeResourceEstimator(standardRecommended)
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("failed to create pipe: %v", err)
+	}
+	oldStderr := os.Stderr
+	os.Stderr = w
+	got := updateResources(k8s, est, time.Now(), time.Time{}, noDelay, noDelay, noChange)
+	log.Flush()
+	os.Stderr = oldStderr
+	w.Close()
+	logged, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatalf("failed to read captured log output: %v", err)
+	}
+
+	if got != noChange {
+		t.Errorf("updateResources got %d, want %d when CountNodes errors", got, noChange)
+	}
+	if !bytes.Contains(logged, []byte("apiserver unavailable")) {
+		t.Errorf("expected the CountNodes error to be logged, got log output: %s", logged)
+	}
+	if bytes.Contains(logged, []byte("No nodes found")) {
+		t.Errorf("CountNodes error was misreported as the unsynced-listers case, got log output: %s", logged)
+	}
+}
+
 type fakeKubernetesClient struct {
 	nodes        uint64
+	nodesErr     error
 	resources    *api.ResourceRequirements
 	newResources *api.ResourceRequirements
 }
@@ -307,7 +346,7 @@ func newFakeKubernetesClient(nodes uint64, limits, reqs api.ResourceList) *fakeK
 }
 
 func (f *fakeKubernetesClient) CountNodes() (uint64, error) {
-	return f.nodes, nil
+	return f.nodes, f.nodesErr
 }
 
 func (f *fakeKubernetesClient) ContainerResources() (*api.ResourceRequirements, error) {
