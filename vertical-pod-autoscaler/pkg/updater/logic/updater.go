@@ -106,6 +106,7 @@ type updater struct {
 	evictAfterOOMThreshold       time.Duration
 	podInformer                  cache.SharedIndexInformer
 	cpuStartupBoostQueue         workqueue.TypedRateLimitingInterface[string]
+	updaterInterval              time.Duration
 }
 
 // NewUpdater creates Updater with given configuration
@@ -123,6 +124,7 @@ func NewUpdater(
 	defaultUpdateThreshold float64,
 	podLifetimeUpdateThreshold time.Duration,
 	evictAfterOOMThreshold time.Duration,
+	updaterInterval time.Duration,
 	statusLeaseName string,
 	statusNamespace string,
 	statusTimeout time.Duration,
@@ -171,6 +173,7 @@ func NewUpdater(
 		defaultUpdateThreshold:     defaultUpdateThreshold,
 		podLifetimeUpdateThreshold: podLifetimeUpdateThreshold,
 		evictAfterOOMThreshold:     evictAfterOOMThreshold,
+		updaterInterval:            updaterInterval,
 	}
 	if features.Enabled(features.CPUStartupBoost) {
 		u.podInformer = podInformerFactory.Core().V1().Pods().Informer()
@@ -688,6 +691,10 @@ func (u *updater) getPodsUpdateOrder(pods []*corev1.Pod, vpa *vpa_types.Vertical
 		MinChangePriority:          u.defaultUpdateThreshold,
 		PodLifetimeUpdateThreshold: u.podLifetimeUpdateThreshold,
 		EvictAfterOOMThreshold:     u.evictAfterOOMThreshold,
+		// Two loops, not one: a single interval leaves no margin if a loop is slow or
+		// the updater restarts, and missing the window entirely means a genuine quick
+		// OOM never triggers an update at all.
+		QuickOOMLookback: 2 * u.updaterInterval,
 	}
 	priorityCalculator := priority.NewUpdatePriorityCalculator(
 		vpa,

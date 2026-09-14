@@ -326,6 +326,95 @@ func TestDontUpdatePodWithStaleQuickOOM(t *testing.T) {
 	assert.Exactly(t, []*corev1.Pod{}, result, "Pod shouldn't be updated because of the stale OOM")
 }
 
+// TestQuickOOMLookbackIsIndependentOfEvictThreshold pins the distinction between the
+// two durations. EvictAfterOOMThreshold answers "did this container OOM soon after
+// starting"; QuickOOMLookback answers "is that OOM recent enough that we have not
+// already acted on it". Before they were separated, a VPA that narrowed
+// EvictAfterOOMSeconds also silently narrowed the staleness window, and widening it
+// re-introduced the repeated-update bug this guard exists to prevent.
+//
+// Here the OOM is genuinely quick (2 minutes after start) and happened 5 minutes ago.
+// EvictAfterOOMThreshold is 10 minutes, so the old code would call this actionable;
+// QuickOOMLookback is 2 minutes, so it is stale and must not trigger an update.
+func TestQuickOOMLookbackIsIndependentOfEvictThreshold(t *testing.T) {
+	pod := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).Get()
+
+	timestampNow := pod.Status.StartTime.Add(time.Hour * 11)
+
+	pod.Status.ContainerStatuses = []corev1.ContainerStatus{
+		{
+			LastTerminationState: corev1.ContainerState{
+				Terminated: &corev1.ContainerStateTerminated{
+					Reason:     "OOMKilled",
+					FinishedAt: metav1.NewTime(timestampNow.Add(-5 * time.Minute)),
+					StartedAt:  metav1.NewTime(timestampNow.Add(-7 * time.Minute)),
+				},
+			},
+		},
+	}
+
+	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
+		WithTarget("5", "").
+		WithLowerBound("1", "").
+		WithUpperBound("6", "").Get()
+
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {OutsideRecommendedRange: false, ScaleUp: true, ResourceDiff: 0.05},
+	})
+
+	updateconfig := UpdateConfig{
+		MinChangePriority:          0.5,
+		PodLifetimeUpdateThreshold: time.Hour * 12,
+		EvictAfterOOMThreshold:     10 * time.Minute,
+		QuickOOMLookback:           2 * time.Minute,
+	}
+	calculator := NewUpdatePriorityCalculator(
+		vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
+
+	calculator.AddPod(pod, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	assert.Exactly(t, []*corev1.Pod{}, result, "OOM older than QuickOOMLookback shouldn't trigger an update even though it is within EvictAfterOOMThreshold")
+}
+
+// TestQuickOOMLookbackDefaultsToEvictThreshold covers callers that never set the new
+// field: a zero value must fall back to the old behaviour, not disable quick-OOM
+// detection outright.
+func TestQuickOOMLookbackDefaultsToEvictThreshold(t *testing.T) {
+	pod := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).Get()
+
+	timestampNow := pod.Status.StartTime.Add(time.Hour * 11)
+
+	pod.Status.ContainerStatuses = []corev1.ContainerStatus{
+		{
+			LastTerminationState: corev1.ContainerState{
+				Terminated: &corev1.ContainerStateTerminated{
+					Reason:     "OOMKilled",
+					FinishedAt: metav1.NewTime(timestampNow.Add(-1 * time.Minute)),
+					StartedAt:  metav1.NewTime(timestampNow.Add(-3 * time.Minute)),
+				},
+			},
+		},
+	}
+
+	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
+		WithTarget("5", "").
+		WithLowerBound("1", "").
+		WithUpperBound("6", "").Get()
+
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {OutsideRecommendedRange: false, ScaleUp: true, ResourceDiff: 0.05},
+	})
+
+	// QuickOOMLookback deliberately left unset.
+	updateconfig := UpdateConfig{MinChangePriority: 0.5, PodLifetimeUpdateThreshold: time.Hour * 12, EvictAfterOOMThreshold: 10 * time.Minute}
+	calculator := NewUpdatePriorityCalculator(
+		vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
+
+	calculator.AddPod(pod, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	assert.Exactly(t, []*corev1.Pod{pod}, result, "with QuickOOMLookback unset, a fresh quick OOM should still be actionable")
+}
+
 func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 	pod := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).Get()
 

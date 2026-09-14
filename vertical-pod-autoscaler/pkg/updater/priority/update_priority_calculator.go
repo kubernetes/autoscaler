@@ -54,6 +54,14 @@ type UpdateConfig struct {
 	MinChangePriority          float64
 	PodLifetimeUpdateThreshold time.Duration
 	EvictAfterOOMThreshold     time.Duration
+	// QuickOOMLookback bounds how long after an OOM event we still treat it as
+	// actionable. It is deliberately NOT EvictAfterOOMThreshold: that threshold asks
+	// "did this container OOM soon after starting", a property of the OOM itself,
+	// while this asks "have we already had a chance to act on it", a property of how
+	// often the updater loops. They are unrelated, and tying them together meant a
+	// user narrowing EvictAfterOOMSeconds on a single VPA also silently narrowed the
+	// staleness window.
+	QuickOOMLookback time.Duration
 }
 
 // NewUpdatePriorityCalculator creates new UpdatePriorityCalculator for the given VPA object
@@ -122,7 +130,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time, inf
 			terminationState.Terminated.Reason == "OOMKilled" &&
 			terminationState.Terminated.FinishedAt.Sub(terminationState.Terminated.StartedAt.Time) < evictOOMThreshold &&
 			!terminationState.Terminated.FinishedAt.After(now) &&
-			now.Sub(terminationState.Terminated.FinishedAt.Time) < evictOOMThreshold {
+			now.Sub(terminationState.Terminated.FinishedAt.Time) < calc.getQuickOOMLookback() {
 			quickOOM = true
 			klog.V(2).InfoS("Quick OOM detected in pod", "pod", klog.KObj(pod), "containerName", cs.Name)
 		}
@@ -221,6 +229,17 @@ func (*UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_types.
 // considering the pod for eviction. It uses the VPA-specific EvictAfterOOMSeconds
 // if the PerVPAConfig feature flag is enabled and the value is set, otherwise
 // falls back to the global evictAfterOOMThreshold flag.
+// getQuickOOMLookback returns how long an OOM event stays actionable. A zero value
+// means the caller did not configure one, in which case we fall back to the eviction
+// threshold -- the previous behaviour -- rather than to zero, which would disable
+// quick-OOM detection entirely.
+func (calc *UpdatePriorityCalculator) getQuickOOMLookback() time.Duration {
+	if calc.config.QuickOOMLookback > 0 {
+		return calc.config.QuickOOMLookback
+	}
+	return calc.getEvictOOMThreshold()
+}
+
 func (calc *UpdatePriorityCalculator) getEvictOOMThreshold() time.Duration {
 	evictOOMThreshold := calc.config.EvictAfterOOMThreshold
 
