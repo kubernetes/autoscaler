@@ -39,7 +39,7 @@ admissionController:
   serviceAccount:
     # If `true`, create a new `ServiceAccount` for the Admission Controller.
     create: true
-    # Name of an existing ServiceAccount to use. If empty, a new ServiceAccount is created.
+    # Name of an existing ServiceAccount to use. If empty, the chart creates a new ServiceAccount.
     name: ""
     # Labels to add to the Admission Controller service account.
     labels: {}
@@ -254,7 +254,7 @@ recommender:
   serviceAccount:
     # If `true`, create a new `ServiceAccount` for the Recommender.
     create: true
-    # Name of an existing ServiceAccount to use. If empty, a new ServiceAccount is created.
+    # Name of an existing ServiceAccount to use. If empty, the chart creates a new ServiceAccount.
     name: ""
     # Labels to add to the Recommender service account.
     labels: {}
@@ -380,7 +380,7 @@ updater:
   serviceAccount:
     # If `true`, create a new `ServiceAccount` for the Updater.
     create: true
-    # Name of an existing ServiceAccount to use. If empty, a new ServiceAccount is created.
+    # Name of an existing ServiceAccount to use. If empty, the chart creates a new ServiceAccount.
     name: ""
     # Labels to add to the Updater service account.
     labels: {}
