@@ -11,6 +11,6 @@ roleRef:
   name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+    name: {{ include "vertical-pod-autoscaler.admissionController.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{- end -}}
