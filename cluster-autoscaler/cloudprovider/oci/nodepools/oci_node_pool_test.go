@@ -267,7 +267,7 @@ func TestSetEphemeralStorageFromRegisteredNode(t *testing.T) {
 		},
 	}
 
-	err = np.setEphemeralStorageFromRegisteredNode(templateNode)
+	err = np.setEphemeralStorageFromRegisteredNode(context.Background(), templateNode)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -332,7 +332,7 @@ func TestSetEphemeralStorageFromRegisteredNodeDifferentPool(t *testing.T) {
 		},
 	}
 
-	err = np.setEphemeralStorageFromRegisteredNode(templateNode)
+	err = np.setEphemeralStorageFromRegisteredNode(context.Background(), templateNode)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
