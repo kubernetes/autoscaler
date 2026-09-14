@@ -336,7 +336,7 @@ func (np *nodePool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, 
 		return nil, errors.Wrap(err, "unable to build node pool template")
 	}
 
-	if err := np.setEphemeralStorageFromRegisteredNode(node); err != nil {
+	if err := np.setEphemeralStorageFromRegisteredNode(ctx, node); err != nil {
 		return nil, errors.Wrap(err, "unable to get ephemeral storage from registered node")
 	}
 
@@ -351,8 +351,8 @@ func (np *nodePool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, 
 
 // setEphemeralStorageFromRegisteredNode copies ephemeral-storage capacity and
 // allocatable values from a registered node in the node pool to the template node.
-func (np *nodePool) setEphemeralStorageFromRegisteredNode(node *apiv1.Node) error {
-	nodes, err := np.kubeClient.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+func (np *nodePool) setEphemeralStorageFromRegisteredNode(ctx context.Context, node *apiv1.Node) error {
+	nodes, err := np.kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -364,12 +364,12 @@ func (np *nodePool) setEphemeralStorageFromRegisteredNode(node *apiv1.Node) erro
 
 		ephemeralStorage, ok := registeredNode.Status.Capacity[apiv1.ResourceEphemeralStorage]
 		if !ok {
-			return nil
+			continue
 		}
 
 		allocatable, ok := registeredNode.Status.Allocatable[apiv1.ResourceEphemeralStorage]
 		if !ok {
-			return nil
+			continue
 		}
 
 		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = ephemeralStorage
