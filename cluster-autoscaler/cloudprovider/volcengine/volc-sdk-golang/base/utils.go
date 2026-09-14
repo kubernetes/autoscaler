@@ -39,10 +39,6 @@ var (
 	defaultRetryInterval        = 1 * time.Second
 )
 
-func init() {
-	rand.Seed(time.Now().Unix())
-}
-
 func createTempAKSK() (accessKeyId string, plainSk string, err error) {
 	if accessKeyId, err = generateAccessKeyId("AKTP"); err != nil {
 		return
