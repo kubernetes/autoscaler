@@ -111,6 +111,7 @@ type testDevice struct {
 	name       string
 	attributes map[string]string
 	capacity   map[string]string
+	mappings   map[apiv1.ResourceName]resourceapi.NodeAllocatableResourceMapping
 }
 
 type testAllocation struct {
@@ -159,6 +160,7 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 	//assert.NoError(t, fs.Set("v", "10"))
 
 	featuretesting.SetFeatureGateDuringTest(t, feature.DefaultFeatureGate, features.DynamicResourceAllocation, true)
+	featuretesting.SetFeatureGateDuringTest(t, feature.DefaultFeatureGate, features.DRANodeAllocatableResources, true)
 
 	now := time.Now()
 
@@ -172,14 +174,53 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 		{name: nicDevice + "-0", attributes: map[string]string{nicAttribute: nicTypeA}},
 	})}
 
+	cpuQuantity2 := resource.MustParse("2")
+	node1CpuA1slice := &testNodeGroupDef{
+		name: "node1CpuA1slice",
+		cpu:  3000,
+		mem:  4000,
+		slicesTemplateFunc: nodeTemplateResourceSlices(exampleDriver, 1, 0, []testDevice{
+			{
+				name:       "cpuDev-0",
+				attributes: map[string]string{gpuAttribute: gpuTypeA},
+				mappings: map[apiv1.ResourceName]resourceapi.NodeAllocatableResourceMapping{
+					apiv1.ResourceCPU: {AllocationMultiplier: &cpuQuantity2},
+				},
+			},
+			{
+				name:       "cpuDev-1",
+				attributes: map[string]string{gpuAttribute: gpuTypeA},
+				mappings: map[apiv1.ResourceName]resourceapi.NodeAllocatableResourceMapping{
+					apiv1.ResourceCPU: {AllocationMultiplier: &cpuQuantity2},
+				},
+			},
+			{
+				name:       "cpuDev-2",
+				attributes: map[string]string{gpuAttribute: gpuTypeA},
+				mappings: map[apiv1.ResourceName]resourceapi.NodeAllocatableResourceMapping{
+					apiv1.ResourceCPU: {AllocationMultiplier: &cpuQuantity2},
+				},
+			},
+			{
+				name:       "cpuDev-3",
+				attributes: map[string]string{gpuAttribute: gpuTypeA},
+				mappings: map[apiv1.ResourceName]resourceapi.NodeAllocatableResourceMapping{
+					apiv1.ResourceCPU: {AllocationMultiplier: &cpuQuantity2},
+				},
+			},
+		}),
+	}
+
 	baseBigPod := BuildTestPod("", 600, 100)
 	baseSmallPod := BuildTestPod("", 100, 100)
+	basePod500Cpu := BuildTestPod("", 500, 100)
 
 	req1GpuA := testDeviceRequest{name: "req1GpuA", count: 1, selectors: singleAttrSelector(exampleDriver, gpuAttribute, gpuTypeA)}
 	req2GpuA := testDeviceRequest{name: "req2GpuA", count: 2, selectors: singleAttrSelector(exampleDriver, gpuAttribute, gpuTypeA)}
 	req1GpuB := testDeviceRequest{name: "req1GpuB", count: 1, selectors: singleAttrSelector(exampleDriver, gpuAttribute, gpuTypeB)}
 	req1Nic := testDeviceRequest{name: "req1Nic", count: 1, selectors: singleAttrSelector(exampleDriver, nicAttribute, nicTypeA)}
 	req1Global := testDeviceRequest{name: "req1Global", count: 1, selectors: singleAttrSelector(exampleDriver, globalDevAttribute, globalDevTypeA)}
+	req1CpuA := testDeviceRequest{name: "req1CpuA", count: 1, selectors: singleAttrSelector(exampleDriver, gpuAttribute, gpuTypeA)}
 
 	sharedGpuBClaim := testResourceClaim("sharedGpuBClaim", nil, "", []testDeviceRequest{req1GpuB}, nil)
 	sharedAllocatedGlobalClaim := testResourceClaim("sharedGlobalClaim", nil, "", []testDeviceRequest{req1Global}, []testAllocation{{request: req1Global.name, driver: exampleDriver, pool: "global-pool", device: globalDevice + "-0"}})
@@ -329,6 +370,14 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 				{nodeName: node3GpuA1slice.name + "-1", reason: simulator.NotUnderutilized},
 				{nodeName: node3GpuA1slice.name + "-2", reason: simulator.NoPlaceToMovePods},
 			},
+		},
+		"scale-up: DRA node allocatable resources account for node capacity": {
+			// Nodes have 3000m CPU and 4 devices (each device maps to 2000m CPU).
+			// Each pod needs 2500m CPU (500m container + 2000m DRA), so each node fits only 1 pod despite having 4 devices.
+			// 2 unschedulable pods -> 2 nodes needed.
+			nodeGroups:       map[*testNodeGroupDef]int{node1CpuA1slice: 0},
+			pods:             unscheduledPods(basePod500Cpu, "unschedulable", 2, []testDeviceRequest{req1CpuA}),
+			expectedScaleUps: map[string]int{node1CpuA1slice.name: 2},
 		},
 	}
 
@@ -545,9 +594,16 @@ func createTestPod(basePod *apiv1.Pod, podName, controllerName, nodeName string,
 		claimRef := fmt.Sprintf("claim-ref-%d", i)
 		claimTemplateName := fmt.Sprintf("%s-%s-template", pod.Name, claimRef) // For completeness only.
 		WithResourceClaim(claimRef, claim.Name, claimTemplateName)(pod)
+		if len(pod.Spec.Containers) > 0 {
+			pod.Spec.Containers[0].Resources.Claims = append(pod.Spec.Containers[0].Resources.Claims, apiv1.ResourceClaim{Name: claimRef})
+		}
 	}
 	for i, extraClaim := range sharedClaims {
-		WithResourceClaim(fmt.Sprintf("claim-ref-extra-%d", i), extraClaim.Name, "")(pod)
+		claimRef := fmt.Sprintf("claim-ref-extra-%d", i)
+		WithResourceClaim(claimRef, extraClaim.Name, "")(pod)
+		if len(pod.Spec.Containers) > 0 {
+			pod.Spec.Containers[0].Resources.Claims = append(pod.Spec.Containers[0].Resources.Claims, apiv1.ResourceClaim{Name: claimRef})
+		}
 	}
 	return testPod{pod: pod, claims: claims}
 }
@@ -731,9 +787,10 @@ func testResourceSlices(driver, poolName string, poolSliceCount, poolGen int64, 
 	var devices []resourceapi.Device
 	for _, deviceDef := range deviceDefs {
 		device := resourceapi.Device{
-			Name:       deviceDef.name,
-			Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{},
-			Capacity:   map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{},
+			Name:                            deviceDef.name,
+			Attributes:                      map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{},
+			Capacity:                        map[resourceapi.QualifiedName]resourceapi.DeviceCapacity{},
+			NodeAllocatableResourceMappings: deviceDef.mappings,
 		}
 		for name, val := range deviceDef.attributes {
 			val := val
