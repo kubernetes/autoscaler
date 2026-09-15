@@ -88,10 +88,12 @@ func ClearPodNodeNames(pods []*apiv1.Pod) []*apiv1.Pod {
 func PodRequests(pod *apiv1.Pod) apiv1.ResourceList {
 	inPlacePodVerticalScalingEnabled := utilfeature.DefaultFeatureGate.Enabled(features.InPlacePodVerticalScaling)
 	podLevelResourcesEnabled := utilfeature.DefaultFeatureGate.Enabled(features.PodLevelResources)
+	draNodeAllocatableResourcesEnabled := utilfeature.DefaultFeatureGate.Enabled(features.DRANodeAllocatableResources)
 
 	return resourcehelper.PodRequests(pod, resourcehelper.PodResourcesOptions{
-		UseStatusResources:    inPlacePodVerticalScalingEnabled,
-		SkipPodLevelResources: !podLevelResourcesEnabled,
+		UseStatusResources:                       inPlacePodVerticalScalingEnabled,
+		SkipPodLevelResources:                    !podLevelResourcesEnabled,
+		UseDRANodeAllocatableResourceClaimStatus: draNodeAllocatableResourcesEnabled,
 	})
 }
 
