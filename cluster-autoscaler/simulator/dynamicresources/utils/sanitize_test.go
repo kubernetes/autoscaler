@@ -24,6 +24,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/utils/ptr"
@@ -201,6 +202,26 @@ func TestSanitizedResourceClaimRefs(t *testing.T) {
 		test.WithResourceClaim("claim3", "own-claim-1-template-xxx", "own-claim-1-template"),
 		test.WithResourceClaim("claim4", "own-claim-2-template-xxx", "own-claim-2-template"))
 
+	// withNodeAllocatableClaimStatuses attaches a KEP-5517 node-allocatable status entry for
+	// each of the provided claim names, so the sanitization of those refs can be verified.
+	withNodeAllocatableClaimStatuses := func(claimNames ...string) func(*apiv1.Pod) {
+		return func(pod *apiv1.Pod) {
+			for _, claimName := range claimNames {
+				pod.Status.NodeAllocatableResourceClaimStatuses = append(pod.Status.NodeAllocatableResourceClaimStatuses,
+					apiv1.NodeAllocatableResourceClaimStatus{
+						ResourceClaimName: claimName,
+						Containers:        []string{"cnt"},
+						Resources:         apiv1.ResourceList{apiv1.ResourceCPU: resource.MustParse("2")},
+					})
+			}
+		}
+	}
+
+	ownAndSharedNodeAllocatableClaimsPod := test.BuildTestPod("ownAndSharedNodeAllocatableClaimsPod", 1, 1,
+		test.WithResourceClaim("claim1", "sharedClaim1", ""),
+		test.WithResourceClaim("claim2", "own-claim-1-template-xxx", "own-claim-1-template"),
+		withNodeAllocatableClaimStatuses("sharedClaim1", "own-claim-1-template-xxx"))
+
 	for _, tc := range []struct {
 		testName string
 		pod      *apiv1.Pod
@@ -224,6 +245,14 @@ func TestSanitizedResourceClaimRefs(t *testing.T) {
 				test.WithResourceClaim("claim2", "sharedClaim2", ""),
 				test.WithResourceClaim("claim3", "own-claim-1-template-xxx-abc", "own-claim-1-template"),
 				test.WithResourceClaim("claim4", "own-claim-2-template-xxx-abc", "own-claim-2-template")),
+		},
+		{
+			testName: "pod owned node-allocatable claim refs upadted, shared claims left unchanged",
+			pod:      ownAndSharedNodeAllocatableClaimsPod,
+			wantPod: test.BuildTestPod("ownAndSharedNodeAllocatableClaimsPod", 1, 1,
+				test.WithResourceClaim("claim1", "sharedClaim1", ""),
+				test.WithResourceClaim("claim2", "own-claim-1-template-xxx-abc", "own-claim-1-template"),
+				withNodeAllocatableClaimStatuses("sharedClaim1", "own-claim-1-template-xxx-abc")),
 		},
 	} {
 		t.Run(tc.testName, func(t *testing.T) {

@@ -127,15 +127,24 @@ func SanitizedPodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceap
 func SanitizedResourceClaimRefs(pod *v1.Pod, nameSuffix string) *v1.Pod {
 	podCopy := pod.DeepCopy()
 
+	renamedClaims := make(map[string]string, len(podCopy.Status.ResourceClaimStatuses))
 	var sanitizedClaimStatuses []v1.PodResourceClaimStatus
 	for _, claimStatus := range podCopy.Status.ResourceClaimStatuses {
 		if claimStatus.ResourceClaimName != nil {
 			newClaimName := fmt.Sprintf("%s-%s", *claimStatus.ResourceClaimName, nameSuffix)
+			renamedClaims[*claimStatus.ResourceClaimName] = newClaimName
 			claimStatus.ResourceClaimName = &newClaimName
 		}
 		sanitizedClaimStatuses = append(sanitizedClaimStatuses, claimStatus)
 	}
 	podCopy.Status.ResourceClaimStatuses = sanitizedClaimStatuses
+
+	for i, claimStatus := range podCopy.Status.NodeAllocatableResourceClaimStatuses {
+		if newClaimName, ok := renamedClaims[claimStatus.ResourceClaimName]; ok {
+			podCopy.Status.NodeAllocatableResourceClaimStatuses[i].ResourceClaimName = newClaimName
+		}
+		//  Names of ResourceClaims not owned by the pod are not changed.
+	}
 
 	return podCopy
 }
