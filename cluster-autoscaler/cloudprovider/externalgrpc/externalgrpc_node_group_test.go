@@ -304,7 +304,7 @@ func TestCloudProvider_TemplateNodeInfoResourceSlices(t *testing.T) {
 	})).Return(
 		&protos.NodeGroupTemplateNodeInfoResponse{
 			NodeBytes:          apiv1NodeBytes,
-			ResourceSliceBytes: [][]byte{resourceSliceBytes, []byte("no a valid resource slice")},
+			ResourceSliceBytes: [][]byte{resourceSliceBytes, []byte("not a valid resource slice")},
 		}, nil,
 	).Once()
 
