@@ -213,6 +213,33 @@ func TestGetNodePoolNodes(t *testing.T) {
 	}
 }
 
+func TestGetNodePoolNodesIncludesUnfulfilledNodesForFailedReconcile(t *testing.T) {
+	cache := newNodePoolCache(nil)
+	cache.okeClient = failedReconcileOKEClient{}
+	nodePoolID := "ocid1.nodepool.oc1.test"
+
+	if err := cache.rebuild(map[string]NodePool{nodePoolID: &nodePool{id: nodePoolID}}, 1); err != nil {
+		t.Fatalf("rebuild() returned an error: %v", err)
+	}
+
+	instances, err := (&ociManagerImpl{nodePoolCache: cache}).GetNodePoolNodes(&nodePool{id: nodePoolID})
+	if err != nil {
+		t.Fatalf("GetNodePoolNodes() returned an error: %v", err)
+	}
+	if len(instances) != 1 {
+		t.Fatalf("GetNodePoolNodes() returned %d instances, want 1", len(instances))
+	}
+	if instances[0].Id != "instance_placeholder"+nodePoolID+"-0" {
+		t.Errorf("instance ID = %q, want unfulfilled placeholder", instances[0].Id)
+	}
+	if instances[0].Status == nil || instances[0].Status.State != cloudprovider.InstanceCreating {
+		t.Errorf("instance status = %#v, want InstanceCreating", instances[0].Status)
+	}
+	if instances[0].Status.ErrorInfo == nil || instances[0].Status.ErrorInfo.ErrorCode != string(oke.WorkRequestOperationTypeNodepoolReconcile) {
+		t.Errorf("instance error = %#v, want failed reconcile error", instances[0].Status.ErrorInfo)
+	}
+}
+
 func TestGetNodePoolAvailabilityDomain(t *testing.T) {
 	testCases := map[string]struct {
 		np          *oke.NodePool
@@ -420,6 +447,42 @@ func TestBuildGenericLabels(t *testing.T) {
 
 type mockOKEClient struct{}
 
+type failedReconcileOKEClient struct {
+	mockOKEClient
+}
+
+func (failedReconcileOKEClient) GetNodePool(_ context.Context, request oke.GetNodePoolRequest) (oke.GetNodePoolResponse, error) {
+	return oke.GetNodePoolResponse{NodePool: oke.NodePool{
+		Id:             request.NodePoolId,
+		CompartmentId:  common.String("ocid1.compartment.oc1.test"),
+		LifecycleState: oke.NodePoolLifecycleStateUpdating,
+		NodeConfigDetails: &oke.NodePoolNodeConfigDetails{
+			Size: common.Int(1),
+		},
+	}}, nil
+}
+
+func (failedReconcileOKEClient) ListWorkRequests(_ context.Context, request oke.ListWorkRequestsRequest) (oke.ListWorkRequestsResponse, error) {
+	if request.ResourceId == nil || *request.ResourceId != "ocid1.nodepool.oc1.test" {
+		return oke.ListWorkRequestsResponse{}, fmt.Errorf("unexpected work request resource ID: %v", request.ResourceId)
+	}
+	return oke.ListWorkRequestsResponse{Items: []oke.WorkRequestSummary{{
+		Id:            common.String("work-request-id"),
+		OperationType: oke.WorkRequestOperationTypeNodepoolReconcile,
+		Status:        oke.WorkRequestStatusFailed,
+	}}}, nil
+}
+
+func (failedReconcileOKEClient) ListWorkRequestErrors(_ context.Context, request oke.ListWorkRequestErrorsRequest) (oke.ListWorkRequestErrorsResponse, error) {
+	if request.WorkRequestId == nil || *request.WorkRequestId != "work-request-id" {
+		return oke.ListWorkRequestErrorsResponse{}, fmt.Errorf("unexpected work request ID: %v", request.WorkRequestId)
+	}
+	return oke.ListWorkRequestErrorsResponse{Items: []oke.WorkRequestError{{
+		Code:    common.String("InternalError"),
+		Message: common.String("node pool reconcile failed"),
+	}}}, nil
+}
+
 func (c mockOKEClient) GetNodePool(ctx context.Context, req oke.GetNodePoolRequest) (oke.GetNodePoolResponse, error) {
 	return oke.GetNodePoolResponse{
 		NodePool: oke.NodePool{
@@ -476,6 +539,14 @@ func (c mockOKEClient) ListNodePools(ctx context.Context, req oke.ListNodePoolsR
 	}
 
 	return oke.ListNodePoolsResponse{}, nil
+}
+
+func (c mockOKEClient) ListWorkRequests(context.Context, oke.ListWorkRequestsRequest) (oke.ListWorkRequestsResponse, error) {
+	return oke.ListWorkRequestsResponse{}, nil
+}
+
+func (c mockOKEClient) ListWorkRequestErrors(context.Context, oke.ListWorkRequestErrorsRequest) (oke.ListWorkRequestErrorsResponse, error) {
+	return oke.ListWorkRequestErrorsResponse{}, nil
 }
 
 func TestRemoveInstance(t *testing.T) {

@@ -52,6 +52,8 @@ and also [managing dynamic groups](https://docs.oracle.com/en-us/iaas/Content/Id
 ```
 # if using node pools
 Allow dynamic-group acme-oke-cluster-autoscaler-dyn-grp to manage cluster-node-pools in compartment <compartment-name>
+# Required to discover failed NODEPOOL_RECONCILE work requests and read their errors.
+Allow dynamic-group acme-oke-cluster-autoscaler-dyn-grp to read cluster-work-requests in compartment <compartment-name>
 # if using instance pools
 Allow dynamic-group acme-oci-cluster-autoscaler-dyn-grp to manage instance-pools in compartment <compartment-name>
 
@@ -74,6 +76,7 @@ When using a mix of nodes, make sure to add proper lables and affinities on the 
 
 ```
 Allow any-user to manage cluster-node-pools in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
+Allow any-user to read cluster-work-requests in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
 Allow any-user to manage instance-family in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
 Allow any-user to use subnets in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
 Allow any-user to read virtual-network-family in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}
@@ -191,6 +194,7 @@ The following policy is required when the specified is not an administrator to r
 ```
 # if using node pools
 Allow group acme-oke-cluster-autoscaler-dyn-grp to manage cluster-node-pools in compartment <compartment-name>
+Allow group acme-oke-cluster-autoscaler-dyn-grp to read cluster-work-requests in compartment <compartment-name>
 # if using instance pools
 Allow group acme-oci-cluster-autoscaler-dyn-grp to manage instance-pools in compartment <compartment-name>
 

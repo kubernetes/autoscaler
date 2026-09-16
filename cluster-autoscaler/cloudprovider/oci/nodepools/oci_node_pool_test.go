@@ -55,7 +55,7 @@ func TestDeletePastMinSize(t *testing.T) {
 	}
 }
 
-func TestDeleteCreateErrorNodeWithoutInstanceIDDecreasesTargetSize(t *testing.T) {
+func TestDeleteCreateErrorPlaceholderDecreasesTargetSize(t *testing.T) {
 	client := fake.NewSimpleClientset()
 
 	manager := &mockManager{
@@ -66,9 +66,12 @@ func TestDeleteCreateErrorNodeWithoutInstanceIDDecreasesTargetSize(t *testing.T)
 				Status: &cloudprovider.InstanceStatus{
 					State: cloudprovider.InstanceCreating,
 					ErrorInfo: &cloudprovider.InstanceErrorInfo{
-						ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
-						ErrorCode:    "QuotaExceeded",
-						ErrorMessage: "quota exceeded",
+						// OKE reports failed NODEPOOL_RECONCILE work requests with this
+						// generic classification, even when the underlying cause is out
+						// of host capacity.
+						ErrorClass:   cloudprovider.OtherErrorClass,
+						ErrorCode:    "NODEPOOL_RECONCILE",
+						ErrorMessage: "out of host capacity",
 					},
 				},
 			},
@@ -85,7 +88,7 @@ func TestDeleteCreateErrorNodeWithoutInstanceIDDecreasesTargetSize(t *testing.T)
 
 	nodeWithoutInstanceID := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "",
+			Name: "instance_placeholdernodepool-0",
 			Annotations: map[string]string{
 				cloudprovider.FakeNodeReasonAnnotation: cloudprovider.FakeNodeCreateError,
 			},

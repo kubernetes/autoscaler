@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
+	ipconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
 )
 
 // This mutex guarantees that multiple node pool actions aren't happening at the same time
@@ -138,7 +140,7 @@ func (np *nodePool) deleteNodes(nodes []*apiv1.Node) error {
 		if err != nil {
 			return err
 		}
-		if ociRef.InstanceID == "" {
+		if ociRef.InstanceID == "" || (node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeCreateError && strings.Contains(ociRef.InstanceID, ipconsts.InstanceIDUnfulfilled)) {
 			if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeCreateError {
 				nodesWithoutInstanceID++
 				continue
@@ -169,7 +171,7 @@ func (np *nodePool) deleteNodes(nodes []*apiv1.Node) error {
 	}
 	if nodesWithoutInstanceID > 0 {
 		klog.Warningf("%d node(s) in node pool %s have no instance ID. Falling back to DecreaseTargetSize to clean up failed node creation.", nodesWithoutInstanceID, np.Id())
-		return np.DecreaseTargetSize(context.TODO(), -nodesWithoutInstanceID)
+		return np.decreaseTargetSize(context.TODO(), -nodesWithoutInstanceID, true)
 	}
 
 	return nil
@@ -223,6 +225,14 @@ func (np *nodePool) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) e
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
 func (np *nodePool) DecreaseTargetSize(ctx context.Context, delta int) error {
+	return np.decreaseTargetSize(ctx, delta, false)
+}
+
+// decreaseTargetSize decreases the target size of the node group. When
+// forceComputeCheck is true, it counts compute instances instead of OKE node
+// pool entries. This is required for a failed creation placeholder: OKE counts
+// that entry toward the target even though it has no compute instance.
+func (np *nodePool) decreaseTargetSize(ctx context.Context, delta int, forceComputeCheck bool) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
@@ -233,8 +243,10 @@ func (np *nodePool) DecreaseTargetSize(ctx context.Context, delta int) error {
 	}
 
 	decreaseTargetCheckViaComputeString, ok := os.LookupEnv("DECREASE_TARGET_CHECK_VIA_COMPUTE")
-	decreaseTargetCheckViaComputeBool := false
-	if !ok {
+	decreaseTargetCheckViaComputeBool := forceComputeCheck
+	if forceComputeCheck {
+		klog.V(4).Infof("Using Compute to calculate nodepool size while removing failed creation placeholders")
+	} else if !ok {
 		klog.V(5).Infof("DECREASE_TARGET_CHECK_VIA_COMPUTE is not present. Using GetNodePoolNodes to check non-terminated nodes")
 	} else {
 		if val, err := strconv.ParseBool(decreaseTargetCheckViaComputeString); err != nil {

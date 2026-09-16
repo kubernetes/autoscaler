@@ -6,28 +6,37 @@ package nodepools
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"sync"
 
 	"k8s.io/klog/v2"
 
 	"github.com/pkg/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
 	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
 )
 
 func newNodePoolCache(okeClient *oke.ContainerEngineClient) *nodePoolCache {
 	return &nodePoolCache{
-		cache:      map[string]*oke.NodePool{},
-		targetSize: map[string]int{},
-		okeClient:  okeClient,
+		cache:       map[string]*oke.NodePool{},
+		targetSize:  map[string]int{},
+		unfulfilled: map[string][]unfulfilledNode{},
+		okeClient:   okeClient,
 	}
 }
 
+type unfulfilledNode struct {
+	id           string
+	errorMessage string
+}
+
 type nodePoolCache struct {
-	mu         sync.Mutex
-	cache      map[string]*oke.NodePool
-	targetSize map[string]int
+	mu          sync.Mutex
+	cache       map[string]*oke.NodePool
+	targetSize  map[string]int
+	unfulfilled map[string][]unfulfilledNode
 
 	okeClient okeClient
 }
@@ -63,6 +72,7 @@ func (c *nodePoolCache) rebuild(staticNodePools map[string]NodePool, maxGetNodep
 			klog.Errorf("The nodepool will not be considered for scaling until next check : %v", id)
 		} else {
 			c.set(&resp.NodePool)
+			c.addUnfulfilledNodesForFailedReconcile(&resp.NodePool)
 		}
 	}
 	return nil
@@ -177,6 +187,73 @@ func (c *nodePoolCache) set(np *oke.NodePool) {
 
 	c.cache[*np.Id] = np
 	c.targetSize[*np.Id] = *np.NodeConfigDetails.Size
+	delete(c.unfulfilled, *np.Id)
+}
+
+func (c *nodePoolCache) unfulfilledNodes(id string) []unfulfilledNode {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	return append([]unfulfilledNode(nil), c.unfulfilled[id]...)
+}
+
+func (c *nodePoolCache) addUnfulfilledNodesForFailedReconcile(np *oke.NodePool) {
+	if np.LifecycleState != oke.NodePoolLifecycleStateUpdating || np.Id == nil || np.CompartmentId == nil || np.NodeConfigDetails == nil || np.NodeConfigDetails.Size == nil || len(np.Nodes) >= *np.NodeConfigDetails.Size {
+		return
+	}
+
+	errorMessage, err := c.lastFailedReconcileError(*np.CompartmentId, *np.Id)
+	if err != nil {
+		klog.V(4).Infof("Unable to determine whether node pool %s has a failed reconcile: %v", *np.Id, err)
+		return
+	}
+
+	missingNodes := *np.NodeConfigDetails.Size - len(np.Nodes)
+	placeholders := make([]unfulfilledNode, 0, missingNodes)
+	for i := len(np.Nodes); i < *np.NodeConfigDetails.Size; i++ {
+		placeholders = append(placeholders, unfulfilledNode{
+			id:           fmt.Sprintf("%s%s-%d", consts.InstanceIDUnfulfilled, *np.Id, i),
+			errorMessage: errorMessage,
+		})
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.unfulfilled[*np.Id] = placeholders
+}
+
+func (c *nodePoolCache) lastFailedReconcileError(compartmentID, nodePoolID string) (string, error) {
+	workRequests, err := c.okeClient.ListWorkRequests(context.Background(), oke.ListWorkRequestsRequest{
+		CompartmentId: common.String(compartmentID),
+		ResourceId:    common.String(nodePoolID),
+		ResourceType:  oke.ListWorkRequestsResourceTypeNodepool,
+		Limit:         common.Int(1),
+		SortBy:        oke.ListWorkRequestsSortByTimeStarted,
+		SortOrder:     oke.ListWorkRequestsSortOrderDesc,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if len(workRequests.Items) != 1 {
+		return "", errors.New("no node pool work requests found")
+	}
+	workRequest := workRequests.Items[0]
+	if workRequest.OperationType != oke.WorkRequestOperationTypeNodepoolReconcile || workRequest.Status != oke.WorkRequestStatusFailed || workRequest.Id == nil {
+		return "", errors.New("latest node pool work request is not a failed reconcile")
+	}
+
+	errorsResponse, err := c.okeClient.ListWorkRequestErrors(context.Background(), oke.ListWorkRequestErrorsRequest{
+		CompartmentId: common.String(compartmentID),
+		WorkRequestId: workRequest.Id,
+	})
+	if err != nil {
+		return "", err
+	}
+	if len(errorsResponse.Items) == 0 || errorsResponse.Items[0].Message == nil {
+		return "OCI node pool reconcile failed", nil
+	}
+	return *errorsResponse.Items[0].Message, nil
 }
 
 func (c *nodePoolCache) setSize(id string, size int) error {
