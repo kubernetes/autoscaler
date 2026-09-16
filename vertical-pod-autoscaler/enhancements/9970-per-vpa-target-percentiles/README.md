@@ -48,41 +48,37 @@ The three percentiles for a resource are configured as a group. A per-VPA target
 
 ## Proposal
 
-Add six optional fields to `ContainerResourcePolicy` (autoscaling.k8s.io/v1) — the lower-bound, target, and upper-bound percentiles for CPU and memory:
+Add one optional field to `ContainerResourcePolicy` (autoscaling.k8s.io/v1), grouping the lower-bound, target, and upper-bound percentiles per resource:
 
 ```go
-// The six fields below override this container's recommendation percentiles.
-// When set, each overrides the Recommender's corresponding global
-// --*-percentile flag. Values are integer percentiles in [1, 100] (e.g. 95
-// for p95). Only honored when the PerVPAConfig feature gate is enabled.
-// For a resource, the lower-bound, target, and upper-bound percentiles must
-// be set together and satisfy lower <= target <= upper.
+// recommendationPercentiles overrides this container's recommendation
+// percentiles, replacing the Recommender's global --*-percentile flags.
+// Set per resource (cpu, memory); within a resource the three percentiles
+// are required together and must satisfy lowerBound <= target <= upperBound.
+// Only honored when the PerVPAConfig feature gate is enabled.
+// +optional
+RecommendationPercentiles *RecommendationPercentiles `json:"recommendationPercentiles,omitempty"`
 
-// +optional
-// +kubebuilder:validation:Minimum=1
-// +kubebuilder:validation:Maximum=100
-LowerBoundCPUPercentile *int32 `json:"lowerBoundCPUPercentile,omitempty"`
-// +optional
-// +kubebuilder:validation:Minimum=1
-// +kubebuilder:validation:Maximum=100
-TargetCPUPercentile *int32 `json:"targetCPUPercentile,omitempty"`
-// +optional
-// +kubebuilder:validation:Minimum=1
-// +kubebuilder:validation:Maximum=100
-UpperBoundCPUPercentile *int32 `json:"upperBoundCPUPercentile,omitempty"`
+type RecommendationPercentiles struct {
+	// +optional
+	CPU *ResourcePercentiles `json:"cpu,omitempty"`
+	// +optional
+	Memory *ResourcePercentiles `json:"memory,omitempty"`
+}
 
-// +optional
-// +kubebuilder:validation:Minimum=1
-// +kubebuilder:validation:Maximum=100
-LowerBoundMemoryPercentile *int32 `json:"lowerBoundMemoryPercentile,omitempty"`
-// +optional
-// +kubebuilder:validation:Minimum=1
-// +kubebuilder:validation:Maximum=100
-TargetMemoryPercentile *int32 `json:"targetMemoryPercentile,omitempty"`
-// +optional
-// +kubebuilder:validation:Minimum=1
-// +kubebuilder:validation:Maximum=100
-UpperBoundMemoryPercentile *int32 `json:"upperBoundMemoryPercentile,omitempty"`
+// Each percentile is an integer in [1, 100] (e.g. 95 for p95).
+// +kubebuilder:validation:XValidation:rule="self.lowerBound <= self.target && self.target <= self.upperBound",message="percentiles must satisfy lowerBound <= target <= upperBound"
+type ResourcePercentiles struct {
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	LowerBound int32 `json:"lowerBound"`
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	Target int32 `json:"target"`
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	UpperBound int32 `json:"upperBound"`
+}
 ```
 
 When set, the Recommender reads each recommendation (lower bound, target, upper bound) for that container at the declared percentile instead of the global flag's; the rest of the pipeline is unchanged.
@@ -93,7 +89,7 @@ When set, the Recommender reads each recommendation (lower bound, target, upper 
 
 Only `ContainerResourcePolicy` changes. No status, condition, or metric changes: the effective percentiles are fully determined by the spec and the Recommender flags, and the resulting recommendation is already observable in `status.recommendation`.
 
-Each field is a plain integer percentile (`*int32`, `[1, 100]`) rather than a `resource.Quantity` — it's a unit, not a resource quantity. This keeps per-field validation to a simple `Minimum`/`Maximum` on the CRD. The Recommender divides the value by 100 to get the `(0, 1]` fraction its estimators use, matching the global flags.
+Each percentile is a plain integer (`int32`, `[1, 100]`) rather than a `resource.Quantity` — it's a unit, not a resource quantity. Grouping the three into `ResourcePercentiles` lets the API schema carry the invariants directly: the three are required together (non-pointer fields of an optional struct), bounded by `Minimum`/`Maximum`, and ordered by a CEL rule on the struct. The Recommender divides each value by 100 to get the `(0, 1]` fraction its estimators use, matching the global flags.
 
 ### Why three percentiles per resource
 
@@ -109,7 +105,7 @@ These are three independent knobs, not a min/max pair around one value. The targ
 
 Overriding only the target is not enough, and can produce an incoherent config. With the bounds left at their global percentiles, a per-VPA target can land outside them: e.g. a target at the 99th percentile while the global upper bound stays at the 95th gives `target > upperBound`. The Updater then reads every pod's request (set from the target) as above the upper bound and evicts it on every pass.
 
-Exposing all three lets an operator shift the whole range together, and lets the admission controller reject inconsistent configs. For a resource the three are set as a group and must satisfy `lower ≤ target ≤ upper` (see [Validation](#validation)); a resource whose triple is unset falls back entirely to the global flags.
+Exposing all three lets an operator shift the whole range together, and lets the API reject inconsistent configs. For a resource the three are required together and must satisfy `lower ≤ target ≤ upper` (see [Validation](#validation)); a resource whose percentiles are unset falls back entirely to the global flags.
 
 ### Effective-Value Resolution
 
@@ -131,30 +127,28 @@ The estimators become parameterized: the effective percentiles are carried on th
 
 ### Interaction with Lower and Upper Bounds
 
-The lower- and upper-bound percentiles drive the lower/upper bound recommendations, which define the range the Updater treats as acceptable: current usage outside it triggers a resize. Making them per-VPA lets a workload pick its own eviction sensitivity — a wide range for a tolerant batch job, a tight one for a latency-sensitive service. Because the admission controller enforces `lower ≤ target ≤ upper` (see [Validation](#validation)), a container's percentiles are always internally consistent.
+The lower- and upper-bound percentiles drive the lower/upper bound recommendations, which define the range the Updater treats as acceptable: current usage outside it triggers a resize. Making them per-VPA lets a workload pick its own eviction sensitivity — a wide range for a tolerant batch job, a tight one for a latency-sensitive service. Because the API enforces `lower ≤ target ≤ upper` (see [Validation](#validation)), a container's percentiles are always internally consistent.
 
 ### Validation
 
-Each field is an integer in `[1, 100]`, enforced by the CRD schema:
+The invariants are enforced by the API schema, so any object that reaches the Recommender or Updater is already well-formed:
+
+- Range: each percentile is an integer in `[1, 100]` (`Minimum`/`Maximum`).
+- All-or-none per resource: `lowerBound`, `target` and `upperBound` are required fields of `ResourcePercentiles`, so a resource is either fully specified or omitted.
+- Ordering: a CEL rule on `ResourcePercentiles` requires `lowerBound ≤ target ≤ upperBound`.
 
 ```go
-// +kubebuilder:validation:Minimum=1
-// +kubebuilder:validation:Maximum=100
+// +kubebuilder:validation:XValidation:rule="self.lowerBound <= self.target && self.target <= self.upperBound",message="percentiles must satisfy lowerBound <= target <= upperBound"
 ```
 
-The admission webhook (`pkg/admission-controller/resource/vpa/validation.go`) enforces the cross-field rules the CRD schema cannot express:
-
-- For each resource (CPU, memory), the lower-bound, target, and upper-bound percentiles are either all set or all unset.
-- When set, `lower ≤ target ≤ upper`.
-
-Requiring the three together lets admission validate the ordering without knowing the Recommender's global flag values. The webhook also rejects the fields when the `PerVPAConfig` gate is disabled, matching the Phase 1 fields.
+The admission webhook (`pkg/admission-controller/resource/vpa/validation.go`) only gates the feature: it rejects `recommendationPercentiles` when the `PerVPAConfig` gate is disabled, matching the Phase 1 fields. It does not re-check the invariants above.
 
 ### Feature Enablement and Rollback
 
 Feature gate: **`PerVPAConfig`** (existing, introduced by AEP-8026). No new gate.
 
 - **Enabled:** the admission controller accepts the fields on new/updated VPAs; the Recommender honours them.
-- **Disabled:** the admission controller rejects new VPAs that set the fields with a descriptive error; the Recommender ignores the fields on existing objects and uses the global flags (fail-open, identical to the Phase 1 fields' rollback semantics).
+- **Disabled:** the admission controller rejects new VPAs that set `recommendationPercentiles` with a descriptive error; the Recommender ignores it on existing objects and uses the global flags (fail-open, identical to the Phase 1 fields' rollback semantics).
 
 ### Version Skew
 
@@ -196,9 +190,11 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: gateway
-      lowerBoundCPUPercentile: 60
-      targetCPUPercentile: 95
-      upperBoundCPUPercentile: 98
+      recommendationPercentiles:
+        cpu:
+          lowerBound: 60
+          target: 95
+          upperBound: 98
 ```
 
 The `gateway` container's CPU recommendations are read at these percentiles instead of the cluster defaults; its memory percentiles are unchanged.
@@ -218,12 +214,15 @@ spec:
   resourcePolicy:
     containerPolicies:
     - containerName: "*"
-      lowerBoundCPUPercentile: 25
-      targetCPUPercentile: 50
-      upperBoundCPUPercentile: 75
-      lowerBoundMemoryPercentile: 25
-      targetMemoryPercentile: 50
-      upperBoundMemoryPercentile: 75
+      recommendationPercentiles:
+        cpu:
+          lowerBound: 25
+          target: 50
+          upperBound: 75
+        memory:
+          lowerBound: 25
+          target: 50
+          upperBound: 75
 ```
 
 Every container targets the median with a wide bound range, trading headroom for density and tolerating more drift before a resize.
