@@ -121,7 +121,7 @@ CPU and memory resolve independently: a policy may set the CPU triple and inheri
 
 Today the percentile estimators are constructed once, at Recommender startup, with the global flag values baked in (e.g. `NewPercentileCPUEstimator(config.TargetCPUPercentile)` in `pkg/recommender/logic/recommender.go`). A single construction-time value cannot express per-container percentiles.
 
-The estimators become parameterized: the effective percentiles are carried on the `AggregateContainerState` — the same vehicle Phase 1 uses for `OOMBumpUpRatio` — and the lower-bound, target, and upper-bound estimators for each resource read their percentile at estimation time, falling back to the construction-time global value when no per-container override is present.
+The estimators become parameterized: the effective percentiles are carried on the `AggregateContainerState` — the same vehicle used for `OOMBumpUpRatio` — and the lower-bound, target, and upper-bound estimators for each resource read their percentile at estimation time, falling back to the construction-time global value when no per-container override is present.
 
 `AggregateContainerState` already receives the VPA's `ContainerResourcePolicy` during aggregation, so populating the effective percentiles alongside `OOMBumpUpRatio` needs no new plumbing between the API and model layers.
 
@@ -141,14 +141,14 @@ The invariants are enforced by the API schema, so any object that reaches the Re
 // +kubebuilder:validation:XValidation:rule="self.lowerBound <= self.target && self.target <= self.upperBound",message="percentiles must satisfy lowerBound <= target <= upperBound"
 ```
 
-The admission webhook (`pkg/admission-controller/resource/vpa/validation.go`) only gates the feature: it rejects `recommendationPercentiles` when the `PerVPAConfig` gate is disabled, matching the Phase 1 fields. It does not re-check the invariants above.
+The admission webhook (`pkg/admission-controller/resource/vpa/validation.go`) only gates the feature: it rejects `recommendationPercentiles` when the `PerVPAConfig` gate is disabled. It does not re-check the invariants above.
 
 ### Feature Enablement and Rollback
 
 Feature gate: **`PerVPAConfig`** (existing, introduced by AEP-8026). No new gate.
 
 - **Enabled:** the admission controller accepts the fields on new/updated VPAs; the Recommender honours them.
-- **Disabled:** the admission controller rejects new VPAs that set `recommendationPercentiles` with a descriptive error; the Recommender ignores it on existing objects and uses the global flags (fail-open, identical to the Phase 1 fields' rollback semantics).
+- **Disabled:** the admission controller rejects new VPAs that set `recommendationPercentiles` with a descriptive error; the Recommender ignores it on existing objects and uses the global flags (fail-open).
 
 ### Version Skew
 
