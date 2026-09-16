@@ -85,6 +85,8 @@ type okeClient interface {
 	UpdateNodePool(context.Context, oke.UpdateNodePoolRequest) (oke.UpdateNodePoolResponse, error)
 	DeleteNode(context.Context, oke.DeleteNodeRequest) (oke.DeleteNodeResponse, error)
 	ListNodePools(ctx context.Context, request oke.ListNodePoolsRequest) (oke.ListNodePoolsResponse, error)
+	ListWorkRequests(context.Context, oke.ListWorkRequestsRequest) (oke.ListWorkRequestsResponse, error)
+	ListWorkRequestErrors(context.Context, oke.ListWorkRequestErrorsRequest) (oke.ListWorkRequestErrorsResponse, error)
 }
 
 // CreateNodePoolManager creates an NodePoolManager that can manage autoscaling node pools
@@ -556,6 +558,15 @@ func getDisplayNamePrefix(clusterId string, nodePoolId string) string {
 		"-" + shortNodePoolId
 }
 
+func instanceErrorClass(errorCode, errorMessage string) cloudprovider.InstanceErrorClass {
+	if errorCode == "LimitExceeded" ||
+		errorCode == "QuotaExceeded" ||
+		(errorCode == "InternalError" && strings.Contains(errorMessage, "Out of host capacity")) {
+		return cloudprovider.OutOfResourcesErrorClass
+	}
+	return cloudprovider.OtherErrorClass
+}
+
 // GetNodePoolNodes returns NodePool nodes that are not in a terminal state.
 func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance, error) {
 	klog.V(4).Infof("getting nodes for node pool: %q", np.Id())
@@ -571,23 +582,15 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 
 		if node.NodeError != nil {
 
-			// We should move away from the approach of determining a node error as a Out of host capacity
+			// We should move away from the approach of determining a node error as an Out of host capacity
 			// through string comparison. An error code specifically for Out of host capacity must be set
 			// and returned in the API response.
-			errorClass := cloudprovider.OtherErrorClass
-			if *node.NodeError.Code == "LimitExceeded" ||
-				*node.NodeError.Code == "QuotaExceeded" ||
-				(*node.NodeError.Code == "InternalError" &&
-					strings.Contains(*node.NodeError.Message, "Out of host capacity")) {
-				errorClass = cloudprovider.OutOfResourcesErrorClass
-			}
-
 			instances = append(instances, cloudprovider.Instance{
 				Id: *node.Id,
 				Status: &cloudprovider.InstanceStatus{
 					State: cloudprovider.InstanceCreating,
 					ErrorInfo: &cloudprovider.InstanceErrorInfo{
-						ErrorClass:   errorClass,
+						ErrorClass:   instanceErrorClass(*node.NodeError.Code, *node.NodeError.Message),
 						ErrorCode:    *node.NodeError.Code,
 						ErrorMessage: *node.NodeError.Message,
 					},
@@ -624,6 +627,20 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 		default:
 			klog.Warningf("instance found in unhandled state: (%q = %v)", *node.Id, node.LifecycleState)
 		}
+	}
+
+	for _, node := range m.nodePoolCache.unfulfilledNodes(np.Id()) {
+		instances = append(instances, cloudprovider.Instance{
+			Id: node.id,
+			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass:   instanceErrorClass(node.errorCode, node.errorMessage),
+					ErrorCode:    node.errorCode,
+					ErrorMessage: node.errorMessage,
+				},
+			},
+		})
 	}
 
 	return instances, nil
