@@ -18,6 +18,8 @@ package utils
 
 import (
 	corev1 "k8s.io/api/core/v1"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 )
 
 // GetPodCondition will get Pod's condition.
@@ -34,7 +36,17 @@ func GetPodCondition(pod *corev1.Pod, conditionType corev1.PodConditionType) (co
 // resize policy for the resources being resized. If any container requires
 // restart for any resource, returns false.
 func IsNonDisruptiveResize(pod *corev1.Pod) bool {
-	for _, container := range pod.Spec.Containers {
+	containers := pod.Spec.Containers
+	if features.Enabled(features.NativeSidecar) {
+		containers = make([]corev1.Container, 0, len(pod.Spec.Containers)+len(pod.Spec.InitContainers))
+		containers = append(containers, pod.Spec.Containers...)
+		for i := range pod.Spec.InitContainers {
+			if c := &pod.Spec.InitContainers[i]; c.RestartPolicy != nil && *c.RestartPolicy == corev1.ContainerRestartPolicyAlways {
+				containers = append(containers, *c)
+			}
+		}
+	}
+	for _, container := range containers {
 		for _, policy := range container.ResizePolicy {
 			// If any resource has RestartContainer policy, it's disruptive
 			if policy.RestartPolicy == corev1.RestartContainer {
@@ -42,7 +54,5 @@ func IsNonDisruptiveResize(pod *corev1.Pod) bool {
 			}
 		}
 	}
-	// TODO(omerap12): do we want to check here for InitContainers/InitContainers+restartPolicy Always/
-	// Also check init containers if they can be resized
 	return true
 }

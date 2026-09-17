@@ -81,7 +81,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 		WithCPURequest(resource.MustParse("2")).WithMemRequest(resource.MustParse("100Mi")).Get()
 	nativeSidecarContainer.RestartPolicy = &always
 	vpaWithSidecar := vpaBuilder.
-		AppendRecommendation(test.Recommendation().WithContainer(sidecarName).WithTarget("2", "200Mi").GetContainerResources()).
+		AppendRecommendation(test.Recommendation().WithContainer(sidecarName).WithTarget("4", "400Mi").GetContainerResources()).
 		Get()
 	initializedWithNativeSidecar := test.Pod().WithName("test_initialized").
 		AddContainer(initializedContainer).WithLabels(labels).
@@ -194,6 +194,8 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedAction:       true,
 			expectedMem:          resource.MustParse("200Mi"),
 			expectedCPU:          resource.MustParse("2"),
+			expectedInitMem:      mustParseResourcePointer("400Mi"),
+			expectedInitCPU:      mustParseResourcePointer("4"),
 		},
 		{
 			name:                 "plain init container is excluded from recommendations even when gate is enabled",
@@ -364,20 +366,24 @@ func TestUpdateResourceRequests(t *testing.T) {
 					return
 				}
 
-				assert.Equal(t, len(tc.pod.Spec.InitContainers), len(initResources), "init containers resources length mismatch")
-				if len(tc.pod.Spec.InitContainers) > 0 {
-					expectedInitCPU := tc.expectedCPU
-					if tc.expectedInitCPU != nil {
-						expectedInitCPU = *tc.expectedInitCPU
+				if !tc.nativeSidecarEnabled {
+					assert.Empty(t, initResources, "no init container resources should be computed when NativeSidecar is disabled")
+				} else {
+					assert.Equal(t, len(tc.pod.Spec.InitContainers), len(initResources), "init containers resources length mismatch")
+					if len(tc.pod.Spec.InitContainers) > 0 {
+						expectedInitCPU := tc.expectedCPU
+						if tc.expectedInitCPU != nil {
+							expectedInitCPU = *tc.expectedInitCPU
+						}
+						expectedInitMem := tc.expectedMem
+						if tc.expectedInitMem != nil {
+							expectedInitMem = *tc.expectedInitMem
+						}
+						cpuRequestInit := initResources[0].Requests[corev1.ResourceCPU]
+						assert.Equal(t, expectedInitCPU.Value(), cpuRequestInit.Value(), "init cpu request doesn't match")
+						memoryRequestInit := initResources[0].Requests[corev1.ResourceMemory]
+						assert.Equal(t, expectedInitMem.Value(), memoryRequestInit.Value(), "init memory request doesn't match")
 					}
-					expectedInitMem := tc.expectedMem
-					if tc.expectedInitMem != nil {
-						expectedInitMem = *tc.expectedInitMem
-					}
-					cpuRequestInit := initResources[0].Requests[corev1.ResourceCPU]
-					assert.Equal(t, expectedInitCPU.Value(), cpuRequestInit.Value(), "init cpu request doesn't match")
-					memoryRequestInit := initResources[0].Requests[corev1.ResourceMemory]
-					assert.Equal(t, expectedInitMem.Value(), memoryRequestInit.Value(), "init memory request doesn't match")
 				}
 
 				assert.NotContains(t, resources, "", "expected empty resource to be removed")

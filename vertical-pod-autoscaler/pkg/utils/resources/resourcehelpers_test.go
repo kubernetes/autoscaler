@@ -132,6 +132,24 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 			},
 		},
 		{
+			desc:          "InitContainer without status falls back to pod spec",
+			containerName: "container",
+			pod: test.Pod().AddInitContainer(
+				test.Container().WithName("container").
+					WithCPURequest(resource.MustParse("1")).
+					WithMemRequest(resource.MustParse("10Mi")).
+					WithCPULimit(resource.MustParse("2")).
+					WithMemLimit(resource.MustParse("20Mi")).Get()).Get(),
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("10Mi"),
+			},
+			wantLimits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("20Mi"),
+			},
+		},
+		{
 			desc:          "Container with no requests or limits returns non-nil resources",
 			containerName: "container",
 			pod:           test.Pod().AddContainer(test.Container().WithName("container").Get()).Get(),
