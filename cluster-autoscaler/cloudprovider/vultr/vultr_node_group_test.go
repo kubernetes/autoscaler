@@ -70,6 +70,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 
 		err := ng.IncreaseSize(context.Background(), delta)
 		assert.NoError(t, err)
+		assert.Equal(t, newQaunt, ng.pendingTargetSize)
 	})
 
 	t.Run("negative increase", func(t *testing.T) {
@@ -123,6 +124,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		nodeQuant := 3
 		delta := -1
 		ng := testData(client, &govultr.NodePool{NodeQuantity: nodeQuant, MinNodes: 2, MaxNodes: 3})
+		ng.pendingTargetSize = nodeQuant
 
 		newQaunt := nodeQuant + delta
 		client.On("UpdateNodePool", context.Background(), ng.clusterID, ng.id,
@@ -130,6 +132,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 
 		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.NoError(t, err)
+		assert.Zero(t, ng.pendingTargetSize)
 	})
 
 	t.Run("positive decrease", func(t *testing.T) {

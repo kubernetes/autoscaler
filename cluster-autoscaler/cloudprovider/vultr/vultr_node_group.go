@@ -47,6 +47,9 @@ type NodeGroup struct {
 
 	minSize int
 	maxSize int
+
+	// pendingTargetSize is set only for scale-ups initiated by this provider.
+	pendingTargetSize int
 }
 
 // MaxSize returns maximum size of the node group.
@@ -96,6 +99,7 @@ func (n *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 
 	// update internal cache
 	n.nodePool.NodeQuantity = targetSize
+	n.pendingTargetSize = targetSize
 	return nil
 }
 
@@ -125,6 +129,7 @@ func (n *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error 
 		}
 
 		n.nodePool.NodeQuantity--
+		n.pendingTargetSize = 0
 	}
 
 	return nil
@@ -174,6 +179,7 @@ func (n *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	} else {
 		n.nodePool.NodeQuantity = targetSize
 	}
+	n.pendingTargetSize = 0
 	return nil
 }
 

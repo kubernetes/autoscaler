@@ -112,8 +112,9 @@ func TestManager_RefreshPreservesInFlightTargetSize(t *testing.T) {
 
 	manager.nodeGroups = []*NodeGroup{
 		{
-			id:       "1234",
-			nodePool: &govultr.NodePool{ID: "1234", NodeQuantity: 3, Nodes: []govultr.Node{{ID: "a"}}},
+			id:                "1234",
+			nodePool:          &govultr.NodePool{ID: "1234", NodeQuantity: 3, Nodes: []govultr.Node{{ID: "a"}}},
+			pendingTargetSize: 3,
 		},
 	}
 
@@ -137,4 +138,53 @@ func TestManager_RefreshPreservesInFlightTargetSize(t *testing.T) {
 	err = manager.Refresh()
 	require.NoError(t, err)
 	assert.Equal(t, 3, manager.nodeGroups[0].nodePool.NodeQuantity)
+	assert.Equal(t, 3, manager.nodeGroups[0].pendingTargetSize)
+}
+
+func TestManager_RefreshAcceptsLowerTargetWithoutPendingScaleUp(t *testing.T) {
+	config := `{"token": "123-456", "cluster_id": "abc"}`
+
+	manager, err := newManager(strings.NewReader(config))
+	require.NoError(t, err)
+
+	client := &vultrClientMock{}
+	ctx := context.Background()
+
+	manager.nodeGroups = []*NodeGroup{
+		{
+			id:       "1234",
+			nodePool: &govultr.NodePool{ID: "1234", NodeQuantity: 10},
+		},
+	}
+
+	client.On("ListNodePools", ctx, manager.clusterID, nil).Return(
+		[]govultr.NodePool{
+			{
+				ID:           "1234",
+				AutoScaler:   true,
+				NodeQuantity: 8,
+				Nodes:        make([]govultr.Node, 8),
+				MinNodes:     1,
+				MaxNodes:     12,
+			},
+		},
+		&govultr.Meta{},
+		nil,
+	).Once()
+
+	manager.client = client
+
+	err = manager.Refresh()
+	require.NoError(t, err)
+	assert.Equal(t, 8, manager.nodeGroups[0].nodePool.NodeQuantity)
+	assert.Zero(t, manager.nodeGroups[0].pendingTargetSize)
+
+	client.On("UpdateNodePool", ctx, manager.clusterID, "1234", &govultr.NodePoolReqUpdate{NodeQuantity: 9}).Return(
+		&govultr.NodePool{NodeQuantity: 9},
+		nil,
+	).Once()
+
+	err = manager.nodeGroups[0].IncreaseSize(ctx, 1)
+	require.NoError(t, err)
+	assert.Equal(t, 9, manager.nodeGroups[0].nodePool.NodeQuantity)
 }
