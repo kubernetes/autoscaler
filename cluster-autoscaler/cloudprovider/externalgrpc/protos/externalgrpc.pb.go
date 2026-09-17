@@ -1672,8 +1672,12 @@ type NodeGroupAutoscalingOptions struct {
 	ScaleDownUnreadyDuration *durationpb.Duration `protobuf:"bytes,9,opt,name=scaleDownUnreadyDuration,proto3" json:"scaleDownUnreadyDuration,omitempty"`
 	// MaxNodeProvisionDuration time CA waits for node to be provisioned
 	MaxNodeProvisionDuration *durationpb.Duration `protobuf:"bytes,10,opt,name=MaxNodeProvisionDuration,proto3" json:"MaxNodeProvisionDuration,omitempty"`
-	unknownFields            protoimpl.UnknownFields
-	sizeCache                protoimpl.SizeCache
+	// MaxNodeStartupDuration time CA waits for a node to become ready before treating it as unready.
+	MaxNodeStartupDuration *durationpb.Duration `protobuf:"bytes,11,opt,name=maxNodeStartupDuration,proto3" json:"maxNodeStartupDuration,omitempty"`
+	// AllowNonAtomicScaleUpToMax allows non-atomic scale-up to the max size of the node group when zeroOrMaxNodeScaling is set.
+	AllowNonAtomicScaleUpToMax bool `protobuf:"varint,12,opt,name=allowNonAtomicScaleUpToMax,proto3" json:"allowNonAtomicScaleUpToMax,omitempty"`
+	unknownFields              protoimpl.UnknownFields
+	sizeCache                  protoimpl.SizeCache
 }
 
 func (x *NodeGroupAutoscalingOptions) Reset() {
@@ -1753,6 +1757,20 @@ func (x *NodeGroupAutoscalingOptions) GetMaxNodeProvisionDuration() *durationpb.
 		return x.MaxNodeProvisionDuration
 	}
 	return nil
+}
+
+func (x *NodeGroupAutoscalingOptions) GetMaxNodeStartupDuration() *durationpb.Duration {
+	if x != nil {
+		return x.MaxNodeStartupDuration
+	}
+	return nil
+}
+
+func (x *NodeGroupAutoscalingOptions) GetAllowNonAtomicScaleUpToMax() bool {
+	if x != nil {
+		return x.AllowNonAtomicScaleUpToMax
+	}
+	return false
 }
 
 type NodeGroupAutoscalingOptionsRequest struct {
@@ -1951,7 +1969,7 @@ const file_cloudprovider_externalgrpc_protos_externalgrpc_proto_rawDesc = "" +
 	" NodeGroupTemplateNodeInfoRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"A\n" +
 	"!NodeGroupTemplateNodeInfoResponse\x12\x1c\n" +
-	"\tnodeBytes\x18\x02 \x01(\fR\tnodeBytes\"\xac\x04\n" +
+	"\tnodeBytes\x18\x02 \x01(\fR\tnodeBytes\"\xbf\x05\n" +
 	"\x1bNodeGroupAutoscalingOptions\x12D\n" +
 	"\x1dscaleDownUtilizationThreshold\x18\x01 \x01(\x01R\x1dscaleDownUtilizationThreshold\x12J\n" +
 	" scaleDownGpuUtilizationThreshold\x18\x02 \x01(\x01R scaleDownGpuUtilizationThreshold\x122\n" +
@@ -1960,7 +1978,9 @@ const file_cloudprovider_externalgrpc_protos_externalgrpc_proto_rawDesc = "" +
 	"\x19scaleDownUnneededDuration\x18\b \x01(\v2\x19.google.protobuf.DurationR\x19scaleDownUnneededDuration\x12U\n" +
 	"\x18scaleDownUnreadyDuration\x18\t \x01(\v2\x19.google.protobuf.DurationR\x18scaleDownUnreadyDuration\x12U\n" +
 	"\x18MaxNodeProvisionDuration\x18\n" +
-	" \x01(\v2\x19.google.protobuf.DurationR\x18MaxNodeProvisionDuration\"\x9e\x01\n" +
+	" \x01(\v2\x19.google.protobuf.DurationR\x18MaxNodeProvisionDuration\x12Q\n" +
+	"\x16maxNodeStartupDuration\x18\v \x01(\v2\x19.google.protobuf.DurationR\x16maxNodeStartupDuration\x12>\n" +
+	"\x1aallowNonAtomicScaleUpToMax\x18\f \x01(\bR\x1aallowNonAtomicScaleUpToMax\"\x9e\x01\n" +
 	"\"NodeGroupAutoscalingOptionsRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12h\n" +
 	"\bdefaults\x18\x02 \x01(\v2L.clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptionsR\bdefaults\"\xb6\x01\n" +
@@ -2063,44 +2083,45 @@ var file_cloudprovider_externalgrpc_protos_externalgrpc_proto_depIdxs = []int32{
 	41, // 16: clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptions.scaleDownUnneededDuration:type_name -> google.protobuf.Duration
 	41, // 17: clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptions.scaleDownUnreadyDuration:type_name -> google.protobuf.Duration
 	41, // 18: clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptions.MaxNodeProvisionDuration:type_name -> google.protobuf.Duration
-	34, // 19: clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptionsRequest.defaults:type_name -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptions
-	34, // 20: clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptionsResponse.nodeGroupAutoscalingOptions:type_name -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptions
-	42, // 21: clusterautoscaler.cloudprovider.v1.externalgrpc.GetAvailableGPUTypesResponse.GpuTypesEntry.value:type_name -> google.protobuf.Any
-	3,  // 22: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroups:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupsRequest
-	5,  // 23: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupForNode:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupForNodeRequest
-	7,  // 24: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.PricingNodePrice:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.PricingNodePriceRequest
-	9,  // 25: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.PricingPodPrice:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.PricingPodPriceRequest
-	11, // 26: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.GPULabel:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.GPULabelRequest
-	13, // 27: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.GetAvailableGPUTypes:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.GetAvailableGPUTypesRequest
-	15, // 28: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.Cleanup:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.CleanupRequest
-	17, // 29: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.Refresh:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.RefreshRequest
-	19, // 30: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupTargetSize:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupTargetSizeRequest
-	21, // 31: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupIncreaseSize:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupIncreaseSizeRequest
-	23, // 32: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupDeleteNodes:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupDeleteNodesRequest
-	25, // 33: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupDecreaseTargetSize:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupDecreaseTargetSizeRequest
-	27, // 34: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupNodes:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupNodesRequest
-	32, // 35: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupTemplateNodeInfo:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupTemplateNodeInfoRequest
-	35, // 36: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupGetOptions:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptionsRequest
-	4,  // 37: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroups:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupsResponse
-	6,  // 38: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupForNode:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupForNodeResponse
-	8,  // 39: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.PricingNodePrice:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.PricingNodePriceResponse
-	10, // 40: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.PricingPodPrice:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.PricingPodPriceResponse
-	12, // 41: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.GPULabel:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.GPULabelResponse
-	14, // 42: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.GetAvailableGPUTypes:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.GetAvailableGPUTypesResponse
-	16, // 43: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.Cleanup:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.CleanupResponse
-	18, // 44: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.Refresh:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.RefreshResponse
-	20, // 45: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupTargetSize:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupTargetSizeResponse
-	22, // 46: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupIncreaseSize:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupIncreaseSizeResponse
-	24, // 47: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupDeleteNodes:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupDeleteNodesResponse
-	26, // 48: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupDecreaseTargetSize:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupDecreaseTargetSizeResponse
-	28, // 49: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupNodes:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupNodesResponse
-	33, // 50: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupTemplateNodeInfo:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupTemplateNodeInfoResponse
-	36, // 51: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupGetOptions:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptionsResponse
-	37, // [37:52] is the sub-list for method output_type
-	22, // [22:37] is the sub-list for method input_type
-	22, // [22:22] is the sub-list for extension type_name
-	22, // [22:22] is the sub-list for extension extendee
-	0,  // [0:22] is the sub-list for field type_name
+	41, // 19: clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptions.maxNodeStartupDuration:type_name -> google.protobuf.Duration
+	34, // 20: clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptionsRequest.defaults:type_name -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptions
+	34, // 21: clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptionsResponse.nodeGroupAutoscalingOptions:type_name -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptions
+	42, // 22: clusterautoscaler.cloudprovider.v1.externalgrpc.GetAvailableGPUTypesResponse.GpuTypesEntry.value:type_name -> google.protobuf.Any
+	3,  // 23: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroups:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupsRequest
+	5,  // 24: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupForNode:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupForNodeRequest
+	7,  // 25: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.PricingNodePrice:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.PricingNodePriceRequest
+	9,  // 26: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.PricingPodPrice:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.PricingPodPriceRequest
+	11, // 27: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.GPULabel:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.GPULabelRequest
+	13, // 28: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.GetAvailableGPUTypes:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.GetAvailableGPUTypesRequest
+	15, // 29: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.Cleanup:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.CleanupRequest
+	17, // 30: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.Refresh:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.RefreshRequest
+	19, // 31: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupTargetSize:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupTargetSizeRequest
+	21, // 32: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupIncreaseSize:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupIncreaseSizeRequest
+	23, // 33: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupDeleteNodes:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupDeleteNodesRequest
+	25, // 34: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupDecreaseTargetSize:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupDecreaseTargetSizeRequest
+	27, // 35: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupNodes:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupNodesRequest
+	32, // 36: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupTemplateNodeInfo:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupTemplateNodeInfoRequest
+	35, // 37: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupGetOptions:input_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptionsRequest
+	4,  // 38: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroups:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupsResponse
+	6,  // 39: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupForNode:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupForNodeResponse
+	8,  // 40: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.PricingNodePrice:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.PricingNodePriceResponse
+	10, // 41: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.PricingPodPrice:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.PricingPodPriceResponse
+	12, // 42: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.GPULabel:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.GPULabelResponse
+	14, // 43: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.GetAvailableGPUTypes:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.GetAvailableGPUTypesResponse
+	16, // 44: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.Cleanup:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.CleanupResponse
+	18, // 45: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.Refresh:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.RefreshResponse
+	20, // 46: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupTargetSize:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupTargetSizeResponse
+	22, // 47: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupIncreaseSize:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupIncreaseSizeResponse
+	24, // 48: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupDeleteNodes:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupDeleteNodesResponse
+	26, // 49: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupDecreaseTargetSize:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupDecreaseTargetSizeResponse
+	28, // 50: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupNodes:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupNodesResponse
+	33, // 51: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupTemplateNodeInfo:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupTemplateNodeInfoResponse
+	36, // 52: clusterautoscaler.cloudprovider.v1.externalgrpc.CloudProvider.NodeGroupGetOptions:output_type -> clusterautoscaler.cloudprovider.v1.externalgrpc.NodeGroupAutoscalingOptionsResponse
+	38, // [38:53] is the sub-list for method output_type
+	23, // [23:38] is the sub-list for method input_type
+	23, // [23:23] is the sub-list for extension type_name
+	23, // [23:23] is the sub-list for extension extendee
+	0,  // [0:23] is the sub-list for field type_name
 }
 
 func init() { file_cloudprovider_externalgrpc_protos_externalgrpc_proto_init() }
