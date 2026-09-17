@@ -34,6 +34,7 @@ import (
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
 	"sigs.k8s.io/cluster-autoscaler/pkg/processors/customresources"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodeinfosprovider"
 	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
 	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
@@ -912,7 +913,7 @@ func TestAwsNodeGroupTemplateNodeInfoDoesNotSetCSINode(t *testing.T) {
 		},
 	}
 
-	nodeInfo, err := ng.TemplateNodeInfo()
+	nodeInfo, err := ng.TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeInfo)
 	assert.Nil(t, nodeInfo.CSINode)
@@ -956,7 +957,7 @@ func TestAwsNodeGroupTemplateNodeInfoSetsCSINodeWhenDeclared(t *testing.T) {
 		},
 	}
 
-	nodeInfo, err := ng.TemplateNodeInfo()
+	nodeInfo, err := ng.TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeInfo)
 	assert.NotNil(t, nodeInfo.CSINode)
@@ -988,7 +989,12 @@ func TestEFSOnlyExistingNodeStaysReadyWhenAWSTemplateHasNoCSINode(t *testing.T) 
 
 	processor := &customresources.CSICustomResourcesProcessor{}
 	_, readyNodes := processor.FilterOutNodesWithUnreadyResources(
-		&ca_context.AutoscalingContext{CloudProvider: provider},
+		context.Background(),
+		&ca_context.AutoscalingContext{
+			CloudProvider: provider,
+			// An empty registry exercises the fallback to the cloud-provider template.
+			TemplateNodeInfoRegistry: nodeinfosprovider.NewTemplateNodeInfoRegistry(nil),
+		},
 		[]*apiv1.Node{node}, []*apiv1.Node{node}, nil,
 		csisnapshot.NewSnapshot(map[string]*storagev1.CSINode{node.Name: efsCSINode}),
 	)
