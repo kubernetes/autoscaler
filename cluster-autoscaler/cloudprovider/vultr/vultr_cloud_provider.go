@@ -97,11 +97,34 @@ func (v *vultrCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.N
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (v *vultrCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
-	ng, err := v.NodeGroupForNode(ctx, node)
+	nodeID, err := nodeIDFromNode(node)
 	if err != nil {
+		if errors.Is(err, errMissingNodeID) {
+			return false, nil
+		}
 		return false, err
 	}
-	return ng != nil, nil
+
+	for _, group := range v.manager.nodeGroups {
+		if group.hasNode(nodeID) {
+			return true, nil
+		}
+	}
+
+	// Nodes in pools not managed by this autoscaler still exist in Vultr.
+	nodePools, _, err := v.manager.client.ListNodePools(ctx, v.manager.clusterID, nil)
+	if err != nil {
+		return true, err
+	}
+	for _, nodePool := range nodePools {
+		for _, poolNode := range nodePool.Nodes {
+			if poolNode.ID == nodeID {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.

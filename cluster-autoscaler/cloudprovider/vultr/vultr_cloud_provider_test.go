@@ -18,6 +18,7 @@ package vultr
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 
@@ -209,9 +210,36 @@ func TestVultrCloudProvider_HasInstance(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, hasInstance)
 
+	client.On("ListNodePools", ctx, manager.clusterID, nil).Return(
+		[]govultr.NodePool{
+			{
+				ID:         "unmanaged",
+				AutoScaler: false,
+				Nodes:      []govultr.Node{{ID: "np-unmanaged", Status: "Active"}},
+			},
+		},
+		&govultr.Meta{},
+		nil,
+	).Twice()
+
+	hasInstance, err = provider.HasInstance(ctx, &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("np-unmanaged")}})
+	require.NoError(t, err)
+	assert.True(t, hasInstance)
+
 	hasInstance, err = provider.HasInstance(ctx, &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("missing")}})
 	require.NoError(t, err)
 	assert.False(t, hasInstance)
+
+	client.On("ListNodePools", ctx, manager.clusterID, nil).Return(
+		[]govultr.NodePool{},
+		&govultr.Meta{},
+		errors.New("list node pools failed"),
+	).Once()
+
+	hasInstance, err = provider.HasInstance(ctx, &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("unknown")}})
+	require.EqualError(t, err, "list node pools failed")
+	assert.True(t, hasInstance)
+	client.AssertExpectations(t)
 }
 
 func TestToNodeID(t *testing.T) {
