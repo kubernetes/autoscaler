@@ -31,7 +31,7 @@ import (
 	azurecore_policy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	armcomputev7 "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
+	armcomputev8 "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v8"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	"github.com/Azure/go-autorest/autorest/azure"
 
@@ -191,7 +191,7 @@ type azClient struct {
 	interfacesClient                interfaceclient.Interface
 	disksClient                     diskclient.Interface
 	storageAccountsClient           accountclient.Interface
-	skuClient                       *armcomputev7.ResourceSKUsClient
+	skuClient                       *armcomputev8.ResourceSKUsClient
 	agentPoolClient                 AgentPoolsClient
 	// Wrapper for delete operations
 	vmssClientForDelete VMSSDeleteClient
@@ -268,8 +268,8 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	}
 	klog.V(5).Infof("Created Azure client factory")
 
-	// Create SKU client separately using v7 (it's not part of the factory, and skewer v2 requires v7)
-	skuClient, err := armcomputev7.NewResourceSKUsClient(subscriptionID, cred, &policy.ClientOptions{
+	// Create the SKU client separately with the v8 SDK required by skewer; azclient still uses v7.
+	skuClient, err := armcomputev8.NewResourceSKUsClient(subscriptionID, cred, &policy.ClientOptions{
 		ClientOptions: azurecore_policy.ClientOptions{
 			Cloud: cloud.Configuration{
 				Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
