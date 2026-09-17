@@ -135,6 +135,18 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		assert.Zero(t, ng.pendingTargetSize)
 	})
 
+	t.Run("nil update response", func(t *testing.T) {
+		client := &vultrClientMock{}
+		ng := testData(client, &govultr.NodePool{NodeQuantity: 3, MinNodes: 1, MaxNodes: 3})
+
+		client.On("UpdateNodePool", context.Background(), ng.clusterID, ng.id,
+			&govultr.NodePoolReqUpdate{NodeQuantity: 2}).Return((*govultr.NodePool)(nil), nil).Once()
+
+		err := ng.DecreaseTargetSize(context.Background(), -1)
+		require.NoError(t, err)
+		assert.Equal(t, 2, ng.nodePool.NodeQuantity)
+	})
+
 	t.Run("positive decrease", func(t *testing.T) {
 		nodes := 5
 		client := &vultrClientMock{}
@@ -280,6 +292,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 
 		err := ng.DeleteNodes(context.Background(), nodes)
 		assert.NoError(t, err)
+		client.AssertExpectations(t)
 	})
 
 	t.Run("reject node from another pool", func(t *testing.T) {

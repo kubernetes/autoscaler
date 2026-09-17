@@ -168,7 +168,7 @@ func (n *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 		return err
 	}
 
-	if updatedNodePool.NodeQuantity != targetSize {
+	if updatedNodePool != nil && updatedNodePool.NodeQuantity != targetSize {
 		return fmt.Errorf("couldn't increase size to %d (delta: %d). Current size is: %d",
 			targetSize, delta, updatedNodePool.NodeQuantity)
 	}
