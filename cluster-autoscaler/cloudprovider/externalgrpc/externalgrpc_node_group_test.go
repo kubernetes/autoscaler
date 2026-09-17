@@ -29,6 +29,9 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
@@ -242,6 +245,97 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 
+}
+
+func TestCloudProvider_TemplateNodeInfoResourceSlices(t *testing.T) {
+	client, m, teardown := setupTest(t)
+	defer teardown()
+
+	apiv1Node := &apiv1.Node{}
+	apiv1Node.Name = "node1"
+	apiv1NodeBytes, _ := apiv1Node.Marshal()
+
+	resourceSlice := &resourceapi.ResourceSlice{
+		ObjectMeta: metav1.ObjectMeta{Name: "node1-gpu.example.com-1"},
+		Spec: resourceapi.ResourceSliceSpec{
+			Driver:   "gpu.example.com",
+			NodeName: new("node1"),
+			Pool: resourceapi.ResourcePool{
+				Name:               "node1",
+				Generation:         1,
+				ResourceSliceCount: 2,
+			},
+			Devices: []resourceapi.Device{{Name: "gpu-0"}},
+		},
+	}
+
+	resourceSliceBytes, _ := resourceSlice.Marshal()
+
+	m.On("NodeGroupTemplateNodeInfo", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupTemplateNodeInfoRequest) bool {
+		return req.Id == "nodeGroup1"
+	})).Return(
+		&protos.NodeGroupTemplateNodeInfoResponse{
+			NodeBytes:          apiv1NodeBytes,
+			ResourceSliceBytes: [][]byte{resourceSliceBytes},
+		}, nil,
+	).Once()
+
+	ng1 := NodeGroup{
+		id:          "nodeGroup1",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
+	}
+
+	ni, err := ng1.TemplateNodeInfo(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, apiv1Node.Name, ni.Node().Name)
+	assert.Len(t, ni.LocalResourceSlices, 1)
+	assert.True(t, apiequality.Semantic.DeepEqual(resourceSlice, ni.LocalResourceSlices[0]))
+
+	// test cached answer
+	ni, err = ng1.TemplateNodeInfo(context.Background())
+	assert.NoError(t, err)
+	assert.Len(t, ni.LocalResourceSlices, 1)
+	m.AssertNumberOfCalls(t, "NodeGroupTemplateNodeInfo", 1)
+
+	// Test malformed resource slice
+	m.On("NodeGroupTemplateNodeInfo", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupTemplateNodeInfoRequest) bool {
+		return req.Id == "nodeGroup2"
+	})).Return(
+		&protos.NodeGroupTemplateNodeInfoResponse{
+			NodeBytes:          apiv1NodeBytes,
+			ResourceSliceBytes: [][]byte{resourceSliceBytes, []byte("not a valid resource slice")},
+		}, nil,
+	).Once()
+
+	ng2 := NodeGroup{
+		id:          "nodeGroup2",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
+	}
+
+	_, err = ng2.TemplateNodeInfo(context.Background())
+	assert.Error(t, err)
+
+	// test without a node
+	m.On("NodeGroupTemplateNodeInfo", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupTemplateNodeInfoRequest) bool {
+		return req.Id == "nodeGroup3"
+	})).Return(
+		&protos.NodeGroupTemplateNodeInfoResponse{
+			NodeBytes:          nil,
+			ResourceSliceBytes: [][]byte{resourceSliceBytes},
+		}, nil,
+	).Once()
+
+	ng3 := NodeGroup{
+		id:          "nodeGroup3",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
+	}
+
+	ni, err = ng3.TemplateNodeInfo(context.Background())
+	assert.NoError(t, err)
+	assert.Nil(t, ni)
 }
 
 func TestCloudProvider_GetOptions(t *testing.T) {

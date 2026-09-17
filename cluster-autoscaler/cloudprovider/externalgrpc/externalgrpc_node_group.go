@@ -26,6 +26,7 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
 	klog "k8s.io/klog/v2"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
@@ -205,7 +206,9 @@ func (n *NodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error)
 // The definition of a generic `NodeInfo` for each potential provider is a pretty
 // complex approach and does not cover all the scenarios. For the sake of simplicity,
 // the `nodeInfo` is defined as a Kubernetes `k8s.io.api.core.v1.Node` type
-// where the system could still extract certain info about the node.
+// where the system could still extract certain info about the node, optionally
+// accompanied by the node-local `resource.k8s.io/v1.ResourceSlice` objects
+// describing the DRA devices that the node would expose.
 func (n *NodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	n.mutex.Lock()
 	defer n.mutex.Unlock()
@@ -239,7 +242,17 @@ func (n *NodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, 
 		n.nodeInfo = new(*framework.NodeInfo)
 		return nil, nil
 	}
-	nodeInfo := framework.NewNodeInfo(pbNodeInfo, nil)
+
+	var resourceSlices []*resourceapi.ResourceSlice
+	for _, resourceSliceBytes := range res.GetResourceSliceBytes() {
+		rs := &resourceapi.ResourceSlice{}
+		if err := rs.Unmarshal(resourceSliceBytes); err != nil {
+			return nil, err
+		}
+		resourceSlices = append(resourceSlices, rs)
+	}
+
+	nodeInfo := framework.NewNodeInfo(pbNodeInfo, resourceSlices)
 	n.nodeInfo = &nodeInfo
 	return nodeInfo, nil
 }

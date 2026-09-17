@@ -101,6 +101,8 @@ type CloudProviderClient interface {
 	// NodeGroupTemplateNodeInfo returns a structure of an empty (as if just started) node,
 	// with all of the labels, capacity and allocatable information. This will be used in
 	// scale-up simulations to predict what would a new node look like if a node group was expanded.
+	// The response can optionally include the node-local ResourceSlices (Dynamic Resource Allocation)
+	// that such a node would expose, which is required to scale up from zero for pods using ResourceClaims.
 	// Implementation optional: if unimplemented return error code 12 (for `Unimplemented`)
 	NodeGroupTemplateNodeInfo(ctx context.Context, in *NodeGroupTemplateNodeInfoRequest, opts ...grpc.CallOption) (*NodeGroupTemplateNodeInfoResponse, error)
 	// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
@@ -317,6 +319,8 @@ type CloudProviderServer interface {
 	// NodeGroupTemplateNodeInfo returns a structure of an empty (as if just started) node,
 	// with all of the labels, capacity and allocatable information. This will be used in
 	// scale-up simulations to predict what would a new node look like if a node group was expanded.
+	// The response can optionally include the node-local ResourceSlices (Dynamic Resource Allocation)
+	// that such a node would expose, which is required to scale up from zero for pods using ResourceClaims.
 	// Implementation optional: if unimplemented return error code 12 (for `Unimplemented`)
 	NodeGroupTemplateNodeInfo(context.Context, *NodeGroupTemplateNodeInfoRequest) (*NodeGroupTemplateNodeInfoResponse, error)
 	// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
