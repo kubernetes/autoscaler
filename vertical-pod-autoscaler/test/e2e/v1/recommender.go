@@ -586,9 +586,10 @@ var _ = utils.RecommenderE2eDescribe("VPA CRD object", func() {
 		var mainRec, sidecarRec *vpa_types.RecommendedContainerResources
 		for i := range vpa.Status.Recommendation.ContainerRecommendations {
 			rec := &vpa.Status.Recommendation.ContainerRecommendations[i]
-			if rec.ContainerName == mainContainerName {
+			switch rec.ContainerName {
+			case mainContainerName:
 				mainRec = rec
-			} else if rec.ContainerName == sidecarName {
+			case sidecarName:
 				sidecarRec = rec
 			}
 		}

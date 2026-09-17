@@ -1031,26 +1031,29 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		ginkgo.By("Verifying updated resources for both main container and native sidecar")
-		updatedPodList, err := GetHamsterPods(f)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Eventually(func(g gomega.Gomega) {
+			updatedPodList, err := GetHamsterPods(f)
+			g.Expect(err).NotTo(gomega.HaveOccurred())
+			g.Expect(updatedPodList.Items).NotTo(gomega.BeEmpty())
 
-		// Verify at least one pod has been updated
-		foundUpdated := false
-		for _, pod := range updatedPodList.Items {
-			// Check if this pod has been updated
-			mainCPU := pod.Status.ContainerStatuses[0].Resources.Requests[apiv1.ResourceCPU]
-			initCPU := pod.Status.InitContainerStatuses[0].Resources.Requests[apiv1.ResourceCPU]
+			// Verify at least one pod has been updated
+			foundUpdated := false
+			for _, pod := range updatedPodList.Items {
+				// Check if this pod has been updated
+				mainCPU := pod.Status.ContainerStatuses[0].Resources.Requests[apiv1.ResourceCPU]
+				initCPU := pod.Status.InitContainerStatuses[0].Resources.Requests[apiv1.ResourceCPU]
 
-			if mainCPU.Equal(ParseQuantityOrDie("150m")) && initCPU.Equal(ParseQuantityOrDie("75m")) {
-				foundUpdated = true
-				gomega.Expect(pod.Status.ContainerStatuses[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("150Mi")))
-				// Verify native sidecar was also updated
-				gomega.Expect(len(pod.Status.InitContainerStatuses)).To(gomega.Equal(1))
-				gomega.Expect(pod.Status.InitContainerStatuses[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("75Mi")))
-				break
+				if mainCPU.Equal(ParseQuantityOrDie("150m")) && initCPU.Equal(ParseQuantityOrDie("75m")) {
+					foundUpdated = true
+					g.Expect(pod.Status.ContainerStatuses[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("150Mi")))
+					// Verify native sidecar was also updated
+					g.Expect(len(pod.Status.InitContainerStatuses)).To(gomega.Equal(1))
+					g.Expect(pod.Status.InitContainerStatuses[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("75Mi")))
+					break
+				}
 			}
-		}
-		gomega.Expect(foundUpdated).To(gomega.BeTrue(), "At least one pod should have been updated in-place")
+			g.Expect(foundUpdated).To(gomega.BeTrue(), "At least one pod should have been updated in-place")
+		}, utils.PollTimeout, utils.PollInterval).Should(gomega.Succeed())
 	})
 })
 

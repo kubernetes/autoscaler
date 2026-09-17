@@ -141,24 +141,8 @@ func (o *observer) OnUpdate(oldObj, newObj any) {
 
 	o.processStatuses(newPod, oldPod, newPod.Status.ContainerStatuses, oldPod.Status.ContainerStatuses)
 	if features.Enabled(features.NativeSidecar) {
-		o.processStatuses(newPod, oldPod, nativeSidecarStatuses(newPod), nativeSidecarStatuses(oldPod))
+		o.processStatuses(newPod, oldPod, resourcehelpers.NativeSidecarStatuses(newPod), resourcehelpers.NativeSidecarStatuses(oldPod))
 	}
-}
-
-// nativeSidecarStatuses returns the InitContainerStatuses that belong to native sidecars
-// (restartPolicy: Always); plain init containers run once and aren't scaled.
-func nativeSidecarStatuses(pod *corev1.Pod) []corev1.ContainerStatus {
-	statuses := make([]corev1.ContainerStatus, 0, len(pod.Status.InitContainerStatuses))
-	for _, status := range pod.Status.InitContainerStatuses {
-		for _, initContainer := range pod.Spec.InitContainers {
-			if initContainer.Name == status.Name &&
-				initContainer.RestartPolicy != nil && *initContainer.RestartPolicy == corev1.ContainerRestartPolicyAlways {
-				statuses = append(statuses, status)
-				break
-			}
-		}
-	}
-	return statuses
 }
 
 func (o *observer) processStatuses(newPod, oldPod *corev1.Pod, statuses, oldStatuses []corev1.ContainerStatus) {

@@ -934,15 +934,11 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 	if !assert.Contains(t, pod1State.InitContainers, containerInit) {
 		return
 	}
-	containerInitState := pod1State.Containers[containerMem]
-	if !assert.NotNil(t, containerInitState) {
+	containerSidecarState := pod1State.Containers[containerMem]
+	if !assert.NotNil(t, containerSidecarState) {
 		return
 	}
-	containerState = pod1State.Containers[containerMem]
-	if !assert.NotNil(t, containerState) {
-		return
-	}
-	assert.Equal(t, memAmount, containerState.GetMaxMemoryPeak())
+	assert.Equal(t, memAmount, containerSidecarState.GetMaxMemoryPeak())
 }
 
 func TestClusterStateFeeder_InitFromHistoryProvider_NativeSidecarGateDisabled(t *testing.T) {

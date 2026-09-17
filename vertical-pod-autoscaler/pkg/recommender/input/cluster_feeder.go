@@ -253,9 +253,8 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 				PodID:         podID,
 				ContainerName: containerName,
 			}
-			klog.V(4).InfoS("Adding", "container", containerID)
-
 			containerType := historyContainerType(podSpec, containerName)
+			klog.V(4).InfoS("Adding container from history", "container", containerID, "containerType", containerType)
 			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil, containerType); err != nil {
 				klog.V(0).InfoS("Failed to add container", "container", containerID, "error", err)
 			}
