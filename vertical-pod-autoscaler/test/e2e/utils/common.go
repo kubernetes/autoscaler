@@ -32,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -74,9 +75,6 @@ var HamsterTargetRef = &autoscaling.CrossVersionObjectReference{
 	Kind:       "Deployment",
 	Name:       "hamster-deployment",
 }
-
-// RecommenderLabels are labels of VPA recommender
-var RecommenderLabels = map[string]string{"app": "vpa-recommender"}
 
 // HamsterLabels are labels of hamster app
 var HamsterLabels = map[string]string{"app": "hamster"}
@@ -161,22 +159,62 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch VPA.")
 }
 
-// NewVPADeployment creates a VPA deployment with n containers
-// for e2e test purposes.
-func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment {
+// VPAComponentConfig describes a VPA component to deploy for e2e test
+// purposes. Extend it when a component requires extra wiring, such as the
+// TLS volumes of the admission controller.
+type VPAComponentConfig struct {
+	// ComponentName is the short name of the component, e.g. "recommender".
+	// The deployment name and service account are "vpa-" + ComponentName,
+	// the container name and command are "/" + ComponentName, mirroring the
+	// manifests in deploy/.
+	ComponentName string
+	// Image is the container image to run, e.g. "localhost:5001/vpa-recommender".
+	// Required.
+	Image string
+	// MetricsPort is the port serving prometheus metrics and health checks,
+	// e.g. 8942 for the recommender. Must be within 1-65535. Required.
+	MetricsPort int32
+	// Flags are the command line flags of the component,
+	// e.g. "--recommender-interval=10s".
+	Flags []string
+}
+
+// RecommenderComponentConfig returns a VPAComponentConfig for deploying the
+// VPA recommender in e2e tests, mirroring deploy/recommender-deployment.yaml.
+func RecommenderComponentConfig(flags ...string) VPAComponentConfig {
+	return VPAComponentConfig{
+		ComponentName: recommenderComponent,
+		Image:         "localhost:5001/vpa-recommender",
+		MetricsPort:   8942,
+		Flags:         flags,
+	}
+}
+
+// NewVPAComponentDeployment creates a deployment of a VPA component for e2e
+// test purposes.
+func NewVPAComponentDeployment(f *framework.Framework, config VPAComponentConfig) *appsv1.Deployment {
+	gomega.Expect(utilvalidation.IsDNS1123Label(config.ComponentName)).To(gomega.BeEmpty(),
+		"VPAComponentConfig.ComponentName must be a valid DNS-1123 label (got %q)", config.ComponentName)
+	deploymentName := fmt.Sprintf("vpa-%s", config.ComponentName)
+	gomega.Expect(utilvalidation.IsDNS1123Label(deploymentName)).To(gomega.BeEmpty(),
+		"deployment name %q derived from ComponentName must be a valid DNS-1123 label", deploymentName)
+	gomega.Expect(config.Image).NotTo(gomega.BeEmpty(), "VPAComponentConfig.Image must be set")
+	gomega.Expect(config.MetricsPort).Should(gomega.SatisfyAll(gomega.BeNumerically(">=", 1), gomega.BeNumerically("<=", 65535)),
+		"VPAComponentConfig.MetricsPort must be set to a valid port number (1-65535)")
+
 	d := framework_deployment.NewDeployment(
-		RecommenderDeploymentName,        /*deploymentName*/
-		1,                                /*replicas*/
-		RecommenderLabels,                /*podLabels*/
-		"recommender",                    /*imageName*/
-		"localhost:5001/vpa-recommender", /*image*/
+		deploymentName,                           /*deploymentName*/
+		1,                                        /*replicas*/
+		map[string]string{"app": deploymentName}, /*podLabels*/
+		config.ComponentName,                     /*imageName*/
+		config.Image,                             /*image*/
 		appsv1.RollingUpdateDeploymentStrategyType, /*strategyType*/
 	)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].ImagePullPolicy = apiv1.PullNever // Image must be loaded first
-	d.Spec.Template.Spec.ServiceAccountName = "vpa-recommender"
-	d.Spec.Template.Spec.Containers[0].Command = []string{"/recommender"}
-	d.Spec.Template.Spec.Containers[0].Args = flags
+	d.Spec.Template.Spec.ServiceAccountName = deploymentName
+	d.Spec.Template.Spec.Containers[0].Command = []string{fmt.Sprintf("/%s", config.ComponentName)}
+	d.Spec.Template.Spec.Containers[0].Args = config.Flags
 
 	runAsNonRoot := true
 	var runAsUser int64 = 65534 // nobody
@@ -185,7 +223,7 @@ func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment
 		RunAsUser:    &runAsUser,
 	}
 
-	// Same as deploy/recommender-deployment.yaml
+	// Same as deploy/recommender-deployment.yaml and deploy/updater-deployment.yaml
 	d.Spec.Template.Spec.Containers[0].Resources = apiv1.ResourceRequirements{
 		Limits: apiv1.ResourceList{
 			apiv1.ResourceCPU:    resource.MustParse("200m"),
@@ -199,7 +237,7 @@ func NewVPADeployment(f *framework.Framework, flags []string) *appsv1.Deployment
 
 	d.Spec.Template.Spec.Containers[0].Ports = []apiv1.ContainerPort{{
 		Name:          "prometheus",
-		ContainerPort: 8942,
+		ContainerPort: config.MetricsPort,
 	}}
 
 	d.Spec.Template.Spec.Containers[0].LivenessProbe = &apiv1.Probe{

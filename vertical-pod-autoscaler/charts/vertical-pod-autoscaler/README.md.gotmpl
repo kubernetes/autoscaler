@@ -84,15 +84,27 @@ By default, you must provide an existing `Issuer` or `ClusterIssuer` via `admiss
 
 ## Custom Resource Definitions
 
-Helm cannot upgrade CustomResourceDefinitions in the `<chart>/crds` folder [by design](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/#some-caveats-and-explanations). When upgrading the chart, the VPA CRDs will not be updated automatically.
+The VPA CRDs are managed as regular chart templates and are kept in sync automatically on `helm upgrade` (set `crds.enabled: false` if you manage CRDs separately, e.g. via Argo CD or Fleet).
 
-If you need to update the CRDs to a newer version, please use `kubectl` to upgrade them manually from the upstream project repo:
+By default, the CRDs are annotated with `helm.sh/resource-policy: keep`, so `helm uninstall` will not remove them, protecting any existing VPA objects from being deleted. Set `crds.keep: false` to disable this.
+
+> [!WARNING]
+> If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`) and `crds.enabled` is `true`, the upgrade will fail with an "invalid ownership metadata" error unless you use `--take-ownership` or apply the manual fix below first. If `crds.enabled` is `false`, these CRDs are not rendered by the chart. This is because Helm never took ownership of CRDs installed via the old `crds/` folder, so it refuses to adopt them without one of these steps. This only needs to be done once, on your first upgrade past 0.12.0.
+
+If you're on Helm 3.17+, pass `--take-ownership` on that upgrade:
 
 ```bash
-kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-<appVersion>/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
+helm upgrade <release-name> <chart> --namespace <namespace> --take-ownership
+```
 
-# Eg. version v1.7.1
-kubectl apply --server-side -f "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-1.7.1/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml"
+On older Helm versions `--take-ownership` isn't available, so add the ownership metadata manually first:
+
+```bash
+kubectl label crd verticalpodautoscalercheckpoints.autoscaling.k8s.io app.kubernetes.io/managed-by=Helm --overwrite
+kubectl annotate crd verticalpodautoscalercheckpoints.autoscaling.k8s.io meta.helm.sh/release-name=<release-name> meta.helm.sh/release-namespace=<namespace> --overwrite
+
+kubectl label crd verticalpodautoscalers.autoscaling.k8s.io app.kubernetes.io/managed-by=Helm --overwrite
+kubectl annotate crd verticalpodautoscalers.autoscaling.k8s.io meta.helm.sh/release-name=<release-name> meta.helm.sh/release-namespace=<namespace> --overwrite
 ```
 
 ## Migration Guides

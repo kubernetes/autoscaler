@@ -23,6 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/validate/content"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/scaleway/scalewaygo"
 	"k8s.io/klog/v2"
@@ -231,7 +232,7 @@ func (ng *NodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo,
 	}
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
-	node.Spec.Taints = parseTaints(ng.pool.Taints)
+	node.Spec.Taints = convertTaints(ng.pool.NodeTaints)
 
 	nodeInfo := framework.NewNodeInfo(&node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.pool.Name), nil))
 
@@ -306,28 +307,38 @@ func fromScwStatus(status scalewaygo.NodeStatus) *cloudprovider.InstanceStatus {
 	return st
 }
 
-func parseTaints(taints map[string]string) []apiv1.Taint {
+func convertTaints(taints []scalewaygo.Taint) []apiv1.Taint {
 	k8sTaints := make([]apiv1.Taint, 0, len(taints))
-	for key, valueEffect := range taints {
-		splittedValueEffect := strings.Split(valueEffect, ":")
-		var taint apiv1.Taint
 
-		switch apiv1.TaintEffect(splittedValueEffect[len(splittedValueEffect)-1]) {
+	for _, taint := range taints {
+		var effect apiv1.TaintEffect
+
+		switch apiv1.TaintEffect(taint.Effect) {
 		case apiv1.TaintEffectNoExecute:
-			taint.Effect = apiv1.TaintEffectNoExecute
+			effect = apiv1.TaintEffectNoExecute
 		case apiv1.TaintEffectNoSchedule:
-			taint.Effect = apiv1.TaintEffectNoSchedule
+			effect = apiv1.TaintEffectNoSchedule
 		case apiv1.TaintEffectPreferNoSchedule:
-			taint.Effect = apiv1.TaintEffectPreferNoSchedule
+			effect = apiv1.TaintEffectPreferNoSchedule
 		default:
+			klog.Warningf("ignoring taint %s with unsupported effect %s", taint.Key, taint.Effect)
 			continue
 		}
-		if len(splittedValueEffect) == 2 {
-			taint.Value = splittedValueEffect[0]
-		}
-		taint.Key = key
 
-		k8sTaints = append(k8sTaints, taint)
+		if errs := content.IsLabelKey(taint.Key); len(errs) > 0 {
+			klog.Warningf("ignoring taint with invalid key %s: %s", taint.Key, strings.Join(errs, "; "))
+			continue
+		}
+		if errs := content.IsLabelValue(taint.Value); len(errs) > 0 {
+			klog.Warningf("ignoring taint %s with invalid value %s: %s", taint.Key, taint.Value, strings.Join(errs, "; "))
+			continue
+		}
+
+		k8sTaints = append(k8sTaints, apiv1.Taint{
+			Key:    taint.Key,
+			Value:  taint.Value,
+			Effect: effect,
+		})
 	}
 
 	return k8sTaints

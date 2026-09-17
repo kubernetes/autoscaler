@@ -577,23 +577,60 @@ type containerExpectation struct {
 func waitForResourceRequestsInRangeInPods(f *framework.Framework, timeout time.Duration, listOptions metav1.ListOptions, expectations []containerExpectation) error {
 	err := waitForPodsMatch(f, timeout, listOptions,
 		func(pod apiv1.Pod) bool {
-			for _, exp := range expectations {
-				if exp.Index >= len(pod.Spec.Containers) {
-					return false
-				}
-				req, found := pod.Spec.Containers[exp.Index].Resources.Requests[exp.ResourceName]
-				framework.Logf("Pod %s container %d: Comparing %v request %v against range of (%v, %v)", pod.Name, exp.Index, exp.ResourceName, req, exp.LowerBound, exp.UpperBound)
-				if !found || req.MilliValue() < exp.LowerBound.MilliValue() || req.MilliValue() > exp.UpperBound.MilliValue() {
-					return false
-				}
-			}
-			return true
+			return podMatchesResourceRequests(pod, expectations)
 		})
 
 	if err != nil {
 		return fmt.Errorf("error waiting for resource requests in range %+v for pods: %+v", expectations, listOptions)
 	}
 	return nil
+}
+
+// waitForEachPodResourceRequestsInRange waits until every pod matching
+// listOptions has been observed with requests in the given ranges at least
+// once. Unlike waitForResourceRequestsInRangeInPods, pods do not need to be in
+// the expected state simultaneously.
+func waitForEachPodResourceRequestsInRange(f *framework.Framework, timeout time.Duration, listOptions metav1.ListOptions, expectations []containerExpectation) error {
+	matched := map[string]bool{}
+	err := wait.PollUntilContextTimeout(context.Background(), utils.PollInterval, timeout, true, func(ctx context.Context) (done bool, err error) {
+		podList, err := f.ClientSet.CoreV1().Pods(f.Namespace.Name).List(ctx, listOptions)
+		if err != nil {
+			return false, err
+		}
+		if len(podList.Items) == 0 {
+			return false, nil
+		}
+		done = true
+		for _, pod := range podList.Items {
+			if matched[pod.Name] {
+				continue
+			}
+			if podMatchesResourceRequests(pod, expectations) {
+				matched[pod.Name] = true
+			} else {
+				done = false
+			}
+		}
+		return done, nil
+	})
+	if err != nil {
+		return fmt.Errorf("error waiting for each pod's resource requests to be in range %+v for pods: %+v", expectations, listOptions)
+	}
+	return nil
+}
+
+func podMatchesResourceRequests(pod apiv1.Pod, expectations []containerExpectation) bool {
+	for _, exp := range expectations {
+		if exp.Index >= len(pod.Spec.Containers) {
+			return false
+		}
+		req, found := pod.Spec.Containers[exp.Index].Resources.Requests[exp.ResourceName]
+		framework.Logf("Pod %s container %d: Comparing %v request %v against range of (%v, %v)", pod.Name, exp.Index, exp.ResourceName, req, exp.LowerBound, exp.UpperBound)
+		if !found || req.MilliValue() < exp.LowerBound.MilliValue() || req.MilliValue() > exp.UpperBound.MilliValue() {
+			return false
+		}
+	}
+	return true
 }
 
 func waitForResourceRequestInRangeInPods(f *framework.Framework, timeout time.Duration, listOptions metav1.ListOptions, resourceName apiv1.ResourceName, lowerBound, upperBound resource.Quantity) error {

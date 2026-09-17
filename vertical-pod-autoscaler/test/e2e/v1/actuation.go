@@ -867,8 +867,10 @@ var _ = ActuationSuiteE2eDescribe("Pods under VPA with CPUStartupBoost", func() 
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			ginkgo.By("Verifying container 1 is unboosted first")
-			// Wait for the VPA updater to unboost container1 while container2 remains boosted.
-			err = waitForResourceRequestsInRangeInPods(f, utils.PollTimeout, hamsterListOptions, []containerExpectation{
+			// Boost expiry is anchored to each pod's own Ready time, so pods pass
+			// through this state at different times; check each pod individually
+			// instead of requiring all pods to be in this state simultaneously.
+			err = waitForEachPodResourceRequestsInRange(f, utils.PollTimeout, hamsterListOptions, []containerExpectation{
 				{Index: 0, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("10m"), UpperBound: ParseQuantityOrDie("10m")},   // Unboosted
 				{Index: 1, ResourceName: apiv1.ResourceCPU, LowerBound: ParseQuantityOrDie("400m"), UpperBound: ParseQuantityOrDie("400m")}, // Still boosted
 			})

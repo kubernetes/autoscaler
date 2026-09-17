@@ -655,6 +655,7 @@ func extractNodeLabels(node *corev1.Node) map[string]string {
 	setLabelIfNotEmpty(m, node.Labels, corev1.LabelZoneRegionStable)
 
 	setLabelIfNotEmpty(m, node.Labels, corev1.LabelZoneFailureDomain)
+	setLabelIfNotEmpty(m, node.Labels, corev1.LabelTopologyZone)
 
 	return m
 }

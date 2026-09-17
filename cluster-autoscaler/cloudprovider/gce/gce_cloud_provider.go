@@ -127,6 +127,12 @@ func (gce *GceCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.Nod
 // NodeGroupForNode returns the node group for the given node.
 func (gce *GceCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	logger := klog.FromContext(ctx)
+
+	if !hasGceProviderId(node.Spec.ProviderID) {
+		logger.V(6).Info("Node has non-GCE providerID, treating as unmanaged", "node", klog.KObj(node), "providerID", node.Spec.ProviderID)
+		return nil, nil
+	}
+
 	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		logger.Error(err, "Error extracting node.Spec.ProviderID for node", "node", klog.KObj(node))
@@ -182,7 +188,13 @@ func (gce *GceCloudProvider) Refresh(ctx context.Context) error {
 	return gce.gceManager.Refresh(ctx)
 }
 
-// GceRef contains s reference to some entity in GCE world.
+const gceProviderIDPrefix = "gce://"
+
+func hasGceProviderId(id string) bool {
+	return strings.HasPrefix(id, gceProviderIDPrefix)
+}
+
+// GceRef contains a reference to some entity in GCE world.
 type GceRef struct {
 	Project string
 	Zone    string
@@ -195,21 +207,20 @@ func (ref GceRef) String() string {
 
 // ToProviderId converts GceRef to string in format used as ProviderId in Node object.
 func (ref GceRef) ToProviderId() string {
-	return fmt.Sprintf("gce://%s/%s/%s", ref.Project, ref.Zone, ref.Name)
+	return fmt.Sprintf("%s%s/%s/%s", gceProviderIDPrefix, ref.Project, ref.Zone, ref.Name)
 }
 
-// GceRefFromProviderId creates InstanceConfig object
+// GceRefFromProviderId creates GceRef object
 // from provider id which must be in format:
 // gce://<project-id>/<zone>/<name>
-// TODO(piosz): add better check whether the id is correct
 func GceRefFromProviderId(id string) (GceRef, error) {
-	if len(id) == 0 {
-		return GceRef{}, fmt.Errorf("wrong id: expected format gce://<project-id>/<zone>/<name>, got nil")
+	if !hasGceProviderId(id) {
+		return GceRef{}, fmt.Errorf("wrong id: expected format gce://<project-id>/<zone>/<name>, got %q", id)
 	}
 
-	splitted := strings.Split(id[6:], "/")
-	if len(splitted) != 3 {
-		return GceRef{}, fmt.Errorf("wrong id: expected format gce://<project-id>/<zone>/<name>, got %v", id)
+	splitted := strings.Split(strings.TrimPrefix(id, gceProviderIDPrefix), "/")
+	if len(splitted) != 3 || splitted[0] == "" || splitted[1] == "" || splitted[2] == "" {
+		return GceRef{}, fmt.Errorf("wrong id: expected format gce://<project-id>/<zone>/<name>, got %q", id)
 	}
 	return GceRef{
 		Project: splitted[0],
@@ -307,6 +318,9 @@ func (mig *gceMig) DecreaseTargetSize(ctx context.Context, delta int) error {
 
 // Belongs returns true if the given node belongs to the NodeGroup.
 func (mig *gceMig) Belongs(ctx context.Context, node *apiv1.Node) (bool, error) {
+	if !hasGceProviderId(node.Spec.ProviderID) {
+		return false, nil
+	}
 	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return false, err
@@ -340,13 +354,12 @@ func (mig *gceMig) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 func (mig *gceMig) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	refs := make([]GceRef, 0, len(nodes))
 	for _, node := range nodes {
-
 		belongs, err := mig.Belongs(ctx, node)
 		if err != nil {
 			return err
 		}
 		if !belongs {
-			return fmt.Errorf("%s belong to a different mig than %s", node.Name, mig.Id())
+			return fmt.Errorf("%s belongs to a different mig than %s", node.Name, mig.Id())
 		}
 		gceref, err := GceRefFromProviderId(node.Spec.ProviderID)
 		if err != nil {
