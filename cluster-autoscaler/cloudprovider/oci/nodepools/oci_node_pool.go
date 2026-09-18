@@ -336,8 +336,26 @@ func (np *nodePool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, 
 		return nil, errors.Wrap(err, "unable to build node pool template")
 	}
 
-	if err := np.setEphemeralStorageFromRegisteredNode(ctx, node); err != nil {
-		return nil, errors.Wrap(err, "unable to get ephemeral storage from registered node")
+	// Cluster Autoscaler already uses a registered node as the template when a
+	// suitable one is available. Only attempt this fallback for a non-empty pool;
+	// a zero-sized pool cannot have a matching node and should retain the value
+	// from cluster-autoscaler/node-ephemeral-storage, if configured.
+	size, err := np.manager.GetNodePoolSize(np)
+	if err != nil {
+		klog.V(4).Infof(
+			"Unable to determine size of node pool %s while building template; preserving configured ephemeral-storage: %v",
+			np.id, err,
+		)
+	} else if size > 0 {
+		if err := np.setEphemeralStorageFromRegisteredNode(ctx, node); err != nil {
+			// Looking up a registered node is an optional refinement. Do not
+			// discard an otherwise valid template, including a value supplied
+			// by freeform tag.
+			klog.V(4).Infof(
+				"Unable to get ephemeral-storage from a registered node in node pool %s; preserving configured value: %v",
+				np.id, err,
+			)
+		}
 	}
 
 	nodeInfo := framework.NewNodeInfo(
