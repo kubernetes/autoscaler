@@ -20,10 +20,18 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534 # nobody
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: recommender
         image: registry.k8s.io/autoscaling/vpa-recommender:1.7.1
         imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
         resources:
           limits:
             cpu: 200m
