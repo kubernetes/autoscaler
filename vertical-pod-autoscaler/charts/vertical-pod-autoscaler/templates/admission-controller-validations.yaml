@@ -8,9 +8,6 @@
 {{- if and .Values.admissionController.certManager.enabled .Values.admissionController.registerWebhook }}
 {{- fail "admissionController.certManager.enabled and admissionController.registerWebhook cannot both be true. Set admissionController.registerWebhook: false when using cert-manager." }}
 {{- end }}
-{{- if and .Values.admissionController.certManager.enabled .Values.admissionController.tls.create }}
-{{- fail "admissionController.certManager.enabled and admissionController.tls.create cannot both be true. Set admissionController.tls.create: false when using cert-manager." }}
-{{- end }}
 {{- if .Values.admissionController.certManager.enabled }}
 {{- range .Values.admissionController.extraArgs }}
 {{- if eq . "--reload-cert=false" }}
