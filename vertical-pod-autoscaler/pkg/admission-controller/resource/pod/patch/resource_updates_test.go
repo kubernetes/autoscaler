@@ -304,6 +304,20 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
 			expectPatches:        []resource_admission.PatchRecord{},
 		},
+		{
+			// Admission-time pods often have empty Spec resources and no status yet.
+			// With no recommendation we must not patch empty /resources or vpaUpdates.
+			name: "no recommendation and empty pod resources",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{}},
+				},
+			},
+			namespace:            "default",
+			recommendResources:   make([]vpa_api_util.ContainerResources, 1),
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			expectPatches:        []resource_admission.PatchRecord{},
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
