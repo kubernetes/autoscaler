@@ -589,7 +589,6 @@ func CreateRandomString() string {
 
 	if err != nil {
 		// fail back to insecure rand
-		rand.Seed(time.Now().UnixNano())
 		for i := range b {
 			b[i] = dictionary[rand.Int()%l]
 		}
