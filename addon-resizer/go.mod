@@ -5,10 +5,10 @@ go 1.26.0
 require (
 	github.com/google/go-cmp v0.7.0
 	github.com/prometheus/client_golang v1.23.2
-	github.com/prometheus/client_model v0.6.2
+	github.com/prometheus/client_model v0.6.3
 	github.com/prometheus/common v0.67.5
 	github.com/spf13/pflag v1.0.10
-	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af
+	google.golang.org/protobuf v1.36.12
 	gopkg.in/inf.v0 v0.9.1
 	k8s.io/api v0.37.0
 	k8s.io/apimachinery v0.37.0
