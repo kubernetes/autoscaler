@@ -243,7 +243,7 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 
 	res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(vpa, pod)
 	assert.Nil(t, err)
-	assert.Equal(t, corev1.ResourceList{
+	test.AssertResourceListEqual(t, "target", corev1.ResourceList{
 		corev1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
 		corev1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
 	}, res.ContainerRecommendations[0].Target)
@@ -252,12 +252,12 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 	assert.Contains(t, annotations["ctr-name"], "cpu capped to minAllowed")
 	assert.Contains(t, annotations["ctr-name"], "memory capped to maxAllowed")
 
-	assert.Equal(t, corev1.ResourceList{
+	test.AssertResourceListEqual(t, "lower bound", corev1.ResourceList{
 		corev1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
 		corev1.ResourceMemory: *resource.NewScaledQuantity(4300, 1),
 	}, res.ContainerRecommendations[0].LowerBound)
 
-	assert.Equal(t, corev1.ResourceList{
+	test.AssertResourceListEqual(t, "upper bound", corev1.ResourceList{
 		corev1.ResourceCPU:    *resource.NewScaledQuantity(45, 1),
 		corev1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
 	}, res.ContainerRecommendations[0].UpperBound)
