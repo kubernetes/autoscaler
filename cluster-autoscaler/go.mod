@@ -46,14 +46,14 @@ require (
 	google.golang.org/grpc v1.83.2
 	google.golang.org/protobuf v1.36.12
 	gopkg.in/gcfg.v1 v1.2.3
-	k8s.io/api v0.37.0-rc.1
-	k8s.io/apimachinery v0.37.0-rc.1
-	k8s.io/apiserver v0.37.0-rc.1
+	k8s.io/api v0.37.0
+	k8s.io/apimachinery v0.37.0
+	k8s.io/apiserver v0.37.0
 	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20260717085528-eec9bc4dc1d2
-	k8s.io/client-go v0.37.0-rc.1
+	k8s.io/client-go v0.37.0
 	k8s.io/cloud-provider-aws v1.35.1
 	k8s.io/cloud-provider-gcp/providers v0.28.2
-	k8s.io/component-base v0.37.0-rc.1
+	k8s.io/component-base v0.37.0
 	k8s.io/dynamic-resource-allocation v0.37.0-rc.1
 	k8s.io/klog/v2 v2.140.0
 	k8s.io/kubelet v0.37.0-rc.1
@@ -62,7 +62,7 @@ require (
 	sigs.k8s.io/cloud-provider-azure v1.36.6
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.23.0
 	sigs.k8s.io/cluster-autoscaler v0.0.0-20260903143621-3d1c7137cdac
-	sigs.k8s.io/controller-runtime v0.24.1
+	sigs.k8s.io/controller-runtime v0.25.1
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -229,7 +229,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.37.0-rc.1 // indirect
+	k8s.io/apiextensions-apiserver v0.37.0 // indirect
 	k8s.io/cloud-provider v0.36.4 // indirect
 	k8s.io/code-generator v0.37.0-rc.1 // indirect
 	k8s.io/component-helpers v0.37.0-rc.1 // indirect
@@ -244,7 +244,7 @@ require (
 	k8s.io/kube-scheduler v0.0.0 // indirect
 	k8s.io/kubectl v0.28.0 // indirect
 	k8s.io/mount-utils v0.26.0-alpha.0 // indirect
-	k8s.io/streaming v0.37.0-rc.1 // indirect
+	k8s.io/streaming v0.37.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.36.0 // indirect
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient/configloader v0.15.3 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
