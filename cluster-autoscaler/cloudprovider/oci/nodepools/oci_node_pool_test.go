@@ -120,7 +120,7 @@ func TestHasInstanceForUnmanagedNodePool(t *testing.T) {
 		},
 	}
 
-	hasInstance, err := provider.HasInstance(node)
+	hasInstance, err := provider.HasInstance(context.Background(), node)
 	if err != nil {
 		t.Fatalf("HasInstance() returned an error for an unmanaged node pool: %v", err)
 	}
