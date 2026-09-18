@@ -37,6 +37,7 @@ import (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas
 // +kubebuilder:resource:path=capacitybuffers,scope=Namespaced,shortName=cb
 // +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.provisioningStrategy",description="The strategy to be used."
 // +kubebuilder:printcolumn:name="PodTemplate",type="string",JSONPath=".status.podTemplateRef.name",description="The name of the PodTemplate used."
