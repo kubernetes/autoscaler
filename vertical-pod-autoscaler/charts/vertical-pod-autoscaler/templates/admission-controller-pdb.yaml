@@ -19,4 +19,7 @@ spec:
   {{- if and .Values.admissionController.podDisruptionBudget.maxUnavailable (not .Values.admissionController.podDisruptionBudget.minAvailable) }}
   maxUnavailable: {{ .Values.admissionController.podDisruptionBudget.maxUnavailable }}
   {{- end }}
+  {{- with .Values.admissionController.podDisruptionBudget.unhealthyPodEvictionPolicy }}
+  unhealthyPodEvictionPolicy: {{ . }}
+  {{- end }}
 {{- end -}}
