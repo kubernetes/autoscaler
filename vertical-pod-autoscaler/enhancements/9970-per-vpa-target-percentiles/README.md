@@ -8,7 +8,7 @@
 - [Proposal](#proposal)
 - [Design Details](#design-details)
   - [API Changes](#api-changes)
-  - [Why Three Percentiles Per Resource](#why-three-percentiles-per-resource)
+  - [Why three percentiles per resource](#why-three-percentiles-per-resource)
   - [Effective-Value Resolution](#effective-value-resolution)
   - [Recommender Integration](#recommender-integration)
   - [Interaction with Lower and Upper Bounds](#interaction-with-lower-and-upper-bounds)
