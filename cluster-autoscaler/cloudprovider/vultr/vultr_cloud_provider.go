@@ -18,6 +18,7 @@ package vultr
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -29,7 +30,7 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
 	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
-	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	autoscalererrors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
@@ -77,22 +78,18 @@ func (v *vultrCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.Nod
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
 func (v *vultrCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	providerID := node.Spec.ProviderID
+	nodeID, err := nodeIDFromNode(node)
+	if err != nil {
+		if errors.Is(err, errMissingNodeID) {
+			return nil, nil
+		}
+		return nil, err
+	}
 
 	// we want to find the pool for a specific node
 	for _, group := range v.manager.nodeGroups {
-		nodes, err := group.Nodes(context.TODO())
-		if err != nil {
-			return nil, err
-		}
-
-		for _, node := range nodes {
-			if node.Id == providerID {
-				if group == nil {
-					return nil, nil
-				}
-				return group, nil
-			}
+		if group.hasNode(nodeID) {
+			return group, nil
 		}
 	}
 	return nil, nil
@@ -100,12 +97,39 @@ func (v *vultrCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.N
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (v *vultrCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+	nodeID, err := nodeIDFromNode(node)
+	if err != nil {
+		if errors.Is(err, errMissingNodeID) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	for _, group := range v.manager.nodeGroups {
+		if group.hasNode(nodeID) {
+			return true, nil
+		}
+	}
+
+	// Nodes in pools not managed by this autoscaler still exist in Vultr.
+	nodePools, _, err := v.manager.client.ListNodePools(ctx, v.manager.clusterID, nil)
+	if err != nil {
+		return true, err
+	}
+	for _, nodePool := range nodePools {
+		for _, poolNode := range nodePool.Nodes {
+			if poolNode.ID == nodeID {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (v *vultrCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (v *vultrCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, autoscalererrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -141,7 +165,7 @@ func (v *vultrCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[strin
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
 func (v *vultrCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), v, node)
+	return gpu.GetNodeGPUFromCloudProvider(ctx, v, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
@@ -162,8 +186,15 @@ func toProviderID(nodeID string) string {
 }
 
 // toNodeID returns a node or droplet ID from the given provider ID.
-func toNodeID(providerID string) string {
-	return strings.TrimPrefix(providerID, vultrProviderIDPrefix)
+func toNodeID(providerID string) (string, error) {
+	if !strings.HasPrefix(providerID, vultrProviderIDPrefix) {
+		return "", fmt.Errorf("provider ID %q does not use expected prefix %q", providerID, vultrProviderIDPrefix)
+	}
+	nodeID := strings.TrimPrefix(providerID, vultrProviderIDPrefix)
+	if nodeID == "" {
+		return "", fmt.Errorf("provider ID %q does not contain a node ID", providerID)
+	}
+	return nodeID, nil
 }
 
 // BuildVultr builds the Vultr cloud provider.
