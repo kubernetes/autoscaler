@@ -85,6 +85,8 @@ type okeClient interface {
 	UpdateNodePool(context.Context, oke.UpdateNodePoolRequest) (oke.UpdateNodePoolResponse, error)
 	DeleteNode(context.Context, oke.DeleteNodeRequest) (oke.DeleteNodeResponse, error)
 	ListNodePools(ctx context.Context, request oke.ListNodePoolsRequest) (oke.ListNodePoolsResponse, error)
+	ListWorkRequests(context.Context, oke.ListWorkRequestsRequest) (oke.ListWorkRequestsResponse, error)
+	ListWorkRequestErrors(context.Context, oke.ListWorkRequestErrorsRequest) (oke.ListWorkRequestErrorsResponse, error)
 }
 
 // CreateNodePoolManager creates an NodePoolManager that can manage autoscaling node pools
@@ -624,6 +626,20 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 		default:
 			klog.Warningf("instance found in unhandled state: (%q = %v)", *node.Id, node.LifecycleState)
 		}
+	}
+
+	for _, node := range m.nodePoolCache.unfulfilledNodes(np.Id()) {
+		instances = append(instances, cloudprovider.Instance{
+			Id: node.id,
+			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OtherErrorClass,
+					ErrorCode:    string(oke.WorkRequestOperationTypeNodepoolReconcile),
+					ErrorMessage: node.errorMessage,
+				},
+			},
+		})
 	}
 
 	return instances, nil
