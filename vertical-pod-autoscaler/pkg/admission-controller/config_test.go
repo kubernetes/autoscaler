@@ -18,6 +18,14 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"math/big"
+	"os"
+	"path"
 	"testing"
 	"time"
 
@@ -25,6 +33,8 @@ import (
 	admissionregistration "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/config"
 )
 
 func TestSelfRegistrationBase(t *testing.T) {
@@ -362,4 +372,68 @@ func TestConvertLabelsToMap(t *testing.T) {
 			assert.Equal(t, m, c.expectedOutput, "expected labels map")
 		}
 	}
+}
+
+func writeStaticCertFiles(t *testing.T) config.CertsConfig {
+	tempDir := t.TempDir()
+	caCert := &x509.Certificate{
+		SerialNumber: big.NewInt(0),
+		Subject: pkix.Name{
+			Organization: []string{"ca"},
+		},
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().AddDate(2, 0, 0),
+		IsCA:                  true,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		BasicConstraintsValid: true,
+	}
+	caKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pub, priv := generateCerts(t, "server", caCert, caKey)
+
+	certPath := path.Join(tempDir, "cert.crt")
+	if err := os.WriteFile(certPath, pub, 0666); err != nil {
+		t.Fatal(err)
+	}
+	keyPath := path.Join(tempDir, "cert.key")
+	if err := os.WriteFile(keyPath, priv, 0666); err != nil {
+		t.Fatal(err)
+	}
+
+	return config.CertsConfig{TlsCertFile: certPath, TlsPrivateKey: keyPath}
+}
+
+func TestConfigTLSMinVersion(t *testing.T) {
+	cfg := writeStaticCertFiles(t)
+
+	testCases := []struct {
+		minTlsVersion string
+		wantVersion   uint16
+	}{
+		{"", tls.VersionTLS12},
+		{"tls1_2", tls.VersionTLS12},
+		{"tls1_3", tls.VersionTLS13},
+	}
+
+	for _, c := range testCases {
+		tlsConfig := configTLS(cfg, c.minTlsVersion, "", nil, nil)
+		assert.Equal(t, c.wantVersion, tlsConfig.MinVersion, "minTlsVersion %q", c.minTlsVersion)
+		assert.Len(t, tlsConfig.Certificates, 1, "minTlsVersion %q", c.minTlsVersion)
+	}
+}
+
+func TestConfigTLSCiphers(t *testing.T) {
+	cfg := writeStaticCertFiles(t)
+
+	tlsConfig := configTLS(cfg, "tls1_2", "TLS_AES_128_GCM_SHA256:not-a-real-cipher", nil, nil)
+	assert.Equal(t, []uint16{tls.TLS_AES_128_GCM_SHA256}, tlsConfig.CipherSuites)
+
+	tlsConfig = configTLS(cfg, "tls1_2", "not-a-real-cipher", nil, nil)
+	assert.Nil(t, tlsConfig.CipherSuites, "unknown ciphers should be dropped, leaving the suite list empty")
+
+	tlsConfig = configTLS(cfg, "tls1_2", "", nil, nil)
+	assert.Nil(t, tlsConfig.CipherSuites, "an empty ciphers flag should leave the suite list unset")
 }
