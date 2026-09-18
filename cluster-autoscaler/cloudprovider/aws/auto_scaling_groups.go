@@ -311,36 +311,26 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 	}
 
 	placeHolderInstancesCount := m.GetPlaceHolderInstancesCount(instances)
-	// Check if there are any placeholder instances in the list.
+
+	// Placeholder instances represent desired capacity that has not materialized
+	// as real instances yet. Do not unconditionally set desired capacity to the
+	// current number of real instances here.
+	//
+	// DescribeAutoScalingGroups() and SetDesiredCapacity() are separate AWS API
+	// calls. A legitimate scale-up can happen between them. Setting desired
+	// capacity to the value observed by DescribeAutoScalingGroups() can therefore
+	// race with the scale-up and cause Auto Scaling to terminate healthy
+	// instances.
+	//
+	// Placeholder instances are virtual cache entries and must not be terminated
+	// through TerminateInstanceInAutoScalingGroup. Real instances below are still
+	// terminated individually with ShouldDecrementDesiredCapacity=true.
 	if placeHolderInstancesCount > 0 {
-		// Log the check for placeholders in the ASG.
-		klog.V(4).Infof("Detected %d placeholder instance(s) in ASG %s",
-			placeHolderInstancesCount, commonAsg.Name)
-
-		asgNames := []string{commonAsg.Name}
-		asgDetail, err := m.awsService.getAutoscalingGroupsByNames(asgNames)
-
-		if err != nil {
-			klog.Errorf("Error retrieving ASG details %s: %v", commonAsg.Name, err)
-			return err
-		}
-
-		activeInstancesInAsg := len(asgDetail[0].Instances)
-		desiredCapacityInAsg := int(*asgDetail[0].DesiredCapacity)
-		klog.V(4).Infof("asg %s has placeholders instances with desired capacity = %d and active instances = %d. updating ASG to match active instances count",
-			commonAsg.Name, desiredCapacityInAsg, activeInstancesInAsg)
-
-		// If the difference between the active instances and the desired capacity is greater than 1,
-		// it means that the ASG is under-provisioned and the desired capacity is not being reached.
-		// In this case, we would reduce the size of ASG by the count of unprovisioned instances
-		// which is equal to the total count of active instances in ASG
-
-		err = m.setAsgSizeNoLock(commonAsg, activeInstancesInAsg)
-
-		if err != nil {
-			klog.Errorf("Error reducing ASG %s size to %d: %v", commonAsg.Name, activeInstancesInAsg, err)
-			return err
-		}
+		klog.V(4).Infof(
+			"Detected %d placeholder instance(s) in ASG %s; skipping desired-capacity reconciliation",
+			placeHolderInstancesCount,
+			commonAsg.Name,
+		)
 	}
 
 	for _, instance := range instances {
