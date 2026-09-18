@@ -18,6 +18,7 @@ package input
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"time"
@@ -75,7 +76,7 @@ type ClusterStateFeeder interface {
 	DeleteRemovedPods()
 
 	// GarbageCollectCheckpoints removes historical checkpoints that don't have a matching VPA.
-	GarbageCollectCheckpoints(ctx context.Context)
+	GarbageCollectCheckpoints(ctx context.Context) error
 }
 
 // ClusterStateFeederFactory makes instances of ClusterStateFeeder.
@@ -305,15 +306,14 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 	}
 }
 
-func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context) {
+func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context) error {
 	klog.V(3).InfoS("Starting garbage collection of checkpoints")
 
 	allVPAKeys := map[model.VpaID]bool{}
 
 	allVpaResources, err := feeder.vpaLister.List(labels.Everything())
 	if err != nil {
-		klog.ErrorS(err, "Cannot list VPAs")
-		return
+		return fmt.Errorf("failed to list VPAs: %w", err)
 	}
 	for _, vpa := range allVpaResources {
 		vpaID := model.VpaID{
@@ -325,10 +325,10 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context)
 
 	checkpointList, err := feeder.vpaCheckpointLister.List(labels.Everything())
 	if err != nil {
-		klog.ErrorS(err, "Cannot list VPA checkpoints")
-		return
+		return fmt.Errorf("failed to list VPA checkpoints: %w", err)
 	}
 
+	var errs error
 	for _, checkpoint := range checkpointList {
 		// Skip the checkpoint if any of the following conditions are true:
 		// 1. `vpaObjectNamespace` is set and doesn't match the checkpoint's namespace.
@@ -340,12 +340,13 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints(ctx context.Context)
 		vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
 		if !allVPAKeys[vpaID] {
 			if err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(checkpoint.Namespace).Delete(ctx, checkpoint.Name, metav1.DeleteOptions{}); err != nil {
-				klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - failed to delete", "checkpoint", klog.KObj(checkpoint))
+				errs = errors.Join(errs, fmt.Errorf("orphaned VPA checkpoint cleanup - failed to delete checkpoint %s: %w", klog.KObj(checkpoint), err))
 				continue
 			}
 			klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "checkpoint", klog.KObj(checkpoint))
 		}
 	}
+	return errs
 }
 
 func (feeder *clusterStateFeeder) shouldIgnoreNamespace(namespace string) bool {
