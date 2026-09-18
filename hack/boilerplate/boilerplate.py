@@ -154,6 +154,7 @@ skipped_names = [
     "cluster-autoscaler/cloudprovider/digitalocean/godo",
     "cluster-autoscaler/cloudprovider/externalgrpc/protos",
     "cluster-autoscaler/cloudprovider/magnum/gophercloud",
+    "cluster-autoscaler/cloudprovider/vke/gophercloud",
     "cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go",
     "cluster-autoscaler/cloudprovider/hetzner/hcloud-go",
     "cluster-autoscaler/cloudprovider/oci",
