@@ -52,6 +52,12 @@ _Appears in:_
 | `oomMinBumpUp` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#quantity-resource-api)_ | oomMinBumpUp is the minimum increase in memory when OOM is detected. |  | Optional: \{\} <br /> |
 | `memoryAggregationIntervalSeconds` _integer_ | memoryAggregationIntervalSeconds is the length of a single interval<br />(in seconds) for which the peak memory usage is computed.<br />Memory usage peaks are aggregated in multiples of this interval.<br />In other words, there is one memory usage sample per interval<br />(the maximum usage over that interval). |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `memoryAggregationIntervalCount` _integer_ | memoryAggregationIntervalCount is the number of consecutive<br />memoryAggregationIntervals which make up the memory aggregation window.<br />The total window length is:<br />MemoryAggregationIntervalSeconds * MemoryAggregationIntervalCount. |  | Minimum: 1 <br />Optional: \{\} <br /> |
+| `lowerBoundCPUPercentile` _integer_ |  |  | Maximum: 100 <br />Minimum: 1 <br />Optional: \{\} <br /> |
+| `targetCPUPercentile` _integer_ |  |  | Maximum: 100 <br />Minimum: 1 <br />Optional: \{\} <br /> |
+| `upperBoundCPUPercentile` _integer_ |  |  | Maximum: 100 <br />Minimum: 1 <br />Optional: \{\} <br /> |
+| `lowerBoundMemoryPercentile` _integer_ |  |  | Maximum: 100 <br />Minimum: 1 <br />Optional: \{\} <br /> |
+| `targetMemoryPercentile` _integer_ |  |  | Maximum: 100 <br />Minimum: 1 <br />Optional: \{\} <br /> |
+| `upperBoundMemoryPercentile` _integer_ |  |  | Maximum: 100 <br />Minimum: 1 <br />Optional: \{\} <br /> |
 | `startupBoost` _[StartupBoost](#startupboost)_ | startupBoost specifies the startup boost policy for the container.<br />This overrides any pod-level startup boost policy.<br />The startup boost policy takes precedence over the rest of the fields in<br />this struct, except for ContainerName and ControlledValues. |  | Optional: \{\} <br /> |
 
 
