@@ -426,11 +426,18 @@ func (csm *cloudServiceManager) transformInstanceState(lifeCycleState huaweiclou
 		}
 		return instanceStatus
 	default:
-		instanceStatus.ErrorInfo = &cloudprovider.InstanceErrorInfo{
-			ErrorClass:   cloudprovider.OtherErrorClass,
-			ErrorMessage: fmt.Sprintf("invalid instance health state: %v", healthStatus),
-		}
-		return instanceStatus
+		// Not an error. The API returns "INITIALIZING" for an instance that is
+		// still starting, while the enum above spells that state INITAILIZING
+		// and carries that spelling as its value, so every booting instance
+		// reaches this branch.
+		//
+		// Reporting it through ErrorInfo made Cluster Autoscaler remove the
+		// instance at once instead of waiting for maxNodeProvisionTime, so an
+		// instance was deleted a few seconds into a multi-minute boot and a
+		// single pending pod became a create-and-delete loop. Health status is
+		// advisory: only ERROR, which the API documents as a real fault, should
+		// mark an instance failed. Anything else is logged and left alone.
+		klog.Warningf("unrecognized instance health status, treating the instance as healthy: %v", healthStatus)
 	}
 
 	return instanceStatus
