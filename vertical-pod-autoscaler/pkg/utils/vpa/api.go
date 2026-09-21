@@ -69,6 +69,15 @@ func TargetRefIndexFunc(obj any) ([]string, error) {
 	return []string{TargetRefIndexKey(vpa.Namespace, vpa.Spec.TargetRef.Kind, vpa.Spec.TargetRef.Name)}, nil
 }
 
+// VPAIndexers returns the indexers the VPA informer is built with. Test fixtures should
+// use the same set so that lookups behave as they do in production.
+func VPAIndexers() cache.Indexers {
+	return cache.Indexers{
+		cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
+		TargetRefIndex:       TargetRefIndexFunc,
+	}
+}
+
 type patchRecord struct {
 	Op    string `json:"op,inline"`
 	Path  string `json:"path,inline"`
@@ -117,11 +126,8 @@ func NewVpasListerWithIndexer(vpaClient *vpa_clientset.Clientset, stopChannel <-
 		ListerWatcher: vpaListWatch,
 		Handler:       &cache.ResourceEventHandlerFuncs{},
 		ResyncPeriod:  1 * time.Hour,
-		Indexers: cache.Indexers{
-			cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
-			TargetRefIndex:       TargetRefIndexFunc,
-		},
-		Transform: client.StripManagedFields,
+		Indexers:      VPAIndexers(),
+		Transform:     client.StripManagedFields,
 	}
 
 	store, controller := cache.NewInformerWithOptions(informerOptions)
