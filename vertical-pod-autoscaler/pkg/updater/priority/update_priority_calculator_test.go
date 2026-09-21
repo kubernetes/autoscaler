@@ -320,6 +320,43 @@ func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 	assert.Exactly(t, []*corev1.Pod{}, result, "Pod shouldn't be updated")
 }
 
+func TestDontUpdatePodWithStaleQuickOOM(t *testing.T) {
+	pod := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).Get()
+
+	// Pretend that the test pod started 11 hours ago.
+	timestampNow := pod.Status.StartTime.Add(time.Hour * 11)
+
+	// Short runtime, but the OOM itself is well outside EvictAfterOOMThreshold.
+	pod.Status.ContainerStatuses = []corev1.ContainerStatus{
+		{
+			LastTerminationState: corev1.ContainerState{
+				Terminated: &corev1.ContainerStateTerminated{
+					Reason:     "OOMKilled",
+					FinishedAt: metav1.NewTime(timestampNow.Add(-10 * 24 * time.Hour)),
+					StartedAt:  metav1.NewTime(timestampNow.Add(-10*24*time.Hour - 2*time.Minute)),
+				},
+			},
+		},
+	}
+
+	// Pod is within the recommended range.
+	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
+		WithTarget("5", "").
+		WithLowerBound("1", "").
+		WithUpperBound("6", "").Get()
+
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {ScaleUp: true, ResourceDiff: 0.25},
+	})
+	updateconfig := UpdateConfig{MinChangePriority: 0.5, PodLifetimeUpdateThreshold: time.Hour * 12, EvictAfterOOMThreshold: 10 * time.Minute}
+	calculator := NewUpdatePriorityCalculator(
+		vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
+
+	calculator.AddPod(pod, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
+	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+	assert.Exactly(t, []*corev1.Pod{}, result, "Stale quick OOM should not force an update")
+}
+
 func TestQuickOOM_VpaOvservedContainers(t *testing.T) {
 	tests := []struct {
 		name       string
