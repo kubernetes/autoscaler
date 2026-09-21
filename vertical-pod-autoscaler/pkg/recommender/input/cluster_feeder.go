@@ -284,23 +284,17 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 	}
 	klog.V(3).InfoS("Fetching VPA checkpoints", "count", len(checkpointList))
 
-	namespaces := make(map[string]bool)
-	for _, v := range feeder.clusterState.VPAs() {
-		namespaces[v.ID.Namespace] = true
-	}
-
-	for namespace := range namespaces {
-		if feeder.shouldIgnoreNamespace(namespace) {
-			klog.V(3).InfoS("Skipping loading VPA Checkpoints from namespace.", "namespace", namespace, "vpaObjectNamespace", feeder.vpaObjectNamespace, "ignoredNamespaces", feeder.ignoredNamespaces)
+	vpas := feeder.clusterState.VPAs()
+	for _, checkpoint := range checkpointList {
+		vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
+		if _, found := vpas[vpaID]; !found {
+			klog.V(4).InfoS("Skipping checkpoint of VPA not handled by this recommender", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "recommenderName", feeder.recommenderName)
 			continue
 		}
-
-		for _, checkpoint := range checkpointList {
-			klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KRef(checkpoint.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
-			err = feeder.setVpaCheckpoint(checkpoint)
-			if err != nil {
-				klog.ErrorS(err, "Error while loading checkpoint")
-			}
+		klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KRef(checkpoint.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
+		err = feeder.setVpaCheckpoint(checkpoint)
+		if err != nil {
+			klog.ErrorS(err, "Error while loading checkpoint")
 		}
 	}
 }
