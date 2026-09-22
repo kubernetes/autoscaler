@@ -152,7 +152,7 @@ For example, suppose VPA calculates a new recommended CPU request of `200m`, the
 
 For example, if the original resource request is `1` and the original limit is `2`, then after VPA calculates a new resource request of `10`, the new limit will be updated to `20`. In other words, the 1:2 ratio is preserved at all times.  
 
-If the user wants to modify the request-to-limit ratio, they must update the Deployment object directly. Since the `resources.requests` and `resources.limits` fields are immutable, this results in the termination and recreation of the existing Pods. The intent of this proposal is to preserve the existing behavior: when the ratio changes on a running workload, the new ratio applies immediately.
+If the user wants to modify the request-to-limit ratio, they must update the Deployment object directly. Since the `resources.requests` and `resources.limits` fields are immutable, this results in the termination and recreation of the existing Pods.
 
 #### Proposed feature behavior
 
