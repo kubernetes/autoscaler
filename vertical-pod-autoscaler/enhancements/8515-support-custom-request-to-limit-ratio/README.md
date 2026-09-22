@@ -21,6 +21,8 @@
   - [Test Plan](#test-plan)
     - [E2E](#e2e)
   - [Examples](#examples)
+  - [Example 1](#example-1)
+  - [Example 2](#example-2)
 - [Implementation History](#implementation-history)
 <!-- /toc -->
 
@@ -40,10 +42,8 @@ The feature is gated by a new feature gate, `RequestToLimitRatio`, which is disa
 
 * Allow VPA to update the request-to-limit ratio of a Pod's containers during Pod recreation or in-place updates based on the new `RequestToLimitRatio` stanza.
 * Introduce a new `RequestToLimitRatio` block that enables users to adjust the request-to-limit ratio in the following ways:  
-  * **Factor**: Multiplies the recommended request by a specified value, and the result is set as the new limit, for example:
-    * If the value for `Factor` is set to `2`, the limit will be twice the recommended request.  
-    * If the value for `Factor` is set to `1.1`, the limit will be 10% higher than the recommended request.  
-  * **Quantity**: Adds a buffer on top of the resource request. This can be expressed as an **absolute value with units** (e.g. `100Mi`, `10m`).
+  * **Percentage**: Represents the request-to-limit ratio as a percentage-like integer.
+  * **Quantity**: Adds a buffer on top of the resource request.
 
 ## Non-Goals
 
@@ -63,43 +63,35 @@ Some examples of the VPA CRD using the new `RequestToLimitRatio` field are provi
 A new `RequestToLimitRatio` field will be added, with the following sub-fields:
 
 * [Required] `RequestToLimitRatio.CPU.Type` or `RequestToLimitRatio.Memory.Type` (type `string`): Specifies how to apply limits proportionally to the requests. `Type` can have the following values:  
-  * `Factor`: Interpreted as a multiplier for the recommended request.  
-    * Example: a value of `2` will double the limits.  
-  * `Quantity`: Adds an absolute value on top of the requests to determine the new limit.  
-    * Example: for memory, a value of `100Mi` means the new limit will be: calculated memory request + `100Mi`. 
+  * `Percentage`
+  * `Quantity`
 
-* [Optional] `RequestToLimitRatio.CPU.Factor` (type `resource.Quantity`): The factor to apply to the CPU request.
-  * If `Type` is `Factor` a value of `3` will triple the CPU limits.  
+* [Optional] `RequestToLimitRatio.CPU.Percentage` (type `integer`): Specifies the request-to-limit ratio as a percentage-like integer.
+  * If `Type` is `Percentage`, the value determines the multiplier applied to the resource request. For example:
+    * 100 represents a 1x multiplier, meaning the limit equals the request.
+    * 150 represents a 1.5x multiplier, meaning the request is multiplied by 1.5 to determine the limit.
+    * Ratios below 1:1 are not permitted. For example, 50, which represents a 0.5x multiplier, is rejected.
   * If `Type` is `Quantity`, this field is not allowed.
 
 * [Optional] `RequestToLimitRatio.CPU.Quantity` (type `resource.Quantity`): The value specified in this field is added to the request to calculate the new limit.
-  * If `Type` is `Factor`, this field is not allowed.  
-  * If `Type` is `Quantity` a CPU resource quantity added. For example, if the value is `200m`, the CPU limit will be calculated as the CPU request plus 200 millicores.
+  * If `Type` is `Percentage`, this field is not allowed.  
+  * If `Type` is `Quantity`, the specified value is added to the resource request. For example, if the value is 200m, the CPU limit is calculated as the CPU request plus 200m.
 
-* [Optional] `RequestToLimitRatio.Memory.Factor` (type `resource.Quantity`): Same as `CPU.Factor`.
+* [Optional] `RequestToLimitRatio.Memory.Percentage` (type `integer`): Same as `CPU.Percentage`.
 * [Optional] `RequestToLimitRatio.Memory.Quantity` (type `resource.Quantity`): Similar to `CPU.Quantity` except that for `Quantity` the units are memory-based (e.g., `Mi`, `Gi`) rather than CPU millicores (`m`).
-
-The `Factor` field should support fractional and decimal values to accommodate use cases such as increasing the recommended request by 20%. In this case, Factor should be set to "1.2". The resource.Quantity type supports this representation and also provides the arithmetic operations needed to apply the factor. For example:
-
-```go
-resourceRequest := resource.MustParse("100Mi")
-// limit should be 120Mi
-factor := resource.MustParse("1.2")
-resourceRequestDec := resourceRequest.AsDec()
-resourceRequestDec.Mul(resourceRequestDec, factor.AsDec())
-```
 
 Here is the Go struct definition for `RequestToLimitRatio`:
 
 ```go
 // RequestToLimitRatioType defines the type of request-to-limit ratio policy.
-// +kubebuilder:validation:Enum=Factor;Quantity
+// +kubebuilder:validation:Enum=Percentage;Quantity
 type RequestToLimitRatioType string
 
 const (
-    // FactorRequestToLimitRatioType specifies that a factor is used to determine the limit.
-    FactorRequestToLimitRatioType   RequestToLimitRatioType = "Factor"
-    // QuantityRequestToLimitRatioType specifies that a fixed quantity is used to determine the limit.
+    // PercentageRequestToLimitRatioType specifies that a percentage-like integer is used to determine the limit.
+    PercentageRequestToLimitRatioType   RequestToLimitRatioType = "Percentage"
+    // QuantityRequestToLimitRatioType specifies that a fixed quantity is added
+	  // to the request to determine the limit.
     QuantityRequestToLimitRatioType RequestToLimitRatioType = "Quantity"
 )
 
@@ -118,9 +110,9 @@ type RequestToLimitRatio struct {
     Memory *RequestToLimitRatioPolicy `json:"memory,omitempty"`
 }
 
-// RequestToLimitRatio defines the request-to-limit ratio policy for CPU and memory resources.
+// RequestToLimitRatioPolicy defines the request-to-limit policy for a resource.
 // +union
-// +kubebuilder:validation:XValidation:rule="(self.type == 'Factor') == has(self.factor)",message="factor is required when type is Factor and forbidden otherwise"
+// +kubebuilder:validation:XValidation:rule="(self.type == 'Percentage') == has(self.percentage)",message="percentage is required when type is Percentage and forbidden otherwise"
 // +kubebuilder:validation:XValidation:rule="(self.type == 'Quantity') == has(self.quantity)",message="quantity is required when type is Quantity and forbidden otherwise"
 type RequestToLimitRatioPolicy struct {
     // Type specifies the type of request-to-limit ratio policy to apply.
@@ -128,12 +120,14 @@ type RequestToLimitRatioPolicy struct {
     // +required
     Type RequestToLimitRatioType `json:"type"`
 
-    // Factor specifies the factor by which the recommended resource request
-    // is multiplied to determine the new limit.
-    // This field is required when Type is "Factor".
-    // +unionMember=Factor
+    // Percentage specifies the request-to-limit ratio as a percentage-like integer.
+    // The value is divided by 100 to determine the multiplier applied to the
+    // recommended resource request to calculate the new limit.
+    // This field is required when Type is "Percentage".
+    // +unionMember=Percentage
     // +optional
-    Factor *resource.Quantity `json:"factor,omitempty"`
+    // +kubebuilder:validation:Minimum=100
+    Percentage *int32 `json:"percentage,omitempty"`
 
     // Quantity specifies the absolute resource quantity
     // to add to the recommended resource request to determine the new limit.
@@ -165,15 +159,14 @@ If the user wants to modify the request-to-limit ratio, they must update the Dep
 * Values specified in `RequestToLimitRatio` in a VerticalPodAutoscaler object take precedence over the request-to-limit ratio defined at the Pod level. For example, if the CPU ratio for container A is `1:2` at the Pod level and the VerticalPodAutoscaler object sets the CPU request-to-limit ratio to `1:10` for container A using the `RequestToLimitRatio` field, VPA uses the ratio from `RequestToLimitRatio` (`1:10`).
 * This KEP proposes scaling limits when `RequestToLimitRatio` is specified, even when the user omits limits from the parent object that manages the Pods and the limits are therefore absent from the Pod `resources` stanza. For example, if the user omits a CPU limit from the controller and sets the CPU ratio to `1:2` in `RequestToLimitRatio`, VPA sets the CPU limit according to the specified ratio.
 * When a relevant VerticalPodAutoscaler object exists in the cluster before Pod creation, the admission controller reads the `RequestToLimitRatio` stanza. Even if the recommender has not yet produced recommendations, the admission controller sets the ratio from `RequestToLimitRatio` using the original resource requests.
-* Users sometimes update the ratio for a running workload in response to changes in resource usage patterns. Users expect ratio updates to take effect immediately. This behavior already exists: when a user updates the ratio (i.e. updates the `resources` stanza) for a running workload like a Deployment, the change triggers a new Pod rollout. This proposal preserves this behavior, because relying on the current recommendation-application logic would prevent new ratios from taking effect when recommendations remain stable.
 
-The following section describes the behavior of the new feature for each VPA mode.
+The following section describes the possible approaches for determining when to apply a new request-to-limit ratio defined in a VPA object after the ratio is updated by the user:
 
-* The updater implements a new mechanism to observe the `RequestToLimitRatio` stanza. When the user changes the ratio, the updater reacts immediately based on the configured VPA mode and ignores the existing logic that governs normal Pod eviction or in-place updates:
-  * **Recreate** and **Auto** modes: the updater evicts the Pod when it detects a change in the `RequestToLimitRatio` stanza. The updater adds the Pod to the [UpdatePriorityCalculator](https://github.com/kubernetes/autoscaler/blob/d9d867a15e96dc50573c59e071f84df5491c03db/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L84).
-  * **InPlaceOrRecreate** mode: the updater first attempts an in-place update and falls back to eviction if the in-place update is not possible. In other words, the updater adds the Pod to the [UpdatePriorityCalculator](https://github.com/kubernetes/autoscaler/blob/d9d867a15e96dc50573c59e071f84df5491c03db/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L84).
-  * When the updater evicts a Pod or applies an in-place update due to a change in the `RequestToLimitRatio` stanza in the modes described above, it applies the most up-to-date recommendations at the same time as the updated ratio.
-* **Initial** mode: in this mode, only the admission controller and the recommender act on the targeted Pods. Pods receive the updated ratio from the `RequestToLimitRatio` stanza only at creation time or when they restart, such as after user initiated deletion or eviction due to node pressure.
+* **Proactive:** Apply the updated ratio during the next Updater cycle, regardless of whether the Pod would otherwise qualify for an update.
+* **Event-driven:** React to changes to the VPA object using the `client-go` `ResourceEventHandlerFuncs` mechanism and apply the updated ratio when the VPA object changes. This approach can apply the updated ratio sooner than the previous approach because the Updater does not need to wait for the next Updater cycle, which is one minute by default.
+* **Recommendation-driven:** Apply the updated ratio only when the Updater determines that the Pod should be updated based on the update-priority logic. This may happen during the next Updater cycle or one of the subsequent cycles, depending on the Pod's current resource requests and the calculated recommendations. For more details, see the [update priority calculator](https://github.com/iamzili/autoscaler/blob/83dc9214a7da4ec30b6fe2e4173ecbfca1c51a9d/vertical-pod-autoscaler/pkg/updater/priority/update_priority_calculator.go#L133-L153).
+
+Although the proactive and event-driven approaches would allow the updated ratio to be applied sooner, the community discussion raised concerns about the additional API server load that VPA could introduce. Therefore, this document proposes applying the request-to-limit ratio defined in the VPA object at admission time (i.e., when a Pod is initially created or recreated after eviction) and by the Updater using the recommendation-driven approach. This preserves the existing VPA update behavior rather than introducing a new trigger for Pod updates.
 
 ### Validation
 
@@ -183,7 +176,7 @@ The following section describes the behavior of the new feature for each VPA mod
 
 * The `RequestToLimitRatio` configuration will be validated when VPA CRD objects are created or updated. For example:  
   * The `Type` field is marked as required, therefore its presence will be validated.
-  * If `Type` is `Factor`, the value must be greater than or equal to 1 (enforced via CRD validation rules).  
+  * If `Type` is `Percentage`, the value must be greater than or equal to 100 (enforced via CRD validation rules).  
 
 #### Dynamic Validation via Admission Controller
 
@@ -212,7 +205,7 @@ The following section describes the behavior of the new feature for each VPA mod
 
 * The admission controller will **reject** new VPA objects that include a configured `RequestToLimitRatio`.  
   * A descriptive error message should be returned to the user, indicating that the feature is feature-gated.
-* When a user disables the feature gate and at least one VPA object with a `RequestToLimitRatio` stanza exists (because the feature gate was previously enabled), the updater uses the ratios from the Pod specifications in its next loop, and the admission controller applies the Pod spec ratios on new Pod creation events.
+* When a user disables the feature gate and at least one VPA object with a `RequestToLimitRatio` stanza exists (because the feature gate was previously enabled), the updater uses the ratios from the Pod specifications, and the admission controller applies the Pod spec ratios on new Pod creation events.
 
 ### Kubernetes Version Compatibility
 
@@ -226,12 +219,14 @@ The following section describes the behavior of the new feature for each VPA mod
 #### E2E
 
 * e2e tests with `InPlaceOrRecreate` VPA mode:
-  1. Add a test case where the QoS class **changes**. In this scenario, the updater evicts the affected Pods immediately, ignoring the normal recommendation application logic. The resulting limits are then verified.
-  2. Add a test case where the QoS class **does not change**. In this scenario, the updater applies the new ratio immediately using the in-place update mechanism. The resulting limits are then verified.
+  1. Add a test case where the QoS class **changes**. In this scenario, the updater should evict the affected Pods. The resulting limits are then verified.
+  2. Add a test case where the QoS class **does not change**. In this scenario, the updater should apply the new ratio using an in-place update. The resulting limits are then verified.
 
 ### Examples
 
 Here are some examples of VPA CRDs using the new `RequestToLimitRatio` field in different scenarios.
+
+### Example 1
 
 The following is a sample VPA manifest that targets a specific container named `app` in a Pod. In this manifest:  
 * The CPU limit is set to twice the calculated CPU request.  
@@ -256,12 +251,14 @@ spec:
         controlledValues: RequestsAndLimits
         requestToLimitRatio:
           cpu:
-            type: Factor
-            factor: "2"
+            type: Percentage
+            percentage: 200
           memory:
             type: Quantity
             quantity: 200Mi
 ```
+
+### Example 2
 
 In the manifest below, we configure VPA to control only the CPU resource's requests and limits for the container named `app`. The CPU limit is calculated by increasing the recommended CPU request by 20% (i.e. `recommended request × 1.2`).
 
@@ -284,12 +281,12 @@ spec:
         controlledValues: RequestsAndLimits
         requestToLimitRatio:
           cpu:
-            type: Factor
-            factor: "1.2"
+            type: Percentage
+            percentage: 120
 ```
 
 ## Implementation History
 
-* 2025-10-06: Update the `Type` field to correctly indicate that it is required, not optional. This field has no default value and must be explicitly set to either "Factor" or "Quantity".
+* 2025-10-06: Update the `Type` field to correctly indicate that it is required, not optional. This field has no default value and must be explicitly set to either "Percentage" or "Quantity".
 * 2025-09-18: Update API for consistency. Add e2e tests and other small updates.
 * 2025-09-10: Initial proposal created.
