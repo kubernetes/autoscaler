@@ -52,7 +52,9 @@ Add one optional field to `ContainerResourcePolicy` (autoscaling.k8s.io/v1), gro
 
 ```go
 // recommendationPercentiles overrides this container's recommendation
-// percentiles, replacing the Recommender's global --*-percentile flags.
+// percentiles, replacing the Recommender's global
+// --recommendation-lower-bound-{cpu,memory}-percentile, --target-{cpu,memory}-percentile
+// and --recommendation-upper-bound-{cpu,memory}-percentile flags.
 // Set per resource (cpu, memory); within a resource the three percentiles
 // are required together and must satisfy lowerBound <= target <= upperBound.
 // Only honored when the PerVPAConfig feature gate is enabled.
