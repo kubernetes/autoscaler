@@ -258,22 +258,6 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 	}
 }
 
-func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
-	vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-	vpa, exists := feeder.clusterState.VPAs()[vpaID]
-	if !exists {
-		return fmt.Errorf("cannot load checkpoint to missing VPA object %s/%s", vpaID.Namespace, vpaID.VpaName)
-	}
-
-	cs := model.NewAggregateContainerState()
-	err := cs.LoadFromCheckpoint(&checkpoint.Status)
-	if err != nil {
-		return fmt.Errorf("cannot load checkpoint for VPA %s/%s. Reason: %v", vpaID.Namespace, vpaID.VpaName, err)
-	}
-	vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
-	return nil
-}
-
 func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 	klog.V(3).InfoS("Initializing VPA from checkpoints")
 	feeder.LoadVPAs(ctx)
@@ -287,15 +271,18 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 	vpas := feeder.clusterState.VPAs()
 	for _, checkpoint := range checkpointList {
 		vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-		if _, found := vpas[vpaID]; !found {
-			klog.V(4).InfoS("Skipping checkpoint of VPA not handled by this recommender", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "recommenderName", feeder.recommenderName)
+		vpa, found := vpas[vpaID]
+		if !found {
+			klog.V(4).InfoS("Skipping checkpoint: VPA not tracked by this recommender", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "recommenderName", feeder.recommenderName)
 			continue
 		}
-		klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KRef(checkpoint.Namespace, checkpoint.Spec.VPAObjectName), "container", checkpoint.Spec.ContainerName)
-		err = feeder.setVpaCheckpoint(checkpoint)
-		if err != nil {
-			klog.ErrorS(err, "Error while loading checkpoint")
+		klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "container", checkpoint.Spec.ContainerName)
+		cs := model.NewAggregateContainerState()
+		if err := cs.LoadFromCheckpoint(&checkpoint.Status); err != nil {
+			klog.ErrorS(err, "Cannot load checkpoint", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName))
+			continue
 		}
+		vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
 	}
 }
 

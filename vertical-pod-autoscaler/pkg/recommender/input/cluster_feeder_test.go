@@ -1107,9 +1107,6 @@ func TestInitFromCheckpoints(t *testing.T) {
 			},
 		}
 	}
-	vpaID := func(vpaNamespace, vpaName string) model.VpaID {
-		return model.VpaID{Namespace: vpaNamespace, VpaName: vpaName}
-	}
 
 	testCases := []struct {
 		name              string
@@ -1125,7 +1122,7 @@ func TestInitFromCheckpoints(t *testing.T) {
 			recommenderName: DefaultRecommenderName,
 			vpas:            []*vpa_types.VerticalPodAutoscaler{newVpa("ns1", "vpa1", "")},
 			checkpoints:     []*vpa_types.VerticalPodAutoscalerCheckpoint{newCheckpoint("ns1", "vpa1", 42, model.SupportedCheckpointVersion)},
-			expectedLoaded:  map[model.VpaID]int{vpaID("ns1", "vpa1"): 42},
+			expectedLoaded:  map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa1"}: 42},
 		},
 		{
 			name:            "loads each checkpoint into its own VPA across namespaces",
@@ -1135,7 +1132,7 @@ func TestInitFromCheckpoints(t *testing.T) {
 				newCheckpoint("ns1", "vpa1", 1, model.SupportedCheckpointVersion),
 				newCheckpoint("ns2", "vpa1", 2, model.SupportedCheckpointVersion),
 			},
-			expectedLoaded: map[model.VpaID]int{vpaID("ns1", "vpa1"): 1, vpaID("ns2", "vpa1"): 2},
+			expectedLoaded: map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa1"}: 1, {Namespace: "ns2", VpaName: "vpa1"}: 2},
 		},
 		{
 			name:            "skips checkpoint of VPA handled by another recommender",
@@ -1145,7 +1142,7 @@ func TestInitFromCheckpoints(t *testing.T) {
 				newCheckpoint("ns1", "vpa1", 42, model.SupportedCheckpointVersion),
 				newCheckpoint("ns1", "vpa2", 7, model.SupportedCheckpointVersion),
 			},
-			expectedLoaded: map[model.VpaID]int{vpaID("ns1", "vpa1"): 42},
+			expectedLoaded: map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa1"}: 42},
 		},
 		{
 			name:            "non-default recommender skips checkpoint of default recommender's VPA",
@@ -1155,7 +1152,7 @@ func TestInitFromCheckpoints(t *testing.T) {
 				newCheckpoint("ns1", "vpa1", 42, model.SupportedCheckpointVersion),
 				newCheckpoint("ns1", "vpa2", 7, model.SupportedCheckpointVersion),
 			},
-			expectedLoaded: map[model.VpaID]int{vpaID("ns1", "vpa2"): 7},
+			expectedLoaded: map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa2"}: 7},
 		},
 		{
 			name:            "skips orphaned checkpoint",
@@ -1165,7 +1162,7 @@ func TestInitFromCheckpoints(t *testing.T) {
 				newCheckpoint("ns1", "vpa1", 42, model.SupportedCheckpointVersion),
 				newCheckpoint("ns1", "vpa-orphaned", 7, model.SupportedCheckpointVersion),
 			},
-			expectedLoaded: map[model.VpaID]int{vpaID("ns1", "vpa1"): 42},
+			expectedLoaded: map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa1"}: 42},
 		},
 		{
 			name:              "skips checkpoint in ignored namespace",
@@ -1176,7 +1173,7 @@ func TestInitFromCheckpoints(t *testing.T) {
 				newCheckpoint("ns1", "vpa1", 42, model.SupportedCheckpointVersion),
 				newCheckpoint("ns-ignored", "vpa1", 7, model.SupportedCheckpointVersion),
 			},
-			expectedLoaded: map[model.VpaID]int{vpaID("ns1", "vpa1"): 42},
+			expectedLoaded: map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa1"}: 42},
 		},
 		{
 			name:            "logs error for checkpoint of tracked VPA that cannot be loaded",
@@ -1215,7 +1212,7 @@ func TestInitFromCheckpoints(t *testing.T) {
 				ignoredNamespaces:   tc.ignoredNamespaces,
 			}
 
-			feeder.InitFromCheckpoints(context.Background())
+			feeder.InitFromCheckpoints(t.Context())
 
 			for id, expectedTotalSamplesCount := range tc.expectedLoaded {
 				vpa, found := clusterState.VPAs()[id]
