@@ -273,7 +273,7 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 		vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
 		vpa, found := vpas[vpaID]
 		if !found {
-			klog.V(4).InfoS("Skipping checkpoint: VPA not tracked by this recommender", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "recommenderName", feeder.recommenderName)
+			klog.V(4).InfoS("Skipping loading checkpoint: VPA not tracked by this recommender", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "recommenderName", feeder.recommenderName)
 			continue
 		}
 		klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "container", checkpoint.Spec.ContainerName)
