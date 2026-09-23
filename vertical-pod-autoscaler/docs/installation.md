@@ -14,11 +14,11 @@
 - [Tear down](#tear-down)
 <!-- /toc -->
 
-The current default version is Vertical Pod Autoscaler 1.7.1
+The current default version is Vertical Pod Autoscaler 1.8.0
 
 ## Supported versions
 
-The Vertical Pod Autoscaler project maintains release branches for the most recent three minor releases (1.7, 1.6, 1.5).
+The Vertical Pod Autoscaler project maintains release branches for the most recent three minor releases (1.8, 1.7, 1.6).
 
 Vertical Pod Autoscaler versions are expressed as x.y.z, where x is the major version, y is the minor version, and z is the patch version, following [Semantic Versioning](https://semver.org) terminology.
 
@@ -26,9 +26,9 @@ Vertical Pod Autoscaler versions are expressed as x.y.z, where x is the major ve
 
 | VPA version     | Kubernetes version |
 | --------------- | ------------------ |
+| 1.8.x           | 1.36 – 1.38        |
 | 1.7.x           | 1.35 – 1.37        |
 | 1.6.x           | 1.34 – 1.36        |
-| 1.5.x           | 1.33 – 1.35        |
 
 ## Notice on CRD update (>=1.0.0)
 
