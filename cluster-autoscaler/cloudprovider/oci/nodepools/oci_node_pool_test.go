@@ -234,6 +234,9 @@ func TestSetEphemeralStorageFromRegisteredNode(t *testing.T) {
 			Labels: map[string]string{
 				"internal_addr": "10.0.0.10",
 			},
+			Annotations: map[string]string{
+				"oci.oraclecloud.com/node-pool-id": "pool-1",
+			},
 		},
 		Status: apiv1.NodeStatus{
 			Capacity: apiv1.ResourceList{
@@ -306,6 +309,9 @@ func TestSetEphemeralStorageFromRegisteredNodeDifferentIP(t *testing.T) {
 			Labels: map[string]string{
 				"internal_addr": "10.0.0.20",
 			},
+			Annotations: map[string]string{
+				"oci.oraclecloud.com/node-pool-id": "pool-1",
+			},
 		},
 		Status: apiv1.NodeStatus{
 			Capacity: apiv1.ResourceList{
@@ -346,5 +352,70 @@ func TestSetEphemeralStorageFromRegisteredNodeDifferentIP(t *testing.T) {
 
 	if _, ok := templateNode.Status.Capacity[apiv1.ResourceEphemeralStorage]; ok {
 		t.Fatal("expected ephemeral-storage to remain unset for a different node pool")
+	}
+}
+
+func TestSetEphemeralStorageFromRegisteredNodeDifferentNodePool(t *testing.T) {
+	client := fake.NewSimpleClientset()
+
+	registeredNode := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "worker-1",
+			Labels: map[string]string{
+				"internal_addr": "10.0.0.10",
+			},
+			Annotations: map[string]string{
+				"oci.oraclecloud.com/node-pool-id": "pool-2",
+			},
+		},
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: *resource.NewQuantity(
+					30*1024*1024*1024,
+					resource.BinarySI,
+				),
+			},
+			Allocatable: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: *resource.NewQuantity(
+					25*1024*1024*1024,
+					resource.BinarySI,
+				),
+			},
+		},
+	}
+
+	_, err := client.CoreV1().Nodes().Create(
+		context.Background(),
+		registeredNode,
+		metav1.CreateOptions{},
+	)
+	if err != nil {
+		t.Fatalf("failed to create test node: %v", err)
+	}
+
+	np := &nodePool{
+		manager:    &mockManager{},
+		id:         "pool-1",
+		kubeClient: client,
+	}
+
+	templateNode := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity:    apiv1.ResourceList{},
+			Allocatable: apiv1.ResourceList{},
+		},
+	}
+
+	err = np.setEphemeralStorageFromRegisteredNode(context.Background(), templateNode)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if _, ok := templateNode.Status.Capacity[apiv1.ResourceEphemeralStorage]; ok {
+		t.Fatal("expected ephemeral-storage to remain unset for a different node pool")
+	}
+
+	if _, ok := templateNode.Status.Allocatable[apiv1.ResourceEphemeralStorage]; ok {
+		t.Fatal("expected allocatable ephemeral-storage to remain unset for a different node pool")
 	}
 }

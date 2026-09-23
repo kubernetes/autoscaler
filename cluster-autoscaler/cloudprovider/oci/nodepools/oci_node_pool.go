@@ -385,15 +385,44 @@ func (np *nodePool) setEphemeralStorageFromRegisteredNode(ctx context.Context, n
 		return err
 	}
 
+	if len(nodes.Items) != 1 {
+		klog.Warningf(
+			"Expected exactly one Kubernetes node for OCI node pool %q and private IP %q, found %d",
+			np.id,
+			privateIP,
+			len(nodes.Items),
+		)
+	}
+
 	for _, registeredNode := range nodes.Items {
+		nodePoolID, ok := registeredNode.Annotations["oci.oraclecloud.com/node-pool-id"]
+		if !ok || nodePoolID != np.id {
+			klog.Warningf(
+				"Kubernetes node %q has unexpected node pool annotation %q, expected %q",
+				registeredNode.Name,
+				nodePoolID,
+				np.id,
+			)
+			continue
+		}
 
 		ephemeralStorage, ok := registeredNode.Status.Capacity[apiv1.ResourceEphemeralStorage]
 		if !ok {
+			klog.Warningf(
+				"Kubernetes node %q in OCI node pool %q is missing ephemeral-storage capacity",
+				registeredNode.Name,
+				np.id,
+			)
 			continue
 		}
 
 		allocatable, ok := registeredNode.Status.Allocatable[apiv1.ResourceEphemeralStorage]
 		if !ok {
+			klog.Warningf(
+				"Kubernetes node %q in OCI node pool %q is missing ephemeral-storage allocatable",
+				registeredNode.Name,
+				np.id,
+			)
 			continue
 		}
 
