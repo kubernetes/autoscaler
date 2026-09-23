@@ -279,7 +279,7 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints(ctx context.Context) {
 		klog.V(3).InfoS("Loading checkpoint for VPA", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName), "container", checkpoint.Spec.ContainerName)
 		cs := model.NewAggregateContainerState()
 		if err := cs.LoadFromCheckpoint(&checkpoint.Status); err != nil {
-			klog.ErrorS(err, "Cannot load checkpoint", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName))
+			klog.ErrorS(err, "Failed loading checkpoint", "checkpoint", klog.KObj(checkpoint), "vpa", klog.KRef(vpaID.Namespace, vpaID.VpaName))
 			continue
 		}
 		vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
