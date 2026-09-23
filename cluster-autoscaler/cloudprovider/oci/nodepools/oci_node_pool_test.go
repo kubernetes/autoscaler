@@ -148,6 +148,11 @@ type mockManager struct {
 	timeOutErr error
 }
 
+func (m *mockManager) GetNodePoolNodePrivateIP(np NodePool) (string, error) {
+	m.called = append(m.called, "get-node-pool-node-private-ip")
+	return "10.0.0.10", m.err
+}
+
 func (m *mockManager) Refresh() error {
 	m.called = append(m.called, "refresh")
 	return nil
@@ -226,8 +231,8 @@ func TestSetEphemeralStorageFromRegisteredNode(t *testing.T) {
 	registeredNode := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "worker-1",
-			Annotations: map[string]string{
-				"oci.oraclecloud.com/node-pool-id": "pool-1",
+			Labels: map[string]string{
+				"internal_addr": "10.0.0.10",
 			},
 		},
 		Status: apiv1.NodeStatus{
@@ -256,6 +261,7 @@ func TestSetEphemeralStorageFromRegisteredNode(t *testing.T) {
 	}
 
 	np := &nodePool{
+		manager:    &mockManager{},
 		id:         "pool-1",
 		kubeClient: client,
 	}
@@ -291,14 +297,14 @@ func TestSetEphemeralStorageFromRegisteredNode(t *testing.T) {
 	}
 }
 
-func TestSetEphemeralStorageFromRegisteredNodeDifferentPool(t *testing.T) {
+func TestSetEphemeralStorageFromRegisteredNodeDifferentIP(t *testing.T) {
 	client := fake.NewSimpleClientset()
 
 	registeredNode := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "worker-1",
-			Annotations: map[string]string{
-				"oci.oraclecloud.com/node-pool-id": "pool-2",
+			Labels: map[string]string{
+				"internal_addr": "10.0.0.20",
 			},
 		},
 		Status: apiv1.NodeStatus{
@@ -321,6 +327,7 @@ func TestSetEphemeralStorageFromRegisteredNodeDifferentPool(t *testing.T) {
 	}
 
 	np := &nodePool{
+		manager:    &mockManager{},
 		id:         "pool-1",
 		kubeClient: client,
 	}
