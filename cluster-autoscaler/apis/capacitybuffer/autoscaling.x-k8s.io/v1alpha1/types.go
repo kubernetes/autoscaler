@@ -160,7 +160,8 @@ type CapacityBufferStatus struct {
 	// +optional
 	PodTemplateRef *LocalObjectRef `json:"podTemplateRef,omitempty" protobuf:"bytes,1,opt,name=podTemplateRef"`
 
-	// Replicas is the actual number of buffer chunks currently provisioned.
+	// Replicas is the final desired number of buffer chunks after processing
+	// .spec.replicas, .spec.percentage and .spec.limits.
 	// +optional
 	Replicas *int32 `json:"replicas,omitempty" protobuf:"varint,2,opt,name=replicas"`
 

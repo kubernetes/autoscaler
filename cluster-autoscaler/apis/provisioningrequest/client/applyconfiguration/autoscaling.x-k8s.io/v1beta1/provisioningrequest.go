@@ -32,7 +32,7 @@ import (
 // can use this information in its calculations and signal if the capacity
 // is available in the cluster or actively add capacity if needed.
 type ProvisioningRequestApplyConfiguration struct {
-	v1.TypeMetaApplyConfiguration `json:",inline"`
+	v1.TypeMetaApplyConfiguration `json:""`
 	// Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
 	// Spec contains specification of the ProvisioningRequest object.
