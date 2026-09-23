@@ -782,7 +782,7 @@ func (m *ociManagerImpl) buildNodeFromTemplate(nodePool *oke.NodePool) (*apiv1.N
 		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(ephemeralStorage, resource.DecimalSI)
 	}
 
-	node.Status.Allocatable = node.Status.Capacity
+	node.Status.Allocatable = node.Status.Capacity.DeepCopy()
 
 	availabilityDomain, err := getNodePoolAvailabilityDomain(nodePool)
 	if err != nil {
