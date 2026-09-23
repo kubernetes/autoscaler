@@ -370,15 +370,22 @@ func (np *nodePool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, 
 // setEphemeralStorageFromRegisteredNode copies ephemeral-storage capacity and
 // allocatable values from a registered node in the node pool to the template node.
 func (np *nodePool) setEphemeralStorageFromRegisteredNode(ctx context.Context, node *apiv1.Node) error {
-	nodes, err := np.kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	privateIP, err := np.manager.GetNodePoolNodePrivateIP(np)
+	if err != nil {
+		return err
+	}
+
+	nodes, err := np.kubeClient.CoreV1().Nodes().List(
+		ctx,
+		metav1.ListOptions{
+			LabelSelector: "internal_addr=" + privateIP,
+		},
+	)
 	if err != nil {
 		return err
 	}
 
 	for _, registeredNode := range nodes.Items {
-		if registeredNode.Annotations["oci.oraclecloud.com/node-pool-id"] != np.id {
-			continue
-		}
 
 		ephemeralStorage, ok := registeredNode.Status.Capacity[apiv1.ResourceEphemeralStorage]
 		if !ok {
