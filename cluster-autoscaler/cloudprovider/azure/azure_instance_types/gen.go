@@ -30,6 +30,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 var packageTemplate = template.Must(template.New("").Parse(`/*
@@ -59,6 +60,7 @@ type InstanceType struct {
 	VCPU         int64
 	MemoryMb     int64
 	GPU          int64
+	Architecture string
 }
 
 // InstanceTypes is a map of azure resources
@@ -70,6 +72,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:         {{ .VCPU }},
 		MemoryMb:     {{ .MemoryMb }},
 		GPU:          {{ .GPU }},
+		Architecture: "{{ .Architecture }}",
 	},
 {{- end }}
 }
@@ -117,6 +120,7 @@ func getAllAzureVirtualMachineTypes() (result map[string]*azure.InstanceType, er
 			var virtualMachine azure.InstanceType
 			virtualMachine.InstanceType = instance.Name
 			virtualMachine.SkuFamily = instance.Family
+			virtualMachine.Architecture = cloudprovider.DefaultArch
 			for _, capability := range instance.Capabilities {
 				switch capability.Name {
 				case "vCPUs":
@@ -134,6 +138,10 @@ func getAllAzureVirtualMachineTypes() (result map[string]*azure.InstanceType, er
 					virtualMachine.GPU, err = strconv.ParseInt(capability.Value, 10, 64)
 					if err != nil {
 						return nil, err
+					}
+				case "CpuArchitectureType":
+					if strings.ToLower(capability.Value) == "arm64" {
+						virtualMachine.Architecture = "arm64"
 					}
 				}
 			}

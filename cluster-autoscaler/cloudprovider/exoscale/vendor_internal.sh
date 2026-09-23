@@ -5,7 +5,6 @@
 #
 # The following modules have been vendored manually and are not managed
 # by this script:
-#   - github.com/gofrs/uuid
 #   - github.com/deepmap/oapi-codegen
 #   - k8s.io/klog
 
@@ -23,7 +22,6 @@ rm -rf ./internal/github.com/exoscale/egoscale/v2/{*_test.go,doc.go,*_test.go,ap
 find ./internal -name '*.go' | while read f; do
     sed -i -r \
         -e 's#"github.com/exoscale/egoscale#"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale#g' \
-        -e 's#"github.com/gofrs/uuid#"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/gofrs/uuid#g' \
         -e 's#"github.com/deepmap/oapi-codegen#"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/deepmap/oapi-codegen#g' \
         -e 's#"k8s.io/klog#"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/k8s.io/klog#g' \
         -e "/[Cc]ode generated/d" \

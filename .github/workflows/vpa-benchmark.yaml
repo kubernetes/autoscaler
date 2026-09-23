@@ -1,0 +1,66 @@
+name: Vertical Pod Autoscaler
+
+on:
+  pull_request:
+    paths:
+      - 'vertical-pod-autoscaler/**'
+      - '!vertical-pod-autoscaler/**/*.md'
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: Go Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          path: pr
+
+      - name: Checkout Base
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: base
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: pr/vertical-pod-autoscaler/go.mod
+          cache-dependency-path: pr/vertical-pod-autoscaler/go.sum
+
+      - name: Run Benchmark (Base branch)
+        shell: bash
+        run: |
+          cd base/vertical-pod-autoscaler
+          go test -run='^$' -bench=. -count=10 ./... | tee ../../base.txt
+
+      - name: Run Benchmark (PR branch)
+        shell: bash
+        run: |
+          cd pr/vertical-pod-autoscaler
+          go test -run='^$' -bench=. -count=10 ./... | tee ../../pr.txt
+
+      - name: Install benchstat
+        run: go install golang.org/x/perf/cmd/benchstat@v0.0.0-20260813145340-fd4a688df892
+
+      - name: Compare Results
+        shell: bash
+        run: |
+          echo "### Vertical Pod Autoscaler Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "Comparing PR branch against \`"$GITHUB_BASE_REF"\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -s base.txt ] && [ -s pr.txt ]; then
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            $(go env GOPATH)/bin/benchstat base.txt pr.txt | tee benchstat.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          
+            # Fail if any regression is >= 10%
+            grep -qE '\+[1-9][0-9].*%' benchstat.txt && { echo "Regression detected >= 10%"; exit 1; } || true
+          else
+            echo "Error: Benchmark results not found or empty." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

@@ -197,6 +197,12 @@ The `AZURE_ENABLE_VMSS_FLEX` environment variable enables VMSS Flex support. By 
 |---------------------------|---------|-----------------------------------------|---------------------------|
 | enableVmssFlex            | false   | AZURE_ENABLE_VMSS_FLEX                  | enableVmssFlex            |
 
+The `AZURE_ENABLE_VMSS_ETAG` environment variable controls ETag-based optimistic concurrency on VMSS capacity updates: the cached VMSS ETag is sent as `If-Match` on `BeginCreateOrUpdate`, so a concurrent modification by another writer is rejected with HTTP 412 instead of silently overwritten. On 412 the autoscaler refreshes the ETag with a fresh GET and retries the update once; if the VMSS has meanwhile reached the desired size the scale-up is treated as satisfied, and only a still-failing retry surfaces an error. On a successful update it adopts the new ETag returned by the operation so subsequent updates remain protected. Disabled by default; set to `true` to opt in.
+
+| Config Name      | Default | Environment Variable    | Cloud Config File |
+|------------------|---------|-------------------------|-------------------|
+| enableVMSSEtag   | false   | AZURE_ENABLE_VMSS_ETAG  | enableVMSSEtag    |
+
 When using K8s 1.18 or higher, it is also recommended to configure backoff and retries on the client as described [here](#rate-limit-and-back-off-retries)
 
 ### Standard deployment

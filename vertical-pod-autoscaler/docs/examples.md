@@ -2,16 +2,18 @@
 
 ## Contents
 
-- [Examples](#examples)
-  - [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
-  - [Capping to Limit Range](#capping-to-limit-range)
-  - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
-  - [Starting multiple recommenders](#starting-multiple-recommenders)
-  - [Using CPU management with static policy](#using-cpu-management-with-static-policy)
-  - [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
-  - [Limiting which namespaces are used](#limiting-which-namespaces-are-used)
-  - [Setting the webhook failurePolicy](#setting-the-webhook-failurepolicy)
-  - [Specifying global maximum allowed resources to prevent pods from being unschedulable](#specifying-global-maximum-allowed-resources-to-prevent-pods-from-being-unschedulable)
+<!-- toc -->
+- [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
+- [Capping to Limit Range](#capping-to-limit-range)
+- [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
+- [Starting multiple recommenders](#starting-multiple-recommenders)
+- [Custom memory bump-up after OOMKill](#custom-memory-bump-up-after-oomkill)
+- [Using CPU management with static policy](#using-cpu-management-with-static-policy)
+- [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
+- [Limiting which namespaces are used](#limiting-which-namespaces-are-used)
+- [Setting the webhook failurePolicy](#setting-the-webhook-failurepolicy)
+- [Specifying global maximum allowed resources to prevent pods from being unschedulable](#specifying-global-maximum-allowed-resources-to-prevent-pods-from-being-unschedulable)
+<!-- /toc -->
 
 ## Keeping limit proportional to request
 
@@ -39,15 +41,15 @@ the 2:1 limit/request ratio from the template).
 ## Starting multiple recommenders
 
 It is possible to start one or more extra recommenders in order to use different percentile on different workload profiles.
-For example you could have 3 profiles:  [frugal](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment-low.yaml),
-[standard](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment.yaml) and
-[performance](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment-high.yaml) which will
-use different TargetCPUPercentile (50, 90 and 95) to calculate their recommendations.
+For example you could have 2 profiles: [standard](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment.yaml)
+and performance which will use different TargetCPUPercentile (90 and 95) to calculate their recommendations.
 
 Please note the usage of the following arguments to override default names and percentiles:
 
 - --recommender-name=performance
 - --target-cpu-percentile=0.95
+
+You can use the [standard recommender deployment](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment.yaml) as a base and adjust the arguments accordingly.
 
 You can then choose which recommender to use by setting `recommenders` inside the `VerticalPodAutoscaler` spec.
 
@@ -110,9 +112,9 @@ It is possible to set the failurePolicy of the webhook to `Fail` by passing `--w
 Please use this option with caution as it may be possible to break Pod creation if there is a failure with the VPA.
 Using it in conjunction with `--ignored-vpa-object-namespaces=kube-system` or `--vpa-object-namespace` to reduce risk.
 
-### Specifying global maximum allowed resources to prevent pods from being unschedulable
+## Specifying global maximum allowed resources to prevent pods from being unschedulable
 
-The [Known limitations dcoument](./known-limitations.md) outlines that VPA (vpa-recommender in particular) is not aware of the cluster's maximum allocatable and can recommend resources which will not fit even the largest node in the cluster. This issue occurs even when the cluster uses the [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics). The vpa-recommender's resource recommendation can exceed the allocatable of the largest node in the cluster. Hence, pod's will be unschedulable (in `Pending` state) and the pod wouldn't fit the cluster even if a new node is added by the Cluster Autoscaler.
+The [Known limitations document](./known-limitations.md) outlines that VPA (vpa-recommender in particular) is not aware of the cluster's maximum allocatable and can recommend resources which will not fit even the largest node in the cluster. This issue occurs even when the cluster uses the [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics). The vpa-recommender's resource recommendation can exceed the allocatable of the largest node in the cluster. Hence, pod's will be unschedulable (in `Pending` state) and the pod wouldn't fit the cluster even if a new node is added by the Cluster Autoscaler.
 It is possible to mitigate this issue by specifying the `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` flags of the vpa-recommender. These flags represent the global maximum amount of cpu/memory that will be recommended **for a container**. If the VerticalPodAutoscaler already defines a max allowed (`.spec.resourcePolicy.containerPolicies.maxAllowed`) then it takes precedence over the global max allowed. The global max allowed is merged to the VerticalPodAutoscaler's max allowed if VerticalPodAutoscaler's max allowed is specified only for cpu or memory. If the VerticalPodAutoscaler does not specify a max allowed and a global max allowed is specified, then the global max allowed is being used.
 
 The recommendation for computing the `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` values for your cluster is to use the largest node's allocatable (`.status.allocatable` field of a node) minus the DaemonSet pods resource requests minus a safety margin:

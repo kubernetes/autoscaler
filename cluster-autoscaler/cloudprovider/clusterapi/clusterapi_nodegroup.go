@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -27,12 +28,13 @@ import (
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 )
 
 const (
@@ -51,11 +53,11 @@ type nodegroup struct {
 
 var _ cloudprovider.NodeGroup = (*nodegroup)(nil)
 
-func (ng *nodegroup) MinSize() int {
+func (ng *nodegroup) MinSize(ctx context.Context) int {
 	return ng.scalableResource.MinSize()
 }
 
-func (ng *nodegroup) MaxSize() int {
+func (ng *nodegroup) MaxSize(ctx context.Context) int {
 	return ng.scalableResource.MaxSize()
 }
 
@@ -64,7 +66,7 @@ func (ng *nodegroup) MaxSize() int {
 // moment but should be equal to Size() once everything stabilizes
 // (new nodes finish startup and registration or removed nodes are
 // deleted completely). Implementation required.
-func (ng *nodegroup) TargetSize() (int, error) {
+func (ng *nodegroup) TargetSize(ctx context.Context) (int, error) {
 	replicas, found, err := unstructured.NestedInt64(ng.scalableResource.unstructured.Object, "spec", "replicas")
 	if err != nil {
 		return 0, errors.Wrap(err, "error getting replica count")
@@ -79,7 +81,7 @@ func (ng *nodegroup) TargetSize() (int, error) {
 // you need to explicitly name it and use DeleteNode. This function
 // should wait until node group size is updated. Implementation
 // required.
-func (ng *nodegroup) IncreaseSize(delta int) error {
+func (ng *nodegroup) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -93,7 +95,7 @@ func (ng *nodegroup) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (ng *nodegroup) AtomicIncreaseSize(delta int) error {
+func (ng *nodegroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -101,7 +103,7 @@ func (ng *nodegroup) AtomicIncreaseSize(delta int) error {
 // either on failure or if the given node doesn't belong to this node
 // group. This function should wait until node group size is updated.
 // Implementation required.
-func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
+func (ng *nodegroup) DeleteNodes(ctx context.Context, nodes []*corev1.Node) error {
 	ng.machineController.accessLock.Lock()
 	defer ng.machineController.accessLock.Unlock()
 
@@ -110,8 +112,8 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 		return err
 	}
 
-	// if we are at minSize already we wail early.
-	if replicas <= ng.MinSize() {
+	// if we are at minSize already we fail early.
+	if replicas <= ng.MinSize(context.TODO()) {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
@@ -119,9 +121,12 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	for _, node := range nodes {
 		actualNodeGroup, err := ng.machineController.nodeGroupForNode(node)
 		if err != nil {
-			return nil
+			if k8serrors.IsNotFound(err) {
+				klog.Warningf("Node group not found for node %q, skipping verification: %v", node.Spec.ProviderID, err)
+				continue
+			}
+			return err
 		}
-
 		if actualNodeGroup == nil {
 			return fmt.Errorf("no node group found for node %q", node.Spec.ProviderID)
 		}
@@ -134,19 +139,63 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 	// Step 2: if deleting len(nodes) would make the replica count
 	// < minSize, then the request to delete that many nodes is bogus
 	// and we fail fast.
-	if replicas-len(nodes) < ng.MinSize() {
-		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %q, minSize is %q ", len(nodes), ng.Id(), replicas, ng.MinSize())
+	if replicas-len(nodes) < ng.MinSize(context.TODO()) {
+		return fmt.Errorf("unable to delete %d machines in %q, machine replicas are %d, minSize is %d", len(nodes), ng.Id(), replicas, ng.MinSize(context.TODO()))
 	}
 
-	// Step 3: annotate the corresponding machine that it is a
-	// suitable candidate for deletion and drop the replica count
-	// by 1. Fail fast on any error.
+	// Step 3: when a backing Machine exists, mark it as a deletion candidate
+	// and decrease the replica count by 1. For MachinePool-backed node groups,
+	// if no per-node Machine can be resolved, fall back to replica decrement
+	// after verifying the node belongs to the MachinePool providerID list.
 	for _, node := range nodes {
-		machine, err := ng.machineController.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
+		nodeGroup, err := ng.machineController.nodeGroupForNode(node)
 		if err != nil {
+			if k8serrors.IsNotFound(err) {
+				klog.Warningf("Node group not found for node %q, skipping deletion: %v", node.Spec.ProviderID, err)
+				continue
+			}
 			return err
 		}
+
+		machine, err := ng.machineController.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
+		if err != nil && !k8serrors.IsNotFound(err) {
+			return err
+		}
+
 		if machine == nil {
+			// Fallback for MachinePool-based providers where no per-node Machine
+			// objects exist. In that case, allow scale-down by decreasing replicas,
+			// but only if the node providerID is explicitly present in the
+			// MachinePool providerIDList.
+			if nodeGroup.scalableResource.Kind() == machinePoolKind {
+				providerIDs, err := nodeGroup.scalableResource.ProviderIDs()
+				if err != nil {
+					return err
+				}
+
+				nodeProviderID := normalizedProviderString(node.Spec.ProviderID)
+				found := false
+				for _, id := range providerIDs {
+					if normalizedProviderString(id) == nodeProviderID {
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					return fmt.Errorf("node %q is not present in MachinePool providerIDList for nodegroup %q", node.Spec.ProviderID, nodeGroup.Id())
+				}
+
+				klog.Warningf("No Machine found for node %q in MachinePool %q, falling back to replica decrement only", node.Spec.ProviderID, nodeGroup.Id())
+
+				if err := nodeGroup.scalableResource.SetSize(replicas - 1); err != nil {
+					return err
+				}
+
+				replicas--
+				continue
+			}
+
 			return fmt.Errorf("unknown machine for node %q", node.Spec.ProviderID)
 		}
 
@@ -157,16 +206,11 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 			continue
 		}
 
-		nodeGroup, err := ng.machineController.nodeGroupForNode(node)
-		if err != nil {
-			return err
-		}
-
 		if err := nodeGroup.scalableResource.MarkMachineForDeletion(machine); err != nil {
 			return err
 		}
 
-		if err := ng.scalableResource.SetSize(replicas - 1); err != nil {
+		if err := nodeGroup.scalableResource.SetSize(replicas - 1); err != nil {
 			_ = nodeGroup.scalableResource.UnmarkMachineForDeletion(machine)
 			return err
 		}
@@ -178,7 +222,7 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (ng *nodegroup) ForceDeleteNodes(nodes []*corev1.Node) error {
+func (ng *nodegroup) ForceDeleteNodes(ctx context.Context, nodes []*corev1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -188,7 +232,7 @@ func (ng *nodegroup) ForceDeleteNodes(nodes []*corev1.Node) error {
 // yet fulfilled. Delta should be negative. It is assumed that cloud
 // nodegroup will not delete the existing nodes when there is an option
 // to just decrease the target. Implementation required.
-func (ng *nodegroup) DecreaseTargetSize(delta int) error {
+func (ng *nodegroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
@@ -198,7 +242,7 @@ func (ng *nodegroup) DecreaseTargetSize(delta int) error {
 		return err
 	}
 
-	nodes, err := ng.Nodes()
+	nodes, err := ng.Nodes(context.TODO())
 	if err != nil {
 		return err
 	}
@@ -232,17 +276,17 @@ func (ng *nodegroup) Id() string {
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (ng *nodegroup) Debug() string {
+func (ng *nodegroup) Debug(ctx context.Context) string {
 	replicas, err := ng.scalableResource.Replicas()
 	if err != nil {
-		return fmt.Sprintf("%s (min: %d, max: %d, replicas: %v)", ng.Id(), ng.MinSize(), ng.MaxSize(), err)
+		return fmt.Sprintf("%s (min: %d, max: %d, replicas: %v)", ng.Id(), ng.MinSize(context.TODO()), ng.MaxSize(context.TODO()), err)
 	}
-	return fmt.Sprintf(debugFormat, ng.Id(), ng.MinSize(), ng.MaxSize(), replicas)
+	return fmt.Sprintf(debugFormat, ng.Id(), ng.MinSize(context.TODO()), ng.MaxSize(context.TODO()), replicas)
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
 // This includes instances that might have not become a kubernetes node yet.
-func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *nodegroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	providerIDs, err := ng.scalableResource.ProviderIDs()
 	if err != nil {
 		return nil, err
@@ -343,7 +387,7 @@ func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 // allocatable information as well as all pods that are started on the
 // node by default, using manifest (most likely only kube-proxy).
 // Implementation optional.
-func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ng *nodegroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	if !ng.scalableResource.CanScaleFromZero() {
 		return nil, cloudprovider.ErrNotImplemented
 	}
@@ -361,12 +405,17 @@ func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 		},
 	}
 
+	nsi := ng.scalableResource.InstanceSystemInfo()
+	if nsi != nil {
+		node.Status.NodeInfo = *nsi
+	}
+
 	node.Status.Capacity = capacity
 	node.Status.Allocatable = capacity
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	node.Spec.Taints = ng.scalableResource.Taints()
 
-	node.Labels, err = ng.buildTemplateLabels(nodeName)
+	node.Labels, err = ng.buildTemplateLabels(nodeName, nsi)
 	if err != nil {
 		return nil, err
 	}
@@ -375,15 +424,30 @@ func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	csiNode := ng.scalableResource.InstanceCSINode()
 
-	nodeInfo := framework.NewNodeInfo(&node, resourceSlices, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.scalableResource.Name())})
+	nodeInfo := framework.NewNodeInfo(&node, resourceSlices, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.scalableResource.Name()), nil))
+	if csiNode != nil {
+		nodeInfo.SetCSINode(csiNode)
+	}
 	return nodeInfo, nil
 }
 
-func (ng *nodegroup) buildTemplateLabels(nodeName string) (map[string]string, error) {
-	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), ng.scalableResource.Labels())
+func (ng *nodegroup) buildTemplateLabels(nodeName string, nsi *corev1.NodeSystemInfo) (map[string]string, error) {
+	nsiLabels := make(map[string]string)
+	if nsi != nil {
+		nsiLabels[corev1.LabelArchStable] = nsi.Architecture
+		nsiLabels[corev1.LabelOSStable] = nsi.OperatingSystem
+	}
 
-	nodes, err := ng.Nodes()
+	// The order of priority is:
+	// - Labels set in existing nodes for not-autoscale-from-zero cases
+	// - Labels set in the labels capacity annotation of machine template, machine set, and machine deployment.
+	// - Values in the status.nodeSystemInfo of MachineTemplates
+	// - Generic/default labels set in the environment of the cluster autoscaler
+	labels := cloudprovider.JoinStringMaps(buildGenericLabels(nodeName), nsiLabels, ng.scalableResource.Labels())
+
+	nodes, err := ng.Nodes(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -404,14 +468,14 @@ func (ng *nodegroup) buildTemplateLabels(nodeName string) (map[string]string, er
 // Exist checks if the node group really exists on the cloud nodegroup
 // side. Allows to tell the theoretical node group from the real one.
 // Implementation required.
-func (ng *nodegroup) Exist() bool {
+func (ng *nodegroup) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud nodegroup side.
 // Implementation optional.
-func (ng *nodegroup) Create() (cloudprovider.NodeGroup, error) {
-	if ng.Exist() {
+func (ng *nodegroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	if ng.Exist(context.TODO()) {
 		return nil, cloudprovider.ErrAlreadyExist
 	}
 	return nil, cloudprovider.ErrNotImplemented
@@ -420,20 +484,20 @@ func (ng *nodegroup) Create() (cloudprovider.NodeGroup, error) {
 // Delete deletes the node group on the cloud nodegroup side. This will
 // be executed only for autoprovisioned node groups, once their size
 // drops to 0. Implementation optional.
-func (ng *nodegroup) Delete() error {
+func (ng *nodegroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
 // An autoprovisioned group was created by CA and can be deleted when
 // scaled to 0.
-func (ng *nodegroup) Autoprovisioned() bool {
+func (ng *nodegroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (ng *nodegroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *nodegroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	options := ng.scalableResource.autoscalingOptions
 	if options == nil || len(options) == 0 {
 		return &defaults, nil
@@ -454,8 +518,73 @@ func (ng *nodegroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*c
 	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultMaxNodeProvisionTimeKey); ok {
 		defaults.MaxNodeProvisionTime = opt
 	}
+	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultMaxNodeStartupTimeKey); ok {
+		defaults.MaxNodeStartupTime = opt
+	}
 
 	return &defaults, nil
+}
+
+func (ng *nodegroup) IsMachineDeploymentAndRollingOut() (bool, error) {
+	if ng.scalableResource.Kind() != machineDeploymentKind {
+		// Not a MachineDeployment.
+		return false, nil
+	}
+
+	machineSets, err := ng.machineController.listMachineSetsForMachineDeployment(ng.scalableResource.unstructured)
+	if err != nil {
+		return false, err
+	}
+
+	if len(machineSets) == 0 {
+		// No MachineSets => MD is not rolling out.
+		return false, nil
+	}
+
+	// Find the latest revision, the MachineSet with the latest revision is the MachineSet that
+	// matches the MachineDeployment spec.
+	var latestMSRevisionInt int64
+	for _, ms := range machineSets {
+		msRevision, ok := ms.GetAnnotations()[machineDeploymentRevisionAnnotation]
+		if !ok {
+			continue
+		}
+
+		msRevisionInt, err := strconv.ParseInt(msRevision, 10, 64)
+		if err != nil {
+			return false, errors.Wrapf(err, "failed to parse current revision on MachineSet %s", klog.KObj(ms))
+		}
+		latestMSRevisionInt = max(latestMSRevisionInt, msRevisionInt)
+	}
+	maxMSRevision := strconv.FormatInt(latestMSRevisionInt, 10)
+
+	for _, ms := range machineSets {
+		if ms.GetAnnotations()[machineDeploymentRevisionAnnotation] == maxMSRevision {
+			// Ignore the MachineSet with the latest revision
+			continue
+		}
+
+		// Check if any of the old MachineSets still have replicas
+		replicas, found, err := unstructured.NestedInt64(ms.UnstructuredContent(), "spec", "replicas")
+		if err != nil {
+			return false, errors.Wrapf(err, "failed to find spec replicas on MachineSet %s", klog.KObj(ms))
+		}
+		if found && replicas > 0 {
+			// Found old MachineSets that still has replicas => MD is still rolling out.
+			return true, nil
+		}
+		replicas, found, err = unstructured.NestedInt64(ms.UnstructuredContent(), "status", "replicas")
+		if err != nil {
+			return false, errors.Wrapf(err, "failed to find status replicas on MachineSet %s", klog.KObj(ms))
+		}
+		if found && replicas > 0 {
+			// Found old MachineSets that still has replicas => MD is still rolling out.
+			return true, nil
+		}
+	}
+
+	// Didn't find any old MachineSets that still have replicas => MD is not rolling out.
+	return false, nil
 }
 
 func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured) (*nodegroup, error) {
@@ -526,6 +655,7 @@ func extractNodeLabels(node *corev1.Node) map[string]string {
 	setLabelIfNotEmpty(m, node.Labels, corev1.LabelZoneRegionStable)
 
 	setLabelIfNotEmpty(m, node.Labels, corev1.LabelZoneFailureDomain)
+	setLabelIfNotEmpty(m, node.Labels, corev1.LabelTopologyZone)
 
 	return m
 }

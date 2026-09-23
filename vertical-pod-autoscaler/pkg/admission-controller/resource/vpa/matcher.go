@@ -19,12 +19,11 @@ package vpa
 import (
 	"context"
 
-	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -33,25 +32,26 @@ import (
 // Matcher is capable of returning a single matching VPA object
 // for a pod. Will return nil if no matching object is found.
 type Matcher interface {
-	GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.VerticalPodAutoscaler
+	GetMatchingVPA(ctx context.Context, pod *corev1.Pod) *vpa_types.VerticalPodAutoscaler
 }
 
 type matcher struct {
-	vpaLister         vpa_lister.VerticalPodAutoscalerLister
+	// vpaIndexer must have the vpa_api_util.TargetRefIndex index registered.
+	vpaIndexer        cache.Indexer
 	selectorFetcher   target.VpaTargetSelectorFetcher
 	controllerFetcher controllerfetcher.ControllerFetcher
 }
 
 // NewMatcher returns a new VPA matcher.
-func NewMatcher(vpaLister vpa_lister.VerticalPodAutoscalerLister,
+func NewMatcher(vpaIndexer cache.Indexer,
 	selectorFetcher target.VpaTargetSelectorFetcher,
 	controllerFetcher controllerfetcher.ControllerFetcher) Matcher {
-	return &matcher{vpaLister: vpaLister,
+	return &matcher{vpaIndexer: vpaIndexer,
 		selectorFetcher:   selectorFetcher,
 		controllerFetcher: controllerFetcher}
 }
 
-func (m *matcher) GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.VerticalPodAutoscaler {
+func (m *matcher) GetMatchingVPA(ctx context.Context, pod *corev1.Pod) *vpa_types.VerticalPodAutoscaler {
 	parentController, err := vpa_api_util.FindParentControllerForPod(ctx, pod, m.controllerFetcher)
 	if err != nil {
 		klog.ErrorS(err, "Failed to get parent controller for pod", "pod", klog.KObj(pod))
@@ -61,25 +61,22 @@ func (m *matcher) GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.
 		return nil
 	}
 
-	configs, err := m.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
+	configs, err := m.vpaIndexer.ByIndex(vpa_api_util.TargetRefIndex,
+		vpa_api_util.TargetRefIndexKey(parentController.Namespace, parentController.Kind, parentController.Name))
 	if err != nil {
 		klog.ErrorS(err, "Failed to get vpa configs")
 		return nil
 	}
 
 	var controllingVpa *vpa_types.VerticalPodAutoscaler
-	for _, vpaConfig := range configs {
-		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff {
+	for _, obj := range configs {
+		vpaConfig, ok := obj.(*vpa_types.VerticalPodAutoscaler)
+		if !ok {
+			klog.ErrorS(nil, "Unexpected object type in VPA cache", "object", obj)
 			continue
 		}
-		if vpaConfig.Spec.TargetRef == nil {
-			klog.V(5).InfoS("Skipping VPA object because targetRef is not defined. If this is a v1beta1 object, switch to v1", "vpa", klog.KObj(vpaConfig))
+		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff && !vpa_api_util.HasStartupBoost(vpaConfig) {
 			continue
-		}
-		if vpaConfig.Spec.TargetRef.Kind != parentController.Kind ||
-			vpaConfig.Namespace != parentController.Namespace ||
-			vpaConfig.Spec.TargetRef.Name != parentController.Name {
-			continue // This pod is not associated to the right controller
 		}
 
 		selector, err := m.selectorFetcher.Fetch(ctx, vpaConfig)

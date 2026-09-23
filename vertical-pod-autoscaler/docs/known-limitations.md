@@ -1,5 +1,8 @@
 # Known limitations
 
+<!-- toc -->
+<!-- /toc -->
+
 - Whenever VPA updates the pod resources, the pod is recreated, which causes all
   running containers to be recreated. The pod may be recreated on a different
   node.

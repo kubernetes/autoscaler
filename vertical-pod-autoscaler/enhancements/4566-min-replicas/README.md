@@ -3,15 +3,15 @@
 <!-- toc -->
 - [Summary](#summary)
 - [Motivation](#motivation)
-   - [Goals](#goals)
-   - [Non-Goals](#non-goals)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
-   - [Test Plan](#test-plan)
+  - [Test Plan](#test-plan)
 - [Implementation History](#implementation-history)
 - [Alternatives](#alternatives)
-   - [Existing Behaviour](#existing-behaviour)
-   - [Reuse Cluster Autoscaler Annotations](#reuse-cluster-autoscaler-annotations)
+  - [Existing Behaviour](#existing-behaviour)
+  - [Reuse Cluster Autoscaler Annotations](#reuse-cluster-autoscaler-annotations)
 <!-- /toc -->
 
 ## Summary

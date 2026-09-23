@@ -17,7 +17,7 @@ limitations under the License.
 package routines
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -25,14 +25,14 @@ import (
 )
 
 type cappingPostProcessor struct {
-	globalMaxAllowed apiv1.ResourceList
+	globalMaxAllowed corev1.ResourceList
 }
 
 var _ RecommendationPostProcessor = &cappingPostProcessor{}
 
 // NewCappingRecommendationProcessor constructs new RecommendationPostProcessor that adjusts recommendation
 // for given pod to obey VPA resources policy and a global max allowed configuration.
-func NewCappingRecommendationProcessor(globalMaxAllowed apiv1.ResourceList) RecommendationPostProcessor {
+func NewCappingRecommendationProcessor(globalMaxAllowed corev1.ResourceList) RecommendationPostProcessor {
 	return &cappingPostProcessor{
 		globalMaxAllowed: globalMaxAllowed,
 	}

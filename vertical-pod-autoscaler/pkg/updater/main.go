@@ -18,20 +18,24 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os"
+	"os/signal"
+	"reflect"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/spf13/pflag"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
-	kube_flag "k8s.io/component-base/cli/flag"
 	componentbaseconfig "k8s.io/component-base/config"
 	componentbaseoptions "k8s.io/component-base/config/options"
 	"k8s.io/klog/v2"
@@ -43,39 +47,17 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	updater_config "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/config"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/inplace"
 	updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/client"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/server"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-)
-
-var (
-	updaterInterval = flag.Duration("updater-interval", 1*time.Minute,
-		`How often updater should run`)
-
-	minReplicas = flag.Int("min-replicas", 2,
-		`Minimum number of replicas to perform update`)
-
-	evictionToleranceFraction = flag.Float64("eviction-tolerance", 0.5,
-		`Fraction of replica count that can be evicted for update, if more than one pod can be evicted.`)
-
-	evictionRateLimit = flag.Float64("eviction-rate-limit", -1,
-		`Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable
-		the rate limiter.`)
-
-	evictionRateBurst = flag.Int("eviction-rate-burst", 1, `Burst of pods that can be evicted.`)
-
-	address = flag.String("address", ":8943", "The address to expose Prometheus metrics.")
-
-	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
-		"If true, updater will only evict pods when admission controller status is valid.")
-
-	namespace = os.Getenv("NAMESPACE")
 )
 
 const (
@@ -85,31 +67,24 @@ const (
 	scaleCacheEntryJitterFactor  float64       = 1.
 )
 
-func main() {
-	commonFlags := common.InitCommonFlags()
-	klog.InitFlags(nil)
-	common.InitLoggingFlags()
+var config *updater_config.UpdaterConfig
 
+func main() {
+	// Leader election needs to be initialized before any other flag, because it may be used in other flag's validation.
 	leaderElection := defaultLeaderElectionConfiguration()
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
-	features.MutableFeatureGate.AddFlag(pflag.CommandLine)
+	config = updater_config.InitUpdaterFlags()
 
-	kube_flag.InitFlags()
 	klog.V(1).InfoS("Vertical Pod Autoscaler Updater", "version", common.VerticalPodAutoscalerVersion())
 
-	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
-		klog.ErrorS(nil, "--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
-		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
-	}
-
-	healthCheck := metrics.NewHealthCheck(*updaterInterval * 5)
-	server.Initialize(&commonFlags.EnableProfiling, healthCheck, address)
+	healthCheck := metrics.NewHealthCheck(config.UpdaterInterval * 5)
+	server.Initialize(&config.CommonFlags.EnableProfiling, healthCheck, &config.Address)
 
 	metrics_updater.Register()
 
 	if !leaderElection.LeaderElect {
-		run(healthCheck, commonFlags)
+		run(healthCheck, config.CommonFlags)
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
@@ -118,8 +93,8 @@ func main() {
 		}
 		id = id + "_" + string(uuid.NewUUID())
 
-		config := common.CreateKubeConfigOrDie(commonFlags.KubeConfig, float32(commonFlags.KubeApiQps), int(commonFlags.KubeApiBurst))
-		kubeClient := kube_client.NewForConfigOrDie(config)
+		kubeConfig := common.CreateKubeConfigOrDie(config.CommonFlags.KubeConfig, float32(config.CommonFlags.KubeApiQps), int(config.CommonFlags.KubeApiBurst))
+		kubeClient := kube_client.NewForConfigOrDie(kubeConfig)
 
 		lock, err := resourcelock.New(
 			leaderElection.ResourceLock,
@@ -144,7 +119,7 @@ func main() {
 			ReleaseOnCancel: true,
 			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(_ context.Context) {
-					run(healthCheck, commonFlags)
+					run(healthCheck, config.CommonFlags)
 				},
 				OnStoppedLeading: func() {
 					klog.Fatal("lost master")
@@ -173,51 +148,69 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 }
 
 func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
+	sigCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+
 	stopCh := make(chan struct{})
 	defer close(stopCh)
-	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
-	kubeClient := kube_client.NewForConfigOrDie(config)
-	vpaClient := vpa_clientset.NewForConfigOrDie(config)
-	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
-	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+
+	kubeConfig := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
+	kubeClient := kube_client.NewForConfigOrDie(kubeConfig)
+	vpaClient := vpa_clientset.NewForConfigOrDie(kubeConfig)
+	kubeFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod,
+		informers.WithNamespace(commonFlag.VpaObjectNamespace),
+		informers.WithTransform(client.StripManagedFields),
+	)
+
+	podInformerFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod,
+		informers.WithNamespace(commonFlag.VpaObjectNamespace),
+		informers.WithTransform(client.StripManagedFields),
+		informers.WithTweakListOptions(func(opts *metav1.ListOptions) {
+			// Filter out unscheduled pods and pods in terminal phases (Succeeded/Failed)
+			opts.FieldSelector = "spec.nodeName!=" + "" + ",status.phase!=" +
+				string(corev1.PodSucceeded) + ",status.phase!=" + string(corev1.PodFailed)
+		}),
+	)
+	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, kubeFactory, stopCh)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, kubeFactory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor, stopCh)
 	var limitRangeCalculator limitrange.LimitRangeCalculator
-	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
+	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(kubeFactory)
 	if err != nil {
 		klog.ErrorS(err, "Failed to create limitRangeCalculator, falling back to not checking limits")
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
 
-	factory.Start(stopCh)
-	informerMap := factory.WaitForCacheSync(stopCh)
-	for kind, synced := range informerMap {
-		if !synced {
-			klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
-			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
-		}
-	}
-
 	admissionControllerStatusNamespace := status.AdmissionControllerStatusNamespace
-	if namespace != "" {
-		admissionControllerStatusNamespace = namespace
+	if config.Namespace != "" {
+		admissionControllerStatusNamespace = config.Namespace
+	}
+	if config.AdmissionControllerStatusLeaseNamespace != "" {
+		admissionControllerStatusNamespace = config.AdmissionControllerStatusLeaseNamespace
 	}
 
 	ignoredNamespaces := strings.Split(commonFlag.IgnoredVpaObjectNamespaces, ",")
 
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
 
-	calculators := []patch.Calculator{inplace.NewResourceInPlaceUpdatesCalculator(recommendationProvider), inplace.NewInPlaceUpdatedCalculator()}
+	calculators := []patch.Calculator{inplace.NewResourceInPlaceUpdatesCalculator(recommendationProvider), inplace.NewInPlaceUpdatedCalculator(), inplace.NewUnboostAnnotationCalculator()}
 
-	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
 		kubeClient,
 		vpaClient,
-		*minReplicas,
-		*evictionRateLimit,
-		*evictionRateBurst,
-		*evictionToleranceFraction,
-		*useAdmissionControllerStatus,
+		kubeFactory,
+		podInformerFactory,
+		config.MinReplicas,
+		config.EvictionRateLimit,
+		config.EvictionRateBurst,
+		config.EvictionToleranceFraction,
+		config.UseAdmissionControllerStatus,
+		config.InPlaceSkipDisruptionBudget,
+		config.DefaultUpdateThreshold,
+		config.PodLifetimeUpdateThreshold,
+		config.EvictAfterOOMThreshold,
+		config.AdmissionControllerStatusLeaseName,
 		admissionControllerStatusNamespace,
+		config.AdmissionControllerStatusLeaseTimeout,
 		vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
 		priority.NewScalingDirectionPodEvictionAdmission(),
 		targetSelectorFetcher,
@@ -232,14 +225,51 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
+	kubeFactory.Start(stopCh)
+	podInformerFactory.Start(stopCh)
+	for _, informerMap := range []map[reflect.Type]bool{
+		kubeFactory.WaitForCacheSync(stopCh),
+		podInformerFactory.WaitForCacheSync(stopCh),
+	} {
+		for kind, synced := range informerMap {
+			if !synced {
+				klog.ErrorS(nil, fmt.Sprintf("Could not sync cache for the %s informer", kind.String()))
+				klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+			}
+		}
+	}
+
+	// Start boost worker only if CPUStartupBoost feature gate are enabled
+	if features.Enabled(features.CPUStartupBoost) {
+		var wg sync.WaitGroup
+		ctx, cancel := context.WithCancel(sigCtx)
+		defer func() {
+			cancel()
+			updater.ShutDown()
+			wg.Wait()
+		}()
+		for i := 0; i < config.ConcurrentCPUStartupBoostSyncs; i++ {
+			wg.Go(func() {
+				wait.UntilWithContext(ctx, updater.RunBoostWorker, time.Second)
+			})
+		}
+	}
+
 	// Start updating health check endpoint.
 	healthCheck.StartMonitoring()
 
-	ticker := time.Tick(*updaterInterval)
-	for range ticker {
-		ctx, cancel := context.WithTimeout(context.Background(), *updaterInterval)
-		updater.RunOnce(ctx)
-		healthCheck.UpdateLastActivity()
-		cancel()
+	ticker := time.NewTicker(config.UpdaterInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			loopCtx, loopCancel := context.WithTimeout(sigCtx, config.UpdaterInterval)
+			updater.RunOnce(loopCtx)
+			healthCheck.UpdateLastActivity()
+			loopCancel()
+		case <-sigCtx.Done():
+			klog.InfoS("Received shutdown signal, exiting")
+			return
+		}
 	}
 }

@@ -1,0 +1,19 @@
+{{- if and (.Values.recommender.enabled) .Values.recommender.podDisruptionBudget.enabled -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "vertical-pod-autoscaler.recommender.selectorLabels" . | nindent 6 }}
+  {{- if .Values.recommender.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.recommender.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if .Values.recommender.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.recommender.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+{{- end -}}

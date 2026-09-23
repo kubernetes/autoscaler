@@ -1,7 +1,7 @@
 approvers:
-#- OriHoch
+- OriHoch
 reviewers:
-#- OriHoch
+- OriHoch
 
 labels:
 - area/provider/kamatera

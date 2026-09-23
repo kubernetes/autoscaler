@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -38,9 +38,9 @@ import (
 type PodsEvictionRestriction interface {
 	// Evict sends eviction instruction to the api client.
 	// Returns error if pod cannot be evicted or if client returned error.
-	Evict(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error
+	Evict(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error
 	// CanEvict checks if pod can be safely evicted
-	CanEvict(pod *apiv1.Pod) bool
+	CanEvict(pod *corev1.Pod) bool
 }
 
 // PodsEvictionRestrictionImpl is the implementation of the PodsEvictionRestriction interface.
@@ -53,14 +53,18 @@ type PodsEvictionRestrictionImpl struct {
 }
 
 // CanEvict checks if pod can be safely evicted
-func (e *PodsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
+func (e *PodsEvictionRestrictionImpl) CanEvict(pod *corev1.Pod) bool {
 	cr, present := e.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
-		if pod.Status.Phase == apiv1.PodPending {
+		if pod.Status.Phase == corev1.PodPending {
 			return true
 		}
 		if present {
+			if singleGroupStats.belowMinReplicas {
+				klog.V(2).InfoS("Cannot evict pod, group is below minReplicas", "pod", klog.KObj(pod))
+				return false
+			}
 			if isInPlaceUpdating(pod) {
 				return CanEvictInPlacingPod(pod, singleGroupStats, e.lastInPlaceAttemptTimeMap, e.clock)
 			}
@@ -72,7 +76,7 @@ func (e *PodsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 
 // Evict sends eviction instruction to api client. Returns error if pod cannot be evicted or if client returned error
 // Does not check if pod was actually evicted after eviction grace period.
-func (e *PodsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
+func (e *PodsEvictionRestrictionImpl) Evict(podToEvict *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
 	cr, present := e.podToReplicaCreatorMap[getPodID(podToEvict)]
 	if !present {
 		return fmt.Errorf("pod not suitable for eviction %s/%s: not in replicated pods map", podToEvict.Namespace, podToEvict.Name)
@@ -93,13 +97,13 @@ func (e *PodsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, vpa *vpa_type
 		klog.ErrorS(err, "Failed to evict pod", "pod", klog.KObj(podToEvict))
 		return err
 	}
-	eventRecorder.Event(podToEvict, apiv1.EventTypeNormal, "EvictedByVPA",
+	eventRecorder.Event(podToEvict, corev1.EventTypeNormal, "EvictedByVPA",
 		"Pod was evicted by VPA Updater to apply resource recommendation.")
 
-	eventRecorder.Event(vpa, apiv1.EventTypeNormal, "EvictedPod",
+	eventRecorder.Event(vpa, corev1.EventTypeNormal, "EvictedPod",
 		"VPA Updater evicted Pod "+podToEvict.Name+" to apply resource recommendation.")
 
-	if podToEvict.Status.Phase != apiv1.PodPending {
+	if podToEvict.Status.Phase != corev1.PodPending {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
 		if !present {
 			return fmt.Errorf("internal error - cannot find stats for replication group %v", cr)

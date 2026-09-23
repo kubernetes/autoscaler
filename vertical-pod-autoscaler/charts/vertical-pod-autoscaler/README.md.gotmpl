@@ -1,0 +1,131 @@
+{{ template "chart.header" . }}
+
+WARNING: This chart is currently under development and is not ready for production use.
+
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" . }}
+{{ template "chart.typeBadge" . }}
+{{ template "chart.appVersionBadge" . }}
+
+## Introduction
+The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resource requests of pods to match their actual resource utilization.
+
+## Helm Installation & upgrade
+
+```bash
+helm repo add autoscalers https://kubernetes.github.io/autoscaler
+helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
+```
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Webhook Management
+The admission controller requires a `MutatingWebhookConfiguration` and TLS certificates. This chart supports three mutually exclusive modes:
+
+### Helm-managed (default)
+```yaml
+admissionController:
+  registerWebhook: false
+  certGen:
+    enabled: true
+```
+In this mode:
+- Helm creates the MutatingWebhookConfiguration
+- The kube-webhook-certgen job generates TLS certificates and stores them in a Secret
+- The certificates are automatically injected into the webhook configuration
+
+### Application-managed
+```yaml
+admissionController:
+  registerWebhook: true
+  certGen:
+    enabled: false
+```
+In this mode:
+- The VPA admission controller creates and manages the webhook itself
+Important: You are responsible for creating the TLS secret before or after installing the chart. The admission controller will only create the `MutatingWebhookConfiguration` once the secret exists.
+If the secret is created after the Helm install, you must restart the admission controller pod to trigger webhook registration.
+
+### cert-manager managed
+
+Using an existing `Issuer` or `ClusterIssuer`:
+```yaml
+admissionController:
+  registerWebhook: false
+  certGen:
+    enabled: false
+  certManager:
+    enabled: true
+    issuerRef:
+      name: my-issuer
+      kind: ClusterIssuer
+```
+
+Or letting the chart create a namespaced self-signed issuer:
+```yaml
+admissionController:
+  registerWebhook: false
+  certGen:
+    enabled: false
+  certManager:
+    enabled: true
+    createSelfSignedIssuer:
+      enabled: true
+```
+In this mode:
+- Helm creates the MutatingWebhookConfiguration
+- cert-manager issues and renews TLS certificates automatically
+- cert-manager's cainjector injects the CA into the webhook configuration
+
+By default, you must provide an existing `Issuer` or `ClusterIssuer` via `admissionController.certManager.issuerRef`. Alternatively, enable `admissionController.certManager.createSelfSignedIssuer.enabled: true` to let the chart create a namespaced self-signed issuer automatically.
+
+## Custom Resource Definitions
+
+The VPA CRDs are managed as regular chart templates and are kept in sync automatically on `helm upgrade` (set `crds.enabled: false` if you manage CRDs separately, e.g. via Argo CD or Fleet).
+
+By default, the CRDs are annotated with `helm.sh/resource-policy: keep`, so `helm uninstall` will not remove them, protecting any existing VPA objects from being deleted. Set `crds.keep: false` to disable this.
+
+> [!WARNING]
+> If you're upgrading from a chart version before 0.12.0 (when CRDs moved from `crds/` to `templates/`) and `crds.enabled` is `true`, the upgrade will fail with an "invalid ownership metadata" error unless you use `--take-ownership` or apply the manual fix below first. If `crds.enabled` is `false`, these CRDs are not rendered by the chart. This is because Helm never took ownership of CRDs installed via the old `crds/` folder, so it refuses to adopt them without one of these steps. This only needs to be done once, on your first upgrade past 0.12.0.
+
+If you're on Helm 3.17+, pass `--take-ownership` on that upgrade:
+
+```bash
+helm upgrade <release-name> <chart> --namespace <namespace> --take-ownership
+```
+
+On older Helm versions `--take-ownership` isn't available, so add the ownership metadata manually first:
+
+```bash
+kubectl label crd verticalpodautoscalercheckpoints.autoscaling.k8s.io app.kubernetes.io/managed-by=Helm --overwrite
+kubectl annotate crd verticalpodautoscalercheckpoints.autoscaling.k8s.io meta.helm.sh/release-name=<release-name> meta.helm.sh/release-namespace=<namespace> --overwrite
+
+kubectl label crd verticalpodautoscalers.autoscaling.k8s.io app.kubernetes.io/managed-by=Helm --overwrite
+kubectl annotate crd verticalpodautoscalers.autoscaling.k8s.io meta.helm.sh/release-name=<release-name> meta.helm.sh/release-namespace=<namespace> --overwrite
+```
+
+## Migration Guides
+
+### Migrating from vpa-up.sh script
+TBD
+
+### Migrating from Application-managed to Helm-managed webhook
+If you previously deployed with registerWebhook: true and want to switch to Helm-managed:
+- Delete the existing webhook:
+```bash
+kubectl delete mutatingwebhookconfiguration vpa-webhook-config
+```
+- Delete the existing secret (to allow certgen to create new certificates):
+```bash
+kubectl delete secret -n <namespace> vpa-tls-certs
+```
+- Upgrade with the new values:
+```bash
+helm upgrade <release-name> <chart> \
+  --set admissionController.registerWebhook=false \
+  --set admissionController.certGen.enabled=true
+```
+{{ template "chart.valuesSection" . }}

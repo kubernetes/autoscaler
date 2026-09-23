@@ -232,6 +232,33 @@ Example tags:
 
 - `k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage`: `100G`
 
+When `--enable-csi-node-aware-scheduling` is enabled, scale-from-zero needs an
+explicit declaration of which CSI drivers a node group will register. CSI
+drivers are optional and are **not** inferred from instance type or
+`EBSVolumeLimit`. `EBSVolumeLimit` is EC2 hardware attachment capacity only; it
+does not mean `ebs.csi.aws.com` is installed.
+
+If the tag is omitted, Cluster Autoscaler advertises **no** synthetic CSI
+drivers for that node group.
+
+The tag key is:
+
+`k8s.io/cluster-autoscaler/node-template/csi-driver`
+
+The value is a comma-separated list of CSI driver names (applicability only).
+Do not encode volume limits in this tag. For EBS, attachment capacity still
+comes from the instance type's `EBSVolumeLimit`.
+
+Examples:
+
+- EBS only: `k8s.io/cluster-autoscaler/node-template/csi-driver`: `ebs.csi.aws.com`
+- EFS only: `k8s.io/cluster-autoscaler/node-template/csi-driver`: `efs.csi.aws.com`
+- Multiple: `k8s.io/cluster-autoscaler/node-template/csi-driver`: `ebs.csi.aws.com,efs.csi.aws.com`
+
+The same key may be set on an EKS managed node group. If both the ASG and the
+managed node group define it, the managed node group value is used (same
+precedence as `node-template/resources` tags).
+
 ASG labels can specify autoscaling options, overriding the global cluster-autoscaler
 settings for the labeled ASGs. Those labels takes the same values format as the
 cluster-autoscaler command line flags they override (a float or a duration, encoded
@@ -422,19 +449,6 @@ the CA back to its original use of a statically defined set.
 
 To refresh static list, please run `go run ec2_instance_types/gen.go` under
 `cluster-autoscaler/cloudprovider/aws/`.
-
-## Using the AWS SDK vendored in the AWS cloudprovider
-
-If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider.
-
-The current version vendored is `v1.48.7`.
-
-If you want to update the vendored AWS SDK to a newer version, please make sure of the following:
-
-1. Place the copy of the new desired version of the AWS SDK under the `aws-sdk-go` directory.
-2. Remove folders : models and examples. Remove _test.go file `find . -name '*_test.go' -exec rm {}+`
-3. Update the import statements within the newly-copied AWS SDK to reference the new paths (e.g., `github.com/aws/aws-sdk-go/aws/awsutil` -> `k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil`). You can use this command from the aws-sdk-go folder `find . -type f -exec sed -i ‘s#github.com/aws/aws-sdk-go#k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go#’ {} \;`
-4. Update the version number above to indicate the new vendored version.
 
 ## Using cloud config with helm
 

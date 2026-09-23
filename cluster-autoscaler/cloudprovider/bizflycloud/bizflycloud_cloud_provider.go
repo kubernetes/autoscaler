@@ -17,6 +17,7 @@ limitations under the License.
 package bizflycloud
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -24,12 +25,21 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildBizflyCloud(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 var _ cloudprovider.CloudProvider = (*bizflycloudCloudProvider)(nil)
 
@@ -58,11 +68,11 @@ func newBizflyCloudProvider(manager *Manager, rl *cloudprovider.ResourceLimiter)
 
 // Name returns name of the cloud provider.
 func (d *bizflycloudCloudProvider) Name() string {
-	return cloudprovider.BizflyCloudProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (d *bizflycloudCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (d *bizflycloudCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	nodeGroups := make([]cloudprovider.NodeGroup, len(d.manager.nodeGroups))
 	for i, ng := range d.manager.nodeGroups {
 		nodeGroups[i] = ng
@@ -73,7 +83,7 @@ func (d *bizflycloudCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (d *bizflycloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (d *bizflycloudCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	providerID := node.Spec.ProviderID
 	nodeID := toNodeID(providerID)
 
@@ -84,7 +94,7 @@ func (d *bizflycloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 	// proceed with this.
 	for _, group := range d.manager.nodeGroups {
 		klog.V(5).Infof("iterating over node group %q", group.Id())
-		nodes, err := group.Nodes()
+		nodes, err := group.Nodes(context.TODO())
 		if err != nil {
 			return nil, err
 		}
@@ -97,6 +107,9 @@ func (d *bizflycloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 				continue
 			}
 
+			if group == nil {
+				return nil, nil
+			}
 			return group, nil
 		}
 	}
@@ -106,19 +119,19 @@ func (d *bizflycloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprov
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (d *bizflycloudCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (d *bizflycloudCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
-func (d *bizflycloudCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (d *bizflycloudCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from
 // the cloud provider. Implementation optional.
-func (d *bizflycloudCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (d *bizflycloudCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
@@ -126,7 +139,7 @@ func (d *bizflycloudCloudProvider) GetAvailableMachineTypes() ([]string, error) 
 // provided. The node group is not automatically created on the cloud provider
 // side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (d *bizflycloudCloudProvider) NewNodeGroup(
+func (d *bizflycloudCloudProvider) NewNodeGroup(ctx context.Context,
 	machineType string,
 	labels map[string]string,
 	systemLabels map[string]string,
@@ -138,43 +151,43 @@ func (d *bizflycloudCloudProvider) NewNodeGroup(
 
 // GetResourceLimiter returns struct containing limits (max, min) for
 // resources (cores, memory etc.).
-func (d *bizflycloudCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (d *bizflycloudCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return d.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (d *bizflycloudCloudProvider) GPULabel() string {
+func (d *bizflycloudCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (d *bizflycloudCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (d *bizflycloudCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (d *bizflycloudCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(d, node)
+func (d *bizflycloudCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), d, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed,
 // i.e. go routines etc.
-func (d *bizflycloudCloudProvider) Cleanup() error {
+func (d *bizflycloudCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically
 // update cloud provider state. In particular the list of node groups returned
 // by NodeGroups() can change as a result of CloudProvider.Refresh().
-func (d *bizflycloudCloudProvider) Refresh() error {
+func (d *bizflycloudCloudProvider) Refresh(ctx context.Context) error {
 	klog.V(4).Info("Refreshing node group cache")
 	return d.manager.Refresh()
 }
 
 // BuildBizflyCloud builds the Bizflycloud cloud provider.
 func BuildBizflyCloud(
-	opts config.AutoscalingOptions,
+	opts *coreoptions.AutoscalerOptions,
 	do cloudprovider.NodeGroupDiscoveryOptions,
 	rl *cloudprovider.ResourceLimiter,
 ) cloudprovider.CloudProvider {

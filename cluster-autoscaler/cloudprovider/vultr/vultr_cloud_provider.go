@@ -17,18 +17,32 @@ limitations under the License.
 package vultr
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	autoscalererrors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "vultr"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildVultr(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 var _ cloudprovider.CloudProvider = (*vultrCloudProvider)(nil)
 
@@ -48,11 +62,11 @@ func newVultrCloudProvider(manager *manager, rl *cloudprovider.ResourceLimiter) 
 
 // Name returns name of the cloud provider.
 func (v *vultrCloudProvider) Name() string {
-	return cloudprovider.VultrProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (v *vultrCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (v *vultrCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	nodeGroups := make([]cloudprovider.NodeGroup, len(v.manager.nodeGroups))
 	for i, ng := range v.manager.nodeGroups {
 		nodeGroups[i] = ng
@@ -63,39 +77,65 @@ func (v *vultrCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (v *vultrCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	providerID := node.Spec.ProviderID
+func (v *vultrCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	nodeID, err := nodeIDFromNode(node)
+	if err != nil {
+		if errors.Is(err, errMissingNodeID) {
+			return nil, nil
+		}
+		return nil, err
+	}
 
 	// we want to find the pool for a specific node
 	for _, group := range v.manager.nodeGroups {
-		nodes, err := group.Nodes()
-		if err != nil {
-			return nil, err
-		}
-
-		for _, node := range nodes {
-			if node.Id == providerID {
-				return group, nil
-			}
+		if group.hasNode(nodeID) {
+			return group, nil
 		}
 	}
 	return nil, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (v *vultrCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+func (v *vultrCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
+	nodeID, err := nodeIDFromNode(node)
+	if err != nil {
+		if errors.Is(err, errMissingNodeID) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	for _, group := range v.manager.nodeGroups {
+		if group.hasNode(nodeID) {
+			return true, nil
+		}
+	}
+
+	// Nodes in pools not managed by this autoscaler still exist in Vultr.
+	nodePools, _, err := v.manager.client.ListNodePools(ctx, v.manager.clusterID, nil)
+	if err != nil {
+		return true, err
+	}
+	for _, nodePool := range nodePools {
+		for _, poolNode := range nodePool.Nodes {
+			if poolNode.ID == nodeID {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (v *vultrCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (v *vultrCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, autoscalererrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (v *vultrCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (v *vultrCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
@@ -103,39 +143,39 @@ func (v *vultrCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // provided. The node group is not automatically created on the cloud provider
 // side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (v *vultrCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (v *vultrCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (v *vultrCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (v *vultrCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return v.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (v *vultrCloudProvider) GPULabel() string {
+func (v *vultrCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (v *vultrCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (v *vultrCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (v *vultrCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(v, node)
+func (v *vultrCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(ctx, v, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (v *vultrCloudProvider) Cleanup() error {
+func (v *vultrCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (v *vultrCloudProvider) Refresh() error {
+func (v *vultrCloudProvider) Refresh(ctx context.Context) error {
 	klog.V(4).Info("Refreshing node group cache")
 	return v.manager.Refresh()
 }
@@ -146,12 +186,19 @@ func toProviderID(nodeID string) string {
 }
 
 // toNodeID returns a node or droplet ID from the given provider ID.
-func toNodeID(providerID string) string {
-	return strings.TrimPrefix(providerID, vultrProviderIDPrefix)
+func toNodeID(providerID string) (string, error) {
+	if !strings.HasPrefix(providerID, vultrProviderIDPrefix) {
+		return "", fmt.Errorf("provider ID %q does not use expected prefix %q", providerID, vultrProviderIDPrefix)
+	}
+	nodeID := strings.TrimPrefix(providerID, vultrProviderIDPrefix)
+	if nodeID == "" {
+		return "", fmt.Errorf("provider ID %q does not contain a node ID", providerID)
+	}
+	return nodeID, nil
 }
 
 // BuildVultr builds the Vultr cloud provider.
-func BuildVultr(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildVultr(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	if opts.CloudConfig == "" {
 		klog.Fatalf("No config file provided, please specify it via the --cloud-config flag")
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -24,12 +25,25 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodegroupset"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "azure"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildAzure(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
@@ -63,7 +77,7 @@ func BuildAzureCloudProvider(azureManager *AzureManager, resourceLimiter *cloudp
 }
 
 // Cleanup stops the go routine that is handling the current view of the ASGs in the form of a cache
-func (azure *AzureCloudProvider) Cleanup() error {
+func (azure *AzureCloudProvider) Cleanup(ctx context.Context) error {
 	azure.azureManager.Cleanup()
 	return nil
 }
@@ -74,24 +88,24 @@ func (azure *AzureCloudProvider) Name() string {
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (azure *AzureCloudProvider) GPULabel() string {
+func (azure *AzureCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
-func (azure *AzureCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (azure *AzureCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (azure *AzureCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(azure, node)
+func (azure *AzureCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), azure, node)
 
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (azure *AzureCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	asgs := azure.azureManager.getNodeGroups()
 
 	ngs := make([]cloudprovider.NodeGroup, len(asgs))
@@ -102,7 +116,7 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (azure *AzureCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	klog.V(6).Infof("NodeGroupForNode: starts")
 	if node.Spec.ProviderID == "" {
 		klog.V(6).Infof("Skipping the search for node group for the node '%s' because it has no spec.ProviderID", node.ObjectMeta.Name)
@@ -120,22 +134,18 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 	}
 
 	klog.V(6).Infof("NodeGroupForNode: ref.Name %s", ref.Name)
-	return azure.azureManager.GetNodeGroupForInstance(ref)
+	ng, err := azure.azureManager.GetNodeGroupForInstance(ref)
+	if err != nil {
+		return nil, err
+	}
+	if ng == nil {
+		return nil, nil
+	}
+	return ng, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider.
-//
-// Used to prevent undercount of existing VMs (taint-based overcount of deleted VMs),
-// and so should not return false, nil (no instance) if uncertain; return error instead.
-// (Think "has instance for sure, else error".) Returning an error causes fallback to taint-based
-// determination; use ErrNotImplemented for silent fallback, any other error will be logged.
-//
-// Expected behavior (should work for VMSS Uniform/Flex, and VMs):
-// -  exists            : return true, nil
-// - !exists            : return *,    ErrNotImplemented (could use custom error for autoscaled nodes)
-// - unimplemented case : return *,    ErrNotImplemented
-// - any other error    : return *,    error
-func (azure *AzureCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (azure *AzureCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	if node.Spec.ProviderID == "" {
 		return false, fmt.Errorf("ProviderID for node: %s is empty, skipped", node.Name)
 	}
@@ -147,30 +157,30 @@ func (azure *AzureCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (azure *AzureCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (azure *AzureCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
-func (azure *AzureCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (azure *AzureCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (azure *AzureCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (azure *AzureCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (azure *AzureCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (azure *AzureCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return azure.resourceLimiter, nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (azure *AzureCloudProvider) Refresh() error {
+func (azure *AzureCloudProvider) Refresh(ctx context.Context) error {
 	return azure.azureManager.Refresh()
 }
 
@@ -190,7 +200,7 @@ func (m *azureRef) String() string {
 }
 
 // BuildAzure builds Azure cloud provider, manager etc.
-func BuildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildAzure(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
 		klog.Infof("Creating Azure Manager using cloud-config file: %v", opts.CloudConfig)
@@ -211,5 +221,13 @@ func BuildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscov
 	if err != nil {
 		klog.Fatalf("Failed to create Azure cloud provider: %v", err)
 	}
+
+	// Configure Azure specific NodeInfoComparator
+	if opts.Processors != nil {
+		opts.Processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+			Comparator: nodegroupset.CreateAzureNodeInfoComparator(opts.AutoscalingOptions.BalancingExtraIgnoredLabels, opts.AutoscalingOptions.NodeGroupSetRatios),
+		}
+	}
+
 	return provider
 }

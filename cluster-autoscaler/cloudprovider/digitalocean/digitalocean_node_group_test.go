@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/digitalocean/godo"
@@ -28,7 +29,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func TestNodeGroup_TargetSize(t *testing.T) {
@@ -40,7 +41,7 @@ func TestNodeGroup_TargetSize(t *testing.T) {
 			Count: numberOfNodes,
 		})
 
-		size, err := ng.TargetSize()
+		size, err := ng.TargetSize(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, numberOfNodes, size, "target size is not correct")
 	})
@@ -74,7 +75,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			nil,
 		).Once()
 
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		assert.NoError(t, err)
 	})
 
@@ -104,7 +105,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 			nil,
 		).Once()
 
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		assert.NoError(t, err)
 	})
 
@@ -115,7 +116,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		ng := testNodeGroup(client, &godo.KubernetesNodePool{
 			Count: numberOfNodes,
 		})
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 
 		exp := fmt.Errorf("delta must be positive, have: %d", delta)
 		assert.EqualError(t, err, exp.Error(), "size increase must be positive")
@@ -131,7 +132,7 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 
 		exp := fmt.Errorf("delta must be positive, have: %d", delta)
 
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size increase must be positive")
 	})
 
@@ -145,9 +146,9 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		})
 
 		exp := fmt.Errorf("size increase is too large. current: %d desired: %d max: %d",
-			numberOfNodes, numberOfNodes+delta, ng.MaxSize())
+			numberOfNodes, numberOfNodes+delta, ng.MaxSize(context.Background()))
 
-		err := ng.IncreaseSize(delta)
+		err := ng.IncreaseSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size increase is too large")
 	})
 }
@@ -178,7 +179,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			nil,
 		).Once()
 
-		err := ng.DecreaseTargetSize(delta)
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.NoError(t, err)
 	})
 
@@ -206,7 +207,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			nil,
 		).Once()
 
-		err := ng.DecreaseTargetSize(delta)
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.NoError(t, err)
 	})
 
@@ -218,7 +219,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		})
 
 		delta := 1
-		err := ng.DecreaseTargetSize(delta)
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 
 		exp := fmt.Errorf("delta must be negative, have: %d", delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease must be negative")
@@ -234,7 +235,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		delta := 0
 		exp := fmt.Errorf("delta must be negative, have: %d", delta)
 
-		err := ng.DecreaseTargetSize(delta)
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease must be negative")
 	})
 
@@ -249,8 +250,8 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		})
 
 		exp := fmt.Errorf("size decrease is too small. current: %d desired: %d min: %d",
-			numberOfNodes, numberOfNodes+delta, ng.MinSize())
-		err := ng.DecreaseTargetSize(delta)
+			numberOfNodes, numberOfNodes+delta, ng.MinSize(context.Background()))
+		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease is too small")
 	})
 }
@@ -275,7 +276,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 		client.On("DeleteNode", ctx, ng.clusterID, ng.id, "2", nil).Return(&godo.Response{}, nil).Once()
 		client.On("DeleteNode", ctx, ng.clusterID, ng.id, "3", nil).Return(&godo.Response{}, nil).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(context.Background(), nodes)
 		assert.NoError(t, err)
 	})
 
@@ -297,7 +298,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 		client.On("DeleteNode", ctx, ng.clusterID, ng.id, "2", nil).
 			Return(&godo.Response{}, errors.New("random error")).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(context.Background(), nodes)
 		assert.Error(t, err)
 	})
 }
@@ -379,7 +380,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 			},
 		}
 
-		nodes, err := ng.Nodes()
+		nodes, err := ng.Nodes(context.Background())
 		assert.NoError(t, err)
 		assert.Equal(t, exp, nodes, "nodes do not match")
 	})
@@ -388,7 +389,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 		client := &doClientMock{}
 		ng := testNodeGroup(client, nil)
 
-		_, err := ng.Nodes()
+		_, err := ng.Nodes(context.Background())
 		assert.Error(t, err, "Nodes() should return an error")
 	})
 }
@@ -402,7 +403,7 @@ func TestNodeGroup_Debug(t *testing.T) {
 			MaxNodes: 200,
 		})
 
-		d := ng.Debug()
+		d := ng.Debug(context.Background())
 		exp := "cluster ID: 1 (min:1 max:200)"
 		assert.Equal(t, exp, d, "debug string do not match")
 	})
@@ -413,7 +414,7 @@ func TestNodeGroup_Exist(t *testing.T) {
 		client := &doClientMock{}
 		ng := testNodeGroup(client, &godo.KubernetesNodePool{Count: 3})
 
-		exist := ng.Exist()
+		exist := ng.Exist(context.Background())
 		assert.Equal(t, true, exist, "node pool should exist")
 	})
 
@@ -421,7 +422,7 @@ func TestNodeGroup_Exist(t *testing.T) {
 		client := &doClientMock{}
 		ng := testNodeGroup(client, nil)
 
-		exist := ng.Exist()
+		exist := ng.Exist(context.Background())
 		assert.Equal(t, false, exist, "node pool should not exist")
 	})
 }
@@ -442,6 +443,18 @@ func testNodeGroup(client nodeGroupClient, np *godo.KubernetesNodePool) *NodeGro
 	}
 }
 
+func TestGenerateWorkerName(t *testing.T) {
+	t.Run("generate worker node name", func(t *testing.T) {
+		prefix := "testpool"
+		expectedLength := generatedWorkerNameSuffixLength
+		g := generateWorkerName(prefix)
+		parts := strings.Split(g, "-")
+		assert.Equal(t, 2, len(parts), "incorrect number of components for generated worker name")
+		assert.Equal(t, prefix, parts[0], "unexpected prefix in generated worker name")
+		assert.Equal(t, expectedLength, len(parts[1]), "incorrect suffix length for generated worker name")
+	})
+}
+
 type doClientMock struct {
 	mock.Mock
 }
@@ -459,4 +472,9 @@ func (m *doClientMock) UpdateNodePool(ctx context.Context, clusterID, poolID str
 func (m *doClientMock) DeleteNode(ctx context.Context, clusterID, poolID, nodeID string, req *godo.KubernetesNodeDeleteRequest) (*godo.Response, error) {
 	args := m.Called(ctx, clusterID, poolID, nodeID, nil)
 	return args.Get(0).(*godo.Response), args.Error(1)
+}
+
+func (m *doClientMock) GetNodePoolTemplate(ctx context.Context, clusterID string, nodePoolName string) (*godo.KubernetesNodePoolTemplate, *godo.Response, error) {
+	args := m.Called(ctx, clusterID, nodePoolName)
+	return args.Get(0).(*godo.KubernetesNodePoolTemplate), args.Get(1).(*godo.Response), args.Error(2)
 }

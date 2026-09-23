@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // GetInstanceTypeStatically uses static list of vmss generated at azure_instance_types.go to fetch vmss instance information.
@@ -95,6 +96,17 @@ var GetInstanceTypeDynamically = func(template NodeTemplate, azCache *azureCache
 		return instanceType, err
 	}
 	instanceType.MemoryMb = int64(memoryGb) * 1024
+
+	arch, err := sku.GetCPUArchitectureType()
+	if err != nil {
+		klog.V(1).Infof("Failed to get CPU architecture type from sku %q %v", template.SkuName, err)
+		return instanceType, err
+	}
+	if strings.ToLower(arch) == "arm64" {
+		instanceType.Architecture = "arm64"
+	} else {
+		instanceType.Architecture = cloudprovider.DefaultArch
+	}
 
 	return instanceType, nil
 }

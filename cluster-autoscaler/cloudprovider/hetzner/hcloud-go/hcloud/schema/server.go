@@ -18,7 +18,7 @@ type Server struct {
 	RescueEnabled   bool               `json:"rescue_enabled"`
 	ISO             *ISO               `json:"iso"`
 	Locked          bool               `json:"locked"`
-	Datacenter      Datacenter         `json:"datacenter"`
+	Location        Location           `json:"location"`
 	Image           *Image             `json:"image"`
 	Protection      ServerProtection   `json:"protection"`
 	Labels          map[string]string  `json:"labels"`
@@ -26,6 +26,11 @@ type Server struct {
 	PrimaryDiskSize int                `json:"primary_disk_size"`
 	PlacementGroup  *PlacementGroup    `json:"placement_group"`
 	LoadBalancers   []int64            `json:"load_balancers"`
+
+	// Deprecated: [Server.Datacenter] is deprecated and will be removed after 1 July 2026.
+	// Use [Server.Location] instead.
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+	Datacenter *Datacenter `json:"datacenter"`
 }
 
 // ServerProtection defines the schema of a server's resource protection.
@@ -103,7 +108,6 @@ type ServerCreateRequest struct {
 	Image            IDOrName                `json:"image"`
 	SSHKeys          []int64                 `json:"ssh_keys,omitempty"`
 	Location         string                  `json:"location,omitempty"`
-	Datacenter       string                  `json:"datacenter,omitempty"`
 	UserData         string                  `json:"user_data,omitempty"`
 	StartAfterCreate *bool                   `json:"start_after_create,omitempty"`
 	Labels           *map[string]string      `json:"labels,omitempty"`
@@ -113,6 +117,11 @@ type ServerCreateRequest struct {
 	Firewalls        []ServerCreateFirewalls `json:"firewalls,omitempty"`
 	PlacementGroup   int64                   `json:"placement_group,omitempty"`
 	PublicNet        *ServerCreatePublicNet  `json:"public_net,omitempty"`
+
+	// Deprecated: [ServerCreateRequest.Datacenter] is deprecated and will be removed after 1 July 2026.
+	// Use [ServerCreateRequest.Location] instead.
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+	Datacenter string `json:"datacenter,omitempty"`
 }
 
 // ServerCreatePublicNet defines the public network configuration of a server.
@@ -257,7 +266,8 @@ type ServerActionDisableRescueResponse struct {
 // ServerActionRebuildRequest defines the schema for the request to
 // rebuild a server.
 type ServerActionRebuildRequest struct {
-	Image IDOrName `json:"image"`
+	Image    IDOrName `json:"image"`
+	UserData *string  `json:"user_data,omitempty"`
 }
 
 // ServerActionRebuildResponse defines the schema of the response when
@@ -362,6 +372,7 @@ type ServerActionAttachToNetworkRequest struct {
 	Network  int64     `json:"network"`
 	IP       *string   `json:"ip,omitempty"`
 	AliasIPs []*string `json:"alias_ips,omitempty"`
+	IPRange  *string   `json:"ip_range,omitempty"`
 }
 
 // ServerActionAttachToNetworkResponse defines the schema of the response when

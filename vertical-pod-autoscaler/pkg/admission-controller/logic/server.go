@@ -19,12 +19,16 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
 	admissionv1 "k8s.io/api/admission/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
@@ -33,6 +37,14 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
+)
+
+const (
+	// maxAdmissionPayloadSize limits the size of the incoming admission request payload
+	// to prevent OOM (Denial of Service) attacks. A typical AdmissionReview is well under 100KB,
+	// and etcd limits objects to 1.5MB. With updates including both the new and old object,
+	// 5MB is an extremely safe upper bound that leaves a comfortable margin.
+	maxAdmissionPayloadSize = 1024 * 1024 * 5 // 5MB
 )
 
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
@@ -72,24 +84,35 @@ func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.
 	response.UID = ar.Request.UID
 
 	var patches []resource.PatchRecord
+	var warnings []string
 	var err error
+	var allErrs field.ErrorList
 	resource := metrics_admission.Unknown
 
 	admittedGroupResource := metav1.GroupResource{
 		Group:    ar.Request.Resource.Group,
 		Resource: ar.Request.Resource.Resource,
 	}
+	kind := ar.Request.RequestKind.Kind
+	name := ar.Request.Name
 
 	handler, ok := s.resourceHandlers[admittedGroupResource]
 	if ok {
-		patches, err = handler.GetPatches(ctx, ar.Request)
+		patches, warnings, allErrs = handler.GetPatches(ctx, ar.Request)
 		resource = handler.AdmissionResource()
+		response.Warnings = append(response.Warnings, warnings...)
 
-		if handler.DisallowIncorrectObjects() && err != nil {
+		if handler.DisallowIncorrectObjects() && len(allErrs) > 0 {
 			// we don't let in problematic objects - late validation
-			status := metav1.Status{}
-			status.Status = "Failure"
-			status.Message = err.Error()
+			err := apierrors.NewInvalid(
+				schema.GroupKind{
+					Group: admittedGroupResource.Group,
+					Kind:  kind,
+				},
+				name,
+				allErrs,
+			)
+			status := err.ErrStatus
 			response.Result = &status
 			response.Allowed = false
 		}
@@ -135,18 +158,28 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 	defer executionTimer.ObserveTotal()
 	admissionLatency := metrics_admission.NewAdmissionLatency()
 
-	var body []byte
-	if r.Body != nil {
-		if data, err := io.ReadAll(r.Body); err == nil {
-			body = data
-		}
-	}
 	// verify the content type is accurate
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		klog.Errorf("contentType=%s, expect application/json", contentType)
 		admissionLatency.Observe(metrics_admission.Error, metrics_admission.Unknown)
 		return
+	}
+
+	var body []byte
+	if r.Body != nil {
+		if data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxAdmissionPayloadSize)); err == nil {
+			body = data
+		} else {
+			var maxBytesErr *http.MaxBytesError
+			if errors.As(err, &maxBytesErr) {
+				klog.ErrorS(err, "Admission request body exceeds size limit", "limit", maxAdmissionPayloadSize)
+				http.Error(w, "request payload too large", http.StatusRequestEntityTooLarge)
+				admissionLatency.Observe(metrics_admission.Error, metrics_admission.Unknown)
+				return
+			}
+			klog.ErrorS(err, "Failed to read admission request body")
+		}
 	}
 	executionTimer.ObserveStep("read_request")
 

@@ -17,19 +17,32 @@ limitations under the License.
 package exoscale
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	egoscale "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "exoscale"
+
 var _ cloudprovider.CloudProvider = (*exoscaleCloudProvider)(nil)
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildExoscale(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 const exoscaleProviderIDPrefix = "exoscale://"
 
@@ -47,18 +60,18 @@ func newExoscaleCloudProvider(manager *Manager, rl *cloudprovider.ResourceLimite
 
 // Name returns name of the cloud provider.
 func (e *exoscaleCloudProvider) Name() string {
-	return cloudprovider.ExoscaleProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (e *exoscaleCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (e *exoscaleCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	return e.manager.nodeGroups
 }
 
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (e *exoscaleCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (e *exoscaleCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	instancePool, err := e.instancePoolFromNode(node)
 	if err != nil {
 		if err == errNoInstancePool {
@@ -135,9 +148,39 @@ func (e *exoscaleCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 		debugf("found node %s belonging to SKS Nodepool %s", toNodeID(node.Spec.ProviderID), *sksNodepool.ID)
 	} else {
 		// Standalone Instance Pool
+
+		var nodeGroupSpec *dynamic.NodeGroupSpec
+
+		for _, spec := range e.manager.discoveryOpts.NodeGroupSpecs {
+			s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
+
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse node group spec: %v", err)
+			}
+
+			if s.Name == *instancePool.Name {
+				nodeGroupSpec = s
+				break
+			}
+		}
+
+		var minSize, maxSize int
+		if nodeGroupSpec != nil {
+			minSize = nodeGroupSpec.MinSize
+			maxSize = nodeGroupSpec.MaxSize
+		} else {
+			minSize = 1
+			maxSize, err = e.manager.computeInstanceQuota()
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		nodeGroup = &instancePoolNodeGroup{
 			instancePool: instancePool,
 			m:            e.manager,
+			minSize:      minSize,
+			maxSize:      maxSize,
 		}
 		debugf("found node %s belonging to Instance Pool %s", toNodeID(node.Spec.ProviderID), *instancePool.ID)
 	}
@@ -162,26 +205,26 @@ func (e *exoscaleCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (e *exoscaleCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (e *exoscaleCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (e *exoscaleCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (e *exoscaleCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (e *exoscaleCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (e *exoscaleCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (e *exoscaleCloudProvider) NewNodeGroup(
+func (e *exoscaleCloudProvider) NewNodeGroup(ctx context.Context,
 	_ string,
 	_,
 	_ map[string]string,
@@ -192,40 +235,40 @@ func (e *exoscaleCloudProvider) NewNodeGroup(
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (e *exoscaleCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (e *exoscaleCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return e.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (e *exoscaleCloudProvider) GPULabel() string {
+func (e *exoscaleCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (e *exoscaleCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (e *exoscaleCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (e *exoscaleCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(e, node)
+func (e *exoscaleCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), e, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (e *exoscaleCloudProvider) Cleanup() error {
+func (e *exoscaleCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (e *exoscaleCloudProvider) Refresh() error {
+func (e *exoscaleCloudProvider) Refresh(ctx context.Context) error {
 	debugf("refreshing node groups cache")
 	return e.manager.Refresh()
 }
 
 // BuildExoscale builds the Exoscale cloud provider.
-func BuildExoscale(_ config.AutoscalingOptions, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildExoscale(_ *coreoptions.AutoscalerOptions, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	manager, err := newManager(discoveryOpts)
 	if err != nil {
 		fatalf("failed to initialize manager: %v", err)

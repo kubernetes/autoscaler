@@ -66,6 +66,8 @@ func retryPolicy(resp *Response, err error) bool {
 				return true
 			case ErrorCodeRateLimitExceeded:
 				return true
+			case ErrorCodeTimeout:
+				return true
 			}
 		case errors.Is(err, ErrStatusCode):
 			switch resp.Response.StatusCode {

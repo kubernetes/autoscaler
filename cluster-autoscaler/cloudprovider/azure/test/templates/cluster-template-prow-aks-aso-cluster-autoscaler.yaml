@@ -20,7 +20,7 @@ metadata:
   namespace: default
 spec:
   resources:
-  - apiVersion: containerservice.azure.com/v1api20231001
+  - apiVersion: containerservice.azure.com/v1api20240901
     kind: ManagedCluster
     metadata:
       annotations:
@@ -49,6 +49,10 @@ spec:
           enabled: true
       servicePrincipalProfile:
         clientId: msi
+      sku:
+        name: Base
+        tier: ${AKS_TIER:=Standard}
+      supportPlan: ${AKS_SUPPORT_PLAN:=KubernetesOfficial}
       tags:
         buildProvenance: ${BUILD_PROVENANCE}
         creationTimestamp: ${TIMESTAMP}
@@ -150,7 +154,7 @@ metadata:
   namespace: default
 spec:
   resources:
-  - apiVersion: containerservice.azure.com/v1api20231001
+  - apiVersion: containerservice.azure.com/v1api20240901
     kind: ManagedClustersAgentPool
     metadata:
       annotations:
@@ -193,7 +197,7 @@ metadata:
   namespace: default
 spec:
   resources:
-  - apiVersion: containerservice.azure.com/v1api20231001
+  - apiVersion: containerservice.azure.com/v1api20240901
     kind: ManagedClustersAgentPool
     metadata:
       annotations:
@@ -241,7 +245,7 @@ metadata:
   namespace: default
 spec:
   resources:
-  - apiVersion: containerservice.azure.com/v1api20231001
+  - apiVersion: containerservice.azure.com/v1api20240901
     kind: ManagedClustersAgentPool
     metadata:
       annotations:

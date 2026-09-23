@@ -1,0 +1,78 @@
+{{- if and (.Values.recommender.enabled) .Values.rbac.create -}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-metrics-reader
+  labels:
+    {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-metrics-reader
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-actor
+  labels:
+    {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-actor
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-status-actor
+  labels:
+    {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-status-actor
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-checkpoint-actor
+  labels:
+    {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-checkpoint-actor
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-target-reader
+  labels:
+    {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-target-reader
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end -}}
+

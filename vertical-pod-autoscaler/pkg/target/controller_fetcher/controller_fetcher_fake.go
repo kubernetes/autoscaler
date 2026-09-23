@@ -23,7 +23,7 @@ type FakeControllerFetcher struct{}
 
 // FindTopMostWellKnownOrScalable returns the same key for that fake implementation and returns and error when the kind is Node
 // See pkg/target/controller_fetcher/controller_fetcher.go:296 where the original implementation does the same.
-func (f FakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+func (FakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	if controller.Kind == "Node" {
 		return nil, ErrNodeInvalidOwner
 	}
@@ -34,7 +34,7 @@ func (f FakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context,
 type NilControllerFetcher struct{}
 
 // FindTopMostWellKnownOrScalable always returns nil
-func (f NilControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, _ *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+func (NilControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, _ *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	return nil, nil
 }
 

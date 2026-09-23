@@ -20,7 +20,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -28,15 +30,27 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	autoscalerErrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	autoscalerErrors "sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "hetzner"
+
 var _ cloudprovider.CloudProvider = (*HetznerCloudProvider)(nil)
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildHetzner(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
@@ -58,11 +72,11 @@ type HetznerCloudProvider struct {
 
 // Name returns name of the cloud provider.
 func (d *HetznerCloudProvider) Name() string {
-	return cloudprovider.HetznerProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (d *HetznerCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (d *HetznerCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, 0, len(d.manager.nodeGroups))
 	for groupId := range d.manager.nodeGroups {
 		groups = append(groups, d.manager.nodeGroups[groupId])
@@ -73,7 +87,7 @@ func (d *HetznerCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (d *HetznerCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	server, err := d.manager.serverForNode(node)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check if server %s exists error: %v", node.Spec.ProviderID, err)
@@ -99,24 +113,27 @@ func (d *HetznerCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 	if !exists {
 		return nil, nil
 	}
+	if group == nil {
+		return nil, nil
+	}
 
 	return group, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (d *HetznerCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (d *HetznerCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
-func (d *HetznerCloudProvider) Pricing() (cloudprovider.PricingModel, autoscalerErrors.AutoscalerError) {
+func (d *HetznerCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, autoscalerErrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from
 // the cloud provider. Implementation optional.
-func (d *HetznerCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (d *HetznerCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	serverTypes, err := d.manager.cachedServerType.getAllServerTypes()
 	if err != nil {
 		return nil, err
@@ -134,7 +151,7 @@ func (d *HetznerCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // provided. The node group is not automatically created on the cloud provider
 // side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (d *HetznerCloudProvider) NewNodeGroup(
+func (d *HetznerCloudProvider) NewNodeGroup(ctx context.Context,
 	machineType string,
 	labels map[string]string,
 	systemLabels map[string]string,
@@ -146,36 +163,36 @@ func (d *HetznerCloudProvider) NewNodeGroup(
 
 // GetResourceLimiter returns struct containing limits (max, min) for
 // resources (cores, memory etc.).
-func (d *HetznerCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (d *HetznerCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return d.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (d *HetznerCloudProvider) GPULabel() string {
+func (d *HetznerCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (d *HetznerCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (d *HetznerCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (d *HetznerCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(d, node)
+func (d *HetznerCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), d, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed,
 // i.e. go routines etc.
-func (d *HetznerCloudProvider) Cleanup() error {
+func (d *HetznerCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically
 // update cloud provider state. In particular the list of node groups returned
 // by NodeGroups() can change as a result of CloudProvider.Refresh().
-func (d *HetznerCloudProvider) Refresh() error {
+func (d *HetznerCloudProvider) Refresh(ctx context.Context) error {
 	for _, group := range d.manager.nodeGroups {
 		group.resetTargetSize(0)
 	}
@@ -183,7 +200,7 @@ func (d *HetznerCloudProvider) Refresh() error {
 }
 
 // BuildHetzner builds the Hetzner cloud provider.
-func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildHetzner(_ *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	manager, err := newManager()
 	if err != nil {
 		klog.Fatalf("Failed to create Hetzner manager: %v", err)
@@ -196,6 +213,17 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 
 	if manager.clusterConfig.IsUsingNewFormat && len(manager.clusterConfig.NodeConfigs) == 0 {
 		klog.Fatalf("No cluster config present provider: %v", err)
+	}
+
+	var defaultSubnetIPRange *net.IPNet
+	if manager.clusterConfig.IsUsingNewFormat && manager.network != nil && manager.clusterConfig.DefaultSubnetIPRange != "" {
+		_, defaultSubnetIPRange, err = net.ParseCIDR(manager.clusterConfig.DefaultSubnetIPRange)
+		if err != nil {
+			klog.Fatalf("failed to parse default subnet ip range %s: %s", manager.clusterConfig.DefaultSubnetIPRange, err)
+		}
+		if !isIpRangeInNetwork(defaultSubnetIPRange, manager.network) {
+			klog.Fatalf("default subnet ip range %s is not part of network %s", manager.clusterConfig.DefaultSubnetIPRange, manager.network.Name)
+		}
 	}
 
 	validNodePoolName := regexp.MustCompile(`^[a-z0-9A-Z]+[a-z0-9A-Z\-\.\_]*[a-z0-9A-Z]+$|^[a-z0-9A-Z]{1}$`)
@@ -214,6 +242,8 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 		}
 
 		var placementGroup *hcloud.PlacementGroup
+		var subnetIPRange *net.IPNet
+		var poolFirewalls []*hcloud.Firewall
 		if manager.clusterConfig.IsUsingNewFormat {
 			_, ok := manager.clusterConfig.NodeConfigs[spec.name]
 			if !ok {
@@ -232,6 +262,32 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 				}
 				placementGroupTotals[placementGroup.Name] += spec.maxSize
 			}
+
+			for _, firewallRef := range manager.clusterConfig.NodeConfigs[spec.name].Firewalls {
+				firewall, err := getFirewall(manager, firewallRef)
+				if err != nil {
+					klog.Fatalf("Encountered error while fetching firewall: %v", err)
+				}
+				if firewall == nil {
+					klog.Fatalf("The requested firewall `%s` does not appear to exist.", firewallRef)
+				}
+				poolFirewalls = append(poolFirewalls, firewall)
+			}
+
+			if manager.network != nil {
+				if manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange != "" {
+					_, subnetIPRange, err = net.ParseCIDR(manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange)
+					if err != nil {
+						klog.Fatalf("failed to parse subnet ip range %s for node group %s: %s", manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange, spec.name, err)
+					}
+					if !isIpRangeInNetwork(subnetIPRange, manager.network) {
+						klog.Fatalf("subnet ip range %s for node group %s is not part of network %s", manager.clusterConfig.NodeConfigs[spec.name].SubnetIPRange, spec.name, manager.network.Name)
+					}
+				} else {
+					subnetIPRange = defaultSubnetIPRange
+				}
+			}
+
 		}
 
 		manager.nodeGroups[spec.name] = &hetznerNodeGroup{
@@ -244,6 +300,8 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 			targetSize:         len(servers),
 			clusterUpdateMutex: &clusterUpdateLock,
 			placementGroup:     placementGroup,
+			subnetIPRange:      subnetIPRange,
+			firewalls:          buildServerCreateFirewalls(manager.firewall, poolFirewalls),
 		}
 	}
 
@@ -262,6 +320,15 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 	return provider
 }
 
+func isIpRangeInNetwork(ipRange *net.IPNet, network *hcloud.Network) bool {
+	return slices.ContainsFunc(network.Subnets, func(subnet hcloud.NetworkSubnet) bool {
+		if ipRange == nil || subnet.IPRange == nil {
+			return false
+		}
+		return subnet.IPRange.IP.Equal(ipRange.IP) && len(subnet.IPRange.Mask) == len(ipRange.Mask)
+	})
+}
+
 func getPlacementGroup(manager *hetznerManager, placementGroupRef string) (*hcloud.PlacementGroup, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -277,6 +344,21 @@ func getPlacementGroup(manager *hetznerManager, placementGroupRef string) (*hclo
 	}
 
 	return placementGroup, nil
+}
+
+func getFirewall(manager *hetznerManager, firewallRef string) (*hcloud.Firewall, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	firewall, _, err := manager.client.Firewall.Get(ctx, firewallRef)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, fmt.Errorf("Timed out checking if firewall `%s` exists.", firewallRef)
+		}
+		return nil, fmt.Errorf("Failed to verify if firewall `%s` exists. Error: %w", firewallRef, err)
+	}
+
+	return firewall, nil
 }
 
 func createNodePoolSpec(groupSpec string) (*hetznerNodeGroupSpec, error) {

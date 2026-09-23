@@ -16,12 +16,11 @@ limitations under the License.
 
 package utils
 
-import (
-	apiv1 "k8s.io/api/core/v1"
-)
-
 // InPlaceDecision is the type of decision that can be made for a pod.
 type InPlaceDecision string
+
+// ResizeStatus is the status of resize api call.
+type ResizeStatus string
 
 const (
 	// InPlaceApproved means we can in-place update the pod.
@@ -30,14 +29,25 @@ const (
 	InPlaceDeferred InPlaceDecision = "InPlaceDeferred"
 	// InPlaceEvict means we will attempt to evict the pod.
 	InPlaceEvict InPlaceDecision = "InPlaceEvict"
+	// InPlaceInfeasible means we can't in-place update the pod right now but we want to retry
+	InPlaceInfeasible InPlaceDecision = "InPlaceInfeasible"
+	// InPlaceInfeasibleCached indicates a cached infeasibility status, avoiding repeated feasibility checks
+	InPlaceInfeasibleCached InPlaceDecision = "InPlaceInfeasibleCached"
+	// ResizeStatusDeferred indicates the resize is deferred by kubelet
+	ResizeStatusDeferred ResizeStatus = "ResizeDeferred"
+	// ResizeStatusInfeasible indicates the resize cannot be performed (e.g., insufficient node resources)
+	ResizeStatusInfeasible ResizeStatus = "ResizeInfeasible"
+	// ResizeStatusInProgress indicates the resize is currently being applied
+	ResizeStatusInProgress ResizeStatus = "ResizeInProgress"
+	// ResizeStatusError indicates an error occurred during resize
+	ResizeStatusError ResizeStatus = "ResizeError"
+	// ResizeStatusUnknown indicates an unknown resize status
+	ResizeStatusUnknown ResizeStatus = "ResizeUnknown"
+	// ResizeStatusNone indicates no resize operation is pending
+	ResizeStatusNone ResizeStatus = "ResizeNone"
 )
 
-// GetPodCondition will get Pod's condition.
-func GetPodCondition(pod *apiv1.Pod, conditionType apiv1.PodConditionType) (apiv1.PodCondition, bool) {
-	for _, cond := range pod.Status.Conditions {
-		if cond.Type == conditionType {
-			return cond, true
-		}
-	}
-	return apiv1.PodCondition{}, false
-}
+// InfeasibleCauseNodeCapacity is the cause type returned by the PodResizeValidator
+// admission plugin when a resize is rejected due to insufficient node capacity.
+// See: https://github.com/kubernetes/kubernetes/blob/35bed76715330c233f0554edbcac761929b9491c/plugin/pkg/admission/podresize/admission.go#L44
+const InfeasibleCauseNodeCapacity = "NodeCapacity"

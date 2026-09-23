@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"reflect"
@@ -24,24 +25,19 @@ import (
 	"testing"
 	"time"
 
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
-
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/go-autorest/autorest/date"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/utils/ptr"
 	azclient "sigs.k8s.io/cloud-provider-azure/pkg/azclient"
-	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient/mock_virtualmachineclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient/mock_virtualmachinescalesetclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient/mock_virtualmachinescalesetvmclient"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
-	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 )
 
 const validAzureCfg = `{
@@ -221,10 +217,10 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).Times(2)
-	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).Times(2)
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]*armcompute.VirtualMachineScaleSet{}, nil).Times(2)
+	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]*armcompute.VirtualMachine{}, nil).Times(2)
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
@@ -232,8 +228,8 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfg), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "fakeId",
@@ -243,56 +239,20 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 					AADClientSecret: "fakeId",
 				},
 				SubscriptionID: "fakeId",
-			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "fakeId",
-			VMType:                               "vmss",
-			VmssCacheTTLInSeconds:                60,
-			VmssVirtualMachinesCacheTTLInSeconds: 240,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
+				// TODO: Moved inside AzureClientConfig
+
+				// Rate limit config simplified
+				CloudProviderCacheConfig: providerazureconfig.CloudProviderCacheConfig{
+					// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+
+					// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+					// VmssCacheTTLInSeconds:                60,
+					// // VmssVirtualMachinesCacheTTLInSeconds: 240,
 				},
 			},
+			Location:      "southeastasia",
+			ResourceGroup: "fakeId",
+			VMType:        "vmss",
 		},
 		VmssVmsCacheJitter:                   120,
 		MaxDeploymentsCount:                  8,
@@ -312,10 +272,10 @@ func TestCreateAzureManagerLegacyConfig(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).Times(2)
-	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).Times(2)
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]*armcompute.VirtualMachineScaleSet{}, nil).Times(2)
+	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]*armcompute.VirtualMachine{}, nil).Times(2)
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
@@ -323,8 +283,8 @@ func TestCreateAzureManagerLegacyConfig(t *testing.T) {
 	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgLegacy), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "fakeId",
@@ -334,55 +294,17 @@ func TestCreateAzureManagerLegacyConfig(t *testing.T) {
 				},
 				SubscriptionID: "fakeId",
 			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "fakeId",
-			VMType:                               "vmss",
-			VmssCacheTTLInSeconds:                60,
-			VmssVirtualMachinesCacheTTLInSeconds: 240,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-			},
+			Location:      "southeastasia",
+			ResourceGroup: "fakeId",
+			VMType:        "vmss",
+			// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+
+			// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+			// VmssCacheTTLInSeconds:                60,
+			// // VmssVirtualMachinesCacheTTLInSeconds: 240,
+			// TODO: Moved inside AzureClientConfig
+
+			// Rate limit config simplified
 		},
 		VmssVmsCacheJitter:  120,
 		MaxDeploymentsCount: 8,
@@ -400,10 +322,10 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).Times(2)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).Times(2)
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]*armcompute.VirtualMachine{}, nil).Times(2)
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]*armcompute.VirtualMachineScaleSet{}, nil).Times(2)
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
@@ -411,8 +333,8 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgForStandardVMType), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "fakeId",
@@ -423,55 +345,17 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 				},
 				SubscriptionID: "fakeId",
 			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "fakeId",
-			VMType:                               "standard",
-			VmssCacheTTLInSeconds:                60,
-			VmssVirtualMachinesCacheTTLInSeconds: 240,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-			},
+			Location:      "southeastasia",
+			ResourceGroup: "fakeId",
+			VMType:        "standard",
+			// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+
+			// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+			// VmssCacheTTLInSeconds:                60,
+			// // VmssVirtualMachinesCacheTTLInSeconds: 240,
+			// TODO: Moved inside AzureClientConfig
+
+			// Rate limit config simplified
 		},
 		VmssVmsCacheJitter:  120,
 		MaxDeploymentsCount: 8,
@@ -523,10 +407,10 @@ func TestCreateAzureManagerValidConfigForVMsPool(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).Times(2)
-	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).Times(2)
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]*armcompute.VirtualMachineScaleSet{}, nil).Times(2)
+	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]*armcompute.VirtualMachine{}, nil).Times(2)
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
@@ -534,8 +418,8 @@ func TestCreateAzureManagerValidConfigForVMsPool(t *testing.T) {
 	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgForVMsPool), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "fakeId",
@@ -546,55 +430,17 @@ func TestCreateAzureManagerValidConfigForVMsPool(t *testing.T) {
 				},
 				SubscriptionID: "fakeId",
 			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "fakeId",
-			VMType:                               "vmss",
-			VmssCacheTTLInSeconds:                60,
-			VmssVirtualMachinesCacheTTLInSeconds: 240,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            false,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-			},
+			Location:      "southeastasia",
+			ResourceGroup: "fakeId",
+			VMType:        "vmss",
+			// TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+
+			// // TODO: Moved to CloudProviderCacheConfig in AzureClientConfig
+			// VmssCacheTTLInSeconds:                60,
+			// // VmssVirtualMachinesCacheTTLInSeconds: 240,
+			// TODO: Moved inside AzureClientConfig
+
+			// Rate limit config simplified
 		},
 		VmssVmsCacheJitter:    120,
 		MaxDeploymentsCount:   8,
@@ -615,10 +461,10 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachineScaleSet{}, nil).AnyTimes()
-	mockVMClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachine{}, nil).AnyTimes()
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]*armcompute.VirtualMachineScaleSet{}, nil).AnyTimes()
+	mockVMClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	vmspool := getTestVMsAgentPool(false)
 	fakeAPListPager := getFakeAgentpoolListPager(&vmspool)
@@ -630,8 +476,8 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	}
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "tenantId",
@@ -646,60 +492,11 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 				},
 				SubscriptionID: "subscriptionId",
 			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "resourceGroup",
-			VMType:                               "vmss",
-			VmssCacheTTLInSeconds:                100,
-			VmssVirtualMachinesCacheTTLInSeconds: 110,
-			CloudProviderBackoff:                 true,
-			CloudProviderBackoffRetries:          1,
-			CloudProviderBackoffExponent:         1,
-			CloudProviderBackoffDuration:         1,
-			CloudProviderBackoffJitter:           1,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-			},
+			Location:      "southeastasia",
+			ResourceGroup: "resourceGroup",
+			VMType:        "vmss",
+			// Note: VmssCacheTTLInSeconds and backoff configs have been moved to
+			// AzureClientConfig in cloud-provider-azure v1.32.0
 		},
 		ClusterName:                          "mycluster",
 		ClusterResourceGroup:                 "myrg",
@@ -874,18 +671,18 @@ func TestCreateAzureManagerWithEnvOverridingConfig(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachineScaleSet{}, nil).AnyTimes()
-	mockVMClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachine{}, nil).AnyTimes()
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]*armcompute.VirtualMachineScaleSet{}, nil).AnyTimes()
+	mockVMClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
 	}
 
 	expectedConfig := &Config{
-		Config: providerazure.Config{
-			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+		Config: providerazureconfig.Config{
+			AzureClientConfig: providerazureconfig.AzureClientConfig{
 				ARMClientConfig: azclient.ARMClientConfig{
 					Cloud:    "AzurePublicCloud",
 					TenantID: "tenantId",
@@ -900,60 +697,11 @@ func TestCreateAzureManagerWithEnvOverridingConfig(t *testing.T) {
 				},
 				SubscriptionID: "subscriptionId",
 			},
-			Location:                             "southeastasia",
-			ResourceGroup:                        "resourceGroup",
-			VMType:                               "vmss",
-			VmssCacheTTLInSeconds:                100,
-			VmssVirtualMachinesCacheTTLInSeconds: 110,
-			CloudProviderBackoff:                 true,
-			CloudProviderBackoffRetries:          1,
-			CloudProviderBackoffExponent:         1,
-			CloudProviderBackoffDuration:         1,
-			CloudProviderBackoffJitter:           1,
-			CloudProviderRateLimitConfig: providerazureconfig.CloudProviderRateLimitConfig{
-				RateLimitConfig: azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				InterfaceRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				StorageAccountRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				DiskRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-				VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-					CloudProviderRateLimit:            true,
-					CloudProviderRateLimitBucket:      5,
-					CloudProviderRateLimitBucketWrite: 5,
-					CloudProviderRateLimitQPS:         1,
-					CloudProviderRateLimitQPSWrite:    1,
-				},
-			},
+			Location:      "southeastasia",
+			ResourceGroup: "resourceGroup",
+			VMType:        "vmss",
+			// Note: VmssCacheTTLInSeconds and backoff configs have been moved to
+			// AzureClientConfig in cloud-provider-azure v1.32.0
 		},
 		ClusterName:           "mycluster",
 		ClusterResourceGroup:  "myrg",
@@ -1028,28 +776,28 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 		},
 	}
 
-	orchestrationModes := [2]compute.OrchestrationMode{compute.Uniform, compute.Flexible}
+	orchestrationModes := [2]armcompute.OrchestrationMode{armcompute.OrchestrationModeUniform, armcompute.OrchestrationModeFlexible}
 	expectedVMSSVMs := newTestVMSSVMList(3)
 	expectedVMs := newTestVMList(3)
 
 	for _, orchMode := range orchestrationModes {
 		manager := newTestAzureManager(t)
-		expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
+		expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", armcompute.OrchestrationModeUniform)
 
-		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+		mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
 		mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 		manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
-		if orchMode == compute.Uniform {
+		if orchMode == armcompute.OrchestrationModeUniform {
 
-			mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
-			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+			mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg").Return(expectedVMSSVMs, nil).AnyTimes()
 			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 		} else {
 
-			mockVMClient := mockvmclient.NewMockInterface(ctrl)
+			mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
 			manager.config.EnableVmssFlexNodes = true
-			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
+			mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
 			manager.azClient.virtualMachinesClient = mockVMClient
 		}
 
@@ -1058,28 +806,25 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 		asgs := manager.azureCache.getRegisteredNodeGroups()
 		assert.Equal(t, 1, len(asgs))
 		assert.Equal(t, name, asgs[0].Id())
-		assert.Equal(t, min, asgs[0].MinSize())
-		assert.Equal(t, max, asgs[0].MaxSize())
+		assert.Equal(t, min, asgs[0].MinSize(context.Background()))
+		assert.Equal(t, max, asgs[0].MaxSize(context.Background()))
 	}
 
 	// test vmTypeStandard
 	testAS := newTestAgentPool(newTestAzureManager(t), "testAS")
-	timeLayout := "2006-01-02 15:04:05"
-	timeBenchMark, _ := time.Parse(timeLayout, "2000-01-01 00:00:00")
 	testAS.manager.azClient.deploymentClient = &DeploymentClientMock{
-		FakeStore: map[string]resources.DeploymentExtended{
+		FakeStore: map[string]armresources.DeploymentExtended{
 			"cluster-autoscaler-0001": {
-				Name: to.StringPtr("cluster-autoscaler-0001"),
-				Properties: &resources.DeploymentPropertiesExtended{
-					ProvisioningState: to.StringPtr("Succeeded"),
-					Timestamp:         &date.Time{Time: timeBenchMark.Add(2 * time.Minute)},
+				Name: ptr.To("cluster-autoscaler-0001"),
+				Properties: &armresources.DeploymentPropertiesExtended{
+					ProvisioningState: ptr.To(armresources.ProvisioningStateSucceeded),
 				},
 			},
 		},
 	}
 	testAS.manager.config.VMType = providerazureconsts.VMTypeStandard
 	err := testAS.manager.fetchExplicitNodeGroups([]string{"1:5:testAS"})
-	expectedErr := fmt.Errorf("failed to parse node group spec: %v", retry.NewError(false, fmt.Errorf("deployment not found")).Error())
+	expectedErr := fmt.Errorf("failed to parse node group spec: deployment not found")
 	assert.Equal(t, expectedErr, err, "testAS.manager.fetchExplicitNodeGroups return error does not match, expected: %v, actual: %v", expectedErr, err)
 	err = testAS.manager.fetchExplicitNodeGroups(nil)
 	assert.NoError(t, err)
@@ -1114,8 +859,9 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 	}
 
 	manager := newTestAzureManager(t)
-	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &min, "max": &max})}
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	vmss1 := fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &min, "max": &max})
+	expectedScaleSets := []*armcompute.VirtualMachineScaleSet{&vmss1}
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	err := manager.forceRefresh()
@@ -1167,8 +913,9 @@ func TestGetFilteredAutoscalingGroupsVmssWithConfiguredSizes(t *testing.T) {
 	}
 
 	manager := newTestAzureManager(t)
-	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, vmssTag2: &vmssTagValue2})}
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	vmss2 := fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, vmssTag2: &vmssTagValue2})
+	expectedScaleSets := []*armcompute.VirtualMachineScaleSet{&vmss2}
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	err := manager.forceRefresh()
@@ -1209,8 +956,8 @@ func TestGetFilteredAutoscalingGroupsWithInvalidVMType(t *testing.T) {
 	}
 
 	manager := newTestAzureManager(t)
-	expectedScaleSets := []compute.VirtualMachineScaleSet{}
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	expectedScaleSets := []*armcompute.VirtualMachineScaleSet{}
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
@@ -1245,19 +992,20 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("label:%s=%s", vmssTag, vmssTagValue)},
 	}
 
-	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &minString, "max": &maxString})}
+	vmss3 := fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &minString, "max": &maxString})
+	expectedScaleSets := []*armcompute.VirtualMachineScaleSet{&vmss3}
 	expectedVMSSVMs := newTestVMSSVMList(1)
 
 	manager := newTestAzureManager(t)
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
-	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
-	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(expectedVMSSVMs, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
 	manager.azClient.virtualMachinesClient = mockVMClient
-	mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return([]compute.VirtualMachine{}, nil).AnyTimes()
+	mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
 	err := manager.forceRefresh()
 	assert.NoError(t, err)
 
@@ -1273,8 +1021,8 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	asgs = manager.azureCache.getRegisteredNodeGroups()
 	assert.Equal(t, 1, len(asgs))
 	assert.Equal(t, vmssName, asgs[0].Id())
-	assert.Equal(t, minVal, asgs[0].MinSize())
-	assert.Equal(t, maxVal, asgs[0].MaxSize())
+	assert.Equal(t, minVal, asgs[0].MinSize(context.Background()))
+	assert.Equal(t, maxVal, asgs[0].MaxSize(context.Background()))
 
 	// test explicitlyConfigured
 	manager.explicitlyConfigured[vmssName] = true
@@ -1360,18 +1108,18 @@ func TestVMSSNotFound(t *testing.T) {
 	// client setup
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
 	client := azClient{}
 	client.virtualMachineScaleSetsClient = mockVMSSClient
 	client.virtualMachinesClient = mockVMClient
 	client.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 
 	// Expect that no vmss are present in the vmss client
-	mockVMSSVMClient.EXPECT().List(gomock.Any(), "fakeId", testASG, gomock.Any()).Return([]compute.VirtualMachineScaleSetVM{}, nil).AnyTimes()
-	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).AnyTimes()
-	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).AnyTimes()
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), "fakeId", testASG).Return([]*armcompute.VirtualMachineScaleSetVM{}, nil).AnyTimes()
+	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]*armcompute.VirtualMachine{}, nil).AnyTimes()
+	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]*armcompute.VirtualMachineScaleSet{}, nil).AnyTimes()
 
 	// Add explicit node group to look for during init
 	ngdo := cloudprovider.NodeGroupDiscoveryOptions{

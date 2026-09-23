@@ -17,9 +17,9 @@ limitations under the License.
 package clusterapi
 
 import (
+	"context"
 	"fmt"
 	"path"
-	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -32,11 +32,24 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	klog "k8s.io/klog/v2"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/scaledowncandidates"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "clusterapi"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildClusterAPI(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
@@ -55,11 +68,11 @@ func (p *provider) Name() string {
 	return p.providerName
 }
 
-func (p *provider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (p *provider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return p.resourceLimiter, nil
 }
 
-func (p *provider) NodeGroups() []cloudprovider.NodeGroup {
+func (p *provider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	nodegroups, err := p.controller.nodeGroups()
 	if err != nil {
 		klog.Errorf("error getting node groups: %v", err)
@@ -68,19 +81,19 @@ func (p *provider) NodeGroups() []cloudprovider.NodeGroup {
 	return nodegroups
 }
 
-func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup, error) {
+func (p *provider) NodeGroupForNode(ctx context.Context, node *corev1.Node) (cloudprovider.NodeGroup, error) {
 	ng, err := p.controller.nodeGroupForNode(node)
 	if err != nil {
 		return nil, err
 	}
-	if ng == nil || reflect.ValueOf(ng).IsNil() {
+	if ng == nil {
 		return nil, nil
 	}
 	return ng, nil
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (p *provider) HasInstance(node *corev1.Node) (bool, error) {
+func (p *provider) HasInstance(ctx context.Context, node *corev1.Node) (bool, error) {
 	machineID := node.Annotations[machineAnnotationKey]
 	ns := node.Annotations[clusterNamespaceAnnotationKey]
 
@@ -92,15 +105,16 @@ func (p *provider) HasInstance(node *corev1.Node) (bool, error) {
 	return false, fmt.Errorf("machine not found for node %s: %v", node.Name, err)
 }
 
-func (*provider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (*provider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
-func (*provider) GetAvailableMachineTypes() ([]string, error) {
+func (*provider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 func (*provider) NewNodeGroup(
+	ctx context.Context,
 	machineType string,
 	labels map[string]string,
 	systemLabels map[string]string,
@@ -110,11 +124,11 @@ func (*provider) NewNodeGroup(
 	return nil, cloudprovider.ErrNotImplemented
 }
 
-func (*provider) Cleanup() error {
+func (*provider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
-func (p *provider) Refresh() error {
+func (p *provider) Refresh(ctx context.Context) error {
 	return nil
 }
 
@@ -124,20 +138,20 @@ func (p *provider) GetInstanceID(node *corev1.Node) string {
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (p *provider) GetAvailableGPUTypes() map[string]struct{} {
+func (p *provider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	// TODO: implement this
 	return nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (p *provider) GPULabel() string {
+func (p *provider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (p *provider) GetNodeGpuConfig(node *corev1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(p, node)
+func (p *provider) GetNodeGpuConfig(ctx context.Context, node *corev1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), p, node)
 }
 
 func newProvider(
@@ -153,7 +167,7 @@ func newProvider(
 }
 
 // BuildClusterAPI builds CloudProvider implementation for machine api.
-func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildClusterAPI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	managementKubeconfig := opts.CloudConfig
 	if managementKubeconfig == "" && !opts.ClusterAPICloudConfigAuthoritative {
 		managementKubeconfig = opts.KubeClientOpts.KubeConfigPath
@@ -178,7 +192,7 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 	// Grab a dynamic interface that we can create informers from
 	managementClient, err := dynamic.NewForConfig(managementConfig)
 	if err != nil {
-		klog.Fatalf("could not generate dynamic client for config")
+		klog.Fatalf("could not generate dynamic client for config: %v", err)
 	}
 
 	workloadClient, err := kubernetes.NewForConfig(workloadConfig)
@@ -210,9 +224,14 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 		klog.Fatal(err)
 	}
 
+	scaleDownUpgradeProcessor := NewScaleDownNodeUpgradeProcessor(controller)
+	if err := scaledowncandidates.RegisterCombinedScaleDownCandidateProcessor(opts.Processors.ScaleDownNodeProcessor, scaleDownUpgradeProcessor); err != nil {
+		klog.Fatalf("unable to register scale down upgrade processor: %v", err)
+	}
+
 	if err := controller.run(); err != nil {
 		klog.Fatal(err)
 	}
 
-	return newProvider(cloudprovider.ClusterAPIProviderName, rl, controller)
+	return newProvider(ProviderName, rl, controller)
 }

@@ -17,22 +17,35 @@ limitations under the License.
 package kamatera
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
 
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/client-go/informers"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
+	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 )
+
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "kamatera"
+
+func init() {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildKamatera(opts, do, rl)
+	})
+	builder.SetDefaultCloudProvider(ProviderName)
+}
 
 // kamateraCloudProvider implements cloudprovider.CloudProvider interface.
 type kamateraCloudProvider struct {
@@ -40,32 +53,43 @@ type kamateraCloudProvider struct {
 	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
+var _ cloudprovider.CloudProvider = (*kamateraCloudProvider)(nil)
+
 // Name returns name of the cloud provider.
 func (k *kamateraCloudProvider) Name() string {
-	return cloudprovider.KamateraProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (k *kamateraCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	nodeGroups := make([]cloudprovider.NodeGroup, len(k.manager.nodeGroups))
-	i := 0
+func (k *kamateraCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
+	k.manager.nodeGroupsMu.RLock()
+	nodeGroups := make([]cloudprovider.NodeGroup, 0, len(k.manager.nodeGroups))
 	for _, ng := range k.manager.nodeGroups {
-		nodeGroups[i] = ng
-		i++
+		nodeGroups = append(nodeGroups, ng)
 	}
+	k.manager.nodeGroupsMu.RUnlock()
 	return nodeGroups
 }
 
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (k *kamateraCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (k *kamateraCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	k.manager.nodeGroupsMu.RLock()
+	nodeGroups := make([]*NodeGroup, 0, len(k.manager.nodeGroups))
 	for _, ng := range k.manager.nodeGroups {
+		nodeGroups = append(nodeGroups, ng)
+	}
+	k.manager.nodeGroupsMu.RUnlock()
+	for _, ng := range nodeGroups {
 		instance, err := ng.findInstanceForNode(node)
 		if err != nil {
 			return nil, err
 		}
 		if instance != nil {
+			if ng == nil {
+				return nil, nil
+			}
 			return ng, nil
 		}
 	}
@@ -73,65 +97,72 @@ func (k *kamateraCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovide
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (k *kamateraCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (k *kamateraCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (k *kamateraCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (k *kamateraCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (k *kamateraCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (k *kamateraCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 // Implementation optional.
-func (k *kamateraCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (k *kamateraCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (k *kamateraCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (k *kamateraCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return k.resourceLimiter, nil
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (k *kamateraCloudProvider) GPULabel() string {
+func (k *kamateraCloudProvider) GPULabel(ctx context.Context) string {
 	return ""
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports.
-func (k *kamateraCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (k *kamateraCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (k *kamateraCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(k, node)
+func (k *kamateraCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), k, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (k *kamateraCloudProvider) Cleanup() error {
+func (k *kamateraCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (k *kamateraCloudProvider) Refresh() error {
-	return k.manager.refresh()
+func (k *kamateraCloudProvider) Refresh(ctx context.Context) error {
+	klog.V(4).Infof("Refreshing Kamatera node groups")
+	err := k.manager.refresh()
+	if err != nil {
+		klog.Errorf("Failed to refresh Kamatera node groups: %v", err)
+		return err
+	}
+	klog.V(4).Infof("Finished refreshing Kamatera node groups")
+	return nil
 }
 
 // BuildKamatera builds the Kamatera cloud provider.
 func BuildKamatera(
-	opts config.AutoscalingOptions,
+	opts *coreoptions.AutoscalerOptions,
 	do cloudprovider.NodeGroupDiscoveryOptions,
 	rl *cloudprovider.ResourceLimiter,
 ) cloudprovider.CloudProvider {
@@ -143,7 +174,7 @@ func BuildKamatera(
 		klog.Fatalf("Could not open cloud provider configuration file %q, error: %v", opts.CloudConfig, err)
 	}
 	defer configFile.Close()
-	kcp, err := newKamateraCloudProvider(configFile, rl, createKubeClient(opts))
+	kcp, err := newKamateraCloudProvider(configFile, rl, createKubeClient(opts.AutoscalingOptions))
 	if err != nil {
 		klog.Fatalf("Could not create kamatera cloud provider: %v", err)
 	}
@@ -158,17 +189,19 @@ func newKamateraCloudProvider(config io.Reader, rl *cloudprovider.ResourceLimite
 
 	err = m.refresh()
 	if err != nil {
-		klog.V(1).Infof("Error on first import of Kamatera node groups: %v", err)
+		klog.Errorf("Error on first import of Kamatera node groups: %v", err)
 	}
-	klog.V(1).Infof("First import of existing Kamatera node groups ended")
+	klog.V(4).Infof("First import of existing Kamatera node groups ended")
+	m.nodeGroupsMu.RLock()
 	if len(m.nodeGroups) == 0 {
-		klog.V(1).Infof("Could not import any Kamatera node groups")
+		klog.Warningf("Could not import any Kamatera node groups")
 	} else {
-		klog.V(1).Infof("imported Kamatera node groups:")
+		klog.V(0).Infof("imported Kamatera node groups:")
 		for _, ng := range m.nodeGroups {
-			klog.V(1).Infof("%s", ng.extendedDebug())
+			klog.V(0).Infof("%s", ng.extendedDebug())
 		}
 	}
+	m.nodeGroupsMu.RUnlock()
 
 	return &kamateraCloudProvider{
 		manager:         m,
@@ -176,15 +209,6 @@ func newKamateraCloudProvider(config io.Reader, rl *cloudprovider.ResourceLimite
 	}, nil
 }
 
-func getKubeConfig(opts config.AutoscalingOptions) *rest.Config {
-	klog.V(1).Infof("Using kubeconfig file: %s", opts.KubeClientOpts.KubeConfigPath)
-	kubeConfig, err := clientcmd.BuildConfigFromFlags("", opts.KubeClientOpts.KubeConfigPath)
-	if err != nil {
-		klog.Fatalf("Failed to build kubeConfig: %v", err)
-	}
-	return kubeConfig
-}
-
 func createKubeClient(opts config.AutoscalingOptions) kubernetes.Interface {
-	return kubernetes.NewForConfigOrDie(getKubeConfig(opts))
+	return kubernetes.NewForConfigOrDie(kube_util.GetKubeConfig(opts.KubeClientOpts))
 }

@@ -1,9 +1,12 @@
-#approvers:
-#- louisportay
-#- jtherin
+approvers:
+- damsien
+- pablo-ruth
+- Tomy2e
 reviewers:
+- damsien
+- pablo-ruth
+- Tomy2e
 - remyleone
-- Sh4d1
 
 labels:
 - area/provider/scaleway

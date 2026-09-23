@@ -18,5 +18,5 @@ repos:
         name: Update Cluster-Autoscaler Flags Table
         entry: bash cluster-autoscaler/hack/update-faq-flags.sh
         language: system
-        files: cluster-autoscaler/main\.go
+        files: cluster-autoscaler/config/flags/flags\.go
     repo: local

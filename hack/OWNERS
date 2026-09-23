@@ -1,11 +1,10 @@
 approvers:
-- kgolab
 - x13n
 - towca
 reviewers:
-- feiskyer
 - kgolab
 emeritus_approvers:
+- kgolab # 2026-04-16
 - piosz # 2022-09-30
 - aleksandra-malinowska # 2022-09-30
 - losipiuk # 2022-09-30

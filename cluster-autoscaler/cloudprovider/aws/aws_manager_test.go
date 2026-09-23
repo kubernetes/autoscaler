@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -25,17 +26,20 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
 func TestJoinNodeLabelsChoosingUserValuesOverAPIValues(t *testing.T) {
@@ -77,7 +81,7 @@ func TestBuildGenericLabels(t *testing.T) {
 }
 
 func TestExtractAllocatableResourcesFromAsg(t *testing.T) {
-	tags := []*autoscaling.TagDescription{
+	tags := []autoscalingtypes.TagDescription{
 		{
 			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/resources/cpu"),
 			Value: aws.String("100m"),
@@ -275,7 +279,7 @@ func TestBuildNodeFromTemplateWithManagedNodegroup(t *testing.T) {
 	// Node with EKS labels
 	observedNode, observedErr := awsManager.buildNodeFromTemplate(asg, &asgTemplate{
 		InstanceType: c5Instance,
-		Tags: []*autoscaling.TagDescription{
+		Tags: []autoscalingtypes.TagDescription{
 			{
 				Key:   aws.String("eks:nodegroup-name"),
 				Value: aws.String(ngNameLabelValue),
@@ -342,7 +346,7 @@ func TestBuildNodeFromTemplateWithManagedNodegroupNoLabelsOrTaints(t *testing.T)
 	// Node with EKS labels
 	observedNode, observedErr := awsManager.buildNodeFromTemplate(asg, &asgTemplate{
 		InstanceType: c5Instance,
-		Tags: []*autoscaling.TagDescription{
+		Tags: []autoscalingtypes.TagDescription{
 			{
 				Key:   aws.String("eks:nodegroup-name"),
 				Value: aws.String(ngNameLabelValue),
@@ -389,7 +393,7 @@ func TestBuildNodeFromTemplateWithManagedNodegroupNilLabelsOrTaints(t *testing.T
 	// Node with EKS labels
 	observedNode, observedErr := awsManager.buildNodeFromTemplate(asg, &asgTemplate{
 		InstanceType: c5Instance,
-		Tags: []*autoscaling.TagDescription{
+		Tags: []autoscalingtypes.TagDescription{
 			{
 				Key:   aws.String("eks:nodegroup-name"),
 				Value: aws.String(ngNameLabelValue),
@@ -429,7 +433,7 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	vpcIPKey := "vpc.amazonaws.com/PrivateIPv4Address"
 	observedNode, observedErr := awsManager.buildNodeFromTemplate(asg, &asgTemplate{
 		InstanceType: c5Instance,
-		Tags: []*autoscaling.TagDescription{
+		Tags: []autoscalingtypes.TagDescription{
 			{
 				Key:   aws.String(fmt.Sprintf("k8s.io/cluster-autoscaler/node-template/resources/%s", ephemeralStorageKey)),
 				Value: aws.String(strconv.FormatInt(ephemeralStorageValue, 10)),
@@ -454,7 +458,7 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	GPULabelValue := "nvidia-telsa-v100"
 	observedNode, observedErr = awsManager.buildNodeFromTemplate(asg, &asgTemplate{
 		InstanceType: c5Instance,
-		Tags: []*autoscaling.TagDescription{
+		Tags: []autoscalingtypes.TagDescription{
 			{
 				Key:   aws.String(fmt.Sprintf("k8s.io/cluster-autoscaler/node-template/label/%s", GPULabel)),
 				Value: aws.String(GPULabelValue),
@@ -470,7 +474,7 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	ngNameLabelValue := "nodegroup-1"
 	observedNode, observedErr = awsManager.buildNodeFromTemplate(asg, &asgTemplate{
 		InstanceType: c5Instance,
-		Tags: []*autoscaling.TagDescription{
+		Tags: []autoscalingtypes.TagDescription{
 			{
 				Key:   aws.String("eks:nodegroup-name"),
 				Value: aws.String(ngNameLabelValue),
@@ -490,7 +494,7 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	}
 	observedNode, observedErr = awsManager.buildNodeFromTemplate(asg, &asgTemplate{
 		InstanceType: c5Instance,
-		Tags: []*autoscaling.TagDescription{
+		Tags: []autoscalingtypes.TagDescription{
 			{
 				Key:   aws.String(fmt.Sprintf("k8s.io/cluster-autoscaler/node-template/taint/%s", gpuTaint.Key)),
 				Value: aws.String(fmt.Sprintf("%s:%s", gpuTaint.Value, gpuTaint.Effect)),
@@ -505,20 +509,20 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 
 	// Node with instance requirements
 	asg.MixedInstancesPolicy = &mixedInstancesPolicy{
-		instanceRequirements: &ec2.InstanceRequirements{
-			VCpuCount: &ec2.VCpuCountRange{
-				Min: aws.Int64(4),
-				Max: aws.Int64(8),
+		instanceRequirements: &ec2types.InstanceRequirements{
+			VCpuCount: &ec2types.VCpuCountRange{
+				Min: aws.Int32(4),
+				Max: aws.Int32(8),
 			},
-			MemoryMiB: &ec2.MemoryMiB{
-				Min: aws.Int64(4),
-				Max: aws.Int64(8),
+			MemoryMiB: &ec2types.MemoryMiB{
+				Min: aws.Int32(8192),
+				Max: aws.Int32(16384),
 			},
-			AcceleratorTypes:         []*string{aws.String(autoscaling.AcceleratorTypeGpu)},
-			AcceleratorManufacturers: []*string{aws.String(autoscaling.AcceleratorManufacturerNvidia)},
-			AcceleratorCount: &ec2.AcceleratorCount{
-				Min: aws.Int64(4),
-				Max: aws.Int64(8),
+			AcceleratorTypes:         []ec2types.AcceleratorType{ec2types.AcceleratorTypeGpu},
+			AcceleratorManufacturers: []ec2types.AcceleratorManufacturer{ec2types.AcceleratorManufacturerNvidia},
+			AcceleratorCount: &ec2types.AcceleratorCount{
+				Min: aws.Int32(4),
+				Max: aws.Int32(8),
 			},
 		},
 	}
@@ -528,7 +532,7 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 
 	assert.NoError(t, observedErr)
 	observedMemoryRequirement := observedNode.Status.Capacity[apiv1.ResourceMemory]
-	assert.Equal(t, int64(4*1024*1024), observedMemoryRequirement.Value())
+	assert.Equal(t, int64(8192*1024*1024), observedMemoryRequirement.Value())
 	observedVCpuRequirement := observedNode.Status.Capacity[apiv1.ResourceCPU]
 	assert.Equal(t, int64(4), observedVCpuRequirement.Value())
 	observedGpuRequirement := observedNode.Status.Capacity[gpu.ResourceNvidiaGPU]
@@ -536,7 +540,7 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 }
 
 func TestExtractLabelsFromAsg(t *testing.T) {
-	tags := []*autoscaling.TagDescription{
+	tags := []autoscalingtypes.TagDescription{
 		{
 			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/label/foo"),
 			Value: aws.String("bar"),
@@ -564,7 +568,7 @@ func TestExtractLabelsFromAsg(t *testing.T) {
 }
 
 func TestExtractTaintsFromAsg(t *testing.T) {
-	tags := []*autoscaling.TagDescription{
+	tags := []autoscalingtypes.TagDescription{
 		{
 			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/dedicated"),
 			Value: aws.String("foo:NoSchedule"),
@@ -627,37 +631,43 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	asgRef := AwsRef{Name: groupname}
 
 	a := &autoScalingMock{}
-	a.On("DescribeAutoScalingGroups", &autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{aws.String(groupname)},
-		MaxRecords:            aws.Int64(1),
-	}).Return(&autoscaling.DescribeAutoScalingGroupsOutput{
-		AutoScalingGroups: []*autoscaling.Group{
-			{AutoScalingGroupName: aws.String(groupname)},
-		},
-	})
-
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{groupname}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{groupname},
+			MaxRecords:            aws.Int32(1),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		zone := "test-1a"
-		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
-			AutoScalingGroups: []*autoscaling.Group{
+	).Return(
+		&autoscaling.DescribeAutoScalingGroupsOutput{
+			AutoScalingGroups: []autoscalingtypes.AutoScalingGroup{
+				{AutoScalingGroupName: aws.String(groupname)},
+			},
+		},
+		nil,
+	)
+
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
+		&autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: []string{groupname},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
+		},
+	).Return(
+		&autoscaling.DescribeAutoScalingGroupsOutput{
+			AutoScalingGroups: []autoscalingtypes.AutoScalingGroup{
 				{
-					AvailabilityZones:    []*string{&zone},
+					AvailabilityZones:    []string{"test-1a"},
 					AutoScalingGroupName: aws.String(groupname),
-					MinSize:              aws.Int64(int64(min)),
-					MaxSize:              aws.Int64(int64(max)),
-					DesiredCapacity:      aws.Int64(int64(min)),
+					MinSize:              aws.Int32(int32(min)),
+					MaxSize:              aws.Int32(int32(max)),
+					DesiredCapacity:      aws.Int32(int32(min)),
 				},
-			}}, false)
-	}).Return(nil)
+			}},
+		nil,
+	)
 
 	a.On("DescribeScalingActivities",
+		mock.Anything,
 		&autoscaling.DescribeScalingActivitiesInput{
 			AutoScalingGroupName: aws.String("coolasg"),
 		},
@@ -694,7 +704,7 @@ func TestGetASGTemplate(t *testing.T) {
 
 	asgRef := AwsRef{Name: asgName}
 
-	tags := []*autoscaling.TagDescription{
+	tags := []autoscalingtypes.TagDescription{
 		{
 			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/dedicated"),
 			Value: aws.String("foo:NoSchedule"),
@@ -722,12 +732,12 @@ func TestGetASGTemplate(t *testing.T) {
 			e := &ec2Mock{}
 			e.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
 				LaunchTemplateName: aws.String(ltName),
-				Versions:           []*string{aws.String(ltVersion)},
+				Versions:           []string{ltVersion},
 			}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
-				LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+				LaunchTemplateVersions: []ec2types.LaunchTemplateVersion{
 					{
-						LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
-							InstanceType: aws.String(test.instanceType),
+						LaunchTemplateData: &ec2types.ResponseLaunchTemplateData{
+							InstanceType: ec2types.InstanceType(test.instanceType),
 						},
 					},
 				},
@@ -779,49 +789,48 @@ func TestFetchAutoAsgs(t *testing.T) {
 
 	// Describe the group to register it, then again to generate the instance
 	// cache.
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: aws.StringSlice([]string{groupname}),
-			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+			AutoScalingGroupNames: []string{groupname},
+			MaxRecords:            aws.Int32(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		zone := "test-1a"
-		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
-			AutoScalingGroups: []*autoscaling.Group{{
-				AvailabilityZones:    []*string{&zone},
+	).Return(
+		&autoscaling.DescribeAutoScalingGroupsOutput{
+			AutoScalingGroups: []autoscalingtypes.AutoScalingGroup{{
+				AvailabilityZones:    []string{"test-1a"},
 				AutoScalingGroupName: aws.String(groupname),
-				MinSize:              aws.Int64(int64(min)),
-				MaxSize:              aws.Int64(int64(max)),
-				DesiredCapacity:      aws.Int64(int64(min)),
-			}}}, false)
-	}).Return(nil).Once()
+				MinSize:              aws.Int32(int32(min)),
+				MaxSize:              aws.Int32(int32(max)),
+				DesiredCapacity:      aws.Int32(int32(min)),
+			}}},
+		nil,
+	).Once()
 
 	expectedGroupsInputWithTags := &autoscaling.DescribeAutoScalingGroupsInput{
-		Filters: []*autoscaling.Filter{
-			{Name: aws.String("tag-key"), Values: aws.StringSlice([]string{tags[0]})},
-			{Name: aws.String("tag-key"), Values: aws.StringSlice([]string{tags[1]})},
+		Filters: []autoscalingtypes.Filter{
+			{Name: aws.String("tag-key"), Values: []string{tags[0]}},
+			{Name: aws.String("tag-key"), Values: []string{tags[1]}},
 		},
-		MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
+		MaxRecords: aws.Int32(maxRecordsReturnedByAPI),
 	}
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		mock.MatchedBy(tagsMatcher(expectedGroupsInputWithTags)),
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		zone := "test-1a"
-		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
-			AutoScalingGroups: []*autoscaling.Group{{
-				AvailabilityZones:    []*string{&zone},
+	).Return(
+		&autoscaling.DescribeAutoScalingGroupsOutput{
+			AutoScalingGroups: []autoscalingtypes.AutoScalingGroup{{
+				AvailabilityZones:    []string{"test-1a"},
 				AutoScalingGroupName: aws.String(groupname),
-				MinSize:              aws.Int64(int64(min)),
-				MaxSize:              aws.Int64(int64(max)),
-				DesiredCapacity:      aws.Int64(int64(min)),
-			}}}, false)
-	}).Return(nil).Once()
+				MinSize:              aws.Int32(int32(min)),
+				MaxSize:              aws.Int32(int32(max)),
+				DesiredCapacity:      aws.Int32(int32(min)),
+			}}},
+		nil,
+	).Once()
 
 	a.On("DescribeScalingActivities",
+		mock.Anything,
 		&autoscaling.DescribeScalingActivitiesInput{
 			AutoScalingGroupName: aws.String("coolasg"),
 		},
@@ -842,14 +851,14 @@ func TestFetchAutoAsgs(t *testing.T) {
 	validateAsg(t, asgs[asgRef], groupname, min, max)
 
 	// Simulate the previously discovered ASG disappearing
-	a.On("DescribeAutoScalingGroupsPages",
+	a.On("DescribeAutoScalingGroups",
+		mock.Anything,
 		mock.MatchedBy(tagsMatcher(expectedGroupsInputWithTags)),
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
-		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
-			AutoScalingGroups: []*autoscaling.Group{}}, false)
-	}).Return(nil).Once()
+	).Return(
+		&autoscaling.DescribeAutoScalingGroupsOutput{
+			AutoScalingGroups: []autoscalingtypes.AutoScalingGroup{}},
+		nil,
+	).Once()
 
 	err = m.asgCache.regenerate()
 	assert.NoError(t, err)
@@ -872,10 +881,10 @@ func tagsMatcher(expected *autoscaling.DescribeAutoScalingGroupsInput) func(*aut
 	}
 }
 
-func flatTagSlice(filters []*autoscaling.Filter) []string {
-	tags := []string{}
+func flatTagSlice(filters []autoscalingtypes.Filter) []string {
+	var tags []string
 	for _, filter := range filters {
-		tags = append(tags, aws.StringValueSlice(filter.Values)...)
+		tags = append(tags, filter.Values...)
 	}
 	// Sort slice for compare
 	sort.Strings(tags)
@@ -943,4 +952,314 @@ func TestParseASGAutoDiscoverySpecs(t *testing.T) {
 			assert.True(t, assert.ObjectsAreEqualValues(tc.want, got), "\ngot: %#v\nwant: %#v", got, tc.want)
 		})
 	}
+}
+
+func csiDriverASGTags(value string) []autoscalingtypes.TagDescription {
+	return []autoscalingtypes.TagDescription{
+		{
+			Key:   aws.String(csiDriverTagKey),
+			Value: aws.String(value),
+		},
+	}
+}
+
+func TestParseCSIDriverTag(t *testing.T) {
+	tests := []struct {
+		name  string
+		value string
+		want  []string
+	}{
+		{name: "empty", value: "", want: nil},
+		{name: "whitespace", value: "   ", want: nil},
+		{name: "single ebs", value: "ebs.csi.aws.com", want: []string{"ebs.csi.aws.com"}},
+		{name: "single efs", value: "efs.csi.aws.com", want: []string{"efs.csi.aws.com"}},
+		{name: "multiple", value: "ebs.csi.aws.com,efs.csi.aws.com", want: []string{"ebs.csi.aws.com", "efs.csi.aws.com"}},
+		{name: "whitespace and duplicates", value: " ebs.csi.aws.com, ebs.csi.aws.com ", want: []string{"ebs.csi.aws.com"}},
+		{name: "empty entries", value: ",ebs.csi.aws.com,,", want: []string{"ebs.csi.aws.com"}},
+		{name: "equals capacity is malformed", value: "ebs.csi.aws.com=39", want: nil},
+		{name: "mixed valid and equals", value: "efs.csi.aws.com,ebs.csi.aws.com=39", want: []string{"efs.csi.aws.com"}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, parseCSIDriverTag(tc.value))
+		})
+	}
+}
+
+func TestBuildCSINodeFromTemplate(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_NoVolumeLimit(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 0,
+		},
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_EBSDeclared(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags("ebs.csi.aws.com"),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Equal(t, "template-node", got.Name)
+	require.Len(t, got.Spec.Drivers, 1)
+	driver := got.Spec.Drivers[0]
+	require.Equal(t, "ebs.csi.aws.com", driver.Name)
+	require.Equal(t, "template-node", driver.NodeID)
+	require.NotNil(t, driver.Allocatable)
+	require.Equal(t, int32(39), *driver.Allocatable.Count)
+}
+
+func TestBuildCSINodeFromTemplate_EBSDeclaredNoVolumeLimit(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 0,
+		},
+		Tags: csiDriverASGTags("ebs.csi.aws.com"),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	driver := got.Spec.Drivers[0]
+	require.Equal(t, "ebs.csi.aws.com", driver.Name)
+	require.Nil(t, driver.Allocatable)
+}
+
+func TestBuildCSINodeFromTemplate_EFSOnly(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags("efs.csi.aws.com"),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	require.Equal(t, "efs.csi.aws.com", got.Spec.Drivers[0].Name)
+	require.Nil(t, got.Spec.Drivers[0].Allocatable)
+}
+
+func TestBuildCSINodeFromTemplate_MultipleDrivers(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags("ebs.csi.aws.com,efs.csi.aws.com"),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 2)
+	require.Equal(t, "ebs.csi.aws.com", got.Spec.Drivers[0].Name)
+	require.NotNil(t, got.Spec.Drivers[0].Allocatable)
+	require.Equal(t, int32(39), *got.Spec.Drivers[0].Allocatable.Count)
+	require.Equal(t, "efs.csi.aws.com", got.Spec.Drivers[1].Name)
+	require.Nil(t, got.Spec.Drivers[1].Allocatable)
+}
+
+func TestBuildCSINodeFromTemplate_DuplicatesAndWhitespace(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags(" ebs.csi.aws.com, ebs.csi.aws.com "),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	require.Equal(t, "ebs.csi.aws.com", got.Spec.Drivers[0].Name)
+}
+
+func TestBuildCSINodeFromTemplate_MalformedTag(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags("ebs.csi.aws.com=39"),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_EmptyTag(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: csiDriverASGTags("  "),
+	}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_NilTemplate(t *testing.T) {
+	manager := &AwsManager{}
+
+	got := manager.buildCSINodeFromTemplate(nil, "template-node")
+
+	require.Nil(t, got)
+}
+
+func TestBuildCSINodeFromTemplate_NilInstanceType(t *testing.T) {
+	manager := &AwsManager{}
+
+	template := &asgTemplate{}
+
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+
+	require.Nil(t, got)
+}
+
+func mngCSITemplate(asgCSIDriver string) *asgTemplate {
+	return &asgTemplate{
+		InstanceType: &InstanceType{
+			InstanceType:   "m5.large",
+			EBSVolumeLimit: 39,
+		},
+		Tags: []autoscalingtypes.TagDescription{
+			{
+				Key:   aws.String("eks:nodegroup-name"),
+				Value: aws.String("ng1"),
+			},
+			{
+				Key:   aws.String("eks:cluster-name"),
+				Value: aws.String("cluster1"),
+			},
+			{
+				Key:   aws.String(csiDriverTagKey),
+				Value: aws.String(asgCSIDriver),
+			},
+		},
+	}
+}
+
+func TestCSIDriverTagMNGOverridesASGEBSWithEFS(t *testing.T) {
+	mngCache := newManagedNodeGroupCache(nil)
+	require.NoError(t, mngCache.Add(managedNodegroupCachedObject{
+		name:        "ng1",
+		clusterName: "cluster1",
+		tags:        map[string]string{csiDriverTagKey: "efs.csi.aws.com"},
+	}))
+	manager := &AwsManager{managedNodegroupCache: mngCache}
+	template := mngCSITemplate("ebs.csi.aws.com")
+
+	assert.Equal(t, "efs.csi.aws.com", manager.csiDriverTagValue(template))
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	assert.Equal(t, "efs.csi.aws.com", got.Spec.Drivers[0].Name)
+}
+
+func TestCSIDriverTagMNGOverridesASGEFSWithEBS(t *testing.T) {
+	mngCache := newManagedNodeGroupCache(nil)
+	require.NoError(t, mngCache.Add(managedNodegroupCachedObject{
+		name:        "ng1",
+		clusterName: "cluster1",
+		tags:        map[string]string{csiDriverTagKey: "ebs.csi.aws.com"},
+	}))
+	manager := &AwsManager{managedNodegroupCache: mngCache}
+	template := mngCSITemplate("efs.csi.aws.com")
+
+	assert.Equal(t, "ebs.csi.aws.com", manager.csiDriverTagValue(template))
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	assert.Equal(t, "ebs.csi.aws.com", got.Spec.Drivers[0].Name)
+	require.NotNil(t, got.Spec.Drivers[0].Allocatable)
+	assert.Equal(t, int32(39), *got.Spec.Drivers[0].Allocatable.Count)
+}
+
+func TestCSIDriverTagASGKeptWhenMNGOmitsKey(t *testing.T) {
+	mngCache := newManagedNodeGroupCache(nil)
+	require.NoError(t, mngCache.Add(managedNodegroupCachedObject{
+		name:        "ng1",
+		clusterName: "cluster1",
+		tags:        map[string]string{"unrelated": "tag"},
+	}))
+	manager := &AwsManager{managedNodegroupCache: mngCache}
+	template := mngCSITemplate("ebs.csi.aws.com")
+
+	assert.Equal(t, "ebs.csi.aws.com", manager.csiDriverTagValue(template))
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	assert.Equal(t, "ebs.csi.aws.com", got.Spec.Drivers[0].Name)
+}
+
+func TestCSIDriverTagASGKeptWhenMNGLookupFails(t *testing.T) {
+	k := &eksMock{}
+	k.On("DescribeNodegroup",
+		mock.Anything,
+		&eks.DescribeNodegroupInput{
+			ClusterName:   aws.String("cluster1"),
+			NodegroupName: aws.String("ng1"),
+		},
+	).Return(nil, errors.New("AccessDenied"))
+
+	manager := &AwsManager{managedNodegroupCache: newManagedNodeGroupCache(&awsWrapper{nil, nil, k})}
+	template := mngCSITemplate("ebs.csi.aws.com")
+
+	assert.Equal(t, "ebs.csi.aws.com", manager.csiDriverTagValue(template))
+	got := manager.buildCSINodeFromTemplate(template, "template-node")
+	require.NotNil(t, got)
+	require.Len(t, got.Spec.Drivers, 1)
+	assert.Equal(t, "ebs.csi.aws.com", got.Spec.Drivers[0].Name)
 }

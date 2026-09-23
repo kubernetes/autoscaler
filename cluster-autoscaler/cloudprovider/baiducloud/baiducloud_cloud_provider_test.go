@@ -17,11 +17,12 @@ limitations under the License.
 package baiducloud
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 var testBaiducloudManager = &BaiducloudManager{
@@ -56,33 +57,33 @@ func TestBuildBaiduCloudProvider(t *testing.T) {
 
 func TestName(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	assert.Equal(t, provider.Name(), cloudprovider.BaiducloudProviderName)
+	assert.Equal(t, provider.Name(), ProviderName)
 }
 
 func TestNodeGroups(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
 
-	nodeGroups := provider.NodeGroups()
+	nodeGroups := provider.NodeGroups(context.Background())
 	assert.Equal(t, len(nodeGroups), 1)
 	assert.Equal(t, nodeGroups[0].Id(), "k8s-worker-asg-1")
-	assert.Equal(t, nodeGroups[0].MinSize(), 1)
-	assert.Equal(t, nodeGroups[0].MaxSize(), 10)
+	assert.Equal(t, nodeGroups[0].MinSize(context.Background()), 1)
+	assert.Equal(t, nodeGroups[0].MaxSize(context.Background()), 10)
 }
 
 func TestGPULabel(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	GPULabel := provider.GPULabel()
+	GPULabel := provider.GPULabel(context.Background())
 	assert.Equal(t, GPULabel, "baidu/nvidia_name")
 }
 
 func TestCleanup(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	err := provider.Cleanup()
+	err := provider.Cleanup(context.Background())
 	assert.NoError(t, err)
 }
 
 func TestRefresh(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	err := provider.Refresh()
+	err := provider.Refresh(context.Background())
 	assert.NoError(t, err)
 }

@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"text/template"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // This file contains fixtures for a hypothetical node group
@@ -87,29 +87,29 @@ func f(index int) string {
 // ExpectedInstances are the instances that should be returned for a node group with nodes defined by AllNodes.
 var ExpectedInstances = []cloudprovider.Instance{
 	// Running nodes
-	{p(AllNodes[0].UUID), &cloudprovider.InstanceStatus{cloudprovider.InstanceRunning, nil}},
-	{p(AllNodes[1].UUID), &cloudprovider.InstanceStatus{cloudprovider.InstanceRunning, nil}},
-	{p(AllNodes[2].UUID), &cloudprovider.InstanceStatus{cloudprovider.InstanceRunning, nil}},
+	{Id: p(AllNodes[0].UUID), Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
+	{Id: p(AllNodes[1].UUID), Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
+	{Id: p(AllNodes[2].UUID), Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning}},
 
 	// Creating nodes
-	{f(AllNodes[3].Index), &cloudprovider.InstanceStatus{cloudprovider.InstanceCreating, nil}},
-	{f(AllNodes[4].Index), &cloudprovider.InstanceStatus{cloudprovider.InstanceCreating, nil}},
-	{p(AllNodes[5].UUID), &cloudprovider.InstanceStatus{cloudprovider.InstanceCreating, nil}},
-	{f(AllNodes[6].Index), &cloudprovider.InstanceStatus{cloudprovider.InstanceCreating, nil}},
-	{f(AllNodes[7].Index), &cloudprovider.InstanceStatus{cloudprovider.InstanceCreating, nil}},
+	{Id: f(AllNodes[3].Index), Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating}},
+	{Id: f(AllNodes[4].Index), Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating}},
+	{Id: p(AllNodes[5].UUID), Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating}},
+	{Id: f(AllNodes[6].Index), Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating}},
+	{Id: f(AllNodes[7].Index), Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating}},
 
 	// Deleting nodes
-	{p(AllNodes[8].UUID), &cloudprovider.InstanceStatus{cloudprovider.InstanceDeleting, nil}},
+	{Id: p(AllNodes[8].UUID), Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting}},
 	// node 9 is deleted so it is not reported
 
 	// Failed nodes
-	{f(AllNodes[10].Index), &cloudprovider.InstanceStatus{
-		cloudprovider.InstanceCreating, &cloudprovider.InstanceErrorInfo{
-			cloudprovider.OutOfResourcesErrorClass, "", "out of quota"}},
+	{Id: f(AllNodes[10].Index), Status: &cloudprovider.InstanceStatus{
+		State: cloudprovider.InstanceCreating, ErrorInfo: &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OutOfResourcesErrorClass, ErrorCode: "", ErrorMessage: "out of quota"}},
 	},
-	{f(AllNodes[11].Index), &cloudprovider.InstanceStatus{
-		cloudprovider.InstanceCreating, &cloudprovider.InstanceErrorInfo{
-			cloudprovider.OtherErrorClass, "", "other error"}},
+	{Id: f(AllNodes[11].Index), Status: &cloudprovider.InstanceStatus{
+		State: cloudprovider.InstanceCreating, ErrorInfo: &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass, ErrorCode: "", ErrorMessage: "other error"}},
 	},
 	// node 12 is not reported
 }

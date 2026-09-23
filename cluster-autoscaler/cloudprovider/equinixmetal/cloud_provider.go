@@ -17,6 +17,7 @@ limitations under the License.
 package equinixmetal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -25,13 +26,23 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/client-go/informers"
 	klog "k8s.io/klog/v2"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
+)
+
+const (
+	// EquinixMetalProviderName is the cloud provider name for this provider.
+	EquinixMetalProviderName = "equinixmetal"
+	// PacketProviderName is the cloud provider name for this provider.
+	// This is a legacy name.
+	PacketProviderName = "packet"
 )
 
 const (
@@ -54,61 +65,70 @@ var (
 	}
 )
 
+func init() {
+	build := func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+		return BuildCloudProvider(opts, do, rl)
+	}
+	builder.RegisterCloudProvider(EquinixMetalProviderName, build)
+	builder.RegisterCloudProvider(PacketProviderName, build)
+	builder.SetDefaultCloudProvider(EquinixMetalProviderName)
+}
+
 // equinixMetalCloudProvider implements CloudProvider interface from cluster-autoscaler/cloudprovider module.
 type equinixMetalCloudProvider struct {
 	equinixMetalManager equinixMetalManager
 	resourceLimiter     *cloudprovider.ResourceLimiter
-	nodeGroups          []equinixMetalNodeGroup
+	nodeGroups          []*equinixMetalNodeGroup
 }
 
 func buildEquinixMetalCloudProvider(metalManager equinixMetalManager, resourceLimiter *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
 	pcp := &equinixMetalCloudProvider{
 		equinixMetalManager: metalManager,
 		resourceLimiter:     resourceLimiter,
-		nodeGroups:          []equinixMetalNodeGroup{},
+		nodeGroups:          []*equinixMetalNodeGroup{},
 	}
 	return pcp, nil
 }
 
 // Name returns the name of the cloud provider.
 func (pcp *equinixMetalCloudProvider) Name() string {
-	return cloudprovider.EquinixMetalProviderName
+	return EquinixMetalProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
-func (pcp *equinixMetalCloudProvider) GPULabel() string {
+func (pcp *equinixMetalCloudProvider) GPULabel(ctx context.Context) string {
 	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
-func (pcp *equinixMetalCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (pcp *equinixMetalCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return availableGPUTypes
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
-func (pcp *equinixMetalCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(pcp, node)
+func (pcp *equinixMetalCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), pcp, node)
 }
 
 // NodeGroups returns all node groups managed by this cloud provider.
-func (pcp *equinixMetalCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (pcp *equinixMetalCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, len(pcp.nodeGroups))
 	for i := range pcp.nodeGroups {
-		groups[i] = &pcp.nodeGroups[i]
+		groups[i] = pcp.nodeGroups[i]
 	}
 	return groups
 }
 
 // AddNodeGroup appends a node group to the list of node groups managed by this cloud provider.
-func (pcp *equinixMetalCloudProvider) AddNodeGroup(group equinixMetalNodeGroup) {
+func (pcp *equinixMetalCloudProvider) AddNodeGroup(group *equinixMetalNodeGroup) {
 	pcp.nodeGroups = append(pcp.nodeGroups, group)
 }
 
 // NodeGroupForNode returns the node group that a given node belongs to.
 //
 // Since only a single node group is currently supported, the first node group is always returned.
-func (pcp *equinixMetalCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (pcp *equinixMetalCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	controllerNodeLabel := DefaultControllerNodeLabelKey
 	value, present := os.LookupEnv(ControllerNodeIdentifierMetalEnv)
 	if present {
@@ -127,52 +147,52 @@ func (pcp *equinixMetalCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudp
 	if err != nil {
 		return nil, err
 	}
-	for i, nodeGroup := range pcp.nodeGroups {
+	for _, nodeGroup := range pcp.nodeGroups {
 		if nodeGroup.Id() == nodeGroupId {
-			return &(pcp.nodeGroups[i]), nil
+			return nodeGroup, nil
 		}
 	}
 	return nil, fmt.Errorf("Could not find group for node: %s", node.Spec.ProviderID)
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (pcp *equinixMetalCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (pcp *equinixMetalCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	return true, cloudprovider.ErrNotImplemented
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (pcp *equinixMetalCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (pcp *equinixMetalCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return &Price{}, nil
 }
 
 // GetAvailableMachineTypes is not implemented.
-func (pcp *equinixMetalCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (pcp *equinixMetalCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup is not implemented.
-func (pcp *equinixMetalCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (pcp *equinixMetalCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns resource constraints for the cloud provider
-func (pcp *equinixMetalCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (pcp *equinixMetalCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return pcp.resourceLimiter, nil
 }
 
 // Refresh is called before every autoscaler main loop.
 //
 // Currently only prints debug information.
-func (pcp *equinixMetalCloudProvider) Refresh() error {
+func (pcp *equinixMetalCloudProvider) Refresh(ctx context.Context) error {
 	for _, nodegroup := range pcp.nodeGroups {
-		klog.V(3).Info(nodegroup.Debug())
+		klog.V(3).Info(nodegroup.Debug(context.TODO()))
 	}
 	return nil
 }
 
 // Cleanup currently does nothing.
-func (pcp *equinixMetalCloudProvider) Cleanup() error {
+func (pcp *equinixMetalCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
@@ -180,7 +200,7 @@ func (pcp *equinixMetalCloudProvider) Cleanup() error {
 //
 // The equinixMetalManager is created here, and the node groups are created
 // based on the specs provided via the command line parameters.
-func BuildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildCloudProvider(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 
 	if opts.CloudConfig != "" {
@@ -192,7 +212,7 @@ func BuildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		defer config.Close()
 	}
 
-	manager, err := createEquinixMetalManager(config, do, opts)
+	manager, err := createEquinixMetalManager(config, do, opts.AutoscalingOptions)
 	if err != nil {
 		klog.Fatalf("Failed to create equinix metal manager: %v", err)
 	}
@@ -234,7 +254,7 @@ func BuildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		if err != nil {
 			klog.Fatalf("Could not set current nodes in node group: %v", err)
 		}
-		provider.(*equinixMetalCloudProvider).AddNodeGroup(ng)
+		provider.(*equinixMetalCloudProvider).AddNodeGroup(&ng)
 	}
 
 	return provider

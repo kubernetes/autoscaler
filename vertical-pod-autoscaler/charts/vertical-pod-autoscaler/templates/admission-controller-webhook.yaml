@@ -1,0 +1,56 @@
+{{- if and .Values.admissionController.enabled (or .Values.admissionController.certGen.enabled .Values.admissionController.certManager.enabled) }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "vertical-pod-autoscaler.admissionController.webhook.configName" . }}
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+  {{- $annotations := dict }}
+  {{- if .Values.admissionController.certManager.enabled }}
+    {{- $_ := set $annotations "cert-manager.io/inject-ca-from" (printf "%s/%s" .Release.Namespace (include "vertical-pod-autoscaler.admissionController.certManager.certName" .)) }}
+  {{- end }}
+  {{- with .Values.admissionController.mutatingWebhookConfiguration.annotations }}
+    {{- $annotations = merge $annotations . }}
+  {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- toYaml $annotations | nindent 4 }}
+  {{- end }}
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    # caBundle is injected by the certgen patch job (certGen mode) or by cert-manager cainjector (certManager mode)
+    service:
+      name: {{ .Values.admissionController.service.name }}
+      namespace: {{ .Release.Namespace }}
+      port: 443
+  failurePolicy: {{ .Values.admissionController.mutatingWebhookConfiguration.failurePolicy }}
+  matchPolicy: Equivalent
+  name: vpa.k8s.io
+  namespaceSelector: {{ .Values.admissionController.mutatingWebhookConfiguration.namespaceSelector | toYaml | nindent 4 }}
+  objectSelector: {{ .Values.admissionController.mutatingWebhookConfiguration.objectSelector | toYaml | nindent 4 }}
+  reinvocationPolicy: Never
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+    scope: '*'
+  - apiGroups:
+    - autoscaling.k8s.io
+    apiVersions:
+    - '*'
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - verticalpodautoscalers
+    scope: '*'
+  sideEffects: None
+  timeoutSeconds: {{ .Values.admissionController.mutatingWebhookConfiguration.timeoutSeconds }}
+{{- end }}

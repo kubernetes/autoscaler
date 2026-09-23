@@ -22,13 +22,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	egoscale "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/exoscale/internal/github.com/exoscale/egoscale/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 var (
@@ -146,10 +146,7 @@ func (ts *cloudProviderTestSuite) TearDownTest() {
 }
 
 func (ts *cloudProviderTestSuite) randomID() string {
-	id, err := uuid.NewV4()
-	if err != nil {
-		ts.T().Fatalf("unable to generate a new UUID: %s", err)
-	}
+	id := uuid.New()
 	return id.String()
 }
 
@@ -169,10 +166,21 @@ func (ts *cloudProviderTestSuite) randomString(length int) string {
 }
 
 func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_Name() {
-	ts.Require().Equal(cloudprovider.ExoscaleProviderName, ts.p.Name())
+	ts.Require().Equal(ProviderName, ts.p.Name())
 }
 
 func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_InstancePool() {
+	ts.p.manager.client.(*exoscaleClientMock).
+		On("GetQuota", ts.p.manager.ctx, ts.p.manager.zone, "instance").
+		Return(
+			&egoscale.Quota{
+				Resource: &testComputeInstanceQuotaName,
+				Usage:    &testComputeInstanceQuotaUsage,
+				Limit:    &testComputeInstanceQuotaLimit,
+			},
+			nil,
+		)
+
 	ts.p.manager.client.(*exoscaleClientMock).
 		On("GetInstancePool", ts.p.manager.ctx, ts.p.manager.zone, testInstancePoolID).
 		Return(
@@ -197,7 +205,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_Ins
 			nil,
 		)
 
-	nodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
+	nodeGroup, err := ts.p.NodeGroupForNode(context.Background(), &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(testInstanceID),
 		},
@@ -268,7 +276,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_SKS
 			nil,
 		)
 
-	nodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
+	nodeGroup, err := ts.p.NodeGroupForNode(context.Background(), &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(testInstanceID),
 		},
@@ -295,7 +303,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroupForNode_Sta
 			nil,
 		)
 
-	nodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
+	nodeGroup, err := ts.p.NodeGroupForNode(context.Background(), &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(testInstanceID),
 		},
@@ -359,7 +367,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroups() {
 			nil,
 		)
 
-	instancePoolNodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
+	instancePoolNodeGroup, err := ts.p.NodeGroupForNode(context.Background(), &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(instancePoolInstanceID),
 		},
@@ -417,7 +425,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroups() {
 			nil,
 		)
 
-	sksNodepoolNodeGroup, err := ts.p.NodeGroupForNode(&apiv1.Node{
+	sksNodepoolNodeGroup, err := ts.p.NodeGroupForNode(context.Background(), &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: toProviderID(sksNodepoolInstanceID),
 		},
@@ -432,7 +440,7 @@ func (ts *cloudProviderTestSuite) TestExoscaleCloudProvider_NodeGroups() {
 
 	// ---------------------------------------------------------------
 
-	ts.Require().Len(ts.p.NodeGroups(), 2)
+	ts.Require().Len(ts.p.NodeGroups(context.Background()), 2)
 }
 
 func TestSuiteExoscaleCloudProvider(t *testing.T) {

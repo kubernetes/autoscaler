@@ -23,7 +23,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	baseclocktest "k8s.io/utils/clock/testing"
 
@@ -35,7 +35,7 @@ func TestEvictTooFewReplicas(t *testing.T) {
 	replicas := int32(5)
 	livePods := 5
 
-	rc := apiv1.ReplicationController{
+	rc := corev1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
@@ -43,18 +43,18 @@ func TestEvictTooFewReplicas(t *testing.T) {
 		TypeMeta: metav1.TypeMeta{
 			Kind: "ReplicationController",
 		},
-		Spec: apiv1.ReplicationControllerSpec{
+		Spec: corev1.ReplicationControllerSpec{
 			Replicas: &replicas,
 		},
 	}
 
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	for i := range pods {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10, 0.5, nil, nil, nil)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10, 0.5, nil, nil, nil, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -75,7 +75,7 @@ func TestEvictionTolerance(t *testing.T) {
 	livePods := 5
 	tolerance := 0.8
 
-	rc := apiv1.ReplicationController{
+	rc := corev1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
@@ -83,18 +83,18 @@ func TestEvictionTolerance(t *testing.T) {
 		TypeMeta: metav1.TypeMeta{
 			Kind: "ReplicationController",
 		},
-		Spec: apiv1.ReplicationControllerSpec{
+		Spec: corev1.ReplicationControllerSpec{
 			Replicas: &replicas,
 		},
 	}
 
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	for i := range pods {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /*minReplicas*/, tolerance, nil, nil, nil)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2 /* minReplicas */, tolerance, nil, nil, nil, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -119,7 +119,7 @@ func TestEvictAtLeastOne(t *testing.T) {
 	livePods := 5
 	tolerance := 0.1
 
-	rc := apiv1.ReplicationController{
+	rc := corev1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
@@ -127,18 +127,18 @@ func TestEvictAtLeastOne(t *testing.T) {
 		TypeMeta: metav1.TypeMeta{
 			Kind: "ReplicationController",
 		},
-		Spec: apiv1.ReplicationControllerSpec{
+		Spec: corev1.ReplicationControllerSpec{
 			Replicas: &replicas,
 		},
 	}
 
-	pods := make([]*apiv1.Pod, livePods)
+	pods := make([]*corev1.Pod, livePods)
 	for i := range pods {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
 	basicVpa := getBasicVpa()
-	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, nil)
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, tolerance, nil, nil, nil, false)
 	assert.NoError(t, err)
 	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
 	assert.NoError(t, err)
@@ -159,7 +159,7 @@ func TestEvictAtLeastOne(t *testing.T) {
 }
 
 func TestEvictEmitEvent(t *testing.T) {
-	rc := apiv1.ReplicationController{
+	rc := corev1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
@@ -192,12 +192,12 @@ func TestEvictEmitEvent(t *testing.T) {
 			vpa:               basicVpa,
 			pods: []podWithExpectations{
 				{
-					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					pod:             generatePod().WithPhase(corev1.PodPending).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					pod:             generatePod().WithPhase(corev1.PodPending).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
@@ -222,15 +222,15 @@ func TestEvictEmitEvent(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		rc.Spec = apiv1.ReplicationControllerSpec{
+		rc.Spec = corev1.ReplicationControllerSpec{
 			Replicas: &testCase.replicas,
 		}
-		pods := make([]*apiv1.Pod, 0, len(testCase.pods))
+		pods := make([]*corev1.Pod, 0, len(testCase.pods))
 		for _, p := range testCase.pods {
 			pods = append(pods, p.pod)
 		}
 		clock := baseclocktest.NewFakeClock(time.Time{})
-		factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, testCase.evictionTolerance, clock, map[string]time.Time{}, nil)
+		factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, testCase.evictionTolerance, clock, map[string]time.Time{}, nil, false)
 		assert.NoError(t, err)
 		creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, testCase.vpa)
 		assert.NoError(t, err)
@@ -238,8 +238,8 @@ func TestEvictEmitEvent(t *testing.T) {
 
 		for _, p := range testCase.pods {
 			mockRecorder := test.MockEventRecorder()
-			mockRecorder.On("Event", mock.Anything, apiv1.EventTypeNormal, "EvictedByVPA", mock.Anything).Return()
-			mockRecorder.On("Event", mock.Anything, apiv1.EventTypeNormal, "EvictedPod", mock.Anything).Return()
+			mockRecorder.On("Event", mock.Anything, corev1.EventTypeNormal, "EvictedByVPA", mock.Anything).Return()
+			mockRecorder.On("Event", mock.Anything, corev1.EventTypeNormal, "EvictedPod", mock.Anything).Return()
 
 			errGot := eviction.Evict(p.pod, testCase.vpa, mockRecorder)
 			if testCase.errorExpected {
@@ -250,10 +250,51 @@ func TestEvictEmitEvent(t *testing.T) {
 
 			if p.canEvict {
 				mockRecorder.AssertNumberOfCalls(t, "Event", 2)
-
 			} else {
 				mockRecorder.AssertNumberOfCalls(t, "Event", 0)
 			}
 		}
+	}
+}
+
+// This test ensures that in-place-skip-disruption-budget only affects in-place
+// updates and does not bypass eviction tolerance when performing pod evictions.
+func TestEvictTooFewReplicasWithInPlaceSkipDisruptionBudget(t *testing.T) {
+	replicas := int32(5)
+	livePods := 5
+
+	rc := corev1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: corev1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*corev1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+	}
+
+	basicVpa := getBasicVpa()
+	// factory with inPlaceSkipDisruptionBudget on
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 10, 0.5, nil, nil, nil, true)
+	assert.NoError(t, err)
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	assert.NoError(t, err)
+	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	for _, pod := range pods {
+		assert.False(t, eviction.CanEvict(pod))
+	}
+
+	for _, pod := range pods {
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
+		assert.Error(t, err, "Error expected")
 	}
 }

@@ -1,0 +1,127 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+
+reviews:
+  request_changes_workflow: false
+
+  path_filters:
+    - "!vertical-pod-autoscaler/pkg/client/**"
+    - "!**/*_generated*.go"
+    - "!**/zz_generated.*.go"
+    - "!vendor/**"
+
+  path_instructions:
+    - path: "vertical-pod-autoscaler/pkg/apis/**/*.go"
+      instructions: |
+        Focus on Kubernetes API conventions and backwards compatibility.
+        Ensure optional fields use pointer types and carry `+optional`
+        markers with clear godoc comments. Flag any breaking changes
+        (field removal, renames, type changes). Verify that changes to
+        API types are reflected in generated CRD YAML
+        (`deploy/vpa-v1-crd-gen.yaml`).
+
+    - path: "vertical-pod-autoscaler/pkg/recommender/**/*.go"
+      instructions: |
+        Review recommendation logic for correctness, especially resource
+        estimation, histogram decay, OOM handling, and checkpoint
+        persistence. Verify that changes to the recommendation model or
+        algorithm have corresponding unit tests. Watch for regressions
+        in CPU/memory estimation accuracy.
+
+    - path: "vertical-pod-autoscaler/pkg/updater/**/*.go"
+      instructions: |
+        Review pod eviction and in-place update logic for safety and
+        correctness. Ensure eviction rate-limiting, PDB respect, and
+        min-replicas constraints are preserved. Verify that update
+        priority calculations are correct and that changes handle both
+        Recreate and InPlace update modes.
+
+    - path: "vertical-pod-autoscaler/pkg/admission-controller/**/*.go"
+      instructions: |
+        Check that the admission controller correctly patches resource
+        requests on pod creation based on VPA recommendations. Ensure
+        proper handling of container policies, resource limits, and
+        limit ranges. Verify that webhook configuration changes are
+        reflected in the corresponding deployment manifests.
+
+    - path: "vertical-pod-autoscaler/pkg/target/**/*.go"
+      instructions: |
+        Review controller-fetcher logic for correct owner-reference
+        traversal and target resolution. Ensure that supported
+        controller types (Deployment, StatefulSet, DaemonSet,
+        ReplicaSet, Job, CronJob, ReplicationController) are handled
+        correctly.
+
+    - path: "vertical-pod-autoscaler/pkg/utils/**/*.go"
+      instructions: |
+        These are shared utilities used across all VPA components.
+        Ensure changes are backwards compatible and do not break
+        existing callers. Pay attention to resource calculation helpers,
+        annotation handling, and VPA condition/status utilities.
+
+    - path: "vertical-pod-autoscaler/pkg/features/**/*.go"
+      instructions: |
+        Verify that new feature gates follow the existing naming
+        conventions and are registered with proper default values
+        and stability levels (Alpha, Beta, GA).
+
+    - path: "vertical-pod-autoscaler/deploy/**"
+      instructions: |
+        Verify RBAC rules follow least-privilege. Ensure CRD changes
+        match the API types in `pkg/apis/`. Check that deployment
+        manifests have correct resource requests/limits and that
+        kustomization.yaml is consistent.
+
+    - path: "vertical-pod-autoscaler/test/e2e/**/*.go"
+      instructions: |
+        Verify E2E tests are self-contained and clean up resources.
+        Tests should use Ginkgo/Gomega and follow the existing patterns
+        in the suite. Ensure tests cover both positive and negative
+        scenarios for the VPA update modes being tested.
+
+    - path: "vertical-pod-autoscaler/test/integration/**/*.go"
+      instructions: |
+        Verify integration tests use the kube-apiserver test framework
+        and follow existing patterns. Ensure tests install VPA CRDs
+        and properly tear down resources.
+
+    - path: "vertical-pod-autoscaler/hack/**"
+      instructions: |
+        Ensure scripts are idempotent and use `set -e` or equivalent
+        error handling. Verify codegen scripts stay consistent with the
+        API types they generate from.
+
+    - path: "vertical-pod-autoscaler/enhancements/**"
+      instructions: |
+        Review enhancement proposals for completeness: motivation,
+        design details, API changes, migration plan, and test plan.
+        Ensure the proposal follows the existing template structure.
+
+    - path: "vertical-pod-autoscaler/charts/**"
+      instructions: |
+        Verify Helm template correctness and that values.yaml defaults
+        are consistent with the deployment manifests in `deploy/`.
+
+    - path: "vertical-pod-autoscaler/docs/**/*.md"
+      instructions: |
+        Focus on technical accuracy, clarity, and markdown formatting.
+        Verify that code snippets and configuration examples match
+        current API definitions and component flags.
+
+    - path: "vertical-pod-autoscaler/**/*_test.go"
+      instructions: |
+        Ensure unit tests follow Go testing conventions with
+        table-driven tests for multiple scenarios. Verify proper use
+        of mocks and that test coverage addresses edge cases.
+
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "master"
+    labels:
+      - "!do-not-merge/work-in-progress"
+      - "!cncf-cla: no"

@@ -23,12 +23,12 @@ import (
 	gerrors "github.com/pkg/errors"
 	"k8s.io/klog/v2"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud/client"
 	as "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/as/v20180419"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/common"
 	cvm "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/cvm/v20170312"
 	vpc "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/vpc/v20170312"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // CloudService is used for communicating with Tencentcloud API.

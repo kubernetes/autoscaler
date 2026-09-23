@@ -21,36 +21,44 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // NodeGroup implements cloudprovider.NodeGroup interface. NodeGroup contains
 // configuration info and functions to control a set of nodes that have the
 // same capacity and set of labels.
 type NodeGroup struct {
-	id           string
-	manager      *manager
-	minSize      int
-	maxSize      int
-	instances    map[string]*Instance // key is the instance ID
-	serverConfig ServerConfig
+	id                            string
+	manager                       *manager
+	minSize                       int
+	maxSize                       int
+	poweroffOnScaleDown           bool
+	poweroffOnScaleDownMaxServers int
+	poweronOnScaleUp              bool
+	instances                     map[string]*Instance // key is the cloud provider ID
+	serverConfig                  ServerConfig
+	templateLabels                []string
 }
 
+var _ cloudprovider.NodeGroup = (*NodeGroup)(nil)
+
 // MaxSize returns maximum size of the node group.
-func (n *NodeGroup) MaxSize() int {
+func (n *NodeGroup) MaxSize(ctx context.Context) int {
 	return n.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (n *NodeGroup) MinSize() int {
+func (n *NodeGroup) MinSize(ctx context.Context) int {
 	return n.minSize
 }
 
@@ -58,42 +66,57 @@ func (n *NodeGroup) MinSize() int {
 // number of nodes in Kubernetes is different at the moment but should be equal
 // to Size() once everything stabilizes (new nodes finish startup and registration or
 // removed nodes are deleted completely). Implementation required.
-func (n *NodeGroup) TargetSize() (int, error) {
-	return len(n.instances), nil
+func (n *NodeGroup) TargetSize(ctx context.Context) (int, error) {
+	numInstances := 0
+	for _, instance := range n.instances {
+		if instance.Status != nil && instance.Status.State != cloudprovider.InstanceDeleting {
+			numInstances += 1
+		}
+	}
+	return numInstances, nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
-func (n *NodeGroup) IncreaseSize(delta int) error {
+func (n *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("delta must be positive, have: %d", delta)
 	}
-
-	currentSize := len(n.instances)
-	targetSize := currentSize + delta
-	if targetSize > n.MaxSize() {
-		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d",
-			currentSize, targetSize, n.MaxSize())
-	}
-
-	err := n.createInstances(delta)
+	currentSize, err := n.TargetSize(context.TODO())
 	if err != nil {
 		return err
 	}
-
+	targetSize := currentSize + delta
+	klog.V(2).Infof("Increasing size of node group %s from %d to %d", n.id, currentSize, targetSize)
+	if targetSize > n.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d",
+			currentSize, targetSize, n.MaxSize(context.TODO()))
+	}
+	err = n.createInstances(delta)
+	if err != nil {
+		klog.Errorf("Failed to increase size of node group %s from %d to %d: %v", n.id, currentSize, targetSize, err)
+		return err
+	}
 	return nil
 }
 
 // AtomicIncreaseSize is not implemented.
-func (n *NodeGroup) AtomicIncreaseSize(delta int) error {
+func (n *NodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
-func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (n *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	klog.V(2).Infof("Deleting %d nodes from node group %s", len(nodes), n.id)
+	numPoweredOffInstances := 0
+	for _, instance := range n.instances {
+		if !instance.PowerOn || instance.StatusCommandCode == InstanceCommandPoweroff {
+			numPoweredOffInstances++
+		}
+	}
 	for _, node := range nodes {
 		instance, err := n.findInstanceForNode(node)
 		if err != nil {
@@ -103,17 +126,21 @@ func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 			return fmt.Errorf("Failed to delete node %q with provider ID %q: cannot find this node in the node group",
 				node.Name, node.Spec.ProviderID)
 		}
-		err = n.deleteInstance(instance)
+		powerOffOnScaleDown := n.poweroffOnScaleDown && (n.poweroffOnScaleDownMaxServers == 0 || numPoweredOffInstances < n.poweroffOnScaleDownMaxServers)
+		err = instance.delete(n.manager.client, n.manager.config.providerIDPrefix, powerOffOnScaleDown)
 		if err != nil {
 			return fmt.Errorf("Failed to delete node %q with provider ID %q: %v",
 				node.Name, node.Spec.ProviderID, err)
+		}
+		if !instance.PowerOn || instance.StatusCommandCode == InstanceCommandPoweroff {
+			numPoweredOffInstances++
 		}
 	}
 	return nil
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (n *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (n *NodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -122,7 +149,7 @@ func (n *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
-func (n *NodeGroup) DecreaseTargetSize(delta int) error {
+func (n *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	// requests for new nodes are always fulfilled so we cannot
 	// decrease the size without actually deleting nodes
 	return cloudprovider.ErrNotImplemented
@@ -134,21 +161,23 @@ func (n *NodeGroup) Id() string {
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (n *NodeGroup) Debug() string {
-	return fmt.Sprintf("node group ID: %s (min:%d max:%d)", n.Id(), n.MinSize(), n.MaxSize())
+func (n *NodeGroup) Debug(ctx context.Context) string {
+	return fmt.Sprintf("node group ID: %s (min:%d max:%d)", n.Id(), n.MinSize(context.TODO()), n.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
 // It is required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
 // This list should include also instances that might have not become a kubernetes node yet.
-func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (n *NodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	var instances []cloudprovider.Instance
 	for _, instance := range n.instances {
-		instances = append(instances, cloudprovider.Instance{
-			Id:     instance.Id,
-			Status: instance.Status,
-		})
+		if instance.Status != nil {
+			instances = append(instances, cloudprovider.Instance{
+				Id:     instance.Id,
+				Status: instance.Status,
+			})
+		}
 	}
 	return instances, nil
 }
@@ -159,15 +188,22 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (n *NodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	resourceList, err := n.getResourceList()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resource list for node group %s error: %v", n.id, err)
 	}
+	labels := make(map[string]string)
+	for _, templateLabel := range n.templateLabels {
+		parts := strings.SplitN(templateLabel, "=", 2)
+		if len(parts) == 2 {
+			labels[parts[0]] = parts[1]
+		}
+	}
 	node := apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   kamateraServerName(""),
-			Labels: map[string]string{},
+			Labels: labels,
 		},
 		Status: apiv1.NodeStatus{
 			Capacity:   resourceList,
@@ -177,96 +213,111 @@ func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	node.Status.Allocatable = node.Status.Capacity
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 
-	nodeInfo := framework.NewNodeInfo(&node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(n.id)})
+	nodeInfo := framework.NewNodeInfo(&node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(n.id), nil))
 	return nodeInfo, nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one. Implementation required.
-func (n *NodeGroup) Exist() bool {
+func (n *NodeGroup) Exist(ctx context.Context) bool {
 	return true
 }
 
 // Create creates the node group on the cloud provider side. Implementation optional.
-func (n *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (n *NodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 // Implementation optional.
-func (n *NodeGroup) Delete() error {
+func (n *NodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
 // was created by CA and can be deleted when scaled to 0.
-func (n *NodeGroup) Autoprovisioned() bool {
+func (n *NodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 // Implementation optional.
-func (n *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+func (n *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	return &config.NodeGroupAutoscalingOptions{
+		ScaleDownUtilizationThreshold:    defaults.ScaleDownUtilizationThreshold,
+		ScaleDownGpuUtilizationThreshold: defaults.ScaleDownGpuUtilizationThreshold,
+		ScaleDownUnneededTime:            defaults.ScaleDownUnneededTime,
+		ScaleDownUnreadyTime:             defaults.ScaleDownUnreadyTime,
+		MaxNodeProvisionTime:             time.Hour, // we can't cancel creation in progress so must give it enough time to complete
+		ZeroOrMaxNodeScaling:             defaults.ZeroOrMaxNodeScaling,
+		IgnoreDaemonSetsUtilization:      defaults.IgnoreDaemonSetsUtilization,
+		MaxNodeStartupTime:               defaults.MaxNodeStartupTime,
+	}, nil
 }
 
 func (n *NodeGroup) findInstanceForNode(node *apiv1.Node) (*Instance, error) {
-	for _, instance := range n.instances {
-		if instance.Id == node.Spec.ProviderID {
-			klog.V(2).Infof("findInstanceForNode(%s): found based on node ProviderID", node.Name)
-			return instance, nil
-		} else if node.Spec.ProviderID == "" && instance.Id == node.Name {
-			klog.V(2).Infof("findInstanceForNode(%s): found based on node Id", node.Name)
-			// Rancher does not set providerID for nodes, so we use node name as providerID
-			// We also set the ProviderID as some autoscaler code expects it to be set
-			node.Spec.ProviderID = instance.Id
-			err := setNodeProviderID(n.manager.kubeClient, node.Name, instance.Id)
+	var instance *Instance
+	logPrefix := fmt.Sprintf("ng %s findInstanceForNode(%s)", n.id, node.Name)
+	for _, i := range n.instances {
+		if i.Id == node.Spec.ProviderID {
+			instance = i
+		} else if i.Id == formatKamateraProviderID(n.manager.config.providerIDPrefix, node.Name) {
+			klog.V(2).Infof("%s: found based on node Name, setting ProviderID", logPrefix)
+			node.Spec.ProviderID = formatKamateraProviderID(n.manager.config.providerIDPrefix, node.Name)
+			err := setNodeProviderID(n.manager.kubeClient, node.Name, node.Spec.ProviderID)
 			if err != nil {
 				// this is not a critical error, the autoscaler can continue functioning in this condition
 				// as the same node object is used in later code the ProviderID change will be picked up
-				klog.Warningf("failed to set node ProviderID for node name %s: %v", instance.Id, err)
+				klog.Warningf("%s: failed to set node ProviderID: %v", logPrefix, err)
 			}
-			return instance, nil
+			instance = i
 		}
 	}
-	return nil, nil
-}
-
-func (n *NodeGroup) deleteInstance(instance *Instance) error {
-	err := instance.delete(n.manager.client)
-	if err != nil {
-		return err
+	if instance == nil || instance.Status == nil {
+		return nil, nil
 	}
-	instances := make(map[string]*Instance)
-	for _, i := range n.instances {
-		if i.Id != instance.Id {
-			instances[i.Id] = i
-		}
-	}
-	n.instances = instances
-	return nil
+	return instance, nil
 }
 
 func (n *NodeGroup) createInstances(count int) error {
-	servers, err := n.manager.client.CreateServers(context.Background(), count, n.serverConfig)
-	if err != nil {
-		return err
+	if n.poweronOnScaleUp {
+		var poweronCandidateInstances []*Instance
+		for _, instance := range n.manager.snapshotInstances() {
+			if sets.New(n.serverConfig.Tags...).Equal(sets.New(instance.Tags...)) && instance.PowerOn == false && instance.Status == nil {
+				poweronCandidateInstances = append(poweronCandidateInstances, instance)
+			}
+		}
+		klog.V(2).Infof("createInstances found %d powered off instances matching node group %s", len(poweronCandidateInstances), n.id)
+		icount := count
+		for i := 0; i < icount && i < len(poweronCandidateInstances); i++ {
+			instance := poweronCandidateInstances[i]
+			klog.V(4).Infof("createInstances: creating instance %s", instance.Id)
+			err := instance.createPoweron(n.manager.client, n.manager.config.providerIDPrefix)
+			if err == nil {
+				n.instances[instance.Id] = instance
+				count--
+			}
+		}
 	}
-	for _, server := range servers {
-		instance, err := n.manager.addInstance(server, cloudprovider.InstanceCreating)
+	if count > 0 {
+		serverCommandIds, err := n.manager.client.StartCreateServers(context.Background(), count, n.serverConfig)
 		if err != nil {
 			return err
 		}
-		n.instances[server.Name] = instance
+		for serverName, commandId := range serverCommandIds {
+			instance := n.manager.addCreatingInstance(serverName, commandId, n.serverConfig.Tags)
+			n.instances[instance.Id] = instance
+			klog.V(4).Infof("%v", n.extendedDebug())
+		}
 	}
 	return nil
 }
 
 func (n *NodeGroup) extendedDebug() string {
 	// TODO: provide extended debug information regarding this node group
-	msgs := []string{n.Debug()}
+	msgs := []string{n.Debug(context.TODO())}
 	for _, instance := range n.instances {
 		msgs = append(msgs, instance.extendedDebug())
 	}
@@ -303,7 +354,7 @@ func (n *NodeGroup) getResourceList() (apiv1.ResourceList, error) {
 		// TODO somehow determine the actual pods that will be running
 		apiv1.ResourcePods:    *resource.NewQuantity(110, resource.DecimalSI),
 		apiv1.ResourceCPU:     *resource.NewQuantity(int64(cpuCores), resource.DecimalSI),
-		apiv1.ResourceMemory:  *resource.NewQuantity(int64(ramMb*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourceMemory:  *resource.NewQuantity(int64(ramMb*1024*1024), resource.DecimalSI),
 		apiv1.ResourceStorage: *resource.NewQuantity(int64(firstDiskSizeGb*1024*1024*1024), resource.DecimalSI),
 	}, nil
 }

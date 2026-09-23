@@ -28,9 +28,9 @@ import (
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/klogx"
 
 	gce "google.golang.org/api/compute/v1"
 	klog "k8s.io/klog/v2"
@@ -46,6 +46,9 @@ const (
 	// ErrorCodeResourcePoolExhausted is an error code used in InstanceErrorInfo if requested resources
 	// cannot be provisioned by cloud provider.
 	ErrorCodeResourcePoolExhausted = "RESOURCE_POOL_EXHAUSTED"
+
+	// ErrorCodeInsufficientCapacity is an error code used in InstanceErrorInfo if there is insufficient capacity.
+	ErrorCodeInsufficientCapacity = "INSUFFICIENT_CAPACITY"
 
 	// ErrorIPSpaceExhausted is an error code used in InstanceErrorInfo if the IP space has been
 	// exhausted.
@@ -80,9 +83,21 @@ const (
 	// be scaled up because the associated reservation is not compatible with the node group.
 	ErrorReservationIncompatible = "RESERVATION_INCOMPATIBLE"
 
+	// ErrorAutomaticReservationsNotAvailable happens if there is no automatic reservation with
+	// matching prespun instance properties, when using affinity ANY_RESERVATION_THEN_FAIL.
+	ErrorAutomaticReservationsNotAvailable = "AUTOMATIC_RESERVATIONS_NOT_AVAILABLE"
+
+	// ErrorAutomaticReservationsNoCapacity happens when trying to create an instance with
+	// affinity ANY_RESERVATION_THEN_FAIL but all reservations are full.
+	ErrorAutomaticReservationsNoCapacity = "AUTOMATIC_RESERVATIONS_NO_CAPACITY"
+
 	// ErrorUnsupportedTpuConfiguration is an error code for InstanceErrorInfo if the
 	// node group couldn't be scaled up because of invalid TPU configuration.
 	ErrorUnsupportedTpuConfiguration = "UNSUPPORTED_TPU_CONFIGURATION"
+
+	// ErrorCodeCloudKms is an error code used in InstanceErrorInfo if there were
+	// Cloud Key Management Service (KMS) issues.
+	ErrorCodeCloudKms = "CLOUD_KMS_ERROR"
 
 	// ErrorCodeOther is an error code used in InstanceErrorInfo if other error occurs.
 	ErrorCodeOther = "OTHER"
@@ -105,6 +120,8 @@ var (
 		regexp.MustCompile("Reservation (.*) is incorrect for the requested resources"),
 		regexp.MustCompile("Zone does not currently have sufficient capacity for the requested resources"),
 	}
+	automaticReservationsNoCapacityRegexp   = regexp.MustCompile("All automatic reservations in your project, or shared with your project, are fully consumed")
+	automaticReservationsNotAvailableRegexp = regexp.MustCompile("There is no automatic reservation matching the instance in your project")
 )
 
 // GceInstance extends cloudprovider.Instance with GCE specific numeric id.
@@ -113,37 +130,41 @@ type GceInstance struct {
 	NumericId            uint64
 	Igm                  GceRef
 	InstanceTemplateName string
+	// GCEStatus is used to describe instance statuses that
+	// are not included in cloudprovider.InstanceStatus.
+	GCEStatus string
 }
 
 // AutoscalingGceClient is used for communicating with GCE API.
 type AutoscalingGceClient interface {
 	// reading resources
-	FetchMachineType(zone, machineType string) (*gce.MachineType, error)
+	FetchMachineType(ctx context.Context, zone, machineType string) (*gce.MachineType, error)
 	FetchMachineTypes(zone string) ([]*gce.MachineType, error)
 	FetchAllMigs(zone string) ([]*gce.InstanceGroupManager, error)
-	FetchAllInstances(project, zone string, filter string) ([]GceInstance, error)
-	FetchMigTargetSize(GceRef) (int64, error)
-	FetchMigBasename(GceRef) (string, error)
-	FetchMigInstances(GceRef) ([]GceInstance, error)
-	FetchMigTemplateName(migRef GceRef) (InstanceTemplateName, error)
-	FetchMigTemplate(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error)
-	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)
-	FetchZones(region string) ([]string, error)
+	FetchAllInstances(ctx context.Context, project, zone string, filter string) ([]GceInstance, error)
+	FetchMig(ctx context.Context, migRef GceRef) (*gce.InstanceGroupManager, error)
+	FetchMigTargetSize(context.Context, GceRef) (int64, error)
+	FetchMigBasename(context.Context, GceRef) (string, error)
+	FetchMigInstances(context.Context, GceRef) ([]GceInstance, error)
+	FetchMigTemplateName(ctx context.Context, migRef GceRef) (InstanceTemplateName, error)
+	FetchMigTemplate(ctx context.Context, migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error)
+	FetchMigsWithName(ctx context.Context, zone string, filter *regexp.Regexp) ([]string, error)
+	FetchZones(ctx context.Context, region string) ([]string, error)
 	FetchAvailableCpuPlatforms() (map[string][]string, error)
 	FetchAvailableDiskTypes(zone string) ([]string, error)
 	FetchReservations() ([]*gce.Reservation, error)
 	FetchReservationsInProject(projectId string) ([]*gce.Reservation, error)
-	FetchListManagedInstancesResults(migRef GceRef) (string, error)
+	FetchListManagedInstancesResults(ctx context.Context, migRef GceRef) (string, error)
 
 	// modifying resources
-	ResizeMig(GceRef, int64) error
-	DeleteInstances(migRef GceRef, instances []GceRef) error
-	CreateInstances(GceRef, string, int64, []string) error
+	ResizeMig(context.Context, GceRef, int64) error
+	DeleteInstances(ctx context.Context, migRef GceRef, instances []GceRef) error
+	CreateInstances(context.Context, GceRef, string, int64, []string) ([]string, error)
 
 	// WaitForOperation can be used to poll GCE operations until completion/timeout using WAIT calls.
 	// Calling this is normally not needed when interacting with the client, other methods should call it internally.
 	// Can be used to extend the interface with more methods outside of this package.
-	WaitForOperation(operationName, operationType, project, zone string) error
+	WaitForOperation(ctx context.Context, operationName, operationType, project, zone string) error
 }
 
 type autoscalingGceClientV1 struct {
@@ -202,9 +223,9 @@ func NewCustomAutoscalingGceClientV1(client *http.Client, projectId, serverUrl, 
 	}, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMachineType(zone, machineType string) (*gce.MachineType, error) {
+func (client *autoscalingGceClientV1) FetchMachineType(ctx context.Context, zone, machineType string) (*gce.MachineType, error) {
 	registerRequest("machine_types", "get")
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
+	ctx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
 	defer cancel()
 	return client.gceService.MachineTypes.Get(client.projectId, zone, machineType).Context(ctx).Do()
 }
@@ -239,89 +260,87 @@ func (client *autoscalingGceClientV1) FetchAllMigs(zone string) ([]*gce.Instance
 	return migs, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, error) {
+func (client *autoscalingGceClientV1) FetchMig(ctx context.Context, migRef GceRef) (*gce.InstanceGroupManager, error) {
 	registerRequest("instance_group_managers", "get")
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
+	ctx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
 	defer cancel()
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Context(ctx).Do()
 	if err != nil {
 		if err, ok := err.(*googleapi.Error); ok {
 			if err.Code == http.StatusNotFound {
-				return 0, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
+				return nil, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
 			}
 		}
-		return 0, err
+		return nil, err
 	}
-	return igm.TargetSize, nil
+	return igm, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, error) {
-	registerRequest("instance_group_managers", "get")
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
-	defer cancel()
-	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Context(ctx).Do()
+func (client *autoscalingGceClientV1) FetchMigTargetSize(ctx context.Context, migRef GceRef) (int64, error) {
+	igm, err := client.FetchMig(ctx, migRef)
 	if err != nil {
-		if err, ok := err.(*googleapi.Error); ok && err.Code == http.StatusNotFound {
-			return "", errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
-		}
+		return 0, err
+	}
+	return igm.TargetSize + igm.TargetSuspendedSize, nil
+}
+
+func (client *autoscalingGceClientV1) FetchMigBasename(ctx context.Context, migRef GceRef) (string, error) {
+	igm, err := client.FetchMig(ctx, migRef)
+	if err != nil {
 		return "", err
 	}
 	return igm.BaseInstanceName, nil
 }
 
-func (client *autoscalingGceClientV1) FetchListManagedInstancesResults(migRef GceRef) (string, error) {
-	registerRequest("instance_group_managers", "get")
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
-	defer cancel()
-	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Context(ctx).Fields("listManagedInstancesResults").Do()
+func (client *autoscalingGceClientV1) FetchListManagedInstancesResults(ctx context.Context, migRef GceRef) (string, error) {
+	igm, err := client.FetchMig(ctx, migRef)
 	if err != nil {
-		if err, ok := err.(*googleapi.Error); ok {
-			if err.Code == http.StatusNotFound {
-				return "", errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
-			}
-		}
 		return "", err
 	}
 	return igm.ListManagedInstancesResults, nil
 }
 
-func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error {
+func (client *autoscalingGceClientV1) ResizeMig(ctx context.Context, migRef GceRef, size int64) error {
 	registerRequest("instance_group_managers", "resize")
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
+	ctx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
 	defer cancel()
 	op, err := client.gceService.InstanceGroupManagers.Resize(migRef.Project, migRef.Zone, migRef.Name, size).Context(ctx).Do()
 	if err != nil {
 		return err
 	}
-	return client.WaitForOperation(op.Name, op.OperationType, migRef.Project, migRef.Zone)
+	return client.WaitForOperation(ctx, op.Name, op.OperationType, migRef.Project, migRef.Zone)
 }
 
-func (client *autoscalingGceClientV1) CreateInstances(migRef GceRef, baseName string, delta int64, existingInstanceProviderIds []string) error {
+func (client *autoscalingGceClientV1) CreateInstances(ctx context.Context, migRef GceRef, baseName string, delta int64, existingInstanceProviderIds []string) ([]string, error) {
 	registerRequest("instance_group_managers", "create_instances")
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
+	ctx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
 	defer cancel()
 	req := gce.InstanceGroupManagersCreateInstancesRequest{}
-	instanceNames := instanceIdsToNamesMap(existingInstanceProviderIds)
+	instanceNames := instanceIdsToNamesMap(ctx, existingInstanceProviderIds)
 	req.Instances = make([]*gce.PerInstanceConfig, 0, delta)
-	for i := int64(0); i < delta; i++ {
-		newInstanceName := generateInstanceName(baseName, instanceNames)
+	createdIds := make([]string, delta)
+	for i := range delta {
+		newInstanceName := generateInstanceName(ctx, baseName, instanceNames)
 		instanceNames[newInstanceName] = true
 		req.Instances = append(req.Instances, &gce.PerInstanceConfig{Name: newInstanceName})
+		ref := GceRef{migRef.Project, migRef.Zone, newInstanceName}
+		createdIds[i] = ref.ToProviderId()
 	}
 
 	op, err := client.gceService.InstanceGroupManagers.CreateInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Context(ctx).Do()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return client.WaitForOperation(op.Name, op.OperationType, migRef.Project, migRef.Zone)
+	return createdIds, client.WaitForOperation(ctx, op.Name, op.OperationType, migRef.Project, migRef.Zone)
 }
 
-func instanceIdsToNamesMap(instanceProviderIds []string) map[string]bool {
+func instanceIdsToNamesMap(ctx context.Context, instanceProviderIds []string) map[string]bool {
+	logger := klog.FromContext(ctx)
 	instanceNames := make(map[string]bool, len(instanceProviderIds))
 	for _, inst := range instanceProviderIds {
 		ref, err := GceRefFromProviderId(inst)
 		if err != nil {
-			klog.Warningf("Failed to extract instance name from %q: %v", inst, err)
+			logger.Info("Failed to extract instance name from id", "instanceId", inst, "err", err)
 		} else {
 			inst = ref.Name
 		}
@@ -333,19 +352,19 @@ func instanceIdsToNamesMap(instanceProviderIds []string) map[string]bool {
 // WaitForOperation can be used to poll GCE operations until completion/timeout using WAIT calls.
 // Calling this is normally not needed when interacting with the client, other methods should call it internally.
 // Can be used to extend the interface with more methods outside of this package.
-func (client *autoscalingGceClientV1) WaitForOperation(operationName, operationType, project, zone string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationWaitTimeout)
+func (client *autoscalingGceClientV1) WaitForOperation(ctx context.Context, operationName, operationType, project, zone string) error {
+	logger := klog.FromContext(ctx)
+	ctx, cancel := context.WithTimeout(ctx, client.operationWaitTimeout)
 	defer cancel()
 
 	for {
-		klog.V(4).Infof("Waiting for operation %s/%s (%s/%s)", operationType, operationName, project, zone)
+		logger.V(4).Info("Waiting for operation", "operationType", operationType, "operationName", operationName, "project", project, "zone", zone)
 		registerRequest("zone_operations", "wait")
 		op, err := client.gceService.ZoneOperations.Wait(project, zone, operationName).Context(ctx).Do()
 		if err != nil {
 			return fmt.Errorf("error while waiting for operation %s/%s: %w", operationType, operationName, err)
 		}
-
-		klog.V(4).Infof("Operation %s/%s (%s/%s) status: %s", operationType, operationName, project, zone, op.Status)
+		logger.V(4).Info("Operation status", "operationType", operationType, "operationName", operationName, "project", project, "zone", zone, "status", op.Status)
 		if op.Status == "DONE" {
 			if op.Error != nil {
 				errBytes, err := op.Error.MarshalJSON()
@@ -363,9 +382,9 @@ func (client *autoscalingGceClientV1) WaitForOperation(operationName, operationT
 	}
 }
 
-func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances []GceRef) error {
+func (client *autoscalingGceClientV1) DeleteInstances(ctx context.Context, migRef GceRef, instances []GceRef) error {
 	registerRequest("instance_group_managers", "delete_instances")
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
+	ctx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
 	defer cancel()
 	req := gce.InstanceGroupManagersDeleteInstancesRequest{
 		Instances:                      []string{},
@@ -378,18 +397,19 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 	if err != nil {
 		return err
 	}
-	return client.WaitForOperation(op.Name, op.OperationType, migRef.Project, migRef.Zone)
+	return client.WaitForOperation(ctx, op.Name, op.OperationType, migRef.Project, migRef.Zone)
 }
 
-func (client *autoscalingGceClientV1) FetchAllInstances(project, zone, filter string) ([]GceInstance, error) {
+func (client *autoscalingGceClientV1) FetchAllInstances(ctx context.Context, project, zone, filter string) ([]GceInstance, error) {
+	logger := klog.FromContext(ctx)
 	registerRequest("instances", "list")
 	instances := make([]GceInstance, 0)
 	loggingQuota := klogx.NewLoggingQuota(MaxInstancesLogged)
-	err := client.gceService.Instances.List(project, zone).Filter(filter).Pages(context.Background(), func(page *gce.InstanceList) error {
+	err := client.gceService.Instances.List(project, zone).Filter(filter).Pages(ctx, func(page *gce.InstanceList) error {
 		for _, gceInstance := range page.Items {
 			instance, err := externalToInternalInstance(gceInstance, loggingQuota)
 			if err != nil {
-				klog.Errorf("Error converting instance to GceInstance: %v", err)
+				logger.Error(err, "Error converting instance to GceInstance")
 				continue
 			}
 			instances = append(instances, instance)
@@ -397,7 +417,7 @@ func (client *autoscalingGceClientV1) FetchAllInstances(project, zone, filter st
 		return nil
 	})
 	if err != nil {
-		klog.Errorf("Failed listing Instances in zone %s, project %s: %v", zone, project, err)
+		logger.Error(err, "Failed listing Instances", "zone", zone, "project", project)
 		return nil, err
 	}
 	klogx.V(5).Over(loggingQuota).Infof("Unable to parse IGM for %v other instances", -loggingQuota.Left())
@@ -421,6 +441,7 @@ func externalToInternalInstance(gceInstance *gce.Instance, loggingQuota *klogx.Q
 		},
 		NumericId: gceInstance.Id,
 		Igm:       createIgmRef(gceInstance, ref.Project, loggingQuota),
+		GCEStatus: gceInstance.Status,
 	}, nil
 }
 
@@ -446,15 +467,16 @@ func createIgmRef(gceInstance *gce.Instance, project string, loggingQuota *klogx
 	return igmRef
 }
 
-func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]GceInstance, error) {
+func (client *autoscalingGceClientV1) FetchMigInstances(ctx context.Context, migRef GceRef) ([]GceInstance, error) {
+	logger := klog.FromContext(ctx)
 	registerRequest("instance_group_managers", "list_managed_instances")
 	b := newInstanceListBuilder(migRef)
-	err := client.gceService.InstanceGroupManagers.ListManagedInstances(migRef.Project, migRef.Zone, migRef.Name).Pages(context.Background(), b.loadPage)
+	err := client.gceService.InstanceGroupManagers.ListManagedInstances(migRef.Project, migRef.Zone, migRef.Name).Pages(ctx, b.loadPage)
 	if err != nil {
-		klog.V(4).Infof("Failed MIG info request for %s %s %s: %v", migRef.Project, migRef.Zone, migRef.Name, err)
+		logger.V(4).Info("Failed MIG info request", "mig", migRef, "err", err)
 		return nil, err
 	}
-	return b.build(), nil
+	return b.build(ctx), nil
 }
 
 type instanceListBuilder struct {
@@ -497,6 +519,7 @@ func (i *instanceListBuilder) gceInstanceToInstance(ref GceRef, gceInstance *gce
 			},
 		},
 		NumericId: gceInstance.Id,
+		GCEStatus: gceInstance.InstanceStatus,
 	}
 
 	if gceInstance.Version != nil {
@@ -545,10 +568,11 @@ func (i *instanceListBuilder) gceInstanceToInstance(ref GceRef, gceInstance *gce
 	return instance
 }
 
-func (i *instanceListBuilder) build() []GceInstance {
+func (i *instanceListBuilder) build(ctx context.Context) []GceInstance {
+	logger := klog.FromContext(ctx)
 	klogx.V(4).Over(i.errorLoggingQuota).Infof("Got %v other GCE instances being created with lastAttemptErrors", -i.errorLoggingQuota.Left())
 	if len(i.errorCodeCounts) > 0 {
-		klog.Warningf("Spotted following instance creation error codes: %#v", i.errorCodeCounts)
+		logger.Info("Spotted following instance creation error codes", "errorCodeCounts", i.errorCodeCounts)
 	}
 	return i.infos
 }
@@ -559,6 +583,11 @@ func GetErrorInfo(errorCode, errorMessage, instanceStatus string, previousErrorI
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OutOfResourcesErrorClass,
 			ErrorCode:  ErrorCodeResourcePoolExhausted,
+		}
+	} else if isInsufficientCapacityErrorCode(errorCode) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+			ErrorCode:  ErrorCodeInsufficientCapacity,
 		}
 	} else if isQuotaExceededErrorCode(errorCode) {
 		return &cloudprovider.InstanceErrorInfo{
@@ -610,6 +639,21 @@ func GetErrorInfo(errorCode, errorMessage, instanceStatus string, previousErrorI
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorUnsupportedTpuConfiguration,
 		}
+	} else if isAutomaticReservationNotAvailableError(errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorAutomaticReservationsNotAvailable,
+		}
+	} else if isAutomaticReservationsNoCapacity(errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorAutomaticReservationsNoCapacity,
+		}
+	} else if isCloudKmsError(errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorCodeCloudKms,
+		}
 	} else if isInstanceStatusNotRunningYet(instanceStatus) {
 		if previousErrorInfo != nil {
 			// keep the current error
@@ -656,6 +700,10 @@ func isResourcePoolExhaustedErrorCode(errorCode string) bool {
 	return errorCode == "RESOURCE_POOL_EXHAUSTED" || errorCode == "ZONE_RESOURCE_POOL_EXHAUSTED" || errorCode == "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS"
 }
 
+func isInsufficientCapacityErrorCode(errorCode string) bool {
+	return errorCode == "INSUFFICIENT_CAPACITY"
+}
+
 func isQuotaExceededErrorCode(errorCode string) bool {
 	return strings.Contains(errorCode, "QUOTA")
 }
@@ -676,6 +724,10 @@ func isVmExternalIpAccessPolicyConstraintError(errorCode, errorMessage string) b
 func isTpuConfigurationInvalidError(errorCode, errorMessage string) bool {
 	return strings.Contains(errorCode, "CONDITION_NOT_MET") &&
 		strings.Contains(errorMessage, "Unsupported TPU configuration")
+}
+
+func isCloudKmsError(errorMessage string) bool {
+	return strings.Contains(errorMessage, "Cloud KMS error")
 }
 
 func isInstanceStatusNotRunningYet(instanceStatus string) bool {
@@ -701,6 +753,14 @@ func isReservationIncompatible(errorMessage string) bool {
 	return strings.Contains(errorMessage, pattern)
 }
 
+func isAutomaticReservationNotAvailableError(errorMessage string) bool {
+	return automaticReservationsNotAvailableRegexp.MatchString(errorMessage)
+}
+
+func isAutomaticReservationsNoCapacity(errorMessage string) bool {
+	return automaticReservationsNoCapacityRegexp.MatchString(errorMessage)
+}
+
 func isInvalidReservationError(errorMessage string) bool {
 	for _, re := range regexReservationErrors {
 		if re.MatchString(errorMessage) {
@@ -710,21 +770,22 @@ func isInvalidReservationError(errorMessage string) bool {
 	return false
 }
 
-func generateInstanceName(baseName string, existingNames map[string]bool) string {
+func generateInstanceName(ctx context.Context, baseName string, existingNames map[string]bool) string {
+	logger := klog.FromContext(ctx)
 	for i := 0; i < 100; i++ {
 		name := fmt.Sprintf("%v-%v", baseName, rand.String(4))
 		if ok, _ := existingNames[name]; !ok {
 			return name
 		}
 	}
-	klog.Warning("Unable to create unique name for a new instance, duplicate name might occur")
+	logger.Info("Unable to create unique name for a new instance, duplicate name might occur")
 	name := fmt.Sprintf("%v-%v", baseName, rand.String(4))
 	return name
 }
 
-func (client *autoscalingGceClientV1) FetchZones(region string) ([]string, error) {
+func (client *autoscalingGceClientV1) FetchZones(ctx context.Context, region string) ([]string, error) {
 	registerRequest("regions", "get")
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
+	ctx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
 	defer cancel()
 	r, err := client.gceService.Regions.Get(client.projectId, region).Context(ctx).Do()
 	if err != nil {
@@ -769,24 +830,16 @@ func (client *autoscalingGceClientV1) FetchAvailableDiskTypes(zone string) ([]st
 	return availableDiskTypes, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (InstanceTemplateName, error) {
-	registerRequest("instance_group_managers", "get")
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
-	defer cancel()
-	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Context(ctx).Do()
+func (client *autoscalingGceClientV1) FetchMigTemplateName(ctx context.Context, migRef GceRef) (InstanceTemplateName, error) {
+	igm, err := client.FetchMig(ctx, migRef)
 	if err != nil {
-		if err, ok := err.(*googleapi.Error); ok {
-			if err.Code == http.StatusNotFound {
-				return InstanceTemplateName{}, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, err.Error())
-			}
-		}
 		return InstanceTemplateName{}, err
 	}
 	return InstanceTemplateNameFromUrl(igm.InstanceTemplate)
 }
 
-func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), client.operationPerCallTimeout)
+func (client *autoscalingGceClientV1) FetchMigTemplate(ctx context.Context, migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error) {
+	ctx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
 	defer cancel()
 	if regional {
 		zoneHyphenIndex := strings.LastIndex(migRef.Zone, "-")
@@ -798,15 +851,16 @@ func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef, templateNa
 	return client.gceService.InstanceTemplates.Get(migRef.Project, templateName).Context(ctx).Do()
 }
 
-func (client *autoscalingGceClientV1) FetchMigsWithName(zone string, name *regexp.Regexp) ([]string, error) {
+func (client *autoscalingGceClientV1) FetchMigsWithName(ctx context.Context, zone string, name *regexp.Regexp) ([]string, error) {
+	logger := klog.FromContext(ctx)
 	filter := fmt.Sprintf("name eq %s", name)
 	links := make([]string, 0)
 	registerRequest("instance_groups", "list")
 	req := client.gceService.InstanceGroups.List(client.projectId, zone).Filter(filter)
-	if err := req.Pages(context.TODO(), func(page *gce.InstanceGroupList) error {
+	if err := req.Pages(ctx, func(page *gce.InstanceGroupList) error {
 		for _, ig := range page.Items {
 			links = append(links, ig.SelfLink)
-			klog.V(3).Infof("found managed instance group %s matching regexp %s", ig.Name, name)
+			logger.V(3).Info("Found managed instance group matching regexp", "migName", ig.Name, "regexp", name)
 		}
 		return nil
 	}); err != nil {

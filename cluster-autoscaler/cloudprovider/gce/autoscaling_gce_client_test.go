@@ -23,17 +23,19 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
-	test_util "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/klogx"
+	test_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	gce_api "google.golang.org/api/compute/v1"
 )
 
@@ -107,7 +109,7 @@ func TestWaitForOp(t *testing.T) {
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationRunningResponse).Times(3)
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationDoneResponse).Once()
 
-	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOp", projectId, zoneB)
+	err := g.WaitForOperation(context.Background(), "operation-1505728466148-d16f5197", "TestWaitForOp", projectId, zoneB)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -119,7 +121,7 @@ func TestWaitForOpError(t *testing.T) {
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationDoneResponseError).Once()
 
-	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOpError", projectId, zoneB)
+	err := g.WaitForOperation(context.Background(), "operation-1505728466148-d16f5197", "TestWaitForOpError", projectId, zoneB)
 	assert.Error(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -135,7 +137,7 @@ func TestWaitForOpTimeout(t *testing.T) {
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationRunningResponse).Once()
 
-	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOpTimeout", projectId, zoneB)
+	err := g.WaitForOperation(context.Background(), "operation-1505728466148-d16f5197", "TestWaitForOpTimeout", projectId, zoneB)
 	assert.Error(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -149,7 +151,7 @@ func TestWaitForOpContextTimeout(t *testing.T) {
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").After(time.Minute).Return(operationDoneResponse).Once()
 
-	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOpContextTimeout", projectId, zoneB)
+	err := g.WaitForOperation(context.Background(), "operation-1505728466148-d16f5197", "TestWaitForOpContextTimeout", projectId, zoneB)
 	assert.ErrorIs(t, err, context.DeadlineExceeded)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -174,6 +176,11 @@ func TestErrors(t *testing.T) {
 		{
 			errorCodes:         []string{"RESOURCE_POOL_EXHAUSTED", "ZONE_RESOURCE_POOL_EXHAUSTED", "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS"},
 			expectedErrorCode:  "RESOURCE_POOL_EXHAUSTED",
+			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
+		},
+		{
+			errorCodes:         []string{"INSUFFICIENT_CAPACITY"},
+			expectedErrorCode:  "INSUFFICIENT_CAPACITY",
 			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
 		},
 		{
@@ -239,6 +246,24 @@ func TestErrors(t *testing.T) {
 			expectedErrorCode:  ErrorUnsupportedTpuConfiguration,
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "There is no automatic reservation matching the instance in your project, or shared with it. To create an instance, create a new automatic reservation or share an existing one from another project.",
+			expectedErrorCode:  ErrorAutomaticReservationsNotAvailable,
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "All automatic reservations in your project, or shared with your project, are fully consumed. To create an instance, create a new automatic reservation or increase the size of an existing one.",
+			expectedErrorCode:  ErrorAutomaticReservationsNoCapacity,
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "Instance 'bad-instance-creation' creation failed: Cloud KMS error when using key projects/my-project/locations/us-central1/keyRings/my-keyring/cryptoKeys/my-key: Permission 'cloudkms.cryptoKeyVersions.useToEncrypt' denied",
+			expectedErrorCode:  "CLOUD_KMS_ERROR",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
 	}
 	for _, tc := range testCases {
 		for _, errorCode := range tc.errorCodes {
@@ -263,7 +288,7 @@ func TestErrors(t *testing.T) {
 			b, err := json.Marshal(lmiResponse)
 			assert.NoError(t, err)
 			server.On("handle", "/projects/zones/instanceGroupManagers/listManagedInstances").Return(string(b)).Times(1)
-			instances, err := g.FetchMigInstances(GceRef{})
+			instances, err := g.FetchMigInstances(context.Background(), GceRef{})
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedErrorCode, instances[0].Status.ErrorInfo.ErrorCode)
 			assert.Equal(t, tc.expectedErrorClass, instances[0].Status.ErrorInfo.ErrorClass)
@@ -303,6 +328,7 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						Version: &gce_api.ManagedInstanceVersion{
 							InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 2),
 						},
+						InstanceStatus: "PROVISIONING",
 					},
 					{
 						Id:            42,
@@ -314,6 +340,7 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						Version: &gce_api.ManagedInstanceVersion{
 							InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 42),
 						},
+						InstanceStatus: "PROVISIONING",
 					},
 				},
 			},
@@ -325,6 +352,7 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 					},
 					NumericId:            2,
 					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 2),
+					GCEStatus:            "PROVISIONING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -333,6 +361,7 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 					},
 					NumericId:            42,
 					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 42),
+					GCEStatus:            "PROVISIONING",
 				},
 			},
 		},
@@ -639,7 +668,7 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 				assert.NoError(t, err)
 				server.On("handle", "/projects/zones/instanceGroupManagers/listManagedInstances", token).Return(string(b)).Times(1)
 			}
-			gotInstances, err := g.FetchMigInstances(GceRef{})
+			gotInstances, err := g.FetchMigInstances(context.Background(), GceRef{})
 			assert.NoError(t, err)
 			if diff := cmp.Diff(tc.wantInstances, gotInstances, cmpopts.EquateErrors()); diff != "" {
 				t.Errorf("FetchMigInstances(...): err diff (-want +got):\n%s", diff)
@@ -675,7 +704,7 @@ func TestUserAgent(t *testing.T) {
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return("testuseragent", operationDoneResponse).Maybe()
 
-	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestUserAgent", projectId, zoneB)
+	err := g.WaitForOperation(context.Background(), "operation-1505728466148-d16f5197", "TestUserAgent", projectId, zoneB)
 
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
@@ -693,134 +722,136 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 	}{
 		"CreateInstances_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.CreateInstances(GceRef{}, "", 0, nil)
+				_, err := client.CreateInstances(context.Background(), GceRef{}, "", 0, nil)
+				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"DeleteInstances_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.DeleteInstances(GceRef{}, nil)
+				return client.DeleteInstances(context.Background(), GceRef{}, nil)
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"ResizeMig_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.ResizeMig(GceRef{}, 0)
+				return client.ResizeMig(context.Background(), GceRef{}, 0)
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchMachineType_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMachineType("", "")
+				_, err := client.FetchMachineType(context.Background(), "", "")
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchMigBasename_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigBasename(GceRef{})
+				_, err := client.FetchMigBasename(context.Background(), GceRef{})
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchMigTargetSize_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTargetSize(GceRef{})
+				_, err := client.FetchMigTargetSize(context.Background(), GceRef{})
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchMigTemplate_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTemplate(GceRef{}, "", false)
+				_, err := client.FetchMigTemplate(context.Background(), GceRef{}, "", false)
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchMigTemplateName_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTemplateName(GceRef{})
+				_, err := client.FetchMigTemplateName(context.Background(), GceRef{})
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchListManagedInstancesResults_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchListManagedInstancesResults(GceRef{})
+				_, err := client.FetchListManagedInstancesResults(context.Background(), GceRef{})
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"FetchZones_ContextTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchZones("")
+				_, err := client.FetchZones(context.Background(), "")
 				return err
 			},
 			operationPerCallTimeout: &instantTimeout,
 		},
 		"CreateInstances_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.CreateInstances(GceRef{}, "", 0, nil)
+				_, err := client.CreateInstances(context.Background(), GceRef{}, "", 0, nil)
+				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"DeleteInstances_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.DeleteInstances(GceRef{}, nil)
+				return client.DeleteInstances(context.Background(), GceRef{}, nil)
 			},
 			httpTimeout: instantTimeout,
 		},
 		"ResizeMig_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				return client.ResizeMig(GceRef{}, 0)
+				return client.ResizeMig(context.Background(), GceRef{}, 0)
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchMachineType_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMachineType("", "")
+				_, err := client.FetchMachineType(context.Background(), "", "")
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchMigBasename_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigBasename(GceRef{})
+				_, err := client.FetchMigBasename(context.Background(), GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchMigTargetSize_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTargetSize(GceRef{})
+				_, err := client.FetchMigTargetSize(context.Background(), GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchMigTemplate_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTemplate(GceRef{}, "", false)
+				_, err := client.FetchMigTemplate(context.Background(), GceRef{}, "", false)
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchMigTemplateName_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigTemplateName(GceRef{})
+				_, err := client.FetchMigTemplateName(context.Background(), GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchListManagedInstancesResults_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchListManagedInstancesResults(GceRef{})
+				_, err := client.FetchListManagedInstancesResults(context.Background(), GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
 		},
 		"FetchZones_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchZones("")
+				_, err := client.FetchZones(context.Background(), "")
 				return err
 			},
 			httpTimeout: instantTimeout,
@@ -841,7 +872,7 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 		},
 		"FetchMigInstances_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigInstances(GceRef{})
+				_, err := client.FetchMigInstances(context.Background(), GceRef{})
 				return err
 			},
 			httpTimeout: instantTimeout,
@@ -862,7 +893,7 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 		},
 		"FetchMigsWithName_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
-				_, err := client.FetchMigsWithName("", &regexp.Regexp{})
+				_, err := client.FetchMigsWithName(context.Background(), "", &regexp.Regexp{})
 				return err
 			},
 			httpTimeout: instantTimeout,
@@ -889,6 +920,27 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 			// NOTE: unable to test with ErrorIs as http errors are not wrapping an err, but overwriting it
 			assert.ErrorContains(t, err, context.DeadlineExceeded.Error())
 		})
+	}
+}
+
+func TestCreateInstances(t *testing.T) {
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	b, err := json.Marshal(gce_api.Operation{
+		Name: "operation-2505728466148-216f5197",
+	})
+	assert.NoError(t, err)
+	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/igm1/createInstances").Return(string(b)).Times(1)
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-2505728466148-216f5197/wait").Return(operationDoneResponse).Once()
+	client := newTestAutoscalingGceClientWithTimeout(t, "project", server.URL, "", time.Second)
+	migRef := GceRef{Project: "project1", Zone: "us-central1-b", Name: "igm1"}
+	createdIds, err := client.CreateInstances(context.Background(), migRef, migRef.Name, 10, nil)
+	assert.NoError(t, err)
+	assert.Len(t, createdIds, 10, "Expected 10 instance names in result")
+	for _, id := range createdIds {
+		createdRef, _ := GceRefFromProviderId(id)
+		prefixed := strings.HasPrefix(createdRef.Name, migRef.Name+"-")
+		require.Truef(t, prefixed, "Expected node name \"%v\" to be prefixed with \"%v\"", createdRef.Name, migRef.Name)
 	}
 }
 
@@ -943,6 +995,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 10,
 					Igm:       GceRef{},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -951,6 +1004,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 11,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "PROVISIONING",
 				},
 			},
 		},
@@ -976,6 +1030,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 10,
 					Igm:       GceRef{},
+					GCEStatus: "STOPPING",
 				},
 			},
 		},
@@ -1013,6 +1068,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 10,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1021,6 +1077,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 11,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 			},
 		},
@@ -1110,6 +1167,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 10,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1118,6 +1176,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 11,
 					Igm:       GceRef{"myprojid", "zones", "test-igm2-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1126,6 +1185,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 12,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1134,6 +1194,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 13,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1142,6 +1203,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 14,
 					Igm:       GceRef{"myprojid", "zones", "test-igm2-grp"},
+					GCEStatus: "RUNNING",
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1150,6 +1212,7 @@ func TestFetchAllInstances(t *testing.T) {
 					},
 					NumericId: 15,
 					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+					GCEStatus: "RUNNING",
 				},
 			},
 		},
@@ -1170,7 +1233,7 @@ func TestFetchAllInstances(t *testing.T) {
 				server.On("handle", "/projects/myprojid/zones/myzone/instances", token).Return(string(b)).Times(1)
 			}
 
-			got, err := gceInternalService.FetchAllInstances("myprojid", "myzone", "test-cluster")
+			got, err := gceInternalService.FetchAllInstances(context.Background(), "myprojid", "myzone", "test-cluster")
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("autoscalingInternalGceClient.FetchAllInstances() diff (-want +got): %s", diff)
 			}
@@ -1206,6 +1269,7 @@ func TestExternalToInternalInstance(t *testing.T) {
 				},
 				NumericId: 10,
 				Igm:       GceRef{},
+				GCEStatus: "RUNNING",
 			},
 		},
 		{
@@ -1254,6 +1318,29 @@ func TestExternalToInternalInstance(t *testing.T) {
 				},
 				NumericId: 10,
 				Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+				GCEStatus: "RUNNING",
+			},
+		},
+		{
+			name: "suspended instance",
+			instance: &gce_api.Instance{
+				Id: 10,
+				Metadata: &gce_api.Metadata{
+					Items: []*gce_api.MetadataItems{
+						{Key: "created-by", Value: &igm1},
+					},
+				},
+				SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-1",
+				Status:   "SUSPENDED",
+			},
+			want: GceInstance{
+				Instance: cloudprovider.Instance{
+					Id:     "gce://myprojid/myzone/test-instance-1",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+				},
+				NumericId: 10,
+				Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
+				GCEStatus: "SUSPENDED",
 			},
 		},
 	}
@@ -1266,6 +1353,51 @@ func TestExternalToInternalInstance(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestFetchMigTargetSize(t *testing.T) {
+	mig := GceRef{
+		Project: "project1",
+		Zone:    "us-central1-b",
+		Name:    "mig-1",
+	}
+
+	testCases := []struct {
+		name     string
+		response gce_api.InstanceGroupManager
+		wantSize int64
+	}{
+		{
+			name: "MIG returns correct target size",
+			response: gce_api.InstanceGroupManager{
+				Name:       "mig-1",
+				TargetSize: 42,
+			},
+			wantSize: 42,
+		},
+		{
+			name: "MIG returns correct target size with suspended instances",
+			response: gce_api.InstanceGroupManager{
+				Name:                "mig-1",
+				TargetSize:          42,
+				TargetSuspendedSize: 3,
+			},
+			wantSize: 45,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			server := test_util.NewHttpServerMock()
+			defer server.Close()
+			gceClient := newTestAutoscalingGceClient(t, "project1", server.URL, "")
+			b, _ := json.Marshal(tc.response)
+			server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/mig-1").Return(string(b)).Once()
+			size, err := gceClient.FetchMigTargetSize(context.Background(), mig)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.wantSize, size)
+			mock.AssertExpectationsForObjects(t, server)
 		})
 	}
 }

@@ -23,13 +23,13 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
-	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
-	resourceapi "k8s.io/api/resource/v1beta1"
+	resourceapi "k8s.io/api/resource/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -38,33 +38,36 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	klog "k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 type unstructuredScalableResource struct {
 	controller         *machineController
 	unstructured       *unstructured.Unstructured
+	infraObj           *unstructured.Unstructured
+	infraMutex         sync.RWMutex
 	maxSize            int
 	minSize            int
 	autoscalingOptions map[string]string
 }
 
-func (r unstructuredScalableResource) ID() string {
+func (r *unstructuredScalableResource) ID() string {
 	return path.Join(r.Kind(), r.Namespace(), r.Name())
 }
 
-func (r unstructuredScalableResource) MaxSize() int {
+func (r *unstructuredScalableResource) MaxSize() int {
 	return r.maxSize
 }
 
-func (r unstructuredScalableResource) MinSize() int {
+func (r *unstructuredScalableResource) MinSize() int {
 	return r.minSize
 }
 
-func (r unstructuredScalableResource) Kind() string {
+func (r *unstructuredScalableResource) Kind() string {
 	return r.unstructured.GetKind()
 }
 
-func (r unstructuredScalableResource) GroupVersionResource() (schema.GroupVersionResource, error) {
+func (r *unstructuredScalableResource) GroupVersionResource() (schema.GroupVersionResource, error) {
 	switch r.Kind() {
 	case machineDeploymentKind:
 		return r.controller.machineDeploymentResource, nil
@@ -77,15 +80,15 @@ func (r unstructuredScalableResource) GroupVersionResource() (schema.GroupVersio
 	}
 }
 
-func (r unstructuredScalableResource) Name() string {
+func (r *unstructuredScalableResource) Name() string {
 	return r.unstructured.GetName()
 }
 
-func (r unstructuredScalableResource) Namespace() string {
+func (r *unstructuredScalableResource) Namespace() string {
 	return r.unstructured.GetNamespace()
 }
 
-func (r unstructuredScalableResource) ProviderIDs() ([]string, error) {
+func (r *unstructuredScalableResource) ProviderIDs() ([]string, error) {
 	providerIds, err := r.controller.scalableResourceProviderIDs(r.unstructured)
 	if err != nil {
 		return nil, err
@@ -94,7 +97,7 @@ func (r unstructuredScalableResource) ProviderIDs() ([]string, error) {
 	return providerIds, nil
 }
 
-func (r unstructuredScalableResource) Replicas() (int, error) {
+func (r *unstructuredScalableResource) Replicas() (int, error) {
 	gvr, err := r.GroupVersionResource()
 	if err != nil {
 		return 0, err
@@ -111,7 +114,7 @@ func (r unstructuredScalableResource) Replicas() (int, error) {
 	return int(s.Spec.Replicas), nil
 }
 
-func (r unstructuredScalableResource) SetSize(nreplicas int) error {
+func (r *unstructuredScalableResource) SetSize(nreplicas int) error {
 	switch {
 	case nreplicas > r.maxSize:
 		return fmt.Errorf("size increase too large - desired:%d max:%d", nreplicas, r.maxSize)
@@ -124,9 +127,9 @@ func (r unstructuredScalableResource) SetSize(nreplicas int) error {
 		return err
 	}
 
-	spec := autoscalingv1.Scale{
-		Spec: autoscalingv1.ScaleSpec{
-			Replicas: int32(nreplicas),
+	spec := autoscalingv1Scale{
+		Spec: autoscalingv1ScaleSpec{
+			Replicas: ptr.To(int32(nreplicas)),
 		},
 	}
 
@@ -144,7 +147,25 @@ func (r unstructuredScalableResource) SetSize(nreplicas int) error {
 	return updateErr
 }
 
-func (r unstructuredScalableResource) UnmarkMachineForDeletion(machine *unstructured.Unstructured) error {
+// scale is a version of the autoscalingv1.Scale struct that marshals correctly.
+// Specifically the Spec.Replicas field is *int32 instead of int32.
+// Accordingly Spec.Replicas = 0 is not omitted, which is important for autoscale to 0 to work.
+type autoscalingv1Scale struct {
+	// spec defines the behavior of the scale. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
+	// +optional
+	Spec autoscalingv1ScaleSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+}
+
+type autoscalingv1ScaleSpec struct {
+	// replicas is the desired number of instances for the scaled object.
+	// +optional
+	// +k8s:optional
+	// +default=0
+	// +k8s:minimum=0
+	Replicas *int32 `json:"replicas,omitempty" protobuf:"varint,1,opt,name=replicas"`
+}
+
+func (r *unstructuredScalableResource) UnmarkMachineForDeletion(machine *unstructured.Unstructured) error {
 	u, err := r.controller.managementClient.Resource(r.controller.machineResource).Namespace(machine.GetNamespace()).Get(context.TODO(), machine.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -158,7 +179,7 @@ func (r unstructuredScalableResource) UnmarkMachineForDeletion(machine *unstruct
 	return updateErr
 }
 
-func (r unstructuredScalableResource) MarkMachineForDeletion(machine *unstructured.Unstructured) error {
+func (r *unstructuredScalableResource) MarkMachineForDeletion(machine *unstructured.Unstructured) error {
 	u, err := r.controller.managementClient.Resource(r.controller.machineResource).Namespace(machine.GetNamespace()).Get(context.TODO(), machine.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -179,43 +200,91 @@ func (r unstructuredScalableResource) MarkMachineForDeletion(machine *unstructur
 	return updateErr
 }
 
-func (r unstructuredScalableResource) Labels() map[string]string {
+func (r *unstructuredScalableResource) Labels() map[string]string {
+	allLabels := map[string]string{}
+
+	// get the managed labels from the scalable resource, if they exist.
+	if labels, found, err := unstructured.NestedStringMap(r.unstructured.UnstructuredContent(), "spec", "template", "spec", "metadata", "labels"); found && err == nil {
+		managedLabels := getManagedNodeLabelsFromLabels(labels)
+		allLabels = cloudprovider.JoinStringMaps(allLabels, managedLabels)
+	}
+
+	// annotation labels are supplied as an override to other values, we process them last.
 	annotations := r.unstructured.GetAnnotations()
 	// annotation value of the form "key1=value1,key2=value2"
 	if val, found := annotations[labelsKey]; found {
 		labels := strings.Split(val, ",")
-		kv := make(map[string]string, len(labels))
+		annotationLabels := make(map[string]string, len(labels))
 		for _, label := range labels {
 			split := strings.SplitN(label, "=", 2)
 			if len(split) == 2 {
-				kv[split[0]] = split[1]
+				annotationLabels[split[0]] = split[1]
 			}
 		}
-		return kv
+		allLabels = cloudprovider.JoinStringMaps(allLabels, annotationLabels)
 	}
-	return nil
+	return allLabels
 }
 
-func (r unstructuredScalableResource) Taints() []apiv1.Taint {
+func (r *unstructuredScalableResource) Taints() []corev1.Taint {
+	var allTaints []corev1.Taint
+
+	// Read taints from spec.template.spec.taints. Requires CAPI v1.12+ with the
+	// MachineTaintPropagation feature gate enabled.
+	if rawTaints, found, err := unstructured.NestedSlice(r.unstructured.UnstructuredContent(), "spec", "template", "spec", "taints"); found && err == nil {
+		for _, item := range rawTaints {
+			taintMap, ok := item.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			taint := corev1.Taint{}
+			if key, ok := taintMap["key"].(string); ok {
+				taint.Key = key
+			}
+			if value, ok := taintMap["value"].(string); ok {
+				taint.Value = value
+			}
+			if effect, ok := taintMap["effect"].(string); ok {
+				taint.Effect = corev1.TaintEffect(effect)
+			}
+			allTaints = append(allTaints, taint)
+		}
+	}
+
+	// Annotation taints take highest priority. If an annotation taint has the same
+	// key+effect as a spec taint, it overrides it; otherwise it is appended.
+	// Format: "key1=value1:NoSchedule,key2=value2:NoExecute"
 	annotations := r.unstructured.GetAnnotations()
-	// annotation value the form of "key1=value1:condition,key2=value2:condition"
 	if val, found := annotations[taintsKey]; found {
-		taints := strings.Split(val, ",")
-		ret := make([]apiv1.Taint, 0, len(taints))
-		for _, taintStr := range taints {
-			taint, err := parseTaint(taintStr)
-			if err == nil {
-				ret = append(ret, taint)
+		for _, taintStr := range strings.Split(val, ",") {
+			t, err := parseTaint(taintStr)
+			if err != nil {
+				klog.V(4).Infof("Failed to parse taint %q from annotation %s: %v", taintStr, taintsKey, err)
+				continue
+			}
+			replaced := false
+			for i, existing := range allTaints {
+				if existing.Key == t.Key && existing.Effect == t.Effect {
+					allTaints[i] = t
+					replaced = true
+					break
+				}
+			}
+			if !replaced {
+				allTaints = append(allTaints, t)
 			}
 		}
-		return ret
 	}
-	return nil
+
+	if len(allTaints) == 0 {
+		return nil
+	}
+	return allTaints
 }
 
 // A node group can scale from zero if it can inform about the CPU and memory
 // capacity of the nodes within the group.
-func (r unstructuredScalableResource) CanScaleFromZero() bool {
+func (r *unstructuredScalableResource) CanScaleFromZero() bool {
 	capacity, err := r.InstanceCapacity()
 	if err != nil {
 		return false
@@ -232,7 +301,7 @@ func (r unstructuredScalableResource) CanScaleFromZero() bool {
 // capacity for this node group. The returned map will be empty if the
 // provider does not support scaling from zero, or the annotations have not
 // been added.
-func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceName]resource.Quantity, error) {
+func (r *unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceName]resource.Quantity, error) {
 	capacityAnnotations := map[corev1.ResourceName]resource.Quantity{}
 
 	cpu, err := r.InstanceCPUCapacityAnnotation()
@@ -304,7 +373,18 @@ func (r unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNam
 	return capacity, nil
 }
 
-func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([]*resourceapi.ResourceSlice, error) {
+// InstanceSystemInfo sets the nodeSystemInfo from the infrastructure reference resource.
+// If the infrastructure reference resource is not found, returns nil.
+func (r *unstructuredScalableResource) InstanceSystemInfo() *corev1.NodeSystemInfo {
+	infraObj, err := r.readInfrastructureReferenceResource()
+	if err != nil || infraObj == nil {
+		return nil
+	}
+	nsiObj := systemInfoFromInfrastructureObject(infraObj)
+	return &nsiObj
+}
+
+func (r *unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([]*resourceapi.ResourceSlice, error) {
 	var result []*resourceapi.ResourceSlice
 	driver := r.InstanceDRADriver()
 	if driver == "" {
@@ -321,20 +401,20 @@ func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([
 			},
 			Spec: resourceapi.ResourceSliceSpec{
 				Driver:   driver,
-				NodeName: nodeName,
+				NodeName: &nodeName,
+				// TODO: Derive ResourceSliceCount from the number of generated ResourceSlices instead of hard-coding it.
 				Pool: resourceapi.ResourcePool{
-					Name: nodeName,
+					Name:               nodeName,
+					ResourceSliceCount: 1,
 				},
 			},
 		}
 		for i := 0; i < int(gpuCount.Value()); i++ {
 			device := resourceapi.Device{
 				Name: "gpu-" + strconv.Itoa(i),
-				Basic: &resourceapi.BasicDevice{
-					Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
-						"type": {
-							StringValue: ptr.To(GpuDeviceType),
-						},
+				Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
+					"type": {
+						StringValue: ptr.To(GpuDeviceType),
 					},
 				},
 			}
@@ -346,51 +426,106 @@ func (r unstructuredScalableResource) InstanceResourceSlices(nodeName string) ([
 	return nil, nil
 }
 
-func (r unstructuredScalableResource) InstanceEphemeralDiskCapacityAnnotation() (resource.Quantity, error) {
+func (r *unstructuredScalableResource) InstanceEphemeralDiskCapacityAnnotation() (resource.Quantity, error) {
 	return parseEphemeralDiskCapacity(r.unstructured.GetAnnotations())
 }
 
-func (r unstructuredScalableResource) InstanceCPUCapacityAnnotation() (resource.Quantity, error) {
+func (r *unstructuredScalableResource) InstanceCPUCapacityAnnotation() (resource.Quantity, error) {
 	return parseCPUCapacity(r.unstructured.GetAnnotations())
 }
 
-func (r unstructuredScalableResource) InstanceMemoryCapacityAnnotation() (resource.Quantity, error) {
+func (r *unstructuredScalableResource) InstanceMemoryCapacityAnnotation() (resource.Quantity, error) {
 	return parseMemoryCapacity(r.unstructured.GetAnnotations())
 }
 
-func (r unstructuredScalableResource) InstanceGPUCapacityAnnotation() (resource.Quantity, error) {
+func (r *unstructuredScalableResource) InstanceGPUCapacityAnnotation() (resource.Quantity, error) {
 	return parseGPUCount(r.unstructured.GetAnnotations())
 }
 
-func (r unstructuredScalableResource) InstanceGPUTypeAnnotation() string {
+func (r *unstructuredScalableResource) InstanceGPUTypeAnnotation() string {
 	return parseGPUType(r.unstructured.GetAnnotations())
 }
 
-func (r unstructuredScalableResource) InstanceMaxPodsCapacityAnnotation() (resource.Quantity, error) {
+func (r *unstructuredScalableResource) InstanceMaxPodsCapacityAnnotation() (resource.Quantity, error) {
 	return parseMaxPodsCapacity(r.unstructured.GetAnnotations())
 }
 
-func (r unstructuredScalableResource) InstanceDRADriver() string {
+func (r *unstructuredScalableResource) InstanceDRADriver() string {
 	return parseDRADriver(r.unstructured.GetAnnotations())
 }
 
-func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*unstructured.Unstructured, error) {
+// InstanceCSINode parses CSI driver information from annotations and returns
+// a CSINode object with the list of installed drivers and their volume limits.
+// The annotation format is "driver-name=volume-limit,driver-name2=volume-limit2".
+// Returns nil if the annotation is not present or empty.
+func (r *unstructuredScalableResource) InstanceCSINode() *storagev1.CSINode {
+	annotations := r.unstructured.GetAnnotations()
+	// annotation value of the form "driver1=limit1,driver2=limit2"
+	if val, found := annotations[csiDriverKey]; found && val != "" {
+		drivers := parseCSIDriverAnnotation(val)
+		if len(drivers) == 0 {
+			return nil
+		}
+		return &storagev1.CSINode{
+			Spec: storagev1.CSINodeSpec{
+				Drivers: drivers,
+			},
+		}
+	}
+	return nil
+}
+
+func (r *unstructuredScalableResource) readInfrastructureReferenceResource() (*unstructured.Unstructured, error) {
+	// Cache w/ lazy loading of the infrastructure reference resource.
+	r.infraMutex.RLock()
+	if r.infraObj != nil {
+		defer r.infraMutex.RUnlock()
+		return r.infraObj, nil
+	}
+	r.infraMutex.RUnlock()
+
+	r.infraMutex.Lock()
+	defer r.infraMutex.Unlock()
+
+	obKind := r.unstructured.GetKind()
+	obName := r.unstructured.GetName()
+
 	infraref, found, err := unstructured.NestedStringMap(r.unstructured.Object, "spec", "template", "spec", "infrastructureRef")
 	if !found || err != nil {
 		return nil, nil
 	}
 
-	apiversion, ok := infraref["apiVersion"]
-	if !ok {
-		return nil, nil
-	}
+	// kind must be read before version discovery — getKindPreferredVersion needs it.
 	kind, ok := infraref["kind"]
 	if !ok {
-		return nil, nil
+		info := fmt.Sprintf("Missing kind from %s %s's InfrastructureReference", obKind, obName)
+		klog.V(4).Info(info)
+		return nil, errors.New(info)
+	}
+
+	var apiversion string
+
+	apiGroup, ok := infraref["apiGroup"]
+	if ok {
+		if apiversion, err = getKindPreferredVersion(r.controller.managementDiscoveryClient, apiGroup, kind); err != nil {
+			klog.V(4).Infof("Unable to read preferred version for kind %s in api group %s, error: %v", kind, apiGroup, err)
+			return nil, err
+		}
+		apiversion = fmt.Sprintf("%s/%s", apiGroup, apiversion)
+	} else {
+		// Fall back to ObjectReference in capi v1beta1
+		apiversion, ok = infraref["apiVersion"]
+		if !ok {
+			info := fmt.Sprintf("Missing apiVersion from %s %s's InfrastructureReference", obKind, obName)
+			klog.V(4).Info(info)
+			return nil, errors.New(info)
+		}
 	}
 	name, ok := infraref["name"]
 	if !ok {
-		return nil, nil
+		info := fmt.Sprintf("Missing name from %s %s's InfrastructureReference", obKind, obName)
+		klog.V(4).Info(info)
+		return nil, errors.New(info)
 	}
 	// kind needs to be lower case and plural
 	kind = fmt.Sprintf("%ss", strings.ToLower(kind))
@@ -402,6 +537,8 @@ func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*un
 		klog.V(4).Infof("Unable to read infrastructure reference, error: %v", err)
 		return nil, err
 	}
+
+	r.infraObj = infra
 
 	return infra, nil
 }
@@ -440,20 +577,99 @@ func resourceCapacityFromInfrastructureObject(infraobj *unstructured.Unstructure
 	return capacity
 }
 
+func systemInfoFromInfrastructureObject(infraobj *unstructured.Unstructured) corev1.NodeSystemInfo {
+	nsi := corev1.NodeSystemInfo{}
+	infransi, found, err := unstructured.NestedStringMap(infraobj.Object, "status", "nodeInfo")
+	if !found || err != nil {
+		return nsi
+	}
+
+	for k, v := range infransi {
+		switch k {
+		case "architecture":
+			nsi.Architecture = v
+		case "operatingSystem":
+			nsi.OperatingSystem = v
+		}
+	}
+
+	return nsi
+}
+
+// parseCSIDriverAnnotation parses a comma-separated list of CSI driver name and volume limit
+// key/value pairs in the format "driver-name=volume-limit,driver-name2=volume-limit2".
+// Returns a slice of CSINodeDriver objects with Name and Allocatable.Count set.
+func parseCSIDriverAnnotation(annotationValue string) []storagev1.CSINodeDriver {
+	drivers := []storagev1.CSINodeDriver{}
+	if annotationValue == "" {
+		return drivers
+	}
+
+	driverSpecs := strings.Split(annotationValue, ",")
+	for _, driverSpec := range driverSpecs {
+		driverSpec = strings.TrimSpace(driverSpec)
+		if driverSpec == "" {
+			continue
+		}
+
+		// Split on "=" to get driver name and volume limit
+		parts := strings.SplitN(driverSpec, "=", 2)
+		if len(parts) != 2 {
+			klog.V(4).Infof("Invalid CSI driver spec format (expected driver-name=volume-limit): %s", driverSpec)
+			continue
+		}
+
+		driverName := strings.TrimSpace(parts[0])
+		volumeLimitStr := strings.TrimSpace(parts[1])
+
+		if driverName == "" {
+			klog.V(4).Infof("Empty driver name in CSI driver spec: %s", driverSpec)
+			continue
+		}
+
+		// Parse volume limit as integer
+		volumeLimit, err := strconv.ParseInt(volumeLimitStr, 10, 32)
+		if err != nil {
+			klog.V(4).Infof("Invalid volume limit value (expected integer) in CSI driver spec %s: %v", driverSpec, err)
+			continue
+		}
+
+		if volumeLimit < 0 {
+			klog.V(4).Infof("Volume limit must be non-negative in CSI driver spec: %s", driverSpec)
+			continue
+		}
+
+		// Create CSINodeDriver with Name and optionally Allocatable.Count
+		// If volume limit is 0, Allocatable is not set
+		driver := storagev1.CSINodeDriver{
+			Name: driverName,
+		}
+		if volumeLimit > 0 {
+			limit := int32(volumeLimit)
+			driver.Allocatable = &storagev1.VolumeNodeResources{
+				Count: &limit,
+			}
+		}
+		drivers = append(drivers, driver)
+	}
+
+	return drivers
+}
+
 // adapted from https://github.com/kubernetes/kubernetes/blob/release-1.25/pkg/util/taints/taints.go#L39
-func parseTaint(st string) (apiv1.Taint, error) {
-	var taint apiv1.Taint
+func parseTaint(st string) (corev1.Taint, error) {
+	var taint corev1.Taint
 
 	var key string
 	var value string
-	var effect apiv1.TaintEffect
+	var effect corev1.TaintEffect
 
 	parts := strings.Split(st, ":")
 	switch len(parts) {
 	case 1:
 		key = parts[0]
 	case 2:
-		effect = apiv1.TaintEffect(parts[1])
+		effect = corev1.TaintEffect(parts[1])
 
 		partsKV := strings.Split(parts[0], "=")
 		if len(partsKV) > 2 {
@@ -479,4 +695,17 @@ func parseTaint(st string) (apiv1.Taint, error) {
 	taint.Effect = effect
 
 	return taint, nil
+}
+
+// returns true if the unstructured resource is a MachineDeployment, MachinePool, or MachineSet,
+// and contains the pause annotation.
+func isScalableResourceAndPaused(resource unstructured.Unstructured) bool {
+	switch resource.GetKind() {
+	case machineDeploymentKind, machinePoolKind, machineSetKind:
+		annotations := resource.GetAnnotations()
+		if _, found := annotations[resourcePausedAnnotation]; found {
+			return true
+		}
+	}
+	return false
 }

@@ -6,7 +6,7 @@
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
-  - [User Stories](#user-stories-optional)
+  - [User Stories](#user-stories)
     - [Story 1](#story-1)
     - [Story 2](#story-2)
   - [Implementation Details](#implementation-details)
@@ -15,7 +15,9 @@
   - [Test Plan](#test-plan)
   - [Upgrade / Downgrade Strategy](#upgrade--downgrade-strategy)
 - [Alternatives](#alternatives)
-- [Out of Scope](#out-out-scope)
+  - [Develop a plugin framework for customizable recommenders.](#develop-a-plugin-framework-for-customizable-recommenders)
+  - [Develop a label selector approach.](#develop-a-label-selector-approach)
+- [Out of Scope](#out-of-scope)
 - [Implementation History](#implementation-history)
 <!-- /toc -->
 

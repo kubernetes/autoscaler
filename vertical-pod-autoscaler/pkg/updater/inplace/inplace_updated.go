@@ -17,7 +17,7 @@ limitations under the License.
 package inplace
 
 import (
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
@@ -29,7 +29,7 @@ type inPlaceUpdate struct{}
 
 // CalculatePatches returns a patch that adds a "vpaInPlaceUpdated" annotation
 // to the pod, marking it as having been requested to be updated in-place by VPA.
-func (*inPlaceUpdate) CalculatePatches(pod *core.Pod, _ *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
+func (*inPlaceUpdate) CalculatePatches(pod *corev1.Pod, _ *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	vpaInPlaceUpdatedValue := annotations.GetVpaInPlaceUpdatedValue()
 	return []resource_admission.PatchRecord{patch.GetAddAnnotationPatch(annotations.VpaInPlaceUpdatedLabel, vpaInPlaceUpdatedValue)}, nil
 }

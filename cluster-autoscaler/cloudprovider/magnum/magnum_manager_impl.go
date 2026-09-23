@@ -21,19 +21,19 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 
 	apiv1 "k8s.io/api/core/v1"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/compute/v2/flavors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/clusters"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/orchestration/v1/stackresources"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/orchestration/v1/stacks"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 )
 
 type nodeGroupStacks struct {
@@ -485,7 +485,7 @@ func (mgr *magnumManagerImpl) nodeGroupForNode(node *apiv1.Node) (string, error)
 
 					// Check that the ID is a proper server UUID.
 					// (It could be an index or "kube-minion" in the refs_map instead).
-					_, err := uuid.FromString(ID)
+					_, err := uuid.Parse(ID)
 					if err != nil {
 						continue
 					}

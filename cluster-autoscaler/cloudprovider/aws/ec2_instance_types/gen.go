@@ -20,18 +20,20 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"html/template"
 	"os"
 	"time"
 
-	"k8s.io/klog/v2"
-
+	awssdk "github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
-	awssdk "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/session"
+	"k8s.io/klog/v2"
 )
 
+// EBSVolumeLimit stays on InstanceType for runtime EC2 metadata, but is omitted
+// from static map literals until the list is regenerated with DescribeInstanceTypes.
 var packageTemplate = template.Must(template.New("").Parse(`/*
 Copyright The Kubernetes Authors.
 
@@ -59,6 +61,7 @@ type InstanceType struct {
 	MemoryMb     int64
 	GPU          int64
 	Architecture string
+	EBSVolumeLimit int64
 }
 
 // StaticListLastUpdateTime is a string declaring the last time the static list was updated.
@@ -73,6 +76,7 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     {{ .MemoryMb }},
 		GPU:          {{ .GPU }},
 		Architecture: "{{ .Architecture }}",
+		EBSVolumeLimit: {{ .EBSVolumeLimit }},
 	},
 {{- end }}
 }
@@ -83,20 +87,17 @@ var InstanceTypes = map[string]*InstanceType{
 func main() {
 	var region = flag.String("region", "", "aws region you'd like to generate instances from.")
 	flag.Parse()
-	if awssdk.StringValue(region) == "" {
+	if awssdk.ToString(region) == "" {
 		klog.Fatalf("Region is required to generate instance types")
 	}
-
 	defer klog.Flush()
 
-	sess, err := session.NewSession(&awssdk.Config{
-		Region: region,
-	})
+	awsConfig, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(awssdk.ToString(region)))
 	if err != nil {
 		klog.Fatal(err)
 	}
 
-	instanceTypes, err := aws.GenerateEC2InstanceTypes(sess)
+	instanceTypes, err := aws.GenerateEC2InstanceTypes(awsConfig)
 	if err != nil {
 		klog.Fatal(err)
 	}

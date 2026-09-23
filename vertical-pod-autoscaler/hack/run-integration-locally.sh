@@ -1,0 +1,175 @@
+#!/bin/bash
+
+# Copyright 2025 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o nounset
+set -o pipefail
+
+BASE_NAME=$(basename $0)
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
+KIND_CONFIG="${SCRIPT_ROOT}/../.github/kind-config.yaml"
+get_host_arch() {
+  local host_arch
+  case "$(uname -m)" in
+    x86_64*)
+      host_arch=amd64
+      ;;
+    i?86_64*)
+      host_arch=amd64
+      ;;
+    amd64*)
+      host_arch=amd64
+      ;;
+    aarch64*)
+      host_arch=arm64
+      ;;
+    arm64*)
+      host_arch=arm64
+      ;;
+    arm*)
+      host_arch=arm
+      ;;
+    i?86*)
+      host_arch=x86
+      ;;
+    s390x*)
+      host_arch=s390x
+      ;;
+    ppc64le*)
+      host_arch=ppc64le
+      ;;
+    *)
+      echo "Unsupported host arch. Must be x86_64, 386, arm, arm64, s390x or ppc64le."
+      exit 1
+      ;;
+  esac
+  echo "${host_arch}"
+}
+
+ARCH=$(get_host_arch)
+
+function print_help {
+  echo "ERROR! Usage: $BASE_NAME <suite>"
+  echo "<suite> should be one of:"
+  echo " - recommender"
+}
+
+if [ $# -eq 0 ]; then
+  print_help
+  exit 1
+fi
+
+if [ $# -gt 1 ]; then
+  print_help
+  exit 1
+fi
+
+SUITE=$1
+REQUIRED_COMMANDS="
+docker
+go
+helm
+kind
+kubectl
+make
+"
+
+for i in $REQUIRED_COMMANDS; do
+  if ! command -v $i > /dev/null 2>&1
+  then
+    echo "$i could not be found, please ensure it is installed"
+    echo
+    echo "The following commands are required to run these tests:"
+    echo $REQUIRED_COMMANDS
+    exit 1;
+  fi
+done
+
+if ! docker ps >/dev/null 2>&1
+then
+  echo "docker isn't running"
+  echo
+  echo "Please ensure that docker is running"
+  exit 1
+fi
+
+case ${SUITE} in
+  recommender)
+    COMPONENTS="${SUITE}"
+    ;;
+  *)
+    print_help
+    exit 1
+    ;;
+esac
+
+echo "Deleting KIND cluster 'kind'."
+kind delete cluster -n kind -q
+
+if [ ! -f "${KIND_CONFIG}" ]; then
+  echo "Missing KIND config file: ${KIND_CONFIG}"
+  exit 1
+fi
+
+echo "Creating KIND cluster 'kind'"
+if ! kind create cluster --config "${KIND_CONFIG}"; then
+    echo "Failed to create KIND cluster using ${KIND_CONFIG}. Exiting."
+    exit 1
+fi
+
+# Local KIND images
+export REGISTRY=${REGISTRY:-localhost:5001}
+export TAG=${TAG:-latest}
+
+rm -f ${SCRIPT_ROOT}/hack/e2e/vpa-rbac.yaml
+patch -c ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml -i ${SCRIPT_ROOT}/hack/e2e/vpa-rbac.diff -o ${SCRIPT_ROOT}/hack/e2e/vpa-rbac.yaml
+kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/vpa-rbac.yaml
+# Other-versioned CRDs are irrelevant as we're running a modern-ish cluster.
+kubectl apply -f ${SCRIPT_ROOT}/deploy/vpa-v1-crd-gen.yaml
+# Deploy metrics server for integration tests via Helm chart
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+helm repo update metrics-server
+helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system --version 3.13.0 --wait
+
+for i in ${COMPONENTS}; do
+  ALL_ARCHITECTURES=${ARCH} make --directory ${SCRIPT_ROOT}/pkg/${i} docker-build REGISTRY=${REGISTRY} TAG=${TAG}
+  docker tag ${REGISTRY}/vpa-${i}-${ARCH}:${TAG} ${REGISTRY}/vpa-${i}:${TAG}
+  kind load docker-image ${REGISTRY}/vpa-${i}:${TAG}
+done
+
+export GO111MODULE=on
+
+case ${SUITE} in
+  recommender)
+
+    export KUBECONFIG=$HOME/.kube/config
+    pushd ${SCRIPT_ROOT}/e2e
+    go test ./integration/*go -v --test.timeout=10m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --disable-log-dump --ginkgo.timeout=10m
+    INTEGRATION_RESULT=$?
+    popd
+    echo integration test result: ${INTEGRATION_RESULT}
+    if [ $INTEGRATION_RESULT -gt 0 ]; then
+      echo "Please check integration \"go test\" logs!"
+    fi
+    if [ $INTEGRATION_RESULT -gt 0 ]; then
+      echo "Tests failed"
+      exit 1
+    fi
+    ;;
+  *)
+    print_help
+    exit 1
+    ;;
+esac

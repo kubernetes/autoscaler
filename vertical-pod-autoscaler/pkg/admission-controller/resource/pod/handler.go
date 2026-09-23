@@ -19,11 +19,11 @@ package pod
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
@@ -49,30 +49,30 @@ func NewResourceHandler(preProcessor PreProcessor, vpaMatcher vpa.Matcher, patch
 }
 
 // AdmissionResource returns resource type this handler accepts.
-func (h *resourceHandler) AdmissionResource() admission.AdmissionResource {
+func (*resourceHandler) AdmissionResource() admission.AdmissionResource {
 	return admission.Pod
 }
 
 // GroupResource returns Group and Resource type this handler accepts.
-func (h *resourceHandler) GroupResource() metav1.GroupResource {
+func (*resourceHandler) GroupResource() metav1.GroupResource {
 	return metav1.GroupResource{Group: "", Resource: "pods"}
 }
 
 // DisallowIncorrectObjects decides whether incorrect objects (eg. unparsable, not passing validations) should be disallowed by Admission Server.
-func (h *resourceHandler) DisallowIncorrectObjects() bool {
+func (*resourceHandler) DisallowIncorrectObjects() bool {
 	// Incorrect Pods are validated by API Server.
 	return false
 }
 
 // GetPatches builds patches for Pod in given admission request.
-func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.AdmissionRequest) ([]resource_admission.PatchRecord, error) {
+func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.AdmissionRequest) ([]resource_admission.PatchRecord, []string, field.ErrorList) {
 	if ar.Resource.Version != "v1" {
-		return nil, fmt.Errorf("only v1 Pods are supported")
+		return nil, nil, field.ErrorList{field.Invalid(field.NewPath("."), ar.Resource.Version, "only v1 Pods are supported")}
 	}
 	raw, namespace := ar.Object.Raw, ar.Namespace
 	pod := corev1.Pod{}
 	if err := json.Unmarshal(raw, &pod); err != nil {
-		return nil, err
+		return nil, nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 	}
 	if len(pod.Name) == 0 {
 		pod.Name = pod.GenerateName + "%"
@@ -82,11 +82,11 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 	controllingVpa := h.vpaMatcher.GetMatchingVPA(ctx, &pod)
 	if controllingVpa == nil {
 		klog.V(4).InfoS("No matching VPA found for pod", "pod", klog.KObj(&pod))
-		return []resource_admission.PatchRecord{}, nil
+		return []resource_admission.PatchRecord{}, nil, nil
 	}
 	pod, err := h.preProcessor.Process(pod)
 	if err != nil {
-		return nil, err
+		return nil, nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 	}
 
 	patches := []resource_admission.PatchRecord{}
@@ -96,10 +96,10 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 	for _, c := range h.patchCalculators {
 		partialPatches, err := c.CalculatePatches(&pod, controllingVpa)
 		if err != nil {
-			return []resource_admission.PatchRecord{}, err
+			return []resource_admission.PatchRecord{}, nil, field.ErrorList{field.InternalError(field.NewPath("."), err)}
 		}
 		patches = append(patches, partialPatches...)
 	}
 
-	return patches, nil
+	return patches, nil, nil
 }

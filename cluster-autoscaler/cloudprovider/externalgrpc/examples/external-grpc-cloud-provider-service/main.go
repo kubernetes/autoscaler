@@ -26,13 +26,17 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/examples/external-grpc-cloud-provider-service/wrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
 	kube_flag "k8s.io/component-base/cli/flag"
 	klog "k8s.io/klog/v2"
+	cloudBuilder "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+
+	// Cloud providers must be explicitly imported to be registered in the builder.
+	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/router"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -63,8 +67,8 @@ var (
 	cacert  = flag.String("ca-cert", "", "The path to the ca certificate file. Empty string for insecure communication.")
 
 	// flags needed by the specific cloud provider
-	cloudProviderFlag = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
-		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
+	cloudProviderFlag = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider(),
+		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders(), ",")+"]")
 	cloudConfig    = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	clusterName    = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	nodeGroupsFlag = multiStringFlag(
@@ -115,17 +119,19 @@ func main() {
 	}
 
 	//cloud provider config
-	autoscalingOptions := config.AutoscalingOptions{
-		CloudProviderName:      *cloudProviderFlag,
-		CloudConfig:            *cloudConfig,
-		NodeGroupAutoDiscovery: *nodeGroupAutoDiscoveryFlag,
-		NodeGroups:             *nodeGroupsFlag,
-		ClusterName:            *clusterName,
-		GCEOptions: config.GCEOptions{
-			ConcurrentRefreshes:      1,
-			LocalSSDDiskSizeProvider: localssdsize.NewSimpleLocalSSDProvider(),
+	autoscalingOptions := &coreoptions.AutoscalerOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
+			CloudProviderName:      *cloudProviderFlag,
+			CloudConfig:            *cloudConfig,
+			NodeGroupAutoDiscovery: *nodeGroupAutoDiscoveryFlag,
+			NodeGroups:             *nodeGroupsFlag,
+			ClusterName:            *clusterName,
+			GCEOptions: config.GCEOptions{
+				ConcurrentRefreshes:      1,
+				LocalSSDDiskSizeProvider: localssdsize.NewSimpleLocalSSDProvider(),
+			},
+			UserAgent: "user-agent",
 		},
-		UserAgent: "user-agent",
 	}
 	cloudProvider := cloudBuilder.NewCloudProvider(autoscalingOptions, nil)
 	srv := wrapper.NewCloudProviderGrpcWrapper(cloudProvider)

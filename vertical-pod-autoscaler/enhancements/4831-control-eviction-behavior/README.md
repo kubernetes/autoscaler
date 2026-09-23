@@ -3,11 +3,12 @@
 <!-- toc -->
 - [Summary](#summary)
 - [Motivation](#motivation)
-   - [Goals](#goals)
+  - [Goals](#goals)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
-   - [Test Plan](#test-plan)
+  - [Test Plan](#test-plan)
 - [Alternatives](#alternatives)
+  - [Run VPA in recommendation only mode](#run-vpa-in-recommendation-only-mode)
 <!-- /toc -->
 
 ## Summary
