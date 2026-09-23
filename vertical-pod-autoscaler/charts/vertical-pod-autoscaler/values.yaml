@@ -60,7 +60,7 @@ admissionController:
   revisionHistoryLimit: 10
 
   # Update strategy for the Admission Controller Deployment.
-  updateStrategy: {}
+  strategy: {}
 
   # Labels to add to the Admission Controller pod.
   podLabels: {}
@@ -267,7 +267,7 @@ recommender:
   revisionHistoryLimit: 10
 
   # Update strategy for the Recommender Deployment.
-  updateStrategy: {}
+  strategy: {}
 
   # Labels to add to the Recommender pod.
   podLabels: {}

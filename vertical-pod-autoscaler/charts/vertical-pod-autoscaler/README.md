@@ -198,6 +198,7 @@ helm upgrade <release-name> <chart> \
 | admissionController.serviceAccount.annotations | object | `{}` |  |
 | admissionController.serviceAccount.create | bool | `true` |  |
 | admissionController.serviceAccount.labels | object | `{}` |  |
+| admissionController.strategy | object | `{}` |  |
 | admissionController.tls.caCert | string | `""` |  |
 | admissionController.tls.cert | string | `""` |  |
 | admissionController.tls.create | bool | `false` |  |
@@ -205,7 +206,6 @@ helm upgrade <release-name> <chart> \
 | admissionController.tls.secretName | string | `"vpa-tls-certs"` |  |
 | admissionController.tolerations | list | `[]` |  |
 | admissionController.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Admission Controller, used to spread replicas across failure domains such as zones. |
-| admissionController.updateStrategy | object | `{}` |  |
 | admissionController.volumeMounts[0].mountPath | string | `"/etc/tls-certs"` |  |
 | admissionController.volumeMounts[0].name | string | `"tls-certs"` |  |
 | admissionController.volumeMounts[0].readOnly | bool | `true` |  |
@@ -261,9 +261,9 @@ helm upgrade <release-name> <chart> \
 | recommender.serviceAccount.annotations | object | `{}` |  |
 | recommender.serviceAccount.create | bool | `true` |  |
 | recommender.serviceAccount.labels | object | `{}` |  |
+| recommender.strategy | object | `{}` |  |
 | recommender.tolerations | list | `[]` |  |
 | recommender.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Recommender, used to spread replicas across failure domains such as zones. |
-| recommender.updateStrategy | object | `{}` |  |
 | updater.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].key | string | `"app.kubernetes.io/component"` |  |
 | updater.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].operator | string | `"In"` |  |
 | updater.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].values[0] | string | `"updater"` |  |
