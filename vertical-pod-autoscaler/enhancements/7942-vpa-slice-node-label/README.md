@@ -250,7 +250,9 @@ The recommender's main loop gains three new steps when the `VPASlice` feature ga
 
 4. **MaintainCheckpointSlices**: Writes `VerticalPodAutoscalerSliceCheckpoint` objects for each
    VPASlice, persisting per-container histogram data. On startup, checkpoints are loaded back via
-   `InitFromCheckpointSlices`.
+   `InitFromCheckpointSlices`. Orphaned slice checkpoints (whose corresponding `VPASlice` no
+   longer exists, e.g. a node pool was removed) are garbage-collected using the same pattern as
+   the regular `VerticalPodAutoscalerCheckpoint` object cleanup in `MaintainCheckpoints`.
 
 **Pods on nodes without the slice label**: When a matched DaemonSet pod runs on a node that does
 not have the `sliceByNodeLabel` label at all, no VPASlice exists for that pod. The recommender
@@ -323,6 +325,8 @@ resource requests.
 5. If a new node pool is added with a new instance type, the recommender creates a new VPASlice
    on its next iteration.
 6. If the parent VPA is deleted, all VPASlice objects are garbage collected via `ownerReferences`.
+7. The recommender periodically garbage-collects orphaned `VPASliceCheckpoint` objects whose
+   corresponding VPASlice no longer exists (e.g. after a node pool removal).
 
 #### Open Questions
 
@@ -548,6 +552,8 @@ with the correct slice-specific recommendation from the start, avoiding eviction
     cannot be determined (absent `matchFields`, empty `values`, malformed node affinity etc).
   - Validation rules (DaemonSet-only).
   - Checkpoint slice writer and reader.
+  - Checkpoint slice garbage collection (`GarbageCollectCheckpointsSlices`): orphaned checkpoints
+    are deleted, checkpoints with live VPASlices are retained, ignored namespaces are skipped.
 - **E2E tests**: Scenarios to cover:
   - DaemonSet with heterogeneous nodes receives per-node-group recommendations.
   - VPASlice objects are created and garbage collected with the parent VPA.
