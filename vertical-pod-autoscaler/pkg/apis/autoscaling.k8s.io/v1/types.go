@@ -436,7 +436,8 @@ var (
 	// and recommendations will not be provided for it.
 	ConfigUnsupported VerticalPodAutoscalerConditionType = "ConfigUnsupported"
 	// TargetConflict indicates that multiple VerticalPodAutoscaler objects with an
-	// active update mode are targeting the same object, which can cause
+	// active update mode control the same resource of the same container on
+	// the same target, which can cause
 	// unpredictable behavior in the admission controller and updater.
 	TargetConflict VerticalPodAutoscalerConditionType = "TargetConflict"
 )
