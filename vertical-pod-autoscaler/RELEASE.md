@@ -63,7 +63,7 @@ We use the issue to communicate what is state of the release.
 
 ### New minor release
 
-1. [ ] Create a new branch named `vpa-release-1.${next-minor}` from the **main branch**. (this can be done in the GitHub interface)
+1. [ ] Create a new branch named `vpa-release-1.${next-minor}` from the **default branch**. (this can be done in the GitHub interface)
 
 ## Build and stage images
 
@@ -305,13 +305,13 @@ sure nothing we care about will break if we do.
 
 ## Post release steps
 
-1. [ ] In the **main branch** update `.github/dependabot.yml` to add the new release branch, keeping the latest 3 minor releases:
+1. [ ] In the **default branch** update `.github/dependabot.yml` to add the new release branch, keeping the latest 3 minor releases:
 
     ```sh
     sed -i "s/vpa-release-1.${oldest-minor}/vpa-release-1.${next-minor}/g" ../.github/dependabot.yml
     ```
 
-2. [ ] For minor releases only: in the **main branch**, change the version in
+2. [ ] For minor releases only: in the **default branch**, change the version in
     [common/version-go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go)
     to `1.${next-minor}.0`.
 3. [ ] Commit and merge the change.
