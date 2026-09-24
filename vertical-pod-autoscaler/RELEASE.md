@@ -311,13 +311,13 @@ sure nothing we care about will break if we do.
     sed -i "s/vpa-release-1.${oldest-minor}/vpa-release-1.${next-minor}/g" ../.github/dependabot.yml
     ```
 
-2. [ ] For minor releases only: in the **default branch**, change the version in
-    [common/version-go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go)
+2. [ ] For minor releases only: in the **default branch**, change the versionCore constant in
+    [common/version.go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go)
     to `1.${next-minor}.0`.
 3. [ ] Commit and merge the change.
 
 
-1.  [ ] For all releaes: Bump the patch version number in VerticalPodAutoscalerVersion constant in
+1.  [ ] For all releases: Bump the patch version number in the versionCore constant in
     [common/version.go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go).
     Create a commit and merge by making a PR to the `vpa-release-1.${minor}` branch.
 
