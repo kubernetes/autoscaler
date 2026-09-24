@@ -1,5 +1,5 @@
 /*
-Copyright 2025 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -83,6 +83,7 @@ func TestReconcileTargetConflicts_TwoActiveVPAsConflict(t *testing.T) {
 		assert.Equal(t, targetConflictReason, cond.Reason)
 		assert.Contains(t, cond.Message, "vpa-1")
 		assert.Contains(t, cond.Message, "vpa-2")
+		assert.Equal(t, got.Generation, cond.ObservedGeneration)
 	}
 }
 
@@ -100,7 +101,7 @@ func TestReconcileTargetConflicts_InitialModeIncluded(t *testing.T) {
 	for _, name := range []string{"vpa-1", "vpa-2"} {
 		got := getVpa(t, client, "default", name)
 		cond := findCondition(got, vpa_types.TargetConflict)
-		require.NotNil(t, cond, "Initial-mode VPAs should still be flagged per maintainer decision")
+		require.NotNil(t, cond, "Initial-mode VPAs still count as active for conflict detection")
 		assert.Equal(t, corev1.ConditionTrue, cond.Status)
 	}
 }
@@ -175,7 +176,7 @@ func TestReconcileTargetConflicts_ClearsOnResolution(t *testing.T) {
 	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
 		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).
 		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
-			"Conflict: multiple active VPAs target the same object: vpa-1, vpa-2", past).Get()
+			"Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2", past).Get()
 
 	client := vpa_fake.NewSimpleClientset(vpa1)
 	u := newConflictTestUpdater(client)
@@ -196,11 +197,11 @@ func TestReconcileTargetConflicts_NoEventOnRepeatedConflict(t *testing.T) {
 	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
 		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).
 		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
-			"Conflict: multiple active VPAs target the same object: vpa-1, vpa-2", past).Get()
+			"Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2", past).Get()
 	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
 		WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).WithTargetRef(deploymentRef("app")).
 		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
-			"Conflict: multiple active VPAs target the same object: vpa-1, vpa-2", past).Get()
+			"Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2", past).Get()
 
 	client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
 	recorder := record.NewFakeRecorder(10)
@@ -226,14 +227,14 @@ func TestReconcileTargetConflicts_ClearsOnIneligibleTransition(t *testing.T) {
 	vpaTurnedOff := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
 		WithUpdateMode(vpa_types.UpdateModeOff).WithTargetRef(deploymentRef("app")).
 		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
-			"Conflict: multiple active VPAs target the same object: vpa-1, vpa-2", past).Get()
+			"Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2", past).Get()
 
 	// vpa2 drops its targetRef entirely. Same expectation: stale condition
 	// should be cleared.
 	vpaNoTargetRef := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
 		WithUpdateMode(vpa_types.UpdateModeRecreate).
 		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
-			"Conflict: multiple active VPAs target the same object: vpa-1, vpa-2", past).Get()
+			"Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2", past).Get()
 	vpaNoTargetRef.Spec.TargetRef = nil
 
 	client := vpa_fake.NewSimpleClientset(vpaTurnedOff, vpaNoTargetRef)
@@ -251,4 +252,85 @@ func TestReconcileTargetConflicts_ClearsOnIneligibleTransition(t *testing.T) {
 	cond2 := findCondition(got2, vpa_types.TargetConflict)
 	require.NotNil(t, cond2, "VPA with no targetRef should still have its stale condition updated, not left dangling")
 	assert.Equal(t, corev1.ConditionFalse, cond2.Status, "condition should be cleared once targetRef is removed")
+}
+
+func TestReconcileTargetConflicts_MessageUpdatesWhenMembershipChanges(t *testing.T) {
+	past := time.Now().Add(-time.Hour)
+	oldMsg := "Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2"
+	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
+		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).
+		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason, oldMsg, past).Get()
+	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
+		WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).WithTargetRef(deploymentRef("app")).
+		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason, oldMsg, past).Get()
+	// A third VPA joins the existing conflict.
+	vpa3 := test.VerticalPodAutoscaler().WithName("vpa-3").WithNamespace("default").WithContainer("main").
+		WithUpdateMode(vpa_types.UpdateModeInitial).WithTargetRef(deploymentRef("app")).Get()
+
+	client := vpa_fake.NewSimpleClientset(vpa1, vpa2, vpa3)
+	recorder := record.NewFakeRecorder(10)
+	u := &updater{vpaClient: client, eventRecorder: recorder}
+
+	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2, vpa3})
+
+	// vpa-1 was already conflicting, so its message must be refreshed to include vpa-3.
+	got := getVpa(t, client, "default", "vpa-1")
+	cond := findCondition(got, vpa_types.TargetConflict)
+	require.NotNil(t, cond)
+	assert.Equal(t, corev1.ConditionTrue, cond.Status)
+	assert.Contains(t, cond.Message, "vpa-3")
+
+	// Only vpa-3 transitioned into conflict, so exactly one event is expected.
+	assert.Equal(t, 1, len(recorder.Events))
+}
+
+func TestReconcileTargetConflicts_Overlap(t *testing.T) {
+	off := vpa_types.ContainerScalingModeOff
+	res := func(name string, r ...corev1.ResourceName) vpa_types.ContainerResourcePolicy {
+		return vpa_types.ContainerResourcePolicy{ContainerName: name, ControlledResources: &r}
+	}
+	offPolicy := func(name string) vpa_types.ContainerResourcePolicy {
+		return vpa_types.ContainerResourcePolicy{ContainerName: name, Mode: &off}
+	}
+	cpu, mem := corev1.ResourceCPU, corev1.ResourceMemory
+
+	cases := []struct {
+		name     string
+		a, b     []vpa_types.ContainerResourcePolicy
+		conflict bool
+	}{
+		{"cpu vs memory", []vpa_types.ContainerResourcePolicy{res("*", cpu)}, []vpa_types.ContainerResourcePolicy{res("*", mem)}, false},
+		{"shared resource", []vpa_types.ContainerResourcePolicy{res("*", cpu)}, []vpa_types.ContainerResourcePolicy{res("*", cpu, mem)}, true},
+		{"different containers", []vpa_types.ContainerResourcePolicy{res("app", cpu), offPolicy("*")}, []vpa_types.ContainerResourcePolicy{res("sidecar", cpu), offPolicy("*")}, false},
+		{"wildcard vs named container", nil, []vpa_types.ContainerResourcePolicy{res("app", cpu)}, true},
+		{"container mode off", []vpa_types.ContainerResourcePolicy{offPolicy("app"), offPolicy("*")}, nil, false},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			mk := func(name string, policies []vpa_types.ContainerResourcePolicy) *vpa_types.VerticalPodAutoscaler {
+				v := test.VerticalPodAutoscaler().WithName(name).WithNamespace("default").WithContainer("main").
+					WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).Get()
+				if policies != nil {
+					v.Spec.ResourcePolicy = &vpa_types.PodResourcePolicy{ContainerPolicies: policies}
+				}
+				return v
+			}
+			vpa1, vpa2 := mk("vpa-1", tc.a), mk("vpa-2", tc.b)
+			client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
+			u := newConflictTestUpdater(client)
+
+			u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2})
+
+			for _, n := range []string{"vpa-1", "vpa-2"} {
+				cond := findCondition(getVpa(t, client, "default", n), vpa_types.TargetConflict)
+				if tc.conflict {
+					require.NotNil(t, cond)
+					assert.Equal(t, corev1.ConditionTrue, cond.Status)
+				} else {
+					assert.Nil(t, cond)
+				}
+			}
+		})
+	}
 }
