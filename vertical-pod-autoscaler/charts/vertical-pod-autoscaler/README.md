@@ -13,9 +13,17 @@ The Vertical Pod Autoscaler (VPA) automatically adjusts the CPU and memory resou
 
 ## Helm Installation & upgrade
 
-```bash
-helm repo add autoscalers https://kubernetes.github.io/autoscaler
-helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
+### Using Helm Repository
+
+```console
+$ helm repo add autoscalers https://kubernetes.github.io/autoscaler
+$ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
+```
+
+### Using OCI Registry
+
+```console
+$ helm install my-release oci://ghcr.io/kubernetes/charts/vertical-pod-autoscaler
 ```
 
 ## Maintainers
