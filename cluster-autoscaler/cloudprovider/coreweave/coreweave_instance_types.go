@@ -254,6 +254,14 @@ var InstanceTypes = map[string]*InstanceType{
 		Architecture:       "amd64",
 		MaxPods:            110,
 	},
+	"vera-gp-ac": {
+		VCPU:               352,
+		MemoryKi:           1590611840,
+		GPU:                0,
+		EphemeralStorageKi: 7499230208,
+		Architecture:       "arm64",
+		MaxPods:            110,
+	},
 }
 
 // GetInstanceType returns the InstanceType for the given instance type name.
