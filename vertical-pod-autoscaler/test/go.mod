@@ -1,6 +1,6 @@
 module k8s.io/autoscaler/vertical-pod-autoscaler/test
 
-go 1.26.0
+go 1.27.0
 
 replace k8s.io/autoscaler/vertical-pod-autoscaler => ../
 
