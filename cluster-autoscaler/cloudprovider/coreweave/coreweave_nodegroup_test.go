@@ -629,6 +629,7 @@ func TestRDMATemplateNodeInfo(t *testing.T) {
 		"b200-8x",
 		"b300-8x",
 		"cd-hc-a384ib-genoa",
+		"cd-hs-i80-srapids",
 		"gd-8xh100ib-i128",
 		"gd-8xh200ib-i128",
 	}
