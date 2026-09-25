@@ -89,17 +89,6 @@ func IsNativeSidecar(container *corev1.Container) bool {
 	return container.RestartPolicy != nil && *container.RestartPolicy == corev1.ContainerRestartPolicyAlways
 }
 
-// NativeSidecarContainers returns the pod's init containers that are native sidecars.
-func NativeSidecarContainers(pod *corev1.Pod) []corev1.Container {
-	sidecars := make([]corev1.Container, 0, len(pod.Spec.InitContainers))
-	for i := range pod.Spec.InitContainers {
-		if IsNativeSidecar(&pod.Spec.InitContainers[i]) {
-			sidecars = append(sidecars, pod.Spec.InitContainers[i])
-		}
-	}
-	return sidecars
-}
-
 // NativeSidecarStatuses returns the InitContainerStatuses that belong to native sidecars.
 func NativeSidecarStatuses(pod *corev1.Pod) []corev1.ContainerStatus {
 	sidecars := make(map[string]bool, len(pod.Spec.InitContainers))
