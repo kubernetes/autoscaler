@@ -121,7 +121,7 @@ func TestGetUpdatePriority(t *testing.T) {
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("6", "20M").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
-				ResourceDiff:            1.0 + 1.0, // summed relative diffs for resources
+				ResourceDiff:            1.0, // max(CPU 3->6, Mem 10M->20M)
 				ScaleUp:                 true,
 			},
 		}, {
@@ -130,7 +130,7 @@ func TestGetUpdatePriority(t *testing.T) {
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("2", "20M").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
-				ResourceDiff:            1.5 + 0.0, // summed relative diffs for resources
+				ResourceDiff:            1.0, // max(CPU 4->2, Mem 10->20)
 				ScaleUp:                 true,
 			},
 		}, {
@@ -139,7 +139,7 @@ func TestGetUpdatePriority(t *testing.T) {
 			vpa:  test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("2", "10M").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
-				ResourceDiff:            0.5 + 0.5, // summed relative diffs for resources
+				ResourceDiff:            0.5, // max(CPU 4->2, Mem 20M->10M)
 				ScaleUp:                 false,
 			},
 		}, {
@@ -151,7 +151,7 @@ func TestGetUpdatePriority(t *testing.T) {
 				WithUpperBound("3", "30M").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: true,
-				ResourceDiff:            0.5 + 0.5, // summed relative diffs for resources
+				ResourceDiff:            0.5, // max(CPU 4->2, Mem 20M->10M)
 				ScaleUp:                 false,
 			},
 		}, {
@@ -165,7 +165,7 @@ func TestGetUpdatePriority(t *testing.T) {
 					WithTarget("8", "").GetContainerResources()).Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
-				ResourceDiff:            3.0, // relative diff between summed requests and summed recommendations
+				ResourceDiff:            3.0, // max(1->4, 2->8)
 				ScaleUp:                 true,
 			},
 		}, {
@@ -179,7 +179,7 @@ func TestGetUpdatePriority(t *testing.T) {
 					WithTarget("2", "").GetContainerResources()).Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
-				ResourceDiff:            0.7, // relative diff between summed requests and summed recommendations
+				ResourceDiff:            5.0 / 7.0, // max(3->1, 7->2)
 				ScaleUp:                 false,
 			},
 		}, {
@@ -196,14 +196,11 @@ func TestGetUpdatePriority(t *testing.T) {
 					WithUpperBound("10", "").GetContainerResources()).Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: true,
-				ResourceDiff:            3.0, // relative diff between summed requests and summed recommendations
+				ResourceDiff:            3.0, // max(1->4, 2->8)
 				ScaleUp:                 true,
 			},
 		}, {
 			name: "multiple containers, multiple resources",
-			//   container1: request={6 CPU, 10 MB}, recommended={8 CPU, 20 MB}
-			//   container2: request={4 CPU, 30 MB}, recommended={7 CPU, 30 MB}
-			//   total:      request={10 CPU, 40 MB}, recommended={15 CPU, 50 MB}
 			pod: test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("6")).WithMemRequest(resource.MustParse("10M")).Get()).
 				AddContainer(test.Container().WithName("test-container-2").WithCPURequest(resource.MustParse("4")).WithMemRequest(resource.MustParse("30M")).Get()).Get(),
 			vpa: test.VerticalPodAutoscaler().WithContainer(containerName).
@@ -213,9 +210,8 @@ func TestGetUpdatePriority(t *testing.T) {
 					WithTarget("7", "30M").GetContainerResources()).Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
-				// relative diff between summed requests and summed recommendations, summed over resources
-				ResourceDiff: 0.5 + 0.25,
-				ScaleUp:      true,
+				ResourceDiff:            1.0, // max(CPU 6->8, Mem 10M->20M, CPU 4->7, Mem 30M->30M)
+				ScaleUp:                 true,
 			},
 		},
 	}
