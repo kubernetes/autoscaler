@@ -86,6 +86,7 @@ type Updater interface {
 
 type updater struct {
 	vpaLister                    vpa_lister.VerticalPodAutoscalerLister
+	vpaClient                    vpa_clientset.Interface
 	podLister                    listersv1.PodLister
 	eventRecorder                record.EventRecorder
 	restrictionFactory           restriction.PodsRestrictionFactory
@@ -149,6 +150,7 @@ func NewUpdater(
 
 	u := &updater{
 		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
+		vpaClient:                    vpaClient,
 		podLister:                    podInformerFactory.Core().V1().Pods().Lister(),
 		eventRecorder:                newEventRecorder(kubeClient),
 		restrictionFactory:           factory,
@@ -216,6 +218,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 	timer.ObserveStep("ListVPAs")
+
+	u.reconcileTargetConflicts(vpaList)
+	timer.ObserveStep("ReconcileTargetConflicts")
 
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
