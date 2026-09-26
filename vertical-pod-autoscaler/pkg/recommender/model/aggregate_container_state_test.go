@@ -200,6 +200,29 @@ func TestAggregateContainerStateLoadFromCheckpoint(t *testing.T) {
 	assert.False(t, cs.AggregateMemoryPeaks.IsEmpty())
 }
 
+func TestLoadFromCheckpointMemoryOnlyLegacyTimestamps(t *testing.T) {
+	lastUpdate := testTimestamp.Add(time.Hour)
+	checkpoint := vpa_types.VerticalPodAutoscalerCheckpointStatus{
+		Version:        SupportedCheckpointVersion,
+		LastUpdateTime: metav1.NewTime(lastUpdate),
+		MemoryHistogram: vpa_types.HistogramCheckpoint{
+			BucketWeights: map[int]uint32{
+				0: 10,
+			},
+			TotalWeight: 1.0,
+		},
+	}
+
+	cs := NewAggregateContainerState()
+	cs.CreationTime = testTimestamp.Add(-9 * 24 * time.Hour)
+	assert.NoError(t, cs.LoadFromCheckpoint(&checkpoint))
+	assert.False(t, cs.isEmpty())
+	assert.Equal(t, lastUpdate, cs.LastSampleStart)
+	assert.Equal(t, lastUpdate, cs.FirstSampleStart)
+	assert.False(t, cs.isExpired(lastUpdate.Add(7*24*time.Hour)))
+	assert.True(t, cs.isExpired(lastUpdate.Add(8*24*time.Hour)))
+}
+
 func TestAggregateContainerStateIsExpired(t *testing.T) {
 	cs := NewAggregateContainerState()
 	cs.LastSampleStart = testTimestamp
@@ -212,6 +235,33 @@ func TestAggregateContainerStateIsExpired(t *testing.T) {
 	csEmpty.CreationTime = testTimestamp
 	assert.False(t, csEmpty.isExpired(testTimestamp.Add(7*24*time.Hour)))
 	assert.True(t, csEmpty.isExpired(testTimestamp.Add(8*24*time.Hour)))
+}
+
+func TestAggregateContainerStateIsEmptyMemoryOnly(t *testing.T) {
+	cs := NewAggregateContainerState()
+	assert.True(t, cs.isEmpty())
+
+	cs.AddSample(&ContainerUsageSample{
+		MeasureStart: testTimestamp,
+		Usage:        MemoryAmountFromBytes(32 * 1024 * 1024),
+		Resource:     ResourceMemory,
+	})
+	assert.False(t, cs.isEmpty())
+	assert.Equal(t, 0, cs.TotalSamplesCount)
+	assert.Equal(t, testTimestamp, cs.FirstSampleStart)
+	assert.Equal(t, testTimestamp, cs.LastSampleStart)
+}
+
+func TestAggregateContainerStateIsExpiredMemoryOnly(t *testing.T) {
+	cs := NewAggregateContainerState()
+	cs.CreationTime = testTimestamp.Add(-9 * 24 * time.Hour)
+	cs.AddSample(&ContainerUsageSample{
+		MeasureStart: testTimestamp,
+		Usage:        MemoryAmountFromBytes(64 * 1024 * 1024),
+		Resource:     ResourceMemory,
+	})
+	assert.False(t, cs.isExpired(testTimestamp.Add(7*24*time.Hour)))
+	assert.True(t, cs.isExpired(testTimestamp.Add(8*24*time.Hour)))
 }
 
 func TestUpdateFromPolicyScalingMode(t *testing.T) {
