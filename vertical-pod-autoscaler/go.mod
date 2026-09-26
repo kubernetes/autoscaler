@@ -1,6 +1,6 @@
 module k8s.io/autoscaler/vertical-pod-autoscaler
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0

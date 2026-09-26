@@ -378,8 +378,18 @@ func (w *Wrapper) NodeGroupTemplateNodeInfo(_ context.Context, req *protos.NodeG
 	if err != nil {
 		return nil, err
 	}
+	var resourceSliceBytes [][]byte
+	for _, resourceSlice := range info.LocalResourceSlices {
+		b, err := resourceSlice.Marshal()
+		if err != nil {
+			return nil, err
+		}
+		resourceSliceBytes = append(resourceSliceBytes, b)
+	}
+
 	return &protos.NodeGroupTemplateNodeInfoResponse{
-		NodeBytes: infoBytes,
+		NodeBytes:          infoBytes,
+		ResourceSliceBytes: resourceSliceBytes,
 	}, nil
 }
 

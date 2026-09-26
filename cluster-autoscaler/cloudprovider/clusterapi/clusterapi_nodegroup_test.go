@@ -1589,6 +1589,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					"kubernetes.io/os":                 "windows",
 					"kubernetes.io/arch":               "arm64",
 					"node.kubernetes.io/instance-type": "instance1",
+					"topology.kubernetes.io/zone":      "us-east-1a",
 				},
 				expectedCapacity: map[corev1.ResourceName]int64{
 					corev1.ResourceCPU:    2,
@@ -1600,6 +1601,7 @@ func TestNodeGroupTemplateNodeInfo(t *testing.T) {
 					"kubernetes.io/os":                 "windows",
 					"kubernetes.io/arch":               "arm64",
 					"node.kubernetes.io/instance-type": "instance1",
+					"topology.kubernetes.io/zone":      "us-east-1a",
 				},
 			},
 		},

@@ -22,6 +22,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
 type ResourcesAsResourceListTestCase struct {
@@ -137,12 +139,7 @@ func TestResourcesAsResourceList(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			result := ResourcesAsResourceList(tc.resources, tc.humanize, tc.roundCPU, tc.roundMemory)
-			if !result[corev1.ResourceCPU].Equal(tc.resourceList[corev1.ResourceCPU]) {
-				t.Errorf("expected %v, got %v", tc.resourceList[corev1.ResourceCPU], result[corev1.ResourceCPU])
-			}
-			if !result[corev1.ResourceMemory].Equal(tc.resourceList[corev1.ResourceMemory]) {
-				t.Errorf("expected %v, got %v", tc.resourceList[corev1.ResourceMemory], result[corev1.ResourceMemory])
-			}
+			test.AssertResourceListEqual(t, "resources", tc.resourceList, result)
 		})
 	}
 }
