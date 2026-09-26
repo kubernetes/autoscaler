@@ -58,7 +58,8 @@ type cappingRecommendationProcessor struct {
 // Apply returns a recommendation for the given pod, adjusted to obey policy and limits.
 func (c *cappingRecommendationProcessor) Apply(
 	vpa *vpa_types.VerticalPodAutoscaler,
-	pod *corev1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
+	pod *corev1.Pod,
+) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	// TODO: Annotate if request enforced by maintaining proportion with limit and allowed limit range is in conflict with policy.
 
 	if vpa == nil {
@@ -118,7 +119,8 @@ func getCappedRecommendationForContainer(
 	pod *corev1.Pod,
 	container corev1.Container,
 	containerRecommendation *vpa_types.RecommendedContainerResources,
-	policy *vpa_types.PodResourcePolicy, limitRange *corev1.LimitRangeItem) (*vpa_types.RecommendedContainerResources, []string, error) {
+	policy *vpa_types.PodResourcePolicy, limitRange *corev1.LimitRangeItem,
+) (*vpa_types.RecommendedContainerResources, []string, error) {
 	if containerRecommendation == nil {
 		return nil, nil, fmt.Errorf("no recommendation available for container name %v", container.Name)
 	}
@@ -193,7 +195,8 @@ func applyVPAPolicy(recommendation corev1.ResourceList, policy *vpa_types.Contai
 func applyVPAPolicyForContainer(containerName string,
 	containerRecommendation *vpa_types.RecommendedContainerResources,
 	policy *vpa_types.PodResourcePolicy,
-	globalMaxAllowed corev1.ResourceList) (*vpa_types.RecommendedContainerResources, error) {
+	globalMaxAllowed corev1.ResourceList,
+) (*vpa_types.RecommendedContainerResources, error) {
 	if containerRecommendation == nil {
 		return nil, fmt.Errorf("no recommendation available for container name %v", containerName)
 	}
@@ -243,17 +246,20 @@ func applyVPAPolicyForContainer(containerName string,
 }
 
 func maybeCapToPolicyMin(recommended resource.Quantity, resourceName corev1.ResourceName,
-	containerPolicy *vpa_types.ContainerResourcePolicy) (resource.Quantity, bool) {
+	containerPolicy *vpa_types.ContainerResourcePolicy,
+) (resource.Quantity, bool) {
 	return maybeCapToMin(recommended, resourceName, containerPolicy.MinAllowed)
 }
 
 func maybeCapToPolicyMax(recommended resource.Quantity, resourceName corev1.ResourceName,
-	containerPolicy *vpa_types.ContainerResourcePolicy) (resource.Quantity, bool) {
+	containerPolicy *vpa_types.ContainerResourcePolicy,
+) (resource.Quantity, bool) {
 	return maybeCapToMax(recommended, resourceName, containerPolicy.MaxAllowed)
 }
 
 func maybeCapToMax(recommended resource.Quantity, resourceName corev1.ResourceName,
-	maxAllowed corev1.ResourceList) (resource.Quantity, bool) {
+	maxAllowed corev1.ResourceList,
+) (resource.Quantity, bool) {
 	maxResource, found := maxAllowed[resourceName]
 	if found && !maxResource.IsZero() && recommended.Cmp(maxResource) > 0 {
 		return maxResource, true
@@ -262,7 +268,8 @@ func maybeCapToMax(recommended resource.Quantity, resourceName corev1.ResourceNa
 }
 
 func maybeCapToMin(recommended resource.Quantity, resourceName corev1.ResourceName,
-	minAllowed corev1.ResourceList) (resource.Quantity, bool) {
+	minAllowed corev1.ResourceList,
+) (resource.Quantity, bool) {
 	minResource, found := minAllowed[resourceName]
 	if found && !minResource.IsZero() && recommended.Cmp(minResource) < 0 {
 		return minResource, true
@@ -272,7 +279,8 @@ func maybeCapToMin(recommended resource.Quantity, resourceName corev1.ResourceNa
 
 // ApplyVPAPolicy returns a recommendation, adjusted to obey policy.
 func ApplyVPAPolicy(podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy, globalMaxAllowed corev1.ResourceList) (*vpa_types.RecommendedPodResources, error) {
+	policy *vpa_types.PodResourcePolicy, globalMaxAllowed corev1.ResourceList,
+) (*vpa_types.RecommendedPodResources, error) {
 	if podRecommendation == nil {
 		return nil, nil
 	}
@@ -322,7 +330,8 @@ func getContainer(containerName string, pod *corev1.Pod) *corev1.Container {
 // applyContainerLimitRange updates recommendation if recommended resources are outside of limits defined in VPA resources policy
 func applyContainerLimitRange(recommendation corev1.ResourceList,
 	containerRequests corev1.ResourceList, containerLimits corev1.ResourceList,
-	limitRange *corev1.LimitRangeItem) []string {
+	limitRange *corev1.LimitRangeItem,
+) []string {
 	annotations := make([]string, 0)
 	if limitRange == nil {
 		return annotations
@@ -346,7 +355,8 @@ func applyContainerLimitRange(recommendation corev1.ResourceList,
 
 func getMaxAllowedRecommendation(recommendation corev1.ResourceList,
 	containerRequests corev1.ResourceList, containerLimits corev1.ResourceList,
-	podLimitRange *corev1.LimitRangeItem) corev1.ResourceList {
+	podLimitRange *corev1.LimitRangeItem,
+) corev1.ResourceList {
 	if podLimitRange == nil {
 		return corev1.ResourceList{}
 	}
@@ -355,7 +365,8 @@ func getMaxAllowedRecommendation(recommendation corev1.ResourceList,
 
 func getMinAllowedRecommendation(recommendation corev1.ResourceList,
 	containerRequests corev1.ResourceList, containerLimits corev1.ResourceList,
-	podLimitRange *corev1.LimitRangeItem) corev1.ResourceList {
+	podLimitRange *corev1.LimitRangeItem,
+) corev1.ResourceList {
 	// Both limit and request must be higher than min set in the limit range:
 	// https://github.com/kubernetes/kubernetes/blob/016e9d5c06089774c6286fd825302cbae661a446/plugin/pkg/admission/limitranger/admission.go#L303
 	if podLimitRange == nil {
@@ -378,7 +389,8 @@ func getMinAllowedRecommendation(recommendation corev1.ResourceList,
 
 func getBoundaryRecommendation(recommendation corev1.ResourceList,
 	containerRequests corev1.ResourceList, containerLimits corev1.ResourceList,
-	boundaryLimit, defaultLimit corev1.ResourceList) corev1.ResourceList {
+	boundaryLimit, defaultLimit corev1.ResourceList,
+) corev1.ResourceList {
 	if boundaryLimit == nil {
 		return corev1.ResourceList{}
 	}
@@ -406,7 +418,8 @@ func zipContainersWithRecommendations(resources []vpa_types.RecommendedContainer
 
 func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 	pod *corev1.Pod, limitRange corev1.LimitRangeItem, resourceName corev1.ResourceName,
-	fieldGetter func(vpa_types.RecommendedContainerResources) *corev1.ResourceList) []vpa_types.RecommendedContainerResources {
+	fieldGetter func(vpa_types.RecommendedContainerResources) *corev1.ResourceList,
+) []vpa_types.RecommendedContainerResources {
 	minLimit := limitRange.Min[resourceName]
 	maxLimit := limitRange.Max[resourceName]
 	defaultLimit := limitRange.Default[resourceName]
@@ -516,7 +529,8 @@ func insertRequestsForMissingRecommendations(containerRecommendations []vpa_type
 }
 
 func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRange(
-	containerRecommendations []vpa_types.RecommendedContainerResources, pod *corev1.Pod) ([]vpa_types.RecommendedContainerResources, error) {
+	containerRecommendations []vpa_types.RecommendedContainerResources, pod *corev1.Pod,
+) ([]vpa_types.RecommendedContainerResources, error) {
 	podLimitRange, err := c.limitsRangeCalculator.GetPodLimitRangeItem(pod.Namespace)
 	if err != nil {
 		return nil, fmt.Errorf("error obtaining limit range: %s", err)
@@ -552,82 +566,7 @@ func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRange(
 // we subtract the delta (calculated as Target - UpperBound in this case) proportionally across other containers.
 //
 // When there is a violation between a LowerBound and Target, the delta is proportionally distributed among containers where there is room to do so.
-func ensureBoundsAreValid(recs []vpa_types.RecommendedContainerResources) []vpa_types.RecommendedContainerResources {
-	// fixBound repairs violations for a single resource/bound pair (e.g. "CPU LowerBound") across all containers
-	fixBound := func(
-		getBound func(vpa_types.RecommendedContainerResources) *corev1.ResourceList,
-		resourceName corev1.ResourceName,
-		isBoundValid func(bound, target resource.Quantity) bool,
-		subtract bool,
-	) {
-		var total resource.Quantity
-		// This variable contains the value to redistribute across containers without violations.
-		// Redistribution is done proportionally by increasing or decreasing values based on available capacity.
-		var totalDelta float64
-		eligibleIdxs := make([]int, 0, len(recs))
-
-		for i := range recs {
-			target, targetOK := recs[i].Target[resourceName]
-			if !targetOK {
-				continue
-			}
-			boundRL := getBound(recs[i])
-			bound, boundOK := (*boundRL)[resourceName]
-			if !boundOK {
-				continue
-			}
-			if !isBoundValid(bound, target) {
-				totalDelta += math.Abs(float64(scalarValue(target, resourceName) - scalarValue(bound, resourceName)))
-				// Fix the violation for a container,
-				// in other words, set its LowerBound or UpperBound equal to the target
-				(*boundRL)[resourceName] = target
-				continue
-			}
-			eligibleIdxs = append(eligibleIdxs, i)
-			total.Add(bound)
-		}
-
-		if totalDelta == 0 || len(eligibleIdxs) == 0 || total.IsZero() {
-			return
-		}
-
-		weights := make([]float64, 0, len(eligibleIdxs))
-		constraints := make([]float64, 0, len(eligibleIdxs))
-		for _, idx := range eligibleIdxs {
-			bound := (*getBound(recs[idx]))[resourceName]
-			target := recs[idx].Target[resourceName]
-
-			weight, err := calculateWeight(total, bound, resourceName)
-			if err != nil {
-				klog.V(2).InfoS("Skipping bound redistribution", "recommendations", recs, "error", err)
-				return
-			}
-			weights = append(weights, *weight)
-			constraints = append(constraints, math.Abs(float64(scalarValue(bound, resourceName)-scalarValue(target, resourceName))))
-		}
-
-		// Calculate how much resources each container - where there is no violation - can give up or absorb
-		allocations, hasAllocation := iterativeWaterfilling(totalDelta, weights, constraints)
-		// All constraints are already saturated at zero, exit early
-		if !hasAllocation {
-			return
-		}
-		allocations = roundPreservingSum(allocations)
-
-		for i, idx := range eligibleIdxs {
-			boundRL := getBound(recs[idx])
-			bound := (*boundRL)[resourceName]
-			delta := newQuantity(int64(allocations[i]), bound.Format, resourceName)
-			adjusted := bound.DeepCopy()
-			if subtract {
-				adjusted.Sub(delta)
-			} else {
-				adjusted.Add(delta)
-			}
-			(*boundRL)[resourceName] = adjusted
-		}
-	}
-
+func ensureBoundsAreValid(recommendations []vpa_types.RecommendedContainerResources) []vpa_types.RecommendedContainerResources {
 	lowerValid := func(lowerBound, target resource.Quantity) bool { return lowerBound.Cmp(target) <= 0 }
 	upperValid := func(upperBound, target resource.Quantity) bool { return upperBound.Cmp(target) >= 0 }
 
@@ -635,10 +574,85 @@ func ensureBoundsAreValid(recs []vpa_types.RecommendedContainerResources) []vpa_
 	getUpper := func(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList { return &rl.UpperBound }
 
 	for _, resourceName := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory} {
-		fixBound(getLower, resourceName, lowerValid, false) // LowerBound must not exceed Target
-		fixBound(getUpper, resourceName, upperValid, true)  // UpperBound must not be below Target
+		fixBound(recommendations, getLower, resourceName, lowerValid, false) // LowerBound must not exceed Target
+		fixBound(recommendations, getUpper, resourceName, upperValid, true)  // UpperBound must not be below Target
 	}
-	return recs
+	return recommendations
+}
+
+// fixBound repairs violations for a single resource/bound pair (e.g. "CPU LowerBound") across all container recommendations.
+func fixBound(recommendations []vpa_types.RecommendedContainerResources,
+	getBound func(vpa_types.RecommendedContainerResources) *corev1.ResourceList,
+	resourceName corev1.ResourceName,
+	isBoundValid func(bound, target resource.Quantity) bool,
+	subtract bool,
+) {
+	var total resource.Quantity
+	// This variable contains the value to redistribute across containers without violations.
+	// Redistribution is done proportionally by increasing or decreasing values based on available capacity.
+	var totalDelta float64
+	eligibleIdxs := make([]int, 0, len(recommendations))
+
+	for i := range recommendations {
+		target, targetOK := recommendations[i].Target[resourceName]
+		if !targetOK {
+			continue
+		}
+		boundRL := getBound(recommendations[i])
+		bound, boundOK := (*boundRL)[resourceName]
+		if !boundOK {
+			continue
+		}
+		if !isBoundValid(bound, target) {
+			totalDelta += math.Abs(float64(scalarValue(target, resourceName) - scalarValue(bound, resourceName)))
+			// Fix the violation for a container,
+			// in other words, set its LowerBound or UpperBound equal to the target
+			(*boundRL)[resourceName] = target
+			continue
+		}
+		eligibleIdxs = append(eligibleIdxs, i)
+		total.Add(bound)
+	}
+
+	if totalDelta == 0 || len(eligibleIdxs) == 0 || total.IsZero() {
+		return
+	}
+
+	weights := make([]float64, 0, len(eligibleIdxs))
+	constraints := make([]float64, 0, len(eligibleIdxs))
+	for _, idx := range eligibleIdxs {
+		bound := (*getBound(recommendations[idx]))[resourceName]
+		target := recommendations[idx].Target[resourceName]
+
+		weight, err := calculateWeight(total, bound, resourceName)
+		if err != nil {
+			klog.V(2).InfoS("Skipping bound redistribution", "recommendations", recommendations, "error", err)
+			return
+		}
+		weights = append(weights, *weight)
+		constraints = append(constraints, math.Abs(float64(scalarValue(bound, resourceName)-scalarValue(target, resourceName))))
+	}
+
+	// Calculate how much resources each container - where there is no violation - can give up or absorb
+	allocations, hasAllocation := iterativeWaterfilling(totalDelta, weights, constraints)
+	// All constraints are already saturated at zero, exit early
+	if !hasAllocation {
+		return
+	}
+	allocations = roundPreservingSum(allocations)
+
+	for i, idx := range eligibleIdxs {
+		boundRL := getBound(recommendations[idx])
+		bound := (*boundRL)[resourceName]
+		delta := newQuantity(int64(allocations[i]), bound.Format, resourceName)
+		adjusted := bound.DeepCopy()
+		if subtract {
+			adjusted.Sub(delta)
+		} else {
+			adjusted.Add(delta)
+		}
+		(*boundRL)[resourceName] = adjusted
+	}
 }
 
 func scalarValue(q resource.Quantity, resourceName corev1.ResourceName) int64 {
