@@ -25,7 +25,7 @@ import (
 // Interface provides access to all the informers in this group version.
 type Interface interface {
 	// CapacityQuotas returns a CapacityQuotaInformer.
-	CapacityQuotas() CapacityQuotaInformer
+	CapacityQuotas() TypedCapacityQuotaInformer
 }
 
 type version struct {
@@ -39,7 +39,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// CapacityQuotas returns a CapacityQuotaInformer.
-func (v *version) CapacityQuotas() CapacityQuotaInformer {
+// CapacityQuotas returns a TypedCapacityQuotaInformer.
+func (v *version) CapacityQuotas() TypedCapacityQuotaInformer {
 	return &capacityQuotaInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

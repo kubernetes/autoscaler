@@ -160,7 +160,9 @@ type CapacityBufferStatus struct {
 	// +optional
 	PodTemplateRef *LocalObjectRef `json:"podTemplateRef,omitempty" protobuf:"bytes,1,opt,name=podTemplateRef"`
 
-	// Replicas is the actual number of buffer chunks currently provisioned.
+	// Replicas is the actual number of buffer chunks to be provisioned.
+	// It represents the final number of desired replicas after processing .spec.replicas,
+	// .spec.percentage and .spec.limits.
 	// +optional
 	Replicas *int32 `json:"replicas,omitempty" protobuf:"varint,2,opt,name=replicas"`
 
@@ -182,6 +184,10 @@ type CapacityBufferStatus struct {
 	// ProvisioningStrategy defines how the buffer should be utilized.
 	// +optional
 	ProvisioningStrategy *string `json:"provisioningStrategy,omitempty" protobuf:"bytes,5,opt,name=provisioningStrategy"`
+
+	// ReadyReplicas is the number of buffer chunks schedulable on existing nodes.
+	// +optional
+	ReadyReplicas *int32 `json:"readyReplicas,omitempty" protobuf:"varint,6,opt,name=readyReplicas"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

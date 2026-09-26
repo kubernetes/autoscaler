@@ -31,7 +31,9 @@ type CapacityBufferStatusApplyConfiguration struct {
 	// to provision the buffer. If this field is not set, and the `conditions`
 	// indicate an error, it provides details about the error state.
 	PodTemplateRef *LocalObjectRefApplyConfiguration `json:"podTemplateRef,omitempty"`
-	// Replicas is the actual number of buffer chunks currently provisioned.
+	// Replicas is the actual number of buffer chunks to be provisioned.
+	// It represents the final number of desired replicas after processing .spec.replicas,
+	// .spec.percentage and .spec.limits.
 	Replicas *int32 `json:"replicas,omitempty"`
 	// PodTemplateGeneration is the observed generation of the PodTemplate, used
 	// to determine if the status is up-to-date with the desired `spec.podTemplateRef`.
@@ -43,6 +45,8 @@ type CapacityBufferStatusApplyConfiguration struct {
 	Conditions []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
 	// ProvisioningStrategy defines how the buffer should be utilized.
 	ProvisioningStrategy *string `json:"provisioningStrategy,omitempty"`
+	// ReadyReplicas is the number of replicas schedulable on existing nodes.
+	ReadyReplicas *int32 `json:"readyReplicas,omitempty"`
 }
 
 // CapacityBufferStatusApplyConfiguration constructs a declarative configuration of the CapacityBufferStatus type for use with
@@ -93,5 +97,13 @@ func (b *CapacityBufferStatusApplyConfiguration) WithConditions(values ...*v1.Co
 // If called multiple times, the ProvisioningStrategy field is set to the value of the last call.
 func (b *CapacityBufferStatusApplyConfiguration) WithProvisioningStrategy(value string) *CapacityBufferStatusApplyConfiguration {
 	b.ProvisioningStrategy = &value
+	return b
+}
+
+// WithReadyReplicas sets the ReadyReplicas field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ReadyReplicas field is set to the value of the last call.
+func (b *CapacityBufferStatusApplyConfiguration) WithReadyReplicas(value int32) *CapacityBufferStatusApplyConfiguration {
+	b.ReadyReplicas = &value
 	return b
 }
