@@ -59,6 +59,9 @@ admissionController:
   # The number of old history revisions to retain to allow rollback.
   revisionHistoryLimit: 10
 
+  # Update strategy for the Admission Controller Deployment.
+  strategy: {}
+
   # Labels to add to the Admission Controller pod.
   podLabels: {}
 
@@ -262,6 +265,9 @@ recommender:
 
   # The number of old history revisions to retain to allow rollback.
   revisionHistoryLimit: 10
+
+  # Update strategy for the Recommender Deployment.
+  strategy: {}
 
   # Labels to add to the Recommender pod.
   podLabels: {}
