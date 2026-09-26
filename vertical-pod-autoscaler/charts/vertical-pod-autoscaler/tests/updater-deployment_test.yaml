@@ -1,0 +1,76 @@
+suite: updater deployment and rbac - leader election
+templates:
+  - updater-deployment.yaml
+  - updater-role.yaml
+  - updater-rolebinding.yaml
+tests:
+  - it: enables leader election by default since default replicas is 2
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+        template: updater-deployment.yaml
+      - hasDocuments:
+          count: 1
+        template: updater-role.yaml
+      - hasDocuments:
+          count: 1
+        template: updater-rolebinding.yaml
+
+  - it: does not enable leader election when replicas is 1 and enabled is unset
+    set:
+      updater.replicas: 1
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+        template: updater-deployment.yaml
+      - hasDocuments:
+          count: 0
+        template: updater-role.yaml
+      - hasDocuments:
+          count: 0
+        template: updater-rolebinding.yaml
+
+  - it: respects an explicit false even with replicas > 1
+    set:
+      updater.replicas: 3
+      updater.leaderElection.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+        template: updater-deployment.yaml
+      - hasDocuments:
+          count: 0
+        template: updater-role.yaml
+      - hasDocuments:
+          count: 0
+        template: updater-rolebinding.yaml
+
+  - it: respects an explicit true even with replicas = 1
+    set:
+      updater.replicas: 1
+      updater.leaderElection.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+        template: updater-deployment.yaml
+      - hasDocuments:
+          count: 1
+        template: updater-role.yaml
+      - hasDocuments:
+          count: 1
+        template: updater-rolebinding.yaml
+
+  - it: does not create leader-locking rbac when rbac.create is false, even with leader election active
+    set:
+      rbac.create: false
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: updater-role.yaml
+      - hasDocuments:
+          count: 0
+        template: updater-rolebinding.yaml
