@@ -14,6 +14,7 @@
 - [How can I configure VPA to manage only specific resources?](#how-can-i-configure-vpa-to-manage-only-specific-resources)
 - [How can I have Pods in the kube-system namespace under VPA control in AKS?](#how-can-i-have-pods-in-the-kube-system-namespace-under-vpa-control-in-aks)
 - [How can I configure VPA when running in EKS with Cilium?](#how-can-i-configure-vpa-when-running-in-eks-with-cilium)
+- [How does VPA treat resource requests and limits?](#how-does-vpa-treat-resource-requests-and-limits)
 <!-- /toc -->
 
 ### VPA restarts my pods but does not modify CPU or memory settings
@@ -298,3 +299,41 @@ The `--webhook-labels` parameter for the VPA admission-controller can be used to
 When running in EKS with Cilium, the EKS API server cannot route traffic to the overlay network. The VPA admission-controller
 Pods either need to use host networking or be exposed through a service or ingress.
 See the [Cilium Helm installation page](https://docs.cilium.io/en/stable/installation/k8s-install-helm/) for more info.
+
+### How does VPA treat resource requests and limits?
+
+VPA can update **requests** and, depending on container resource policy,
+**limits**. Per-container `controlledValues` is either `RequestsAndLimits`
+(default: scale both, keeping the original request:limit ratio when both were
+set) or `RequestsOnly` (scale requests only).
+
+Kubernetes and VPA do not always treat the same values the same way:
+
+| Original pod values | Kubernetes behavior | Typical VPA outcome |
+|---------------------|---------------------|---------------------|
+| request and limit both **unset** | BestEffort (for that resource) | Recommendations can set requests; limits are also set when `controlledValues` is `RequestsAndLimits` (the default). With `RequestsOnly`, only requests change |
+| request and limit set to **equal non-zero** values | Guaranteed QoS when all resources match | VPA keeps ratio 1:1 while updating values |
+| request and limit set to **different non-zero** values | Burstable | VPA preserves the original request:limit ratio |
+| request and limit both explicitly **`0`** | Treated like unset for QoS (BestEffort) | VPA may recommend a **non-zero request** while leaving a **zero limit**, which the API server then rejects (`request must be ≤ limit`) |
+
+Important points:
+
+1. **A limit of `0` is not "unlimited" in Kubernetes.** If the field is present
+   with value `0`, validation still enforces `request ≤ limit`. Omitting the
+   limit field is different from setting it to zero.
+2. **VPA does not use `limit: 0` as a special "no limit" sentinel.** Prefer
+   removing limits from the pod template (or from your Helm/chart defaults)
+   instead of writing zeros to clear defaults.
+3. **Changing requests/limits can change QoS.** Zero-valued specs make that
+   harder because Kubernetes treats zeros like "unset" for QoS while still
+   validating numbers literally when the fields are present.
+
+If you see admission errors such as `must be less than or equal to cpu limit of 0`
+after a VPA recommendation, check whether the original pod (or chart) set
+`limits` to zero. Fix the template so limits are either omitted or set to a real
+value consistent with the intended request:limit ratio.
+
+See also the discussion in
+[kubernetes/autoscaler#7882](https://github.com/kubernetes/autoscaler/issues/7882)
+and [kubernetes/autoscaler#7895](https://github.com/kubernetes/autoscaler/issues/7895).
+
