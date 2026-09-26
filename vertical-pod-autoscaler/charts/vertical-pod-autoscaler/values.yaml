@@ -147,7 +147,7 @@ admissionController:
   certManager:
     # admissionController.certManager.enabled -- If true, cert-manager manages the webhook certificate lifecycle.
     # cert-manager must be installed in the cluster, see https://cert-manager.io/docs/installation.
-    # Mutually exclusive with certGen.enabled, registerWebhook, and tls.create.
+    # Mutually exclusive with certGen.enabled and registerWebhook.
     enabled: false
     # admissionController.certManager.createSelfSignedIssuer -- Optionally create a SelfSigned Issuer for CA generation.
     # When enabled, a namespaced SelfSigned Issuer is created in the VPA namespace to issue the intermediate CA certificate,
@@ -195,13 +195,8 @@ admissionController:
 
 
   tls:
-    # If true, Helm will generate the TLS secret using genCA/genSignedCert
-    create: false
     # Name of the TLS secret
     secretName: vpa-tls-certs
-    caCert: ""
-    cert: ""
-    key: ""
 
   volumes:
     - name: tls-certs
