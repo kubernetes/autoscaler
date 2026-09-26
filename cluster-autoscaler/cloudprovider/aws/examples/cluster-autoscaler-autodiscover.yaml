@@ -149,7 +149,7 @@ spec:
           type: RuntimeDefault
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.1
+        - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.36.1
           name: cluster-autoscaler
           resources:
             limits:
