@@ -258,7 +258,7 @@ Initial validation rules (CEL):
 * `evictAfterOOMSeconds` > 0
 
 Validation via Admission Controller:
-Some components cann't be validated using Common Expression Language (CEL). This validation is performed within the admission controller.
+Some components can't be validated using Common Expression Language (CEL). This validation is performed within the admission controller.
 
 * `oomBumpUpRatio` – Using Kubernetes Quantity type for validation. The value must be greater than or equal to 1.
 

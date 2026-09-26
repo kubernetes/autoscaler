@@ -200,7 +200,7 @@ for details.
 When scaling up from 0 nodes, the Cluster Autoscaler reads ASG tags to derive information about the specifications of the nodes
 i.e labels and taints in that ASG. Note that it does not actually apply these labels or taints - this is done by an AWS generated
 user data script. It gives the Cluster Autoscaler information about whether pending pods will be able to be scheduled should a new node
-be spun up for a particular ASG with the asumption the ASG tags accurately reflect the labels/taint actually applied.
+be spun up for a particular ASG with the assumption the ASG tags accurately reflect the labels/taint actually applied.
 
 The following is only required if scaling up from 0 nodes. The Cluster Autoscaler will require the label tag
 on the ASG should a deployment have a NodeSelector, else no scaling will occur as the Cluster Autoscaler does not realise
