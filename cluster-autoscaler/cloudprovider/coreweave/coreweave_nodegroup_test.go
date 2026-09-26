@@ -567,6 +567,25 @@ func TestTemplateNodeInfo(t *testing.T) {
 				require.Equal(t, int64(72), cpu.Value())
 			},
 		},
+		"b300 instance type": {
+			nodePool: makeTestNodePool("uid-b300", "ng-b300", 0, 4, 0,
+				withInstanceType("b300-8x"),
+			),
+			validateNode: func(t *testing.T, node *apiv1.Node) {
+				require.Equal(t, "amd64", node.Labels[apiv1.LabelArchStable])
+
+				cpu := node.Status.Capacity[apiv1.ResourceCPU]
+				memory := node.Status.Capacity[apiv1.ResourceMemory]
+				storage := node.Status.Capacity[apiv1.ResourceEphemeralStorage]
+				gpuCount := node.Status.Capacity[gpu.ResourceNvidiaGPU]
+				pods := node.Status.Capacity[apiv1.ResourcePods]
+				require.Equal(t, int64(192), cpu.Value())
+				require.True(t, memory.Equal(resource.MustParse("4225760944Ki")))
+				require.True(t, storage.Equal(resource.MustParse("30003181568Ki")))
+				require.Equal(t, int64(8), gpuCount.Value())
+				require.Equal(t, int64(110), pods.Value())
+			},
+		},
 		"missing instance type error": {
 			nodePool: makeTestNodePool("uid-err-1", "ng-err-1", 1, 5, 3,
 				withInstanceType(""),
@@ -601,6 +620,28 @@ func TestTemplateNodeInfo(t *testing.T) {
 					tc.validateNode(t, node)
 				}
 			}
+		})
+	}
+}
+
+func TestRDMATemplateNodeInfo(t *testing.T) {
+	instanceTypes := []string{
+		"b200-8x",
+		"b300-8x",
+		"cd-hc-a384ib-genoa",
+		"cd-hs-i80-srapids",
+		"gd-8xh100ib-i128",
+		"gd-8xh200ib-i128",
+	}
+
+	for _, instanceType := range instanceTypes {
+		t.Run(instanceType, func(t *testing.T) {
+			nodePool := makeTestNodePool("uid-rdma", "ng-rdma", 0, 1, 0, withInstanceType(instanceType))
+			nodeInfo, err := NewCoreWeaveNodeGroup(nodePool).TemplateNodeInfo(t.Context())
+			require.NoError(t, err)
+
+			rdma := nodeInfo.Node().Status.Allocatable[apiv1.ResourceName("rdma/ib")]
+			require.Equal(t, int64(64), rdma.Value())
 		})
 	}
 }
