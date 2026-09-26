@@ -170,7 +170,7 @@ will depend on the autoscaling capabilities of the cluster. Adding them as a CRD
 in autoscaling space will make it clear and will allow for releasing it
 independently of the core k8s.
 
-## Out of scope, may be added as follow up porposals
+## Out of scope, may be added as follow up proposals
 
 The initial iteration will cover basic use cases and will allow to simplify
 balloon pod/deployment management and allow for reduction of scheduler related

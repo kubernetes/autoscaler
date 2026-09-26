@@ -12,7 +12,7 @@ a config file can be passed with the `--cloud-config` flag.
 here is the corresponding JSON schema:
 * `cluster_id`: Kapsule Cluster Id
 * `secret_key`: Secret Key used to manage associated Kapsule resources
-* `region`: Region where the control-plane is runnning
+* `region`: Region where the control-plane is running
 * `api_url`: URL to contact Scaleway, defaults to `api.scaleway.com`
 
 ### Env variables
