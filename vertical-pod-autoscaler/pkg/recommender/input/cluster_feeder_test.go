@@ -1071,7 +1071,8 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 		recommenderName:     "default",
 	}
 
-	feeder.GarbageCollectCheckpoints(tctx)
+	err := feeder.GarbageCollectCheckpoints(tctx)
+	assert.NoError(t, err)
 
 	assert.Contains(t, deletedCheckpoints, "nonExistentVPA")
 
