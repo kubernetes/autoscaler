@@ -21,8 +21,6 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -34,6 +32,7 @@ import (
 	"k8s.io/apiserver/pkg/server/mux"
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	cbv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	cqv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/client-go/informers"
@@ -78,28 +77,13 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(cqv1beta1.AddToScheme(scheme))
+	utilruntime.Must(cbv1beta1.AddToScheme(scheme))
 	// TODO: add other CRDs
 }
 
-func registerSignalHandlers(autoscaler core.Autoscaler) {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
-	klog.V(1).Info("Registered cleanup signal handler")
-
-	go func() {
-		<-sigs
-		klog.V(1).Info("Received signal, attempting cleanup")
-		autoscaler.ExitCleanUp()
-		klog.V(1).Info("Cleaned up, exiting...")
-		klog.Flush()
-		os.Exit(0)
-	}()
-}
-
 func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, autoscalingOpts config.AutoscalingOptions) {
+	ctx := ctrl.SetupSignalHandler()
 	metrics.RegisterAll(autoscalingOpts.EmitPerNodeGroupMetrics)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	restConfig := kube_util.GetKubeConfig(autoscalingOpts.KubeClientOpts)
 	mgr, err := ctrl.NewManager(restConfig, ctrl.Options{
@@ -118,10 +102,6 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 	}
 
 	autoscaler, trigger := mustBuildAutoscaler(ctx, autoscalingOpts, debuggingSnapshotter, mgr)
-
-	// Register signal handlers for graceful shutdown.
-	// TODO: replace with ctrl.SetupSignalHandlers() and handle graceful shutdown with context
-	registerSignalHandlers(autoscaler)
 
 	// Start updating health check endpoint.
 	healthCheck.StartMonitoring()
@@ -144,6 +124,8 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 				case <-ctx.Done():
 					// Context is also passed down to RunOnce, so a long-running
 					// iteration in progress will be interrupted and cleaned up there.
+					klog.V(1).Info("Received signal, attempting cleanup")
+					autoscaler.ExitCleanUp()
 					return nil
 				default:
 					trigger.Wait(previousRun)
@@ -158,6 +140,8 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 				case <-ctx.Done():
 					// Context is also passed down to RunOnce, so a long-running
 					// iteration in progress will be interrupted and cleaned up there.
+					klog.V(1).Info("Received signal, attempting cleanup")
+					autoscaler.ExitCleanUp()
 					return nil
 				case <-time.After(autoscalingOpts.ScanInterval):
 					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, time.Now(), iteration)
@@ -173,6 +157,8 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 	if err := mgr.Start(ctx); err != nil {
 		klog.Fatalf("Manager exited with error: %v", err)
 	}
+	klog.V(1).Info("Cleaned up, exiting...")
+	klog.Flush()
 }
 
 func mustBuildAutoscaler(ctx context.Context, opts config.AutoscalingOptions, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, mgr manager.Manager) (core.Autoscaler, *loop.LoopTrigger) {
