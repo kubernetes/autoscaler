@@ -16,6 +16,7 @@ import (
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	klog "k8s.io/klog/v2"
@@ -335,6 +336,28 @@ func (np *nodePool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, 
 		return nil, errors.Wrap(err, "unable to build node pool template")
 	}
 
+	// Cluster Autoscaler already uses a registered node as the template when a
+	// suitable one is available. Only attempt this fallback for a non-empty pool;
+	// a zero-sized pool cannot have a matching node and should retain the value
+	// from cluster-autoscaler/node-ephemeral-storage, if configured.
+	size, err := np.manager.GetNodePoolSize(np)
+	if err != nil {
+		klog.V(4).Infof(
+			"Unable to determine size of node pool %s while building template; preserving configured ephemeral-storage: %v",
+			np.id, err,
+		)
+	} else if size > 0 {
+		if err := np.setEphemeralStorageFromRegisteredNode(ctx, node); err != nil {
+			// Looking up a registered node is an optional refinement. Do not
+			// discard an otherwise valid template, including a value supplied
+			// by freeform tag.
+			klog.V(4).Infof(
+				"Unable to get ephemeral-storage from a registered node in node pool %s; preserving configured value: %v",
+				np.id, err,
+			)
+		}
+	}
+
 	nodeInfo := framework.NewNodeInfo(
 		node, nil,
 		framework.NewPodInfo(cloudprovider.BuildKubeProxy(np.id), nil),
@@ -342,6 +365,76 @@ func (np *nodePool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, 
 		framework.NewPodInfo(ocicommon.BuildProxymuxClientPod(), nil),
 	)
 	return nodeInfo, nil
+}
+
+// setEphemeralStorageFromRegisteredNode copies ephemeral-storage capacity and
+// allocatable values from a registered node in the node pool to the template node.
+func (np *nodePool) setEphemeralStorageFromRegisteredNode(ctx context.Context, node *apiv1.Node) error {
+	privateIP, err := np.manager.GetNodePoolNodePrivateIP(np)
+	if err != nil {
+		return err
+	}
+
+	nodes, err := np.kubeClient.CoreV1().Nodes().List(
+		ctx,
+		metav1.ListOptions{
+			LabelSelector: "internal_addr=" + privateIP,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	if len(nodes.Items) != 1 {
+		klog.Warningf(
+			"Expected exactly one Kubernetes node for OCI node pool %q and private IP %q, found %d",
+			np.id,
+			privateIP,
+			len(nodes.Items),
+		)
+	}
+
+	for _, registeredNode := range nodes.Items {
+		nodePoolID, ok := registeredNode.Annotations["oci.oraclecloud.com/node-pool-id"]
+		if !ok || nodePoolID != np.id {
+			klog.Warningf(
+				"Kubernetes node %q has unexpected node pool annotation %q, expected %q",
+				registeredNode.Name,
+				nodePoolID,
+				np.id,
+			)
+			continue
+		}
+
+		ephemeralStorage, ok := registeredNode.Status.Capacity[apiv1.ResourceEphemeralStorage]
+		if !ok {
+			klog.Warningf(
+				"Kubernetes node %q in OCI node pool %q is missing ephemeral-storage capacity",
+				registeredNode.Name,
+				np.id,
+			)
+			continue
+		}
+
+		allocatable, ok := registeredNode.Status.Allocatable[apiv1.ResourceEphemeralStorage]
+		if !ok {
+			klog.Warningf(
+				"Kubernetes node %q in OCI node pool %q is missing ephemeral-storage allocatable",
+				registeredNode.Name,
+				np.id,
+			)
+			continue
+		}
+
+		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = ephemeralStorage
+
+		node.Status.Allocatable = node.Status.Allocatable.DeepCopy()
+		node.Status.Allocatable[apiv1.ResourceEphemeralStorage] = allocatable
+
+		return nil
+	}
+
+	return nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
