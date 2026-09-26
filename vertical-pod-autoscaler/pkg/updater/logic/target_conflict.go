@@ -17,12 +17,15 @@ limitations under the License.
 package logic
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -83,17 +86,16 @@ func (u *updater) reconcileTargetConflicts(vpaList []*vpa_types.VerticalPodAutos
 // single VPA if it needs to change, and emits a Warning/Normal event only on
 // a state transition (conflict appearing or clearing).
 func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutoscaler, conflicting bool, conflictingNames []string) {
-	oldStatus := vpa.Status.DeepCopy()
-
 	wasConflicting := false
-	if c := getVpaCondition(oldStatus, vpa_types.TargetConflict); c != nil {
+	if c := getVpaCondition(&vpa.Status, vpa_types.TargetConflict); c != nil {
 		wasConflicting = c.Status == corev1.ConditionTrue
 	}
 
-	// Nothing to do: no conflict now and none previously recorded.
+	// Skip the copy below when there's nothing to do.
 	if !conflicting && !wasConflicting {
 		return
 	}
+	oldStatus := vpa.Status.DeepCopy()
 
 	// transitioned is true only when the conflict appears or clears. While a
 	// conflict persists we still rebuild the condition, because the set of
@@ -113,13 +115,8 @@ func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutosc
 	newStatus := oldStatus.DeepCopy()
 	setVpaCondition(newStatus, vpa_types.TargetConflict, condStatus, reason, message, vpa.Generation)
 
-	_, err := vpa_api_util.UpdateVpaStatusIfNeeded(
-		u.vpaClient.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace),
-		vpa.Name,
-		newStatus,
-		oldStatus,
-	)
-	if err != nil {
+	// Patch conditions only so a concurrent recommender status write isn't clobbered.
+	if err := u.patchTargetConflictConditions(vpa, newStatus.Conditions); err != nil {
 		klog.ErrorS(err, "Failed to update VPA TargetConflict condition", "vpa", klog.KObj(vpa))
 		return
 	}
@@ -134,6 +131,23 @@ func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutosc
 		eventType = corev1.EventTypeNormal
 	}
 	u.eventRecorder.Event(vpa, eventType, reason, message)
+}
+
+// patchTargetConflictConditions patches status.conditions only, leaving the
+// rest of status (owned by the recommender) untouched.
+func (u *updater) patchTargetConflictConditions(vpa *vpa_types.VerticalPodAutoscaler, conditions []vpa_types.VerticalPodAutoscalerCondition) error {
+	patch := []struct {
+		Op    string                                     `json:"op"`
+		Path  string                                     `json:"path"`
+		Value []vpa_types.VerticalPodAutoscalerCondition `json:"value"`
+	}{{Op: "add", Path: "/status/conditions", Value: conditions}}
+	patchBytes, err := json.Marshal(patch)
+	if err != nil {
+		return fmt.Errorf("marshal TargetConflict patch: %v", err)
+	}
+	_, err = u.vpaClient.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace).
+		Patch(context.TODO(), vpa.Name, types.JSONPatchType, patchBytes, metav1.PatchOptions{}, "status")
+	return err
 }
 
 // getVpaCondition returns a pointer to the condition of the given type, or
@@ -193,17 +207,27 @@ func conflictingVpaNames(vpa *vpa_types.VerticalPodAutoscaler, group []*vpa_type
 }
 
 // vpasOverlap reports whether two VPAs would both manage at least one resource
-// of the same container. The wildcard policy stands in for every container
-// that has no explicit policy in either VPA.
+// of the same container. "*" is only included when it can actually apply
+// (no ResourcePolicy, or an explicit "*" entry) — otherwise a shared named
+// container with no wildcard policy would falsely fall back to default
+// CPU/memory and look like a conflict.
 func vpasOverlap(a, b *vpa_types.VerticalPodAutoscaler) bool {
-	containers := map[string]struct{}{vpa_types.DefaultContainerResourcePolicy: {}}
+	containers := make(map[string]struct{})
+	includeWildcard := false
 	for _, v := range []*vpa_types.VerticalPodAutoscaler{a, b} {
 		if v.Spec.ResourcePolicy == nil {
+			includeWildcard = true
 			continue
 		}
 		for _, p := range v.Spec.ResourcePolicy.ContainerPolicies {
+			if p.ContainerName == vpa_types.DefaultContainerResourcePolicy {
+				includeWildcard = true
+			}
 			containers[p.ContainerName] = struct{}{}
 		}
+	}
+	if includeWildcard {
+		containers[vpa_types.DefaultContainerResourcePolicy] = struct{}{}
 	}
 	for name := range containers {
 		resourcesB := controlledResourcesFor(b, name)
