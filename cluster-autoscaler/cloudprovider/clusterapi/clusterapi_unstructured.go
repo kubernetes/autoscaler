@@ -204,7 +204,7 @@ func (r *unstructuredScalableResource) Labels() map[string]string {
 	allLabels := map[string]string{}
 
 	// get the managed labels from the scalable resource, if they exist.
-	if labels, found, err := unstructured.NestedStringMap(r.unstructured.UnstructuredContent(), "spec", "template", "spec", "metadata", "labels"); found && err == nil {
+	if labels, found, err := unstructured.NestedStringMap(r.unstructured.UnstructuredContent(), "spec", "template", "metadata", "labels"); found && err == nil {
 		managedLabels := getManagedNodeLabelsFromLabels(labels)
 		allLabels = cloudprovider.JoinStringMaps(allLabels, managedLabels)
 	}
