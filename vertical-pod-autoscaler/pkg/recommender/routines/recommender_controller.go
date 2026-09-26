@@ -220,7 +220,7 @@ func initHistoryProvider(ctx context.Context, rec Recommender, config *recommend
 		if err != nil {
 			return err
 		}
-		rec.GetClusterStateFeeder().InitFromHistoryProvider(provider)
+		rec.GetClusterStateFeeder().InitFromHistoryProvider(ctx, provider)
 	}
 	return nil
 }
