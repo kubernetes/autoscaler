@@ -67,6 +67,7 @@ rules:
     - cluster.x-k8s.io
     resources:
     - machinedeployments/scale
+    - machinesets/scale
     - machinepools/scale
     verbs:
     - get

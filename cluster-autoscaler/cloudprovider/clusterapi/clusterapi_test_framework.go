@@ -756,8 +756,9 @@ func NewTestMachineController(t testing.TB) *testMachineController {
 
 			result := &autoscalingv1.Scale{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      u.GetName(),
-					Namespace: u.GetNamespace(),
+					Name:            u.GetName(),
+					Namespace:       u.GetNamespace(),
+					ResourceVersion: u.GetResourceVersion(),
 				},
 				Spec: autoscalingv1.ScaleSpec{
 					Replicas: int32(replicas),
@@ -779,6 +780,9 @@ func NewTestMachineController(t testing.TB) *testMachineController {
 			u, err := dynamicClientset.Resource(gvr).Namespace(s.Namespace).Get(context.TODO(), s.Name, metav1.GetOptions{})
 			if err != nil {
 				return true, nil, fmt.Errorf("failed to fetch underlying %s resource: %s/%s", resource, s.Namespace, s.Name)
+			}
+			if s.ResourceVersion != u.GetResourceVersion() {
+				return true, nil, apierrors.NewConflict(gvr.GroupResource(), s.Name, fmt.Errorf("resource version changed"))
 			}
 
 			if err := unstructured.SetNestedField(u.Object, int64(s.Spec.Replicas), "spec", "replicas"); err != nil {

@@ -176,7 +176,9 @@ rules:
     - machinedeployments/scale
     - machines
     - machinesets
+    - machinesets/scale
     - machinepools
+    - machinepools/scale
     verbs:
     - get
     - list
