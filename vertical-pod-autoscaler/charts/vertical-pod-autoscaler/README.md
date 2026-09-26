@@ -184,6 +184,7 @@ helm upgrade <release-name> <chart> \
 | admissionController.podDisruptionBudget.enabled | bool | `true` |  |
 | admissionController.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
+| admissionController.podDisruptionBudget.unhealthyPodEvictionPolicy | string | `nil` | Policy used to evict unhealthy pods, either 'IfHealthyBudget' or 'AlwaysAllow'. Defaults to the Kubernetes default, 'IfHealthyBudget', when unset. |
 | admissionController.podLabels | object | `{}` |  |
 | admissionController.priorityClassName | string | `nil` |  |
 | admissionController.registerWebhook | bool | `false` | Whether to register webhook via the application itself or via Helm. Set to false when using Helm-managed webhook. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations. |
@@ -252,6 +253,7 @@ helm upgrade <release-name> <chart> \
 | recommender.podDisruptionBudget.enabled | bool | `true` |  |
 | recommender.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | recommender.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
+| recommender.podDisruptionBudget.unhealthyPodEvictionPolicy | string | `nil` | Policy used to evict unhealthy pods, either 'IfHealthyBudget' or 'AlwaysAllow'. Defaults to the Kubernetes default, 'IfHealthyBudget', when unset. |
 | recommender.podLabels | object | `{}` |  |
 | recommender.priorityClassName | string | `nil` |  |
 | recommender.replicas | int | `2` |  |
@@ -285,6 +287,7 @@ helm upgrade <release-name> <chart> \
 | updater.podDisruptionBudget.enabled | bool | `true` |  |
 | updater.podDisruptionBudget.maxUnavailable | int or string | `nil` | Maximum number/percentage of pods that can be unavailable after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | updater.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
+| updater.podDisruptionBudget.unhealthyPodEvictionPolicy | string | `nil` | Policy used to evict unhealthy pods, either 'IfHealthyBudget' or 'AlwaysAllow'. Defaults to the Kubernetes default, 'IfHealthyBudget', when unset. |
 | updater.podLabels | object | `{}` |  |
 | updater.priorityClassName | string | `nil` |  |
 | updater.replicas | int | `2` |  |

@@ -16,4 +16,7 @@ spec:
   {{- if .Values.recommender.podDisruptionBudget.maxUnavailable }}
   maxUnavailable: {{ .Values.recommender.podDisruptionBudget.maxUnavailable }}
   {{- end }}
+  {{- with .Values.recommender.podDisruptionBudget.unhealthyPodEvictionPolicy }}
+  unhealthyPodEvictionPolicy: {{ . }}
+  {{- end }}
 {{- end -}}
