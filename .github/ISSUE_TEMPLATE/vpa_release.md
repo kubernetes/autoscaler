@@ -15,3 +15,5 @@ Please provide any information that is related to the release:
 
 - When we plan to do the release?
 - Are there any issues / PRs blocking the release?
+
+/area vertical-pod-autoscaler
