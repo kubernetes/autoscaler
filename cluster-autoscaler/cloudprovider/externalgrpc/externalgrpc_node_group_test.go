@@ -357,6 +357,8 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 				MaxNodeProvisionDuration:         durationpb.New(time.Minute),
 				ZeroOrMaxNodeScaling:             true,
 				IgnoreDaemonSetsUtilization:      true,
+				MaxNodeStartupDuration:           durationpb.New(15 * time.Minute),
+				AllowNonAtomicScaleUpToMax:       true,
 			},
 		},
 		nil,
@@ -376,6 +378,8 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 		MaxNodeProvisionTime:             time.Minute,
 		ZeroOrMaxNodeScaling:             false,
 		IgnoreDaemonSetsUtilization:      false,
+		MaxNodeStartupTime:               15 * time.Minute,
+		AllowNonAtomicScaleUpToMax:       false,
 	}
 
 	opts, err := ng1.GetOptions(context.Background(), defaultsOpts)
@@ -387,6 +391,8 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	assert.Equal(t, time.Minute, opts.MaxNodeProvisionTime)
 	assert.Equal(t, true, opts.ZeroOrMaxNodeScaling)
 	assert.Equal(t, true, opts.IgnoreDaemonSetsUtilization)
+	assert.Equal(t, 15*time.Minute, opts.MaxNodeStartupTime)
+	assert.Equal(t, true, opts.AllowNonAtomicScaleUpToMax)
 
 	// test grpc error
 	m.On(
@@ -483,6 +489,9 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	assert.Equal(t, time.Minute, opts.MaxNodeProvisionTime)
 	assert.Equal(t, false, opts.ZeroOrMaxNodeScaling)
 	assert.Equal(t, false, opts.IgnoreDaemonSetsUtilization)
+	// provider did not set maxNodeStartupDuration: falls back to the default
+	assert.Equal(t, 15*time.Minute, opts.MaxNodeStartupTime)
+	assert.Equal(t, false, opts.AllowNonAtomicScaleUpToMax)
 
 }
 

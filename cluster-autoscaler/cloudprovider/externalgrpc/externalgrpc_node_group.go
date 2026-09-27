@@ -299,6 +299,8 @@ func (n *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAut
 			MaxNodeProvisionDuration:         durationpb.New(defaults.MaxNodeProvisionTime),
 			ZeroOrMaxNodeScaling:             defaults.ZeroOrMaxNodeScaling,
 			IgnoreDaemonSetsUtilization:      defaults.IgnoreDaemonSetsUtilization,
+			MaxNodeStartupDuration:           durationpb.New(defaults.MaxNodeStartupTime),
+			AllowNonAtomicScaleUpToMax:       defaults.AllowNonAtomicScaleUpToMax,
 		},
 	})
 	if err != nil {
@@ -329,6 +331,12 @@ func (n *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAut
 		maxNodeProvisionTime = d.AsDuration()
 	}
 
+	// Providers built against an older proto do not set this field: keep the CA default.
+	maxNodeStartupTime := defaults.MaxNodeStartupTime
+	if d := pbOpts.GetMaxNodeStartupDuration(); d != nil {
+		maxNodeStartupTime = d.AsDuration()
+	}
+
 	opts := &config.NodeGroupAutoscalingOptions{
 		ScaleDownUtilizationThreshold:    pbOpts.GetScaleDownUtilizationThreshold(),
 		ScaleDownGpuUtilizationThreshold: pbOpts.GetScaleDownGpuUtilizationThreshold(),
@@ -337,6 +345,8 @@ func (n *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAut
 		MaxNodeProvisionTime:             maxNodeProvisionTime,
 		ZeroOrMaxNodeScaling:             pbOpts.GetZeroOrMaxNodeScaling(),
 		IgnoreDaemonSetsUtilization:      pbOpts.GetIgnoreDaemonSetsUtilization(),
+		MaxNodeStartupTime:               maxNodeStartupTime,
+		AllowNonAtomicScaleUpToMax:       pbOpts.GetAllowNonAtomicScaleUpToMax(),
 	}
 	return opts, nil
 }
