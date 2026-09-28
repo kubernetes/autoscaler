@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 )
 
@@ -41,6 +42,16 @@ func init() {
 	})
 	builder.SetDefaultCloudProvider(ProviderName)
 }
+
+// GPULabel is the node label whose presence identifies CoreWeave GPU nodes.
+// The autoscaler's GPU readiness checks are presence-based, so the label
+// must exist only on GPU nodes and must be applied at node registration,
+// before the device plugin publishes nvidia.com/gpu in allocatable.
+// gpu.coreweave.cloud/driver-version is the only node label that satisfies
+// both: gpu.nvidia.com/class and its siblings look like the natural choice,
+// but CoreWeave stamps those keys onto every node with an empty value on
+// CPU nodes, which would classify all CPU nodes as GPU-unready forever.
+const GPULabel = "gpu.coreweave.cloud/driver-version"
 
 // CoreWeaveCloudProvider implements the CloudProvider interface for CoreWeave.
 type CoreWeaveCloudProvider struct {
@@ -166,10 +177,12 @@ func (c *CoreWeaveCloudProvider) GetResourceLimiter(ctx context.Context) (*cloud
 	return c.resourceLimiter, nil
 }
 
-// GPULabel returns the label used to identify GPU nodes.
-// This method is not implemented for CoreWeave, so it returns an empty string.
-func (c *CoreWeaveCloudProvider) GPULabel(ctx context.Context) string {
-	return ""
+// GPULabel returns the label used to identify GPU nodes. Nodes carry the
+// label from first registration, before the device plugin publishes
+// nvidia.com/gpu in allocatable, which lets the core autoscaler classify a
+// booting GPU node as upcoming instead of usable-with-zero-GPUs.
+func (c *CoreWeaveCloudProvider) GPULabel(_ context.Context) string {
+	return GPULabel
 }
 
 // GetAvailableGPUTypes returns a map of available GPU types for this cloud provider.
@@ -178,10 +191,10 @@ func (c *CoreWeaveCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[s
 	return nil
 }
 
-// GetNodeGpuConfig returns the GPU configuration for a given node.
-// This method is not implemented for CoreWeave, so it returns nil.
+// GetNodeGpuConfig returns the GPU configuration for a given node, or nil for
+// nodes without the GPU label.
 func (c *CoreWeaveCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
-	return nil
+	return gpu.GetNodeGPUFromCloudProvider(ctx, c, node)
 }
 
 // Cleanup performs any necessary cleanup for the cloud provider.

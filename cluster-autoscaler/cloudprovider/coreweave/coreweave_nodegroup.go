@@ -201,6 +201,9 @@ func (ng *CoreWeaveNodeGroup) buildResourceList(instanceType *InstanceType) apiv
 	if instanceType.GPU > 0 {
 		resources[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(instanceType.GPU, resource.DecimalSI)
 	}
+	if instanceType.RDMA > 0 {
+		resources[apiv1.ResourceName("rdma/ib")] = *resource.NewQuantity(instanceType.RDMA, resource.DecimalSI)
+	}
 
 	// Default to max of 110 pods if not specified (Kubernetes default)
 	resources[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)

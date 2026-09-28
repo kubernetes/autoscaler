@@ -201,14 +201,11 @@ func TestCoreWeaveCloudProvider_NotImplementedMethods(t *testing.T) {
 	if !errors.Is(err4, cloudprovider.ErrNotImplemented) {
 		t.Error("expected ErrNotImplemented for NewNodeGroup")
 	}
-	if cp.GPULabel(context.Background()) != "" {
-		t.Error("expected empty string for GPULabel")
-	}
 	if cp.GetAvailableGPUTypes(context.Background()) != nil {
 		t.Error("expected nil for GetAvailableGPUTypes")
 	}
 	if cp.GetNodeGpuConfig(context.Background(), &apiv1.Node{}) != nil {
-		t.Error("expected nil for GetNodeGpuConfig")
+		t.Error("expected nil for GetNodeGpuConfig on a node without the GPU label")
 	}
 	if cp.Cleanup(context.Background()) != nil {
 		t.Error("expected nil for Cleanup")

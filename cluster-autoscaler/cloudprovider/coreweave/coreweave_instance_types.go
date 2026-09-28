@@ -27,6 +27,8 @@ type InstanceType struct {
 	MemoryKi int64
 	// GPU is the number of GPUs
 	GPU int64
+	// RDMA is the capacity of the rdma/ib resource
+	RDMA int64
 	// EphemeralStorageKi is the amount of ephemeral storage in kibibytes (1 Ki = 1024 bytes)
 	EphemeralStorageKi int64
 	// Architecture is the CPU architecture (e.g., "amd64", "arm64")
@@ -42,6 +44,16 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:               128,
 		MemoryKi:           2112277172,
 		GPU:                8,
+		RDMA:               64,
+		EphemeralStorageKi: 30003181568,
+		Architecture:       "amd64",
+		MaxPods:            110,
+	},
+	"b300-8x": {
+		VCPU:               192,
+		MemoryKi:           4225760944,
+		GPU:                8,
+		RDMA:               64,
 		EphemeralStorageKi: 30003181568,
 		Architecture:       "amd64",
 		MaxPods:            110,
@@ -90,6 +102,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:               384,
 		MemoryKi:           1583672504,
 		GPU:                0,
+		RDMA:               64,
 		EphemeralStorageKi: 30003181568,
 		Architecture:       "amd64",
 		MaxPods:            110,
@@ -130,6 +143,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:               128,
 		MemoryKi:           2112109804,
 		GPU:                8,
+		RDMA:               64,
 		EphemeralStorageKi: 30003181568,
 		Architecture:       "amd64",
 		MaxPods:            110,
@@ -138,6 +152,7 @@ var InstanceTypes = map[string]*InstanceType{
 		VCPU:               128,
 		MemoryKi:           2112109800,
 		GPU:                8,
+		RDMA:               64,
 		EphemeralStorageKi: 30003181568,
 		Architecture:       "amd64",
 		MaxPods:            110,
@@ -180,6 +195,71 @@ var InstanceTypes = map[string]*InstanceType{
 		GPU:                0,
 		EphemeralStorageKi: 7499230528,
 		Architecture:       "amd64",
+		MaxPods:            110,
+	},
+	"cd-hs-i80-srapids": {
+		VCPU:               80,
+		MemoryKi:           229404332,
+		GPU:                0,
+		EphemeralStorageKi: 937234648,
+		Architecture:       "amd64",
+		RDMA:               64,
+		MaxPods:            110,
+	},
+	"cd-ls-i96-srapids": {
+		VCPU:               96,
+		MemoryKi:           262622784,
+		GPU:                0,
+		EphemeralStorageKi: 937234648,
+		Architecture:       "amd64",
+		MaxPods:            110,
+	},
+	"rtxp6000-8x-v2": {
+		VCPU:               128,
+		MemoryKi:           526851268,
+		GPU:                8,
+		EphemeralStorageKi: 7499230528,
+		Architecture:       "amd64",
+		MaxPods:            110,
+	},
+	"turin-gp-v2": {
+		VCPU:               96,
+		MemoryKi:           790940244,
+		GPU:                0,
+		EphemeralStorageKi: 7499230528,
+		Architecture:       "amd64",
+		MaxPods:            110,
+	},
+	"turin-gp-xl": {
+		VCPU:               192,
+		MemoryKi:           1582741732,
+		GPU:                0,
+		EphemeralStorageKi: 31876748288,
+		Architecture:       "amd64",
+		MaxPods:            110,
+	},
+	"turin-gp-xl-v2": {
+		VCPU:               192,
+		MemoryKi:           789958324,
+		GPU:                0,
+		EphemeralStorageKi: 18750169088,
+		Architecture:       "amd64",
+		MaxPods:            110,
+	},
+	"turin-hs-v1": {
+		VCPU:               192,
+		MemoryKi:           1583174916,
+		GPU:                0,
+		EphemeralStorageKi: 24375845888,
+		Architecture:       "amd64",
+		MaxPods:            110,
+	},
+	"vera-gp-ac": {
+		VCPU:               352,
+		MemoryKi:           1590611840,
+		GPU:                0,
+		EphemeralStorageKi: 7499230208,
+		Architecture:       "arm64",
 		MaxPods:            110,
 	},
 }
