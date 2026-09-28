@@ -62,7 +62,7 @@ require (
 	sigs.k8s.io/cloud-provider-azure v1.36.6
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.23.0
 	sigs.k8s.io/cluster-autoscaler v0.0.0-k8s.v1.37.0
-	sigs.k8s.io/controller-runtime v0.24.1
+	sigs.k8s.io/controller-runtime v0.25.1
 	sigs.k8s.io/yaml v1.6.0
 )
 
