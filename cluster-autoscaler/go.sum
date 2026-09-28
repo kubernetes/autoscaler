@@ -8,8 +8,8 @@ cloud.google.com/go/compute/metadata v0.9.0 h1:pDUj4QMoPejqq20dK0Pg2N4yG9zIkYGdB
 cloud.google.com/go/compute/metadata v0.9.0/go.mod h1:E0bWwX5wTnLPedCKqk3pJmVgCBSM6qQI1yTBdEb3C10=
 cyphar.com/go-pathrs v0.2.5 h1:SnX9FBvnoyn3lUs1dkMgZ52bAETpirNu3FTRh5HlRik=
 cyphar.com/go-pathrs v0.2.5/go.mod h1:y8f1EMG7r+hCuFf/rXsKqMJrJAUoADZGNh5/vZPKcGc=
-github.com/Azure/azure-sdk-for-go-extensions v0.6.0 h1:LzJ4iAk3ZBZ0Y27uUm66XBQntbgMr3QXn2KIDb4Mx04=
-github.com/Azure/azure-sdk-for-go-extensions v0.6.0/go.mod h1:f/wRrqvvh197V5r4jGADV7528UdO/zfL+/Ud92BMSag=
+github.com/Azure/azure-sdk-for-go-extensions v0.7.0 h1:ko7jxarxFmfm3OAtIkKcnC2yK1H7a7wB7As38huaa4Y=
+github.com/Azure/azure-sdk-for-go-extensions v0.7.0/go.mod h1:f/wRrqvvh197V5r4jGADV7528UdO/zfL+/Ud92BMSag=
 github.com/Azure/azure-sdk-for-go/sdk/azcore v1.23.1 h1:zvXfGJCWvywnCA814d8ZiVyt+fm9nnTE8xSb99zRyfo=
 github.com/Azure/azure-sdk-for-go/sdk/azcore v1.23.1/go.mod h1:iptorS+VYKFL2N6PnebpS91dubG35eAOEERnT4PJbQU=
 github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.14.1 h1:u93s+zU2JD62im61Bm5CZIc1ZrOJaIAWEg0WOrMVkEo=
