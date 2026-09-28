@@ -32,7 +32,7 @@ import (
 // ensuring that there is always spare capacity available to handle sudden workload spikes or to speed up scaling events.
 type CapacityBufferApplyConfiguration struct {
 	// Standard Kubernetes object metadata.
-	v1.TypeMetaApplyConfiguration    `json:",inline"`
+	v1.TypeMetaApplyConfiguration    `json:""`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
 	// Spec defines the desired characteristics of the buffer.
 	Spec *CapacityBufferSpecApplyConfiguration `json:"spec,omitempty"`

@@ -34,11 +34,39 @@ import (
 )
 
 // CapacityQuotaInformer provides access to a shared informer and lister for
-// CapacityQuotas.
+// CapacityQuotas. Prefer using the type-safe variant (see [TypedCapacityQuotaInformer]).
 type CapacityQuotaInformer interface {
 	Informer() cache.SharedIndexInformer
 	Lister() autoscalingxk8siov1beta1.CapacityQuotaLister
 }
+
+// TypedCapacityQuotaInformer provides access to a shared informer and lister for
+// CapacityQuotas, including the type-safe TypedInformer variant.
+// It is a superset of CapacityQuotaInformer.
+type TypedCapacityQuotaInformer interface {
+	Informer() cache.SharedIndexInformer
+	TypedInformer() CapacityQuotaIndexInformer
+	Lister() autoscalingxk8siov1beta1.CapacityQuotaLister
+}
+
+// CapacityQuotaIndexInformer is a wrapper around the underlying [cache.SharedIndexInformer]
+// with type-safe variants of several methods.
+type CapacityQuotaIndexInformer cache.TypedSharedIndexInformer[*capacityquotaautoscalingxk8siov1beta1.CapacityQuota]
+
+// CapacityQuotaHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerFuncs] for CapacityQuota.
+type CapacityQuotaHandlerFuncs = cache.TypedResourceEventHandlerFuncs[*capacityquotaautoscalingxk8siov1beta1.CapacityQuota]
+
+// CapacityQuotaDetailedHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerDetailedFuncs] for CapacityQuota.
+type CapacityQuotaDetailedHandlerFuncs = cache.TypedResourceEventHandlerDetailedFuncs[*capacityquotaautoscalingxk8siov1beta1.CapacityQuota]
+
+// CapacityQuotaFilteringHandler is a specialization of [cache.TypedFilteringResourceEventHandler] for CapacityQuota.
+type CapacityQuotaFilteringHandler = cache.TypedFilteringResourceEventHandler[*capacityquotaautoscalingxk8siov1beta1.CapacityQuota]
+
+// CapacityQuotaIndexers is a specialization of [cache.TypedIndexers] for CapacityQuota.
+type CapacityQuotaIndexers = cache.TypedIndexers[*capacityquotaautoscalingxk8siov1beta1.CapacityQuota]
+
+// DeletedCapacityQuota is a specialization of [cache.DeletedObject] for CapacityQuota.
+type DeletedCapacityQuota = cache.DeletedObject[*capacityquotaautoscalingxk8siov1beta1.CapacityQuota]
 
 type capacityQuotaInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
@@ -49,25 +77,49 @@ type capacityQuotaInformer struct {
 // NewCapacityQuotaInformer constructs a new informer for CapacityQuota type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedCapacityQuotaInformer]).
 func NewCapacityQuotaInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewCapacityQuotaInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers})
+}
+
+// NewTypedCapacityQuotaInformer constructs a new informer for CapacityQuota type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedCapacityQuotaInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers CapacityQuotaIndexers) CapacityQuotaIndexInformer {
+	return NewTypedCapacityQuotaInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers)})
 }
 
 // NewFilteredCapacityQuotaInformer constructs a new informer for CapacityQuota type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedFilteredCapacityQuotaInformer]).
 func NewFilteredCapacityQuotaInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
-	return NewCapacityQuotaInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+	return NewTypedCapacityQuotaInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+}
+
+// NewTypedFilteredCapacityQuotaInformer constructs a new informer for CapacityQuota type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedFilteredCapacityQuotaInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers CapacityQuotaIndexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) CapacityQuotaIndexInformer {
+	return NewTypedCapacityQuotaInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers), TweakListOptions: tweakListOptions})
 }
 
 // NewCapacityQuotaInformerWithOptions constructs a new informer for CapacityQuota type with additional options.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedCapacityQuotaInformerWithOptions]).
 func NewCapacityQuotaInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) cache.SharedIndexInformer {
+	return NewTypedCapacityQuotaInformerWithOptions(client, namespace, options)
+}
+
+// NewTypedCapacityQuotaInformerWithOptions constructs a new informer for CapacityQuota type with additional options.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedCapacityQuotaInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) CapacityQuotaIndexInformer {
 	gvr := schema.GroupVersionResource{Group: "autoscaling.x-k8s.io", Version: "v1beta1", Resource: "capacityquotas"}
 	identifier := options.InformerName.WithResource(gvr)
 	tweakListOptions := options.TweakListOptions
-	return cache.NewSharedIndexInformerWithOptions(
+	return cache.NewTypedSharedIndexInformer[*capacityquotaautoscalingxk8siov1beta1.CapacityQuota](cache.NewSharedIndexInformerWithOptions(
 		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(opts v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
@@ -100,17 +152,57 @@ func NewCapacityQuotaInformerWithOptions(client versioned.Interface, namespace s
 			Indexers:     options.Indexers,
 			Identifier:   identifier,
 		},
-	)
+	))
 }
 
 func (f *capacityQuotaInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewCapacityQuotaInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
+	return NewTypedCapacityQuotaInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
 }
 
 func (f *capacityQuotaInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&capacityquotaautoscalingxk8siov1beta1.CapacityQuota{}, f.defaultInformer)
+	return f.TypedInformer()
+}
+
+func (f *capacityQuotaInformer) TypedInformer() CapacityQuotaIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*capacityquotaautoscalingxk8siov1beta1.CapacityQuota](f.factory.InformerFor(&capacityquotaautoscalingxk8siov1beta1.CapacityQuota{}, f.defaultInformer))
 }
 
 func (f *capacityQuotaInformer) Lister() autoscalingxk8siov1beta1.CapacityQuotaLister {
 	return autoscalingxk8siov1beta1.NewCapacityQuotaLister(f.Informer().GetIndexer())
+}
+
+// ToTypedCapacityQuotaInformer converts an untyped informer into a TypedCapacityQuotaInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *CapacityQuota. If that is not the case, calling type-safe methods of the returned
+// TypedCapacityQuotaInformer leads to runtime panics. A safer alternative is to pass
+// around a TypedCapacityQuotaInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToTypedCapacityQuotaInformer(informer CapacityQuotaInformer) TypedCapacityQuotaInformer {
+	if informer, ok := informer.(TypedCapacityQuotaInformer); ok {
+		return informer
+	}
+	return &capacityQuotaTypedInformerAdapter{informer}
+}
+
+type capacityQuotaTypedInformerAdapter struct {
+	CapacityQuotaInformer
+}
+
+func (a *capacityQuotaTypedInformerAdapter) TypedInformer() CapacityQuotaIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*capacityquotaautoscalingxk8siov1beta1.CapacityQuota](a.Informer())
+}
+
+// ToCapacityQuotaIndexInformer converts an untyped informer into a CapacityQuotaIndexInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *CapacityQuota. If that is not the case, calling type-safe methods of the returned
+// CapacityQuotaIndexInformer leads to runtime panics. A safer alternative is to pass
+// around a CapacityQuotaIndexInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToCapacityQuotaIndexInformer(informer cache.SharedIndexInformer) CapacityQuotaIndexInformer {
+	if informer, ok := informer.(CapacityQuotaIndexInformer); ok {
+		return informer
+	}
+	return cache.NewTypedSharedIndexInformer[*capacityquotaautoscalingxk8siov1beta1.CapacityQuota](informer)
 }
