@@ -381,7 +381,7 @@ metadata:
 
 #### Per-NodeGroup autoscaling options
 
-Custom autoscaling options per node group (MachineDeployment/MachinePool/MachineSet) can be specified as annoations with a common prefix:
+Custom autoscaling options per node group (MachineDeployment/MachinePool/MachineSet) can be specified as annotations with a common prefix:
 
 ```yaml
 apiVersion: cluster.x-k8s.io/v1beta1

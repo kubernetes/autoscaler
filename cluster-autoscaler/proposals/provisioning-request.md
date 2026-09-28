@@ -27,7 +27,7 @@ This is especially problematic in couple of cases:
 Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that
 aims to allow users to ask CA for capacity for groups of pods.
 It allows users to express the fact that group of pods is connected and should
-be threated as one entity.
+be treated as one entity.
 This AEP proposes an API that can have multiple provisioning classes and can be
 extended by cloud provider specific ones.
 This object is meant as one-shot request to CA, so that if CA fails to provision
@@ -88,7 +88,7 @@ type ProvisioningRequestSpec struct {
 
 	// ProvisioningClass describes the different modes of provisioning the resources.
 	// Supported values:
-	// * check-capacity.autoscaling.x-k8s.io - check if current cluster state can fullfil this request,
+	// * check-capacity.autoscaling.x-k8s.io - check if current cluster state can fulfill this request,
 	//   do not reserve the capacity.
 	// * best-effort-atomic-scale-up.autoscaling.x-k8s.io - provision the resources in an atomic manner
     // * ... - potential other classes that are specific to the cloud providers
@@ -169,7 +169,7 @@ specified pods in an atomic way. The proposed logic is to:
 2. If it failed, remove the partially provisioned VMs and back-off.
 3. Stop the back-off after a given duration (optional), which would be passed
    via `Parameters` field, using `ValidUntilSeconds` key and would contain string
-   denoting duration for which we should retry (measured since creation fo the CR).
+   denoting duration for which we should retry (measured since creation of the CR).
 
 Note: that the VMs created in this mode are subject to the scale-down logic.
 So the duration during which users need to create the Pods is equal to the
@@ -253,7 +253,7 @@ loop. This will require changes in multiple parts of CA:
 1.  Listing unschedulable pods where:
       - pods that consume ProvReq need to filtered-out
       - pods that are represented by the ProvReq need to be injected (we need to
-        ensure those are threated as one group by the sharding logic)
+        ensure those are treated as one group by the sharding logic)
 2.  Scale-up logic, which as of now has no notion atomicity and grouping of
     pods. This is simplified as the ScaleUp logic was recently put [behind an
     interface](https://github.com/kubernetes/autoscaler/pull/5597).

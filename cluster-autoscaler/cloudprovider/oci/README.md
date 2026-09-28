@@ -70,7 +70,7 @@ Note: This is available to use with OKE Node Pools or OCI Managed Instance Pools
 
 See the [documentation](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contenggrantingworkloadaccesstoresources.htm) for more details
 
-When using a mix of nodes, make sure to add proper lables and affinities on the cluster-autoscaler deployment to prevent it from being deployed on non-OCI managed nodes.
+When using a mix of nodes, make sure to add proper labels and affinities on the cluster-autoscaler deployment to prevent it from being deployed on non-OCI managed nodes.
 
 ```
 Allow any-user to manage cluster-node-pools in compartment <compartment name> where ALL {request.principal.type='workload', request.principal.namespace ='<namespace>', request.principal.service_account = 'cluster-autoscaler', request.principal.cluster_id = 'ocid1.cluster.oc1....'}

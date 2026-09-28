@@ -546,7 +546,7 @@ the following annotation.
 "cluster-autoscaler.kubernetes.io/enable-ds-eviction": "true"
 ```
 
-It is also possible to disable DaemonSet pods eviction expicitly:
+It is also possible to disable DaemonSet pods eviction explicitly:
 
 ```
 "cluster-autoscaler.kubernetes.io/enable-ds-eviction": "false"
