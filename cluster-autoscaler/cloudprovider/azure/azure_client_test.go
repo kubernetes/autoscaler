@@ -49,7 +49,8 @@ func (staticTokenCredential) GetToken(context.Context, azcorepolicy.TokenRequest
 }
 
 type recordingTransport struct {
-	request *http.Request
+	request      *http.Request
+	responseBody string
 }
 
 func (transport *recordingTransport) Do(request *http.Request) (*http.Response, error) {
@@ -57,7 +58,7 @@ func (transport *recordingTransport) Do(request *http.Request) (*http.Response, 
 	return &http.Response{
 		StatusCode: http.StatusOK,
 		Header:     http.Header{"Content-Type": []string{"application/json"}},
-		Body:       io.NopCloser(strings.NewReader(`{"value":[]}`)),
+		Body:       io.NopCloser(strings.NewReader(transport.responseBody)),
 		Request:    request,
 	}, nil
 }
@@ -85,7 +86,7 @@ func TestNewARMClientConfigControlsAzureStackVMSSDeleteAPIVersion(t *testing.T) 
 			cfg.DisableAzureStackCloud = testCase.disableAzureStackCloud
 			armConfig := newARMClientConfig(cfg, &autorestazure.Environment{})
 
-			transport := &recordingTransport{}
+			transport := &recordingTransport{responseBody: `{"value":[]}`}
 			factory, err := azclient.NewClientFactory(
 				&azclient.ClientFactoryConfig{SubscriptionID: "subscription"},
 				armConfig,

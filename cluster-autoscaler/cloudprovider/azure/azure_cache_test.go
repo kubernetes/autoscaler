@@ -17,16 +17,70 @@ limitations under the License.
 package azure
 
 import (
+	"context"
+	"net/http"
 	"testing"
 
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 
+	armpolicy "github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/policy"
+	azcorepolicy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	armcomputev8 "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v8"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"k8s.io/utils/ptr"
 )
+
+func TestFetchSKUs(t *testing.T) {
+	ctx := context.Background()
+	transport := &recordingTransport{
+		responseBody: `{
+			"value": [{
+				"name": "Standard_D2s_v3",
+				"resourceType": "virtualMachines",
+				"locations": ["eastus"],
+				"capabilities": [
+					{"name": "vCPUs", "value": "2"},
+					{"name": "MemoryGB", "value": "8"}
+				]
+			}]
+		}`,
+	}
+	skuClient, err := armcomputev8.NewResourceSKUsClient("subscription", staticTokenCredential{}, &armpolicy.ClientOptions{
+		ClientOptions: azcorepolicy.ClientOptions{Transport: transport},
+	})
+	require.NoError(t, err)
+
+	cache := &azureCache{azClient: &azClient{skuClient: skuClient}}
+	cache.skus, err = cache.fetchSKUs(ctx, "eastus")
+	require.NoError(t, err)
+	assert.True(t, cache.HasVMSKUs())
+
+	require.NotNil(t, transport.request)
+	assert.Equal(t, http.MethodGet, transport.request.Method)
+	assert.Equal(t, "/subscriptions/subscription/providers/Microsoft.Compute/skus", transport.request.URL.Path)
+	assert.Equal(t, "2021-07-01", transport.request.URL.Query().Get("api-version"))
+	assert.Equal(t, "location eq 'eastus'", transport.request.URL.Query().Get("$filter"))
+
+	sku, err := cache.GetSKU(ctx, "Standard_D2s_v3", "eastus")
+	require.NoError(t, err)
+	cpus, err := sku.VCPU()
+	require.NoError(t, err)
+	assert.Equal(t, int64(2), cpus)
+	memory, err := sku.Memory()
+	require.NoError(t, err)
+	assert.Equal(t, float64(8), memory)
+}
+
+func TestFetchSKUsRequiresLocation(t *testing.T) {
+	cache := &azureCache{}
+	skus, err := cache.fetchSKUs(context.Background(), "")
+	require.EqualError(t, err, "location not specified")
+	assert.Nil(t, skus)
+}
 
 func TestFetchVMsPools(t *testing.T) {
 	ctrl := gomock.NewController(t)
