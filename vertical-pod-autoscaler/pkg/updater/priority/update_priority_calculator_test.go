@@ -26,8 +26,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -244,6 +246,67 @@ func TestUpdatePodWithQuickOOM(t *testing.T) {
 	calculator.AddPod(pod, timestampNow, make(map[types.UID]*vpa_types.RecommendedPodResources))
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
 	assert.Exactly(t, []*corev1.Pod{pod}, result, "Pod should be updated")
+}
+
+func TestUpdatePodWithQuickOOMNativeSidecar(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
+	newPod := func() *corev1.Pod {
+		pod := test.Pod().WithName("POD1").
+			AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("4")).Get()).
+			AddInitContainer(corev1.Container{
+				Name:          "sidecar",
+				RestartPolicy: &always,
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+				},
+			}).Get()
+		// The OOM happened in the native sidecar, recorded under InitContainerStatuses.
+		pod.Status.InitContainerStatuses = []corev1.ContainerStatus{
+			{
+				Name: "sidecar",
+				LastTerminationState: corev1.ContainerState{
+					Terminated: &corev1.ContainerStateTerminated{
+						Reason:     "OOMKilled",
+						FinishedAt: metav1.NewTime(pod.Status.StartTime.Add(time.Hour*11 - 3*time.Minute)),
+						StartedAt:  metav1.NewTime(pod.Status.StartTime.Add(time.Hour*11 - 5*time.Minute)),
+					},
+				},
+			},
+		}
+		return pod
+	}
+
+	// Pod is within the recommended range and the resource diff is below the
+	// update threshold, so only a quick OOM can trigger an update.
+	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).
+		WithTarget("5", "").
+		WithLowerBound("1", "").
+		WithUpperBound("6", "").Get()
+
+	priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+		"POD1": {ScaleUp: true, ResourceDiff: 0.25},
+	})
+	updateconfig := UpdateConfig{MinChangePriority: 0.5, PodLifetimeUpdateThreshold: time.Hour * 12, EvictAfterOOMThreshold: 10 * time.Minute}
+
+	t.Run("native sidecar OOM triggers update when gate enabled", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+		pod := newPod()
+		calculator := NewUpdatePriorityCalculator(
+			vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
+		calculator.AddPod(pod, pod.Status.StartTime.Add(time.Hour*11), make(map[types.UID]*vpa_types.RecommendedPodResources))
+		result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+		assert.Exactly(t, []*corev1.Pod{pod}, result, "Pod should be updated")
+	})
+
+	t.Run("native sidecar OOM ignored when gate disabled", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, false)
+		pod := newPod()
+		calculator := NewUpdatePriorityCalculator(
+			vpa, updateconfig, &test.FakeRecommendationProcessor{}, priorityProcessor)
+		calculator.AddPod(pod, pod.Status.StartTime.Add(time.Hour*11), make(map[types.UID]*vpa_types.RecommendedPodResources))
+		result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
+		assert.Empty(t, result, "Pod should not be updated")
+	})
 }
 
 func TestDontUpdatePodWithQuickOOMNoResourceChange(t *testing.T) {

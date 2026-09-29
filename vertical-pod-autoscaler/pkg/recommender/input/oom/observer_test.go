@@ -23,10 +23,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
@@ -47,12 +50,20 @@ metadata:
   name: Pod1
   namespace: mockNamespace
 spec:
+  initContainers:
+  - name: InitName11
+    resources:
+      requests:
+        memory: "1024"
   containers:
   - name: Name11
     resources:
       requests:
         memory: "1024"
 status:
+  initContainerStatuses:
+  - name: InitName11
+    restartCount: 0
   containerStatuses:
   - name: Name11
 `
@@ -292,6 +303,71 @@ func TestOOMObserverOnUpdate(t *testing.T) {
 			assert.Equal(t, *tc.wantOOMInfo, info)
 		})
 	}
+}
+
+// TestOOMObserverOnUpdate_NativeSidecar verifies that OOM events from init containers are only
+// observed for native sidecars (restartPolicy: Always) and only when the NativeSidecar feature
+// gate is enabled; plain init containers must never surface an OOM event.
+func TestOOMObserverOnUpdate_NativeSidecar(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
+	timestamp, err := time.Parse(time.RFC3339, "2018-02-23T13:38:48Z")
+	assert.NoError(t, err)
+
+	newPod := func(restartPolicy *corev1.ContainerRestartPolicy, terminated bool) *corev1.Pod {
+		status := corev1.ContainerStatus{Name: "sidecar"}
+		if terminated {
+			status.State = corev1.ContainerState{
+				Terminated: &corev1.ContainerStateTerminated{
+					FinishedAt: metav1.NewTime(timestamp),
+					Reason:     "OOMKilled",
+				},
+			}
+		} else {
+			status.State = corev1.ContainerState{Running: &corev1.ContainerStateRunning{}}
+		}
+		return &corev1.Pod{
+			ObjectMeta: metav1.ObjectMeta{Name: "Pod1", Namespace: "mockNamespace"},
+			Spec: corev1.PodSpec{
+				InitContainers: []corev1.Container{{
+					Name:          "sidecar",
+					RestartPolicy: restartPolicy,
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1024")},
+					},
+				}},
+			},
+			Status: corev1.PodStatus{InitContainerStatuses: []corev1.ContainerStatus{status}},
+		}
+	}
+
+	t.Run("gate disabled ignores native sidecar OOM", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, false)
+		observer := NewObserver()
+		observer.OnUpdate(newPod(&always, false), newPod(&always, true))
+		assert.Empty(t, observer.observedOomsChannel)
+	})
+
+	t.Run("gate enabled ignores plain init container OOM", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+		observer := NewObserver()
+		observer.OnUpdate(newPod(nil, false), newPod(nil, true))
+		assert.Empty(t, observer.observedOomsChannel)
+	})
+
+	t.Run("gate enabled records native sidecar OOM", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+		observer := NewObserver()
+		observer.OnUpdate(newPod(&always, false), newPod(&always, true))
+		info := <-observer.observedOomsChannel
+		assert.Equal(t, OomInfo{
+			ContainerID: model.ContainerID{
+				PodID:         model.PodID{Namespace: "mockNamespace", PodName: "Pod1"},
+				ContainerName: "sidecar",
+			},
+			Memory:    model.ResourceAmount(1024),
+			Timestamp: timestamp,
+		}, info)
+	})
 }
 
 func TestParseEvictionEvent(t *testing.T) {

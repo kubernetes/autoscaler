@@ -22,8 +22,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -1222,6 +1224,140 @@ func TestApplyPodLimitRange(t *testing.T) {
 			assert.Equal(t, tc.expect, got)
 		})
 	}
+}
+
+// TestNativeSidecarCappingGating verifies that native sidecars (init containers with
+// restartPolicy: Always) are only pulled into pod-scoped capping when the NativeSidecar
+// feature is enabled. With the flag off, the sidecar must not appear in the zipped set
+// nor be backfilled into the recommendation list.
+func TestNativeSidecarCappingGating(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
+	pod := &corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Name: "app"},
+			},
+			InitContainers: []corev1.Container{
+				{
+					Name:          "sidecar",
+					RestartPolicy: &always,
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m")},
+					},
+				},
+				{
+					Name: "plain-init",
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("50m")},
+					},
+				},
+			},
+		},
+	}
+	recommendations := []vpa_types.RecommendedContainerResources{
+		{ContainerName: "app", Target: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}},
+	}
+
+	names := func(cwrs []containerWithRecommendation) []string {
+		result := make([]string, 0, len(cwrs))
+		for _, cwr := range cwrs {
+			result = append(result, cwr.container.Name)
+		}
+		return result
+	}
+	recNames := func(recs []vpa_types.RecommendedContainerResources) []string {
+		result := make([]string, 0, len(recs))
+		for _, r := range recs {
+			result = append(result, r.ContainerName)
+		}
+		return result
+	}
+
+	tests := []struct {
+		name                string
+		nativeSidecarGate   bool
+		expectZippedNames   []string
+		expectBackfillNames []string
+	}{
+		{
+			name:                "gate off excludes sidecar",
+			nativeSidecarGate:   false,
+			expectZippedNames:   []string{"app"},
+			expectBackfillNames: []string{"app"},
+		},
+		{
+			name:                "gate on includes sidecar only",
+			nativeSidecarGate:   true,
+			expectZippedNames:   []string{"app", "sidecar"},
+			expectBackfillNames: []string{"app", "sidecar"},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, tc.nativeSidecarGate)
+			// The plain init container is never zipped/backfilled, regardless of the gate.
+			assert.Equal(t, tc.expectZippedNames, names(zipContainersWithRecommendations(recommendations, pod)))
+			assert.Equal(t, tc.expectBackfillNames, recNames(insertRequestsForMissingRecommendations(recommendations, pod)))
+		})
+	}
+}
+
+// TestNativeSidecarPodLimitRangeCapping verifies that applyPodLimitRange's proportional capping
+// output includes a native sidecar's target only when the NativeSidecar feature gate is enabled;
+// a regression in the capping math for the sidecar path wouldn't be caught by helper-membership
+// checks alone.
+func TestNativeSidecarPodLimitRangeCapping(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
+	newPod := func() *corev1.Pod {
+		return &corev1.Pod{
+			Spec: corev1.PodSpec{
+				Containers: []corev1.Container{{
+					Name: "app",
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+						Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+					},
+				}},
+				InitContainers: []corev1.Container{{
+					Name:          "sidecar",
+					RestartPolicy: &always,
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+						Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+					},
+				}},
+			},
+		}
+	}
+	limitRange := corev1.LimitRangeItem{
+		Max: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+	}
+	getTarget := func(rl vpa_types.RecommendedContainerResources) *corev1.ResourceList { return &rl.Target }
+
+	t.Run("gate off leaves sidecar recommendation untouched", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, false)
+		resources := []vpa_types.RecommendedContainerResources{
+			{ContainerName: "app", Target: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}},
+			{ContainerName: "sidecar", Target: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}},
+		}
+		got := applyPodLimitRange(resources, newPod(), limitRange, corev1.ResourceCPU, getTarget)
+		// "app" alone doesn't exceed the 1 CPU max, so nothing is capped; the sidecar recommendation
+		// isn't considered for capping at all, and is returned exactly as given.
+		assert.Equal(t, resource.MustParse("1"), got[0].Target[corev1.ResourceCPU])
+		assert.Equal(t, resource.MustParse("1"), got[1].Target[corev1.ResourceCPU])
+	})
+
+	t.Run("gate on caps sidecar proportionally with app", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+		resources := []vpa_types.RecommendedContainerResources{
+			{ContainerName: "app", Target: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}},
+			{ContainerName: "sidecar", Target: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}},
+		}
+		got := applyPodLimitRange(resources, newPod(), limitRange, corev1.ResourceCPU, getTarget)
+		// app + sidecar limits sum to 2 CPU, exceeding the 1 CPU max, so both are capped to 500m.
+		assert.Equal(t, *resource.NewMilliQuantity(500, resource.DecimalSI), got[0].Target[corev1.ResourceCPU])
+		assert.Equal(t, *resource.NewMilliQuantity(500, resource.DecimalSI), got[1].Target[corev1.ResourceCPU])
+	})
 }
 
 func TestApplyLimitRangeMinToRequest(t *testing.T) {
