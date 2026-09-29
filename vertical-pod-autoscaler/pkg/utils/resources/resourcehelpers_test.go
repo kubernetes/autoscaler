@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package resourcehelpers
+package resourcehelpers_test
 
 import (
 	"testing"
@@ -25,6 +25,7 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 )
 
 func TestContainerRequestsAndLimits(t *testing.T) {
@@ -196,7 +197,7 @@ func TestContainerRequestsAndLimits(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			gotRequests, gotLimits := ContainerRequestsAndLimits(tc.containerName, tc.pod)
+			gotRequests, gotLimits := resourcehelpers.ContainerRequestsAndLimits(tc.containerName, tc.pod)
 			assert.Equal(t, tc.wantRequests, gotRequests, "requests don't match")
 			assert.Equal(t, tc.wantLimits, gotLimits, "limits don't match")
 		})
@@ -255,7 +256,7 @@ func TestHasLowerResource(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := HasLowerResource(tt.a, tt.b); got != tt.expected {
+			if got := resourcehelpers.HasLowerResource(tt.a, tt.b); got != tt.expected {
 				t.Errorf("HasLowerResource() = %v, want %v", got, tt.expected)
 			}
 		})
@@ -331,7 +332,7 @@ func TestRecommendationHasLowerResource(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := RecommendationHasLowerResource(tt.a, tt.b); got != tt.expected {
+			if got := resourcehelpers.RecommendationHasLowerResource(tt.a, tt.b); got != tt.expected {
 				t.Errorf("RecommendationHasLowerResource() = %v, want %v", got, tt.expected)
 			}
 		})

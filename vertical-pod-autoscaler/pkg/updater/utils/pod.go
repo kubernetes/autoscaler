@@ -17,9 +17,12 @@ limitations under the License.
 package utils
 
 import (
+	"slices"
+
 	corev1 "k8s.io/api/core/v1"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 )
 
 // GetPodCondition will get Pod's condition.
@@ -38,13 +41,7 @@ func GetPodCondition(pod *corev1.Pod, conditionType corev1.PodConditionType) (co
 func IsNonDisruptiveResize(pod *corev1.Pod) bool {
 	containers := pod.Spec.Containers
 	if features.Enabled(features.NativeSidecar) {
-		containers = make([]corev1.Container, 0, len(pod.Spec.Containers)+len(pod.Spec.InitContainers))
-		containers = append(containers, pod.Spec.Containers...)
-		for i := range pod.Spec.InitContainers {
-			if c := &pod.Spec.InitContainers[i]; c.RestartPolicy != nil && *c.RestartPolicy == corev1.ContainerRestartPolicyAlways {
-				containers = append(containers, *c)
-			}
-		}
+		containers = slices.Concat(pod.Spec.Containers, resourcehelpers.NativeSidecarContainers(pod))
 	}
 	for _, container := range containers {
 		for _, policy := range container.ResizePolicy {

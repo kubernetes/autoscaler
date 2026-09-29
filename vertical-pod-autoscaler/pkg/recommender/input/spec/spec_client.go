@@ -63,7 +63,7 @@ type BasicContainerSpec struct {
 	Image string
 	// Currently requested resources for this container.
 	Request model.Resources
-	// Type of the container (e.g. main, init, init_sidecar)
+	// Type of the container (e.g. container, init, init-sidecar)
 	ContainerType model.ContainerType
 }
 
