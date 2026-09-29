@@ -231,9 +231,7 @@ admissionController:
     maxUnavailable:
     # maxUnavailable: 1
     # -- (string) Policy used to evict unhealthy pods, either 'IfHealthyBudget' or 'AlwaysAllow'.
-    # Defaults to the Kubernetes default, 'IfHealthyBudget', when unset.
-    unhealthyPodEvictionPolicy:
-    # unhealthyPodEvictionPolicy: AlwaysAllow
+    unhealthyPodEvictionPolicy: AlwaysAllow
 
   # name of priorityclass for scheduling
   priorityClassName:
@@ -341,9 +339,7 @@ recommender:
     maxUnavailable:
     # maxUnavailable: 1
     # -- (string) Policy used to evict unhealthy pods, either 'IfHealthyBudget' or 'AlwaysAllow'.
-    # Defaults to the Kubernetes default, 'IfHealthyBudget', when unset.
-    unhealthyPodEvictionPolicy:
-    # unhealthyPodEvictionPolicy: AlwaysAllow
+    unhealthyPodEvictionPolicy: AlwaysAllow
 
   # name of priorityclass for scheduling
   priorityClassName:
@@ -438,9 +434,7 @@ updater:
     # IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both.
     maxUnavailable:
     # -- (string) Policy used to evict unhealthy pods, either 'IfHealthyBudget' or 'AlwaysAllow'.
-    # Defaults to the Kubernetes default, 'IfHealthyBudget', when unset.
-    unhealthyPodEvictionPolicy:
-    # unhealthyPodEvictionPolicy: AlwaysAllow
+    unhealthyPodEvictionPolicy: AlwaysAllow
 
   # Resources for the updater Controller
   resources: {}
