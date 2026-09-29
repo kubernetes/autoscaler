@@ -3,6 +3,7 @@
 <!--
 Add one of the following kinds:
 /kind bug
+/kind dependency
 /kind cleanup
 /kind documentation
 /kind feature
