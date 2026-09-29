@@ -13,6 +13,7 @@ updates:
     - "release-note-none"
     - "ok-to-test"
     - "triage/accepted"
+    - "kind/dependency"
   allow:
     - dependency-type: "all"
   groups:
@@ -41,6 +42,7 @@ updates:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
     - "ok-to-test"
+    - "kind/dependency"
   groups:
     actions:
       update-types:
@@ -60,6 +62,7 @@ updates:
     - "release-note-none"
     - "ok-to-test"
     - "triage/accepted"
+    - "kind/dependency"
   allow:
     - dependency-type: "all"
   ignore:
@@ -84,6 +87,7 @@ updates:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
     - "ok-to-test"
+    - "kind/dependency"
   groups:
     actions:
       update-types:
@@ -102,6 +106,7 @@ updates:
     - "release-note-none"
     - "ok-to-test"
     - "triage/accepted"
+    - "kind/dependency"
   allow:
     - dependency-type: "all"
   ignore:
@@ -126,6 +131,7 @@ updates:
     - "area/vertical-pod-autoscaler"
     - "release-note-none"
     - "ok-to-test"
+    - "kind/dependency"
   groups:
     actions:
       update-types:
