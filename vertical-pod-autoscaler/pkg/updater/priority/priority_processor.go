@@ -54,14 +54,25 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_typ
 
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
 
-	processContainer := func(podContainer corev1.Container) {
+	containers := pod.Spec.Containers
+	if features.Enabled(features.NativeSidecar) {
+		containers = make([]corev1.Container, 0, len(pod.Spec.Containers)+len(pod.Spec.InitContainers))
+		containers = append(containers, pod.Spec.Containers...)
+		for i := range pod.Spec.InitContainers {
+			if resourcehelpers.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
+				containers = append(containers, pod.Spec.InitContainers[i])
+			}
+		}
+	}
+
+	for _, podContainer := range containers {
 		if hasObservedContainers && !vpaContainerSet.Has(podContainer.Name) {
 			klog.V(4).InfoS("Not listed in VPA observed containers label. Skipping container priority calculations", "label", annotations.VpaObservedContainersLabel, "observedContainers", pod.GetAnnotations()[annotations.VpaObservedContainersLabel], "containerName", podContainer.Name, "vpa", klog.KObj(vpa))
-			return
+			continue
 		}
 		recommendedRequest := vpa_api_util.GetRecommendationForContainer(podContainer.Name, recommendation)
 		if recommendedRequest == nil {
-			return
+			continue
 		}
 		for resourceName, recommended := range recommendedRequest.Target {
 			totalRecommendedPerResource[resourceName] += recommended.MilliValue()
@@ -86,20 +97,6 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *corev1.Pod, vpa *vpa_typ
 				outsideRecommendedRange = true
 			}
 		}
-	}
-
-	containers := pod.Spec.Containers
-	if features.Enabled(features.NativeSidecar) {
-		containers = make([]corev1.Container, 0, len(pod.Spec.Containers)+len(pod.Spec.InitContainers))
-		containers = append(containers, pod.Spec.Containers...)
-		for i := range pod.Spec.InitContainers {
-			if resourcehelpers.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
-				containers = append(containers, pod.Spec.InitContainers[i])
-			}
-		}
-	}
-	for _, podContainer := range containers {
-		processContainer(podContainer)
 	}
 
 	resourceDiff := 0.0
