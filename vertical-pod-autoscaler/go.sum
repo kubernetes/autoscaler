@@ -17,8 +17,8 @@ github.com/fxamacker/cbor/v2 v2.9.4 h1:xwjVlxEMR3S605oUlgBjKLTTeGFciYPGYCtF/35LK
 github.com/fxamacker/cbor/v2 v2.9.4/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
 github.com/go-logr/logr v1.4.4 h1:tG4xh9yMsRCAiodLVTxyrkzSZ9+o0L1Kg/+cPVcbP/8=
 github.com/go-logr/logr v1.4.4/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
-github.com/go-openapi/jsonpointer v1.0.1 h1:2KxywRmNwJkT/FMBa3iRNHEaAxSJvjqoufQZy3au1Mg=
-github.com/go-openapi/jsonpointer v1.0.1/go.mod h1:wI7ZYsFmbIi9nBXOZqgDaS/bqOchRGZjqxFli7FBYxY=
+github.com/go-openapi/jsonpointer v1.0.2 h1:NbW7xT2b+l7x+JefiPGDsZWsrLk1ogrz4AHK1TTzMt8=
+github.com/go-openapi/jsonpointer v1.0.2/go.mod h1:N0rI4MbNKD7xAFTiHtB+5Nhrg2j/wwYg7m7Fmb4/jk8=
 github.com/go-openapi/jsonreference v1.0.2 h1:oS4et8FOf3p3UQxEo4Xt0esijmBUM+F259Xl72OSZsc=
 github.com/go-openapi/jsonreference v1.0.2/go.mod h1:TbUNSOo+fcorZjFaNoiSDSoaNnnZtqJtLGR1PuvE/Cs=
 github.com/go-openapi/swag v0.29.2 h1:9n8frkcsuQRA0INU31VbxNxt1zBaHxrHYGEf5BUjFi4=
@@ -49,8 +49,8 @@ github.com/go-openapi/swag/yamlutils v0.29.2 h1:IFKFFeDnuIwzfsuWRQU+rI8iL3g4XyAY
 github.com/go-openapi/swag/yamlutils v0.29.2/go.mod h1:7MGqtcrK73sxQ4ceiyIf8qiXS/s09JLMdR5esK5euYQ=
 github.com/go-openapi/testify/enable/yaml/v2 v2.7.0 h1:wPW6YRgx3+SID1yUy/Xwa17L8kFEaEKod2VRbJDZNUs=
 github.com/go-openapi/testify/enable/yaml/v2 v2.7.0/go.mod h1:mI1M88etYbc3PhgHsWQK2kwvNwW5aGFqMPbmib+SGIs=
-github.com/go-openapi/testify/v2 v2.7.0 h1:bycOreEj6wfBvijg3YFogZ/sFjTCDmQnwSodSzHa3X8=
-github.com/go-openapi/testify/v2 v2.7.0/go.mod h1:SgsVHtfooshd0tublTtJ50FPKhujf47YRqauXXOUxfw=
+github.com/go-openapi/testify/v2 v2.8.0 h1:19QDx5b57p8KjO2E4sgs/woL4Akp+FGLRlVm2xn0Rho=
+github.com/go-openapi/testify/v2 v2.8.0/go.mod h1:4gUN8jC+RqOE2qjW/vDmfyTvl5BCht4qL7oca0odrak=
 github.com/golang-jwt/jwt/v5 v5.3.1 h1:kYf81DTWFe7t+1VvL7eS+jKFVWaUnK9cB1qbwn63YCY=
 github.com/golang-jwt/jwt/v5 v5.3.1/go.mod h1:fxCRLWMO43lRc8nhHWY6LGqRcf+1gQWArsqaEUEa5bE=
 github.com/google/gnostic-models v0.7.1 h1:SisTfuFKJSKM5CPZkffwi6coztzzeYUhc3v4yxLWH8c=
@@ -66,8 +66,8 @@ github.com/jpillora/backoff v1.0.0 h1:uvFg412JmmHBHw7iwprIxkPMI+sGQ4kzOWsMeHnm2E
 github.com/jpillora/backoff v1.0.0/go.mod h1:J/6gKK9jxlEcS3zixgDgUAsiuZ7yrSoa/FX5e0EB2j4=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
-github.com/klauspost/compress v1.20.0 h1:a3C1ke2ohxFymNlb2HWAHjDeKCI90scRskErZkR0ezA=
-github.com/klauspost/compress v1.20.0/go.mod h1:LUdAzn7YLVvxLpc7y3V1m40wESHTgc1422pwwBSKYuI=
+github.com/klauspost/compress v1.20.1 h1:T7kKElXUMXrUJ2E9QhQhxFtcK5rPyLdsGZvdbLMPdiQ=
+github.com/klauspost/compress v1.20.1/go.mod h1:LUdAzn7YLVvxLpc7y3V1m40wESHTgc1422pwwBSKYuI=
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
