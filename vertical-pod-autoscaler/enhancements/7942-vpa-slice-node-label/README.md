@@ -140,10 +140,6 @@ type VerticalPodAutoscalerSpec struct {
 }
 ```
 
-The admission controller validates that:
-- The feature gate `VPASlice` is enabled.
-- `targetRef.Kind` is `DaemonSet`.
-
 #### New CRD: VerticalPodAutoscalerSlice
 
 ```go
