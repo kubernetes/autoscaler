@@ -21,7 +21,7 @@ package common
 var gitCommit = ""
 
 // versionCore is the version of VPA.
-const versionCore = "1.7.2"
+const versionCore = "1.7.3"
 
 // VerticalPodAutoscalerVersion returns the version of the VPA.
 func VerticalPodAutoscalerVersion() string {
