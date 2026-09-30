@@ -181,6 +181,43 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		err := ng.IncreaseSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size increase is too large")
 	})
+
+	t.Run("mismatched count returned by api", func(t *testing.T) {
+		numberOfNodes := 3
+		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
+			Count: numberOfNodes,
+		}, 1, 10)
+
+		delta := 2
+		targetSize := numberOfNodes + delta
+		mismatchedCount := targetSize - 1
+
+		client.On("UpdateKubernetesClusterPool",
+			ng.clusterID,
+			ng.id,
+			&civocloud.KubernetesClusterPoolUpdateConfig{
+				Count:  targetSize,
+				Region: "test",
+			},
+		).Return(
+			&civocloud.KubernetesPool{Count: mismatchedCount},
+			nil,
+		).Once()
+
+		err := ng.IncreaseSize(context.Background(), delta)
+		exp := fmt.Errorf("couldn't increase size to %d (delta: %d). Current size is: %d",
+			targetSize, delta, mismatchedCount)
+		assert.EqualError(t, err, exp.Error())
+		assert.Equal(t, numberOfNodes, ng.nodePool.Count, "cached node pool count should not be updated")
+	})
 }
 
 func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
@@ -279,6 +316,43 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			numberOfNodes, numberOfNodes+delta, ng.MinSize(context.Background()))
 		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease is too small")
+	})
+
+	t.Run("mismatched count returned by api", func(t *testing.T) {
+		numberOfNodes := 5
+		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
+			Count: numberOfNodes,
+		}, 1, 10)
+
+		delta := -2
+		targetSize := numberOfNodes + delta
+		mismatchedCount := targetSize + 1
+
+		client.On("UpdateKubernetesClusterPool",
+			ng.clusterID,
+			ng.id,
+			&civocloud.KubernetesClusterPoolUpdateConfig{
+				Count:  targetSize,
+				Region: "test",
+			},
+		).Return(
+			&civocloud.KubernetesPool{Count: mismatchedCount},
+			nil,
+		).Once()
+
+		err := ng.DecreaseTargetSize(context.Background(), delta)
+		exp := fmt.Errorf("couldn't decrease size to %d (delta: %d). Current size is: %d",
+			targetSize, delta, mismatchedCount)
+		assert.EqualError(t, err, exp.Error())
+		assert.Equal(t, numberOfNodes, ng.nodePool.Count, "cached node pool count should not be updated")
 	})
 }
 

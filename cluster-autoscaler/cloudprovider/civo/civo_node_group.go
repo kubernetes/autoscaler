@@ -95,9 +95,9 @@ func (n *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 
 	targetSize := n.nodePool.Count + delta
 
-	if targetSize > n.MaxSize(context.TODO()) {
+	if targetSize > n.MaxSize(ctx) {
 		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d",
-			n.nodePool.Count, targetSize, n.MaxSize(context.TODO()))
+			n.nodePool.Count, targetSize, n.MaxSize(ctx))
 	}
 
 	req := &civocloud.KubernetesClusterPoolUpdateConfig{
@@ -109,9 +109,9 @@ func (n *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 		return err
 	}
 
-	if targetSize > n.MaxSize(context.TODO()) {
-		return fmt.Errorf("size increase too large. current: %d, desired: %d, max: %d",
-			updatedNodePool.Count, targetSize, n.MaxSize(context.TODO()))
+	if updatedNodePool.Count != targetSize {
+		return fmt.Errorf("couldn't increase size to %d (delta: %d). Current size is: %d",
+			targetSize, delta, updatedNodePool.Count)
 	}
 
 	// update internal cache
@@ -161,9 +161,9 @@ func (n *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	}
 
 	targetSize := n.nodePool.Count + delta
-	if targetSize < n.MinSize(context.TODO()) {
+	if targetSize < n.MinSize(ctx) {
 		return fmt.Errorf("size decrease is too small. current: %d desired: %d min: %d",
-			n.nodePool.Count, targetSize, n.MinSize(context.TODO()))
+			n.nodePool.Count, targetSize, n.MinSize(ctx))
 	}
 
 	req := &civocloud.KubernetesClusterPoolUpdateConfig{
@@ -177,7 +177,7 @@ func (n *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	}
 
 	if updatedNodePool.Count != targetSize {
-		return fmt.Errorf("couldn't increase size to %d (delta: %d). Current size is: %d",
+		return fmt.Errorf("couldn't decrease size to %d (delta: %d). Current size is: %d",
 			targetSize, delta, updatedNodePool.Count)
 	}
 
@@ -193,7 +193,7 @@ func (n *NodeGroup) Id() string {
 
 // Debug returns a string containing all information regarding this node group.
 func (n *NodeGroup) Debug(ctx context.Context) string {
-	return fmt.Sprintf("id: %s (min:%d max:%d)", n.Id(), n.MinSize(context.TODO()), n.MaxSize(context.TODO()))
+	return fmt.Sprintf("id: %s (min:%d max:%d)", n.Id(), n.MinSize(ctx), n.MaxSize(ctx))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.  It is
