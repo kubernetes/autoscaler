@@ -1487,3 +1487,123 @@ func TestVeryInvalidateVPA(t *testing.T) {
 		assert.Contains(t, expectFieldErrors, err.Field)
 	}
 }
+
+func vpaWithPressure(mode vpa_types.PressureDetectionMode) *vpa_types.VerticalPodAutoscaler {
+	return &vpa_types.VerticalPodAutoscaler{
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			TargetRef: &autoscalingv1.CrossVersionObjectReference{Kind: "Deployment", Name: "app", APIVersion: "apps/v1"},
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{{ContainerName: "app", PressureDetection: &mode}},
+			},
+		},
+	}
+}
+
+func TestExistingPressureDetection(t *testing.T) {
+	tests := []struct {
+		name     string
+		oldObj   *vpa_types.VerticalPodAutoscaler
+		expected map[string]bool
+	}{
+		{name: "no old object", expected: map[string]bool{}},
+		{name: "no resource policy", oldObj: &vpa_types.VerticalPodAutoscaler{}, expected: map[string]bool{}},
+		{name: "opted-in container", oldObj: vpaWithPressure(vpa_types.PressureDetectionEnabled), expected: map[string]bool{"app": true}},
+		{name: "Disabled container", oldObj: vpaWithPressure(vpa_types.PressureDetectionDisabled), expected: map[string]bool{}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, existingPressureDetection(tc.oldObj))
+		})
+	}
+}
+
+func TestPressureDetectionUpdateModeWarning(t *testing.T) {
+	warningFor := func(mode vpa_types.UpdateMode) string {
+		return fmt.Sprintf("spec.resourcePolicy.containerPolicies[0].pressureDetection: pressure detection raises the memory recommendation in every update mode, but only updateMode %q and %q apply the raise to running Pods without waiting for the usual update thresholds. This object uses %q.",
+			vpa_types.UpdateModeInPlace, vpa_types.UpdateModeInPlaceOrRecreate, mode)
+	}
+	tests := []struct {
+		name  string
+		mode  *vpa_types.UpdateMode
+		allow bool
+		// wantMode is the mode the warning must name, or "" when no warning is expected.
+		wantMode vpa_types.UpdateMode
+	}{
+		{name: "InPlace acts on the signal", mode: ptr.To(vpa_types.UpdateModeInPlace), allow: true},
+		{name: "InPlaceOrRecreate acts on the signal", mode: ptr.To(vpa_types.UpdateModeInPlaceOrRecreate), allow: true},
+		{name: "Recreate warns", mode: ptr.To(vpa_types.UpdateModeRecreate), allow: true, wantMode: vpa_types.UpdateModeRecreate},
+		{name: "Initial warns", mode: ptr.To(vpa_types.UpdateModeInitial), allow: true, wantMode: vpa_types.UpdateModeInitial},
+		{name: "Off warns", mode: ptr.To(vpa_types.UpdateModeOff), allow: true, wantMode: vpa_types.UpdateModeOff},
+		{name: "deprecated Auto warns alongside the deprecation warning", mode: ptr.To(vpa_types.UpdateModeAuto), allow: true, wantMode: vpa_types.UpdateModeAuto}, //nolint:staticcheck
+		{name: "empty update mode defaults to Recreate and warns", mode: ptr.To(vpa_types.UpdateMode("")), allow: true, wantMode: vpa_types.UpdateModeRecreate},
+		{name: "no update policy defaults to Recreate and warns", allow: true, wantMode: vpa_types.UpdateModeRecreate},
+		{name: "a rejected opt-in carries an error instead", mode: ptr.To(vpa_types.UpdateModeRecreate)},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			vpa := vpaWithPressure(vpa_types.PressureDetectionEnabled)
+			if tc.mode != nil {
+				vpa.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: tc.mode}
+			}
+			warnings, _ := validateVPA(vpa, VPAValidationOptions{IsVPACreate: true, AllowPressureDetection: tc.allow, AllowInPlace: true})
+			if tc.wantMode == "" {
+				assert.Empty(t, warnings)
+				return
+			}
+			assert.Contains(t, warnings, warningFor(tc.wantMode))
+		})
+	}
+}
+
+func TestPressureDetectionUpdateModeWarningPerContainer(t *testing.T) {
+	enabled := vpa_types.PressureDetectionEnabled
+	disabled := vpa_types.PressureDetectionDisabled
+	vpa := &vpa_types.VerticalPodAutoscaler{
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			TargetRef:    &autoscalingv1.CrossVersionObjectReference{Kind: "Deployment", Name: "app", APIVersion: "apps/v1"},
+			UpdatePolicy: &vpa_types.PodUpdatePolicy{UpdateMode: ptr.To(vpa_types.UpdateModeRecreate)},
+			ResourcePolicy: &vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+				{ContainerName: "sidecar", PressureDetection: &disabled},
+				{ContainerName: "app", PressureDetection: &enabled},
+				{ContainerName: "*", PressureDetection: &enabled},
+			}},
+		},
+	}
+
+	warnings, _ := validateVPA(vpa, VPAValidationOptions{IsVPACreate: true, AllowPressureDetection: true})
+
+	assert.Len(t, warnings, 2)
+	assert.Contains(t, warnings[0], "spec.resourcePolicy.containerPolicies[1].pressureDetection:")
+	assert.Contains(t, warnings[1], "spec.resourcePolicy.containerPolicies[2].pressureDetection:")
+}
+
+func TestValidatePressureDetection(t *testing.T) {
+	tests := []struct {
+		name        string
+		mode        vpa_types.PressureDetectionMode
+		allow       bool
+		existing    map[string]bool
+		expectError string
+	}{
+		{name: "Enabled allowed", mode: vpa_types.PressureDetectionEnabled, allow: true},
+		{name: "Enabled forbidden with the gate off", mode: vpa_types.PressureDetectionEnabled, allow: false,
+			expectError: "spec.resourcePolicy.containerPolicies[0].pressureDetection: Forbidden: Enabled is not supported when feature flag ReactiveMemoryPressureDetection is disabled"},
+		{name: "Disabled always allowed", mode: vpa_types.PressureDetectionDisabled, allow: false},
+		{name: "Enabled kept on the same container with the gate off", mode: vpa_types.PressureDetectionEnabled, existing: map[string]bool{"app": true}},
+		{name: "Enabled on another container with the gate off", mode: vpa_types.PressureDetectionEnabled, existing: map[string]bool{"sidecar": true},
+			expectError: "spec.resourcePolicy.containerPolicies[0].pressureDetection: Forbidden: Enabled is not supported when feature flag ReactiveMemoryPressureDetection is disabled"},
+		{name: "unknown value rejected", mode: "Sometimes", allow: true,
+			expectError: `spec.resourcePolicy.containerPolicies[0].pressureDetection: Unsupported value: "Sometimes": supported values: "Enabled", "Disabled"`},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			_, errs := validateVPA(vpaWithPressure(tc.mode), VPAValidationOptions{IsVPACreate: true, AllowPressureDetection: tc.allow, ExistingPressureDetection: tc.existing})
+			if tc.expectError == "" {
+				assert.Empty(t, errs)
+				return
+			}
+			assert.Len(t, errs, 1)
+			assert.Equal(t, tc.expectError, errs[0].Error())
+		})
+	}
+}

@@ -1,0 +1,27 @@
+# Opt-in only: grants the VPA recommender `get nodes/proxy` for the apiserver-proxy transport of
+# ReactiveMemoryPressureDetection. nodes/proxy also permits command execution in any container on any
+# node through the API server. Prefer the default direct transport with system:vpa-recommender-node-stats.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:vpa-recommender-node-proxy
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/proxy
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:vpa-recommender-node-proxy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:vpa-recommender-node-proxy
+subjects:
+  - kind: ServiceAccount
+    name: vpa-recommender
+    namespace: kube-system

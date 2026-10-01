@@ -31,6 +31,8 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
+	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -45,6 +47,19 @@ type UpdatePriorityCalculator struct {
 	config                  UpdateConfig
 	recommendationProcessor vpa_api_util.RecommendationProcessor
 	priorityProcessor       PriorityProcessor
+	// quickPressureBudget caps pressure-only admissions per loop.
+	quickPressureBudget int
+	// pressureOnly records Pods admitted only because of quick pressure; they must never be evicted.
+	pressureOnly map[types.UID]bool
+}
+
+// PressureOnly reports the Pods admitted only because of quick pressure.
+func (calc *UpdatePriorityCalculator) PressureOnly() map[types.UID]bool { return calc.pressureOnly }
+
+// SetQuickPressureBudget sets how many Pods may be admitted by quick pressure alone this loop:
+// PressureQuickUpdateFraction of the VPA's Pods, at least one.
+func (calc *UpdatePriorityCalculator) SetQuickPressureBudget(pods int) {
+	calc.quickPressureBudget = max(int(calc.config.PressureQuickUpdateFraction*float64(pods)), 1)
 }
 
 // UpdateConfig holds configuration for UpdatePriorityCalculator
@@ -54,6 +69,11 @@ type UpdateConfig struct {
 	MinChangePriority          float64
 	PodLifetimeUpdateThreshold time.Duration
 	EvictAfterOOMThreshold     time.Duration
+	// PressureQuickUpdateWindow is how long after an accepted memory pressure sample the lifetime and
+	// minimum-change gates are bypassed for Pods below their memory target.
+	PressureQuickUpdateWindow time.Duration
+	// PressureQuickUpdateFraction caps the share of a VPA's Pods admitted by quick pressure per loop.
+	PressureQuickUpdateFraction float64
 }
 
 // NewUpdatePriorityCalculator creates new UpdatePriorityCalculator for the given VPA object
@@ -131,19 +151,13 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time, inf
 	// - the request is outside the recommended range for some container.
 	// - the pod lives for at least the duration of PodLifetimeUpdateThreshold and the resource diff is >= MinChangePriority.
 	// - a vpa scaled container OOMed in less than evictAfterOOMThreshold of startup, and that OOM is still within evictAfterOOMThreshold of now.
+	// - quick pressure admits a pod the lifetime and minimum-change gates rejected.
 	if !updatePriority.OutsideRecommendedRange && !quickOOM {
-		if pod.Status.StartTime == nil {
-			// TODO: Set proper condition on the VPA.
-			klog.V(4).InfoS("Not updating pod, missing field pod.Status.StartTime", "pod", klog.KObj(pod))
-			return
-		}
-		if now.Before(pod.Status.StartTime.Add(calc.config.PodLifetimeUpdateThreshold)) {
-			klog.V(4).InfoS("Not updating a short-lived pod, request within recommended range", "pod", klog.KObj(pod))
-			return
-		}
-		if updatePriority.ResourceDiff < calc.config.MinChangePriority {
-			klog.V(4).InfoS("Not updating pod, resource diff too low", "pod", klog.KObj(pod), "updatePriority", updatePriority)
-			return
+		if reason := calc.lifetimeGateRejection(pod, now, updatePriority); reason != "" {
+			if !calc.admitByQuickPressure(pod, processedRecommendation, now, updatePriority.ResourceDiff) {
+				klog.V(4).InfoS(reason, "pod", klog.KObj(pod), "updatePriority", updatePriority)
+				return
+			}
 		}
 	}
 
@@ -314,4 +328,89 @@ func (p PodPriority) Less(other PodPriority) bool {
 	}
 	// 2. A pod with larger value of resourceDiff takes precedence.
 	return p.ResourceDiff < other.ResourceDiff
+}
+
+// quickPressure reports whether a pressure sample was accepted for an opted-in container within
+// PressureQuickUpdateWindow and the container's memory request is below its processed target. It reads
+// LastPressureTime from the raw VPA status because post-processors may rebuild processed entries without it.
+func (calc *UpdatePriorityCalculator) quickPressure(pod *corev1.Pod, processed *vpa_types.RecommendedPodResources, now time.Time) bool {
+	if !features.Enabled(features.ReactiveMemoryPressureDetection) || calc.vpa.Status.Recommendation == nil || processed == nil {
+		return false
+	}
+	mode := vpa_api_util.GetUpdateMode(calc.vpa)
+	if mode != vpa_types.UpdateModeInPlace && mode != vpa_types.UpdateModeInPlaceOrRecreate {
+		return false
+	}
+	if resizeOutstanding(pod) {
+		return false
+	}
+	for _, rec := range calc.vpa.Status.Recommendation.ContainerRecommendations {
+		if rec.LastPressureTime == nil || now.Sub(rec.LastPressureTime.Time) >= calc.config.PressureQuickUpdateWindow {
+			continue
+		}
+		if !vpa_api_util.IsPressureDetectionEnabled(rec.ContainerName, calc.vpa.Spec.ResourcePolicy) {
+			continue
+		}
+		target := vpa_api_util.GetRecommendationForContainer(rec.ContainerName, processed)
+		if target == nil {
+			continue
+		}
+		requests, _ := resourcehelpers.ContainerRequestsAndLimits(rec.ContainerName, pod)
+		if requests.Memory().Cmp(*target.Target.Memory()) < 0 {
+			klog.V(4).InfoS("Quick pressure update", "pod", klog.KObj(pod), "container", rec.ContainerName,
+				"request", requests.Memory().String(), "target", target.Target.Memory().String(), "pressureAt", rec.LastPressureTime.Time)
+			return true
+		}
+	}
+	return false
+}
+
+// lifetimeGateRejection returns why a pod inside the recommended range is not updated yet, or "" when
+// it has lived long enough and the change is large enough.
+func (calc *UpdatePriorityCalculator) lifetimeGateRejection(pod *corev1.Pod, now time.Time, updatePriority PodPriority) string {
+	if pod.Status.StartTime == nil {
+		// TODO: Set proper condition on the VPA.
+		return "Not updating pod, missing field pod.Status.StartTime"
+	}
+	if now.Before(pod.Status.StartTime.Add(calc.config.PodLifetimeUpdateThreshold)) {
+		return "Not updating a short-lived pod, request within recommended range"
+	}
+	if updatePriority.ResourceDiff < calc.config.MinChangePriority {
+		return "Not updating pod, resource diff too low"
+	}
+	return ""
+}
+
+// admitByQuickPressure reports whether quick pressure admits a pod that would otherwise wait. An
+// admitted pod spends the per-loop budget and is recorded as pressure-only.
+func (calc *UpdatePriorityCalculator) admitByQuickPressure(pod *corev1.Pod, processed *vpa_types.RecommendedPodResources, now time.Time, resourceDiff float64) bool {
+	if !calc.quickPressure(pod, processed, now) {
+		return false
+	}
+	if resourceDiff == 0 {
+		metrics_updater.RecordQuickPressure("no_change")
+		return false
+	}
+	if calc.quickPressureBudget <= 0 {
+		klog.V(4).InfoS("Quick pressure update capped for this loop", "pod", klog.KObj(pod))
+		metrics_updater.RecordQuickPressure("capped")
+		return false
+	}
+	calc.quickPressureBudget--
+	if calc.pressureOnly == nil {
+		calc.pressureOnly = map[types.UID]bool{}
+	}
+	calc.pressureOnly[pod.UID] = true
+	metrics_updater.RecordQuickPressure("admitted")
+	return true
+}
+
+// resizeOutstanding returns true while a resize of the Pod is pending or in progress.
+func resizeOutstanding(pod *corev1.Pod) bool {
+	for _, c := range pod.Status.Conditions {
+		if (c.Type == corev1.PodResizePending || c.Type == corev1.PodResizeInProgress) && c.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }

@@ -238,6 +238,14 @@ admissionController:
 recommender:
   enabled: true
 
+  memoryPressure:
+    # Grant `get nodes/stats` so the recommender can read kubelet Summary PSI directly
+    # (ReactiveMemoryPressureDetection with the direct transport).
+    nodeStatsAccess: false
+    # Grant `get nodes/proxy` for the apiserver-proxy transport. nodes/proxy also allows
+    # command execution in any container on any node; prefer nodeStatsAccess.
+    nodeProxyAccess: false
+
   # Annotations to add to the Recommender deployment.
   annotations: {}
 
