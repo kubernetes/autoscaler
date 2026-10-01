@@ -17,6 +17,7 @@ limitations under the License.
 package api
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"math"
@@ -629,22 +630,22 @@ func fixBound(recommendations []vpa_types.RecommendedContainerResources,
 			klog.V(2).InfoS("Skipping bound redistribution", "recommendations", recommendations, "error", err)
 			return
 		}
-		weights = append(weights, *weight)
+		weights = append(weights, weight)
 		constraints = append(constraints, math.Abs(float64(scalarValue(bound, resourceName)-scalarValue(target, resourceName))))
 	}
 
 	// Calculate how much resources each container - where there is no violation - can give up or absorb
-	allocations, hasAllocation := iterativeWaterfilling(totalDelta, weights, constraints)
+	fractionalDeltas,  hasDeltas:= iterativeWaterfilling(totalDelta, weights, constraints)
 	// All constraints are already saturated at zero, exit early
-	if !hasAllocation {
+	if !hasDeltas {
 		return
 	}
-	allocations = roundPreservingSum(allocations)
+	deltas := roundPreservingSum(fractionalDeltas)
 
 	for i, idx := range eligibleIdxs {
 		boundRL := getBound(recommendations[idx])
 		bound := (*boundRL)[resourceName]
-		delta := newQuantity(int64(allocations[i]), bound.Format, resourceName)
+		delta := newQuantity(deltas[i], bound.Format, resourceName)
 		adjusted := bound.DeepCopy()
 		if subtract {
 			adjusted.Sub(delta)
@@ -724,9 +725,9 @@ func iterativeWaterfilling(total float64, weights []float64, constraints []float
 	}
 }
 
-func calculateWeight(total, value resource.Quantity, res corev1.ResourceName) (*float64, error) {
+func calculateWeight(total, value resource.Quantity, res corev1.ResourceName) (float64, error) {
 	if total.IsZero() {
-		return nil, fmt.Errorf("total %s is zero", res)
+		return 0, fmt.Errorf("total %s is zero", res)
 	}
 
 	var t, v float64
@@ -736,34 +737,42 @@ func calculateWeight(total, value resource.Quantity, res corev1.ResourceName) (*
 	case corev1.ResourceCPU:
 		t, v = float64(total.MilliValue()), float64(value.MilliValue())
 	default:
-		return nil, fmt.Errorf("unsupported resource type %q", res)
+		return 0, fmt.Errorf("unsupported resource type %q", res)
 	}
 
 	w := v / t
-	return &w, nil
+	return w, nil
 }
 
-// roundPreservingSum floors every element in the slice, then increments the
-// largest element by one. If multiple elements share the largest integer value,
-// the first occurrence is incremented.
-// This function prevents losing fractional CPU (less than 1m) and fractional bytes.
-func roundPreservingSum(floats []float64) []float64 {
-	if len(floats) == 0 {
-		return floats
+// roundPreservingSum is a rounding function based on the largest remainders.
+// Every value is floored, then the leftover units are handed out one by one
+// to the elements with the largest fractional parts. Ties go to the lower index.
+// Elements without a fractional part are never incremented.
+func roundPreservingSum(values []float64) []int64 {
+	rounded := make([]int64, len(values))
+	remainders := make([]float64, len(values))
+	var remainderSum float64
+	for i, v := range values {
+		floor := math.Floor(v)
+		rounded[i] = int64(floor)
+		remainders[i] = v - floor
+		remainderSum += remainders[i]
 	}
-	var sum, flooredSum float64
-	maxIdx, maxVal := 0, floats[0]
 
-	for i, f := range floats {
-		if f > maxVal {
-			maxIdx, maxVal = i, f
-		}
-		sum += f
-		floats[i] = math.Floor(f)
-		flooredSum += floats[i]
+	leftover := int(math.Round(remainderSum))
+	if leftover == 0 {
+		return rounded
 	}
-	if sum != flooredSum {
-		floats[maxIdx]++
+
+	order := make([]int, len(values))
+	for i := range order {
+		order[i] = i
 	}
-	return floats
+	slices.SortStableFunc(order, func(a, b int) int {
+		return cmp.Compare(remainders[b], remainders[a])
+	})
+	for _, i := range order[:leftover] {
+		rounded[i]++
+	}
+	return rounded
 }

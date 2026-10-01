@@ -36,6 +36,7 @@ func TestApplyWithNilVPA(t *testing.T) {
 	assert.Nil(t, res)
 	assert.Nil(t, annotations)
 }
+
 func TestApplyWithNilPod(t *testing.T) {
 	vpa := test.VerticalPodAutoscaler().WithContainer("container").Get()
 	processor := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{})
@@ -68,11 +69,10 @@ func TestRecommendationNotAvailable(t *testing.T) {
 func TestRecommendationToLimitCapping(t *testing.T) {
 	containerName := "ctr-name"
 	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName(containerName).Get()).Get()
-	pod.Spec.Containers[0].Resources.Limits =
-		corev1.ResourceList{
-			corev1.ResourceCPU:    *resource.NewScaledQuantity(3, 1),
-			corev1.ResourceMemory: *resource.NewScaledQuantity(7000, 1),
-		}
+	pod.Spec.Containers[0].Resources.Limits = corev1.ResourceList{
+		corev1.ResourceCPU:    *resource.NewScaledQuantity(3, 1),
+		corev1.ResourceMemory: *resource.NewScaledQuantity(7000, 1),
+	}
 	podRecommendation := vpa_types.RecommendedPodResources{
 		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 			{
@@ -159,7 +159,8 @@ func TestRecommendationToLimitCapping(t *testing.T) {
 				pod.Status.ContainerStatuses = []corev1.ContainerStatus{
 					test.ContainerStatus().WithName(containerName).
 						WithCPULimit(resource.MustParse("2.5")).
-						WithMemLimit(*resource.NewScaledQuantity(6000, 1)).Get()}
+						WithMemLimit(*resource.NewScaledQuantity(6000, 1)).Get(),
+				}
 				return pod
 			}(),
 			policy: vpa_types.PodResourcePolicy{
@@ -269,16 +270,20 @@ var podRecommendation *vpa_types.RecommendedPodResources = &vpa_types.Recommende
 			ContainerName: "ctr-name",
 			LowerBound: corev1.ResourceList{
 				corev1.ResourceCPU:    *resource.NewScaledQuantity(5, 1),
-				corev1.ResourceMemory: *resource.NewScaledQuantity(10, 1)},
+				corev1.ResourceMemory: *resource.NewScaledQuantity(10, 1),
+			},
 			Target: corev1.ResourceList{
 				corev1.ResourceCPU:    *resource.NewScaledQuantity(50, 1),
-				corev1.ResourceMemory: *resource.NewScaledQuantity(100, 1)},
+				corev1.ResourceMemory: *resource.NewScaledQuantity(100, 1),
+			},
 			UpperBound: corev1.ResourceList{
 				corev1.ResourceCPU:    *resource.NewScaledQuantity(150, 1),
-				corev1.ResourceMemory: *resource.NewScaledQuantity(200, 1)},
+				corev1.ResourceMemory: *resource.NewScaledQuantity(200, 1),
+			},
 		},
 	},
 }
+
 var applyTestCases = []struct {
 	PodRecommendation         *vpa_types.RecommendedPodResources
 	Policy                    *vpa_types.PodResourcePolicy
@@ -314,31 +319,29 @@ func TestApply(t *testing.T) {
 	}
 }
 
-var (
-	recommendation = &vpa_types.RecommendedPodResources{
-		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
-			{
-				ContainerName: "foo",
-				Target: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("42m"),
-					corev1.ResourceMemory: resource.MustParse("42Mi"),
-				},
-				LowerBound: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("31m"),
-					corev1.ResourceMemory: resource.MustParse("31Mi"),
-				},
-				UpperBound: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("53m"),
-					corev1.ResourceMemory: resource.MustParse("53Mi"),
-				},
-				UncappedTarget: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("42m"),
-					corev1.ResourceMemory: resource.MustParse("42Mi"),
-				},
+var recommendation = &vpa_types.RecommendedPodResources{
+	ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+		{
+			ContainerName: "foo",
+			Target: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("42m"),
+				corev1.ResourceMemory: resource.MustParse("42Mi"),
+			},
+			LowerBound: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("31m"),
+				corev1.ResourceMemory: resource.MustParse("31Mi"),
+			},
+			UpperBound: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("53m"),
+				corev1.ResourceMemory: resource.MustParse("53Mi"),
+			},
+			UncappedTarget: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("42m"),
+				corev1.ResourceMemory: resource.MustParse("42Mi"),
 			},
 		},
-	}
-)
+	},
+}
 
 func TestApplyVPAPolicy(t *testing.T) {
 	tests := []struct {
@@ -2012,8 +2015,8 @@ func TestEnsureValidBounds(t *testing.T) {
 				{
 					ContainerName: "c2",
 					LowerBound: corev1.ResourceList{
-						corev1.ResourceCPU:    *resource.NewMilliQuantity(32, resource.DecimalSI), // + 2
-						corev1.ResourceMemory: *resource.NewQuantity(33973862, resource.BinarySI), // 31457280 + floor(8388608 x 0,3)
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(33, resource.DecimalSI), // + 3
+						corev1.ResourceMemory: *resource.NewQuantity(33973863, resource.BinarySI), // 31457280 + ceil(8388608 x 0,3)
 					},
 					Target: corev1.ResourceList{
 						corev1.ResourceCPU:    resource.MustParse("40m"),
@@ -2023,8 +2026,8 @@ func TestEnsureValidBounds(t *testing.T) {
 				{
 					ContainerName: "c3",
 					LowerBound: corev1.ResourceList{
-						corev1.ResourceCPU:    *resource.NewMilliQuantity(44, resource.DecimalSI), // + 4
-						corev1.ResourceMemory: *resource.NewQuantity(45298484, resource.BinarySI), // 41943040 + ceil(8388608 x 0,4)
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(43, resource.DecimalSI), // + 3
+						corev1.ResourceMemory: *resource.NewQuantity(45298483, resource.BinarySI), // 41943040 + floor(8388608 x 0,4)
 					},
 					Target: corev1.ResourceList{
 						corev1.ResourceCPU:    resource.MustParse("50m"),
@@ -2213,8 +2216,8 @@ func TestEnsureValidBounds(t *testing.T) {
 						corev1.ResourceMemory: resource.MustParse("10Mi"),
 					},
 					UpperBound: corev1.ResourceList{
-						corev1.ResourceCPU:    *resource.NewMilliQuantity(28, resource.DecimalSI), // -2
-						corev1.ResourceMemory: *resource.NewQuantity(28940698, resource.BinarySI), // 31457280 - floor(8388608 x 0.3)
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(27, resource.DecimalSI), // -3
+						corev1.ResourceMemory: *resource.NewQuantity(28940697, resource.BinarySI), // 31457280 - ceil(8388608 x 0.3)
 					},
 				},
 				{
@@ -2224,8 +2227,8 @@ func TestEnsureValidBounds(t *testing.T) {
 						corev1.ResourceMemory: resource.MustParse("10Mi"),
 					},
 					UpperBound: corev1.ResourceList{
-						corev1.ResourceCPU:    *resource.NewMilliQuantity(36, resource.DecimalSI), // -4
-						corev1.ResourceMemory: *resource.NewQuantity(38587596, resource.BinarySI), // 41943040 - ceil(8388608 x 0.4)
+						corev1.ResourceCPU:    *resource.NewMilliQuantity(37, resource.DecimalSI), // -3
+						corev1.ResourceMemory: *resource.NewQuantity(38587597, resource.BinarySI), // 41943040 - floor(8388608 x 0.4)
 					},
 				},
 				{
@@ -2351,45 +2354,40 @@ func TestEnsureValidBounds(t *testing.T) {
 
 func TestRoundPreservingSum(t *testing.T) {
 	tests := []struct {
-		name           string
-		floats         []float64
-		expectedFloats []float64
+		name     string
+		floats   []float64
+		expected []int64
 	}{
 		{
-			name:           "increment the largest value",
-			floats:         []float64{0, 1, 2.8, 3.2},
-			expectedFloats: []float64{0, 1, 2, 4},
+			name:     "sum of the remainders equals 1 and there two numbers with fractional parts",
+			floats:   []float64{2, 2.8, 1, 6, 3.2},
+			expected: []int64{2, 3, 1, 6, 3},
 		},
 		{
-			name:           "increment the first occurrence of the largest value",
-			floats:         []float64{0, 1, 3.5, 3.5},
-			expectedFloats: []float64{0, 1, 4, 3},
+			name:     "sum of the remainders equals 1 and there three numbers with fractional parts",
+			floats:   []float64{1, 1.67, 0, 1.66, 1.67, 1},
+			expected: []int64{1, 2, 0, 1, 2, 1},
 		},
 		{
-			name:           "sum of remainder is less than 1",
-			floats:         []float64{0, 1, 2.1, 3.1},
-			expectedFloats: []float64{0, 1, 2, 4},
+			name:     "sum of the remainders is greater than 1",
+			floats:   []float64{5, 1.67, 0, 1.66, 1.70, 1},
+			expected: []int64{5, 2, 0, 1, 2, 1},
 		},
 		{
-			name:           "sum of remainder is greater than 1",
-			floats:         []float64{0, 1, 2.9, 3.9},
-			expectedFloats: []float64{0, 1, 2, 4},
+			name:     "no remainder",
+			floats:   []float64{1, 0, 4, 3},
+			expected: []int64{1, 0, 4, 3},
 		},
 		{
-			name:           "no remainder",
-			floats:         []float64{0, 1, 4, 3},
-			expectedFloats: []float64{0, 1, 4, 3},
-		},
-		{
-			name:           "slice where all elements are zero",
-			floats:         []float64{0, 0, 0},
-			expectedFloats: []float64{0, 0, 0},
+			name:     "slice where all elements are zero",
+			floats:   []float64{0, 0, 0},
+			expected: []int64{0, 0, 0},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			floats := roundPreservingSum(tt.floats)
-			assert.Equal(t, tt.expectedFloats, floats)
+			assert.Equal(t, tt.expected, floats)
 		})
 	}
 }
