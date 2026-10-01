@@ -33,6 +33,11 @@ type VPAValidationOptions struct {
 	AllowCPUStartupBoost bool
 	AllowPerVPAConfig    bool
 	AllowInPlace         bool
+	// AllowPressureDetection permits pressureDetection: Enabled on any container policy.
+	AllowPressureDetection bool
+	// ExistingPressureDetection contains the container policies that already opt in to pressure
+	// detection in the old VPA object, which stay allowed on update even with the feature gate off.
+	ExistingPressureDetection map[string]bool
 	// ExistingControlledResources contains the controlled resources already
 	// present in the old VPA object, which stay allowed on update even if
 	// they wouldn't be accepted on create.
@@ -45,6 +50,8 @@ func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAVali
 		AllowCPUStartupBoost:        allowCPUBoost(oldObj),
 		AllowPerVPAConfig:           allowPerVPAConfig(oldObj),
 		AllowInPlace:                allowInPlace(oldObj),
+		AllowPressureDetection:      features.Enabled(features.ReactiveMemoryPressureDetection),
+		ExistingPressureDetection:   existingPressureDetection(oldObj),
 		ExistingControlledResources: existingControlledResources(oldObj),
 	}
 
@@ -112,6 +119,21 @@ func allowPerVPAConfig(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	}
 
 	return false
+}
+
+// existingPressureDetection returns the container policies that already opt in to pressure detection in
+// the old object, which stay allowed on update with the feature gate off.
+func existingPressureDetection(oldObj *vpa_types.VerticalPodAutoscaler) map[string]bool {
+	containers := map[string]bool{}
+	if oldObj == nil || oldObj.Spec.ResourcePolicy == nil {
+		return containers
+	}
+	for _, policy := range oldObj.Spec.ResourcePolicy.ContainerPolicies {
+		if policy.PressureDetection != nil && *policy.PressureDetection == vpa_types.PressureDetectionEnabled {
+			containers[policy.ContainerName] = true
+		}
+	}
+	return containers
 }
 
 func allowInPlace(oldObj *vpa_types.VerticalPodAutoscaler) bool {
@@ -292,6 +314,19 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 				}
 			} else {
 				allErrs = append(allErrs, field.Forbidden(policyPath.Child("memoryAggregationIntervalCount"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+			}
+		}
+
+		if policy.PressureDetection != nil {
+			switch *policy.PressureDetection {
+			case vpa_types.PressureDetectionDisabled:
+			case vpa_types.PressureDetectionEnabled:
+				if !opts.AllowPressureDetection && !opts.ExistingPressureDetection[policy.ContainerName] {
+					allErrs = append(allErrs, field.Forbidden(policyPath.Child("pressureDetection"), fmt.Sprintf("Enabled is not supported when feature flag %s is disabled", features.ReactiveMemoryPressureDetection)))
+				}
+			default:
+				allErrs = append(allErrs, field.NotSupported(policyPath.Child("pressureDetection"), *policy.PressureDetection,
+					[]vpa_types.PressureDetectionMode{vpa_types.PressureDetectionEnabled, vpa_types.PressureDetectionDisabled}))
 			}
 		}
 

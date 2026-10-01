@@ -40,6 +40,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/pressure"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -1240,6 +1241,64 @@ func TestInitFromCheckpoints(t *testing.T) {
 				}
 			}
 			assert.Len(t, errorLogs, tc.expectedErrors, "unexpected error log entries:\n%s", strings.Join(errorLogs, "\n"))
+		})
+	}
+}
+
+// pressureRecordingClusterState records which containers reach RecordPressure.
+type pressureRecordingClusterState struct {
+	model.ClusterState
+	recorded []model.ContainerID
+}
+
+func (r *pressureRecordingClusterState) RecordPressure(id model.ContainerID, _ time.Time, _ model.ResourceAmount) error {
+	r.recorded = append(r.recorded, id)
+	return nil
+}
+
+func (*pressureRecordingClusterState) Pods() map[model.PodID]*model.PodState {
+	return nil
+}
+
+func TestClusterStateFeeder_RecordPressure(t *testing.T) {
+	targeted := model.ContainerID{PodID: model.PodID{Namespace: "ns", PodName: "app-1"}, ContainerName: "main"}
+	other := model.ContainerID{PodID: model.PodID{Namespace: "ns", PodName: "app-2"}, ContainerName: "main"}
+	targets := []pressure.Target{{ContainerID: targeted, PodUID: "uid-1", Node: "node-1"}}
+	testCases := []struct {
+		name         string
+		targets      []pressure.Target
+		info         pressure.Info
+		wantRecorded bool
+	}{
+		{
+			name:         "targeted container is recorded",
+			targets:      targets,
+			info:         pressure.Info{ContainerID: targeted, PodUID: "uid-1"},
+			wantRecorded: true,
+		},
+		{
+			name:    "container outside the target set is dropped",
+			targets: targets,
+			info:    pressure.Info{ContainerID: other, PodUID: "uid-2"},
+		},
+		{
+			name:    "replaced Pod with the same name is dropped",
+			targets: targets,
+			info:    pressure.Info{ContainerID: targeted, PodUID: "uid-replaced"},
+		},
+		{
+			name: "container that left the target set after the event was queued is dropped",
+			info: pressure.Info{ContainerID: targeted, PodUID: "uid-1"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			observer := pressure.NewObserver(nil, pressure.DefaultConfig())
+			observer.SetTargets(tc.targets)
+			clusterState := &pressureRecordingClusterState{}
+			feeder := &clusterStateFeeder{clusterState: clusterState, pressureObserver: observer}
+			feeder.recordPressure(tc.info)
+			assert.Equal(t, tc.wantRecorded, len(clusterState.recorded) == 1)
 		})
 	}
 }

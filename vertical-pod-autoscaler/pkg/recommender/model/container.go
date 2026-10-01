@@ -53,6 +53,8 @@ type ContainerState struct {
 	memoryPeak ResourceAmount
 	// Max memory usage estimated from an OOM event in the current aggregation interval.
 	oomPeak ResourceAmount
+	// pressurePeak is the largest pressure-derived peak in the current aggregation interval.
+	pressurePeak ResourceAmount
 	// End time of the current memory aggregation interval (not inclusive).
 	WindowEnd time.Time
 	// Start of the latest memory usage sample that was aggregated.
@@ -126,7 +128,7 @@ func (container *ContainerState) observeQualityMetrics(usage ResourceAmount, isO
 
 // GetMaxMemoryPeak returns maximum memory usage in the sample, possibly estimated from OOM
 func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
-	return ResourceAmountMax(container.memoryPeak, container.oomPeak)
+	return ResourceAmountMax(container.memoryPeak, ResourceAmountMax(container.oomPeak, container.pressurePeak))
 }
 
 // GetOOMBumpUpRatio returns the ratio to increase resources when OOM is detected.
@@ -147,14 +149,25 @@ func (container *ContainerState) GetMemoryAggregationIntervalDuration() time.Dur
 	return container.aggregator.GetMemoryAggregationIntervalDuration()
 }
 
-func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, isOOM bool) bool {
+type memorySampleSource int
+
+const (
+	sampleSourceUsage memorySampleSource = iota
+	sampleSourceOOM
+	sampleSourcePressure
+)
+
+func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, source memorySampleSource) bool {
+	isOOM := source == sampleSourceOOM
 	ts := sample.MeasureStart
-	// We always process OOM samples.
+	// Only usage samples must arrive in order; OOM and pressure samples are synthetic.
 	if !sample.isValid(ResourceMemory) ||
-		(!isOOM && ts.Before(container.lastMemorySampleStart)) {
+		(source == sampleSourceUsage && ts.Before(container.lastMemorySampleStart)) {
 		return false // Discard invalid or outdated samples.
 	}
-	container.lastMemorySampleStart = ts
+	if source != sampleSourcePressure {
+		container.lastMemorySampleStart = ts
+	}
 	if container.WindowEnd.IsZero() { // This is the first sample.
 		container.WindowEnd = ts
 	}
@@ -183,9 +196,12 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 		container.WindowEnd = container.WindowEnd.Add(shift)
 		container.memoryPeak = 0
 		container.oomPeak = 0
+		container.pressurePeak = 0
 		addNewPeak = true
 	}
-	container.observeQualityMetrics(sample.Usage, isOOM, corev1.ResourceMemory)
+	if source != sampleSourcePressure {
+		container.observeQualityMetrics(sample.Usage, isOOM, corev1.ResourceMemory)
+	}
 	if addNewPeak {
 		newPeak := ContainerUsageSample{
 			MeasureStart: container.WindowEnd,
@@ -193,9 +209,12 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 			Resource:     ResourceMemory,
 		}
 		container.aggregator.AddSample(&newPeak)
-		if isOOM {
+		switch source {
+		case sampleSourceOOM:
 			container.oomPeak = sample.Usage
-		} else {
+		case sampleSourcePressure:
+			container.pressurePeak = sample.Usage
+		default:
 			container.memoryPeak = sample.Usage
 		}
 	}
@@ -216,15 +235,14 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	// Get max of the request and the recent usage-based memory peak.
 	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
 	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
-	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(container.GetOOMMinBumpUp()),
-		ScaleResource(memoryUsed, container.GetOOMBumpUpRatio()))
+	memoryNeeded := bumpUpMemory(memoryUsed, container.GetOOMBumpUpRatio(), container.GetOOMMinBumpUp())
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
 		Usage:        memoryNeeded,
 		Resource:     ResourceMemory,
 	}
-	if !container.addMemorySample(&oomMemorySample, true) {
+	if !container.addMemorySample(&oomMemorySample, sampleSourceOOM) {
 		return errors.New("adding OOM sample failed")
 	}
 	return nil
@@ -242,8 +260,47 @@ func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
 	case ResourceCPU:
 		return container.addCPUSample(sample)
 	case ResourceMemory:
-		return container.addMemorySample(sample, false)
+		return container.addMemorySample(sample, sampleSourceUsage)
 	default:
 		return false
 	}
+}
+
+// bumpUpMemory returns max(used + minBumpUpBytes, used * ratio).
+func bumpUpMemory(used ResourceAmount, ratio, minBumpUpBytes float64) ResourceAmount {
+	return ResourceAmountMax(used+MemoryAmountFromBytes(minBumpUpBytes), ScaleResource(used, ratio))
+}
+
+// RecordPressure adds a synthetic memory peak derived from a sustained memory stall observation and
+// notes the observation on the aggregator. Unlike RecordOOM it measures the interval against WindowEnd:
+// the sample is accepted only inside the current aggregation interval so that it can never roll the
+// window forward ahead of real usage samples.
+func (container *ContainerState) RecordPressure(timestamp time.Time, workingSet ResourceAmount) error {
+	intervalStart := container.WindowEnd.Add(-container.GetMemoryAggregationIntervalDuration())
+	if container.WindowEnd.IsZero() || timestamp.Before(intervalStart) || !timestamp.Before(container.WindowEnd) {
+		return errors.New("pressure sample outside active memory aggregation interval")
+	}
+	// Reading memoryPeak, never pressurePeak, prevents reinflating a previous synthetic peak.
+	memoryUsed := ResourceAmountMax(workingSet, container.memoryPeak)
+	sample := ContainerUsageSample{
+		MeasureStart: timestamp,
+		Usage:        bumpUpMemory(memoryUsed, GetAggregationsConfig().PressureBumpUpRatio, GetAggregationsConfig().PressureMinBumpUp),
+		Resource:     ResourceMemory,
+	}
+	if !container.addMemorySample(&sample, sampleSourcePressure) {
+		return errors.New("adding pressure sample failed")
+	}
+	container.aggregator.RecordPressureObserved(timestamp)
+	return nil
+}
+
+// PressureEstimateToRecommendation returns the current pressure peak divided by the last memory
+// recommendation, or 0 when either is unknown.
+func (container *ContainerState) PressureEstimateToRecommendation() float64 {
+	last := container.aggregator.GetLastRecommendation()
+	mem, ok := last[corev1.ResourceMemory]
+	if !ok || mem.Value() <= 0 || container.pressurePeak == 0 {
+		return 0
+	}
+	return float64(container.pressurePeak) / float64(mem.Value())
 }
