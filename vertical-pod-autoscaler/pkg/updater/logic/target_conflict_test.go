@@ -334,3 +334,21 @@ func TestReconcileTargetConflicts_Overlap(t *testing.T) {
 		})
 	}
 }
+
+func TestReconcileTargetConflicts_OffWithStartupBoostIsActive(t *testing.T) {
+	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
+		WithUpdateMode(vpa_types.UpdateModeOff).WithTargetRef(deploymentRef("app")).Get()
+	vpa1.Spec.StartupBoost = &vpa_types.StartupBoost{}
+	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
+		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).Get()
+	client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
+	u := newConflictTestUpdater(client)
+
+	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2})
+
+	for _, name := range []string{"vpa-1", "vpa-2"} {
+		cond := findCondition(getVpa(t, client, "default", name), vpa_types.TargetConflict)
+		require.NotNil(t, cond, "an Off VPA with startupBoost still acts on pods: %s", name)
+		assert.Equal(t, corev1.ConditionTrue, cond.Status)
+	}
+}
