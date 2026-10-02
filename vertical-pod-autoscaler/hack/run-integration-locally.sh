@@ -64,6 +64,7 @@ function print_help {
   echo "ERROR! Usage: $BASE_NAME <suite>"
   echo "<suite> should be one of:"
   echo " - recommender"
+  echo " - updater"
 }
 
 if [ $# -eq 0 ]; then
@@ -106,7 +107,7 @@ then
 fi
 
 case ${SUITE} in
-  recommender)
+  recommender|updater)
     COMPONENTS="${SUITE}"
     ;;
   *)
@@ -150,7 +151,7 @@ done
 export GO111MODULE=on
 
 case ${SUITE} in
-  recommender)
+  recommender|updater)
 
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/test/e2e
