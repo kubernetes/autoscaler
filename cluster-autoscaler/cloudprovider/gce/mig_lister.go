@@ -22,6 +22,8 @@ type MigLister interface {
 	GetMigs() []Mig
 	// HandleMigIssue handles an issue with a given mig
 	HandleMigIssue(migRef GceRef, err error)
+	// IsMigBlocked returns whether the mig is marked as blocked
+	IsMigBlocked(migRef GceRef) bool
 }
 
 type migLister struct {
@@ -42,4 +44,9 @@ func (l *migLister) GetMigs() []Mig {
 
 // HandleMigIssue handles an issue with a given mig
 func (l *migLister) HandleMigIssue(_ GceRef, _ error) {
+}
+
+// IsMigBlocked returns whether the mig is marked as blocked
+func (l *migLister) IsMigBlocked(_ GceRef) bool {
+	return false
 }

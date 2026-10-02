@@ -2100,3 +2100,70 @@ func fetchAllInstancesInZone(allInstances map[string][]GceInstance) func(string,
 		return instances, nil
 	}
 }
+
+type mockBlockedMigLister struct {
+	*migLister
+	blockedMigs map[GceRef]bool
+}
+
+func (l *mockBlockedMigLister) IsMigBlocked(migRef GceRef) bool {
+	if l.blockedMigs != nil {
+		return l.blockedMigs[migRef]
+	}
+	return false
+}
+
+func TestBlockedMigShortCircuit(t *testing.T) {
+	blockedMigRef := mig.GceRef()
+	cache := emptyCache()
+	migLister := &mockBlockedMigLister{
+		migLister:   NewMigLister(cache),
+		blockedMigs: map[GceRef]bool{blockedMigRef: true},
+	}
+	client := &mockAutoscalingGceClient{
+		fetchMigs: func(zone string) ([]*gce.InstanceGroupManager, error) {
+			return []*gce.InstanceGroupManager{}, nil
+		},
+		fetchMig: func(migRef GceRef) (*gce.InstanceGroupManager, error) {
+			t.Fatalf("FetchMig should not be called for blocked mig: %v", migRef)
+			return nil, nil
+		},
+		fetchMigInstances: func(migRef GceRef) ([]GceInstance, error) {
+			t.Fatalf("FetchMigInstances should not be called for blocked mig: %v", migRef)
+			return nil, nil
+		},
+		fetchMigTemplate: func(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error) {
+			t.Fatalf("FetchMigTemplate should not be called for blocked mig: %v", migRef)
+			return nil, nil
+		},
+	}
+	provider := NewCachingMigInfoProvider(cache, migLister, client, blockedMigRef.Project, 1, 0*time.Second, false, false)
+
+	t.Run("GetMigTargetSize short-circuits", func(t *testing.T) {
+		targetSize, err := provider.GetMigTargetSize(context.Background(), blockedMigRef)
+		assert.Equal(t, int64(0), targetSize)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), fmt.Sprintf("mig %v is blocked, short-circuiting GCE API GET call", blockedMigRef))
+	})
+
+	t.Run("GetMigBasename short-circuits", func(t *testing.T) {
+		basename, err := provider.GetMigBasename(context.Background(), blockedMigRef)
+		assert.Equal(t, "", basename)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), fmt.Sprintf("mig %v is blocked, short-circuiting GCE API GET call", blockedMigRef))
+	})
+
+	t.Run("GetMigInstances short-circuits", func(t *testing.T) {
+		instances, err := provider.GetMigInstances(context.Background(), blockedMigRef)
+		assert.Nil(t, instances)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), fmt.Sprintf("mig %v is blocked, short-circuiting GCE API instance list", blockedMigRef))
+	})
+
+	t.Run("GetMigInstanceTemplate short-circuits", func(t *testing.T) {
+		template, err := provider.GetMigInstanceTemplate(context.Background(), blockedMigRef)
+		assert.Nil(t, template)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), fmt.Sprintf("mig %v is blocked, short-circuiting template fetch", blockedMigRef))
+	})
+}

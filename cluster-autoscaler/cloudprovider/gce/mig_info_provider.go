@@ -329,6 +329,9 @@ func (c *cachingMigInfoProvider) findMigWithMatchingBasename(ctx context.Context
 }
 
 func (c *cachingMigInfoProvider) fillMigInstances(ctx context.Context, migRef GceRef) error {
+	if c.migLister != nil && c.migLister.IsMigBlocked(migRef) {
+		return fmt.Errorf("mig %v is blocked, short-circuiting GCE API instance list", migRef)
+	}
 	logger := klog.FromContext(ctx)
 	if val, ok := c.cache.GetMigInstancesUpdateTime(ctx, migRef); ok {
 		// do not regenerate MIG instances cache if last refresh happened recently.
@@ -435,6 +438,9 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplateName(ctx context.Context,
 }
 
 func (c *cachingMigInfoProvider) GetMigInstanceTemplate(ctx context.Context, migRef GceRef) (*gce.InstanceTemplate, error) {
+	if c.migLister != nil && c.migLister.IsMigBlocked(migRef) {
+		return nil, fmt.Errorf("mig %v is blocked, short-circuiting template fetch", migRef)
+	}
 	logger := klog.FromContext(ctx)
 	instanceTemplateName, err := c.GetMigInstanceTemplateName(ctx, migRef)
 	if err != nil {
@@ -548,6 +554,9 @@ func (c *cachingMigInfoProvider) RefreshMigInfo(migRef GceRef) error {
 }
 
 func (c *cachingMigInfoProvider) fillSingleMigInfo(ctx context.Context, migRef GceRef) error {
+	if c.migLister != nil && c.migLister.IsMigBlocked(migRef) {
+		return fmt.Errorf("mig %v is blocked, short-circuiting GCE API GET call", migRef)
+	}
 	igm, err := c.gceClient.FetchMig(ctx, migRef)
 	if err != nil {
 		c.migLister.HandleMigIssue(migRef, err)
