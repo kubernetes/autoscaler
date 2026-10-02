@@ -56,8 +56,8 @@ func (u *updater) reconcileTargetConflicts(vpaList []*vpa_types.VerticalPodAutos
 			ineligible = append(ineligible, vpa)
 			continue
 		}
-		// "Off" VPAs don't update pods at all, so they can't conflict.
-		if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeOff {
+		// "Off" VPAs without a startupBoost don't act on pods, so they can't conflict.
+		if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeOff && !vpa_api_util.HasStartupBoost(vpa) {
 			ineligible = append(ineligible, vpa)
 			continue
 		}
