@@ -22,7 +22,10 @@ helm version --short
 Then install accordingly:
 
 ```bash
-# Helm 4.x (plugin verification enabled by default)
+# Helm 4.x (plugin verification is enabled by default). --verify=false is
+# required because helm-unittest is installed from a git source, which Helm
+# cannot verify. See the helm-unittest README:
+# https://github.com/helm-unittest/helm-unittest/blob/33c48cac798e465deda9a66c8e6c07c0973cf53d/README.md#L69
 helm plugin install https://github.com/helm-unittest/helm-unittest.git --version 1.1.2 --verify=false
 
 # Helm 3.x (no --verify flag exists, omit it)

@@ -1,6 +1,9 @@
 name: VPA Helm Unit Tests
 
 on:
+  push:
+    paths:
+      - 'vertical-pod-autoscaler/charts/**'
   pull_request:
     paths:
       - 'vertical-pod-autoscaler/charts/**'
