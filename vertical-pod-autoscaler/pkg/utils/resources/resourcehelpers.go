@@ -148,3 +148,13 @@ func HasLowerResource(a, b corev1.ResourceList) bool {
 	}
 	return false
 }
+
+// CapResources caps every resource in-place to the corresponding value in maxResources
+func CapResources(resources, maxResources corev1.ResourceList) {
+	for resourceName, resourceValue := range resources {
+		maxValue, ok := maxResources[resourceName]
+		if ok && maxValue.Cmp(resourceValue) < 0 {
+			resources[resourceName] = maxValue.DeepCopy()
+		}
+	}
+}
