@@ -18,6 +18,7 @@ package routines
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -29,11 +30,13 @@ import (
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	recommender_config "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/config"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	input_metrics "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/pressure"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
@@ -77,14 +80,17 @@ func NewRecommenderController(
 	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor, stopCh)
 	podLister, oomObserver := input.NewPodListerAndOOMObserver(ctx, kubeClient, commonFlags.VpaObjectNamespace, stopCh)
 
-	model.InitializeAggregationsConfig(model.NewAggregationsConfig(
+	aggregationsConfig := model.NewAggregationsConfig(
 		config.MemoryAggregationInterval,
 		config.MemoryAggregationIntervalCount,
 		config.MemoryHistogramDecayHalfLife,
 		config.CpuHistogramDecayHalfLife,
 		config.OOMBumpUpRatio,
 		config.OOMMinBumpUp,
-	))
+	)
+	aggregationsConfig.PressureBumpUpRatio = config.PressureBumpUpRatio
+	aggregationsConfig.PressureMinBumpUp = config.PressureMinBumpUp
+	model.InitializeAggregationsConfig(aggregationsConfig)
 
 	useCheckpoints := config.Storage != "prometheus"
 
@@ -118,9 +124,25 @@ func NewRecommenderController(
 
 	ignoredNamespaces := strings.Split(commonFlags.IgnoredVpaObjectNamespaces, ",")
 
+	var pressureObserver pressure.Observer
+	if features.Enabled(features.ReactiveMemoryPressureDetection) {
+		pcfg := pressure.DefaultConfig()
+		pcfg.Transport = pressure.Transport(config.PressureTransport)
+		ko := pressure.NewObserver(kubeClient.CoreV1().RESTClient(), pcfg)
+		if pcfg.Transport == pressure.TransportDirect {
+			if err := ko.UseDirectTransport(kubeConfig, config.PressureKubeletCAFile, factory.Core().V1().Nodes().Lister()); err != nil {
+				return nil, fmt.Errorf("pressure direct transport: %w", err)
+			}
+		}
+		go ko.Run(ctx)
+		pressureObserver = ko
+		klog.InfoS("Reactive memory pressure detection enabled", "transport", pcfg.Transport, "bumpUpRatio", config.PressureBumpUpRatio, "minBumpUp", config.PressureMinBumpUp)
+	}
+
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
 		OOMObserver:         oomObserver,
+		PressureObserver:    pressureObserver,
 		MetricsClient:       input_metrics.NewMetricsClient(source, commonFlags.VpaObjectNamespace, "default-metrics-client"),
 		VpaCheckpointClient: vpaClient.AutoscalingV1(),
 		VpaLister:           vpa_api_util.NewVpasLister(vpaClient, stopCh, commonFlags.VpaObjectNamespace),

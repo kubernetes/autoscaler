@@ -308,6 +308,13 @@ func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResou
 	return defaultPolicy
 }
 
+// IsPressureDetectionEnabled returns true if the resolved policy for the container opts in to memory
+// pressure detection.
+func IsPressureDetectionEnabled(containerName string, policy *vpa_types.PodResourcePolicy) bool {
+	p := GetContainerResourcePolicy(containerName, policy)
+	return p != nil && p.PressureDetection != nil && *p.PressureDetection == vpa_types.PressureDetectionEnabled
+}
+
 // GetContainerControlledValues returns controlled resource values
 func GetContainerControlledValues(name string, vpaResourcePolicy *vpa_types.PodResourcePolicy) vpa_types.ContainerControlledValues {
 	containerPolicy := GetContainerResourcePolicy(name, vpaResourcePolicy)

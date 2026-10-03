@@ -28,6 +28,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -53,6 +54,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -104,6 +106,8 @@ type updater struct {
 	defaultUpdateThreshold       float64
 	podLifetimeUpdateThreshold   time.Duration
 	evictAfterOOMThreshold       time.Duration
+	pressureQuickUpdateWindow    time.Duration
+	pressureQuickUpdateFraction  float64
 	podInformer                  cache.SharedIndexInformer
 	cpuStartupBoostQueue         workqueue.TypedRateLimitingInterface[string]
 }
@@ -123,6 +127,8 @@ func NewUpdater(
 	defaultUpdateThreshold float64,
 	podLifetimeUpdateThreshold time.Duration,
 	evictAfterOOMThreshold time.Duration,
+	pressureQuickUpdateWindow time.Duration,
+	pressureQuickUpdateFraction float64,
 	statusLeaseName string,
 	statusNamespace string,
 	statusTimeout time.Duration,
@@ -165,12 +171,14 @@ func NewUpdater(
 			statusLeaseName,
 			statusNamespace,
 		),
-		statusTimeout:              statusTimeout,
-		infeasibleAttempts:         make(map[types.UID]*vpa_types.RecommendedPodResources),
-		ignoredNamespaces:          ignoredNamespaces,
-		defaultUpdateThreshold:     defaultUpdateThreshold,
-		podLifetimeUpdateThreshold: podLifetimeUpdateThreshold,
-		evictAfterOOMThreshold:     evictAfterOOMThreshold,
+		statusTimeout:               statusTimeout,
+		infeasibleAttempts:          make(map[types.UID]*vpa_types.RecommendedPodResources),
+		ignoredNamespaces:           ignoredNamespaces,
+		defaultUpdateThreshold:      defaultUpdateThreshold,
+		podLifetimeUpdateThreshold:  podLifetimeUpdateThreshold,
+		evictAfterOOMThreshold:      evictAfterOOMThreshold,
+		pressureQuickUpdateWindow:   pressureQuickUpdateWindow,
+		pressureQuickUpdateFraction: pressureQuickUpdateFraction,
 	}
 	if features.Enabled(features.CPUStartupBoost) {
 		u.podInformer = podInformerFactory.Core().V1().Pods().Informer()
@@ -307,6 +315,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	defer vpasWithInPlaceUpdatedPodsCounter.Observe()
 
 	for vpa, livePods := range controlledPods {
+		var pressureOnly map[types.UID]bool
 		vpaSize := len(livePods)
 		updateMode := vpa_api_util.GetUpdateMode(vpa)
 		controlledPodsCounter.Add(vpaSize, updateMode, vpaSize)
@@ -341,7 +350,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		withEvictable := false
 
 		if (updateMode == vpa_types.UpdateModeInPlaceOrRecreate) || (updateMode == vpa_types.UpdateModeInPlace && inPlaceFeatureEnabled) {
-			podsForInPlace = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter, vpa, len(livePods), u.infeasibleAttempts, u.eventRecorder), vpa)
+			podsForInPlace, pressureOnly = u.getPodsUpdateOrder(filterNonInPlaceUpdatablePods(podsAvailableForUpdate, inPlaceLimiter, vpa, len(livePods), u.infeasibleAttempts, u.eventRecorder), vpa, len(livePods))
 			inPlaceUpdatablePodsCounter.Add(vpaSize, len(podsForInPlace))
 			if len(podsForInPlace) > 0 {
 				withInPlaceUpdatable = true
@@ -353,7 +362,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				continue
 			}
 			// We evict the pod when the mode is set to Recreate or Auto. The latter mode is deprecated.
-			podsForEviction = u.getPodsUpdateOrder(filterNonEvictablePods(podsAvailableForUpdate, evictionLimiter), vpa)
+			podsForEviction, _ = u.getPodsUpdateOrder(filterNonEvictablePods(podsAvailableForUpdate, evictionLimiter), vpa, len(livePods))
 			evictablePodsCounter.Add(vpaSize, updateMode, len(podsForEviction))
 			if len(podsForEviction) > 0 {
 				withEvictable = true
@@ -363,7 +372,22 @@ func (u *updater) RunOnce(ctx context.Context) {
 		withEvicted := false
 
 		for _, pod := range podsForInPlace {
-			decision := inPlaceLimiter.CanInPlaceUpdate(pod, vpa, u.infeasibleAttempts)
+			// A Pod admitted only by quick pressure gets its recommendation clamped to never lower a resource,
+			// and the same clamped object drives the decision, the infeasible cache and the update.
+			vpaForPod := vpa
+			recorder := u.eventRecorder
+			if pressureOnly[pod.UID] {
+				recorder = quickPressureRecorder{u.eventRecorder}
+				vpaForPod = clampToCurrentRequests(vpa, pod)
+				// The in-place update caps the recommendation again (maxAllowed, LimitRange), which can undo
+				// the clamp when a cap is below the current request.
+				if u.lowersResource(vpaForPod, pod) {
+					klog.V(2).InfoS("Quick pressure skipped: policy caps would lower a resource", "pod", klog.KObj(pod))
+					metrics_updater.RecordQuickPressure("decrease_blocked")
+					continue
+				}
+			}
+			decision := inPlaceLimiter.CanInPlaceUpdate(pod, vpaForPod, u.infeasibleAttempts)
 
 			switch decision {
 			case utils.InPlaceDeferred:
@@ -377,6 +401,11 @@ func (u *updater) RunOnce(ctx context.Context) {
 				klog.V(2).InfoS("In-place update deferred", "pod", klog.KObj(pod))
 			case utils.InPlaceEvict:
 				// This should only happen for InPlaceOrRecreate mode
+				if pressureOnly[pod.UID] {
+					klog.V(2).InfoS("Quick pressure never evicts: in-place not possible, skipping pod this loop", "pod", klog.KObj(pod))
+					metrics_updater.RecordQuickPressure("eviction_skipped")
+					continue
+				}
 				podsForEviction = append(podsForEviction, pod)
 				continue
 
@@ -392,7 +421,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				// this status should only be returned with InPlace update mode (InPlaceOrRecreate will return InPlaceEvict in case of infeasible state)
 				// Fall through to attempt in-place update
 				klog.V(2).InfoS("In-place update infeasible, retrying with new recommendation", "pod", klog.KObj(pod))
-				u.recordInfeasibleAttempt(pod, vpa)
+				u.recordInfeasibleAttempt(pod, vpaForPod)
 			case utils.InPlaceApproved:
 				klog.V(2).InfoS("In-place update approved", "pod", klog.KObj(pod))
 				// Proceed with in-place update
@@ -407,16 +436,22 @@ func (u *updater) RunOnce(ctx context.Context) {
 				metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, "InPlaceUpdateRateLimiterWaitFailed")
 				return
 			}
-			err := inPlaceLimiter.InPlaceUpdate(pod, vpa, u.eventRecorder)
+			err := inPlaceLimiter.InPlaceUpdate(pod, vpaForPod, recorder)
 			if err != nil {
 				reason := "InPlaceUpdateError"
 				// For InPlace mode, don't evict pods even if we get an error
 				if updateMode == vpa_types.UpdateModeInPlace {
 					if isInfeasibleError(err) {
 						reason = "InPlaceUpdateInfeasible"
-						u.recordInfeasibleAttempt(pod, vpa)
+						u.recordInfeasibleAttempt(pod, vpaForPod)
 					}
 					klog.V(0).InfoS("In-place resize failed", "error", err, "pod", klog.KObj(pod), "reason", reason)
+					metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, reason)
+					continue
+				}
+				if pressureOnly[pod.UID] {
+					klog.V(2).InfoS("Quick pressure never evicts: in-place resize failed, skipping pod this loop", "error", err, "pod", klog.KObj(pod))
+					metrics_updater.RecordQuickPressure("eviction_skipped")
 					metrics_updater.RecordFailedInPlaceUpdate(vpaSize, vpa.Name, vpa.Namespace, reason)
 					continue
 				}
@@ -682,24 +717,29 @@ func getRateLimiter(rateLimit float64, rateLimitBurst int) *rate.Limiter {
 	return rateLimiter
 }
 
-// getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
-func (u *updater) getPodsUpdateOrder(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*corev1.Pod {
+// getPodsUpdateOrder returns the Pods to update in priority order, and the ones admitted only by quick
+// pressure, which must never be evicted. controlledPods is the number of Pods the VPA controls, which
+// sizes the quick pressure budget; pods may be only the candidates among them.
+func (u *updater) getPodsUpdateOrder(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, controlledPods int) ([]*corev1.Pod, map[types.UID]bool) {
 	updateconfig := priority.UpdateConfig{
-		MinChangePriority:          u.defaultUpdateThreshold,
-		PodLifetimeUpdateThreshold: u.podLifetimeUpdateThreshold,
-		EvictAfterOOMThreshold:     u.evictAfterOOMThreshold,
+		MinChangePriority:           u.defaultUpdateThreshold,
+		PodLifetimeUpdateThreshold:  u.podLifetimeUpdateThreshold,
+		EvictAfterOOMThreshold:      u.evictAfterOOMThreshold,
+		PressureQuickUpdateWindow:   u.pressureQuickUpdateWindow,
+		PressureQuickUpdateFraction: u.pressureQuickUpdateFraction,
 	}
 	priorityCalculator := priority.NewUpdatePriorityCalculator(
 		vpa,
 		updateconfig,
 		u.recommendationProcessor,
 		u.priorityProcessor)
+	priorityCalculator.SetQuickPressureBudget(controlledPods)
 
 	for _, pod := range pods {
 		priorityCalculator.AddPod(pod, time.Now(), u.infeasibleAttempts)
 	}
 
-	return priorityCalculator.GetSortedPods(u.evictionAdmission)
+	return priorityCalculator.GetSortedPods(u.evictionAdmission), priorityCalculator.PressureOnly()
 }
 
 func filterPods(pods []*corev1.Pod, predicate func(*corev1.Pod) bool) []*corev1.Pod {
@@ -787,4 +827,53 @@ func isInfeasibleError(err error) bool {
 		}
 	}
 	return false
+}
+
+// clampToCurrentRequests returns a copy of vpa whose targets never go below the Pod's current requests,
+// so a quick pressure update only raises resources.
+func clampToCurrentRequests(vpa *vpa_types.VerticalPodAutoscaler, pod *corev1.Pod) *vpa_types.VerticalPodAutoscaler {
+	c := vpa.DeepCopy()
+	if c.Status.Recommendation == nil {
+		return c
+	}
+	for i := range c.Status.Recommendation.ContainerRecommendations {
+		rec := &c.Status.Recommendation.ContainerRecommendations[i]
+		requests, _ := resourcehelpers.ContainerRequestsAndLimits(rec.ContainerName, pod)
+		for res, target := range rec.Target {
+			if cur, ok := requests[res]; ok && target.Cmp(cur) < 0 {
+				rec.Target[res] = cur.DeepCopy()
+				klog.V(4).InfoS("Quick pressure kept a resource at its current request", "pod", klog.KObj(pod), "container", rec.ContainerName, "resource", res, "kept", cur.String(), "target", target.String())
+				metrics_updater.RecordQuickPressure("decrease_clamped")
+			}
+		}
+	}
+	return c
+}
+
+// lowersResource reports whether applying vpa's recommendation to pod, after capping, would lower any
+// resource below its current request. A recommendation that cannot be computed counts as lowering.
+func (u *updater) lowersResource(vpa *vpa_types.VerticalPodAutoscaler, pod *corev1.Pod) bool {
+	capped, _, err := u.recommendationProcessor.Apply(vpa, pod)
+	if err != nil || capped == nil {
+		return true
+	}
+	for _, rec := range capped.ContainerRecommendations {
+		requests, _ := resourcehelpers.ContainerRequestsAndLimits(rec.ContainerName, pod)
+		if resourcehelpers.HasLowerResource(requests, rec.Target) {
+			return true
+		}
+	}
+	return false
+}
+
+// quickPressureRecorder marks the in-place resize event of a Pod admitted by quick pressure.
+type quickPressureRecorder struct {
+	record.EventRecorder
+}
+
+func (r quickPressureRecorder) Event(object runtime.Object, eventtype, reason, message string) {
+	if reason == restriction.InPlaceResizedEventReason {
+		message += " Admitted by quick pressure after sustained memory stall."
+	}
+	r.EventRecorder.Event(object, eventtype, reason, message)
 }

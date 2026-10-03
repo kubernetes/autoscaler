@@ -247,6 +247,8 @@ helm upgrade <release-name> <chart> \
 | recommender.leaderElection.resourceNamespace | string | `""` |  |
 | recommender.leaderElection.retryPeriod | string | `"2s"` |  |
 | recommender.logLevel | int | `4` | Log verbosity for the Recommender (klog -v). |
+| recommender.memoryPressure.nodeProxyAccess | bool | `false` |  |
+| recommender.memoryPressure.nodeStatsAccess | bool | `false` |  |
 | recommender.nodeSelector | object | `{}` |  |
 | recommender.podAnnotations | object | `{}` |  |
 | recommender.podDisruptionBudget.enabled | bool | `true` |  |

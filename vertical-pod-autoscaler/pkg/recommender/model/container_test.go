@@ -374,3 +374,150 @@ func TestMemorySamplesWithCustomAggregationIntervalCount(t *testing.T) {
 	test.mockCPUHistogram.AssertExpectations(t)
 	test.mockMemoryHistogram.AssertExpectations(t)
 }
+
+func TestRecordPressureDoesNotReinflate(t *testing.T) {
+	test := newContainerTest()
+	windowEnd := testTimestamp.Add(GetAggregationsConfig().MemoryAggregationIntervalDuration)
+	// A usage sample establishes the interval and memoryPeak = 1000mb.
+	test.mockMemoryHistogram.On("AddSample", 1000.0*mb, 1.0, windowEnd)
+	assert.True(t, test.container.AddSample(&ContainerUsageSample{MeasureStart: testTimestamp, Usage: ResourceAmount(1000 * mb), Resource: ResourceMemory}))
+
+	// Pressure at 1000mb working set: max(1000+64Mi, 1000*1.15) = 1150mb replaces the peak.
+	test.mockMemoryHistogram.On("SubtractSample", 1000.0*mb, 1.0, windowEnd)
+	test.mockMemoryHistogram.On("AddSample", 1150.0*mb, 1.0, windowEnd)
+	assert.NoError(t, test.container.RecordPressure(testTimestamp.Add(time.Minute), ResourceAmount(1000*mb)))
+
+	// Repeating the same observation must not read its own synthetic peak and inflate again.
+	assert.NoError(t, test.container.RecordPressure(testTimestamp.Add(2*time.Minute), ResourceAmount(1000*mb)))
+	test.mockMemoryHistogram.AssertNumberOfCalls(t, "AddSample", 2)
+	assert.Equal(t, ResourceAmount(1000*mb), test.container.memoryPeak)
+	assert.Equal(t, ResourceAmount(1150*mb), test.container.pressurePeak)
+
+	// Pressure never rolls the window.
+	assert.Error(t, test.container.RecordPressure(windowEnd, ResourceAmount(1000*mb)))
+}
+
+func TestRecordPressure(t *testing.T) {
+	type op struct {
+		kind    string // "usage", "oom" or "pressure"
+		at      time.Duration
+		amount  ResourceAmount
+		wantErr bool
+		// wantMaxPeak, when set, is the interval's peak after this op.
+		wantMaxPeak ResourceAmount
+	}
+	testCases := []struct {
+		name         string
+		ops          []op
+		wantObserved bool
+	}{
+		{
+			name: "rejected before the first usage sample",
+			ops: []op{
+				{kind: "pressure", amount: 1000 * mb, wantErr: true},
+			},
+		},
+		{
+			name: "rejected outside the current interval",
+			ops: []op{
+				{kind: "usage", amount: 1000 * mb},
+				{kind: "pressure", at: -time.Minute, amount: 1000 * mb, wantErr: true},
+				{kind: "pressure", at: 25 * time.Hour, amount: 1000 * mb, wantErr: true, wantMaxPeak: 1000 * mb},
+			},
+		},
+		{
+			// max(486Mi + 64Mi, 486Mi * 1.15)
+			name: "bumps the working set",
+			ops: []op{
+				{kind: "usage", amount: 400 * mb},
+				{kind: "pressure", at: time.Minute, amount: 486 * mb, wantMaxPeak: ScaleResource(486*mb, DefaultPressureBumpUpRatio)},
+			},
+			wantObserved: true,
+		},
+		{
+			name: "bumps the usage peak when it is above the working set",
+			ops: []op{
+				{kind: "usage", amount: 1000 * mb},
+				{kind: "pressure", at: time.Minute, amount: 900 * mb, wantMaxPeak: 1150 * mb},
+			},
+			wantObserved: true,
+		},
+		{
+			name: "observed but adds no peak below an OOM peak",
+			ops: []op{
+				{kind: "usage", amount: 1000 * mb},
+				{kind: "oom", at: time.Minute, amount: 2000 * mb, wantMaxPeak: 2400 * mb},
+				{kind: "pressure", at: 2 * time.Minute, amount: 1000 * mb, wantMaxPeak: 2400 * mb},
+			},
+			wantObserved: true,
+		},
+		{
+			// RecordOOM bumps max(1000, 1000) by 1.2 and ignores the 1150 pressure peak.
+			name: "a later OOM is not stacked on the pressure peak",
+			ops: []op{
+				{kind: "usage", amount: 1000 * mb},
+				{kind: "pressure", at: time.Minute, amount: 1000 * mb, wantMaxPeak: 1150 * mb},
+				{kind: "oom", at: 2 * time.Minute, amount: 1000 * mb, wantMaxPeak: 1200 * mb},
+			},
+			wantObserved: true,
+		},
+		{
+			// The observer's sample can be older than the latest metrics sample; it is still recorded and
+			// does not move the usage ordering watermark.
+			name: "accepted when older than the latest usage sample",
+			ops: []op{
+				{kind: "usage", amount: 1000 * mb},
+				{kind: "usage", at: 2 * time.Minute, amount: 1000 * mb},
+				{kind: "pressure", at: time.Minute, amount: 1000 * mb, wantMaxPeak: 1150 * mb},
+				{kind: "usage", at: 3 * time.Minute, amount: 1100 * mb, wantMaxPeak: 1150 * mb},
+			},
+			wantObserved: true,
+		},
+		{
+			// A usage sample later than the previous usage sample but earlier than the pressure sample is
+			// still in order, because pressure samples do not move the watermark.
+			name: "does not move the usage ordering watermark",
+			ops: []op{
+				{kind: "usage", amount: 1000 * mb},
+				{kind: "pressure", at: 2 * time.Minute, amount: 1000 * mb, wantMaxPeak: 1150 * mb},
+				{kind: "usage", at: time.Minute, amount: 1300 * mb, wantMaxPeak: 1300 * mb},
+			},
+			wantObserved: true,
+		},
+		{
+			name: "higher usage replaces the pressure peak",
+			ops: []op{
+				{kind: "usage", amount: 1000 * mb},
+				{kind: "pressure", at: time.Minute, amount: 1000 * mb, wantMaxPeak: 1150 * mb},
+				{kind: "usage", at: 2 * time.Minute, amount: 1100 * mb, wantMaxPeak: 1150 * mb},
+				{kind: "usage", at: 3 * time.Minute, amount: 1300 * mb, wantMaxPeak: 1300 * mb},
+			},
+			wantObserved: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			aggregator := NewAggregateContainerState()
+			container := NewContainerState(TestRequest, aggregator)
+			for i, o := range tc.ops {
+				at := testTimestamp.Add(o.at)
+				var err error
+				switch o.kind {
+				case "usage":
+					assert.True(t, container.AddSample(&ContainerUsageSample{MeasureStart: at, Usage: o.amount, Resource: ResourceMemory}), "op %d", i)
+				case "oom":
+					err = container.RecordOOM(at, o.amount)
+				case "pressure":
+					err = container.RecordPressure(at, o.amount)
+				default:
+					t.Fatalf("unknown op %q", o.kind)
+				}
+				assert.Equal(t, o.wantErr, err != nil, "op %d: %v", i, err)
+				if o.wantMaxPeak != 0 {
+					assert.Equal(t, o.wantMaxPeak, container.GetMaxMemoryPeak(), "op %d", i)
+				}
+			}
+			assert.Equal(t, tc.wantObserved, !aggregator.LastPressureTime.IsZero())
+		})
+	}
+}

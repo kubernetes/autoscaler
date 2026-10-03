@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/pressure"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
@@ -99,6 +100,12 @@ type RecommenderConfig struct {
 	CpuHistogramDecayHalfLife      time.Duration
 	OOMBumpUpRatio                 float64
 	OOMMinBumpUp                   float64
+
+	// Memory pressure detection configuration
+	PressureBumpUpRatio   float64
+	PressureMinBumpUp     float64
+	PressureTransport     string
+	PressureKubeletCAFile string
 
 	// Post processors configuration
 	PostProcessorCPUasInteger bool
@@ -172,6 +179,11 @@ func DefaultRecommenderConfig() *RecommenderConfig {
 		CpuHistogramDecayHalfLife:      model.DefaultCPUHistogramDecayHalfLife,
 		OOMBumpUpRatio:                 model.DefaultOOMBumpUpRatio,
 		OOMMinBumpUp:                   model.DefaultOOMMinBumpUp,
+
+		// Memory pressure detection flags
+		PressureBumpUpRatio: model.DefaultPressureBumpUpRatio,
+		PressureMinBumpUp:   model.DefaultPressureMinBumpUp,
+		PressureTransport:   string(pressure.TransportDirect),
 
 		// Post processors flags
 		PostProcessorCPUasInteger: false,
@@ -247,6 +259,12 @@ func InitRecommenderFlags() *RecommenderConfig {
 	flag.Float64Var(&config.OOMBumpUpRatio, "oom-bump-up-ratio", config.OOMBumpUpRatio, `Default memory bump up ratio when OOM occurs. This value applies to all VPAs unless overridden in the VPA spec. Default is 1.2.`)
 	flag.Float64Var(&config.OOMMinBumpUp, "oom-min-bump-up-bytes", config.OOMMinBumpUp, `Default minimal increase of memory (in bytes) when OOM occurs. This value applies to all VPAs unless overridden in the VPA spec. Default is 100 * 1024 * 1024 (100Mi).`)
 
+	// Memory pressure detection flags
+	flag.Float64Var(&config.PressureBumpUpRatio, "pressure-bump-up-ratio", config.PressureBumpUpRatio, `[ALPHA] Memory bump up ratio of a peak recorded after sustained memory pressure. Requires the ReactiveMemoryPressureDetection feature gate.`)
+	flag.Float64Var(&config.PressureMinBumpUp, "pressure-min-bump-up-bytes", config.PressureMinBumpUp, `[ALPHA] Minimal increase of memory (in bytes) of a peak recorded after sustained memory pressure. Requires the ReactiveMemoryPressureDetection feature gate.`)
+	flag.StringVar(&config.PressureTransport, "pressure-transport", config.PressureTransport, `[ALPHA] How the recommender reads the kubelet Summary API for memory pressure: "direct" (needs get nodes/stats) or "apiserver-proxy" (needs get nodes/proxy). Requires the ReactiveMemoryPressureDetection feature gate.`)
+	flag.StringVar(&config.PressureKubeletCAFile, "pressure-kubelet-ca-file", config.PressureKubeletCAFile, `[ALPHA] CA bundle that verifies kubelet serving certificates for the direct pressure transport. Defaults to the API server CA. Requires the ReactiveMemoryPressureDetection feature gate.`)
+
 	// Post processors flags
 	// CPU as integer to benefit for CPU management Static Policy ( https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy )
 	flag.BoolVar(&config.PostProcessorCPUasInteger, "cpu-integer-post-processor-enabled", config.PostProcessorCPUasInteger, "Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental)")
@@ -281,6 +299,21 @@ func ValidateRecommenderConfig(config *RecommenderConfig) {
 
 	if config.PrometheusBearerToken != "" && config.PrometheusBearerTokenFile != "" && config.Username != "" {
 		klog.ErrorS(nil, "--bearer-token, --bearer-token-file and --username are mutually exclusive and can't be set together.")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	if config.PressureBumpUpRatio < 1 || config.PressureBumpUpRatio > 2 {
+		klog.ErrorS(nil, "--pressure-bump-up-ratio must be in [1, 2]", "pressure-bump-up-ratio", config.PressureBumpUpRatio)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	if config.PressureMinBumpUp < 0 {
+		klog.ErrorS(nil, "--pressure-min-bump-up-bytes must not be negative", "pressure-min-bump-up-bytes", config.PressureMinBumpUp)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	if t := pressure.Transport(config.PressureTransport); t != pressure.TransportDirect && t != pressure.TransportAPIServerProxy {
+		klog.ErrorS(nil, "--pressure-transport must be direct or apiserver-proxy", "pressure-transport", config.PressureTransport)
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 

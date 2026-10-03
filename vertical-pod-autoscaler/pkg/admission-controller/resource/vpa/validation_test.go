@@ -1487,3 +1487,63 @@ func TestVeryInvalidateVPA(t *testing.T) {
 		assert.Contains(t, expectFieldErrors, err.Field)
 	}
 }
+
+func vpaWithPressure(mode vpa_types.PressureDetectionMode) *vpa_types.VerticalPodAutoscaler {
+	return &vpa_types.VerticalPodAutoscaler{
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			TargetRef: &autoscalingv1.CrossVersionObjectReference{Kind: "Deployment", Name: "app", APIVersion: "apps/v1"},
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{{ContainerName: "app", PressureDetection: &mode}},
+			},
+		},
+	}
+}
+
+func TestExistingPressureDetection(t *testing.T) {
+	tests := []struct {
+		name     string
+		oldObj   *vpa_types.VerticalPodAutoscaler
+		expected map[string]bool
+	}{
+		{name: "no old object", expected: map[string]bool{}},
+		{name: "no resource policy", oldObj: &vpa_types.VerticalPodAutoscaler{}, expected: map[string]bool{}},
+		{name: "opted-in container", oldObj: vpaWithPressure(vpa_types.PressureDetectionEnabled), expected: map[string]bool{"app": true}},
+		{name: "Disabled container", oldObj: vpaWithPressure(vpa_types.PressureDetectionDisabled), expected: map[string]bool{}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, existingPressureDetection(tc.oldObj))
+		})
+	}
+}
+
+func TestValidatePressureDetection(t *testing.T) {
+	tests := []struct {
+		name        string
+		mode        vpa_types.PressureDetectionMode
+		allow       bool
+		existing    map[string]bool
+		expectError string
+	}{
+		{name: "Enabled allowed", mode: vpa_types.PressureDetectionEnabled, allow: true},
+		{name: "Enabled forbidden with the gate off", mode: vpa_types.PressureDetectionEnabled, allow: false,
+			expectError: "spec.resourcePolicy.containerPolicies[0].pressureDetection: Forbidden: Enabled is not supported when feature flag ReactiveMemoryPressureDetection is disabled"},
+		{name: "Disabled always allowed", mode: vpa_types.PressureDetectionDisabled, allow: false},
+		{name: "Enabled kept on the same container with the gate off", mode: vpa_types.PressureDetectionEnabled, existing: map[string]bool{"app": true}},
+		{name: "Enabled on another container with the gate off", mode: vpa_types.PressureDetectionEnabled, existing: map[string]bool{"sidecar": true},
+			expectError: "spec.resourcePolicy.containerPolicies[0].pressureDetection: Forbidden: Enabled is not supported when feature flag ReactiveMemoryPressureDetection is disabled"},
+		{name: "unknown value rejected", mode: "Sometimes", allow: true,
+			expectError: `spec.resourcePolicy.containerPolicies[0].pressureDetection: Unsupported value: "Sometimes": supported values: "Enabled", "Disabled"`},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			_, errs := validateVPA(vpaWithPressure(tc.mode), VPAValidationOptions{IsVPACreate: true, AllowPressureDetection: tc.allow, ExistingPressureDetection: tc.existing})
+			if tc.expectError == "" {
+				assert.Empty(t, errs)
+				return
+			}
+			assert.Len(t, errs, 1)
+			assert.Equal(t, tc.expectError, errs[0].Error())
+		})
+	}
+}

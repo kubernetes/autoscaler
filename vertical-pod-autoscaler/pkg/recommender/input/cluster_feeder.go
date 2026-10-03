@@ -40,6 +40,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/pressure"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
@@ -88,6 +89,7 @@ type ClusterStateFeederFactory struct {
 	VpaLister           vpa_lister.VerticalPodAutoscalerLister
 	PodLister           listersv1.PodLister
 	OOMObserver         oom.Observer
+	PressureObserver    pressure.Observer
 	SelectorFetcher     target.VpaTargetSelectorFetcher
 	MemorySaveMode      bool
 	ControllerFetcher   controllerfetcher.ControllerFetcher
@@ -99,9 +101,16 @@ type ClusterStateFeederFactory struct {
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
 func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
+	var pressureChan <-chan pressure.Info
+	if m.PressureObserver != nil {
+		pressureChan = m.PressureObserver.Channel()
+	}
 	return &clusterStateFeeder{
+		pressureChan:        pressureChan,
 		metricsClient:       m.MetricsClient,
 		oomChan:             m.OOMObserver.GetObservedOomsChannel(),
+		pressureObserver:    m.PressureObserver,
+		podLister:           m.PodLister,
 		vpaCheckpointClient: m.VpaCheckpointClient,
 		vpaCheckpointLister: m.VpaCheckpointLister,
 		vpaLister:           m.VpaLister,
@@ -215,6 +224,9 @@ type clusterStateFeeder struct {
 	specClient          spec.SpecClient
 	metricsClient       metrics.MetricsClient
 	oomChan             <-chan oom.OomInfo
+	pressureObserver    pressure.Observer
+	pressureChan        <-chan pressure.Info
+	podLister           listersv1.PodLister
 	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	vpaCheckpointLister vpa_lister.VerticalPodAutoscalerCheckpointLister
 	vpaLister           vpa_lister.VerticalPodAutoscalerLister
@@ -514,6 +526,9 @@ func (feeder *clusterStateFeeder) LoadRealTimeMetrics(ctx context.Context) {
 		}
 	}
 	klog.V(3).InfoS("ClusterSpec fed with ContainerUsageSamples", "sampleCount", sampleCount, "containerCount", len(containersMetrics), "droppedSampleCount", droppedSampleCount)
+	if feeder.pressureObserver != nil {
+		feeder.pressureObserver.SetTargets(pressure.BuildTargets(feeder.clusterState, feeder.podLister))
+	}
 Loop:
 	for {
 		select {
@@ -522,6 +537,8 @@ Loop:
 			if err = feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory); err != nil {
 				klog.V(0).InfoS("Failed to record OOM", "oomInfo", oomInfo, "error", err)
 			}
+		case info := <-feeder.pressureChan:
+			feeder.recordPressure(info)
 		default:
 			break Loop
 		}
@@ -614,5 +631,32 @@ func (feeder *clusterStateFeeder) getSelector(ctx context.Context, vpa *vpa_type
 	return labels.Nothing(), []condition{
 		{conditionType: vpa_types.ConfigUnsupported, delete: false, message: msg},
 		{conditionType: vpa_types.ConfigDeprecated, delete: true},
+	}
+}
+
+// recordPressure injects an accepted pressure observation into the cluster state.
+func (feeder *clusterStateFeeder) recordPressure(info pressure.Info) {
+	if !feeder.pressureObserver.Eligible(info) {
+		metrics_recommender.RecordPressureEvent("policy_changed")
+		return
+	}
+	err := feeder.clusterState.RecordPressure(info.ContainerID, info.SampleTime, info.WorkingSet)
+	if _, isKeyError := err.(model.KeyError); isKeyError {
+		metrics_recommender.RecordPressureEvent("unknown_container")
+		return
+	}
+	if err != nil {
+		klog.V(4).InfoS("Pressure sample rejected", "container", info.ContainerID, "error", err)
+		metrics_recommender.RecordPressureEvent("window_mismatch")
+		return
+	}
+	klog.V(3).InfoS("Pressure sample accepted", "container", info.ContainerID, "workingSet", info.WorkingSet, "stallRate", info.StallRate)
+	metrics_recommender.RecordPressureEvent("accepted")
+	if pod, ok := feeder.clusterState.Pods()[info.ContainerID.PodID]; ok {
+		if c, ok := pod.Containers[info.ContainerID.ContainerName]; ok {
+			if ratio := c.PressureEstimateToRecommendation(); ratio > 0 {
+				metrics_recommender.ObservePressureEstimateRatio(ratio)
+			}
+		}
 	}
 }
