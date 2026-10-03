@@ -172,7 +172,16 @@ func (aws *awsCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) 
 		return false, err
 	}
 
-	// we don't care about the status
+	// Instances that are being terminated (e.g. after NodeGroup.DeleteNodes())
+	// stay in the ASG API response until termination completes, but they are no
+	// longer counted towards the target size - report them as gone right away
+	// so that ClusterStateRegistry doesn't miscount them (see issue #9877).
+	if aws.awsManager.asgCache.InstanceTerminating(*awsRef) {
+		return false, nil
+	}
+
+	// for instances that are not terminating we don't care about the status
+	// value, only that the instance is present in the cache
 	status, err := aws.awsManager.asgCache.InstanceStatus(*awsRef)
 	if status != nil {
 		return true, nil

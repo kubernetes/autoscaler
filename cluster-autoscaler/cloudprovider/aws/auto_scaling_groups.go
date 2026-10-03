@@ -253,6 +253,29 @@ func (m *asgCache) findInstanceLifecycle(ref AwsInstanceRef) (autoscalingtypes.L
 	return "", fmt.Errorf("could not find instance %v", ref)
 }
 
+// isTerminatingLifecycleState returns whether an instance in the given
+// lifecycle state is terminating or already terminated, and therefore no
+// longer counted towards the ASG's desired capacity.
+func isTerminatingLifecycleState(lifecycle autoscalingtypes.LifecycleState) bool {
+	return lifecycle == autoscalingtypes.LifecycleStateTerminated ||
+		lifecycle == autoscalingtypes.LifecycleStateTerminating ||
+		lifecycle == autoscalingtypes.LifecycleStateTerminatingWait ||
+		lifecycle == autoscalingtypes.LifecycleStateTerminatingProceed
+}
+
+// InstanceTerminating returns whether the instance is terminating or already
+// terminated, i.e. it is no longer counted towards the ASG's desired capacity.
+func (m *asgCache) InstanceTerminating(ref AwsInstanceRef) bool {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	lifecycle, found := m.instanceLifecycle[ref]
+	if !found {
+		return false
+	}
+	return isTerminatingLifecycleState(lifecycle)
+}
+
 func (m *asgCache) SetAsgSize(asg *asg, size int) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -358,10 +381,7 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 			return err
 		}
 
-		if lifecycle == autoscalingtypes.LifecycleStateTerminated ||
-			lifecycle == autoscalingtypes.LifecycleStateTerminating ||
-			lifecycle == autoscalingtypes.LifecycleStateTerminatingWait ||
-			lifecycle == autoscalingtypes.LifecycleStateTerminatingProceed {
+		if isTerminatingLifecycleState(lifecycle) {
 			klog.V(2).Infof("instance %s is already terminating in state %s, will skip instead", instance.Name, lifecycle)
 			continue
 		}
@@ -381,6 +401,9 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		// Proactively decrement the size so autoscaler makes better decisions
 		commonAsg.curSize--
 
+		// Mark the instance as terminating in the cache, so that HasInstance
+		// reports it as gone immediately, before the cache is regenerated
+		m.instanceLifecycle[*instance] = autoscalingtypes.LifecycleStateTerminating
 	}
 	return nil
 }
@@ -465,6 +488,14 @@ func (m *asgCache) regenerate() error {
 			newAsgToInstancesCache[asg.AwsRef][i] = ref
 			newInstanceStatusMap[ref] = instance.HealthStatus
 			newInstanceLifecycleMap[ref] = instance.LifecycleState
+			// Termination is one-way, so a stale API response claiming that an
+			// already-terminating instance is healthy must not overwrite the
+			// cached lifecycle state - right after DeleteInstances(), an
+			// eventually consistent response can still report the instance as
+			// InService.
+			if !isTerminatingLifecycleState(instance.LifecycleState) && isTerminatingLifecycleState(m.instanceLifecycle[ref]) {
+				newInstanceLifecycleMap[ref] = m.instanceLifecycle[ref]
+			}
 		}
 	}
 
