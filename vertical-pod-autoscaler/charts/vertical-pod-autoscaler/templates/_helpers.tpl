@@ -47,6 +47,18 @@ admissionController
 {{ include "vertical-pod-autoscaler.fullname" . }}-admission-controller
 {{- end }}
 
+{{- define "vertical-pod-autoscaler.recommender.serviceAccountName" -}}
+{{- default (include "vertical-pod-autoscaler.recommender.fullname" .) .Values.recommender.serviceAccount.name -}}
+{{- end }}
+
+{{- define "vertical-pod-autoscaler.updater.serviceAccountName" -}}
+{{- default (include "vertical-pod-autoscaler.updater.fullname" .) .Values.updater.serviceAccount.name -}}
+{{- end }}
+
+{{- define "vertical-pod-autoscaler.admissionController.serviceAccountName" -}}
+{{- default (include "vertical-pod-autoscaler.admissionController.fullname" .) .Values.admissionController.serviceAccount.name -}}
+{{- end }}
+
 {{- define "vertical-pod-autoscaler.admissionController.labels" -}}
 {{ include "vertical-pod-autoscaler.labels" . }}
 app.kubernetes.io/component: admission-controller
