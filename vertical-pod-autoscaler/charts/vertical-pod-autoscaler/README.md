@@ -110,6 +110,49 @@ kubectl label crd verticalpodautoscalers.autoscaling.k8s.io app.kubernetes.io/ma
 kubectl annotate crd verticalpodautoscalers.autoscaling.k8s.io meta.helm.sh/release-name=<release-name> meta.helm.sh/release-namespace=<namespace> --overwrite
 ```
 
+## Extra Objects
+
+`extraObjects` deploys additional Kubernetes manifests alongside the release, for example a `PodMonitor`, a `NetworkPolicy` or a `ConfigMap`. This avoids a separate chart or a manual `kubectl apply`, and the chart does not need to know about (or depend on the CRDs of) those resource types.
+
+Each item in the list is either a YAML map or a multi-line string. Both forms are evaluated as templates, so `.Release`, `.Values`, `.Chart` and the named templates of this chart are available. Objects without `metadata.namespace` are created in the release namespace.
+
+Map form:
+
+```yaml
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: "{{ .Release.Name }}-example"
+    data:
+      key: value
+```
+
+String form, which you need when using pipelines such as `nindent`. This example scrapes the Recommender's metrics with the Prometheus Operator (requires its CRDs):
+
+```yaml
+extraObjects:
+  - |
+    apiVersion: monitoring.coreos.com/v1
+    kind: PodMonitor
+    metadata:
+      name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+      labels:
+        {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
+    spec:
+      selector:
+        matchLabels:
+          {{- include "vertical-pod-autoscaler.recommender.selectorLabels" . | nindent 6 }}
+      podMetricsEndpoints:
+        - port: prometheus
+```
+
+Because items are evaluated as templates, a literal `{{ ... }}` in a manifest (for example in a `PrometheusRule` annotation) must be escaped:
+
+```yaml
+summary: "{{`{{ $labels.pod }}`}} is restarting"
+```
+
 ## Migration Guides
 
 ### Migrating from vpa-up.sh script
@@ -221,6 +264,7 @@ helm upgrade <release-name> <chart> \
 | containerSecurityContext | object | `{}` |  |
 | crds.enabled | bool | `true` | Whether to install and manage the VPA CRDs. Disable if you manage CRDs separately. |
 | crds.keep | bool | `true` | Whether to add the helm.sh/resource-policy: keep annotation to the CRDs, so they are not removed by `helm uninstall`. |
+| extraObjects | list | `[]` | Extra Kubernetes objects to deploy with the release, such as PodMonitors, NetworkPolicies or ConfigMaps. Each item is either a YAML map or a multi-line string, and is evaluated as a template. See the README for examples. |
 | fullnameOverride | string | `nil` |  |
 | imagePullSecrets | list | `[]` |  |
 | nameOverride | string | `nil` |  |

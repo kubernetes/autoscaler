@@ -175,3 +175,20 @@ app.kubernetes.io/component: recommender
 {{- define "vertical-pod-autoscaler.recommender.image" -}}
 {{- printf "%s:%s" .Values.recommender.image.repository (default .Chart.AppVersion .Values.recommender.image.tag) }}
 {{- end }}
+
+
+{{/*
+extraObjects
+*/}}
+
+{{/*
+Render one extraObjects entry: a string is evaluated as a template as-is, a map is converted to YAML first.
+The context must be the root context ($) so that tpl can resolve .Release, .Values and the named templates.
+*/}}
+{{- define "vertical-pod-autoscaler.tplvalues.render" -}}
+{{- if typeIs "string" .value -}}
+{{- tpl .value .context -}}
+{{- else -}}
+{{- tpl (.value | toYaml) .context -}}
+{{- end -}}
+{{- end }}
