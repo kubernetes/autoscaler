@@ -1,0 +1,58 @@
+suite: recommender deployment - leader election
+templates:
+  - recommender-deployment.yaml
+tests:
+  - it: enables leader election by default (no overrides) since default replicas is 2
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+      - equal:
+          path: spec.replicas
+          value: 2
+
+  - it: enables leader election automatically when replicas > 1 and enabled is unset
+    set:
+      recommender.replicas: 2
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+
+  - it: does not enable leader election when replicas is 1 and enabled is unset
+    set:
+      recommender.replicas: 1
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+
+  - it: respects an explicit false even with replicas > 1
+    set:
+      recommender.replicas: 3
+      recommender.leaderElection.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+
+  - it: respects an explicit true even with replicas = 1
+    set:
+      recommender.replicas: 1
+      recommender.leaderElection.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect=true
+
+  - it: sets a deterministic default image and namespace env var
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^registry\.k8s\.io/autoscaling/vpa-recommender:.+$
+      - equal:
+          path: spec.template.spec.containers[0].env[0].name
+          value: NAMESPACE
+      - equal:
+          path: spec.template.spec.containers[0].env[0].valueFrom.fieldRef.fieldPath
+          value: metadata.namespace
