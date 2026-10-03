@@ -1,3 +1,13 @@
+approvers:
+  - Lucasgranet
+  - misterkind
+
+reviewers:
+  - alchimere
+  - atnbrg
+  - Lucasgranet
+  - misterkind
+  - mxm-tr
 
 labels:
-- area/provider/ovhcloud
+  - area/provider/ovhcloud
