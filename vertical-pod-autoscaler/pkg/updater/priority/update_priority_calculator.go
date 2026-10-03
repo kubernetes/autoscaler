@@ -120,7 +120,8 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time, inf
 		terminationState := &cs.LastTerminationState
 		if terminationState.Terminated != nil &&
 			terminationState.Terminated.Reason == "OOMKilled" &&
-			terminationState.Terminated.FinishedAt.Sub(terminationState.Terminated.StartedAt.Time) < evictOOMThreshold {
+			terminationState.Terminated.FinishedAt.Sub(terminationState.Terminated.StartedAt.Time) < evictOOMThreshold &&
+			now.Sub(terminationState.Terminated.FinishedAt.Time) < evictOOMThreshold {
 			quickOOM = true
 			klog.V(2).InfoS("Quick OOM detected in pod", "pod", klog.KObj(pod), "containerName", cs.Name)
 		}
@@ -129,7 +130,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time, inf
 	// The update is allowed in following cases:
 	// - the request is outside the recommended range for some container.
 	// - the pod lives for at least the duration of PodLifetimeUpdateThreshold and the resource diff is >= MinChangePriority.
-	// - a vpa scaled container OOMed in less than evictAfterOOMThreshold.
+	// - a vpa scaled container OOMed in less than evictAfterOOMThreshold of startup, and that OOM is still within evictAfterOOMThreshold of now.
 	if !updatePriority.OutsideRecommendedRange && !quickOOM {
 		if pod.Status.StartTime == nil {
 			// TODO: Set proper condition on the VPA.
