@@ -218,7 +218,9 @@ helm upgrade <release-name> <chart> \
 | admissionController.volumes[0].secret.items[2].path | string | `"serverKey.pem"` |  |
 | admissionController.volumes[0].secret.secretName | string | `"vpa-tls-certs"` |  |
 | commonLabels | object | `{}` |  |
-| containerSecurityContext | object | `{}` |  |
+| containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
+| containerSecurityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| containerSecurityContext.readOnlyRootFilesystem | bool | `true` |  |
 | crds.enabled | bool | `true` | Whether to install and manage the VPA CRDs. Disable if you manage CRDs separately. |
 | crds.keep | bool | `true` | Whether to add the helm.sh/resource-policy: keep annotation to the CRDs, so they are not removed by `helm uninstall`. |
 | fullnameOverride | string | `nil` |  |
@@ -226,6 +228,7 @@ helm upgrade <release-name> <chart> \
 | nameOverride | string | `nil` |  |
 | podSecurityContext.runAsNonRoot | bool | `true` |  |
 | podSecurityContext.runAsUser | int | `65534` |  |
+| podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
 | rbac.create | bool | `true` |  |
 | rbac.extraRules | list | `[]` |  |
 | recommender.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].key | string | `"app.kubernetes.io/component"` |  |
