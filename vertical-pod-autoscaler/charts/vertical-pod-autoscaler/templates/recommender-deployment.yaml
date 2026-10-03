@@ -15,7 +15,7 @@ spec:
   replicas: {{ . }}
   {{- end }}
   revisionHistoryLimit: {{ .Values.recommender.revisionHistoryLimit }}
-  {{- with .Values.recommender.updateStrategy }}
+  {{- with (.Values.recommender.strategy | default .Values.recommender.updateStrategy) }}
   strategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}

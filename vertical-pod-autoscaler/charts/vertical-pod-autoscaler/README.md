@@ -198,6 +198,7 @@ helm upgrade <release-name> <chart> \
 | admissionController.serviceAccount.annotations | object | `{}` |  |
 | admissionController.serviceAccount.create | bool | `true` |  |
 | admissionController.serviceAccount.labels | object | `{}` |  |
+| admissionController.strategy | object | `{}` |  |
 | admissionController.tls.caCert | string | `""` |  |
 | admissionController.tls.cert | string | `""` |  |
 | admissionController.tls.create | bool | `false` |  |
@@ -260,6 +261,7 @@ helm upgrade <release-name> <chart> \
 | recommender.serviceAccount.annotations | object | `{}` |  |
 | recommender.serviceAccount.create | bool | `true` |  |
 | recommender.serviceAccount.labels | object | `{}` |  |
+| recommender.strategy | object | `{}` |  |
 | recommender.tolerations | list | `[]` |  |
 | recommender.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Recommender, used to spread replicas across failure domains such as zones. |
 | updater.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].key | string | `"app.kubernetes.io/component"` |  |
