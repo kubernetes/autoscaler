@@ -42,6 +42,7 @@ find_files() {
         -o -wholename './cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/*' \
         -o -wholename './cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go/*' \
         -o -wholename './cluster-autoscaler/cloudprovider/hetzner/hcloud-go/*' \
+        -o -wholename './cluster-autoscaler/cloudprovider/upcloud/pkg/*' \
       \) -prune \
     \) -name '*.go'
 }
