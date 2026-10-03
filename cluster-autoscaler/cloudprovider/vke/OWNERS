@@ -1,0 +1,12 @@
+# See https://github.com/kubernetes/community/blob/master/community-membership.md
+# Handles may be temporarily commented per cloudprovider/POLICY.md until owners
+# join the Kubernetes GitHub organization.
+approvers:
+- kubilaykaptanoglu
+- mertongngl
+reviewers:
+- kubilaykaptanoglu
+- mertongngl
+
+labels:
+- area/provider/vke
