@@ -110,7 +110,7 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 	}
 }
 
-func TestPodMatchesVPA(t *testing.T) {
+func TestPodLabelsMatchVPA(t *testing.T) {
 	type testCase struct {
 		pod             *corev1.Pod
 		vpaWithSelector VpaWithSelector
@@ -135,7 +135,7 @@ func TestPodMatchesVPA(t *testing.T) {
 		{pod, VpaWithSelector{vpa, parseLabelSelector("app = other")}, false}}
 
 	for _, tc := range testCases {
-		actual := PodMatchesVPA(tc.pod, &tc.vpaWithSelector)
+		actual := PodLabelsMatchVPA(tc.pod.Namespace, labels.Set(tc.pod.Labels), tc.vpaWithSelector.Vpa.Namespace, tc.vpaWithSelector.Selector)
 		assert.Equal(t, tc.result, actual)
 	}
 }

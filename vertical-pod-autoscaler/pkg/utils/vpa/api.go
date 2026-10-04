@@ -178,11 +178,6 @@ func NewVpaCheckpointLister(vpaClient *vpa_clientset.Clientset, stopChannel <-ch
 	return vpaCheckpointLister
 }
 
-// PodMatchesVPA returns true iff the vpaWithSelector matches the Pod.
-func PodMatchesVPA(pod *corev1.Pod, vpaWithSelector *VpaWithSelector) bool {
-	return PodLabelsMatchVPA(pod.Namespace, labels.Set(pod.GetLabels()), vpaWithSelector.Vpa.Namespace, vpaWithSelector.Selector)
-}
-
 // PodLabelsMatchVPA returns true iff the vpaWithSelector matches the pod labels.
 func PodLabelsMatchVPA(podNamespace string, labels labels.Set, vpaNamespace string, vpaSelector labels.Selector) bool {
 	if podNamespace != vpaNamespace {
