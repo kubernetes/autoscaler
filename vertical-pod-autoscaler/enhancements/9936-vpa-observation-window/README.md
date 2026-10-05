@@ -206,7 +206,7 @@ Add a new value to the existing `VerticalPodAutoscalerStatus.Conditions` slice:
 
 This lets `kubectl describe vpa` surface the gate without an operator having to compute `CreationTimestamp + initialDelaySeconds` mentally.
 
-The condition is updated reactively. When the Updater sees a VPA whose window is active, it schedules a re-evaluation at `CreationTimestamp + initialDelaySeconds`, the same way reactive CPU startup boost unboosting works ([#10087](https://github.com/kubernetes/autoscaler/pull/10087)). Otherwise the condition could read `True` for up to one Updater sync interval after the window has elapsed, while the Admission Controller is already applying recommendations. The gate itself is unaffected either way, since the Updater and Admission Controller compute it directly.
+The condition is updated reactively. When the Updater sees a VPA whose window is active, it schedules a re-evaluation at `CreationTimestamp + initialDelaySeconds`. Otherwise the condition could read `True` for up to one Updater sync interval after the window has elapsed, while the Admission Controller is already applying recommendations. The gate itself is unaffected either way, since the Updater and Admission Controller compute it directly.
 
 ### Metric
 
