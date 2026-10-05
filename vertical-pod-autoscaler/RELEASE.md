@@ -303,6 +303,11 @@ sure nothing we care about will break if we do.
 12. [ ] Update the [VPA documentation in kubernetes/website](https://github.com/kubernetes/website/blob/main/content/en/docs/concepts/workloads/autoscaling/vertical-pod-autoscale.md)
     if any user-facing changes were made in this release.
 
+13. [ ] Add the release to [LWKD](https://lwkd.info/). Find the branch for the upcoming issue in the
+    [branch list](https://github.com/kubernetes-sigs/lwkd/branches) (named by date, e.g. `20260927`),
+    and open a PR against it adding the release to `_posts/YYYY-MM-DD-update.md`.
+    See https://github.com/kubernetes-sigs/lwkd/pull/996 as an example.
+
 ## Post release steps
 
 1. [ ] In the **default branch** update `.github/dependabot.yml` to add the new release branch, keeping the latest 3 minor releases:
