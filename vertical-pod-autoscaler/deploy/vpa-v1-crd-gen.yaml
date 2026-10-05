@@ -415,6 +415,86 @@ spec:
                             when OOM is detected.
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
+                        recommendationPercentiles:
+                          description: |-
+                            recommendationPercentiles overrides the recommender percentiles for this
+                            container, replacing the corresponding global Recommender flags. Percentiles
+                            are set per resource (cpu, memory); within a resource the lower-bound, target
+                            and upper-bound percentiles are all required and must satisfy
+                            lowerBound <= target <= upperBound. Only honored when the PerVPAConfig feature
+                            gate is enabled.
+                          properties:
+                            cpu:
+                              description: cpu holds the percentile overrides for
+                                CPU.
+                              properties:
+                                lowerBound:
+                                  description: lowerBound is the usage percentile
+                                    used for the lower bound of the recommendation.
+                                  format: int32
+                                  maximum: 100
+                                  minimum: 1
+                                  type: integer
+                                target:
+                                  description: target is the usage percentile used
+                                    for the target recommendation.
+                                  format: int32
+                                  maximum: 100
+                                  minimum: 1
+                                  type: integer
+                                upperBound:
+                                  description: upperBound is the usage percentile
+                                    used for the upper bound of the recommendation.
+                                  format: int32
+                                  maximum: 100
+                                  minimum: 1
+                                  type: integer
+                              required:
+                              - lowerBound
+                              - target
+                              - upperBound
+                              type: object
+                              x-kubernetes-validations:
+                              - message: percentiles must satisfy lowerBound <= target
+                                  <= upperBound
+                                rule: self.lowerBound <= self.target && self.target
+                                  <= self.upperBound
+                            memory:
+                              description: memory holds the percentile overrides for
+                                memory.
+                              properties:
+                                lowerBound:
+                                  description: lowerBound is the usage percentile
+                                    used for the lower bound of the recommendation.
+                                  format: int32
+                                  maximum: 100
+                                  minimum: 1
+                                  type: integer
+                                target:
+                                  description: target is the usage percentile used
+                                    for the target recommendation.
+                                  format: int32
+                                  maximum: 100
+                                  minimum: 1
+                                  type: integer
+                                upperBound:
+                                  description: upperBound is the usage percentile
+                                    used for the upper bound of the recommendation.
+                                  format: int32
+                                  maximum: 100
+                                  minimum: 1
+                                  type: integer
+                              required:
+                              - lowerBound
+                              - target
+                              - upperBound
+                              type: object
+                              x-kubernetes-validations:
+                              - message: percentiles must satisfy lowerBound <= target
+                                  <= upperBound
+                                rule: self.lowerBound <= self.target && self.target
+                                  <= self.upperBound
+                          type: object
                         startupBoost:
                           description: |-
                             startupBoost specifies the startup boost policy for the container.

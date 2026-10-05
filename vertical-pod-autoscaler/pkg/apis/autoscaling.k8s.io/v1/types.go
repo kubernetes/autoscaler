@@ -319,6 +319,15 @@ type ContainerResourcePolicy struct {
 	// +kubebuilder:validation:Minimum=1
 	MemoryAggregationIntervalCount *int64 `json:"memoryAggregationIntervalCount,omitempty"`
 
+	// recommendationPercentiles overrides the recommender percentiles for this
+	// container, replacing the corresponding global Recommender flags. Percentiles
+	// are set per resource (cpu, memory); within a resource the lower-bound, target
+	// and upper-bound percentiles are all required and must satisfy
+	// lowerBound <= target <= upperBound. Only honored when the PerVPAConfig feature
+	// gate is enabled.
+	// +optional
+	RecommendationPercentiles *RecommendationPercentiles `json:"recommendationPercentiles,omitempty"`
+
 	// startupBoost specifies the startup boost policy for the container.
 	// This overrides any pod-level startup boost policy.
 	// The startup boost policy takes precedence over the rest of the fields in
@@ -332,6 +341,38 @@ const (
 	// ContainerResourcePolicy.ContainerName to specify the default policy.
 	DefaultContainerResourcePolicy = "*"
 )
+
+// RecommendationPercentiles overrides the recommender percentiles for a
+// container, per resource. A resource is only overridden when its entry is set;
+// resources left unset fall back to the global Recommender flags.
+type RecommendationPercentiles struct {
+	// cpu holds the percentile overrides for CPU.
+	// +optional
+	CPU *ResourcePercentiles `json:"cpu,omitempty"`
+	// memory holds the percentile overrides for memory.
+	// +optional
+	Memory *ResourcePercentiles `json:"memory,omitempty"`
+}
+
+// ResourcePercentiles is the set of usage percentiles the recommender uses for a
+// single resource. All three are required and must satisfy
+// lowerBound <= target <= upperBound. Each is an integer percentile in [1, 100]
+// (e.g. 95 for p95).
+// +kubebuilder:validation:XValidation:rule="self.lowerBound <= self.target && self.target <= self.upperBound",message="percentiles must satisfy lowerBound <= target <= upperBound"
+type ResourcePercentiles struct {
+	// lowerBound is the usage percentile used for the lower bound of the recommendation.
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	LowerBound int32 `json:"lowerBound"`
+	// target is the usage percentile used for the target recommendation.
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	Target int32 `json:"target"`
+	// upperBound is the usage percentile used for the upper bound of the recommendation.
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=100
+	UpperBound int32 `json:"upperBound"`
+}
 
 // ContainerScalingMode controls whether autoscaler is enabled for a specific
 // container.

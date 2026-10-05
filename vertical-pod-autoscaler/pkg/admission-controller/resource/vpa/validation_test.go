@@ -1033,6 +1033,60 @@ func TestValidateVPA(t *testing.T) {
 			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].oomBumpUpRatio: Invalid value: 0.5: must be greater than or equal to 1.0"),
 		},
 		{
+			name: "Valid percentile triples",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "*",
+								Mode:          &validScalingMode,
+								RecommendationPercentiles: &vpa_types.RecommendationPercentiles{
+									CPU:    &vpa_types.ResourcePercentiles{LowerBound: 50, Target: 95, UpperBound: 98},
+									Memory: &vpa_types.ResourcePercentiles{LowerBound: 40, Target: 80, UpperBound: 90},
+								},
+							},
+						},
+					},
+				},
+			},
+			opts: VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: true},
+		},
+		{
+			name: "recommendationPercentiles set but PerVPAConfig disabled",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "*",
+								Mode:          &validScalingMode,
+								RecommendationPercentiles: &vpa_types.RecommendationPercentiles{
+									Memory: &vpa_types.ResourcePercentiles{LowerBound: 40, Target: 80, UpperBound: 90},
+								},
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowPerVPAConfig: false},
+			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].recommendationPercentiles: Forbidden: not supported when feature flag PerVPAConfig is disabled"),
+		},
+		{
 			name: "Invalid oomMinBumpUp (negative value)",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
