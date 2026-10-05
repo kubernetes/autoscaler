@@ -84,7 +84,7 @@ Modifying the VPA's spec does not reset the window. The gate is a pure function 
 2. The Recommender begins computing recommendations on the normal schedule and populates `status.recommendation`. It is unaware of and unaffected by the observation window.
 3. On every Updater reconcile, before deciding whether the VPA is eligible for actuation, the Updater evaluates the gate. If the gate is active, the VPA is treated as if `updateMode` were `Off` for that reconcile: no pods are evicted (`Recreate` / `InPlaceOrRecreate`) and no in-place resize is attempted (`InPlace` / `InPlaceOrRecreate`).
 4. The Admission Controller evaluates the same gate whenever a pod matching the VPA's target is created. While the gate is active it does not patch the pod's resources — the pod is admitted with its original spec, exactly as under `updateMode: Off`. This applies to every mode, not just `Initial`: without it, pods created during the window (scale-ups, node replacements, crash restarts) would receive un-stabilised recommendations at admission time.
-5. The Updater sets the `InitialDelayActive` status condition to `True` while the gate is active and `False` once it has elapsed. It emits the `vpa_initial_delay_active` gauge accordingly.
+5. The Updater sets the `InitialDelayActive` status condition to `True` while the gate is active and `False` once it has elapsed. It emits the `vpa_initial_delay_active` gauge accordingly. Both are updated at expiry rather than on the next sync (see [Status Condition](#status-condition)).
 6. After the window elapses (i.e. `now >= CreationTimestamp + InitialDelaySeconds`), the gate opens and the configured `updateMode` takes effect on subsequent reconciles and pod creations.
 
 ### API Changes
@@ -205,6 +205,8 @@ Add a new value to the existing `VerticalPodAutoscalerStatus.Conditions` slice:
 - **Message:** human-readable summary including expiry timestamp.
 
 This lets `kubectl describe vpa` surface the gate without an operator having to compute `CreationTimestamp + initialDelaySeconds` mentally.
+
+The condition is updated reactively. When the Updater sees a VPA whose window is active, it schedules a re-evaluation at `CreationTimestamp + initialDelaySeconds`, the same way reactive CPU startup boost unboosting works ([#10087](https://github.com/kubernetes/autoscaler/pull/10087)). Otherwise the condition could read `True` for up to one Updater sync interval after the window has elapsed, while the Admission Controller is already applying recommendations. The gate itself is unaffected either way, since the Updater and Admission Controller compute it directly.
 
 ### Metric
 
