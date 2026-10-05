@@ -186,8 +186,7 @@ func TestGetMatchingVpa(t *testing.T) {
 
 			mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
-			vpaIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc,
-				cache.Indexers{vpa_api_util.TargetRefIndex: vpa_api_util.TargetRefIndexFunc})
+			vpaIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, vpa_api_util.VPAIndexers())
 			for _, vpa := range tc.vpas {
 				assert.NoError(t, vpaIndexer.Add(vpa))
 			}

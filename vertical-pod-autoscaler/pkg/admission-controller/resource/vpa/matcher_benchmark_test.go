@@ -63,9 +63,7 @@ func setupMatcherBenchmark(b *testing.B, vpaCount int) (Matcher, *corev1.Pod) {
 		WithCreator(&owner.ObjectMeta, &owner.TypeMeta).
 		Get()
 
-	indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{
-		vpa_api_util.TargetRefIndex: vpa_api_util.TargetRefIndexFunc,
-	})
+	indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, vpa_api_util.VPAIndexers())
 	for i := range vpaCount {
 		vpa := test.VerticalPodAutoscaler().
 			WithContainer("bench-container").
