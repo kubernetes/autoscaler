@@ -18,6 +18,7 @@ package logic
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -33,18 +35,12 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
+var conflictTestBase = time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC)
+
 func deploymentRef(name string) *autoscalingv1.CrossVersionObjectReference {
 	return &autoscalingv1.CrossVersionObjectReference{
 		Kind: "Deployment",
 		Name: name,
-	}
-}
-
-func newConflictTestUpdater(vpaClient *vpa_fake.Clientset, ignoredNamespaces ...string) *updater {
-	return &updater{
-		vpaClient:         vpaClient,
-		eventRecorder:     record.NewFakeRecorder(10),
-		ignoredNamespaces: ignoredNamespaces,
 	}
 }
 
@@ -64,291 +60,274 @@ func findCondition(vpa *vpa_types.VerticalPodAutoscaler, condType vpa_types.Vert
 	return nil
 }
 
-func TestReconcileTargetConflicts_TwoActiveVPAsConflict(t *testing.T) {
-	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).Get()
-	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).WithTargetRef(deploymentRef("app")).Get()
+// conflictVpa describes a VPA used in the tests. All VPAs target Deployment "app".
+type conflictVpa struct {
+	name      string
+	namespace string               // defaults to "default"
+	mode      vpa_types.UpdateMode // defaults to Recreate
+	age       time.Duration        // larger age means created earlier
+	policies  []vpa_types.ContainerResourcePolicy
+	// noTargetRef drops the targetRef.
+	noTargetRef bool
+	// startupBoost sets a startupBoost config.
+	startupBoost bool
+	// priorMessage, if set, gives the VPA an existing TargetConflict=True
+	// condition with this message.
+	priorMessage string
+}
 
-	client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
-	u := newConflictTestUpdater(client)
-
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2})
-
-	for _, name := range []string{"vpa-1", "vpa-2"} {
-		got := getVpa(t, client, "default", name)
-		cond := findCondition(got, vpa_types.TargetConflict)
-		require.NotNil(t, cond, "expected TargetConflict condition on %s", name)
-		assert.Equal(t, corev1.ConditionTrue, cond.Status)
-		assert.Equal(t, targetConflictReason, cond.Reason)
-		assert.Contains(t, cond.Message, "vpa-1")
-		assert.Contains(t, cond.Message, "vpa-2")
-		assert.Equal(t, got.Generation, cond.ObservedGeneration)
+func (c conflictVpa) ns() string {
+	if c.namespace == "" {
+		return "default"
 	}
+	return c.namespace
 }
 
-func TestReconcileTargetConflicts_InitialModeIncluded(t *testing.T) {
-	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeInitial).WithTargetRef(deploymentRef("app")).Get()
-	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeInitial).WithTargetRef(deploymentRef("app")).Get()
-
-	client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
-	u := newConflictTestUpdater(client)
-
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2})
-
-	for _, name := range []string{"vpa-1", "vpa-2"} {
-		got := getVpa(t, client, "default", name)
-		cond := findCondition(got, vpa_types.TargetConflict)
-		require.NotNil(t, cond, "Initial-mode VPAs still count as active for conflict detection")
-		assert.Equal(t, corev1.ConditionTrue, cond.Status)
+func (c conflictVpa) build() *vpa_types.VerticalPodAutoscaler {
+	mode := c.mode
+	if mode == "" {
+		mode = vpa_types.UpdateModeRecreate
 	}
-}
-
-func TestReconcileTargetConflicts_OffModeExcluded(t *testing.T) {
-	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeOff).WithTargetRef(deploymentRef("app")).Get()
-	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).Get()
-
-	client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
-	u := newConflictTestUpdater(client)
-
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2})
-
-	got1 := getVpa(t, client, "default", "vpa-1")
-	assert.Nil(t, findCondition(got1, vpa_types.TargetConflict), "Off-mode VPA should not be flagged")
-
-	got2 := getVpa(t, client, "default", "vpa-2")
-	assert.Nil(t, findCondition(got2, vpa_types.TargetConflict), "single active VPA on a target should not be flagged")
-}
-
-func TestReconcileTargetConflicts_NoConflictSingleVPA(t *testing.T) {
-	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).Get()
-
-	client := vpa_fake.NewSimpleClientset(vpa1)
-	u := newConflictTestUpdater(client)
-
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1})
-
-	got := getVpa(t, client, "default", "vpa-1")
-	assert.Nil(t, findCondition(got, vpa_types.TargetConflict), "single VPA should not get a TargetConflict condition")
-}
-
-func TestReconcileTargetConflicts_NamespaceIsolation(t *testing.T) {
-	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("ns-a").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).Get()
-	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("ns-b").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).Get()
-
-	client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
-	u := newConflictTestUpdater(client)
-
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2})
-
-	got1 := getVpa(t, client, "ns-a", "vpa-1")
-	assert.Nil(t, findCondition(got1, vpa_types.TargetConflict), "same name/kind in different namespaces should not conflict")
-
-	got2 := getVpa(t, client, "ns-b", "vpa-2")
-	assert.Nil(t, findCondition(got2, vpa_types.TargetConflict))
-}
-
-func TestReconcileTargetConflicts_IgnoredNamespaceRespected(t *testing.T) {
-	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("ignored-ns").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).Get()
-	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("ignored-ns").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).WithTargetRef(deploymentRef("app")).Get()
-
-	client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
-	u := newConflictTestUpdater(client, "ignored-ns")
-
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2})
-
-	got1 := getVpa(t, client, "ignored-ns", "vpa-1")
-	assert.Nil(t, findCondition(got1, vpa_types.TargetConflict), "VPAs in ignored namespaces should be skipped")
-}
-
-func TestReconcileTargetConflicts_ClearsOnResolution(t *testing.T) {
-	past := time.Now().Add(-time.Hour)
-	// vpa1 previously had a recorded conflict; vpa2 (the other party) is gone now.
-	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).
-		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
-			"Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2", past).Get()
-
-	client := vpa_fake.NewSimpleClientset(vpa1)
-	u := newConflictTestUpdater(client)
-
-	// Only vpa1 remains active on this target now.
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1})
-
-	got := getVpa(t, client, "default", "vpa-1")
-	cond := findCondition(got, vpa_types.TargetConflict)
-	require.NotNil(t, cond)
-	assert.Equal(t, corev1.ConditionFalse, cond.Status)
-	assert.Equal(t, noTargetConflictReason, cond.Reason)
-	assert.True(t, cond.LastTransitionTime.After(past), "LastTransitionTime should be bumped on status change")
-}
-
-func TestReconcileTargetConflicts_NoEventOnRepeatedConflict(t *testing.T) {
-	past := time.Now().Add(-time.Hour)
-	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).
-		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
-			"Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2", past).Get()
-	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).WithTargetRef(deploymentRef("app")).
-		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
-			"Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2", past).Get()
-
-	client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
-	recorder := record.NewFakeRecorder(10)
-	u := &updater{vpaClient: client, eventRecorder: recorder}
-
-	// Conflict still active on this run -- should not re-fire an event.
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2})
-
-	select {
-	case ev := <-recorder.Events:
-		t.Fatalf("expected no event on unchanged conflict state, got: %s", ev)
-	default:
-		// expected: no event
+	b := test.VerticalPodAutoscaler().WithName(c.name).WithNamespace(c.ns()).WithContainer("main").
+		WithUpdateMode(mode).WithTargetRef(deploymentRef("app"))
+	if c.priorMessage != "" {
+		b = b.AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
+			c.priorMessage, time.Now().Add(-time.Hour))
 	}
-}
-
-func TestReconcileTargetConflicts_ClearsOnIneligibleTransition(t *testing.T) {
-	past := time.Now().Add(-time.Hour)
-
-	// vpa1 flips from Recreate to Off. It was previously flagged as
-	// conflicting and should have that condition cleared even though it no
-	// longer participates in grouping.
-	vpaTurnedOff := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeOff).WithTargetRef(deploymentRef("app")).
-		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
-			"Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2", past).Get()
-
-	// vpa2 drops its targetRef entirely. Same expectation: stale condition
-	// should be cleared.
-	vpaNoTargetRef := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).
-		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason,
-			"Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2", past).Get()
-	vpaNoTargetRef.Spec.TargetRef = nil
-
-	client := vpa_fake.NewSimpleClientset(vpaTurnedOff, vpaNoTargetRef)
-	u := newConflictTestUpdater(client)
-
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpaTurnedOff, vpaNoTargetRef})
-
-	got1 := getVpa(t, client, "default", "vpa-1")
-	cond1 := findCondition(got1, vpa_types.TargetConflict)
-	require.NotNil(t, cond1, "Off-mode VPA should still have its stale condition updated, not left dangling")
-	assert.Equal(t, corev1.ConditionFalse, cond1.Status, "condition should be cleared once VPA turns Off")
-	assert.Equal(t, noTargetConflictReason, cond1.Reason)
-
-	got2 := getVpa(t, client, "default", "vpa-2")
-	cond2 := findCondition(got2, vpa_types.TargetConflict)
-	require.NotNil(t, cond2, "VPA with no targetRef should still have its stale condition updated, not left dangling")
-	assert.Equal(t, corev1.ConditionFalse, cond2.Status, "condition should be cleared once targetRef is removed")
-}
-
-func TestReconcileTargetConflicts_MessageUpdatesWhenMembershipChanges(t *testing.T) {
-	past := time.Now().Add(-time.Hour)
-	oldMsg := "Conflict: multiple active VPAs target the same resource: vpa-1, vpa-2"
-	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).
-		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason, oldMsg, past).Get()
-	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeInPlaceOrRecreate).WithTargetRef(deploymentRef("app")).
-		AppendCondition(vpa_types.TargetConflict, corev1.ConditionTrue, targetConflictReason, oldMsg, past).Get()
-	// A third VPA joins the existing conflict.
-	vpa3 := test.VerticalPodAutoscaler().WithName("vpa-3").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeInitial).WithTargetRef(deploymentRef("app")).Get()
-
-	client := vpa_fake.NewSimpleClientset(vpa1, vpa2, vpa3)
-	recorder := record.NewFakeRecorder(10)
-	u := &updater{vpaClient: client, eventRecorder: recorder}
-
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2, vpa3})
-
-	// vpa-1 was already conflicting, so its message must be refreshed to include vpa-3.
-	got := getVpa(t, client, "default", "vpa-1")
-	cond := findCondition(got, vpa_types.TargetConflict)
-	require.NotNil(t, cond)
-	assert.Equal(t, corev1.ConditionTrue, cond.Status)
-	assert.Contains(t, cond.Message, "vpa-3")
-
-	// Only vpa-3 transitioned into conflict, so exactly one event is expected.
-	assert.Equal(t, 1, len(recorder.Events))
-}
-
-func TestReconcileTargetConflicts_Overlap(t *testing.T) {
-	off := vpa_types.ContainerScalingModeOff
-	res := func(name string, r ...corev1.ResourceName) vpa_types.ContainerResourcePolicy {
-		return vpa_types.ContainerResourcePolicy{ContainerName: name, ControlledResources: &r}
+	v := b.Get()
+	v.CreationTimestamp = metav1.NewTime(conflictTestBase.Add(-c.age))
+	if c.noTargetRef {
+		v.Spec.TargetRef = nil
 	}
-	offPolicy := func(name string) vpa_types.ContainerResourcePolicy {
-		return vpa_types.ContainerResourcePolicy{ContainerName: name, Mode: &off}
+	if c.startupBoost {
+		v.Spec.StartupBoost = &vpa_types.StartupBoost{}
 	}
+	if c.policies != nil {
+		v.Spec.ResourcePolicy = &vpa_types.PodResourcePolicy{ContainerPolicies: c.policies}
+	}
+	return v
+}
+
+// runReconcile creates the VPAs in a fake client and runs reconcileTargetConflicts
+// on them, optionally passing them in reverse order.
+func runReconcile(vpas []conflictVpa, reverse bool, ignoredNamespaces ...string) (*vpa_fake.Clientset, *record.FakeRecorder) {
+	built := make([]*vpa_types.VerticalPodAutoscaler, 0, len(vpas))
+	objs := make([]runtime.Object, 0, len(vpas))
+	for _, c := range vpas {
+		v := c.build()
+		built = append(built, v)
+		objs = append(objs, v)
+	}
+	if reverse {
+		for i, j := 0, len(built)-1; i < j; i, j = i+1, j-1 {
+			built[i], built[j] = built[j], built[i]
+		}
+	}
+	client := vpa_fake.NewSimpleClientset(objs...)
+	recorder := record.NewFakeRecorder(20)
+	u := &updater{vpaClient: client, eventRecorder: recorder, ignoredNamespaces: ignoredNamespaces}
+	u.reconcileTargetConflicts(built)
+	return client, recorder
+}
+
+func TestReconcileTargetConflicts(t *testing.T) {
 	cpu, mem := corev1.ResourceCPU, corev1.ResourceMemory
+	cpuOnly := []vpa_types.ContainerResourcePolicy{{ContainerName: "*", ControlledResources: &[]corev1.ResourceName{cpu}}}
+	memOnly := []vpa_types.ContainerResourcePolicy{{ContainerName: "*", ControlledResources: &[]corev1.ResourceName{mem}}}
 
-	cases := []struct {
-		name     string
-		a, b     []vpa_types.ContainerResourcePolicy
-		conflict bool
+	tests := []struct {
+		name              string
+		vpas              []conflictVpa
+		ignoredNamespaces []string
+		// wantConflict maps a VPA name to the name of the VPA that controls
+		// the target instead of it. VPAs not listed must not be in conflict:
+		// the condition is absent, or False if they had one before.
+		wantConflict map[string]string
 	}{
-		{"cpu vs memory", []vpa_types.ContainerResourcePolicy{res("*", cpu)}, []vpa_types.ContainerResourcePolicy{res("*", mem)}, false},
-		{"shared resource", []vpa_types.ContainerResourcePolicy{res("*", cpu)}, []vpa_types.ContainerResourcePolicy{res("*", cpu, mem)}, true},
-		{"different containers", []vpa_types.ContainerResourcePolicy{res("app", cpu), offPolicy("*")}, []vpa_types.ContainerResourcePolicy{res("sidecar", cpu), offPolicy("*")}, false},
-		{"wildcard vs named container", nil, []vpa_types.ContainerResourcePolicy{res("app", cpu)}, true},
-		{"container mode off", []vpa_types.ContainerResourcePolicy{offPolicy("app"), offPolicy("*")}, nil, false},
+		{
+			name:         "older VPA controls, newer one conflicts",
+			vpas:         []conflictVpa{{name: "vpa-1", age: 2 * time.Hour}, {name: "vpa-2", age: time.Hour}},
+			wantConflict: map[string]string{"vpa-2": "vpa-1"},
+		},
+		{
+			name:         "creation time wins over name",
+			vpas:         []conflictVpa{{name: "vpa-a", age: time.Hour}, {name: "vpa-b", age: 2 * time.Hour}},
+			wantConflict: map[string]string{"vpa-a": "vpa-b"},
+		},
+		{
+			name:         "same creation time, lower name controls",
+			vpas:         []conflictVpa{{name: "vpa-1"}, {name: "vpa-2"}},
+			wantConflict: map[string]string{"vpa-2": "vpa-1"},
+		},
+		{
+			name: "three VPAs, only the oldest controls",
+			vpas: []conflictVpa{
+				{name: "vpa-1", age: 3 * time.Hour},
+				{name: "vpa-2", age: 2 * time.Hour},
+				{name: "vpa-3", age: time.Hour},
+			},
+			wantConflict: map[string]string{"vpa-2": "vpa-1", "vpa-3": "vpa-1"},
+		},
+		{
+			name: "Initial mode counts as active",
+			vpas: []conflictVpa{
+				{name: "vpa-1", age: 2 * time.Hour, mode: vpa_types.UpdateModeInitial},
+				{name: "vpa-2", age: time.Hour, mode: vpa_types.UpdateModeInitial},
+			},
+			wantConflict: map[string]string{"vpa-2": "vpa-1"},
+		},
+		{
+			name: "Off VPA is ignored",
+			vpas: []conflictVpa{
+				{name: "vpa-1", age: 2 * time.Hour, mode: vpa_types.UpdateModeOff},
+				{name: "vpa-2", age: time.Hour},
+			},
+		},
+		{
+			name: "Off VPA with startupBoost is active",
+			vpas: []conflictVpa{
+				{name: "vpa-1", age: 2 * time.Hour, mode: vpa_types.UpdateModeOff, startupBoost: true},
+				{name: "vpa-2", age: time.Hour},
+			},
+			wantConflict: map[string]string{"vpa-2": "vpa-1"},
+		},
+		{
+			name: "single VPA",
+			vpas: []conflictVpa{{name: "vpa-1"}},
+		},
+		{
+			name: "same target name in different namespaces",
+			vpas: []conflictVpa{
+				{name: "vpa-1", namespace: "ns-a", age: 2 * time.Hour},
+				{name: "vpa-2", namespace: "ns-b", age: time.Hour},
+			},
+		},
+		{
+			name: "ignored namespace is skipped",
+			vpas: []conflictVpa{
+				{name: "vpa-1", namespace: "ignored-ns", age: 2 * time.Hour},
+				{name: "vpa-2", namespace: "ignored-ns", age: time.Hour},
+			},
+			ignoredNamespaces: []string{"ignored-ns"},
+		},
+		{
+			// Stronger() picks one VPA per pod regardless of the resources
+			// each VPA controls, so disjoint resources still conflict.
+			name: "different controlled resources still conflict",
+			vpas: []conflictVpa{
+				{name: "vpa-1", age: 2 * time.Hour, policies: cpuOnly},
+				{name: "vpa-2", age: time.Hour, policies: memOnly},
+			},
+			wantConflict: map[string]string{"vpa-2": "vpa-1"},
+		},
+		{
+			name: "condition cleared when the other VPA is gone",
+			vpas: []conflictVpa{{name: "vpa-1", priorMessage: "old"}},
+		},
+		{
+			name: "controlling VPA's stale condition is cleared",
+			vpas: []conflictVpa{
+				{name: "vpa-1", age: 2 * time.Hour, priorMessage: "old"},
+				{name: "vpa-2", age: time.Hour},
+			},
+			wantConflict: map[string]string{"vpa-2": "vpa-1"},
+		},
+		{
+			name: "condition cleared when a VPA turns Off or loses its targetRef",
+			vpas: []conflictVpa{
+				{name: "vpa-1", mode: vpa_types.UpdateModeOff, priorMessage: "old"},
+				{name: "vpa-2", noTargetRef: true, priorMessage: "old"},
+			},
+		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			mk := func(name string, policies []vpa_types.ContainerResourcePolicy) *vpa_types.VerticalPodAutoscaler {
-				v := test.VerticalPodAutoscaler().WithName(name).WithNamespace("default").WithContainer("main").
-					WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).Get()
-				if policies != nil {
-					v.Spec.ResourcePolicy = &vpa_types.PodResourcePolicy{ContainerPolicies: policies}
-				}
-				return v
+	for _, tc := range tests {
+		for _, reverse := range []bool{false, true} {
+			name := tc.name
+			if reverse {
+				name += " (reversed input)"
 			}
-			vpa1, vpa2 := mk("vpa-1", tc.a), mk("vpa-2", tc.b)
-			client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
-			u := newConflictTestUpdater(client)
-
-			u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2})
-
-			for _, n := range []string{"vpa-1", "vpa-2"} {
-				cond := findCondition(getVpa(t, client, "default", n), vpa_types.TargetConflict)
-				if tc.conflict {
-					require.NotNil(t, cond)
-					assert.Equal(t, corev1.ConditionTrue, cond.Status)
-				} else {
-					assert.Nil(t, cond)
+			t.Run(name, func(t *testing.T) {
+				client, _ := runReconcile(tc.vpas, reverse, tc.ignoredNamespaces...)
+				for _, c := range tc.vpas {
+					got := getVpa(t, client, c.ns(), c.name)
+					cond := findCondition(got, vpa_types.TargetConflict)
+					if controlling, ok := tc.wantConflict[c.name]; ok {
+						require.NotNil(t, cond, "expected TargetConflict condition on %s", c.name)
+						assert.Equal(t, corev1.ConditionTrue, cond.Status)
+						assert.Equal(t, targetConflictReason, cond.Reason)
+						assert.Contains(t, cond.Message, controlling)
+						assert.Equal(t, got.Generation, cond.ObservedGeneration)
+						continue
+					}
+					if c.priorMessage != "" {
+						require.NotNil(t, cond, "stale condition on %s should be updated, not left dangling", c.name)
+						assert.Equal(t, corev1.ConditionFalse, cond.Status)
+						assert.Equal(t, noTargetConflictReason, cond.Reason)
+						assert.True(t, cond.LastTransitionTime.After(time.Now().Add(-10*time.Minute)),
+							"LastTransitionTime should be bumped when the status changes")
+						continue
+					}
+					assert.Nil(t, cond, "%s should not have a TargetConflict condition", c.name)
 				}
-			}
-		})
+			})
+		}
 	}
 }
 
-func TestReconcileTargetConflicts_OffWithStartupBoostIsActive(t *testing.T) {
-	vpa1 := test.VerticalPodAutoscaler().WithName("vpa-1").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeOff).WithTargetRef(deploymentRef("app")).Get()
-	vpa1.Spec.StartupBoost = &vpa_types.StartupBoost{}
-	vpa2 := test.VerticalPodAutoscaler().WithName("vpa-2").WithNamespace("default").WithContainer("main").
-		WithUpdateMode(vpa_types.UpdateModeRecreate).WithTargetRef(deploymentRef("app")).Get()
-	client := vpa_fake.NewSimpleClientset(vpa1, vpa2)
-	u := newConflictTestUpdater(client)
+func TestReconcileTargetConflictsEvents(t *testing.T) {
+	warning := "Warning " + targetConflictReason
+	normal := "Normal " + noTargetConflictReason
 
-	u.reconcileTargetConflicts([]*vpa_types.VerticalPodAutoscaler{vpa1, vpa2})
+	tests := []struct {
+		name       string
+		vpas       []conflictVpa
+		wantEvents []string
+	}{
+		{
+			name:       "new conflict emits one warning",
+			vpas:       []conflictVpa{{name: "vpa-1", age: 2 * time.Hour}, {name: "vpa-2", age: time.Hour}},
+			wantEvents: []string{warning},
+		},
+		{
+			name: "persisting conflict emits nothing",
+			vpas: []conflictVpa{
+				{name: "vpa-1", age: 2 * time.Hour},
+				{name: "vpa-2", age: time.Hour, priorMessage: `Conflict: VPA "vpa-1" controls it`},
+			},
+		},
+		{
+			name: "changed controlling VPA updates the message but emits nothing",
+			vpas: []conflictVpa{
+				{name: "vpa-1", age: 2 * time.Hour},
+				{name: "vpa-2", age: time.Hour, priorMessage: `Conflict: VPA "vpa-9" controls it`},
+			},
+		},
+		{
+			name: "third VPA joining emits one warning, for the new one",
+			vpas: []conflictVpa{
+				{name: "vpa-1", age: 3 * time.Hour},
+				{name: "vpa-2", age: 2 * time.Hour, priorMessage: `Conflict: VPA "vpa-1" controls it`},
+				{name: "vpa-3", age: time.Hour},
+			},
+			wantEvents: []string{warning},
+		},
+		{
+			name:       "resolved conflict emits a normal event",
+			vpas:       []conflictVpa{{name: "vpa-1", priorMessage: "old"}},
+			wantEvents: []string{normal},
+		},
+	}
 
-	for _, name := range []string{"vpa-1", "vpa-2"} {
-		cond := findCondition(getVpa(t, client, "default", name), vpa_types.TargetConflict)
-		require.NotNil(t, cond, "an Off VPA with startupBoost still acts on pods: %s", name)
-		assert.Equal(t, corev1.ConditionTrue, cond.Status)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			_, recorder := runReconcile(tc.vpas, false)
+			var got []string
+			for len(recorder.Events) > 0 {
+				f := strings.Fields(<-recorder.Events)
+				got = append(got, f[0]+" "+f[1])
+			}
+			assert.ElementsMatch(t, tc.wantEvents, got)
+		})
 	}
 }

@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
-	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,16 +34,14 @@ import (
 const targetConflictReason = "MultipleActiveVPATargetsFound"
 const noTargetConflictReason = "NoConflictingActiveVPATargets"
 
-// reconcileTargetConflicts groups the given VPAs by their targetRef and, within
-// each group of active VPAs (update mode other than "Off"), sets the
-// TargetConflict status condition to True on every VPA that overlaps with
-// another one, meaning both control the same resource of the same container.
-// VPAs that control disjoint containers or resources do not conflict. VPAs
-// that no longer conflict but previously had the condition set to True have
-// it cleared.
-//
-// This surfaces the conflict to the user; it does not change which VPA
-// actually controls a pod (see vpa_api_util.Stronger for that logic).
+// reconcileTargetConflicts groups the given VPAs by their targetRef. Within
+// each group of active VPAs (update mode other than "Off", or "Off" with a
+// startupBoost) it picks the controlling VPA with vpa_api_util.Stronger, the
+// same logic the admission controller and updater use to choose a VPA for a
+// pod. Every other VPA in the group gets the TargetConflict condition set to
+// True, naming the controlling VPA. The controlling VPA is left untouched.
+// VPAs that are not in conflict, or are no longer eligible, have a previously
+// set TargetConflict condition cleared.
 func (u *updater) reconcileTargetConflicts(vpaList []*vpa_types.VerticalPodAutoscaler) {
 	vpaGroups := make(map[string][]*vpa_types.VerticalPodAutoscaler, len(vpaList))
 	var ineligible []*vpa_types.VerticalPodAutoscaler
@@ -66,31 +63,41 @@ func (u *updater) reconcileTargetConflicts(vpaList []*vpa_types.VerticalPodAutos
 	}
 
 	for _, group := range vpaGroups {
+		controlling := group[0]
+		for _, vpa := range group[1:] {
+			if vpa_api_util.Stronger(vpa, controlling) {
+				controlling = vpa
+			}
+		}
 		for _, vpa := range group {
-			names := conflictingVpaNames(vpa, group)
-			u.updateTargetConflictCondition(vpa, len(names) > 1, names)
+			if vpa == controlling {
+				// The controlling VPA (or the only VPA) is never in conflict.
+				u.updateTargetConflictCondition(vpa, "")
+				continue
+			}
+			u.updateTargetConflictCondition(vpa, controlling.Name)
 		}
 	}
 
 	// VPAs that became ineligible (e.g. switched to Off, or dropped their
-	// targetRef) may still be carrying a stale TargetConflict=True condition
-	// from a previous run. Clear it since they can no longer be part of a
-	// conflict. updateTargetConflictCondition is a no-op if there was never
-	// a condition to begin with.
+	// targetRef) may still carry a stale TargetConflict=True condition.
+	// updateTargetConflictCondition is a no-op if there never was one.
 	for _, vpa := range ineligible {
-		u.updateTargetConflictCondition(vpa, false, nil)
+		u.updateTargetConflictCondition(vpa, "")
 	}
 }
 
 // updateTargetConflictCondition patches the TargetConflict condition on a
 // single VPA if it needs to change, and emits a Warning/Normal event only on
-// a state transition (conflict appearing or clearing).
-func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutoscaler, conflicting bool, conflictingNames []string) {
+// a state transition (conflict appearing or clearing). controllingVpaName is
+// the name of the VPA that controls the target instead of this one; an empty
+// string means this VPA is not in conflict.
+func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutoscaler, controllingVpaName string) {
+	conflicting := controllingVpaName != ""
 	wasConflicting := false
 	if c := getVpaCondition(&vpa.Status, vpa_types.TargetConflict); c != nil {
 		wasConflicting = c.Status == corev1.ConditionTrue
 	}
-
 	// Skip the copy below when there's nothing to do.
 	if !conflicting && !wasConflicting {
 		return
@@ -98,9 +105,9 @@ func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutosc
 	oldStatus := vpa.Status.DeepCopy()
 
 	// transitioned is true only when the conflict appears or clears. While a
-	// conflict persists we still rebuild the condition, because the set of
-	// conflicting VPAs (and so the message) can change without a transition;
-	// UpdateVpaStatusIfNeeded skips the patch when nothing differs.
+	// conflict persists we still rebuild the condition, because the controlling
+	// VPA (and so the message) can change without a transition; the patch is
+	// skipped when nothing differs.
 	transitioned := conflicting != wasConflicting
 
 	condStatus := corev1.ConditionFalse
@@ -109,7 +116,7 @@ func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutosc
 	if conflicting {
 		condStatus = corev1.ConditionTrue
 		reason = targetConflictReason
-		message = fmt.Sprintf("Conflict: multiple active VPAs target the same resource: %s", strings.Join(conflictingNames, ", "))
+		message = fmt.Sprintf("Conflict: multiple active VPAs target the same resource; VPA %q controls it and this VPA is not applied", controllingVpaName)
 	}
 
 	newStatus := oldStatus.DeepCopy()
@@ -125,7 +132,6 @@ func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutosc
 	if !transitioned {
 		return
 	}
-
 	eventType := corev1.EventTypeWarning
 	if !conflicting {
 		eventType = corev1.EventTypeNormal
@@ -189,72 +195,4 @@ func setVpaCondition(status *vpa_types.VerticalPodAutoscalerStatus, condType vpa
 		Message:            message,
 		ObservedGeneration: observedGeneration,
 	})
-}
-
-// conflictingVpaNames returns the sorted names of vpa plus every other VPA in
-// group whose controlled (container, resource) set overlaps with vpa's. If
-// nothing overlaps, only vpa's own name is returned.
-func conflictingVpaNames(vpa *vpa_types.VerticalPodAutoscaler, group []*vpa_types.VerticalPodAutoscaler) []string {
-	names := []string{vpa.Name}
-	for _, other := range group {
-		if other != vpa && vpasOverlap(vpa, other) {
-			names = append(names, other.Name)
-		}
-	}
-	// Sorted so the condition message and event text are stable across runs.
-	slices.Sort(names)
-	return names
-}
-
-// vpasOverlap reports whether two VPAs would both manage at least one resource
-// of the same container. "*" is only included when it can actually apply
-// (no ResourcePolicy, or an explicit "*" entry) — otherwise a shared named
-// container with no wildcard policy would falsely fall back to default
-// CPU/memory and look like a conflict.
-func vpasOverlap(a, b *vpa_types.VerticalPodAutoscaler) bool {
-	containers := make(map[string]struct{})
-	includeWildcard := false
-	for _, v := range []*vpa_types.VerticalPodAutoscaler{a, b} {
-		if v.Spec.ResourcePolicy == nil {
-			includeWildcard = true
-			continue
-		}
-		for _, p := range v.Spec.ResourcePolicy.ContainerPolicies {
-			if p.ContainerName == vpa_types.DefaultContainerResourcePolicy {
-				includeWildcard = true
-			}
-			containers[p.ContainerName] = struct{}{}
-		}
-	}
-	if includeWildcard {
-		containers[vpa_types.DefaultContainerResourcePolicy] = struct{}{}
-	}
-	for name := range containers {
-		resourcesB := controlledResourcesFor(b, name)
-		for r := range controlledResourcesFor(a, name) {
-			if _, ok := resourcesB[r]; ok {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// controlledResourcesFor returns the resources the VPA manages for the given
-// container: none if the container policy mode is Off, the policy's
-// controlledResources if set, otherwise CPU and memory.
-func controlledResourcesFor(vpa *vpa_types.VerticalPodAutoscaler, containerName string) map[corev1.ResourceName]struct{} {
-	policy := vpa_api_util.GetContainerResourcePolicy(containerName, vpa.Spec.ResourcePolicy)
-	if policy != nil && policy.Mode != nil && *policy.Mode == vpa_types.ContainerScalingModeOff {
-		return nil
-	}
-	resources := []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory}
-	if policy != nil && policy.ControlledResources != nil {
-		resources = *policy.ControlledResources
-	}
-	set := make(map[corev1.ResourceName]struct{}, len(resources))
-	for _, r := range resources {
-		set[r] = struct{}{}
-	}
-	return set
 }
