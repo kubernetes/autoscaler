@@ -12,7 +12,7 @@ require (
 	golang.org/x/sync v0.23.0
 	k8s.io/api v0.38.0-alpha.0
 	k8s.io/apiextensions-apiserver v0.37.1
-	k8s.io/apimachinery v0.38.0-alpha.0
+	k8s.io/apimachinery v0.38.0-alpha.1
 	k8s.io/apiserver v0.38.0-alpha.0
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-00010101000000-000000000000
 	k8s.io/client-go v0.38.0-alpha.0
@@ -182,15 +182,15 @@ require (
 	k8s.io/controller-manager v0.38.0-alpha.0 // indirect
 	k8s.io/cri-api v0.38.0-alpha.1 // indirect
 	k8s.io/cri-client v0.38.0-alpha.0 // indirect
-	k8s.io/cri-streaming v0.38.0-alpha.0 // indirect
+	k8s.io/cri-streaming v0.38.0-alpha.1 // indirect
 	k8s.io/csi-translation-lib v0.38.0-alpha.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.38.0-alpha.0 // indirect
 	k8s.io/endpointslice v0.38.0-alpha.0 // indirect
 	k8s.io/externaljwt v0.38.0-alpha.1 // indirect
-	k8s.io/kms v0.38.0-alpha.0 // indirect
+	k8s.io/kms v0.38.0-alpha.1 // indirect
 	k8s.io/kube-aggregator v0.38.0-alpha.0 // indirect
 	k8s.io/kube-controller-manager v0.38.0-alpha.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098 // indirect
+	k8s.io/kube-openapi v0.0.0-20260908163437-c4db2bdfbfe6 // indirect
 	k8s.io/kube-proxy v0.38.0-alpha.0 // indirect
 	k8s.io/kube-scheduler v0.38.0-alpha.0 // indirect
 	k8s.io/kubectl v0.38.0-alpha.0 // indirect
@@ -198,13 +198,14 @@ require (
 	k8s.io/metrics v0.38.0-alpha.0 // indirect
 	k8s.io/mount-utils v0.38.0-alpha.1 // indirect
 	k8s.io/sample-apiserver v0.38.0-alpha.0 // indirect
-	k8s.io/streaming v0.38.0-alpha.0 // indirect
+	k8s.io/streaming v0.38.0-alpha.1 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.37.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
-	sigs.k8s.io/kustomize/api v0.21.1 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.21.1 // indirect
+	sigs.k8s.io/kustomize/api v0.21.2 // indirect
+	sigs.k8s.io/kustomize/kyaml v0.21.2 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.2 // indirect
+	sigs.k8s.io/structured-merge-diff/v7 v7.0.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 	tags.cncf.io/container-device-interface/specs-go v1.1.1 // indirect
 )
