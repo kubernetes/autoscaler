@@ -63,8 +63,9 @@ func TestPercentileEstimator(t *testing.T) {
 }
 
 // Verifies that the target percentile estimators honor the per-container
-// override on AggregateContainerState, that bound estimators ignore it, and
-// that the target estimator falls back to the global percentile when unset.
+// override on AggregateContainerState, that the plain percentile estimators
+// (no override hook) ignore it, and that the target estimator falls back to
+// the global percentile when unset.
 func TestTargetPercentileEstimatorOverride(t *testing.T) {
 	config := model.GetAggregationsConfig()
 	cpuHistogram := util.NewHistogram(config.CPUHistogramOptions)
@@ -78,9 +79,9 @@ func TestTargetPercentileEstimatorOverride(t *testing.T) {
 	overridePercentile := 0.9
 
 	targetCPU := NewTargetPercentileCPUEstimator(globalPercentile)
-	boundCPU := NewPercentileCPUEstimator(globalPercentile)
+	plainCPU := NewPercentileCPUEstimator(globalPercentile)
 	targetMem := NewTargetPercentileMemoryEstimator(globalPercentile)
-	boundMem := NewPercentileMemoryEstimator(globalPercentile)
+	plainMem := NewPercentileMemoryEstimator(globalPercentile)
 
 	withOverride := &model.AggregateContainerState{
 		AggregateCPUUsage:      cpuHistogram,
@@ -97,13 +98,13 @@ func TestTargetPercentileEstimatorOverride(t *testing.T) {
 	assert.Greater(t, targetCPU.GetCPUEstimation(withOverride), targetCPU.GetCPUEstimation(noOverride))
 	assert.Greater(t, targetMem.GetMemoryEstimation(withOverride), targetMem.GetMemoryEstimation(noOverride))
 
-	// Bound estimator ignores the override entirely.
-	assert.Equal(t, boundCPU.GetCPUEstimation(noOverride), boundCPU.GetCPUEstimation(withOverride))
-	assert.Equal(t, boundMem.GetMemoryEstimation(noOverride), boundMem.GetMemoryEstimation(withOverride))
+	// Plain estimator has no override hook and ignores it entirely.
+	assert.Equal(t, plainCPU.GetCPUEstimation(noOverride), plainCPU.GetCPUEstimation(withOverride))
+	assert.Equal(t, plainMem.GetMemoryEstimation(noOverride), plainMem.GetMemoryEstimation(withOverride))
 
-	// Target estimator with no override falls back to the global percentile (matches the bound estimator).
-	assert.Equal(t, boundCPU.GetCPUEstimation(noOverride), targetCPU.GetCPUEstimation(noOverride))
-	assert.Equal(t, boundMem.GetMemoryEstimation(noOverride), targetMem.GetMemoryEstimation(noOverride))
+	// Target estimator with no override falls back to the global percentile (matches the plain estimator).
+	assert.Equal(t, plainCPU.GetCPUEstimation(noOverride), targetCPU.GetCPUEstimation(noOverride))
+	assert.Equal(t, plainMem.GetMemoryEstimation(noOverride), targetMem.GetMemoryEstimation(noOverride))
 }
 
 func TestBoundPercentileEstimatorOverride(t *testing.T) {

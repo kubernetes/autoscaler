@@ -127,11 +127,11 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `prometheus-cadvisor-job-name` | string | "kubernetes-cadvisor" | Name of the Prometheus job which scrapes the cAdvisor metrics |
 | `prometheus-insecure` | bool | false | Skip TLS verification if HTTPS is used in the prometheus-address |
 | `prometheus-query-timeout` | string | "5m" | How long to wait before killing long queries |
-| `recommendation-lower-bound-cpu-percentile` | float | 0.5 | CPU usage percentile that will be used for the lower bound on CPU recommendation. |
-| `recommendation-lower-bound-memory-percentile` | float | 0.5 | Memory usage percentile that will be used for the lower bound on memory recommendation. |
+| `recommendation-lower-bound-cpu-percentile` | float | 0.5 | Default CPU usage percentile that will be used for the lower bound on CPU recommendation. Can be overridden per container with recommendationPercentiles. |
+| `recommendation-lower-bound-memory-percentile` | float | 0.5 | Default memory usage percentile that will be used for the lower bound on memory recommendation. Can be overridden per container with recommendationPercentiles. |
 | `recommendation-margin-fraction` | float | 0.15 | Fraction of usage added as the safety margin to the recommended request |
-| `recommendation-upper-bound-cpu-percentile` | float | 0.95 | CPU usage percentile that will be used for the upper bound on CPU recommendation. |
-| `recommendation-upper-bound-memory-percentile` | float | 0.95 | Memory usage percentile that will be used for the upper bound on memory recommendation. |
+| `recommendation-upper-bound-cpu-percentile` | float | 0.95 | Default CPU usage percentile that will be used for the upper bound on CPU recommendation. Can be overridden per container with recommendationPercentiles. |
+| `recommendation-upper-bound-memory-percentile` | float | 0.95 | Default memory usage percentile that will be used for the upper bound on memory recommendation. Can be overridden per container with recommendationPercentiles. |
 | `recommender-interval` | duration | 1m0s | How often metrics should be fetched |
 | `recommender-name` | string | "default" | Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster. |
 | `round-cpu-millicores` | int | 1 | CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor. |
@@ -140,8 +140,8 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `skip-log-headers` | bool | false | If true, avoid headers when opening log files (no effect when -logtostderr=true) |
 | `stderrthreshold` | severity | info | set the log level threshold for writing to standard error |
 | `storage` | string | checkpoint | Specifies storage mode. Supported values: prometheus, checkpoint |
-| `target-cpu-percentile` | float | 0.9 | CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. |
-| `target-memory-percentile` | float | 0.9 | Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. |
+| `target-cpu-percentile` | float | 0.9 | Default CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. Can be overridden per container with recommendationPercentiles. |
+| `target-memory-percentile` | float | 0.9 | Default memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. Can be overridden per container with recommendationPercentiles. |
 | `update-worker-count` | int | 10 | Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits ('kube-api-qps' and 'kube-api-burst') are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop. |
 | `use-external-metrics` | bool | false | ALPHA. Use an external metrics provider instead of metrics_server. |
 | `username` | string |  | The username used in the Prometheus server basic auth. Can also be set via the PROMETHEUS_USERNAME environment variable |

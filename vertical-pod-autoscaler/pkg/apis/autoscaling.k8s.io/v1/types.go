@@ -361,14 +361,17 @@ type RecommendationPercentiles struct {
 // +kubebuilder:validation:XValidation:rule="self.lowerBound <= self.target && self.target <= self.upperBound",message="percentiles must satisfy lowerBound <= target <= upperBound"
 type ResourcePercentiles struct {
 	// lowerBound is the usage percentile used for the lower bound of the recommendation.
+	// +required
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100
 	LowerBound int32 `json:"lowerBound"`
 	// target is the usage percentile used for the target recommendation.
+	// +required
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100
 	Target int32 `json:"target"`
 	// upperBound is the usage percentile used for the upper bound of the recommendation.
+	// +required
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100
 	UpperBound int32 `json:"upperBound"`

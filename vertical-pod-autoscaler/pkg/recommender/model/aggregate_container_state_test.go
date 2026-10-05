@@ -392,7 +392,7 @@ func TestUpdateFromPolicyMemoryAggregationIntervalCount(t *testing.T) {
 	}
 }
 
-func TestUpdateFromPolicyTargetPercentile(t *testing.T) {
+func TestUpdateFromPolicyRecommendationPercentiles(t *testing.T) {
 	fullPolicy := &vpa_types.ContainerResourcePolicy{
 		RecommendationPercentiles: &vpa_types.RecommendationPercentiles{
 			CPU:    &vpa_types.ResourcePercentiles{LowerBound: 50, Target: 95, UpperBound: 98},
@@ -461,7 +461,7 @@ func TestUpdateFromPolicyTargetPercentile(t *testing.T) {
 	}
 }
 
-func TestUpdateFromPolicyTargetPercentileReset(t *testing.T) {
+func TestUpdateFromPolicyRecommendationPercentilesReset(t *testing.T) {
 	// AggregateContainerState is reused across reconciles, so removing a per-VPA
 	// override must reset the field back to 0 (global fallback), not keep the old value.
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, true)
