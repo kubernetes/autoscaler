@@ -56,7 +56,7 @@ You can also read about the [features](./docs/features.md) and [known limitation
 
 ## Metrics
 
-See [Recommender metrics](./docs/recommender-metrics.md) for the Prometheus metrics exported by the VPA Recommender.
+See [VPA metrics](./docs/metrics.md) for the Prometheus metrics exported by the Admission Controller, Recommender, and Updater.
 
 ## Development and testing
 

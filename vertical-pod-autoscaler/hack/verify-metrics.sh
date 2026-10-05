@@ -21,4 +21,4 @@ set -o pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "${ROOT}"
 
-go run ./hack/tools/recommender-metrics -check
+go run ./hack/tools/metrics -check

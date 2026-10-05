@@ -37,7 +37,17 @@ const metricsNamespace = metrics.TopMetricsNamespace + "recommender"
 var count = prometheus.NewGaugeVec(prometheus.GaugeOpts{Namespace: metricsNamespace, Name: "objects", Help: "Object | count"}, []string{"mode"})
 var latency = metrics.CreateExecutionTimeMetric(metricsNamespace, "Loop duration")
 func Register() { prometheus.MustRegister(count, latency) }`,
-		"docs/recommender-metrics.md": "Introduction\n" + startMarker + "\nold table\n" + endMarker + "\nNotes\n",
+		"pkg/utils/metrics/admission/admission.go": `package admission
+const metricsNamespace = metrics.TopMetricsNamespace + "admission_controller"
+var count = prometheus.NewCounter(prometheus.CounterOpts{Namespace: metricsNamespace, Name: "pods_total", Help: "Admitted pods"})
+var latency = metrics.CreateExecutionTimeMetric(metricsNamespace, "Admission duration")
+func Register() { prometheus.MustRegister(count); prometheus.MustRegister(latency) }`,
+		"pkg/utils/metrics/updater/updater.go": `package updater
+const metricsNamespace = metrics.TopMetricsNamespace + "updater"
+var count = prometheus.NewGauge(prometheus.GaugeOpts{Namespace: metricsNamespace, Name: "pods_total", Help: "Controlled pods"})
+var latency = metrics.CreateExecutionTimeMetric(metricsNamespace, "Updater duration")
+func Register() { collectors := []prometheus.Collector{count, latency}; prometheus.MustRegister(collectors...) }`,
+		"docs/metrics.md": "Introduction\n" + startMarker + "\nold table\n" + endMarker + "\nNotes\n",
 	}
 	for name, content := range files {
 		path := filepath.Join(root, name)
@@ -68,7 +78,7 @@ func change(t *testing.T, root, name, old, replacement string) {
 
 func TestGenerateAndCheck(t *testing.T) {
 	root := fixture(t)
-	path := filepath.Join(root, "docs/recommender-metrics.md")
+	path := filepath.Join(root, "docs/metrics.md")
 	before, _ := os.ReadFile(path)
 	if err := run(root, true); err == nil {
 		t.Fatal("stale documentation passed verification")
@@ -89,6 +99,10 @@ func TestGenerateAndCheck(t *testing.T) {
 	}
 	for _, want := range []string{
 		"Introduction\n", "\nNotes\n",
+		"## Admission Controller", "## Recommender", "## Updater",
+		"| `vpa_admission_controller_pods_total` | Counter | None | Admitted pods |",
+		"| `vpa_updater_pods_total` | Gauge | None | Controlled pods |",
+		"| `vpa_updater_execution_latency_seconds` | Histogram | `step` | Updater duration |",
 		"| `vpa_recommender_objects` | Gauge | `mode` | Object \\| count |",
 		"| `vpa_recommender_execution_latency_seconds` | Histogram | `step` | Loop duration |",
 	} {
@@ -110,6 +124,8 @@ func TestDefinitionChanges(t *testing.T) {
 		{"namespace", "pkg/utils/metrics/metrics.go", `"vpa_"`, `"custom_"`, "`custom_recommender_objects`"},
 		{"helper labels", "pkg/utils/metrics/metrics.go", `[]string{"step"}`, `[]string{"phase", "result"}`, "`phase`, `result`"},
 		{"helper metric name", "pkg/utils/metrics/metrics.go", `"execution_latency_seconds"`, `"loop_seconds"`, "`vpa_recommender_loop_seconds`"},
+		{"admission description", "pkg/utils/metrics/admission/admission.go", `"Admitted pods"`, `"Processed pods"`, "Processed pods"},
+		{"updater registration", "pkg/utils/metrics/updater/updater.go", "Collector{count, latency}", "Collector{count}", "Controlled pods"},
 		{"description", "pkg/utils/metrics/recommender/recommender.go", `"Object | count"`, `"Current objects"`, "Current objects"},
 		{"added collector", "pkg/utils/metrics/recommender/recommender.go", "func Register() { prometheus.MustRegister(count, latency) }", `var requests = prometheus.NewCounter(prometheus.CounterOpts{Namespace: metricsNamespace, Name: "requests", Help: "Requests"})
 func Register() { prometheus.MustRegister(count, latency, requests) }`, "| `vpa_recommender_requests` | Counter | None | Requests |"},
@@ -131,11 +147,14 @@ func Register() { prometheus.MustRegister(count, latency, requests) }`, "| `vpa_
 			if err := run(root, true); err != nil {
 				t.Fatal(err)
 			}
-			doc, _ := os.ReadFile(filepath.Join(root, "docs/recommender-metrics.md"))
+			doc, _ := os.ReadFile(filepath.Join(root, "docs/metrics.md"))
 			if !strings.Contains(string(doc), tc.want) {
 				t.Fatalf("missing %q", tc.want)
 			}
-			if tc.name == "removed collector" && strings.Contains(string(doc), "execution_latency_seconds") {
+			if tc.name == "updater registration" && strings.Contains(string(doc), "vpa_updater_execution_latency_seconds") {
+				t.Fatal("removed updater collector is still documented")
+			}
+			if tc.name == "removed collector" && strings.Contains(string(doc), "vpa_recommender_execution_latency_seconds") {
 				t.Fatal("removed collector is still documented")
 			}
 		})
@@ -145,7 +164,7 @@ func Register() { prometheus.MustRegister(count, latency, requests) }`, "| `vpa_
 func TestUnsupportedDefinitionFailsWithoutWriting(t *testing.T) {
 	root := fixture(t)
 	change(t, root, "pkg/utils/metrics/recommender/recommender.go", `[]string{"mode"}`, `labelNames()`)
-	path := filepath.Join(root, "docs/recommender-metrics.md")
+	path := filepath.Join(root, "docs/metrics.md")
 	before, _ := os.ReadFile(path)
 	if err := run(root, false); err == nil || !strings.Contains(err.Error(), "literal label names") {
 		t.Fatalf("expected unsupported labels error, got %v", err)
@@ -161,5 +180,35 @@ func TestInvalidMarkers(t *testing.T) {
 		if _, err := replaceTable(doc, "table"); err == nil {
 			t.Errorf("accepted invalid markers in %q", doc)
 		}
+	}
+}
+
+func TestUnsupportedRegistrationFailsWithoutWriting(t *testing.T) {
+	cases := []struct{ name, old, replacement, want string }{
+		{"unknown slice", "MustRegister(collectors...)", "MustRegister(other...)", "unknown collector slice"},
+		{"dynamic slice", "[]prometheus.Collector{count, latency}", "makeCollectors()", "collector slice literal"},
+		{"modified slice", "prometheus.MustRegister(collectors...)", "collectors = append(collectors, count); prometheus.MustRegister(collectors...)", "collector list assignment"},
+		{"duplicate collector", "Collector{count, latency}", "Collector{count, latency, count}", "duplicate metric"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			root := fixture(t)
+			change(t, root, "pkg/utils/metrics/updater/updater.go", tc.old, tc.replacement)
+			path := filepath.Join(root, "docs/metrics.md")
+			before, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := run(root, false); err == nil || !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("expected %q error, got %v", tc.want, err)
+			}
+			after, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(before) != string(after) {
+				t.Fatal("failed generation modified the document")
+			}
+		})
 	}
 }
