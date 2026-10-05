@@ -24,6 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
 	"sigs.k8s.io/cluster-autoscaler/pkg/processors/customresources"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
@@ -121,6 +122,13 @@ func TestGetNodeGpuConfig(t *testing.T) {
 	assert.NotNil(t, config)
 	assert.Equal(t, GPULabel, config.Label)
 	assert.Equal(t, apiv1.ResourceName(gpu.ResourceNvidiaGPU), config.ExtendedResourceName)
+
+	// DRA takes precedence over the device-plugin GPU label.
+	gpuNode.Labels[DraGPULabel] = "true"
+	assert.Equal(t, &cloudprovider.GpuConfig{DraDriverName: DraGPUDriver}, provider.GetNodeGpuConfig(context.Background(), gpuNode))
+
+	gpuNode.Labels[DraGPULabel] = "false"
+	assert.Equal(t, config, provider.GetNodeGpuConfig(context.Background(), gpuNode))
 
 	cpuNode := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{

@@ -89,7 +89,7 @@ func (ng *CoreWeaveNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.No
 	if err != nil {
 		return fmt.Errorf("some nodes do not belong to node group %s: %v", ng.Name, err)
 	}
-	//update target size
+	// update target size
 	if err := ng.nodepool.SetSize(ng.nodepool.GetTargetSize() - len(nodes)); err != nil {
 		return fmt.Errorf("failed to update target size after marking nodes for removal: %v", err)
 	}
@@ -146,8 +146,10 @@ func (ng *CoreWeaveNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.
 		return nil, fmt.Errorf("failed to build node from instance type: %v", err)
 	}
 
-	// The second parameter is for ResourceSlices when using DRA. CoreWeave only DRA for rack based instances which are
-	// not supported by the Cluster Autoscaler at this time
+	// TODO(ndbaker1): if scale-from-zero support is needed, we need to also
+	// construct the resourceSlice from the instance type information. this
+	// would require a way to replicate the final device list based on instance
+	// type in a fashion identical to https://github.com/kubernetes-sigs/dra-driver-nvidia-gpu/blob/53bae861d6188eef85c6e2b4275aec504181c5a6/cmd/gpu-kubelet-plugin/nvlib.go#L212.
 	nodeInfo := framework.NewNodeInfo(node, nil)
 
 	return nodeInfo, nil
@@ -197,8 +199,9 @@ func (ng *CoreWeaveNodeGroup) buildResourceList(instanceType *InstanceType) apiv
 		resources[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(instanceType.EphemeralStorageKi*1024, resource.BinarySI)
 	}
 
-	// GPU - use nvidia.com/gpu as the resource name
-	if instanceType.GPU > 0 {
+	// Only device-plugin nodepools advertise GPUs as an extended resource.
+	// DRA GPU capacity is represented by ResourceSlices, not node resources.
+	if instanceType.GPU > 0 && !NodePoolGpuDraDriverEnabled(ng.nodepool) {
 		resources[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(instanceType.GPU, resource.DecimalSI)
 	}
 	if instanceType.RDMA > 0 {
