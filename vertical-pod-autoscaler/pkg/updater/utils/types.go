@@ -46,3 +46,8 @@ const (
 	// ResizeStatusNone indicates no resize operation is pending
 	ResizeStatusNone ResizeStatus = "ResizeNone"
 )
+
+// InfeasibleCauseNodeCapacity is the cause type returned by the PodResizeValidator
+// admission plugin when a resize is rejected due to insufficient node capacity.
+// See: https://github.com/kubernetes/kubernetes/blob/35bed76715330c233f0554edbcac761929b9491c/plugin/pkg/admission/podresize/admission.go#L44
+const InfeasibleCauseNodeCapacity = "NodeCapacity"

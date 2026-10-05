@@ -23,8 +23,8 @@ import (
 
 	"k8s.io/klog/v2"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	as "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/as/v20180419"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // TencentcloudCache is used for caching cluster resources state.

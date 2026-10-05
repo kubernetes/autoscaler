@@ -712,3 +712,246 @@ func TestPodHasCPUBoostInProgressAnnotation(t *testing.T) {
 		})
 	}
 }
+
+func TestGetBoostRemainingDuration(t *testing.T) {
+	makeVPAWithPodLevelBoost := func(duration int32) *vpa_types.VerticalPodAutoscaler {
+		return test.VerticalPodAutoscaler().
+			WithName("test-vpa").
+			WithNamespace("default").
+			WithContainer(containerName).
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, new(int32(2)), nil, duration).
+			Get()
+	}
+
+	makeVPAWithContainerLevelBoost := func(container string, duration int32) *vpa_types.VerticalPodAutoscaler {
+		return test.VerticalPodAutoscaler().
+			WithName("test-vpa").
+			WithNamespace("default").
+			WithContainer(container).
+			WithContainerCPUStartupBoost(container, vpa_types.FactorStartupBoostType, new(int32(2)), nil, duration).
+			Get()
+	}
+
+	testCases := []struct {
+		name        string
+		pod         *corev1.Pod
+		vpa         *vpa_types.VerticalPodAutoscaler
+		expectZero  bool
+		expectRange [2]time.Duration // [min, max] inclusive; ignored if expectZero
+	}{
+		{
+			name: "pod not ready returns 0",
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"vpaCpuStartupBoost/container1": "true",
+					},
+				},
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
+						{
+							Type:   corev1.PodReady,
+							Status: corev1.ConditionFalse,
+						},
+					},
+				},
+			},
+			vpa:        makeVPAWithPodLevelBoost(120),
+			expectZero: true,
+		},
+		{
+			name: "no ready condition returns 0",
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"vpaCpuStartupBoost/container1": "true",
+					},
+				},
+				Status: corev1.PodStatus{},
+			},
+			vpa:        makeVPAWithPodLevelBoost(120),
+			expectZero: true,
+		},
+		{
+			name: "boost already expired returns 0",
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"vpaCpuStartupBoost/container1": "true",
+					},
+				},
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
+						{
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
+							LastTransitionTime: metav1.NewTime(time.Now().Add(-5 * time.Minute)),
+						},
+					},
+				},
+			},
+			vpa:        makeVPAWithPodLevelBoost(60),
+			expectZero: true,
+		},
+		{
+			name: "no boost annotations returns 0",
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{},
+				},
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
+						{
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
+							LastTransitionTime: metav1.NewTime(time.Now()),
+						},
+					},
+				},
+			},
+			vpa:        makeVPAWithPodLevelBoost(120),
+			expectZero: true,
+		},
+		{
+			name: "active boost returns remaining duration",
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"vpaCpuStartupBoost/container1": "true",
+					},
+				},
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
+						{
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
+							LastTransitionTime: metav1.NewTime(time.Now()),
+						},
+					},
+				},
+			},
+			vpa:         makeVPAWithPodLevelBoost(120),
+			expectZero:  false,
+			expectRange: [2]time.Duration{110 * time.Second, 120 * time.Second},
+		},
+		{
+			name: "multiple containers returns shortest remaining",
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"vpaCpuStartupBoost/c1": "true",
+						"vpaCpuStartupBoost/c2": "true",
+					},
+				},
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
+						{
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
+							LastTransitionTime: metav1.NewTime(time.Now()),
+						},
+					},
+				},
+			},
+			vpa: func() *vpa_types.VerticalPodAutoscaler {
+				return test.VerticalPodAutoscaler().
+					WithName("test-vpa").
+					WithNamespace("default").
+					WithContainer("c1").
+					WithContainer("c2").
+					WithContainerCPUStartupBoost("c1", vpa_types.FactorStartupBoostType, ptr.To[int32](2), nil, 60).
+					WithContainerCPUStartupBoost("c2", vpa_types.FactorStartupBoostType, ptr.To[int32](2), nil, 300).
+					Get()
+			}(),
+			expectZero:  false,
+			expectRange: [2]time.Duration{50 * time.Second, 60 * time.Second},
+		},
+		{
+			name: "one expired one active returns active remaining",
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"vpaCpuStartupBoost/c1": "true",
+						"vpaCpuStartupBoost/c2": "true",
+					},
+				},
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
+						{
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
+							LastTransitionTime: metav1.NewTime(time.Now().Add(-90 * time.Second)),
+						},
+					},
+				},
+			},
+			vpa: func() *vpa_types.VerticalPodAutoscaler {
+				return test.VerticalPodAutoscaler().
+					WithName("test-vpa").
+					WithNamespace("default").
+					WithContainer("c1").
+					WithContainer("c2").
+					WithContainerCPUStartupBoost("c1", vpa_types.FactorStartupBoostType, ptr.To[int32](2), nil, 60).
+					WithContainerCPUStartupBoost("c2", vpa_types.FactorStartupBoostType, ptr.To[int32](2), nil, 300).
+					Get()
+			}(),
+			expectZero:  false,
+			expectRange: [2]time.Duration{200 * time.Second, 210 * time.Second},
+		},
+		{
+			name: "non-boost annotations are ignored",
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"some-other-annotation": "true",
+					},
+				},
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
+						{
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
+							LastTransitionTime: metav1.NewTime(time.Now()),
+						},
+					},
+				},
+			},
+			vpa:        makeVPAWithPodLevelBoost(120),
+			expectZero: true,
+		},
+		{
+			name: "container-level boost duration overrides pod-level",
+			pod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"vpaCpuStartupBoost/container1": "true",
+					},
+				},
+				Status: corev1.PodStatus{
+					Conditions: []corev1.PodCondition{
+						{
+							Type:               corev1.PodReady,
+							Status:             corev1.ConditionTrue,
+							LastTransitionTime: metav1.NewTime(time.Now()),
+						},
+					},
+				},
+			},
+			vpa:         makeVPAWithContainerLevelBoost(containerName, 200),
+			expectZero:  false,
+			expectRange: [2]time.Duration{190 * time.Second, 200 * time.Second},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := GetBoostRemainingDuration(tc.pod, tc.vpa)
+			if tc.expectZero {
+				assert.Equal(t, time.Duration(0), result)
+			} else {
+				assert.GreaterOrEqual(t, result, tc.expectRange[0], "remaining duration should be >= lower bound")
+				assert.LessOrEqual(t, result, tc.expectRange[1], "remaining duration should be <= upper bound")
+			}
+		})
+	}
+}

@@ -29,23 +29,31 @@ const (
 	anyHttpsUrlPattern = "https://.*/"
 )
 
+var (
+	regionalInstanceTemplateRe = regexp.MustCompile("(/projects/.*[A-Za-z0-9]+.*/regions/)")
+	migUrlRe                   = regexp.MustCompile(anyHttpsUrlPattern + "projects/(.*)/zones/(.*)/instanceGroups/(.*)")
+	igmUrlRe                   = regexp.MustCompile(anyHttpsUrlPattern + "projects/(.*)/zones/(.*)/instanceGroupManagers/(.*)")
+	igmRefUrlRe                = regexp.MustCompile("projects/(.*)/zones/(.*)/instanceGroupManagers/(.*)")
+	instanceUrlRe              = regexp.MustCompile(anyHttpsUrlPattern + "projects/(.*)/zones/(.*)/instances/(.*)")
+)
+
 // ParseMigUrl expects url in format:
 // https://.*/projects/<project-id>/zones/<zone>/instanceGroups/<name>
 func ParseMigUrl(url string) (project string, zone string, name string, err error) {
-	return parseGceUrl(anyHttpsUrlPattern, url, "instanceGroups")
+	return parseGceUrl(url, migUrlRe, anyHttpsUrlPattern, "instanceGroups")
 }
 
 // ParseIgmUrl expects url in format:
 // https://.*/<project-id>/zones/<zone>/instanceGroupManagers/<name>
 func ParseIgmUrl(url string) (project string, zone string, name string, err error) {
-	return parseGceUrl(anyHttpsUrlPattern, url, "instanceGroupManagers")
+	return parseGceUrl(url, igmUrlRe, anyHttpsUrlPattern, "instanceGroupManagers")
 }
 
 // ParseIgmUrlRef expects url in format:
 // projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>
 // and returns a GceRef struct for it.
 func ParseIgmUrlRef(url string) (GceRef, error) {
-	project, zone, name, err := parseGceUrl("", url, "instanceGroupManagers")
+	project, zone, name, err := parseGceUrl(url, igmRefUrlRe, "", "instanceGroupManagers")
 	if err != nil {
 		return GceRef{}, err
 	}
@@ -59,14 +67,14 @@ func ParseIgmUrlRef(url string) (GceRef, error) {
 // ParseInstanceUrl expects url in format:
 // https://.*/<project-id>/zones/<zone>/instances/<name>
 func ParseInstanceUrl(url string) (project string, zone string, name string, err error) {
-	return parseGceUrl(anyHttpsUrlPattern, url, "instances")
+	return parseGceUrl(url, instanceUrlRe, anyHttpsUrlPattern, "instances")
 }
 
 // ParseInstanceUrlRef expects url in format:
 // https://.*/projects/<project-id>/zones/<zone>/instances/<name>
 // and returns a GceRef struct for it.
 func ParseInstanceUrlRef(url string) (GceRef, error) {
-	project, zone, name, err := parseGceUrl(anyHttpsUrlPattern, url, "instances")
+	project, zone, name, err := ParseInstanceUrl(url)
 	if err != nil {
 		return GceRef{}, err
 	}
@@ -94,8 +102,8 @@ func GenerateMigUrl(domainUrl string, ref GceRef) string {
 }
 
 // IsInstanceTemplateRegional determines whether or not an instance template is regional based on the url
-func IsInstanceTemplateRegional(templateUrl string) (bool, error) {
-	return regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl)
+func IsInstanceTemplateRegional(templateUrl string) bool {
+	return regionalInstanceTemplateRe.MatchString(templateUrl)
 }
 
 // InstanceTemplateNameFromUrl retrieves name of the Instance Template from the url.
@@ -104,25 +112,17 @@ func InstanceTemplateNameFromUrl(instanceTemplateLink string) (InstanceTemplateN
 	if err != nil {
 		return InstanceTemplateName{}, err
 	}
-	regional, err := IsInstanceTemplateRegional(templateUrl.String())
-	if err != nil {
-		return InstanceTemplateName{}, err
-	}
-
 	_, templateName := path.Split(templateUrl.EscapedPath())
+
+	regional := IsInstanceTemplateRegional(instanceTemplateLink)
+
 	return InstanceTemplateName{templateName, regional}, nil
 }
 
-func parseGceUrl(prefix, url, expectedResource string) (project string, zone string, name string, err error) {
-	reg := regexp.MustCompile(prefix + "projects/.*/zones/.*/" + expectedResource + "/.*")
-	errMsg := fmt.Errorf("wrong url: expected format %sprojects/<project-id>/zones/<zone>/%s/<name>, got %s", prefix, expectedResource, url)
-	if !reg.MatchString(url) {
-		return "", "", "", errMsg
+func parseGceUrl(url string, re *regexp.Regexp, prefix, expectedResource string) (project string, zone string, name string, err error) {
+	subMatches := re.FindStringSubmatch(url)
+	if len(subMatches) < 4 {
+		return "", "", "", fmt.Errorf("wrong url: expected format %sprojects/<project-id>/zones/<zone>/%s/<name>, got %s", prefix, expectedResource, url)
 	}
-
-	subMatches := regexp.MustCompile(prefix + "projects/(.*)/zones/(.*)/" + expectedResource + "/(.*)").FindStringSubmatch(url)
-	project = subMatches[1]
-	zone = subMatches[2]
-	name = subMatches[3]
-	return project, zone, name, nil
+	return subMatches[1], subMatches[2], subMatches[3], nil
 }

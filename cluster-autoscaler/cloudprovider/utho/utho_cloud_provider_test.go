@@ -25,8 +25,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho/utho-go"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // Helper function to set up mock ListNodePools
@@ -72,10 +72,10 @@ func TestUthoCloudProvider_NewNodeGroup_Success(t *testing.T) {
 	manager.client = client
 	provider := newUthoCloudProvider(manager, &cloudprovider.ResourceLimiter{})
 
-	err = provider.Refresh()
+	err = provider.Refresh(context.Background())
 	assert.NoError(t, err)
 
-	nodes := provider.NodeGroups()
+	nodes := provider.NodeGroups(context.Background())
 	assert.Equal(t, 2, len(nodes), "number of nodes do not match")
 }
 
@@ -118,11 +118,11 @@ func TestUthoCloudProvider_NodeGroupForNode_Success(t *testing.T) {
 	manager.client = client
 	provider := newUthoCloudProvider(manager, &cloudprovider.ResourceLimiter{})
 
-	err = provider.Refresh()
+	err = provider.Refresh(context.Background())
 	assert.NoError(t, err)
 
 	node := &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("1234")}}
-	nodeGroup, err := provider.NodeGroupForNode(node)
+	nodeGroup, err := provider.NodeGroupForNode(context.Background(), node)
 	require.NoError(t, err)
 
 	require.NotNil(t, nodeGroup)
@@ -137,7 +137,7 @@ func TestUthoCloudProvider_Name_ReturnsCorrectName(t *testing.T) {
 	require.NoError(t, err)
 
 	p := newUthoCloudProvider(manager, &cloudprovider.ResourceLimiter{})
-	assert.Equal(t, cloudprovider.UthoProviderName, p.Name(), "provider name doesn't match")
+	assert.Equal(t, ProviderName, p.Name(), "provider name doesn't match")
 }
 
 func TestUthoCloudProvider_Refresh_EmptyNodePools(t *testing.T) {
@@ -154,10 +154,10 @@ func TestUthoCloudProvider_Refresh_EmptyNodePools(t *testing.T) {
 	manager.client = client
 	provider := newUthoCloudProvider(manager, &cloudprovider.ResourceLimiter{})
 
-	err = provider.Refresh()
+	err = provider.Refresh(context.Background())
 	assert.NoError(t, err)
 
-	nodes := provider.NodeGroups()
+	nodes := provider.NodeGroups(context.Background())
 	assert.Equal(t, 0, len(nodes), "expected no node groups")
 
 }
@@ -176,7 +176,7 @@ func TestUthoCloudProvider_Refresh_ErrorFromAPI(t *testing.T) {
 	manager.client = client
 	provider := newUthoCloudProvider(manager, &cloudprovider.ResourceLimiter{})
 
-	err = provider.Refresh()
+	err = provider.Refresh(context.Background())
 	assert.Error(t, err, "expected an error from ListNodePools")
 
 }

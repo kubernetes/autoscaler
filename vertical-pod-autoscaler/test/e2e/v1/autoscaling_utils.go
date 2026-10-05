@@ -29,35 +29,26 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	e2edebug "k8s.io/kubernetes/test/e2e/framework/debug"
-	e2eendpointslice "k8s.io/kubernetes/test/e2e/framework/endpointslice"
 	e2ekubectl "k8s.io/kubernetes/test/e2e/framework/kubectl"
 	e2erc "k8s.io/kubernetes/test/e2e/framework/rc"
 	"k8s.io/kubernetes/test/e2e/framework/resource"
-	e2eservice "k8s.io/kubernetes/test/e2e/framework/service"
 	testutils "k8s.io/kubernetes/test/utils"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
 
-	scaleclient "k8s.io/client-go/scale"
 	imageutils "k8s.io/kubernetes/test/utils/image"
 )
 
 const (
 	dynamicConsumptionTimeInSeconds = 30
-	dynamicRequestSizeInMillicores  = 20
-	dynamicRequestSizeInMegabytes   = 100
-	dynamicRequestSizeCustomMetric  = 10
-	port                            = 80
 	targetPort                      = 8080
 	timeoutRC                       = 120 * time.Second
 	invalidKind                     = "ERROR: invalid workload kind for resource consumer"
-	customMetricName                = "QPS"
 	serviceInitializationTimeout    = 2 * time.Minute
 	serviceInitializationInterval   = 15 * time.Second
 	stressImage                     = "registry.k8s.io/e2e-test-images/agnhost:2.53"
@@ -77,279 +68,253 @@ var (
 )
 
 /*
-ResourceConsumer is a tool for testing. It helps create specified usage of CPU or memory (Warning: memory not supported)
+ResourceConsumer is a tool for testing. It helps create specified usage of CPU or memory.
+Load is sent directly to each pod via the Kubernetes pod proxy API, so no
+service, kube-proxy or resource-consumer-controller pod is involved.
 typical use case:
-rc.ConsumeCPU(600)
+rc.ConsumeCPUPerPod(600)
 // ... check your assumption here
-rc.ConsumeCPU(300)
+rc.ConsumeCPUPerPod(300)
 // ... check your assumption here
 */
 type ResourceConsumer struct {
 	name                     string
-	controllerName           string
 	kind                     schema.GroupVersionKind
 	nsName                   string
 	clientSet                clientset.Interface
-	scaleClient              scaleclient.ScalesGetter
-	cpu                      chan int
-	mem                      chan int
-	customMetric             chan int
-	stopCPU                  chan int
-	stopMem                  chan int
-	stopCustomMetric         chan int
+	cpuPerPod                chan int
+	memPerPod                chan int
+	stopCPUPerPod            chan int
+	stopMemPerPod            chan int
 	stopWaitGroup            sync.WaitGroup
 	consumptionTimeInSeconds int
 	sleepTime                time.Duration
-	requestSizeInMillicores  int
-	requestSizeInMegabytes   int
-	requestSizeCustomMetric  int
 }
 
-// NewDynamicResourceConsumer is a wrapper to create a new dynamic ResourceConsumer
-func NewDynamicResourceConsumer(name, nsName string, kind schema.GroupVersionKind, replicas, initCPUTotal, initMemoryTotal, initCustomMetric int, cpuLimit, memLimit int64, clientset clientset.Interface, scaleClient scaleclient.ScalesGetter) *ResourceConsumer {
-	return newResourceConsumer(name, nsName, kind, replicas, initCPUTotal, initMemoryTotal, initCustomMetric, dynamicConsumptionTimeInSeconds,
-		dynamicRequestSizeInMillicores, dynamicRequestSizeInMegabytes, dynamicRequestSizeCustomMetric, cpuLimit, memLimit, clientset, scaleClient, nil, nil)
+// NewDynamicResourceConsumer is a wrapper to create a new dynamic ResourceConsumer.
+func NewDynamicResourceConsumer(name, nsName string, kind schema.GroupVersionKind, replicas, initCPUTotal, initMemoryTotal int, cpuLimit, memLimit int64, clientset clientset.Interface) *ResourceConsumer {
+	return newResourceConsumer(name, nsName, kind, replicas, initCPUTotal, initMemoryTotal, dynamicConsumptionTimeInSeconds,
+		cpuLimit, memLimit, clientset, nil)
 }
 
 /*
-NewResourceConsumer creates new ResourceConsumer
+newResourceConsumer creates new ResourceConsumer
 initCPUTotal argument is in millicores
 initMemoryTotal argument is in megabytes
 memLimit argument is in megabytes, memLimit is a maximum amount of memory that can be consumed by a single pod
 cpuLimit argument is in millicores, cpuLimit is a maximum amount of cpu that can be consumed by a single pod
 */
-func newResourceConsumer(name, nsName string, kind schema.GroupVersionKind, replicas, initCPUTotal, initMemoryTotal, initCustomMetric, consumptionTimeInSeconds, requestSizeInMillicores,
-	requestSizeInMegabytes int, requestSizeCustomMetric int, cpuLimit, memLimit int64, clientset clientset.Interface, scaleClient scaleclient.ScalesGetter, podAnnotations, serviceAnnotations map[string]string) *ResourceConsumer {
+func newResourceConsumer(name, nsName string, kind schema.GroupVersionKind, replicas, initCPUTotal, initMemoryTotal, consumptionTimeInSeconds int,
+	cpuLimit, memLimit int64, clientset clientset.Interface, podAnnotations map[string]string) *ResourceConsumer {
 	if podAnnotations == nil {
 		podAnnotations = make(map[string]string)
 	}
-	if serviceAnnotations == nil {
-		serviceAnnotations = make(map[string]string)
-	}
-	runServiceAndWorkloadForResourceConsumer(clientset, nsName, name, kind, replicas, cpuLimit, memLimit, podAnnotations, serviceAnnotations)
+	runWorkloadForResourceConsumer(clientset, nsName, name, kind, replicas, cpuLimit, memLimit, podAnnotations)
 	rc := &ResourceConsumer{
 		name:                     name,
-		controllerName:           name + "-ctrl",
 		kind:                     kind,
 		nsName:                   nsName,
 		clientSet:                clientset,
-		scaleClient:              scaleClient,
-		cpu:                      make(chan int),
-		mem:                      make(chan int),
-		customMetric:             make(chan int),
-		stopCPU:                  make(chan int),
-		stopMem:                  make(chan int),
-		stopCustomMetric:         make(chan int),
+		cpuPerPod:                make(chan int),
+		memPerPod:                make(chan int),
+		stopCPUPerPod:            make(chan int),
+		stopMemPerPod:            make(chan int),
 		consumptionTimeInSeconds: consumptionTimeInSeconds,
 		sleepTime:                time.Duration(consumptionTimeInSeconds) * time.Second,
-		requestSizeInMillicores:  requestSizeInMillicores,
-		requestSizeInMegabytes:   requestSizeInMegabytes,
-		requestSizeCustomMetric:  requestSizeCustomMetric,
 	}
 
-	go rc.makeConsumeCPURequests()
-	rc.ConsumeCPU(initCPUTotal)
-
-	go rc.makeConsumeMemRequests()
-	rc.ConsumeMem(initMemoryTotal)
-	go rc.makeConsumeCustomMetric()
-	rc.ConsumeCustomMetric(initCustomMetric)
+	rc.stopWaitGroup.Add(1)
+	go rc.makeConsumeCPUPerPodRequests()
+	rc.ConsumeCPUPerPod(initCPUTotal)
+	rc.stopWaitGroup.Add(1)
+	go rc.makeConsumeMemPerPodRequests()
+	rc.ConsumeMemPerPod(initMemoryTotal)
 	return rc
 }
 
-// ConsumeCPU consumes given number of CPU
-func (rc *ResourceConsumer) ConsumeCPU(millicores int) {
-	framework.Logf("RC %s: consume %v millicores in total", rc.name, millicores)
-	rc.cpu <- millicores
+// ConsumeCPUPerPod sends CPU load directly to each consumer pod via the
+// Kubernetes pod proxy API, bypassing kube-proxy's non-deterministic load
+// balancing. millicoresTotal is divided evenly across all running pods,
+// guaranteeing each pod receives an equal share.
+func (rc *ResourceConsumer) ConsumeCPUPerPod(millicoresTotal int) {
+	framework.Logf("RC %s: consume %v millicores in total (evenly distributed per pod)", rc.name, millicoresTotal)
+	rc.cpuPerPod <- millicoresTotal
 }
 
-// ConsumeMem consumes given number of Mem
-func (rc *ResourceConsumer) ConsumeMem(megabytes int) {
-	framework.Logf("RC %s: consume %v MB in total", rc.name, megabytes)
-	rc.mem <- megabytes
+// ConsumeMemPerPod is the memory equivalent of ConsumeCPUPerPod:
+// megabytesTotal is divided evenly across all running pods and sent directly
+// via the Kubernetes pod proxy API.
+func (rc *ResourceConsumer) ConsumeMemPerPod(megabytesTotal int) {
+	framework.Logf("RC %s: consume %v MB in total (evenly distributed per pod)", rc.name, megabytesTotal)
+	rc.memPerPod <- megabytesTotal
 }
 
-// ConsumeCustomMetric consumes given number of custom metric
-func (rc *ResourceConsumer) ConsumeCustomMetric(amount int) {
-	framework.Logf("RC %s: consume custom metric %v in total", rc.name, amount)
-	rc.customMetric <- amount
-}
-
-func (rc *ResourceConsumer) makeConsumeCPURequests() {
+func (rc *ResourceConsumer) makeConsumeCPUPerPodRequests() {
 	defer ginkgo.GinkgoRecover()
-	rc.stopWaitGroup.Add(1)
 	defer rc.stopWaitGroup.Done()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	// Cancel in-flight requests as soon as the stop channel closes, so CleanUp
+	// isn't blocked waiting for a long poll to finish.
+	go func() {
+		<-rc.stopCPUPerPod
+		cancel()
+	}()
 	sleepTime := time.Duration(0)
-	millicores := 0
+	millicoresTotal := 0
 	for {
 		select {
-		case millicores = <-rc.cpu:
-			framework.Logf("RC %s: setting consumption to %v millicores in total", rc.name, millicores)
+		case millicoresTotal = <-rc.cpuPerPod:
+			framework.Logf("RC %s: setting per-pod CPU to %v millicores total", rc.name, millicoresTotal)
 		case <-time.After(sleepTime):
-			framework.Logf("RC %s: sending request to consume %d millicores", rc.name, millicores)
-			rc.sendConsumeCPURequest(millicores)
+			if millicoresTotal != 0 {
+				framework.Logf("RC %s: sending per-pod CPU request: %d millicores total", rc.name, millicoresTotal)
+				rc.sendConsumeCPUPerPodRequest(ctx, millicoresTotal)
+			}
 			sleepTime = rc.sleepTime
-		case <-rc.stopCPU:
-			framework.Logf("RC %s: stopping CPU consumer", rc.name)
+		case <-rc.stopCPUPerPod:
+			framework.Logf("RC %s: stopping per-pod CPU consumer", rc.name)
 			return
 		}
 	}
 }
 
-func (rc *ResourceConsumer) makeConsumeMemRequests() {
+func (rc *ResourceConsumer) makeConsumeMemPerPodRequests() {
 	defer ginkgo.GinkgoRecover()
-	rc.stopWaitGroup.Add(1)
 	defer rc.stopWaitGroup.Done()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	// Cancel in-flight requests as soon as the stop channel closes, so CleanUp
+	// isn't blocked waiting for a long poll to finish.
+	go func() {
+		<-rc.stopMemPerPod
+		cancel()
+	}()
 	sleepTime := time.Duration(0)
-	megabytes := 0
+	megabytesTotal := 0
 	for {
 		select {
-		case megabytes = <-rc.mem:
-			framework.Logf("RC %s: setting consumption to %v MB in total", rc.name, megabytes)
+		case megabytesTotal = <-rc.memPerPod:
+			framework.Logf("RC %s: setting per-pod mem to %v MB total", rc.name, megabytesTotal)
 		case <-time.After(sleepTime):
-			framework.Logf("RC %s: sending request to consume %d MB", rc.name, megabytes)
-			rc.sendConsumeMemRequest(megabytes)
+			if megabytesTotal != 0 {
+				framework.Logf("RC %s: sending per-pod mem request: %d MB total", rc.name, megabytesTotal)
+				rc.sendConsumeMemPerPodRequest(ctx, megabytesTotal)
+			}
 			sleepTime = rc.sleepTime
-		case <-rc.stopMem:
-			framework.Logf("RC %s: stopping mem consumer", rc.name)
+		case <-rc.stopMemPerPod:
+			framework.Logf("RC %s: stopping per-pod mem consumer", rc.name)
 			return
 		}
 	}
 }
 
-func (rc *ResourceConsumer) makeConsumeCustomMetric() {
-	defer ginkgo.GinkgoRecover()
-	rc.stopWaitGroup.Add(1)
-	defer rc.stopWaitGroup.Done()
-	sleepTime := time.Duration(0)
-	delta := 0
-	for {
-		select {
-		case delta = <-rc.customMetric:
-			framework.Logf("RC %s: setting bump of metric %s to %d in total", rc.name, customMetricName, delta)
-		case <-time.After(sleepTime):
-			framework.Logf("RC %s: sending request to consume %d of custom metric %s", rc.name, delta, customMetricName)
-			rc.sendConsumeCustomMetric(delta)
-			sleepTime = rc.sleepTime
-		case <-rc.stopCustomMetric:
-			framework.Logf("RC %s: stopping metric consumer", rc.name)
-			return
+func (rc *ResourceConsumer) sendConsumeCPUPerPodRequest(ctx context.Context, millicoresTotal int) {
+	rc.sendConsumePerPodRequests(ctx, "ConsumeCPU", "millicores", millicoresTotal)
+}
+
+func (rc *ResourceConsumer) sendConsumeMemPerPodRequest(ctx context.Context, megabytesTotal int) {
+	rc.sendConsumePerPodRequests(ctx, "ConsumeMem", "megabytes", megabytesTotal)
+}
+
+// sendConsumePerPodRequests distributes load evenly across all running pods
+// by sending requests directly via the Kubernetes pod proxy API. This
+// bypasses kube-proxy load balancing, guaranteeing each pod receives exactly
+// its share.
+func (rc *ResourceConsumer) sendConsumePerPodRequests(ctx context.Context, endpoint, valueParam string, total int) {
+	ctx, cancel := context.WithTimeout(ctx, framework.SingleCallTimeout)
+	defer cancel()
+
+	var readyPods []string
+	err := wait.PollUntilContextTimeout(ctx, serviceInitializationInterval, serviceInitializationTimeout, true, func(ctx context.Context) (done bool, err error) {
+		readyPods = nil
+		pods, err := rc.clientSet.CoreV1().Pods(rc.nsName).List(ctx, metav1.ListOptions{
+			LabelSelector: fmt.Sprintf("name=%s", rc.name),
+		})
+		if err != nil {
+			framework.Logf("%s per pod: failed to list pods: %v", endpoint, err)
+			return false, nil
 		}
+		for i := range pods.Items {
+			pod := &pods.Items[i]
+			if pod.Status.Phase != v1.PodRunning || pod.DeletionTimestamp != nil {
+				continue
+			}
+			for _, cond := range pod.Status.Conditions {
+				if cond.Type == v1.PodReady && cond.Status == v1.ConditionTrue {
+					readyPods = append(readyPods, pod.Name)
+					break
+				}
+			}
+		}
+		if len(readyPods) == 0 {
+			framework.Logf("%s per pod: no running pods labeled name=%s", endpoint, rc.name)
+			return false, nil
+		}
+		return true, nil
+	})
+	if err != nil {
+		// The pods may be under eviction by the VPA updater. Skip this tick and
+		// retry after the next sleep interval.
+		framework.Logf("%s per pod: no ready pods to send load to: %v", endpoint, err)
+		return
 	}
-}
 
-func (rc *ResourceConsumer) sendConsumeCPURequest(millicores int) {
-	ctx, cancel := context.WithTimeout(context.Background(), framework.SingleCallTimeout)
-	defer cancel()
+	perPodValue := total / len(readyPods)
+	if perPodValue == 0 {
+		perPodValue = 1
+	}
 
-	err := wait.PollUntilContextTimeout(ctx, serviceInitializationInterval, serviceInitializationTimeout, true, func(ctx context.Context) (done bool, err error) {
-		proxyRequest, err := e2eservice.GetServicesProxyRequest(rc.clientSet, rc.clientSet.CoreV1().RESTClient().Post())
-		framework.ExpectNoError(err)
-		req := proxyRequest.Namespace(rc.nsName).
-			Name(rc.controllerName).
-			Suffix("ConsumeCPU").
-			Param("millicores", strconv.Itoa(millicores)).
-			Param("durationSec", strconv.Itoa(rc.consumptionTimeInSeconds)).
-			Param("requestSizeMillicores", strconv.Itoa(rc.requestSizeInMillicores))
-		framework.Logf("ConsumeCPU URL: %v", *req.URL())
-		_, err = req.DoRaw(ctx)
-		if err != nil {
-			framework.Logf("ConsumeCPU failure: %v", err)
-			return false, nil
-		}
-		return true, nil
-	})
+	framework.Logf("%s per pod: distributing %d %s across %d pods (%d per pod)",
+		endpoint, total, valueParam, len(readyPods), perPodValue)
 
-	framework.ExpectNoError(err)
-}
-
-// sendConsumeMemRequest sends POST request for memory consumption
-func (rc *ResourceConsumer) sendConsumeMemRequest(megabytes int) {
-	ctx, cancel := context.WithTimeout(context.Background(), framework.SingleCallTimeout)
-	defer cancel()
-
-	err := wait.PollUntilContextTimeout(ctx, serviceInitializationInterval, serviceInitializationTimeout, true, func(ctx context.Context) (done bool, err error) {
-		proxyRequest, err := e2eservice.GetServicesProxyRequest(rc.clientSet, rc.clientSet.CoreV1().RESTClient().Post())
-		framework.ExpectNoError(err)
-		req := proxyRequest.Namespace(rc.nsName).
-			Name(rc.controllerName).
-			Suffix("ConsumeMem").
-			Param("megabytes", strconv.Itoa(megabytes)).
-			Param("durationSec", strconv.Itoa(rc.consumptionTimeInSeconds)).
-			Param("requestSizeMegabytes", strconv.Itoa(rc.requestSizeInMegabytes))
-		framework.Logf("ConsumeMem URL: %v", *req.URL())
-		_, err = req.DoRaw(ctx)
-		if err != nil {
-			framework.Logf("ConsumeMem failure: %v", err)
-			return false, nil
-		}
-		return true, nil
-	})
-
-	framework.ExpectNoError(err)
-}
-
-// sendConsumeCustomMetric sends POST request for custom metric consumption
-func (rc *ResourceConsumer) sendConsumeCustomMetric(delta int) {
-	ctx, cancel := context.WithTimeout(context.Background(), framework.SingleCallTimeout)
-	defer cancel()
-
-	err := wait.PollUntilContextTimeout(ctx, serviceInitializationInterval, serviceInitializationTimeout, true, func(ctx context.Context) (done bool, err error) {
-		proxyRequest, err := e2eservice.GetServicesProxyRequest(rc.clientSet, rc.clientSet.CoreV1().RESTClient().Post())
-		framework.ExpectNoError(err)
-		req := proxyRequest.Namespace(rc.nsName).
-			Name(rc.controllerName).
-			Suffix("BumpMetric").
-			Param("metric", customMetricName).
-			Param("delta", strconv.Itoa(delta)).
-			Param("durationSec", strconv.Itoa(rc.consumptionTimeInSeconds)).
-			Param("requestSizeMetrics", strconv.Itoa(rc.requestSizeCustomMetric))
-		framework.Logf("ConsumeCustomMetric URL: %v", *req.URL())
-		_, err = req.DoRaw(ctx)
-		if err != nil {
-			framework.Logf("ConsumeCustomMetric failure: %v", err)
-			return false, nil
-		}
-		return true, nil
-	})
-	framework.ExpectNoError(err)
+	var wg sync.WaitGroup
+	for _, podName := range readyPods {
+		wg.Add(1)
+		go func(name string) {
+			defer wg.Done()
+			// Pod proxy URL: /api/v1/namespaces/{ns}/pods/{podname}:{port}/proxy/{path}
+			// Both service and pod proxy support the name:port format. Without an explicit
+			// port the API server defaults to port 80, but resource-consumer listens on
+			// targetPort (8080), so the port must be specified.
+			err := wait.PollUntilContextTimeout(ctx, serviceInitializationInterval, serviceInitializationTimeout, true, func(ctx context.Context) (done bool, err error) {
+				_, podErr := rc.clientSet.CoreV1().RESTClient().Post().
+					Resource("pods").
+					Namespace(rc.nsName).
+					Name(fmt.Sprintf("%s:%d", name, targetPort)).
+					SubResource("proxy").
+					Suffix(endpoint).
+					Param(valueParam, strconv.Itoa(perPodValue)).
+					Param("durationSec", strconv.Itoa(rc.consumptionTimeInSeconds)).
+					DoRaw(ctx)
+				if podErr != nil {
+					framework.Logf("%s per pod: error sending to pod %s: %v", endpoint, name, podErr)
+					return false, nil
+				}
+				return true, nil
+			})
+			if err != nil {
+				// The pod may have been evicted or recreated by the VPA updater;
+				// its replacement will get its share on the next tick.
+				framework.Logf("%s per pod: giving up on pod %s: %v", endpoint, name, err)
+			}
+		}(podName)
+	}
+	wg.Wait()
 }
 
 // CleanUp clean up the background goroutines responsible for consuming resources.
 func (rc *ResourceConsumer) CleanUp() {
 	ginkgo.By(fmt.Sprintf("Removing consuming RC %s", rc.name))
-	close(rc.stopCPU)
-	close(rc.stopMem)
-	close(rc.stopCustomMetric)
+	close(rc.stopCPUPerPod)
+	close(rc.stopMemPerPod)
 	rc.stopWaitGroup.Wait()
-	// Wait some time to ensure all child goroutines are finished.
-	time.Sleep(10 * time.Second)
 	kind := rc.kind.GroupKind()
 	framework.ExpectNoError(resource.DeleteResourceAndWaitForGC(context.TODO(), rc.clientSet, kind, rc.nsName, rc.name))
-	framework.ExpectNoError(rc.clientSet.CoreV1().Services(rc.nsName).Delete(context.TODO(), rc.name, metav1.DeleteOptions{}))
-	framework.ExpectNoError(resource.DeleteResourceAndWaitForGC(context.TODO(), rc.clientSet, schema.GroupKind{Kind: "ReplicationController"}, rc.nsName, rc.controllerName))
-	framework.ExpectNoError(rc.clientSet.CoreV1().Services(rc.nsName).Delete(context.TODO(), rc.controllerName, metav1.DeleteOptions{}))
 }
 
-func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, ns, name string, kind schema.GroupVersionKind, replicas int, cpuRequestMillis, memRequestMb int64, podAnnotations, serviceAnnotations map[string]string) {
+func runWorkloadForResourceConsumer(c clientset.Interface, ns, name string, kind schema.GroupVersionKind, replicas int, cpuRequestMillis, memRequestMb int64, podAnnotations map[string]string) {
 	ginkgo.By(fmt.Sprintf("Running consuming RC %s via %s with %v replicas", name, kind, replicas))
-	_, err := c.CoreV1().Services(ns).Create(context.TODO(), &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
-			Annotations: serviceAnnotations,
-		},
-		Spec: v1.ServiceSpec{
-			Ports: []v1.ServicePort{{
-				Port:       port,
-				TargetPort: intstr.FromInt(targetPort),
-			}},
-
-			Selector: map[string]string{
-				"name": name,
-			},
-		},
-	}, metav1.CreateOptions{})
-	framework.ExpectNoError(err)
 
 	rcConfig := testutils.RCConfig{
 		Client:      c,
@@ -383,42 +348,6 @@ func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, ns, name st
 	default:
 		framework.Failf(invalidKind)
 	}
-
-	ginkgo.By(fmt.Sprintf("Running controller"))
-	controllerName := name + "-ctrl"
-	_, err = c.CoreV1().Services(ns).Create(context.TODO(), &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: controllerName,
-		},
-		Spec: v1.ServiceSpec{
-			Ports: []v1.ServicePort{{
-				Port:       port,
-				TargetPort: intstr.FromInt(targetPort),
-			}},
-
-			Selector: map[string]string{
-				"name": controllerName,
-			},
-		},
-	}, metav1.CreateOptions{})
-	framework.ExpectNoError(err)
-
-	dnsClusterFirst := v1.DNSClusterFirst
-	controllerRcConfig := testutils.RCConfig{
-		Client:    c,
-		Image:     imageutils.GetE2EImage(imageutils.Agnhost),
-		Name:      controllerName,
-		Namespace: ns,
-		Timeout:   timeoutRC,
-		Replicas:  1,
-		Command:   []string{"/agnhost", "resource-consumer-controller", "--consumer-service-name=" + name, "--consumer-service-namespace=" + ns, "--consumer-port=80"},
-		DNSPolicy: &dnsClusterFirst,
-	}
-	framework.ExpectNoError(e2erc.RunRC(context.TODO(), controllerRcConfig))
-
-	// Wait for endpoints to propagate for the controller service.
-	framework.ExpectNoError(e2eendpointslice.WaitForEndpointCount(
-		context.TODO(), c, ns, controllerName, 1))
 }
 
 // runReplicaSet launches (and verifies correctness) of a replicaset.

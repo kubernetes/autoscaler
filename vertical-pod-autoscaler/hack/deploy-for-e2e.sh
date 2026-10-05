@@ -120,8 +120,6 @@ for COMPONENT in ${COMPONENTS}; do
 done
 
 # Propagate FEATURE_GATES (set on alpha/beta CI lanes) to component args.
-# Helm --set replaces lists; for admissionController we re-add --reload-cert
-# (set in values-e2e.yaml for the cert-rotation test) so it isn't dropped.
 # Commas in the value are escaped so Helm --set treats it as one assignment.
 if [[ -n "${FEATURE_GATES:-}" ]]; then
   ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
@@ -134,10 +132,7 @@ if [[ -n "${FEATURE_GATES:-}" ]]; then
         HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         ;;
       admission-controller)
-        HELM_SET_ARGS+=(
-          "--set" "admissionController.extraArgs[0]=--reload-cert"
-          "--set" "admissionController.extraArgs[1]=--feature-gates=${ESCAPED_FEATURE_GATES}"
-        )
+        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
         ;;
     esac
   done

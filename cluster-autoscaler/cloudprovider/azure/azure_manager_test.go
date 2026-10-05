@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"reflect"
@@ -24,12 +25,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/utils/ptr"
 	azclient "sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient/mock_virtualmachineclient"
@@ -37,6 +36,8 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient/mock_virtualmachinescalesetvmclient"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 )
 
 const validAzureCfg = `{
@@ -805,8 +806,8 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 		asgs := manager.azureCache.getRegisteredNodeGroups()
 		assert.Equal(t, 1, len(asgs))
 		assert.Equal(t, name, asgs[0].Id())
-		assert.Equal(t, min, asgs[0].MinSize())
-		assert.Equal(t, max, asgs[0].MaxSize())
+		assert.Equal(t, min, asgs[0].MinSize(context.Background()))
+		assert.Equal(t, max, asgs[0].MaxSize(context.Background()))
 	}
 
 	// test vmTypeStandard
@@ -1020,8 +1021,8 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	asgs = manager.azureCache.getRegisteredNodeGroups()
 	assert.Equal(t, 1, len(asgs))
 	assert.Equal(t, vmssName, asgs[0].Id())
-	assert.Equal(t, minVal, asgs[0].MinSize())
-	assert.Equal(t, maxVal, asgs[0].MaxSize())
+	assert.Equal(t, minVal, asgs[0].MinSize(context.Background()))
+	assert.Equal(t, maxVal, asgs[0].MaxSize(context.Background()))
 
 	// test explicitlyConfigured
 	manager.explicitlyConfigured[vmssName] = true

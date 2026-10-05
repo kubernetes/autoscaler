@@ -8,5 +8,7 @@ reviewers:
 - BigDarkClown
 - x13n
 - elmiko
+- mtrqq
+- norbertcyran
 labels:
 - area/cluster-autoscaler

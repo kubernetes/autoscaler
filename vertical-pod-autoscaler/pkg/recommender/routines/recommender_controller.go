@@ -56,8 +56,8 @@ const (
 // It implements controllercontext.Controller.
 type RecommenderController struct {
 	recommender Recommender
-	interval    time.Duration
 	healthCheck *metrics.HealthCheck
+	config      *recommender_config.RecommenderConfig
 }
 
 // NewRecommenderController creates a RecommenderController
@@ -121,7 +121,6 @@ func NewRecommenderController(
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
 		OOMObserver:         oomObserver,
-		KubeClient:          kubeClient,
 		MetricsClient:       input_metrics.NewMetricsClient(source, commonFlags.VpaObjectNamespace, "default-metrics-client"),
 		VpaCheckpointClient: vpaClient.AutoscalingV1(),
 		VpaLister:           vpa_api_util.NewVpasLister(vpaClient, stopCh, commonFlags.VpaObjectNamespace),
@@ -162,28 +161,29 @@ func NewRecommenderController(
 		},
 		RecommendationPostProcessors: postProcessors,
 		CheckpointsGCInterval:        config.CheckpointsGCInterval,
+		CheckpointsGCTimeout:         config.CheckpointsGCTimeout,
 		CheckpointsWriteTimeout:      config.CheckpointsWriteTimeout,
 		UseCheckpoints:               useCheckpoints,
 		UpdateWorkerCount:            config.UpdateWorkerCount,
 	}.Make()
 
-	if err := initHistoryProvider(ctx, recommender, config); err != nil {
-		return nil, err
-	}
-
 	return &RecommenderController{
 		recommender: recommender,
-		interval:    config.MetricsFetcherInterval,
 		healthCheck: healthCheck,
+		config:      config,
 	}, nil
 }
 
 // Run starts the recommender loop and blocks until ctx is cancelled.
 // It implements controllercontext.Controller.
 func (c *RecommenderController) Run(ctx context.Context) error {
+	if err := initHistoryProvider(ctx, c.recommender, c.config); err != nil {
+		return err
+	}
+
 	c.healthCheck.StartMonitoring()
 
-	ticker := time.NewTicker(c.interval)
+	ticker := time.NewTicker(c.config.MetricsFetcherInterval)
 	defer ticker.Stop()
 
 	for {
@@ -213,30 +213,9 @@ func initHistoryProvider(ctx context.Context, rec Recommender, config *recommend
 	if useCheckpoints {
 		rec.GetClusterStateFeeder().InitFromCheckpoints(ctx)
 	} else {
-		promQueryTimeout, err := time.ParseDuration(config.QueryTimeout)
+		histConfig, err := newPrometheusHistoryProviderConfig(config)
 		if err != nil {
 			return err
-		}
-		histConfig := history.PrometheusHistoryProviderConfig{
-			Address:                config.PrometheusAddress,
-			Insecure:               config.PrometheusInsecure,
-			QueryTimeout:           promQueryTimeout,
-			HistoryLength:          config.HistoryLength,
-			HistoryResolution:      config.HistoryResolution,
-			PodLabelPrefix:         config.PodLabelPrefix,
-			PodLabelsMetricName:    config.PodLabelsMetricName,
-			PodNamespaceLabel:      config.PodNamespaceLabel,
-			PodNameLabel:           config.PodNameLabel,
-			CtrNamespaceLabel:      config.CtrNamespaceLabel,
-			CtrPodNameLabel:        config.CtrPodNameLabel,
-			CtrNameLabel:           config.CtrNameLabel,
-			CadvisorMetricsJobName: config.PrometheusJobName,
-			Namespace:              config.CommonFlags.VpaObjectNamespace,
-			Authentication: history.PrometheusCredentials{
-				BearerToken: config.PrometheusBearerToken,
-				Username:    config.Username,
-				Password:    config.Password,
-			},
 		}
 		provider, err := history.NewPrometheusHistoryProvider(histConfig)
 		if err != nil {
@@ -245,4 +224,34 @@ func initHistoryProvider(ctx context.Context, rec Recommender, config *recommend
 		rec.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}
 	return nil
+}
+
+func newPrometheusHistoryProviderConfig(config *recommender_config.RecommenderConfig) (history.PrometheusHistoryProviderConfig, error) {
+	promQueryTimeout, err := time.ParseDuration(config.QueryTimeout)
+	if err != nil {
+		return history.PrometheusHistoryProviderConfig{}, err
+	}
+	return history.PrometheusHistoryProviderConfig{
+		Address:                config.PrometheusAddress,
+		Insecure:               config.PrometheusInsecure,
+		QueryTimeout:           promQueryTimeout,
+		HistoryLength:          config.HistoryLength,
+		HistoryResolution:      config.HistoryResolution,
+		PodLabelPrefix:         config.PodLabelPrefix,
+		PodLabelsMetricName:    config.PodLabelsMetricName,
+		PodNamespaceLabel:      config.PodNamespaceLabel,
+		PodNameLabel:           config.PodNameLabel,
+		CtrNamespaceLabel:      config.CtrNamespaceLabel,
+		CtrPodNameLabel:        config.CtrPodNameLabel,
+		CtrNameLabel:           config.CtrNameLabel,
+		CadvisorMetricsJobName: config.PrometheusJobName,
+		Namespace:              config.CommonFlags.VpaObjectNamespace,
+		CPUMetricName:          config.HistoryCPUMetric,
+		MemoryMetricName:       config.HistoryMemoryMetric,
+		Authentication: history.PrometheusCredentials{
+			BearerToken: config.PrometheusBearerToken,
+			Username:    config.Username,
+			Password:    config.Password,
+		},
+	}, nil
 }

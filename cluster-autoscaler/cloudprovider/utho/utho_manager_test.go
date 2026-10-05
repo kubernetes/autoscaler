@@ -114,7 +114,7 @@ func TestManager_Refresh(t *testing.T) {
 
 		// Verify first node group
 		assert.Equal(t, 1, manager.nodeGroups[0].minSize)
-		assert.Equal(t, 3, manager.nodeGroups[0].MaxSize())
+		assert.Equal(t, 3, manager.nodeGroups[0].MaxSize(context.Background()))
 
 		// Verify second node group
 		assert.Equal(t, 2, manager.nodeGroups[1].minSize)
@@ -206,7 +206,7 @@ func TestNodeGroup_Nodes_EmptyWorkers(t *testing.T) {
 		Workers: []utho.WorkerNode{},
 	})
 
-	nodes, err := nodeGroup.Nodes()
+	nodes, err := nodeGroup.Nodes(context.Background())
 	assert.NoError(t, err)
 	assert.Empty(t, nodes, "nodes should be empty when no workers exist")
 }
@@ -220,7 +220,7 @@ func TestNodeGroup_Nodes_NilNodePool(t *testing.T) {
 		nodePool:  nil,
 	}
 
-	nodes, err := nodeGroup.Nodes()
+	nodes, err := nodeGroup.Nodes(context.Background())
 	assert.Error(t, err)
 	assert.Nil(t, nodes)
 	assert.Contains(t, err.Error(), "node pool instance is not created")

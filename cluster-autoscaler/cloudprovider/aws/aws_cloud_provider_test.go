@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -26,9 +27,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	testprovider "sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/test"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/customresources"
+	"sigs.k8s.io/cluster-autoscaler/pkg/processors/nodeinfosprovider"
+	csisnapshot "sigs.k8s.io/cluster-autoscaler/pkg/simulator/csi/snapshot"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 var testAwsManager = &AwsManager{
@@ -146,17 +154,17 @@ func TestInstanceTypeFallback(t *testing.T) {
 
 func TestName(t *testing.T) {
 	provider := testProvider(t, testAwsManager)
-	assert.Equal(t, provider.Name(), cloudprovider.AwsProviderName)
+	assert.Equal(t, provider.Name(), ProviderName)
 }
 
 func TestNodeGroups(t *testing.T) {
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, testAwsService, nil, []string{"1:5:test-asg"}))
 
-	nodeGroups := provider.NodeGroups()
+	nodeGroups := provider.NodeGroups(context.Background())
 	assert.Equal(t, len(nodeGroups), 1)
 	assert.Equal(t, nodeGroups[0].Id(), "test-asg")
-	assert.Equal(t, nodeGroups[0].MinSize(), 1)
-	assert.Equal(t, nodeGroups[0].MaxSize(), 5)
+	assert.Equal(t, nodeGroups[0].MinSize(context.Background()), 1)
+	assert.Equal(t, nodeGroups[0].MaxSize(context.Background()), 5)
 }
 
 func TestAutoDiscoveredNodeGroups(t *testing.T) {
@@ -177,13 +185,13 @@ func TestAutoDiscoveredNodeGroups(t *testing.T) {
 		},
 	).Return(testNamedDescribeAutoScalingGroupsOutput("auto-asg", 1, "test-instance-id"), nil)
 
-	provider.Refresh()
+	provider.Refresh(context.Background())
 
-	nodeGroups := provider.NodeGroups()
+	nodeGroups := provider.NodeGroups(context.Background())
 	assert.Equal(t, len(nodeGroups), 1)
 	assert.Equal(t, nodeGroups[0].Id(), "auto-asg")
-	assert.Equal(t, nodeGroups[0].MinSize(), 1)
-	assert.Equal(t, nodeGroups[0].MaxSize(), 5)
+	assert.Equal(t, nodeGroups[0].MinSize(context.Background()), 1)
+	assert.Equal(t, nodeGroups[0].MaxSize(context.Background()), 5)
 }
 
 func TestNodeGroupForNode(t *testing.T) {
@@ -203,16 +211,16 @@ func TestNodeGroupForNode(t *testing.T) {
 		},
 	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id"), nil)
 
-	provider.Refresh()
+	provider.Refresh(context.Background())
 
-	group, err := provider.NodeGroupForNode(node)
+	group, err := provider.NodeGroupForNode(context.Background(), node)
 
 	assert.NoError(t, err)
 	assert.Equal(t, group.Id(), "test-asg")
-	assert.Equal(t, group.MinSize(), 1)
-	assert.Equal(t, group.MaxSize(), 5)
+	assert.Equal(t, group.MinSize(context.Background()), 1)
+	assert.Equal(t, group.MaxSize(context.Background()), 5)
 
-	nodes, err := group.Nodes()
+	nodes, err := group.Nodes(context.Background())
 
 	assert.NoError(t, err)
 
@@ -226,7 +234,7 @@ func TestNodeGroupForNode(t *testing.T) {
 		},
 	}
 
-	group, err = provider.NodeGroupForNode(nodeNotInGroup)
+	group, err = provider.NodeGroupForNode(context.Background(), nodeNotInGroup)
 
 	assert.NoError(t, err)
 	assert.Nil(t, group)
@@ -241,7 +249,7 @@ func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
 	}
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
-	group, err := provider.NodeGroupForNode(node)
+	group, err := provider.NodeGroupForNode(context.Background(), node)
 
 	assert.NoError(t, err)
 	assert.Equal(t, group, nil)
@@ -255,7 +263,7 @@ func TestNodeGroupForNodeWithHybridNode(t *testing.T) {
 	}
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
-	group, err := provider.NodeGroupForNode(hybridNode)
+	group, err := provider.NodeGroupForNode(context.Background(), hybridNode)
 
 	assert.NoError(t, err)
 	assert.Nil(t, group)
@@ -301,6 +309,26 @@ func TestAwsRefFromProviderId(t *testing.T) {
 				ProviderID: "aws:///eu-central-1c/i-placeholder-K3-EKS-spotr5xlasgsubnet02af43b02922e710f-10QH9H0C8PG7O-14",
 			},
 		},
+		{
+			// ref: https://github.com/kubernetes/autoscaler/issues/8305
+			provID: "aws:///us-east-1a/i-placeholder-some/arbitrary/cluster/local",
+			expErr: false,
+			expRef: &AwsInstanceRef{
+				Name:       "i-placeholder-some/arbitrary/cluster/local",
+				ProviderID: "aws:///us-east-1a/i-placeholder-some/arbitrary/cluster/local",
+			},
+		},
+		{
+			// A non-placeholder instance name that happens to contain the
+			// placeholder prefix as a substring must still be routed through
+			// the ordinary-ID branch (matches[2]), not the placeholder branch.
+			provID: "aws:///us-east-1a/i-foo-i-placeholder-bar",
+			expErr: false,
+			expRef: &AwsInstanceRef{
+				Name:       "i-foo-i-placeholder-bar",
+				ProviderID: "aws:///us-east-1a/i-foo-i-placeholder-bar",
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -317,7 +345,7 @@ func TestAwsRefFromProviderId(t *testing.T) {
 func TestTargetSize(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 
 	a.On("DescribeAutoScalingGroups",
 		mock.Anything,
@@ -327,9 +355,9 @@ func TestTargetSize(t *testing.T) {
 		},
 	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), nil)
 
-	provider.Refresh()
+	provider.Refresh(context.Background())
 
-	targetSize, err := asgs[0].TargetSize()
+	targetSize, err := asgs[0].TargetSize(context.Background())
 	assert.Equal(t, targetSize, 2)
 	assert.NoError(t, err)
 
@@ -339,7 +367,7 @@ func TestTargetSize(t *testing.T) {
 func TestIncreaseSize(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 
 	a.On("SetDesiredCapacity", mock.Anything,
 		&autoscaling.SetDesiredCapacityInput{
@@ -356,18 +384,18 @@ func TestIncreaseSize(t *testing.T) {
 		},
 	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), nil)
 
-	provider.Refresh()
+	provider.Refresh(context.Background())
 
-	initialSize, err := asgs[0].TargetSize()
+	initialSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 2, initialSize)
 
-	err = asgs[0].IncreaseSize(1)
+	err = asgs[0].IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
-	newSize, err := asgs[0].TargetSize()
+	newSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, newSize)
 }
@@ -375,7 +403,7 @@ func TestIncreaseSize(t *testing.T) {
 func TestBelongs(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 
 	a.On("DescribeAutoScalingGroups",
 		mock.Anything,
@@ -385,7 +413,7 @@ func TestBelongs(t *testing.T) {
 		},
 	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id"), nil)
 
-	provider.Refresh()
+	provider.Refresh(context.Background())
 
 	invalidNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
@@ -413,7 +441,7 @@ func TestBelongs(t *testing.T) {
 func TestDeleteNodes(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 	var expectedInstancesCount int32 = 2
 
 	a.On("TerminateInstanceInAutoScalingGroup",
@@ -438,9 +466,9 @@ func TestDeleteNodes(t *testing.T) {
 	},
 	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id", "second-test-instance-id"), nil)
 
-	provider.Refresh()
+	provider.Refresh(context.Background())
 
-	initialSize, err := asgs[0].TargetSize()
+	initialSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 2, initialSize)
 
@@ -449,12 +477,12 @@ func TestDeleteNodes(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err = asgs[0].DeleteNodes(context.Background(), []*apiv1.Node{node})
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 1)
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
-	newSize, err := asgs[0].TargetSize()
+	newSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 1, newSize)
 }
@@ -462,7 +490,7 @@ func TestDeleteNodes(t *testing.T) {
 func TestDeleteNodesTerminatingInstances(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 
 	a.On("TerminateInstanceInAutoScalingGroup",
 		mock.Anything,
@@ -490,9 +518,9 @@ func TestDeleteNodesTerminatingInstances(t *testing.T) {
 		expectedInstancesCount = 1
 	}).Return(testSetASGInstanceLifecycle(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id", "second-test-instance-id"), autoscalingtypes.LifecycleStateTerminatingWait), nil)
 
-	provider.Refresh()
+	provider.Refresh(context.Background())
 
-	initialSize, err := asgs[0].TargetSize()
+	initialSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 2, initialSize)
 
@@ -501,12 +529,12 @@ func TestDeleteNodesTerminatingInstances(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err = asgs[0].DeleteNodes(context.Background(), []*apiv1.Node{node})
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 0) // instances which are terminating don't need to be terminated again
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
-	newSize, err := asgs[0].TargetSize()
+	newSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 2, newSize)
 }
@@ -514,7 +542,7 @@ func TestDeleteNodesTerminatingInstances(t *testing.T) {
 func TestDeleteNodesTerminatedInstances(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 
 	a.On("TerminateInstanceInAutoScalingGroup",
 		mock.Anything,
@@ -539,9 +567,9 @@ func TestDeleteNodesTerminatedInstances(t *testing.T) {
 	).Return(testSetASGInstanceLifecycle(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id", "second-test-instance-id"), autoscalingtypes.LifecycleStateTerminated), nil)
 
 	// load ASG state into cache
-	provider.Refresh()
+	provider.Refresh(context.Background())
 
-	initialSize, err := asgs[0].TargetSize()
+	initialSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, expectedInstancesCount, int32(initialSize))
 
@@ -552,14 +580,14 @@ func TestDeleteNodesTerminatedInstances(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err = asgs[0].DeleteNodes(context.Background(), []*apiv1.Node{node})
 	assert.NoError(t, err)
 	// we expect no calls to TerminateInstanceInAutoScalingGroup,
 	// because the Node we tried to Delete was already terminating.
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 0)
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
-	newSize, err := asgs[0].TargetSize()
+	newSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	// we expect TargetSize to stay the same, even though there are
 	// two instances in Terminated state - TargetSize was already
@@ -570,7 +598,7 @@ func TestDeleteNodesTerminatedInstances(t *testing.T) {
 func TestDeleteNodesWithPlaceholder(t *testing.T) {
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 
 	a.On("SetDesiredCapacity",
 		mock.Anything,
@@ -604,9 +632,9 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 		nil,
 	)
 
-	provider.Refresh()
+	provider.Refresh(context.Background())
 
-	initialSize, err := asgs[0].TargetSize()
+	initialSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 2, initialSize)
 
@@ -615,12 +643,12 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/i-placeholder-test-asg-1",
 		},
 	}
-	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err = asgs[0].DeleteNodes(context.Background(), []*apiv1.Node{node})
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
 
-	newSize, err := asgs[0].TargetSize()
+	newSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 1, newSize)
 }
@@ -629,7 +657,7 @@ func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {
 	a := &autoScalingMock{}
 	manager := newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"})
 	provider := testProvider(t, manager)
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 
 	a.On("TerminateInstanceInAutoScalingGroup",
 		mock.Anything,
@@ -653,7 +681,7 @@ func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {
 		},
 	).Return(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), nil)
 
-	provider.Refresh()
+	provider.Refresh(context.Background())
 	// Call the manager directly as otherwise the call would be a noop as its within less then 60s
 	manager.forceRefresh()
 
@@ -662,7 +690,7 @@ func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	err := asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err := asgs[0].DeleteNodes(context.Background(), []*apiv1.Node{node})
 	assert.NoError(t, err)
 }
 
@@ -672,13 +700,13 @@ func TestGetResourceLimiter(t *testing.T) {
 	m := newTestAwsManagerWithMockServices(mockAutoScaling, mockEC2, nil, nil, nil)
 
 	provider := testProvider(t, m)
-	_, err := provider.GetResourceLimiter()
+	_, err := provider.GetResourceLimiter(context.Background())
 	assert.NoError(t, err)
 }
 
 func TestCleanup(t *testing.T) {
 	provider := testProvider(t, testAwsManager)
-	err := provider.Cleanup()
+	err := provider.Cleanup(context.Background())
 	assert.NoError(t, err)
 }
 
@@ -711,7 +739,7 @@ func TestHasInstance(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	present, err := provider.HasInstance(node1)
+	present, err := provider.HasInstance(context.Background(), node1)
 	assert.NoError(t, err)
 	assert.True(t, present)
 
@@ -724,7 +752,7 @@ func TestHasInstance(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	present, err = provider.HasInstance(node2)
+	present, err = provider.HasInstance(context.Background(), node2)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 	assert.True(t, present)
 
@@ -737,7 +765,7 @@ func TestHasInstance(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id-2",
 		},
 	}
-	present, err = provider.HasInstance(node3)
+	present, err = provider.HasInstance(context.Background(), node3)
 	assert.ErrorContains(t, err, nodeNotPresentErr)
 	assert.False(t, present)
 
@@ -753,7 +781,7 @@ func TestHasInstance(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id-2",
 		},
 	}
-	present, err = provider.HasInstance(node4)
+	present, err = provider.HasInstance(context.Background(), node4)
 	assert.NoError(t, err)
 	assert.False(t, present)
 }
@@ -766,11 +794,11 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 
 	a := &autoScalingMock{}
 	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:10:test-asg"}))
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 	commonAsg := &asg{
 		AwsRef:  AwsRef{Name: asgs[0].Id()},
-		minSize: asgs[0].MinSize(),
-		maxSize: asgs[0].MaxSize(),
+		minSize: asgs[0].MinSize(context.Background()),
+		maxSize: asgs[0].MaxSize(context.Background()),
 	}
 
 	// desired capacity will be set as 6 as ASG has 4 placeholders
@@ -802,9 +830,9 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 		},
 	).Return(&autoscaling.DescribeScalingActivitiesOutput{}, nil)
 
-	provider.Refresh()
+	provider.Refresh(context.Background())
 
-	initialSize, err := asgs[0].TargetSize()
+	initialSize, err := asgs[0].TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 10, initialSize)
 
@@ -863,7 +891,7 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 	provider.awsManager.asgCache.instanceToAsg = instanceToAsg
 
 	// calling delete nodes 2 nodes and remaining placeholders
-	err = asgs[0].DeleteNodes(nodes)
+	err = asgs[0].DeleteNodes(context.Background(), nodes)
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
@@ -871,4 +899,128 @@ func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 	// This ensures only 2 instances are terminated which are mocked in this unit test
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 2)
 
+}
+
+func TestAwsNodeGroupTemplateNodeInfoDoesNotSetCSINode(t *testing.T) {
+	const instanceTypeName = "m5.large"
+
+	manager := &AwsManager{
+		instanceTypes: map[string]*InstanceType{
+			instanceTypeName: {
+				InstanceType:   instanceTypeName,
+				VCPU:           2,
+				MemoryMb:       8192,
+				Architecture:   "amd64",
+				EBSVolumeLimit: 39,
+			},
+		},
+	}
+
+	origGetInstanceTypeFunc := getInstanceTypeForAsg
+	defer func() { getInstanceTypeForAsg = origGetInstanceTypeFunc }()
+	getInstanceTypeForAsg = func(_ *asgCache, _ *asg) (string, error) {
+		return instanceTypeName, nil
+	}
+
+	ng := &AwsNodeGroup{
+		awsManager: manager,
+		asg: &asg{
+			AwsRef:            AwsRef{Name: "test-asg"},
+			AvailabilityZones: []string{"us-east-1a"},
+			minSize:           0,
+			maxSize:           5,
+			curSize:           0,
+		},
+	}
+
+	nodeInfo, err := ng.TemplateNodeInfo(context.Background())
+	assert.NoError(t, err)
+	assert.NotNil(t, nodeInfo)
+	assert.Nil(t, nodeInfo.CSINode)
+}
+
+func TestAwsNodeGroupTemplateNodeInfoSetsCSINodeWhenDeclared(t *testing.T) {
+	const instanceTypeName = "m5.large"
+
+	manager := &AwsManager{
+		instanceTypes: map[string]*InstanceType{
+			instanceTypeName: {
+				InstanceType:   instanceTypeName,
+				VCPU:           2,
+				MemoryMb:       8192,
+				Architecture:   "amd64",
+				EBSVolumeLimit: 39,
+			},
+		},
+	}
+
+	origGetInstanceTypeFunc := getInstanceTypeForAsg
+	defer func() { getInstanceTypeForAsg = origGetInstanceTypeFunc }()
+	getInstanceTypeForAsg = func(_ *asgCache, _ *asg) (string, error) {
+		return instanceTypeName, nil
+	}
+
+	ng := &AwsNodeGroup{
+		awsManager: manager,
+		asg: &asg{
+			AwsRef:            AwsRef{Name: "test-asg"},
+			AvailabilityZones: []string{"us-east-1a"},
+			minSize:           0,
+			maxSize:           5,
+			curSize:           0,
+			Tags: []autoscalingtypes.TagDescription{
+				{
+					Key:   aws.String(csiDriverTagKey),
+					Value: aws.String("ebs.csi.aws.com"),
+				},
+			},
+		},
+	}
+
+	nodeInfo, err := ng.TemplateNodeInfo(context.Background())
+	assert.NoError(t, err)
+	assert.NotNil(t, nodeInfo)
+	assert.NotNil(t, nodeInfo.CSINode)
+	assert.Len(t, nodeInfo.CSINode.Spec.Drivers, 1)
+	assert.Equal(t, "ebs.csi.aws.com", nodeInfo.CSINode.Spec.Drivers[0].Name)
+	assert.NotNil(t, nodeInfo.CSINode.Spec.Drivers[0].Allocatable)
+	assert.Equal(t, int32(39), *nodeInfo.CSINode.Spec.Drivers[0].Allocatable.Count)
+}
+
+func TestEFSOnlyExistingNodeStaysReadyWhenAWSTemplateHasNoCSINode(t *testing.T) {
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{Name: "efs-only-node"},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{{Type: apiv1.NodeReady, Status: apiv1.ConditionTrue}},
+		},
+	}
+	efsCSINode := &storagev1.CSINode{
+		ObjectMeta: metav1.ObjectMeta{Name: node.Name},
+		Spec: storagev1.CSINodeSpec{
+			Drivers: []storagev1.CSINodeDriver{{Name: "efs.csi.aws.com", NodeID: node.Name}},
+		},
+	}
+	template := framework.NewTestNodeInfo(&apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "template"}})
+
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	provider.AddAutoprovisionedNodeGroup("ng1", 0, 5, 1, "template")
+	provider.AddNode("ng1", node)
+	provider.SetMachineTemplates(map[string]*framework.NodeInfo{"template": template})
+
+	processor := &customresources.CSICustomResourcesProcessor{}
+	_, readyNodes := processor.FilterOutNodesWithUnreadyResources(
+		context.Background(),
+		&ca_context.AutoscalingContext{
+			CloudProvider: provider,
+			// An empty registry exercises the fallback to the cloud-provider template.
+			TemplateNodeInfoRegistry: nodeinfosprovider.NewTemplateNodeInfoRegistry(nil),
+		},
+		[]*apiv1.Node{node}, []*apiv1.Node{node}, nil,
+		csisnapshot.NewSnapshot(map[string]*storagev1.CSINode{node.Name: efsCSINode}),
+	)
+
+	assert.Nil(t, template.CSINode)
+	assert.Equal(t, "efs.csi.aws.com", efsCSINode.Spec.Drivers[0].Name)
+	assert.Len(t, readyNodes, 1)
+	assert.Equal(t, apiv1.ConditionTrue, readyNodes[0].Status.Conditions[0].Status)
 }

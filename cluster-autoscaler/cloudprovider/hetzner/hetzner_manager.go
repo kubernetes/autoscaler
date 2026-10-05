@@ -31,7 +31,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
-	"k8s.io/autoscaler/cluster-autoscaler/version"
+	"sigs.k8s.io/cluster-autoscaler/pkg/version"
 )
 
 var (
@@ -81,6 +81,9 @@ type NodeConfig struct {
 	ServerLabels   map[string]string
 	ImagesForArch  *ImageList
 	SubnetIPRange  string
+	// Firewalls are additional firewall ids or names attached to this nodepool's
+	// servers, on top of the cluster-wide HCLOUD_FIREWALL.
+	Firewalls []string
 }
 
 // LegacyConfig holds the configuration in the legacy format

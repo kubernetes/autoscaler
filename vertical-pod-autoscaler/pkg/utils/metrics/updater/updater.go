@@ -132,8 +132,24 @@ var (
 		}, []string{"vpa_size_log2", "reason", "vpa_name", "vpa_namespace"},
 	)
 
+	inPlaceInfeasibleCachedCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "in_place_infeasible_skip_pods_total",
+			Help:      "Number of pods that were skipped for in-place update due to cached infeasibility",
+		}, []string{"vpa_size_log2", "vpa_name", "vpa_namespace"},
+	)
+
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
 		"Time spent in various parts of VPA Updater main loop.")
+
+	admissionControllerStatusInvalidCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "admission_controller_status_invalid_total",
+			Help:      "Number of times Updater skipped its main loop because the Admission Controller status Lease was missing, stale or otherwise invalid.",
+		}, []string{"reason"},
+	)
 )
 
 // Register initializes all metrics for VPA Updater
@@ -147,10 +163,12 @@ func Register() {
 		failedEvictionAttempts,
 		inPlaceUpdatableCount,
 		inPlaceUpdatedCount,
+		inPlaceInfeasibleCachedCount,
 		vpasWithInPlaceUpdatablePodsCount,
 		vpasWithInPlaceUpdatedPodsCount,
 		failedInPlaceUpdateAttempts,
 		functionLatency,
+		admissionControllerStatusInvalidCount,
 	}
 	prometheus.MustRegister(collectors...)
 }
@@ -158,6 +176,11 @@ func Register() {
 // NewExecutionTimer provides a timer for Updater's RunOnce execution
 func NewExecutionTimer() *metrics.ExecutionTimer {
 	return metrics.NewExecutionTimer(functionLatency)
+}
+
+// RecordAdmissionControllerStatusInvalid increases the counter of skipped main loop iterations
+func RecordAdmissionControllerStatusInvalid(reason string) {
+	admissionControllerStatusInvalidCount.WithLabelValues(reason).Inc()
 }
 
 // newSizeBasedGauge provides a wrapper for counting items in a loop
@@ -209,6 +232,13 @@ func AddEvictedPod(vpaSize int, vpaName string, vpaNamespace string, mode vpa_ty
 	evictedCount.WithLabelValues(strconv.Itoa(log2), string(mode), vpaName, vpaNamespace).Inc()
 }
 
+// InitCounters initializes counters to 0 for a given VPA so they are visible before any events occur
+func InitCounters(vpaSize int, vpaName string, vpaNamespace string, mode vpa_types.UpdateMode) {
+	log2 := strconv.Itoa(metrics.GetVpaSizeLog2(vpaSize))
+	evictedCount.WithLabelValues(log2, string(mode), vpaName, vpaNamespace).Add(0)
+	inPlaceUpdatedCount.WithLabelValues(log2, vpaName, vpaNamespace).Add(0)
+}
+
 // RecordFailedEviction increases the counter of failed eviction attempts by given VPA size, name, namespace, update mode and reason
 func RecordFailedEviction(vpaSize int, vpaName string, vpaNamespace string, mode vpa_types.UpdateMode, reason string) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
@@ -243,6 +273,12 @@ func AddInPlaceUpdatedPod(vpaSize int, vpaName string, vpaNamespace string) {
 func RecordFailedInPlaceUpdate(vpaSize int, vpaName string, vpaNamespace string, reason string) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
 	failedInPlaceUpdateAttempts.WithLabelValues(strconv.Itoa(log2), reason, vpaName, vpaNamespace).Inc()
+}
+
+// RecordInPlaceInfeasibleCached increases the counter of pods skipped from in-place updates due to cache by given VPA size, name, namespace
+func RecordInPlaceInfeasibleCached(vpaSize int, vpaName string, vpaNamespace string) {
+	log2 := metrics.GetVpaSizeLog2(vpaSize)
+	inPlaceInfeasibleCachedCount.WithLabelValues(strconv.Itoa(log2), vpaName, vpaNamespace).Inc()
 }
 
 // Add increases the counter for the given VPA size

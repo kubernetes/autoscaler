@@ -38,7 +38,7 @@ func (*unboostAnnotationPatchCalculator) PatchResourceTarget() patch.PatchResour
 }
 
 // CalculatePatches calculates the patch to remove the startup CPU boost annotation if the pod is ready to be unboosted.
-func (c *unboostAnnotationPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
+func (*unboostAnnotationPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	var patches []resource_admission.PatchRecord
 	for _, annotationKey := range vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa) {
 		patches = append(patches, patch.GetRemoveAnnotationPatch(annotationKey))

@@ -29,11 +29,11 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // hetznerNodeGroup implements cloudprovider.NodeGroup interface. hetznerNodeGroup contains
@@ -51,6 +51,7 @@ type hetznerNodeGroup struct {
 	clusterUpdateMutex *sync.Mutex
 	placementGroup     *hcloud.PlacementGroup
 	subnetIPRange      *net.IPNet
+	firewalls          []*hcloud.ServerCreateFirewall
 }
 
 type hetznerNodeGroupSpec struct {
@@ -62,18 +63,18 @@ type hetznerNodeGroupSpec struct {
 }
 
 // MaxSize returns maximum size of the node group.
-func (n *hetznerNodeGroup) MaxSize() int {
+func (n *hetznerNodeGroup) MaxSize(ctx context.Context) int {
 	return n.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (n *hetznerNodeGroup) MinSize() int {
+func (n *hetznerNodeGroup) MinSize(ctx context.Context) int {
 	return n.minSize
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
-func (n *hetznerNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (n *hetznerNodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -82,21 +83,21 @@ func (n *hetznerNodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOption
 // be equal to Size() once everything stabilizes (new nodes finish startup and
 // registration or removed nodes are deleted completely). Implementation
 // required.
-func (n *hetznerNodeGroup) TargetSize() (int, error) {
+func (n *hetznerNodeGroup) TargetSize(ctx context.Context) (int, error) {
 	return n.targetSize, nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
-func (n *hetznerNodeGroup) IncreaseSize(delta int) error {
+func (n *hetznerNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("delta must be positive, have: %d", delta)
 	}
 
 	desiredTargetSize := n.targetSize + delta
-	if desiredTargetSize > n.MaxSize() {
-		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d", n.targetSize, desiredTargetSize, n.MaxSize())
+	if desiredTargetSize > n.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d", n.targetSize, desiredTargetSize, n.MaxSize(context.TODO()))
 	}
 
 	actualDelta := delta
@@ -157,7 +158,7 @@ func (n *hetznerNodeGroup) IncreaseSize(delta int) error {
 }
 
 // AtomicIncreaseSize is not implemented.
-func (n *hetznerNodeGroup) AtomicIncreaseSize(delta int) error {
+func (n *hetznerNodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -165,15 +166,15 @@ func (n *hetznerNodeGroup) AtomicIncreaseSize(delta int) error {
 // of the node group with that). Error is returned either on failure or if the
 // given node doesn't belong to this node group. This function should wait
 // until node group size is updated. Implementation required.
-func (n *hetznerNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (n *hetznerNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	n.clusterUpdateMutex.Lock()
 	defer n.clusterUpdateMutex.Unlock()
 
 	delta := len(nodes)
 
 	targetSize := n.targetSize - delta
-	if targetSize < n.MinSize() {
-		return fmt.Errorf("size decrease is too large. current: %d desired: %d min: %d", n.targetSize, targetSize, n.MinSize())
+	if targetSize < n.MinSize(context.TODO()) {
+		return fmt.Errorf("size decrease is too large. current: %d desired: %d min: %d", n.targetSize, targetSize, n.MinSize(context.TODO()))
 	}
 
 	actualDelta := delta
@@ -218,7 +219,7 @@ func (n *hetznerNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (n *hetznerNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (n *hetznerNodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -227,7 +228,7 @@ func (n *hetznerNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
-func (n *hetznerNodeGroup) DecreaseTargetSize(delta int) error {
+func (n *hetznerNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	n.targetSize = n.targetSize + delta
 	return nil
 }
@@ -238,14 +239,14 @@ func (n *hetznerNodeGroup) Id() string {
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (n *hetznerNodeGroup) Debug() string {
-	return fmt.Sprintf("cluster ID: %s (min:%d max:%d)", n.Id(), n.MinSize(), n.MaxSize())
+func (n *hetznerNodeGroup) Debug(ctx context.Context) string {
+	return fmt.Sprintf("cluster ID: %s (min:%d max:%d)", n.Id(), n.MinSize(context.TODO()), n.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.  It is
 // required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
-func (n *hetznerNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (n *hetznerNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	servers, err := n.manager.cachedServers.getServersByNodeGroupName(n.id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get servers for hcloud: %v", err)
@@ -266,7 +267,7 @@ func (n *hetznerNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // all of the labels, capacity and allocatable information as well as all pods
 // that are started on the node by default, using manifest (most likely only
 // kube-proxy). Implementation optional.
-func (n *hetznerNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (n *hetznerNodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	resourceList, err := getMachineTypeResourceList(n.manager, n.instanceType)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resource list for node group %s error: %v", n.id, err)
@@ -312,14 +313,14 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 // Exist checks if the node group really exists on the cloud provider side.
 // Allows to tell the theoretical node group from the real one. Implementation
 // required.
-func (n *hetznerNodeGroup) Exist() bool {
+func (n *hetznerNodeGroup) Exist(ctx context.Context) bool {
 	_, exists := n.manager.nodeGroups[n.id]
 	return exists
 }
 
 // Create creates the node group on the cloud provider side. Implementation
 // optional.
-func (n *hetznerNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (n *hetznerNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	n.manager.nodeGroups[n.id] = n
 
 	return n, cloudprovider.ErrNotImplemented
@@ -328,14 +329,14 @@ func (n *hetznerNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 // Delete deletes the node group on the cloud provider side.  This will be
 // executed only for autoprovisioned node groups, once their size drops to 0.
 // Implementation optional.
-func (n *hetznerNodeGroup) Delete() error {
+func (n *hetznerNodeGroup) Delete(ctx context.Context) error {
 	// We do not use actual node groups but all nodes within the Hcloud project are labeled with a group
 	return nil
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned. An
 // autoprovisioned group was created by CA and can be deleted when scaled to 0.
-func (n *hetznerNodeGroup) Autoprovisioned() bool {
+func (n *hetznerNodeGroup) Autoprovisioned(ctx context.Context) bool {
 	// All groups are auto provisioned
 	return false
 }
@@ -454,6 +455,27 @@ func instanceTypeArch(manager *hetznerManager, instanceType string) (string, err
 	}
 }
 
+// buildServerCreateFirewalls returns the firewalls to attach to a new server: the
+// cluster-wide firewall (HCLOUD_FIREWALL, if set) plus the nodepool's own
+// firewalls, deduplicated by id so a pool can harmlessly list the global one.
+// It is computed once at node-group build time and reused for every server.
+func buildServerCreateFirewalls(clusterFirewall *hcloud.Firewall, nodePoolFirewalls []*hcloud.Firewall) []*hcloud.ServerCreateFirewall {
+	var result []*hcloud.ServerCreateFirewall
+	seen := make(map[int64]bool)
+	add := func(firewall *hcloud.Firewall) {
+		if firewall == nil || seen[firewall.ID] {
+			return
+		}
+		seen[firewall.ID] = true
+		result = append(result, &hcloud.ServerCreateFirewall{Firewall: *firewall})
+	}
+	add(clusterFirewall)
+	for _, firewall := range nodePoolFirewalls {
+		add(firewall)
+	}
+	return result
+}
+
 func createServer(n *hetznerNodeGroup) error {
 	ctx, cancel := context.WithTimeout(n.manager.apiCallContext, n.manager.createTimeout)
 	defer cancel()
@@ -503,10 +525,7 @@ func createServer(n *hetznerNodeGroup) error {
 	if n.manager.network != nil && n.subnetIPRange == nil {
 		opts.Networks = []*hcloud.Network{n.manager.network}
 	}
-	if n.manager.firewall != nil {
-		serverCreateFirewall := &hcloud.ServerCreateFirewall{Firewall: *n.manager.firewall}
-		opts.Firewalls = []*hcloud.ServerCreateFirewall{serverCreateFirewall}
-	}
+	opts.Firewalls = n.firewalls
 
 	serverCreateResult, _, err := n.manager.client.Server.Create(ctx, opts)
 	if err != nil {

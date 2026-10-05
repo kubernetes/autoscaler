@@ -74,6 +74,7 @@ function print_help {
   echo "Environment variables:"
   echo "  REGISTRY           - Container image registry (default: localhost:5001)"
   echo "  TAG                - Container image tag (default: latest)"
+  echo "  PULL_IMAGES        - Pull images from the registry instead of building them locally (default: false)"
   echo "  FEATURE_GATES      - Comma-separated list of feature gates to enable"
   echo "  EXTRA_HELM_VALUES  - Path to an additional Helm values file to use during installation"
 }
@@ -119,10 +120,14 @@ helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 helm repo update metrics-server
 helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system --version 3.13.0 --wait
 
-# Build and load Docker images for each component
+# Build (or pull) and load Docker images for each component
 for COMPONENT in ${COMPONENTS}; do
-  ALL_ARCHITECTURES=${ARCH} make --directory "${SCRIPT_ROOT}/pkg/${COMPONENT}" docker-build REGISTRY="${REGISTRY}" TAG="${TAG}"
-  docker tag "${REGISTRY}/vpa-${COMPONENT}-${ARCH}:${TAG}" "${REGISTRY}/vpa-${COMPONENT}:${TAG}"
+  if [ "${PULL_IMAGES:-false}" == "true" ]; then
+    docker pull "${REGISTRY}/vpa-${COMPONENT}:${TAG}"
+  else
+    ALL_ARCHITECTURES=${ARCH} make --directory "${SCRIPT_ROOT}/pkg/${COMPONENT}" docker-build REGISTRY="${REGISTRY}" TAG="${TAG}"
+    docker tag "${REGISTRY}/vpa-${COMPONENT}-${ARCH}:${TAG}" "${REGISTRY}/vpa-${COMPONENT}:${TAG}"
+  fi
   kind load docker-image "${REGISTRY}/vpa-${COMPONENT}:${TAG}"
 done
 

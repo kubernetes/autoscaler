@@ -17,6 +17,7 @@ limitations under the License.
 package magnum
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -99,7 +100,7 @@ func TestRefreshNodeGroupsRace(t *testing.T) {
 	// Continuously read from the node groups list.
 	go func() {
 		for time.Since(startTime) < 2*time.Second {
-			ngs := provider.NodeGroups()
+			ngs := provider.NodeGroups(context.Background())
 			assert.NotNil(t, ngs)
 		}
 		wg.Done()
@@ -128,8 +129,8 @@ func TestNodeGroups(t *testing.T) {
 
 	provider.nodeGroups = []*magnumNodeGroup{ng1, ng2}
 
-	for _, ng := range provider.NodeGroups() {
-		err := ng.IncreaseSize(1)
+	for _, ng := range provider.NodeGroups(context.Background()) {
+		err := ng.IncreaseSize(context.Background(), 1)
 		require.NoError(t, err)
 	}
 
@@ -256,7 +257,7 @@ func TestNodeInf(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, len(provider.nodeGroups), "wrong number of initial node groups")
 
-	nodeInfo, err := provider.nodeGroups[0].TemplateNodeInfo()
+	nodeInfo, err := provider.nodeGroups[0].TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, len(nodeInfo.Pods()), 1, "should have one template pod")
 	assert.Equal(t, nodeInfo.Node().Status.Capacity.Cpu().ToDec().Value(), int64(2000), "should match cpu capacity ")
@@ -270,7 +271,7 @@ func TestNodeInf(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, len(provider.nodeGroups), "wrong number of initial node groups")
 
-	nodeInfo, err = provider.nodeGroups[0].TemplateNodeInfo()
+	nodeInfo, err = provider.nodeGroups[0].TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(nodeInfo.Pods()), "should have one template pod")
 	assert.Equal(t, int64(2000), nodeInfo.Node().Status.Capacity.Cpu().ToDec().Value(), "should match cpu capacity ")
@@ -468,15 +469,15 @@ func TestRefreshNodeGroupsUpdate(t *testing.T) {
 	err = provider.refreshNodeGroups()
 	require.NoError(t, err)
 	require.Equal(t, 1, len(provider.nodeGroups), "wrong number of initial node groups")
-	require.Equal(t, 1, provider.nodeGroups[0].MinSize(), "wrong initial min node count")
-	require.Equal(t, 3, provider.nodeGroups[0].MaxSize(), "wrong initial max node count")
+	require.Equal(t, 1, provider.nodeGroups[0].MinSize(context.Background()), "wrong initial min node count")
+	require.Equal(t, 3, provider.nodeGroups[0].MaxSize(context.Background()), "wrong initial max node count")
 
 	// Update the node group
 	err = provider.refreshNodeGroups()
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(provider.nodeGroups), "wrong number of node groups after refresh")
-	assert.Equal(t, 2, provider.nodeGroups[0].MinSize(), "wrong updated min node count")
-	assert.Equal(t, 4, provider.nodeGroups[0].MaxSize(), "wrong updated max node count")
+	assert.Equal(t, 2, provider.nodeGroups[0].MinSize(context.Background()), "wrong updated min node count")
+	assert.Equal(t, 4, provider.nodeGroups[0].MaxSize(context.Background()), "wrong updated max node count")
 }
 
 // TestRefreshNodeGroupsEmpty checks that refreshNodeGroups correctly
@@ -567,25 +568,25 @@ func TestProviderNodeGroupForNode(t *testing.T) {
 	manager.On("nodeGroupForNode", node4).Return("", fmt.Errorf("manager error"))
 
 	t.Run("ng1", func(t *testing.T) {
-		ng, err := provider.NodeGroupForNode(node1)
+		ng, err := provider.NodeGroupForNode(context.Background(), node1)
 		assert.NoError(t, err)
 		assert.Equal(t, nodegroup1, ng)
 	})
 
 	t.Run("ng2", func(t *testing.T) {
-		ng, err := provider.NodeGroupForNode(node2)
+		ng, err := provider.NodeGroupForNode(context.Background(), node2)
 		assert.NoError(t, err)
 		assert.Equal(t, nodegroup2, ng)
 	})
 
 	t.Run("ng3", func(t *testing.T) {
-		ng, err := provider.NodeGroupForNode(node3)
+		ng, err := provider.NodeGroupForNode(context.Background(), node3)
 		assert.NoError(t, err)
 		assert.Equal(t, nil, ng)
 	})
 
 	t.Run("error", func(t *testing.T) {
-		_, err := provider.NodeGroupForNode(node4)
+		_, err := provider.NodeGroupForNode(context.Background(), node4)
 		assert.Error(t, err)
 	})
 }

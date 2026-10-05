@@ -285,7 +285,7 @@ type ContainerResourcePolicy struct {
 
 	// Specifies the type of recommendations that will be computed
 	// (and possibly applied) by VPA.
-	// If not specified, the default of [ResourceCPU, ResourceMemory] will be used.
+	// If not specified, the default of [cpu, memory] will be used.
 	// +patchStrategy=merge
 	ControlledResources *[]corev1.ResourceName `json:"controlledResources,omitempty" patchStrategy:"merge"`
 

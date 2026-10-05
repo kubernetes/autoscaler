@@ -33,9 +33,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	smithymiddleware "github.com/aws/smithy-go/middleware"
-	"k8s.io/autoscaler/cluster-autoscaler/version"
 	aws_config "k8s.io/cloud-provider-aws/pkg/providers/v1/config"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/version"
 )
 
 // createAWSSDKProvider

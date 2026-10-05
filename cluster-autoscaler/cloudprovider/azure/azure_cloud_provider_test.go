@@ -17,10 +17,11 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v6"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 
@@ -28,12 +29,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient/mock_virtualmachineclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient/mock_virtualmachinescalesetclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient/mock_virtualmachinescalesetvmclient"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/assert"
@@ -136,7 +137,7 @@ func TestName(t *testing.T) {
 
 func TestNodeGroups(t *testing.T) {
 	provider := newTestProvider(t)
-	assert.Equal(t, len(provider.NodeGroups()), 0)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 0)
 
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"),
@@ -146,7 +147,7 @@ func TestNodeGroups(t *testing.T) {
 		newTestVMsPool(provider.azureManager),
 	)
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 2)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 2)
 }
 
 func TestHasInstance(t *testing.T) {
@@ -190,7 +191,7 @@ func TestHasInstance(t *testing.T) {
 		Return(fakeAPListPager).AnyTimes()
 
 	// Register node groups
-	assert.Equal(t, len(provider.NodeGroups()), 0)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 0)
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"),
 	)
@@ -202,7 +203,7 @@ func TestHasInstance(t *testing.T) {
 	)
 	provider.azureManager.explicitlyConfigured[vmsNodeGroupName] = true
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 2)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 2)
 
 	// Refresh cache
 	provider.azureManager.forceRefresh()
@@ -218,6 +219,95 @@ func TestHasInstance(t *testing.T) {
 	hasInstance, err = provider.azureManager.azureCache.HasInstance(vmsPoolNode.Spec.ProviderID)
 	assert.True(t, hasInstance)
 	assert.NoError(t, err)
+}
+
+func TestHasInstanceReportsDeletingNodesAsGone(t *testing.T) {
+	testCases := []struct {
+		name                        string
+		strictCacheUpdates          bool
+		expectDeletingBeforeRefresh bool
+	}{
+		{
+			name:                        "non-strict cache updates",
+			strictCacheUpdates:          false,
+			expectDeletingBeforeRefresh: true,
+		},
+		{
+			name:                        "strict cache updates",
+			strictCacheUpdates:          true,
+			expectDeletingBeforeRefresh: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			manager := newTestAzureManager(t)
+			manager.config.StrictCacheUpdates = tc.strictCacheUpdates
+
+			expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", armcompute.OrchestrationModeUniform)
+			expectedVMSSVMs := newTestVMSSVMList(3)
+
+			mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+			mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+			manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+			mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+			mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, "test-asg").Return(expectedVMSSVMs, nil).AnyTimes()
+			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+			mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+			mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+			manager.azClient.vmssClientForDelete = mockDeleteClient
+
+			registered := manager.RegisterNodeGroup(newTestScaleSet(manager, "test-asg"))
+			manager.explicitlyConfigured["test-asg"] = true
+			assert.True(t, registered)
+			assert.NoError(t, manager.forceRefresh())
+
+			deletedNode := newApiNode(armcompute.OrchestrationModeUniform, 0)
+			survivingNode := newApiNode(armcompute.OrchestrationModeUniform, 1)
+
+			// Before the scale-down both instances are reported as present.
+			hasInstance, err := manager.azureCache.HasInstance(deletedNode.Spec.ProviderID)
+			assert.True(t, hasInstance)
+			assert.NoError(t, err)
+
+			scaleSet, ok := manager.azureCache.registeredNodeGroups[0].(*ScaleSet)
+			assert.True(t, ok)
+			assert.NoError(t, scaleSet.DeleteNodes(context.Background(), []*apiv1.Node{deletedNode}))
+
+			// In non-strict mode, deleting state is proactive. In strict mode, it is
+			// only reflected after refresh from Azure.
+			hasInstance, err = manager.azureCache.HasInstance(deletedNode.Spec.ProviderID)
+			if tc.expectDeletingBeforeRefresh {
+				assert.False(t, hasInstance)
+				assert.NoError(t, err)
+			} else {
+				assert.True(t, hasInstance)
+				assert.NoError(t, err)
+			}
+
+			// Simulate Azure still listing the VM in the Deleting provisioning state
+			// during the deletion window, then refresh the cache.
+			expectedVMSSVMs[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
+			assert.NoError(t, manager.forceRefresh())
+
+			// The node being deleted must now be reported as gone (false, nil),
+			// even though it is still tracked by the node group.
+			hasInstance, err = manager.azureCache.HasInstance(deletedNode.Spec.ProviderID)
+			assert.False(t, hasInstance)
+			assert.NoError(t, err)
+			assert.NotNil(t, manager.azureCache.getInstanceFromCache(deletedNode.Spec.ProviderID))
+
+			// Nodes that are not being deleted continue to be reported as present.
+			hasInstance, err = manager.azureCache.HasInstance(survivingNode.Spec.ProviderID)
+			assert.True(t, hasInstance)
+			assert.NoError(t, err)
+		})
+	}
 }
 
 func TestUnownedInstancesFallbackToDeletionTaint(t *testing.T) {
@@ -263,7 +353,7 @@ func TestHasInstanceProviderIDErrorValidation(t *testing.T) {
 			ProviderID: "",
 		},
 	}
-	_, err := provider.HasInstance(nodeWithoutValidProviderID)
+	_, err := provider.HasInstance(context.Background(), nodeWithoutValidProviderID)
 	assert.Equal(t, "ProviderID for node: test-node is empty, skipped", err.Error())
 
 	// Test cases: Nodes with invalid ProviderID prefixes
@@ -283,7 +373,7 @@ func TestHasInstanceProviderIDErrorValidation(t *testing.T) {
 				ProviderID: providerID,
 			},
 		}
-		_, err := provider.HasInstance(invalidProviderIDNode)
+		_, err := provider.HasInstance(context.Background(), invalidProviderIDNode)
 		assert.Equal(t, "invalid azure ProviderID prefix for node: test-node, skipped", err.Error())
 	}
 }
@@ -324,7 +414,7 @@ func TestMixedNodeGroups(t *testing.T) {
 	mockAgentpoolclient.EXPECT().NewListPager(provider.azureManager.azureCache.clusterResourceGroup, provider.azureManager.azureCache.clusterName, nil).
 		Return(fakeAPListPager).AnyTimes()
 
-	assert.Equal(t, len(provider.NodeGroups()), 0)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 0)
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"),
 	)
@@ -336,28 +426,28 @@ func TestMixedNodeGroups(t *testing.T) {
 	)
 	provider.azureManager.explicitlyConfigured[vmsNodeGroupName] = true
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 2)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 2)
 
 	// refresh cache
 	provider.azureManager.forceRefresh()
 
 	// node from vmss pool
 	node := newApiNode(armcompute.OrchestrationModeUniform, 0)
-	group, err := provider.NodeGroupForNode(node)
+	group, err := provider.NodeGroupForNode(context.Background(), node)
 	assert.NoError(t, err)
 	assert.NotNil(t, group, "Group should not be nil")
 	assert.Equal(t, group.Id(), "test-asg")
-	assert.Equal(t, group.MinSize(), 1)
-	assert.Equal(t, group.MaxSize(), 5)
+	assert.Equal(t, group.MinSize(context.Background()), 1)
+	assert.Equal(t, group.MaxSize(context.Background()), 5)
 
 	// node from vms pool
 	vmsPoolNode := newVMsNode(0)
-	group, err = provider.NodeGroupForNode(vmsPoolNode)
+	group, err = provider.NodeGroupForNode(context.Background(), vmsPoolNode)
 	assert.NoError(t, err)
 	assert.NotNil(t, group, "Group should not be nil")
 	assert.Equal(t, group.Id(), vmsNodeGroupName)
-	assert.Equal(t, group.MinSize(), 3)
-	assert.Equal(t, group.MaxSize(), 10)
+	assert.Equal(t, group.MinSize(context.Background()), 3)
+	assert.Equal(t, group.MaxSize(context.Background()), 10)
 }
 
 func TestNodeGroupForNode(t *testing.T) {
@@ -393,19 +483,19 @@ func TestNodeGroupForNode(t *testing.T) {
 				newTestScaleSet(provider.azureManager, "test-asg"))
 			provider.azureManager.explicitlyConfigured["test-asg"] = true
 			assert.True(t, registered)
-			assert.Equal(t, len(provider.NodeGroups()), 1)
+			assert.Equal(t, len(provider.NodeGroups(context.Background())), 1)
 
 			node := newApiNode(orchMode, 0)
 			// refresh cache
 			provider.azureManager.forceRefresh()
-			group, err := provider.NodeGroupForNode(node)
+			group, err := provider.NodeGroupForNode(context.Background(), node)
 			assert.NoError(t, err)
 			assert.NotNil(t, group, "Group should not be nil")
 			assert.Equal(t, group.Id(), "test-asg")
-			assert.Equal(t, group.MinSize(), 1)
-			assert.Equal(t, group.MaxSize(), 5)
+			assert.Equal(t, group.MinSize(context.Background()), 1)
+			assert.Equal(t, group.MaxSize(context.Background()), 5)
 
-			hasInstance, err := provider.HasInstance(node)
+			hasInstance, err := provider.HasInstance(context.Background(), node)
 			assert.True(t, hasInstance)
 			assert.NoError(t, err)
 
@@ -415,11 +505,11 @@ func TestNodeGroupForNode(t *testing.T) {
 					ProviderID: "azure:///subscriptions/subscription/resourceGroups/test-resource-group/providers/Microsoft.Compute/virtualMachineScaleSets/test/virtualMachines/test-instance-id-not-in-group",
 				},
 			}
-			group, err = provider.NodeGroupForNode(nodeNotInGroup)
+			group, err = provider.NodeGroupForNode(context.Background(), nodeNotInGroup)
 			assert.NoError(t, err)
 			assert.Nil(t, group)
 
-			hasInstance, err = provider.HasInstance(nodeNotInGroup)
+			hasInstance, err = provider.HasInstance(context.Background(), nodeNotInGroup)
 			assert.False(t, hasInstance)
 			assert.Error(t, err)
 			assert.Equal(t, err, cloudprovider.ErrNotImplemented)
@@ -432,14 +522,14 @@ func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
+	assert.Equal(t, len(provider.NodeGroups(context.Background())), 1)
 
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: "",
 		},
 	}
-	group, err := provider.NodeGroupForNode(node)
+	group, err := provider.NodeGroupForNode(context.Background(), node)
 
 	assert.NoError(t, err)
 	assert.Equal(t, group, nil)

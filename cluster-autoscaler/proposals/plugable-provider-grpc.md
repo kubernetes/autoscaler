@@ -1,4 +1,4 @@
-# Plugable Cloud Provider over gRPC
+# Pluggable Cloud Provider over gRPC
 
 
 Authors:

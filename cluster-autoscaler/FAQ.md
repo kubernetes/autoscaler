@@ -42,6 +42,7 @@ this document:
   * [How can I enable/disable eviction for a specific DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset)
   * [How can I enable Cluster Autoscaler to scale up when Node's max volume count is exceeded (CSI migration enabled)?](#how-can-i-enable-cluster-autoscaler-to-scale-up-when-nodes-max-volume-count-is-exceeded-csi-migration-enabled)
   * [How can I use ProvisioningRequest to run batch workloads?](#how-can-i-use-provisioningrequest-to-run-batch-workloads)
+  * [How can I enable scale-up when a CSI driver uses node-specific CSIStorageCapacity objects?](#how-can-i-enable-scale-up-when-a-csi-driver-uses-node-specific-csistoragecapacity-objects)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale-up work?](#how-does-scale-up-work)
@@ -265,7 +266,7 @@ It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/archi
 
 ### How does Cluster Autoscaler treat nodes with status/startup/ignore taints?
 
-### Startup taints
+#### Startup taints
 
 Startup taints are meant to be used when there is an operation that has to complete before any pods can run on the node, e.g. drivers installation.
 
@@ -281,7 +282,7 @@ Startup taints are defined as:
 * all taints with prefixes specified using `--startup-taint-prefix` flag,
 * all taints defined using `--startup-taint` flag.
 
-### Status taints
+#### Status taints
 
 Status taints are meant to be used when a given node should not be used to run pods for the time being.
 
@@ -294,7 +295,7 @@ Status taints are defined as:
 * all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--status-taint` flag.
 
-### Ignore taints
+#### Ignore taints
 
 Ignore taints are now deprecated and treated as startup taints.
 
@@ -302,6 +303,10 @@ Ignore taints are defined as:
 
 * all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--ignore-taint` flag.
+
+### How does Cluster Autoscaler handle Dynamic Resource Allocation (DRA)?
+
+Cluster Autoscaler support for DRA is documented [here](docs/dra_support.md).
 
 ****************
 
@@ -541,7 +546,7 @@ the following annotation.
 "cluster-autoscaler.kubernetes.io/enable-ds-eviction": "true"
 ```
 
-It is also possible to disable DaemonSet pods eviction expicitly:
+It is also possible to disable DaemonSet pods eviction explicitly:
 
 ```
 "cluster-autoscaler.kubernetes.io/enable-ds-eviction": "false"
@@ -754,6 +759,18 @@ Autoscaler configuration:
 spend processing CheckCapacity ProvisioningRequests in a single iteration by
 setting the following flag in your Cluster Autoscaler configuration:
 `--check-capacity-provisioning-request-batch-timebox=<timebox>`. The default value is 10s.
+
+### How can I enable scale-up when a CSI driver uses node-specific CSIStorageCapacity objects?
+
+Some CSI drivers publish `CSIStorageCapacity` objects with node-specific topology keys (e.g.
+`kubernetes.io/hostname=<node-name>`). During scale-up simulation, Cluster Autoscaler creates a
+template node based on an existing node. Because no `CSIStorageCapacity` object exists for this
+template node, the scheduler's storage capacity check fails during simulation and scale-up is
+blocked (see [#9700](https://github.com/kubernetes/autoscaler/issues/9700)).
+
+For mitigating issues like this, Cluster Autoscaler adds the label `cluster-autoscaler.kubernetes.io/template-node=true`
+to template nodes. CSI storage vendors can use this label to create a dedicated `CSIStorageCapacity`
+object that matches template nodes, allowing the scale-up simulation to succeed.
 
 ****************
 

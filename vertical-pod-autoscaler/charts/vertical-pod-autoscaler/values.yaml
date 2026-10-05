@@ -68,6 +68,9 @@ admissionController:
   # Additional environment variables for the Admission Controller default container.
   extraEnv: []
 
+  # admissionController.logLevel -- Log verbosity for the Admission Controller (klog -v).
+  logLevel: 4
+
   # Additional args for the Admission Controller default container.
   extraArgs: []
 
@@ -99,6 +102,9 @@ admissionController:
 
   # List of node taints to tolerate.
   tolerations: []
+
+  # admissionController.topologySpreadConstraints -- Topology spread constraints for scheduling the Admission Controller, used to spread replicas across failure domains such as zones.
+  topologySpreadConstraints: []
 
   # admissionController.registerWebhook -- Whether to register webhook via the application itself or via Helm. Set to false when using Helm-managed webhook. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations.
   registerWebhook: false
@@ -135,6 +141,8 @@ admissionController:
     nodeSelector: {}
     tolerations: []
     affinity: {}
+    # admissionController.certGen.priorityClassName -- Priority class name for the certgen job pods. These jobs gate the release as pre-install/pre-upgrade and post-install/post-upgrade hooks, so a priority class can help them schedule on a busy cluster.
+    priorityClassName: ""
 
   certManager:
     # admissionController.certManager.enabled -- If true, cert-manager manages the webhook certificate lifecycle.
@@ -264,6 +272,9 @@ recommender:
   # Additional environment variables for the Recommender default container.
   extraEnv: []
 
+  # recommender.logLevel -- Log verbosity for the Recommender (klog -v).
+  logLevel: 4
+
   # Additional args for the Recommender default container.
   extraArgs: []
 
@@ -295,6 +306,9 @@ recommender:
 
   # Tolerations for scheduling the Recommender.
   tolerations: []
+
+  # recommender.topologySpreadConstraints -- Topology spread constraints for scheduling the Recommender, used to spread replicas across failure domains such as zones.
+  topologySpreadConstraints: []
 
   # Leader election configuration for the Recommender.
   # When running multiple replicas, leader election ensures only one instance is actively processing.
@@ -332,6 +346,9 @@ updater:
 
   # Annotations to add to the Updater deployment.
   annotations: {}
+
+  # updater.logLevel -- Log verbosity for the Updater (klog -v).
+  logLevel: 4
 
   # Additional args for the updater
   extraArgs:
@@ -384,6 +401,9 @@ updater:
   # Tolerations for scheduling the Updater.
   tolerations: []
 
+  # updater.topologySpreadConstraints -- Topology spread constraints for scheduling the Updater, used to spread replicas across failure domains such as zones.
+  topologySpreadConstraints: []
+
   # Leader election configuration for the Updater.
   # When running multiple replicas, leader election ensures only one instance is actively processing.
   leaderElection:
@@ -422,3 +442,10 @@ updater:
   # name of priorityclass for scheduling
   priorityClassName:
   # priorityClassName : high-priority
+
+crds:
+  # crds.enabled -- Whether to install and manage the VPA CRDs. Disable if you manage CRDs separately.
+  enabled: true
+  # crds.keep -- Whether to add the helm.sh/resource-policy: keep annotation to the CRDs,
+  # so they are not removed by `helm uninstall`.
+  keep: true

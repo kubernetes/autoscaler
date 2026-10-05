@@ -39,7 +39,7 @@ func GetAddEmptyAnnotationsPatch() resource_admission.PatchRecord {
 func GetAddAnnotationPatch(annotationName, annotationValue string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/metadata/annotations/%s", strings.ReplaceAll(annotationName, "/", "~1")),
+		Path:  fmt.Sprintf("/metadata/annotations/%s", escapeJSONPatchPath(annotationName)),
 		Value: annotationValue,
 	}
 }
@@ -48,15 +48,22 @@ func GetAddAnnotationPatch(annotationName, annotationValue string) resource_admi
 func GetRemoveAnnotationPatch(annotationName string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:   "remove",
-		Path: fmt.Sprintf("/metadata/annotations/%s", strings.ReplaceAll(annotationName, "/", "~1")),
+		Path: fmt.Sprintf("/metadata/annotations/%s", escapeJSONPatchPath(annotationName)),
 	}
+}
+
+// escapeJSONPatchPath escapes special JSONPatch path characters (~ and /)
+// inside path segments according to RFC 6901 / RFC 6902.
+func escapeJSONPatchPath(segment string) string {
+	escaped := strings.ReplaceAll(segment, "~", "~0")
+	return strings.ReplaceAll(escaped, "/", "~1")
 }
 
 // GetAddResourceRequirementValuePatch returns a patch record to add resource requirements to a container.
 func GetAddResourceRequirementValuePatch(i int, kind string, resource corev1.ResourceName, quantity resource.Quantity) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
 		Op:    "add",
-		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s/%s", i, kind, resource),
+		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s/%s", i, kind, escapeJSONPatchPath(string(resource))),
 		Value: quantity.String()}
 }
 

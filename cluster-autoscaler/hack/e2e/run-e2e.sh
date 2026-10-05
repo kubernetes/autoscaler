@@ -43,8 +43,9 @@ gcloud auth configure-docker -q
 GIT_COMMIT="$(git describe --always --dirty --exclude '*')"
 TAG="dev-${GIT_COMMIT}-$(date +%s)"
 REGISTRY="gcr.io/$(gcloud config get core/project)"
-make -C "${CA_ROOT}" execute-release REGISTRY=${REGISTRY} TAG=${TAG}
-CA_IMAGE="${REGISTRY}/cluster-autoscaler:${TAG}"
+BUILD_TAGS="gce"
+make -C "${CA_ROOT}" execute-release REGISTRY=${REGISTRY} TAG=${TAG} BUILD_TAGS="${BUILD_TAGS}"
+CA_IMAGE="${REGISTRY}/cluster-autoscaler-${BUILD_TAGS}:${TAG}"
 
 echo "### STEP 1: Standard Autoscaling tests ###"
 ${CA_ROOT}/hack/e2e/deploy-ca-on-gce-for-e2e.sh "${CA_IMAGE}"

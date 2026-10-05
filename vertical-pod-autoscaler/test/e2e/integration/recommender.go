@@ -55,10 +55,10 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		f.Namespace.Name = utils.VpaNamespace
-		vpaDeployment := utils.NewVPADeployment(f, []string{
+		vpaDeployment := utils.NewVPAComponentDeployment(f, utils.RecommenderComponentConfig(
 			"--recommender-interval=10s",
 			fmt.Sprintf("--vpa-object-namespace=%s", hamsterNamespace),
-		})
+		))
 		utils.StartDeploymentPods(f, vpaDeployment)
 
 		testIncludedAndIgnoredNamespaces(f, vpaClientSet, hamsterNamespace, ignoredNamespace.Name)
@@ -70,13 +70,49 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		f.Namespace.Name = utils.VpaNamespace
-		vpaDeployment := utils.NewVPADeployment(f, []string{
+		vpaDeployment := utils.NewVPAComponentDeployment(f, utils.RecommenderComponentConfig(
 			"--recommender-interval=10s",
 			fmt.Sprintf("--ignored-vpa-object-namespaces=%s", ignoredNamespace.Name),
-		})
+		))
 		utils.StartDeploymentPods(f, vpaDeployment)
 
 		testIncludedAndIgnoredNamespaces(f, vpaClientSet, hamsterNamespace, ignoredNamespace.Name)
+	})
+
+	ginkgo.It("starts recommender with --pod-recommendation-min-memory-mb parameter", func() {
+		const minMemoryMb = 500
+
+		ginkgo.By("Setting up VPA deployment")
+		f.Namespace.Name = utils.VpaNamespace
+		vpaDeployment := utils.NewVPAComponentDeployment(f, utils.RecommenderComponentConfig(
+			"--recommender-interval=10s",
+			fmt.Sprintf("--pod-recommendation-min-memory-mb=%d", minMemoryMb),
+		))
+		utils.StartDeploymentPods(f, vpaDeployment)
+
+		ginkgo.By("Setting up a hamster deployment")
+		f.Namespace.Name = hamsterNamespace
+		d := utils.NewNHamstersDeployment(f, 1)
+		_ = utils.StartDeploymentPods(f, d)
+
+		ginkgo.By("Setting up VPA")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(hamsterNamespace).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled")
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
+
+		memoryMb := vpa.Status.Recommendation.ContainerRecommendations[0].Target.Memory().Value() / (1024 * 1024)
+		gomega.Expect(memoryMb).Should(gomega.BeNumerically(">=", minMemoryMb),
+			"recommended memory should respect the --pod-recommendation-min-memory-mb floor even though actual usage is far below it")
 	})
 })
 

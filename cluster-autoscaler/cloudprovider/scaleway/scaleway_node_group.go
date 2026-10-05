@@ -23,12 +23,13 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/validate/content"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/scaleway/scalewaygo"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/simulator/framework"
 )
 
 // NodeGroup contains configuration info and functions to control a set
@@ -41,13 +42,13 @@ type NodeGroup struct {
 }
 
 // MaxSize returns maximum size of the node group.
-func (ng *NodeGroup) MaxSize() int {
+func (ng *NodeGroup) MaxSize(ctx context.Context) int {
 	klog.V(6).Info("MaxSize,called")
 	return ng.pool.MaxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (ng *NodeGroup) MinSize() int {
+func (ng *NodeGroup) MinSize(ctx context.Context) int {
 	klog.V(6).Info("MinSize,called")
 	return ng.pool.MinSize
 }
@@ -56,7 +57,7 @@ func (ng *NodeGroup) MinSize() int {
 // number of nodes in Kubernetes is different at the moment but should be equal
 // to Size() once everything stabilizes (new nodes finish startup and registration or
 // removed nodes are deleted completely). Implementation required.
-func (ng *NodeGroup) TargetSize() (int, error) {
+func (ng *NodeGroup) TargetSize(ctx context.Context) (int, error) {
 	klog.V(6).Info("TargetSize,called")
 	return ng.pool.Size, nil
 }
@@ -64,7 +65,7 @@ func (ng *NodeGroup) TargetSize() (int, error) {
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
-func (ng *NodeGroup) IncreaseSize(delta int) error {
+func (ng *NodeGroup) IncreaseSize(ctx context.Context, delta int) error {
 	klog.V(4).Infof("IncreaseSize,ClusterID=%s,delta=%d", ng.pool.ClusterID, delta)
 
 	if delta <= 0 {
@@ -77,8 +78,8 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("size cannot be negative. current: %d delta: %d", ng.pool.Size, delta)
 	}
 
-	if targetSize > ng.MaxSize() {
-		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d", ng.pool.Size, targetSize, ng.MaxSize())
+	if targetSize > ng.MaxSize(context.TODO()) {
+		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d", ng.pool.Size, targetSize, ng.MaxSize(context.TODO()))
 	}
 
 	updatedPool, err := ng.UpdatePool(context.Background(), ng.pool.ID, targetSize)
@@ -97,15 +98,18 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 // for atomically requesting multiple instances. If implemented, CA will take advantage of the method while scaling up
 // BestEffortAtomicScaleUp ProvisioningClass, guaranteeing that all instances required for such a
 // ProvisioningRequest are provisioned atomically.
-func (ng *NodeGroup) AtomicIncreaseSize(delta int) error {
+func (ng *NodeGroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
-func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
-	ctx := context.Background()
+func (ng *NodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
 	klog.V(4).Infof("DeleteNodes: %d nodes to reclaim", len(nodes))
 	for _, n := range nodes {
 		node, ok := ng.nodes[n.Spec.ProviderID]
@@ -114,7 +118,7 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 			continue
 		}
 
-		deletedNode, err := ng.DeleteNode(ctx, node.ID)
+		deletedNode, err := ng.DeleteNode(emptyCtx, node.ID)
 		if err != nil {
 			return err
 		}
@@ -130,7 +134,7 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 // constraints like minimal size validation etc. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated.
-func (ng *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+func (ng *NodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -139,7 +143,7 @@ func (ng *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
-func (ng *NodeGroup) DecreaseTargetSize(delta int) error {
+func (ng *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	klog.V(4).Infof("DecreaseTargetSize,ClusterID=%s,delta=%d", ng.pool.ClusterID, delta)
 
 	if delta >= 0 {
@@ -152,12 +156,15 @@ func (ng *NodeGroup) DecreaseTargetSize(delta int) error {
 		return fmt.Errorf("size cannot be negative. current: %d delta: %d", ng.pool.Size, delta)
 	}
 
-	if targetSize < ng.MinSize() {
-		return fmt.Errorf("size decrease is too large. current: %d desired: %d min: %d", ng.pool.Size, targetSize, ng.MinSize())
+	if targetSize < ng.MinSize(context.TODO()) {
+		return fmt.Errorf("size decrease is too large. current: %d desired: %d min: %d", ng.pool.Size, targetSize, ng.MinSize(context.TODO()))
 	}
 
-	ctx := context.Background()
-	updatedNode, err := ng.UpdatePool(ctx, ng.pool.ID, targetSize)
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
+	updatedNode, err := ng.UpdatePool(emptyCtx, ng.pool.ID, targetSize)
 	if err != nil {
 		return err
 	}
@@ -174,16 +181,16 @@ func (ng *NodeGroup) Id() string {
 }
 
 // Debug returns a string containing all information regarding this node group.
-func (ng *NodeGroup) Debug() string {
+func (ng *NodeGroup) Debug(ctx context.Context) string {
 	klog.V(4).Info("Debug,called")
-	return fmt.Sprintf("id:%s,status:%s,version:%s,autoscaling:%t,size:%d,min_size:%d,max_size:%d", ng.Id(), ng.pool.Status, ng.pool.Version, ng.pool.Autoscaling, ng.pool.Size, ng.MinSize(), ng.MaxSize())
+	return fmt.Sprintf("id:%s,status:%s,version:%s,autoscaling:%t,size:%d,min_size:%d,max_size:%d", ng.Id(), ng.pool.Status, ng.pool.Version, ng.pool.Autoscaling, ng.pool.Size, ng.MinSize(context.TODO()), ng.MaxSize(context.TODO()))
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
 // It is required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
 // This list should include also instances that might have not become a kubernetes node yet.
-func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *NodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	klog.V(4).Infof("Nodes,PoolID=%s", ng.pool.ID)
 
 	nodes := make([]cloudprovider.Instance, 0, len(ng.nodes))
@@ -203,7 +210,7 @@ func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
+func (ng *NodeGroup) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo, error) {
 	klog.V(4).Infof("TemplateNodeInfo,PoolID=%s", ng.pool.ID)
 	node := apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -225,7 +232,7 @@ func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	}
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
-	node.Spec.Taints = parseTaints(ng.pool.Taints)
+	node.Spec.Taints = convertTaints(ng.pool.NodeTaints)
 
 	nodeInfo := framework.NewNodeInfo(&node, nil, framework.NewPodInfo(cloudprovider.BuildKubeProxy(ng.pool.Name), nil))
 
@@ -234,33 +241,33 @@ func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one. Implementation required.
-func (ng *NodeGroup) Exist() bool {
+func (ng *NodeGroup) Exist(ctx context.Context) bool {
 	klog.V(4).Infof("Exist,PoolID=%s", ng.pool.ID)
 	return true
 }
 
 // Create creates the node group on the cloud provider side. Implementation optional.
-func (ng *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ng *NodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 // Implementation optional.
-func (ng *NodeGroup) Delete() error {
+func (ng *NodeGroup) Delete(ctx context.Context) error {
 	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
 // was created by CA and can be deleted when scaled to 0.
-func (ng *NodeGroup) Autoprovisioned() bool {
+func (ng *NodeGroup) Autoprovisioned(ctx context.Context) bool {
 	return false
 }
 
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 // Implementation optional. Callers MUST handle `cloudprovider.ErrNotImplemented`.
-func (ng *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+func (ng *NodeGroup) GetOptions(ctx context.Context, defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -276,6 +283,7 @@ func fromScwStatus(status scalewaygo.NodeStatus) *cloudprovider.InstanceStatus {
 	case scalewaygo.NodeStatusDeleting:
 		st.State = cloudprovider.InstanceDeleting
 	case scalewaygo.NodeStatusCreationError:
+		st.State = cloudprovider.InstanceCreating
 		st.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 			ErrorCode:    string(scalewaygo.NodeStatusCreationError),
 			ErrorMessage: "scaleway node could not be created",
@@ -299,28 +307,38 @@ func fromScwStatus(status scalewaygo.NodeStatus) *cloudprovider.InstanceStatus {
 	return st
 }
 
-func parseTaints(taints map[string]string) []apiv1.Taint {
+func convertTaints(taints []scalewaygo.Taint) []apiv1.Taint {
 	k8sTaints := make([]apiv1.Taint, 0, len(taints))
-	for key, valueEffect := range taints {
-		splittedValueEffect := strings.Split(valueEffect, ":")
-		var taint apiv1.Taint
 
-		switch apiv1.TaintEffect(splittedValueEffect[len(splittedValueEffect)-1]) {
+	for _, taint := range taints {
+		var effect apiv1.TaintEffect
+
+		switch apiv1.TaintEffect(taint.Effect) {
 		case apiv1.TaintEffectNoExecute:
-			taint.Effect = apiv1.TaintEffectNoExecute
+			effect = apiv1.TaintEffectNoExecute
 		case apiv1.TaintEffectNoSchedule:
-			taint.Effect = apiv1.TaintEffectNoSchedule
+			effect = apiv1.TaintEffectNoSchedule
 		case apiv1.TaintEffectPreferNoSchedule:
-			taint.Effect = apiv1.TaintEffectPreferNoSchedule
+			effect = apiv1.TaintEffectPreferNoSchedule
 		default:
+			klog.Warningf("ignoring taint %s with unsupported effect %s", taint.Key, taint.Effect)
 			continue
 		}
-		if len(splittedValueEffect) == 2 {
-			taint.Value = splittedValueEffect[0]
-		}
-		taint.Key = key
 
-		k8sTaints = append(k8sTaints, taint)
+		if errs := content.IsLabelKey(taint.Key); len(errs) > 0 {
+			klog.Warningf("ignoring taint with invalid key %s: %s", taint.Key, strings.Join(errs, "; "))
+			continue
+		}
+		if errs := content.IsLabelValue(taint.Value); len(errs) > 0 {
+			klog.Warningf("ignoring taint %s with invalid value %s: %s", taint.Key, taint.Value, strings.Join(errs, "; "))
+			continue
+		}
+
+		k8sTaints = append(k8sTaints, apiv1.Taint{
+			Key:    taint.Key,
+			Value:  taint.Value,
+			Effect: effect,
+		})
 	}
 
 	return k8sTaints

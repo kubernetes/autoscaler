@@ -64,6 +64,52 @@ func TestAddEvictedPod(t *testing.T) {
 	}
 }
 
+func TestInitCountersAreZero(t *testing.T) {
+	testCases := []struct {
+		desc         string
+		vpaSize      int
+		mode         vpa_types.UpdateMode
+		log2         string
+		vpaName      string
+		vpaNamespace string
+	}{
+		{
+			desc:         "VPA size 5, mode Recreate",
+			vpaSize:      5,
+			mode:         vpa_types.UpdateModeRecreate,
+			log2:         "2",
+			vpaName:      "vpa-5",
+			vpaNamespace: "vpa-ns-5",
+		},
+		{
+			desc:         "VPA size 10, mode Off",
+			vpaSize:      10,
+			mode:         vpa_types.UpdateModeOff,
+			log2:         "3",
+			vpaName:      "vpa-10",
+			vpaNamespace: "vpa-ns-10",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			t.Cleanup(evictedCount.Reset)
+			t.Cleanup(inPlaceUpdatedCount.Reset)
+			InitCounters(tc.vpaSize, tc.vpaName, tc.vpaNamespace, tc.mode)
+
+			evictedVal := testutil.ToFloat64(evictedCount.WithLabelValues(tc.log2, string(tc.mode), tc.vpaName, tc.vpaNamespace))
+			if evictedVal != 0 {
+				t.Errorf("Expected evictedCount to be 0 after init got %v", evictedVal)
+			}
+
+			inPlaceVal := testutil.ToFloat64(inPlaceUpdatedCount.WithLabelValues(tc.log2, tc.vpaName, tc.vpaNamespace))
+			if inPlaceVal != 0 {
+				t.Errorf("Expected inPlaceUpdatedCount to be 0 after init got %v", inPlaceVal)
+			}
+		})
+	}
+}
+
 func TestRecordFailedEviction(t *testing.T) {
 	testCases := []struct {
 		desc         string
@@ -99,6 +145,42 @@ func TestRecordFailedEviction(t *testing.T) {
 			val := testutil.ToFloat64(failedEvictionAttempts.WithLabelValues(tc.log2, string(tc.mode), tc.reason, tc.vpaName, tc.vpaNamespace))
 			if val != 1 {
 				t.Errorf("Unexpected value for FailedEviction metric with labels (%s, %s): got %v, want 1", tc.log2, tc.reason, val)
+			}
+		})
+	}
+}
+
+func TestRecordInPlaceInfeasibleCached(t *testing.T) {
+	testCases := []struct {
+		desc         string
+		vpaSize      int
+		log2         string
+		vpaName      string
+		vpaNamespace string
+	}{
+		{
+			desc:         "VPA size 2",
+			vpaSize:      2,
+			log2:         "1",
+			vpaName:      "vpa-2",
+			vpaNamespace: "vpa-2-ns",
+		},
+		{
+			desc:         "VPA size 20",
+			vpaSize:      20,
+			log2:         "4",
+			vpaName:      "vpa-20",
+			vpaNamespace: "vpa-20-ns",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			t.Cleanup(inPlaceInfeasibleCachedCount.Reset)
+			RecordInPlaceInfeasibleCached(tc.vpaSize, tc.vpaName, tc.vpaNamespace)
+			val := testutil.ToFloat64(inPlaceInfeasibleCachedCount.WithLabelValues(tc.log2, tc.vpaName, tc.vpaNamespace))
+			if val != 1 {
+				t.Errorf("Unexpected value for inPlaceInfeasibleCachedCount metric with labels (%s, %s): got %v, want 1", tc.log2, tc.vpaName, val)
 			}
 		})
 	}
@@ -174,6 +256,33 @@ func TestRecordFailedInPlaceUpdate(t *testing.T) {
 			val := testutil.ToFloat64(failedInPlaceUpdateAttempts.WithLabelValues(tc.log2, tc.reason, tc.vpaName, tc.vpaNamespace))
 			if val != 1 {
 				t.Errorf("Unexpected value for FailedInPlaceUpdate metric with labels (%s, %s): got %v, want 1", tc.log2, tc.reason, val)
+			}
+		})
+	}
+}
+
+func TestRecordAdmissionControllerStatusInvalid(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		reason string
+	}{
+		{
+			desc:   "error reason",
+			reason: "error",
+		},
+		{
+			desc:   "invalid reason",
+			reason: "invalid",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			t.Cleanup(admissionControllerStatusInvalidCount.Reset)
+			RecordAdmissionControllerStatusInvalid(tc.reason)
+			val := testutil.ToFloat64(admissionControllerStatusInvalidCount.WithLabelValues(tc.reason))
+			if val != 1 {
+				t.Errorf("Unexpected value for admissionControllerStatusInvalidCount metric with label %s: got %v, want 1", tc.reason, val)
 			}
 		})
 	}

@@ -32,6 +32,13 @@ Autoscaler collaborators may add "LGTM" (Looks Good To Me) or an equivalent comm
 that a PR is acceptable. Any change requires at least one LGTM. No pull requests can be merged 
 until at least one Autoscaler collaborator signs off with an LGTM.
 
+### Deprecation Policy
+
+This repository follows the [Kubernetes Deprecation Policy](https://kubernetes.io/docs/reference/using-api/deprecation-policy/#deprecating-a-flag-or-cli).
+When planning to deprecate a Kubernetes resource API, command line flag or CLI behavior, or
+a feature, please review the deprecation policy to ensure that functionality has not been removed before the
+appropriate signals have been broadcast and the proper amount of deprecation time has been observed.
+
 ### Support Channels
 
 Whether you are a user or contributor, official support channels include:

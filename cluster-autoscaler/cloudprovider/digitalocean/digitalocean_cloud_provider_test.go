@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func defaultDOClientMock(clusterID string) *doClientMock {
@@ -121,7 +121,7 @@ func TestDigitalOceanCloudProvider_Name(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		name := provider.Name()
-		assert.Equal(t, cloudprovider.DigitalOceanProviderName, name, "provider name doesn't match")
+		assert.Equal(t, ProviderName, name, "provider name doesn't match")
 	})
 }
 
@@ -134,13 +134,13 @@ func TestDigitalOceanCloudProvider_NodeGroups(t *testing.T) {
 	assert.NoError(t, err)
 
 	t.Run("success", func(t *testing.T) {
-		nodes := provider.NodeGroups()
+		nodes := provider.NodeGroups(context.Background())
 		assert.Equal(t, len(nodes), 3, "number of nodes do not match")
 	})
 
 	t.Run("zero groups", func(t *testing.T) {
 		provider.manager.nodeGroups = []*NodeGroup{}
-		nodes := provider.NodeGroups()
+		nodes := provider.NodeGroups(context.Background())
 		assert.Equal(t, len(nodes), 0, "number of nodes do not match")
 	})
 }
@@ -186,7 +186,7 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		nodeGroup, err := provider.NodeGroupForNode(node)
+		nodeGroup, err := provider.NodeGroupForNode(context.Background(), node)
 		require.NoError(t, err)
 		require.NotNil(t, nodeGroup)
 		require.Equal(t, nodeGroup.Id(), "2", "node group ID does not match")
@@ -227,7 +227,7 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 			},
 		}
 
-		nodeGroup, err := provider.NodeGroupForNode(node)
+		nodeGroup, err := provider.NodeGroupForNode(context.Background(), node)
 		assert.NoError(t, err)
 		assert.Nil(t, nodeGroup)
 	})

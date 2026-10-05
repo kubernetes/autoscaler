@@ -1,10 +1,8 @@
 ALL_ARCH = amd64 arm64 s390x
 all: $(addprefix build-arch-,$(ALL_ARCH))
 
-# TODO: #8127 - Use default analyzers set by `go test` to include `printf` analyzer.
-# Default analyzers that go test runs according to https://github.com/golang/go/blob/52624e533fe52329da5ba6ebb9c37712048168e0/src/cmd/go/internal/test/test.go#L649
-# This doesn't include the `printf` analyzer until cluster-autoscaler libraries are updated.
-GO_TEST_DEFAULT_ANALYZERS?=atomic,bool,buildtags,directive,errorsas,ifaceassert,nilfunc,slog,stringintconv,tests
+GO_TEST_DEFAULT_ANALYZERS?=all
+GO_TEST_EXCLUDE_REGEX?=/cloudprovider/oci/vendor-internal/
 TAG?=dev
 FLAGS=
 LDFLAGS?=-s
@@ -14,6 +12,31 @@ GOARCH?=$(shell go env GOARCH)
 REGISTRY?=gcr.io/k8s-staging-autoscaling
 DOCKER_NETWORK?=default
 SUPPORTED_BUILD_TAGS=$(shell ls cloudprovider/router/ | grep -e '^router_.*\.go' | sed 's/router_\(.*\)\.go/\1/')
+
+# VERSION is the cluster-autoscaler version baked into the binary via -ldflags.
+#   1. Exact git tag pointing at HEAD, with the "cluster-autoscaler-" prefix stripped.
+#   2. The current commit SHA.
+#   3. The literal string "dev" (for builds outside a git checkout).
+# A "-dirty" suffix is appended when the git working tree has uncommitted
+# changes (cases 1 and 2 only).
+# Override with `make VERSION=<value> ...` to force a specific value; an
+# externally provided VERSION is used verbatim, with no "-dirty" suffix.
+ifeq ($(origin VERSION),undefined)
+  VERSION := $(shell git describe --exact-match --tags 2>/dev/null | sed -e 's|^cluster-autoscaler-||')
+  ifeq ($(strip $(VERSION)),)
+    VERSION := $(shell git rev-parse HEAD 2>/dev/null)
+  endif
+  ifeq ($(strip $(VERSION)),)
+    VERSION := dev
+  else
+    VERSION := $(VERSION)$(shell git diff --no-ext-diff --quiet --exit-code 2>/dev/null || echo -dirty)
+  endif
+endif
+
+VERSION_PKG := k8s.io/autoscaler/cluster-autoscaler/version
+VERSION_LDFLAG := -X $(VERSION_PKG).ClusterAutoscalerVersion=$(VERSION)
+LDFLAGS_VALUE := $(strip $(LDFLAGS) $(VERSION_LDFLAG))
+
 ifdef BUILD_TAGS
   TAGS_FLAG=--tags ${BUILD_TAGS}
   PROVIDER=-${BUILD_TAGS}
@@ -23,11 +46,7 @@ else
   PROVIDER=
   FOR_PROVIDER=
 endif
-ifdef LDFLAGS
-  LDFLAGS_FLAG=--ldflags="${LDFLAGS}"
-else
-  LDFLAGS_FLAG=
-endif
+LDFLAGS_FLAG=--ldflags="${LDFLAGS_VALUE}"
 ifdef DOCKER_RM
   RM_FLAG=--rm
 else
@@ -58,16 +77,16 @@ test-build-tags:
 	done
 
 test-unit: clean build
-	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+	go test -race $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 test-controllers: setup-envtest clean build
 	ginkgo --race --vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG} ./test/integration/controllers/...
 
 test-ci: setup-envtest
-	go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
+	go test -race $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 benchmark:
-	go test ./... -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
+	go test $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -bench=. -run='^$$' -vet="${GO_TEST_DEFAULT_ANALYZERS}"
 
 dev-release: dev-release-arch-$(GOARCH)
 
@@ -79,8 +98,8 @@ make-image: make-image-arch-$(GOARCH)
 make-image-arch-%:
 	GOOS=$(GOOS) docker buildx build --pull --platform linux/$* \
 		--build-arg "GOARCH=$*" \
-		--build-arg "LDFLAGS_FLAG=${LDFLAGS_FLAG}" \
-		--build-arg "TAGS_FLAG=${TAGS_FLAG}" \
+		--build-arg 'LDFLAGS=${LDFLAGS_VALUE}' \
+		--build-arg 'BUILD_TAGS=${BUILD_TAGS}' \
 		-t ${IMAGE}-$*:${TAG} \
 		-f Dockerfile .
 	@echo "Image ${TAG}${FOR_PROVIDER}-$* completed"
@@ -122,15 +141,11 @@ build-in-docker-arch-%: clean-arch-% docker-builder
 	docker run ${RM_FLAG} -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/:Z autoscaling-builder:latest \
 		bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && BUILD_TAGS=${BUILD_TAGS} LDFLAGS="${LDFLAGS}" make build-arch-$*'
 
-release-extract-version = $(shell cat version/version.go | grep "Version =" | cut -d '"' -f 2)
+release-extract-version = $(VERSION)
 
 release-validate:
-	@if [ -z $(shell git tag --points-at HEAD | grep -e ^cluster-autoscaler-1.[1-9][0-9]*.[0-9][0-9]*$) ]; then \
-		echo "Can't release from this commit, there is no compatible git tag"; \
-		exit 1; \
-	fi
-	@if [ -z $(shell git tag --points-at HEAD | grep -e $(call release-extract-version)) ]; then \
-		echo "Can't release from this commit, git tag does not match version/version.go"; \
+	@if [ -z "$(shell git tag --points-at HEAD | grep -Fx 'cluster-autoscaler-$(VERSION)')" ]; then \
+		echo "Can't release: VERSION=$(VERSION) does not match a git tag at HEAD"; \
 		exit 1; \
 	fi
 
@@ -144,7 +159,7 @@ container-arch-%: build-in-docker-arch-% make-image-arch-%
 	@echo "Full in-docker image ${TAG}${FOR_PROVIDER}-$* completed"
 
 test-in-docker: clean docker-builder
-	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
+	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}'
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
@@ -162,8 +177,12 @@ ENVTEST_K8S_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -
 setup-envtest: envtest ## Download the binaries required for ENVTEST in the local bin directory.
 	@echo "Setting up envtest binaries for Kubernetes version $(ENVTEST_K8S_VERSION)..."
 	@$(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path || { \
-		echo "Error: Failed to set up envtest binaries for version $(ENVTEST_K8S_VERSION)."; \
-		exit 1; \
+		echo "Warning: Failed to set up envtest binaries for version $(ENVTEST_K8S_VERSION)."; \
+		echo "Attempting fallback to latest available envtest binaries version."; \
+		$(ENVTEST) use latest --bin-dir $(LOCALBIN) -p path || { \
+			echo "Error: Failed to set up envtest binaries."; \
+			exit 1; \
+		}; \
 	}
 
 .PHONY: envtest

@@ -183,7 +183,7 @@ func TestGetPatches(t *testing.T) {
 			fppp := &fakePodPreProcessor{tc.podPreProcessorError}
 			fvm := &fakeVpaMatcher{vpa: tc.vpa}
 			h := NewResourceHandler(fppp, fvm, tc.calculators)
-			patches, errs := h.GetPatches(context.Background(), &admissionv1.AdmissionRequest{
+			patches, _, errs := h.GetPatches(context.Background(), &admissionv1.AdmissionRequest{
 				Resource: metav1.GroupVersionResource{
 					Version: "v1",
 				},

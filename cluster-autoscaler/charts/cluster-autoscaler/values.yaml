@@ -113,6 +113,9 @@ azureVMType: "vmss"
 # azureEnableForceDelete -- Whether to force delete VMs or VMSS instances when scaling down.
 azureEnableForceDelete: false
 
+# azureEnableVMSSEtag -- Whether to send the cached VMSS ETag as an `If-Match` header on capacity updates, so concurrent modifications are rejected (HTTP 412) and retried instead of silently overwritten.
+azureEnableVMSSEtag: false
+
 # civoApiUrl -- URL for the Civo API.
 # Required if `cloudProvider=civo`
 civoApiUrl: "https://api.civo.com"

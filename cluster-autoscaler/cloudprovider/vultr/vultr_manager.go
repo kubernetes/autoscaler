@@ -97,6 +97,13 @@ func (m *manager) Refresh() error {
 		return err
 	}
 
+	pendingTargets := make(map[string]int, len(m.nodeGroups))
+	for _, nodeGroup := range m.nodeGroups {
+		if nodeGroup.pendingTargetSize > 0 {
+			pendingTargets[nodeGroup.id] = nodeGroup.pendingTargetSize
+		}
+	}
+
 	var group []*NodeGroup
 	for _, nodePool := range nodePools {
 
@@ -106,14 +113,22 @@ func (m *manager) Refresh() error {
 
 		klog.V(3).Infof("adding node pool: %q name with min nodes %d and max nodes %d", nodePool.Label, nodePool.MinNodes, nodePool.MaxNodes)
 
+		pendingTargetSize := 0
+		if pendingTarget, ok := pendingTargets[nodePool.ID]; ok && pendingTarget > nodePool.NodeQuantity && len(nodePool.Nodes) < pendingTarget {
+			klog.V(4).Infof("preserving in-flight target size for node pool %q: vultr target %d, pending target %d, existing nodes %d", nodePool.ID, nodePool.NodeQuantity, pendingTarget, len(nodePool.Nodes))
+			nodePool.NodeQuantity = pendingTarget
+			pendingTargetSize = pendingTarget
+		}
+
 		np := nodePool
 		group = append(group, &NodeGroup{
-			id:        nodePool.ID,
-			clusterID: m.clusterID,
-			client:    m.client,
-			nodePool:  &np, // we had to set this as a pointer because we don't return the [] as []*
-			minSize:   nodePool.MinNodes,
-			maxSize:   nodePool.MaxNodes,
+			id:                nodePool.ID,
+			clusterID:         m.clusterID,
+			client:            m.client,
+			nodePool:          &np, // we had to set this as a pointer because we don't return the [] as []*
+			minSize:           nodePool.MinNodes,
+			maxSize:           nodePool.MaxNodes,
+			pendingTargetSize: pendingTargetSize,
 		})
 	}
 

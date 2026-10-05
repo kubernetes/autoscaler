@@ -41,6 +41,6 @@ func (f *FakePodsRestrictionFactory) NewPodsInPlaceRestriction(creatorToSingleGr
 }
 
 // GetCreatorMaps returns nil maps.
-func (f *FakePodsRestrictionFactory) GetCreatorMaps(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error) {
+func (*FakePodsRestrictionFactory) GetCreatorMaps(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error) {
 	return nil, nil, nil
 }
