@@ -23,7 +23,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/stretchr/testify/assert"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func testGetInstanceCacheWithStates(t *testing.T, vms []*armcompute.VirtualMachineScaleSetVM,

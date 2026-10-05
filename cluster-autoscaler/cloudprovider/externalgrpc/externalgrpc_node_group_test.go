@@ -17,6 +17,7 @@ limitations under the License.
 package externalgrpc
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -28,9 +29,12 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	resourceapi "k8s.io/api/resource/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
 )
 
 func TestCloudProvider_Nodes(t *testing.T) {
@@ -76,7 +80,7 @@ func TestCloudProvider_Nodes(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	instances, err := ng1.Nodes()
+	instances, err := ng1.Nodes(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(instances))
 	for _, i := range instances {
@@ -113,7 +117,7 @@ func TestCloudProvider_Nodes(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	_, err = ng2.Nodes()
+	_, err = ng2.Nodes(context.Background())
 	assert.Error(t, err)
 
 }
@@ -163,16 +167,16 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	nodeInfo1, err := ng1.TemplateNodeInfo()
+	nodeInfo1, err := ng1.TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, apiv1Node1.Name, nodeInfo1.Node().Name)
 
-	nodeInfo2, err := ng2.TemplateNodeInfo()
+	nodeInfo2, err := ng2.TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, apiv1Node2.Name, nodeInfo2.Node().Name)
 
 	// test cached answer
-	nodeInfo1, err = ng1.TemplateNodeInfo()
+	nodeInfo1, err = ng1.TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, apiv1Node1.Name, nodeInfo1.Node().Name)
 	m.AssertNumberOfCalls(t, "NodeGroupTemplateNodeInfo", 2)
@@ -194,7 +198,7 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	nodeInfo3, err := ng3.TemplateNodeInfo()
+	nodeInfo3, err := ng3.TemplateNodeInfo(context.Background())
 	assert.NoError(t, err)
 	assert.Nil(t, nodeInfo3)
 
@@ -216,7 +220,7 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	_, err = ng4.TemplateNodeInfo()
+	_, err = ng4.TemplateNodeInfo(context.Background())
 	assert.Error(t, err)
 
 	// test notImplemented
@@ -237,10 +241,101 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	_, err = ng5.TemplateNodeInfo()
+	_, err = ng5.TemplateNodeInfo(context.Background())
 	assert.Error(t, err)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 
+}
+
+func TestCloudProvider_TemplateNodeInfoResourceSlices(t *testing.T) {
+	client, m, teardown := setupTest(t)
+	defer teardown()
+
+	apiv1Node := &apiv1.Node{}
+	apiv1Node.Name = "node1"
+	apiv1NodeBytes, _ := apiv1Node.Marshal()
+
+	resourceSlice := &resourceapi.ResourceSlice{
+		ObjectMeta: metav1.ObjectMeta{Name: "node1-gpu.example.com-1"},
+		Spec: resourceapi.ResourceSliceSpec{
+			Driver:   "gpu.example.com",
+			NodeName: new("node1"),
+			Pool: resourceapi.ResourcePool{
+				Name:               "node1",
+				Generation:         1,
+				ResourceSliceCount: 2,
+			},
+			Devices: []resourceapi.Device{{Name: "gpu-0"}},
+		},
+	}
+
+	resourceSliceBytes, _ := resourceSlice.Marshal()
+
+	m.On("NodeGroupTemplateNodeInfo", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupTemplateNodeInfoRequest) bool {
+		return req.Id == "nodeGroup1"
+	})).Return(
+		&protos.NodeGroupTemplateNodeInfoResponse{
+			NodeBytes:          apiv1NodeBytes,
+			ResourceSliceBytes: [][]byte{resourceSliceBytes},
+		}, nil,
+	).Once()
+
+	ng1 := NodeGroup{
+		id:          "nodeGroup1",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
+	}
+
+	ni, err := ng1.TemplateNodeInfo(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, apiv1Node.Name, ni.Node().Name)
+	assert.Len(t, ni.LocalResourceSlices, 1)
+	assert.True(t, apiequality.Semantic.DeepEqual(resourceSlice, ni.LocalResourceSlices[0]))
+
+	// test cached answer
+	ni, err = ng1.TemplateNodeInfo(context.Background())
+	assert.NoError(t, err)
+	assert.Len(t, ni.LocalResourceSlices, 1)
+	m.AssertNumberOfCalls(t, "NodeGroupTemplateNodeInfo", 1)
+
+	// Test malformed resource slice
+	m.On("NodeGroupTemplateNodeInfo", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupTemplateNodeInfoRequest) bool {
+		return req.Id == "nodeGroup2"
+	})).Return(
+		&protos.NodeGroupTemplateNodeInfoResponse{
+			NodeBytes:          apiv1NodeBytes,
+			ResourceSliceBytes: [][]byte{resourceSliceBytes, []byte("not a valid resource slice")},
+		}, nil,
+	).Once()
+
+	ng2 := NodeGroup{
+		id:          "nodeGroup2",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
+	}
+
+	_, err = ng2.TemplateNodeInfo(context.Background())
+	assert.Error(t, err)
+
+	// test without a node
+	m.On("NodeGroupTemplateNodeInfo", mock.Anything, mock.MatchedBy(func(req *protos.NodeGroupTemplateNodeInfoRequest) bool {
+		return req.Id == "nodeGroup3"
+	})).Return(
+		&protos.NodeGroupTemplateNodeInfoResponse{
+			NodeBytes:          nil,
+			ResourceSliceBytes: [][]byte{resourceSliceBytes},
+		}, nil,
+	).Once()
+
+	ng3 := NodeGroup{
+		id:          "nodeGroup3",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
+	}
+
+	ni, err = ng3.TemplateNodeInfo(context.Background())
+	assert.NoError(t, err)
+	assert.Nil(t, ni)
 }
 
 func TestCloudProvider_GetOptions(t *testing.T) {
@@ -262,6 +357,8 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 				MaxNodeProvisionDuration:         durationpb.New(time.Minute),
 				ZeroOrMaxNodeScaling:             true,
 				IgnoreDaemonSetsUtilization:      true,
+				MaxNodeStartupDuration:           durationpb.New(15 * time.Minute),
+				AllowNonAtomicScaleUpToMax:       true,
 			},
 		},
 		nil,
@@ -281,9 +378,11 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 		MaxNodeProvisionTime:             time.Minute,
 		ZeroOrMaxNodeScaling:             false,
 		IgnoreDaemonSetsUtilization:      false,
+		MaxNodeStartupTime:               15 * time.Minute,
+		AllowNonAtomicScaleUpToMax:       false,
 	}
 
-	opts, err := ng1.GetOptions(defaultsOpts)
+	opts, err := ng1.GetOptions(context.Background(), defaultsOpts)
 	assert.NoError(t, err)
 	assert.Equal(t, 0.6, opts.ScaleDownUtilizationThreshold)
 	assert.Equal(t, 0.7, opts.ScaleDownGpuUtilizationThreshold)
@@ -292,6 +391,8 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	assert.Equal(t, time.Minute, opts.MaxNodeProvisionTime)
 	assert.Equal(t, true, opts.ZeroOrMaxNodeScaling)
 	assert.Equal(t, true, opts.IgnoreDaemonSetsUtilization)
+	assert.Equal(t, 15*time.Minute, opts.MaxNodeStartupTime)
+	assert.Equal(t, true, opts.AllowNonAtomicScaleUpToMax)
 
 	// test grpc error
 	m.On(
@@ -311,7 +412,7 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	opts, err = ng2.GetOptions(defaultsOpts)
+	opts, err = ng2.GetOptions(context.Background(), defaultsOpts)
 	assert.Error(t, err)
 	assert.Nil(t, opts)
 
@@ -331,7 +432,7 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	opts, err = ng3.GetOptions(defaultsOpts)
+	opts, err = ng3.GetOptions(context.Background(), defaultsOpts)
 	assert.NoError(t, err)
 	assert.Nil(t, opts)
 
@@ -351,7 +452,7 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	_, err = ng4.GetOptions(defaultsOpts)
+	_, err = ng4.GetOptions(context.Background(), defaultsOpts)
 	assert.Error(t, err)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 
@@ -379,7 +480,7 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	opts, err = ng5.GetOptions(defaultsOpts)
+	opts, err = ng5.GetOptions(context.Background(), defaultsOpts)
 	assert.NoError(t, err)
 	assert.Equal(t, 0.6, opts.ScaleDownUtilizationThreshold)
 	assert.Equal(t, 0.7, opts.ScaleDownGpuUtilizationThreshold)
@@ -388,6 +489,9 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	assert.Equal(t, time.Minute, opts.MaxNodeProvisionTime)
 	assert.Equal(t, false, opts.ZeroOrMaxNodeScaling)
 	assert.Equal(t, false, opts.IgnoreDaemonSetsUtilization)
+	// provider did not set maxNodeStartupDuration: falls back to the default
+	assert.Equal(t, 15*time.Minute, opts.MaxNodeStartupTime)
+	assert.Equal(t, false, opts.AllowNonAtomicScaleUpToMax)
 
 }
 
@@ -412,7 +516,7 @@ func TestCloudProvider_TargetSize(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	size, err := ng1.TargetSize()
+	size, err := ng1.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 1, size)
 
@@ -432,7 +536,7 @@ func TestCloudProvider_TargetSize(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	_, err = ng2.TargetSize()
+	_, err = ng2.TargetSize(context.Background())
 	assert.Error(t, err)
 
 }
@@ -456,7 +560,7 @@ func TestCloudProvider_IncreaseSize(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	err := ng1.IncreaseSize(1)
+	err := ng1.IncreaseSize(context.Background(), 1)
 	assert.NoError(t, err)
 
 	// test grpc error
@@ -475,7 +579,7 @@ func TestCloudProvider_IncreaseSize(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	err = ng2.IncreaseSize(1)
+	err = ng2.IncreaseSize(context.Background(), 1)
 	assert.Error(t, err)
 
 }
@@ -499,7 +603,7 @@ func TestCloudProvider_DecreaseSize(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	err := ng1.DecreaseTargetSize(1)
+	err := ng1.DecreaseTargetSize(context.Background(), 1)
 	assert.NoError(t, err)
 
 	// test grpc error
@@ -518,7 +622,7 @@ func TestCloudProvider_DecreaseSize(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	err = ng2.DecreaseTargetSize(1)
+	err = ng2.DecreaseTargetSize(context.Background(), 1)
 	assert.Error(t, err)
 
 }
@@ -550,7 +654,7 @@ func TestCloudProvider_DeleteNodes(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	err := ng1.DeleteNodes(nodes)
+	err := ng1.DeleteNodes(context.Background(), nodes)
 	assert.NoError(t, err)
 
 	// test grpc error
@@ -569,7 +673,7 @@ func TestCloudProvider_DeleteNodes(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	err = ng2.DeleteNodes(nodes)
+	err = ng2.DeleteNodes(context.Background(), nodes)
 	assert.Error(t, err)
 
 }

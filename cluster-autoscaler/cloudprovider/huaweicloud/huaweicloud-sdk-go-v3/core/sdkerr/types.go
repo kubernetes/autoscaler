@@ -133,5 +133,5 @@ func (sr ServiceResponseError) Error() string {
 	if err != nil {
 		return fmt.Sprintf("{\"ErrorMessage\": \"%s\",\"ErrorCode\": \"%s\"}", sr.ErrorMessage, sr.ErrorCode)
 	}
-	return fmt.Sprintf(string(data))
+	return string(data)
 }

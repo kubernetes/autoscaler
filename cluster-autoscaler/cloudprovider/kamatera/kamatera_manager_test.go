@@ -25,8 +25,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/kubernetes/fake"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func TestManager_newManager(t *testing.T) {
@@ -153,7 +153,7 @@ max-size=5
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(m.nodeGroups))
 	assert.Equal(t, 4, len(m.nodeGroups["ng1"].instances))
-	targetSize, _ := m.nodeGroups["ng1"].TargetSize()
+	targetSize, _ := m.nodeGroups["ng1"].TargetSize(context.Background())
 	assert.Equal(t, 3, targetSize)
 	assert.Equal(t, 2, len(m.nodeGroups["ng2"].instances))
 	for _, serverName := range []string{serverName4} {
@@ -166,7 +166,7 @@ max-size=5
 			},
 		})
 	}
-	targetSize, _ = m.nodeGroups["ng2"].TargetSize()
+	targetSize, _ = m.nodeGroups["ng2"].TargetSize(context.Background())
 	assert.Equal(t, 1, targetSize)
 
 	// test api error

@@ -28,8 +28,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	klog "k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config/dynamic"
 )
 
 const (

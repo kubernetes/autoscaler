@@ -68,6 +68,7 @@ const (
 
 	disabledTaint           = "DisabledForAutoscalingTest"
 	criticalAddonsOnlyTaint = "CriticalAddonsOnly"
+	toBeDeletedTaint        = "ToBeDeletedByClusterAutoscaler"
 
 	caNoScaleUpStatus      = "NoActivity"
 	caOngoingScaleUpStatus = "InProgress"
@@ -124,11 +125,11 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 			gomega.Expect(nodes.Items).ToNot(gomega.BeEmpty(), "Initial cluster must have at least one schedulable node")
 			nodeCountSet = true
 			ginkgo.By(fmt.Sprintf("Captured initial cluster size: %v", nodeCount))
-		} else {
-			ginkgo.By(fmt.Sprintf("Waiting for initial cluster size to be stable at %v ready schedulable nodes", nodeCount))
-			nodes, err = waitForStableReadySchedulableNodeCount(ctx, c, nodeCount, scaleDownTimeout)
-			framework.ExpectNoError(err)
 		}
+
+		ginkgo.By(fmt.Sprintf("Waiting for initial cluster size to be stable at %v ready schedulable nodes", nodeCount))
+		nodes, err = waitForStableReadySchedulableNodeCount(ctx, c, nodeCount, scaleDownTimeout)
+		framework.ExpectNoError(err)
 
 		gomega.Expect(nodes.Items).To(gomega.HaveLen(nodeCount), "Cluster size should match the initial baseline size (test isolation failure)")
 		ginkgo.By(fmt.Sprintf("Initial number of schedulable nodes: %v", nodeCount))
@@ -158,6 +159,10 @@ var _ = SIGDescribe("Cluster size autoscaling", framework.WithSlow(), framework.
 			break
 		}
 		klog.Infof("Made nodes schedulable again in %v", time.Since(s).String())
+
+		ginkgo.By("Waiting for node deletions to finish and the initial cluster size to stabilize")
+		_, err = waitForStableReadySchedulableNodeCount(ctx, c, nodeCount, scaleDownTimeout)
+		framework.ExpectNoError(err)
 	}
 
 	f.Context("Standard Autoscaling", func() {
@@ -670,20 +675,39 @@ func WaitForClusterSizeFuncWithUnready(ctx context.Context, c clientset.Interfac
 }
 
 func waitForStableReadySchedulableNodeCount(ctx context.Context, c clientset.Interface, expected int, timeout time.Duration) (*v1.NodeList, error) {
+	logger := klog.FromContext(ctx)
 	var nodes *v1.NodeList
 	var stableSince time.Time
 
 	err := wait.PollUntilContextTimeout(ctx, nodeCountPollInterval, timeout, true, func(ctx context.Context) (bool, error) {
-		currentNodes, err := e2enode.GetReadySchedulableNodes(ctx, c)
+		currentNodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 		if err != nil {
 			stableSince = time.Time{}
-			klog.Warningf("Failed to list ready schedulable nodes: %v", err)
+			klog.Warningf("Failed to list nodes while waiting for a stable cluster size: %v", err)
 			return false, nil
 		}
 
+		// Cordoned nodes leave the schedulable count before deletion finishes.
+		// Restarting CA would uncordon them and change the next test's baseline.
+		for _, node := range currentNodes.Items {
+			deleting := node.DeletionTimestamp != nil
+			for _, taint := range node.Spec.Taints {
+				deleting = deleting || taint.Key == toBeDeletedTaint
+			}
+			if deleting {
+				stableSince = time.Time{}
+				klog.Infof("Waiting for node %s to finish deletion", node.Name)
+				return false, nil
+			}
+		}
+
+		e2enode.Filter(currentNodes, func(node v1.Node) bool {
+			return e2enode.IsNodeSchedulable(logger, &node) && !isNodeTainted(&node)
+		})
+
 		nodes = currentNodes
 		current := len(currentNodes.Items)
-		if current != expected {
+		if current == 0 || current != expected {
 			stableSince = time.Time{}
 			klog.Infof("Waiting for %d ready schedulable nodes, current size %d", expected, current)
 			return false, nil
@@ -702,7 +726,7 @@ func waitForStableReadySchedulableNodeCount(ctx context.Context, c clientset.Int
 		return false, nil
 	})
 	if err != nil {
-		return nodes, fmt.Errorf("timeout waiting %v for %d stable ready schedulable nodes", timeout, expected)
+		return nodes, fmt.Errorf("waiting up to %v for %d stable ready schedulable nodes with no pending deletions: %w", timeout, expected, err)
 	}
 	return nodes, nil
 }

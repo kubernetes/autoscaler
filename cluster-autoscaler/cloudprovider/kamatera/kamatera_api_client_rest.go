@@ -22,8 +22,8 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/version"
 )
 
 var userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion

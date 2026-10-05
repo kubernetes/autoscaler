@@ -47,7 +47,7 @@ The Cluster Builder will ensure the group name and description are
 updated with the correct values in the format that autoscaler can recognise.
 
 Generally it is best to keep the `min` and the `count` values to be the
-same within the Cluster Buider and let autoscaler create and destroy
+same within the Cluster Builder and let autoscaler create and destroy
 servers dynamically up the the `max` value.
 
 While using autoscaler you may find that the Cluster Builder recreates
@@ -59,7 +59,7 @@ autoscaler will scale the cluster back down during the next few minutes.
 # Autoscaler Brightbox cloudprovider configuration
 
 The Brightbox Cloud cloudprovider is configured via Environment Variables
-suppied to the autoscaler pod. The easiest way to do this is to [create
+supplied to the autoscaler pod. The easiest way to do this is to [create
 a secret](https://kubernetes.io/docs/concepts/configuration/secret/#creating-a-secret-manually) containing the variables within the `kube-system` namespace.
 
 ```

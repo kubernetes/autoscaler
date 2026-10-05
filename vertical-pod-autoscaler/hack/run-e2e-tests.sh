@@ -57,6 +57,22 @@ fi
 
 NUMPROC=${NUMPROC:-10}
 
+# Dump logs of all VPA component pods into ARTIFACTS so CI uploads them.
+function dump_vpa_logs {
+  local ns="kube-system"
+  mkdir -p "${ARTIFACTS}"
+  local component pod name
+  for component in admission-controller recommender updater; do
+    for pod in $(kubectl get pods -n "${ns}" -l "app.kubernetes.io/component=${component}" -o name 2>/dev/null); do
+      name="${pod#pod/}"
+      echo "Dumping $component logs for pod $pod ..."
+      kubectl logs -n "${ns}" "${name}" --request-timeout=5s --tail=-1 > "${ARTIFACTS}/${name}.log" 2>/dev/null || true
+      kubectl logs -n "${ns}" "${name}" --request-timeout=5s --tail=-1 --previous > "${ARTIFACTS}/${name}-previous.log" 2>/dev/null \
+        || rm -f "${ARTIFACTS}/${name}-previous.log"
+    done
+  done
+}
+
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
@@ -65,11 +81,11 @@ case ${SUITE} in
     ${GOBIN}/ginkgo build v1/ && ${GOBIN}/ginkgo --nodes=$NUMPROC --focus="\[VPA\] \[${SUITE}\]" v1/v1.test -- --report-dir=${ARTIFACTS} --disable-log-dump ${SKIP}
     V1_RESULT=$?
     popd
+    echo "Copying VPA logs to ${ARTIFACTS}"
+    dump_vpa_logs
     echo v1 test result: ${V1_RESULT}
     if [ $V1_RESULT -gt 0 ]; then
       echo "Please check v1 \"go test\" logs!"
-    fi
-    if [ $V1_RESULT -gt 0 ]; then
       echo "Tests failed"
       exit 1
     fi

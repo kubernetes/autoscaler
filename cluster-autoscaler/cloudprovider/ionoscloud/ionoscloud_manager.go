@@ -26,9 +26,9 @@ import (
 
 	"github.com/google/uuid"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ionos "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 const (

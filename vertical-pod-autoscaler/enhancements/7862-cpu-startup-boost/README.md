@@ -11,6 +11,7 @@
   - [Validation](#validation)
     - [Static Validation](#static-validation)
     - [Dynamic Validation](#dynamic-validation)
+  - [Reactive Unboosting Architecture](#reactive-unboosting-architecture)
   - [Mitigating Failed In-Place Downsizes](#mitigating-failed-in-place-downsizes)
   - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
     - [How can this feature be enabled / disabled in a live cluster?](#how-can-this-feature-be-enabled--disabled-in-a-live-cluster)
@@ -94,11 +95,20 @@ VPA Admission Controller
     *   If `ControlledValues` is `RequestsAndLimits` (the default), the CPU limit is also boosted.
         The new limit is calculated to maintain the container's original limit-to-request ratio, applied to the new boosted CPU request. In cases where this ratio cannot be established (e.g., if the original CPU limit was unspecified), the limit will not be changed by the boost.
 
-1. The VPA Updater monitors pods targeted by the VPA object and when the pod
-condition is `Ready` and `StartupBoost.CPU.DurationSeconds` has elapsed, it scales
-down the CPU resources to the appropriate non-boosted value. This "unboosting"
-resizes the pod to whatever the recommendation is at that moment. The specific
-behavior is determined by the VPA `updatePolicy`:
+1. The VPA Updater reactively unbooosts pods using an event-driven workqueue.
+   A shared pod informer watches for pod add/update events. When a pod becomes
+   `Ready` and has a CPU startup boost annotation, it is enqueued to a
+   rate-limiting workqueue. Dedicated boost worker goroutines process the queue:
+
+    * If the boost duration has not yet expired, the pod is re-enqueued with a
+    precise delay matching the remaining boost duration (using `AddAfter`),
+    avoiding unnecessary polling.
+    * Once the pod is `Ready` and `StartupBoost.CPU.DurationSeconds` has elapsed,
+    the worker scales down the CPU resources to the appropriate non-boosted
+    value. This "unboosting" resizes the pod to whatever the recommendation is
+    at that moment.
+
+    The specific unboosting behavior is determined by the VPA `updatePolicy`:
     * If `updatePolicy` is `Auto`, `Recreate` or `InPlaceOrRecreate`, the VPA
     Updater will apply the current VPA recommendation, even if it's higher than
     the boosted value.
@@ -106,6 +116,10 @@ behavior is determined by the VPA `updatePolicy`:
     container policy, the VPA Updater will revert the CPU resources to the
     values specified in the pod spec.
     * The scale down is applied [in-place](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/1287-in-place-update-pod-resources).
+
+    The main `RunOnce` loop excludes pods with active CPU startup boost
+    annotations from standard eviction and in-place update processing, so they
+    are only handled by the boost workers.
 
 ### API Changes
 
@@ -214,6 +228,35 @@ are created/updated:
   parsed as a `float64` (e.g., `500m`), the API must reject the `startupBoost`
   configuration as invalid.
 
+### Reactive Unboosting Architecture
+
+During the alpha phase of the feature, the unboosting mechanism was changed from
+a synchronous scan inside the updater's main `RunOnce` loop (which iterated over
+all pods every cycle) to a reactive, event-driven model:
+
+1. **Shared pod informer**: The updater uses a `SharedInformerFactory` for pods
+   (replacing a standalone reflector-based `PodLister`). This allows both the
+   pod lister and pod event handlers to share the same cache.
+
+2. **Workqueue**: A `TypedRateLimitingInterface[string]` workqueue with
+   exponential back-off is used to track pods that need unboosting. Pod
+   add/update events are filtered — only pods that are `Ready`, have a CPU boost
+   annotation, and are not in an ignored namespace are enqueued.
+
+3. **Dedicated boost workers**: Configurable via the
+   `--concurrent-cpu-startup-boost-syncs` flag (default: `1`), one or more
+   goroutines consume from the workqueue. Each worker:
+   * Looks up the pod and its controlling VPA.
+   * If the boost duration has not yet expired, re-enqueues with a precise delay
+     (`AddAfter`) equal to the remaining time, so no unnecessary polling occurs.
+   * If the boost has expired, performs the in-place unboost, respecting
+     disruption budget and rate limiting.
+   * If the VPA cannot be found after `5` retries, the item is dropped.
+
+4. **Graceful shutdown**: The updater handles `SIGTERM`/`SIGINT` signals. On
+   shutdown, the workqueue is drained and worker goroutines are waited on via a
+   `WaitGroup`.
+
 ### Mitigating Failed In-Place Downsizes
 
 The VPA Updater **will not** evict a pod if it attempted to scaled the pod down
@@ -240,7 +283,8 @@ Enabling of feature gates `CPUStartupBoost` will cause the following to happen:
   * admission-controller to **accept** new VPA objects being created with
 `StartupBoost` configured.
   * admission-controller to **boost** CPU resources.
-  * updater to **unboost** the CPU resources.
+  * updater to register pod event handlers and start boost worker goroutines to
+  reactively **unboost** CPU resources.
 
 Disabling of feature gates `CPUStartupBoost` will cause the following to happen:
   * admission-controller to **reject** new VPA objects being created with
@@ -249,9 +293,12 @@ Disabling of feature gates `CPUStartupBoost` will cause the following to happen:
     know that they are using a feature gated feature.
   * admission-controller **to not** boost CPU resources, should it encounter a
   VPA configured with a `StartupBoost` config.
-  * updater **to not** unboost CPU resources when pods meet the scale down
-  requirements, should it encounter a VPA configured with a `StartupBoost`
-  config.
+  * updater **to not** register pod event handlers or start boost workers. Pods
+  with existing boost annotations will not be unboosted.
+
+The updater also accepts the following flag when `CPUStartupBoost` is enabled:
+  * `--concurrent-cpu-startup-boost-syncs` (default: `1`): The number of worker
+  goroutines processing CPU startup boost unboosting concurrently.
 
 ### Kubernetes Version Compatibility
 
@@ -449,6 +496,7 @@ spec:
 
 ## Implementation History
 
+* 2026-08-11: Replace synchronous unboosting in `RunOnce` with a reactive, event-driven workqueue processed by dedicated boost worker goroutines.
 * 2026-02-02: Change `startupBoost.cpu.duration` to `startupBoost.cpu.durationSeconds` and its type from string to int32 (seconds).
 * 2025-10-04: Update `startupBoost.cpu.type` field to correctly indicate it is a required field, not optional. The field has no default value and must be explicitly set to either "Factor" or "Quantity".
 * 2025-08-05: Make some API changes and clarify behavior during and after boost period in the workflow section.

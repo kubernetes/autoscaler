@@ -200,7 +200,7 @@ for details.
 When scaling up from 0 nodes, the Cluster Autoscaler reads ASG tags to derive information about the specifications of the nodes
 i.e labels and taints in that ASG. Note that it does not actually apply these labels or taints - this is done by an AWS generated
 user data script. It gives the Cluster Autoscaler information about whether pending pods will be able to be scheduled should a new node
-be spun up for a particular ASG with the asumption the ASG tags accurately reflect the labels/taint actually applied.
+be spun up for a particular ASG with the assumption the ASG tags accurately reflect the labels/taint actually applied.
 
 The following is only required if scaling up from 0 nodes. The Cluster Autoscaler will require the label tag
 on the ASG should a deployment have a NodeSelector, else no scaling will occur as the Cluster Autoscaler does not realise
@@ -231,6 +231,33 @@ identical to the units used in the `resources` field of a Pod specification.
 Example tags:
 
 - `k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage`: `100G`
+
+When `--enable-csi-node-aware-scheduling` is enabled, scale-from-zero needs an
+explicit declaration of which CSI drivers a node group will register. CSI
+drivers are optional and are **not** inferred from instance type or
+`EBSVolumeLimit`. `EBSVolumeLimit` is EC2 hardware attachment capacity only; it
+does not mean `ebs.csi.aws.com` is installed.
+
+If the tag is omitted, Cluster Autoscaler advertises **no** synthetic CSI
+drivers for that node group.
+
+The tag key is:
+
+`k8s.io/cluster-autoscaler/node-template/csi-driver`
+
+The value is a comma-separated list of CSI driver names (applicability only).
+Do not encode volume limits in this tag. For EBS, attachment capacity still
+comes from the instance type's `EBSVolumeLimit`.
+
+Examples:
+
+- EBS only: `k8s.io/cluster-autoscaler/node-template/csi-driver`: `ebs.csi.aws.com`
+- EFS only: `k8s.io/cluster-autoscaler/node-template/csi-driver`: `efs.csi.aws.com`
+- Multiple: `k8s.io/cluster-autoscaler/node-template/csi-driver`: `ebs.csi.aws.com,efs.csi.aws.com`
+
+The same key may be set on an EKS managed node group. If both the ASG and the
+managed node group define it, the managed node group value is used (same
+precedence as `node-template/resources` tags).
 
 ASG labels can specify autoscaling options, overriding the global cluster-autoscaler
 settings for the labeled ASGs. Those labels takes the same values format as the

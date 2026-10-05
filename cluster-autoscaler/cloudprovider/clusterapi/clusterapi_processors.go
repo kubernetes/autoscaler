@@ -17,10 +17,12 @@ limitations under the License.
 package clusterapi
 
 import (
+	"context"
+
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	klog "k8s.io/klog/v2"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 )
 
 // ScaleDownNodeUpgradeProcessor is a processor to filter out
@@ -36,13 +38,13 @@ func NewScaleDownNodeUpgradeProcessor(c *machineController) *ScaleDownNodeUpgrad
 }
 
 // GetPodDestinationCandidates returns nodes as is no processing is required here
-func (p *ScaleDownNodeUpgradeProcessor) GetPodDestinationCandidates(ctx *context.AutoscalingContext,
+func (p *ScaleDownNodeUpgradeProcessor) GetPodDestinationCandidates(ctx *ca_context.AutoscalingContext,
 	nodes []*corev1.Node) ([]*corev1.Node, errors.AutoscalerError) {
 	return nodes, nil
 }
 
 // GetScaleDownCandidates returns filter nodes based on if scale down is enabled or disabled per nodegroup.
-func (p *ScaleDownNodeUpgradeProcessor) GetScaleDownCandidates(ctx *context.AutoscalingContext,
+func (p *ScaleDownNodeUpgradeProcessor) GetScaleDownCandidates(ctx context.Context, autoscalingCtx *ca_context.AutoscalingContext,
 	nodes []*corev1.Node) ([]*corev1.Node, errors.AutoscalerError) {
 	result := []*corev1.Node{}
 

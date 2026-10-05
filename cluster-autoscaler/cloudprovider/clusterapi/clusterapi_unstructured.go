@@ -36,9 +36,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	klog "k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 type unstructuredScalableResource struct {
@@ -402,8 +402,10 @@ func (r *unstructuredScalableResource) InstanceResourceSlices(nodeName string) (
 			Spec: resourceapi.ResourceSliceSpec{
 				Driver:   driver,
 				NodeName: &nodeName,
+				// TODO: Derive ResourceSliceCount from the number of generated ResourceSlices instead of hard-coding it.
 				Pool: resourceapi.ResourcePool{
-					Name: nodeName,
+					Name:               nodeName,
+					ResourceSliceCount: 1,
 				},
 			},
 		}

@@ -23,7 +23,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/linode/linodego"
-	"k8s.io/autoscaler/cluster-autoscaler/version"
+	"sigs.k8s.io/cluster-autoscaler/pkg/version"
 )
 
 var userAgent = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion

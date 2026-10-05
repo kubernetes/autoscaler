@@ -86,7 +86,11 @@ func (*mockPrometheusAPI) Flags(ctx context.Context) (prometheusv1.FlagsResult, 
 	panic("not implemented")
 }
 
-func (*mockPrometheusAPI) LabelNames(ctx context.Context, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) ([]string, prometheusv1.Warnings, error) {
+func (*mockPrometheusAPI) FormatQuery(ctx context.Context, query string) (string, error) {
+	panic("not implemented")
+}
+
+func (*mockPrometheusAPI) LabelNames(ctx context.Context, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) (prommodel.LabelNames, prometheusv1.Warnings, error) {
 	panic("not implemented")
 }
 
@@ -98,7 +102,7 @@ func (*mockPrometheusAPI) Series(ctx context.Context, matches []string, startTim
 	panic("not implemented")
 }
 
-func (*mockPrometheusAPI) Rules(ctx context.Context) (prometheusv1.RulesResult, error) {
+func (*mockPrometheusAPI) Rules(ctx context.Context, matches []string) (prometheusv1.RulesResult, error) {
 	panic("not implemented")
 }
 
@@ -131,6 +135,10 @@ func (*mockPrometheusAPI) Runtimeinfo(ctx context.Context) (prometheusv1.Runtime
 }
 
 func (*mockPrometheusAPI) TSDB(ctx context.Context, opts ...prometheusv1.Option) (prometheusv1.TSDBResult, error) {
+	panic("not implemented")
+}
+
+func (*mockPrometheusAPI) TSDBBlocks(ctx context.Context) (prometheusv1.TSDBBlocksResult, error) {
 	panic("not implemented")
 }
 

@@ -24,8 +24,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/time/rate"
+	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -34,20 +36,28 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/utils/set"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/inplace"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 func parseLabelSelector(selector string) labels.Selector {
@@ -144,7 +154,7 @@ func TestRunOnce_Mode(t *testing.T) {
 			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
-			expectedInPlacedCount: 5,
+			expectedInPlacedCount: 0,
 			canEvict:              true,
 			canInPlaceUpdate:      utils.InPlaceApproved,
 			isCPUBoostTest:        true,
@@ -155,7 +165,7 @@ func TestRunOnce_Mode(t *testing.T) {
 			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
-			expectedInPlacedCount: 5,
+			expectedInPlacedCount: 0,
 			canEvict:              true,
 			canInPlaceUpdate:      utils.InPlaceApproved,
 			isCPUBoostTest:        true,
@@ -166,7 +176,7 @@ func TestRunOnce_Mode(t *testing.T) {
 			shouldInPlaceFail:     false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
-			expectedInPlacedCount: 5,
+			expectedInPlacedCount: 0,
 			canEvict:              true,
 			canInPlaceUpdate:      utils.InPlaceApproved,
 			isCPUBoostTest:        true,
@@ -177,7 +187,7 @@ func TestRunOnce_Mode(t *testing.T) {
 			shouldInPlaceFail:     true,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
-			expectedInPlacedCount: 5,
+			expectedInPlacedCount: 0,
 			canEvict:              true,
 			canInPlaceUpdate:      utils.InPlaceApproved,
 			isCPUBoostTest:        true,
@@ -218,6 +228,13 @@ func TestRunOnce_Status(t *testing.T) {
 		{
 			name:                  "with invalid status",
 			statusValidator:       newFakeValidator(false),
+			expectFetchCalls:      false,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
+		},
+		{
+			name:                  "with status check error",
+			statusValidator:       newFakeValidatorErr(errors.New("failed to get status")),
 			expectFetchCalls:      false,
 			expectedEvictionCount: 0,
 			expectedInPlacedCount: 0,
@@ -370,6 +387,144 @@ func testRunOnceBase(
 	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", expectedInPlacedCount)
 }
 
+// TestRunOnce_MultipleVPAs tests that if multiple VPAs target the same Pod and only one of them is 'active' (does NOT have `spec.updateMode: Off`):
+// - the applied recommendation is always the one from the 'active' VPA
+// - the 'active' VPA is always selected as the 'controlling' VPA for the Pod
+func TestRunOnce_MultipleVPAs(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	podLabels := map[string]string{"app": "test"}
+	selector := parseLabelSelector("app = test")
+	containerName := "test"
+	replicas := int32(1)
+	rs := appsv1.ReplicaSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ReplicaSet",
+			APIVersion: "apps/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rs",
+			Namespace: "default",
+		},
+		Spec: appsv1.ReplicaSetSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pod := test.Pod().WithName("test-pod").
+		AddContainer(test.Container().WithName(containerName).
+			WithCPURequest(resource.MustParse("1")).
+			WithMemRequest(resource.MustParse("100M")).
+			WithCPULimit(resource.MustParse("1")).
+			WithMemLimit(resource.MustParse("100M")).Get()).
+		WithLabels(podLabels).
+		WithCreator(&rs.ObjectMeta, &rs.TypeMeta).
+		Get()
+
+	targetRef := &autoscalingv1.CrossVersionObjectReference{
+		Kind:       rs.Kind,
+		Name:       rs.Name,
+		APIVersion: rs.APIVersion,
+	}
+
+	// If multiple VPAs match a Pod, a 'controlling' VPA is selected using VPA
+	// timestamps.
+	// The selector should be given a list that does NOT include any VPAs with
+	// `updateMode: Off` and no startup boost, so the test here would catch if
+	// that logic changed.
+	now := time.Now()
+	vpaInPlace := test.VerticalPodAutoscaler().
+		WithName("vpa-in-place").
+		WithNamespace("default").
+		WithCreationTimestamp(now).
+		WithContainer(containerName).
+		WithUpdateMode(vpa_types.UpdateModeInPlace).
+		WithTarget("3", "300M").
+		WithTargetRef(targetRef).
+		Get()
+
+	vpaOff1 := test.VerticalPodAutoscaler().
+		WithName("vpa-off-1").
+		WithNamespace("default").
+		WithCreationTimestamp(now.Add(-time.Hour)). // older than the InPlace VPA
+		WithContainer(containerName).
+		WithUpdateMode(vpa_types.UpdateModeOff).
+		WithTarget("9", "900M").
+		WithTargetRef(targetRef).
+		Get()
+
+	vpaOff2 := test.VerticalPodAutoscaler().
+		WithName("vpa-off-2").
+		WithNamespace("default").
+		WithCreationTimestamp(now). // timestamp matches the InPlace VPA
+		WithContainer(containerName).
+		WithUpdateMode(vpa_types.UpdateModeOff).
+		WithTarget("5", "500M").
+		WithTargetRef(targetRef).
+		Get()
+
+	vpaOff3 := test.VerticalPodAutoscaler().
+		WithName("vpa-off-3").
+		WithNamespace("default").
+		WithCreationTimestamp(now.Add(time.Hour)). // newer than the InPlace VPA
+		WithContainer(containerName).
+		WithUpdateMode(vpa_types.UpdateModeOff).
+		WithTarget("7", "700M").
+		WithTargetRef(targetRef).
+		Get()
+
+	kubeClient := fake.NewSimpleClientset(pod)
+
+	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
+	require.NoError(t, informerFactory.Apps().V1().ReplicaSets().Informer().GetStore().Add(&rs))
+
+	limitRangeCalculator := limitrange.NewNoopLimitsCalculator()
+	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
+	calculators := []patch.Calculator{inplace.NewResourceInPlaceUpdatesCalculator(recommendationProvider)}
+	restrictionFactory := restriction.NewPodsRestrictionFactory(kubeClient, informerFactory, 0, 0, calculators, false)
+
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaInPlace, vpaOff1, vpaOff2, vpaOff3}, nil).Once()
+
+	podLister := &test.PodListerMock{}
+	podLister.On("List").Return([]*corev1.Pod{pod}, nil)
+
+	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaInPlace)).Return(selector, nil)
+
+	u := &updater{
+		vpaLister:                    vpaLister,
+		podLister:                    podLister,
+		restrictionFactory:           restrictionFactory,
+		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		inPlaceRateLimiter:           rate.NewLimiter(rate.Inf, 0),
+		evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
+		recommendationProcessor:      &test.FakeRecommendationProcessor{},
+		selectorFetcher:              mockSelectorFetcher,
+		controllerFetcher:            controllerfetcher.FakeControllerFetcher{},
+		useAdmissionControllerStatus: true,
+		statusValidator:              newFakeValidator(true),
+		priorityProcessor:            priority.NewProcessor(),
+		eventRecorder:                record.NewFakeRecorder(10),
+	}
+
+	u.RunOnce(context.Background())
+
+	updatedPod, err := kubeClient.CoreV1().Pods("default").Get(context.Background(), pod.Name, metav1.GetOptions{})
+	require.NoError(t, err)
+
+	// Test that the Pod got patched with the recommendation from the VPA with `updateMode: InPlace`.
+	wantResources := vpaInPlace.Status.Recommendation.ContainerRecommendations[0].Target
+
+	gotRequests := updatedPod.Spec.Containers[0].Resources.Requests
+	test.AssertResourceListEqual(t, "requests", wantResources, gotRequests)
+
+	gotLimits := updatedPod.Spec.Containers[0].Resources.Limits
+	test.AssertResourceListEqual(t, "limits", wantResources, gotLimits)
+}
+
 func TestRunOnceNotingToProcess(t *testing.T) {
 	eviction := &test.PodsEvictionRestrictionMock{}
 	inplace := &test.PodsInPlaceRestrictionMock{}
@@ -414,14 +569,19 @@ func TestGetRateLimiter(t *testing.T) {
 
 type fakeValidator struct {
 	isValid bool
+	err     error
 }
 
 func newFakeValidator(isValid bool) status.Validator {
-	return &fakeValidator{isValid}
+	return &fakeValidator{isValid: isValid}
+}
+
+func newFakeValidatorErr(err error) status.Validator {
+	return &fakeValidator{err: err}
 }
 
 func (f *fakeValidator) IsStatusValid(ctx context.Context, statusTimeout time.Duration) (bool, error) {
-	return f.isValid, nil
+	return f.isValid, f.err
 }
 
 func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
@@ -739,7 +899,7 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 		priorityProcessor:            priority.NewProcessor(),
 	}
 
-	// Cycle 1: Unboost the cpu
+	// Cycle 1: Pods have boost annotations — RunOnce skips them (handled by queue worker)
 	for i := range pods {
 		pods[i].Annotations = map[string]string{annotations.GetStartupCPUBoostAnnotationKey(containerName): ""}
 		pods[i].Status.Conditions = []corev1.PodCondition{
@@ -748,22 +908,18 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 				Status: corev1.ConditionTrue,
 			},
 		}
-		inplace.On("CanUnboost", pods[i], vpaObj).Return(true).Once()
-		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
 	}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 	podLister.On("List").Return(pods, nil).Once()
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
 	updater.RunOnce(context.Background())
-	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 5)
-	inplace.AssertNumberOfCalls(t, "CanUnboost", 5)
+	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 0)
 	eviction.AssertNumberOfCalls(t, "Evict", 0)
 
-	// Cycle 2: Regular patch which will lead to eviction
+	// Cycle 2: Boost annotations removed — pods go through normal eviction path
 	for i := range pods {
 		pods[i].Annotations = nil
-		inplace.On("CanUnboost", pods[i], vpaObj).Return(false).Once()
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i], nil).Return(nil)
 	}
@@ -772,8 +928,7 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
 	updater.RunOnce(context.Background())
-	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 5) // all 5 from previous run only
-	inplace.AssertNumberOfCalls(t, "CanUnboost", 5)    // all 5 from previous run only
+	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 0)
 	eviction.AssertNumberOfCalls(t, "Evict", 5)
 }
 
@@ -836,7 +991,7 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 		priorityProcessor:            priority.NewProcessor(),
 	}
 
-	// Cycle 1: Unboost the cpu
+	// Cycle 1: Pods have boost annotations — RunOnce skips them (handled by queue worker)
 	for i := range pods {
 		pods[i].Annotations = map[string]string{annotations.GetStartupCPUBoostAnnotationKey(containerName): ""}
 		pods[i].Status.Conditions = []corev1.PodCondition{
@@ -845,22 +1000,18 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 				Status: corev1.ConditionTrue,
 			},
 		}
-		inplace.On("CanUnboost", pods[i], vpaObj).Return(true).Once()
-		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
 	}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 	podLister.On("List").Return(pods, nil).Once()
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
 	updater.RunOnce(context.Background())
-	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 5)
-	inplace.AssertNumberOfCalls(t, "CanUnboost", 5)
+	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 0)
 	eviction.AssertNumberOfCalls(t, "Evict", 0)
 
-	// Cycle 2: Regular patch which will lead to eviction
+	// Cycle 2: Boost annotations removed — pods go through normal in-place update path
 	for i := range pods {
 		pods[i].Annotations = nil
-		inplace.On("CanUnboost", pods[i], vpaObj).Return(false).Once()
 		inplace.On("CanInPlaceUpdate", pods[i]).Return(utils.InPlaceApproved)
 		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
 	}
@@ -869,8 +1020,7 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
 	updater.RunOnce(context.Background())
-	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 10)
-	inplace.AssertNumberOfCalls(t, "CanUnboost", 5) // all 5 from previous run only
+	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 5)
 	eviction.AssertNumberOfCalls(t, "Evict", 0)
 }
 
@@ -924,4 +1074,116 @@ func TestIsInfeasibleError(t *testing.T) {
 			assert.Equal(t, tc.want, isInfeasibleError(tc.err))
 		})
 	}
+}
+
+type podNamespaceListerStub struct {
+	pods []*corev1.Pod
+}
+
+func (s *podNamespaceListerStub) List(_ labels.Selector) ([]*corev1.Pod, error) {
+	return s.pods, nil
+}
+
+func (s *podNamespaceListerStub) Get(name string) (*corev1.Pod, error) {
+	for _, p := range s.pods {
+		if p.Name == name {
+			return p, nil
+		}
+	}
+	return nil, apierrors.NewNotFound(corev1.Resource("pods"), name)
+}
+
+func TestProcessNextBoostItem_RetryExhaustion_ThenResync(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, true)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	containerName := "container1"
+	replicas := int32(1)
+	rc := corev1.ReplicationController{
+		TypeMeta:   metav1.TypeMeta{Kind: "ReplicationController", APIVersion: "apps/v1"},
+		ObjectMeta: metav1.ObjectMeta{Name: "rc", Namespace: "default"},
+		Spec:       corev1.ReplicationControllerSpec{Replicas: &replicas},
+	}
+
+	pod := test.Pod().WithName("boost-pod").
+		AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).
+		WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+		WithLabels(map[string]string{"app": "testingApp"}).
+		WithAnnotations(map[string]string{annotations.GetStartupCPUBoostAnnotationKey(containerName): ""}).
+		WithPodConditions([]corev1.PodCondition{{
+			Type:               corev1.PodReady,
+			Status:             corev1.ConditionTrue,
+			LastTransitionTime: metav1.NewTime(time.Now().Add(-2 * time.Minute)),
+		}}).
+		Get()
+
+	selector := parseLabelSelector("app = testingApp")
+	vpaObj := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed(containerName, "1", "100M").
+		WithMaxAllowed(containerName, "3", "1G").
+		WithTargetRef(&autoscalingv1.CrossVersionObjectReference{Kind: rc.Kind, Name: rc.Name, APIVersion: rc.APIVersion}).
+		WithCPUStartupBoost(vpa_types.FactorStartupBoostType, nil, nil, 60).
+		Get()
+
+	inplace := &test.PodsInPlaceRestrictionMock{}
+	factory := &restriction.FakePodsRestrictionFactory{InPlace: inplace}
+
+	podNSLister := &podNamespaceListerStub{pods: []*corev1.Pod{pod}}
+	podLister := &test.PodListerMock{}
+	podLister.On("Pods", "default").Return(podNSLister)
+
+	emptyVPANSLister := &test.VerticalPodAutoscalerListerMock{}
+	emptyVPANSLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{}, nil)
+
+	fullVPANSLister := &test.VerticalPodAutoscalerListerMock{}
+	fullVPANSLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil)
+
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+	vpaLister.On("VerticalPodAutoscalers", "default").Return(emptyVPANSLister).Times(7)
+	vpaLister.On("VerticalPodAutoscalers", "default").Return(fullVPANSLister).Once()
+
+	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
+
+	queue := workqueue.NewTypedRateLimitingQueueWithConfig(
+		workqueue.NewTypedItemExponentialFailureRateLimiter[string](0, 0),
+		workqueue.TypedRateLimitingQueueConfig[string]{Name: "test-boost"},
+	)
+	defer queue.ShutDown()
+
+	u := &updater{
+		vpaLister:            vpaLister,
+		podLister:            podLister,
+		restrictionFactory:   factory,
+		inPlaceRateLimiter:   rate.NewLimiter(rate.Inf, 0),
+		selectorFetcher:      mockSelectorFetcher,
+		controllerFetcher:    controllerfetcher.FakeControllerFetcher{},
+		cpuStartupBoostQueue: queue,
+	}
+
+	ctx := context.Background()
+	queue.Add("default/boost-pod")
+
+	// Phase 1: exhaust VPA-lookup retries.
+	// Calls 1-6 find no VPA and re-enqueue (NumRequeues 0→5, all ≤ maxVPALookupRetries).
+	// Call 7: NumRequeues=6 > 5, item is forgotten.
+	for i := range maxVPALookupRetries + 2 {
+		assert.True(t, u.processNextBoostItem(ctx), "iteration %d", i)
+	}
+	assert.Equal(t, 0, queue.Len(), "queue should be empty after retry exhaustion")
+
+	// Phase 2: resync re-enqueues the pod via PodUpdateHandler.
+	u.PodUpdateHandler(nil, pod)
+	assert.Equal(t, 1, queue.Len(), "queue should have 1 item after resync")
+
+	// Phase 3: VPA is now resolvable. Boost expired, unboost succeeds.
+	inplace.On("CanUnboost", pod, vpaObj).Return(true)
+	inplace.On("InPlaceUpdate", pod, nil).Return(nil)
+
+	assert.True(t, u.processNextBoostItem(ctx))
+	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 1)
+	assert.Equal(t, 0, queue.Len(), "queue should be empty after successful unboost")
 }

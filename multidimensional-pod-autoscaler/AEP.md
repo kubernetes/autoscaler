@@ -89,7 +89,7 @@ Manual fine-tuning the timing or frequency to do vertical/horizontal scaling and
 
 - Design and implement a holistic framework with a set of controllers to achieve multi-dimensional pod autoscaling (MPA).
 - Separate the decision actuation from recommendations for both horizontal and vertical autoscaling, which enables users to replace the default recommender with their customized recommender.
-- Re-use existing HPA and VPA libraries as much as possible in MPA.
+- Reuse existing HPA and VPA libraries as much as possible in MPA.
 
 ### Non-Goals
 
@@ -169,7 +169,7 @@ To generate the vertical scaling action recommendation, we reuse VPA libraries a
 To do that, we need to update accordingly the code which read and update the VPA objects to be interacting with the MPA objects.
 To generate the horizontal scaling action recommendation, we reuse HPA libraries, integrating with the MPA API code, to reads and updates the MPA objects.
 We integrate vertical and horizontal scaling in a single feedback cycle.
-As an intitial solution, vertical scaling and horizontal scaling is performed alternatively (vertical scaling first).
+As an initial solution, vertical scaling and horizontal scaling is performed alternatively (vertical scaling first).
 Vertical scaling will scale the CPU and memory allocations based on the historical usage; and horizontal scaling will scale the number of replicas based on either CPU utilization or a custom metric.
 In the future, we can consider more complex way of prioritization and conflict resolution.
 The separation of recommendation and actuation allows customized recommender to be used to replace the default recommender.
@@ -363,9 +363,9 @@ No.
 
 MPA can be disabled by executing `./deploy/mpa-down.sh`.
 
-#### What happens if we reenable the feature if it was previously rolled back?
+#### What happens if we re-enable the feature if it was previously rolled back?
 
-No impact will happen because everytime MPA is enabled it is a full new reset and restart of MPA.
+No impact will happen because every time MPA is enabled it is a full new reset and restart of MPA.
 
 #### Are there any tests for feature enablement/disablement?
 

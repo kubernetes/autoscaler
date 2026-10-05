@@ -18,14 +18,15 @@ package vultr
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/vultr/govultr"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func TestVultrCloudProvider_newVultrCloudProvider(t *testing.T) {
@@ -107,10 +108,10 @@ func TestVultrCloudProvider_NewNodeGroup(t *testing.T) {
 	rl := &cloudprovider.ResourceLimiter{}
 
 	provider := newVultrCloudProvider(manager, rl)
-	err = provider.Refresh()
+	err = provider.Refresh(context.Background())
 	assert.NoError(t, err)
 
-	nodes := provider.NodeGroups()
+	nodes := provider.NodeGroups(context.Background())
 	assert.Equal(t, len(nodes), 2, "number of nodes do not match")
 
 }
@@ -165,16 +166,89 @@ func TestVultrCloudProvider_NodeGroupForNode(t *testing.T) {
 	rl := &cloudprovider.ResourceLimiter{}
 
 	provider := newVultrCloudProvider(manager, rl)
-	err = provider.Refresh()
+	err = provider.Refresh(context.Background())
 	assert.NoError(t, err)
 
 	node := &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("np-1234")}}
 
-	nodeGroup, err := provider.NodeGroupForNode(node)
+	nodeGroup, err := provider.NodeGroupForNode(context.Background(), node)
 	require.NoError(t, err)
 
 	require.NotNil(t, nodeGroup)
 	require.Equal(t, nodeGroup.Id(), "a", "nodegroup IDs do not match")
+}
+
+func TestVultrCloudProvider_HasInstance(t *testing.T) {
+	config := `{"token": "123-456", "cluster_id": "abc"}`
+
+	manager, err := newManager(strings.NewReader(config))
+	require.NoError(t, err)
+
+	client := &vultrClientMock{}
+	ctx := context.Background()
+
+	client.On("ListNodePools", ctx, manager.clusterID, nil).Return(
+		[]govultr.NodePool{
+			{
+				ID:         "a",
+				AutoScaler: true,
+				Nodes:      []govultr.Node{{ID: "np-1234", Status: "Active"}},
+				MinNodes:   1,
+				MaxNodes:   2,
+			},
+		},
+		&govultr.Meta{},
+		nil,
+	).Once()
+
+	manager.client = client
+	provider := newVultrCloudProvider(manager, &cloudprovider.ResourceLimiter{})
+	err = provider.Refresh(ctx)
+	assert.NoError(t, err)
+
+	hasInstance, err := provider.HasInstance(ctx, &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("np-1234")}})
+	require.NoError(t, err)
+	assert.True(t, hasInstance)
+
+	client.On("ListNodePools", ctx, manager.clusterID, nil).Return(
+		[]govultr.NodePool{
+			{
+				ID:         "unmanaged",
+				AutoScaler: false,
+				Nodes:      []govultr.Node{{ID: "np-unmanaged", Status: "Active"}},
+			},
+		},
+		&govultr.Meta{},
+		nil,
+	).Twice()
+
+	hasInstance, err = provider.HasInstance(ctx, &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("np-unmanaged")}})
+	require.NoError(t, err)
+	assert.True(t, hasInstance)
+
+	hasInstance, err = provider.HasInstance(ctx, &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("missing")}})
+	require.NoError(t, err)
+	assert.False(t, hasInstance)
+
+	client.On("ListNodePools", ctx, manager.clusterID, nil).Return(
+		[]govultr.NodePool{},
+		&govultr.Meta{},
+		errors.New("list node pools failed"),
+	).Once()
+
+	hasInstance, err = provider.HasInstance(ctx, &apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: toProviderID("unknown")}})
+	require.EqualError(t, err, "list node pools failed")
+	assert.True(t, hasInstance)
+	client.AssertExpectations(t)
+}
+
+func TestToNodeID(t *testing.T) {
+	nodeID, err := toNodeID(toProviderID("np-1234"))
+	require.NoError(t, err)
+	assert.Equal(t, "np-1234", nodeID)
+
+	_, err = toNodeID("aws:///np-1234")
+	assert.Error(t, err)
 }
 
 func TestVultrCloudProvider_Name(t *testing.T) {
@@ -184,5 +258,5 @@ func TestVultrCloudProvider_Name(t *testing.T) {
 	require.NoError(t, err)
 
 	p := newVultrCloudProvider(manager, &cloudprovider.ResourceLimiter{})
-	assert.Equal(t, cloudprovider.VultrProviderName, p.Name(), "provider name doesn't match")
+	assert.Equal(t, ProviderName, p.Name(), "provider name doesn't match")
 }

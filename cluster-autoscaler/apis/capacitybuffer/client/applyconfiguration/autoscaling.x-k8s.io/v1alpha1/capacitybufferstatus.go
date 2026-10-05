@@ -31,7 +31,8 @@ type CapacityBufferStatusApplyConfiguration struct {
 	// to provision the buffer. If this field is not set, and the `conditions`
 	// indicate an error, it provides details about the error state.
 	PodTemplateRef *LocalObjectRefApplyConfiguration `json:"podTemplateRef,omitempty"`
-	// Replicas is the actual number of buffer chunks currently provisioned.
+	// Replicas is the final desired number of buffer chunks after processing
+	// .spec.replicas, .spec.percentage and .spec.limits.
 	Replicas *int32 `json:"replicas,omitempty"`
 	// PodTemplateGeneration is the observed generation of the PodTemplate, used
 	// to determine if the status is up-to-date with the desired `spec.podTemplateRef`.

@@ -24,6 +24,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
 func TestGetOriginalResourcesAnnotationValue(t *testing.T) {
@@ -103,10 +105,8 @@ func TestGetOriginalResourcesAnnotationValue(t *testing.T) {
 			var got OriginalResources
 			err = json.Unmarshal([]byte(val), &got)
 			assert.NoError(t, err)
-			assert.True(t, tc.expected.Requests.Cpu().Equal(*got.Requests.Cpu()), "CPU requests do not match")
-			assert.True(t, tc.expected.Requests.Memory().Equal(*got.Requests.Memory()), "Memory requests do not match")
-			assert.True(t, tc.expected.Limits.Cpu().Equal(*got.Limits.Cpu()), "CPU limits do not match")
-			assert.True(t, tc.expected.Limits.Memory().Equal(*got.Limits.Memory()), "Memory limits do not match")
+			test.AssertResourceListEqual(t, "requests", tc.expected.Requests, got.Requests)
+			test.AssertResourceListEqual(t, "limits", tc.expected.Limits, got.Limits)
 		})
 	}
 }
@@ -175,10 +175,8 @@ func TestGetOriginalResourcesFromAnnotation(t *testing.T) {
 				assert.Nil(t, got)
 			} else {
 				assert.NotNil(t, got)
-				assert.True(t, tc.expected.Requests.Cpu().Equal(*got.Requests.Cpu()), "CPU requests do not match")
-				assert.True(t, tc.expected.Requests.Memory().Equal(*got.Requests.Memory()), "Memory requests do not match")
-				assert.True(t, tc.expected.Limits.Cpu().Equal(*got.Limits.Cpu()), "CPU limits do not match")
-				assert.True(t, tc.expected.Limits.Memory().Equal(*got.Limits.Memory()), "Memory limits do not match")
+				test.AssertResourceListEqual(t, "requests", tc.expected.Requests, got.Requests)
+				test.AssertResourceListEqual(t, "limits", tc.expected.Limits, got.Limits)
 			}
 		})
 	}

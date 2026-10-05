@@ -48,6 +48,27 @@ type VpaWithSelector struct {
 	Selector labels.Selector
 }
 
+// TargetRefIndex is the name of the informer index that indexes VPA objects
+// by the namespace/kind/name of their targetRef.
+const TargetRefIndex = "vpaTargetRef"
+
+// TargetRefIndexKey returns the TargetRefIndex key for the given target controller.
+func TargetRefIndexKey(namespace, kind, name string) string {
+	return namespace + "/" + kind + "/" + name
+}
+
+// TargetRefIndexFunc indexes a VPA object by its targetRef. VPAs without a targetRef are not indexed.
+func TargetRefIndexFunc(obj any) ([]string, error) {
+	vpa, ok := obj.(*vpa_types.VerticalPodAutoscaler)
+	if !ok {
+		return nil, fmt.Errorf("expected *VerticalPodAutoscaler, got %T", obj)
+	}
+	if vpa.Spec.TargetRef == nil {
+		return nil, nil
+	}
+	return []string{TargetRefIndexKey(vpa.Namespace, vpa.Spec.TargetRef.Kind, vpa.Spec.TargetRef.Name)}, nil
+}
+
 type patchRecord struct {
 	Op    string `json:"op,inline"`
 	Path  string `json:"path,inline"`
@@ -83,14 +104,24 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 // set namespace to k8sapiv1.NamespaceAll to select all namespaces.
 // The method blocks until vpaLister is initially populated.
 func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}, namespace string) vpa_lister.VerticalPodAutoscalerLister {
+	lister, _ := NewVpasListerWithIndexer(vpaClient, stopChannel, namespace)
+	return lister
+}
+
+// NewVpasListerWithIndexer is like NewVpasLister but also returns the underlying indexer,
+// which additionally indexes VPA objects by targetRef (see TargetRefIndex).
+func NewVpasListerWithIndexer(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}, namespace string) (vpa_lister.VerticalPodAutoscalerLister, cache.Indexer) {
 	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1().RESTClient(), "verticalpodautoscalers", namespace, fields.Everything())
 	informerOptions := cache.InformerOptions{
 		ObjectType:    &vpa_types.VerticalPodAutoscaler{},
 		ListerWatcher: vpaListWatch,
 		Handler:       &cache.ResourceEventHandlerFuncs{},
 		ResyncPeriod:  1 * time.Hour,
-		Indexers:      cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
-		Transform:     client.StripManagedFields,
+		Indexers: cache.Indexers{
+			cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
+			TargetRefIndex:       TargetRefIndexFunc,
+		},
+		Transform: client.StripManagedFields,
 	}
 
 	store, controller := cache.NewInformerWithOptions(informerOptions)
@@ -107,7 +138,7 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 	} else {
 		klog.InfoS("Initial VPA synced successfully")
 	}
-	return vpaLister
+	return vpaLister, indexer
 }
 
 // NewVpaCheckpointLister returns VerticalPodAutoscalerCheckpointLister configured to fetch all VPACheckpoint objects from namespace,
@@ -345,6 +376,35 @@ func getContainerCPUStartupBoostDuration(containerName string, vpa *vpa_types.Ve
 		}
 	}
 	return boostDuration
+}
+
+// GetBoostRemainingDuration returns the shortest remaining time until the next
+// container's startup boost expires. The caller should re-check after processing
+// in case other containers have longer durations still pending.
+// Returns 0 if all boosts have already expired or if the pod is not ready.
+func GetBoostRemainingDuration(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) time.Duration {
+	_, readyCond := GetPodCondition(&pod.Status, corev1.PodReady)
+	if readyCond == nil || readyCond.Status != corev1.ConditionTrue {
+		return 0
+	}
+	readyTime := readyCond.LastTransitionTime.Time
+
+	var minRemaining time.Duration
+	found := false
+	for k := range pod.Annotations {
+		if containerName, ok := strings.CutPrefix(k, annotations.StartupCPUBoostAnnotationPrefix); ok {
+			boostDuration := time.Duration(getContainerCPUStartupBoostDuration(containerName, vpa)) * time.Second
+			remaining := boostDuration - time.Since(readyTime)
+			if remaining <= 0 {
+				continue
+			}
+			if !found || remaining < minRemaining {
+				minRemaining = remaining
+				found = true
+			}
+		}
+	}
+	return minRemaining
 }
 
 // PodHasCPUBoostInProgressAnnotation returns true if the pod has any CPU boost in progress annotation.

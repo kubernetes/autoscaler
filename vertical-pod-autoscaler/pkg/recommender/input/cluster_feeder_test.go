@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -30,8 +31,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
+	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/ktesting"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -1008,11 +1009,7 @@ func TestFilterVPAsIgnoreNamespaces(t *testing.T) {
 
 func TestCanCleanupCheckpoints(t *testing.T) {
 	_, tctx := ktesting.NewTestContext(t)
-	client := fake.NewClientset()
 	namespace := "testNamespace"
-
-	_, err := client.CoreV1().Namespaces().Create(tctx, &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}, metav1.CreateOptions{})
-	assert.NoError(t, err)
 
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("container").WithNamespace(namespace).WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
 		Kind:       kind,
@@ -1062,16 +1059,11 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 		return true, nil, nil
 	})
 
-	// Create namespace lister mock that will return the checkpoint list
-	checkpointNamespaceLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
-	checkpointNamespaceLister.On("List").Return(vpacheckpoints, nil)
-
-	// Create main checkpoint mock that will return the namespace lister
+	// Create checkpoint lister mock that will return the checkpoint list
 	checkpointLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
-	checkpointLister.On("VerticalPodAutoscalerCheckpoints", namespace).Return(checkpointNamespaceLister)
+	checkpointLister.On("List").Return(vpacheckpoints, nil)
 
 	feeder := clusterStateFeeder{
-		coreClient:          client.CoreV1(),
 		vpaLister:           vpaLister,
 		vpaCheckpointClient: checkpointClient,
 		vpaCheckpointLister: checkpointLister,
@@ -1079,11 +1071,175 @@ func TestCanCleanupCheckpoints(t *testing.T) {
 		recommenderName:     "default",
 	}
 
-	feeder.GarbageCollectCheckpoints(tctx)
+	err := feeder.GarbageCollectCheckpoints(tctx)
+	assert.NoError(t, err)
 
 	assert.Contains(t, deletedCheckpoints, "nonExistentVPA")
 
 	for _, vpa := range vpas {
 		assert.NotContains(t, deletedCheckpoints, vpa.Name)
+	}
+}
+
+func TestInitFromCheckpoints(t *testing.T) {
+	const containerName = "container"
+	firstSampleStart := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	newVpa := func(vpaNamespace, vpaName string, recommender string) *vpa_types.VerticalPodAutoscaler {
+		builder := test.VerticalPodAutoscaler().WithName(vpaName).WithNamespace(vpaNamespace).WithContainer(containerName).WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+			Kind:       kind,
+			Name:       name1,
+			APIVersion: apiVersion,
+		})
+		if recommender != "" {
+			builder = builder.WithRecommender(recommender)
+		}
+		return builder.Get()
+	}
+	newCheckpoint := func(vpaNamespace, vpaName string, totalSamplesCount int, version string) *vpa_types.VerticalPodAutoscalerCheckpoint {
+		return &vpa_types.VerticalPodAutoscalerCheckpoint{
+			ObjectMeta: metav1.ObjectMeta{Namespace: vpaNamespace, Name: vpaName + "-" + containerName},
+			Spec:       vpa_types.VerticalPodAutoscalerCheckpointSpec{VPAObjectName: vpaName, ContainerName: containerName},
+			Status: vpa_types.VerticalPodAutoscalerCheckpointStatus{
+				Version:           version,
+				TotalSamplesCount: totalSamplesCount,
+				FirstSampleStart:  metav1.NewTime(firstSampleStart),
+				LastSampleStart:   metav1.NewTime(firstSampleStart.Add(time.Hour)),
+			},
+		}
+	}
+
+	testCases := []struct {
+		name              string
+		recommenderName   string
+		ignoredNamespaces []string
+		vpas              []*vpa_types.VerticalPodAutoscaler
+		checkpoints       []*vpa_types.VerticalPodAutoscalerCheckpoint
+		expectedLoaded    map[model.VpaID]int
+		expectedErrors    int
+	}{
+		{
+			name:            "loads checkpoint of tracked VPA",
+			recommenderName: DefaultRecommenderName,
+			vpas:            []*vpa_types.VerticalPodAutoscaler{newVpa("ns1", "vpa1", "")},
+			checkpoints:     []*vpa_types.VerticalPodAutoscalerCheckpoint{newCheckpoint("ns1", "vpa1", 42, model.SupportedCheckpointVersion)},
+			expectedLoaded:  map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa1"}: 42},
+		},
+		{
+			name:            "loads each checkpoint into its own VPA across namespaces",
+			recommenderName: DefaultRecommenderName,
+			vpas:            []*vpa_types.VerticalPodAutoscaler{newVpa("ns1", "vpa1", ""), newVpa("ns2", "vpa1", "")},
+			checkpoints: []*vpa_types.VerticalPodAutoscalerCheckpoint{
+				newCheckpoint("ns1", "vpa1", 1, model.SupportedCheckpointVersion),
+				newCheckpoint("ns2", "vpa1", 2, model.SupportedCheckpointVersion),
+			},
+			expectedLoaded: map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa1"}: 1, {Namespace: "ns2", VpaName: "vpa1"}: 2},
+		},
+		{
+			name:            "skips checkpoint of VPA handled by another recommender",
+			recommenderName: DefaultRecommenderName,
+			vpas:            []*vpa_types.VerticalPodAutoscaler{newVpa("ns1", "vpa1", ""), newVpa("ns1", "vpa2", "other-recommender")},
+			checkpoints: []*vpa_types.VerticalPodAutoscalerCheckpoint{
+				newCheckpoint("ns1", "vpa1", 42, model.SupportedCheckpointVersion),
+				newCheckpoint("ns1", "vpa2", 7, model.SupportedCheckpointVersion),
+			},
+			expectedLoaded: map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa1"}: 42},
+		},
+		{
+			name:            "non-default recommender skips checkpoint of default recommender's VPA",
+			recommenderName: "other-recommender",
+			vpas:            []*vpa_types.VerticalPodAutoscaler{newVpa("ns1", "vpa1", ""), newVpa("ns1", "vpa2", "other-recommender")},
+			checkpoints: []*vpa_types.VerticalPodAutoscalerCheckpoint{
+				newCheckpoint("ns1", "vpa1", 42, model.SupportedCheckpointVersion),
+				newCheckpoint("ns1", "vpa2", 7, model.SupportedCheckpointVersion),
+			},
+			expectedLoaded: map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa2"}: 7},
+		},
+		{
+			name:            "skips orphaned checkpoint",
+			recommenderName: DefaultRecommenderName,
+			vpas:            []*vpa_types.VerticalPodAutoscaler{newVpa("ns1", "vpa1", "")},
+			checkpoints: []*vpa_types.VerticalPodAutoscalerCheckpoint{
+				newCheckpoint("ns1", "vpa1", 42, model.SupportedCheckpointVersion),
+				newCheckpoint("ns1", "vpa-orphaned", 7, model.SupportedCheckpointVersion),
+			},
+			expectedLoaded: map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa1"}: 42},
+		},
+		{
+			name:              "skips checkpoint in ignored namespace",
+			recommenderName:   DefaultRecommenderName,
+			ignoredNamespaces: []string{"ns-ignored"},
+			vpas:              []*vpa_types.VerticalPodAutoscaler{newVpa("ns1", "vpa1", ""), newVpa("ns-ignored", "vpa1", "")},
+			checkpoints: []*vpa_types.VerticalPodAutoscalerCheckpoint{
+				newCheckpoint("ns1", "vpa1", 42, model.SupportedCheckpointVersion),
+				newCheckpoint("ns-ignored", "vpa1", 7, model.SupportedCheckpointVersion),
+			},
+			expectedLoaded: map[model.VpaID]int{{Namespace: "ns1", VpaName: "vpa1"}: 42},
+		},
+		{
+			name:            "logs error for checkpoint of tracked VPA that cannot be loaded",
+			recommenderName: DefaultRecommenderName,
+			vpas:            []*vpa_types.VerticalPodAutoscaler{newVpa("ns1", "vpa1", "")},
+			checkpoints:     []*vpa_types.VerticalPodAutoscalerCheckpoint{newCheckpoint("ns1", "vpa1", 42, "invalidVersion")},
+			expectedLoaded:  map[model.VpaID]int{},
+			expectedErrors:  1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			logger := ktesting.NewLogger(t, ktesting.NewConfig(ktesting.BufferLogs(true)))
+			klog.SetLogger(logger)
+			defer klog.ClearLogger()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			vpaLister := &test.VerticalPodAutoscalerListerMock{}
+			vpaLister.On("List").Return(tc.vpas, nil)
+			checkpointLister := &test.VerticalPodAutoscalerCheckPointListerMock{}
+			checkpointLister.On("List").Return(tc.checkpoints, nil)
+			targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+			targetSelectorFetcher.EXPECT().Fetch(gomock.Any()).Return(parseLabelSelector("app = test"), nil).AnyTimes()
+
+			clusterState := model.NewClusterState(testGcPeriod)
+			feeder := clusterStateFeeder{
+				vpaLister:           vpaLister,
+				vpaCheckpointLister: checkpointLister,
+				clusterState:        clusterState,
+				selectorFetcher:     targetSelectorFetcher,
+				controllerFetcher:   &fakeControllerFetcher{},
+				recommenderName:     tc.recommenderName,
+				ignoredNamespaces:   tc.ignoredNamespaces,
+			}
+
+			feeder.InitFromCheckpoints(t.Context())
+
+			for id, expectedTotalSamplesCount := range tc.expectedLoaded {
+				vpa, found := clusterState.VPAs()[id]
+				if !assert.True(t, found, "VPA %v not in cluster state", id) {
+					continue
+				}
+				state, found := vpa.ContainersInitialAggregateState[containerName]
+				if !assert.True(t, found, "checkpoint not loaded for VPA %v", id) {
+					continue
+				}
+				assert.Equal(t, expectedTotalSamplesCount, state.TotalSamplesCount)
+				assert.True(t, firstSampleStart.Equal(state.FirstSampleStart), "unexpected FirstSampleStart %v for VPA %v", state.FirstSampleStart, id)
+			}
+			for id, vpa := range clusterState.VPAs() {
+				if _, expected := tc.expectedLoaded[id]; !expected {
+					assert.Empty(t, vpa.ContainersInitialAggregateState, "unexpected checkpoint loaded for VPA %v", id)
+				}
+			}
+
+			var errorLogs []string
+			for _, entry := range logger.GetSink().(ktesting.Underlier).GetBuffer().Data() {
+				if entry.Type == ktesting.LogError {
+					errorLogs = append(errorLogs, fmt.Sprintf("%s: %v", entry.Message, entry.Err))
+				}
+			}
+			assert.Len(t, errorLogs, tc.expectedErrors, "unexpected error log entries:\n%s", strings.Join(errorLogs, "\n"))
+		})
 	}
 }

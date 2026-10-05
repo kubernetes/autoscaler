@@ -142,6 +142,14 @@ var (
 
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
 		"Time spent in various parts of VPA Updater main loop.")
+
+	admissionControllerStatusInvalidCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "admission_controller_status_invalid_total",
+			Help:      "Number of times Updater skipped its main loop because the Admission Controller status Lease was missing, stale or otherwise invalid.",
+		}, []string{"reason"},
+	)
 )
 
 // Register initializes all metrics for VPA Updater
@@ -160,6 +168,7 @@ func Register() {
 		vpasWithInPlaceUpdatedPodsCount,
 		failedInPlaceUpdateAttempts,
 		functionLatency,
+		admissionControllerStatusInvalidCount,
 	}
 	prometheus.MustRegister(collectors...)
 }
@@ -167,6 +176,11 @@ func Register() {
 // NewExecutionTimer provides a timer for Updater's RunOnce execution
 func NewExecutionTimer() *metrics.ExecutionTimer {
 	return metrics.NewExecutionTimer(functionLatency)
+}
+
+// RecordAdmissionControllerStatusInvalid increases the counter of skipped main loop iterations
+func RecordAdmissionControllerStatusInvalid(reason string) {
+	admissionControllerStatusInvalidCount.WithLabelValues(reason).Inc()
 }
 
 // newSizeBasedGauge provides a wrapper for counting items in a loop

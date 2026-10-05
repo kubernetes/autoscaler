@@ -9,12 +9,12 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
 	"k8s.io/kubernetes/pkg/apis/scheduling"
 	"math/rand"
 	"regexp"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"strings"
 )
 

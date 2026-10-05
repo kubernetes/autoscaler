@@ -24,7 +24,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.priorityClassName }}
+      {{- with .Values.admissionController.certGen.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
       containers:

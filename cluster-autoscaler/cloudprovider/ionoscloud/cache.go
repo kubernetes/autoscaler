@@ -20,8 +20,8 @@ import (
 	"maps"
 	"sync"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 // IonosCache caches resources to reduce API calls.

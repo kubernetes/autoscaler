@@ -17,26 +17,41 @@ limitations under the License.
 package coreweave
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	coreoptions "k8s.io/autoscaler/cluster-autoscaler/core/options"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
+	kube_util "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
 )
 
+// ProviderName is the cloud provider name for this provider.
+const ProviderName = "coreweave"
+
 func init() {
-	builder.RegisterCloudProvider(cloudprovider.CoreWeaveProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
+	builder.RegisterCloudProvider(ProviderName, func(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, informerFactory informers.SharedInformerFactory) cloudprovider.CloudProvider {
 		return BuildCoreWeave(opts, do, rl)
 	})
-	builder.SetDefaultCloudProvider(cloudprovider.CoreWeaveProviderName)
+	builder.SetDefaultCloudProvider(ProviderName)
 }
+
+// GPULabel is the node label whose presence identifies CoreWeave GPU nodes.
+// The autoscaler's GPU readiness checks are presence-based, so the label
+// must exist only on GPU nodes and must be applied at node registration,
+// before the device plugin publishes nvidia.com/gpu in allocatable.
+// gpu.coreweave.cloud/driver-version is the only node label that satisfies
+// both: gpu.nvidia.com/class and its siblings look like the natural choice,
+// but CoreWeave stamps those keys onto every node with an empty value on
+// CPU nodes, which would classify all CPU nodes as GPU-unready forever.
+const GPULabel = "gpu.coreweave.cloud/driver-version"
 
 // CoreWeaveCloudProvider implements the CloudProvider interface for CoreWeave.
 type CoreWeaveCloudProvider struct {
@@ -74,11 +89,11 @@ func NewCoreWeaveCloudProvider(rl *cloudprovider.ResourceLimiter, opts config.Au
 
 // Name returns the name of the cloud provider.
 func (c *CoreWeaveCloudProvider) Name() string {
-	return cloudprovider.CoreWeaveProviderName
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (c *CoreWeaveCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (c *CoreWeaveCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
 	// Check if the manager is nil
 	if c.manager == nil {
 		klog.Error("CoreWeave manager is nil, cannot retrieve node groups")
@@ -95,7 +110,7 @@ func (c *CoreWeaveCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (c *CoreWeaveCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (c *CoreWeaveCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	klog.V(4).Infof("Getting node group for node %s", node.Name)
 	// Check if the manager is nil before proceeding
 	if c.manager == nil {
@@ -112,7 +127,7 @@ func (c *CoreWeaveCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 }
 
 // HasInstance checks if a given node has a corresponding instance in this cloud provider.
-func (c *CoreWeaveCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+func (c *CoreWeaveCloudProvider) HasInstance(ctx context.Context, node *apiv1.Node) (bool, error) {
 	// Check if the manager is nil
 	if c.manager == nil {
 		return false, fmt.Errorf("CoreWeave manager is nil")
@@ -140,54 +155,56 @@ func (c *CoreWeaveCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 
 // Pricing returns the pricing model for this cloud provider.
 // This method is not implemented for CoreWeave.
-func (c *CoreWeaveCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (c *CoreWeaveCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes returns a list of available machine types for this cloud provider.
 // This method is not implemented for CoreWeave.
-func (c *CoreWeaveCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (c *CoreWeaveCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup creates a new node group with the specified machine type, labels, system labels, taints, and extra resources.
 // This method is not implemented for CoreWeave.
-func (c *CoreWeaveCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (c *CoreWeaveCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns the resource limiter for this cloud provider.
-func (c *CoreWeaveCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (c *CoreWeaveCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
 	return c.resourceLimiter, nil
 }
 
-// GPULabel returns the label used to identify GPU nodes.
-// This method is not implemented for CoreWeave, so it returns an empty string.
-func (c *CoreWeaveCloudProvider) GPULabel() string {
-	return ""
+// GPULabel returns the label used to identify GPU nodes. Nodes carry the
+// label from first registration, before the device plugin publishes
+// nvidia.com/gpu in allocatable, which lets the core autoscaler classify a
+// booting GPU node as upcoming instead of usable-with-zero-GPUs.
+func (c *CoreWeaveCloudProvider) GPULabel(_ context.Context) string {
+	return GPULabel
 }
 
 // GetAvailableGPUTypes returns a map of available GPU types for this cloud provider.
 // This method is not implemented for CoreWeave, so it returns nil.
-func (c *CoreWeaveCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+func (c *CoreWeaveCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[string]struct{} {
 	return nil
 }
 
-// GetNodeGpuConfig returns the GPU configuration for a given node.
-// This method is not implemented for CoreWeave, so it returns nil.
-func (c *CoreWeaveCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
-	return nil
+// GetNodeGpuConfig returns the GPU configuration for a given node, or nil for
+// nodes without the GPU label.
+func (c *CoreWeaveCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	return gpu.GetNodeGPUFromCloudProvider(ctx, c, node)
 }
 
 // Cleanup performs any necessary cleanup for the cloud provider.
 // This method is not implemented for CoreWeave, so it returns nil.
-func (c *CoreWeaveCloudProvider) Cleanup() error {
+func (c *CoreWeaveCloudProvider) Cleanup(ctx context.Context) error {
 	return nil
 }
 
 // Refresh refreshes the state of the cloud provider.
-func (c *CoreWeaveCloudProvider) Refresh() error {
+func (c *CoreWeaveCloudProvider) Refresh(ctx context.Context) error {
 	return c.manager.Refresh()
 }
 

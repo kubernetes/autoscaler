@@ -42,6 +42,7 @@ type RecommenderConfig struct {
 	RecommenderName         string
 	MetricsFetcherInterval  time.Duration
 	CheckpointsGCInterval   time.Duration
+	CheckpointsGCTimeout    time.Duration
 	CheckpointsWriteTimeout time.Duration
 	Address                 string
 	Storage                 string
@@ -114,6 +115,7 @@ func DefaultRecommenderConfig() *RecommenderConfig {
 		RecommenderName:         input.DefaultRecommenderName,
 		MetricsFetcherInterval:  1 * time.Minute,
 		CheckpointsGCInterval:   10 * time.Minute,
+		CheckpointsGCTimeout:    time.Minute,
 		CheckpointsWriteTimeout: time.Minute,
 		Address:                 ":8942",
 		Storage:                 "",
@@ -186,9 +188,10 @@ func InitRecommenderFlags() *RecommenderConfig {
 	flag.StringVar(&config.RecommenderName, "recommender-name", config.RecommenderName, "Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster.")
 	flag.DurationVar(&config.MetricsFetcherInterval, "recommender-interval", config.MetricsFetcherInterval, `How often metrics should be fetched`)
 	flag.DurationVar(&config.CheckpointsGCInterval, "checkpoints-gc-interval", config.CheckpointsGCInterval, `How often orphaned checkpoints should be garbage collected`)
+	flag.DurationVar(&config.CheckpointsGCTimeout, "checkpoints-gc-timeout", config.CheckpointsGCTimeout, `Timeout for garbage collecting orphaned checkpoints`)
 	flag.DurationVar(&config.CheckpointsWriteTimeout, "checkpoints-timeout", config.CheckpointsWriteTimeout, `Timeout for writing checkpoints since the start of the recommender's main loop`)
 	flag.StringVar(&config.Address, "address", config.Address, "The address to expose Prometheus metrics.")
-	flag.StringVar(&config.Storage, "storage", config.Storage, `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
+	flag.StringVar(&config.Storage, "storage", config.Storage, `Specifies storage mode. Supported values: prometheus, checkpoint (default: checkpoint)`)
 	flag.BoolVar(&config.MemorySaver, "memory-saver", config.MemorySaver, `If true, only track pods which have an associated VPA`)
 	flag.IntVar(&config.UpdateWorkerCount, "update-worker-count", config.UpdateWorkerCount, "Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits ('kube-api-qps' and 'kube-api-burst') are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop.")
 	// MinCheckpointsPerRun is deprecated but kept for warning/compatibility.
@@ -212,9 +215,9 @@ func InitRecommenderFlags() *RecommenderConfig {
 
 	// Prometheus history provider flags
 	flag.StringVar(&config.PrometheusAddress, "prometheus-address", config.PrometheusAddress, `Where to reach for Prometheus metrics`)
-	flag.BoolVar(&config.PrometheusInsecure, "prometheus-insecure", config.PrometheusInsecure, `Skip tls verify if https is used in the prometheus-address`)
-	flag.StringVar(&config.PrometheusJobName, "prometheus-cadvisor-job-name", config.PrometheusJobName, `Name of the prometheus job name which scrapes the cAdvisor metrics`)
-	flag.StringVar(&config.HistoryLength, "history-length", config.HistoryLength, `How much time back prometheus have to be queried to get historical metrics`)
+	flag.BoolVar(&config.PrometheusInsecure, "prometheus-insecure", config.PrometheusInsecure, `Skip TLS verification if HTTPS is used in the prometheus-address`)
+	flag.StringVar(&config.PrometheusJobName, "prometheus-cadvisor-job-name", config.PrometheusJobName, `Name of the Prometheus job which scrapes the cAdvisor metrics`)
+	flag.StringVar(&config.HistoryLength, "history-length", config.HistoryLength, `How much time back Prometheus has to be queried to get historical metrics`)
 	flag.StringVar(&config.HistoryResolution, "history-resolution", config.HistoryResolution, `Resolution at which Prometheus is queried for historical metrics`)
 	flag.StringVar(&config.HistoryCPUMetric, "history-cpu-metric", config.HistoryCPUMetric, `Name of the metric to use for CPU history when querying Prometheus.`)
 	flag.StringVar(&config.HistoryMemoryMetric, "history-memory-metric", config.HistoryMemoryMetric, `Name of the metric to use for memory history when querying Prometheus`)
@@ -226,15 +229,15 @@ func InitRecommenderFlags() *RecommenderConfig {
 	flag.StringVar(&config.CtrNamespaceLabel, "container-namespace-label", config.CtrNamespaceLabel, `Label name to look for container namespaces`)
 	flag.StringVar(&config.CtrPodNameLabel, "container-pod-name-label", config.CtrPodNameLabel, `Label name to look for container pod names`)
 	flag.StringVar(&config.CtrNameLabel, "container-name-label", config.CtrNameLabel, `Label name to look for container names`)
-	flag.StringVar(&config.Username, "username", config.Username, "The username used in the prometheus server basic auth. Can also be set via the PROMETHEUS_USERNAME environment variable")
-	flag.StringVar(&config.Password, "password", config.Password, "The password used in the prometheus server basic auth. Can also be set via the PROMETHEUS_PASSWORD environment variable")
+	flag.StringVar(&config.Username, "username", config.Username, "The username used in the Prometheus server basic auth. Can also be set via the PROMETHEUS_USERNAME environment variable")
+	flag.StringVar(&config.Password, "password", config.Password, "The password used in the Prometheus server basic auth. Can also be set via the PROMETHEUS_PASSWORD environment variable")
 	flag.StringVar(&config.PrometheusBearerToken, "prometheus-bearer-token", config.PrometheusBearerToken, "The bearer token used in the Prometheus server bearer token auth")
 	flag.StringVar(&config.PrometheusBearerTokenFile, "prometheus-bearer-token-file", config.PrometheusBearerTokenFile, "Path to the bearer token file used for authentication by the Prometheus server")
 
 	// External metrics provider flags
-	flag.BoolVar(&config.UseExternalMetrics, "use-external-metrics", config.UseExternalMetrics, "ALPHA.  Use an external metrics provider instead of metrics_server.")
-	flag.StringVar(&config.ExternalCpuMetric, "external-metrics-cpu-metric", config.ExternalCpuMetric, "ALPHA.  Metric to use with external metrics provider for CPU usage.")
-	flag.StringVar(&config.ExternalMemoryMetric, "external-metrics-memory-metric", config.ExternalMemoryMetric, "ALPHA.  Metric to use with external metrics provider for memory usage.")
+	flag.BoolVar(&config.UseExternalMetrics, "use-external-metrics", config.UseExternalMetrics, "ALPHA. Use an external metrics provider instead of metrics_server.")
+	flag.StringVar(&config.ExternalCpuMetric, "external-metrics-cpu-metric", config.ExternalCpuMetric, "ALPHA. Metric to use with external metrics provider for CPU usage.")
+	flag.StringVar(&config.ExternalMemoryMetric, "external-metrics-memory-metric", config.ExternalMemoryMetric, "ALPHA. Metric to use with external metrics provider for memory usage.")
 
 	// Aggregation configuration flags
 	flag.DurationVar(&config.MemoryAggregationInterval, "memory-aggregation-interval", config.MemoryAggregationInterval, `Default length of a single interval, for which the peak memory usage is computed. Memory usage peaks are aggregated in multiples of this interval. In other words there is one memory usage sample per interval (the maximum usage over that interval). This value applies to all VPAs unless overridden in the VPA spec. Default is 24h.`)
@@ -269,6 +272,11 @@ func ValidateRecommenderConfig(config *RecommenderConfig) {
 
 	if config.MinCheckpointsPerRun != 10 { // Default value is 10
 		klog.InfoS("DEPRECATION WARNING: The 'min-checkpoints' flag is deprecated and has no effect. It will be removed in a future release.")
+	}
+
+	if config.CheckpointsGCTimeout <= 0 {
+		klog.ErrorS(nil, "--checkpoints-gc-timeout must be a positive duration", "checkpoints-gc-timeout", config.CheckpointsGCTimeout)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
 	if config.PrometheusBearerToken != "" && config.PrometheusBearerTokenFile != "" && config.Username != "" {

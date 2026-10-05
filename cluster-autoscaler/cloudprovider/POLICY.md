@@ -14,7 +14,7 @@ integration owners. A lot of what is described below has been unofficial
 practice for multiple years now, but this policy also introduces some new
 requirements for cloudprovider maintenance.
 
-## Responsbilities
+## Responsibilities
 
 Cloudprovider owners are responsible for:
 
