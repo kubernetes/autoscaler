@@ -40,6 +40,7 @@ Run `bash hack/update-metrics.sh` from the VPA directory after changing metric d
 
 | Metric name | Type | Labels | Description |
 | --- | --- | --- | --- |
+| `vpa_updater_admission_controller_status_invalid_total` | Counter | `reason` | Number of times Updater skipped its main loop because the Admission Controller status Lease was missing, stale or otherwise invalid. |
 | `vpa_updater_controlled_pods_total` | Gauge | `vpa_size_log2`, `update_mode` | Number of Pods controlled by VPA updater. |
 | `vpa_updater_evictable_pods_total` | Gauge | `vpa_size_log2`, `update_mode` | Number of Pods matching eviction criteria. |
 | `vpa_updater_evicted_pods_total` | Counter | `vpa_size_log2`, `update_mode`, `vpa_name`, `vpa_namespace` | Number of Pods evicted by Updater to apply a new recommendation. |
