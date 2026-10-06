@@ -227,11 +227,11 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *corev1.Pod, vpa
 		return fmt.Errorf("pod not suitable for in-place update %v: not in replicated pods map", podToUpdate.Name)
 	}
 
-	// separate patches since we have to patch resize and spec separately
+	// separate patches since resize is patched via the subresource and pod metadata via the pod resource
 	resizePatches := []resource_updates.PatchRecord{}
-	annotationPatches := []resource_updates.PatchRecord{}
+	podPatches := []resource_updates.PatchRecord{}
 	if podToUpdate.Annotations == nil {
-		annotationPatches = append(annotationPatches, patch.GetAddEmptyAnnotationsPatch())
+		podPatches = append(podPatches, patch.GetAddEmptyAnnotationsPatch())
 	}
 	for _, calculator := range ip.patchCalculators {
 		p, err := calculator.CalculatePatches(podToUpdate, vpa)
@@ -242,7 +242,7 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *corev1.Pod, vpa
 		if calculator.PatchResourceTarget() == patch.Resize {
 			resizePatches = append(resizePatches, p...)
 		} else {
-			annotationPatches = append(annotationPatches, p...)
+			podPatches = append(podPatches, p...)
 		}
 	}
 
@@ -261,16 +261,16 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *corev1.Pod, vpa
 	}
 	klog.V(4).InfoS("In-place patched pod /resize subresource using patches", "pod", klog.KObj(res), "patches", string(patch))
 
-	if len(annotationPatches) > 0 {
-		patch, err := json.Marshal(annotationPatches)
+	if len(podPatches) > 0 {
+		patch, err := json.Marshal(podPatches)
 		if err != nil {
 			return err
 		}
 		res, err = ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{})
 		if err != nil {
-			klog.V(4).ErrorS(err, "Failed to patch pod annotations", "pod", klog.KObj(res), "patches", string(patch))
+			klog.V(4).ErrorS(err, "Failed to patch pod metadata", "pod", klog.KObj(res), "patches", string(patch))
 		} else {
-			klog.V(4).InfoS("Patched pod annotations", "pod", klog.KObj(res), "patches", string(patch))
+			klog.V(4).InfoS("Patched pod metadata", "pod", klog.KObj(res), "patches", string(patch))
 		}
 	}
 
