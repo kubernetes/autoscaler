@@ -40,6 +40,7 @@ type VerticalPodAutoscalerCheckpointInterface interface {
 	Create(ctx context.Context, verticalPodAutoscalerCheckpoint *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, opts v1.CreateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, error)
 	Update(ctx context.Context, verticalPodAutoscalerCheckpoint *pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, opts v1.UpdateOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteWithResult(ctx context.Context, name string, opts v1.DeleteOptions) (v1.APIResult, error)
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
 	Get(ctx context.Context, name string, opts v1.GetOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpoint, error)
 	List(ctx context.Context, opts v1.ListOptions) (*pocautoscalingk8siov1alpha1.VerticalPodAutoscalerCheckpointList, error)
