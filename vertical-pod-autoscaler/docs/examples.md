@@ -7,6 +7,7 @@
 - [Capping to Limit Range](#capping-to-limit-range)
 - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
 - [Starting multiple recommenders](#starting-multiple-recommenders)
+- [Using your own recommender](#using-your-own-recommender)
 - [Custom memory bump-up after OOMKill](#custom-memory-bump-up-after-oomkill)
 - [Using CPU management with static policy](#using-cpu-management-with-static-policy)
 - [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
@@ -52,6 +53,35 @@ Please note the usage of the following arguments to override default names and p
 You can use the [standard recommender deployment](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/deploy/recommender-deployment.yaml) as a base and adjust the arguments accordingly.
 
 You can then choose which recommender to use by setting `recommenders` inside the `VerticalPodAutoscaler` spec.
+
+## Using your own recommender
+
+For the VPAs that select it, the VPA recommender can be replaced by another implementation,
+for example one that sizes workloads from other signals. The updater and admission controller
+apply recommendations consistently, regardless of which recommender generated them.
+
+What your recommender is expected to do:
+
+- **Handle only the VPA resources that name it.** A VPA selects which recommender controls it by name:
+
+  ```yaml
+  spec:
+    recommenders:
+      - name: my-recommender
+  ```
+
+  The list should contain at most one entry. The default recommender ignores VPAs that name
+  another recommender, to avoid collision between recommenders.
+- **Write the VPA's status** through the `status` subresource, following the
+  [`VerticalPodAutoscalerStatus`](../pkg/apis/autoscaling.k8s.io/v1/types.go) type (see also the
+  [API reference](./api.md#verticalpodautoscalerstatus)).
+- **Have the permissions it needs**: at least `get`, `list` and `watch` on
+  `verticalpodautoscalers` and `patch` on `verticalpodautoscalers/status`, plus read access to
+  whatever it uses to size workloads. The default recommender's roles in
+  [vpa-rbac.yaml](../deploy/vpa-rbac.yaml) are a useful reference.
+
+Your recommender doesn't need to write `VerticalPodAutoscalerCheckpoint` objects. The
+default recommender uses them to keep its usage history across restarts.
 
 ## Custom memory bump-up after OOMKill
 
