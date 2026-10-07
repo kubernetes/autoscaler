@@ -52,9 +52,9 @@ func TestMinResourcesApplied(t *testing.T) {
 	assert.Equal(t, model.MemoryAmountFromBytes(minMemoryMb*1024*1024), recommendedResources["container-1"].Target[model.ResourceMemory])
 }
 
-// Verifies that CreatePodResourceRecommender wires each per-container percentile
-// override to its own estimator: overriding one of the six (lower/target/upper
-// for cpu/memory) moves only that bound and leaves the other five untouched.
+// Verifies that CreatePodResourceRecommender wires the per-container target
+// percentile overrides to the target estimators only: overriding the cpu or
+// memory target moves that target and leaves every other value untouched.
 func TestCreatePodResourceRecommenderPerContainerPercentiles(t *testing.T) {
 	aggregations := model.GetAggregationsConfig()
 	cpuHistogram := util.NewHistogram(aggregations.CPUHistogramOptions)
@@ -92,27 +92,39 @@ func TestCreatePodResourceRecommenderPerContainerPercentiles(t *testing.T) {
 	}
 	baseline := recommend(newState())
 
-	slots := []struct {
+	type pickFn func(RecommendedContainerResources) model.ResourceAmount
+	pick := func(bound func(RecommendedContainerResources) model.Resources, resource model.ResourceName) pickFn {
+		return func(r RecommendedContainerResources) model.ResourceAmount { return bound(r)[resource] }
+	}
+	lower := func(r RecommendedContainerResources) model.Resources { return r.LowerBound }
+	target := func(r RecommendedContainerResources) model.Resources { return r.Target }
+	upper := func(r RecommendedContainerResources) model.Resources { return r.UpperBound }
+	values := map[string]pickFn{
+		"cpu lower bound":    pick(lower, model.ResourceCPU),
+		"cpu target":         pick(target, model.ResourceCPU),
+		"cpu upper bound":    pick(upper, model.ResourceCPU),
+		"memory lower bound": pick(lower, model.ResourceMemory),
+		"memory target":      pick(target, model.ResourceMemory),
+		"memory upper bound": pick(upper, model.ResourceMemory),
+	}
+
+	testCases := []struct {
 		name     string
 		override func(*model.AggregateContainerState)
-		pick     func(RecommendedContainerResources) model.ResourceAmount
 	}{
-		{"cpu lower bound", func(s *model.AggregateContainerState) { s.LowerBoundCPUPercentile = 0.9 }, func(r RecommendedContainerResources) model.ResourceAmount { return r.LowerBound[model.ResourceCPU] }},
-		{"cpu target", func(s *model.AggregateContainerState) { s.TargetCPUPercentile = 0.9 }, func(r RecommendedContainerResources) model.ResourceAmount { return r.Target[model.ResourceCPU] }},
-		{"cpu upper bound", func(s *model.AggregateContainerState) { s.UpperBoundCPUPercentile = 0.9 }, func(r RecommendedContainerResources) model.ResourceAmount { return r.UpperBound[model.ResourceCPU] }},
-		{"memory lower bound", func(s *model.AggregateContainerState) { s.LowerBoundMemoryPercentile = 0.9 }, func(r RecommendedContainerResources) model.ResourceAmount { return r.LowerBound[model.ResourceMemory] }},
-		{"memory target", func(s *model.AggregateContainerState) { s.TargetMemoryPercentile = 0.9 }, func(r RecommendedContainerResources) model.ResourceAmount { return r.Target[model.ResourceMemory] }},
-		{"memory upper bound", func(s *model.AggregateContainerState) { s.UpperBoundMemoryPercentile = 0.9 }, func(r RecommendedContainerResources) model.ResourceAmount { return r.UpperBound[model.ResourceMemory] }},
+		{"cpu target", func(s *model.AggregateContainerState) { s.TargetCPUPercentile = 0.9 }},
+		{"memory target", func(s *model.AggregateContainerState) { s.TargetMemoryPercentile = 0.9 }},
 	}
-	for i, tc := range slots {
+	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := newState()
 			tc.override(s)
 			got := recommend(s)
-			assert.Greater(t, tc.pick(got), tc.pick(baseline), "%s should follow its override", tc.name)
-			for j, other := range slots {
-				if j != i {
-					assert.Equal(t, other.pick(baseline), other.pick(got), "%s should be unchanged", other.name)
+			for name, value := range values {
+				if name == tc.name {
+					assert.Greater(t, value(got), value(baseline), "%s should follow its override", name)
+				} else {
+					assert.Equal(t, value(baseline), value(got), "%s should be unchanged", name)
 				}
 			}
 		})

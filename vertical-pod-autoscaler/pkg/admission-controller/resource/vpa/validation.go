@@ -296,10 +296,9 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 			}
 		}
 
-		// The recommendationPercentiles invariants (all three set per resource,
-		// 1..100, lowerBound <= target <= upperBound) are enforced by the API
-		// schema (required fields, Min/Max, CEL). The webhook only gates the
-		// feature here.
+		// The target range (1..100) is enforced by the API schema, and the check
+		// against the bound percentiles needs the Recommender's flags, so it's done
+		// by the Recommender (ConfigInvalid). The webhook only gates the feature.
 		if policy.RecommendationPercentiles != nil && !opts.AllowPerVPAConfig {
 			allErrs = append(allErrs, field.Forbidden(policyPath.Child("recommendationPercentiles"),
 				fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))

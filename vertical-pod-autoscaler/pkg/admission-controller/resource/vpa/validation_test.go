@@ -1033,7 +1033,7 @@ func TestValidateVPA(t *testing.T) {
 			expectError: errors.New("spec.resourcePolicy.containerPolicies[0].oomBumpUpRatio: Invalid value: 0.5: must be greater than or equal to 1.0"),
 		},
 		{
-			name: "Valid percentile triples",
+			name: "Valid target percentiles",
 			vpa: vpa_types.VerticalPodAutoscaler{
 				Spec: vpa_types.VerticalPodAutoscalerSpec{
 					TargetRef: &autoscalingv1.CrossVersionObjectReference{
@@ -1049,8 +1049,8 @@ func TestValidateVPA(t *testing.T) {
 								ContainerName: "*",
 								Mode:          &validScalingMode,
 								RecommendationPercentiles: &vpa_types.RecommendationPercentiles{
-									CPU:    &vpa_types.ResourcePercentiles{LowerBound: 50, Target: 95, UpperBound: 98},
-									Memory: &vpa_types.ResourcePercentiles{LowerBound: 40, Target: 80, UpperBound: 90},
+									CPU:    &vpa_types.ResourcePercentiles{Target: 95},
+									Memory: &vpa_types.ResourcePercentiles{Target: 80},
 								},
 							},
 						},
@@ -1076,7 +1076,7 @@ func TestValidateVPA(t *testing.T) {
 								ContainerName: "*",
 								Mode:          &validScalingMode,
 								RecommendationPercentiles: &vpa_types.RecommendationPercentiles{
-									Memory: &vpa_types.ResourcePercentiles{LowerBound: 40, Target: 80, UpperBound: 90},
+									Memory: &vpa_types.ResourcePercentiles{Target: 80},
 								},
 							},
 						},

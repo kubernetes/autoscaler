@@ -319,12 +319,12 @@ type ContainerResourcePolicy struct {
 	// +kubebuilder:validation:Minimum=1
 	MemoryAggregationIntervalCount *int64 `json:"memoryAggregationIntervalCount,omitempty"`
 
-	// recommendationPercentiles overrides the recommender percentiles for this
-	// container, replacing the corresponding global Recommender flags. Percentiles
-	// are set per resource (cpu, memory); within a resource the lower-bound, target
-	// and upper-bound percentiles are all required and must satisfy
-	// lowerBound <= target <= upperBound. Only honored when the PerVPAConfig feature
-	// gate is enabled.
+	// recommendationPercentiles overrides the recommender's target percentile for
+	// this container, per resource (cpu, memory), replacing the corresponding
+	// global Recommender flag. The lower and upper bounds keep using the global
+	// percentiles; if a target falls outside them, the Recommender sets the
+	// ConfigInvalid condition and the Updater does not update the VPA's pods.
+	// Only honored when the PerVPAConfig feature gate is enabled.
 	// +optional
 	RecommendationPercentiles *RecommendationPercentiles `json:"recommendationPercentiles,omitempty"`
 
@@ -342,7 +342,7 @@ const (
 	DefaultContainerResourcePolicy = "*"
 )
 
-// RecommendationPercentiles overrides the recommender percentiles for a
+// RecommendationPercentiles overrides the recommender's target percentile for a
 // container, per resource. A resource is only overridden when its entry is set;
 // resources left unset fall back to the global Recommender flags.
 type RecommendationPercentiles struct {
@@ -354,27 +354,14 @@ type RecommendationPercentiles struct {
 	Memory *ResourcePercentiles `json:"memory,omitempty"`
 }
 
-// ResourcePercentiles is the set of usage percentiles the recommender uses for a
-// single resource. All three are required and must satisfy
-// lowerBound <= target <= upperBound. Each is an integer percentile in [1, 100]
-// (e.g. 95 for p95).
-// +kubebuilder:validation:XValidation:rule="self.lowerBound <= self.target && self.target <= self.upperBound",message="percentiles must satisfy lowerBound <= target <= upperBound"
+// ResourcePercentiles holds the percentile overrides for a single resource.
 type ResourcePercentiles struct {
-	// lowerBound is the usage percentile used for the lower bound of the recommendation.
-	// +required
-	// +kubebuilder:validation:Minimum=1
-	// +kubebuilder:validation:Maximum=100
-	LowerBound int32 `json:"lowerBound"`
-	// target is the usage percentile used for the target recommendation.
+	// target is the usage percentile used for the target recommendation, as an
+	// integer in [1, 100] (e.g. 95 for p95).
 	// +required
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100
 	Target int32 `json:"target"`
-	// upperBound is the usage percentile used for the upper bound of the recommendation.
-	// +required
-	// +kubebuilder:validation:Minimum=1
-	// +kubebuilder:validation:Maximum=100
-	UpperBound int32 `json:"upperBound"`
 }
 
 // ContainerScalingMode controls whether autoscaler is enabled for a specific
@@ -479,6 +466,11 @@ var (
 	// ConfigUnsupported indicates that this VPA configuration is unsupported
 	// and recommendations will not be provided for it.
 	ConfigUnsupported VerticalPodAutoscalerConditionType = "ConfigUnsupported"
+	// ConfigInvalid indicates that this VPA configuration is invalid for the
+	// recommender serving it, for example a per-VPA target percentile outside
+	// the recommender's lower and upper bound percentiles. Recommendations are
+	// still provided, but the updater does not update the VPA's pods.
+	ConfigInvalid VerticalPodAutoscalerConditionType = "ConfigInvalid"
 )
 
 // VerticalPodAutoscalerCondition describes the state of

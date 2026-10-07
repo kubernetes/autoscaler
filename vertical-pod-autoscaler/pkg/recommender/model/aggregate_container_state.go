@@ -91,18 +91,10 @@ type ContainerStateAggregator interface {
 	GetOOMMinBumpUp() float64
 	// GetMemoryAggregationIntervalDuration returns the memory aggregation interval for this container.
 	GetMemoryAggregationIntervalDuration() time.Duration
-	// GetLowerBoundCPUPercentile returns the CPU lower-bound percentile override for this container (0 if unset).
-	GetLowerBoundCPUPercentile() float64
 	// GetTargetCPUPercentile returns the CPU target percentile override for this container (0 if unset).
 	GetTargetCPUPercentile() float64
-	// GetUpperBoundCPUPercentile returns the CPU upper-bound percentile override for this container (0 if unset).
-	GetUpperBoundCPUPercentile() float64
-	// GetLowerBoundMemoryPercentile returns the memory lower-bound percentile override for this container (0 if unset).
-	GetLowerBoundMemoryPercentile() float64
 	// GetTargetMemoryPercentile returns the memory target percentile override for this container (0 if unset).
 	GetTargetMemoryPercentile() float64
-	// GetUpperBoundMemoryPercentile returns the memory upper-bound percentile override for this container (0 if unset).
-	GetUpperBoundMemoryPercentile() float64
 }
 
 // AggregateContainerState holds input signals aggregated from a set of containers.
@@ -135,15 +127,11 @@ type AggregateContainerState struct {
 	OOMMinBumpUp                      float64
 	MemoryAggregationIntervalDuration time.Duration
 	MemoryAggregationIntervalCount    int64
-	// Per-container recommendation percentile overrides, as (0, 1] fractions.
-	// Zero means unset, in which case the corresponding global flag is used.
-	LowerBoundCPUPercentile    float64
-	TargetCPUPercentile        float64
-	UpperBoundCPUPercentile    float64
-	LowerBoundMemoryPercentile float64
-	TargetMemoryPercentile     float64
-	UpperBoundMemoryPercentile float64
-	ControlledResources        *[]ResourceName
+	// Per-container target percentile overrides, as (0, 1] fractions.
+	// Zero means unset, in which case the global target flag is used.
+	TargetCPUPercentile    float64
+	TargetMemoryPercentile float64
+	ControlledResources    *[]ResourceName
 
 	mutex sync.RWMutex
 }
@@ -198,34 +186,14 @@ func (a *AggregateContainerState) GetOOMMinBumpUp() float64 {
 	return a.OOMMinBumpUp
 }
 
-// GetLowerBoundCPUPercentile returns the per-container CPU lower-bound percentile override, or 0 if unset.
-func (a *AggregateContainerState) GetLowerBoundCPUPercentile() float64 {
-	return a.LowerBoundCPUPercentile
-}
-
 // GetTargetCPUPercentile returns the per-container CPU target percentile override, or 0 if unset.
 func (a *AggregateContainerState) GetTargetCPUPercentile() float64 {
 	return a.TargetCPUPercentile
 }
 
-// GetUpperBoundCPUPercentile returns the per-container CPU upper-bound percentile override, or 0 if unset.
-func (a *AggregateContainerState) GetUpperBoundCPUPercentile() float64 {
-	return a.UpperBoundCPUPercentile
-}
-
-// GetLowerBoundMemoryPercentile returns the per-container memory lower-bound percentile override, or 0 if unset.
-func (a *AggregateContainerState) GetLowerBoundMemoryPercentile() float64 {
-	return a.LowerBoundMemoryPercentile
-}
-
 // GetTargetMemoryPercentile returns the per-container memory target percentile override, or 0 if unset.
 func (a *AggregateContainerState) GetTargetMemoryPercentile() float64 {
 	return a.TargetMemoryPercentile
-}
-
-// GetUpperBoundMemoryPercentile returns the per-container memory upper-bound percentile override, or 0 if unset.
-func (a *AggregateContainerState) GetUpperBoundMemoryPercentile() float64 {
-	return a.UpperBoundMemoryPercentile
 }
 
 // GetMemoryAggregationIntervalDuration returns the memory aggregation interval for this container state.
@@ -402,14 +370,10 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 		a.ControlledResources = ResourceNamesApiToModel(*resourcePolicy.ControlledResources)
 	}
 
-	// Reset per-VPA recommendation percentiles so that removing an override falls
-	// back to the global flag (0 means "unset" for these fields).
-	a.LowerBoundCPUPercentile = 0
+	// Reset per-VPA target percentiles so that removing an override falls back
+	// to the global flag (0 means "unset" for these fields).
 	a.TargetCPUPercentile = 0
-	a.UpperBoundCPUPercentile = 0
-	a.LowerBoundMemoryPercentile = 0
 	a.TargetMemoryPercentile = 0
-	a.UpperBoundMemoryPercentile = 0
 
 	// Per VPA components - feature flag "PerVPAConfig" must be enabled
 	if resourcePolicy != nil {
@@ -445,24 +409,19 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 			}
 		}
 
-		// Per-VPA recommendation percentiles. Each is an integer [1, 100] on the
-		// API; convert to the (0, 1] fraction the estimators use. A resource is
-		// overridden only when its entry is set; the three percentiles within a
-		// resource are all required and ordered (enforced by the API schema).
+		// Per-VPA target percentiles. Each is an integer [1, 100] on the API;
+		// convert to the (0, 1] fraction the estimators use. A resource is
+		// overridden only when its entry is set.
 		if hasPercentileOverride(resourcePolicy) {
 			if features.Enabled(features.PerVPAConfig) {
 				if cpu := resourcePolicy.RecommendationPercentiles.CPU; cpu != nil {
-					a.LowerBoundCPUPercentile = percentileToFraction(cpu.LowerBound)
 					a.TargetCPUPercentile = percentileToFraction(cpu.Target)
-					a.UpperBoundCPUPercentile = percentileToFraction(cpu.UpperBound)
 				}
 				if memory := resourcePolicy.RecommendationPercentiles.Memory; memory != nil {
-					a.LowerBoundMemoryPercentile = percentileToFraction(memory.LowerBound)
 					a.TargetMemoryPercentile = percentileToFraction(memory.Target)
-					a.UpperBoundMemoryPercentile = percentileToFraction(memory.UpperBound)
 				}
 			} else {
-				klog.InfoS("per-VPA recommendation percentiles are set but PerVPAConfig feature gate is disabled, falling back to global flags")
+				klog.InfoS("per-VPA target percentiles are set but PerVPAConfig feature gate is disabled, falling back to global flags")
 			}
 		}
 	}
@@ -549,40 +508,16 @@ func (p *ContainerStateAggregatorProxy) GetOOMBumpUpRatio() float64 {
 	return aggregator.GetOOMBumpUpRatio()
 }
 
-// GetLowerBoundCPUPercentile returns the per-container CPU lower-bound percentile override.
-func (p *ContainerStateAggregatorProxy) GetLowerBoundCPUPercentile() float64 {
-	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
-	return aggregator.GetLowerBoundCPUPercentile()
-}
-
 // GetTargetCPUPercentile returns the per-container CPU target percentile override.
 func (p *ContainerStateAggregatorProxy) GetTargetCPUPercentile() float64 {
 	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
 	return aggregator.GetTargetCPUPercentile()
 }
 
-// GetUpperBoundCPUPercentile returns the per-container CPU upper-bound percentile override.
-func (p *ContainerStateAggregatorProxy) GetUpperBoundCPUPercentile() float64 {
-	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
-	return aggregator.GetUpperBoundCPUPercentile()
-}
-
-// GetLowerBoundMemoryPercentile returns the per-container memory lower-bound percentile override.
-func (p *ContainerStateAggregatorProxy) GetLowerBoundMemoryPercentile() float64 {
-	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
-	return aggregator.GetLowerBoundMemoryPercentile()
-}
-
 // GetTargetMemoryPercentile returns the per-container memory target percentile override.
 func (p *ContainerStateAggregatorProxy) GetTargetMemoryPercentile() float64 {
 	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
 	return aggregator.GetTargetMemoryPercentile()
-}
-
-// GetUpperBoundMemoryPercentile returns the per-container memory upper-bound percentile override.
-func (p *ContainerStateAggregatorProxy) GetUpperBoundMemoryPercentile() float64 {
-	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
-	return aggregator.GetUpperBoundMemoryPercentile()
 }
 
 // GetMemoryAggregationIntervalDuration returns the memory aggregation interval from the underlying aggregate container state.

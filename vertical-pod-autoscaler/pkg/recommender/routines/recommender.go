@@ -18,6 +18,7 @@ package routines
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -25,6 +26,7 @@ import (
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
@@ -66,6 +68,64 @@ type recommender struct {
 	lastAggregateContainerStateGC time.Time
 	recommendationPostProcessor   []RecommendationPostProcessor
 	updateWorkerCount             int
+	percentileBounds              PercentileBounds
+}
+
+// PercentileBounds holds the recommender's global lower and upper bound
+// percentiles, as (0, 1] fractions. Per-VPA target percentiles are checked
+// against them.
+type PercentileBounds struct {
+	LowerBoundCPU    float64
+	UpperBoundCPU    float64
+	LowerBoundMemory float64
+	UpperBoundMemory float64
+}
+
+// invalidTargetPercentileMessage returns a message describing the first
+// per-container target percentile that falls outside the recommender's lower
+// and upper bound percentiles, or "" if there is none.
+func invalidTargetPercentileMessage(policy *vpaautoscalingv1.PodResourcePolicy, bounds PercentileBounds) string {
+	if policy == nil {
+		return ""
+	}
+	check := func(container, resource string, rp *vpaautoscalingv1.ResourcePercentiles, lower, upper float64) string {
+		if rp == nil {
+			return ""
+		}
+		if target := float64(rp.Target) / 100.0; target < lower || target > upper {
+			return fmt.Sprintf("container %q: %s target percentile %d is outside the recommender's bound percentiles [%g, %g]",
+				container, resource, rp.Target, lower*100, upper*100)
+		}
+		return ""
+	}
+	for _, cp := range policy.ContainerPolicies {
+		if cp.RecommendationPercentiles == nil {
+			continue
+		}
+		if msg := check(cp.ContainerName, "cpu", cp.RecommendationPercentiles.CPU, bounds.LowerBoundCPU, bounds.UpperBoundCPU); msg != "" {
+			return msg
+		}
+		if msg := check(cp.ContainerName, "memory", cp.RecommendationPercentiles.Memory, bounds.LowerBoundMemory, bounds.UpperBoundMemory); msg != "" {
+			return msg
+		}
+	}
+	return ""
+}
+
+// updateConfigInvalidCondition sets ConfigInvalid when a per-VPA target
+// percentile falls outside the recommender's bound percentiles, and clears it
+// otherwise. The updater skips VPAs with this condition, so it never evicts
+// pods against bounds that can't contain the target.
+func updateConfigInvalidCondition(vpa *model.Vpa, bounds PercentileBounds) {
+	if !features.Enabled(features.PerVPAConfig) {
+		vpa.DeleteCondition(vpaautoscalingv1.ConfigInvalid)
+		return
+	}
+	if msg := invalidTargetPercentileMessage(vpa.ResourcePolicy, bounds); msg != "" {
+		vpa.SetCondition(vpaautoscalingv1.ConfigInvalid, true, "TargetPercentileOutOfBounds", msg)
+		return
+	}
+	vpa.DeleteCondition(vpaautoscalingv1.ConfigInvalid)
 }
 
 func (r *recommender) GetClusterState() model.ClusterState {
@@ -92,6 +152,7 @@ func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *vpaautoscalin
 	}
 	hasMatchingPods := vpa.PodCount > 0
 	vpa.UpdateConditions(hasMatchingPods)
+	updateConfigInvalidCondition(vpa, r.percentileBounds)
 	if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
 		klog.V(0).InfoS("", "err", err)
 		if klog.V(4).Enabled() {
@@ -221,6 +282,8 @@ type RecommenderFactory struct {
 	CheckpointsWriteTimeout time.Duration
 	UseCheckpoints          bool
 	UpdateWorkerCount       int
+
+	PercentileBounds PercentileBounds
 }
 
 // Make creates a new recommender instance,
@@ -242,6 +305,7 @@ func (c RecommenderFactory) Make() Recommender {
 		lastAggregateContainerStateGC: time.Now(),
 		lastCheckpointGC:              time.Now(),
 		updateWorkerCount:             c.UpdateWorkerCount,
+		percentileBounds:              c.PercentileBounds,
 	}
 	klog.V(3).InfoS("New Recommender created", "recommender", recommender)
 	return recommender

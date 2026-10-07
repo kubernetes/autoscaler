@@ -127,11 +127,11 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `prometheus-cadvisor-job-name` | string | "kubernetes-cadvisor" | Name of the Prometheus job which scrapes the cAdvisor metrics |
 | `prometheus-insecure` | bool | false | Skip TLS verification if HTTPS is used in the prometheus-address |
 | `prometheus-query-timeout` | string | "5m" | How long to wait before killing long queries |
-| `recommendation-lower-bound-cpu-percentile` | float | 0.5 | Default CPU usage percentile that will be used for the lower bound on CPU recommendation. Can be overridden per container with recommendationPercentiles. |
-| `recommendation-lower-bound-memory-percentile` | float | 0.5 | Default memory usage percentile that will be used for the lower bound on memory recommendation. Can be overridden per container with recommendationPercentiles. |
+| `recommendation-lower-bound-cpu-percentile` | float | 0.5 | CPU usage percentile that will be used for the lower bound on CPU recommendation. |
+| `recommendation-lower-bound-memory-percentile` | float | 0.5 | Memory usage percentile that will be used for the lower bound on memory recommendation. |
 | `recommendation-margin-fraction` | float | 0.15 | Fraction of usage added as the safety margin to the recommended request |
-| `recommendation-upper-bound-cpu-percentile` | float | 0.95 | Default CPU usage percentile that will be used for the upper bound on CPU recommendation. Can be overridden per container with recommendationPercentiles. |
-| `recommendation-upper-bound-memory-percentile` | float | 0.95 | Default memory usage percentile that will be used for the upper bound on memory recommendation. Can be overridden per container with recommendationPercentiles. |
+| `recommendation-upper-bound-cpu-percentile` | float | 0.95 | CPU usage percentile that will be used for the upper bound on CPU recommendation. |
+| `recommendation-upper-bound-memory-percentile` | float | 0.95 | Memory usage percentile that will be used for the upper bound on memory recommendation. |
 | `recommender-interval` | duration | 1m0s | How often metrics should be fetched |
 | `recommender-name` | string | "default" | Set the recommender name. Recommender will generate recommendations for VPAs that configure the same recommender name. If the recommender name is left as default it will also generate recommendations that don't explicitly specify recommender. You shouldn't run two recommenders with the same name in a cluster. |
 | `round-cpu-millicores` | int | 1 | CPU recommendation rounding factor in millicores. The CPU value will always be rounded up to the nearest multiple of this factor. |
