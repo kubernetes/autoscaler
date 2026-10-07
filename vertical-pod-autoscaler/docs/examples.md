@@ -77,7 +77,7 @@ What your recommender is expected to do:
   [API reference](./api.md#verticalpodautoscalerstatus)).
 - **Have the permissions it needs**: at least `get`, `list` and `watch` on
   `verticalpodautoscalers` and `patch` on `verticalpodautoscalers/status`, plus read access to
-  whatever it uses to size workloads. The default recommender's roles in
+  whatever it uses to create the recommendations. The default recommender's roles in
   [vpa-rbac.yaml](../deploy/vpa-rbac.yaml) are a useful reference.
 
 Your recommender doesn't need to write `VerticalPodAutoscalerCheckpoint` objects. The
