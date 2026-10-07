@@ -901,9 +901,17 @@ autoscaled node group. On clusters that mix autoscaled node groups with an exter
 node fleet, `--unready-nodes-scope=autoscaled` excludes nodes known to be outside autoscaled
 node groups from this check, so unready nodes in the externally managed fleet no longer block
 autoscaling. Nodes whose node group lookup fails remain included because their ownership is unknown.
-The per-node-group check is unaffected either way, and the status ConfigMap keeps reporting
-cluster-wide node counts, so under `autoscaled` those counts can exceed the configured
-thresholds while the cluster is still reported healthy.
+The percentage threshold also uses only nodes in the selected scope as its denominator, so
+excluding ready external nodes can make this check stricter. For example, with the default
+thresholds, 5 unready nodes among 10 autoscaled nodes alongside 100 ready external nodes pass
+the cluster-wide check under `cluster` (5/110, about 4.5%) but fail it under `autoscaled`
+(5/10, 50%). The per-node-group check is unaffected either way.
+
+The status ConfigMap keeps reporting cluster-wide node counts, as does the
+`cluster_autoscaler_nodes_count{state="unready"}` metric for unready nodes. The
+`cluster_autoscaler_cluster_safe_to_autoscale` metric follows the scoped health check. Under
+`autoscaled`, cluster-wide counts can exceed the configured thresholds while the cluster is
+still reported healthy, so alerts based on those counts can disagree with the health metric.
 
 ### How fast is Cluster Autoscaler?
 
