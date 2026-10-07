@@ -1,5 +1,5 @@
 /*
-Copyright 2025 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
-// VpaManagedLabel is added to pods whose resources are set by the VPA admission controller,
-// so managed pods can be found with a label selector.
+// VpaManagedLabel marks pods managed by a VPA, so they can be found with a label selector.
 const VpaManagedLabel = "vpa-autoscaler.k8s.io/managed"
 
 type managedLabel struct{}
@@ -37,8 +36,7 @@ func (*managedLabel) PatchResourceTarget() PatchResourceTarget {
 	return Pod
 }
 
-// NewManagedLabelCalculator returns calculator for
-// vpa managed label patches.
+// NewManagedLabelCalculator returns a calculator that adds VpaManagedLabel to pods on creation.
 func NewManagedLabelCalculator() Calculator {
 	return &managedLabel{}
 }

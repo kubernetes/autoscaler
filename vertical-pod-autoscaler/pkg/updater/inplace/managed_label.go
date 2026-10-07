@@ -1,5 +1,5 @@
 /*
-Copyright 2025 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,9 +26,8 @@ import (
 
 type managedLabel struct{}
 
-// CalculatePatches returns a patch that adds the VPA managed label to the pod,
-// matching the label the admission controller adds on pod creation. In-place
-// resized pods never pass through admission again, so the updater has to label them.
+// CalculatePatches returns patches that add VpaManagedLabel to the pod.
+// The admission controller only labels pods on creation, so pods resized in-place need to be labeled here.
 func (*managedLabel) CalculatePatches(pod *corev1.Pod, _ *vpa_types.VerticalPodAutoscaler) ([]resource_admission.PatchRecord, error) {
 	patches := []resource_admission.PatchRecord{}
 	if pod.Labels == nil {
@@ -41,8 +40,7 @@ func (*managedLabel) PatchResourceTarget() patch.PatchResourceTarget {
 	return patch.Pod
 }
 
-// NewManagedLabelCalculator returns calculator for
-// vpa managed label patches.
+// NewManagedLabelCalculator returns a calculator that adds VpaManagedLabel to in-place updated pods.
 func NewManagedLabelCalculator() patch.Calculator {
 	return &managedLabel{}
 }

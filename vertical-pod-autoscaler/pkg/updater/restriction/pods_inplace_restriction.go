@@ -268,7 +268,8 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *corev1.Pod, vpa
 		}
 		res, err = ip.client.CoreV1().Pods(podToUpdate.Namespace).Patch(context.TODO(), podToUpdate.Name, k8stypes.JSONPatchType, patch, metav1.PatchOptions{})
 		if err != nil {
-			klog.V(4).ErrorS(err, "Failed to patch pod metadata", "pod", klog.KObj(res), "patches", string(patch))
+			// not returning the error: the resize already succeeded and callers would fall back to eviction
+			klog.V(4).ErrorS(err, "Failed to patch pod metadata after in-place resize", "pod", klog.KObj(podToUpdate), "patches", string(patch))
 		} else {
 			klog.V(4).InfoS("Patched pod metadata", "pod", klog.KObj(res), "patches", string(patch))
 		}
