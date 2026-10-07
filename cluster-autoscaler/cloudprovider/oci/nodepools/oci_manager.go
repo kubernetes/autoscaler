@@ -62,6 +62,8 @@ type NodePoolManager interface {
 	GetNodePools() []NodePool
 	// GetNodePoolNodes returns NodePool nodes.
 	GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance, error)
+	// GetNodePoolNodePrivateIP returns the private IP of a node in the node pool.
+	GetNodePoolNodePrivateIP(np NodePool) (string, error)
 	// GetNodePoolNodes returns NodePool nodes.
 	GetExistingNodePoolSizeViaCompute(np NodePool) (int, error)
 	// GetNodePoolForInstance returns NodePool to which the given instance belongs.
@@ -629,6 +631,23 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 	return instances, nil
 }
 
+func (m *ociManagerImpl) GetNodePoolNodePrivateIP(np NodePool) (string, error) {
+	nodePool, err := m.nodePoolCache.get(np.Id())
+	if err != nil {
+		return "", err
+	}
+
+	if len(nodePool.Nodes) == 0 {
+		return "", fmt.Errorf("node pool %s has no nodes", np.Id())
+	}
+
+	if nodePool.Nodes[0].PrivateIp == nil {
+		return "", fmt.Errorf("node pool %s node has no private IP", np.Id())
+	}
+
+	return *nodePool.Nodes[0].PrivateIp, nil
+}
+
 // GetNodePoolForInstance returns NodePool to which the given instance belongs.
 func (m *ociManagerImpl) GetNodePoolForInstance(instance ocicommon.OciRef) (NodePool, error) {
 	if strings.Contains(instance.InstanceID, npconsts.OciVirtualNodeResourceIdent) {
@@ -763,7 +782,7 @@ func (m *ociManagerImpl) buildNodeFromTemplate(nodePool *oke.NodePool) (*apiv1.N
 		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(ephemeralStorage, resource.DecimalSI)
 	}
 
-	node.Status.Allocatable = node.Status.Capacity
+	node.Status.Allocatable = node.Status.Capacity.DeepCopy()
 
 	availabilityDomain, err := getNodePoolAvailabilityDomain(nodePool)
 	if err != nil {
