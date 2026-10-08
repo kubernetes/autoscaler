@@ -175,9 +175,9 @@ func (u *updater) applyTargetConflictCondition(vpa *vpa_types.VerticalPodAutosca
 
 // jsonPatchOp is a single JSON Patch (RFC 6902) operation.
 type jsonPatchOp struct {
-	Op    string      `json:"op"`
-	Path  string      `json:"path"`
-	Value interface{} `json:"value"`
+	Op    string `json:"op"`
+	Path  string `json:"path"`
+	Value any    `json:"value"`
 }
 
 // patchTargetConflictConditions replaces status.conditions only, leaving the
