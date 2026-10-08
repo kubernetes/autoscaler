@@ -114,3 +114,28 @@ func TestReconcileTargetConflictsGivesUpWhenConditionsKeepChanging(t *testing.T)
 	assert.Contains(t, tc.Message, "vpa-9", "nothing was written, the old condition is left as is")
 	assert.Empty(t, recorder.Events, "no event for a persisting conflict")
 }
+
+func TestReconcileTargetConflictsStopsRetryWhenGenerationChanged(t *testing.T) {
+	older, newer := concurrentWriteSetup()
+	client := vpa_fake.NewSimpleClientset(older.build(), newer.build())
+	listed := []*vpa_types.VerticalPodAutoscaler{older.build(), newer.build()}
+	recorder := record.NewFakeRecorder(20)
+
+	// Another writer adds a condition and the VPA spec changes (generation bump).
+	appendStoredCondition(t, client, "vpa-2", "concurrent")
+	obj, err := client.Tracker().Get(vpaGVR, "default", "vpa-2")
+	require.NoError(t, err)
+	stored := obj.(*vpa_types.VerticalPodAutoscaler).DeepCopy()
+	stored.Generation = 2
+	require.NoError(t, client.Tracker().Update(vpaGVR, stored, "default"))
+	client.ClearActions()
+
+	u := &updater{vpaClient: client, eventRecorder: recorder}
+	u.reconcileTargetConflicts(listed)
+
+	assert.Equal(t, 1, statusPatchCount(client), "no retry once the generation changed")
+	tc := findCondition(getVpa(t, client, "default", "vpa-2"), vpa_types.TargetConflict)
+	require.NotNil(t, tc)
+	assert.Contains(t, tc.Message, "vpa-9", "nothing was written for a stale decision")
+	assert.Empty(t, recorder.Events)
+}
