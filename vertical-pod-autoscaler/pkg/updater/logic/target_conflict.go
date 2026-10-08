@@ -23,6 +23,7 @@ import (
 	"slices"
 
 	corev1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
@@ -121,6 +122,11 @@ func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutosc
 
 	newStatus := oldStatus.DeepCopy()
 	setVpaCondition(newStatus, vpa_types.TargetConflict, condStatus, reason, message, vpa.Generation)
+	// Nothing changed (same status, reason, message and generation): don't
+	// send a status patch every updater loop for an unchanged conflict.
+	if apiequality.Semantic.DeepEqual(oldStatus.Conditions, newStatus.Conditions) {
+		return
+	}
 
 	// Patch conditions only so a concurrent recommender status write isn't clobbered.
 	if err := u.patchTargetConflictConditions(vpa, newStatus.Conditions); err != nil {
