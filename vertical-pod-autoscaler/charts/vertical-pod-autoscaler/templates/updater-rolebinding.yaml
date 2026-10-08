@@ -13,7 +13,7 @@ roleRef:
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-leader-locking
 subjects:
   - kind: ServiceAccount
-    name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
+    name: {{ include "vertical-pod-autoscaler.updater.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{- end -}}
 {{- end -}}
