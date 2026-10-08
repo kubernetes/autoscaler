@@ -169,6 +169,12 @@ func (u *updater) applyTargetConflictCondition(vpa *vpa_types.VerticalPodAutosca
 		if attempt >= targetConflictPatchAttempts || apiequality.Semantic.DeepEqual(fresh.Status.Conditions, current.Status.Conditions) {
 			return err
 		}
+		// The conflict was computed from the VPA as listed. If its spec changed since
+		// (generation bumped), don't stamp the new generation on that stale decision;
+		// the next loop recomputes it.
+		if fresh.Generation != vpa.Generation {
+			return fmt.Errorf("%w (VPA generation changed from %d to %d, will recompute on the next loop)", err, vpa.Generation, fresh.Generation)
+		}
 		current = fresh
 	}
 }
