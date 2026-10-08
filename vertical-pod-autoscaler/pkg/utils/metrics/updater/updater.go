@@ -140,6 +140,14 @@ var (
 		}, []string{"vpa_size_log2", "vpa_name", "vpa_namespace"},
 	)
 
+	initialDelayActive = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "initial_delay_active",
+			Help:      "Whether a VPA that sets initialDelaySeconds is within its initial delay window (1) or not (0).",
+		}, []string{"vpa_name", "vpa_namespace"},
+	)
+
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
 		"Time spent in various parts of VPA Updater main loop.")
 
@@ -167,6 +175,7 @@ func Register() {
 		vpasWithInPlaceUpdatablePodsCount,
 		vpasWithInPlaceUpdatedPodsCount,
 		failedInPlaceUpdateAttempts,
+		initialDelayActive,
 		functionLatency,
 		admissionControllerStatusInvalidCount,
 	}
@@ -176,6 +185,21 @@ func Register() {
 // NewExecutionTimer provides a timer for Updater's RunOnce execution
 func NewExecutionTimer() *metrics.ExecutionTimer {
 	return metrics.NewExecutionTimer(functionLatency)
+}
+
+// ResetInitialDelayActive clears the initial delay gauge, so VPAs that were
+// deleted or no longer set initialDelaySeconds drop out.
+func ResetInitialDelayActive() {
+	initialDelayActive.Reset()
+}
+
+// RecordInitialDelayActive sets the initial delay gauge for the given VPA.
+func RecordInitialDelayActive(vpaName string, vpaNamespace string, active bool) {
+	value := 0.0
+	if active {
+		value = 1.0
+	}
+	initialDelayActive.WithLabelValues(vpaName, vpaNamespace).Set(value)
 }
 
 // RecordAdmissionControllerStatusInvalid increases the counter of skipped main loop iterations

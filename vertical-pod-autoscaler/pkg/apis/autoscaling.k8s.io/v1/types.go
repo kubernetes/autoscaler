@@ -211,6 +211,24 @@ type PodUpdatePolicy struct {
 	// +optional
 	// +kubebuilder:validation:Minimum=1
 	EvictAfterOOMSeconds *int32 `json:"evictAfterOOMSeconds,omitempty"`
+
+	// initialDelaySeconds specifies the number of seconds to wait after
+	// the VPA object is created before recommendations are actuated,
+	// regardless of the configured UpdateMode.
+	//
+	// During the window, the Recommender still computes and publishes
+	// recommendations to status.recommendation, but the Updater and
+	// Admission Controller treat the VPA as if UpdateMode were Off: no
+	// evictions, in-place resizes, or injection into new pods. The
+	// configured UpdateMode takes effect once the window elapses.
+	//
+	// If UpdateMode is Off, this field has no effect. Must be between
+	// 1 and 7776000 (90 days) if set. Only honored when the
+	// VPAInitialDelay feature gate is enabled.
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=7776000
+	InitialDelaySeconds *int32 `json:"initialDelaySeconds,omitempty"`
 }
 
 // UpdateMode controls when autoscaler applies changes to the pod resources.
@@ -435,6 +453,10 @@ var (
 	// ConfigUnsupported indicates that this VPA configuration is unsupported
 	// and recommendations will not be provided for it.
 	ConfigUnsupported VerticalPodAutoscalerConditionType = "ConfigUnsupported"
+	// InitialDelayActive indicates whether the VPA is currently within its
+	// configured initial delay window. It is True while the window is
+	// active and False once it has elapsed.
+	InitialDelayActive VerticalPodAutoscalerConditionType = "InitialDelayActive"
 )
 
 // VerticalPodAutoscalerCondition describes the state of
