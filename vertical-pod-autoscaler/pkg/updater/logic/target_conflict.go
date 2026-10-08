@@ -35,6 +35,10 @@ import (
 const targetConflictReason = "MultipleActiveVPATargetsFound"
 const noTargetConflictReason = "NoConflictingActiveVPATargets"
 
+// targetConflictPatchAttempts bounds how often a TargetConflict patch is retried
+// when other writers keep changing the VPA's conditions.
+const targetConflictPatchAttempts = 3
+
 // reconcileTargetConflicts groups the given VPAs by their targetRef. Within
 // each group of active VPAs (update mode other than "Off", or "Off" with a
 // startupBoost) it picks the controlling VPA with vpa_api_util.Stronger, the
@@ -99,11 +103,10 @@ func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutosc
 	if c := getVpaCondition(&vpa.Status, vpa_types.TargetConflict); c != nil {
 		wasConflicting = c.Status == corev1.ConditionTrue
 	}
-	// Skip the copy below when there's nothing to do.
+	// Nothing to do: no conflict now and none previously recorded.
 	if !conflicting && !wasConflicting {
 		return
 	}
-	oldStatus := vpa.Status.DeepCopy()
 
 	// transitioned is true only when the conflict appears or clears. While a
 	// conflict persists we still rebuild the condition, because the controlling
@@ -120,16 +123,7 @@ func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutosc
 		message = fmt.Sprintf("Conflict: multiple active VPAs target the same resource; VPA %q controls it and this VPA is not applied", controllingVpaName)
 	}
 
-	newStatus := oldStatus.DeepCopy()
-	setVpaCondition(newStatus, vpa_types.TargetConflict, condStatus, reason, message, vpa.Generation)
-	// Nothing changed (same status, reason, message and generation): don't
-	// send a status patch every updater loop for an unchanged conflict.
-	if apiequality.Semantic.DeepEqual(oldStatus.Conditions, newStatus.Conditions) {
-		return
-	}
-
-	// Patch conditions only so a concurrent recommender status write isn't clobbered.
-	if err := u.patchTargetConflictConditions(vpa, newStatus.Conditions); err != nil {
+	if err := u.applyTargetConflictCondition(vpa, condStatus, reason, message); err != nil {
 		klog.ErrorS(err, "Failed to update VPA TargetConflict condition", "vpa", klog.KObj(vpa))
 		return
 	}
@@ -145,14 +139,60 @@ func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutosc
 	u.eventRecorder.Event(vpa, eventType, reason, message)
 }
 
-// patchTargetConflictConditions patches status.conditions only, leaving the
-// rest of status (owned by the recommender) untouched.
+// applyTargetConflictCondition sets the TargetConflict condition on the VPA's
+// status, sending a patch only if that changes anything. The patch is guarded
+// against concurrent writers (see patchTargetConflictConditions). If the guard
+// trips because another writer changed the conditions in the meantime, the VPA
+// is refetched, the condition is recomputed on top of the fresh conditions, and
+// the patch is retried, up to targetConflictPatchAttempts times.
+func (u *updater) applyTargetConflictCondition(vpa *vpa_types.VerticalPodAutoscaler, condStatus corev1.ConditionStatus, reason, message string) error {
+	vpaClient := u.vpaClient.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace)
+	current := vpa
+	for attempt := 1; ; attempt++ {
+		newStatus := current.Status.DeepCopy()
+		setVpaCondition(newStatus, vpa_types.TargetConflict, condStatus, reason, message, current.Generation)
+		// Nothing changed (same status, reason, message and generation): don't
+		// send a status patch every updater loop for an unchanged conflict.
+		if apiequality.Semantic.DeepEqual(current.Status.Conditions, newStatus.Conditions) {
+			return nil
+		}
+		err := u.patchTargetConflictConditions(current, newStatus.Conditions)
+		if err == nil {
+			return nil
+		}
+		// Only retry if the conditions really changed underneath us; any other
+		// failure (RBAC, VPA deleted, ...) won't be fixed by retrying.
+		fresh, getErr := vpaClient.Get(context.TODO(), vpa.Name, metav1.GetOptions{})
+		if getErr != nil {
+			return fmt.Errorf("%w (refetching the VPA also failed: %v)", err, getErr)
+		}
+		if attempt >= targetConflictPatchAttempts || apiequality.Semantic.DeepEqual(fresh.Status.Conditions, current.Status.Conditions) {
+			return err
+		}
+		current = fresh
+	}
+}
+
+// jsonPatchOp is a single JSON Patch (RFC 6902) operation.
+type jsonPatchOp struct {
+	Op    string      `json:"op"`
+	Path  string      `json:"path"`
+	Value interface{} `json:"value"`
+}
+
+// patchTargetConflictConditions replaces status.conditions only, leaving the
+// rest of status (owned by the recommender) untouched. When the VPA already has
+// conditions, the patch first tests that /status/conditions still equals the
+// snapshot the new list was computed from, so it fails instead of overwriting a
+// condition another writer (e.g. the recommender) added in the meantime. A VPA
+// with no conditions at all can't be guarded this way (JSON Patch has no "path
+// does not exist" test), so for it the patch is applied unguarded.
 func (u *updater) patchTargetConflictConditions(vpa *vpa_types.VerticalPodAutoscaler, conditions []vpa_types.VerticalPodAutoscalerCondition) error {
-	patch := []struct {
-		Op    string                                     `json:"op"`
-		Path  string                                     `json:"path"`
-		Value []vpa_types.VerticalPodAutoscalerCondition `json:"value"`
-	}{{Op: "add", Path: "/status/conditions", Value: conditions}}
+	var patch []jsonPatchOp
+	if len(vpa.Status.Conditions) > 0 {
+		patch = append(patch, jsonPatchOp{Op: "test", Path: "/status/conditions", Value: vpa.Status.Conditions})
+	}
+	patch = append(patch, jsonPatchOp{Op: "add", Path: "/status/conditions", Value: conditions})
 	patchBytes, err := json.Marshal(patch)
 	if err != nil {
 		return fmt.Errorf("marshal TargetConflict patch: %v", err)
