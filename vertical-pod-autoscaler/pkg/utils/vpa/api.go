@@ -37,6 +37,7 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/client"
@@ -280,6 +281,36 @@ func GetUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
 		return vpa_types.UpdateModeRecreate
 	}
 	return *vpa.Spec.UpdatePolicy.UpdateMode
+}
+
+// InInitialDelayWindow returns true if the VPA is currently within its
+// declared initial delay window, so the Updater and Admission Controller
+// should not actuate recommendations. It does not check the VPAInitialDelay
+// feature gate.
+func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler, now time.Time) bool {
+	expiry, ok := InitialDelayExpiry(vpa)
+	return ok && now.Before(expiry)
+}
+
+// InitialDelayExpiry returns the end of the VPA's initial delay window, and
+// false if the VPA doesn't set initialDelaySeconds.
+func InitialDelayExpiry(vpa *vpa_types.VerticalPodAutoscaler) (time.Time, bool) {
+	p := vpa.Spec.UpdatePolicy
+	if p == nil || p.InitialDelaySeconds == nil || *p.InitialDelaySeconds < 1 {
+		return time.Time{}, false
+	}
+	return vpa.CreationTimestamp.Add(time.Duration(*p.InitialDelaySeconds) * time.Second), true
+}
+
+// GetEffectiveUpdateMode returns the update mode the Updater and Admission
+// Controller should act on: UpdateModeOff while the VPA's initial delay window
+// is active (with the VPAInitialDelay feature gate enabled), and the
+// configured update mode otherwise.
+func GetEffectiveUpdateMode(vpa *vpa_types.VerticalPodAutoscaler, now time.Time) vpa_types.UpdateMode {
+	if features.Enabled(features.VPAInitialDelay) && InInitialDelayWindow(vpa, now) {
+		return vpa_types.UpdateModeOff
+	}
+	return GetUpdateMode(vpa)
 }
 
 // HasStartupBoost returns true if VPA has StartupBoost defined either globally or at container level.

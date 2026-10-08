@@ -219,7 +219,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
+	now := time.Now()
 	inPlaceFeatureEnabled := features.Enabled(features.InPlace)
+	initialDelayFeatureEnabled := features.Enabled(features.VPAInitialDelay)
+	metrics_updater.ResetInitialDelayActive()
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
 			klog.V(3).InfoS("Skipping VPA object in ignored namespace", "vpa", klog.KObj(vpa), "namespace", vpa.Namespace)
@@ -228,7 +231,16 @@ func (u *updater) RunOnce(ctx context.Context) {
 		// Log deprecation warnings for VPAs using deprecated modes
 		logDeprecationWarnings(vpa)
 
-		updateMode := vpa_api_util.GetUpdateMode(vpa)
+		if _, ok := vpa_api_util.InitialDelayExpiry(vpa); ok && initialDelayFeatureEnabled {
+			metrics_updater.RecordInitialDelayActive(vpa.Name, vpa.Namespace, vpa_api_util.InInitialDelayWindow(vpa, now))
+		}
+
+		updateMode := vpa_api_util.GetEffectiveUpdateMode(vpa, now)
+		// The effective mode only differs from the configured one during the initial delay window.
+		if updateMode != vpa_api_util.GetUpdateMode(vpa) && !vpa_api_util.HasStartupBoost(vpa) {
+			klog.V(3).InfoS("Skipping VPA object because it is in its initial delay window", "vpa", klog.KObj(vpa))
+			continue
+		}
 		if updateMode != vpa_types.UpdateModeRecreate &&
 			updateMode != vpa_types.UpdateModeAuto && //nolint:staticcheck
 			updateMode != vpa_types.UpdateModeInPlaceOrRecreate &&
@@ -330,7 +342,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			})
 		}
 
-		if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial {
+		if effectiveMode := vpa_api_util.GetEffectiveUpdateMode(vpa, now); effectiveMode == vpa_types.UpdateModeOff || effectiveMode == vpa_types.UpdateModeInitial {
 			continue
 		}
 

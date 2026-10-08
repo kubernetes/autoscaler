@@ -18,6 +18,7 @@ package vpa
 
 import (
 	"context"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
@@ -75,7 +76,7 @@ func (m *matcher) GetMatchingVPA(ctx context.Context, pod *corev1.Pod) *vpa_type
 			klog.ErrorS(nil, "Unexpected object type in VPA cache", "object", obj)
 			continue
 		}
-		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff && !vpa_api_util.HasStartupBoost(vpaConfig) {
+		if vpa_api_util.GetEffectiveUpdateMode(vpaConfig, time.Now()) == vpa_types.UpdateModeOff && !vpa_api_util.HasStartupBoost(vpaConfig) {
 			continue
 		}
 
