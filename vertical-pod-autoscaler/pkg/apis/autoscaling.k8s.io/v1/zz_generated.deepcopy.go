@@ -229,6 +229,11 @@ func (in *PodUpdatePolicy) DeepCopyInto(out *PodUpdatePolicy) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.InitialDelaySeconds != nil {
+		in, out := &in.InitialDelaySeconds, &out.InitialDelaySeconds
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 

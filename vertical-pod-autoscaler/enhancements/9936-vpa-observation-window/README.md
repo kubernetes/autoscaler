@@ -48,7 +48,7 @@ This feature moves the sequencing into the VPA API itself. Operators declare "wa
 - Provide a declarative per-VPA field that delays actuation of recommendations — evictions, in-place resizes, and admission-time injection into newly created pods — for a configurable duration after VPA creation. CPU Startup Boost is not delayed (see [Interaction with CPU Startup Boost](#interaction-with-cpu-startup-boost)).
 - Keep the Recommender's behaviour unchanged: recommendations are still computed and published to `status.recommendation` during the window, so operators can inspect them.
 - Work uniformly across `Recreate`, `InPlaceOrRecreate`, `InPlace`, and `Initial`.
-- Surface the gate state through both a status condition (`InitialDelayActive`) and a Prometheus gauge (`vpa_initial_delay_active`), so operators and dashboards can see when a VPA is gated without inspecting `spec`.
+- Surface the gate state through both a status condition (`InitialDelayActive`) and a Prometheus gauge (`vpa_updater_initial_delay_active`), so operators and dashboards can see when a VPA is gated without inspecting `spec`.
 
 ### Non-Goals
 
@@ -81,10 +81,10 @@ Modifying the VPA's spec does not reset the window. The gate is a pure function 
 ### Workflow
 
 1. The user creates a VPA with a non-`Off` `updateMode` and `initialDelaySeconds: N` set on `spec.updatePolicy`.
-2. The Recommender begins computing recommendations on the normal schedule and populates `status.recommendation`. It is unaware of and unaffected by the observation window.
+2. The Recommender begins computing recommendations on the normal schedule and populates `status.recommendation`. The window doesn't change how it computes them.
 3. On every Updater reconcile, before deciding whether the VPA is eligible for actuation, the Updater evaluates the gate. If the gate is active, the VPA is treated as if `updateMode` were `Off` for that reconcile: no pods are evicted (`Recreate` / `InPlaceOrRecreate`) and no in-place resize is attempted (`InPlace` / `InPlaceOrRecreate`).
 4. The Admission Controller evaluates the same gate whenever a pod matching the VPA's target is created. While the gate is active it does not patch the pod's resources — the pod is admitted with its original spec, exactly as under `updateMode: Off`. This applies to every mode, not just `Initial`: without it, pods created during the window (scale-ups, node replacements, crash restarts) would receive un-stabilised recommendations at admission time.
-5. The Updater sets the `InitialDelayActive` status condition to `True` while the gate is active and `False` once it has elapsed. It emits the `vpa_initial_delay_active` gauge accordingly. Both are updated at expiry rather than on the next sync (see [Status Condition](#status-condition)).
+5. The Recommender sets the `InitialDelayActive` status condition to `True` while the gate is active and `False` once it has elapsed (see [Status Condition](#status-condition)). The Updater emits the `vpa_updater_initial_delay_active` gauge.
 6. After the window elapses (i.e. `now >= CreationTimestamp + InitialDelaySeconds`), the gate opens and the configured `updateMode` takes effect on subsequent reconciles and pod creations.
 
 ### API Changes
@@ -148,16 +148,16 @@ func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler, now time.Time) b
 }
 ```
 
-Insertion points:
+The call sites use it through `GetEffectiveUpdateMode(vpa, now)`, also in `pkg/utils/vpa`, which returns `UpdateModeOff` while the window is active and the configured mode otherwise. It checks the `VPAInitialDelay` feature gate first; when the gate is disabled it returns the configured mode, so the component behaves exactly as it does today (fail-open).
 
-- **Updater** — at the top of the eligibility check in `pkg/updater/logic/updater.go`, at the same call site where `UpdateModeOff` and `UpdateModeInitial` currently short-circuit the eviction path.
-- **Admission Controller** — at the existing `UpdateModeOff` short-circuits in `pkg/admission-controller/resource/vpa/matcher.go` and `pkg/admission-controller/resource/pod/recommendation/recommendation_provider.go`, so pods created during the window are admitted with their original spec resources.
+Insertion points, all existing `UpdateModeOff` checks switched to the effective mode:
 
-When `InInitialDelayWindow` returns `true`, both components take the same code path they take for `UpdateModeOff` today.
+- **Updater** — the eligibility filter and the `Off`/`Initial` short-circuit in `pkg/updater/logic/updater.go`, and the post-boost in-place resize in `pkg/updater/inplace/resource_updates.go` (see [Interaction with CPU Startup Boost](#interaction-with-cpu-startup-boost)).
+- **Admission Controller** — `pkg/admission-controller/resource/vpa/matcher.go` and `pkg/admission-controller/resource/pod/patch/resource_updates.go`, so pods created during the window are admitted with their original spec resources.
 
-`InInitialDelayWindow` is exported from the shared `pkg/utils/vpa` package so both the Updater and the Admission Controller consume the identical implementation. Each call site first checks the `VPAInitialDelay` feature gate (`features.Enabled(features.VPAInitialDelay)`); when the gate is disabled the helper is not consulted and the component behaves exactly as it does today (fail-open).
+When the window is active, both components take the same code path they take for `UpdateModeOff` today.
 
-The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current `initialDelaySeconds` value (mutable). No caching, no status writes.
+The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current `initialDelaySeconds` value (mutable). No caching, and the gate never reads the status condition.
 
 No VPA spec change affects the gate **except** modifying `initialDelaySeconds` itself: the new value simply moves the expiry (`CreationTimestamp + initialDelaySeconds`), so on the next reconcile the gate may open earlier (value shortened or removed) or stay closed longer (value extended). No other field — existing or added to the CRD in the future — participates in gate evaluation; `updateMode` changes only what happens once the gate opens.
 
@@ -206,17 +206,19 @@ Add a new value to the existing `VerticalPodAutoscalerStatus.Conditions` slice:
 
 This lets `kubectl describe vpa` surface the gate without an operator having to compute `CreationTimestamp + initialDelaySeconds` mentally.
 
-The condition is updated reactively. When the Updater sees a VPA whose window is active, it schedules a re-evaluation at `CreationTimestamp + initialDelaySeconds`. Otherwise the condition could read `True` for up to one Updater sync interval after the window has elapsed, while the Admission Controller is already applying recommendations. The gate itself is unaffected either way, since the Updater and Admission Controller compute it directly.
+The condition is set by the Recommender, on each status update, using the same helper as the Updater and Admission Controller. The Recommender is the only component with permission to write VPA status, and it writes the whole status on each update, so a condition written by the Updater would need new RBAC and could be overwritten by the Recommender's next write. The condition can read `True` for up to one Recommender loop (1 minute by default) after the window has elapsed. The gate itself is unaffected, since the Updater and Admission Controller compute it directly.
+
+The condition is removed when `initialDelaySeconds` is unset or the feature gate is disabled on the Recommender.
 
 ### Metric
 
 Emit a new gauge from the Updater:
 
 ```text
-vpa_initial_delay_active{namespace, name} = 0 | 1
+vpa_updater_initial_delay_active{vpa_name, vpa_namespace} = 0 | 1
 ```
 
-Value is `1` while the gate is active for that VPA, `0` otherwise. Enables fleet-wide visibility into how many VPAs are currently gated, useful for dashboards and alerting on stuck windows.
+Value is `1` while the gate is active for that VPA, `0` otherwise. Only VPAs that set `initialDelaySeconds` are reported, and the gauge is reset on each Updater loop so deleted VPAs drop out. Enables fleet-wide visibility into how many VPAs are currently gated, useful for dashboards and alerting on stuck windows. The name and labels follow the Updater's existing per-VPA metrics.
 
 The condition and gauge report the window state, not effective suppression — so under `updateMode: Off` they still read active until the window elapses.
 
@@ -224,10 +226,11 @@ The condition and gauge report the window state, not effective suppression — s
 
 Feature gate: **`VPAInitialDelay`**.
 
-Both the `updater` and the `admission-controller` read `initialDelaySeconds` and honour the `VPAInitialDelay` feature gate. While the window is active:
+The `updater`, `admission-controller` and `recommender` read `initialDelaySeconds` and honour the `VPAInitialDelay` feature gate. While the window is active:
 
-- `updater` — makes no evictions or in-place resizes for the VPA.
-- `admission-controller` — skips recommendation injection for newly created pods. It also validates the field on write and rejects it when the gate is disabled.
+- `updater` — makes no evictions or in-place resizes for the VPA, and reports the gauge.
+- `admission-controller` — skips recommendation injection for newly created pods. It also validates the field on write and rejects it when the gate is disabled, unless the existing object already sets it.
+- `recommender` — sets the `InitialDelayActive` condition. It doesn't enforce anything.
 
 Disabling the gate causes:
 
@@ -253,7 +256,7 @@ Disabling the gate causes:
 
 ### Version Skew
 
-The Recommender is unaffected by this feature. The gate is fully effective only when both the Updater and the Admission Controller run a version that supports it, with the feature gate enabled on both. During a rollout with mixed versions, an older component simply ignores the field and behaves as it does today (fail-open, matching the gate-disabled semantics in [Feature Enablement and Rollback](#feature-enablement-and-rollback)):
+The Recommender only reports the window; an older Recommender, or one with the gate disabled, just doesn't set the condition. The gate is fully effective only when both the Updater and the Admission Controller run a version that supports it, with the feature gate enabled on both. During a rollout with mixed versions, an older component simply ignores the field and behaves as it does today (fail-open, matching the gate-disabled semantics in [Feature Enablement and Rollback](#feature-enablement-and-rollback)):
 
 - **Old Updater, new Admission Controller** — pods created during the window are admitted without injection, but the Updater may still evict or resize during the window.
 - **New Updater, old Admission Controller** — no evictions or resizes during the window, but pods created during the window still receive recommendation injection.
@@ -292,7 +295,7 @@ This feature is entirely internal to the VPA controllers and depends on no new K
 - Repeat for `InPlaceOrRecreate`, `InPlace`, and `Initial` (for `Initial`, assert on injection at new-pod creation instead of eviction).
 - Admission gating: while `InitialDelayActive=True`, scale the target Deployment up and verify the new pod keeps its template resources; after patching `initialDelaySeconds` to `1` and observing `InitialDelayActive=False`, verify newly created pods receive injected resources.
 - Re-arm: create a VPA with `initialDelaySeconds: 1`; watch for `InitialDelayActive=False`. Patch to `3600` (new expiry still lies in the future); watch for `InitialDelayActive=True` and verify actuation is suppressed again.
-- Throughout each scenario, verify the `vpa_initial_delay_active` gauge matches the condition.
+- Throughout each scenario, verify the `vpa_updater_initial_delay_active` gauge matches the condition.
 
 ## Examples
 
@@ -369,3 +372,4 @@ Pods created during the first hour receive their `Deployment`-spec resources unc
 ## Implementation History
 
 * 2026-07-10: Initial version.
+* 2026-10-08: Implementation: the `InitialDelayActive` condition is set by the Recommender instead of the Updater, and the gauge is named `vpa_updater_initial_delay_active`.
