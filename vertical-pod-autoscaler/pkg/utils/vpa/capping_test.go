@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -690,7 +691,7 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Contains(t, annotations, "container")
 	assert.ElementsMatch(t, []string{"cpu capped to fit Max in container LimitRange", "memory capped to fit Min in container LimitRange"}, annotations["container"])
-	assert.Equal(t, expectedRecommendation, *processedRecommendation)
+	assert.True(t, apiequality.Semantic.DeepEqual(expectedRecommendation, *processedRecommendation), "expected %v, got %v", expectedRecommendation, *processedRecommendation)
 }
 
 func TestApplyPodLimitRange(t *testing.T) {
@@ -1219,7 +1220,7 @@ func TestApplyPodLimitRange(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			got := applyPodLimitRange(tc.resources, &tc.pod, tc.limitRange, tc.resourceName, getTarget)
-			assert.Equal(t, tc.expect, got)
+			assert.True(t, apiequality.Semantic.DeepEqual(tc.expect, got), "expected %v, got %v", tc.expect, got)
 		})
 	}
 }
@@ -1654,7 +1655,7 @@ func TestApplyLimitRangeMinToRequest(t *testing.T) {
 					assert.ElementsMatch(t, expectedAnnotations, annotations[containerName], "for container '%s'", containerName)
 				}
 			}
-			assert.Equal(t, tc.expect, *processedRecommendation, "for container %s", containerName)
+			assert.True(t, apiequality.Semantic.DeepEqual(tc.expect, *processedRecommendation), "for container %s: expected %v, got %v", containerName, tc.expect, *processedRecommendation)
 			for containerName := range annotations {
 				assert.Contains(t, tc.expectAnnotations, containerName)
 			}

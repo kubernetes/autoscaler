@@ -11,13 +11,13 @@ require (
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/mock v0.6.0
 	golang.org/x/time v0.16.0
-	k8s.io/api v0.37.1
-	k8s.io/apimachinery v0.37.1
-	k8s.io/client-go v0.37.1
-	k8s.io/code-generator v0.37.1
-	k8s.io/component-base v0.37.1
+	k8s.io/api v0.38.0-alpha.1
+	k8s.io/apimachinery v0.38.0-alpha.1
+	k8s.io/client-go v0.38.0-alpha.1
+	k8s.io/code-generator v0.38.0-alpha.1
+	k8s.io/component-base v0.38.0-alpha.1
 	k8s.io/klog/v2 v2.140.0
-	k8s.io/metrics v0.37.1
+	k8s.io/metrics v0.38.0-alpha.1
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
 )
 
@@ -73,10 +73,10 @@ require (
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/gengo/v2 v2.0.0-20260408192533-25e2208e0dc3 // indirect
-	k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098 // indirect
+	k8s.io/kube-openapi v0.0.0-20260908163437-c4db2bdfbfe6 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.4.2 // indirect
+	sigs.k8s.io/structured-merge-diff/v7 v7.0.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
