@@ -105,7 +105,8 @@ func allowPerVPAConfig(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	}
 	if oldObj.Spec.ResourcePolicy != nil && oldObj.Spec.ResourcePolicy.ContainerPolicies != nil {
 		for _, policy := range oldObj.Spec.ResourcePolicy.ContainerPolicies {
-			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil || policy.MemoryAggregationIntervalCount != nil || policy.MemoryAggregationIntervalSeconds != nil {
+			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil || policy.MemoryAggregationIntervalCount != nil || policy.MemoryAggregationIntervalSeconds != nil ||
+				policy.RecommendationPercentiles != nil {
 				return true
 			}
 		}
@@ -293,6 +294,11 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 			} else {
 				allErrs = append(allErrs, field.Forbidden(policyPath.Child("memoryAggregationIntervalCount"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
 			}
+		}
+
+		if policy.RecommendationPercentiles != nil && !opts.AllowPerVPAConfig {
+			allErrs = append(allErrs, field.Forbidden(policyPath.Child("recommendationPercentiles"),
+				fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
 		}
 
 		if policy.StartupBoost != nil {

@@ -205,6 +205,7 @@ func TestRunOnce_Mode(t *testing.T) {
 				tc.expectedInPlacedCount,
 				tc.canInPlaceUpdate,
 				tc.isCPUBoostTest,
+				nil,
 			)
 		})
 	}
@@ -252,6 +253,42 @@ func TestRunOnce_Status(t *testing.T) {
 				tc.expectedInPlacedCount,
 				utils.InPlaceApproved,
 				false,
+				nil,
+			)
+		})
+	}
+}
+
+func TestRunOnce_ConfigInvalid(t *testing.T) {
+	tests := []struct {
+		name                  string
+		conditionStatus       corev1.ConditionStatus
+		expectedEvictionCount int
+	}{
+		{
+			name:                  "with ConfigInvalid true",
+			conditionStatus:       corev1.ConditionTrue,
+			expectedEvictionCount: 0,
+		},
+		{
+			name:                  "with ConfigInvalid false",
+			conditionStatus:       corev1.ConditionFalse,
+			expectedEvictionCount: 5,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			testRunOnceBase(
+				t,
+				vpa_types.UpdateModeRecreate,
+				false,
+				newFakeValidator(true),
+				true,
+				tc.expectedEvictionCount,
+				0,
+				utils.InPlaceApproved,
+				false,
+				[]vpa_types.VerticalPodAutoscalerCondition{{Type: vpa_types.ConfigInvalid, Status: tc.conditionStatus}},
 			)
 		})
 	}
@@ -267,6 +304,7 @@ func testRunOnceBase(
 	expectedInPlacedCount int,
 	canInPlaceUpdate utils.InPlaceDecision,
 	isCPUBoostTest bool,
+	vpaConditions []vpa_types.VerticalPodAutoscalerCondition,
 ) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, true)
 	ctrl := gomock.NewController(t)
@@ -350,6 +388,7 @@ func testRunOnceBase(
 	podLister.On("List").Return(pods, nil)
 
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
+	vpaObj.Status.Conditions = vpaConditions
 	if isCPUBoostTest {
 		durationSeconds := int32(60)
 		cpuStartupBoost := &vpa_types.GenericStartupBoost{
