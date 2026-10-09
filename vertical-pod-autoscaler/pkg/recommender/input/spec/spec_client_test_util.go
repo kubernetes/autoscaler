@@ -146,14 +146,14 @@ func newSpecClientTestCase() *specClientTestCase {
 	podID1 := model.PodID{Namespace: "", PodName: "Pod1"}
 	podID2 := model.PodID{Namespace: "", PodName: "Pod2"}
 
-	containerSpec11 := newTestContainerSpec(podID1, "Name11", 500, 512*1024*1024)
-	containerSpec12 := newTestContainerSpec(podID1, "Name12", 1000, 1024*1024*1024)
-	containerSpec21 := newTestContainerSpec(podID2, "Name21", 2000, 2048*1024*1024)
-	containerSpec22 := newTestContainerSpec(podID2, "Name22", 4000, 4096*1024*1024)
-	containerSpec23 := newTestContainerSpec(podID2, "Name23", 30, 250*1024*1024)
+	containerSpec11 := newTestContainerSpec(podID1, "Name11", 500, 512*1024*1024, model.ContainerTypeStandard)
+	containerSpec12 := newTestContainerSpec(podID1, "Name12", 1000, 1024*1024*1024, model.ContainerTypeStandard)
+	containerSpec21 := newTestContainerSpec(podID2, "Name21", 2000, 2048*1024*1024, model.ContainerTypeStandard)
+	containerSpec22 := newTestContainerSpec(podID2, "Name22", 4000, 4096*1024*1024, model.ContainerTypeStandard)
+	containerSpec23 := newTestContainerSpec(podID2, "Name23", 30, 250*1024*1024, model.ContainerTypeStandard)
 
-	initContainerSpec21 := newTestContainerSpec(podID2, "Name21-init", 40, 128*1024*1024)
-	initContainerSpec22 := newTestContainerSpec(podID2, "Name22-init", 40, 350*1024*1024)
+	initContainerSpec21 := newTestContainerSpec(podID2, "Name21-init", 40, 128*1024*1024, model.ContainerTypeInit)
+	initContainerSpec22 := newTestContainerSpec(podID2, "Name22-init", 40, 350*1024*1024, model.ContainerTypeInit)
 
 	podSpec1 := newTestPodSpec(podID1, []BasicContainerSpec{containerSpec11, containerSpec12}, nil)
 	podSpec2 := newTestPodSpec(podID2, []BasicContainerSpec{containerSpec21, containerSpec22, containerSpec23}, []BasicContainerSpec{initContainerSpec21, initContainerSpec22})
@@ -164,7 +164,7 @@ func newSpecClientTestCase() *specClientTestCase {
 	}
 }
 
-func newTestContainerSpec(podID model.PodID, containerName string, milicores int, memory int64) BasicContainerSpec {
+func newTestContainerSpec(podID model.PodID, containerName string, milicores int, memory int64, containerType model.ContainerType) BasicContainerSpec {
 	containerID := model.ContainerID{
 		PodID:         podID,
 		ContainerName: containerName,
@@ -174,9 +174,10 @@ func newTestContainerSpec(podID model.PodID, containerName string, milicores int
 		model.ResourceMemory: model.ResourceAmount(memory),
 	}
 	return BasicContainerSpec{
-		ID:      containerID,
-		Image:   containerName + "Image",
-		Request: requestedResources,
+		ID:            containerID,
+		Image:         containerName + "Image",
+		Request:       requestedResources,
+		ContainerType: containerType,
 	}
 }
 

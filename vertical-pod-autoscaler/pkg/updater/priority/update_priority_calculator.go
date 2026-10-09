@@ -31,6 +31,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -101,8 +102,12 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time, inf
 	updatePriority := calc.priorityProcessor.GetUpdatePriority(pod, calc.vpa, processedRecommendation)
 
 	quickOOM := false
-	for i := range pod.Status.ContainerStatuses {
-		cs := &pod.Status.ContainerStatuses[i]
+	statuses := pod.Status.ContainerStatuses
+	if features.Enabled(features.NativeSidecar) {
+		statuses = slices.Concat(statuses, resourcehelpers.NativeSidecarStatuses(pod))
+	}
+	for i := range statuses {
+		cs := &statuses[i]
 		if hasObservedContainers && !vpaContainerSet.Has(cs.Name) {
 			// Containers not observed by Admission Controller are not supported
 			// by the quick OOM logic.
