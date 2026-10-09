@@ -61,6 +61,13 @@ const (
 	// InPlace enables the InPlace update mode to be used.
 	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
 	InPlace featuregate.Feature = "InPlace"
+
+	// alpha: v1.8.0
+	// components: admission-controller, recommender, updater
+
+	// ReactiveMemoryPressureDetection enables per-container memory pressure detection from kubelet
+	// PSI, pressure-derived memory peaks in the recommender, and quick pressure updates in the updater.
+	ReactiveMemoryPressureDetection featuregate.Feature = "ReactiveMemoryPressureDetection"
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.

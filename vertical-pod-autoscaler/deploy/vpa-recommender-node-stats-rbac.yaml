@@ -1,0 +1,27 @@
+# Opt-in: grants the VPA recommender `get nodes/stats` for the default direct transport of
+# ReactiveMemoryPressureDetection. Apply it only when the feature gate is enabled. It does not grant
+# nodes/proxy; see vpa-recommender-nodes-proxy-rbac.yaml for the apiserver-proxy transport.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:vpa-recommender-node-stats
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/stats
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:vpa-recommender-node-stats
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:vpa-recommender-node-stats
+subjects:
+  - kind: ServiceAccount
+    name: vpa-recommender
+    namespace: kube-system

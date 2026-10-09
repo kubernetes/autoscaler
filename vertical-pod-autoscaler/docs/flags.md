@@ -21,7 +21,7 @@ This document is auto-generated from the flag definitions in the VPA admission-c
 | `alsologtostderr` | bool | false | log to standard error as well as files (no effect when -logtostderr=true) |
 | `alsologtostderrthreshold` | severity |  | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |
 | `client-ca-file` | string | "/etc/tls-certs/caCert.pem" | Path to CA PEM file. |
-| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>InPlace=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>InPlace=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false)<br>ReactiveMemoryPressureDetection=true\|false (ALPHA - default=false) |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `kube-api-burst` | float | 100 | QPS burst limit when making requests to Kubernetes apiserver |
 | `kube-api-qps` | float | 50 | QPS limit when making requests to Kubernetes apiserver |
@@ -82,7 +82,7 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `cpu-integer-post-processor-enabled` | bool | false | Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental) |
 | `external-metrics-cpu-metric` | string |  | ALPHA. Metric to use with external metrics provider for CPU usage. |
 | `external-metrics-memory-metric` | string |  | ALPHA. Metric to use with external metrics provider for memory usage. |
-| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>InPlace=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>InPlace=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false)<br>ReactiveMemoryPressureDetection=true\|false (ALPHA - default=false) |
 | `history-cpu-metric` | string | "container_cpu_usage_seconds_total" | Name of the metric to use for CPU history when querying Prometheus. |
 | `history-length` | string | "8d" | How much time back Prometheus has to be queried to get historical metrics |
 | `history-memory-metric` | string | "container_memory_working_set_bytes" | Name of the metric to use for memory history when querying Prometheus |
@@ -120,6 +120,12 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `pod-namespace-label` | string | "kubernetes_namespace" | Label name to look for pod namespaces |
 | `pod-recommendation-min-cpu-millicores` | float | 25 | Minimum CPU recommendation for a pod |
 | `pod-recommendation-min-memory-mb` | float | 250 | Minimum memory recommendation for a pod |
+| `pressure-bump-up-ratio` | float | 1.15 | [ALPHA] Memory bump up ratio of a peak recorded after sustained memory pressure. Requires the ReactiveMemoryPressureDetection feature gate. |
+| `pressure-kubelet-ca-file` | string |  | [ALPHA] CA bundle that verifies kubelet serving certificates for the direct pressure transport. Defaults to the API server CA. Requires the ReactiveMemoryPressureDetection feature gate. |
+| `pressure-min-bump-up-bytes` | float | 6.7108864e+07 | [ALPHA] Minimal increase of memory (in bytes) of a peak recorded after sustained memory pressure. Requires the ReactiveMemoryPressureDetection feature gate. |
+| `pressure-stall-ratio` | float | 0.1 | [ALPHA] Memory PSI "some" stall rate a window must exceed to count towards a pressure event, in [0, 1). Requires the ReactiveMemoryPressureDetection feature gate. |
+| `pressure-transport` | string | "direct" | [ALPHA] How the recommender reads the kubelet Summary API for memory pressure: "direct" (needs get nodes/stats) or "apiserver-proxy" (needs get nodes/proxy). Requires the ReactiveMemoryPressureDetection feature gate. |
+| `pressure-working-set-fraction` | float | 0.9 | [ALPHA] Working set divided by memory limit a window must reach to count towards a pressure event, in (0, 1]. Requires the ReactiveMemoryPressureDetection feature gate. |
 | `profiling` | bool | false | Enable the debug/pprof endpoint |
 | `prometheus-address` | string | "http://prometheus.monitoring.svc" | Where to reach for Prometheus metrics |
 | `prometheus-bearer-token` | string |  | The bearer token used in the Prometheus server bearer token auth |
@@ -166,7 +172,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `eviction-rate-burst` | int | 1 | Burst of pods that can be evicted. |
 | `eviction-rate-limit` | float | -1 | Number of pods that can be evicted per second. A rate limit set to 0 or -1 will disable the rate limiter. |
 | `eviction-tolerance` | float | 0.5 | Fraction of replica count that can be evicted for update, if more than one pod can be evicted. |
-| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>InPlace=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false) |
+| `feature-gates` | mapStringBool |  | A set of key=value pairs that describe feature gates for alpha/experimental features. Options are:<br>AllAlpha=true\|false (ALPHA - default=false)<br>AllBeta=true\|false (BETA - default=false)<br>CPUStartupBoost=true\|false (ALPHA - default=false)<br>InPlace=true\|false (ALPHA - default=false)<br>PerVPAConfig=true\|false (ALPHA - default=false)<br>ReactiveMemoryPressureDetection=true\|false (ALPHA - default=false) |
 | `ignored-vpa-object-namespaces` | string |  | A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector. |
 | `in-place-skip-disruption-budget` | bool | false | [BETA] If true, VPA updater skips disruption budget checks for in-place pod updates when all containers have NotRequired resize policy (or no policy defined) for both CPU and memory resources. Disruption budgets are still respected when any container has RestartContainer resize policy for any resource. |
 | `in-recommendation-bounds-eviction-lifetime-threshold` | duration | 12h0m0s | Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range |
@@ -189,6 +195,8 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `min-replicas` | int | 2 | Minimum number of replicas to perform update |
 | `one-output` | bool | false | If true, only write logs to their native severity level (vs also writing to each lower severity level; no effect when -logtostderr=true) |
 | `pod-update-threshold` | float | 0.1 | Ignore updates that have priority lower than the value of this flag |
+| `pressure-quick-update-fraction` | float | 0.1 | [ALPHA] Fraction of a VPA's Pods, at least one, that quick pressure may update in place per updater loop. Requires the ReactiveMemoryPressureDetection feature gate. |
+| `pressure-quick-update-window` | duration | 10m0s | [ALPHA] How long after an accepted memory pressure sample a Pod below its memory target is updated in place without waiting for the lifetime and minimum-change thresholds. Requires the ReactiveMemoryPressureDetection feature gate. |
 | `profiling` | bool | false | Enable the debug/pprof endpoint |
 | `skip-headers` | bool | false | If true, avoid header prefixes in the log messages |
 | `skip-log-headers` | bool | false | If true, avoid headers when opening log files (no effect when -logtostderr=true) |
