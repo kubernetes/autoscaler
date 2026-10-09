@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -24,11 +25,13 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
 	"k8s.io/utils/ptr"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
 
 // realGetInstanceTypeStatically captures the real implementation before any test can override it.
@@ -440,4 +443,84 @@ func TestBuildNodeFromTemplateWithEphemeralStorage(t *testing.T) {
 	ephemeralStorage, exists := node.Status.Capacity[apiv1.ResourceEphemeralStorage]
 	assert.True(t, exists)
 	assert.Equal(t, expectedEphemeralStorage.String(), ephemeralStorage.String())
+}
+
+func TestBuildNodeFromTemplateGpuMode(t *testing.T) {
+	originalLookup := GetInstanceTypeStatically
+	GetInstanceTypeStatically = realGetInstanceTypeStatically
+	t.Cleanup(func() { GetInstanceTypeStatically = originalLookup })
+
+	for _, source := range []string{"VMSS tags", "VMSS explicit labels", "VM pool labels", "VM pool explicit labels"} {
+		for _, marker := range []string{"true", "false", "", "TRUE"} {
+			t.Run(source+"/"+marker, func(t *testing.T) {
+				labels := map[string]string{GPULabel: "nvidia", DraGPULabel: marker}
+				var template NodeTemplate
+				var err error
+				switch source {
+				case "VMSS tags", "VMSS explicit labels":
+					vmss := &armcompute.VirtualMachineScaleSet{
+						SKU:      &armcompute.SKU{Name: ptr.To("Standard_NV12ads_A10_v5")},
+						Location: ptr.To("eastus"),
+						Tags: map[string]*string{
+							nodeResourcesTagName + "nvidia.com_gpu": ptr.To("4"),
+						},
+					}
+					var inputLabels map[string]string
+					if source == "VMSS tags" {
+						for key, value := range labels {
+							vmss.Tags[nodeLabelTagName+strings.ReplaceAll(key, "/", "_")] = ptr.To(value)
+						}
+					} else {
+						inputLabels = labels
+						vmss.Tags[nodeLabelTagName+strings.ReplaceAll(DraGPULabel, "/", "_")] = ptr.To("true")
+					}
+					template, err = buildNodeTemplateFromVMSS(vmss, inputLabels, "")
+				case "VM pool labels", "VM pool explicit labels":
+					pool := armcontainerservice.AgentPool{
+						Name:       ptr.To("gpu-pool"),
+						Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{},
+					}
+					var inputLabels map[string]string
+					if source == "VM pool labels" {
+						pool.Properties.NodeLabels = map[string]*string{}
+						for key, value := range labels {
+							pool.Properties.NodeLabels[key] = ptr.To(value)
+						}
+					} else {
+						inputLabels = labels
+						pool.Properties.NodeLabels = map[string]*string{DraGPULabel: ptr.To("true")}
+					}
+					template, err = buildNodeTemplateFromVMPool(pool, "eastus", "Standard_NV12ads_A10_v5", inputLabels, "")
+				}
+				require.NoError(t, err)
+				for _, predictLabels := range []bool{false, true} {
+					t.Run(fmt.Sprintf("predictLabels=%t", predictLabels), func(t *testing.T) {
+						node, err := buildNodeFromTemplate("gpu-pool", template, &AzureManager{}, false, predictLabels)
+						require.NoError(t, err)
+						assert.Equal(t, marker, node.Labels[DraGPULabel])
+						assert.Equal(t, "nvidia", node.Labels[GPULabel])
+						assert.Equal(t, int64(12), node.Status.Capacity.Cpu().Value())
+						assert.Equal(t, int64(112640*1024*1024), node.Status.Capacity.Memory().Value())
+						config := (&AzureCloudProvider{}).GetNodeGpuConfig(context.Background(), node)
+						require.NotNil(t, config)
+						assert.Equal(t, marker == "true", config.ExposedViaDra())
+						if marker == "true" {
+							assert.NotContains(t, node.Status.Capacity, gpu.ResourceNvidiaGPU)
+							assert.NotContains(t, node.Status.Allocatable, gpu.ResourceNvidiaGPU)
+							assert.Empty(t, config.ExtendedResourceName)
+						} else {
+							wantGPUs := int64(1)
+							if strings.HasPrefix(source, "VMSS") {
+								wantGPUs = 4
+							}
+							capacity := node.Status.Capacity[gpu.ResourceNvidiaGPU]
+							allocatable := node.Status.Allocatable[gpu.ResourceNvidiaGPU]
+							assert.Equal(t, wantGPUs, capacity.Value())
+							assert.Equal(t, wantGPUs, allocatable.Value())
+						}
+					})
+				}
+			})
+		}
+	}
 }
