@@ -413,7 +413,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 			expectFound:    true,
 			expectStatus:   true,
 			expectReason:   "WindowActive",
-			expectMessage:  "Recommendations are not applied until 2026-01-01T01:00:00Z",
+			expectMessage:  "Initial delay window active until 2026-01-01T01:00:00Z",
 		},
 		{
 			name:           "after the window",

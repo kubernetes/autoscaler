@@ -95,7 +95,7 @@ func updateInitialDelayCondition(vpa *model.Vpa, observedVpa *vpaautoscalingv1.V
 	}
 	if vpa_utils.InInitialDelayWindow(observedVpa, now) {
 		vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, true, "WindowActive",
-			fmt.Sprintf("Recommendations are not applied until %s", expiry.UTC().Format(time.RFC3339)))
+			fmt.Sprintf("Initial delay window active until %s", expiry.UTC().Format(time.RFC3339)))
 		return
 	}
 		vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, true, "DelayWindowActive",
