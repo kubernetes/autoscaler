@@ -26,13 +26,13 @@
 
 ## Summary
 
-Add an optional per-container target percentile override to `ContainerResourcePolicy`, for CPU and memory, replacing the Recommender's global `--target-{cpu,memory}-percentile` flag for that container. This extends the per-VPA configuration mechanism of [AEP-8026](../8026-per-vpa-component-configuration/README.md): the field lives on `ContainerResourcePolicy`, is gated behind the `PerVPAConfig` feature gate, and falls back to the global flag when unset.
+Add an optional per-container target percentile override to `ContainerResourcePolicy`, for CPU and memory, replacing the Recommender's global `--target-{cpu,memory}-percentile` flag for that container. The field is gated behind the `PerVPAConfig` feature gate and falls back to the global flag when unset.
 
 The lower and upper bound percentiles stay global. If a per-VPA target falls outside them, the Recommender sets a new `ConfigInvalid` condition on the VPA and the Updater stops updating its pods.
 
 ## Motivation
 
-The target percentile is one of the most workload-dependent knobs the Recommender has: a latency-sensitive service may want a p95 CPU target, while a batch job on the same cluster is fine at p50. Today it is a cluster-wide flag, so operators either pick a compromise value for the whole cluster or run separate Recommender instances per profile via [AEP-3919](../3919-customized-recommender-vpa/README.md), with all the operational overhead that brings.
+The target percentile is one of the most workload-dependent knobs the Recommender has: a latency-sensitive service may want a p95 CPU target, while a batch job on the same cluster is fine at p50. Today it is a cluster-wide flag, so operators either pick a compromise value for the whole cluster or run separate Recommender instances per profile, with all the operational overhead that brings.
 
 ### Goals
 
@@ -94,7 +94,7 @@ The per-resource struct leaves room to add lower and upper bound percentiles lat
 
 ### API Changes
 
-`ContainerResourcePolicy` gets the `recommendationPercentiles` field, and `VerticalPodAutoscalerConditionType` gets `ConfigInvalid`, in the same family as `ConfigDeprecated` and `ConfigUnsupported`.
+`ContainerResourcePolicy` gets the `recommendationPercentiles` field, and `VerticalPodAutoscalerConditionType` gets `ConfigInvalid`.
 
 The target is a plain integer (`int32`, `[1, 100]`) rather than a `resource.Quantity`, since it's a percentile and not a resource amount. The Recommender divides it by 100 to get the `(0, 1]` fraction its estimators use, matching the global flags.
 
@@ -112,7 +112,7 @@ CPU and memory resolve independently.
 
 Today the percentile estimators are built once at startup with the global flag values (e.g. `NewPercentileCPUEstimator(config.TargetCPUPercentile)` in `pkg/recommender/logic/recommender.go`), which can't express a per-container value.
 
-The target estimators become parameterized: the effective target is carried on the `AggregateContainerState`, the same way as `OOMBumpUpRatio`, and the target estimator reads it at estimation time, falling back to the global value when unset. `AggregateContainerState` already receives the VPA's `ContainerResourcePolicy`, so no new plumbing is needed between the API and model layers. The lower and upper bound estimators are unchanged.
+The target estimators become parameterized: the effective target is carried on the `AggregateContainerState`, and the target estimator reads it at estimation time, falling back to the global value when unset. `AggregateContainerState` already receives the VPA's `ContainerResourcePolicy`, so no new plumbing is needed between the API and model layers. The lower and upper bound estimators are unchanged.
 
 ### Interaction with Lower and Upper Bounds
 
@@ -123,7 +123,7 @@ This can happen today with the global flags alone, since nothing checks their or
 The check needs the Recommender's flags, so it can't be done in the API schema or the admission webhook. Instead:
 
 - **Recommender:** on each status update, it compares every per-container target against its own `--recommendation-lower-bound-*-percentile` and `--recommendation-upper-bound-*-percentile` flags. If one is out of range, it sets `ConfigInvalid=True` with a message naming the container and resource, e.g. `container "app": cpu target percentile 99 is outside the recommender's bound percentiles [50, 95]`. Otherwise it removes the condition. Recommendations are still computed and published.
-- **Updater:** skips VPAs with `ConfigInvalid=True`, the same way it skips `Off` and `Initial` modes. No evictions or in-place updates happen until the target is fixed.
+- **Updater:** skips VPAs with `ConfigInvalid=True`. No evictions or in-place updates happen until the target is fixed.
 
 The check is based only on percentiles, so it doesn't need to wait for any history. The condition shows up on the first Recommender loop after the VPA is created or changed. The Admission Controller still applies the recommendation to new pods, so pods created by the workload itself (scale-up, rollout) get the per-VPA target.
 
@@ -137,7 +137,7 @@ The ordering against the bound percentiles is checked by the Recommender, as des
 
 ### Feature Enablement and Rollback
 
-Feature gate: **`PerVPAConfig`** (existing, introduced by AEP-8026). No new gate.
+Feature gate: **`PerVPAConfig`** (existing). No new gate.
 
 - **Enabled:** the admission controller accepts the field; the Recommender honours it and sets or clears `ConfigInvalid`.
 - **Disabled:** the admission controller rejects new VPAs that set `recommendationPercentiles`. The Recommender ignores the field on existing objects, uses the global flags, and removes any `ConfigInvalid` condition it set earlier.
@@ -222,11 +222,11 @@ Every container targets the median, trading headroom for density.
 
 ## Alternatives Considered
 
-**1. Multiple Recommender instances (AEP-3919).** The current workaround: run one Recommender per percentile profile and point each VPA at one. Works, but each extra Recommender is another deployment to size, monitor, and upgrade, and workloads have to be split into a few static profiles.
+**1. Multiple Recommender instances.** The current workaround: run one Recommender per percentile profile and point each VPA at one. Works, but each extra Recommender is another deployment to size, monitor, and upgrade, and workloads have to be split into a few static profiles.
 
 **2. Require lower, target and upper together.** An earlier version of this AEP had all three percentiles per resource, required together, with a CEL rule enforcing `lowerBound <= target <= upperBound`. This keeps every VPA consistent at admission time, but makes the common case (just change the target) more verbose, and adds two fields most users don't need. It was dropped in review in favour of the target-only field with a Recommender-side check; it can still be added later (see [Future Work](#future-work)).
 
-**3. Validate in the admission webhook.** The webhook doesn't know the Recommender's flags, and a cluster can run several Recommenders with different flags (AEP-3919), so only the Recommender serving the VPA can check the target against its bounds.
+**3. Validate in the admission webhook.** The webhook doesn't know the Recommender's flags, and a cluster can run several Recommenders with different flags, so only the Recommender serving the VPA can check the target against its bounds.
 
 ## Implementation History
 
