@@ -608,18 +608,13 @@ spec:
                     type: array
                   initialDelaySeconds:
                     description: |-
-                      initialDelaySeconds specifies the number of seconds to wait after
-                      the VPA object is created before recommendations are actuated,
-                      regardless of the configured UpdateMode.
+                      initialDelaySeconds is the number of seconds after the VPA is created
+                      during which the Updater and Admission Controller treat the VPA as if
+                      UpdateMode were Off. The Recommender keeps publishing recommendations
+                      to status.recommendation, and the configured UpdateMode applies once
+                      the delay has passed.
 
-                      During the window, the Recommender still computes and publishes
-                      recommendations to status.recommendation, but the Updater and
-                      Admission Controller treat the VPA as if UpdateMode were Off: no
-                      evictions, in-place resizes, or injection into new pods. The
-                      configured UpdateMode takes effect once the window elapses.
-
-                      If UpdateMode is Off, this field has no effect. Must be between
-                      1 and 7776000 (90 days) if set. Only honored when the
+                      Must be between 1 and 7776000 (90 days). Only honored when the
                       VPAInitialDelay feature gate is enabled.
                     format: int32
                     maximum: 7776000
