@@ -167,8 +167,9 @@ func (c *CoreWeaveCloudProvider) GetAvailableMachineTypes(ctx context.Context) (
 
 // NewNodeGroup creates a new node group with the specified machine type, labels, system labels, taints, and extra resources.
 // This method is not implemented for CoreWeave.
-func (c *CoreWeaveCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
-	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (c *CoreWeaveCloudProvider) NewNodeGroup(
+	ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity,
+) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -192,8 +193,11 @@ func (c *CoreWeaveCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[s
 }
 
 // GetNodeGpuConfig returns the GPU configuration for a given node, or nil for
-// nodes without the GPU label.
+// nodes without a GPU.
 func (c *CoreWeaveCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
+	if NodeGpuDraDriverEnabled(node) {
+		return &cloudprovider.GpuConfig{DraDriverName: DraGPUDriver}
+	}
 	return gpu.GetNodeGPUFromCloudProvider(ctx, c, node)
 }
 

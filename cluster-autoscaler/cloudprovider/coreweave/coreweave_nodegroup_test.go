@@ -532,6 +532,19 @@ func TestTemplateNodeInfo(t *testing.T) {
 				require.Equal(t, validInstanceType, node.Labels[apiv1.LabelInstanceTypeStable])
 			},
 		},
+		"DRA GPU label from NodePool": {
+			nodePool: makeTestNodePool("uid-dra", "ng-dra", 1, 5, 1,
+				withInstanceType("b200-8x"),
+				withNodeLabels(map[string]string{DraGPULabel: "true"}),
+			),
+			validateNode: func(t *testing.T, node *apiv1.Node) {
+				require.Equal(t, "true", node.Labels[DraGPULabel])
+				require.NotContains(t, node.Status.Capacity, apiv1.ResourceName(gpu.ResourceNvidiaGPU))
+				require.NotContains(t, node.Status.Allocatable, apiv1.ResourceName(gpu.ResourceNvidiaGPU))
+				provider := &CoreWeaveCloudProvider{}
+				require.Equal(t, &cloudprovider.GpuConfig{DraDriverName: DraGPUDriver}, provider.GetNodeGpuConfig(context.Background(), node))
+			},
+		},
 		"with node taints": {
 			nodePool: makeTestNodePool("uid-3", "ng-taints", 1, 5, 3,
 				withInstanceType(validInstanceType),
