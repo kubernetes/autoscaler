@@ -153,6 +153,7 @@ func TestGetPatches(t *testing.T) {
 			expectError:          nil,
 			expectPatches: []resource_admission.PatchRecord{
 				patch.GetAddEmptyAnnotationsPatch(),
+				patch.GetAddEmptyLabelsPatch(),
 				testPatchRecord,
 				testPatchRecord2,
 			},
@@ -173,6 +174,7 @@ func TestGetPatches(t *testing.T) {
 			expectError:          nil,
 			expectPatches: []resource_admission.PatchRecord{
 				patch.GetAddEmptyAnnotationsPatch(),
+				patch.GetAddEmptyLabelsPatch(),
 				testPatchRecord,
 				testPatchRecord2,
 			},
