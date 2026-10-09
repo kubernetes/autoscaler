@@ -149,3 +149,74 @@ func TestMigInstancesCache(t *testing.T) {
 	assert.False(t, found, "Expected MIG instances cache to be empty after InvalidateAllMigInstances was called")
 	assert.True(t, c.IsMigInstancesCacheEmpty(migRef))
 }
+
+func TestMigInfoCacheWarm(t *testing.T) {
+	migRef := GceRef{
+		Project: "project",
+		Zone:    "us-test1",
+		Name:    "mig",
+	}
+	testCases := []struct {
+		name       string
+		invalidate func(c *GceCache)
+		wantWarm   bool
+	}{
+		{
+			name:       "InvalidateAllMigTargetSizes",
+			invalidate: func(c *GceCache) { c.InvalidateAllMigTargetSizes(context.Background()) },
+			wantWarm:   false,
+		},
+		{
+			name:       "InvalidateAllMigIsStable",
+			invalidate: func(c *GceCache) { c.InvalidateAllMigIsStable(context.Background()) },
+			wantWarm:   false,
+		},
+		{
+			name:       "InvalidateAllMigBasenames",
+			invalidate: func(c *GceCache) { c.InvalidateAllMigBasenames() },
+			wantWarm:   false,
+		},
+		{
+			name:       "InvalidateAllListManagedInstancesResults",
+			invalidate: func(c *GceCache) { c.InvalidateAllListManagedInstancesResults() },
+			wantWarm:   false,
+		},
+		{
+			name:       "InvalidateAllMigInstanceTemplateNames",
+			invalidate: func(c *GceCache) { c.InvalidateAllMigInstanceTemplateNames(context.Background()) },
+			wantWarm:   false,
+		},
+		{
+			name:       "InvalidateMigTargetSize",
+			invalidate: func(c *GceCache) { c.InvalidateMigTargetSize(context.Background(), migRef) },
+			wantWarm:   true,
+		},
+		{
+			name:       "InvalidateMigBasename",
+			invalidate: func(c *GceCache) { c.InvalidateMigBasename(migRef) },
+			wantWarm:   true,
+		},
+		{
+			name:       "InvalidateMigInstanceTemplateName",
+			invalidate: func(c *GceCache) { c.InvalidateMigInstanceTemplateName(migRef) },
+			wantWarm:   true,
+		},
+		{
+			name:       "InvalidateAllMigInstances",
+			invalidate: func(c *GceCache) { c.InvalidateAllMigInstances(context.Background()) },
+			wantWarm:   true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := NewGceCache()
+			assert.False(t, c.IsMigInfoCacheWarm(), "Expected a new cache to be cold")
+
+			c.MarkMigInfoCacheWarm()
+			assert.True(t, c.IsMigInfoCacheWarm(), "Expected the cache to be warm after MarkMigInfoCacheWarm was called")
+
+			tc.invalidate(c)
+			assert.Equal(t, tc.wantWarm, c.IsMigInfoCacheWarm())
+		})
+	}
+}
