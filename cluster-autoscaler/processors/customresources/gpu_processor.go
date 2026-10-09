@@ -104,8 +104,10 @@ func (p *GpuCustomResourcesProcessor) GetNodeGpuTarget(context *context.Autoscal
 		// But those are not yet visible in node's resource (e.g. gpu drivers are still being installed).
 		// In case of node coming from autoscaled node group we would look and node group template here.
 		// But for nodes coming from non-autoscaled groups we have no such possibility.
-		// Let's hope it is a transient error. As long as it exists we will not scale nodes groups with gpus.
-		return CustomResourceTarget{}, errors.NewAutoscalerError(errors.InternalError, "node without with gpu label, without capacity not belonging to autoscaled node group")
+		// Let's not fail here to not block cluster-wide scale ups, return empty resource target, it can possibly lead to GPU overprovisioning,
+		// while faulty GPU nodes exist, but it seems better than failing scaling at all.
+		klog.Warningf("Unable to determine expected GPU capacity for unmanaged node %q; excluding it from GPU quota usage", node.Name)
+		return CustomResourceTarget{}, nil
 	}
 
 	template, err := nodeGroup.TemplateNodeInfo()
