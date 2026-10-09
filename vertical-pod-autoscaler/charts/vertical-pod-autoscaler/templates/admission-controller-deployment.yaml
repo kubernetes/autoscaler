@@ -98,6 +98,13 @@ spec:
             - containerPort: 8944
               name: prometheus
               protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /health-check
+              port: prometheus
+              scheme: HTTP
+            periodSeconds: 10
+            failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /health-check
