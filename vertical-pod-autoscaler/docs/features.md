@@ -348,7 +348,7 @@ spec:
 ### Behavior
 
 * The window runs from the VPA's `creationTimestamp` for `initialDelaySeconds` seconds. Editing the VPA doesn't restart it; changing `initialDelaySeconds` moves the end of the window.
-* During the window the Recommender still publishes recommendations to `status.recommendation`, but the Updater and Admission Controller treat the VPA as if `updateMode` were `Off`: no evictions, no in-place resizes, and no recommendations applied to new pods.
+* During the window the Updater and Admission Controller treat the VPA as if `updateMode` were `Off`, and the Recommender keeps publishing recommendations to `status.recommendation`.
 * CPU Startup Boost still applies during the window. A boost that expires during the window is scaled back to the pod's original resources, not to the recommendation.
 * After the window, the configured `updateMode` takes effect.
 

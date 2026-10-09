@@ -81,7 +81,7 @@ Modifying the VPA's spec does not reset the window. The gate is a pure function 
 ### Workflow
 
 1. The user creates a VPA with a non-`Off` `updateMode` and `initialDelaySeconds: N` set on `spec.updatePolicy`.
-2. The Recommender begins computing recommendations on the normal schedule and populates `status.recommendation`. The window doesn't change how it computes them.
+2. The Recommender begins computing recommendations on the normal schedule and populates `status.recommendation`, the same as without the window.
 3. On every Updater reconcile, before deciding whether the VPA is eligible for actuation, the Updater evaluates the gate. If the gate is active, the VPA is treated as if `updateMode` were `Off` for that reconcile: no pods are evicted (`Recreate` / `InPlaceOrRecreate`) and no in-place resize is attempted (`InPlace` / `InPlaceOrRecreate`).
 4. The Admission Controller evaluates the same gate whenever a pod matching the VPA's target is created. While the gate is active it does not patch the pod's resources — the pod is admitted with its original spec, exactly as under `updateMode: Off`. This applies to every mode, not just `Initial`: without it, pods created during the window (scale-ups, node replacements, crash restarts) would receive un-stabilised recommendations at admission time.
 5. The Recommender sets the `InitialDelayActive` status condition to `True` while the gate is active and `False` once it has elapsed (see [Status Condition](#status-condition)). The Updater emits the `vpa_updater_initial_delay_active` gauge.
@@ -96,18 +96,13 @@ type PodUpdatePolicy struct {
     // ... existing fields (UpdateMode, MinReplicas, EvictionRequirements,
     //                     EvictAfterOOMSeconds) ...
 
-    // InitialDelaySeconds specifies the number of seconds to wait after
-    // the VPA object is created before recommendations are actuated,
-    // regardless of the configured UpdateMode.
+    // initialDelaySeconds is the number of seconds after the VPA is created
+    // during which the Updater and Admission Controller treat the VPA as if
+    // UpdateMode were Off. The Recommender keeps publishing recommendations
+    // to status.recommendation, and the configured UpdateMode applies once
+    // the delay has passed.
     //
-    // During the window, the Recommender still computes and publishes
-    // recommendations to status.recommendation, but the Updater and
-    // Admission Controller treat the VPA as if UpdateMode were Off: no
-    // evictions, in-place resizes, or injection into new pods. The
-    // configured UpdateMode takes effect once the window elapses.
-    //
-    // If UpdateMode is Off, this field has no effect. Must be between
-    // 1 and 7776000 (90 days) if set.
+    // Must be between 1 and 7776000 (90 days).
     // +optional
     // +kubebuilder:validation:Minimum=1
     // +kubebuilder:validation:Maximum=7776000
@@ -157,7 +152,7 @@ Insertion points, all existing `UpdateModeOff` checks switched to the effective 
 
 When the window is active, both components take the same code path they take for `UpdateModeOff` today.
 
-The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current `initialDelaySeconds` value (mutable). No caching, and the gate never reads the status condition.
+The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current `initialDelaySeconds` value (mutable). No caching; the gate is computed from the spec on every check.
 
 No VPA spec change affects the gate **except** modifying `initialDelaySeconds` itself: the new value simply moves the expiry (`CreationTimestamp + initialDelaySeconds`), so on the next reconcile the gate may open earlier (value shortened or removed) or stay closed longer (value extended). No other field — existing or added to the CRD in the future — participates in gate evaluation; `updateMode` changes only what happens once the gate opens.
 
@@ -228,9 +223,9 @@ Feature gate: **`VPAInitialDelay`**.
 
 The `updater`, `admission-controller` and `recommender` read `initialDelaySeconds` and honour the `VPAInitialDelay` feature gate. While the window is active:
 
-- `updater` — makes no evictions or in-place resizes for the VPA, and reports the gauge.
+- `updater` — treats the VPA as `Off`, and reports the gauge.
 - `admission-controller` — skips recommendation injection for newly created pods. It also validates the field on write and rejects it when the gate is disabled, unless the existing object already sets it.
-- `recommender` — sets the `InitialDelayActive` condition. It doesn't enforce anything.
+- `recommender` — sets the `InitialDelayActive` condition.
 
 Disabling the gate causes:
 
