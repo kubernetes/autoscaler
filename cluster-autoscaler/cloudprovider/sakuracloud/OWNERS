@@ -1,0 +1,7 @@
+# Uncomment once the maintainer is a member of the kubernetes org.
+approvers:
+# - shinichitazawa
+reviewers:
+# - shinichitazawa
+labels:
+- area/provider/sakuracloud
