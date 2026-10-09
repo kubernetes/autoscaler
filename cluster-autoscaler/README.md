@@ -22,17 +22,17 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [CherryServers](./cloudprovider/cherryservers/README.md)
 * [Civo](./cloudprovider/civo/README.md)
 * [CloudStack](./cloudprovider/cloudstack/README.md)
-* [ClusterAPI](./cloudprovider/clusterapi/README.md)
+* [ClusterAPI](https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/cloudprovider/clusterapi/README.md)
 * [CoreWeave](./cloudprovider/coreweave/README.md)
 * [DigitalOcean](./cloudprovider/digitalocean/README.md)
 * [Equinix Metal](cloudprovider/equinixmetal/README.md#notes)
 * [Exoscale](./cloudprovider/exoscale/README.md)
-* [External gRPC](./cloudprovider/externalgrpc/README.md)
+* [External gRPC](https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/cloudprovider/externalgrpc/README.md)
 * [Hetzner](./cloudprovider/hetzner/README.md)
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
 * [IonosCloud](./cloudprovider/ionoscloud/README.md)
 * [Kamatera](./cloudprovider/kamatera/README.md)
-* [Kwok](./cloudprovider/kwok/README.md)
+* [Kwok](https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/cloudprovider/kwok/README.md)
 * [Linode](./cloudprovider/linode/README.md)
 * [Magnum](./cloudprovider/magnum/README.md)
 * [OracleCloud](./cloudprovider/oci/README.md)
@@ -226,11 +226,11 @@ Supported cloud providers:
 * CherryServers https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/cherryservers/README.md
 * Civo https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/civo/README.md
 * CloudStack https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/cloudstack/README.md
-* ClusterAPI https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md
+* ClusterAPI https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/cloudprovider/clusterapi/README.md
 * DigitalOcean https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/digitalocean/README.md
 * Equinix Metal https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/equinixmetal/README.md
 * Exoscale https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md
-* External gRPC https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/externalgrpc/README.md
+* External gRPC https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/cloudprovider/externalgrpc/README.md
 * GCE https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/
 * GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
 * Hetzner https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md
