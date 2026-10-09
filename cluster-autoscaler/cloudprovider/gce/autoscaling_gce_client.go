@@ -302,9 +302,9 @@ func (client *autoscalingGceClientV1) FetchListManagedInstancesResults(ctx conte
 
 func (client *autoscalingGceClientV1) ResizeMig(ctx context.Context, migRef GceRef, size int64) error {
 	registerRequest("instance_group_managers", "resize")
-	ctx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
+	reqCtx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
 	defer cancel()
-	op, err := client.gceService.InstanceGroupManagers.Resize(migRef.Project, migRef.Zone, migRef.Name, size).Context(ctx).Do()
+	op, err := client.gceService.InstanceGroupManagers.Resize(migRef.Project, migRef.Zone, migRef.Name, size).Context(reqCtx).Do()
 	if err != nil {
 		return err
 	}
@@ -313,7 +313,7 @@ func (client *autoscalingGceClientV1) ResizeMig(ctx context.Context, migRef GceR
 
 func (client *autoscalingGceClientV1) CreateInstances(ctx context.Context, migRef GceRef, baseName string, delta int64, existingInstanceProviderIds []string) ([]string, error) {
 	registerRequest("instance_group_managers", "create_instances")
-	ctx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
+	reqCtx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
 	defer cancel()
 	req := gce.InstanceGroupManagersCreateInstancesRequest{}
 	instanceNames := instanceIdsToNamesMap(ctx, existingInstanceProviderIds)
@@ -327,7 +327,7 @@ func (client *autoscalingGceClientV1) CreateInstances(ctx context.Context, migRe
 		createdIds[i] = ref.ToProviderId()
 	}
 
-	op, err := client.gceService.InstanceGroupManagers.CreateInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Context(ctx).Do()
+	op, err := client.gceService.InstanceGroupManagers.CreateInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Context(reqCtx).Do()
 	if err != nil {
 		return nil, err
 	}
@@ -384,7 +384,7 @@ func (client *autoscalingGceClientV1) WaitForOperation(ctx context.Context, oper
 
 func (client *autoscalingGceClientV1) DeleteInstances(ctx context.Context, migRef GceRef, instances []GceRef) error {
 	registerRequest("instance_group_managers", "delete_instances")
-	ctx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
+	reqCtx, cancel := context.WithTimeout(ctx, client.operationPerCallTimeout)
 	defer cancel()
 	req := gce.InstanceGroupManagersDeleteInstancesRequest{
 		Instances:                      []string{},
@@ -393,7 +393,7 @@ func (client *autoscalingGceClientV1) DeleteInstances(ctx context.Context, migRe
 	for _, i := range instances {
 		req.Instances = append(req.Instances, GenerateInstanceUrl(client.domainUrl, i))
 	}
-	op, err := client.gceService.InstanceGroupManagers.DeleteInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Context(ctx).Do()
+	op, err := client.gceService.InstanceGroupManagers.DeleteInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Context(reqCtx).Do()
 	if err != nil {
 		return err
 	}
