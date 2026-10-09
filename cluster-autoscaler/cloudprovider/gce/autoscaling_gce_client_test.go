@@ -944,6 +944,56 @@ func TestCreateInstances(t *testing.T) {
 	}
 }
 
+func TestWaitForOperationNotBoundedByPerCallTimeout(t *testing.T) {
+	migRef := GceRef{Project: "project1", Zone: "us-central1-b", Name: "igm1"}
+	opResponse, err := json.Marshal(gce_api.Operation{
+		Name: "operation-2505728466148-216f5197",
+	})
+	require.NoError(t, err)
+
+	tests := map[string]struct {
+		endpoint   string
+		clientFunc func(*autoscalingGceClientV1) error
+	}{
+		"ResizeMig": {
+			endpoint: "/projects/project1/zones/us-central1-b/instanceGroupManagers/igm1/resize",
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.ResizeMig(context.Background(), migRef, 5)
+			},
+		},
+		"CreateInstances": {
+			endpoint: "/projects/project1/zones/us-central1-b/instanceGroupManagers/igm1/createInstances",
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.CreateInstances(context.Background(), migRef, migRef.Name, 1, nil)
+				return err
+			},
+		},
+		"DeleteInstances": {
+			endpoint: "/projects/project1/zones/us-central1-b/instanceGroupManagers/igm1/deleteInstances",
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.DeleteInstances(context.Background(), migRef, []GceRef{{Project: "project1", Zone: "us-central1-b", Name: "inst-1"}})
+			},
+		},
+	}
+
+	for testName, tc := range tests {
+		t.Run(testName, func(t *testing.T) {
+			server := test_util.NewHttpServerMock()
+			defer server.Close()
+			server.On("handle", tc.endpoint).Return(string(opResponse)).Once()
+			server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-2505728466148-216f5197/wait").After(50 * time.Millisecond).Return(operationDoneResponse).Once()
+
+			client := newTestAutoscalingGceClient(t, "project1", server.URL, "")
+			client.operationPerCallTimeout = 20 * time.Millisecond
+			client.operationWaitTimeout = time.Second
+
+			err := tc.clientFunc(client)
+			assert.NoError(t, err)
+			mock.AssertExpectationsForObjects(t, server)
+		})
+	}
+}
+
 func TestFetchAllInstances(t *testing.T) {
 	igm1 := "projects/893226960234/zones/zones/instanceGroupManagers/test-igm1-grp"
 	igm2 := "projects/893226960234/zones/zones/instanceGroupManagers/test-igm2-grp"
