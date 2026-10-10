@@ -93,7 +93,7 @@ func updateInitialDelayCondition(vpa *model.Vpa, observedVpa *vpaautoscalingv1.V
 		vpa.DeleteCondition(vpaautoscalingv1.InitialDelayActive)
 		return
 	}
-	if vpa_utils.InInitialDelayWindow(observedVpa, now) {
+	if now.Before(expiry) {
 		vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, true, "WindowActive",
 			fmt.Sprintf("Initial delay window active until %s", expiry.UTC().Format(time.RFC3339)))
 		return

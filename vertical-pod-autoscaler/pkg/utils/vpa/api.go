@@ -283,13 +283,25 @@ func GetUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
 	return *vpa.Spec.UpdatePolicy.UpdateMode
 }
 
-// InInitialDelayWindow returns true if the VPA is currently within its
-// declared initial delay window, so the Updater and Admission Controller
-// should not actuate recommendations. It does not check the VPAInitialDelay
-// feature gate.
-func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler, now time.Time) bool {
+// InInitialDelayWindow returns true if the VPAInitialDelay feature gate is
+// enabled and the VPA is within its initial delay window. During the window
+// the Updater and Admission Controller treat the VPA as if UpdateMode were Off.
+func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if !features.Enabled(features.VPAInitialDelay) {
+		return false
+	}
 	expiry, ok := InitialDelayExpiry(vpa)
-	return ok && now.Before(expiry)
+	return ok && time.Now().Before(expiry)
+}
+
+// GetEffectiveUpdateMode returns the update mode the Updater and Admission
+// Controller act on: UpdateModeOff while the VPA is in its initial delay
+// window, and the configured update mode otherwise.
+func GetEffectiveUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
+	if InInitialDelayWindow(vpa) {
+		return vpa_types.UpdateModeOff
+	}
+	return GetUpdateMode(vpa)
 }
 
 // InitialDelayExpiry returns the end of the VPA's initial delay window, and
@@ -300,17 +312,6 @@ func InitialDelayExpiry(vpa *vpa_types.VerticalPodAutoscaler) (time.Time, bool) 
 		return time.Time{}, false
 	}
 	return vpa.CreationTimestamp.Add(time.Duration(*p.InitialDelaySeconds) * time.Second), true
-}
-
-// GetEffectiveUpdateMode returns the update mode the Updater and Admission
-// Controller should act on: UpdateModeOff while the VPA's initial delay window
-// is active (with the VPAInitialDelay feature gate enabled), and the
-// configured update mode otherwise.
-func GetEffectiveUpdateMode(vpa *vpa_types.VerticalPodAutoscaler, now time.Time) vpa_types.UpdateMode {
-	if features.Enabled(features.VPAInitialDelay) && InInitialDelayWindow(vpa, now) {
-		return vpa_types.UpdateModeOff
-	}
-	return GetUpdateMode(vpa)
 }
 
 // HasStartupBoost returns true if VPA has StartupBoost defined either globally or at container level.
