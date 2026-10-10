@@ -128,24 +128,23 @@ Reasons and message format are described in [Status Condition](#status-condition
 Reference implementation, exposed from a shared package (`pkg/utils/vpa`) and consumed by both actuating components:
 
 ```go
-// InInitialDelayWindow returns true if the VPA is currently within its
-// declared observation window and the Updater and Admission Controller
-// should refrain from actuating recommendations.
-func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler, now time.Time) bool {
-    p := vpa.Spec.UpdatePolicy
-    if p == nil || p.InitialDelaySeconds == nil || *p.InitialDelaySeconds < 1 {
+// InInitialDelayWindow returns true if the VPAInitialDelay feature gate is
+// enabled and the VPA is within its initial delay window. During the window
+// the Updater and Admission Controller treat the VPA as if UpdateMode were Off.
+func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler) bool {
+    if !features.Enabled(features.VPAInitialDelay) {
         return false
     }
-    expiry := vpa.CreationTimestamp.Add(
-        time.Duration(*p.InitialDelaySeconds) * time.Second,
-    )
-    return now.Before(expiry)
+    expiry, ok := InitialDelayExpiry(vpa)
+    return ok && time.Now().Before(expiry)
 }
 ```
 
-The call sites use it through `GetEffectiveUpdateMode(vpa, now)`, also in `pkg/utils/vpa`, which returns `UpdateModeOff` while the window is active and the configured mode otherwise. It checks the `VPAInitialDelay` feature gate first; when the gate is disabled it returns the configured mode, so the component behaves exactly as it does today (fail-open).
+`InitialDelayExpiry` returns `CreationTimestamp + initialDelaySeconds`, and whether the field is set. With the gate disabled the helper returns false, so the components behave as they do today (fail-open).
 
-Insertion points, all existing `UpdateModeOff` checks switched to the effective mode:
+The call sites use it through `GetEffectiveUpdateMode(vpa)`, also in `pkg/utils/vpa`, which returns `UpdateModeOff` while the window is active and the configured mode otherwise.
+
+Insertion points, all existing `UpdateModeOff` checks switched to `GetEffectiveUpdateMode`:
 
 - **Updater** — the eligibility filter and the `Off`/`Initial` short-circuit in `pkg/updater/logic/updater.go`, and the post-boost in-place resize in `pkg/updater/inplace/resource_updates.go` (see [Interaction with CPU Startup Boost](#interaction-with-cpu-startup-boost)).
 - **Admission Controller** — `pkg/admission-controller/resource/vpa/matcher.go` and `pkg/admission-controller/resource/pod/patch/resource_updates.go`, so pods created during the window are admitted with their original spec resources.
@@ -196,7 +195,7 @@ Add a new value to the existing `VerticalPodAutoscalerStatus.Conditions` slice:
 
 - **Type:** `InitialDelayActive`
 - **Status:** `True` while the gate is active, `False` once it has elapsed.
-- **Reason:** `WindowActive` (True) / `WindowExpired` (False).
+- **Reason:** `DelayWindowActive` (True) / `DelayWindowExpired` (False).
 - **Message:** human-readable summary including expiry timestamp.
 
 This lets `kubectl describe vpa` surface the gate without an operator having to compute `CreationTimestamp + initialDelaySeconds` mentally.

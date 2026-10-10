@@ -412,7 +412,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 			featureEnabled: true,
 			expectFound:    true,
 			expectStatus:   true,
-			expectReason:   "WindowActive",
+			expectReason:   "DelayWindowActive",
 			expectMessage:  "Initial delay window active until 2026-01-01T01:00:00Z",
 		},
 		{
@@ -422,7 +422,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 			featureEnabled: true,
 			expectFound:    true,
 			expectStatus:   false,
-			expectReason:   "WindowExpired",
+			expectReason:   "DelayWindowExpired",
 			expectMessage:  "Initial delay window ended at 2026-01-01T01:00:00Z",
 		},
 		{
@@ -445,7 +445,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureEnabled)
 			vpa := model.NewVpa(model.VpaID{Namespace: "default", VpaName: "vpa"}, labels.Everything(), created)
 			// A condition left over from an earlier loop must be replaced or removed.
-			vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, true, "WindowActive", "stale")
+			vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, true, "DelayWindowActive", "stale")
 
 			updateInitialDelayCondition(vpa, newObserved(tc.delay), tc.now)
 
