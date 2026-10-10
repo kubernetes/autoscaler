@@ -41,6 +41,7 @@ and PR titles.
     - [Calculating Pod-Level Recommendations](#calculating-pod-level-recommendations)
       - [Leveraging Container-Level Histograms](#leveraging-container-level-histograms)
       - [Using New Pod-Level Histograms](#using-new-pod-level-histograms)
+    - [Validation](#validation)
     - [Maintaining checkpoints](#maintaining-checkpoints)
     - [New Global Pod maximums](#new-global-pod-maximums)
     - [New Flags for Configuring Pod Level Percentiles](#new-flags-for-configuring-pod-level-percentiles)
@@ -133,6 +134,8 @@ something a reviewer could point at later to decide whether the AEP succeeded.
 * The admission controller should be able to apply pod-level resources at admission.
 * The pod-level request-to-limit ratio is determined from the pod spec in the same way as in the latest VPA release at the container-level.
 * Support all existing VPA modes
+* Include `initContainers` with `restartPolicy: Always` (i.e. native sidecar containers) in pod-level recommendation calculations. Omitting them would result in incorrect recommendations and could cause some containers to experience resource starvation.
+* Container-level resource stanzas should remain unchanged if present. For example, they should not be lost when a pod is evicted.
 
 ### Non-Goals
 
@@ -143,7 +146,6 @@ review.
 -->
 
 * Managing container-level resource stanzas when pod-level autoscaling is enabled
-* Since the latest VPA does not support initContainers ([the native way to use sidecar containers](https://kubernetes.io/blog/2023/08/25/native-sidecar-containers/)), this AEP does not aim to implement support for them. In other words, initContainers are simply ignored when calculating pod-level recommendations. Support for initContainers is outside the scope of this proposal.
 * Support for the startupBoost feature at the pod-level is outside the scope of this proposal.
 
 ## Proposal
@@ -202,7 +204,7 @@ type RecommendedPodResources struct {
   ContainerRecommendations []RecommendedContainerResources `json:"containerRecommendations,omitempty"`
   // Resources recommended by the autoscaler at the pod level.
   // +optional
-  PodRecommendations *RecommendedPodLevelResources `json:"podRecommendations,omitempty"` // (!NEW)
+  PodRecommendation *RecommendedPodLevelResources `json:"podRecommendation,omitempty"` // (!NEW)
 }
 
 // (!NEW) RecommendedPodLevelResources is the recommendation computed by the autoscaler for Pod Level Resources.
@@ -304,6 +306,7 @@ For example, if a user defines a Kubernetes Deployment with two replicas, each c
 
 The differences in how resource sample aggregation (both CPU and memory) works at the pod level versus the container level are as follows, at the pod level:
 * All container usage samples for each resource type belonging to a pod are discarded if a sample for any of its running containers is missing.
+* As stated in the [goals](#goals) section, native sidecar samples are also included in the pod level calculations.
 * For CPU usage, the recommender sums the CPU samples from all running regular containers in the pod, calculates the weight of the aggregated sample, and adds it to the appropriate bucket in the pod-level CPU histogram.
 * For memory usage, the recommender sums the memory samples from all running regular containers in the pod. It adds the resulting sample to the pod-level memory histogram only when the sum exceeds the current pod-level peak within the current aggregation interval.
 
@@ -312,6 +315,18 @@ All other mechanisms remain unchanged, including:
 * Calculating the sample weight by using the decayFactor
 * Determining the histogram bucket index
 * Applying the confidence multiplier
+
+#### Validation
+
+Although this proposal does not include container-level resource autoscaling, the code should validate that pod-level recommendations do not conflict with aggregated container-level resource specifications.
+
+The flow should be as follows: if the pod contains any container-level resource specifications, validation should be triggered. If a violation is detected, the pod-level recommendations should be updated accordingly.
+
+The rules to verify are:
+* pod.spec.resources.requests >= sum(containers.requests)
+* pod.spec.resources.limits >= max(containers.limits)
+
+These checks are implemented in k/k [here](https://github.com/kubernetes/kubernetes/blob/v1.37.0/pkg/apis/core/validation/validation.go#L4926).
 
 #### Maintaining checkpoints
 
