@@ -374,6 +374,9 @@ updater:
   # The number of old history revisions to retain to allow rollback.
   revisionHistoryLimit: 10
 
+  # Update strategy for the Updater Deployment.
+  strategy: {}
+
   # Labels to add to the Updater pod.
   podLabels: {}
 

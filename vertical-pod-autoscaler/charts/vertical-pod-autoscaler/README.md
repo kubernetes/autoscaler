@@ -339,5 +339,6 @@ helm upgrade <release-name> <chart> \
 | updater.serviceAccount.annotations | object | `{}` |  |
 | updater.serviceAccount.create | bool | `true` |  |
 | updater.serviceAccount.labels | object | `{}` |  |
+| updater.strategy | object | `{}` |  |
 | updater.tolerations | list | `[]` |  |
 | updater.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Updater, used to spread replicas across failure domains such as zones. |
