@@ -18,7 +18,6 @@ package vpa
 
 import (
 	"context"
-	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
@@ -60,5 +59,5 @@ func (m *matcher) GetMatchingVPA(ctx context.Context, pod *corev1.Pod) *vpa_type
 // admitsPods reports whether the admission controller should act on Pods
 // controlled by the VPA.
 func admitsPods(vpa *vpa_types.VerticalPodAutoscaler) bool {
-	return vpa_api_util.GetEffectiveUpdateMode(vpa, time.Now()) != vpa_types.UpdateModeOff || vpa_api_util.HasStartupBoost(vpa)
+	return vpa_api_util.GetEffectiveUpdateMode(vpa) != vpa_types.UpdateModeOff || vpa_api_util.HasStartupBoost(vpa)
 }
