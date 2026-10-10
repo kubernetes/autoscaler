@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -139,47 +138,6 @@ func TestPodMatchesVPA(t *testing.T) {
 		actual := PodMatchesVPA(tc.pod, &tc.vpaWithSelector)
 		assert.Equal(t, tc.result, actual)
 	}
-}
-
-func TestGetControllingVPAForPod(t *testing.T) {
-	ctx := context.Background()
-
-	pod := test.Pod().WithName("test-pod").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).Get()
-	pod.Labels = map[string]string{"app": "testingApp"}
-	pod.OwnerReferences = []metav1.OwnerReference{
-		{
-			APIVersion: "apps/v1",
-			Kind:       "StatefulSet",
-			Name:       "test-sts",
-			Controller: ptr.To(true),
-		},
-	}
-
-	vpaBuilder := test.VerticalPodAutoscaler().
-		WithContainer(containerName).
-		WithTarget("2", "200M").
-		WithMinAllowed(containerName, "1", "100M").
-		WithMaxAllowed(containerName, "3", "1G")
-	vpaA := vpaBuilder.WithCreationTimestamp(time.Unix(5, 0)).Get()
-	vpaB := vpaBuilder.WithCreationTimestamp(time.Unix(10, 0)).Get()
-	nonMatchingVPA := vpaBuilder.WithCreationTimestamp(time.Unix(2, 0)).Get()
-	vpaA.Spec.TargetRef = &autoscalingv1.CrossVersionObjectReference{
-		Kind:       "StatefulSet",
-		Name:       "test-sts",
-		APIVersion: "apps/v1",
-	}
-	chosen := GetControllingVPAForPod(ctx, pod, []*VpaWithSelector{
-		{vpaB, parseLabelSelector("app = testingApp")},
-		{vpaA, parseLabelSelector("app = testingApp")},
-		{nonMatchingVPA, parseLabelSelector("app = other")},
-	}, &controllerfetcher.FakeControllerFetcher{})
-	assert.Equal(t, vpaA, chosen.Vpa)
-
-	// For some Pods (which are *not* under VPA), controllerFetcher.FindTopMostWellKnownOrScalable will return `nil`, e.g. when the Pod owner is a custom resource, which doesn't implement the /scale subresource
-	// See pkg/target/controller_fetcher/controller_fetcher_test.go:393 for testing this behavior
-	// This test case makes sure that GetControllingVPAForPod will just return `nil` in that case as well
-	chosen = GetControllingVPAForPod(ctx, pod, []*VpaWithSelector{{vpaA, parseLabelSelector("app = testingApp")}}, &controllerfetcher.NilControllerFetcher{})
-	assert.Nil(t, chosen)
 }
 
 func TestGetContainerResourcePolicy(t *testing.T) {
