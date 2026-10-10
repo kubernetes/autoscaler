@@ -829,6 +829,51 @@ func TestClusterStateFeeder_LoadRealTimeMetrics_OOMEventsWithDeletedPods(t *test
 	assert.NotContains(t, feeder.clusterState.Pods(), pod2ID)
 }
 
+// TestClusterStateFeeder_LoadRealTimeMetrics_RetriesOOMForPodNotInModelYet covers a pod that is
+// recreated faster than the recommender observes it: the OOM event arrives while the pod is not
+// in the cluster state at all, because pods only enter it through LoadPods and the pod informer
+// does not watch Pending pods. The observation must survive until the pod appears, instead of
+// being dropped by the KeyError that RecordOOM reports for an unknown pod.
+func TestClusterStateFeeder_LoadRealTimeMetrics_RetriesOOMForPodNotInModelYet(t *testing.T) {
+	_, tctx := ktesting.NewTestContext(t)
+	podID := model.PodID{Namespace: "default", PodName: "Recreated"}
+	containerID := model.ContainerID{PodID: podID, ContainerName: "containerA"}
+
+	client := &testSpecClient{pods: nil}
+	clusterState := model.NewClusterState(testGcPeriod)
+	oomChan := make(chan oom.OomInfo, 10)
+	feeder := clusterStateFeeder{
+		specClient:    client,
+		clusterState:  clusterState,
+		oomChan:       oomChan,
+		metricsClient: fakeMetricsClient{snapshots: nil},
+	}
+
+	feeder.LoadPods()
+	assert.NotContains(t, feeder.clusterState.Pods(), podID)
+
+	oomChan <- oom.OomInfo{
+		Timestamp:   time.Now(),
+		Memory:      model.ResourceAmount(1024 * 1024 * 1024),
+		ContainerID: containerID,
+	}
+	// RecordOOM cannot accept this yet, so the observation has to be kept for a later cycle.
+	feeder.LoadRealTimeMetrics(tctx)
+
+	// The recreated pod becomes visible one cycle later.
+	client.pods = []*spec.BasicPodSpec{newTestPodSpec(podID, []spec.BasicContainerSpec{
+		newTestContainerSpec(podID, "containerA", 500, 512*1024*1024),
+	}, nil)}
+	feeder.LoadPods()
+	feeder.LoadRealTimeMetrics(tctx)
+
+	containerState := clusterState.GetContainer(containerID)
+	if !assert.NotNil(t, containerState) {
+		return
+	}
+	assert.Greater(t, int64(containerState.GetMaxMemoryPeak()), int64(0))
+}
+
 type fakeHistoryProvider struct {
 	history map[model.PodID]*history.PodHistory
 	err     error
