@@ -187,24 +187,41 @@ type jsonPatchOp struct {
 }
 
 // patchTargetConflictConditions replaces status.conditions only, leaving the
-// rest of status (owned by the recommender) untouched. When the VPA already has
-// conditions, the patch first tests that /status/conditions still equals the
-// snapshot the new list was computed from, so it fails instead of overwriting a
-// condition another writer (e.g. the recommender) added in the meantime. A VPA
-// with no conditions at all can't be guarded this way (JSON Patch has no "path
-// does not exist" test), so for it the patch is applied unguarded.
+// rest of status (owned by the recommender) untouched.
+//
+// When the VPA already has conditions, a JSON Patch first tests that
+// /status/conditions still equals the snapshot the new list was computed from,
+// so it fails instead of overwriting a condition another writer (e.g. the
+// recommender) added in the meantime.
+//
+// When the VPA has no conditions, /status may not exist yet (the updater can run
+// before the recommender has populated it), and a JSON Patch "add" fails if the
+// parent path is missing. JSON Patch also has no "path does not exist" test, so
+// this case uses a JSON merge patch on status.conditions instead: it creates
+// /status if needed, leaves the other status fields alone, and is unguarded.
 func (u *updater) patchTargetConflictConditions(vpa *vpa_types.VerticalPodAutoscaler, conditions []vpa_types.VerticalPodAutoscalerCondition) error {
-	var patch []jsonPatchOp
-	if len(vpa.Status.Conditions) > 0 {
-		patch = append(patch, jsonPatchOp{Op: "test", Path: "/status/conditions", Value: vpa.Status.Conditions})
+	vpaClient := u.vpaClient.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace)
+
+	if len(vpa.Status.Conditions) == 0 {
+		mergePatch, err := json.Marshal(map[string]any{
+			"status": map[string]any{"conditions": conditions},
+		})
+		if err != nil {
+			return fmt.Errorf("marshal TargetConflict merge patch: %v", err)
+		}
+		_, err = vpaClient.Patch(context.TODO(), vpa.Name, types.MergePatchType, mergePatch, metav1.PatchOptions{}, "status")
+		return err
 	}
-	patch = append(patch, jsonPatchOp{Op: "add", Path: "/status/conditions", Value: conditions})
+
+	patch := []jsonPatchOp{
+		{Op: "test", Path: "/status/conditions", Value: vpa.Status.Conditions},
+		{Op: "add", Path: "/status/conditions", Value: conditions},
+	}
 	patchBytes, err := json.Marshal(patch)
 	if err != nil {
 		return fmt.Errorf("marshal TargetConflict patch: %v", err)
 	}
-	_, err = u.vpaClient.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace).
-		Patch(context.TODO(), vpa.Name, types.JSONPatchType, patchBytes, metav1.PatchOptions{}, "status")
+	_, err = vpaClient.Patch(context.TODO(), vpa.Name, types.JSONPatchType, patchBytes, metav1.PatchOptions{}, "status")
 	return err
 }
 
