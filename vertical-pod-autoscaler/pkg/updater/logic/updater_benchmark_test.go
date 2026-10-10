@@ -33,7 +33,6 @@ import (
 	"k8s.io/client-go/tools/record"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/restriction"
@@ -149,8 +148,8 @@ func setupUpdaterBenchmark(b *testing.B, vpaCount, podCount int) (*updater, *cou
 	inplace := &countingInPlaceRestriction{}
 	fetcher := &countingSelectorFetcher{selector: parseLabelSelector("app = bench")}
 	return &updater{
-		vpaLister: vpa_lister.NewVerticalPodAutoscalerLister(vpaIndexer),
-		podLister: listersv1.NewPodLister(podIndexer),
+		vpaIndexer: vpaIndexer,
+		podLister:  listersv1.NewPodLister(podIndexer),
 		restrictionFactory: &restriction.FakePodsRestrictionFactory{
 			Eviction: eviction,
 			InPlace:  inplace,
@@ -221,16 +220,16 @@ func BenchmarkBoostWorkerVPALookup(b *testing.B) {
 
 			b.ReportAllocs()
 			// A fixture whose pod matches no VPA would silently benchmark the cheap no-match path.
-			got, err := u.getControllingVPAForPod(ctx, pod)
-			if err != nil || got == nil {
-				b.Fatalf("expected the pod to be controlled by vpa-0, got %v (err: %v)", got, err)
+			got, _ := u.getControllingVPAForPod(ctx, pod)
+			if got == nil {
+				b.Fatal("expected the pod to be controlled by vpa-0, got none")
 			}
-			if got.Vpa.Name != "vpa-0" {
-				b.Fatalf("expected the pod to be controlled by vpa-0, got %s", got.Vpa.Name)
+			if got.Name != "vpa-0" {
+				b.Fatalf("expected the pod to be controlled by vpa-0, got %s", got.Name)
 			}
 			fetcher.fetches = 0
 			for b.Loop() {
-				_, _ = u.getControllingVPAForPod(ctx, pod)
+				u.getControllingVPAForPod(ctx, pod)
 			}
 			b.ReportMetric(float64(fetcher.fetches)/float64(b.N), "fetches/op")
 		})

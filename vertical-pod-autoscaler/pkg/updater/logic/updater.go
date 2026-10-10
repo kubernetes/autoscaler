@@ -85,7 +85,8 @@ type Updater interface {
 }
 
 type updater struct {
-	vpaLister                    vpa_lister.VerticalPodAutoscalerLister
+	// vpaIndexer must have the vpa_api_util.TargetRefIndex index registered.
+	vpaIndexer                   cache.Indexer
 	podLister                    listersv1.PodLister
 	eventRecorder                record.EventRecorder
 	restrictionFactory           restriction.PodsRestrictionFactory
@@ -147,8 +148,9 @@ func NewUpdater(
 		inPlaceSkipDisruptionBudget,
 	)
 
+	_, vpaIndexer := vpa_api_util.NewVpasListerWithIndexer(vpaClient, make(chan struct{}), namespace)
 	u := &updater{
-		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
+		vpaIndexer:                   vpaIndexer,
 		podLister:                    podInformerFactory.Core().V1().Pods().Lister(),
 		eventRecorder:                newEventRecorder(kubeClient),
 		restrictionFactory:           factory,
@@ -210,7 +212,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 		}
 	}
 
-	vpaList, err := u.vpaLister.List(labels.Everything())
+	vpaList, err := vpa_lister.NewVerticalPodAutoscalerLister(u.vpaIndexer).List(labels.Everything())
 	if err != nil {
 		klog.ErrorS(err, "Failed to get VPA list")
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
@@ -563,13 +565,8 @@ func (u *updater) processNextBoostItem(ctx context.Context) bool {
 		return true
 	}
 
-	vpaWithSelector, err := u.getControllingVPAForPod(ctx, pod)
-	if err != nil {
-		logger.Error(err, "Failed to get controlling VPA")
-		u.cpuStartupBoostQueue.AddRateLimited(key)
-		return true
-	}
-	if vpaWithSelector == nil {
+	vpa, selector := u.getControllingVPAForPod(ctx, pod)
+	if vpa == nil {
 		if u.cpuStartupBoostQueue.NumRequeues(key) > maxVPALookupRetries {
 			logger.V(2).Info("No controlling VPA found for pod after retries, deferring until next resync", "maxRetries", maxVPALookupRetries)
 			u.cpuStartupBoostQueue.Forget(key)
@@ -579,12 +576,11 @@ func (u *updater) processNextBoostItem(ctx context.Context) bool {
 		u.cpuStartupBoostQueue.AddRateLimited(key)
 		return true
 	}
-	vpa := vpaWithSelector.Vpa
 
 	expiredAnnotations := vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)
 	if len(expiredAnnotations) > 0 {
 		logger.V(4).Info("Found expired boost annotations", "count", len(expiredAnnotations))
-		allPodsPerVPA, err := u.podLister.Pods(namespace).List(vpaWithSelector.Selector)
+		allPodsPerVPA, err := u.podLister.Pods(namespace).List(selector)
 		if err != nil {
 			logger.Error(err, "Failed to list pods for VPA", "vpa", klog.KObj(vpa))
 			u.cpuStartupBoostQueue.AddRateLimited(key)
@@ -642,31 +638,12 @@ func (u *updater) processNextBoostItem(ctx context.Context) bool {
 	return true
 }
 
-// getControllingVPAForPod gets the controlling VPA for a pod.
-//
-// TODO(omerap12): We should revisit this.
-// Every time the boost worker processes a pod, it lists ALL VPAs in the pod's namespace and fetches selectors for each.
-// In clusters with many VPAs this is expensive (I know there is a lister so the list operation is in memory but maybe we can do something better).
-//
-// TODO(omerap12): Move this function to the utils package since it shares code with the admission controller.
-func (u *updater) getControllingVPAForPod(ctx context.Context, pod *corev1.Pod) (*vpa_api_util.VpaWithSelector, error) {
-	vpaList, err := u.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
-	if err != nil {
-		return nil, err
-	}
-	vpas := make([]*vpa_api_util.VpaWithSelector, 0, len(vpaList))
-	for _, vpa := range vpaList {
-		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
-		if err != nil {
-			klog.V(3).ErrorS(err, "Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
-			continue
-		}
-		vpas = append(vpas, &vpa_api_util.VpaWithSelector{
-			Vpa:      vpa,
-			Selector: selector,
-		})
-	}
-	return vpa_api_util.GetControllingVPAForPod(ctx, pod, vpas, u.controllerFetcher), nil
+// getControllingVPAForPod returns the VPA controlling pod and its selector, or
+// a nil VPA if there is none. Unlike RunOnce, the selector of each candidate VPA
+// is fetched on demand.
+func (u *updater) getControllingVPAForPod(ctx context.Context, pod *corev1.Pod) (*vpa_types.VerticalPodAutoscaler, labels.Selector) {
+	finder := vpa_api_util.NewControllingVPAFinder(u.vpaIndexer, u.selectorFetcher, u.controllerFetcher, nil)
+	return finder.GetControllingVPAForPod(ctx, pod)
 }
 
 func getRateLimiter(rateLimit float64, rateLimitBurst int) *rate.Limiter {

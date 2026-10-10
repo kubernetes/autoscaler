@@ -38,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
@@ -64,6 +65,18 @@ func parseLabelSelector(selector string) labels.Selector {
 	labelSelector, _ := metav1.ParseToLabelSelector(selector)
 	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
 	return parsedSelector
+}
+
+// newVPAIndexer returns an indexer, as used by the updater, holding the given VPAs.
+func newVPAIndexer(t testing.TB, vpas ...*vpa_types.VerticalPodAutoscaler) cache.Indexer {
+	t.Helper()
+	indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, vpa_api_util.VPAIndexers())
+	for _, vpa := range vpas {
+		if err := indexer.Add(vpa); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return indexer
 }
 
 func TestRunOnce_Mode(t *testing.T) {
@@ -344,7 +357,6 @@ func testRunOnceBase(
 		Eviction: eviction,
 		InPlace:  inplace,
 	}
-	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 
 	podLister := &test.PodListerMock{}
 	podLister.On("List").Return(pods, nil)
@@ -360,12 +372,11 @@ func testRunOnceBase(
 			CPU: cpuStartupBoost,
 		}
 	}
-	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
 	updater := &updater{
-		vpaLister:                    vpaLister,
+		vpaIndexer:                   newVPAIndexer(t, vpaObj),
 		podLister:                    podLister,
 		restrictionFactory:           factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
@@ -485,9 +496,6 @@ func TestRunOnce_MultipleVPAs(t *testing.T) {
 	calculators := []patch.Calculator{inplace.NewResourceInPlaceUpdatesCalculator(recommendationProvider)}
 	restrictionFactory := restriction.NewPodsRestrictionFactory(kubeClient, informerFactory, 0, 0, calculators, false)
 
-	vpaLister := &test.VerticalPodAutoscalerListerMock{}
-	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaInPlace, vpaOff1, vpaOff2, vpaOff3}, nil).Once()
-
 	podLister := &test.PodListerMock{}
 	podLister.On("List").Return([]*corev1.Pod{pod}, nil)
 
@@ -495,7 +503,7 @@ func TestRunOnce_MultipleVPAs(t *testing.T) {
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaInPlace)).Return(selector, nil)
 
 	u := &updater{
-		vpaLister:                    vpaLister,
+		vpaIndexer:                   newVPAIndexer(t, vpaInPlace, vpaOff1, vpaOff2, vpaOff3),
 		podLister:                    podLister,
 		restrictionFactory:           restrictionFactory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
@@ -532,12 +540,10 @@ func TestRunOnceNotingToProcess(t *testing.T) {
 		Eviction: eviction,
 		InPlace:  inplace,
 	}
-	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 	podLister := &test.PodListerMock{}
-	vpaLister.On("List").Return(nil, nil).Once()
 
 	updater := &updater{
-		vpaLister:                    vpaLister,
+		vpaIndexer:                   newVPAIndexer(t),
 		podLister:                    podLister,
 		restrictionFactory:           factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
@@ -625,7 +631,6 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 		Eviction: eviction,
 		InPlace:  inplace,
 	}
-	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 
 	podLister := &test.PodListerMock{}
 	podLister.On("List").Return(pods, nil)
@@ -644,13 +649,11 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 		WithTargetRef(targetRef).
 		Get()
 
-	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
-
 	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
 	updater := &updater{
-		vpaLister:                    vpaLister,
+		vpaIndexer:                   newVPAIndexer(t, vpaObj),
 		podLister:                    podLister,
 		restrictionFactory:           factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
@@ -671,15 +674,12 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 
 func TestRunOnceIgnoreNamespaceMatching(t *testing.T) {
 	eviction := &test.PodsEvictionRestrictionMock{}
-	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 	vpaObj := test.VerticalPodAutoscaler().
 		WithNamespace("default").
 		WithContainer("container").Get()
 
-	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
-
 	updater := &updater{
-		vpaLister:         vpaLister,
+		vpaIndexer:        newVPAIndexer(t, vpaObj),
 		ignoredNamespaces: []string{"default"},
 	}
 
@@ -880,12 +880,11 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 	eviction := &test.PodsEvictionRestrictionMock{}
 	inplace := &test.PodsInPlaceRestrictionMock{}
 	factory := &restriction.FakePodsRestrictionFactory{Eviction: eviction, InPlace: inplace}
-	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 	podLister := &test.PodListerMock{}
 	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
 	updater := &updater{
-		vpaLister:                    vpaLister,
+		vpaIndexer:                   newVPAIndexer(t, vpaObj),
 		podLister:                    podLister,
 		restrictionFactory:           factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
@@ -909,7 +908,6 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 			},
 		}
 	}
-	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 	podLister.On("List").Return(pods, nil).Once()
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
@@ -923,7 +921,6 @@ func TestRunOnce_AutoUnboostThenEvict(t *testing.T) {
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i], nil).Return(nil)
 	}
-	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 	podLister.On("List").Return(pods, nil).Once()
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
@@ -972,12 +969,11 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 	eviction := &test.PodsEvictionRestrictionMock{}
 	inplace := &test.PodsInPlaceRestrictionMock{}
 	factory := &restriction.FakePodsRestrictionFactory{Eviction: eviction, InPlace: inplace}
-	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 	podLister := &test.PodListerMock{}
 	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
 	updater := &updater{
-		vpaLister:                    vpaLister,
+		vpaIndexer:                   newVPAIndexer(t, vpaObj),
 		podLister:                    podLister,
 		restrictionFactory:           factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
@@ -1001,7 +997,6 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 			},
 		}
 	}
-	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 	podLister.On("List").Return(pods, nil).Once()
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
@@ -1015,7 +1010,6 @@ func TestRunOnce_AutoUnboostThenInPlace(t *testing.T) {
 		inplace.On("CanInPlaceUpdate", pods[i]).Return(utils.InPlaceApproved)
 		inplace.On("InPlaceUpdate", pods[i], nil).Return(nil)
 	}
-	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 	podLister.On("List").Return(pods, nil).Once()
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 
@@ -1135,15 +1129,8 @@ func TestProcessNextBoostItem_RetryExhaustion_ThenResync(t *testing.T) {
 	podLister := &test.PodListerMock{}
 	podLister.On("Pods", "default").Return(podNSLister)
 
-	emptyVPANSLister := &test.VerticalPodAutoscalerListerMock{}
-	emptyVPANSLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{}, nil)
-
-	fullVPANSLister := &test.VerticalPodAutoscalerListerMock{}
-	fullVPANSLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil)
-
-	vpaLister := &test.VerticalPodAutoscalerListerMock{}
-	vpaLister.On("VerticalPodAutoscalers", "default").Return(emptyVPANSLister).Times(7)
-	vpaLister.On("VerticalPodAutoscalers", "default").Return(fullVPANSLister).Once()
+	// The VPA is added to the indexer only once retries are exhausted.
+	vpaIndexer := newVPAIndexer(t)
 
 	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
@@ -1155,7 +1142,7 @@ func TestProcessNextBoostItem_RetryExhaustion_ThenResync(t *testing.T) {
 	defer queue.ShutDown()
 
 	u := &updater{
-		vpaLister:            vpaLister,
+		vpaIndexer:           vpaIndexer,
 		podLister:            podLister,
 		restrictionFactory:   factory,
 		inPlaceRateLimiter:   rate.NewLimiter(rate.Inf, 0),
@@ -1180,6 +1167,7 @@ func TestProcessNextBoostItem_RetryExhaustion_ThenResync(t *testing.T) {
 	assert.Equal(t, 1, queue.Len(), "queue should have 1 item after resync")
 
 	// Phase 3: VPA is now resolvable. Boost expired, unboost succeeds.
+	assert.NoError(t, vpaIndexer.Add(vpaObj))
 	inplace.On("CanUnboost", pod, vpaObj).Return(true)
 	inplace.On("InPlaceUpdate", pod, nil).Return(nil)
 
