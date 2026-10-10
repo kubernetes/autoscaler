@@ -28,10 +28,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 	"k8s.io/utils/ptr"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -952,6 +954,73 @@ func TestGetBoostRemainingDuration(t *testing.T) {
 				assert.GreaterOrEqual(t, result, tc.expectRange[0], "remaining duration should be >= lower bound")
 				assert.LessOrEqual(t, result, tc.expectRange[1], "remaining duration should be <= upper bound")
 			}
+		})
+	}
+}
+
+func TestInInitialDelayWindow(t *testing.T) {
+	testCases := []struct {
+		name           string
+		mode           vpa_types.UpdateMode
+		delay          *int32
+		created        time.Time
+		featureEnabled bool
+		expected       bool
+	}{
+		{name: "inside the window", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](3600), created: time.Now(), featureEnabled: true, expected: true},
+		{name: "after the window", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](3600), created: time.Now().Add(-2 * time.Hour), featureEnabled: true, expected: false},
+		{name: "unset", mode: vpa_types.UpdateModeRecreate, delay: nil, created: time.Now(), featureEnabled: true, expected: false},
+		{name: "zero", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](0), created: time.Now(), featureEnabled: true, expected: false},
+		{name: "inside the window, feature disabled", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](3600), created: time.Now(), featureEnabled: false, expected: false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureEnabled)
+			builder := test.VerticalPodAutoscaler().WithName("vpa").WithContainer(containerName).
+				WithUpdateMode(tc.mode).WithCreationTimestamp(tc.created)
+			if tc.delay != nil {
+				builder = builder.WithInitialDelaySeconds(*tc.delay)
+			}
+			assert.Equal(t, tc.expected, InInitialDelayWindow(builder.Get()))
+		})
+	}
+}
+
+func TestInitialDelayExpiry(t *testing.T) {
+	created := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	builder := test.VerticalPodAutoscaler().WithName("vpa").WithContainer(containerName).
+		WithUpdateMode(vpa_types.UpdateModeRecreate).WithCreationTimestamp(created)
+
+	expiry, ok := InitialDelayExpiry(builder.WithInitialDelaySeconds(3600).Get())
+	assert.True(t, ok)
+	assert.Equal(t, created.Add(time.Hour), expiry.UTC())
+
+	_, ok = InitialDelayExpiry(builder.Get())
+	assert.False(t, ok)
+}
+
+func TestGetEffectiveUpdateMode(t *testing.T) {
+	testCases := []struct {
+		name           string
+		mode           vpa_types.UpdateMode
+		created        time.Time
+		featureEnabled bool
+		expected       vpa_types.UpdateMode
+	}{
+		{name: "Recreate inside the window", mode: vpa_types.UpdateModeRecreate, created: time.Now(), featureEnabled: true, expected: vpa_types.UpdateModeOff},
+		{name: "InPlaceOrRecreate inside the window", mode: vpa_types.UpdateModeInPlaceOrRecreate, created: time.Now(), featureEnabled: true, expected: vpa_types.UpdateModeOff},
+		{name: "Initial inside the window", mode: vpa_types.UpdateModeInitial, created: time.Now(), featureEnabled: true, expected: vpa_types.UpdateModeOff},
+		{name: "Off inside the window", mode: vpa_types.UpdateModeOff, created: time.Now(), featureEnabled: true, expected: vpa_types.UpdateModeOff},
+		{name: "Off after the window", mode: vpa_types.UpdateModeOff, created: time.Now().Add(-2 * time.Hour), featureEnabled: true, expected: vpa_types.UpdateModeOff},
+		{name: "Recreate after the window", mode: vpa_types.UpdateModeRecreate, created: time.Now().Add(-2 * time.Hour), featureEnabled: true, expected: vpa_types.UpdateModeRecreate},
+		{name: "Recreate inside the window, feature disabled", mode: vpa_types.UpdateModeRecreate, created: time.Now(), featureEnabled: false, expected: vpa_types.UpdateModeRecreate},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureEnabled)
+			vpa := test.VerticalPodAutoscaler().WithName("vpa").WithContainer(containerName).
+				WithUpdateMode(tc.mode).WithCreationTimestamp(tc.created).WithInitialDelaySeconds(3600).Get()
+			assert.Equal(t, tc.expected, GetEffectiveUpdateMode(vpa))
 		})
 	}
 }

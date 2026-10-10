@@ -606,6 +606,20 @@ spec:
                       - resources
                       type: object
                     type: array
+                  initialDelaySeconds:
+                    description: |-
+                      initialDelaySeconds is the number of seconds after the VPA is created
+                      during which the Updater and Admission Controller treat the VPA as if
+                      UpdateMode were Off. The Recommender keeps publishing recommendations
+                      to status.recommendation, and the configured UpdateMode applies once
+                      the delay has passed.
+
+                      Must be between 1 and 7776000 (90 days). Only honored when the
+                      VPAInitialDelay feature gate is enabled.
+                    format: int32
+                    maximum: 7776000
+                    minimum: 1
+                    type: integer
                   minReplicas:
                     description: |-
                       Minimal number of replicas which need to be alive for Updater to attempt

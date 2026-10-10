@@ -53,7 +53,7 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *corev1.Po
 
 	expiredAnnotations := vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)
 
-	updateMode := vpa_api_util.GetUpdateMode(vpa)
+	updateMode := vpa_api_util.GetEffectiveUpdateMode(vpa)
 	var recommendedResources []vpa_api_util.ContainerResources
 	if updateMode != vpa_types.UpdateModeOff {
 		var err error

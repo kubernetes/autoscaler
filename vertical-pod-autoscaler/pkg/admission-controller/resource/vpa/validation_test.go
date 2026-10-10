@@ -1487,3 +1487,64 @@ func TestVeryInvalidateVPA(t *testing.T) {
 		assert.Contains(t, expectFieldErrors, err.Field)
 	}
 }
+
+func TestAllowInitialDelay(t *testing.T) {
+	withDelay := &vpa_types.VerticalPodAutoscaler{
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			UpdatePolicy: &vpa_types.PodUpdatePolicy{InitialDelaySeconds: ptr.To(int32(600))},
+		},
+	}
+	tests := []struct {
+		name        string
+		oldObj      *vpa_types.VerticalPodAutoscaler
+		featureFlag bool
+		expected    bool
+	}{
+		{name: "feature enabled returns true", oldObj: nil, featureFlag: true, expected: true},
+		{name: "feature disabled and oldObj nil returns false", oldObj: nil, featureFlag: false, expected: false},
+		{name: "feature disabled but old object sets initialDelaySeconds returns true", oldObj: withDelay, featureFlag: false, expected: true},
+		{name: "feature disabled and old object without initialDelaySeconds returns false", oldObj: &vpa_types.VerticalPodAutoscaler{}, featureFlag: false, expected: false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureFlag)
+			assert.Equal(t, tc.expected, allowInitialDelay(tc.oldObj))
+		})
+	}
+}
+
+func TestValidateVPAInitialDelay(t *testing.T) {
+	recreate := vpa_types.UpdateModeRecreate
+	tests := []struct {
+		name        string
+		delay       int32
+		allow       bool
+		expectError string
+	}{
+		{name: "minimum", delay: 1, allow: true},
+		{name: "maximum", delay: 7776000, allow: true},
+		{name: "zero", delay: 0, allow: true, expectError: "spec.updatePolicy.initialDelaySeconds: Invalid value: 0: must be between 1 and 7776000"},
+		{name: "above maximum", delay: 7776001, allow: true, expectError: "spec.updatePolicy.initialDelaySeconds: Invalid value: 7776001: must be between 1 and 7776000"},
+		{name: "feature disabled", delay: 600, allow: false, expectError: "spec.updatePolicy.initialDelaySeconds: Forbidden: not supported when feature flag VPAInitialDelay is disabled"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			vpa := vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{Kind: "Deployment", Name: "my-app"},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode:          &recreate,
+						InitialDelaySeconds: ptr.To(tc.delay),
+					},
+				},
+			}
+			_, errs := validateVPA(&vpa, VPAValidationOptions{IsVPACreate: true, AllowInitialDelay: tc.allow})
+			if tc.expectError == "" {
+				assert.Empty(t, errs)
+				return
+			}
+			assert.Len(t, errs, 1)
+			assert.Equal(t, tc.expectError, errs[0].Error())
+		})
+	}
+}

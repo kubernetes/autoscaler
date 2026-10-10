@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -322,6 +323,77 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 					if !EqPatch(gotPatch, tc.expectPatches[i]) {
 						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
 					}
+				}
+			}
+		})
+	}
+}
+
+func TestCalculatePatches_InitialDelay(t *testing.T) {
+	// The calculator clears the recommendation in place for Off, so each case
+	// gets its own copy.
+	newRecommendation := func() []vpa_api_util.ContainerResources {
+		return []vpa_api_util.ContainerResources{
+			{
+				Requests: corev1.ResourceList{
+					cpu: resource.MustParse("1"),
+				},
+			},
+		}
+	}
+	newPod := func() *corev1.Pod {
+		return &corev1.Pod{Spec: corev1.PodSpec{Containers: []corev1.Container{{
+			Resources: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					cpu: resource.MustParse("0"),
+				},
+			},
+		}}}}
+	}
+	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("test").WithName("name").
+		WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600)
+
+	testCases := []struct {
+		name           string
+		created        time.Time
+		featureEnabled bool
+		expectPatches  []resource_admission.PatchRecord
+	}{
+		{
+			name:           "inside the window",
+			created:        time.Now(),
+			featureEnabled: true,
+			expectPatches:  []resource_admission.PatchRecord{},
+		},
+		{
+			name:           "after the window",
+			created:        time.Now().Add(-2 * time.Hour),
+			featureEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				addResourceRequestPatch(0, cpu, "1"),
+				addAnnotationRequest([][]string{{cpu}}, request),
+			},
+		},
+		{
+			name:           "inside the window, feature disabled",
+			created:        time.Now(),
+			featureEnabled: false,
+			expectPatches: []resource_admission.PatchRecord{
+				addResourceRequestPatch(0, cpu, "1"),
+				addAnnotationRequest([][]string{{cpu}}, request),
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureEnabled)
+			frp := fakeRecommendationProvider{newRecommendation(), vpa_api_util.ContainerToAnnotationsMap{}, nil}
+			c := NewResourceUpdatesCalculator(&frp, resource.QuantityValue{})
+			patches, err := c.CalculatePatches(newPod(), vpaBuilder.WithCreationTimestamp(tc.created).Get())
+			assert.NoError(t, err)
+			if assert.Len(t, patches, len(tc.expectPatches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
+				for i, gotPatch := range patches {
+					assert.True(t, EqPatch(gotPatch, tc.expectPatches[i]), "patch %d: got %+v, want %+v", i, gotPatch, tc.expectPatches[i])
 				}
 			}
 		})
