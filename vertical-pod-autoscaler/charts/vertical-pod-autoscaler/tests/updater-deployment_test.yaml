@@ -4,7 +4,7 @@ templates:
   - updater-role.yaml
   - updater-rolebinding.yaml
 tests:
-  - it: enables leader election by default since default replicas is 2
+  - it: enables leader election with chart defaults (default replicas is 2)
     asserts:
       - contains:
           path: spec.template.spec.containers[0].args
@@ -17,7 +17,7 @@ tests:
           count: 1
         template: updater-rolebinding.yaml
 
-  - it: does not enable leader election when replicas is 1 and enabled is unset
+  - it: does not enable leader election when replicas is 1 and leaderElection.enabled is not set
     set:
       updater.replicas: 1
     asserts:
@@ -25,6 +25,7 @@ tests:
           path: spec.template.spec.containers[0].args
           content: --leader-elect=true
         template: updater-deployment.yaml
+      # count: 0 means the template renders nothing (no Role/RoleBinding is created)
       - hasDocuments:
           count: 0
         template: updater-role.yaml
@@ -32,7 +33,7 @@ tests:
           count: 0
         template: updater-rolebinding.yaml
 
-  - it: respects an explicit false even with replicas > 1
+  - it: does not enable leader election when leaderElection.enabled is false, even with replicas > 1
     set:
       updater.replicas: 3
       updater.leaderElection.enabled: false
@@ -48,7 +49,7 @@ tests:
           count: 0
         template: updater-rolebinding.yaml
 
-  - it: respects an explicit true even with replicas = 1
+  - it: enables leader election when leaderElection.enabled is true, even with replicas = 1
     set:
       updater.replicas: 1
       updater.leaderElection.enabled: true
@@ -64,7 +65,7 @@ tests:
           count: 1
         template: updater-rolebinding.yaml
 
-  - it: does not create leader-locking rbac when rbac.create is false, even with leader election active
+  - it: does not create leader-locking RBAC when rbac.create is false (user supplies their own RBAC)
     set:
       rbac.create: false
     asserts:
