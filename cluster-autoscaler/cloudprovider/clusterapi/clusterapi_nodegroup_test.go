@@ -2210,6 +2210,250 @@ func TestNodeGroupNodesInstancesStatus(t *testing.T) {
 	})
 }
 
+func TestNodeGroupMachinePoolDeleteNodes(t *testing.T) {
+	type testCase struct {
+		description         string
+		nodeCount           int
+		nodesToDelete       int
+		expectedError       bool
+		errorMsg            string
+		useUnknownNode      bool
+		emptyProviderIDList bool
+	}
+
+	testCases := []testCase{
+		{
+			// Happy path: node providerID is found in MachinePool providerIDList
+			description:   "happy path: node providerID found in MachinePool providerIDList, scale-down allowed",
+			nodeCount:     3,
+			nodesToDelete: 1,
+			expectedError: false,
+		},
+		{
+			// Error case: node providerID NOT found in MachinePool providerIDList
+			description:    "error: node providerID not found in MachinePool providerIDList, scale-down rejected",
+			nodeCount:      3,
+			nodesToDelete:  1,
+			expectedError:  true,
+			errorMsg:       "no node group found for node",
+			useUnknownNode: true,
+		},
+		{
+			// Edge case: empty providerIDList
+			description:   "edge case: MachinePool has empty providerIDList, scale-down rejected",
+			nodeCount:     0,
+			nodesToDelete: 1,
+			expectedError: true,
+			errorMsg:      "min size reached",
+		},
+		{
+			description:         "error: node providerID known to controller but not in MachinePool providerIDList",
+			nodeCount:           3,
+			nodesToDelete:       1,
+			expectedError:       true,
+			errorMsg:            "no node group found for node",
+			emptyProviderIDList: true,
+		},
+	}
+
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+	capacity := map[string]string{
+		"cpu":    "2",
+		"memory": "4Gi",
+	}
+	t.Run("MachinePool", func(t *testing.T) {
+		for _, tc := range testCases {
+			t.Run(tc.description, func(t *testing.T) {
+				testConfig := NewTestConfigBuilder().
+					ForMachinePool().
+					WithNodeCount(tc.nodeCount).
+					WithAnnotations(annotations).
+					WithCapacity(capacity).
+					Build()
+
+				controller := NewTestMachineController(t)
+				defer controller.Stop()
+				controller.AddTestConfigs(testConfig)
+
+				if tc.emptyProviderIDList {
+					updatedPool := testConfig.machinePool.DeepCopy()
+					unstructured.RemoveNestedField(updatedPool.Object, "spec", "providerIDList")
+					if err := controller.machinePoolInformer.Informer().GetStore().Update(updatedPool); err != nil {
+						t.Fatalf("failed to update machinePool in store: %v", err)
+					}
+					for i := range testConfig.machines {
+						if err := controller.DeleteResource(
+							controller.machineInformer,
+							controller.machineResource,
+							testConfig.machines[i],
+						); err != nil {
+							t.Fatalf("failed to delete machine from store: %v", err)
+						}
+					}
+				}
+
+				nodegroups, err := controller.nodeGroups()
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+
+				if l := len(nodegroups); l != 1 {
+					t.Fatalf("expected 1 nodegroup, got %d", l)
+				}
+
+				ng := nodegroups[0].(*nodegroup)
+
+				var nodesToDelete []*corev1.Node
+				if !tc.useUnknownNode && !tc.emptyProviderIDList && tc.nodesToDelete > 0 && len(testConfig.nodes) > 0 {
+					nodesToDelete = testConfig.nodes[:tc.nodesToDelete]
+				} else {
+					// Node not belonging to this MachinePool
+					nodesToDelete = []*corev1.Node{
+						{
+							Spec: corev1.NodeSpec{
+								ProviderID: "azure:///subscriptions/unknown/virtualMachineScaleSets/unknown/virtualMachines/0",
+							},
+						},
+					}
+				}
+
+				err = ng.DeleteNodes(nodesToDelete)
+				if tc.expectedError {
+					if err == nil {
+						t.Fatal("expected an error but got none")
+					}
+					if tc.errorMsg != "" && !strings.Contains(err.Error(), tc.errorMsg) {
+						t.Errorf("expected error to contain %q, got %q", tc.errorMsg, err.Error())
+					}
+				} else {
+					if err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+				}
+			})
+		}
+	})
+}
+
+func TestNodeGroupMachinePoolProviderIDList(t *testing.T) {
+	type testCase struct {
+		description     string
+		nodeProviderID  string
+		poolProviderIDs []string
+		expectAllowed   bool
+	}
+
+	testCases := []testCase{
+		{
+			description:    "happy path: providerID found in list",
+			nodeProviderID: "azure:///subscriptions/sub1/virtualMachineScaleSets/vmss1/virtualMachines/0",
+			poolProviderIDs: []string{
+				"azure:///subscriptions/sub1/virtualMachineScaleSets/vmss1/virtualMachines/0",
+				"azure:///subscriptions/sub1/virtualMachineScaleSets/vmss1/virtualMachines/1",
+				"azure:///subscriptions/sub1/virtualMachineScaleSets/vmss1/virtualMachines/2",
+			},
+			expectAllowed: true,
+		},
+		{
+			description:    "error: providerID not found in list",
+			nodeProviderID: "azure:///subscriptions/sub1/virtualMachineScaleSets/vmss1/virtualMachines/99",
+			poolProviderIDs: []string{
+				"azure:///subscriptions/sub1/virtualMachineScaleSets/vmss1/virtualMachines/0",
+				"azure:///subscriptions/sub1/virtualMachineScaleSets/vmss1/virtualMachines/1",
+			},
+			expectAllowed: false,
+		},
+		{
+			description:     "edge case: empty providerIDList",
+			nodeProviderID:  "azure:///subscriptions/sub1/virtualMachineScaleSets/vmss1/virtualMachines/0",
+			poolProviderIDs: []string{},
+			expectAllowed:   false,
+		},
+		{
+			description:    "edge case: multiple MachinePools, only one matching",
+			nodeProviderID: "azure:///subscriptions/sub1/virtualMachineScaleSets/vmss2/virtualMachines/0",
+			poolProviderIDs: []string{
+				"azure:///subscriptions/sub1/virtualMachineScaleSets/vmss1/virtualMachines/0",
+				"azure:///subscriptions/sub1/virtualMachineScaleSets/vmss2/virtualMachines/0",
+			},
+			expectAllowed: true,
+		},
+	}
+
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+	capacity := map[string]string{
+		"cpu":    "2",
+		"memory": "4Gi",
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			testConfig := NewTestConfigBuilder().
+				ForMachinePool().
+				WithNodeCount(len(tc.poolProviderIDs)).
+				WithAnnotations(annotations).
+				WithCapacity(capacity).
+				Build()
+
+			controller := NewTestMachineController(t)
+			defer controller.Stop()
+			controller.AddTestConfigs(testConfig)
+
+			if len(tc.poolProviderIDs) > 0 {
+				rawIDs := make([]interface{}, len(tc.poolProviderIDs))
+				for i, id := range tc.poolProviderIDs {
+					rawIDs[i] = id
+				}
+				if err := unstructured.SetNestedSlice(
+					testConfig.machinePool.Object,
+					rawIDs,
+					"spec", "providerIDList",
+				); err != nil {
+					t.Fatalf("failed to set providerIDList: %v", err)
+				}
+				controller.UpdateResource(
+					controller.machinePoolInformer,
+					controller.machinePoolResource,
+					testConfig.machinePool,
+				)
+			}
+
+			nodegroups, err := controller.nodeGroups()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if l := len(nodegroups); l != 1 {
+				t.Fatalf("expected 1 nodegroup, got %d", l)
+			}
+
+			ng := nodegroups[0].(*nodegroup)
+
+			node := &corev1.Node{
+				Spec: corev1.NodeSpec{
+					ProviderID: tc.nodeProviderID,
+				},
+			}
+
+			err = ng.DeleteNodes([]*corev1.Node{node})
+			if tc.expectAllowed {
+				if err != nil {
+					t.Fatalf("expected scale-down to be allowed, got error: %v", err)
+				}
+			} else {
+				if err == nil {
+					t.Fatal("expected scale-down to be rejected, but got no error")
+				}
+			}
+		})
+	}
+}
+
 func validateCSIDrivers(t *testing.T, expectedDrivers []storagev1.CSINodeDriver, gotDrivers []storagev1.CSINodeDriver) {
 	t.Helper()
 	for _, gotDriver := range gotDrivers {
