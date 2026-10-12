@@ -140,12 +140,12 @@ var (
 		}, []string{"vpa_size_log2", "vpa_name", "vpa_namespace"},
 	)
 
-	initialDelayActive = prometheus.NewGaugeVec(
+	vpasInInitialDelayCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: metricsNamespace,
-			Name:      "initial_delay_active",
-			Help:      "Whether a VPA that sets initialDelaySeconds is within its initial delay window (1) or not (0).",
-		}, []string{"vpa_name", "vpa_namespace"},
+			Name:      "vpas_in_initial_delay_total",
+			Help:      "Number of VPA objects in their initial delay window.",
+		}, []string{"vpa_size_log2", "update_mode"},
 	)
 
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
@@ -175,7 +175,7 @@ func Register() {
 		vpasWithInPlaceUpdatablePodsCount,
 		vpasWithInPlaceUpdatedPodsCount,
 		failedInPlaceUpdateAttempts,
-		initialDelayActive,
+		vpasInInitialDelayCount,
 		functionLatency,
 		admissionControllerStatusInvalidCount,
 	}
@@ -185,21 +185,6 @@ func Register() {
 // NewExecutionTimer provides a timer for Updater's RunOnce execution
 func NewExecutionTimer() *metrics.ExecutionTimer {
 	return metrics.NewExecutionTimer(functionLatency)
-}
-
-// ResetInitialDelayActive clears the initial delay gauge, so VPAs that were
-// deleted or no longer set initialDelaySeconds drop out.
-func ResetInitialDelayActive() {
-	initialDelayActive.Reset()
-}
-
-// RecordInitialDelayActive sets the initial delay gauge for the given VPA.
-func RecordInitialDelayActive(vpaName string, vpaNamespace string, active bool) {
-	value := 0.0
-	if active {
-		value = 1.0
-	}
-	initialDelayActive.WithLabelValues(vpaName, vpaNamespace).Set(value)
 }
 
 // RecordAdmissionControllerStatusInvalid increases the counter of skipped main loop iterations
@@ -248,6 +233,12 @@ func NewVpasWithEvictablePodsCounter() *UpdateModeAndSizeBasedGauge {
 func NewVpasWithEvictedPodsCounter() *UpdateModeAndSizeBasedGauge {
 	vpasWithEvictedPodsCount.Reset()
 	return newModeAndSizeBasedGauge(vpasWithEvictedPodsCount)
+}
+
+// NewVpasInInitialDelayCounter returns a wrapper for counting VPA objects in their initial delay window
+func NewVpasInInitialDelayCounter() *UpdateModeAndSizeBasedGauge {
+	vpasInInitialDelayCount.Reset()
+	return newModeAndSizeBasedGauge(vpasInInitialDelayCount)
 }
 
 // AddEvictedPod increases the counter of pods evicted by Updater, by given VPA size

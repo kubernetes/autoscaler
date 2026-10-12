@@ -418,6 +418,33 @@ func TestUpdateModeAndSizeBasedGauge(t *testing.T) {
 				},
 			},
 		},
+		{
+			desc:       "VpasInInitialDelayCounter",
+			newCounter: NewVpasInInitialDelayCounter,
+			metric:     vpasInInitialDelayCount,
+			metricName: "vpa_updater_vpas_in_initial_delay_total",
+			iterations: []iteration{
+				{
+					additions: []addition{
+						{1, vpa_types.UpdateModeRecreate, 1},
+						{1, vpa_types.UpdateModeRecreate, 1},
+						{4, vpa_types.UpdateModeInPlaceOrRecreate, 1},
+					},
+					expectations: []expectation{
+						{[]string{"0" /* log2(1) */, "Recreate"}, 2},
+						{[]string{"2" /* log2(4) */, "InPlaceOrRecreate"}, 1},
+					},
+				},
+				{
+					additions: []addition{
+						{4, vpa_types.UpdateModeInPlaceOrRecreate, 1},
+					},
+					expectations: []expectation{
+						{[]string{"2" /* log2(4) */, "InPlaceOrRecreate"}, 1},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -560,23 +587,5 @@ func TestSizeBasedGauge(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func TestRecordInitialDelayActive(t *testing.T) {
-	t.Cleanup(initialDelayActive.Reset)
-	ResetInitialDelayActive()
-	RecordInitialDelayActive("delayed", "default", true)
-	RecordInitialDelayActive("expired", "default", false)
-	if val := testutil.ToFloat64(initialDelayActive.WithLabelValues("delayed", "default")); val != 1 {
-		t.Errorf("Unexpected value for initialDelayActive metric for an active window: got %v, want 1", val)
-	}
-	if val := testutil.ToFloat64(initialDelayActive.WithLabelValues("expired", "default")); val != 0 {
-		t.Errorf("Unexpected value for initialDelayActive metric for an expired window: got %v, want 0", val)
-	}
-
-	ResetInitialDelayActive()
-	if count := testutil.CollectAndCount(initialDelayActive); count != 0 {
-		t.Errorf("Unexpected number of initialDelayActive series after reset: got %v, want 0", count)
 	}
 }
