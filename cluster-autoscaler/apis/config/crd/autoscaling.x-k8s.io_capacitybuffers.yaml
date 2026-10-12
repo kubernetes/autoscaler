@@ -263,34 +263,51 @@ spec:
     subresources:
       status: {}
   - additionalPrinterColumns:
-    - description: The strategy to be used.
-      jsonPath: .spec.provisioningStrategy
-      name: Strategy
+    - description: Whether the requested buffer capacity is available.
+      jsonPath: .status.conditions[?(@.type=='Provisioning')].status
+      name: Satisfied
       type: string
-    - description: The name of the PodTemplate used.
-      jsonPath: .status.podTemplateRef.name
-      name: PodTemplate
+    - description: Why the buffer capacity is or isn't available.
+      jsonPath: .status.conditions[?(@.type=='Provisioning')].reason
+      name: Reason
       type: string
     - description: The actual number of buffer chunks.
       jsonPath: .status.replicas
       name: Replicas
       type: integer
-    - description: List of all condition types.
-      jsonPath: .status.conditions[*].type
-      name: ConditionsType
-      type: string
-    - description: List of all condition statuses.
-      jsonPath: .status.conditions[*].status
-      name: ConditionsStatus
-      type: string
-    - description: List of all condition reasons.
-      jsonPath: .status.conditions[*].reason
-      name: ConditionsReason
+    - description: Details on the buffer capacity breakdown.
+      jsonPath: .status.conditions[?(@.type=='Provisioning')].message
+      name: Message
       type: string
     - description: The age of the CapacityBuffer.
       jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
+    - description: The strategy to be used.
+      jsonPath: .spec.provisioningStrategy
+      name: Strategy
+      priority: 1
+      type: string
+    - description: The name of the PodTemplate used.
+      jsonPath: .status.podTemplateRef.name
+      name: PodTemplate
+      priority: 1
+      type: string
+    - description: List of all condition types.
+      jsonPath: .status.conditions[*].type
+      name: ConditionsType
+      priority: 1
+      type: string
+    - description: List of all condition statuses.
+      jsonPath: .status.conditions[*].status
+      name: ConditionsStatus
+      priority: 1
+      type: string
+    - description: List of all condition reasons.
+      jsonPath: .status.conditions[*].reason
+      name: ConditionsReason
+      priority: 1
+      type: string
     name: v1beta1
     schema:
       openAPIV3Schema:
