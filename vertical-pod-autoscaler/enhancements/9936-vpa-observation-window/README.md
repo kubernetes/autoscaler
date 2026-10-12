@@ -142,9 +142,7 @@ func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler) bool {
 
 `InitialDelayExpiry` returns `CreationTimestamp + initialDelaySeconds`, and whether the field is set. With the gate disabled the helper returns false, so the components behave as they do today (fail-open).
 
-The call sites use it through `GetEffectiveUpdateMode(vpa)`, also in `pkg/utils/vpa`, which returns `UpdateModeOff` while the window is active and the configured mode otherwise.
-
-Insertion points, all existing `UpdateModeOff` checks switched to `GetEffectiveUpdateMode`:
+Insertion points, each existing `UpdateModeOff` check extended to `GetUpdateMode(vpa) == UpdateModeOff || InInitialDelayWindow(vpa)`:
 
 - **Updater** — the eligibility filter and the `Off`/`Initial` short-circuit in `pkg/updater/logic/updater.go`, and the post-boost in-place resize in `pkg/updater/inplace/resource_updates.go` (see [Interaction with CPU Startup Boost](#interaction-with-cpu-startup-boost)).
 - **Admission Controller** — `pkg/admission-controller/resource/vpa/matcher.go` and `pkg/admission-controller/resource/pod/patch/resource_updates.go`, so pods created during the window are admitted with their original spec resources.
