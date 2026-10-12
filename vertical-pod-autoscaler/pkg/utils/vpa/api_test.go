@@ -999,4 +999,7 @@ func TestInitialDelayExpiry(t *testing.T) {
 
 	_, ok = InitialDelayExpiry(builder.Get())
 	assert.False(t, ok)
+
+	_, ok = InitialDelayExpiry(test.VerticalPodAutoscaler().WithName("vpa").WithContainer(containerName).Get())
+	assert.False(t, ok)
 }
