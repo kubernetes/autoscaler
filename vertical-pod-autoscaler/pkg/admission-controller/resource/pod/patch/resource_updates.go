@@ -65,7 +65,7 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 		return []resource_admission.PatchRecord{}, fmt.Errorf("failed to calculate resource patch for pod %s/%s: %v", pod.Namespace, pod.Name, err)
 	}
 
-	if vpa_api_util.GetEffectiveUpdateMode(vpa) == vpa_types.UpdateModeOff {
+	if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeOff || vpa_api_util.InInitialDelayWindow(vpa) {
 		// If update mode is "Off", or the VPA is in its initial delay window,
 		// we don't want to apply any recommendations, but we still want to
 		// apply startup boost.

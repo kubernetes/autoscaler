@@ -53,9 +53,9 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *corev1.Po
 
 	expiredAnnotations := vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)
 
-	updateMode := vpa_api_util.GetEffectiveUpdateMode(vpa)
+	off := vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeOff || vpa_api_util.InInitialDelayWindow(vpa)
 	var recommendedResources []vpa_api_util.ContainerResources
-	if updateMode != vpa_types.UpdateModeOff {
+	if !off {
 		var err error
 		recommendedResources, _, err = c.recommendationProvider.GetContainersResourcesForPod(pod, vpa)
 		if err != nil {
@@ -82,7 +82,7 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *corev1.Po
 			}
 		case boosted:
 			continue // currently boosted pod so we skip creating patches
-		case updateMode == vpa_types.UpdateModeOff:
+		case off:
 			continue // Nothing to do for pods when VPA is Off.
 		default:
 			targetResources = recommendedResources[i]

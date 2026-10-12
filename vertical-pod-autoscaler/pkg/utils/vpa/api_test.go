@@ -971,6 +971,8 @@ func TestInInitialDelayWindow(t *testing.T) {
 		{name: "after the window", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](3600), created: time.Now().Add(-2 * time.Hour), featureEnabled: true, expected: false},
 		{name: "unset", mode: vpa_types.UpdateModeRecreate, delay: nil, created: time.Now(), featureEnabled: true, expected: false},
 		{name: "zero", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](0), created: time.Now(), featureEnabled: true, expected: false},
+		{name: "Off inside the window", mode: vpa_types.UpdateModeOff, delay: ptr.To[int32](3600), created: time.Now(), featureEnabled: true, expected: true},
+		{name: "Off after the window", mode: vpa_types.UpdateModeOff, delay: ptr.To[int32](3600), created: time.Now().Add(-2 * time.Hour), featureEnabled: true, expected: false},
 		{name: "inside the window, feature disabled", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](3600), created: time.Now(), featureEnabled: false, expected: false},
 	}
 	for _, tc := range testCases {
@@ -997,30 +999,4 @@ func TestInitialDelayExpiry(t *testing.T) {
 
 	_, ok = InitialDelayExpiry(builder.Get())
 	assert.False(t, ok)
-}
-
-func TestGetEffectiveUpdateMode(t *testing.T) {
-	testCases := []struct {
-		name           string
-		mode           vpa_types.UpdateMode
-		created        time.Time
-		featureEnabled bool
-		expected       vpa_types.UpdateMode
-	}{
-		{name: "Recreate inside the window", mode: vpa_types.UpdateModeRecreate, created: time.Now(), featureEnabled: true, expected: vpa_types.UpdateModeOff},
-		{name: "InPlaceOrRecreate inside the window", mode: vpa_types.UpdateModeInPlaceOrRecreate, created: time.Now(), featureEnabled: true, expected: vpa_types.UpdateModeOff},
-		{name: "Initial inside the window", mode: vpa_types.UpdateModeInitial, created: time.Now(), featureEnabled: true, expected: vpa_types.UpdateModeOff},
-		{name: "Off inside the window", mode: vpa_types.UpdateModeOff, created: time.Now(), featureEnabled: true, expected: vpa_types.UpdateModeOff},
-		{name: "Off after the window", mode: vpa_types.UpdateModeOff, created: time.Now().Add(-2 * time.Hour), featureEnabled: true, expected: vpa_types.UpdateModeOff},
-		{name: "Recreate after the window", mode: vpa_types.UpdateModeRecreate, created: time.Now().Add(-2 * time.Hour), featureEnabled: true, expected: vpa_types.UpdateModeRecreate},
-		{name: "Recreate inside the window, feature disabled", mode: vpa_types.UpdateModeRecreate, created: time.Now(), featureEnabled: false, expected: vpa_types.UpdateModeRecreate},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureEnabled)
-			vpa := test.VerticalPodAutoscaler().WithName("vpa").WithContainer(containerName).
-				WithUpdateMode(tc.mode).WithCreationTimestamp(tc.created).WithInitialDelaySeconds(3600).Get()
-			assert.Equal(t, tc.expected, GetEffectiveUpdateMode(vpa))
-		})
-	}
 }
