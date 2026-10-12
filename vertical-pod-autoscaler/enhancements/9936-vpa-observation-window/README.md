@@ -81,7 +81,7 @@ Modifying the VPA's spec does not reset the window. The gate is a pure function 
 ### Workflow
 
 1. The user creates a VPA with a non-`Off` `updateMode` and `initialDelaySeconds: N` set on `spec.updatePolicy`.
-2. The Recommender begins computing recommendations on the normal schedule and populates `status.recommendation`, the same as without the window.
+2. The Recommender begins computing recommendations on the normal schedule and populates `status.recommendation`.
 3. On every Updater reconcile, before deciding whether the VPA is eligible for actuation, the Updater evaluates the gate. If the gate is active, the VPA is treated as if `updateMode` were `Off` for that reconcile: no pods are evicted (`Recreate` / `InPlaceOrRecreate`) and no in-place resize is attempted (`InPlace` / `InPlaceOrRecreate`).
 4. The Admission Controller evaluates the same gate whenever a pod matching the VPA's target is created. While the gate is active it does not patch the pod's resources — the pod is admitted with its original spec, exactly as under `updateMode: Off`. This applies to every mode, not just `Initial`: without it, pods created during the window (scale-ups, node replacements, crash restarts) would receive un-stabilised recommendations at admission time.
 5. The Recommender sets the `InitialDelayActive` status condition to `True` while the gate is active and `False` once it has elapsed (see [Status Condition](#status-condition)). The Updater counts gated VPAs in the `vpa_updater_vpas_in_initial_delay_total` gauge.
@@ -132,11 +132,8 @@ Reference implementation, exposed from a shared package (`pkg/utils/vpa`) and co
 // enabled and the VPA is within its initial delay window. During the window
 // the Updater and Admission Controller treat the VPA as if UpdateMode were Off.
 func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler) bool {
-    if !features.Enabled(features.VPAInitialDelay) {
-        return false
-    }
     expiry, ok := InitialDelayExpiry(vpa)
-    return ok && time.Now().Before(expiry)
+    return ok && features.Enabled(features.VPAInitialDelay) && time.Now().Before(expiry)
 }
 ```
 
@@ -144,12 +141,12 @@ func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler) bool {
 
 Insertion points, each existing `UpdateModeOff` check extended to `GetUpdateMode(vpa) == UpdateModeOff || InInitialDelayWindow(vpa)`:
 
-- **Updater** — the eligibility filter and the `Off`/`Initial` short-circuit in `pkg/updater/logic/updater.go`, and the post-boost in-place resize in `pkg/updater/inplace/resource_updates.go` (see [Interaction with CPU Startup Boost](#interaction-with-cpu-startup-boost)).
+- **Updater** — the `Off`/`Initial` short-circuit in `pkg/updater/logic/updater.go`, and the post-boost in-place resize in `pkg/updater/inplace/resource_updates.go` (see [Interaction with CPU Startup Boost](#interaction-with-cpu-startup-boost)).
 - **Admission Controller** — `pkg/admission-controller/resource/vpa/matcher.go` and `pkg/admission-controller/resource/pod/patch/resource_updates.go`, so pods created during the window are admitted with their original spec resources.
 
 When the window is active, both components take the same code path they take for `UpdateModeOff` today.
 
-The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current `initialDelaySeconds` value (mutable). No caching; the gate is computed from the spec on every check.
+The gate is stateless: it is a pure function of `CreationTimestamp` (immutable on the object) and the current `initialDelaySeconds` value (mutable).
 
 No VPA spec change affects the gate **except** modifying `initialDelaySeconds` itself: the new value simply moves the expiry (`CreationTimestamp + initialDelaySeconds`), so on the next reconcile the gate may open earlier (value shortened or removed) or stay closed longer (value extended). No other field — existing or added to the CRD in the future — participates in gate evaluation; `updateMode` changes only what happens once the gate opens.
 
@@ -198,7 +195,7 @@ Add a new value to the existing `VerticalPodAutoscalerStatus.Conditions` slice:
 
 This lets `kubectl describe vpa` surface the gate without an operator having to compute `CreationTimestamp + initialDelaySeconds` mentally.
 
-The condition is set by the Recommender, on each status update, using the same helper as the Updater and Admission Controller. The Recommender is the only component with permission to write VPA status, and it writes the whole status on each update, so a condition written by the Updater would need new RBAC and could be overwritten by the Recommender's next write. The condition can read `True` for up to one Recommender loop (1 minute by default) after the window has elapsed. The gate itself is unaffected, since the Updater and Admission Controller compute it directly.
+The condition is set by the Recommender, on each status update, from the same expiry (`CreationTimestamp + initialDelaySeconds`) the Updater and Admission Controller use. The Recommender is the only component with permission to write VPA status, and it writes the whole status on each update, so a condition written by the Updater would need new RBAC and could be overwritten by the Recommender's next write. The condition can read `True` for up to one Recommender loop (1 minute by default) after the window has elapsed. The gate itself is unaffected, since the Updater and Admission Controller compute it directly.
 
 The condition is removed when `initialDelaySeconds` is unset or the feature gate is disabled on the Recommender.
 
@@ -246,7 +243,7 @@ Disabling the gate causes:
 
 ### Version Skew
 
-The Recommender only reports the window; an older Recommender, or one with the gate disabled, just doesn't set the condition. The gate is fully effective only when both the Updater and the Admission Controller run a version that supports it, with the feature gate enabled on both. During a rollout with mixed versions, an older component simply ignores the field and behaves as it does today (fail-open, matching the gate-disabled semantics in [Feature Enablement and Rollback](#feature-enablement-and-rollback)):
+An older Recommender, or one with the gate disabled, leaves the condition unset. The gate is fully effective only when both the Updater and the Admission Controller run a version that supports it, with the feature gate enabled on both. During a rollout with mixed versions, an older component simply ignores the field and behaves as it does today (fail-open, matching the gate-disabled semantics in [Feature Enablement and Rollback](#feature-enablement-and-rollback)):
 
 - **Old Updater, new Admission Controller** — pods created during the window are admitted without injection, but the Updater may still evict or resize during the window.
 - **New Updater, old Admission Controller** — no evictions or resizes during the window, but pods created during the window still receive recommendation injection.

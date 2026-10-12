@@ -326,7 +326,7 @@ The `startupBoost` field contains a `cpu` field with the following sub-fields:
 > [!WARNING]
 > FEATURE STATE: VPA v1.9.0 [alpha]
 
-`spec.updatePolicy.initialDelaySeconds` delays actuation of recommendations for a period after the VPA is created, so a new workload isn't resized on recommendations built from only a few samples. See [AEP-9936](../enhancements/9936-vpa-observation-window/README.md) for the design.
+`spec.updatePolicy.initialDelaySeconds` delays actuation of recommendations for a period after the VPA is created, giving the recommender time to collect usage data for a new workload. See [AEP-9936](../enhancements/9936-vpa-observation-window/README.md) for the design.
 
 ### Usage
 
@@ -347,9 +347,9 @@ spec:
 
 ### Behavior
 
-* The window runs from the VPA's `creationTimestamp` for `initialDelaySeconds` seconds. Editing the VPA doesn't restart it; changing `initialDelaySeconds` moves the end of the window.
+* The window starts at the VPA's `creationTimestamp` and lasts `initialDelaySeconds` seconds. Changing `initialDelaySeconds` moves the end of the window.
 * During the window the Updater and Admission Controller treat the VPA as if `updateMode` were `Off`, and the Recommender keeps publishing recommendations to `status.recommendation`.
-* CPU Startup Boost still applies during the window. A boost that expires during the window is scaled back to the pod's original resources, not to the recommendation.
+* CPU Startup Boost still applies during the window. A boost that expires during the window is scaled back to the pod's original resources.
 * After the window, the configured `updateMode` takes effect.
 
 ### Requirements
@@ -360,7 +360,7 @@ spec:
 --feature-gates=VPAInitialDelay=true
 ```
 
-The admission-controller and updater enforce the window; the recommender only reports it in the status condition.
+The admission-controller and updater enforce the window, and the recommender reports it in the `InitialDelayActive` condition.
 
 ### Monitoring
 
