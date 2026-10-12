@@ -210,3 +210,22 @@ func TestFilterOutNodesWithUnreadyResources(t *testing.T) {
 		}
 	}
 }
+
+func TestGetNodeGpuTargetForUnmanagedNodeWithoutGpuAllocatable(t *testing.T) {
+	processor := GpuCustomResourcesProcessor{}
+	provider := testprovider.NewTestCloudProviderBuilder().Build()
+	autoscalingCtx := &ca_context.AutoscalingContext{CloudProvider: provider}
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "unmanaged-gpu-node",
+			Labels: map[string]string{
+				GPULabel: "nvidia-tesla-k80",
+			},
+		},
+	}
+
+	target, err := processor.GetNodeGpuTarget(autoscalingCtx, node, nil)
+
+	assert.NoError(t, err)
+	assert.Equal(t, CustomResourceTarget{}, target)
+}
