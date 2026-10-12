@@ -240,8 +240,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			metrics_updater.RecordInitialDelayActive(vpa.Name, vpa.Namespace, vpa_api_util.InInitialDelayWindow(vpa))
 		}
 
-		// The effective mode only differs from the configured one during the initial delay window.
-		if vpa_api_util.GetEffectiveUpdateMode(vpa) != vpa_api_util.GetUpdateMode(vpa) && !vpa_api_util.HasStartupBoost(vpa) {
+		if vpa_api_util.InInitialDelayWindow(vpa) && !vpa_api_util.HasStartupBoost(vpa) {
 			klog.V(3).InfoS("Skipping VPA object because it is in its initial delay window", "vpa", klog.KObj(vpa))
 			continue
 		}
@@ -342,7 +341,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			})
 		}
 
-		if effectiveMode := vpa_api_util.GetEffectiveUpdateMode(vpa); effectiveMode == vpa_types.UpdateModeOff || effectiveMode == vpa_types.UpdateModeInitial {
+		if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial || vpa_api_util.InInitialDelayWindow(vpa) {
 			continue
 		}
 
