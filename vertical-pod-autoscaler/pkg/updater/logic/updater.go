@@ -222,8 +222,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 	timer.ObserveStep("ListVPAs")
 
 	inPlaceFeatureEnabled := features.Enabled(features.InPlace)
-	initialDelayFeatureEnabled := features.Enabled(features.VPAInitialDelay)
-	metrics_updater.ResetInitialDelayActive()
 	if u.vpasByTarget == nil {
 		u.vpasByTarget = make(vpasByTargetController, len(vpaList))
 	}
@@ -236,14 +234,6 @@ func (u *updater) RunOnce(ctx context.Context) {
 		// Log deprecation warnings for VPAs using deprecated modes
 		logDeprecationWarnings(vpa)
 
-		if _, ok := vpa_api_util.InitialDelayExpiry(vpa); ok && initialDelayFeatureEnabled {
-			metrics_updater.RecordInitialDelayActive(vpa.Name, vpa.Namespace, vpa_api_util.InInitialDelayWindow(vpa))
-		}
-
-		if vpa_api_util.InInitialDelayWindow(vpa) && !vpa_api_util.HasStartupBoost(vpa) {
-			klog.V(3).InfoS("Skipping VPA object because it is in its initial delay window", "vpa", klog.KObj(vpa))
-			continue
-		}
 		if !hasUpdatableMode(vpa) {
 			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"InPlace\", \"Recreate\" or \"Auto\" and it doesn't have startupBoost configured", "vpa", klog.KObj(vpa))
 			continue
@@ -306,6 +296,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	vpasWithInPlaceUpdatablePodsCounter := metrics_updater.NewVpasWithInPlaceUpdatablePodsCounter()
 	vpasWithInPlaceUpdatedPodsCounter := metrics_updater.NewVpasWithInPlaceUpdatedPodsCounter()
+	vpasInInitialDelayCounter := metrics_updater.NewVpasInInitialDelayCounter()
 
 	// using defer to protect against 'return' after evictionRateLimiter.Wait
 	defer controlledPodsCounter.Observe()
@@ -316,6 +307,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	defer inPlaceUpdatablePodsCounter.Observe()
 	defer vpasWithInPlaceUpdatablePodsCounter.Observe()
 	defer vpasWithInPlaceUpdatedPodsCounter.Observe()
+	defer vpasInInitialDelayCounter.Observe()
 
 	for vpa, livePods := range controlledPods {
 		vpaSize := len(livePods)
@@ -341,7 +333,11 @@ func (u *updater) RunOnce(ctx context.Context) {
 			})
 		}
 
-		if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial || vpa_api_util.InInitialDelayWindow(vpa) {
+		inInitialDelay := vpa_api_util.InInitialDelayWindow(vpa)
+		if inInitialDelay {
+			vpasInInitialDelayCounter.Add(vpaSize, updateMode, 1)
+		}
+		if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial || inInitialDelay {
 			continue
 		}
 

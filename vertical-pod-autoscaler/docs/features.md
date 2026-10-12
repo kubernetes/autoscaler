@@ -365,4 +365,4 @@ The admission-controller and updater enforce the window; the recommender only re
 ### Monitoring
 
 * The `InitialDelayActive` condition on the VPA is `True` while the window is active and `False` after it ends. It's set by the recommender, so it can lag the end of the window by up to one recommender loop (1 minute by default).
-* The updater exports `vpa_updater_initial_delay_active{vpa_name, vpa_namespace}`, `1` while the window is active and `0` after, for VPAs that set `initialDelaySeconds`.
+* The updater exports `vpa_updater_vpas_in_initial_delay_total{vpa_size_log2, update_mode}`, the number of VPAs in their initial delay window.
