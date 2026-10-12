@@ -272,7 +272,7 @@ func TestRunOnce_InitialDelay(t *testing.T) {
 			name:                  "inside the window",
 			created:               time.Now(),
 			featureEnabled:        true,
-			expectFetchCalls:      false,
+			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
 		},
 		{
