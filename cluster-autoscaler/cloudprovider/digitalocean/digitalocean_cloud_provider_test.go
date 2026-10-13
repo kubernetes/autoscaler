@@ -79,14 +79,14 @@ func setGetNodeTemplateMock(c *doClientMock, times int) *doClientMock {
 		Template: &godo.KubernetesNodeTemplate{
 			Labels: make(map[string]string),
 			Capacity: &godo.KubernetesNodePoolResources{
-				CPU:    1,
-				Memory: "2048Mi",
-				Pods:   110,
+				CpuMilliCores: 1000,
+				Memory:        "2048Mi",
+				Pods:          110,
 			},
 			Allocatable: &godo.KubernetesNodePoolResources{
-				CPU:    380,
-				Memory: "1024MI",
-				Pods:   110,
+				CpuMilliCores: 380,
+				Memory:        "1024MI",
+				Pods:          110,
 			},
 		},
 	}, &godo.Response{}, nil).Times(times)
