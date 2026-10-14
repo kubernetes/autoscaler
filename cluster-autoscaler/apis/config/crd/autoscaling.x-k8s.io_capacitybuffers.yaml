@@ -271,14 +271,14 @@ spec:
       jsonPath: .status.conditions[?(@.type=='Provisioning')].reason
       name: Reason
       type: string
-    - description: The actual number of buffer chunks.
+    - description: The desired number of buffer chunks.
       jsonPath: .status.replicas
-      name: Replicas
+      name: Desired
       type: integer
-    - description: Details on the buffer capacity breakdown.
-      jsonPath: .status.conditions[?(@.type=='Provisioning')].message
-      name: Message
-      type: string
+    - description: The number of buffer chunks schedulable on existing nodes.
+      jsonPath: .status.readyReplicas
+      name: Ready
+      type: integer
     - description: The age of the CapacityBuffer.
       jsonPath: .metadata.creationTimestamp
       name: Age
@@ -293,19 +293,9 @@ spec:
       name: PodTemplate
       priority: 1
       type: string
-    - description: List of all condition types.
-      jsonPath: .status.conditions[*].type
-      name: ConditionsType
-      priority: 1
-      type: string
-    - description: List of all condition statuses.
-      jsonPath: .status.conditions[*].status
-      name: ConditionsStatus
-      priority: 1
-      type: string
-    - description: List of all condition reasons.
-      jsonPath: .status.conditions[*].reason
-      name: ConditionsReason
+    - description: Whether the buffer's pod template and replicas have been resolved.
+      jsonPath: .status.conditions[?(@.type=='ReadyForProvisioning')].status
+      name: ReadyForProvisioning
       priority: 1
       type: string
     name: v1beta1

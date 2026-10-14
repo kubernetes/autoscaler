@@ -40,14 +40,12 @@ import (
 // +kubebuilder:resource:path=capacitybuffers,scope=Namespaced,shortName=cb
 // +kubebuilder:printcolumn:name="Satisfied",type="string",JSONPath=".status.conditions[?(@.type=='Provisioning')].status",description="Whether the requested buffer capacity is available."
 // +kubebuilder:printcolumn:name="Reason",type="string",JSONPath=".status.conditions[?(@.type=='Provisioning')].reason",description="Why the buffer capacity is or isn't available."
-// +kubebuilder:printcolumn:name="Replicas",type="integer",JSONPath=".status.replicas",description="The actual number of buffer chunks."
-// +kubebuilder:printcolumn:name="Message",type="string",JSONPath=".status.conditions[?(@.type=='Provisioning')].message",description="Details on the buffer capacity breakdown."
+// +kubebuilder:printcolumn:name="Desired",type="integer",JSONPath=".status.replicas",description="The desired number of buffer chunks."
+// +kubebuilder:printcolumn:name="Ready",type="integer",JSONPath=".status.readyReplicas",description="The number of buffer chunks schedulable on existing nodes."
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="The age of the CapacityBuffer."
 // +kubebuilder:printcolumn:name="Strategy",type="string",JSONPath=".spec.provisioningStrategy",description="The strategy to be used.",priority=1
 // +kubebuilder:printcolumn:name="PodTemplate",type="string",JSONPath=".status.podTemplateRef.name",description="The name of the PodTemplate used.",priority=1
-// +kubebuilder:printcolumn:name="ConditionsType",type="string",JSONPath=".status.conditions[*].type",description="List of all condition types.",priority=1
-// +kubebuilder:printcolumn:name="ConditionsStatus",type="string",JSONPath=".status.conditions[*].status",description="List of all condition statuses.",priority=1
-// +kubebuilder:printcolumn:name="ConditionsReason",type="string",JSONPath=".status.conditions[*].reason",description="List of all condition reasons.",priority=1
+// +kubebuilder:printcolumn:name="ReadyForProvisioning",type="string",JSONPath=".status.conditions[?(@.type=='ReadyForProvisioning')].status",description="Whether the buffer's pod template and replicas have been resolved.",priority=1
 // +versionName=v1beta1
 // +kubebuilder:storageversion
 // +k8s:openapi-gen=true
