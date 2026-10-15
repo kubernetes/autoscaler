@@ -278,7 +278,7 @@ func TestEstimateResources(t *testing.T) {
 
 func TestComputeResourceOverheadValueString(t *testing.T) {
 	testCases := []struct {
-		clusterSize         uint64
+		clusterSize      uint64
 		resource         Resource
 		expectedOverhead string
 	}{
