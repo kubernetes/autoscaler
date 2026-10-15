@@ -40,7 +40,7 @@ jobs:
       - name: Fetch history
         run: git fetch --prune --unshallow
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@6ec842c01de15ebb84c8627d2744a0c2f2755c9f # v2.8.0
+        uses: helm/chart-testing-action@720270857a28afd41e2426521a7801db09e9b510 # v2.9.0
       - name: Run chart-testing for CA (lint)
         run: ct lint --chart-dirs cluster-autoscaler/charts --target-branch ${{ github.event.pull_request.base.ref }}
       - name: Run chart-testing for VPA (lint)
