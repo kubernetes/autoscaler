@@ -21,13 +21,18 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 )
 
 func TestIsNonDisruptiveResize(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
 	testCases := []struct {
-		name     string
-		pod      *corev1.Pod
-		expected bool
+		name                 string
+		pod                  *corev1.Pod
+		nativeSidecarEnabled bool
+		expected             bool
 	}{
 		{
 			name: "No resize policy - defaults to NotRequired",
@@ -118,10 +123,66 @@ func TestIsNonDisruptiveResize(t *testing.T) {
 			},
 			expected: true,
 		},
+		{
+			name: "Native sidecar with RestartContainer is disruptive when gate enabled",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{Name: "container1"}},
+					InitContainers: []corev1.Container{
+						{
+							Name:          "sidecar",
+							RestartPolicy: &always,
+							ResizePolicy: []corev1.ContainerResizePolicy{
+								{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.RestartContainer},
+							},
+						},
+					},
+				},
+			},
+			nativeSidecarEnabled: true,
+			expected:             false,
+		},
+		{
+			name: "Native sidecar resize policy ignored when gate disabled",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{Name: "container1"}},
+					InitContainers: []corev1.Container{
+						{
+							Name:          "sidecar",
+							RestartPolicy: &always,
+							ResizePolicy: []corev1.ContainerResizePolicy{
+								{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.RestartContainer},
+							},
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Plain init container with RestartContainer is ignored when gate enabled",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{Name: "container1"}},
+					InitContainers: []corev1.Container{
+						{
+							Name: "plain-init",
+							ResizePolicy: []corev1.ContainerResizePolicy{
+								{ResourceName: corev1.ResourceCPU, RestartPolicy: corev1.RestartContainer},
+							},
+						},
+					},
+				},
+			},
+			nativeSidecarEnabled: true,
+			expected:             true,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, tc.nativeSidecarEnabled)
 			result := IsNonDisruptiveResize(tc.pod)
 			assert.Equal(t, tc.expected, result)
 		})
