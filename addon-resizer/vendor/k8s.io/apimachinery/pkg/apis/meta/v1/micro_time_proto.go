@@ -27,9 +27,12 @@ func (m *MicroTime) ProtoMicroTime() *Timestamp {
 	if m == nil {
 		return &Timestamp{}
 	}
+
+	// truncate precision to microseconds to match JSON marshaling/unmarshaling
+	truncatedNanoseconds := time.Duration(m.Time.Nanosecond()).Truncate(time.Microsecond)
 	return &Timestamp{
 		Seconds: m.Time.Unix(),
-		Nanos:   int32(m.Time.Nanosecond()),
+		Nanos:   int32(truncatedNanoseconds),
 	}
 }
 
@@ -51,7 +54,10 @@ func (m *MicroTime) Unmarshal(data []byte) error {
 	if err := p.Unmarshal(data); err != nil {
 		return err
 	}
-	m.Time = time.Unix(p.Seconds, int64(p.Nanos)).Local()
+
+	// truncate precision to microseconds to match JSON marshaling/unmarshaling
+	truncatedNanoseconds := time.Duration(p.Nanos).Truncate(time.Microsecond)
+	m.Time = time.Unix(p.Seconds, int64(truncatedNanoseconds)).Local()
 	return nil
 }
 
@@ -69,4 +75,12 @@ func (m *MicroTime) MarshalTo(data []byte) (int, error) {
 		return 0, nil
 	}
 	return m.ProtoMicroTime().MarshalTo(data)
+}
+
+// MarshalToSizedBuffer implements the protobuf marshalling interface.
+func (m *MicroTime) MarshalToSizedBuffer(data []byte) (int, error) {
+	if m == nil || m.Time.IsZero() {
+		return 0, nil
+	}
+	return m.ProtoMicroTime().MarshalToSizedBuffer(data)
 }

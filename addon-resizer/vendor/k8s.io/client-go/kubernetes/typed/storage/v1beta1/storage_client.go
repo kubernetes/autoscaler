@@ -19,21 +19,38 @@ limitations under the License.
 package v1beta1
 
 import (
-	v1beta1 "k8s.io/api/storage/v1beta1"
-	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/client-go/kubernetes/scheme"
+	http "net/http"
+
+	storagev1beta1 "k8s.io/api/storage/v1beta1"
+	scheme "k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
 )
 
 type StorageV1beta1Interface interface {
 	RESTClient() rest.Interface
+	CSIDriversGetter
+	CSINodesGetter
+	CSIStorageCapacitiesGetter
 	StorageClassesGetter
 	VolumeAttachmentsGetter
+	VolumeAttributesClassesGetter
 }
 
 // StorageV1beta1Client is used to interact with features provided by the storage.k8s.io group.
 type StorageV1beta1Client struct {
 	restClient rest.Interface
+}
+
+func (c *StorageV1beta1Client) CSIDrivers() CSIDriverInterface {
+	return newCSIDrivers(c)
+}
+
+func (c *StorageV1beta1Client) CSINodes() CSINodeInterface {
+	return newCSINodes(c)
+}
+
+func (c *StorageV1beta1Client) CSIStorageCapacities(namespace string) CSIStorageCapacityInterface {
+	return newCSIStorageCapacities(c, namespace)
 }
 
 func (c *StorageV1beta1Client) StorageClasses() StorageClassInterface {
@@ -44,13 +61,29 @@ func (c *StorageV1beta1Client) VolumeAttachments() VolumeAttachmentInterface {
 	return newVolumeAttachments(c)
 }
 
+func (c *StorageV1beta1Client) VolumeAttributesClasses() VolumeAttributesClassInterface {
+	return newVolumeAttributesClasses(c)
+}
+
 // NewForConfig creates a new StorageV1beta1Client for the given config.
+// NewForConfig is equivalent to NewForConfigAndClient(c, httpClient),
+// where httpClient was generated with rest.HTTPClientFor(c).
 func NewForConfig(c *rest.Config) (*StorageV1beta1Client, error) {
 	config := *c
-	if err := setConfigDefaults(&config); err != nil {
+	setConfigDefaults(&config)
+	httpClient, err := rest.HTTPClientFor(&config)
+	if err != nil {
 		return nil, err
 	}
-	client, err := rest.RESTClientFor(&config)
+	return NewForConfigAndClient(&config, httpClient)
+}
+
+// NewForConfigAndClient creates a new StorageV1beta1Client for the given config and http client.
+// Note the http client provided takes precedence over the configured transport values.
+func NewForConfigAndClient(c *rest.Config, h *http.Client) (*StorageV1beta1Client, error) {
+	config := *c
+	setConfigDefaults(&config)
+	client, err := rest.RESTClientForConfigAndClient(&config, h)
 	if err != nil {
 		return nil, err
 	}
@@ -72,17 +105,15 @@ func New(c rest.Interface) *StorageV1beta1Client {
 	return &StorageV1beta1Client{c}
 }
 
-func setConfigDefaults(config *rest.Config) error {
-	gv := v1beta1.SchemeGroupVersion
+func setConfigDefaults(config *rest.Config) {
+	gv := storagev1beta1.SchemeGroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
+	config.NegotiatedSerializer = rest.CodecFactoryForGeneratedClient(scheme.Scheme, scheme.Codecs).WithoutConversion()
 
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()
 	}
-
-	return nil
 }
 
 // RESTClient returns a RESTClient that is used to communicate

@@ -19,12 +19,19 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/apps/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	context "context"
+	fmt "fmt"
+
+	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationsappsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
+	applyconfigurationsautoscalingv1 "k8s.io/client-go/applyconfigurations/autoscaling/v1"
+	gentype "k8s.io/client-go/gentype"
 	scheme "k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
+	apply "k8s.io/client-go/util/apply"
 )
 
 // StatefulSetsGetter has a method to return a StatefulSetInterface.
@@ -35,140 +42,98 @@ type StatefulSetsGetter interface {
 
 // StatefulSetInterface has methods to work with StatefulSet resources.
 type StatefulSetInterface interface {
-	Create(*v1.StatefulSet) (*v1.StatefulSet, error)
-	Update(*v1.StatefulSet) (*v1.StatefulSet, error)
-	UpdateStatus(*v1.StatefulSet) (*v1.StatefulSet, error)
-	Delete(name string, options *meta_v1.DeleteOptions) error
-	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v1.StatefulSet, error)
-	List(opts meta_v1.ListOptions) (*v1.StatefulSetList, error)
-	Watch(opts meta_v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.StatefulSet, err error)
+	Create(ctx context.Context, statefulSet *appsv1.StatefulSet, opts metav1.CreateOptions) (*appsv1.StatefulSet, error)
+	Update(ctx context.Context, statefulSet *appsv1.StatefulSet, opts metav1.UpdateOptions) (*appsv1.StatefulSet, error)
+	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+	UpdateStatus(ctx context.Context, statefulSet *appsv1.StatefulSet, opts metav1.UpdateOptions) (*appsv1.StatefulSet, error)
+	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*appsv1.StatefulSet, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*appsv1.StatefulSetList, error)
+	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *appsv1.StatefulSet, err error)
+	Apply(ctx context.Context, statefulSet *applyconfigurationsappsv1.StatefulSetApplyConfiguration, opts metav1.ApplyOptions) (result *appsv1.StatefulSet, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, statefulSet *applyconfigurationsappsv1.StatefulSetApplyConfiguration, opts metav1.ApplyOptions) (result *appsv1.StatefulSet, err error)
+	GetScale(ctx context.Context, statefulSetName string, options metav1.GetOptions) (*autoscalingv1.Scale, error)
+	UpdateScale(ctx context.Context, statefulSetName string, scale *autoscalingv1.Scale, opts metav1.UpdateOptions) (*autoscalingv1.Scale, error)
+	ApplyScale(ctx context.Context, statefulSetName string, scale *applyconfigurationsautoscalingv1.ScaleApplyConfiguration, opts metav1.ApplyOptions) (*autoscalingv1.Scale, error)
+
 	StatefulSetExpansion
 }
 
 // statefulSets implements StatefulSetInterface
 type statefulSets struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithListAndApply[*appsv1.StatefulSet, *appsv1.StatefulSetList, *applyconfigurationsappsv1.StatefulSetApplyConfiguration]
 }
 
 // newStatefulSets returns a StatefulSets
 func newStatefulSets(c *AppsV1Client, namespace string) *statefulSets {
 	return &statefulSets{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithListAndApply[*appsv1.StatefulSet, *appsv1.StatefulSetList, *applyconfigurationsappsv1.StatefulSetApplyConfiguration](
+			"statefulsets",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *appsv1.StatefulSet { return &appsv1.StatefulSet{} },
+			func() *appsv1.StatefulSetList { return &appsv1.StatefulSetList{} },
+			gentype.PrefersProtobuf[*appsv1.StatefulSet](),
+		),
 	}
 }
 
-// Get takes name of the statefulSet, and returns the corresponding statefulSet object, and an error if there is any.
-func (c *statefulSets) Get(name string, options meta_v1.GetOptions) (result *v1.StatefulSet, err error) {
-	result = &v1.StatefulSet{}
-	err = c.client.Get().
-		Namespace(c.ns).
+// GetScale takes name of the statefulSet, and returns the corresponding autoscalingv1.Scale object, and an error if there is any.
+func (c *statefulSets) GetScale(ctx context.Context, statefulSetName string, options metav1.GetOptions) (result *autoscalingv1.Scale, err error) {
+	result = &autoscalingv1.Scale{}
+	err = c.GetClient().Get().
+		UseProtobufAsDefault().
+		Namespace(c.GetNamespace()).
 		Resource("statefulsets").
-		Name(name).
+		Name(statefulSetName).
+		SubResource("scale").
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
-// List takes label and field selectors, and returns the list of StatefulSets that match those selectors.
-func (c *statefulSets) List(opts meta_v1.ListOptions) (result *v1.StatefulSetList, err error) {
-	result = &v1.StatefulSetList{}
-	err = c.client.Get().
-		Namespace(c.ns).
+// UpdateScale takes the top resource name and the representation of a scale and updates it. Returns the server's representation of the scale, and an error, if there is any.
+func (c *statefulSets) UpdateScale(ctx context.Context, statefulSetName string, scale *autoscalingv1.Scale, opts metav1.UpdateOptions) (result *autoscalingv1.Scale, err error) {
+	result = &autoscalingv1.Scale{}
+	err = c.GetClient().Put().
+		UseProtobufAsDefault().
+		Namespace(c.GetNamespace()).
 		Resource("statefulsets").
+		Name(statefulSetName).
+		SubResource("scale").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Body(scale).
+		Do(ctx).
 		Into(result)
 	return
 }
 
-// Watch returns a watch.Interface that watches the requested statefulSets.
-func (c *statefulSets) Watch(opts meta_v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("statefulsets").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
-}
+// ApplyScale takes top resource name and the apply declarative configuration for scale,
+// applies it and returns the applied scale, and an error, if there is any.
+func (c *statefulSets) ApplyScale(ctx context.Context, statefulSetName string, scale *applyconfigurationsautoscalingv1.ScaleApplyConfiguration, opts metav1.ApplyOptions) (result *autoscalingv1.Scale, err error) {
+	if scale == nil {
+		return nil, fmt.Errorf("scale provided to ApplyScale must not be nil")
+	}
+	patchOpts := opts.ToPatchOptions()
+	request, err := apply.NewRequest(c.GetClient(), scale)
+	if err != nil {
+		return nil, err
+	}
 
-// Create takes the representation of a statefulSet and creates it.  Returns the server's representation of the statefulSet, and an error, if there is any.
-func (c *statefulSets) Create(statefulSet *v1.StatefulSet) (result *v1.StatefulSet, err error) {
-	result = &v1.StatefulSet{}
-	err = c.client.Post().
-		Namespace(c.ns).
+	result = &autoscalingv1.Scale{}
+	err = request.
+		UseProtobufAsDefault().
+		Namespace(c.GetNamespace()).
 		Resource("statefulsets").
-		Body(statefulSet).
-		Do().
-		Into(result)
-	return
-}
-
-// Update takes the representation of a statefulSet and updates it. Returns the server's representation of the statefulSet, and an error, if there is any.
-func (c *statefulSets) Update(statefulSet *v1.StatefulSet) (result *v1.StatefulSet, err error) {
-	result = &v1.StatefulSet{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("statefulsets").
-		Name(statefulSet.Name).
-		Body(statefulSet).
-		Do().
-		Into(result)
-	return
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *statefulSets) UpdateStatus(statefulSet *v1.StatefulSet) (result *v1.StatefulSet, err error) {
-	result = &v1.StatefulSet{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("statefulsets").
-		Name(statefulSet.Name).
-		SubResource("status").
-		Body(statefulSet).
-		Do().
-		Into(result)
-	return
-}
-
-// Delete takes name of the statefulSet and deletes it. Returns an error if one occurs.
-func (c *statefulSets) Delete(name string, options *meta_v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("statefulsets").
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *statefulSets) DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("statefulsets").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Patch applies the patch and returns the patched statefulSet.
-func (c *statefulSets) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.StatefulSet, err error) {
-	result = &v1.StatefulSet{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("statefulsets").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
+		Name(statefulSetName).
+		SubResource("scale").
+		VersionedParams(&patchOpts, scheme.ParameterCodec).
+		Do(ctx).
 		Into(result)
 	return
 }

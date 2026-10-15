@@ -19,18 +19,17 @@
 
 ALL_ARCH = amd64 arm arm64 ppc64le s390x
 ARCH ?= amd64
+export DOCKER_CLI_EXPERIMENTAL=enabled
 
 GOARM=7
-GOLANG_VERSION = 1.12.1
-REGISTRY = staging-k8s.gcr.io
+GOLANG_VERSION = 1.26
+REGISTRY = gcr.io/k8s-staging-autoscaling
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
 MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)
-TAG = 2.3
+TAG ?= 2.4
 # The output type could either be docker (local), or registry.
 OUTPUT_TYPE ?= docker
-
-BASEIMAGE?=gcr.io/distroless/static:latest
 
 TEMP_DIR := $(shell mktemp -d)
 
@@ -39,18 +38,12 @@ all: all-container
 sub-container-%:
 	$(MAKE) ARCH=$* container
 
-sub-manifest-push-%:
-	$(MAKE) ARCH=$* manifest-push
-
 sub-push-%:
 	$(MAKE) ARCH=$* push
 
 all-container: test $(addprefix sub-container-,$(ALL_ARCH))
 
-all-manifest-push: $(addprefix sub-manifest-push-,$(ALL_ARCH))
-	docker manifest push -p $(IMAGE):$(TAG)
-
-all-push: $(addprefix sub-push-,$(ALL_ARCH)) all-manifest-push
+all-push: $(addprefix sub-push-,$(ALL_ARCH)) push-multi-arch
 
 buildx-setup:
 	docker buildx inspect img-builder > /dev/null || docker buildx create --name img-builder --use
@@ -58,49 +51,34 @@ buildx-setup:
 container: .container-$(ARCH)
 .container-$(ARCH): buildx-setup
 	cp -r * $(TEMP_DIR)
-	cd $(TEMP_DIR) && sed -i 's|BASEIMAGE|$(BASEIMAGE)|g' Dockerfile
-
-	docker run --rm -v $(TEMP_DIR):$(TEMP_DIR):Z -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
-        golang:${GOLANG_VERSION} \
-        /bin/bash -c "\
-            go get github.com/tools/godep && \
-            cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
-            CGO_ENABLED=0 GOARM=$(GOARM) GOARCH=$(ARCH) godep go build -a -installsuffix cgo --ldflags '-w -X k8s.io/autoscaler/addon-resizer/nanny.AddonResizerVersion=$(TAG)' -o $(TEMP_DIR)/pod_nanny main.go"
+	cd $(TEMP_DIR)
 
 	docker buildx build \
 		--pull \
 		--platform linux/$(ARCH) \
+		--build-arg ARCH=$(ARCH) \
+		--build-arg GOARM=$(GOARM) \
+		--build-arg TAG=$(TAG) \
 		--output=type=$(OUTPUT_TYPE) \
 		-t $(MULTI_ARCH_IMG):$(TAG) $(TEMP_DIR)
-
-ifeq ($(ARCH), amd64)
-	# This is for to maintain the backward compatibility
-	docker tag $(MULTI_ARCH_IMG):$(TAG) $(IMAGE):$(TAG)
-endif
 
 test:
 	docker run --rm -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
 	golang:${GOLANG_VERSION} \
         /bin/bash -c "\
-            go get github.com/tools/godep && \
             cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
-            godep go test ./nanny -v"
+            go test ./nanny -v"
 
 push: .push-$(ARCH)
 .push-$(ARCH): .container-$(ARCH)
 	gcloud docker -- push $(MULTI_ARCH_IMG):$(TAG)
-ifeq ($(ARCH), amd64)
-	gcloud docker -- push $(IMAGE):$(TAG)
-endif
 
-manifest-push: .manifest-push-$(ARCH)
-.manifest-push-$(ARCH):
-	docker manifest create --amend $(IMAGE):$(TAG) $(MULTI_ARCH_IMG):$(TAG) && \
-	docker manifest annotate --os=linux --arch=$(ARCH) $(IMAGE):$(TAG) $(MULTI_ARCH_IMG):$(TAG)
+push-multi-arch:
+	docker manifest create --amend $(IMAGE):$(TAG) $(shell echo $(ALL_ARCH) | sed -e "s~[^ ]*~$(IMAGE)\-&:$(TAG)~g")
+	@for arch in $(ALL_ARCH); do docker manifest annotate --arch $${arch} $(IMAGE):$(TAG) $(IMAGE)-$${arch}:$(TAG); done
+	gcloud docker -- manifest push --purge $(IMAGE):$(TAG)
 
 clean: $(addprefix sub-clean-,$(ALL_ARCH))
 sub-clean-%:
 	docker rmi -f $(IMAGE)-$*:$(TAG) || true
-ifeq ($(ARCH), amd64)
-	docker rmi -f $(IMAGE):$(TAG)
-endif
+

@@ -17,101 +17,251 @@ limitations under the License.
 package runtime
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"net/http"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
+	"k8s.io/klog/v2/textlogger"
 )
 
 var (
-	// ReallyCrash controls the behavior of HandleCrash and now defaults
-	// true. It's still exposed so components can optionally set to false
-	// to restore prior behavior.
+	// ReallyCrash controls the behavior of HandleCrash and defaults to
+	// true. It's exposed so components can optionally set to false
+	// to restore prior behavior. This flag is mostly used for tests to validate
+	// crash conditions.
 	ReallyCrash = true
 )
 
 // PanicHandlers is a list of functions which will be invoked when a panic happens.
-var PanicHandlers = []func(interface{}){logPanic}
+//
+// The code invoking these handlers prepares a contextual logger so that
+// klog.FromContext(ctx) already skips over the panic handler itself and
+// several other intermediate functions, ideally such that the log output
+// is attributed to the code which triggered the panic.
+var PanicHandlers = []func(context.Context, interface{}){logPanic}
 
 // HandleCrash simply catches a crash and logs an error. Meant to be called via
 // defer.  Additional context-specific handlers can be provided, and will be
 // called in case of panic.  HandleCrash actually crashes, after calling the
 // handlers and logging the panic message.
 //
-// TODO: remove this function. We are switching to a world where it's safe for
-// apiserver to panic, since it will be restarted by kubelet. At the beginning
-// of the Kubernetes project, nothing was going to restart apiserver and so
-// catching panics was important. But it's actually much simpler for monitoring
-// software if we just exit when an unexpected panic happens.
+// E.g., you can provide one or more additional handlers for something like shutting down go routines gracefully.
+//
+// Contextual logging: HandleCrashWithContext or HandleCrashWithLogger should be used instead of HandleCrash in code which supports contextual logging.
 func HandleCrash(additionalHandlers ...func(interface{})) {
 	if r := recover(); r != nil {
-		for _, fn := range PanicHandlers {
-			fn(r)
+		additionalHandlersWithContext := make([]func(context.Context, interface{}), len(additionalHandlers))
+		for i, handler := range additionalHandlers {
+			additionalHandlersWithContext[i] = func(_ context.Context, r interface{}) {
+				handler(r)
+			}
 		}
-		for _, fn := range additionalHandlers {
-			fn(r)
-		}
-		if ReallyCrash {
-			// Actually proceed to panic.
-			panic(r)
-		}
+
+		handleCrash(context.Background(), r, additionalHandlersWithContext...)
 	}
 }
 
-// logPanic logs the caller tree when a panic occurs.
-func logPanic(r interface{}) {
-	callers := getCallers(r)
-	glog.Errorf("Observed a panic: %#v (%v)\n%v", r, r, callers)
+// HandleCrashWithContext simply catches a crash and logs an error. Meant to be called via
+// defer.  Additional context-specific handlers can be provided, and will be
+// called in case of panic.  HandleCrash actually crashes, after calling the
+// handlers and logging the panic message.
+//
+// E.g., you can provide one or more additional handlers for something like shutting down go routines gracefully.
+//
+// The context is used to determine how to log.
+func HandleCrashWithContext(ctx context.Context, additionalHandlers ...func(context.Context, interface{})) {
+	if r := recover(); r != nil {
+		handleCrash(ctx, r, additionalHandlers...)
+	}
 }
 
-func getCallers(r interface{}) string {
-	callers := ""
-	for i := 0; true; i++ {
-		_, file, line, ok := runtime.Caller(i)
-		if !ok {
-			break
-		}
-		callers = callers + fmt.Sprintf("%v:%v\n", file, line)
+// HandleCrashWithLogger simply catches a crash and logs an error. Meant to be called via
+// defer.  Additional context-specific handlers can be provided, and will be
+// called in case of panic.  HandleCrash actually crashes, after calling the
+// handlers and logging the panic message.
+//
+// E.g., you can provide one or more additional handlers for something like shutting down go routines gracefully.
+func HandleCrashWithLogger(logger klog.Logger, additionalHandlers ...func(context.Context, interface{})) {
+	if r := recover(); r != nil {
+		ctx := klog.NewContext(context.Background(), logger)
+		handleCrash(ctx, r, additionalHandlers...)
+	}
+}
+
+// handleCrash is the common implementation of the HandleCrash* variants.
+// Having those call a common implementation ensures that the stack depth
+// is the same regardless through which path the handlers get invoked.
+func handleCrash(ctx context.Context, r any, additionalHandlers ...func(context.Context, interface{})) {
+	// We don't really know how many call frames to skip because the Go
+	// panic handler is between us and the code where the panic occurred.
+	// If it's one function (as in Go 1.21), then skipping four levels
+	// gets us to the function which called the `defer HandleCrashWithontext(...)`.
+	logger := klog.FromContext(ctx).WithCallDepth(4)
+	ctx = klog.NewContext(ctx, logger)
+
+	for _, fn := range PanicHandlers {
+		fn(ctx, r)
+	}
+	for _, fn := range additionalHandlers {
+		fn(ctx, r)
+	}
+	if ReallyCrash {
+		// Actually proceed to panic.
+		panic(r)
+	}
+}
+
+// logPanic logs the caller tree when a panic occurs (except in the special case of http.ErrAbortHandler).
+func logPanic(ctx context.Context, r interface{}) {
+	if r == http.ErrAbortHandler {
+		// honor the http.ErrAbortHandler sentinel panic value:
+		//   ErrAbortHandler is a sentinel panic value to abort a handler.
+		//   While any panic from ServeHTTP aborts the response to the client,
+		//   panicking with ErrAbortHandler also suppresses logging of a stack trace to the server's error log.
+		return
 	}
 
-	return callers
+	// Same as stdlib http server code. Manually allocate stack trace buffer size
+	// to prevent excessively large logs
+	const size = 64 << 10
+	stacktrace := make([]byte, size)
+	stacktrace = stacktrace[:runtime.Stack(stacktrace, false)]
+
+	logger := klog.FromContext(ctx)
+
+	// For backwards compatibility, conversion to string
+	// is handled here instead of defering to the logging
+	// backend.
+	if _, ok := r.(string); ok {
+		logger.Error(nil, "Observed a panic", "panic", r, "stacktrace", string(stacktrace))
+	} else {
+		logger.Error(nil, "Observed a panic", "panic", fmt.Sprintf("%v", r), "panicGoValue", fmt.Sprintf("%#v", r), "stacktrace", string(stacktrace))
+	}
 }
 
-// ErrorHandlers is a list of functions which will be invoked when an unreturnable
+// ErrorHandlers is a list of functions which will be invoked when a nonreturnable
 // error occurs.
 // TODO(lavalamp): for testability, this and the below HandleError function
 // should be packaged up into a testable and reusable object.
-var ErrorHandlers = []func(error){
+var ErrorHandlers = []ErrorHandler{
 	logError,
-	(&rudimentaryErrorBackoff{
-		lastErrorTime: time.Now(),
-		// 1ms was the number folks were able to stomach as a global rate limit.
-		// If you need to log errors more than 1000 times a second you
-		// should probably consider fixing your code instead. :)
-		minPeriod: time.Millisecond,
-	}).OnError,
+	// 1ms was the number folks were able to stomach as a global rate limit.
+	// If you need to log errors more than 1000 times a second, you
+	// should probably consider fixing your code instead. :)
+	backoffError(1 * time.Millisecond),
+}
+
+// ErrorHandler is called indirectly through [HandleError], [HandleErrorWithContext] or [HandleErrorWithLogger].
+// It is passed the same parameters that a structured logging backend needs to log a problem.
+// It follows the semantic described for [HandleErrorWithContext] and [logr.Logger.Error]:
+// - err is optional and may be nil
+// - msg is string that describes the problem
+// - keysAndValues contains additional information that varies between different occurrences of the problem
+//
+// [ErrorToString] can be used to convert these parameters into a single string, using the klog text output.
+type ErrorHandler func(ctx context.Context, err error, msg string, keysAndValues ...interface{})
+
+// ErrorToString takes the parameters passed to [ErrorHandler] and
+// formats them as a string using the klog text output.
+//
+// If any of the values is a multi-line string, then the resulting
+// string also uses line breaks and indention for the sake of readability.
+// Does not include a trailing newline.
+//
+// Use errors.New if an error instead of a string is needed.
+func ErrorToString(err error, msg string, keysAndValues ...interface{}) string {
+	var buffer bytes.Buffer
+	config := textlogger.NewConfig(
+		textlogger.Output(&buffer),
+		textlogger.WithHeader(false),
+	)
+	logger := textlogger.NewLogger(config)
+	logger.Error(err, msg, keysAndValues...)
+	result := buffer.String()
+	result = strings.TrimSpace(result)
+	return result
 }
 
 // HandlerError is a method to invoke when a non-user facing piece of code cannot
 // return an error and needs to indicate it has been ignored. Invoking this method
 // is preferable to logging the error - the default behavior is to log but the
 // errors may be sent to a remote server for analysis.
+//
+// Contextual logging: HandleErrorWithContext should be used instead of HandleError in code which supports contextual logging.
 func HandleError(err error) {
 	// this is sometimes called with a nil error.  We probably shouldn't fail and should do nothing instead
 	if err == nil {
 		return
 	}
 
+	handleError(context.Background(), err, "Unhandled Error")
+}
+
+// HandlerErrorWithContext is a method to invoke when a non-user facing piece of code cannot
+// return an error and needs to indicate it has been ignored. Invoking this method
+// is preferable to logging the error - the default behavior is to log but the
+// errors may be sent to a remote server for analysis. The context is used to
+// determine how to log the error.
+//
+// If contextual logging is enabled, the default log output is equivalent to
+//
+//	logr.FromContext(ctx).WithName("UnhandledError").Error(err, msg, keysAndValues...)
+//
+// Without contextual logging, it is equivalent to:
+//
+//	klog.ErrorS(err, msg, keysAndValues...)
+//
+// In contrast to HandleError, passing nil for the error is still going to
+// trigger a log entry. Don't construct a new error or wrap an error
+// with fmt.Errorf. Instead, add additional information via the mssage
+// and key/value pairs.
+//
+// This variant should be used instead of HandleError because it supports
+// structured, contextual logging. Alternatively, [HandleErrorWithLogger] can
+// be used if a logger is available instead of a context.
+func HandleErrorWithContext(ctx context.Context, err error, msg string, keysAndValues ...interface{}) {
+	handleError(ctx, err, msg, keysAndValues...)
+}
+
+// HandleErrorWithLogger is an alternative to [HandlerErrorWithContext] which accepts
+// a logger for contextual logging.
+func HandleErrorWithLogger(logger klog.Logger, err error, msg string, keysAndValues ...interface{}) {
+	handleError(klog.NewContext(context.Background(), logger), err, msg, keysAndValues...)
+}
+
+// handleError is the common implementation of the HandleError* variants.
+// Using this common implementation ensures that the stack depth
+// is the same regardless through which path the handlers get invoked.
+func handleError(ctx context.Context, err error, msg string, keysAndValues ...interface{}) {
 	for _, fn := range ErrorHandlers {
-		fn(err)
+		fn(ctx, err, msg, keysAndValues...)
 	}
 }
 
-// logError prints an error with the call stack of the location it was reported
-func logError(err error) {
-	glog.ErrorDepth(2, err)
+// logError prints an error with the call stack of the location it was reported.
+// It expects to be called as <caller> -> HandleError[WithContext] -> handleError -> logError.
+func logError(ctx context.Context, err error, msg string, keysAndValues ...interface{}) {
+	logger := klog.FromContext(ctx).WithCallDepth(3)
+	logger = klog.LoggerWithName(logger, "UnhandledError")
+	logger.Error(err, msg, keysAndValues...) //nolint:logcheck // logcheck complains about unknown key/value pairs.
+}
+
+// backoffError blocks if it is called more often than the minPeriod.
+func backoffError(minPeriod time.Duration) ErrorHandler {
+	r := &rudimentaryErrorBackoff{
+		lastErrorTime: time.Now(),
+		minPeriod:     minPeriod,
+	}
+
+	return func(ctx context.Context, err error, msg string, keysAndValues ...interface{}) {
+		r.OnError()
+	}
 }
 
 type rudimentaryErrorBackoff struct {
@@ -124,15 +274,18 @@ type rudimentaryErrorBackoff struct {
 
 // OnError will block if it is called more often than the embedded period time.
 // This will prevent overly tight hot error loops.
-func (r *rudimentaryErrorBackoff) OnError(error) {
+func (r *rudimentaryErrorBackoff) OnError() {
+	now := time.Now() // start the timer before acquiring the lock
 	r.lastErrorTimeLock.Lock()
-	defer r.lastErrorTimeLock.Unlock()
-	d := time.Since(r.lastErrorTime)
-	if d < r.minPeriod {
-		// If the time moves backwards for any reason, do nothing
-		time.Sleep(r.minPeriod - d)
-	}
+	d := now.Sub(r.lastErrorTime)
 	r.lastErrorTime = time.Now()
+	r.lastErrorTimeLock.Unlock()
+
+	// Do not sleep with the lock held because that causes all callers of HandleError to block.
+	// We only want the current goroutine to block.
+	// A negative or zero duration causes time.Sleep to return immediately.
+	// If the time moves backwards for any reason, do nothing.
+	time.Sleep(r.minPeriod - d)
 }
 
 // GetCaller returns the caller of the function that calls it.
@@ -141,7 +294,7 @@ func GetCaller() string {
 	runtime.Callers(3, pc[:])
 	f := runtime.FuncForPC(pc[0])
 	if f == nil {
-		return fmt.Sprintf("Unable to find caller")
+		return "Unable to find caller"
 	}
 	return f.Name()
 }
@@ -151,17 +304,21 @@ func GetCaller() string {
 // handlers to handle errors and panics the same way.
 func RecoverFromPanic(err *error) {
 	if r := recover(); r != nil {
-		callers := getCallers(r)
+		// Same as stdlib http server code. Manually allocate stack trace buffer size
+		// to prevent excessively large logs
+		const size = 64 << 10
+		stacktrace := make([]byte, size)
+		stacktrace = stacktrace[:runtime.Stack(stacktrace, false)]
 
 		*err = fmt.Errorf(
-			"recovered from panic %q. (err=%v) Call stack:\n%v",
+			"recovered from panic %q. (err=%v) Call stack:\n%s",
 			r,
 			*err,
-			callers)
+			stacktrace)
 	}
 }
 
-// Must panics on non-nil errors.  Useful to handling programmer level errors.
+// Must panics on non-nil errors. Useful to handling programmer level errors.
 func Must(err error) {
 	if err != nil {
 		panic(err)

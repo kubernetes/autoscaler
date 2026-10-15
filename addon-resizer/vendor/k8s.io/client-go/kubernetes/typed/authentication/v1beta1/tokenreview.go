@@ -19,7 +19,12 @@ limitations under the License.
 package v1beta1
 
 import (
-	rest "k8s.io/client-go/rest"
+	context "context"
+
+	authenticationv1beta1 "k8s.io/api/authentication/v1beta1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gentype "k8s.io/client-go/gentype"
+	scheme "k8s.io/client-go/kubernetes/scheme"
 )
 
 // TokenReviewsGetter has a method to return a TokenReviewInterface.
@@ -30,17 +35,25 @@ type TokenReviewsGetter interface {
 
 // TokenReviewInterface has methods to work with TokenReview resources.
 type TokenReviewInterface interface {
+	Create(ctx context.Context, tokenReview *authenticationv1beta1.TokenReview, opts v1.CreateOptions) (*authenticationv1beta1.TokenReview, error)
 	TokenReviewExpansion
 }
 
 // tokenReviews implements TokenReviewInterface
 type tokenReviews struct {
-	client rest.Interface
+	*gentype.Client[*authenticationv1beta1.TokenReview]
 }
 
 // newTokenReviews returns a TokenReviews
 func newTokenReviews(c *AuthenticationV1beta1Client) *tokenReviews {
 	return &tokenReviews{
-		client: c.RESTClient(),
+		gentype.NewClient[*authenticationv1beta1.TokenReview](
+			"tokenreviews",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			"",
+			func() *authenticationv1beta1.TokenReview { return &authenticationv1beta1.TokenReview{} },
+			gentype.PrefersProtobuf[*authenticationv1beta1.TokenReview](),
+		),
 	}
 }

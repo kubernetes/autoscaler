@@ -19,12 +19,15 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "k8s.io/api/rbac/v1alpha1"
+	context "context"
+
+	rbacv1alpha1 "k8s.io/api/rbac/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationsrbacv1alpha1 "k8s.io/client-go/applyconfigurations/rbac/v1alpha1"
+	gentype "k8s.io/client-go/gentype"
 	scheme "k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 // ClusterRolesGetter has a method to return a ClusterRoleInterface.
@@ -35,113 +38,34 @@ type ClusterRolesGetter interface {
 
 // ClusterRoleInterface has methods to work with ClusterRole resources.
 type ClusterRoleInterface interface {
-	Create(*v1alpha1.ClusterRole) (*v1alpha1.ClusterRole, error)
-	Update(*v1alpha1.ClusterRole) (*v1alpha1.ClusterRole, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.ClusterRole, error)
-	List(opts v1.ListOptions) (*v1alpha1.ClusterRoleList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ClusterRole, err error)
+	Create(ctx context.Context, clusterRole *rbacv1alpha1.ClusterRole, opts v1.CreateOptions) (*rbacv1alpha1.ClusterRole, error)
+	Update(ctx context.Context, clusterRole *rbacv1alpha1.ClusterRole, opts v1.UpdateOptions) (*rbacv1alpha1.ClusterRole, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*rbacv1alpha1.ClusterRole, error)
+	List(ctx context.Context, opts v1.ListOptions) (*rbacv1alpha1.ClusterRoleList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *rbacv1alpha1.ClusterRole, err error)
+	Apply(ctx context.Context, clusterRole *applyconfigurationsrbacv1alpha1.ClusterRoleApplyConfiguration, opts v1.ApplyOptions) (result *rbacv1alpha1.ClusterRole, err error)
 	ClusterRoleExpansion
 }
 
 // clusterRoles implements ClusterRoleInterface
 type clusterRoles struct {
-	client rest.Interface
+	*gentype.ClientWithListAndApply[*rbacv1alpha1.ClusterRole, *rbacv1alpha1.ClusterRoleList, *applyconfigurationsrbacv1alpha1.ClusterRoleApplyConfiguration]
 }
 
 // newClusterRoles returns a ClusterRoles
 func newClusterRoles(c *RbacV1alpha1Client) *clusterRoles {
 	return &clusterRoles{
-		client: c.RESTClient(),
+		gentype.NewClientWithListAndApply[*rbacv1alpha1.ClusterRole, *rbacv1alpha1.ClusterRoleList, *applyconfigurationsrbacv1alpha1.ClusterRoleApplyConfiguration](
+			"clusterroles",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			"",
+			func() *rbacv1alpha1.ClusterRole { return &rbacv1alpha1.ClusterRole{} },
+			func() *rbacv1alpha1.ClusterRoleList { return &rbacv1alpha1.ClusterRoleList{} },
+			gentype.PrefersProtobuf[*rbacv1alpha1.ClusterRole](),
+		),
 	}
-}
-
-// Get takes name of the clusterRole, and returns the corresponding clusterRole object, and an error if there is any.
-func (c *clusterRoles) Get(name string, options v1.GetOptions) (result *v1alpha1.ClusterRole, err error) {
-	result = &v1alpha1.ClusterRole{}
-	err = c.client.Get().
-		Resource("clusterroles").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of ClusterRoles that match those selectors.
-func (c *clusterRoles) List(opts v1.ListOptions) (result *v1alpha1.ClusterRoleList, err error) {
-	result = &v1alpha1.ClusterRoleList{}
-	err = c.client.Get().
-		Resource("clusterroles").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested clusterRoles.
-func (c *clusterRoles) Watch(opts v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Resource("clusterroles").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
-}
-
-// Create takes the representation of a clusterRole and creates it.  Returns the server's representation of the clusterRole, and an error, if there is any.
-func (c *clusterRoles) Create(clusterRole *v1alpha1.ClusterRole) (result *v1alpha1.ClusterRole, err error) {
-	result = &v1alpha1.ClusterRole{}
-	err = c.client.Post().
-		Resource("clusterroles").
-		Body(clusterRole).
-		Do().
-		Into(result)
-	return
-}
-
-// Update takes the representation of a clusterRole and updates it. Returns the server's representation of the clusterRole, and an error, if there is any.
-func (c *clusterRoles) Update(clusterRole *v1alpha1.ClusterRole) (result *v1alpha1.ClusterRole, err error) {
-	result = &v1alpha1.ClusterRole{}
-	err = c.client.Put().
-		Resource("clusterroles").
-		Name(clusterRole.Name).
-		Body(clusterRole).
-		Do().
-		Into(result)
-	return
-}
-
-// Delete takes name of the clusterRole and deletes it. Returns an error if one occurs.
-func (c *clusterRoles) Delete(name string, options *v1.DeleteOptions) error {
-	return c.client.Delete().
-		Resource("clusterroles").
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *clusterRoles) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	return c.client.Delete().
-		Resource("clusterroles").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Patch applies the patch and returns the patched clusterRole.
-func (c *clusterRoles) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ClusterRole, err error) {
-	result = &v1alpha1.ClusterRole{}
-	err = c.client.Patch(pt).
-		Resource("clusterroles").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
-		Into(result)
-	return
 }

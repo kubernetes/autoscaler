@@ -86,8 +86,8 @@ fmt.Println("ip has value ", *ip)
 fmt.Println("flagvar has value ", flagvar)
 ```
 
-There are helpers function to get values later if you have the FlagSet but
-it was difficult to keep up with all of the flag pointers in your code.
+There are helper functions available to get the value stored in a Flag if you have a FlagSet but find
+it difficult to keep up with all of the pointers in your code.
 If you have a pflag.FlagSet with a flag called 'flagname' of type int you
 can use GetInt() to get the int value. But notice that 'flagname' must exist
 and it must be an int. GetString("flagname") will fail.
@@ -280,6 +280,33 @@ var ip *int = flag.Int("flagname", 1234, "help message for flagname")
 
 func main() {
 	flag.CommandLine.AddGoFlagSet(goflag.CommandLine)
+	flag.Parse()
+}
+```
+
+### Using pflag with go test
+`pflag` does not parse the shorthand versions of go test's built-in flags (i.e., those starting with `-test.`).
+For more context, see issues [#63](https://github.com/spf13/pflag/issues/63) and [#238](https://github.com/spf13/pflag/issues/238) for more details.
+
+For example, if you use pflag in your `TestMain` function and call `pflag.Parse()` after defining your custom flags, running a test like this:
+```bash
+go test /your/tests -run ^YourTest -v --your-test-pflags
+```
+will result in the `-v` flag being ignored. This happens because of the way pflag handles flag parsing, skipping over go test's built-in shorthand flags.
+To work around this, you can use the `ParseSkippedFlags` function, which ensures that go test's flags are parsed separately using the standard flag package.
+
+**Example**: You want to parse go test flags that are otherwise ignore by `pflag.Parse()`
+```go
+import (
+	goflag "flag"
+	flag "github.com/spf13/pflag"
+)
+
+var ip *int = flag.Int("flagname", 1234, "help message for flagname")
+
+func main() {
+	flag.CommandLine.AddGoFlagSet(goflag.CommandLine)
+    flag.ParseSkippedFlags(os.Args[1:], goflag.CommandLine)
 	flag.Parse()
 }
 ```

@@ -19,12 +19,15 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	context "context"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
+	gentype "k8s.io/client-go/gentype"
 	scheme "k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 // LimitRangesGetter has a method to return a LimitRangeInterface.
@@ -35,123 +38,34 @@ type LimitRangesGetter interface {
 
 // LimitRangeInterface has methods to work with LimitRange resources.
 type LimitRangeInterface interface {
-	Create(*v1.LimitRange) (*v1.LimitRange, error)
-	Update(*v1.LimitRange) (*v1.LimitRange, error)
-	Delete(name string, options *meta_v1.DeleteOptions) error
-	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v1.LimitRange, error)
-	List(opts meta_v1.ListOptions) (*v1.LimitRangeList, error)
-	Watch(opts meta_v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.LimitRange, err error)
+	Create(ctx context.Context, limitRange *corev1.LimitRange, opts metav1.CreateOptions) (*corev1.LimitRange, error)
+	Update(ctx context.Context, limitRange *corev1.LimitRange, opts metav1.UpdateOptions) (*corev1.LimitRange, error)
+	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*corev1.LimitRange, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*corev1.LimitRangeList, error)
+	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *corev1.LimitRange, err error)
+	Apply(ctx context.Context, limitRange *applyconfigurationscorev1.LimitRangeApplyConfiguration, opts metav1.ApplyOptions) (result *corev1.LimitRange, err error)
 	LimitRangeExpansion
 }
 
 // limitRanges implements LimitRangeInterface
 type limitRanges struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithListAndApply[*corev1.LimitRange, *corev1.LimitRangeList, *applyconfigurationscorev1.LimitRangeApplyConfiguration]
 }
 
 // newLimitRanges returns a LimitRanges
 func newLimitRanges(c *CoreV1Client, namespace string) *limitRanges {
 	return &limitRanges{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithListAndApply[*corev1.LimitRange, *corev1.LimitRangeList, *applyconfigurationscorev1.LimitRangeApplyConfiguration](
+			"limitranges",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *corev1.LimitRange { return &corev1.LimitRange{} },
+			func() *corev1.LimitRangeList { return &corev1.LimitRangeList{} },
+			gentype.PrefersProtobuf[*corev1.LimitRange](),
+		),
 	}
-}
-
-// Get takes name of the limitRange, and returns the corresponding limitRange object, and an error if there is any.
-func (c *limitRanges) Get(name string, options meta_v1.GetOptions) (result *v1.LimitRange, err error) {
-	result = &v1.LimitRange{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("limitranges").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of LimitRanges that match those selectors.
-func (c *limitRanges) List(opts meta_v1.ListOptions) (result *v1.LimitRangeList, err error) {
-	result = &v1.LimitRangeList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("limitranges").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested limitRanges.
-func (c *limitRanges) Watch(opts meta_v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("limitranges").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
-}
-
-// Create takes the representation of a limitRange and creates it.  Returns the server's representation of the limitRange, and an error, if there is any.
-func (c *limitRanges) Create(limitRange *v1.LimitRange) (result *v1.LimitRange, err error) {
-	result = &v1.LimitRange{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("limitranges").
-		Body(limitRange).
-		Do().
-		Into(result)
-	return
-}
-
-// Update takes the representation of a limitRange and updates it. Returns the server's representation of the limitRange, and an error, if there is any.
-func (c *limitRanges) Update(limitRange *v1.LimitRange) (result *v1.LimitRange, err error) {
-	result = &v1.LimitRange{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("limitranges").
-		Name(limitRange.Name).
-		Body(limitRange).
-		Do().
-		Into(result)
-	return
-}
-
-// Delete takes name of the limitRange and deletes it. Returns an error if one occurs.
-func (c *limitRanges) Delete(name string, options *meta_v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("limitranges").
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *limitRanges) DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("limitranges").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Patch applies the patch and returns the patched limitRange.
-func (c *limitRanges) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.LimitRange, err error) {
-	result = &v1.LimitRange{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("limitranges").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
-		Into(result)
-	return
 }

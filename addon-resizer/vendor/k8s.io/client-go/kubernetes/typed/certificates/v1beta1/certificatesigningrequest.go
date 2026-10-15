@@ -19,12 +19,15 @@ limitations under the License.
 package v1beta1
 
 import (
-	v1beta1 "k8s.io/api/certificates/v1beta1"
+	context "context"
+
+	certificatesv1beta1 "k8s.io/api/certificates/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationscertificatesv1beta1 "k8s.io/client-go/applyconfigurations/certificates/v1beta1"
+	gentype "k8s.io/client-go/gentype"
 	scheme "k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 // CertificateSigningRequestsGetter has a method to return a CertificateSigningRequestInterface.
@@ -35,129 +38,42 @@ type CertificateSigningRequestsGetter interface {
 
 // CertificateSigningRequestInterface has methods to work with CertificateSigningRequest resources.
 type CertificateSigningRequestInterface interface {
-	Create(*v1beta1.CertificateSigningRequest) (*v1beta1.CertificateSigningRequest, error)
-	Update(*v1beta1.CertificateSigningRequest) (*v1beta1.CertificateSigningRequest, error)
-	UpdateStatus(*v1beta1.CertificateSigningRequest) (*v1beta1.CertificateSigningRequest, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1beta1.CertificateSigningRequest, error)
-	List(opts v1.ListOptions) (*v1beta1.CertificateSigningRequestList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1beta1.CertificateSigningRequest, err error)
+	Create(ctx context.Context, certificateSigningRequest *certificatesv1beta1.CertificateSigningRequest, opts v1.CreateOptions) (*certificatesv1beta1.CertificateSigningRequest, error)
+	Update(ctx context.Context, certificateSigningRequest *certificatesv1beta1.CertificateSigningRequest, opts v1.UpdateOptions) (*certificatesv1beta1.CertificateSigningRequest, error)
+	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+	UpdateStatus(ctx context.Context, certificateSigningRequest *certificatesv1beta1.CertificateSigningRequest, opts v1.UpdateOptions) (*certificatesv1beta1.CertificateSigningRequest, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*certificatesv1beta1.CertificateSigningRequest, error)
+	List(ctx context.Context, opts v1.ListOptions) (*certificatesv1beta1.CertificateSigningRequestList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *certificatesv1beta1.CertificateSigningRequest, err error)
+	Apply(ctx context.Context, certificateSigningRequest *applyconfigurationscertificatesv1beta1.CertificateSigningRequestApplyConfiguration, opts v1.ApplyOptions) (result *certificatesv1beta1.CertificateSigningRequest, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, certificateSigningRequest *applyconfigurationscertificatesv1beta1.CertificateSigningRequestApplyConfiguration, opts v1.ApplyOptions) (result *certificatesv1beta1.CertificateSigningRequest, err error)
 	CertificateSigningRequestExpansion
 }
 
 // certificateSigningRequests implements CertificateSigningRequestInterface
 type certificateSigningRequests struct {
-	client rest.Interface
+	*gentype.ClientWithListAndApply[*certificatesv1beta1.CertificateSigningRequest, *certificatesv1beta1.CertificateSigningRequestList, *applyconfigurationscertificatesv1beta1.CertificateSigningRequestApplyConfiguration]
 }
 
 // newCertificateSigningRequests returns a CertificateSigningRequests
 func newCertificateSigningRequests(c *CertificatesV1beta1Client) *certificateSigningRequests {
 	return &certificateSigningRequests{
-		client: c.RESTClient(),
+		gentype.NewClientWithListAndApply[*certificatesv1beta1.CertificateSigningRequest, *certificatesv1beta1.CertificateSigningRequestList, *applyconfigurationscertificatesv1beta1.CertificateSigningRequestApplyConfiguration](
+			"certificatesigningrequests",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			"",
+			func() *certificatesv1beta1.CertificateSigningRequest {
+				return &certificatesv1beta1.CertificateSigningRequest{}
+			},
+			func() *certificatesv1beta1.CertificateSigningRequestList {
+				return &certificatesv1beta1.CertificateSigningRequestList{}
+			},
+			gentype.PrefersProtobuf[*certificatesv1beta1.CertificateSigningRequest](),
+		),
 	}
-}
-
-// Get takes name of the certificateSigningRequest, and returns the corresponding certificateSigningRequest object, and an error if there is any.
-func (c *certificateSigningRequests) Get(name string, options v1.GetOptions) (result *v1beta1.CertificateSigningRequest, err error) {
-	result = &v1beta1.CertificateSigningRequest{}
-	err = c.client.Get().
-		Resource("certificatesigningrequests").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of CertificateSigningRequests that match those selectors.
-func (c *certificateSigningRequests) List(opts v1.ListOptions) (result *v1beta1.CertificateSigningRequestList, err error) {
-	result = &v1beta1.CertificateSigningRequestList{}
-	err = c.client.Get().
-		Resource("certificatesigningrequests").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested certificateSigningRequests.
-func (c *certificateSigningRequests) Watch(opts v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Resource("certificatesigningrequests").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
-}
-
-// Create takes the representation of a certificateSigningRequest and creates it.  Returns the server's representation of the certificateSigningRequest, and an error, if there is any.
-func (c *certificateSigningRequests) Create(certificateSigningRequest *v1beta1.CertificateSigningRequest) (result *v1beta1.CertificateSigningRequest, err error) {
-	result = &v1beta1.CertificateSigningRequest{}
-	err = c.client.Post().
-		Resource("certificatesigningrequests").
-		Body(certificateSigningRequest).
-		Do().
-		Into(result)
-	return
-}
-
-// Update takes the representation of a certificateSigningRequest and updates it. Returns the server's representation of the certificateSigningRequest, and an error, if there is any.
-func (c *certificateSigningRequests) Update(certificateSigningRequest *v1beta1.CertificateSigningRequest) (result *v1beta1.CertificateSigningRequest, err error) {
-	result = &v1beta1.CertificateSigningRequest{}
-	err = c.client.Put().
-		Resource("certificatesigningrequests").
-		Name(certificateSigningRequest.Name).
-		Body(certificateSigningRequest).
-		Do().
-		Into(result)
-	return
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *certificateSigningRequests) UpdateStatus(certificateSigningRequest *v1beta1.CertificateSigningRequest) (result *v1beta1.CertificateSigningRequest, err error) {
-	result = &v1beta1.CertificateSigningRequest{}
-	err = c.client.Put().
-		Resource("certificatesigningrequests").
-		Name(certificateSigningRequest.Name).
-		SubResource("status").
-		Body(certificateSigningRequest).
-		Do().
-		Into(result)
-	return
-}
-
-// Delete takes name of the certificateSigningRequest and deletes it. Returns an error if one occurs.
-func (c *certificateSigningRequests) Delete(name string, options *v1.DeleteOptions) error {
-	return c.client.Delete().
-		Resource("certificatesigningrequests").
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *certificateSigningRequests) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	return c.client.Delete().
-		Resource("certificatesigningrequests").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Patch applies the patch and returns the patched certificateSigningRequest.
-func (c *certificateSigningRequests) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1beta1.CertificateSigningRequest, err error) {
-	result = &v1beta1.CertificateSigningRequest{}
-	err = c.client.Patch(pt).
-		Resource("certificatesigningrequests").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
-		Into(result)
-	return
 }

@@ -19,15 +19,19 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "k8s.io/api/admissionregistration/v1alpha1"
-	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/client-go/kubernetes/scheme"
+	http "net/http"
+
+	admissionregistrationv1alpha1 "k8s.io/api/admissionregistration/v1alpha1"
+	scheme "k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
 )
 
 type AdmissionregistrationV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	InitializerConfigurationsGetter
+	MutatingAdmissionPoliciesGetter
+	MutatingAdmissionPolicyBindingsGetter
+	ValidatingAdmissionPoliciesGetter
+	ValidatingAdmissionPolicyBindingsGetter
 }
 
 // AdmissionregistrationV1alpha1Client is used to interact with features provided by the admissionregistration.k8s.io group.
@@ -35,17 +39,41 @@ type AdmissionregistrationV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *AdmissionregistrationV1alpha1Client) InitializerConfigurations() InitializerConfigurationInterface {
-	return newInitializerConfigurations(c)
+func (c *AdmissionregistrationV1alpha1Client) MutatingAdmissionPolicies() MutatingAdmissionPolicyInterface {
+	return newMutatingAdmissionPolicies(c)
+}
+
+func (c *AdmissionregistrationV1alpha1Client) MutatingAdmissionPolicyBindings() MutatingAdmissionPolicyBindingInterface {
+	return newMutatingAdmissionPolicyBindings(c)
+}
+
+func (c *AdmissionregistrationV1alpha1Client) ValidatingAdmissionPolicies() ValidatingAdmissionPolicyInterface {
+	return newValidatingAdmissionPolicies(c)
+}
+
+func (c *AdmissionregistrationV1alpha1Client) ValidatingAdmissionPolicyBindings() ValidatingAdmissionPolicyBindingInterface {
+	return newValidatingAdmissionPolicyBindings(c)
 }
 
 // NewForConfig creates a new AdmissionregistrationV1alpha1Client for the given config.
+// NewForConfig is equivalent to NewForConfigAndClient(c, httpClient),
+// where httpClient was generated with rest.HTTPClientFor(c).
 func NewForConfig(c *rest.Config) (*AdmissionregistrationV1alpha1Client, error) {
 	config := *c
-	if err := setConfigDefaults(&config); err != nil {
+	setConfigDefaults(&config)
+	httpClient, err := rest.HTTPClientFor(&config)
+	if err != nil {
 		return nil, err
 	}
-	client, err := rest.RESTClientFor(&config)
+	return NewForConfigAndClient(&config, httpClient)
+}
+
+// NewForConfigAndClient creates a new AdmissionregistrationV1alpha1Client for the given config and http client.
+// Note the http client provided takes precedence over the configured transport values.
+func NewForConfigAndClient(c *rest.Config, h *http.Client) (*AdmissionregistrationV1alpha1Client, error) {
+	config := *c
+	setConfigDefaults(&config)
+	client, err := rest.RESTClientForConfigAndClient(&config, h)
 	if err != nil {
 		return nil, err
 	}
@@ -67,17 +95,15 @@ func New(c rest.Interface) *AdmissionregistrationV1alpha1Client {
 	return &AdmissionregistrationV1alpha1Client{c}
 }
 
-func setConfigDefaults(config *rest.Config) error {
-	gv := v1alpha1.SchemeGroupVersion
+func setConfigDefaults(config *rest.Config) {
+	gv := admissionregistrationv1alpha1.SchemeGroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
+	config.NegotiatedSerializer = rest.CodecFactoryForGeneratedClient(scheme.Scheme, scheme.Codecs).WithoutConversion()
 
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()
 	}
-
-	return nil
 }
 
 // RESTClient returns a RESTClient that is used to communicate

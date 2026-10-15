@@ -19,12 +19,15 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/rbac/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	context "context"
+
+	rbacv1 "k8s.io/api/rbac/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationsrbacv1 "k8s.io/client-go/applyconfigurations/rbac/v1"
+	gentype "k8s.io/client-go/gentype"
 	scheme "k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 // RoleBindingsGetter has a method to return a RoleBindingInterface.
@@ -35,123 +38,34 @@ type RoleBindingsGetter interface {
 
 // RoleBindingInterface has methods to work with RoleBinding resources.
 type RoleBindingInterface interface {
-	Create(*v1.RoleBinding) (*v1.RoleBinding, error)
-	Update(*v1.RoleBinding) (*v1.RoleBinding, error)
-	Delete(name string, options *meta_v1.DeleteOptions) error
-	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v1.RoleBinding, error)
-	List(opts meta_v1.ListOptions) (*v1.RoleBindingList, error)
-	Watch(opts meta_v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.RoleBinding, err error)
+	Create(ctx context.Context, roleBinding *rbacv1.RoleBinding, opts metav1.CreateOptions) (*rbacv1.RoleBinding, error)
+	Update(ctx context.Context, roleBinding *rbacv1.RoleBinding, opts metav1.UpdateOptions) (*rbacv1.RoleBinding, error)
+	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*rbacv1.RoleBinding, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*rbacv1.RoleBindingList, error)
+	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *rbacv1.RoleBinding, err error)
+	Apply(ctx context.Context, roleBinding *applyconfigurationsrbacv1.RoleBindingApplyConfiguration, opts metav1.ApplyOptions) (result *rbacv1.RoleBinding, err error)
 	RoleBindingExpansion
 }
 
 // roleBindings implements RoleBindingInterface
 type roleBindings struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithListAndApply[*rbacv1.RoleBinding, *rbacv1.RoleBindingList, *applyconfigurationsrbacv1.RoleBindingApplyConfiguration]
 }
 
 // newRoleBindings returns a RoleBindings
 func newRoleBindings(c *RbacV1Client, namespace string) *roleBindings {
 	return &roleBindings{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithListAndApply[*rbacv1.RoleBinding, *rbacv1.RoleBindingList, *applyconfigurationsrbacv1.RoleBindingApplyConfiguration](
+			"rolebindings",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *rbacv1.RoleBinding { return &rbacv1.RoleBinding{} },
+			func() *rbacv1.RoleBindingList { return &rbacv1.RoleBindingList{} },
+			gentype.PrefersProtobuf[*rbacv1.RoleBinding](),
+		),
 	}
-}
-
-// Get takes name of the roleBinding, and returns the corresponding roleBinding object, and an error if there is any.
-func (c *roleBindings) Get(name string, options meta_v1.GetOptions) (result *v1.RoleBinding, err error) {
-	result = &v1.RoleBinding{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("rolebindings").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of RoleBindings that match those selectors.
-func (c *roleBindings) List(opts meta_v1.ListOptions) (result *v1.RoleBindingList, err error) {
-	result = &v1.RoleBindingList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("rolebindings").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested roleBindings.
-func (c *roleBindings) Watch(opts meta_v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("rolebindings").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
-}
-
-// Create takes the representation of a roleBinding and creates it.  Returns the server's representation of the roleBinding, and an error, if there is any.
-func (c *roleBindings) Create(roleBinding *v1.RoleBinding) (result *v1.RoleBinding, err error) {
-	result = &v1.RoleBinding{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("rolebindings").
-		Body(roleBinding).
-		Do().
-		Into(result)
-	return
-}
-
-// Update takes the representation of a roleBinding and updates it. Returns the server's representation of the roleBinding, and an error, if there is any.
-func (c *roleBindings) Update(roleBinding *v1.RoleBinding) (result *v1.RoleBinding, err error) {
-	result = &v1.RoleBinding{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("rolebindings").
-		Name(roleBinding.Name).
-		Body(roleBinding).
-		Do().
-		Into(result)
-	return
-}
-
-// Delete takes name of the roleBinding and deletes it. Returns an error if one occurs.
-func (c *roleBindings) Delete(name string, options *meta_v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("rolebindings").
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *roleBindings) DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("rolebindings").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Patch applies the patch and returns the patched roleBinding.
-func (c *roleBindings) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.RoleBinding, err error) {
-	result = &v1.RoleBinding{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("rolebindings").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
-		Into(result)
-	return
 }

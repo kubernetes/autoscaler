@@ -20,20 +20,33 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/ptr"
 )
 
 // Interface can be implemented by anything that knows how to watch and report changes.
 type Interface interface {
-	// Stops watching. Will close the channel returned by ResultChan(). Releases
-	// any resources used by the watch.
+	// Stop tells the producer that the consumer is done watching, so the
+	// producer should stop sending events and close the result channel. The
+	// consumer should keep watching for events until the result channel is
+	// closed.
+	//
+	// Because some implementations may create channels when constructed, Stop
+	// must always be called, even if the consumer has not yet called
+	// ResultChan().
+	//
+	// Only the consumer should call Stop(), not the producer. If the producer
+	// errors and needs to stop the watch prematurely, it should instead send
+	// an error event and close the result channel.
 	Stop()
 
-	// Returns a chan which will receive all the events. If an error occurs
-	// or Stop() is called, this channel will be closed, in which case the
-	// watch should be completely cleaned up.
+	// ResultChan returns a channel which will receive events from the event
+	// producer. If an error occurs or Stop() is called, the producer must
+	// close this channel and release any resources used by the watch.
+	// Closing the result channel tells the consumer that no more events will be
+	// sent.
 	ResultChan() <-chan Event
 }
 
@@ -44,8 +57,11 @@ const (
 	Added    EventType = "ADDED"
 	Modified EventType = "MODIFIED"
 	Deleted  EventType = "DELETED"
+	Bookmark EventType = "BOOKMARK"
 	Error    EventType = "ERROR"
+)
 
+var (
 	DefaultChanSize int32 = 100
 )
 
@@ -57,6 +73,10 @@ type Event struct {
 	// Object is:
 	//  * If Type is Added or Modified: the new state of the object.
 	//  * If Type is Deleted: the state of the object immediately before deletion.
+	//  * If Type is Bookmark: the object (instance of a type being watched) where
+	//    only ResourceVersion field is set. On successful restart of watch from a
+	//    bookmark resourceVersion, client is guaranteed to not get repeat event
+	//    nor miss any events.
 	//  * If Type is Error: *api.Status is recommended; other types may make sense
 	//    depending on context.
 	Object runtime.Object
@@ -84,45 +104,58 @@ func (w emptyWatch) ResultChan() <-chan Event {
 
 // FakeWatcher lets you test anything that consumes a watch.Interface; threadsafe.
 type FakeWatcher struct {
+	logger  klog.Logger
 	result  chan Event
-	Stopped bool
+	stopped bool
 	sync.Mutex
 }
 
+var _ Interface = &FakeWatcher{}
+
+// Contextual logging: NewFakeWithOptions and a logger in the FakeOptions should be used instead in code which supports contextual logging.
 func NewFake() *FakeWatcher {
+	return NewFakeWithOptions(FakeOptions{})
+}
+
+// Contextual logging: NewFakeWithOptions and a logger in the FakeOptions should be used instead in code which supports contextual logging.
+func NewFakeWithChanSize(size int, blocking bool) *FakeWatcher {
+	return NewFakeWithOptions(FakeOptions{ChannelSize: size})
+}
+
+func NewFakeWithOptions(options FakeOptions) *FakeWatcher {
 	return &FakeWatcher{
-		result: make(chan Event),
+		logger: ptr.Deref(options.Logger, klog.Background()),
+		result: make(chan Event, options.ChannelSize),
 	}
 }
 
-func NewFakeWithChanSize(size int, blocking bool) *FakeWatcher {
-	return &FakeWatcher{
-		result: make(chan Event, size),
-	}
+type FakeOptions struct {
+	Logger      *klog.Logger
+	ChannelSize int
 }
 
 // Stop implements Interface.Stop().
 func (f *FakeWatcher) Stop() {
 	f.Lock()
 	defer f.Unlock()
-	if !f.Stopped {
-		glog.V(4).Infof("Stopping fake watcher.")
+	if !f.stopped {
+		f.logger.V(4).Info("Stopping fake watcher")
 		close(f.result)
-		f.Stopped = true
+		f.stopped = true
 	}
 }
 
 func (f *FakeWatcher) IsStopped() bool {
 	f.Lock()
 	defer f.Unlock()
-	return f.Stopped
+	return f.stopped
 }
 
 // Reset prepares the watcher to be reused.
 func (f *FakeWatcher) Reset() {
 	f.Lock()
 	defer f.Unlock()
-	f.Stopped = false
+	f.stopped = false
 	f.result = make(chan Event)
 }
 
@@ -157,13 +190,22 @@ func (f *FakeWatcher) Action(action EventType, obj runtime.Object) {
 
 // RaceFreeFakeWatcher lets you test anything that consumes a watch.Interface; threadsafe.
 type RaceFreeFakeWatcher struct {
+	logger  klog.Logger
 	result  chan Event
 	Stopped bool
 	sync.Mutex
 }
 
+var _ Interface = &RaceFreeFakeWatcher{}
+
+// Contextual logging: RaceFreeFakeWatcherWithLogger should be used instead of NewRaceFreeFake in code which supports contextual logging.
 func NewRaceFreeFake() *RaceFreeFakeWatcher {
+	return NewRaceFreeFakeWithLogger(klog.Background())
+}
+
+func NewRaceFreeFakeWithLogger(logger klog.Logger) *RaceFreeFakeWatcher {
 	return &RaceFreeFakeWatcher{
+		logger: logger,
 		result: make(chan Event, DefaultChanSize),
 	}
 }
@@ -173,7 +215,7 @@ func (f *RaceFreeFakeWatcher) Stop() {
 	f.Lock()
 	defer f.Unlock()
 	if !f.Stopped {
-		glog.V(4).Infof("Stopping fake watcher.")
+		f.logger.V(4).Info("Stopping fake watcher")
 		close(f.result)
 		f.Stopped = true
 	}
@@ -267,4 +309,69 @@ func (f *RaceFreeFakeWatcher) Action(action EventType, obj runtime.Object) {
 			panic(fmt.Errorf("channel full"))
 		}
 	}
+}
+
+// ProxyWatcher lets you wrap your channel in watch Interface. threadsafe.
+type ProxyWatcher struct {
+	result chan Event
+	stopCh chan struct{}
+
+	mutex   sync.Mutex
+	stopped bool
+}
+
+var _ Interface = &ProxyWatcher{}
+
+// NewProxyWatcher creates new ProxyWatcher by wrapping a channel
+func NewProxyWatcher(ch chan Event) *ProxyWatcher {
+	return &ProxyWatcher{
+		result:  ch,
+		stopCh:  make(chan struct{}),
+		stopped: false,
+	}
+}
+
+// Stop implements Interface
+func (pw *ProxyWatcher) Stop() {
+	pw.mutex.Lock()
+	defer pw.mutex.Unlock()
+	if !pw.stopped {
+		pw.stopped = true
+		close(pw.stopCh)
+	}
+}
+
+// Stopping returns true if Stop() has been called
+func (pw *ProxyWatcher) Stopping() bool {
+	pw.mutex.Lock()
+	defer pw.mutex.Unlock()
+	return pw.stopped
+}
+
+// ResultChan implements Interface
+func (pw *ProxyWatcher) ResultChan() <-chan Event {
+	return pw.result
+}
+
+// StopChan returns stop channel
+func (pw *ProxyWatcher) StopChan() <-chan struct{} {
+	return pw.stopCh
+}
+
+// MockWatcher implements watch.Interface with mockable functions.
+type MockWatcher struct {
+	StopFunc       func()
+	ResultChanFunc func() <-chan Event
+}
+
+var _ Interface = &MockWatcher{}
+
+// Stop calls StopFunc
+func (mw MockWatcher) Stop() {
+	mw.StopFunc()
+}
+
+// ResultChan calls ResultChanFunc
+func (mw MockWatcher) ResultChan() <-chan Event {
+	return mw.ResultChanFunc()
 }

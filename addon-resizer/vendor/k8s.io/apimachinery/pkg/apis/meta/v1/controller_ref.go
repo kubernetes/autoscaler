@@ -18,11 +18,12 @@ package v1
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/utils/ptr"
 )
 
 // IsControlledBy checks if the  object has a controllerRef set to the given owner
 func IsControlledBy(obj Object, owner Object) bool {
-	ref := GetControllerOf(obj)
+	ref := GetControllerOfNoCopy(obj)
 	if ref == nil {
 		return false
 	}
@@ -31,9 +32,24 @@ func IsControlledBy(obj Object, owner Object) bool {
 
 // GetControllerOf returns a pointer to a copy of the controllerRef if controllee has a controller
 func GetControllerOf(controllee Object) *OwnerReference {
-	for _, ref := range controllee.GetOwnerReferences() {
-		if ref.Controller != nil && *ref.Controller {
-			return &ref
+	ref := GetControllerOfNoCopy(controllee)
+	if ref == nil {
+		return nil
+	}
+	cp := *ref
+	cp.Controller = ptr.To(*ref.Controller)
+	if ref.BlockOwnerDeletion != nil {
+		cp.BlockOwnerDeletion = ptr.To(*ref.BlockOwnerDeletion)
+	}
+	return &cp
+}
+
+// GetControllerOfNoCopy returns a pointer to the controllerRef if controllee has a controller
+func GetControllerOfNoCopy(controllee Object) *OwnerReference {
+	refs := controllee.GetOwnerReferences()
+	for i := range refs {
+		if refs[i].Controller != nil && *refs[i].Controller {
+			return &refs[i]
 		}
 	}
 	return nil
@@ -41,14 +57,12 @@ func GetControllerOf(controllee Object) *OwnerReference {
 
 // NewControllerRef creates an OwnerReference pointing to the given owner.
 func NewControllerRef(owner Object, gvk schema.GroupVersionKind) *OwnerReference {
-	blockOwnerDeletion := true
-	isController := true
 	return &OwnerReference{
 		APIVersion:         gvk.GroupVersion().String(),
 		Kind:               gvk.Kind,
 		Name:               owner.GetName(),
 		UID:                owner.GetUID(),
-		BlockOwnerDeletion: &blockOwnerDeletion,
-		Controller:         &isController,
+		BlockOwnerDeletion: ptr.To(true),
+		Controller:         ptr.To(true),
 	}
 }

@@ -19,7 +19,12 @@ limitations under the License.
 package v1beta1
 
 import (
-	rest "k8s.io/client-go/rest"
+	context "context"
+
+	authorizationv1beta1 "k8s.io/api/authorization/v1beta1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gentype "k8s.io/client-go/gentype"
+	scheme "k8s.io/client-go/kubernetes/scheme"
 )
 
 // SelfSubjectRulesReviewsGetter has a method to return a SelfSubjectRulesReviewInterface.
@@ -30,17 +35,27 @@ type SelfSubjectRulesReviewsGetter interface {
 
 // SelfSubjectRulesReviewInterface has methods to work with SelfSubjectRulesReview resources.
 type SelfSubjectRulesReviewInterface interface {
+	Create(ctx context.Context, selfSubjectRulesReview *authorizationv1beta1.SelfSubjectRulesReview, opts v1.CreateOptions) (*authorizationv1beta1.SelfSubjectRulesReview, error)
 	SelfSubjectRulesReviewExpansion
 }
 
 // selfSubjectRulesReviews implements SelfSubjectRulesReviewInterface
 type selfSubjectRulesReviews struct {
-	client rest.Interface
+	*gentype.Client[*authorizationv1beta1.SelfSubjectRulesReview]
 }
 
 // newSelfSubjectRulesReviews returns a SelfSubjectRulesReviews
 func newSelfSubjectRulesReviews(c *AuthorizationV1beta1Client) *selfSubjectRulesReviews {
 	return &selfSubjectRulesReviews{
-		client: c.RESTClient(),
+		gentype.NewClient[*authorizationv1beta1.SelfSubjectRulesReview](
+			"selfsubjectrulesreviews",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			"",
+			func() *authorizationv1beta1.SelfSubjectRulesReview {
+				return &authorizationv1beta1.SelfSubjectRulesReview{}
+			},
+			gentype.PrefersProtobuf[*authorizationv1beta1.SelfSubjectRulesReview](),
+		),
 	}
 }

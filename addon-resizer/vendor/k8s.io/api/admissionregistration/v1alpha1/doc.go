@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2022 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@ limitations under the License.
 */
 
 // +k8s:deepcopy-gen=package
+// +k8s:protobuf-gen=package
 // +k8s:openapi-gen=true
+// +k8s:prerelease-lifecycle-gen=true
+// +k8s:openapi-model-package=io.k8s.api.admissionregistration.v1alpha1
+
+// +groupName=admissionregistration.k8s.io
 
 // Package v1alpha1 is the v1alpha1 version of the API.
-// AdmissionConfiguration and AdmissionPluginConfiguration are legacy static admission plugin configuration
-// InitializerConfiguration and validatingWebhookConfiguration is for the
-// new dynamic admission controller configuration.
-// +groupName=admissionregistration.k8s.io
 package v1alpha1

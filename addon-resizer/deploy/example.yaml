@@ -41,7 +41,7 @@ spec:
     spec:
       serviceAccountName: pod-nanny
       containers:
-        - image: registry.k8s.io/autoscaling/addon-resizer:1.8.14
+        - image: registry.k8s.io/autoscaling/addon-resizer:1.8.24
           imagePullPolicy: Always
           name: pod-nanny
           resources:
@@ -66,12 +66,14 @@ spec:
           command:
             - /pod_nanny
             - --config-dir=/etc/config
+            - --container="pod-nanny"
             - --cpu=300m
             - --extra-cpu=20m
             - --memory=200Mi
             - --extra-memory=10Mi
             - --threshold=5
             - --deployment=nanny-v1
+            - --expose-metrics=true
       volumes:
       - name: nanny-config-volume
         configMap:

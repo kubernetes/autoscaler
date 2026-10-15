@@ -18,17 +18,13 @@ package clientcmd
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
 	goruntime "runtime"
 	"strings"
 
-	"github.com/golang/glog"
-	"github.com/imdario/mergo"
+	"k8s.io/klog/v2"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -48,24 +44,24 @@ const (
 )
 
 var (
-	RecommendedConfigDir  = path.Join(homedir.HomeDir(), RecommendedHomeDir)
-	RecommendedHomeFile   = path.Join(RecommendedConfigDir, RecommendedFileName)
-	RecommendedSchemaFile = path.Join(RecommendedConfigDir, RecommendedSchemaName)
+	RecommendedConfigDir  = filepath.Join(homedir.HomeDir(), RecommendedHomeDir)
+	RecommendedHomeFile   = filepath.Join(RecommendedConfigDir, RecommendedFileName)
+	RecommendedSchemaFile = filepath.Join(RecommendedConfigDir, RecommendedSchemaName)
 )
 
 // currentMigrationRules returns a map that holds the history of recommended home directories used in previous versions.
 // Any future changes to RecommendedHomeFile and related are expected to add a migration rule here, in order to make
 // sure existing config files are migrated to their new locations properly.
 func currentMigrationRules() map[string]string {
-	oldRecommendedHomeFile := path.Join(os.Getenv("HOME"), "/.kube/.kubeconfig")
-	oldRecommendedWindowsHomeFile := path.Join(os.Getenv("HOME"), RecommendedHomeDir, RecommendedFileName)
-
-	migrationRules := map[string]string{}
-	migrationRules[RecommendedHomeFile] = oldRecommendedHomeFile
+	var oldRecommendedHomeFileName string
 	if goruntime.GOOS == "windows" {
-		migrationRules[RecommendedHomeFile] = oldRecommendedWindowsHomeFile
+		oldRecommendedHomeFileName = RecommendedFileName
+	} else {
+		oldRecommendedHomeFileName = ".kubeconfig"
 	}
-	return migrationRules
+	return map[string]string{
+		RecommendedHomeFile: filepath.Join(os.Getenv("HOME"), RecommendedHomeDir, oldRecommendedHomeFileName),
+	}
 }
 
 type ClientConfigLoader interface {
@@ -127,6 +123,33 @@ type ClientConfigLoadingRules struct {
 	// DefaultClientConfig is an optional field indicating what rules to use to calculate a default configuration.
 	// This should match the overrides passed in to ClientConfig loader.
 	DefaultClientConfig ClientConfig
+
+	// WarnIfAllMissing indicates whether the configuration files pointed by KUBECONFIG environment variable are present or not.
+	// In case of missing files, it warns the user about the missing files.
+	WarnIfAllMissing bool
+
+	// Warner is the warning log callback to use in case of missing files.
+	Warner WarningHandler
+}
+
+// WarningHandler allows to set the logging function to use
+type WarningHandler func(error)
+
+func (handler WarningHandler) Warn(err error) {
+	if handler == nil {
+		//nolint:logcheck // This is the fallback when logging is not initialized. With nothing provided, using the global logger is the only option.
+		klog.V(1).Info(err)
+	} else {
+		handler(err)
+	}
+}
+
+type MissingConfigError struct {
+	Missing []string
+}
+
+func (c MissingConfigError) Error() string {
+	return fmt.Sprintf("Config not found: %s", strings.Join(c.Missing, ", "))
 }
 
 // ClientConfigLoadingRules implements the ClientConfigLoader interface.
@@ -136,27 +159,32 @@ var _ ClientConfigLoader = &ClientConfigLoadingRules{}
 // use this constructor
 func NewDefaultClientConfigLoadingRules() *ClientConfigLoadingRules {
 	chain := []string{}
+	warnIfAllMissing := false
 
 	envVarFiles := os.Getenv(RecommendedConfigPathEnvVar)
 	if len(envVarFiles) != 0 {
 		fileList := filepath.SplitList(envVarFiles)
 		// prevent the same path load multiple times
 		chain = append(chain, deduplicate(fileList)...)
+		warnIfAllMissing = true
 
 	} else {
 		chain = append(chain, RecommendedHomeFile)
 	}
 
 	return &ClientConfigLoadingRules{
-		Precedence:     chain,
-		MigrationRules: currentMigrationRules(),
+		Precedence:       chain,
+		MigrationRules:   currentMigrationRules(),
+		WarnIfAllMissing: warnIfAllMissing,
 	}
 }
 
 // Load starts by running the MigrationRules and then
 // takes the loading rules and returns a Config object based on following rules.
-//   if the ExplicitPath, return the unmerged explicit file
-//   Otherwise, return a merged config based on the Precedence slice
+//
+//	if the ExplicitPath, return the unmerged explicit file
+//	Otherwise, return a merged config based on the Precedence slice
+//
 // A missing ExplicitPath file produces an error. Empty filenames or other missing files are ignored.
 // Read errors or files with non-deserializable content produce errors.
 // The first file to set a particular map key wins and map key's value is never changed.
@@ -172,6 +200,7 @@ func (rules *ClientConfigLoadingRules) Load() (*clientcmdapi.Config, error) {
 	}
 
 	errlist := []error{}
+	missingList := []string{}
 
 	kubeConfigFiles := []string{}
 
@@ -195,23 +224,33 @@ func (rules *ClientConfigLoadingRules) Load() (*clientcmdapi.Config, error) {
 		}
 
 		config, err := LoadFromFile(filename)
+
 		if os.IsNotExist(err) {
 			// skip missing files
+			// Add to the missing list to produce a warning
+			missingList = append(missingList, filename)
 			continue
 		}
+
 		if err != nil {
-			errlist = append(errlist, fmt.Errorf("Error loading config file \"%s\": %v", filename, err))
+			errlist = append(errlist, fmt.Errorf("error loading config file \"%s\": %v", filename, err))
 			continue
 		}
 
 		kubeconfigs = append(kubeconfigs, config)
 	}
 
+	if rules.WarnIfAllMissing && len(missingList) > 0 && len(kubeconfigs) == 0 {
+		rules.Warner.Warn(MissingConfigError{Missing: missingList})
+	}
+
 	// first merge all of our maps
 	mapConfig := clientcmdapi.NewConfig()
 
 	for _, kubeconfig := range kubeconfigs {
-		mergo.Merge(mapConfig, kubeconfig)
+		if err := merge(mapConfig, kubeconfig); err != nil {
+			return nil, err
+		}
 	}
 
 	// merge all of the struct values in the reverse order so that priority is given correctly
@@ -219,14 +258,20 @@ func (rules *ClientConfigLoadingRules) Load() (*clientcmdapi.Config, error) {
 	nonMapConfig := clientcmdapi.NewConfig()
 	for i := len(kubeconfigs) - 1; i >= 0; i-- {
 		kubeconfig := kubeconfigs[i]
-		mergo.Merge(nonMapConfig, kubeconfig)
+		if err := merge(nonMapConfig, kubeconfig); err != nil {
+			return nil, err
+		}
 	}
 
 	// since values are overwritten, but maps values are not, we can merge the non-map config on top of the map config and
 	// get the values we expect.
 	config := clientcmdapi.NewConfig()
-	mergo.Merge(config, mapConfig)
-	mergo.Merge(config, nonMapConfig)
+	if err := merge(config, mapConfig); err != nil {
+		return nil, err
+	}
+	if err := merge(config, nonMapConfig); err != nil {
+		return nil, err
+	}
 
 	if rules.ResolvePaths() {
 		if err := ResolveLocalPaths(config); err != nil {
@@ -255,7 +300,8 @@ func (rules *ClientConfigLoadingRules) Migrate() error {
 			return err
 		}
 
-		if sourceInfo, err := os.Stat(source); err != nil {
+		sourceInfo, err := os.Stat(source)
+		if err != nil {
 			if os.IsNotExist(err) || os.IsPermission(err) {
 				// if the source file doesn't exist or we can't access it, there's no work to do.
 				continue
@@ -267,18 +313,13 @@ func (rules *ClientConfigLoadingRules) Migrate() error {
 			return fmt.Errorf("cannot migrate %v to %v because it is a directory", source, destination)
 		}
 
-		in, err := os.Open(source)
+		data, err := os.ReadFile(source)
 		if err != nil {
 			return err
 		}
-		defer in.Close()
-		out, err := os.Create(destination)
+		// destination created with source perm, but never executable, and subject to umask
+		err = os.WriteFile(destination, data, sourceInfo.Mode().Perm()&0666)
 		if err != nil {
-			return err
-		}
-		defer out.Close()
-
-		if _, err = io.Copy(out, in); err != nil {
 			return err
 		}
 	}
@@ -288,7 +329,14 @@ func (rules *ClientConfigLoadingRules) Migrate() error {
 
 // GetLoadingPrecedence implements ConfigAccess
 func (rules *ClientConfigLoadingRules) GetLoadingPrecedence() []string {
-	return rules.Precedence
+	if len(rules.ExplicitPath) > 0 {
+		return []string{rules.ExplicitPath}
+	}
+
+	// Create a copy in case something tries to sort the returned slice.
+	precedence := make([]string, len(rules.Precedence))
+	copy(precedence, rules.Precedence)
+	return precedence
 }
 
 // GetStartingConfig implements ConfigAccess
@@ -348,7 +396,7 @@ func (rules *ClientConfigLoadingRules) IsDefaultConfig(config *restclient.Config
 
 // LoadFromFile takes a filename and deserializes the contents into Config object
 func LoadFromFile(filename string) (*clientcmdapi.Config, error) {
-	kubeconfigBytes, err := ioutil.ReadFile(filename)
+	kubeconfigBytes, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +404,8 @@ func LoadFromFile(filename string) (*clientcmdapi.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	glog.V(6).Infoln("Config loaded from file", filename)
+	//nolint:logcheck // A helper function like this should not log. But this is probably part of the the established client-go API and not worth changing.
+	klog.V(6).Infoln("Config loaded from file: ", filename)
 
 	// set LocationOfOrigin on every Cluster, User, and Context
 	for key, obj := range config.AuthInfos {
@@ -414,7 +463,7 @@ func WriteToFile(config clientcmdapi.Config, filename string) error {
 		}
 	}
 
-	if err := ioutil.WriteFile(filename, content, 0600); err != nil {
+	if err := os.WriteFile(filename, content, 0600); err != nil {
 		return err
 	}
 	return nil
@@ -467,7 +516,7 @@ func ResolveLocalPaths(config *clientcmdapi.Config) error {
 		}
 		base, err := filepath.Abs(filepath.Dir(cluster.LocationOfOrigin))
 		if err != nil {
-			return fmt.Errorf("Could not determine the absolute path of config file %s: %v", cluster.LocationOfOrigin, err)
+			return fmt.Errorf("could not determine the absolute path of config file %s: %v", cluster.LocationOfOrigin, err)
 		}
 
 		if err := ResolvePaths(GetClusterFileReferences(cluster), base); err != nil {
@@ -480,7 +529,7 @@ func ResolveLocalPaths(config *clientcmdapi.Config) error {
 		}
 		base, err := filepath.Abs(filepath.Dir(authInfo.LocationOfOrigin))
 		if err != nil {
-			return fmt.Errorf("Could not determine the absolute path of config file %s: %v", authInfo.LocationOfOrigin, err)
+			return fmt.Errorf("could not determine the absolute path of config file %s: %v", authInfo.LocationOfOrigin, err)
 		}
 
 		if err := ResolvePaths(GetAuthInfoFileReferences(authInfo), base); err != nil {
@@ -593,7 +642,7 @@ func RelativizePathWithNoBacksteps(refs []*string, base string) error {
 			}
 
 			// if we have a backstep, don't mess with the path
-			if strings.HasPrefix(rel, "../") {
+			if strings.HasPrefix(rel, "../") || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
 				if filepath.IsAbs(*ref) {
 					continue
 				}
