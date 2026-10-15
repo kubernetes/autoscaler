@@ -39,6 +39,7 @@ const noValue = "MISSING"
 var (
 	// Flags to define the resource requirements.
 	baseCPU              = flag.String("cpu", noValue, "The base CPU resource requirement.")
+	cpuRequestsOnly      = flag.Bool("cpu-requests-only", false, "Manage CPU requests without managing CPU limits.")
 	cpuPerNode           = flag.String("extra-cpu", "0", "The amount of CPU to add per node.")
 	baseMemory           = flag.String("memory", noValue, "The base memory resource requirement.")
 	memoryPerNode        = flag.String("extra-memory", "0Mi", "The amount of memory to add per node.")
@@ -188,5 +189,6 @@ func main() {
 		},
 		pollPeriod,
 		*scaleDownDelay,
-		*scaleUpDelay)
+		*scaleUpDelay,
+		*cpuRequestsOnly)
 }
