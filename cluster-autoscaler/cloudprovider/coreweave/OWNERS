@@ -1,6 +1,12 @@
-maintainers:
-- keedya
+reviewers:
 - ddymko
+- LanceEa
+- stevesloka
+
+approvers:
+- ddymko
+- LanceEa
+- stevesloka
 
 
 labels:
