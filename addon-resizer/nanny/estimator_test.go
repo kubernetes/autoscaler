@@ -17,354 +17,281 @@ limitations under the License.
 package nanny
 
 import (
-	"runtime"
 	"testing"
 
-	api "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
+const (
+	DefaultScaleFactor    = 1.5
+	DefaultMinClusterSize = 16
+	SmallMinClusterSize   = 5
+)
+
 var (
-	fullEstimator = Estimator{
+	fullEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("1"),
-				Name:         "cpu",
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("1"),
+				Name:             "cpu",
 			},
 			{
-				Base:         resource.MustParse("30Mi"),
-				ExtraPerNode: resource.MustParse("1Mi"),
-				Name:         "memory",
+				Base:             resource.MustParse("30Mi"),
+				ExtraPerResource: resource.MustParse("1Mi"),
+				Name:             "memory",
 			},
 			{
-				Base:         resource.MustParse("30Gi"),
-				ExtraPerNode: resource.MustParse("1Gi"),
-				Name:         "storage",
+				Base:             resource.MustParse("30Gi"),
+				ExtraPerResource: resource.MustParse("1Gi"),
+				Name:             "storage",
 			},
 		},
-		AcceptanceOffset:     20,
-		RecommendationOffset: 10,
 	}
-	noCPUEstimator = Estimator{
+	noCPUEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("30Mi"),
-				ExtraPerNode: resource.MustParse("1Mi"),
-				Name:         "memory",
+				Base:             resource.MustParse("30Mi"),
+				ExtraPerResource: resource.MustParse("1Mi"),
+				Name:             "memory",
 			},
 			{
-				Base:         resource.MustParse("30Gi"),
-				ExtraPerNode: resource.MustParse("1Gi"),
-				Name:         "storage",
+				Base:             resource.MustParse("30Gi"),
+				ExtraPerResource: resource.MustParse("1Gi"),
+				Name:             "storage",
 			},
 		},
-		AcceptanceOffset:     20,
-		RecommendationOffset: 10,
 	}
-	noMemoryEstimator = Estimator{
+	noMemoryEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("1"),
-				Name:         "cpu",
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("1"),
+				Name:             "cpu",
 			},
 			{
-				Base:         resource.MustParse("30Gi"),
-				ExtraPerNode: resource.MustParse("1Gi"),
-				Name:         "storage",
+				Base:             resource.MustParse("30Gi"),
+				ExtraPerResource: resource.MustParse("1Gi"),
+				Name:             "storage",
 			},
 		},
-		AcceptanceOffset:     20,
-		RecommendationOffset: 10,
 	}
-	noStorageEstimator = Estimator{
+	noStorageEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("1"),
-				Name:         "cpu",
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("1"),
+				Name:             "cpu",
 			},
 			{
-				Base:         resource.MustParse("30Mi"),
-				ExtraPerNode: resource.MustParse("1Mi"),
-				Name:         "memory",
+				Base:             resource.MustParse("30Mi"),
+				ExtraPerResource: resource.MustParse("1Mi"),
+				Name:             "memory",
 			},
 		},
-		AcceptanceOffset:     20,
-		RecommendationOffset: 10,
 	}
-	lessThanMilliEstimator = Estimator{
+	lessThanMilliEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("0.6m"),
-				Name:         "cpu",
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("0.5m"),
+				Name:             "cpu",
 			},
 		},
-		AcceptanceOffset:     20,
-		RecommendationOffset: 10,
 	}
-	emptyEstimator = Estimator{
-		Resources:            []Resource{},
-		AcceptanceOffset:     20,
-		RecommendationOffset: 10,
-	}
-	emptyRecommendedRangeEstimator = Estimator{
-		Resources: []Resource{
-			{
-				Base:         resource.MustParse("0.3"),
-				ExtraPerNode: resource.MustParse("1"),
-				Name:         "cpu",
-			},
-			{
-				Base:         resource.MustParse("30Mi"),
-				ExtraPerNode: resource.MustParse("1Mi"),
-				Name:         "memory",
-			},
-			{
-				Base:         resource.MustParse("30Gi"),
-				ExtraPerNode: resource.MustParse("1Gi"),
-				Name:         "storage",
-			},
-		},
-		AcceptanceOffset:     20,
-		RecommendationOffset: 0,
+	emptyEstimator = LinearEstimator{
+		Resources: []Resource{},
 	}
 
-	baseResources = api.ResourceList{
+	exponentialEstimator = ExponentialEstimator{
+		Resources: []Resource{
+			{
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("1"),
+				Name:             "cpu",
+			},
+			{
+				Base:             resource.MustParse("30Mi"),
+				ExtraPerResource: resource.MustParse("1Mi"),
+				Name:             "memory",
+			},
+			{
+				Base:             resource.MustParse("30Gi"),
+				ExtraPerResource: resource.MustParse("1Gi"),
+				Name:             "storage",
+			},
+		},
+		ScaleFactor:    DefaultScaleFactor,
+		MinClusterSize: DefaultMinClusterSize,
+	}
+	exponentialLessThanMilliEstimator = ExponentialEstimator{
+		Resources: []Resource{
+			{
+				Base:             resource.MustParse("0.3"),
+				ExtraPerResource: resource.MustParse("0.5m"),
+				Name:             "cpu",
+			},
+		},
+		ScaleFactor:    DefaultScaleFactor,
+		MinClusterSize: DefaultMinClusterSize,
+	}
+	exponentialSmallClusterEstimator = ExponentialEstimator{
+		Resources: []Resource{
+			{
+				Base:             resource.MustParse("10m"),
+				ExtraPerResource: resource.MustParse("0.5m"),
+				Name:             "cpu",
+			},
+			{
+				Base:             resource.MustParse("50Mi"),
+				ExtraPerResource: resource.MustParse("4.5Mi"),
+				Name:             "memory",
+			},
+			{
+				Base:             resource.MustParse("500Mi"),
+				ExtraPerResource: resource.MustParse("100Mi"),
+				Name:             "storage",
+			},
+		},
+		ScaleFactor:    DefaultScaleFactor,
+		MinClusterSize: SmallMinClusterSize,
+	}
+
+	baseResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
 		"memory":  resource.MustParse("30Mi"),
 		"storage": resource.MustParse("30Gi"),
 	}
-	noCPUBaseResources = api.ResourceList{
+
+	noCPUBaseResources = corev1.ResourceList{
 		"memory":  resource.MustParse("30Mi"),
 		"storage": resource.MustParse("30Gi"),
 	}
-	noMemoryBaseResources = api.ResourceList{
+	noMemoryBaseResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
 		"storage": resource.MustParse("30Gi"),
 	}
-	noStorageBaseResources = api.ResourceList{
+	noStorageBaseResources = corev1.ResourceList{
 		"cpu":    resource.MustParse("0.3"),
 		"memory": resource.MustParse("30Mi"),
 	}
-	threeNodeResources = api.ResourceList{
+	threeNodeResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("3.3"),
 		"memory":  resource.MustParse("33Mi"),
 		"storage": resource.MustParse("33Gi"),
 	}
-	fourNodeResources = api.ResourceList{
-		"cpu":     resource.MustParse("4.3"),
-		"memory":  resource.MustParse("34Mi"),
-		"storage": resource.MustParse("34Gi"),
+	threeNodeNoCPUResources = corev1.ResourceList{
+		"memory":  resource.MustParse("33Mi"),
+		"storage": resource.MustParse("33Gi"),
 	}
-	fiveNodeResources = api.ResourceList{
-		"cpu":     resource.MustParse("5.3"),
-		"memory":  resource.MustParse("35Mi"),
-		"storage": resource.MustParse("35Gi"),
+	threeNodeNoMemoryResources = corev1.ResourceList{
+		"cpu":     resource.MustParse("3.3"),
+		"storage": resource.MustParse("33Gi"),
 	}
-	twelveNodeResources = api.ResourceList{
-		"cpu":     resource.MustParse("12.3"),
-		"memory":  resource.MustParse("42Mi"),
-		"storage": resource.MustParse("42Gi"),
+	threeNodeNoStorageResources = corev1.ResourceList{
+		"cpu":    resource.MustParse("3.3"),
+		"memory": resource.MustParse("33Mi"),
 	}
-	fourteenNodeResources = api.ResourceList{
-		"cpu":     resource.MustParse("14.3"),
-		"memory":  resource.MustParse("44Mi"),
-		"storage": resource.MustParse("44Gi"),
+	threeNodeLessThanMilliResources = corev1.ResourceList{
+		"cpu": resource.MustParse("0.3015"),
 	}
-	eighteenNodeResources = api.ResourceList{
-		"cpu":     resource.MustParse("18.3"),
-		"memory":  resource.MustParse("48Mi"),
-		"storage": resource.MustParse("48Gi"),
+	threeNodeLessThanMilliExpResources = corev1.ResourceList{
+		"cpu": resource.MustParse("0.308"),
 	}
-	nineteenNodeResources = api.ResourceList{
-		"cpu":     resource.MustParse("19.3"),
-		"memory":  resource.MustParse("49Mi"),
-		"storage": resource.MustParse("49Gi"),
-	}
-	twentyNodeResources = api.ResourceList{
-		"cpu":     resource.MustParse("20.3"),
-		"memory":  resource.MustParse("50Mi"),
-		"storage": resource.MustParse("50Gi"),
-	}
-	twentyOneNodeResources = api.ResourceList{
-		"cpu":     resource.MustParse("21.3"),
-		"memory":  resource.MustParse("51Mi"),
-		"storage": resource.MustParse("51Gi"),
-	}
-	twentySevenNodeResources = api.ResourceList{
-		"cpu":     resource.MustParse("27.3"),
-		"memory":  resource.MustParse("57Mi"),
-		"storage": resource.MustParse("57Gi"),
-	}
-	twentyNineNodeResources = api.ResourceList{
-		"cpu":     resource.MustParse("29.3"),
-		"memory":  resource.MustParse("59Mi"),
-		"storage": resource.MustParse("59Gi"),
-	}
-	twoNodeNoCPUResources = api.ResourceList{
-		"memory":  resource.MustParse("32Mi"),
-		"storage": resource.MustParse("32Gi"),
-	}
-	fourNodeNoCPUResources = api.ResourceList{
-		"memory":  resource.MustParse("34Mi"),
-		"storage": resource.MustParse("34Gi"),
-	}
-	twoNodeNoMemoryResources = api.ResourceList{
-		"cpu":     resource.MustParse("2.3"),
-		"storage": resource.MustParse("32Gi"),
-	}
-	fourNodeNoMemoryResources = api.ResourceList{
-		"cpu":     resource.MustParse("4.3"),
-		"storage": resource.MustParse("34Gi"),
-	}
-	twoNodeNoStorageResources = api.ResourceList{
-		"cpu":    resource.MustParse("2.3"),
-		"memory": resource.MustParse("32Mi"),
-	}
-	fourNodeNoStorageResources = api.ResourceList{
-		"cpu":    resource.MustParse("4.3"),
-		"memory": resource.MustParse("34Mi"),
-	}
-	twoNodeLessThanMilliResources = api.ResourceList{
-		"cpu": resource.MustParse("0.3012"),
-	}
-	fourNodeLessThanMilliResources = api.ResourceList{
-		"cpu": resource.MustParse("0.3024"),
-	}
-	noResources = api.ResourceList{}
+	noResources = corev1.ResourceList{}
 
-	sixteenNodeResources = api.ResourceList{
+	sixteenNodeResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("16.3"),
 		"memory":  resource.MustParse("46Mi"),
 		"storage": resource.MustParse("46Gi"),
 	}
-	twentyFourNodeResources = api.ResourceList{
+	twentyFourNodeResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("24.3"),
 		"memory":  resource.MustParse("54Mi"),
 		"storage": resource.MustParse("54Gi"),
 	}
 
-	zeroNodesResourcesRange = ResourceListPair{
-		lower: baseResources,
-		upper: baseResources,
-	}
-	threeToFiveNodesResourcesRange = ResourceListPair{
-		lower: threeNodeResources,
-		upper: fiveNodeResources,
-	}
-	fourteenToEighteenNodesResourcesRange = ResourceListPair{
-		lower: fourteenNodeResources,
-		upper: eighteenNodeResources,
-	}
-	twelveToTwentyNodesResourcesRange = ResourceListPair{
-		lower: twelveNodeResources,
-		upper: twentyNodeResources,
-	}
-	twentyOneToTwentySevenNodesResourcesRange = ResourceListPair{
-		lower: twentyOneNodeResources,
-		upper: twentySevenNodeResources,
-	}
-	nineteenToTwentyNineNodesResourcesRange = ResourceListPair{
-		lower: nineteenNodeResources,
-		upper: twentyNineNodeResources,
-	}
-	zeroNodesNoCPUResourcesRange = ResourceListPair{
-		lower: noCPUBaseResources,
-		upper: noCPUBaseResources,
-	}
-	twoToFourNodesNoCPUResourcesRange = ResourceListPair{
-		lower: twoNodeNoCPUResources,
-		upper: fourNodeNoCPUResources,
-	}
-	zeroNodesNoMemoryResourcesRange = ResourceListPair{
-		lower: noMemoryBaseResources,
-		upper: noMemoryBaseResources,
-	}
-	twoToFourNodesNoMemoryResourcesRange = ResourceListPair{
-		lower: twoNodeNoMemoryResources,
-		upper: fourNodeNoMemoryResources,
-	}
-	zeroNodesNoStorageResourcesRange = ResourceListPair{
-		lower: noStorageBaseResources,
-		upper: noStorageBaseResources,
-	}
-	twoToFourNodesNoStorageResourcesRange = ResourceListPair{
-		lower: twoNodeNoStorageResources,
-		upper: fourNodeNoStorageResources,
-	}
-	twoToFourNodesLessThanMilliResourcesRange = ResourceListPair{
-		lower: twoNodeLessThanMilliResources,
-		upper: fourNodeLessThanMilliResources,
-	}
-	noResourcesRange = ResourceListPair{
-		lower: noResources,
-		upper: noResources,
-	}
-	fourToFourNodesResourcesRange = ResourceListPair{
-		lower: fourNodeResources,
-		upper: fourNodeResources,
+	smallClusterFiveNodeResources = corev1.ResourceList{
+		"cpu":     resource.MustParse("12.5m"),
+		"memory":  resource.MustParse("72.5Mi"),
+		"storage": resource.MustParse("1000Mi"),
 	}
 )
 
-func verifyResources(t *testing.T, lineNum int, kind string, got, want api.ResourceList) {
+func verifyResources(t *testing.T, kind string, got, want corev1.ResourceList) {
+	if len(got) != len(want) {
+		t.Errorf("%s not equal got: %+v want: %+v", kind, got, want)
+	}
 	for res, val := range want {
 		actVal, ok := got[res]
 		if !ok {
-			t.Errorf("[test@line %d] missing resource %s in %s", lineNum, res, kind)
+			t.Errorf("missing resource %s in %s", res, kind)
 		}
 		if val.Cmp(actVal) != 0 {
-			t.Errorf("[test@line %d] not equal resource %s in %s, got: %+v, want: %+v", lineNum, res, kind, actVal, val)
+			t.Errorf("not equal resource %s in %s, got: %s, want: %s", res, kind, actVal.String(), val.String())
 		}
 	}
-}
-
-func verifyRange(t *testing.T, lineNum int, kind string, got, want ResourceListPair) {
-	if len(got.lower) != len(want.lower) || len(got.upper) != len(want.upper) {
-		t.Errorf("[test@line %d] %s not equal got: %+v want: %+v", lineNum, kind, got, want)
-	}
-	verifyResources(t, lineNum, kind+" (lower bound)", got.lower, want.lower)
-	verifyResources(t, lineNum, kind+" (upper bound)", got.upper, want.upper)
-}
-
-func num() int {
-	_, _, line, ok := runtime.Caller(1)
-	if ok {
-		return line
-	}
-	return -1
 }
 
 func TestEstimateResources(t *testing.T) {
 	testCases := []struct {
-		lineNum         int
-		e               ResourceEstimator
-		numNodes        uint64
-		estimatorResult EstimatorResult
+		e        ResourceEstimator
+		numNodes uint64
+		limits   corev1.ResourceList
+		requests corev1.ResourceList
 	}{
-		{num(), fullEstimator, 0, EstimatorResult{zeroNodesResourcesRange, zeroNodesResourcesRange}},
-		{num(), fullEstimator, 4, EstimatorResult{threeToFiveNodesResourcesRange, threeToFiveNodesResourcesRange}},
-		{num(), fullEstimator, 16, EstimatorResult{fourteenToEighteenNodesResourcesRange, twelveToTwentyNodesResourcesRange}},
-		{num(), fullEstimator, 24, EstimatorResult{twentyOneToTwentySevenNodesResourcesRange, nineteenToTwentyNineNodesResourcesRange}},
-		{num(), noCPUEstimator, 0, EstimatorResult{zeroNodesNoCPUResourcesRange, zeroNodesNoCPUResourcesRange}},
-		{num(), noCPUEstimator, 3, EstimatorResult{twoToFourNodesNoCPUResourcesRange, twoToFourNodesNoCPUResourcesRange}},
-		{num(), noMemoryEstimator, 0, EstimatorResult{zeroNodesNoMemoryResourcesRange, zeroNodesNoMemoryResourcesRange}},
-		{num(), noMemoryEstimator, 3, EstimatorResult{twoToFourNodesNoMemoryResourcesRange, twoToFourNodesNoMemoryResourcesRange}},
-		{num(), noStorageEstimator, 0, EstimatorResult{zeroNodesNoStorageResourcesRange, zeroNodesNoStorageResourcesRange}},
-		{num(), noStorageEstimator, 3, EstimatorResult{twoToFourNodesNoStorageResourcesRange, twoToFourNodesNoStorageResourcesRange}},
-		{num(), lessThanMilliEstimator, 3, EstimatorResult{twoToFourNodesLessThanMilliResourcesRange, twoToFourNodesLessThanMilliResourcesRange}},
-		{num(), emptyEstimator, 0, EstimatorResult{noResourcesRange, noResourcesRange}},
-		{num(), emptyEstimator, 3, EstimatorResult{noResourcesRange, noResourcesRange}},
-		{num(), emptyRecommendedRangeEstimator, 0, EstimatorResult{zeroNodesResourcesRange, zeroNodesResourcesRange}},
-		{num(), emptyRecommendedRangeEstimator, 4, EstimatorResult{fourToFourNodesResourcesRange, threeToFiveNodesResourcesRange}},
+		{fullEstimator, 0, baseResources, baseResources},
+		{fullEstimator, 3, threeNodeResources, threeNodeResources},
+		{fullEstimator, 16, sixteenNodeResources, sixteenNodeResources},
+		{fullEstimator, 24, twentyFourNodeResources, twentyFourNodeResources},
+		{noCPUEstimator, 0, noCPUBaseResources, noCPUBaseResources},
+		{noCPUEstimator, 3, threeNodeNoCPUResources, threeNodeNoCPUResources},
+		{noMemoryEstimator, 0, noMemoryBaseResources, noMemoryBaseResources},
+		{noMemoryEstimator, 3, threeNodeNoMemoryResources, threeNodeNoMemoryResources},
+		{noStorageEstimator, 0, noStorageBaseResources, noStorageBaseResources},
+		{noStorageEstimator, 3, threeNodeNoStorageResources, threeNodeNoStorageResources},
+		{lessThanMilliEstimator, 3, threeNodeLessThanMilliResources, threeNodeLessThanMilliResources},
+		{emptyEstimator, 0, noResources, noResources},
+		{emptyEstimator, 3, noResources, noResources},
+		{exponentialEstimator, 0, sixteenNodeResources, sixteenNodeResources},
+		{exponentialEstimator, 3, sixteenNodeResources, sixteenNodeResources},
+		{exponentialEstimator, 10, sixteenNodeResources, sixteenNodeResources},
+		{exponentialEstimator, 16, sixteenNodeResources, sixteenNodeResources},
+		{exponentialEstimator, 17, twentyFourNodeResources, twentyFourNodeResources},
+		{exponentialEstimator, 20, twentyFourNodeResources, twentyFourNodeResources},
+		{exponentialEstimator, 24, twentyFourNodeResources, twentyFourNodeResources},
+		{exponentialLessThanMilliEstimator, 3, threeNodeLessThanMilliExpResources, threeNodeLessThanMilliExpResources},
+		{exponentialSmallClusterEstimator, 1, smallClusterFiveNodeResources, smallClusterFiveNodeResources},
 	}
 
 	for _, tc := range testCases {
-		got := tc.e.scaleWithNodes(tc.numNodes)
-		want := &tc.estimatorResult
-		verifyRange(t, tc.lineNum, "AcceptableRange", got.AcceptableRange, want.AcceptableRange)
-		verifyRange(t, tc.lineNum, "RecommendedRange", got.RecommendedRange, want.RecommendedRange)
+		got := tc.e.scale(tc.numNodes)
+		want := &corev1.ResourceRequirements{
+			Limits:   tc.limits,
+			Requests: tc.requests,
+		}
+		verifyResources(t, "limits", got.Limits, want.Limits)
+		verifyResources(t, "requests", got.Requests, want.Limits)
+	}
+}
+
+func TestComputeResourceOverheadValueString(t *testing.T) {
+	testCases := []struct {
+		clusterSize         uint64
+		resource         Resource
+		expectedOverhead string
+	}{
+		{1, Resource{ExtraPerResource: resource.MustParse("1"), Name: "cpu"}, "1.000000"},
+		{1, Resource{ExtraPerResource: resource.MustParse("1m"), Name: "cpu"}, "1.000000m"},
+		{1, Resource{ExtraPerResource: resource.MustParse("0.5m"), Name: "cpu"}, "500.000000u"},
+		{3, Resource{ExtraPerResource: resource.MustParse("0.5m"), Name: "cpu"}, "1500.000000u"},
+	}
+
+	for _, tc := range testCases {
+		got := computeResourceOverheadValueString(tc.clusterSize, tc.resource)
+		if got != tc.expectedOverhead {
+			t.Errorf("Overhead is incorrect, got: '%s', want: '%s'", got, tc.expectedOverhead)
+		}
 	}
 }
