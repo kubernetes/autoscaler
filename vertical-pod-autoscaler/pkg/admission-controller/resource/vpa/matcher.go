@@ -75,7 +75,8 @@ func (m *matcher) GetMatchingVPA(ctx context.Context, pod *corev1.Pod) *vpa_type
 			klog.ErrorS(nil, "Unexpected object type in VPA cache", "object", obj)
 			continue
 		}
-		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff && !vpa_api_util.HasStartupBoost(vpaConfig) {
+		off := vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff || vpa_api_util.InInitialDelayWindow(vpaConfig)
+		if off && !vpa_api_util.HasStartupBoost(vpaConfig) {
 			continue
 		}
 

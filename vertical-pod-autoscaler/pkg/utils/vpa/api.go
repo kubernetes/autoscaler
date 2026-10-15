@@ -37,6 +37,7 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/client"
@@ -280,6 +281,32 @@ func GetUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
 		return vpa_types.UpdateModeRecreate
 	}
 	return *vpa.Spec.UpdatePolicy.UpdateMode
+}
+
+// InInitialDelayWindow returns true if the VPAInitialDelay feature gate is
+// enabled and the VPA is within its initial delay window. During the window
+// the Updater and Admission Controller treat the VPA as if UpdateMode were Off.
+func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	// Fast path for VPAs that don't set the field. This runs on every pod admission.
+	if vpa.Spec.UpdatePolicy == nil || vpa.Spec.UpdatePolicy.InitialDelaySeconds == nil {
+		return false
+	}
+	return inInitialDelayWindow(vpa)
+}
+
+func inInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	expiry, ok := InitialDelayExpiry(vpa)
+	return ok && features.Enabled(features.VPAInitialDelay) && time.Now().Before(expiry)
+}
+
+// InitialDelayExpiry returns the end of the VPA's initial delay window, and
+// false if the VPA doesn't set initialDelaySeconds.
+func InitialDelayExpiry(vpa *vpa_types.VerticalPodAutoscaler) (time.Time, bool) {
+	p := vpa.Spec.UpdatePolicy
+	if p == nil || p.InitialDelaySeconds == nil || *p.InitialDelaySeconds < 1 {
+		return time.Time{}, false
+	}
+	return vpa.CreationTimestamp.Add(time.Duration(*p.InitialDelaySeconds) * time.Second), true
 }
 
 // HasStartupBoost returns true if VPA has StartupBoost defined either globally or at container level.

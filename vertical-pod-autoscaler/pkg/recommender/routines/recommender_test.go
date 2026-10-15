@@ -28,9 +28,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
+	"k8s.io/utils/ptr"
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
@@ -379,4 +382,81 @@ func TestMaintainCheckpointsGCUsesIndependentTimeout(t *testing.T) {
 
 	// Ensure that garbage collection was invoked and succeeded
 	assert.False(t, r.lastCheckpointGC.IsZero())
+}
+
+func TestUpdateInitialDelayCondition(t *testing.T) {
+	created := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	newObserved := func(delay *int32) *vpaautoscalingv1.VerticalPodAutoscaler {
+		mode := vpaautoscalingv1.UpdateModeRecreate
+		return &vpaautoscalingv1.VerticalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{Name: "vpa", Namespace: "default", CreationTimestamp: metav1.NewTime(created)},
+			Spec: vpaautoscalingv1.VerticalPodAutoscalerSpec{
+				UpdatePolicy: &vpaautoscalingv1.PodUpdatePolicy{UpdateMode: &mode, InitialDelaySeconds: delay},
+			},
+		}
+	}
+	tests := []struct {
+		name           string
+		delay          *int32
+		now            time.Time
+		featureEnabled bool
+		expectFound    bool
+		expectStatus   bool
+		expectReason   string
+		expectMessage  string
+	}{
+		{
+			name:           "inside the window",
+			delay:          ptr.To(int32(3600)),
+			now:            created.Add(time.Minute),
+			featureEnabled: true,
+			expectFound:    true,
+			expectStatus:   true,
+			expectReason:   "DelayWindowActive",
+			expectMessage:  "Initial delay window active until 2026-01-01T01:00:00Z",
+		},
+		{
+			name:           "after the window",
+			delay:          ptr.To(int32(3600)),
+			now:            created.Add(2 * time.Hour),
+			featureEnabled: true,
+			expectFound:    true,
+			expectStatus:   false,
+			expectReason:   "DelayWindowExpired",
+			expectMessage:  "Initial delay window ended at 2026-01-01T01:00:00Z",
+		},
+		{
+			name:           "field unset",
+			delay:          nil,
+			now:            created,
+			featureEnabled: true,
+			expectFound:    false,
+		},
+		{
+			name:           "feature disabled",
+			delay:          ptr.To(int32(3600)),
+			now:            created.Add(time.Minute),
+			featureEnabled: false,
+			expectFound:    false,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureEnabled)
+			vpa := model.NewVpa(model.VpaID{Namespace: "default", VpaName: "vpa"}, labels.Everything(), created)
+			// A condition left over from an earlier loop must be replaced or removed.
+			vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, true, "DelayWindowActive", "stale")
+
+			updateInitialDelayCondition(vpa, newObserved(tc.delay), tc.now)
+
+			condition, found := vpa.GetConditionsMap()[vpaautoscalingv1.InitialDelayActive]
+			assert.Equal(t, tc.expectFound, found)
+			if !tc.expectFound {
+				return
+			}
+			assert.Equal(t, tc.expectStatus, condition.Status == "True")
+			assert.Equal(t, tc.expectReason, condition.Reason)
+			assert.Equal(t, tc.expectMessage, condition.Message)
+		})
+	}
 }
