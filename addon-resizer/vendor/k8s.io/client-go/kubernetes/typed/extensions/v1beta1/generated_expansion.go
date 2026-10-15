@@ -22,6 +22,6 @@ type DaemonSetExpansion interface{}
 
 type IngressExpansion interface{}
 
-type PodSecurityPolicyExpansion interface{}
+type NetworkPolicyExpansion interface{}
 
 type ReplicaSetExpansion interface{}

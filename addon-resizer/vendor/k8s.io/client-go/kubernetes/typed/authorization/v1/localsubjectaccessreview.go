@@ -19,7 +19,12 @@ limitations under the License.
 package v1
 
 import (
-	rest "k8s.io/client-go/rest"
+	context "context"
+
+	authorizationv1 "k8s.io/api/authorization/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gentype "k8s.io/client-go/gentype"
+	scheme "k8s.io/client-go/kubernetes/scheme"
 )
 
 // LocalSubjectAccessReviewsGetter has a method to return a LocalSubjectAccessReviewInterface.
@@ -30,19 +35,25 @@ type LocalSubjectAccessReviewsGetter interface {
 
 // LocalSubjectAccessReviewInterface has methods to work with LocalSubjectAccessReview resources.
 type LocalSubjectAccessReviewInterface interface {
+	Create(ctx context.Context, localSubjectAccessReview *authorizationv1.LocalSubjectAccessReview, opts metav1.CreateOptions) (*authorizationv1.LocalSubjectAccessReview, error)
 	LocalSubjectAccessReviewExpansion
 }
 
 // localSubjectAccessReviews implements LocalSubjectAccessReviewInterface
 type localSubjectAccessReviews struct {
-	client rest.Interface
-	ns     string
+	*gentype.Client[*authorizationv1.LocalSubjectAccessReview]
 }
 
 // newLocalSubjectAccessReviews returns a LocalSubjectAccessReviews
 func newLocalSubjectAccessReviews(c *AuthorizationV1Client, namespace string) *localSubjectAccessReviews {
 	return &localSubjectAccessReviews{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClient[*authorizationv1.LocalSubjectAccessReview](
+			"localsubjectaccessreviews",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *authorizationv1.LocalSubjectAccessReview { return &authorizationv1.LocalSubjectAccessReview{} },
+			gentype.PrefersProtobuf[*authorizationv1.LocalSubjectAccessReview](),
+		),
 	}
 }

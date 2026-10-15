@@ -19,12 +19,15 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	context "context"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
+	gentype "k8s.io/client-go/gentype"
 	scheme "k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 // PodsGetter has a method to return a PodInterface.
@@ -35,140 +38,73 @@ type PodsGetter interface {
 
 // PodInterface has methods to work with Pod resources.
 type PodInterface interface {
-	Create(*v1.Pod) (*v1.Pod, error)
-	Update(*v1.Pod) (*v1.Pod, error)
-	UpdateStatus(*v1.Pod) (*v1.Pod, error)
-	Delete(name string, options *meta_v1.DeleteOptions) error
-	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v1.Pod, error)
-	List(opts meta_v1.ListOptions) (*v1.PodList, error)
-	Watch(opts meta_v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error)
+	Create(ctx context.Context, pod *corev1.Pod, opts metav1.CreateOptions) (*corev1.Pod, error)
+	Update(ctx context.Context, pod *corev1.Pod, opts metav1.UpdateOptions) (*corev1.Pod, error)
+	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+	UpdateStatus(ctx context.Context, pod *corev1.Pod, opts metav1.UpdateOptions) (*corev1.Pod, error)
+	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*corev1.Pod, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*corev1.PodList, error)
+	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *corev1.Pod, err error)
+	Apply(ctx context.Context, pod *applyconfigurationscorev1.PodApplyConfiguration, opts metav1.ApplyOptions) (result *corev1.Pod, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, pod *applyconfigurationscorev1.PodApplyConfiguration, opts metav1.ApplyOptions) (result *corev1.Pod, err error)
+	UpdateEphemeralContainers(ctx context.Context, podName string, pod *corev1.Pod, opts metav1.UpdateOptions) (*corev1.Pod, error)
+	UpdateResize(ctx context.Context, podName string, pod *corev1.Pod, opts metav1.UpdateOptions) (*corev1.Pod, error)
+
 	PodExpansion
 }
 
 // pods implements PodInterface
 type pods struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithListAndApply[*corev1.Pod, *corev1.PodList, *applyconfigurationscorev1.PodApplyConfiguration]
 }
 
 // newPods returns a Pods
 func newPods(c *CoreV1Client, namespace string) *pods {
 	return &pods{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithListAndApply[*corev1.Pod, *corev1.PodList, *applyconfigurationscorev1.PodApplyConfiguration](
+			"pods",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *corev1.Pod { return &corev1.Pod{} },
+			func() *corev1.PodList { return &corev1.PodList{} },
+			gentype.PrefersProtobuf[*corev1.Pod](),
+		),
 	}
 }
 
-// Get takes name of the pod, and returns the corresponding pod object, and an error if there is any.
-func (c *pods) Get(name string, options meta_v1.GetOptions) (result *v1.Pod, err error) {
-	result = &v1.Pod{}
-	err = c.client.Get().
-		Namespace(c.ns).
+// UpdateEphemeralContainers takes the top resource name and the representation of a pod and updates it. Returns the server's representation of the pod, and an error, if there is any.
+func (c *pods) UpdateEphemeralContainers(ctx context.Context, podName string, pod *corev1.Pod, opts metav1.UpdateOptions) (result *corev1.Pod, err error) {
+	result = &corev1.Pod{}
+	err = c.GetClient().Put().
+		UseProtobufAsDefault().
+		Namespace(c.GetNamespace()).
 		Resource("pods").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of Pods that match those selectors.
-func (c *pods) List(opts meta_v1.ListOptions) (result *v1.PodList, err error) {
-	result = &v1.PodList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("pods").
+		Name(podName).
+		SubResource("ephemeralcontainers").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Body(pod).
+		Do(ctx).
 		Into(result)
 	return
 }
 
-// Watch returns a watch.Interface that watches the requested pods.
-func (c *pods) Watch(opts meta_v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
+// UpdateResize takes the top resource name and the representation of a pod and updates it. Returns the server's representation of the pod, and an error, if there is any.
+func (c *pods) UpdateResize(ctx context.Context, podName string, pod *corev1.Pod, opts metav1.UpdateOptions) (result *corev1.Pod, err error) {
+	result = &corev1.Pod{}
+	err = c.GetClient().Put().
+		UseProtobufAsDefault().
+		Namespace(c.GetNamespace()).
 		Resource("pods").
+		Name(podName).
+		SubResource("resize").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
-}
-
-// Create takes the representation of a pod and creates it.  Returns the server's representation of the pod, and an error, if there is any.
-func (c *pods) Create(pod *v1.Pod) (result *v1.Pod, err error) {
-	result = &v1.Pod{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("pods").
 		Body(pod).
-		Do().
-		Into(result)
-	return
-}
-
-// Update takes the representation of a pod and updates it. Returns the server's representation of the pod, and an error, if there is any.
-func (c *pods) Update(pod *v1.Pod) (result *v1.Pod, err error) {
-	result = &v1.Pod{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("pods").
-		Name(pod.Name).
-		Body(pod).
-		Do().
-		Into(result)
-	return
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *pods) UpdateStatus(pod *v1.Pod) (result *v1.Pod, err error) {
-	result = &v1.Pod{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("pods").
-		Name(pod.Name).
-		SubResource("status").
-		Body(pod).
-		Do().
-		Into(result)
-	return
-}
-
-// Delete takes name of the pod and deletes it. Returns an error if one occurs.
-func (c *pods) Delete(name string, options *meta_v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("pods").
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *pods) DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("pods").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Patch applies the patch and returns the patched pod.
-func (c *pods) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error) {
-	result = &v1.Pod{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("pods").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

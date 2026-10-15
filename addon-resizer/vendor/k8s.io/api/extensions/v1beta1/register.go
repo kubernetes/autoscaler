@@ -47,7 +47,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&Deployment{},
 		&DeploymentList{},
 		&DeploymentRollback{},
-		&ReplicationControllerDummy{},
 		&Scale{},
 		&DaemonSetList{},
 		&DaemonSet{},
@@ -55,8 +54,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&IngressList{},
 		&ReplicaSet{},
 		&ReplicaSetList{},
-		&PodSecurityPolicy{},
-		&PodSecurityPolicyList{},
 		&NetworkPolicy{},
 		&NetworkPolicyList{},
 	)

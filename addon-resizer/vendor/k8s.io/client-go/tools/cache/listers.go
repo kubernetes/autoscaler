@@ -17,7 +17,7 @@ limitations under the License.
 package cache
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -30,8 +30,20 @@ import (
 // AppendFunc is used to add a matching item to whatever list the caller is using
 type AppendFunc func(interface{})
 
+// ListAll lists items in the store matching the given selector, calling appendFn on each one.
 func ListAll(store Store, selector labels.Selector, appendFn AppendFunc) error {
+	if labels.MatchesNothing(selector) {
+		return nil
+	}
+
+	selectAll := selector.Empty()
 	for _, m := range store.List() {
+		if selectAll {
+			// Avoid computing labels of the objects to speed up common flows
+			// of listing all objects.
+			appendFn(m)
+			continue
+		}
 		metadata, err := meta.Accessor(m)
 		if err != nil {
 			return err
@@ -43,24 +55,27 @@ func ListAll(store Store, selector labels.Selector, appendFn AppendFunc) error {
 	return nil
 }
 
+// ListAllByNamespace lists items in the given namespace in the store matching the given selector,
+// calling appendFn on each one.
+// If a blank namespace (NamespaceAll) is specified, this delegates to ListAll().
 func ListAllByNamespace(indexer Indexer, namespace string, selector labels.Selector, appendFn AppendFunc) error {
-	if namespace == metav1.NamespaceAll {
-		for _, m := range indexer.List() {
-			metadata, err := meta.Accessor(m)
-			if err != nil {
-				return err
-			}
-			if selector.Matches(labels.Set(metadata.GetLabels())) {
-				appendFn(m)
-			}
-		}
+	if labels.MatchesNothing(selector) {
 		return nil
+	}
+
+	if namespace == metav1.NamespaceAll {
+		return ListAll(indexer, selector, appendFn)
 	}
 
 	items, err := indexer.Index(NamespaceIndex, &metav1.ObjectMeta{Namespace: namespace})
 	if err != nil {
 		// Ignore error; do slow search without index.
-		glog.Warningf("can not retrieve list of objects using index : %v", err)
+		//
+		// ListAllByNamespace is called by generated code
+		// (k8s.io/client-go/listers) and probably not worth converting
+		// to contextual logging, which would require changing all of
+		// those APIs.
+		klog.TODO().Info("Warning: can not retrieve list of objects using index", "err", err)
 		for _, m := range indexer.List() {
 			metadata, err := meta.Accessor(m)
 			if err != nil {
@@ -73,7 +88,15 @@ func ListAllByNamespace(indexer Indexer, namespace string, selector labels.Selec
 		}
 		return nil
 	}
+
+	selectAll := selector.Empty()
 	for _, m := range items {
+		if selectAll {
+			// Avoid computing labels of the objects to speed up common flows
+			// of listing all objects.
+			appendFn(m)
+			continue
+		}
 		metadata, err := meta.Accessor(m)
 		if err != nil {
 			return err
@@ -104,6 +127,7 @@ type GenericNamespaceLister interface {
 	Get(name string) (runtime.Object, error)
 }
 
+// NewGenericLister creates a new instance for the genericLister.
 func NewGenericLister(indexer Indexer, resource schema.GroupResource) GenericLister {
 	return &genericLister{indexer: indexer, resource: resource}
 }

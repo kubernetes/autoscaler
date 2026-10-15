@@ -40,25 +40,18 @@ type SummaryMetric interface {
 	Observe(float64)
 }
 
+// HistogramMetric captures individual observations into configurable buckets.
+// It also provides a sum and count of observations.
+type HistogramMetric interface {
+	Observe(float64)
+}
+
 type noopMetric struct{}
 
 func (noopMetric) Inc()            {}
 func (noopMetric) Dec()            {}
 func (noopMetric) Observe(float64) {}
 func (noopMetric) Set(float64)     {}
-
-type reflectorMetrics struct {
-	numberOfLists       CounterMetric
-	listDuration        SummaryMetric
-	numberOfItemsInList SummaryMetric
-
-	numberOfWatches      CounterMetric
-	numberOfShortWatches CounterMetric
-	watchDuration        SummaryMetric
-	numberOfItemsInWatch SummaryMetric
-
-	lastResourceVersion GaugeMetric
-}
 
 // MetricsProvider generates various metrics used by the reflector.
 type MetricsProvider interface {
@@ -92,23 +85,6 @@ var metricsFactory = struct {
 	setProviders    sync.Once
 }{
 	metricsProvider: noopMetricsProvider{},
-}
-
-func newReflectorMetrics(name string) *reflectorMetrics {
-	var ret *reflectorMetrics
-	if len(name) == 0 {
-		return ret
-	}
-	return &reflectorMetrics{
-		numberOfLists:        metricsFactory.metricsProvider.NewListsMetric(name),
-		listDuration:         metricsFactory.metricsProvider.NewListDurationMetric(name),
-		numberOfItemsInList:  metricsFactory.metricsProvider.NewItemsInListMetric(name),
-		numberOfWatches:      metricsFactory.metricsProvider.NewWatchesMetric(name),
-		numberOfShortWatches: metricsFactory.metricsProvider.NewShortWatchesMetric(name),
-		watchDuration:        metricsFactory.metricsProvider.NewWatchDurationMetric(name),
-		numberOfItemsInWatch: metricsFactory.metricsProvider.NewItemsInWatchMetric(name),
-		lastResourceVersion:  metricsFactory.metricsProvider.NewLastResourceVersionMetric(name),
-	}
 }
 
 // SetReflectorMetricsProvider sets the metrics provider

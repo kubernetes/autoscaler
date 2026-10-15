@@ -19,9 +19,10 @@ limitations under the License.
 package v1beta2
 
 import (
-	v1beta2 "k8s.io/api/apps/v1beta2"
-	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/client-go/kubernetes/scheme"
+	http "net/http"
+
+	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	scheme "k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
 )
 
@@ -31,7 +32,6 @@ type AppsV1beta2Interface interface {
 	DaemonSetsGetter
 	DeploymentsGetter
 	ReplicaSetsGetter
-	ScalesGetter
 	StatefulSetsGetter
 }
 
@@ -56,21 +56,29 @@ func (c *AppsV1beta2Client) ReplicaSets(namespace string) ReplicaSetInterface {
 	return newReplicaSets(c, namespace)
 }
 
-func (c *AppsV1beta2Client) Scales(namespace string) ScaleInterface {
-	return newScales(c, namespace)
-}
-
 func (c *AppsV1beta2Client) StatefulSets(namespace string) StatefulSetInterface {
 	return newStatefulSets(c, namespace)
 }
 
 // NewForConfig creates a new AppsV1beta2Client for the given config.
+// NewForConfig is equivalent to NewForConfigAndClient(c, httpClient),
+// where httpClient was generated with rest.HTTPClientFor(c).
 func NewForConfig(c *rest.Config) (*AppsV1beta2Client, error) {
 	config := *c
-	if err := setConfigDefaults(&config); err != nil {
+	setConfigDefaults(&config)
+	httpClient, err := rest.HTTPClientFor(&config)
+	if err != nil {
 		return nil, err
 	}
-	client, err := rest.RESTClientFor(&config)
+	return NewForConfigAndClient(&config, httpClient)
+}
+
+// NewForConfigAndClient creates a new AppsV1beta2Client for the given config and http client.
+// Note the http client provided takes precedence over the configured transport values.
+func NewForConfigAndClient(c *rest.Config, h *http.Client) (*AppsV1beta2Client, error) {
+	config := *c
+	setConfigDefaults(&config)
+	client, err := rest.RESTClientForConfigAndClient(&config, h)
 	if err != nil {
 		return nil, err
 	}
@@ -92,17 +100,15 @@ func New(c rest.Interface) *AppsV1beta2Client {
 	return &AppsV1beta2Client{c}
 }
 
-func setConfigDefaults(config *rest.Config) error {
-	gv := v1beta2.SchemeGroupVersion
+func setConfigDefaults(config *rest.Config) {
+	gv := appsv1beta2.SchemeGroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
+	config.NegotiatedSerializer = rest.CodecFactoryForGeneratedClient(scheme.Scheme, scheme.Codecs).WithoutConversion()
 
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()
 	}
-
-	return nil
 }
 
 // RESTClient returns a RESTClient that is used to communicate
