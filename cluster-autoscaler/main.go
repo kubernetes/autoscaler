@@ -21,8 +21,6 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -34,6 +32,7 @@ import (
 	"k8s.io/apiserver/pkg/server/mux"
 	"k8s.io/apiserver/pkg/server/routes"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	cbv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacitybuffer/autoscaling.x-k8s.io/v1beta1"
 	cqv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/capacityquota/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/client-go/informers"
@@ -78,28 +77,12 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(cqv1beta1.AddToScheme(scheme))
+	utilruntime.Must(cbv1beta1.AddToScheme(scheme))
 	// TODO: add other CRDs
 }
 
-func registerSignalHandlers(autoscaler core.Autoscaler) {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
-	klog.V(1).Info("Registered cleanup signal handler")
-
-	go func() {
-		<-sigs
-		klog.V(1).Info("Received signal, attempting cleanup")
-		autoscaler.ExitCleanUp()
-		klog.V(1).Info("Cleaned up, exiting...")
-		klog.Flush()
-		os.Exit(0)
-	}()
-}
-
-func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, autoscalingOpts config.AutoscalingOptions) {
+func run(ctx context.Context, healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, autoscalingOpts config.AutoscalingOptions) {
 	metrics.RegisterAll(autoscalingOpts.EmitPerNodeGroupMetrics)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	restConfig := kube_util.GetKubeConfig(autoscalingOpts.KubeClientOpts)
 	mgr, err := ctrl.NewManager(restConfig, ctrl.Options{
@@ -108,20 +91,17 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 			DefaultTransform: cache.TransformStripManagedFields(),
 		},
 		// TODO: migrate leader election, metrics, healthcheck, pprof servers to Manager
-		LeaderElection:         false,
-		Metrics:                metricsserver.Options{BindAddress: "0"},
-		HealthProbeBindAddress: "0",
-		PprofBindAddress:       "0",
+		LeaderElection:          false,
+		Metrics:                 metricsserver.Options{BindAddress: "0"},
+		HealthProbeBindAddress:  "0",
+		PprofBindAddress:        "0",
+		GracefulShutdownTimeout: new(time.Duration(-1)), // disabled timeout for compatibility, TODO: configure reasonable timeout
 	})
 	if err != nil {
 		klog.Fatalf("Failed to create manager: %v", err)
 	}
 
 	autoscaler, trigger := mustBuildAutoscaler(ctx, autoscalingOpts, debuggingSnapshotter, mgr)
-
-	// Register signal handlers for graceful shutdown.
-	// TODO: replace with ctrl.SetupSignalHandlers() and handle graceful shutdown with context
-	registerSignalHandlers(autoscaler)
 
 	// Start updating health check endpoint.
 	healthCheck.StartMonitoring()
@@ -144,6 +124,8 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 				case <-ctx.Done():
 					// Context is also passed down to RunOnce, so a long-running
 					// iteration in progress will be interrupted and cleaned up there.
+					klog.V(1).Info("Received signal, attempting cleanup")
+					autoscaler.ExitCleanUp()
 					return nil
 				default:
 					trigger.Wait(previousRun)
@@ -158,6 +140,8 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 				case <-ctx.Done():
 					// Context is also passed down to RunOnce, so a long-running
 					// iteration in progress will be interrupted and cleaned up there.
+					klog.V(1).Info("Received signal, attempting cleanup")
+					autoscaler.ExitCleanUp()
 					return nil
 				case <-time.After(autoscalingOpts.ScanInterval):
 					loop.RunAutoscalerOnce(ctx, autoscaler, healthCheck, time.Now(), iteration)
@@ -173,6 +157,8 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 	if err := mgr.Start(ctx); err != nil {
 		klog.Fatalf("Manager exited with error: %v", err)
 	}
+	klog.V(1).Info("Cleaned up, exiting...")
+	klog.Flush()
 }
 
 func mustBuildAutoscaler(ctx context.Context, opts config.AutoscalingOptions, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter, mgr manager.Manager) (core.Autoscaler, *loop.LoopTrigger) {
@@ -201,6 +187,8 @@ func mustBuildAutoscaler(ctx context.Context, opts config.AutoscalingOptions, de
 }
 
 func main() {
+	rootCtx := ctrl.SetupSignalHandler()
+
 	klog.InitFlags(nil)
 
 	// Opt into new klog behavior where -stderrthreshold is honored even when
@@ -277,17 +265,20 @@ func main() {
 	}()
 
 	if !leaderElection.LeaderElect {
-		run(healthCheck, debuggingSnapshotter, autoscalingOpts)
+		run(rootCtx, healthCheck, debuggingSnapshotter, autoscalingOpts)
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
 			klog.Fatalf("Unable to get hostname: %v", err)
 		}
 
+		electionCtx, stopElection := context.WithCancel(context.Background())
+		defer stopElection()
+
 		kubeClient := kube_util.CreateKubeClient(autoscalingOpts.KubeClientOpts)
 
 		// Validate that the client is ok.
-		_, err = kubeClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+		_, err = kubeClient.CoreV1().Nodes().List(rootCtx, metav1.ListOptions{})
 		if err != nil {
 			klog.Fatalf("Failed to get nodes from apiserver: %v", err)
 		}
@@ -299,31 +290,48 @@ func main() {
 			kubeClient.CoreV1(),
 			kubeClient.CoordinationV1(),
 			resourcelock.ResourceLockConfig{
-				Identity:      id,
-				EventRecorder: kube_util.CreateEventRecorder(context.TODO(), kubeClient, autoscalingOpts.RecordDuplicatedEvents),
+				Identity: id,
+				// using background context here, so the event can be recorded after receiving the termination signal
+				EventRecorder: kube_util.CreateEventRecorder(context.Background(), kubeClient, autoscalingOpts.RecordDuplicatedEvents),
 			},
 		)
 		if err != nil {
 			klog.Fatalf("Unable to create leader election lock: %v", err)
 		}
 
-		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
+		le, err := leaderelection.NewLeaderElector(leaderelection.LeaderElectionConfig{
 			Lock:            lock,
 			LeaseDuration:   leaderElection.LeaseDuration.Duration,
 			RenewDeadline:   leaderElection.RenewDeadline.Duration,
 			RetryPeriod:     leaderElection.RetryPeriod.Duration,
 			ReleaseOnCancel: true,
 			Callbacks: leaderelection.LeaderCallbacks{
-				OnStartedLeading: func(_ context.Context) {
-					// Since we are committing a suicide after losing
-					// mastership, we can safely ignore the argument.
-					run(healthCheck, debuggingSnapshotter, autoscalingOpts)
+				OnStartedLeading: func(context.Context) {
+					defer stopElection()
+					run(rootCtx, healthCheck, debuggingSnapshotter, autoscalingOpts)
 				},
 				OnStoppedLeading: func() {
+					if electionCtx.Err() != nil {
+						klog.Info("Shut down gracefully")
+						os.Exit(0)
+					}
 					klog.Fatalf("lost master")
 				},
 			},
 		})
+		if err != nil {
+			klog.Fatalf("Unable to create leader elector: %v", err)
+		}
+
+		// if we're not leading, make sure that the leader elector context is canceled on termination signal
+		go func() {
+			<-rootCtx.Done()
+			if !le.IsLeader() {
+				stopElection()
+			}
+		}()
+
+		le.Run(electionCtx)
 	}
 }
 
