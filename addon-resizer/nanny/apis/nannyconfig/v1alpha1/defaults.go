@@ -25,6 +25,7 @@ func addDefaultingFuncs(scheme *kruntime.Scheme) error {
 	return RegisterDefaults(scheme)
 }
 
+// SetDefaults_NannyConfiguration sets the default values for NannyConfiguration.
 func SetDefaults_NannyConfiguration(obj *NannyConfiguration) {
 	if obj.BaseCPU == "" {
 		obj.BaseCPU = nannyconfig.NoValue

@@ -41,7 +41,7 @@ var (
 	)
 )
 
-// Initialize sets up Prometheus to expose metrics.
+// InitializeMetrics sets up Prometheus to expose metrics.
 func InitializeMetrics(address string) {
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
@@ -50,10 +50,12 @@ func InitializeMetrics(address string) {
 	}()
 }
 
+// RegisterMetrics registers nanny's Prometheus metrics.
 func RegisterMetrics() {
 	prometheus.MustRegister(executionOutcome)
 }
 
+// ObserveOutcome records the outcome of an execution loop.
 func ObserveOutcome(outcome string) {
 	executionOutcome.WithLabelValues(outcome).Inc()
 }

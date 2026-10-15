@@ -33,11 +33,14 @@ import (
 type operation int
 
 const (
-	unknown               operation = iota
-	scaleDown             operation = iota
-	scaleUp               operation = iota
-	ContainerProportional           = "container-proportional"
-	NodeProportional                = "node-proportional"
+	unknown   operation = iota
+	scaleDown operation = iota
+	scaleUp   operation = iota
+
+	// ContainerProportional scaling modes.
+	ContainerProportional = "container-proportional"
+	// NodeProportional scaling modes.
+	NodeProportional = "node-proportional"
 )
 
 type updateResult int
@@ -101,6 +104,7 @@ type ResourceEstimator interface {
 	updatedResourceEstimator(resources []Resource) ResourceEstimator
 }
 
+// NannyConfigUpdater interface is used to update the NannyConfiguration.
 type NannyConfigUpdater interface {
 	CurrentResources() ([]Resource, error)
 }

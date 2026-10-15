@@ -37,6 +37,7 @@ excluded_packages=(
   'cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go'
   'cluster-autoscaler/cloudprovider/volcengine/volc-sdk-golang'
   'cluster-autoscaler/cloudprovider/volcengine/volcengine-go-sdk'
+  'addon-resizer/nanny/apis/nannyconfig/v1alpha1'
 )
 
 FIND_PACKAGES='go list ./... 2> /dev/null'
