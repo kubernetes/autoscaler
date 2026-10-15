@@ -20,22 +20,81 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
-	"github.com/ghodss/yaml"
-	"github.com/golang/glog"
+	jsonutil "k8s.io/apimachinery/pkg/util/json"
+
+	"sigs.k8s.io/yaml"
 )
+
+// Unmarshal unmarshals the given data
+// If v is a *map[string]interface{}, *[]interface{}, or *interface{} numbers
+// are converted to int64 or float64
+func Unmarshal(data []byte, v interface{}) error {
+	preserveIntFloat := func(d *json.Decoder) *json.Decoder {
+		d.UseNumber()
+		return d
+	}
+	switch v := v.(type) {
+	case *map[string]interface{}:
+		if err := yaml.Unmarshal(data, v, preserveIntFloat); err != nil {
+			return err
+		}
+		return jsonutil.ConvertMapNumbers(*v, 0)
+	case *[]interface{}:
+		if err := yaml.Unmarshal(data, v, preserveIntFloat); err != nil {
+			return err
+		}
+		return jsonutil.ConvertSliceNumbers(*v, 0)
+	case *interface{}:
+		if err := yaml.Unmarshal(data, v, preserveIntFloat); err != nil {
+			return err
+		}
+		return jsonutil.ConvertInterfaceNumbers(v, 0)
+	default:
+		return yaml.Unmarshal(data, v)
+	}
+}
+
+// UnmarshalStrict unmarshals the given data
+// strictly (erroring when there are duplicate fields).
+func UnmarshalStrict(data []byte, v interface{}) error {
+	preserveIntFloat := func(d *json.Decoder) *json.Decoder {
+		d.UseNumber()
+		return d
+	}
+	switch v := v.(type) {
+	case *map[string]interface{}:
+		if err := yaml.UnmarshalStrict(data, v, preserveIntFloat); err != nil {
+			return err
+		}
+		return jsonutil.ConvertMapNumbers(*v, 0)
+	case *[]interface{}:
+		if err := yaml.UnmarshalStrict(data, v, preserveIntFloat); err != nil {
+			return err
+		}
+		return jsonutil.ConvertSliceNumbers(*v, 0)
+	case *interface{}:
+		if err := yaml.UnmarshalStrict(data, v, preserveIntFloat); err != nil {
+			return err
+		}
+		return jsonutil.ConvertInterfaceNumbers(v, 0)
+	default:
+		return yaml.UnmarshalStrict(data, v)
+	}
+}
 
 // ToJSON converts a single YAML document into a JSON document
 // or returns an error. If the document appears to be JSON the
 // YAML decoding path is not used (so that error messages are
 // JSON specific).
 func ToJSON(data []byte) ([]byte, error) {
-	if hasJSONPrefix(data) {
+	if IsJSONBuffer(data) {
 		return data, nil
 	}
 	return yaml.YAMLToJSON(data)
@@ -45,7 +104,8 @@ func ToJSON(data []byte) ([]byte, error) {
 // separating individual documents. It first converts the YAML
 // body to JSON, then unmarshals the JSON.
 type YAMLToJSONDecoder struct {
-	reader Reader
+	reader      Reader
+	inputOffset int
 }
 
 // NewYAMLToJSONDecoder decodes YAML documents from the provided
@@ -64,7 +124,7 @@ func NewYAMLToJSONDecoder(r io.Reader) *YAMLToJSONDecoder {
 // yaml.Unmarshal.
 func (d *YAMLToJSONDecoder) Decode(into interface{}) error {
 	bytes, err := d.reader.Read()
-	if err != nil && err != io.EOF {
+	if err != nil && err != io.EOF { //nolint:errorlint
 		return err
 	}
 
@@ -74,7 +134,12 @@ func (d *YAMLToJSONDecoder) Decode(into interface{}) error {
 			return YAMLSyntaxError{err}
 		}
 	}
+	d.inputOffset += len(bytes)
 	return err
+}
+
+func (d *YAMLToJSONDecoder) InputOffset() int {
+	return d.inputOffset
 }
 
 // YAMLDecoder reads chunks of objects and returns ErrShortBuffer if
@@ -92,6 +157,10 @@ type YAMLDecoder struct {
 // the caller in framing the chunk.
 func NewDocumentDecoder(r io.ReadCloser) io.ReadCloser {
 	scanner := bufio.NewScanner(r)
+	// the size of initial allocation for buffer 4k
+	buf := make([]byte, 4*1024)
+	// the maximum size used to buffer a token 5M
+	scanner.Buffer(buf, 5*1024*1024)
 	scanner.Split(splitYAMLDocument)
 	return &YAMLDecoder{
 		r:       r,
@@ -168,28 +237,31 @@ func splitYAMLDocument(data []byte, atEOF bool) (advance int, token []byte, err 
 	return 0, nil, nil
 }
 
-// decoder is a convenience interface for Decode.
-type decoder interface {
-	Decode(into interface{}) error
-}
-
-// YAMLOrJSONDecoder attempts to decode a stream of JSON documents or
-// YAML documents by sniffing for a leading { character.
+// YAMLOrJSONDecoder attempts to decode a stream of JSON or YAML documents.
+// While JSON is YAML, the way Go's JSON decode defines a multi-document stream
+// is a series of JSON objects (e.g. {}{}), but YAML defines a multi-document
+// stream as a series of documents separated by "---".
+//
+// This decoder will attempt to decode the stream as JSON first, and if that
+// fails, it will switch to YAML. Once it determines the stream is JSON (by
+// finding a non-YAML-delimited series of objects), it will not switch to YAML.
+// Once it switches to YAML it will not switch back to JSON.
 type YAMLOrJSONDecoder struct {
-	r          io.Reader
-	bufferSize int
-
-	decoder decoder
-	rawData []byte
+	json         *json.Decoder
+	jsonConsumed int64 // of the stream total, how much was JSON?
+	yaml         *YAMLToJSONDecoder
+	yamlConsumed int64 // of the stream total, how much was YAML?
+	stream       *StreamReader
+	count        int // how many objects have been decoded
 }
 
 type JSONSyntaxError struct {
-	Line int
-	Err  error
+	Offset int64
+	Err    error
 }
 
 func (e JSONSyntaxError) Error() string {
-	return fmt.Sprintf("json: line %d: %s", e.Line, e.Err.Error())
+	return fmt.Sprintf("json: offset %d: %s", e.Offset, e.Err.Error())
 }
 
 type YAMLSyntaxError struct {
@@ -205,50 +277,113 @@ func (e YAMLSyntaxError) Error() string {
 // how far into the stream the decoder will look to figure out whether this
 // is a JSON stream (has whitespace followed by an open brace).
 func NewYAMLOrJSONDecoder(r io.Reader, bufferSize int) *YAMLOrJSONDecoder {
-	return &YAMLOrJSONDecoder{
-		r:          r,
-		bufferSize: bufferSize,
+	d := &YAMLOrJSONDecoder{}
+
+	reader, _, mightBeJSON := GuessJSONStream(r, bufferSize)
+	d.stream = reader
+	if mightBeJSON {
+		d.json = json.NewDecoder(reader)
+	} else {
+		d.yaml = NewYAMLToJSONDecoder(reader)
 	}
+	return d
 }
 
 // Decode unmarshals the next object from the underlying stream into the
 // provide object, or returns an error.
 func (d *YAMLOrJSONDecoder) Decode(into interface{}) error {
-	if d.decoder == nil {
-		buffer, origData, isJSON := GuessJSONStream(d.r, d.bufferSize)
-		if isJSON {
-			glog.V(4).Infof("decoding stream as JSON")
-			d.decoder = json.NewDecoder(buffer)
-			d.rawData = origData
+	// Because we don't know if this is a JSON or YAML stream, a failure from
+	// both decoders is ambiguous. When in doubt, it will return the error from
+	// the JSON decoder.  Unfortunately, this means that if the first document
+	// is invalid YAML, the error won't be awesome.
+	// TODO: the errors from YAML are not great, we could improve them a lot.
+	var firstErr error
+	if d.json != nil {
+		err := d.json.Decode(into)
+		if err == nil {
+			d.count++
+			consumed := d.json.InputOffset() - d.jsonConsumed
+			d.stream.Consume(int(consumed))
+			d.jsonConsumed += consumed
+			return nil
+		}
+		if err == io.EOF { //nolint:errorlint
+			return err
+		}
+		var syntax *json.SyntaxError
+		if ok := errors.As(err, &syntax); ok {
+			firstErr = JSONSyntaxError{
+				Offset: syntax.Offset,
+				Err:    syntax,
+			}
 		} else {
-			glog.V(4).Infof("decoding stream as YAML")
-			d.decoder = NewYAMLToJSONDecoder(buffer)
+			firstErr = err
+		}
+		if d.count > 1 {
+			// If we found 0 or 1 JSON object(s), this stream is still
+			// ambiguous.  But if we found more than 1 JSON object, then this
+			// is an unambiguous JSON stream, and we should not switch to YAML.
+			return err
+		}
+		// If JSON decoding hits the end of one object and then fails on the
+		// next, it leaves any leading whitespace in the buffer, which can
+		// confuse the YAML decoder. We just eat any whitespace we find, up to
+		// and including the first newline.
+		d.stream.Rewind()
+		if err := d.consumeWhitespace(); err == nil {
+			d.yaml = NewYAMLToJSONDecoder(d.stream)
+		}
+		d.json = nil
+	}
+	if d.yaml != nil {
+		err := d.yaml.Decode(into)
+		if err == nil {
+			d.count++
+			consumed := int64(d.yaml.InputOffset()) - d.yamlConsumed
+			d.stream.Consume(int(consumed))
+			d.yamlConsumed += consumed
+			return nil
+		}
+		if err == io.EOF { //nolint:errorlint
+			return err
+		}
+		if firstErr == nil {
+			firstErr = err
 		}
 	}
-	err := d.decoder.Decode(into)
-	if jsonDecoder, ok := d.decoder.(*json.Decoder); ok {
-		if syntax, ok := err.(*json.SyntaxError); ok {
-			data, readErr := ioutil.ReadAll(jsonDecoder.Buffered())
-			if readErr != nil {
-				glog.V(4).Infof("reading stream failed: %v", readErr)
-			}
-			js := string(data)
+	if firstErr != nil {
+		return firstErr
+	}
+	return fmt.Errorf("decoding failed as both JSON and YAML")
+}
 
-			// if contents from io.Reader are not complete,
-			// use the original raw data to prevent panic
-			if int64(len(js)) <= syntax.Offset {
-				js = string(d.rawData)
-			}
-
-			start := strings.LastIndex(js[:syntax.Offset], "\n") + 1
-			line := strings.Count(js[:start], "\n")
-			return JSONSyntaxError{
-				Line: line,
-				Err:  fmt.Errorf(syntax.Error()),
-			}
+func (d *YAMLOrJSONDecoder) consumeWhitespace() error {
+	consumed := 0
+	for {
+		buf, err := d.stream.ReadN(4)
+		if err != nil && err == io.EOF { //nolint:errorlint
+			return err
+		}
+		r, sz := utf8.DecodeRune(buf)
+		if r == utf8.RuneError || sz == 0 {
+			return fmt.Errorf("invalid utf8 rune")
+		}
+		d.stream.RewindN(len(buf) - sz)
+		if !unicode.IsSpace(r) {
+			d.stream.RewindN(sz)
+			d.stream.Consume(consumed)
+			return nil
+		}
+		consumed += sz
+		if r == '\n' {
+			d.stream.Consume(consumed)
+			return nil
+		}
+		if err == io.EOF { //nolint:errorlint
+			break
 		}
 	}
-	return err
+	return io.EOF
 }
 
 type Reader interface {
@@ -270,7 +405,7 @@ func (r *YAMLReader) Read() ([]byte, error) {
 	var buffer bytes.Buffer
 	for {
 		line, err := r.reader.Read()
-		if err != nil && err != io.EOF {
+		if err != nil && err != io.EOF { //nolint:errorlint
 			return nil, err
 		}
 
@@ -278,17 +413,21 @@ func (r *YAMLReader) Read() ([]byte, error) {
 		if i := bytes.Index(line, []byte(separator)); i == 0 {
 			// We have a potential document terminator
 			i += sep
-			after := line[i:]
-			if len(strings.TrimRightFunc(string(after), unicode.IsSpace)) == 0 {
-				if buffer.Len() != 0 {
-					return buffer.Bytes(), nil
-				}
-				if err == io.EOF {
-					return nil, err
+			trimmed := strings.TrimSpace(string(line[i:]))
+			// We only allow comments and spaces following the yaml doc separator, otherwise we'll return an error
+			if len(trimmed) > 0 && string(trimmed[0]) != "#" {
+				return nil, YAMLSyntaxError{
+					err: fmt.Errorf("invalid Yaml document separator: %s", trimmed),
 				}
 			}
+			if buffer.Len() != 0 {
+				return buffer.Bytes(), nil
+			}
+			if err == io.EOF { //nolint:errorlint
+				return nil, err
+			}
 		}
-		if err == io.EOF {
+		if err == io.EOF { //nolint:errorlint
 			if buffer.Len() != 0 {
 				// If we're at EOF, we have a final, non-terminated line. Return it.
 				return buffer.Bytes(), nil
@@ -324,19 +463,19 @@ func (r *LineReader) Read() ([]byte, error) {
 // GuessJSONStream scans the provided reader up to size, looking
 // for an open brace indicating this is JSON. It will return the
 // bufio.Reader it creates for the consumer.
-func GuessJSONStream(r io.Reader, size int) (io.Reader, []byte, bool) {
-	buffer := bufio.NewReaderSize(r, size)
+func GuessJSONStream(r io.Reader, size int) (*StreamReader, []byte, bool) {
+	buffer := NewStreamReader(r, size)
 	b, _ := buffer.Peek(size)
-	return buffer, b, hasJSONPrefix(b)
+	return buffer, b, IsJSONBuffer(b)
+}
+
+// IsJSONBuffer scans the provided buffer, looking
+// for an open brace indicating this is JSON.
+func IsJSONBuffer(buf []byte) bool {
+	return hasPrefix(buf, jsonPrefix)
 }
 
 var jsonPrefix = []byte("{")
-
-// hasJSONPrefix returns true if the provided buffer appears to start with
-// a JSON open brace.
-func hasJSONPrefix(buf []byte) bool {
-	return hasPrefix(buf, jsonPrefix)
-}
 
 // Return true if the first non-whitespace bytes in buf is
 // prefix.

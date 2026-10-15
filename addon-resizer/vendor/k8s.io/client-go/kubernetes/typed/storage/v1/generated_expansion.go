@@ -18,4 +18,14 @@ limitations under the License.
 
 package v1
 
+type CSIDriverExpansion interface{}
+
+type CSINodeExpansion interface{}
+
+type CSIStorageCapacityExpansion interface{}
+
 type StorageClassExpansion interface{}
+
+type VolumeAttachmentExpansion interface{}
+
+type VolumeAttributesClassExpansion interface{}

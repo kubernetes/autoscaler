@@ -16,18 +16,22 @@ limitations under the License.
 
 package cache
 
-// FakeStore lets you define custom functions for store operations
+// FakeCustomStore lets you define custom functions for store operations.
 type FakeCustomStore struct {
-	AddFunc      func(obj interface{}) error
-	UpdateFunc   func(obj interface{}) error
-	DeleteFunc   func(obj interface{}) error
-	ListFunc     func() []interface{}
-	ListKeysFunc func() []string
-	GetFunc      func(obj interface{}) (item interface{}, exists bool, err error)
-	GetByKeyFunc func(key string) (item interface{}, exists bool, err error)
-	ReplaceFunc  func(list []interface{}, resourceVerion string) error
-	ResyncFunc   func() error
+	AddFunc                          func(obj interface{}) error
+	UpdateFunc                       func(obj interface{}) error
+	DeleteFunc                       func(obj interface{}) error
+	ListFunc                         func() []interface{}
+	ListKeysFunc                     func() []string
+	GetFunc                          func(obj interface{}) (item interface{}, exists bool, err error)
+	GetByKeyFunc                     func(key string) (item interface{}, exists bool, err error)
+	ReplaceFunc                      func(list []interface{}, resourceVersion string) error
+	ResyncFunc                       func() error
+	BookmarkFunc                     func(rv string)
+	LastStoreSyncResourceVersionFunc func() string
 }
+
+var _ Store = &FakeCustomStore{}
 
 // Add calls the custom Add function if defined
 func (f *FakeCustomStore) Add(obj interface{}) error {
@@ -40,7 +44,7 @@ func (f *FakeCustomStore) Add(obj interface{}) error {
 // Update calls the custom Update function if defined
 func (f *FakeCustomStore) Update(obj interface{}) error {
 	if f.UpdateFunc != nil {
-		return f.Update(obj)
+		return f.UpdateFunc(obj)
 	}
 	return nil
 }
@@ -99,4 +103,19 @@ func (f *FakeCustomStore) Resync() error {
 		return f.ResyncFunc()
 	}
 	return nil
+}
+
+// Bookmark calls the custom Bookmark function if defined
+func (f *FakeCustomStore) Bookmark(rv string) {
+	if f.BookmarkFunc != nil {
+		f.BookmarkFunc(rv)
+	}
+}
+
+// LastStoreSyncResourceVersion calls the custom LastStoreSyncResourceVersion function if defined
+func (f *FakeCustomStore) LastStoreSyncResourceVersion() string {
+	if f.LastStoreSyncResourceVersionFunc != nil {
+		return f.LastStoreSyncResourceVersionFunc()
+	}
+	return ""
 }

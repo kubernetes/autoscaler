@@ -19,12 +19,15 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/rbac/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	context "context"
+
+	rbacv1 "k8s.io/api/rbac/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationsrbacv1 "k8s.io/client-go/applyconfigurations/rbac/v1"
+	gentype "k8s.io/client-go/gentype"
 	scheme "k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 // ClusterRoleBindingsGetter has a method to return a ClusterRoleBindingInterface.
@@ -35,113 +38,34 @@ type ClusterRoleBindingsGetter interface {
 
 // ClusterRoleBindingInterface has methods to work with ClusterRoleBinding resources.
 type ClusterRoleBindingInterface interface {
-	Create(*v1.ClusterRoleBinding) (*v1.ClusterRoleBinding, error)
-	Update(*v1.ClusterRoleBinding) (*v1.ClusterRoleBinding, error)
-	Delete(name string, options *meta_v1.DeleteOptions) error
-	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v1.ClusterRoleBinding, error)
-	List(opts meta_v1.ListOptions) (*v1.ClusterRoleBindingList, error)
-	Watch(opts meta_v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.ClusterRoleBinding, err error)
+	Create(ctx context.Context, clusterRoleBinding *rbacv1.ClusterRoleBinding, opts metav1.CreateOptions) (*rbacv1.ClusterRoleBinding, error)
+	Update(ctx context.Context, clusterRoleBinding *rbacv1.ClusterRoleBinding, opts metav1.UpdateOptions) (*rbacv1.ClusterRoleBinding, error)
+	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*rbacv1.ClusterRoleBinding, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*rbacv1.ClusterRoleBindingList, error)
+	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *rbacv1.ClusterRoleBinding, err error)
+	Apply(ctx context.Context, clusterRoleBinding *applyconfigurationsrbacv1.ClusterRoleBindingApplyConfiguration, opts metav1.ApplyOptions) (result *rbacv1.ClusterRoleBinding, err error)
 	ClusterRoleBindingExpansion
 }
 
 // clusterRoleBindings implements ClusterRoleBindingInterface
 type clusterRoleBindings struct {
-	client rest.Interface
+	*gentype.ClientWithListAndApply[*rbacv1.ClusterRoleBinding, *rbacv1.ClusterRoleBindingList, *applyconfigurationsrbacv1.ClusterRoleBindingApplyConfiguration]
 }
 
 // newClusterRoleBindings returns a ClusterRoleBindings
 func newClusterRoleBindings(c *RbacV1Client) *clusterRoleBindings {
 	return &clusterRoleBindings{
-		client: c.RESTClient(),
+		gentype.NewClientWithListAndApply[*rbacv1.ClusterRoleBinding, *rbacv1.ClusterRoleBindingList, *applyconfigurationsrbacv1.ClusterRoleBindingApplyConfiguration](
+			"clusterrolebindings",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			"",
+			func() *rbacv1.ClusterRoleBinding { return &rbacv1.ClusterRoleBinding{} },
+			func() *rbacv1.ClusterRoleBindingList { return &rbacv1.ClusterRoleBindingList{} },
+			gentype.PrefersProtobuf[*rbacv1.ClusterRoleBinding](),
+		),
 	}
-}
-
-// Get takes name of the clusterRoleBinding, and returns the corresponding clusterRoleBinding object, and an error if there is any.
-func (c *clusterRoleBindings) Get(name string, options meta_v1.GetOptions) (result *v1.ClusterRoleBinding, err error) {
-	result = &v1.ClusterRoleBinding{}
-	err = c.client.Get().
-		Resource("clusterrolebindings").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of ClusterRoleBindings that match those selectors.
-func (c *clusterRoleBindings) List(opts meta_v1.ListOptions) (result *v1.ClusterRoleBindingList, err error) {
-	result = &v1.ClusterRoleBindingList{}
-	err = c.client.Get().
-		Resource("clusterrolebindings").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested clusterRoleBindings.
-func (c *clusterRoleBindings) Watch(opts meta_v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Resource("clusterrolebindings").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
-}
-
-// Create takes the representation of a clusterRoleBinding and creates it.  Returns the server's representation of the clusterRoleBinding, and an error, if there is any.
-func (c *clusterRoleBindings) Create(clusterRoleBinding *v1.ClusterRoleBinding) (result *v1.ClusterRoleBinding, err error) {
-	result = &v1.ClusterRoleBinding{}
-	err = c.client.Post().
-		Resource("clusterrolebindings").
-		Body(clusterRoleBinding).
-		Do().
-		Into(result)
-	return
-}
-
-// Update takes the representation of a clusterRoleBinding and updates it. Returns the server's representation of the clusterRoleBinding, and an error, if there is any.
-func (c *clusterRoleBindings) Update(clusterRoleBinding *v1.ClusterRoleBinding) (result *v1.ClusterRoleBinding, err error) {
-	result = &v1.ClusterRoleBinding{}
-	err = c.client.Put().
-		Resource("clusterrolebindings").
-		Name(clusterRoleBinding.Name).
-		Body(clusterRoleBinding).
-		Do().
-		Into(result)
-	return
-}
-
-// Delete takes name of the clusterRoleBinding and deletes it. Returns an error if one occurs.
-func (c *clusterRoleBindings) Delete(name string, options *meta_v1.DeleteOptions) error {
-	return c.client.Delete().
-		Resource("clusterrolebindings").
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *clusterRoleBindings) DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error {
-	return c.client.Delete().
-		Resource("clusterrolebindings").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Patch applies the patch and returns the patched clusterRoleBinding.
-func (c *clusterRoleBindings) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.ClusterRoleBinding, err error) {
-	result = &v1.ClusterRoleBinding{}
-	err = c.client.Patch(pt).
-		Resource("clusterrolebindings").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
-		Into(result)
-	return
 }

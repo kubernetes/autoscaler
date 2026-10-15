@@ -64,7 +64,7 @@ func NewDecoder(r io.ReadCloser, d runtime.Decoder) Decoder {
 		reader:   r,
 		decoder:  d,
 		buf:      make([]byte, 1024),
-		maxBytes: 1024 * 1024,
+		maxBytes: 16 * 1024 * 1024,
 	}
 }
 
@@ -90,7 +90,6 @@ func (d *decoder) Decode(defaults *schema.GroupVersionKind, into runtime.Object)
 			}
 			// must read the rest of the frame (until we stop getting ErrShortBuffer)
 			d.resetRead = true
-			base = 0
 			return nil, nil, ErrObjectTooLarge
 		}
 		if err != nil {

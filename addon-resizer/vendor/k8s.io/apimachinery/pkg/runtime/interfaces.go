@@ -37,16 +37,70 @@ type GroupVersioner interface {
 	// Scheme.New(target) and then perform a conversion between the current Go type and the destination Go type.
 	// Sophisticated implementations may use additional information about the input kinds to pick a destination kind.
 	KindForGroupVersionKinds(kinds []schema.GroupVersionKind) (target schema.GroupVersionKind, ok bool)
+	// Identifier returns string representation of the object.
+	// Identifiers of two different encoders should be equal only if for every input
+	// kinds they return the same result.
+	Identifier() string
 }
 
-// Encoders write objects to a serialized form
+// Identifier represents an identifier.
+// Identitier of two different objects should be equal if and only if for every
+// input the output they produce is exactly the same.
+type Identifier string
+
+// Encoder writes objects to a serialized form
 type Encoder interface {
 	// Encode writes an object to a stream. Implementations may return errors if the versions are
 	// incompatible, or if no conversion is defined.
 	Encode(obj Object, w io.Writer) error
+	// Identifier returns an identifier of the encoder.
+	// Identifiers of two different encoders should be equal if and only if for every input
+	// object it will be encoded to the same representation by both of them.
+	//
+	// Identifier is intended for use with CacheableObject#CacheEncode method. In order to
+	// correctly handle CacheableObject, Encode() method should look similar to below, where
+	// doEncode() is the encoding logic of implemented encoder:
+	//   func (e *MyEncoder) Encode(obj Object, w io.Writer) error {
+	//     if co, ok := obj.(CacheableObject); ok {
+	//       return co.CacheEncode(e.Identifier(), e.doEncode, w)
+	//     }
+	//     return e.doEncode(obj, w)
+	//   }
+	Identifier() Identifier
 }
 
-// Decoders attempt to load an object from data.
+// NondeterministicEncoder is implemented by Encoders that can serialize objects more efficiently in
+// cases where the output does not need to be deterministic.
+type NondeterministicEncoder interface {
+	Encoder
+
+	// EncodeNondeterministic writes an object to the stream. Unlike the Encode method of
+	// Encoder, EncodeNondeterministic does not guarantee that any two invocations will write
+	// the same sequence of bytes to the io.Writer. Any differences will not be significant to a
+	// generic decoder. For example, map entries and struct fields might be encoded in any
+	// order.
+	EncodeNondeterministic(Object, io.Writer) error
+}
+
+// MemoryAllocator is responsible for allocating memory.
+// By encapsulating memory allocation into its own interface, we can reuse the memory
+// across many operations in places we know it can significantly improve the performance.
+type MemoryAllocator interface {
+	// Allocate reserves memory for n bytes.
+	// Note that implementations of this method are not required to zero the returned array.
+	// It is the caller's responsibility to clean the memory if needed.
+	Allocate(n uint64) []byte
+}
+
+// EncoderWithAllocator  serializes objects in a way that allows callers to manage any additional memory allocations.
+type EncoderWithAllocator interface {
+	Encoder
+	// EncodeWithAllocator writes an object to a stream as Encode does.
+	// In addition, it allows for providing a memory allocator for efficient memory usage during object serialization
+	EncodeWithAllocator(obj Object, w io.Writer, memAlloc MemoryAllocator) error
+}
+
+// Decoder attempts to load an object from data.
 type Decoder interface {
 	// Decode attempts to deserialize the provided data using either the innate typing of the scheme or the
 	// default kind, group, and version provided. It returns a decoded object as well as the kind, group, and
@@ -91,6 +145,10 @@ type Framer interface {
 type SerializerInfo struct {
 	// MediaType is the value that represents this serializer over the wire.
 	MediaType string
+	// MediaTypeType is the first part of the MediaType ("application" in "application/json").
+	MediaTypeType string
+	// MediaTypeSubType is the second part of the MediaType ("json" in "application/json").
+	MediaTypeSubType string
 	// EncodesAsText indicates this serializer can be encoded to UTF-8 safely.
 	EncodesAsText bool
 	// Serializer is the individual object serializer for this media type.
@@ -98,6 +156,9 @@ type SerializerInfo struct {
 	// PrettySerializer, if set, can serialize this object in a form biased towards
 	// readability.
 	PrettySerializer Serializer
+	// StrictSerializer, if set, deserializes this object strictly,
+	// erring on unknown fields.
+	StrictSerializer Serializer
 	// StreamSerializer, if set, describes the streaming serialization format
 	// for this media type.
 	StreamSerializer *StreamSerializerInfo
@@ -123,9 +184,31 @@ type NegotiatedSerializer interface {
 	// EncoderForVersion returns an encoder that ensures objects being written to the provided
 	// serializer are in the provided group version.
 	EncoderForVersion(serializer Encoder, gv GroupVersioner) Encoder
-	// DecoderForVersion returns a decoder that ensures objects being read by the provided
+	// DecoderToVersion returns a decoder that ensures objects being read by the provided
 	// serializer are in the provided group version by default.
 	DecoderToVersion(serializer Decoder, gv GroupVersioner) Decoder
+}
+
+// ClientNegotiator handles turning an HTTP content type into the appropriate encoder.
+// Use NewClientNegotiator or NewVersionedClientNegotiator to create this interface from
+// a NegotiatedSerializer.
+type ClientNegotiator interface {
+	// Encoder returns the appropriate encoder for the provided contentType (e.g. application/json)
+	// and any optional mediaType parameters (e.g. pretty=1), or an error. If no serializer is found
+	// a NegotiateError will be returned. The current client implementations consider params to be
+	// optional modifiers to the contentType and will ignore unrecognized parameters.
+	Encoder(contentType string, params map[string]string) (Encoder, error)
+	// Decoder returns the appropriate decoder for the provided contentType (e.g. application/json)
+	// and any optional mediaType parameters (e.g. pretty=1), or an error. If no serializer is found
+	// a NegotiateError will be returned. The current client implementations consider params to be
+	// optional modifiers to the contentType and will ignore unrecognized parameters.
+	Decoder(contentType string, params map[string]string) (Decoder, error)
+	// StreamDecoder returns the appropriate stream decoder for the provided contentType (e.g.
+	// application/json) and any optional mediaType parameters (e.g. pretty=1), or an error. If no
+	// serializer is found a NegotiateError will be returned. The Serializer and Framer will always
+	// be returned if a Decoder is returned. The current client implementations consider params to be
+	// optional modifiers to the contentType and will ignore unrecognized parameters.
+	StreamDecoder(contentType string, params map[string]string) (Decoder, Serializer, Framer, error)
 }
 
 // StorageSerializer is an interface used for obtaining encoders, decoders, and serializers
@@ -155,6 +238,12 @@ type NestedObjectEncoder interface {
 
 // NestedObjectDecoder is an optional interface that objects may implement to be given
 // an opportunity to decode any nested Objects / RawExtensions during serialization.
+// It is possible for DecodeNestedObjects to return a non-nil error but for the decoding
+// to have succeeded in the case of strict decoding errors (e.g. unknown/duplicate fields).
+// As such it is important for callers of DecodeNestedObjects to check to confirm whether
+// an error is a runtime.StrictDecodingError before short circuiting.
+// Similarly, implementations of DecodeNestedObjects should ensure that a runtime.StrictDecodingError
+// is only returned when the rest of decoding has succeeded.
 type NestedObjectDecoder interface {
 	DecodeNestedObjects(d Decoder) error
 }
@@ -170,6 +259,7 @@ type ObjectDefaulter interface {
 
 type ObjectVersioner interface {
 	ConvertToVersion(in Object, gv GroupVersioner) (out Object, err error)
+	PrioritizedVersionsForGroup(group string) []schema.GroupVersion
 }
 
 // ObjectConvertor converts an object to a different version.
@@ -185,7 +275,7 @@ type ObjectConvertor interface {
 	// This method is similar to Convert() but handles specific details of choosing the correct
 	// output version.
 	ConvertToVersion(in Object, gv GroupVersioner) (out Object, err error)
-	ConvertFieldLabel(version, kind, label, value string) (string, string, error)
+	ConvertFieldLabel(gvk schema.GroupVersionKind, label, value string) (string, string, error)
 }
 
 // ObjectTyper contains methods for extracting the APIVersion and Kind
@@ -206,6 +296,25 @@ type ObjectCreater interface {
 	New(kind schema.GroupVersionKind) (out Object, err error)
 }
 
+// EquivalentResourceMapper provides information about resources that address the same underlying data as a specified resource
+type EquivalentResourceMapper interface {
+	// EquivalentResourcesFor returns a list of resources that address the same underlying data as resource.
+	// If subresource is specified, only equivalent resources which also have the same subresource are included.
+	// The specified resource can be included in the returned list.
+	EquivalentResourcesFor(resource schema.GroupVersionResource, subresource string) []schema.GroupVersionResource
+	// KindFor returns the kind expected by the specified resource[/subresource].
+	// A zero value is returned if the kind is unknown.
+	KindFor(resource schema.GroupVersionResource, subresource string) schema.GroupVersionKind
+}
+
+// EquivalentResourceRegistry provides an EquivalentResourceMapper interface,
+// and allows registering known resource[/subresource] -> kind
+type EquivalentResourceRegistry interface {
+	EquivalentResourceMapper
+	// RegisterKindFor registers the existence of the specified resource[/subresource] along with its expected kind.
+	RegisterKindFor(resource schema.GroupVersionResource, subresource string, kind schema.GroupVersionKind)
+}
+
 // ResourceVersioner provides methods for setting and retrieving
 // the resource version from an API object.
 type ResourceVersioner interface {
@@ -213,18 +322,15 @@ type ResourceVersioner interface {
 	ResourceVersion(obj Object) (string, error)
 }
 
-// SelfLinker provides methods for setting and retrieving the SelfLink field of an API object.
-type SelfLinker interface {
-	SetSelfLink(obj Object, selfLink string) error
-	SelfLink(obj Object) (string, error)
-
-	// Knowing Name is sometimes necessary to use a SelfLinker.
+// Namer provides methods for retrieving name and namespace of an API object.
+type Namer interface {
+	// Name returns the name of a given object.
 	Name(obj Object) (string, error)
-	// Knowing Namespace is sometimes necessary to use a SelfLinker
+	// Namespace returns the name of a given object.
 	Namespace(obj Object) (string, error)
 }
 
-// All API types registered with Scheme must support the Object interface. Since objects in a scheme are
+// Object interface must be supported by all API types registered with Scheme. Since objects in a scheme are
 // expected to be serialized to the wire, the interface an Object must provide to the Scheme allows
 // serializers to set the kind, version, and group the object is represented as. An Object may choose
 // to return a no-op ObjectKindAccessor in cases where it is not expected to be serialized.
@@ -233,10 +339,34 @@ type Object interface {
 	DeepCopyObject() Object
 }
 
+// CacheableObject allows an object to cache its different serializations
+// to avoid performing the same serialization multiple times.
+type CacheableObject interface {
+	// CacheEncode writes an object to a stream. The <encode> function will
+	// be used in case of cache miss. The <encode> function takes ownership
+	// of the object.
+	// If CacheableObject is a wrapper, then deep-copy of the wrapped object
+	// should be passed to <encode> function.
+	// CacheEncode assumes that for two different calls with the same <id>,
+	// <encode> function will also be the same.
+	CacheEncode(id Identifier, encode func(Object, io.Writer) error, w io.Writer) error
+	// GetObject returns a deep-copy of an object to be encoded - the caller of
+	// GetObject() is the owner of returned object. The reason for making a copy
+	// is to avoid bugs, where caller modifies the object and forgets to copy it,
+	// thus modifying the object for everyone.
+	// The object returned by GetObject should be the same as the one that is supposed
+	// to be passed to <encode> function in CacheEncode method.
+	// If CacheableObject is a wrapper, the copy of wrapped object should be returned.
+	GetObject() Object
+}
+
 // Unstructured objects store values as map[string]interface{}, with only values that can be serialized
 // to JSON allowed.
 type Unstructured interface {
 	Object
+	// NewEmptyInstance returns a new instance of the concrete type containing only kind/apiVersion and no other data.
+	// This should be called instead of reflect.New() for unstructured types because the go type alone does not preserve kind/apiVersion info.
+	NewEmptyInstance() Unstructured
 	// UnstructuredContent returns a non-nil map with this object's contents. Values may be
 	// []interface{}, map[string]interface{}, or any primitive type. Contents are typically serialized to
 	// and from JSON. SetUnstructuredContent should be used to mutate the contents.
@@ -249,4 +379,15 @@ type Unstructured interface {
 	// error should terminate the iteration. If IsList() returns false, this method should return an error
 	// instead of calling the provided function.
 	EachListItem(func(Object) error) error
+	// EachListItemWithAlloc works like EachListItem, but avoids retaining references to a slice of items.
+	// It does this by making a shallow copy of non-pointer items before passing them to fn.
+	//
+	// If the items passed to fn are not retained, or are retained for the same duration, use EachListItem instead for memory efficiency.
+	EachListItemWithAlloc(func(Object) error) error
+}
+
+// ApplyConfiguration is an interface that root apply configuration types implement.
+type ApplyConfiguration interface {
+	// IsApplyConfiguration is implemented if the object is the root of an apply configuration.
+	IsApplyConfiguration()
 }

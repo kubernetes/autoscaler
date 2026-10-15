@@ -15,6 +15,10 @@ limitations under the License.
 */
 
 // +k8s:deepcopy-gen=package
+// +k8s:protobuf-gen=package
 // +groupName=authentication.k8s.io
 // +k8s:openapi-gen=true
+// +k8s:prerelease-lifecycle-gen=true
+// +k8s:openapi-model-package=io.k8s.api.authentication.v1
+
 package v1

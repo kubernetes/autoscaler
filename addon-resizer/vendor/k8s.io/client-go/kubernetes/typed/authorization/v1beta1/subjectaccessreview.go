@@ -19,7 +19,12 @@ limitations under the License.
 package v1beta1
 
 import (
-	rest "k8s.io/client-go/rest"
+	context "context"
+
+	authorizationv1beta1 "k8s.io/api/authorization/v1beta1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gentype "k8s.io/client-go/gentype"
+	scheme "k8s.io/client-go/kubernetes/scheme"
 )
 
 // SubjectAccessReviewsGetter has a method to return a SubjectAccessReviewInterface.
@@ -30,17 +35,25 @@ type SubjectAccessReviewsGetter interface {
 
 // SubjectAccessReviewInterface has methods to work with SubjectAccessReview resources.
 type SubjectAccessReviewInterface interface {
+	Create(ctx context.Context, subjectAccessReview *authorizationv1beta1.SubjectAccessReview, opts v1.CreateOptions) (*authorizationv1beta1.SubjectAccessReview, error)
 	SubjectAccessReviewExpansion
 }
 
 // subjectAccessReviews implements SubjectAccessReviewInterface
 type subjectAccessReviews struct {
-	client rest.Interface
+	*gentype.Client[*authorizationv1beta1.SubjectAccessReview]
 }
 
 // newSubjectAccessReviews returns a SubjectAccessReviews
 func newSubjectAccessReviews(c *AuthorizationV1beta1Client) *subjectAccessReviews {
 	return &subjectAccessReviews{
-		client: c.RESTClient(),
+		gentype.NewClient[*authorizationv1beta1.SubjectAccessReview](
+			"subjectaccessreviews",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			"",
+			func() *authorizationv1beta1.SubjectAccessReview { return &authorizationv1beta1.SubjectAccessReview{} },
+			gentype.PrefersProtobuf[*authorizationv1beta1.SubjectAccessReview](),
+		),
 	}
 }

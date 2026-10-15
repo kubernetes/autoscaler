@@ -20,92 +20,98 @@ import (
 	"encoding/json"
 	"io"
 	"strconv"
-	"unsafe"
 
-	"github.com/ghodss/yaml"
-	jsoniter "github.com/json-iterator/go"
+	kjson "sigs.k8s.io/json"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer/recognizer"
 	"k8s.io/apimachinery/pkg/util/framer"
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/klog/v2"
 )
 
 // NewSerializer creates a JSON serializer that handles encoding versioned objects into the proper JSON form. If typer
 // is not nil, the object has the group, version, and kind fields set.
+// Deprecated: use NewSerializerWithOptions instead.
 func NewSerializer(meta MetaFactory, creater runtime.ObjectCreater, typer runtime.ObjectTyper, pretty bool) *Serializer {
-	return &Serializer{
-		meta:    meta,
-		creater: creater,
-		typer:   typer,
-		yaml:    false,
-		pretty:  pretty,
-	}
+	return NewSerializerWithOptions(meta, creater, typer, SerializerOptions{false, pretty, false, false})
 }
 
 // NewYAMLSerializer creates a YAML serializer that handles encoding versioned objects into the proper YAML form. If typer
 // is not nil, the object has the group, version, and kind fields set. This serializer supports only the subset of YAML that
 // matches JSON, and will error if constructs are used that do not serialize to JSON.
+// Deprecated: use NewSerializerWithOptions instead.
 func NewYAMLSerializer(meta MetaFactory, creater runtime.ObjectCreater, typer runtime.ObjectTyper) *Serializer {
+	return NewSerializerWithOptions(meta, creater, typer, SerializerOptions{true, false, false, false})
+}
+
+// NewSerializerWithOptions creates a JSON/YAML serializer that handles encoding versioned objects into the proper JSON/YAML
+// form. If typer is not nil, the object has the group, version, and kind fields set. Options are copied into the Serializer
+// and are immutable.
+func NewSerializerWithOptions(meta MetaFactory, creater runtime.ObjectCreater, typer runtime.ObjectTyper, options SerializerOptions) *Serializer {
 	return &Serializer{
-		meta:    meta,
-		creater: creater,
-		typer:   typer,
-		yaml:    true,
+		meta:       meta,
+		creater:    creater,
+		typer:      typer,
+		options:    options,
+		identifier: identifier(options),
 	}
 }
 
+// identifier computes Identifier of Encoder based on the given options.
+func identifier(options SerializerOptions) runtime.Identifier {
+	result := map[string]string{
+		"name":   "json",
+		"yaml":   strconv.FormatBool(options.Yaml),
+		"pretty": strconv.FormatBool(options.Pretty),
+		"strict": strconv.FormatBool(options.Strict),
+	}
+	identifier, err := json.Marshal(result)
+	if err != nil {
+		//nolint:logcheck // Should not be reached.
+		klog.Fatalf("Failed marshaling identifier for json Serializer: %v", err)
+	}
+	return runtime.Identifier(identifier)
+}
+
+// SerializerOptions holds the options which are used to configure a JSON/YAML serializer.
+// example:
+// (1) To configure a JSON serializer, set `Yaml` to `false`.
+// (2) To configure a YAML serializer, set `Yaml` to `true`.
+// (3) To configure a strict serializer that can return strictDecodingError, set `Strict` to `true`.
+type SerializerOptions struct {
+	// Yaml: configures the Serializer to work with JSON(false) or YAML(true).
+	// When `Yaml` is enabled, this serializer only supports the subset of YAML that
+	// matches JSON, and will error if constructs are used that do not serialize to JSON.
+	Yaml bool
+
+	// Pretty: configures a JSON enabled Serializer(`Yaml: false`) to produce human-readable output.
+	// This option is silently ignored when `Yaml` is `true`.
+	Pretty bool
+
+	// Strict: configures the Serializer to return strictDecodingError's when duplicate fields are present decoding JSON or YAML.
+	// Note that enabling this option is not as performant as the non-strict variant, and should not be used in fast paths.
+	Strict bool
+
+	// StreamingCollectionsEncoding enables encoding collection, one item at the time, drastically reducing memory needed.
+	StreamingCollectionsEncoding bool
+}
+
+// Serializer handles encoding versioned objects into the proper JSON form
 type Serializer struct {
 	meta    MetaFactory
+	options SerializerOptions
 	creater runtime.ObjectCreater
 	typer   runtime.ObjectTyper
-	yaml    bool
-	pretty  bool
+
+	identifier runtime.Identifier
 }
 
 // Serializer implements Serializer
 var _ runtime.Serializer = &Serializer{}
 var _ recognizer.RecognizingDecoder = &Serializer{}
-
-func init() {
-	// Force jsoniter to decode number to interface{} via ints, if possible.
-	decodeNumberAsInt64IfPossible := func(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
-		switch iter.WhatIsNext() {
-		case jsoniter.NumberValue:
-			var number json.Number
-			iter.ReadVal(&number)
-			i64, err := strconv.ParseInt(string(number), 10, 64)
-			if err == nil {
-				*(*interface{})(ptr) = i64
-				return
-			}
-			f64, err := strconv.ParseFloat(string(number), 64)
-			if err == nil {
-				*(*interface{})(ptr) = f64
-				return
-			}
-			// Not much we can do here.
-		default:
-			*(*interface{})(ptr) = iter.Read()
-		}
-	}
-	jsoniter.RegisterTypeDecoderFunc("interface {}", decodeNumberAsInt64IfPossible)
-}
-
-// CaseSensitiveJsonIterator returns a jsoniterator API that's configured to be
-// case-sensitive when unmarshalling, and otherwise compatible with
-// the encoding/json standard library.
-func CaseSensitiveJsonIterator() jsoniter.API {
-	return jsoniter.Config{
-		EscapeHTML:             true,
-		SortMapKeys:            true,
-		ValidateJsonRawMessage: true,
-		CaseSensitive:          true,
-	}.Froze()
-}
-
-var caseSensitiveJsonIterator = CaseSensitiveJsonIterator()
 
 // gvkWithDefaults returns group kind and version defaulting from provided default
 func gvkWithDefaults(actual, defaultGVK schema.GroupVersionKind) schema.GroupVersionKind {
@@ -131,18 +137,8 @@ func gvkWithDefaults(actual, defaultGVK schema.GroupVersionKind) schema.GroupVer
 // On success or most errors, the method will return the calculated schema kind.
 // The gvk calculate priority will be originalData > default gvk > into
 func (s *Serializer) Decode(originalData []byte, gvk *schema.GroupVersionKind, into runtime.Object) (runtime.Object, *schema.GroupVersionKind, error) {
-	if versioned, ok := into.(*runtime.VersionedObjects); ok {
-		into = versioned.Last()
-		obj, actual, err := s.Decode(originalData, gvk, into)
-		if err != nil {
-			return nil, actual, err
-		}
-		versioned.Objects = []runtime.Object{obj}
-		return versioned, actual, nil
-	}
-
 	data := originalData
-	if s.yaml {
+	if s.options.Yaml {
 		altered, err := yaml.YAMLToJSON(data)
 		if err != nil {
 			return nil, nil, err
@@ -171,8 +167,24 @@ func (s *Serializer) Decode(originalData []byte, gvk *schema.GroupVersionKind, i
 		types, _, err := s.typer.ObjectKinds(into)
 		switch {
 		case runtime.IsNotRegisteredError(err), isUnstructured:
-			if err := caseSensitiveJsonIterator.Unmarshal(data, into); err != nil {
+			strictErrs, err := s.unmarshal(into, data, originalData)
+			if err != nil {
 				return nil, actual, err
+			}
+
+			// when decoding directly into a provided unstructured object,
+			// extract the actual gvk decoded from the provided data,
+			// and ensure it is non-empty.
+			if isUnstructured {
+				*actual = into.GetObjectKind().GroupVersionKind()
+				if len(actual.Kind) == 0 {
+					return nil, actual, runtime.NewMissingKindErr(string(originalData))
+				}
+				// TODO(109023): require apiVersion here as well once unstructuredJSONScheme#Decode does
+			}
+
+			if len(strictErrs) > 0 {
+				return into, actual, runtime.NewStrictDecodingError(strictErrs)
 			}
 			return into, actual, nil
 		case err != nil:
@@ -195,16 +207,26 @@ func (s *Serializer) Decode(originalData []byte, gvk *schema.GroupVersionKind, i
 		return nil, actual, err
 	}
 
-	if err := caseSensitiveJsonIterator.Unmarshal(data, obj); err != nil {
+	strictErrs, err := s.unmarshal(obj, data, originalData)
+	if err != nil {
 		return nil, actual, err
+	} else if len(strictErrs) > 0 {
+		return obj, actual, runtime.NewStrictDecodingError(strictErrs)
 	}
 	return obj, actual, nil
 }
 
 // Encode serializes the provided object to the given writer.
 func (s *Serializer) Encode(obj runtime.Object, w io.Writer) error {
-	if s.yaml {
-		json, err := caseSensitiveJsonIterator.Marshal(obj)
+	if co, ok := obj.(runtime.CacheableObject); ok {
+		return co.CacheEncode(s.Identifier(), s.doEncode, w)
+	}
+	return s.doEncode(obj, w)
+}
+
+func (s *Serializer) doEncode(obj runtime.Object, w io.Writer) error {
+	if s.options.Yaml {
+		json, err := json.Marshal(obj)
 		if err != nil {
 			return err
 		}
@@ -216,26 +238,83 @@ func (s *Serializer) Encode(obj runtime.Object, w io.Writer) error {
 		return err
 	}
 
-	if s.pretty {
-		data, err := caseSensitiveJsonIterator.MarshalIndent(obj, "", "  ")
+	if s.options.Pretty {
+		data, err := json.MarshalIndent(obj, "", "  ")
 		if err != nil {
 			return err
 		}
 		_, err = w.Write(data)
 		return err
 	}
+	if s.options.StreamingCollectionsEncoding {
+		ok, err := streamEncodeCollections(obj, w)
+		if err != nil {
+			return err
+		}
+		if ok {
+			return nil
+		}
+	}
 	encoder := json.NewEncoder(w)
 	return encoder.Encode(obj)
 }
 
+// IsStrict indicates whether the serializer
+// uses strict decoding or not
+func (s *Serializer) IsStrict() bool {
+	return s.options.Strict
+}
+
+func (s *Serializer) unmarshal(into runtime.Object, data, originalData []byte) (strictErrs []error, err error) {
+	// If the deserializer is non-strict, return here.
+	if !s.options.Strict {
+		if err := kjson.UnmarshalCaseSensitivePreserveInts(data, into); err != nil {
+			return nil, err
+		}
+		return nil, nil
+	}
+
+	if s.options.Yaml {
+		// In strict mode pass the original data through the YAMLToJSONStrict converter.
+		// This is done to catch duplicate fields in YAML that would have been dropped in the original YAMLToJSON conversion.
+		// TODO: rework YAMLToJSONStrict to return warnings about duplicate fields without terminating so we don't have to do this twice.
+		_, err := yaml.YAMLToJSONStrict(originalData)
+		if err != nil {
+			strictErrs = append(strictErrs, err)
+		}
+	}
+
+	var strictJSONErrs []error
+	if u, isUnstructured := into.(runtime.Unstructured); isUnstructured {
+		// Unstructured is a custom unmarshaler that gets delegated
+		// to, so in order to detect strict JSON errors we need
+		// to unmarshal directly into the object.
+		m := map[string]interface{}{}
+		strictJSONErrs, err = kjson.UnmarshalStrict(data, &m)
+		u.SetUnstructuredContent(m)
+	} else {
+		strictJSONErrs, err = kjson.UnmarshalStrict(data, into)
+	}
+	if err != nil {
+		// fatal decoding error, not due to strictness
+		return nil, err
+	}
+	strictErrs = append(strictErrs, strictJSONErrs...)
+	return strictErrs, nil
+}
+
+// Identifier implements runtime.Encoder interface.
+func (s *Serializer) Identifier() runtime.Identifier {
+	return s.identifier
+}
+
 // RecognizesData implements the RecognizingDecoder interface.
-func (s *Serializer) RecognizesData(peek io.Reader) (ok, unknown bool, err error) {
-	if s.yaml {
+func (s *Serializer) RecognizesData(data []byte) (ok, unknown bool, err error) {
+	if s.options.Yaml {
 		// we could potentially look for '---'
 		return false, true, nil
 	}
-	_, _, ok = utilyaml.GuessJSONStream(peek, 2048)
-	return ok, false, nil
+	return utilyaml.IsJSONBuffer(data), false, nil
 }
 
 // Framer is the default JSON framing behavior, with newlines delimiting individual objects.
@@ -255,7 +334,7 @@ func (jsonFramer) NewFrameReader(r io.ReadCloser) io.ReadCloser {
 	return framer.NewJSONFramedReader(r)
 }
 
-// Framer is the default JSON framing behavior, with newlines delimiting individual objects.
+// YAMLFramer is the default JSON framing behavior, with newlines delimiting individual objects.
 var YAMLFramer = yamlFramer{}
 
 type yamlFramer struct{}

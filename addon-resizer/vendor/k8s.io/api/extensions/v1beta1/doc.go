@@ -15,6 +15,12 @@ limitations under the License.
 */
 
 // +k8s:deepcopy-gen=package
+// +k8s:protobuf-gen=package
 // +k8s:openapi-gen=true
+// +k8s:prerelease-lifecycle-gen=true
+// +k8s:openapi-model-package=io.k8s.api.extensions.v1beta1
+// extensions/v1beta1 is permanently unserved, so version-specific declarative
+// validation here is unreachable.
+// +k8s:validation-gen=false
 
 package v1beta1
