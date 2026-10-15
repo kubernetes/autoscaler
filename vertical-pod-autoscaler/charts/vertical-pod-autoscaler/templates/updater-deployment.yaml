@@ -15,6 +15,10 @@ spec:
   replicas: {{ . }}
   {{- end }}
   revisionHistoryLimit: {{ .Values.updater.revisionHistoryLimit }}
+  {{- with .Values.updater.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "vertical-pod-autoscaler.updater.selectorLabels" . | nindent 6 }}
