@@ -85,7 +85,8 @@ type Updater interface {
 }
 
 type updater struct {
-	vpaLister                    vpa_lister.VerticalPodAutoscalerLister
+	// vpaIndexer must have the vpa_api_util.TargetRefIndex index registered.
+	vpaIndexer                   cache.Indexer
 	podLister                    listersv1.PodLister
 	eventRecorder                record.EventRecorder
 	restrictionFactory           restriction.PodsRestrictionFactory
@@ -147,8 +148,9 @@ func NewUpdater(
 		inPlaceSkipDisruptionBudget,
 	)
 
+	_, vpaIndexer := vpa_api_util.NewVpasListerWithIndexer(vpaClient, make(chan struct{}), namespace)
 	u := &updater{
-		vpaLister:                    vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), namespace),
+		vpaIndexer:                   vpaIndexer,
 		podLister:                    podInformerFactory.Core().V1().Pods().Lister(),
 		eventRecorder:                newEventRecorder(kubeClient),
 		restrictionFactory:           factory,
@@ -210,16 +212,15 @@ func (u *updater) RunOnce(ctx context.Context) {
 		}
 	}
 
-	vpaList, err := u.vpaLister.List(labels.Everything())
+	vpaList, err := vpa_lister.NewVerticalPodAutoscalerLister(u.vpaIndexer).List(labels.Everything())
 	if err != nil {
 		klog.ErrorS(err, "Failed to get VPA list")
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 	timer.ObserveStep("ListVPAs")
 
-	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
-
 	inPlaceFeatureEnabled := features.Enabled(features.InPlace)
+	vpasByTarget := make(vpasByTargetController, len(vpaList))
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
 			klog.V(3).InfoS("Skipping VPA object in ignored namespace", "vpa", klog.KObj(vpa), "namespace", vpa.Namespace)
@@ -228,13 +229,12 @@ func (u *updater) RunOnce(ctx context.Context) {
 		// Log deprecation warnings for VPAs using deprecated modes
 		logDeprecationWarnings(vpa)
 
-		updateMode := vpa_api_util.GetUpdateMode(vpa)
-		if updateMode != vpa_types.UpdateModeRecreate &&
-			updateMode != vpa_types.UpdateModeAuto && //nolint:staticcheck
-			updateMode != vpa_types.UpdateModeInPlaceOrRecreate &&
-			updateMode != vpa_types.UpdateModeInPlace &&
-			!vpa_api_util.HasStartupBoost(vpa) {
+		if !hasUpdatableMode(vpa) {
 			klog.V(3).InfoS("Skipping VPA object because its mode is not  \"InPlaceOrRecreate\", \"InPlace\", \"Recreate\" or \"Auto\" and it doesn't have startupBoost configured", "vpa", klog.KObj(vpa))
+			continue
+		}
+		if vpa.Spec.TargetRef == nil {
+			klog.V(5).InfoS("Skipping VPA object because targetRef is not defined. If this is a v1beta1 object, switch to v1", "vpa", klog.KObj(vpa))
 			continue
 		}
 		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
@@ -242,14 +242,10 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).ErrorS(err, "Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
 			continue
 		}
-
-		vpas = append(vpas, &vpa_api_util.VpaWithSelector{
-			Vpa:      vpa,
-			Selector: selector,
-		})
+		vpasByTarget.add(vpa, selector)
 	}
 
-	if len(vpas) == 0 {
+	if len(vpasByTarget) == 0 {
 		klog.V(0).InfoS("No VPA objects to process")
 		if u.evictionAdmission != nil {
 			u.evictionAdmission.CleanUp()
@@ -269,9 +265,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 	livePodUIDs := set.New[types.UID]()
 	for _, pod := range allLivePods {
 		livePodUIDs.Insert(pod.UID)
-		controllingVPA := vpa_api_util.GetControllingVPAForPod(ctx, pod, vpas, u.controllerFetcher)
+		controllingVPA := u.controllingVPAForPod(ctx, pod, vpasByTarget)
 		if controllingVPA != nil {
-			controlledPods[controllingVPA.Vpa] = append(controlledPods[controllingVPA.Vpa], pod)
+			controlledPods[controllingVPA] = append(controlledPods[controllingVPA], pod)
 		}
 	}
 
@@ -563,13 +559,8 @@ func (u *updater) processNextBoostItem(ctx context.Context) bool {
 		return true
 	}
 
-	vpaWithSelector, err := u.getControllingVPAForPod(ctx, pod)
-	if err != nil {
-		logger.Error(err, "Failed to get controlling VPA")
-		u.cpuStartupBoostQueue.AddRateLimited(key)
-		return true
-	}
-	if vpaWithSelector == nil {
+	vpa, selector := u.getControllingVPAForPod(ctx, pod)
+	if vpa == nil {
 		if u.cpuStartupBoostQueue.NumRequeues(key) > maxVPALookupRetries {
 			logger.V(2).Info("No controlling VPA found for pod after retries, deferring until next resync", "maxRetries", maxVPALookupRetries)
 			u.cpuStartupBoostQueue.Forget(key)
@@ -579,12 +570,11 @@ func (u *updater) processNextBoostItem(ctx context.Context) bool {
 		u.cpuStartupBoostQueue.AddRateLimited(key)
 		return true
 	}
-	vpa := vpaWithSelector.Vpa
 
 	expiredAnnotations := vpa_api_util.GetExpiredStartupCPUBoostAnnotations(pod, vpa)
 	if len(expiredAnnotations) > 0 {
 		logger.V(4).Info("Found expired boost annotations", "count", len(expiredAnnotations))
-		allPodsPerVPA, err := u.podLister.Pods(namespace).List(vpaWithSelector.Selector)
+		allPodsPerVPA, err := u.podLister.Pods(namespace).List(selector)
 		if err != nil {
 			logger.Error(err, "Failed to list pods for VPA", "vpa", klog.KObj(vpa))
 			u.cpuStartupBoostQueue.AddRateLimited(key)
@@ -642,31 +632,54 @@ func (u *updater) processNextBoostItem(ctx context.Context) bool {
 	return true
 }
 
-// getControllingVPAForPod gets the controlling VPA for a pod.
-//
-// TODO(omerap12): We should revisit this.
-// Every time the boost worker processes a pod, it lists ALL VPAs in the pod's namespace and fetches selectors for each.
-// In clusters with many VPAs this is expensive (I know there is a lister so the list operation is in memory but maybe we can do something better).
-//
-// TODO(omerap12): Move this function to the utils package since it shares code with the admission controller.
-func (u *updater) getControllingVPAForPod(ctx context.Context, pod *corev1.Pod) (*vpa_api_util.VpaWithSelector, error) {
-	vpaList, err := u.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
+// getControllingVPAForPod returns the VPA controlling pod and its selector, or
+// a nil VPA if there is none. Unlike RunOnce, the selector of each candidate VPA
+// is fetched on demand.
+func (u *updater) getControllingVPAForPod(ctx context.Context, pod *corev1.Pod) (*vpa_types.VerticalPodAutoscaler, labels.Selector) {
+	finder := vpa_api_util.NewControllingVPAFinder(u.vpaIndexer, u.selectorFetcher, u.controllerFetcher, nil)
+	return finder.GetControllingVPAForPod(ctx, pod)
+}
+
+// controllingVPAForPod returns the strongest VPA in vpasByTarget that targets
+// pod's parent controller and whose selector matches pod, or nil if there is none.
+func (u *updater) controllingVPAForPod(ctx context.Context, pod *corev1.Pod, vpasByTarget vpasByTargetController) *vpa_types.VerticalPodAutoscaler {
+	parentController, err := vpa_api_util.FindParentControllerForPod(ctx, pod, u.controllerFetcher)
 	if err != nil {
-		return nil, err
+		klog.ErrorS(err, "Failed to get parent controller for pod", "pod", klog.KObj(pod))
+		return nil
 	}
-	vpas := make([]*vpa_api_util.VpaWithSelector, 0, len(vpaList))
-	for _, vpa := range vpaList {
-		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
-		if err != nil {
-			klog.V(3).ErrorS(err, "Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
-			continue
+	if parentController == nil {
+		return nil
+	}
+	podLabels := labels.Set(pod.GetLabels())
+	var controlling *vpa_types.VerticalPodAutoscaler
+	for _, candidate := range vpasByTarget[parentController.ControllerKey] {
+		if vpa_api_util.Stronger(candidate.Vpa, controlling) &&
+			vpa_api_util.PodLabelsMatchVPA(pod.Namespace, podLabels, candidate.Vpa.Namespace, candidate.Selector) {
+			controlling = candidate.Vpa
 		}
-		vpas = append(vpas, &vpa_api_util.VpaWithSelector{
-			Vpa:      vpa,
-			Selector: selector,
-		})
 	}
-	return vpa_api_util.GetControllingVPAForPod(ctx, pod, vpas, u.controllerFetcher), nil
+	return controlling
+}
+
+// hasUpdatableMode reports whether the VPA's update mode (or startup boost
+// configuration) requires the updater to act on its Pods.
+func hasUpdatableMode(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	updateMode := vpa_api_util.GetUpdateMode(vpa)
+	return updateMode == vpa_types.UpdateModeRecreate ||
+		updateMode == vpa_types.UpdateModeAuto || //nolint:staticcheck
+		updateMode == vpa_types.UpdateModeInPlaceOrRecreate ||
+		updateMode == vpa_types.UpdateModeInPlace ||
+		vpa_api_util.HasStartupBoost(vpa)
+}
+
+// vpasByTargetController holds the VPAs RunOnce acts on, with their selectors
+// fetched up front, keyed by the controller their targetRef points to.
+type vpasByTargetController map[controllerfetcher.ControllerKey][]vpa_api_util.VpaWithSelector
+
+func (m vpasByTargetController) add(vpa *vpa_types.VerticalPodAutoscaler, selector labels.Selector) {
+	key := controllerfetcher.ControllerKey{Namespace: vpa.Namespace, Kind: vpa.Spec.TargetRef.Kind, Name: vpa.Spec.TargetRef.Name}
+	m[key] = append(m[key], vpa_api_util.VpaWithSelector{Vpa: vpa, Selector: selector})
 }
 
 func getRateLimiter(rateLimit float64, rateLimitBurst int) *rate.Limiter {

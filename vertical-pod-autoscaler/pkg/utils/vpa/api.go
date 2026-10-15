@@ -178,11 +178,6 @@ func NewVpaCheckpointLister(vpaClient *vpa_clientset.Clientset, stopChannel <-ch
 	return vpaCheckpointLister
 }
 
-// PodMatchesVPA returns true iff the vpaWithSelector matches the Pod.
-func PodMatchesVPA(pod *corev1.Pod, vpaWithSelector *VpaWithSelector) bool {
-	return PodLabelsMatchVPA(pod.Namespace, labels.Set(pod.GetLabels()), vpaWithSelector.Vpa.Namespace, vpaWithSelector.Selector)
-}
-
 // PodLabelsMatchVPA returns true iff the vpaWithSelector matches the pod labels.
 func PodLabelsMatchVPA(podNamespace string, labels labels.Set, vpaNamespace string, vpaSelector labels.Selector) bool {
 	if podNamespace != vpaNamespace {
@@ -206,38 +201,6 @@ func Stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 	}
 	// If the timestamps are the same (unlikely, but possible e.g. in test environments): compare by name to have a complete deterministic order.
 	return a.GetName() < b.GetName()
-}
-
-// GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
-func GetControllingVPAForPod(ctx context.Context, pod *corev1.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
-	parentController, err := FindParentControllerForPod(ctx, pod, ctrlFetcher)
-	if err != nil {
-		klog.ErrorS(err, "Failed to get parent controller for pod", "pod", klog.KObj(pod))
-		return nil
-	}
-	if parentController == nil {
-		return nil
-	}
-
-	var controlling *VpaWithSelector
-	var controllingVpa *vpa_types.VerticalPodAutoscaler
-	// Choose the strongest VPA from the ones that match this Pod.
-	for _, vpaWithSelector := range vpas {
-		if vpaWithSelector.Vpa.Spec.TargetRef == nil {
-			klog.V(5).InfoS("Skipping VPA object because targetRef is not defined. If this is a v1beta1 object, switch to v1", "vpa", klog.KObj(vpaWithSelector.Vpa))
-			continue
-		}
-		if vpaWithSelector.Vpa.Spec.TargetRef.Kind != parentController.Kind ||
-			vpaWithSelector.Vpa.Namespace != parentController.Namespace ||
-			vpaWithSelector.Vpa.Spec.TargetRef.Name != parentController.Name {
-			continue // This pod is not associated to the right controller
-		}
-		if PodMatchesVPA(pod, vpaWithSelector) && Stronger(vpaWithSelector.Vpa, controllingVpa) {
-			controlling = vpaWithSelector
-			controllingVpa = controlling.Vpa
-		}
-	}
-	return controlling
 }
 
 // FindParentControllerForPod returns the parent controller (topmost well-known or scalable controller) for the given Pod.
