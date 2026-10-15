@@ -25,6 +25,7 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // VPAValidationOptions contains the different settings for VPA validation
@@ -33,6 +34,11 @@ type VPAValidationOptions struct {
 	AllowCPUStartupBoost bool
 	AllowPerVPAConfig    bool
 	AllowInPlace         bool
+	// AllowPressureDetection permits pressureDetection: Enabled on any container policy.
+	AllowPressureDetection bool
+	// ExistingPressureDetection contains the container policies that already opt in to pressure
+	// detection in the old VPA object, which stay allowed on update even with the feature gate off.
+	ExistingPressureDetection map[string]bool
 	// ExistingControlledResources contains the controlled resources already
 	// present in the old VPA object, which stay allowed on update even if
 	// they wouldn't be accepted on create.
@@ -45,6 +51,8 @@ func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAVali
 		AllowCPUStartupBoost:        allowCPUBoost(oldObj),
 		AllowPerVPAConfig:           allowPerVPAConfig(oldObj),
 		AllowInPlace:                allowInPlace(oldObj),
+		AllowPressureDetection:      features.Enabled(features.ReactiveMemoryPressureDetection),
+		ExistingPressureDetection:   existingPressureDetection(oldObj),
 		ExistingControlledResources: existingControlledResources(oldObj),
 	}
 
@@ -114,6 +122,54 @@ func allowPerVPAConfig(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	return false
 }
 
+// existingPressureDetection returns the container policies that already opt in to pressure detection in
+// the old object, which stay allowed on update with the feature gate off.
+func existingPressureDetection(oldObj *vpa_types.VerticalPodAutoscaler) map[string]bool {
+	containers := map[string]bool{}
+	if oldObj == nil || oldObj.Spec.ResourcePolicy == nil {
+		return containers
+	}
+	for _, policy := range oldObj.Spec.ResourcePolicy.ContainerPolicies {
+		if policy.PressureDetection != nil && *policy.PressureDetection == vpa_types.PressureDetectionEnabled {
+			containers[policy.ContainerName] = true
+		}
+	}
+	return containers
+}
+
+// pressureOptInAllowed reports whether pressureDetection: Enabled is accepted on a container policy.
+// The feature gate admits a new opt-in, and an object that already carries one keeps it, so turning
+// the gate off does not block unrelated edits to that object.
+func pressureOptInAllowed(opts VPAValidationOptions, containerName string) bool {
+	return opts.AllowPressureDetection || opts.ExistingPressureDetection[containerName]
+}
+
+// warnPressureDetectionUpdateMode warns when a container opts in to pressure detection under an update
+// mode that cannot act on the signal quickly.
+func warnPressureDetectionUpdateMode(vpa *vpa_types.VerticalPodAutoscaler, fldPath *field.Path, opts VPAValidationOptions) []string {
+	if vpa.Spec.ResourcePolicy == nil {
+		return nil
+	}
+	mode := vpa_api_util.GetUpdateMode(vpa)
+	if mode == vpa_types.UpdateModeInPlace || mode == vpa_types.UpdateModeInPlaceOrRecreate {
+		return nil
+	}
+	var warnings []string
+	for i, policy := range vpa.Spec.ResourcePolicy.ContainerPolicies {
+		if policy.PressureDetection == nil || *policy.PressureDetection != vpa_types.PressureDetectionEnabled {
+			continue
+		}
+		// A rejected opt-in already carries an error.
+		if !pressureOptInAllowed(opts, policy.ContainerName) {
+			continue
+		}
+		policyPath := fldPath.Child("resourcePolicy", "containerPolicies").Index(i).Child("pressureDetection")
+		warnings = append(warnings, fmt.Sprintf("%s: pressure detection raises the memory recommendation in every update mode, but only updateMode %q and %q apply the raise to running Pods without waiting for the usual update thresholds. This object uses %q.",
+			policyPath, vpa_types.UpdateModeInPlace, vpa_types.UpdateModeInPlaceOrRecreate, mode))
+	}
+	return warnings
+}
+
 func allowInPlace(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	if features.Enabled(features.InPlace) {
 		return true
@@ -131,7 +187,10 @@ func allowInPlace(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions) ([]string, field.ErrorList) {
-	return validateVPASpec(&vpa.Spec, field.NewPath("spec"), opts)
+	fldPath := field.NewPath("spec")
+	warnings, allErrs := validateVPASpec(&vpa.Spec, fldPath, opts)
+	warnings = append(warnings, warnPressureDetectionUpdateMode(vpa, fldPath, opts)...)
+	return warnings, allErrs
 }
 
 func validateVPASpec(spec *vpa_types.VerticalPodAutoscalerSpec, fldPath *field.Path, opts VPAValidationOptions) ([]string, field.ErrorList) {
@@ -292,6 +351,19 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 				}
 			} else {
 				allErrs = append(allErrs, field.Forbidden(policyPath.Child("memoryAggregationIntervalCount"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+			}
+		}
+
+		if policy.PressureDetection != nil {
+			switch *policy.PressureDetection {
+			case vpa_types.PressureDetectionDisabled:
+			case vpa_types.PressureDetectionEnabled:
+				if !pressureOptInAllowed(opts, policy.ContainerName) {
+					allErrs = append(allErrs, field.Forbidden(policyPath.Child("pressureDetection"), fmt.Sprintf("Enabled is not supported when feature flag %s is disabled", features.ReactiveMemoryPressureDetection)))
+				}
+			default:
+				allErrs = append(allErrs, field.NotSupported(policyPath.Child("pressureDetection"), *policy.PressureDetection,
+					[]vpa_types.PressureDetectionMode{vpa_types.PressureDetectionEnabled, vpa_types.PressureDetectionDisabled}))
 			}
 		}
 

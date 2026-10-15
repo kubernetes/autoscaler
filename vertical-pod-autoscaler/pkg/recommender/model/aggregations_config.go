@@ -55,6 +55,10 @@ type AggregationsConfig struct {
 	OOMBumpUpRatio float64
 	// OOMMinBumpUp specifies the minimal increase of memory when OOM occurred in bytes.
 	OOMMinBumpUp float64
+	// PressureBumpUpRatio specifies the memory bump up ratio of a pressure-derived peak.
+	PressureBumpUpRatio float64
+	// PressureMinBumpUp specifies the minimal increase of a pressure-derived peak in bytes.
+	PressureMinBumpUp float64
 }
 
 const (
@@ -79,6 +83,10 @@ const (
 	DefaultOOMBumpUpRatio float64 = 1.2 // Memory is increased by 20% after an OOMKill.
 	// DefaultOOMMinBumpUp is the default value for OOMMinBumpUp.
 	DefaultOOMMinBumpUp float64 = 100 * 1024 * 1024 // Memory is increased by at least 100MB after an OOMKill.
+	// DefaultPressureBumpUpRatio is the default value for PressureBumpUpRatio.
+	DefaultPressureBumpUpRatio float64 = 1.15
+	// DefaultPressureMinBumpUp is the default value for PressureMinBumpUp.
+	DefaultPressureMinBumpUp float64 = 64 * 1024 * 1024
 )
 
 // GetMemoryAggregationWindowLength returns the total length of the memory usage history aggregated by VPA.
@@ -120,6 +128,8 @@ func NewAggregationsConfig(memoryAggregationIntervalDuration time.Duration, memo
 		CPUHistogramDecayHalfLife:         cpuHistogramDecayHalfLife,
 		OOMBumpUpRatio:                    oomBumpUpRatio,
 		OOMMinBumpUp:                      oomMinBumpUp,
+		PressureBumpUpRatio:               DefaultPressureBumpUpRatio,
+		PressureMinBumpUp:                 DefaultPressureMinBumpUp,
 	}
 	a.CPUHistogramOptions = a.cpuHistogramOptions()
 	a.MemoryHistogramOptions = a.memoryHistogramOptions()
