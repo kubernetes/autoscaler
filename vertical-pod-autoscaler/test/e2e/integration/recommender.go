@@ -114,6 +114,73 @@ var _ = utils.RecommenderE2eDescribe("Flags", func() {
 		gomega.Expect(memoryMb).Should(gomega.BeNumerically(">=", minMemoryMb),
 			"recommended memory should respect the --pod-recommendation-min-memory-mb floor even though actual usage is far below it")
 	})
+
+	ginkgo.It("starts recommender with --recommender-name parameter", func() {
+		const recommenderName = "custom-recommender"
+
+		ginkgo.By("Setting up VPA deployment")
+		f.Namespace.Name = utils.VpaNamespace
+		vpaDeployment := utils.NewVPAComponentDeployment(f, utils.RecommenderComponentConfig(
+			"--recommender-interval=10s",
+			fmt.Sprintf("--recommender-name=%s", recommenderName),
+		))
+		utils.StartDeploymentPods(f, vpaDeployment)
+
+		ginkgo.By("Setting up a hamster deployment")
+		f.Namespace.Name = hamsterNamespace
+		d := utils.NewNHamstersDeployment(f, 1)
+		_ = utils.StartDeploymentPods(f, d)
+
+		// VPAs that the recommender should ignore are created first, so that by the
+		// time the selected VPA has a recommendation, they have been waiting long enough.
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		var ignoredVpaCRDs []*vpa_types.VerticalPodAutoscaler
+		for _, ignored := range []struct {
+			vpaName     string
+			recommender string
+		}{
+			{vpaName: "hamster-vpa-implicit-default", recommender: ""},
+			{vpaName: "hamster-vpa-explicit-default", recommender: "default"},
+			{vpaName: "hamster-vpa-other-recommender", recommender: "other-recommender"},
+		} {
+			ginkgo.By(fmt.Sprintf("Setting up VPA %s, which the recommender should ignore", ignored.vpaName))
+			vpaCRD := test.VerticalPodAutoscaler().
+				WithName(ignored.vpaName).
+				WithNamespace(hamsterNamespace).
+				WithTargetRef(utils.HamsterTargetRef).
+				WithContainer(containerName).
+				WithRecommender(ignored.recommender).
+				Get()
+			utils.InstallVPA(f, vpaCRD)
+			ignoredVpaCRDs = append(ignoredVpaCRDs, vpaCRD)
+		}
+
+		ginkgo.By("Setting up VPA that selects the recommender")
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(hamsterNamespace).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithRecommender(recommenderName).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Waiting for recommendation to be filled")
+		vpa, err := utils.WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(vpa.Status.Recommendation.ContainerRecommendations).Should(gomega.HaveLen(1))
+
+		ginkgo.By("VPAs that don't select the recommender should not be recommended")
+		for _, ignoredVpaCRD := range ignoredVpaCRDs {
+			ignoredVpa, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalers(hamsterNamespace).Get(context.TODO(), ignoredVpaCRD.Name, metav1.GetOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+			gomega.Expect(ignoredVpa.Status.Conditions).Should(gomega.BeEmpty(), "VPA %s should not have conditions", ignoredVpa.Name)
+			gomega.Expect(ignoredVpa.Status.Recommendation).To(gomega.SatisfyAny(
+				gomega.BeNil(),
+				gomega.HaveField("ContainerRecommendations", gomega.BeEmpty()),
+			), "VPA %s should not have a recommendation", ignoredVpa.Name)
+		}
+	})
 })
 
 // Create VPA and deployment in 2 namespaces, 1 should be ignored
