@@ -90,15 +90,15 @@ func (*mockPrometheusAPI) FormatQuery(ctx context.Context, query string) (string
 	panic("not implemented")
 }
 
-func (*mockPrometheusAPI) LabelNames(ctx context.Context, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) (prommodel.LabelNames, prometheusv1.Warnings, error) {
+func (*mockPrometheusAPI) LabelNames(ctx context.Context, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) (prommodel.LabelNames, prometheusv1.Warnings, prometheusv1.Infos, error) {
 	panic("not implemented")
 }
 
-func (*mockPrometheusAPI) LabelValues(ctx context.Context, label string, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) (prommodel.LabelValues, prometheusv1.Warnings, error) {
+func (*mockPrometheusAPI) LabelValues(ctx context.Context, label string, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) (prommodel.LabelValues, prometheusv1.Warnings, prometheusv1.Infos, error) {
 	panic("not implemented")
 }
 
-func (*mockPrometheusAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) ([]prommodel.LabelSet, prometheusv1.Warnings, error) {
+func (*mockPrometheusAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time, opts ...prometheusv1.Option) ([]prommodel.LabelSet, prometheusv1.Warnings, prometheusv1.Infos, error) {
 	panic("not implemented")
 }
 
@@ -146,22 +146,22 @@ func (*mockPrometheusAPI) WalReplay(ctx context.Context) (prometheusv1.WalReplay
 	panic("not implemented")
 }
 
-func (m *mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time, opts ...prometheusv1.Option) (prommodel.Value, prometheusv1.Warnings, error) {
+func (m *mockPrometheusAPI) Query(ctx context.Context, query string, ts time.Time, opts ...prometheusv1.Option) (prommodel.Value, prometheusv1.Warnings, prometheusv1.Infos, error) {
 	args := m.Called(ctx, query, ts)
 	var returnArg prommodel.Value
 	if args.Get(0) != nil {
 		returnArg = args.Get(0).(prommodel.Value)
 	}
-	return returnArg, nil, args.Error(1)
+	return returnArg, nil, nil, args.Error(1)
 }
 
-func (m *mockPrometheusAPI) QueryRange(ctx context.Context, query string, r prometheusv1.Range, opts ...prometheusv1.Option) (prommodel.Value, prometheusv1.Warnings, error) {
+func (m *mockPrometheusAPI) QueryRange(ctx context.Context, query string, r prometheusv1.Range, opts ...prometheusv1.Option) (prommodel.Value, prometheusv1.Warnings, prometheusv1.Infos, error) {
 	args := m.Called(ctx, query, r)
 	var returnArg prommodel.Value
 	if args.Get(0) != nil {
 		returnArg = args.Get(0).(prommodel.Value)
 	}
-	return returnArg, nil, args.Error(1)
+	return returnArg, nil, nil, args.Error(1)
 }
 
 func TestGetEmptyClusterHistory(t *testing.T) {
