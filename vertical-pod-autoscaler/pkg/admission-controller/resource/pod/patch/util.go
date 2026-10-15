@@ -44,6 +44,24 @@ func GetAddAnnotationPatch(annotationName, annotationValue string) resource_admi
 	}
 }
 
+// GetAddEmptyLabelsPatch returns a patch initializing empty labels.
+func GetAddEmptyLabelsPatch() resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  "/metadata/labels",
+		Value: map[string]string{},
+	}
+}
+
+// GetAddLabelPatch returns a patch for a label.
+func GetAddLabelPatch(labelName, labelValue string) resource_admission.PatchRecord {
+	return resource_admission.PatchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/metadata/labels/%s", escapeJSONPatchPath(labelName)),
+		Value: labelValue,
+	}
+}
+
 // GetRemoveAnnotationPatch returns a patch to remove an annotation.
 func GetRemoveAnnotationPatch(annotationName string) resource_admission.PatchRecord {
 	return resource_admission.PatchRecord{
