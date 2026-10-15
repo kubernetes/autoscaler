@@ -422,6 +422,46 @@ spec:
                             when OOM is detected.
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
+                        recommendationPercentiles:
+                          description: |-
+                            recommendationPercentiles overrides the recommender's target percentile for
+                            this container, per resource (cpu, memory), replacing the corresponding
+                            global Recommender flag. The lower and upper bounds keep using the global
+                            percentiles; if a target falls outside them, the Recommender sets the
+                            ConfigInvalid condition and the Updater does not update the VPA's pods.
+                            Only honored when the PerVPAConfig feature gate is enabled.
+                          properties:
+                            cpu:
+                              description: cpu holds the percentile overrides for
+                                CPU.
+                              properties:
+                                target:
+                                  description: |-
+                                    target is the usage percentile used for the target recommendation, as an
+                                    integer in [1, 100] (e.g. 95 for p95).
+                                  format: int32
+                                  maximum: 100
+                                  minimum: 1
+                                  type: integer
+                              required:
+                              - target
+                              type: object
+                            memory:
+                              description: memory holds the percentile overrides for
+                                memory.
+                              properties:
+                                target:
+                                  description: |-
+                                    target is the usage percentile used for the target recommendation, as an
+                                    integer in [1, 100] (e.g. 95 for p95).
+                                  format: int32
+                                  maximum: 100
+                                  minimum: 1
+                                  type: integer
+                              required:
+                              - target
+                              type: object
+                          type: object
                         startupBoost:
                           description: |-
                             startupBoost specifies the startup boost policy for the container.

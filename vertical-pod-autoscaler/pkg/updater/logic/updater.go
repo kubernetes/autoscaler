@@ -334,6 +334,11 @@ func (u *updater) RunOnce(ctx context.Context) {
 			continue
 		}
 
+		if vpa_api_util.HasConfigInvalidCondition(vpa) {
+			klog.V(3).InfoS("Skipping VPA with ConfigInvalid condition", "vpa", klog.KObj(vpa))
+			continue
+		}
+
 		evictionLimiter := u.restrictionFactory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
 		podsForEviction := make([]*corev1.Pod, 0)
 		podsForInPlace := make([]*corev1.Pod, 0)

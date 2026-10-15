@@ -426,6 +426,17 @@ func PodHasCPUBoostInProgressAnnotation(pod *corev1.Pod) bool {
 	return false
 }
 
+// HasConfigInvalidCondition returns true if the VPA has the ConfigInvalid
+// condition set to True.
+func HasConfigInvalidCondition(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	for _, condition := range vpa.Status.Conditions {
+		if condition.Type == vpa_types.ConfigInvalid {
+			return condition.Status == corev1.ConditionTrue
+		}
+	}
+	return false
+}
+
 // IsPodReady returns true if a pod is ready; false otherwise.
 func IsPodReady(pod *corev1.Pod) bool {
 	_, condition := GetPodCondition(&pod.Status, corev1.PodReady)
