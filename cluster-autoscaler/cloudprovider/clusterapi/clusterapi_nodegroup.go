@@ -91,7 +91,18 @@ func (ng *nodegroup) IncreaseSize(ctx context.Context, delta int) error {
 		return err
 	}
 
-	return ng.scalableResource.SetSize(size + delta)
+	target := size + delta
+	minSize := ng.MinSize(ctx)
+	if target < minSize {
+		// SetSize rejects a target below min. That error is recorded as a
+		// failed scale-up and the group is backed off, so the pass that
+		// grows groups up to min skips it. Raise this increase to min.
+		// A delta that already reaches min is left as requested.
+		klog.V(4).Infof("%s: IncreaseSize: scaling to %d instead of %d to satisfy min size", ng.scalableResource.Name(), minSize, target)
+		target = minSize
+	}
+
+	return ng.scalableResource.SetSize(target)
 }
 
 // AtomicIncreaseSize is not implemented.
