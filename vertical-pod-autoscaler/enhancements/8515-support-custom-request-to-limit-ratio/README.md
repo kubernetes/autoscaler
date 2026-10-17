@@ -10,6 +10,7 @@
   - [Behavior](#behavior)
     - [Current behavior of VPA 1.5.0](#current-behavior-of-vpa-150)
     - [Proposed feature behavior](#proposed-feature-behavior)
+      - [Policy application strategies](#policy-application-strategies)
   - [Validation](#validation)
     - [Static Validation via CRD Rules](#static-validation-via-crd-rules)
     - [Dynamic Validation via Admission Controller](#dynamic-validation-via-admission-controller)
@@ -125,6 +126,7 @@ type RequestToLimit struct {
 // +kubebuilder:validation:XValidation:rule="(self.type == 'Quantity') == has(self.quantity)",message="quantity is required when type is Quantity and forbidden otherwise"
 type RequestToLimitPolicy struct {
     // Type specifies the type of request-to-limit policy to apply.
+    // New values may be added in future releases; unrecognized values result in no request-to-limit policy being applied.
     // +unionDiscriminator
     // +required
     Type RequestToLimitType `json:"type"`
@@ -166,8 +168,12 @@ If the user wants to modify the request-to-limit ratio, they must update the Dep
 #### Proposed feature behavior
 
 * Values specified in `RequestToLimit` in a VerticalPodAutoscaler object take precedence over the request-to-limit ratio defined at the Pod level. For example, if a request-to-limit policy exists at the VPA object level for a specific resource of a container, the policy defined in the Pod spec is not checked for that resource.
-* The updater and admission controller do not enforce the request-to-limit policy for a container when the recommender has not generated a recommendation for it. This is consistent with the current behavior for request-to-limit ratios defined in the Pod spec.
+* The Updater and admission controller do not enforce the request-to-limit policy for a container when the recommender has not generated a recommendation for it, unless a startup boost is applied to the container.
+* When a startup boost (through `startupBoost` stanza) is applied to a container and `RequestToLimit` is configured for the corresponding resource, the limit for the boosted request is calculated using the `RequestToLimit` policy instead of the ratio defined in the Pod spec. The reason for this is to make the new policy mechanism cleaner, as having the Pod spec ratio apply during the boost and the policy ratio/quantity after the unboost may be confusing for users.
 * This KEP proposes scaling limits when `RequestToLimit` is specified, even when the user omits limits from the parent object that manages the Pods and the limits are therefore absent from the Pod `resources` stanza.
+* This proposal does not allow the `Percentage` and `Quantity` fields to be used together. However, if the community requests it in the future, this rule can be relaxed and new values for the `Type` field, such as `LargestOf` or `SmallestOf`, can be implemented.
+
+##### Policy application strategies
 
 The following part describes the possible approaches for determining when the updater should apply the request-to-limit policy defined in the new stanza. The admission controller's behavior is straightforward: when a Pod creation event occurs, update the limits based on the request-to-limit policy.
 
