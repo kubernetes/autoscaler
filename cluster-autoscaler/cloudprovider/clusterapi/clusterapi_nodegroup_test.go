@@ -358,7 +358,48 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 		delta       int
 		initial     int32
 		expected    int32
+		annotations map[string]string
 	}
+
+	// A group at 0 replicas is only registered when it can scale from zero.
+	scaleFromZero := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "2",
+		nodeGroupMaxSizeAnnotationKey: "10",
+		cpuKey:                        "1",
+		memoryKey:                     "1024Mi",
+	}
+
+	testCases := []testCase{{
+		description: "increase by 1",
+		delta:       1,
+		initial:     3,
+		expected:    4,
+		annotations: map[string]string{
+			nodeGroupMinSizeAnnotationKey: "1",
+			nodeGroupMaxSizeAnnotationKey: "10",
+		},
+	}, {
+		description: "increase from below min size",
+		delta:       1,
+		initial:     0,
+		expected:    2,
+		annotations: scaleFromZero,
+	}, {
+		description: "increase by more than the gap to min size",
+		delta:       3,
+		initial:     0,
+		expected:    3,
+		annotations: scaleFromZero,
+	}, {
+		description: "increase from min size",
+		delta:       1,
+		initial:     2,
+		expected:    3,
+		annotations: map[string]string{
+			nodeGroupMinSizeAnnotationKey: "2",
+			nodeGroupMaxSizeAnnotationKey: "10",
+		},
+	}}
 
 	test := func(t *testing.T, tc *testCase, testConfig *TestConfig) {
 		controller := NewTestMachineController(t)
@@ -404,39 +445,30 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 		}
 	}
 
-	annotations := map[string]string{
-		nodeGroupMinSizeAnnotationKey: "1",
-		nodeGroupMaxSizeAnnotationKey: "10",
-	}
-
 	t.Run("MachineSet", func(t *testing.T) {
-		tc := testCase{
-			description: "increase by 1",
-			initial:     3,
-			expected:    4,
-			delta:       1,
+		for _, tc := range testCases {
+			t.Run(tc.description, func(t *testing.T) {
+				testConfig := NewTestConfigBuilder().
+					ForMachineSet().
+					WithNodeCount(int(tc.initial)).
+					WithAnnotations(tc.annotations).
+					Build()
+				test(t, &tc, testConfig)
+			})
 		}
-		testConfig := NewTestConfigBuilder().
-			ForMachineSet().
-			WithNodeCount(int(tc.initial)).
-			WithAnnotations(annotations).
-			Build()
-		test(t, &tc, testConfig)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		tc := testCase{
-			description: "increase by 1",
-			initial:     3,
-			expected:    4,
-			delta:       1,
+		for _, tc := range testCases {
+			t.Run(tc.description, func(t *testing.T) {
+				testConfig := NewTestConfigBuilder().
+					ForMachineDeployment().
+					WithNodeCount(int(tc.initial)).
+					WithAnnotations(tc.annotations).
+					Build()
+				test(t, &tc, testConfig)
+			})
 		}
-		testConfig := NewTestConfigBuilder().
-			ForMachineDeployment().
-			WithNodeCount(int(tc.initial)).
-			WithAnnotations(annotations).
-			Build()
-		test(t, &tc, testConfig)
 	})
 }
 
