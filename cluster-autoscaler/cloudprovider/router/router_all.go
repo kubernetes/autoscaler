@@ -1,5 +1,5 @@
-//go:build !gce && !aws && !azure && !kubemark && !alicloud && !magnum && !digitalocean && !clusterapi && !huaweicloud && !ionoscloud && !linode && !hetzner && !bizflycloud && !brightbox && !equinixmetal && !oci && !vultr && !tencentcloud && !scaleway && !externalgrpc && !civo && !rancher && !volcengine && !baiducloud && !cherry && !cloudstack && !exoscale && !kamatera && !ovhcloud && !kwok && !utho && !coreweave
-// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner,!bizflycloud,!brightbox,!equinixmetal,!oci,!vultr,!tencentcloud,!scaleway,!externalgrpc,!civo,!rancher,!volcengine,!baiducloud,!cherry,!cloudstack,!exoscale,!kamatera,!ovhcloud,!kwok,!utho,!coreweave
+//go:build !gce && !aws && !azure && !kubemark && !alicloud && !magnum && !digitalocean && !clusterapi && !huaweicloud && !ionoscloud && !linode && !hetzner && !bizflycloud && !brightbox && !equinixmetal && !oci && !vultr && !tencentcloud && !scaleway && !externalgrpc && !civo && !rancher && !volcengine && !baiducloud && !cherry && !cloudstack && !exoscale && !kamatera && !ovhcloud && !kwok && !utho && !coreweave && !upcloud
+// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean,!clusterapi,!huaweicloud,!ionoscloud,!linode,!hetzner,!bizflycloud,!brightbox,!equinixmetal,!oci,!vultr,!tencentcloud,!scaleway,!externalgrpc,!civo,!rancher,!volcengine,!baiducloud,!cherry,!cloudstack,!exoscale,!kamatera,!ovhcloud,!kwok,!utho,!coreweave,!upcloud
 
 /*
 Copyright The Kubernetes Authors.
@@ -49,6 +49,7 @@ import (
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/rancher"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/scaleway"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud"
+	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/upcloud"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/utho"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/volcengine"
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/vultr"
