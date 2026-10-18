@@ -83,7 +83,7 @@ func (c *resourcesInplaceUpdatesPatchCalculator) CalculatePatches(pod *corev1.Po
 		case boosted:
 			continue // currently boosted pod so we skip creating patches
 		case off:
-			continue // Nothing to do for pods when VPA is Off.
+			continue // Nothing to do for pods when VPA is Off or still during InitialDelay
 		default:
 			targetResources = recommendedResources[i]
 		}
