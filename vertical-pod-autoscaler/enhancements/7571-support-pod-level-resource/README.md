@@ -45,6 +45,7 @@ and PR titles.
     - [Maintaining checkpoints](#maintaining-checkpoints)
     - [New Global Pod maximums](#new-global-pod-maximums)
     - [New Flags for Configuring Pod Level Percentiles](#new-flags-for-configuring-pod-level-percentiles)
+    - [Handling OOM events](#handling-oom-events)
   - [Admission Controller](#admission-controller)
     - [Dynamic Validation](#dynamic-validation)
   - [Updater](#updater)
@@ -354,6 +355,23 @@ This document proposes adding new recommender flags that allow customization of 
 * `--pod-level-target-memory-percentile` (defaults to 0.9)
 * `--pod-level-recommendation-upper-bound-cpu-percentile` (defaults to 0.95)
 * `--pod-level-recommendation-upper-bound-memory-percentile` (defaults to 0.95)
+
+
+#### Handling OOM events
+
+This proposal does not change how OOM events are detected in the cluster. Detecting these events remains the responsibility of the VPA recommender.
+
+Each pod replica belonging to a controller is tracked by a new in-memory `PodState` object (with fields analogous to the existing `ContainerState`). Its `memoryPeak` field holds the maximum observed memory usage for the current aggregation interval for that pod replica. 
+
+When an OOM event is recorded for a container belonging to a pod whose pod-level resources are autoscaled, the `oomPeak` field is computed as follows:
+
+```
+memoryUsed := Max(podLevelRequest, memoryPeak)
+oomPeak    := Max(memoryUsed + oomMinBumpUp,
+                  memoryUsed * oomBumpUpRatio)
+```
+
+Then the artificial sample is recorded in the corresponding pod-level memory histogram. oomBumpUpRatio and oomMinBumpUp come from `spec.resourcePolicy.podPolicy`, falling back to the new --pod-level-oom-bump-up-ratio / --pod-level-oom-min-bump-up-bytes flags.
 
 ### Admission Controller
 
