@@ -42,7 +42,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
-	"k8s.io/utils/ptr"
 	"k8s.io/utils/set"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
