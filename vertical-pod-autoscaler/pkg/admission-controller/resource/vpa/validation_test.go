@@ -1574,7 +1574,7 @@ func TestVeryInvalidateVPA(t *testing.T) {
 func TestAllowInitialDelay(t *testing.T) {
 	withDelay := &vpa_types.VerticalPodAutoscaler{
 		Spec: vpa_types.VerticalPodAutoscalerSpec{
-			UpdatePolicy: &vpa_types.PodUpdatePolicy{InitialDelaySeconds: ptr.To(int32(600))},
+			UpdatePolicy: &vpa_types.PodUpdatePolicy{InitialDelaySeconds: new(int32(600))},
 		},
 	}
 	tests := []struct {
@@ -1583,10 +1583,30 @@ func TestAllowInitialDelay(t *testing.T) {
 		featureFlag bool
 		expected    bool
 	}{
-		{name: "feature enabled returns true", oldObj: nil, featureFlag: true, expected: true},
-		{name: "feature disabled and oldObj nil returns false", oldObj: nil, featureFlag: false, expected: false},
-		{name: "feature disabled but old object sets initialDelaySeconds returns true", oldObj: withDelay, featureFlag: false, expected: true},
-		{name: "feature disabled and old object without initialDelaySeconds returns false", oldObj: &vpa_types.VerticalPodAutoscaler{}, featureFlag: false, expected: false},
+		{
+			name:        "feature enabled returns true",
+			oldObj:      nil,
+			featureFlag: true,
+			expected:    true,
+		},
+		{
+			name:        "feature disabled and oldObj nil returns false",
+			oldObj:      nil,
+			featureFlag: false,
+			expected:    false,
+		},
+		{
+			name:        "feature disabled but old object sets initialDelaySeconds returns true",
+			oldObj:      withDelay,
+			featureFlag: false,
+			expected:    true,
+		},
+		{
+			name:        "feature disabled and old object without initialDelaySeconds returns false",
+			oldObj:      &vpa_types.VerticalPodAutoscaler{},
+			featureFlag: false,
+			expected:    false,
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
