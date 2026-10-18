@@ -54,9 +54,10 @@ const (
 	// DefaultRecommenderName recommender name explicitly (and so implicitly specify that the default recommender should handle them)
 	DefaultRecommenderName = "default"
 	// pendingOOMRetention is how long an OOM observation is kept when the cluster state cannot
-	// accept it yet, and pendingOOMsCapacity bounds the buffer so a recommender that never sees
-	// the pod cannot grow it without limit.
+	// accept it yet.
 	pendingOOMRetention = 10 * time.Minute
+	// pendingOOMsCapacity bounds the buffer so a recommender that never sees
+	// the pod cannot grow it without limit.
 	pendingOOMsCapacity = 1000
 )
 
@@ -498,10 +499,9 @@ func (feeder *clusterStateFeeder) DeleteRemovedPods() {
 }
 
 func (feeder *clusterStateFeeder) LoadRealTimeMetrics(ctx context.Context) {
-	now := time.Now()
 	// Retry before draining, so an OOM observed while its pod was not yet in the cluster state
 	// is recorded as soon as the pod becomes known.
-	feeder.retryPendingOOMs(now)
+	feeder.retryPendingOOMs()
 
 	containersMetrics, err := feeder.metricsClient.GetContainersMetrics(ctx)
 	if err != nil {
@@ -538,7 +538,7 @@ Loop:
 		select {
 		case oomInfo := <-feeder.oomChan:
 			klog.V(3).InfoS("OOM detected", "oomInfo", oomInfo)
-			feeder.recordOOM(oomInfo, now)
+			feeder.recordOOM(oomInfo)
 		default:
 			break Loop
 		}
@@ -546,35 +546,43 @@ Loop:
 	metrics_recommender.RecordAggregateContainerStatesCount(feeder.clusterState.StateMapSize())
 }
 
-// recordOOM feeds an OOM observation to the cluster state, keeping it for a later cycle when the
-// pod is not there yet. A pod recreated faster than it is observed has no entry when its event
+// recordOOM records an OOM observation into the cluster state, or buffers it for a later cycle when
+// the pod is not tracked yet. A pod recreated faster than it is observed has no entry when its event
 // arrives: pods enter the cluster state in LoadPods and the pod informer does not watch Pending
 // pods, so RecordOOM reports a KeyError for exactly the OOM that matters most. Dropping it makes
 // the recommendation miss the memory spike; retrying is safe because RecordOOM takes the maximum.
-func (feeder *clusterStateFeeder) recordOOM(oomInfo oom.OomInfo, now time.Time) {
+func (feeder *clusterStateFeeder) recordOOM(oomInfo oom.OomInfo) {
 	err := feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory)
 	if err == nil {
 		return
 	}
 	if _, isKeyError := err.(model.KeyError); isKeyError {
 		if len(feeder.pendingOOMs) >= pendingOOMsCapacity {
-			klog.V(0).InfoS("Dropping OOM event, retry buffer full", "oomInfo", oomInfo,
-				"capacity", pendingOOMsCapacity)
-			return
+			oldest := 0
+			for i, pending := range feeder.pendingOOMs {
+				if pending.firstSeen.Before(feeder.pendingOOMs[oldest].firstSeen) {
+					oldest = i
+				}
+			}
+			klog.V(0).InfoS("Removing the oldest buffered OOM event, retry buffer full",
+				"oomInfo", feeder.pendingOOMs[oldest].info, "capacity", pendingOOMsCapacity)
+			feeder.pendingOOMs = append(feeder.pendingOOMs[:oldest], feeder.pendingOOMs[oldest+1:]...)
 		}
-		klog.V(2).InfoS("Pod not tracked yet, retrying OOM event", "oomInfo", oomInfo)
-		feeder.pendingOOMs = append(feeder.pendingOOMs, pendingOOM{info: oomInfo, firstSeen: now})
+		klog.V(2).InfoS("Buffering OOM event for a later retry, pod is not tracked yet", "oomInfo", oomInfo)
+		metrics_recommender.RecordOOMEventBuffered()
+		feeder.pendingOOMs = append(feeder.pendingOOMs, pendingOOM{info: oomInfo, firstSeen: time.Now()})
 		return
 	}
 	klog.V(0).InfoS("Failed to record OOM", "oomInfo", oomInfo, "error", err)
 }
 
-// retryPendingOOMs records kept observations whose pod has since entered the cluster state, and
+// retryPendingOOMs records buffered observations whose pod has since entered the cluster state, and
 // forgets the ones that outlived their retention or failed for a non-KeyError reason.
-func (feeder *clusterStateFeeder) retryPendingOOMs(now time.Time) {
+func (feeder *clusterStateFeeder) retryPendingOOMs() {
 	if len(feeder.pendingOOMs) == 0 {
 		return
 	}
+	now := time.Now()
 	retryLater := make([]pendingOOM, 0, len(feeder.pendingOOMs))
 	for _, pending := range feeder.pendingOOMs {
 		age := now.Sub(pending.firstSeen)

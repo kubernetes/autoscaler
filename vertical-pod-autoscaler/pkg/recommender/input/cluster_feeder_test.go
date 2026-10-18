@@ -1288,3 +1288,39 @@ func TestInitFromCheckpoints(t *testing.T) {
 		})
 	}
 }
+
+// TestClusterStateFeeder_recordOOMevictsOldestWhenBufferFull covers the capacity policy: once the
+// retry buffer is full, the observation that has waited longest gives up its place, not the one that
+// just arrived.
+func TestClusterStateFeeder_recordOOMevictsOldestWhenBufferFull(t *testing.T) {
+	podID := model.PodID{Namespace: "default", PodName: "Recreated"}
+	base := time.Now().Add(-time.Hour)
+	buffered := make([]pendingOOM, 0, pendingOOMsCapacity+1)
+	for i := 0; i < pendingOOMsCapacity; i++ {
+		info := oom.OomInfo{
+			ContainerID: model.ContainerID{PodID: podID, ContainerName: fmt.Sprintf("container-%d", i)},
+			Timestamp:   base,
+			Memory:      model.ResourceAmount(i),
+		}
+		buffered = append(buffered, pendingOOM{info: info, firstSeen: base.Add(time.Duration(i) * time.Second)})
+	}
+	feeder := clusterStateFeeder{
+		clusterState: model.NewClusterState(testGcPeriod),
+		pendingOOMs:  buffered,
+	}
+
+	newest := oom.OomInfo{
+		ContainerID: model.ContainerID{PodID: podID, ContainerName: "newest"},
+		Timestamp:   time.Now(),
+		Memory:      model.ResourceAmount(pendingOOMsCapacity + 1),
+	}
+	feeder.recordOOM(newest)
+
+	assert.Len(t, feeder.pendingOOMs, pendingOOMsCapacity)
+	for _, pending := range feeder.pendingOOMs {
+		assert.NotEqual(t, model.ResourceAmount(0), pending.info.Memory,
+			"the observation that waited longest should have been removed")
+	}
+	assert.Equal(t, newest.Memory, feeder.pendingOOMs[len(feeder.pendingOOMs)-1].info.Memory,
+		"the arriving observation should have taken the freed place")
+}
