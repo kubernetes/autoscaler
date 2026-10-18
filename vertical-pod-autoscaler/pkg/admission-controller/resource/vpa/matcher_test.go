@@ -70,9 +70,6 @@ func TestGetMatchingVpa(t *testing.T) {
 		AddContainer(test.Container().WithName("i-am-container").Get())
 	podBuilder := podBuilderWithoutCreator.WithCreator(&sts.ObjectMeta, &sts.TypeMeta)
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("i-am-container")
-	// Separate builder: the startup boost cases below add to vpaBuilder's
-	// container boost map, which every later vpaBuilder copy shares.
-	delayedVpaBuilder := test.VerticalPodAutoscaler().WithContainer("i-am-container").WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithTargetRef(targetRef)
 	factor := int32(1)
 
 	testCases := []struct {
@@ -148,6 +145,32 @@ func TestGetMatchingVpa(t *testing.T) {
 			expectedFound:   true,
 			expectedVpaName: "initial-vpa",
 		}, {
+			name: "vpa in initial delay window is not matched",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithName("delayed-vpa").WithCreationTimestamp(time.Now()).WithTargetRef(targetRef).Get(),
+			},
+			labelSelector: "app = test",
+			expectedFound: false,
+		}, {
+			name: "vpa after initial delay window is matched",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithName("delayed-vpa").WithCreationTimestamp(time.Now().Add(-2 * time.Hour)).WithTargetRef(targetRef).Get(),
+			},
+			labelSelector:   "app = test",
+			expectedFound:   true,
+			expectedVpaName: "delayed-vpa",
+		}, {
+			name: "vpa in initial delay window with startup boost is matched",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithName("delayed-with-boost-vpa").WithCreationTimestamp(time.Now()).WithTargetRef(targetRef).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 0).Get(),
+			},
+			labelSelector:   "app = test",
+			expectedFound:   true,
+			expectedVpaName: "delayed-with-boost-vpa",
+		}, {
 			name:          "no vpa objects",
 			pod:           podBuilder.Get(),
 			vpas:          []*vpa_types.VerticalPodAutoscaler{},
@@ -181,32 +204,6 @@ func TestGetMatchingVpa(t *testing.T) {
 			labelSelector:   "app = test",
 			expectedFound:   true,
 			expectedVpaName: "auto-with-boost-vpa",
-		}, {
-			name: "vpa in initial delay window is not matched",
-			pod:  podBuilder.Get(),
-			vpas: []*vpa_types.VerticalPodAutoscaler{
-				delayedVpaBuilder.WithName("delayed-vpa").WithCreationTimestamp(time.Now()).Get(),
-			},
-			labelSelector: "app = test",
-			expectedFound: false,
-		}, {
-			name: "vpa after initial delay window is matched",
-			pod:  podBuilder.Get(),
-			vpas: []*vpa_types.VerticalPodAutoscaler{
-				delayedVpaBuilder.WithName("delayed-vpa").WithCreationTimestamp(time.Now().Add(-2 * time.Hour)).Get(),
-			},
-			labelSelector:   "app = test",
-			expectedFound:   true,
-			expectedVpaName: "delayed-vpa",
-		}, {
-			name: "vpa in initial delay window with startup boost is matched",
-			pod:  podBuilder.Get(),
-			vpas: []*vpa_types.VerticalPodAutoscaler{
-				delayedVpaBuilder.WithName("delayed-with-boost-vpa").WithCreationTimestamp(time.Now()).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 0).Get(),
-			},
-			labelSelector:   "app = test",
-			expectedFound:   true,
-			expectedVpaName: "delayed-with-boost-vpa",
 		},
 	}
 
