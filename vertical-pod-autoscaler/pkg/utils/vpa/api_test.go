@@ -967,13 +967,62 @@ func TestInInitialDelayWindow(t *testing.T) {
 		featureEnabled bool
 		expected       bool
 	}{
-		{name: "inside the window", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](3600), created: time.Now(), featureEnabled: true, expected: true},
-		{name: "after the window", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](3600), created: time.Now().Add(-2 * time.Hour), featureEnabled: true, expected: false},
-		{name: "unset", mode: vpa_types.UpdateModeRecreate, delay: nil, created: time.Now(), featureEnabled: true, expected: false},
-		{name: "zero", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](0), created: time.Now(), featureEnabled: true, expected: false},
-		{name: "Off inside the window", mode: vpa_types.UpdateModeOff, delay: ptr.To[int32](3600), created: time.Now(), featureEnabled: true, expected: true},
-		{name: "Off after the window", mode: vpa_types.UpdateModeOff, delay: ptr.To[int32](3600), created: time.Now().Add(-2 * time.Hour), featureEnabled: true, expected: false},
-		{name: "inside the window, feature disabled", mode: vpa_types.UpdateModeRecreate, delay: ptr.To[int32](3600), created: time.Now(), featureEnabled: false, expected: false},
+		{
+			name:           "inside the window",
+			mode:           vpa_types.UpdateModeRecreate,
+			delay:          new(int32(3600)),
+			created:        time.Now(),
+			featureEnabled: true,
+			expected:       true,
+		},
+		{
+			name:           "after the window",
+			mode:           vpa_types.UpdateModeRecreate,
+			delay:          new(int32(3600)),
+			created:        time.Now().Add(-2 * time.Hour),
+			featureEnabled: true,
+			expected:       false,
+		},
+		{
+			name:           "unset",
+			mode:           vpa_types.UpdateModeRecreate,
+			delay:          nil,
+			created:        time.Now(),
+			featureEnabled: true,
+			expected:       false,
+		},
+		{
+			name:           "zero",
+			mode:           vpa_types.UpdateModeRecreate,
+			delay:          new(int32(0)),
+			created:        time.Now(),
+			featureEnabled: true,
+			expected:       false,
+		},
+		{
+			name:           "Off inside the window",
+			mode:           vpa_types.UpdateModeOff,
+			delay:          new(int32(3600)),
+			created:        time.Now(),
+			featureEnabled: true,
+			expected:       true,
+		},
+		{
+			name:           "Off after the window",
+			mode:           vpa_types.UpdateModeOff,
+			delay:          new(int32(3600)),
+			created:        time.Now().Add(-2 * time.Hour),
+			featureEnabled: true,
+			expected:       false,
+		},
+		{
+			name:           "inside the window, feature disabled",
+			mode:           vpa_types.UpdateModeRecreate,
+			delay:          new(int32(3600)),
+			created:        time.Now(),
+			featureEnabled: false,
+			expected:       false,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
