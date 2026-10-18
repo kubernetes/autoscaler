@@ -305,7 +305,7 @@ func TestRunOnce_InitialDelay(t *testing.T) {
 				false,
 				func(vpa *vpa_types.VerticalPodAutoscaler) {
 					vpa.CreationTimestamp = metav1.NewTime(tc.created)
-					vpa.Spec.UpdatePolicy.InitialDelaySeconds = ptr.To(int32(3600))
+					vpa.Spec.UpdatePolicy.InitialDelaySeconds = new(int32(3600))
 				},
 			)
 		})
