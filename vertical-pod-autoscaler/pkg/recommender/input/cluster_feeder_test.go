@@ -1296,7 +1296,7 @@ func TestClusterStateFeeder_recordOOMevictsOldestWhenBufferFull(t *testing.T) {
 	podID := model.PodID{Namespace: "default", PodName: "Recreated"}
 	base := time.Now().Add(-time.Hour)
 	buffered := make([]pendingOOM, 0, pendingOOMsCapacity+1)
-	for i := 0; i < pendingOOMsCapacity; i++ {
+	for i := range pendingOOMsCapacity {
 		info := oom.OomInfo{
 			ContainerID: model.ContainerID{PodID: podID, ContainerName: fmt.Sprintf("container-%d", i)},
 			Timestamp:   base,

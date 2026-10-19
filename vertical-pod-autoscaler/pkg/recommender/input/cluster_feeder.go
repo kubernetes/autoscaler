@@ -546,11 +546,13 @@ Loop:
 	metrics_recommender.RecordAggregateContainerStatesCount(feeder.clusterState.StateMapSize())
 }
 
-// recordOOM records an OOM observation into the cluster state, or buffers it for a later cycle when
-// the pod is not tracked yet. A pod recreated faster than it is observed has no entry when its event
-// arrives: pods enter the cluster state in LoadPods and the pod informer does not watch Pending
-// pods, so RecordOOM reports a KeyError for exactly the OOM that matters most. Dropping it makes
-// the recommendation miss the memory spike; retrying is safe because RecordOOM takes the maximum.
+// recordOOM records an OOM observation into the cluster state. When the observation belongs to a pod
+// that the cluster state does not track yet, it is buffered so that retryPendingOOMs can record it
+// once a later cycle does track the pod. A pod recreated faster than it is observed has no entry when
+// its event arrives: pods enter the cluster state in LoadPods and the pod informer does not watch
+// Pending pods, so RecordOOM reports a KeyError for exactly the OOM that matters most. Dropping it
+// makes the recommendation miss the memory spike; retrying is safe because RecordOOM takes the
+// maximum.
 func (feeder *clusterStateFeeder) recordOOM(oomInfo oom.OomInfo) {
 	err := feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory)
 	if err == nil {
