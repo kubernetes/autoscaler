@@ -1,4 +1,7 @@
 {{- if and (.Values.recommender.enabled) .Values.recommender.podDisruptionBudget.enabled -}}
+{{- if and .Values.recommender.podDisruptionBudget.minAvailable .Values.recommender.podDisruptionBudget.maxUnavailable }}
+    {{- fail "Only one of recommender.podDisruptionBudget.minAvailable or recommender.podDisruptionBudget.maxUnavailable should be set." }}
+{{- end }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:

@@ -1,0 +1,30 @@
+suite: recommender pod disruption budget
+templates:
+  - recommender-pdb.yaml
+tests:
+  - it: uses minAvailable by default
+    asserts:
+      - equal:
+          path: spec.minAvailable
+          value: 1
+      - notExists:
+          path: spec.maxUnavailable
+
+  - it: supports maxUnavailable when minAvailable is unset
+    set:
+      recommender.podDisruptionBudget.minAvailable: null
+      recommender.podDisruptionBudget.maxUnavailable: 1
+    asserts:
+      - equal:
+          path: spec.maxUnavailable
+          value: 1
+      - notExists:
+          path: spec.minAvailable
+
+  - it: rejects both minAvailable and maxUnavailable
+    set:
+      recommender.podDisruptionBudget.minAvailable: 1
+      recommender.podDisruptionBudget.maxUnavailable: 1
+    asserts:
+      - failedTemplate:
+          errorMessage: "Only one of recommender.podDisruptionBudget.minAvailable or recommender.podDisruptionBudget.maxUnavailable should be set."
