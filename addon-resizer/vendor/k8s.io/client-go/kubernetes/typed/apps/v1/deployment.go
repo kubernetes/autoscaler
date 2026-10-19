@@ -19,12 +19,19 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/apps/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	context "context"
+	fmt "fmt"
+
+	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationsappsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
+	applyconfigurationsautoscalingv1 "k8s.io/client-go/applyconfigurations/autoscaling/v1"
+	gentype "k8s.io/client-go/gentype"
 	scheme "k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
+	apply "k8s.io/client-go/util/apply"
 )
 
 // DeploymentsGetter has a method to return a DeploymentInterface.
@@ -35,140 +42,98 @@ type DeploymentsGetter interface {
 
 // DeploymentInterface has methods to work with Deployment resources.
 type DeploymentInterface interface {
-	Create(*v1.Deployment) (*v1.Deployment, error)
-	Update(*v1.Deployment) (*v1.Deployment, error)
-	UpdateStatus(*v1.Deployment) (*v1.Deployment, error)
-	Delete(name string, options *meta_v1.DeleteOptions) error
-	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v1.Deployment, error)
-	List(opts meta_v1.ListOptions) (*v1.DeploymentList, error)
-	Watch(opts meta_v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.Deployment, err error)
+	Create(ctx context.Context, deployment *appsv1.Deployment, opts metav1.CreateOptions) (*appsv1.Deployment, error)
+	Update(ctx context.Context, deployment *appsv1.Deployment, opts metav1.UpdateOptions) (*appsv1.Deployment, error)
+	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+	UpdateStatus(ctx context.Context, deployment *appsv1.Deployment, opts metav1.UpdateOptions) (*appsv1.Deployment, error)
+	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*appsv1.Deployment, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*appsv1.DeploymentList, error)
+	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *appsv1.Deployment, err error)
+	Apply(ctx context.Context, deployment *applyconfigurationsappsv1.DeploymentApplyConfiguration, opts metav1.ApplyOptions) (result *appsv1.Deployment, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, deployment *applyconfigurationsappsv1.DeploymentApplyConfiguration, opts metav1.ApplyOptions) (result *appsv1.Deployment, err error)
+	GetScale(ctx context.Context, deploymentName string, options metav1.GetOptions) (*autoscalingv1.Scale, error)
+	UpdateScale(ctx context.Context, deploymentName string, scale *autoscalingv1.Scale, opts metav1.UpdateOptions) (*autoscalingv1.Scale, error)
+	ApplyScale(ctx context.Context, deploymentName string, scale *applyconfigurationsautoscalingv1.ScaleApplyConfiguration, opts metav1.ApplyOptions) (*autoscalingv1.Scale, error)
+
 	DeploymentExpansion
 }
 
 // deployments implements DeploymentInterface
 type deployments struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithListAndApply[*appsv1.Deployment, *appsv1.DeploymentList, *applyconfigurationsappsv1.DeploymentApplyConfiguration]
 }
 
 // newDeployments returns a Deployments
 func newDeployments(c *AppsV1Client, namespace string) *deployments {
 	return &deployments{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithListAndApply[*appsv1.Deployment, *appsv1.DeploymentList, *applyconfigurationsappsv1.DeploymentApplyConfiguration](
+			"deployments",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *appsv1.Deployment { return &appsv1.Deployment{} },
+			func() *appsv1.DeploymentList { return &appsv1.DeploymentList{} },
+			gentype.PrefersProtobuf[*appsv1.Deployment](),
+		),
 	}
 }
 
-// Get takes name of the deployment, and returns the corresponding deployment object, and an error if there is any.
-func (c *deployments) Get(name string, options meta_v1.GetOptions) (result *v1.Deployment, err error) {
-	result = &v1.Deployment{}
-	err = c.client.Get().
-		Namespace(c.ns).
+// GetScale takes name of the deployment, and returns the corresponding autoscalingv1.Scale object, and an error if there is any.
+func (c *deployments) GetScale(ctx context.Context, deploymentName string, options metav1.GetOptions) (result *autoscalingv1.Scale, err error) {
+	result = &autoscalingv1.Scale{}
+	err = c.GetClient().Get().
+		UseProtobufAsDefault().
+		Namespace(c.GetNamespace()).
 		Resource("deployments").
-		Name(name).
+		Name(deploymentName).
+		SubResource("scale").
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
-// List takes label and field selectors, and returns the list of Deployments that match those selectors.
-func (c *deployments) List(opts meta_v1.ListOptions) (result *v1.DeploymentList, err error) {
-	result = &v1.DeploymentList{}
-	err = c.client.Get().
-		Namespace(c.ns).
+// UpdateScale takes the top resource name and the representation of a scale and updates it. Returns the server's representation of the scale, and an error, if there is any.
+func (c *deployments) UpdateScale(ctx context.Context, deploymentName string, scale *autoscalingv1.Scale, opts metav1.UpdateOptions) (result *autoscalingv1.Scale, err error) {
+	result = &autoscalingv1.Scale{}
+	err = c.GetClient().Put().
+		UseProtobufAsDefault().
+		Namespace(c.GetNamespace()).
 		Resource("deployments").
+		Name(deploymentName).
+		SubResource("scale").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Body(scale).
+		Do(ctx).
 		Into(result)
 	return
 }
 
-// Watch returns a watch.Interface that watches the requested deployments.
-func (c *deployments) Watch(opts meta_v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("deployments").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
-}
+// ApplyScale takes top resource name and the apply declarative configuration for scale,
+// applies it and returns the applied scale, and an error, if there is any.
+func (c *deployments) ApplyScale(ctx context.Context, deploymentName string, scale *applyconfigurationsautoscalingv1.ScaleApplyConfiguration, opts metav1.ApplyOptions) (result *autoscalingv1.Scale, err error) {
+	if scale == nil {
+		return nil, fmt.Errorf("scale provided to ApplyScale must not be nil")
+	}
+	patchOpts := opts.ToPatchOptions()
+	request, err := apply.NewRequest(c.GetClient(), scale)
+	if err != nil {
+		return nil, err
+	}
 
-// Create takes the representation of a deployment and creates it.  Returns the server's representation of the deployment, and an error, if there is any.
-func (c *deployments) Create(deployment *v1.Deployment) (result *v1.Deployment, err error) {
-	result = &v1.Deployment{}
-	err = c.client.Post().
-		Namespace(c.ns).
+	result = &autoscalingv1.Scale{}
+	err = request.
+		UseProtobufAsDefault().
+		Namespace(c.GetNamespace()).
 		Resource("deployments").
-		Body(deployment).
-		Do().
-		Into(result)
-	return
-}
-
-// Update takes the representation of a deployment and updates it. Returns the server's representation of the deployment, and an error, if there is any.
-func (c *deployments) Update(deployment *v1.Deployment) (result *v1.Deployment, err error) {
-	result = &v1.Deployment{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("deployments").
-		Name(deployment.Name).
-		Body(deployment).
-		Do().
-		Into(result)
-	return
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *deployments) UpdateStatus(deployment *v1.Deployment) (result *v1.Deployment, err error) {
-	result = &v1.Deployment{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("deployments").
-		Name(deployment.Name).
-		SubResource("status").
-		Body(deployment).
-		Do().
-		Into(result)
-	return
-}
-
-// Delete takes name of the deployment and deletes it. Returns an error if one occurs.
-func (c *deployments) Delete(name string, options *meta_v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("deployments").
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *deployments) DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("deployments").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Patch applies the patch and returns the patched deployment.
-func (c *deployments) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.Deployment, err error) {
-	result = &v1.Deployment{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("deployments").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
+		Name(deploymentName).
+		SubResource("scale").
+		VersionedParams(&patchOpts, scheme.ParameterCodec).
+		Do(ctx).
 		Into(result)
 	return
 }

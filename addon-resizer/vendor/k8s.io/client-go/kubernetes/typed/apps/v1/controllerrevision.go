@@ -19,12 +19,15 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/apps/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	context "context"
+
+	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationsappsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
+	gentype "k8s.io/client-go/gentype"
 	scheme "k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 // ControllerRevisionsGetter has a method to return a ControllerRevisionInterface.
@@ -35,123 +38,34 @@ type ControllerRevisionsGetter interface {
 
 // ControllerRevisionInterface has methods to work with ControllerRevision resources.
 type ControllerRevisionInterface interface {
-	Create(*v1.ControllerRevision) (*v1.ControllerRevision, error)
-	Update(*v1.ControllerRevision) (*v1.ControllerRevision, error)
-	Delete(name string, options *meta_v1.DeleteOptions) error
-	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v1.ControllerRevision, error)
-	List(opts meta_v1.ListOptions) (*v1.ControllerRevisionList, error)
-	Watch(opts meta_v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.ControllerRevision, err error)
+	Create(ctx context.Context, controllerRevision *appsv1.ControllerRevision, opts metav1.CreateOptions) (*appsv1.ControllerRevision, error)
+	Update(ctx context.Context, controllerRevision *appsv1.ControllerRevision, opts metav1.UpdateOptions) (*appsv1.ControllerRevision, error)
+	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*appsv1.ControllerRevision, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*appsv1.ControllerRevisionList, error)
+	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *appsv1.ControllerRevision, err error)
+	Apply(ctx context.Context, controllerRevision *applyconfigurationsappsv1.ControllerRevisionApplyConfiguration, opts metav1.ApplyOptions) (result *appsv1.ControllerRevision, err error)
 	ControllerRevisionExpansion
 }
 
 // controllerRevisions implements ControllerRevisionInterface
 type controllerRevisions struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithListAndApply[*appsv1.ControllerRevision, *appsv1.ControllerRevisionList, *applyconfigurationsappsv1.ControllerRevisionApplyConfiguration]
 }
 
 // newControllerRevisions returns a ControllerRevisions
 func newControllerRevisions(c *AppsV1Client, namespace string) *controllerRevisions {
 	return &controllerRevisions{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithListAndApply[*appsv1.ControllerRevision, *appsv1.ControllerRevisionList, *applyconfigurationsappsv1.ControllerRevisionApplyConfiguration](
+			"controllerrevisions",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *appsv1.ControllerRevision { return &appsv1.ControllerRevision{} },
+			func() *appsv1.ControllerRevisionList { return &appsv1.ControllerRevisionList{} },
+			gentype.PrefersProtobuf[*appsv1.ControllerRevision](),
+		),
 	}
-}
-
-// Get takes name of the controllerRevision, and returns the corresponding controllerRevision object, and an error if there is any.
-func (c *controllerRevisions) Get(name string, options meta_v1.GetOptions) (result *v1.ControllerRevision, err error) {
-	result = &v1.ControllerRevision{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("controllerrevisions").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of ControllerRevisions that match those selectors.
-func (c *controllerRevisions) List(opts meta_v1.ListOptions) (result *v1.ControllerRevisionList, err error) {
-	result = &v1.ControllerRevisionList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("controllerrevisions").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested controllerRevisions.
-func (c *controllerRevisions) Watch(opts meta_v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("controllerrevisions").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
-}
-
-// Create takes the representation of a controllerRevision and creates it.  Returns the server's representation of the controllerRevision, and an error, if there is any.
-func (c *controllerRevisions) Create(controllerRevision *v1.ControllerRevision) (result *v1.ControllerRevision, err error) {
-	result = &v1.ControllerRevision{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("controllerrevisions").
-		Body(controllerRevision).
-		Do().
-		Into(result)
-	return
-}
-
-// Update takes the representation of a controllerRevision and updates it. Returns the server's representation of the controllerRevision, and an error, if there is any.
-func (c *controllerRevisions) Update(controllerRevision *v1.ControllerRevision) (result *v1.ControllerRevision, err error) {
-	result = &v1.ControllerRevision{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("controllerrevisions").
-		Name(controllerRevision.Name).
-		Body(controllerRevision).
-		Do().
-		Into(result)
-	return
-}
-
-// Delete takes name of the controllerRevision and deletes it. Returns an error if one occurs.
-func (c *controllerRevisions) Delete(name string, options *meta_v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("controllerrevisions").
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *controllerRevisions) DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("controllerrevisions").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Patch applies the patch and returns the patched controllerRevision.
-func (c *controllerRevisions) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.ControllerRevision, err error) {
-	result = &v1.ControllerRevision{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("controllerrevisions").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
-		Into(result)
-	return
 }

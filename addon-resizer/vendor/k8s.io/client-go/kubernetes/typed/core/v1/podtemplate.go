@@ -19,12 +19,15 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	context "context"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
+	gentype "k8s.io/client-go/gentype"
 	scheme "k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 // PodTemplatesGetter has a method to return a PodTemplateInterface.
@@ -35,123 +38,34 @@ type PodTemplatesGetter interface {
 
 // PodTemplateInterface has methods to work with PodTemplate resources.
 type PodTemplateInterface interface {
-	Create(*v1.PodTemplate) (*v1.PodTemplate, error)
-	Update(*v1.PodTemplate) (*v1.PodTemplate, error)
-	Delete(name string, options *meta_v1.DeleteOptions) error
-	DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v1.PodTemplate, error)
-	List(opts meta_v1.ListOptions) (*v1.PodTemplateList, error)
-	Watch(opts meta_v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.PodTemplate, err error)
+	Create(ctx context.Context, podTemplate *corev1.PodTemplate, opts metav1.CreateOptions) (*corev1.PodTemplate, error)
+	Update(ctx context.Context, podTemplate *corev1.PodTemplate, opts metav1.UpdateOptions) (*corev1.PodTemplate, error)
+	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*corev1.PodTemplate, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*corev1.PodTemplateList, error)
+	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *corev1.PodTemplate, err error)
+	Apply(ctx context.Context, podTemplate *applyconfigurationscorev1.PodTemplateApplyConfiguration, opts metav1.ApplyOptions) (result *corev1.PodTemplate, err error)
 	PodTemplateExpansion
 }
 
 // podTemplates implements PodTemplateInterface
 type podTemplates struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithListAndApply[*corev1.PodTemplate, *corev1.PodTemplateList, *applyconfigurationscorev1.PodTemplateApplyConfiguration]
 }
 
 // newPodTemplates returns a PodTemplates
 func newPodTemplates(c *CoreV1Client, namespace string) *podTemplates {
 	return &podTemplates{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithListAndApply[*corev1.PodTemplate, *corev1.PodTemplateList, *applyconfigurationscorev1.PodTemplateApplyConfiguration](
+			"podtemplates",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *corev1.PodTemplate { return &corev1.PodTemplate{} },
+			func() *corev1.PodTemplateList { return &corev1.PodTemplateList{} },
+			gentype.PrefersProtobuf[*corev1.PodTemplate](),
+		),
 	}
-}
-
-// Get takes name of the podTemplate, and returns the corresponding podTemplate object, and an error if there is any.
-func (c *podTemplates) Get(name string, options meta_v1.GetOptions) (result *v1.PodTemplate, err error) {
-	result = &v1.PodTemplate{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("podtemplates").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of PodTemplates that match those selectors.
-func (c *podTemplates) List(opts meta_v1.ListOptions) (result *v1.PodTemplateList, err error) {
-	result = &v1.PodTemplateList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("podtemplates").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested podTemplates.
-func (c *podTemplates) Watch(opts meta_v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("podtemplates").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
-}
-
-// Create takes the representation of a podTemplate and creates it.  Returns the server's representation of the podTemplate, and an error, if there is any.
-func (c *podTemplates) Create(podTemplate *v1.PodTemplate) (result *v1.PodTemplate, err error) {
-	result = &v1.PodTemplate{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("podtemplates").
-		Body(podTemplate).
-		Do().
-		Into(result)
-	return
-}
-
-// Update takes the representation of a podTemplate and updates it. Returns the server's representation of the podTemplate, and an error, if there is any.
-func (c *podTemplates) Update(podTemplate *v1.PodTemplate) (result *v1.PodTemplate, err error) {
-	result = &v1.PodTemplate{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("podtemplates").
-		Name(podTemplate.Name).
-		Body(podTemplate).
-		Do().
-		Into(result)
-	return
-}
-
-// Delete takes name of the podTemplate and deletes it. Returns an error if one occurs.
-func (c *podTemplates) Delete(name string, options *meta_v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("podtemplates").
-		Name(name).
-		Body(options).
-		Do().
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *podTemplates) DeleteCollection(options *meta_v1.DeleteOptions, listOptions meta_v1.ListOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("podtemplates").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Body(options).
-		Do().
-		Error()
-}
-
-// Patch applies the patch and returns the patched podTemplate.
-func (c *podTemplates) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1.PodTemplate, err error) {
-	result = &v1.PodTemplate{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("podtemplates").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
-		Into(result)
-	return
 }

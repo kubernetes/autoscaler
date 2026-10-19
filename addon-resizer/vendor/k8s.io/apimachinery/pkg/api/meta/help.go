@@ -17,30 +17,76 @@ limitations under the License.
 package meta
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
+	"sync"
 
 	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// IsListType returns true if the provided Object has a slice called Items
+var (
+	// isListCache maintains a cache of types that are checked for lists
+	// which is used by IsListType.
+	// TODO: remove and replace with an interface check
+	isListCache = struct {
+		lock   sync.RWMutex
+		byType map[reflect.Type]bool
+	}{
+		byType: make(map[reflect.Type]bool, 1024),
+	}
+)
+
+// IsListType returns true if the provided Object has a slice called Items.
+// TODO: Replace the code in this check with an interface comparison by
+// creating and enforcing that lists implement a list accessor.
 func IsListType(obj runtime.Object) bool {
-	// if we're a runtime.Unstructured, check whether this is a list.
-	// TODO: refactor GetItemsPtr to use an interface that returns []runtime.Object
-	if unstructured, ok := obj.(runtime.Unstructured); ok {
-		return unstructured.IsList()
+	switch t := obj.(type) {
+	case runtime.Unstructured:
+		return t.IsList()
+	}
+	t := reflect.TypeOf(obj)
+
+	isListCache.lock.RLock()
+	ok, exists := isListCache.byType[t]
+	isListCache.lock.RUnlock()
+
+	if !exists {
+		_, err := getItemsPtr(obj)
+		ok = err == nil
+
+		// cache only the first 1024 types
+		isListCache.lock.Lock()
+		if len(isListCache.byType) < 1024 {
+			isListCache.byType[t] = ok
+		}
+		isListCache.lock.Unlock()
 	}
 
-	_, err := GetItemsPtr(obj)
-	return err == nil
+	return ok
 }
+
+var (
+	errExpectFieldItems = errors.New("no Items field in this object")
+	errExpectSliceItems = errors.New("Items field must be a slice of objects")
+)
 
 // GetItemsPtr returns a pointer to the list object's Items member.
 // If 'list' doesn't have an Items member, it's not really a list type
 // and an error will be returned.
 // This function will either return a pointer to a slice, or an error, but not both.
+// TODO: this will be replaced with an interface in the future
 func GetItemsPtr(list runtime.Object) (interface{}, error) {
+	obj, err := getItemsPtr(list)
+	if err != nil {
+		return nil, fmt.Errorf("%T is not a list: %v", list, err)
+	}
+	return obj, nil
+}
+
+// getItemsPtr returns a pointer to the list object's Items member or an error.
+func getItemsPtr(list runtime.Object) (interface{}, error) {
 	v, err := conversion.EnforcePtr(list)
 	if err != nil {
 		return nil, err
@@ -48,26 +94,45 @@ func GetItemsPtr(list runtime.Object) (interface{}, error) {
 
 	items := v.FieldByName("Items")
 	if !items.IsValid() {
-		return nil, fmt.Errorf("no Items field in %#v", list)
+		return nil, errExpectFieldItems
 	}
 	switch items.Kind() {
-	case reflect.Interface, reflect.Ptr:
+	case reflect.Interface, reflect.Pointer:
 		target := reflect.TypeOf(items.Interface()).Elem()
 		if target.Kind() != reflect.Slice {
-			return nil, fmt.Errorf("items: Expected slice, got %s", target.Kind())
+			return nil, errExpectSliceItems
 		}
 		return items.Interface(), nil
 	case reflect.Slice:
 		return items.Addr().Interface(), nil
 	default:
-		return nil, fmt.Errorf("items: Expected slice, got %s", items.Kind())
+		return nil, errExpectSliceItems
 	}
 }
 
 // EachListItem invokes fn on each runtime.Object in the list. Any error immediately terminates
 // the loop.
+//
+// If items passed to fn are retained for different durations, and you want to avoid
+// retaining all items in obj as long as any item is referenced, use EachListItemWithAlloc instead.
 func EachListItem(obj runtime.Object, fn func(runtime.Object) error) error {
+	return eachListItem(obj, fn, false)
+}
+
+// EachListItemWithAlloc works like EachListItem, but avoids retaining references to the items slice in obj.
+// It does this by making a shallow copy of non-pointer items in obj.
+//
+// If the items passed to fn are not retained, or are retained for the same duration, use EachListItem instead for memory efficiency.
+func EachListItemWithAlloc(obj runtime.Object, fn func(runtime.Object) error) error {
+	return eachListItem(obj, fn, true)
+}
+
+// allocNew: Whether shallow copy is required when the elements in Object.Items are struct
+func eachListItem(obj runtime.Object, fn func(runtime.Object) error, allocNew bool) error {
 	if unstructured, ok := obj.(runtime.Unstructured); ok {
+		if allocNew {
+			return unstructured.EachListItemWithAlloc(fn)
+		}
 		return unstructured.EachListItem(fn)
 	}
 	// TODO: Change to an interface call?
@@ -84,7 +149,7 @@ func EachListItem(obj runtime.Object, fn func(runtime.Object) error) error {
 		return nil
 	}
 	takeAddr := false
-	if elemType := items.Type().Elem(); elemType.Kind() != reflect.Ptr && elemType.Kind() != reflect.Interface {
+	if elemType := items.Type().Elem(); elemType.Kind() != reflect.Pointer && elemType.Kind() != reflect.Interface {
 		if !items.Index(0).CanAddr() {
 			return fmt.Errorf("unable to take address of items in %T for EachListItem", obj)
 		}
@@ -94,8 +159,19 @@ func EachListItem(obj runtime.Object, fn func(runtime.Object) error) error {
 	for i := 0; i < len; i++ {
 		raw := items.Index(i)
 		if takeAddr {
-			raw = raw.Addr()
+			if allocNew {
+				// shallow copy to avoid retaining a reference to the original list item
+				itemCopy := reflect.New(raw.Type())
+				// assign to itemCopy and type-assert
+				itemCopy.Elem().Set(raw)
+				// reflect.New will guarantee that itemCopy must be a pointer.
+				raw = itemCopy
+			} else {
+				raw = raw.Addr()
+			}
 		}
+		// raw must be a pointer or an interface
+		// allocate a pointer is cheap
 		switch item := raw.Interface().(type) {
 		case *runtime.RawExtension:
 			if err := fn(item.Object); err != nil {
@@ -120,7 +196,23 @@ func EachListItem(obj runtime.Object, fn func(runtime.Object) error) error {
 
 // ExtractList returns obj's Items element as an array of runtime.Objects.
 // Returns an error if obj is not a List type (does not have an Items member).
+//
+// If items in the returned list are retained for different durations, and you want to avoid
+// retaining all items in obj as long as any item is referenced, use ExtractListWithAlloc instead.
 func ExtractList(obj runtime.Object) ([]runtime.Object, error) {
+	return extractList(obj, false)
+}
+
+// ExtractListWithAlloc works like ExtractList, but avoids retaining references to the items slice in obj.
+// It does this by making a shallow copy of non-pointer items in obj.
+//
+// If the items in the returned list are not retained, or are retained for the same duration, use ExtractList instead for memory efficiency.
+func ExtractListWithAlloc(obj runtime.Object) ([]runtime.Object, error) {
+	return extractList(obj, true)
+}
+
+// allocNew: Whether shallow copy is required when the elements in Object.Items are struct
+func extractList(obj runtime.Object, allocNew bool) ([]runtime.Object, error) {
 	itemsPtr, err := GetItemsPtr(obj)
 	if err != nil {
 		return nil, err
@@ -129,11 +221,21 @@ func ExtractList(obj runtime.Object) ([]runtime.Object, error) {
 	if err != nil {
 		return nil, err
 	}
+	if items.IsNil() {
+		return nil, nil
+	}
 	list := make([]runtime.Object, items.Len())
+	if len(list) == 0 {
+		return list, nil
+	}
+	elemType := items.Type().Elem()
+	isRawExtension := elemType == rawExtensionObjectType
+	implementsObject := elemType.Implements(objectType)
 	for i := range list {
 		raw := items.Index(i)
-		switch item := raw.Interface().(type) {
-		case runtime.RawExtension:
+		switch {
+		case isRawExtension:
+			item := raw.Interface().(runtime.RawExtension)
 			switch {
 			case item.Object != nil:
 				list[i] = item.Object
@@ -143,8 +245,18 @@ func ExtractList(obj runtime.Object) ([]runtime.Object, error) {
 			default:
 				list[i] = nil
 			}
-		case runtime.Object:
-			list[i] = item
+		case implementsObject:
+			list[i] = raw.Interface().(runtime.Object)
+		case allocNew:
+			// shallow copy to avoid retaining a reference to the original list item
+			itemCopy := reflect.New(raw.Type())
+			// assign to itemCopy and type-assert
+			itemCopy.Elem().Set(raw)
+			var ok bool
+			// reflect.New will guarantee that itemCopy must be a pointer.
+			if list[i], ok = itemCopy.Interface().(runtime.Object); !ok {
+				return nil, fmt.Errorf("%v: item[%v]: Expected object, got %#v(%s)", obj, i, raw.Interface(), raw.Kind())
+			}
 		default:
 			var found bool
 			if list[i], found = raw.Addr().Interface().(runtime.Object); !found {
@@ -155,8 +267,25 @@ func ExtractList(obj runtime.Object) ([]runtime.Object, error) {
 	return list, nil
 }
 
-// objectSliceType is the type of a slice of Objects
-var objectSliceType = reflect.TypeOf([]runtime.Object{})
+var (
+	// objectSliceType is the type of a slice of Objects
+	objectSliceType        = reflect.TypeOf([]runtime.Object{})
+	objectType             = reflect.TypeOf((*runtime.Object)(nil)).Elem()
+	rawExtensionObjectType = reflect.TypeOf(runtime.RawExtension{})
+)
+
+// LenList returns the length of this list or 0 if it is not a list.
+func LenList(list runtime.Object) int {
+	itemsPtr, err := GetItemsPtr(list)
+	if err != nil {
+		return 0
+	}
+	items, err := conversion.EnforcePtr(itemsPtr)
+	if err != nil {
+		return 0
+	}
+	return items.Len()
+}
 
 // SetList sets the given list object's Items member have the elements given in
 // objects.
@@ -178,7 +307,7 @@ func SetList(list runtime.Object, objects []runtime.Object) error {
 	slice := reflect.MakeSlice(items.Type(), len(objects), len(objects))
 	for i := range objects {
 		dest := slice.Index(i)
-		if dest.Type() == reflect.TypeOf(runtime.RawExtension{}) {
+		if dest.Type() == rawExtensionObjectType {
 			dest = dest.FieldByName("Object")
 		}
 

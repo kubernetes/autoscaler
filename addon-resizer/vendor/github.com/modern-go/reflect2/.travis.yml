@@ -1,11 +1,12 @@
 language: go
 
 go:
-  - 1.8.x
+  - 1.9.x
   - 1.x
 
 before_install:
   - go get -t -v ./...
+  - go get -t -v github.com/modern-go/reflect2-tests/...
 
 script:
   - ./test.sh

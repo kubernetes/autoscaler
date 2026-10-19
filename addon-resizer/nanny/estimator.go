@@ -18,96 +18,111 @@ package nanny
 
 import (
 	"fmt"
-	"math"
 
-	api "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/klog/v2"
+)
 
-	log "github.com/golang/glog"
+const (
+	eps = float64(0.01)
 )
 
 // Resource defines the name of a resource, the quantity, and the marginal value.
 type Resource struct {
-	Base, ExtraPerNode resource.Quantity
-	Name               api.ResourceName
+	Base, ExtraPerResource resource.Quantity
+	Name                   corev1.ResourceName
 }
 
-// ResourceListPair is a pair of ResourceLists, denoting a range.
-type ResourceListPair struct {
-	// lower bound of the resource range.
-	lower api.ResourceList
-	// upper bound of the resource range.
-	upper api.ResourceList
-}
-
-// EstimatorResult is the result of the resource Estimation, used by Estimator struct.
-type EstimatorResult struct {
-	// Recommended range is used for setting new values of resource requirements.
-	RecommendedRange ResourceListPair
-	// Acceptable range specifies which requirements are acceptable and doesn't need to be changed.
-	AcceptableRange ResourceListPair
-}
-
-// Estimator is a struct used for estimating accepted and recommended resource requirements.
-type Estimator struct {
-	// Specification of monitored resources.
+// LinearEstimator estimates the amount of resources as r = base + extra*nodes.
+type LinearEstimator struct {
 	Resources []Resource
-	// Percentage offset defining acceptable resource range.
-	AcceptanceOffset int64
-	// Percentage offset defining recommended resource range.
-	RecommendationOffset int64
 }
 
-// Returns the node count that is offset/100 away from nodeCount rounded to the
-// nearest integer using the rounder function.
-func getOffsetNodeCount(nodeCount uint64, offset int64, rounder func(float64) float64) uint64 {
-	return uint64(int64(nodeCount) + int64(rounder(float64(nodeCount)*float64(offset)/100)))
+func (e LinearEstimator) scale(clusterSize uint64) *corev1.ResourceRequirements {
+	return calculateResources(clusterSize, e.Resources)
 }
 
-// Returns a ResourceListPair representing the intervals describing the set
-// of valid values for each of the given resources. The lower bound of each
-// interval is computed using the node count equal to numNodes +
-// floor(numNodes * -offset/100). The uppoer bound of each interval is computed
-// using the node count equal to numNodes + ceil(numNodes * offset/100). Note
-// the ordering of the elements of the lower and upper fields is significant.
-// Element N of each field represents the lower and upper bounds, respectively,
-// of the interval for the resource with index N in res.
-func nodesAndOffsetToRange(numNodes uint64, offset int64, res []Resource) ResourceListPair {
-	numNodesMin := getOffsetNodeCount(numNodes, -offset, math.Floor)
-	numNodesMax := getOffsetNodeCount(numNodes, offset, math.Ceil)
-	return ResourceListPair{
-		lower: calculateResources(numNodesMin, res),
-		upper: calculateResources(numNodesMax, res),
+// updatedResourceEstimator creates a copy of original estimator
+// with updated resources.
+func (e LinearEstimator) updatedResourceEstimator(resources []Resource) ResourceEstimator {
+	newEstimator := LinearEstimator{
+		Resources: resources,
 	}
+	return newEstimator
 }
 
-// Computes the acceptable and recommended resource ranges relative to the base
-// resource values for a cluster with the specified number of nodes.
-func (e Estimator) scaleWithNodes(numNodes uint64) *EstimatorResult {
-	return &EstimatorResult{
-		RecommendedRange: nodesAndOffsetToRange(numNodes, e.RecommendationOffset, e.Resources),
-		AcceptableRange:  nodesAndOffsetToRange(numNodes, e.AcceptanceOffset, e.Resources),
+// ExponentialEstimator estimates resource requirements in a way that prevents
+// frequent updates but may end up with larger estimates than actually needed.
+type ExponentialEstimator struct {
+	// The collection of resources to provide estimates for.
+	Resources []Resource
+	// The minimum cluster size for which the estimator will provide
+	// resource estimates. Must be greater than 1.
+	MinClusterSize uint64
+	// The multiplier used to compute the next cluster size to provide
+	// estimates for. For example, suppose the cluster has 9 nodes,
+	// MinClusterSize is 5, and ScaleFactor is 1.5. Then the estimator will
+	// provide estimates for FLOOR(5 * 1.5 * 1.5) = 11 nodes since that is
+	// the smallest cluster size larger than 9 nodes.
+	ScaleFactor float64
+}
+
+func (e ExponentialEstimator) scale(clusterSize uint64) *corev1.ResourceRequirements {
+	n := e.MinClusterSize
+	for n < clusterSize {
+		n = uint64(float64(n)*e.ScaleFactor + eps)
 	}
+
+	return calculateResources(n, e.Resources)
 }
 
-// Returns a ResourceList containing the resource value for each type of
-// resource given the specified number of nodes and base resource value.
-func calculateResources(numNodes uint64, resources []Resource) api.ResourceList {
-	resourceList := make(api.ResourceList)
+// updatedResourceEstimator creates a copy of original estimator
+// with updated resources.
+func (e ExponentialEstimator) updatedResourceEstimator(resources []Resource) ResourceEstimator {
+	newEstimator := ExponentialEstimator{
+		Resources:      resources,
+		MinClusterSize: e.MinClusterSize,
+		ScaleFactor:    e.ScaleFactor,
+	}
+	return newEstimator
+}
+
+// Generates and returns a resource value string describing the overhead when
+// running on a cluster with the given the cluster size. The per resource overhead
+// is taken from the Resource instance.
+//
+// Note this function takes into account resource units allowing it to compute
+// resource overhead values even with fractional values. For example, it can
+// handle incremental values of 0.5m for cpu resources.
+func computeResourceOverheadValueString(clusterSize uint64, resource Resource) string {
+	perResourceOverhead := resource.ExtraPerResource.String()
+	var perResourceValue float64
+	var perResourceUnit string
+	_, err := fmt.Sscanf(perResourceOverhead, "%f%s", &perResourceValue, &perResourceUnit)
+	if err != nil && err.Error() != "EOF" {
+		klog.Warningf(
+			"Failed to parse the per resource overhead string '%s'; error=%s",
+			perResourceOverhead, err)
+		// Default to not specifying any unit to maintain existing
+		// behaviour.
+		perResourceUnit = ""
+	}
+	return fmt.Sprintf("%f%s", perResourceValue*float64(clusterSize), perResourceUnit)
+}
+
+func calculateResources(clusterSize uint64, resources []Resource) *corev1.ResourceRequirements {
+	limits := make(corev1.ResourceList)
+	requests := make(corev1.ResourceList)
 	for _, r := range resources {
-		// Since we want to enable passing values smaller than e.g. 1 millicore per node,
-		// we need to have some more hacky solution here than operating on MilliValues.
-		perNodeString := r.ExtraPerNode.String()
-		var perNode float64
-		read, _ := fmt.Sscanf(perNodeString, "%f", &perNode)
-		overhead := resource.MustParse(fmt.Sprintf("%f%s", perNode*float64(numNodes), perNodeString[read:]))
-
+		overhead := computeResourceOverheadValueString(clusterSize, r)
 		newRes := r.Base
-		newRes.Add(overhead)
-
-		log.V(4).Infof("New requirement for resource %s with %d nodes is %s", r.Name, numNodes, newRes.String())
-
-		resourceList[r.Name] = newRes
+		newRes.Add(resource.MustParse(overhead))
+		limits[r.Name] = newRes
+		requests[r.Name] = newRes
 	}
-	return resourceList
+	return &corev1.ResourceRequirements{
+		Limits:   limits,
+		Requests: requests,
+	}
 }
