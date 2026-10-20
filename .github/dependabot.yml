@@ -82,6 +82,11 @@ updates:
     - "/vertical-pod-autoscaler/pkg/updater"
   schedule:
     interval: weekly
+  ignore:
+    - dependency-name: "*"
+      update-types:
+        - "version-update:semver-major"
+        - "version-update:semver-minor"
   open-pull-requests-limit: 3
   labels:
     - "area/vertical-pod-autoscaler"
@@ -89,9 +94,9 @@ updates:
     - "ok-to-test"
     - "kind/dependency"
   groups:
-    actions:
-      update-types:
-        - "patch"
+    patch-updates:
+      patterns:
+        - "*"
 
 ### VPA release 1.7 branch
 - package-ecosystem: gomod
@@ -126,6 +131,11 @@ updates:
     - "/vertical-pod-autoscaler/pkg/updater"
   schedule:
     interval: weekly
+  ignore:
+    - dependency-name: "*"
+      update-types:
+        - "version-update:semver-major"
+        - "version-update:semver-minor"
   open-pull-requests-limit: 3
   labels:
     - "area/vertical-pod-autoscaler"
@@ -133,9 +143,9 @@ updates:
     - "ok-to-test"
     - "kind/dependency"
   groups:
-    actions:
-      update-types:
-        - "patch"
+    patch-updates:
+      patterns:
+        - "*"
 
 ### Addon-resizer
 - package-ecosystem: gomod
