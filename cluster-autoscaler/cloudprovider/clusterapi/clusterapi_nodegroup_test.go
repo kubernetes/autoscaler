@@ -354,11 +354,13 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 
 func TestNodeGroupIncreaseSize(t *testing.T) {
 	type testCase struct {
-		description string
-		delta       int
-		initial     int32
-		expected    int32
-		annotations map[string]string
+		description    string
+		delta          int
+		initial        int32
+		expected       int32
+		annotations    map[string]string
+		enforceMinSize bool
+		errorMsg       string
 	}
 
 	// A group at 0 replicas is only registered when it can scale from zero.
@@ -379,11 +381,19 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			nodeGroupMaxSizeAnnotationKey: "10",
 		},
 	}, {
-		description: "increase from below min size",
+		description: "increase from below min size is rejected without enforce-node-group-min-size",
 		delta:       1,
 		initial:     0,
-		expected:    2,
+		expected:    0,
 		annotations: scaleFromZero,
+		errorMsg:    "size decrease too large - desired:1 min:2",
+	}, {
+		description:    "increase from below min size with enforce-node-group-min-size",
+		delta:          1,
+		initial:        0,
+		expected:       2,
+		annotations:    scaleFromZero,
+		enforceMinSize: true,
 	}, {
 		description: "increase by more than the gap to min size",
 		delta:       3,
@@ -404,6 +414,7 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 	test := func(t *testing.T, tc *testCase, testConfig *TestConfig) {
 		controller := NewTestMachineController(t)
 		defer controller.Stop()
+		controller.enforceNodeGroupMinSize = tc.enforceMinSize
 		controller.AddTestConfigs(testConfig)
 
 		nodegroups, err := controller.nodeGroups()
@@ -425,7 +436,15 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			t.Errorf("initially expected %v, got %v", tc.initial, currReplicas)
 		}
 
-		if err := ng.IncreaseSize(context.Background(), tc.delta); err != nil {
+		err = ng.IncreaseSize(context.Background(), tc.delta)
+		if tc.errorMsg != "" {
+			if err == nil {
+				t.Fatal("expected an error")
+			}
+			if !strings.Contains(err.Error(), tc.errorMsg) {
+				t.Errorf("expected error message to contain %q, got %q", tc.errorMsg, err.Error())
+			}
+		} else if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
