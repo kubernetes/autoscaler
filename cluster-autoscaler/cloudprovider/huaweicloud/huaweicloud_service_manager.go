@@ -232,6 +232,11 @@ func (csm *cloudServiceManager) ListScalingInstances(groupID string) ([]huaweicl
 
 	var scalingGroupInstances []huaweicloudsdkasmodel.ScalingGroupInstance
 	var startNumber int32 = 0
+	const maxPages = 100
+	const pageSize = int32(100)
+
+
+	
 	for {
 		opts := &huaweicloudsdkasmodel.ListScalingInstancesRequest{
 			ScalingGroupId: groupID,
