@@ -37,7 +37,7 @@ type zombieInstance struct {
 
 // cleanupZombieNodes detects and cleans up zombie VMSS instances that are in non-functional states.
 // A zombie instance is one that meets any of the following conditions:
-// - Has failed provisioning state
+// - Has failed provisioning state, is stopped, and has no K8s node
 // - Has failed VM extensions
 // - Never registered in Kubernetes (age > threshold)
 // - Has unreachable taint (age > threshold)
@@ -338,9 +338,10 @@ func (m *AzureManager) evaluateZombieStatus(
 		}
 	}
 
-	// SCENARIO 2: Provisioning failed
-	if provisioningState == "Failed" {
-		return true, false, "Provisioning FAILED"
+	// SCENARIO 2: Provisioning failed on an unregistered, stopped VM.
+	// Deallocated VMs may be intentionally parked for reuse.
+	if !hasK8sNode && provisioningState == "Failed" && powerState == "stopped" {
+		return true, false, "Provisioning FAILED and VM is stopped"
 	}
 
 	// SCENARIO 3: VMSS succeeded but never registered in K8s

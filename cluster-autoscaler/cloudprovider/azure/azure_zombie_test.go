@@ -100,6 +100,86 @@ func TestZombieCleanup_DetectsFailedProvisioning(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestZombieCleanup_FailedProvisioningSafety(t *testing.T) {
+	for _, powerState := range []string{"running", "starting", "stopping", "stopped", "deallocating", "deallocated", "unknown", "", "missing-instance-view"} {
+		for _, registration := range []string{"unregistered", "ready", "not-ready", "unreachable"} {
+			t.Run(powerState+"/"+registration, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				defer ctrl.Finish()
+
+				manager, mockVMSSClient, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
+				manager.config.EnableZombieCleanup = true
+				manager.config.ZombieCleanupDryRun = false
+				manager.config.ZombieMinAgeMinutes = 5
+
+				vm := newZombieVMWithFailedProvisioning(0, 10*time.Minute)
+				switch powerState {
+				case "missing-instance-view":
+					vm.Properties.InstanceView = nil
+				case "":
+					vm.Properties.InstanceView.Statuses = nil
+				default:
+					vm.Properties.InstanceView.Statuses = []*armcompute.InstanceViewStatus{
+						{Code: ptr.To("PowerState/" + powerState)},
+					}
+				}
+
+				nodeMap := make(map[string]*apiv1.Node)
+				hasK8sNode := registration != "unregistered"
+				if hasK8sNode {
+					node := &apiv1.Node{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:              "node-0",
+							CreationTimestamp: metav1.NewTime(time.Now().Add(-10 * time.Minute)),
+						},
+						Spec: apiv1.NodeSpec{
+							ProviderID: azurePrefix + *vm.ID,
+						},
+						Status: apiv1.NodeStatus{
+							Conditions: []apiv1.NodeCondition{
+								{Type: apiv1.NodeReady, Status: apiv1.ConditionFalse},
+							},
+						},
+					}
+					if registration == "ready" {
+						node.Status.Conditions[0].Status = apiv1.ConditionTrue
+					}
+					if registration == "unreachable" {
+						node.Spec.Taints = []apiv1.Taint{
+							{Key: "node.kubernetes.io/unreachable", Effect: apiv1.TaintEffectNoSchedule},
+						}
+					}
+					manager.kubeClient = fake.NewSimpleClientset(node)
+					nodeMap[normalizeProviderID(node.Spec.ProviderID)] = node
+				}
+
+				shouldDelete := !hasK8sNode && powerState == "stopped"
+				shouldLog := registration == "unreachable" || (registration == "not-ready" && powerState == "running")
+				isZombie, registered, _ := manager.evaluateZombieStatus(vm, nodeMap, time.Now(), 5*time.Minute)
+				assert.Equal(t, hasK8sNode, registered)
+				assert.Equal(t, shouldDelete || shouldLog, isZombie)
+
+				vmssName := "test-vmss"
+				mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(
+					[]*armcompute.VirtualMachineScaleSet{{Name: ptr.To(vmssName)}}, nil,
+				)
+				mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(
+					[]*armcompute.VirtualMachineScaleSetVM{vm}, nil,
+				)
+				if shouldDelete {
+					mockDeleteClient.EXPECT().BeginDeleteInstances(
+						gomock.Any(), manager.config.ResourceGroup, vmssName,
+						armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIDs: []*string{ptr.To("0")}},
+						gomock.Any(),
+					).Return(nil, nil)
+				}
+
+				assert.NoError(t, manager.cleanupZombieNodes())
+			})
+		}
+	}
+}
+
 func TestZombieCleanup_DetectsFailedExtensions(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -867,7 +947,7 @@ func newHealthyVM(instanceID int) *armcompute.VirtualMachineScaleSetVM {
 	}
 }
 
-// newZombieVMWithFailedProvisioning creates a VMSS VM with failed provisioning state
+// newZombieVMWithFailedProvisioning creates a stopped VMSS VM with failed provisioning state
 func newZombieVMWithFailedProvisioning(instanceID int, age time.Duration) *armcompute.VirtualMachineScaleSetVM {
 	return &armcompute.VirtualMachineScaleSetVM{
 		ID:         ptr.To(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, instanceID)),
@@ -881,7 +961,7 @@ func newZombieVMWithFailedProvisioning(instanceID int, age time.Duration) *armco
 						Code: ptr.To("ProvisioningState/failed"),
 					},
 					{
-						Code: ptr.To("PowerState/running"),
+						Code: ptr.To("PowerState/stopped"),
 					},
 				},
 			},
