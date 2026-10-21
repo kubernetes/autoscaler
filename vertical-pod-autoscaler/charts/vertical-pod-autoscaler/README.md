@@ -321,6 +321,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | updater.annotations | object | `{}` |  |
 | updater.enabled | bool | `true` |  |
 | updater.extraArgs[0] | string | `"--in-place-skip-disruption-budget=true"` |  |
+| updater.extraEnv | list | `[]` |  |
 | updater.image.pullPolicy | string | `"IfNotPresent"` |  |
 | updater.image.repository | string | `"registry.k8s.io/autoscaling/vpa-updater"` |  |
 | updater.image.tag | string | `nil` |  |

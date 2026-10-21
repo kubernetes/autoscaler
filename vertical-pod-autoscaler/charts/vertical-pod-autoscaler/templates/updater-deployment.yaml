@@ -67,6 +67,9 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          {{- with .Values.updater.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           args:
             - --stderrthreshold=info
             {{- if eq (include "vertical-pod-autoscaler.updater.leaderElectionEnabled" .) "true" }}
