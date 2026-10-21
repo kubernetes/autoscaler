@@ -57,11 +57,11 @@ type MigInfoProvider interface {
 	// machine name. For standard types it's retrieved from GCE API.
 	GetMigMachineType(ctx context.Context, migRef GceRef) (MachineType, error)
 	// Returns the pagination behavior of the listManagedInstances Results API method for a given MIG ref
-	GetListManagedInstancesResults(migRef GceRef) (string, error)
+	GetListManagedInstancesResults(ctx context.Context, migRef GceRef) (string, error)
 	// GetMigIsStable returns whether given MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
-	GetMigIsStable(migRef GceRef) (bool, error)
+	GetMigIsStable(ctx context.Context, migRef GceRef) (bool, error)
 	// RefreshMigInfo updates the cached information for a specific MIG without rebuilding the full zone cache
-	RefreshMigInfo(migRef GceRef) error
+	RefreshMigInfo(ctx context.Context, migRef GceRef) error
 }
 
 type timeProvider interface {
@@ -551,8 +551,8 @@ func (c *cachingMigInfoProvider) fillMigInfoCache(ctx context.Context) error {
 }
 
 // RefreshMigInfo updates the cached information for a specific MIG without rebuilding the full zone cache
-func (c *cachingMigInfoProvider) RefreshMigInfo(migRef GceRef) error {
-	return c.fillSingleMigInfo(context.TODO(), migRef)
+func (c *cachingMigInfoProvider) RefreshMigInfo(ctx context.Context, migRef GceRef) error {
+	return c.fillSingleMigInfo(ctx, migRef)
 }
 
 func (c *cachingMigInfoProvider) fillSingleMigInfo(ctx context.Context, migRef GceRef) error {
@@ -583,7 +583,7 @@ func (c *cachingMigInfoProvider) setMigInfoCache(ctx context.Context, migRef Gce
 	c.cache.SetMigInstanceTemplateName(migRef, InstanceTemplateName{templateName, regional})
 }
 
-func (c *cachingMigInfoProvider) GetMigIsStable(migRef GceRef) (bool, error) {
+func (c *cachingMigInfoProvider) GetMigIsStable(ctx context.Context, migRef GceRef) (bool, error) {
 	c.migInfoMutex.Lock()
 	defer c.migInfoMutex.Unlock()
 
@@ -592,13 +592,13 @@ func (c *cachingMigInfoProvider) GetMigIsStable(migRef GceRef) (bool, error) {
 		return isStable, nil
 	}
 
-	err := c.fillMigInfoCacheIfCold(context.TODO())
+	err := c.fillMigInfoCacheIfCold(ctx)
 	isStable, found = c.cache.GetMigIsStable(migRef)
 	if err == nil && found {
 		return isStable, nil
 	}
 
-	err = c.fillSingleMigInfo(context.TODO(), migRef)
+	err = c.fillSingleMigInfo(ctx, migRef)
 	if err != nil {
 		return false, err
 	}
@@ -665,7 +665,7 @@ func (c *cachingMigInfoProvider) GetMigMachineType(ctx context.Context, migRef G
 	return machine, nil
 }
 
-func (c *cachingMigInfoProvider) GetListManagedInstancesResults(migRef GceRef) (string, error) {
+func (c *cachingMigInfoProvider) GetListManagedInstancesResults(ctx context.Context, migRef GceRef) (string, error) {
 	c.migInfoMutex.Lock()
 	defer c.migInfoMutex.Unlock()
 
@@ -674,13 +674,13 @@ func (c *cachingMigInfoProvider) GetListManagedInstancesResults(migRef GceRef) (
 		return listManagedInstancesResults, nil
 	}
 
-	err := c.fillMigInfoCacheIfCold(context.TODO())
+	err := c.fillMigInfoCacheIfCold(ctx)
 	listManagedInstancesResults, found = c.cache.GetListManagedInstancesResults(migRef)
 	if err == nil && found {
 		return listManagedInstancesResults, nil
 	}
 
-	err = c.fillSingleMigInfo(context.TODO(), migRef)
+	err = c.fillSingleMigInfo(ctx, migRef)
 	if err != nil {
 		return "", err
 	}
