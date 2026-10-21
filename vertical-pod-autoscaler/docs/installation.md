@@ -13,7 +13,7 @@
 - [Tear down](#tear-down)
 <!-- /toc -->
 
-The current default version is Vertical Pod Autoscaler 1.7.2
+The current default version is Vertical Pod Autoscaler 1.7.3
 
 ## Compatibility
 
