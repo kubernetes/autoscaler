@@ -26,8 +26,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	apiv1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	clienttesting "k8s.io/client-go/testing"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient/mock_virtualmachinescalesetclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient/mock_virtualmachinescalesetvmclient"
@@ -252,6 +255,73 @@ func TestZombieCleanup_UsesKubeClientForNodeContext(t *testing.T) {
 	// hasK8sNode=true so the zombie is logged only, not deleted.
 	err := manager.cleanupZombieNodes()
 	assert.NoError(t, err)
+}
+
+func TestZombieCleanup_MissingKubeClient(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager, _, _, _ := setupMockManager(t, ctrl)
+	manager.kubeClient = nil
+
+	err := manager.cleanupZombieNodes()
+	assert.ErrorContains(t, err, "Kubernetes client is unavailable")
+}
+
+func TestZombieCleanup_RetriesAfterNodeListFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager, mockVMSSClient, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
+	manager.config.EnableZombieCleanup = true
+	manager.config.ZombieCleanupDryRun = false
+	manager.config.ZombieMinAgeMinutes = 5
+
+	vm := newHealthyVM(0)
+	vm.Properties.TimeCreated = ptr.To(time.Now().Add(-10 * time.Minute))
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "node-0",
+			CreationTimestamp: metav1.NewTime(time.Now().Add(-10 * time.Minute)),
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: azurePrefix + *vm.ID,
+		},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{
+				{Type: apiv1.NodeReady, Status: apiv1.ConditionTrue},
+			},
+		},
+	}
+	kubeClient := fake.NewSimpleClientset(node)
+	nodeListErr := apierrors.NewServiceUnavailable("node list unavailable")
+	nodeListCalls := 0
+	kubeClient.PrependReactor("list", "nodes", func(clienttesting.Action) (bool, runtime.Object, error) {
+		nodeListCalls++
+		if nodeListCalls == 1 {
+			return true, nil, nodeListErr
+		}
+		return false, nil, nil
+	})
+	manager.kubeClient = kubeClient
+
+	// No Azure calls are allowed while Kubernetes node state is unavailable.
+	err := manager.cleanupZombieNodes()
+	assert.ErrorIs(t, err, nodeListErr)
+	assert.Equal(t, 1, nodeListCalls)
+
+	vmssName := "test-vmss"
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(
+		[]*armcompute.VirtualMachineScaleSet{{Name: ptr.To(vmssName)}}, nil,
+	)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(
+		[]*armcompute.VirtualMachineScaleSetVM{vm}, nil,
+	)
+
+	// A later invocation can list nodes successfully and must preserve the registered VM.
+	err = manager.cleanupZombieNodes()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, nodeListCalls)
 }
 
 func TestZombieCleanup_RespectsMinAge(t *testing.T) {
@@ -762,6 +832,7 @@ func setupMockManager(t *testing.T, ctrl *gomock.Controller) (*AzureManager, *mo
 
 func newTestAzureManagerForZombieCleanup(t *testing.T) *AzureManager {
 	return &AzureManager{
+		kubeClient: fake.NewSimpleClientset(),
 		config: &Config{
 			Config: providerazureconfig.Config{
 				ResourceGroup: "test-rg",

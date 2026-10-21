@@ -46,10 +46,10 @@ type zombieInstance struct {
 // Implementation follows a hybrid approach:
 // - VMs that never registered in K8s are directly deleted
 // - VMs with K8s nodes (unreachable/NotReady) are logged only (autoscaler handles deletion)
+// If Kubernetes nodes cannot be listed, cleanup is skipped until the next refresh.
 func (m *AzureManager) cleanupZombieNodes() error {
 	if m.kubeClient == nil {
-		klog.V(4).Info("No kubeClient available, running zombie cleanup without K8s node context")
-		return m.cleanupZombieNodesWithContext(nil)
+		return fmt.Errorf("cannot clean up zombie nodes: Kubernetes client is unavailable")
 	}
 
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
@@ -57,8 +57,7 @@ func (m *AzureManager) cleanupZombieNodes() error {
 
 	nodeList, err := m.kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		klog.Warningf("Failed to list K8s nodes for zombie cleanup, proceeding without K8s context: %v", err)
-		return m.cleanupZombieNodesWithContext(nil)
+		return fmt.Errorf("cannot clean up zombie nodes: failed to list Kubernetes nodes: %w", err)
 	}
 
 	nodes := make([]*apiv1.Node, len(nodeList.Items))
