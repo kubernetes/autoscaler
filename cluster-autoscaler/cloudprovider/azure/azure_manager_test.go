@@ -29,6 +29,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/utils/ptr"
 	azclient "sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient/mock_virtualmachineclient"
@@ -1044,6 +1045,30 @@ func TestManagerRefreshAndCleanup(t *testing.T) {
 	err := manager.Refresh()
 	assert.NoError(t, err)
 	manager.Cleanup()
+}
+
+func TestManagerRefreshSkipsZombieCleanupOnDiscoveryFailure(t *testing.T) {
+	manager := newTestAzureManager(t)
+	manager.config.EnableZombieCleanup = true
+	manager.config.ZombieCleanupDryRun = false
+	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.VMType = providerazureconsts.VMTypeStandard
+	manager.autoDiscoverySpecs = []labelAutoDiscoveryConfig{
+		{Selector: map[string]string{"cluster": "managed"}},
+	}
+	manager.RegisterNodeGroup(newTestScaleSet(manager, "test-asg"))
+	manager.explicitlyConfigured["test-asg"] = true
+	kubeClient := fake.NewSimpleClientset()
+	manager.kubeClient = kubeClient
+
+	assert.NoError(t, manager.forceRefresh())
+	assert.Empty(t, kubeClient.Actions(), "cleanup must not run after failed discovery")
+	assert.False(t, manager.lastRefresh.IsZero(), "normal cache refresh must still complete")
+
+	manager.config.VMType = providerazureconsts.VMTypeVMSS
+	manager.autoDiscoverySpecs = nil
+	assert.NoError(t, manager.forceRefresh())
+	assert.Len(t, kubeClient.Actions(), 1, "cleanup should resume after successful discovery")
 }
 
 func TestGetScaleSetOptions(t *testing.T) {

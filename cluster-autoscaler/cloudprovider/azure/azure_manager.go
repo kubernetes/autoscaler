@@ -248,8 +248,9 @@ func (m *AzureManager) Refresh() error {
 }
 
 func (m *AzureManager) forceRefresh() error {
-	if err := m.fetchAutoNodeGroups(); err != nil {
-		klog.Errorf("Failed to fetch autodiscovered nodegroups: %v", err)
+	discoveryErr := m.fetchAutoNodeGroups()
+	if discoveryErr != nil {
+		klog.Errorf("Failed to fetch autodiscovered nodegroups: %v", discoveryErr)
 	}
 	if err := m.azureCache.regenerate(); err != nil {
 		klog.Errorf("Failed to regenerate Azure cache: %v", err)
@@ -258,8 +259,8 @@ func (m *AzureManager) forceRefresh() error {
 	m.lastRefresh = time.Now()
 	klog.V(2).Infof("Refreshed Azure VM and VMSS list, next refresh after %v", m.lastRefresh.Add(m.azureCache.refreshInterval))
 
-	// Cleanup zombie nodes if enabled
-	if m.config.EnableZombieCleanup {
+	// Cleanup requires successful discovery to avoid using stale node group ownership.
+	if m.config.EnableZombieCleanup && discoveryErr == nil {
 		if err := m.cleanupZombieNodes(); err != nil {
 			klog.Errorf("Failed to cleanup zombie nodes: %v", err)
 			// Don't fail the refresh if zombie cleanup fails

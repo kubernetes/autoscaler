@@ -35,7 +35,7 @@ type zombieInstance struct {
 	reason     string
 }
 
-// cleanupZombieNodes detects and cleans up zombie VMSS instances that are in non-functional states.
+// cleanupZombieNodes detects and cleans up non-functional VMSS instances in autoscaler-managed node groups.
 // A zombie instance is one that meets any of the following conditions:
 // - Has failed provisioning state, is stopped, and has no K8s node
 // - Has failed VM extensions
@@ -74,13 +74,6 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
-	// Get all VMSS in the resource group
-	scaleSets, err := m.azClient.virtualMachineScaleSetsClient.List(ctx, m.config.ResourceGroup)
-	if err != nil {
-		klog.Errorf("Failed to list VMSS: %v", err)
-		return fmt.Errorf("failed to list VMSS: %w", err)
-	}
-
 	// Build K8s node lookup table
 	k8sNodeMap := make(map[string]*apiv1.Node)
 	if nodes != nil {
@@ -94,13 +87,17 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 		}
 	}
 
-	// Process each VMSS
+	// Process only VMSS node groups registered with the autoscaler.
 	zombiesByVMSS := make(map[string][]zombieInstance)
 	currentTime := time.Now()
 	minAgeDuration := time.Duration(m.config.ZombieMinAgeMinutes) * time.Minute
 
-	for _, scaleSet := range scaleSets {
-		vmssName := ptr.Deref(scaleSet.Name, "")
+	for _, nodeGroup := range m.getNodeGroups() {
+		scaleSet, ok := nodeGroup.(*ScaleSet)
+		if !ok {
+			continue
+		}
+		vmssName := scaleSet.Name
 		if vmssName == "" {
 			continue
 		}
