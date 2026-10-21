@@ -40,13 +40,14 @@ type zombieInstance struct {
 // - Has failed provisioning state, is stopped, and has no K8s node
 // - Has failed VM extensions
 // - Never registered in Kubernetes (age > threshold)
-// - Has unreachable taint (age > threshold)
-// - Is NotReady with a running VM (age > threshold)
+// - Has unreachable taint beyond the threshold (using taint or Ready-condition timestamps)
+// - Is NotReady with a running VM beyond the threshold (using the Ready-condition timestamp)
 //
 // Implementation follows a hybrid approach:
 // - VMs that never registered in K8s are directly deleted
 // - VMs with K8s nodes (unreachable/NotReady) are logged only (autoscaler handles deletion)
 // If Kubernetes nodes cannot be listed, cleanup is skipped until the next refresh.
+// Registered-node checks skip missing or invalid timestamps rather than using node creation time.
 func (m *AzureManager) cleanupZombieNodes() error {
 	if m.kubeClient == nil {
 		return fmt.Errorf("cannot clean up zombie nodes: Kubernetes client is unavailable")
@@ -304,22 +305,6 @@ func (m *AzureManager) evaluateZombieStatus(
 		k8sNode, hasK8sNode = k8sNodeMap[normalizedVMID]
 	}
 
-	// Calculate node age if K8s node exists
-	var nodeAge *time.Duration
-	isReady := false
-	if hasK8sNode && k8sNode != nil {
-		age := currentTime.Sub(k8sNode.CreationTimestamp.Time)
-		nodeAge = &age
-
-		// Check Ready condition
-		for _, condition := range k8sNode.Status.Conditions {
-			if condition.Type == apiv1.NodeReady && condition.Status == apiv1.ConditionTrue {
-				isReady = true
-				break
-			}
-		}
-	}
-
 	// SCENARIO 1: Extensions failed or never installed
 	if !hasK8sNode && provisioningState == "Succeeded" && (!extensionsInstalled || extensionsFailed) {
 		if vmssAge == nil {
@@ -360,37 +345,62 @@ func (m *AzureManager) evaluateZombieStatus(
 			return false, true, ""
 		}
 
-		// Sub-check 4a: Unreachable taint
+		var readyCondition *apiv1.NodeCondition
+		for i := range k8sNode.Status.Conditions {
+			if k8sNode.Status.Conditions[i].Type == apiv1.NodeReady {
+				readyCondition = &k8sNode.Status.Conditions[i]
+				break
+			}
+		}
+		if readyCondition != nil && readyCondition.Status == apiv1.ConditionTrue {
+			return false, true, ""
+		}
+
 		hasUnreachableTaint := false
-		if k8sNode.Spec.Taints != nil {
-			for _, taint := range k8sNode.Spec.Taints {
-				if taint.Key == "node.kubernetes.io/unreachable" {
-					hasUnreachableTaint = true
-					break
-				}
+		var unhealthySince *metav1.Time
+		for _, taint := range k8sNode.Spec.Taints {
+			if taint.Key != "node.kubernetes.io/unreachable" {
+				continue
+			}
+			hasUnreachableTaint = true
+			if taint.TimeAdded == nil {
+				continue
+			}
+			if taint.TimeAdded.IsZero() || taint.TimeAdded.Time.After(currentTime) {
+				klog.V(4).Infof("Skipping registered node %s: unreachable taint timestamp is zero or in the future", k8sNode.Name)
+				return false, true, ""
+			}
+			// Use the most recent timestamp when both unreachable taint effects are present.
+			if unhealthySince == nil || taint.TimeAdded.Time.After(unhealthySince.Time) {
+				unhealthySince = taint.TimeAdded
 			}
 		}
 
-		if hasUnreachableTaint {
-			if nodeAge != nil && *nodeAge > minAgeDuration {
-				return true, true, fmt.Sprintf("Node has unreachable taint for %.0f minutes", nodeAge.Minutes())
-			}
-			// Node is too young to be considered a zombie
+		if !hasUnreachableTaint && powerState != "running" {
 			return false, true, ""
 		}
 
-		// Sub-check 4b: NotReady status (only if no unreachable taint)
-		if !isReady {
-			// Problem case: VM running but node not ready
-			if powerState == "running" && nodeAge != nil && *nodeAge > minAgeDuration {
-				return true, true, fmt.Sprintf("Running VM but NotReady node for %.0f minutes", nodeAge.Minutes())
+		reason := "Node has unreachable taint"
+		if unhealthySince == nil {
+			if readyCondition == nil || (readyCondition.Status != apiv1.ConditionFalse && readyCondition.Status != apiv1.ConditionUnknown) {
+				klog.V(4).Infof("Skipping registered node %s: no timestamped unreachable taint or unhealthy Ready condition", k8sNode.Name)
+				return false, true, ""
 			}
-
-			// Node is too young or not running
+			unhealthySince = &readyCondition.LastTransitionTime
+			if hasUnreachableTaint {
+				reason = fmt.Sprintf("Node has unreachable taint; Ready condition has been %s", readyCondition.Status)
+			} else {
+				reason = fmt.Sprintf("Running VM; Ready condition has been %s", readyCondition.Status)
+			}
+		}
+		if unhealthySince.IsZero() || unhealthySince.Time.After(currentTime) {
+			klog.V(4).Infof("Skipping registered node %s: Ready-condition timestamp is zero or in the future", k8sNode.Name)
 			return false, true, ""
 		}
-
-		// Node is healthy
+		unhealthyDuration := currentTime.Sub(unhealthySince.Time)
+		if unhealthyDuration > minAgeDuration {
+			return true, true, fmt.Sprintf("%s for %.0f minutes", reason, unhealthyDuration.Minutes())
+		}
 		return false, true, ""
 	}
 

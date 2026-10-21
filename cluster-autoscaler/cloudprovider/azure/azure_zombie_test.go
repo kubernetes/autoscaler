@@ -199,7 +199,11 @@ func TestZombieCleanup_FailedProvisioningSafety(t *testing.T) {
 						},
 						Status: apiv1.NodeStatus{
 							Conditions: []apiv1.NodeCondition{
-								{Type: apiv1.NodeReady, Status: apiv1.ConditionFalse},
+								{
+									Type:               apiv1.NodeReady,
+									Status:             apiv1.ConditionFalse,
+									LastTransitionTime: metav1.NewTime(time.Now().Add(-10 * time.Minute)),
+								},
 							},
 						},
 					}
@@ -326,8 +330,9 @@ func TestZombieCleanup_WithK8sNodesContext(t *testing.T) {
 				ProviderID: azurePrefix + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0),
 				Taints: []apiv1.Taint{
 					{
-						Key:    "node.kubernetes.io/unreachable",
-						Effect: apiv1.TaintEffectNoSchedule,
+						Key:       "node.kubernetes.io/unreachable",
+						Effect:    apiv1.TaintEffectNoSchedule,
+						TimeAdded: &metav1.Time{Time: time.Now().Add(-10 * time.Minute)},
 					},
 				},
 			},
@@ -361,8 +366,9 @@ func TestZombieCleanup_UsesKubeClientForNodeContext(t *testing.T) {
 			ProviderID: azurePrefix + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0),
 			Taints: []apiv1.Taint{
 				{
-					Key:    "node.kubernetes.io/unreachable",
-					Effect: apiv1.TaintEffectNoSchedule,
+					Key:       "node.kubernetes.io/unreachable",
+					Effect:    apiv1.TaintEffectNoSchedule,
+					TimeAdded: &metav1.Time{Time: time.Now().Add(-10 * time.Minute)},
 				},
 			},
 		},
@@ -675,6 +681,96 @@ func TestZombieCleanup_MixedZombiesAndHealthy(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestZombieCleanup_RegisteredNodeUnhealthyDuration(t *testing.T) {
+	now := time.Now()
+	old := metav1.NewTime(now.Add(-10 * time.Minute))
+	recent := metav1.NewTime(now.Add(-30 * time.Second))
+	boundary := metav1.NewTime(now.Add(-5 * time.Minute))
+	future := metav1.NewTime(now.Add(time.Minute))
+	zero := metav1.Time{}
+
+	for _, tc := range []struct {
+		name           string
+		status         apiv1.ConditionStatus
+		transition     metav1.Time
+		taintTimes     []*metav1.Time
+		deallocated    bool
+		expectedReason string
+	}{
+		{name: "recent NotReady", status: apiv1.ConditionFalse, transition: recent},
+		{name: "recent Unknown", status: apiv1.ConditionUnknown, transition: recent},
+		{name: "old NotReady", status: apiv1.ConditionFalse, transition: old, expectedReason: "Running VM; Ready condition has been False for 10 minutes"},
+		{name: "old Unknown", status: apiv1.ConditionUnknown, transition: old, expectedReason: "Running VM; Ready condition has been Unknown for 10 minutes"},
+		{name: "NotReady at threshold", status: apiv1.ConditionFalse, transition: boundary},
+		{name: "missing Ready condition"},
+		{name: "invalid Ready status", status: apiv1.ConditionStatus("invalid"), transition: old},
+		{name: "zero Ready timestamp", status: apiv1.ConditionFalse},
+		{name: "future Ready timestamp", status: apiv1.ConditionUnknown, transition: future},
+		{name: "recovered Ready", status: apiv1.ConditionTrue, transition: old},
+		{name: "recent taint overrides old condition", status: apiv1.ConditionUnknown, transition: old, taintTimes: []*metav1.Time{&recent}},
+		{name: "old taint", taintTimes: []*metav1.Time{&old}, expectedReason: "Node has unreachable taint for 10 minutes"},
+		{name: "taint at threshold", taintTimes: []*metav1.Time{&boundary}},
+		{name: "missing taint timestamp recent fallback", status: apiv1.ConditionUnknown, transition: recent, taintTimes: []*metav1.Time{nil}},
+		{name: "missing taint timestamp Unknown fallback", status: apiv1.ConditionUnknown, transition: old, taintTimes: []*metav1.Time{nil}, expectedReason: "Node has unreachable taint; Ready condition has been Unknown for 10 minutes"},
+		{name: "missing taint timestamp False fallback", status: apiv1.ConditionFalse, transition: old, taintTimes: []*metav1.Time{nil}, expectedReason: "Node has unreachable taint; Ready condition has been False for 10 minutes"},
+		{name: "missing both timestamps", status: apiv1.ConditionUnknown, taintTimes: []*metav1.Time{nil}},
+		{name: "missing timestamp and condition", taintTimes: []*metav1.Time{nil}},
+		{name: "future fallback timestamp", status: apiv1.ConditionUnknown, transition: future, taintTimes: []*metav1.Time{nil}},
+		{name: "zero taint timestamp does not fall back", status: apiv1.ConditionUnknown, transition: old, taintTimes: []*metav1.Time{&zero}},
+		{name: "future taint timestamp does not fall back", status: apiv1.ConditionUnknown, transition: old, taintTimes: []*metav1.Time{&future}},
+		{name: "Ready with stale taint", status: apiv1.ConditionTrue, transition: recent, taintTimes: []*metav1.Time{&old}},
+		{name: "timestamp on second taint", taintTimes: []*metav1.Time{nil, &old}, expectedReason: "Node has unreachable taint for 10 minutes"},
+		{name: "newest taint first", taintTimes: []*metav1.Time{&recent, &old}},
+		{name: "newest taint last", taintTimes: []*metav1.Time{&old, &recent}},
+		{name: "deallocated with old taint", status: apiv1.ConditionUnknown, transition: old, taintTimes: []*metav1.Time{&old}, deallocated: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
+			manager.config.EnableZombieCleanup = true
+			manager.config.ZombieCleanupDryRun = false
+			manager.config.ZombieMinAgeMinutes = 5
+			vm := newHealthyVM(0)
+			if tc.deallocated {
+				vm = newDeallocatedVM(0)
+			}
+			node := &apiv1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:              "node-0",
+					CreationTimestamp: metav1.NewTime(now.Add(-10 * 24 * time.Hour)),
+				},
+				Spec: apiv1.NodeSpec{ProviderID: azurePrefix + *vm.ID},
+			}
+			if tc.status != "" {
+				node.Status.Conditions = []apiv1.NodeCondition{
+					{Type: apiv1.NodeReady, Status: tc.status, LastTransitionTime: tc.transition},
+				}
+			}
+			for i, timestamp := range tc.taintTimes {
+				effect := apiv1.TaintEffectNoSchedule
+				if i == 1 {
+					effect = apiv1.TaintEffectNoExecute
+				}
+				node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
+					Key: "node.kubernetes.io/unreachable", Effect: effect, TimeAdded: timestamp,
+				})
+			}
+			nodeMap := map[string]*apiv1.Node{normalizeProviderID(node.Spec.ProviderID): node}
+			isZombie, registered, reason := manager.evaluateZombieStatus(vm, nodeMap, now, 5*time.Minute)
+			assert.Equal(t, tc.expectedReason != "", isZombie)
+			assert.True(t, registered)
+			assert.Equal(t, tc.expectedReason, reason)
+
+			manager.RegisterNodeGroup(newTestScaleSet(manager, "test-vmss"))
+			mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, "test-vmss").Return(
+				[]*armcompute.VirtualMachineScaleSetVM{vm}, nil,
+			)
+			assert.NoError(t, manager.cleanupZombieNodesWithContext([]*apiv1.Node{node}))
+		})
+	}
+}
+
 func TestZombieCleanup_IgnoresDeallocatedNodes(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -813,6 +909,7 @@ func TestZombieScenario_NeverRegisteredInKubernetes(t *testing.T) {
 
 func TestZombieScenario_NodeUnreachableTaint(t *testing.T) {
 	vm := newHealthyVM(0)
+	now := time.Now()
 
 	// Node has unreachable taint (common failure scenario)
 	node := &apiv1.Node{
@@ -824,38 +921,20 @@ func TestZombieScenario_NodeUnreachableTaint(t *testing.T) {
 			ProviderID: azurePrefix + fmt.Sprintf(fakeVirtualMachineScaleSetVMID, 0),
 			Taints: []apiv1.Taint{
 				{
-					Key:    "node.kubernetes.io/unreachable",
-					Effect: apiv1.TaintEffectNoSchedule,
+					Key:       "node.kubernetes.io/unreachable",
+					Effect:    apiv1.TaintEffectNoSchedule,
+					TimeAdded: &metav1.Time{Time: now.Add(-15 * time.Minute)},
 				},
 			},
 		},
 	}
 
-	// VM is running
-	vmIsRunning := false
-	if vm.Properties != nil && vm.Properties.InstanceView != nil && vm.Properties.InstanceView.Statuses != nil {
-		for _, status := range vm.Properties.InstanceView.Statuses {
-			if ptr.Deref(status.Code, "") == "PowerState/running" {
-				vmIsRunning = true
-				break
-			}
-		}
-	}
-
-	// Node is tainted unreachable
-	hasUnreachableTaint := false
-	for _, taint := range node.Spec.Taints {
-		if taint.Key == "node.kubernetes.io/unreachable" {
-			hasUnreachableTaint = true
-			break
-		}
-	}
-
-	nodeAge := 15 * time.Minute
-
-	assert.True(t, vmIsRunning && hasUnreachableTaint && nodeAge > 5*time.Minute,
-		"ZOMBIE DETECTED: VM is running but node has unreachable taint for %v - pods can't schedule!",
-		nodeAge)
+	manager := newTestAzureManagerForZombieCleanup(t)
+	nodeMap := map[string]*apiv1.Node{normalizeProviderID(node.Spec.ProviderID): node}
+	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nodeMap, now, 5*time.Minute)
+	assert.True(t, isZombie)
+	assert.True(t, registered)
+	assert.Equal(t, "Node has unreachable taint for 15 minutes", reason)
 }
 
 func TestZombieScenario_NodeNotReady(t *testing.T) {
@@ -882,33 +961,12 @@ func TestZombieScenario_NodeNotReady(t *testing.T) {
 		},
 	}
 
-	// Check VM is running (not deallocated)
-	vmIsRunning := false
-	if vm.Properties != nil && vm.Properties.InstanceView != nil && vm.Properties.InstanceView.Statuses != nil {
-		for _, status := range vm.Properties.InstanceView.Statuses {
-			if ptr.Deref(status.Code, "") == "PowerState/running" {
-				vmIsRunning = true
-				break
-			}
-		}
-	}
-
-	vmProvisioned := ptr.Deref(vm.Properties.ProvisioningState, "") == "Succeeded"
-
-	// Check node ready status
-	nodeReady := false
-	for _, condition := range node.Status.Conditions {
-		if condition.Type == apiv1.NodeReady && condition.Status == apiv1.ConditionTrue {
-			nodeReady = true
-			break
-		}
-	}
-
-	notReadyDuration := 15 * time.Minute
-
-	assert.True(t, vmProvisioned && vmIsRunning && !nodeReady && notReadyDuration > 5*time.Minute,
-		"ZOMBIE DETECTED: VM running but node NotReady for %v (>5min threshold)!",
-		notReadyDuration)
+	manager := newTestAzureManagerForZombieCleanup(t)
+	nodeMap := map[string]*apiv1.Node{normalizeProviderID(node.Spec.ProviderID): node}
+	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nodeMap, time.Now(), 5*time.Minute)
+	assert.True(t, isZombie)
+	assert.True(t, registered)
+	assert.Equal(t, "Running VM; Ready condition has been False for 15 minutes", reason)
 }
 
 func TestZombieScenario_DeallocatedNodesAreHealthy(t *testing.T) {

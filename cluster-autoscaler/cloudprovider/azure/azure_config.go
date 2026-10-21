@@ -125,7 +125,8 @@ type Config struct {
 	// In dry-run mode, zombies are detected and logged but NOT deleted
 	ZombieCleanupDryRun bool `json:"zombieCleanupDryRun,omitempty" yaml:"zombieCleanupDryRun,omitempty"`
 
-	// ZombieMinAgeMinutes defines the minimum age (in minutes) before an instance is considered a zombie
+	// ZombieMinAgeMinutes defines the minimum VM age for age-based unregistered-instance checks
+	// and the minimum unhealthy duration for registered-node checks, in minutes.
 	ZombieMinAgeMinutes int `json:"zombieMinAgeMinutes,omitempty" yaml:"zombieMinAgeMinutes,omitempty"`
 }
 
