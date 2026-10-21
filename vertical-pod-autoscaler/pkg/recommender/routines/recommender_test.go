@@ -29,7 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
-	"k8s.io/utils/ptr"
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
@@ -407,7 +406,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 	}{
 		{
 			name:           "inside the window",
-			delay:          ptr.To(int32(3600)),
+			delay:          new(int32(3600)),
 			now:            created.Add(time.Minute),
 			featureEnabled: true,
 			expectFound:    true,
@@ -417,7 +416,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 		},
 		{
 			name:           "after the window",
-			delay:          ptr.To(int32(3600)),
+			delay:          new(int32(3600)),
 			now:            created.Add(2 * time.Hour),
 			featureEnabled: true,
 			expectFound:    true,
@@ -434,7 +433,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 		},
 		{
 			name:           "feature disabled",
-			delay:          ptr.To(int32(3600)),
+			delay:          new(int32(3600)),
 			now:            created.Add(time.Minute),
 			featureEnabled: false,
 			expectFound:    false,
