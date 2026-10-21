@@ -353,6 +353,9 @@ updater:
   # Annotations to add to the Updater deployment.
   annotations: {}
 
+  # Additional environment variables for the Updater default container.
+  extraEnv: []
+
   # updater.logLevel -- Log verbosity for the Updater (klog -v).
   logLevel: 4
 

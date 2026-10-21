@@ -75,3 +75,24 @@ tests:
       - hasDocuments:
           count: 0
         template: updater-rolebinding.yaml
+
+  - it: appends updater.extraEnv to the updater container env
+    set:
+      updater.extraEnv:
+        - name: GOMAXPROCS
+          value: "2"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: GOMAXPROCS
+            value: "2"
+        template: updater-deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        template: updater-deployment.yaml
