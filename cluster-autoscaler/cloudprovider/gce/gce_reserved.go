@@ -87,7 +87,7 @@ type EvictionHard struct {
 type GceReserved struct{}
 
 // CalculateKernelReserved computes how much memory Linux kernel will reserve.
-// TODO(jkaniuk): account for crashkernel reservation on RHEL / CentOS
+// TODO: Account for crashkernel reservation on RHEL / CentOS
 func (r *GceReserved) CalculateKernelReserved(ctx context.Context, m MigOsInfo, physicalMemory int64) int64 {
 	logger := klog.FromContext(ctx)
 	os := m.Os()

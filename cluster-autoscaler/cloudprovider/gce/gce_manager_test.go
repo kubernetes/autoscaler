@@ -519,7 +519,7 @@ func TestDeleteInstances(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, server)
 }
 
-// TODO; make Test*MigSize tests use MigTargetSizesProvider mock and move mocking API server to tests of cachingMigTargetSizesProvider
+// TODO: Make Test*MigSize tests use MigTargetSizesProvider mock and move mocking API server to tests of cachingMigTargetSizesProvider
 
 const setMigSizeResponse = `{
   "kind": "compute#operation",
@@ -616,7 +616,7 @@ func TestGetAndSetMigSize(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, server)
 
 	// let's invalidate target size cache
-	// TODO we should probably call g.Refresh here but that imples more API calls. Leaving just partial cache invalidation for now
+	// TODO: We should probably call g.Refresh here but that imples more API calls. Leaving just partial cache invalidation for now
 	g.cache.InvalidateAllMigTargetSizes(context.Background())
 
 	// now if w query size of any mig whole cache should be refreshed by listing InstanceGroupManagers; we expect two calls
