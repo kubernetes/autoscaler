@@ -85,6 +85,40 @@ func TestZombieCleanup_OnlyManagedScaleSets(t *testing.T) {
 	}
 }
 
+func TestZombieCleanup_UsesDiscoveredResourceGroup(t *testing.T) {
+	for _, tc := range []struct {
+		name                string
+		hostedResourceGroup string
+		resourceGroup       string
+	}{
+		{name: "default", resourceGroup: "test-rg"},
+		{name: "hosted", hostedResourceGroup: "hosted-rg", resourceGroup: "hosted-rg"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			manager, _, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
+			manager.config.EnableZombieCleanup = true
+			manager.config.ZombieCleanupDryRun = false
+			manager.config.HostedResourceGroup = tc.hostedResourceGroup
+			manager.azureCache.resourceGroup = tc.resourceGroup
+			manager.RegisterNodeGroup(newTestScaleSet(manager, "managed-vmss"))
+
+			mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), tc.resourceGroup, "managed-vmss").Return(
+				[]*armcompute.VirtualMachineScaleSetVM{newZombieVMWithFailedProvisioning(0, 10*time.Minute)}, nil,
+			)
+			mockDeleteClient.EXPECT().BeginDeleteInstances(
+				gomock.Any(), tc.resourceGroup, "managed-vmss",
+				armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIDs: []*string{ptr.To("0")}},
+				gomock.Any(),
+			).Return(nil, nil)
+
+			assert.NoError(t, manager.cleanupZombieNodes())
+		})
+	}
+}
+
 func TestZombieCleanup_NoManagedScaleSets(t *testing.T) {
 	for _, scope := range []string{"empty", "non-vmss"} {
 		t.Run(scope, func(t *testing.T) {
@@ -1026,7 +1060,7 @@ func setupMockManager(t *testing.T, ctrl *gomock.Controller) (*AzureManager, *mo
 func newTestAzureManagerForZombieCleanup(t *testing.T) *AzureManager {
 	return &AzureManager{
 		kubeClient:           fake.NewSimpleClientset(),
-		azureCache:           &azureCache{},
+		azureCache:           &azureCache{resourceGroup: "test-rg"},
 		explicitlyConfigured: make(map[string]bool),
 		config: &Config{
 			Config: providerazureconfig.Config{

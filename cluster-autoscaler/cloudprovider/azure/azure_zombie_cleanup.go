@@ -48,6 +48,7 @@ type zombieInstance struct {
 // - VMs with K8s nodes (unreachable/NotReady) are logged only (autoscaler handles deletion)
 // If Kubernetes nodes cannot be listed, cleanup is skipped until the next refresh.
 // Registered-node checks skip missing or invalid timestamps rather than using node creation time.
+// Azure operations use the cache's effective resource group, including the hosted-resource-group override.
 func (m *AzureManager) cleanupZombieNodes() error {
 	if m.kubeClient == nil {
 		return fmt.Errorf("cannot clean up zombie nodes: Kubernetes client is unavailable")
@@ -106,7 +107,7 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 		// Get all VMs in this VMSS with instance view
 		vms, err := m.azClient.virtualMachineScaleSetVMsClient.ListVMInstanceView(
 			ctx,
-			m.config.ResourceGroup,
+			m.azureCache.resourceGroup,
 			vmssName,
 		)
 		if err != nil {
@@ -213,7 +214,7 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 		// Delete VMSS instances
 		poller, err := m.azClient.vmssClientForDelete.BeginDeleteInstances(
 			ctx,
-			m.config.ResourceGroup,
+			m.azureCache.resourceGroup,
 			vmssName,
 			vmInstanceIDs,
 			&armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions{
