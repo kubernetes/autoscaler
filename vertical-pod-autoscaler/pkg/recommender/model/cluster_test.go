@@ -522,6 +522,20 @@ func TestAddOrUpdateVpaPreservesInitialStateOnRealSelectorChange(t *testing.T) {
 		"ContainersInitialAggregateState must survive empty→real selector recreate")
 }
 
+func TestAddOrUpdateVpaSelectorNothingToEverything(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	apiObject := test.VerticalPodAutoscaler().WithNamespace(testVpaID.Namespace).
+		WithName(testVpaID.VpaName).WithContainer(testContainerID.ContainerName).
+		WithAnnotations(testAnnotations).WithTargetRef(testTargetRef).Get()
+
+	err := cluster.AddOrUpdateVpa(apiObject, labels.Nothing())
+	assert.NoError(t, err)
+	err = cluster.AddOrUpdateVpa(apiObject, labels.Everything())
+	assert.NoError(t, err)
+
+	assert.True(t, cluster.VPAs()[testVpaID].PodSelector.Empty())
+}
+
 // TestIsEmptySelector verifies isEmptySelector only matches labels.Nothing(),
 // not labels.Everything() — both stringify to "" but must be told apart
 // (see PR #10095 review discussion).

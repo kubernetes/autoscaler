@@ -303,7 +303,7 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 
 	vpa, vpaExists := cluster.vpas[vpaID]
 	var preservedInitialState ContainerNameToAggregateStateMap
-	if vpaExists && (vpa.PodSelector.String() != selector.String()) {
+	if vpaExists && selectorsDiffer(vpa.PodSelector, selector) {
 		// A transient targetRef resolution failure yields labels.Nothing()
 		// (empty selector string). That is not a real selector change — keep
 		// the previous selector so we do not wipe checkpointed history.
@@ -353,6 +353,12 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 // checked too, to avoid mistaking an all-matching selector for a failure.
 func isEmptySelector(s labels.Selector) bool {
 	return s == nil || (s.String() == "" && !s.Empty())
+}
+
+// selectorsDiffer compares selectors by String(), but also tells Nothing()
+// and Everything() apart.
+func selectorsDiffer(a, b labels.Selector) bool {
+	return isEmptySelector(a) != isEmptySelector(b) || a.String() != b.String()
 }
 
 // DeleteVpa removes a VPA with the given ID from the clusterState.
