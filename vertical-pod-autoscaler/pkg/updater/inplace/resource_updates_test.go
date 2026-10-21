@@ -25,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	featuregatetesting "k8s.io/component-base/featuregate/testing"
-	"k8s.io/utils/ptr"
 
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -263,7 +262,7 @@ func TestCalculatePatches_UnboostDuringInitialDelay(t *testing.T) {
 	vpa := &vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{CreationTimestamp: metav1.Now()},
 		Spec: vpa_types.VerticalPodAutoscalerSpec{
-			UpdatePolicy: &vpa_types.PodUpdatePolicy{UpdateMode: &inPlaceOrRecreate, InitialDelaySeconds: ptr.To(int32(3600))},
+			UpdatePolicy: &vpa_types.PodUpdatePolicy{UpdateMode: &inPlaceOrRecreate, InitialDelaySeconds: new(int32(3600))},
 			ResourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 					{ContainerName: "c1", StartupBoost: &vpa_types.StartupBoost{CPU: &vpa_types.GenericStartupBoost{DurationSeconds: &ten}}},
