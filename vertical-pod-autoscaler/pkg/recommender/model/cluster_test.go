@@ -469,9 +469,6 @@ func TestUpdatePodSelector(t *testing.T) {
 	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(testContainerID))
 }
 
-// TestAddOrUpdateVpaKeepsSelectorOnEmptyFlip covers kubernetes/autoscaler#9891:
-// a transient targetRef failure yields labels.Nothing() (empty string). That
-// must not recreate the VPA or drop checkpointed aggregate state.
 func TestAddOrUpdateVpaKeepsSelectorOnEmptyFlip(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
 	vpa := addTestVpa(cluster)
@@ -494,9 +491,6 @@ func TestAddOrUpdateVpaKeepsSelectorOnEmptyFlip(t *testing.T) {
 		"checkpointed initial aggregate state must not be discarded")
 }
 
-// TestAddOrUpdateVpaPreservesInitialStateOnRealSelectorChange covers the
-// InitFromCheckpoints race: VPA created with empty selector, checkpoint loaded,
-// then selector becomes real — history must survive the recreate.
 func TestAddOrUpdateVpaPreservesInitialStateOnRealSelectorChange(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
 	apiObject := test.VerticalPodAutoscaler().WithNamespace(testVpaID.Namespace).
@@ -536,9 +530,6 @@ func TestAddOrUpdateVpaSelectorNothingToEverything(t *testing.T) {
 	assert.True(t, cluster.VPAs()[testVpaID].PodSelector.Empty())
 }
 
-// TestIsEmptySelector verifies isEmptySelector only matches labels.Nothing(),
-// not labels.Everything() — both stringify to "" but must be told apart
-// (see PR #10095 review discussion).
 func TestIsEmptySelector(t *testing.T) {
 	assert.True(t, isEmptySelector(nil))
 	assert.True(t, isEmptySelector(labels.Nothing()))

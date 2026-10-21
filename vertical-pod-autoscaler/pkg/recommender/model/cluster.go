@@ -304,19 +304,11 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	vpa, vpaExists := cluster.vpas[vpaID]
 	var preservedInitialState ContainerNameToAggregateStateMap
 	if vpaExists && selectorsDiffer(vpa.PodSelector, selector) {
-		// A transient targetRef resolution failure yields labels.Nothing()
-		// (empty selector string). That is not a real selector change — keep
-		// the previous selector so we do not wipe checkpointed history.
-		// See kubernetes/autoscaler#9891.
+		// A target resolution failure gives labels.Nothing(), so keep the previous selector.
 		if isEmptySelector(selector) && !isEmptySelector(vpa.PodSelector) {
 			selector = vpa.PodSelector
 		} else {
-			// Real selector change (including ""→real after a failed first
-			// resolve): recreate the VPA object but keep
-			// ContainersInitialAggregateState (loaded from checkpoints).
-			// Without this, InitFromCheckpoints followed by a selector flip
-			// discards the just-loaded history and the next checkpoint write
-			// overwrites the CR with thin data.
+			// Keep the history loaded from checkpoints when recreating the VPA.
 			preservedInitialState = vpa.ContainersInitialAggregateState
 			if err := cluster.DeleteVpa(vpaID); err != nil {
 				return err
@@ -347,10 +339,9 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	return nil
 }
 
-// isEmptySelector reports whether s is the labels.Nothing() sentinel used to
-// signal a target resolution failure (see #9891). Both Nothing and
-// Everything stringify to "", so Empty() (true only for Everything) is
-// checked too, to avoid mistaking an all-matching selector for a failure.
+// isEmptySelector reports whether s is labels.Nothing(), which getSelector
+// returns when the target can't be resolved. Everything() also stringifies
+// to "", so Empty() tells them apart.
 func isEmptySelector(s labels.Selector) bool {
 	return s == nil || (s.String() == "" && !s.Empty())
 }
