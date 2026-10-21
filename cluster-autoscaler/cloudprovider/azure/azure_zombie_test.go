@@ -216,7 +216,7 @@ func TestZombieCleanup_FailedProvisioningSafety(t *testing.T) {
 				}
 
 				shouldDelete := !hasK8sNode && powerState == "stopped"
-				shouldLog := registration == "unreachable" || (registration == "not-ready" && powerState == "running")
+				shouldLog := (registration == "unreachable" && powerState != "deallocated") || (registration == "not-ready" && powerState == "running")
 				isZombie, registered, _ := manager.evaluateZombieStatus(vm, nodeMap, time.Now(), 5*time.Minute)
 				assert.Equal(t, hasK8sNode, registered)
 				assert.Equal(t, shouldDelete || shouldLog, isZombie)
@@ -713,10 +713,40 @@ func TestZombieCleanup_IgnoresDeallocatedNodes(t *testing.T) {
 		},
 	}
 
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(vms, nil)
+	for _, tc := range []struct {
+		name   string
+		taints []apiv1.Taint
+	}{
+		{name: "without unreachable taint"},
+		{
+			name: "unreachable NoSchedule",
+			taints: []apiv1.Taint{
+				{Key: "node.kubernetes.io/unreachable", Effect: apiv1.TaintEffectNoSchedule},
+			},
+		},
+		{
+			name: "unreachable NoExecute",
+			taints: []apiv1.Taint{
+				{Key: "node.kubernetes.io/unreachable", Effect: apiv1.TaintEffectNoExecute},
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			nodes[0].Spec.Taints = tc.taints
+			nodeMap := map[string]*apiv1.Node{
+				normalizeProviderID(nodes[0].Spec.ProviderID): nodes[0],
+			}
+			isZombie, hasK8sNode, reason := manager.evaluateZombieStatus(vms[0], nodeMap, time.Now(), 5*time.Minute)
+			assert.False(t, isZombie)
+			assert.True(t, hasK8sNode)
+			assert.Empty(t, reason)
 
-	err := manager.cleanupZombieNodesWithContext(nodes)
-	assert.NoError(t, err)
+			mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(vms, nil)
+
+			err := manager.cleanupZombieNodesWithContext(nodes)
+			assert.NoError(t, err)
+		})
+	}
 }
 
 // ============================================================================

@@ -355,6 +355,11 @@ func (m *AzureManager) evaluateZombieStatus(
 
 	// SCENARIO 4: Has K8s node but with critical issues
 	if hasK8sNode && k8sNode != nil {
+		// Deallocated nodes may be intentionally parked for reuse.
+		if powerState == "deallocated" {
+			return false, true, ""
+		}
+
 		// Sub-check 4a: Unreachable taint
 		hasUnreachableTaint := false
 		if k8sNode.Spec.Taints != nil {
@@ -376,11 +381,6 @@ func (m *AzureManager) evaluateZombieStatus(
 
 		// Sub-check 4b: NotReady status (only if no unreachable taint)
 		if !isReady {
-			// Special case: Deallocated by autoscaler so healthy state
-			if powerState == "deallocated" {
-				return false, true, ""
-			}
-
 			// Problem case: VM running but node not ready
 			if powerState == "running" && nodeAge != nil && *nodeAge > minAgeDuration {
 				return true, true, fmt.Sprintf("Running VM but NotReady node for %.0f minutes", nodeAge.Minutes())
