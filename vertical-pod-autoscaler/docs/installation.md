@@ -14,7 +14,7 @@
 - [Tear down](#tear-down)
 <!-- /toc -->
 
-The current default version is Vertical Pod Autoscaler 1.8.0
+The current default version is Vertical Pod Autoscaler 1.8.1
 
 ## Supported versions
 
