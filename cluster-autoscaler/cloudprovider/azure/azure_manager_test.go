@@ -1047,11 +1047,11 @@ func TestManagerRefreshAndCleanup(t *testing.T) {
 	manager.Cleanup()
 }
 
-func TestManagerRefreshSkipsZombieCleanupOnDiscoveryFailure(t *testing.T) {
+func TestManagerRefreshSkipsStaleInstanceCleanupOnDiscoveryFailure(t *testing.T) {
 	manager := newTestAzureManager(t)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 	manager.config.VMType = providerazureconsts.VMTypeStandard
 	manager.autoDiscoverySpecs = []labelAutoDiscoveryConfig{
 		{Selector: map[string]string{"cluster": "managed"}},
@@ -1061,12 +1061,12 @@ func TestManagerRefreshSkipsZombieCleanupOnDiscoveryFailure(t *testing.T) {
 	kubeClient := fake.NewSimpleClientset()
 	manager.kubeClient = kubeClient
 
-	manager.zombieObservations = map[zombieObservationKey]time.Time{
+	manager.staleInstanceObservations = map[staleInstanceObservationKey]time.Time{
 		{nodeGroupID: "test-asg", providerID: "old-vm"}: time.Now().Add(-time.Hour),
 	}
 	assert.NoError(t, manager.forceRefresh())
 	assert.Empty(t, kubeClient.Actions(), "cleanup must not run after failed discovery")
-	assert.Empty(t, manager.zombieObservations, "failed discovery must reset candidate grace periods")
+	assert.Empty(t, manager.staleInstanceObservations, "failed discovery must reset candidate grace periods")
 	assert.False(t, manager.lastRefresh.IsZero(), "normal cache refresh must still complete")
 
 	manager.config.VMType = providerazureconsts.VMTypeVMSS

@@ -76,6 +76,32 @@ k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownunneededtim
 k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownunreadytime: "20m0s"
 ```
 
+## Stale unregistered VMSS instance cleanup
+
+Cluster Autoscaler can optionally clean up eligible stale VMSS instances without
+a matching Kubernetes Node in autoscaler-managed node groups. Unhealthy registered
+instances are logged only; this feature does not request their deletion.
+
+The Azure cloud-provider JSON configuration supports:
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `enableStaleInstanceCleanup` | `false` | Enable stale unregistered VMSS instance cleanup. |
+| `staleInstanceCleanupDryRun` | `true` | Log eligible instances without deleting them. |
+| `staleInstanceMinAgeMinutes` | `5` | Minimum creation age and additional observation grace period for age-based cleanup; also the unhealthy-duration threshold for registered-node logging. Values below 1 use the default. |
+
+Age-based cleanup requires a creation timestamp and more than the configured
+minimum age, followed by more than the configured observation grace period.
+Observed registration, ineligibility, or observation failures reset the timer;
+restarting CA also grants a fresh grace period. Unregistered instances confirmed
+to have failed provisioning and be stopped do not require either age threshold
+or observation grace.
+
+Deallocated/deallocating instances are protected, and direct deletion is skipped
+for starting/stopping instances or missing/unknown power states. Cleanup runs
+during eligible Azure cache refreshes; the minimum age does not control its cadence.
+This feature does not fix failed-restart/backoff/fallback behavior.
+
 ## Deployment manifests
 
 Cluster autoscaler supports four Kubernetes cluster options on Azure:

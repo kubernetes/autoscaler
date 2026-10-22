@@ -118,17 +118,17 @@ type Config struct {
 	// Disabled by default; set to true to opt in.
 	EnableVMSSEtag bool `json:"enableVMSSEtag,omitempty" yaml:"enableVMSSEtag,omitempty"`
 
-	// EnableZombieCleanup defines whether to enable automatic cleanup of zombie VMSS instances
-	EnableZombieCleanup bool `json:"enableZombieCleanup,omitempty" yaml:"enableZombieCleanup,omitempty"`
+	// EnableStaleInstanceCleanup defines whether to enable automatic cleanup of stale unregistered VMSS instances
+	EnableStaleInstanceCleanup bool `json:"enableStaleInstanceCleanup,omitempty" yaml:"enableStaleInstanceCleanup,omitempty"`
 
-	// ZombieCleanupDryRun defines whether zombie cleanup should run in dry-run mode (detect but don't delete)
-	// In dry-run mode, zombies are detected and logged but NOT deleted
-	ZombieCleanupDryRun bool `json:"zombieCleanupDryRun,omitempty" yaml:"zombieCleanupDryRun,omitempty"`
+	// StaleInstanceCleanupDryRun defines whether stale instance cleanup should run in dry-run mode (detect but don't delete)
+	// In dry-run mode, stale instances are detected and logged but NOT deleted
+	StaleInstanceCleanupDryRun bool `json:"staleInstanceCleanupDryRun,omitempty" yaml:"staleInstanceCleanupDryRun,omitempty"`
 
-	// ZombieMinAgeMinutes defines the minimum VM age for age-based unregistered-instance checks
+	// StaleInstanceMinAgeMinutes defines the minimum VM age for age-based unregistered-instance checks
 	// and the additional continuous observation grace period before deleting those candidates.
 	// It also defines the minimum unhealthy duration for registered-node checks, in minutes.
-	ZombieMinAgeMinutes int `json:"zombieMinAgeMinutes,omitempty" yaml:"zombieMinAgeMinutes,omitempty"`
+	StaleInstanceMinAgeMinutes int `json:"staleInstanceMinAgeMinutes,omitempty" yaml:"staleInstanceMinAgeMinutes,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -161,10 +161,10 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	cfg.StrictCacheUpdates = false
 	cfg.EnableLabelPredictionsOnTemplate = true
 	cfg.EnableVMSSEtag = false
-	// Zombie cleanup disabled by default for safety
-	cfg.EnableZombieCleanup = false
-	cfg.ZombieCleanupDryRun = true // Default to dry-run mode for extra safety
-	cfg.ZombieMinAgeMinutes = 5    // Default 5 minutes minimum age
+	// Stale instance cleanup disabled by default for safety
+	cfg.EnableStaleInstanceCleanup = false
+	cfg.StaleInstanceCleanupDryRun = true // Default to dry-run mode for extra safety
+	cfg.StaleInstanceMinAgeMinutes = 5    // Default 5 minutes minimum age
 
 	// Config file overrides defaults
 	if configReader != nil {
@@ -363,8 +363,8 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		// This means, if it is valued by the config file, but explicitly set to 0 in the env, it will retreat to default.
 		cfg.MaxDeploymentsCount = int64(defaultMaxDeploymentsCount)
 	}
-	if cfg.ZombieMinAgeMinutes < 1 {
-		cfg.ZombieMinAgeMinutes = 5
+	if cfg.StaleInstanceMinAgeMinutes < 1 {
+		cfg.StaleInstanceMinAgeMinutes = 5
 	}
 	if cfg.SubscriptionID == "" {
 		metadataService, err := providerazure.NewInstanceMetadataService(imdsServerURL)

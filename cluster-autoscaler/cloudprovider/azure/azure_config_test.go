@@ -17,9 +17,11 @@ limitations under the License.
 package azure
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
 
@@ -28,6 +30,45 @@ func TestCloudProviderAzureConsts(t *testing.T) {
 	// Shouldn't really change a lot, but just in case.
 	assert.Equal(t, "vmss", providerazureconsts.VMTypeVMSS)
 	assert.Equal(t, "standard", providerazureconsts.VMTypeStandard)
+}
+
+func TestBuildAzureConfig_StaleInstanceCleanup(t *testing.T) {
+	t.Setenv("ARM_SUBSCRIPTION_ID", "test-subscription")
+	t.Setenv("ARM_RESOURCE_GROUP", "test-resource-group")
+	t.Setenv("ARM_VM_TYPE", providerazureconsts.VMTypeVMSS)
+	t.Setenv("ARM_USE_MANAGED_IDENTITY_EXTENSION", "true")
+	t.Setenv("ARM_USE_FEDERATED_WORKLOAD_IDENTITY_EXTENSION", "false")
+	t.Setenv("ARM_USE_WORKLOAD_IDENTITY_EXTENSION", "false")
+
+	for _, tc := range []struct {
+		name    string
+		config  string
+		enabled bool
+		dryRun  bool
+		minAge  int
+	}{
+		{name: "defaults", config: `{}`, dryRun: true, minAge: 5},
+		{
+			name:    "active cleanup",
+			config:  `{"enableStaleInstanceCleanup":true,"staleInstanceCleanupDryRun":false,"staleInstanceMinAgeMinutes":7}`,
+			enabled: true, minAge: 7,
+		},
+		{
+			name:    "explicit dry run",
+			config:  `{"enableStaleInstanceCleanup":true,"staleInstanceCleanupDryRun":true,"staleInstanceMinAgeMinutes":1}`,
+			enabled: true, dryRun: true, minAge: 1,
+		},
+		{name: "zero age defaults", config: `{"staleInstanceMinAgeMinutes":0}`, dryRun: true, minAge: 5},
+		{name: "negative age defaults", config: `{"staleInstanceMinAgeMinutes":-1}`, dryRun: true, minAge: 5},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg, err := BuildAzureConfig(strings.NewReader(tc.config))
+			require.NoError(t, err)
+			assert.Equal(t, tc.enabled, cfg.EnableStaleInstanceCleanup)
+			assert.Equal(t, tc.dryRun, cfg.StaleInstanceCleanupDryRun)
+			assert.Equal(t, tc.minAge, cfg.StaleInstanceMinAgeMinutes)
+		})
+	}
 }
 
 // Note: The previous tests for InitializeCloudProviderRateLimitConfig were removed

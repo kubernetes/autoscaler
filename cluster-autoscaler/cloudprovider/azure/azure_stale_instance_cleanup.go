@@ -28,27 +28,27 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-type zombieInstance struct {
+type staleInstance struct {
 	vmssName   string
 	instanceID string
 	hasK8sNode bool
 	reason     string
 }
 
-type zombieObservationKey struct {
+type staleInstanceObservationKey struct {
 	nodeGroupID string
 	providerID  string
 	createdAt   time.Time
 }
 
-func (m *AzureManager) resetZombieObservations() {
-	m.zombieCleanupMutex.Lock()
-	defer m.zombieCleanupMutex.Unlock()
-	m.zombieObservations = nil
+func (m *AzureManager) resetStaleInstanceObservations() {
+	m.staleInstanceCleanupMutex.Lock()
+	defer m.staleInstanceCleanupMutex.Unlock()
+	m.staleInstanceObservations = nil
 }
 
-// cleanupZombieNodes detects and cleans up non-functional VMSS instances in autoscaler-managed node groups.
-// A zombie instance is one that meets any of the following conditions:
+// cleanupStaleInstances detects and cleans up non-functional VMSS instances in autoscaler-managed node groups.
+// A stale instance is one that meets any of the following conditions:
 // - Has failed provisioning state, is stopped, and has no K8s node
 // - Has failed VM extensions
 // - Never registered in Kubernetes (age > threshold)
@@ -66,10 +66,10 @@ func (m *AzureManager) resetZombieObservations() {
 // Age-based deletion also requires a full threshold of consecutive eligible observations.
 // Registration, transitional states, missing instances, and observation errors reset that grace period.
 // Observation history is in memory, so restarting CA grants a fresh grace period.
-func (m *AzureManager) cleanupZombieNodes() error {
+func (m *AzureManager) cleanupStaleInstances() error {
 	if m.kubeClient == nil {
-		m.resetZombieObservations()
-		return fmt.Errorf("cannot clean up zombie nodes: Kubernetes client is unavailable")
+		m.resetStaleInstanceObservations()
+		return fmt.Errorf("cannot clean up stale VMSS instances: Kubernetes client is unavailable")
 	}
 
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
@@ -77,8 +77,8 @@ func (m *AzureManager) cleanupZombieNodes() error {
 
 	nodeList, err := m.kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		m.resetZombieObservations()
-		return fmt.Errorf("cannot clean up zombie nodes: failed to list Kubernetes nodes: %w", err)
+		m.resetStaleInstanceObservations()
+		return fmt.Errorf("cannot clean up stale VMSS instances: failed to list Kubernetes nodes: %w", err)
 	}
 
 	nodes := make([]*apiv1.Node, len(nodeList.Items))
@@ -86,14 +86,14 @@ func (m *AzureManager) cleanupZombieNodes() error {
 		nodes[i] = &nodeList.Items[i]
 	}
 
-	return m.cleanupZombieNodesWithContext(nodes, time.Now())
+	return m.cleanupStaleInstancesWithContext(nodes, time.Now())
 }
 
-// cleanupZombieNodesWithContext is similar to cleanupZombieNodes but accepts Kubernetes nodes
+// cleanupStaleInstancesWithContext is similar to cleanupStaleInstances but accepts Kubernetes nodes
 // as context to help correlate VMSS instances with K8s nodes.
-func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node, currentTime time.Time) error {
-	m.zombieCleanupMutex.Lock()
-	defer m.zombieCleanupMutex.Unlock()
+func (m *AzureManager) cleanupStaleInstancesWithContext(nodes []*apiv1.Node, currentTime time.Time) error {
+	m.staleInstanceCleanupMutex.Lock()
+	defer m.staleInstanceCleanupMutex.Unlock()
 
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
@@ -112,9 +112,9 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node, curren
 	}
 
 	// Process only VMSS node groups registered with the autoscaler.
-	zombiesByVMSS := make(map[string][]zombieInstance)
-	minAgeDuration := time.Duration(m.config.ZombieMinAgeMinutes) * time.Minute
-	observations := make(map[zombieObservationKey]time.Time)
+	staleInstancesByVMSS := make(map[string][]staleInstance)
+	minAgeDuration := time.Duration(m.config.StaleInstanceMinAgeMinutes) * time.Minute
+	observations := make(map[staleInstanceObservationKey]time.Time)
 
 	for _, nodeGroup := range m.getNodeGroups() {
 		scaleSet, ok := nodeGroup.(*ScaleSet)
@@ -142,18 +142,18 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node, curren
 			continue
 		}
 
-		// Analyze each VMSS instance for zombie status
+		// Analyze each VMSS instance for stale status
 		for _, vm := range vms {
 			instanceID := ptr.Deref(vm.InstanceID, "")
 			if instanceID == "" {
 				continue
 			}
 
-			// Evaluate zombie conditions
-			isZombie, hasK8sNode, reason := m.evaluateZombieStatus(vm, k8sNodeMap, currentTime, minAgeDuration)
+			// Evaluate stale-instance conditions
+			isStaleInstance, hasK8sNode, reason := m.evaluateStaleInstanceStatus(vm, k8sNodeMap, currentTime, minAgeDuration)
 
-			if isZombie && !hasK8sNode && ptr.Deref(vm.Properties.ProvisioningState, "") == "Succeeded" {
-				key := zombieObservationKey{
+			if isStaleInstance && !hasK8sNode && ptr.Deref(vm.Properties.ProvisioningState, "") == "Succeeded" {
+				key := staleInstanceObservationKey{
 					nodeGroupID: vmssName,
 					providerID:  normalizeProviderID(ptr.Deref(vm.ID, "")),
 					createdAt:   vm.Properties.TimeCreated.UTC(),
@@ -162,7 +162,7 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node, curren
 					klog.V(4).Infof("Skipping instance %s: no VM identity for registration grace period", instanceID)
 					continue
 				}
-				firstSeen, found := m.zombieObservations[key]
+				firstSeen, found := m.staleInstanceObservations[key]
 				if !found || firstSeen.After(currentTime) {
 					firstSeen = currentTime
 				}
@@ -173,9 +173,9 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node, curren
 				}
 			}
 
-			if isZombie {
-				klog.V(2).Infof("ZOMBIE DETECTED: Instance %s (VMSS: %s) - %s", instanceID, vmssName, reason)
-				zombiesByVMSS[vmssName] = append(zombiesByVMSS[vmssName], zombieInstance{
+			if isStaleInstance {
+				klog.V(2).Infof("STALE INSTANCE DETECTED: Instance %s (VMSS: %s) - %s", instanceID, vmssName, reason)
+				staleInstancesByVMSS[vmssName] = append(staleInstancesByVMSS[vmssName], staleInstance{
 					vmssName:   vmssName,
 					instanceID: instanceID,
 					hasK8sNode: hasK8sNode,
@@ -186,75 +186,75 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node, curren
 	}
 	// Only observations from this scan survive. Failed VMSS lists, missing VMs,
 	// deregistered groups, and recovered instances lose their timers.
-	m.zombieObservations = observations
+	m.staleInstanceObservations = observations
 
 	// Cleanup phase
-	totalZombies := 0
-	for _, zombies := range zombiesByVMSS {
-		totalZombies += len(zombies)
+	totalStaleInstances := 0
+	for _, staleInstances := range staleInstancesByVMSS {
+		totalStaleInstances += len(staleInstances)
 	}
 
-	if totalZombies == 0 {
-		klog.V(4).Info("No zombies found")
+	if totalStaleInstances == 0 {
+		klog.V(4).Info("No stale VMSS instances found")
 		return nil
 	}
 
-	// Separate zombies by whether they have K8s nodes
+	// Separate stale instances by whether they have K8s nodes
 	// Manually delete unregistered VMs, log registered ones
-	unregisteredZombies := make(map[string][]zombieInstance)
-	registeredZombieCount := 0
+	unregisteredStaleInstances := make(map[string][]staleInstance)
+	registeredStaleInstanceCount := 0
 
-	for vmssName, zombies := range zombiesByVMSS {
-		for _, zombie := range zombies {
-			if !zombie.hasK8sNode {
+	for vmssName, staleInstances := range staleInstancesByVMSS {
+		for _, staleInstance := range staleInstances {
+			if !staleInstance.hasK8sNode {
 				// Safe to delete directly - no K8s state
-				unregisteredZombies[vmssName] = append(unregisteredZombies[vmssName], zombie)
+				unregisteredStaleInstances[vmssName] = append(unregisteredStaleInstances[vmssName], staleInstance)
 			} else {
 				// Has K8s node - let autoscaler handle deletion
-				registeredZombieCount++
-				klog.V(2).Infof("Registered zombie node (will be handled by autoscaler): Instance %s (VMSS: %s) - %s",
-					zombie.instanceID, vmssName, zombie.reason)
+				registeredStaleInstanceCount++
+				klog.V(2).Infof("Unhealthy registered instance (logged only): Instance %s (VMSS: %s) - %s",
+					staleInstance.instanceID, vmssName, staleInstance.reason)
 			}
 		}
 	}
 
-	unregisteredCount := totalZombies - registeredZombieCount
+	unregisteredCount := totalStaleInstances - registeredStaleInstanceCount
 
-	// Dry-run or active cleanup for unregistered zombies
-	if m.config.ZombieCleanupDryRun {
-		klog.Infof("DRY RUN: Would clean up %d unregistered zombie(s), %d registered zombies logged",
-			unregisteredCount, registeredZombieCount)
-		for vmssName, zombies := range unregisteredZombies {
-			for _, zombie := range zombies {
+	// Dry-run or active cleanup for stale unregistered instances
+	if m.config.StaleInstanceCleanupDryRun {
+		klog.Infof("DRY RUN: Would clean up %d stale unregistered instance(s), %d unhealthy registered instances logged",
+			unregisteredCount, registeredStaleInstanceCount)
+		for vmssName, staleInstances := range unregisteredStaleInstances {
+			for _, staleInstance := range staleInstances {
 				klog.V(2).Infof("Would remove: Instance %s (VMSS: %s, reason: %s)",
-					zombie.instanceID, vmssName, zombie.reason)
+					staleInstance.instanceID, vmssName, staleInstance.reason)
 			}
 		}
 		return nil
 	}
 
 	if unregisteredCount == 0 {
-		klog.V(2).Infof("No unregistered zombies to clean up (%d registered zombies will be handled by autoscaler)",
-			registeredZombieCount)
+		klog.V(2).Infof("No stale unregistered instances to clean up (%d unhealthy registered instances logged)",
+			registeredStaleInstanceCount)
 		return nil
 	}
 
-	// Actually cleaning up unregistered zombies
-	klog.Infof("Cleaning up %d unregistered zombie(s) (%d registered zombies will be handled by autoscaler)...",
-		unregisteredCount, registeredZombieCount)
+	// Actually cleaning up stale unregistered instances
+	klog.Infof("Cleaning up %d stale unregistered instance(s) (%d unhealthy registered instances logged)...",
+		unregisteredCount, registeredStaleInstanceCount)
 
-	// Batch delete zombies per VMSS for efficiency
-	for vmssName, zombies := range unregisteredZombies {
-		instanceIDs := make([]*string, len(zombies))
-		for i, zombie := range zombies {
-			instanceIDs[i] = ptr.To(zombie.instanceID)
+	// Batch delete stale instances per VMSS for efficiency
+	for vmssName, staleInstances := range unregisteredStaleInstances {
+		instanceIDs := make([]*string, len(staleInstances))
+		for i, staleInstance := range staleInstances {
+			instanceIDs[i] = ptr.To(staleInstance.instanceID)
 		}
 
 		vmInstanceIDs := armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{
 			InstanceIDs: instanceIDs,
 		}
 
-		klog.V(2).Infof("Deleting %d unregistered zombie instance(s) from VMSS %s: %v",
+		klog.V(2).Infof("Deleting %d stale unregistered instance(s) from VMSS %s: %v",
 			len(instanceIDs), vmssName, instanceIDs)
 
 		// Delete VMSS instances
@@ -269,11 +269,11 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node, curren
 		)
 
 		if err != nil {
-			klog.Errorf("Failed to delete zombie instances from VMSS %s: %v", vmssName, err)
+			klog.Errorf("Failed to delete stale instances from VMSS %s: %v", vmssName, err)
 			continue
 		}
 
-		klog.V(2).Infof("Initiated deletion of %d zombie instance(s) from VMSS %s", len(zombies), vmssName)
+		klog.V(2).Infof("Initiated deletion of %d stale instance(s) from VMSS %s", len(staleInstances), vmssName)
 
 		// Poll for completion in background
 		if poller != nil {
@@ -282,10 +282,10 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node, curren
 				defer pollCancel()
 				_, pollErr := poller.PollUntilDone(pollCtx, nil)
 				if pollErr != nil {
-					klog.Errorf("Zombie deletion polling failed for VMSS %s instances %v: %v", vmssName, ids, pollErr)
+					klog.Errorf("Stale instance deletion polling failed for VMSS %s instances %v: %v", vmssName, ids, pollErr)
 					return
 				}
-				klog.V(2).Infof("Zombie deletion completed for VMSS %s instances %v", vmssName, ids)
+				klog.V(2).Infof("Stale instance deletion completed for VMSS %s instances %v", vmssName, ids)
 			}(vmssName, instanceIDs)
 		}
 	}
@@ -293,9 +293,9 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node, curren
 	return nil
 }
 
-// evaluateZombieStatus evaluates a VMSS VM to determine if it's a zombie
-// Returns (isZombie bool, hasK8sNode bool, reason string)
-func (m *AzureManager) evaluateZombieStatus(
+// evaluateStaleInstanceStatus evaluates a VMSS VM to determine if it's a stale instance
+// Returns (isStaleInstance bool, hasK8sNode bool, reason string)
+func (m *AzureManager) evaluateStaleInstanceStatus(
 	vm *armcompute.VirtualMachineScaleSetVM,
 	k8sNodeMap map[string]*apiv1.Node,
 	currentTime time.Time,
@@ -385,7 +385,7 @@ func (m *AzureManager) evaluateZombieStatus(
 			if extensionsFailed {
 				return true, false, fmt.Sprintf("Extensions FAILED, age: %.0f minutes", vmssAge.Minutes())
 			}
-			return true, false, fmt.Sprintf("Extensions NOT INSTALLED (flapping zombie), age: %.0f minutes", vmssAge.Minutes())
+			return true, false, fmt.Sprintf("Extensions NOT INSTALLED, age: %.0f minutes", vmssAge.Minutes())
 		}
 	}
 
@@ -467,7 +467,7 @@ func (m *AzureManager) evaluateZombieStatus(
 		return false, true, ""
 	}
 
-	// Not a zombie
+	// Not a stale instance
 	return false, false, ""
 }
 

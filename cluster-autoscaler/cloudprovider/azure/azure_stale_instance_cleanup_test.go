@@ -38,15 +38,15 @@ import (
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 )
 
-func TestZombieCleanup_OnlyManagedScaleSets(t *testing.T) {
+func TestStaleInstanceCleanup_OnlyManagedScaleSets(t *testing.T) {
 	for _, discovery := range []string{"explicit", "automatic"} {
 		t.Run(discovery, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			manager, _, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
-			manager.config.EnableZombieCleanup = true
-			manager.config.ZombieCleanupDryRun = false
+			manager.config.EnableStaleInstanceCleanup = true
+			manager.config.StaleInstanceCleanupDryRun = false
 
 			managed := fakeVMSSWithTags("managed-vmss", map[string]*string{
 				"cluster": ptr.To("managed"), "min": ptr.To("0"), "max": ptr.To("5"),
@@ -67,7 +67,7 @@ func TestZombieCleanup_OnlyManagedScaleSets(t *testing.T) {
 			}
 
 			mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, "managed-vmss").Return(
-				[]*armcompute.VirtualMachineScaleSetVM{newZombieVMWithFailedProvisioning(0, 10*time.Minute)}, nil,
+				[]*armcompute.VirtualMachineScaleSetVM{newStaleVMWithFailedProvisioning(0, 10*time.Minute)}, nil,
 			)
 			mockDeleteClient.EXPECT().BeginDeleteInstances(
 				gomock.Any(), manager.config.ResourceGroup, "managed-vmss",
@@ -76,16 +76,16 @@ func TestZombieCleanup_OnlyManagedScaleSets(t *testing.T) {
 			).Return(nil, nil)
 
 			// No resource-group listing or calls for the unmanaged VMSS are allowed.
-			assert.NoError(t, manager.cleanupZombieNodes())
+			assert.NoError(t, manager.cleanupStaleInstances())
 
 			manager.UnregisterNodeGroup(newTestScaleSet(manager, "managed-vmss"))
 			assert.Empty(t, manager.getNodeGroups())
-			assert.NoError(t, manager.cleanupZombieNodes())
+			assert.NoError(t, manager.cleanupStaleInstances())
 		})
 	}
 }
 
-func TestZombieCleanup_UsesDiscoveredResourceGroup(t *testing.T) {
+func TestStaleInstanceCleanup_UsesDiscoveredResourceGroup(t *testing.T) {
 	for _, tc := range []struct {
 		name                string
 		hostedResourceGroup string
@@ -99,14 +99,14 @@ func TestZombieCleanup_UsesDiscoveredResourceGroup(t *testing.T) {
 			defer ctrl.Finish()
 
 			manager, _, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
-			manager.config.EnableZombieCleanup = true
-			manager.config.ZombieCleanupDryRun = false
+			manager.config.EnableStaleInstanceCleanup = true
+			manager.config.StaleInstanceCleanupDryRun = false
 			manager.config.HostedResourceGroup = tc.hostedResourceGroup
 			manager.azureCache.resourceGroup = tc.resourceGroup
 			manager.RegisterNodeGroup(newTestScaleSet(manager, "managed-vmss"))
 
 			mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), tc.resourceGroup, "managed-vmss").Return(
-				[]*armcompute.VirtualMachineScaleSetVM{newZombieVMWithFailedProvisioning(0, 10*time.Minute)}, nil,
+				[]*armcompute.VirtualMachineScaleSetVM{newStaleVMWithFailedProvisioning(0, 10*time.Minute)}, nil,
 			)
 			mockDeleteClient.EXPECT().BeginDeleteInstances(
 				gomock.Any(), tc.resourceGroup, "managed-vmss",
@@ -114,20 +114,20 @@ func TestZombieCleanup_UsesDiscoveredResourceGroup(t *testing.T) {
 				gomock.Any(),
 			).Return(nil, nil)
 
-			assert.NoError(t, manager.cleanupZombieNodes())
+			assert.NoError(t, manager.cleanupStaleInstances())
 		})
 	}
 }
 
-func TestZombieCleanup_NoManagedScaleSets(t *testing.T) {
+func TestStaleInstanceCleanup_NoManagedScaleSets(t *testing.T) {
 	for _, scope := range []string{"empty", "non-vmss"} {
 		t.Run(scope, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			manager, _, _, _ := setupMockManager(t, ctrl)
-			manager.config.EnableZombieCleanup = true
-			manager.config.ZombieCleanupDryRun = false
+			manager.config.EnableStaleInstanceCleanup = true
+			manager.config.StaleInstanceCleanupDryRun = false
 			manager.azureCache.scaleSets = map[string]*armcompute.VirtualMachineScaleSet{
 				"unmanaged-vmss": {Name: ptr.To("unmanaged-vmss")},
 			}
@@ -136,18 +136,18 @@ func TestZombieCleanup_NoManagedScaleSets(t *testing.T) {
 				manager.RegisterNodeGroup(&VMPool{azureRef: azureRef{Name: "vm-pool/sku"}})
 			}
 
-			assert.NoError(t, manager.cleanupZombieNodes())
+			assert.NoError(t, manager.cleanupStaleInstances())
 		})
 	}
 }
 
-func TestZombieCleanup_NoZombiesFound(t *testing.T) {
+func TestStaleInstanceCleanup_NoStaleInstancesFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
@@ -156,26 +156,26 @@ func TestZombieCleanup_NoZombiesFound(t *testing.T) {
 	}
 	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(healthyVMs, nil)
 
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_DetectsFailedProvisioning(t *testing.T) {
+func TestStaleInstanceCleanup_DetectsFailedProvisioning(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
-	zombieVMs := []*armcompute.VirtualMachineScaleSetVM{
-		newZombieVMWithFailedProvisioning(0, 10*time.Minute),
+	staleInstanceVMs := []*armcompute.VirtualMachineScaleSetVM{
+		newStaleVMWithFailedProvisioning(0, 10*time.Minute),
 	}
 
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(zombieVMs, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(staleInstanceVMs, nil)
 
 	// Verify BeginDeleteInstances is called with correct instance IDs
 	mockDeleteClient.EXPECT().BeginDeleteInstances(
@@ -192,11 +192,11 @@ func TestZombieCleanup_DetectsFailedProvisioning(t *testing.T) {
 		return nil, nil
 	})
 
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_FailedProvisioningSafety(t *testing.T) {
+func TestStaleInstanceCleanup_FailedProvisioningSafety(t *testing.T) {
 	for _, powerState := range []string{"running", "starting", "stopping", "stopped", "deallocating", "deallocated", "unknown", "", "missing-instance-view"} {
 		for _, registration := range []string{"unregistered", "ready", "not-ready", "unreachable"} {
 			t.Run(powerState+"/"+registration, func(t *testing.T) {
@@ -204,11 +204,11 @@ func TestZombieCleanup_FailedProvisioningSafety(t *testing.T) {
 				defer ctrl.Finish()
 
 				manager, _, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
-				manager.config.EnableZombieCleanup = true
-				manager.config.ZombieCleanupDryRun = false
-				manager.config.ZombieMinAgeMinutes = 5
+				manager.config.EnableStaleInstanceCleanup = true
+				manager.config.StaleInstanceCleanupDryRun = false
+				manager.config.StaleInstanceMinAgeMinutes = 5
 
-				vm := newZombieVMWithFailedProvisioning(0, 10*time.Minute)
+				vm := newStaleVMWithFailedProvisioning(0, 10*time.Minute)
 				switch powerState {
 				case "missing-instance-view":
 					vm.Properties.InstanceView = nil
@@ -255,9 +255,9 @@ func TestZombieCleanup_FailedProvisioningSafety(t *testing.T) {
 
 				shouldDelete := !hasK8sNode && powerState == "stopped"
 				shouldLog := (registration == "unreachable" && powerState != "deallocated" && powerState != "deallocating") || (registration == "not-ready" && powerState == "running")
-				isZombie, registered, _ := manager.evaluateZombieStatus(vm, nodeMap, time.Now(), 5*time.Minute)
+				isStaleInstance, registered, _ := manager.evaluateStaleInstanceStatus(vm, nodeMap, time.Now(), 5*time.Minute)
 				assert.Equal(t, hasK8sNode, registered)
-				assert.Equal(t, shouldDelete || shouldLog, isZombie)
+				assert.Equal(t, shouldDelete || shouldLog, isStaleInstance)
 
 				vmssName := "test-vmss"
 				manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
@@ -272,30 +272,30 @@ func TestZombieCleanup_FailedProvisioningSafety(t *testing.T) {
 					).Return(nil, nil)
 				}
 
-				assert.NoError(t, manager.cleanupZombieNodes())
+				assert.NoError(t, manager.cleanupStaleInstances())
 			})
 		}
 	}
 }
 
-func TestZombieCleanup_DetectsFailedExtensions(t *testing.T) {
+func TestStaleInstanceCleanup_DetectsFailedExtensions(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
 
-	zombieVMs := []*armcompute.VirtualMachineScaleSetVM{
-		newZombieVMWithFailedExtensions(0, 15*time.Minute),
+	staleInstanceVMs := []*armcompute.VirtualMachineScaleSetVM{
+		newStaleVMWithFailedExtensions(0, 15*time.Minute),
 	}
-	seedZombieObservations(manager, vmssName, zombieVMs)
+	seedStaleInstanceObservations(manager, vmssName, staleInstanceVMs)
 
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(zombieVMs, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(staleInstanceVMs, nil)
 
 	mockDeleteClient.EXPECT().BeginDeleteInstances(
 		gomock.Any(),
@@ -305,28 +305,28 @@ func TestZombieCleanup_DetectsFailedExtensions(t *testing.T) {
 		gomock.Any(),
 	).Return(nil, nil)
 
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_DetectsNeverRegisteredInstances(t *testing.T) {
+func TestStaleInstanceCleanup_DetectsNeverRegisteredInstances(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
 
-	zombieVMs := []*armcompute.VirtualMachineScaleSetVM{
-		newZombieVMNeverRegistered(0, 30*time.Minute),
+	staleInstanceVMs := []*armcompute.VirtualMachineScaleSetVM{
+		newStaleVMNeverRegistered(0, 30*time.Minute),
 	}
-	seedZombieObservations(manager, vmssName, zombieVMs)
+	seedStaleInstanceObservations(manager, vmssName, staleInstanceVMs)
 
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(zombieVMs, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(staleInstanceVMs, nil)
 
 	mockDeleteClient.EXPECT().BeginDeleteInstances(
 		gomock.Any(),
@@ -336,24 +336,24 @@ func TestZombieCleanup_DetectsNeverRegisteredInstances(t *testing.T) {
 		gomock.Any(),
 	).Return(nil, nil)
 
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_WithK8sNodesContext(t *testing.T) {
+func TestStaleInstanceCleanup_WithK8sNodesContext(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
 
 	// Create a healthy VM (succeeded provisioning, running) that will be marked unreachable
-	zombieVM := newUnreachableZombieVM(0, 10*time.Minute)
+	staleInstanceVM := newUnreachableVM(0, 10*time.Minute)
 
 	// Create a K8s node that matches this VM (unreachable)
 	nodes := []*apiv1.Node{
@@ -375,22 +375,22 @@ func TestZombieCleanup_WithK8sNodesContext(t *testing.T) {
 		},
 	}
 
-	zombieVMs := []*armcompute.VirtualMachineScaleSetVM{zombieVM}
+	staleInstanceVMs := []*armcompute.VirtualMachineScaleSetVM{staleInstanceVM}
 
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(zombieVMs, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(staleInstanceVMs, nil)
 
-	err := manager.cleanupZombieNodesWithContext(nodes, time.Now())
+	err := manager.cleanupStaleInstancesWithContext(nodes, time.Now())
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_UsesKubeClientForNodeContext(t *testing.T) {
+func TestStaleInstanceCleanup_UsesKubeClientForNodeContext(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	// Create a K8s node with unreachable taint using the fake clientset
 	unreachableNode := &apiv1.Node{
@@ -415,37 +415,37 @@ func TestZombieCleanup_UsesKubeClientForNodeContext(t *testing.T) {
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
 
 	// Succeeded+running VM that matches the unreachable K8s node
-	zombieVM := newUnreachableZombieVM(0, 10*time.Minute)
+	staleInstanceVM := newUnreachableVM(0, 10*time.Minute)
 
 	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(
-		[]*armcompute.VirtualMachineScaleSetVM{zombieVM}, nil,
+		[]*armcompute.VirtualMachineScaleSetVM{staleInstanceVM}, nil,
 	)
 
-	// Call cleanupZombieNodes() not cleanupZombieNodesWithContext)
-	// hasK8sNode=true so the zombie is logged only, not deleted.
-	err := manager.cleanupZombieNodes()
+	// Call cleanupStaleInstances() not cleanupStaleInstancesWithContext)
+	// hasK8sNode=true so the unhealthy instance is logged only, not deleted.
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_MissingKubeClient(t *testing.T) {
+func TestStaleInstanceCleanup_MissingKubeClient(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, _, _ := setupMockManager(t, ctrl)
 	manager.kubeClient = nil
 
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.ErrorContains(t, err, "Kubernetes client is unavailable")
 }
 
-func TestZombieCleanup_RetriesAfterNodeListFailure(t *testing.T) {
+func TestStaleInstanceCleanup_RetriesAfterNodeListFailure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vm := newHealthyVM(0)
 	vm.Properties.TimeCreated = ptr.To(time.Now().Add(-10 * time.Minute))
@@ -476,7 +476,7 @@ func TestZombieCleanup_RetriesAfterNodeListFailure(t *testing.T) {
 	manager.kubeClient = kubeClient
 
 	// No Azure calls are allowed while Kubernetes node state is unavailable.
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.ErrorIs(t, err, nodeListErr)
 	assert.Equal(t, 1, nodeListCalls)
 
@@ -487,42 +487,42 @@ func TestZombieCleanup_RetriesAfterNodeListFailure(t *testing.T) {
 	)
 
 	// A later invocation can list nodes successfully and must preserve the registered VM.
-	err = manager.cleanupZombieNodes()
+	err = manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, nodeListCalls)
 }
 
-func TestZombieCleanup_RespectsMinAge(t *testing.T) {
+func TestStaleInstanceCleanup_RespectsMinAge(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 10 // 10 minute threshold
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 10 // 10 minute threshold
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
 
 	// VM that's only 3 minutes old (below threshold)
-	youngZombieVMs := []*armcompute.VirtualMachineScaleSetVM{
-		newZombieVMNeverRegistered(0, 3*time.Minute),
+	youngStaleInstanceVMs := []*armcompute.VirtualMachineScaleSetVM{
+		newStaleVMNeverRegistered(0, 3*time.Minute),
 	}
 
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(youngZombieVMs, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(youngStaleInstanceVMs, nil)
 
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_SkipsNilTimeCreated(t *testing.T) {
+func TestStaleInstanceCleanup_SkipsNilTimeCreated(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
@@ -574,53 +574,53 @@ func TestZombieCleanup_SkipsNilTimeCreated(t *testing.T) {
 	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(nilTimeCreatedVMs, nil)
 
 	// No delete calls should be made, skip both VMs
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_DryRunMode(t *testing.T) {
+func TestStaleInstanceCleanup_DryRunMode(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = true // Dry-run enabled
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = true // Dry-run enabled
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
 
-	zombieVMs := []*armcompute.VirtualMachineScaleSetVM{
-		newZombieVMWithFailedProvisioning(0, 10*time.Minute),
+	staleInstanceVMs := []*armcompute.VirtualMachineScaleSetVM{
+		newStaleVMWithFailedProvisioning(0, 10*time.Minute),
 	}
 
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(zombieVMs, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(staleInstanceVMs, nil)
 
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_MultipleZombiesInSamePool(t *testing.T) {
+func TestStaleInstanceCleanup_MultipleStaleInstancesInSamePool(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
 
-	// Multiple zombie VMs
-	zombieVMs := []*armcompute.VirtualMachineScaleSetVM{
-		newZombieVMWithFailedProvisioning(0, 10*time.Minute),
-		newZombieVMWithFailedExtensions(1, 15*time.Minute),
-		newZombieVMNeverRegistered(2, 20*time.Minute),
+	// Multiple stale VMs
+	staleInstanceVMs := []*armcompute.VirtualMachineScaleSetVM{
+		newStaleVMWithFailedProvisioning(0, 10*time.Minute),
+		newStaleVMWithFailedExtensions(1, 15*time.Minute),
+		newStaleVMNeverRegistered(2, 20*time.Minute),
 	}
-	seedZombieObservations(manager, vmssName, zombieVMs)
+	seedStaleInstanceObservations(manager, vmssName, staleInstanceVMs)
 
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(zombieVMs, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(staleInstanceVMs, nil)
 
 	// Should call BeginDeleteInstances ONCE with all 3 instance IDs
 	mockDeleteClient.EXPECT().BeginDeleteInstances(
@@ -636,63 +636,63 @@ func TestZombieCleanup_MultipleZombiesInSamePool(t *testing.T) {
 		return nil, nil
 	})
 
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_MultipleVMSSPools(t *testing.T) {
+func TestStaleInstanceCleanup_MultipleVMSSPools(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vmss1 := "vmss-pool-1"
 	vmss2 := "vmss-pool-2"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmss1))
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmss2))
 
-	zombieVMs1 := []*armcompute.VirtualMachineScaleSetVM{
-		newZombieVMWithFailedProvisioning(0, 10*time.Minute),
+	staleInstanceVMs1 := []*armcompute.VirtualMachineScaleSetVM{
+		newStaleVMWithFailedProvisioning(0, 10*time.Minute),
 	}
-	zombieVMs2 := []*armcompute.VirtualMachineScaleSetVM{
-		newZombieVMWithFailedExtensions(0, 15*time.Minute),
+	staleInstanceVMs2 := []*armcompute.VirtualMachineScaleSetVM{
+		newStaleVMWithFailedExtensions(0, 15*time.Minute),
 	}
-	seedZombieObservations(manager, vmss2, zombieVMs2)
+	seedStaleInstanceObservations(manager, vmss2, staleInstanceVMs2)
 
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmss1).Return(zombieVMs1, nil)
-	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmss2).Return(zombieVMs2, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmss1).Return(staleInstanceVMs1, nil)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmss2).Return(staleInstanceVMs2, nil)
 
 	// Should call BeginDeleteInstances TWICE (once per VMSS)
 	mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), manager.config.ResourceGroup, vmss1, gomock.Any(), gomock.Any()).Return(nil, nil)
 	mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), manager.config.ResourceGroup, vmss2, gomock.Any(), gomock.Any()).Return(nil, nil)
 
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_MixedZombiesAndHealthy(t *testing.T) {
+func TestStaleInstanceCleanup_MixedStaleInstancesAndHealthy(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, mockDeleteClient := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
 
-	// Mix of healthy and zombie VMs
+	// Mix of healthy and stale VMs
 	vms := []*armcompute.VirtualMachineScaleSetVM{
 		newHealthyVM(0), // Healthy
-		newZombieVMWithFailedProvisioning(1, 10*time.Minute), // Zombie
+		newStaleVMWithFailedProvisioning(1, 10*time.Minute), // Stale instance
 		newHealthyVM(2), // Healthy
-		newZombieVMWithFailedExtensions(3, 15*time.Minute), // Zombie
+		newStaleVMWithFailedExtensions(3, 15*time.Minute), // Stale instance
 	}
-	seedZombieObservations(manager, vmssName, vms)
+	seedStaleInstanceObservations(manager, vmssName, vms)
 
 	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(vms, nil)
 
@@ -706,7 +706,7 @@ func TestZombieCleanup_MixedZombiesAndHealthy(t *testing.T) {
 	).DoAndReturn(func(ctx context.Context, resourceGroup, vmssName string, vmInstanceIDs armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs, options *armcompute.VirtualMachineScaleSetsClientBeginDeleteInstancesOptions) (*armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse, error) {
 		assert.NotNil(t, vmInstanceIDs.InstanceIDs)
 		assert.Equal(t, 2, len(vmInstanceIDs.InstanceIDs))
-		// Verify only zombie instance IDs
+		// Verify only stale instance IDs
 		var ids []string
 		for _, id := range vmInstanceIDs.InstanceIDs {
 			ids = append(ids, *id)
@@ -716,11 +716,11 @@ func TestZombieCleanup_MixedZombiesAndHealthy(t *testing.T) {
 		return nil, nil
 	})
 
-	err := manager.cleanupZombieNodes()
+	err := manager.cleanupStaleInstances()
 	assert.NoError(t, err)
 }
 
-func TestZombieCleanup_RegisteredNodeUnhealthyDuration(t *testing.T) {
+func TestStaleInstanceCleanup_RegisteredNodeUnhealthyDuration(t *testing.T) {
 	now := time.Now()
 	old := metav1.NewTime(now.Add(-10 * time.Minute))
 	recent := metav1.NewTime(now.Add(-30 * time.Second))
@@ -767,9 +767,9 @@ func TestZombieCleanup_RegisteredNodeUnhealthyDuration(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
-			manager.config.EnableZombieCleanup = true
-			manager.config.ZombieCleanupDryRun = false
-			manager.config.ZombieMinAgeMinutes = 5
+			manager.config.EnableStaleInstanceCleanup = true
+			manager.config.StaleInstanceCleanupDryRun = false
+			manager.config.StaleInstanceMinAgeMinutes = 5
 			vm := newHealthyVM(0)
 			if tc.deallocated {
 				vm = newDeallocatedVM(0)
@@ -796,8 +796,8 @@ func TestZombieCleanup_RegisteredNodeUnhealthyDuration(t *testing.T) {
 				})
 			}
 			nodeMap := map[string]*apiv1.Node{normalizeProviderID(node.Spec.ProviderID): node}
-			isZombie, registered, reason := manager.evaluateZombieStatus(vm, nodeMap, now, 5*time.Minute)
-			assert.Equal(t, tc.expectedReason != "", isZombie)
+			isStaleInstance, registered, reason := manager.evaluateStaleInstanceStatus(vm, nodeMap, now, 5*time.Minute)
+			assert.Equal(t, tc.expectedReason != "", isStaleInstance)
 			assert.True(t, registered)
 			assert.Equal(t, tc.expectedReason, reason)
 
@@ -805,12 +805,12 @@ func TestZombieCleanup_RegisteredNodeUnhealthyDuration(t *testing.T) {
 			mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, "test-vmss").Return(
 				[]*armcompute.VirtualMachineScaleSetVM{vm}, nil,
 			)
-			assert.NoError(t, manager.cleanupZombieNodesWithContext([]*apiv1.Node{node}, now))
+			assert.NoError(t, manager.cleanupStaleInstancesWithContext([]*apiv1.Node{node}, now))
 		})
 	}
 }
 
-func TestZombieCleanup_RequiresKnownPowerState(t *testing.T) {
+func TestStaleInstanceCleanup_RequiresKnownPowerState(t *testing.T) {
 	for _, powerState := range []string{"missing-instance-view", "missing-statuses", "nil-status", "missing-code", "no-power-state", "", "unknown", "unrecognized", "starting", "stopping", "running", "stopped"} {
 		for _, extensions := range []string{"missing", "succeeded", "failed"} {
 			t.Run(powerState+"/extensions-"+extensions, func(t *testing.T) {
@@ -818,14 +818,14 @@ func TestZombieCleanup_RequiresKnownPowerState(t *testing.T) {
 				defer ctrl.Finish()
 
 				manager, _, vmClient, deleteClient := setupMockManager(t, ctrl)
-				manager.config.EnableZombieCleanup = true
-				manager.config.ZombieCleanupDryRun = false
-				manager.config.ZombieMinAgeMinutes = 5
+				manager.config.EnableStaleInstanceCleanup = true
+				manager.config.StaleInstanceCleanupDryRun = false
+				manager.config.StaleInstanceMinAgeMinutes = 5
 				vmssName := "test-vmss"
 				manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
 
 				now := time.Now()
-				vm := newZombieVMNeverRegistered(0, 24*time.Hour)
+				vm := newStaleVMNeverRegistered(0, 24*time.Hour)
 				view := vm.Properties.InstanceView
 				if extensions != "missing" {
 					view.Extensions = []*armcompute.VirtualMachineExtensionInstanceView{
@@ -853,8 +853,8 @@ func TestZombieCleanup_RequiresKnownPowerState(t *testing.T) {
 				}
 
 				shouldDelete := powerState == "running" || powerState == "stopped"
-				isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, now, 5*time.Minute)
-				assert.Equal(t, shouldDelete, isZombie)
+				isStaleInstance, registered, reason := manager.evaluateStaleInstanceStatus(vm, nil, now, 5*time.Minute)
+				assert.Equal(t, shouldDelete, isStaleInstance)
 				assert.False(t, registered)
 				if shouldDelete {
 					assert.NotEmpty(t, reason)
@@ -865,7 +865,7 @@ func TestZombieCleanup_RequiresKnownPowerState(t *testing.T) {
 				vmClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.azureCache.resourceGroup, vmssName).Return(
 					[]*armcompute.VirtualMachineScaleSetVM{vm}, nil,
 				).Times(2)
-				assert.NoError(t, manager.cleanupZombieNodesWithContext(nil, now))
+				assert.NoError(t, manager.cleanupStaleInstancesWithContext(nil, now))
 				if shouldDelete {
 					deleteClient.EXPECT().BeginDeleteInstances(
 						gomock.Any(), manager.azureCache.resourceGroup, vmssName,
@@ -873,13 +873,13 @@ func TestZombieCleanup_RequiresKnownPowerState(t *testing.T) {
 						gomock.Any(),
 					).Return(nil, nil)
 				}
-				assert.NoError(t, manager.cleanupZombieNodesWithContext(nil, now.Add(6*time.Minute)))
+				assert.NoError(t, manager.cleanupStaleInstancesWithContext(nil, now.Add(6*time.Minute)))
 			})
 		}
 	}
 }
 
-func TestZombieCleanup_RegistrationGracePeriod(t *testing.T) {
+func TestStaleInstanceCleanup_RegistrationGracePeriod(t *testing.T) {
 	for _, interruption := range []string{
 		"registered", "starting", "stopping", "deallocated", "deallocating", "unknown",
 		"provisioning", "missing-timestamp", "missing-identity", "missing-vm",
@@ -889,13 +889,13 @@ func TestZombieCleanup_RegistrationGracePeriod(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			manager, _, vmClient, deleteClient := setupMockManager(t, ctrl)
-			manager.config.EnableZombieCleanup = true
-			manager.config.ZombieCleanupDryRun = false
-			manager.config.ZombieMinAgeMinutes = 5
+			manager.config.EnableStaleInstanceCleanup = true
+			manager.config.StaleInstanceCleanupDryRun = false
+			manager.config.StaleInstanceMinAgeMinutes = 5
 			group := newTestScaleSet(manager, "test-vmss")
 			manager.RegisterNodeGroup(group)
 			now := time.Now()
-			vm := newZombieVMNeverRegistered(0, 24*time.Hour)
+			vm := newStaleVMNeverRegistered(0, 24*time.Hour)
 			vms := []*armcompute.VirtualMachineScaleSetVM{vm}
 			var listErr error
 			vmClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.azureCache.resourceGroup, group.Name).DoAndReturn(
@@ -904,14 +904,14 @@ func TestZombieCleanup_RegistrationGracePeriod(t *testing.T) {
 				},
 			).AnyTimes()
 
-			assert.NoError(t, manager.cleanupZombieNodesWithContext(nil, now))
-			assert.Len(t, manager.zombieObservations, 1)
-			assert.NoError(t, manager.cleanupZombieNodesWithContext(nil, now.Add(4*time.Minute)))
+			assert.NoError(t, manager.cleanupStaleInstancesWithContext(nil, now))
+			assert.Len(t, manager.staleInstanceObservations, 1)
+			assert.NoError(t, manager.cleanupStaleInstancesWithContext(nil, now.Add(4*time.Minute)))
 
 			var nodes []*apiv1.Node
 			originalProperties := vm.Properties
 			originalID := vm.ID
-			interrupted := newZombieVMNeverRegistered(0, 24*time.Hour)
+			interrupted := newStaleVMNeverRegistered(0, 24*time.Hour)
 			interrupted.Properties.TimeCreated = originalProperties.TimeCreated
 			vm.Properties = interrupted.Properties
 			switch interruption {
@@ -946,18 +946,18 @@ func TestZombieCleanup_RegistrationGracePeriod(t *testing.T) {
 			}
 
 			if interruption == "node-list-error" || interruption == "missing-client" {
-				assert.Error(t, manager.cleanupZombieNodes())
+				assert.Error(t, manager.cleanupStaleInstances())
 			} else {
-				assert.NoError(t, manager.cleanupZombieNodesWithContext(nodes, now.Add(4*time.Minute)))
+				assert.NoError(t, manager.cleanupStaleInstancesWithContext(nodes, now.Add(4*time.Minute)))
 			}
 			if interruption == "recreated" {
-				assert.Len(t, manager.zombieObservations, 1)
-				for key, firstSeen := range manager.zombieObservations {
+				assert.Len(t, manager.staleInstanceObservations, 1)
+				for key, firstSeen := range manager.staleInstanceObservations {
 					assert.Equal(t, vm.Properties.TimeCreated.UTC(), key.createdAt)
 					assert.Equal(t, now.Add(4*time.Minute), firstSeen, "recreated VM must not inherit the old timer")
 				}
 			} else {
-				assert.Empty(t, manager.zombieObservations, "interrupted observations must not retain the old timer")
+				assert.Empty(t, manager.staleInstanceObservations, "interrupted observations must not retain the old timer")
 			}
 
 			vm.Properties = originalProperties
@@ -966,44 +966,44 @@ func TestZombieCleanup_RegistrationGracePeriod(t *testing.T) {
 			listErr = nil
 			manager.kubeClient = fake.NewSimpleClientset()
 			manager.RegisterNodeGroup(group)
-			assert.NoError(t, manager.cleanupZombieNodesWithContext(nil, now.Add(6*time.Minute)))
-			assert.NoError(t, manager.cleanupZombieNodesWithContext(nil, now.Add(11*time.Minute)))
+			assert.NoError(t, manager.cleanupStaleInstancesWithContext(nil, now.Add(6*time.Minute)))
+			assert.NoError(t, manager.cleanupStaleInstancesWithContext(nil, now.Add(11*time.Minute)))
 
 			deleteClient.EXPECT().BeginDeleteInstances(
 				gomock.Any(), manager.azureCache.resourceGroup, group.Name,
 				armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIDs: []*string{ptr.To("0")}},
 				gomock.Any(),
 			).Return(nil, nil)
-			assert.NoError(t, manager.cleanupZombieNodesWithContext(nil, now.Add(11*time.Minute+time.Second)))
+			assert.NoError(t, manager.cleanupStaleInstancesWithContext(nil, now.Add(11*time.Minute+time.Second)))
 		})
 	}
 }
 
-func TestZombieCleanup_GracePeriodDryRunAndRestart(t *testing.T) {
+func TestStaleInstanceCleanup_GracePeriodDryRunAndRestart(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	now := time.Now()
-	vm := newZombieVMNeverRegistered(0, 24*time.Hour)
+	vm := newStaleVMNeverRegistered(0, 24*time.Hour)
 	for restart := 0; restart < 2; restart++ {
 		manager, _, vmClient, _ := setupMockManager(t, ctrl)
-		manager.config.ZombieCleanupDryRun = true
-		manager.config.ZombieMinAgeMinutes = 5
+		manager.config.StaleInstanceCleanupDryRun = true
+		manager.config.StaleInstanceMinAgeMinutes = 5
 		manager.RegisterNodeGroup(newTestScaleSet(manager, "test-vmss"))
 		vmClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.azureCache.resourceGroup, "test-vmss").Return(
 			[]*armcompute.VirtualMachineScaleSetVM{vm}, nil,
 		).Times(2)
 
 		start := now.Add(time.Duration(restart) * time.Hour)
-		assert.NoError(t, manager.cleanupZombieNodesWithContext(nil, start))
-		assert.Len(t, manager.zombieObservations, 1)
-		for _, firstSeen := range manager.zombieObservations {
+		assert.NoError(t, manager.cleanupStaleInstancesWithContext(nil, start))
+		assert.Len(t, manager.staleInstanceObservations, 1)
+		for _, firstSeen := range manager.staleInstanceObservations {
 			assert.Equal(t, start, firstSeen, "a new manager must grant a fresh grace period")
 		}
-		assert.NoError(t, manager.cleanupZombieNodesWithContext(nil, start.Add(6*time.Minute)))
+		assert.NoError(t, manager.cleanupStaleInstancesWithContext(nil, start.Add(6*time.Minute)))
 	}
 }
 
-func TestZombieCleanup_PreservesParkedVMs(t *testing.T) {
+func TestStaleInstanceCleanup_PreservesParkedVMs(t *testing.T) {
 	for _, powerState := range []string{"deallocated", "deallocating"} {
 		for _, provisioningState := range []string{"Succeeded", "Failed"} {
 			for _, extensions := range []string{"missing", "succeeded", "failed"} {
@@ -1013,9 +1013,9 @@ func TestZombieCleanup_PreservesParkedVMs(t *testing.T) {
 						defer ctrl.Finish()
 
 						manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
-						manager.config.EnableZombieCleanup = true
-						manager.config.ZombieCleanupDryRun = false
-						manager.config.ZombieMinAgeMinutes = 5
+						manager.config.EnableStaleInstanceCleanup = true
+						manager.config.StaleInstanceCleanupDryRun = false
+						manager.config.StaleInstanceMinAgeMinutes = 5
 
 						now := time.Now()
 						vm := newDeallocatedVM(0)
@@ -1054,8 +1054,8 @@ func TestZombieCleanup_PreservesParkedVMs(t *testing.T) {
 							nodeMap[normalizeProviderID(node.Spec.ProviderID)] = node
 						}
 
-						isZombie, hasK8sNode, reason := manager.evaluateZombieStatus(vm, nodeMap, now, 5*time.Minute)
-						assert.False(t, isZombie)
+						isStaleInstance, hasK8sNode, reason := manager.evaluateStaleInstanceStatus(vm, nodeMap, now, 5*time.Minute)
+						assert.False(t, isStaleInstance)
 						assert.Equal(t, registered, hasK8sNode)
 						assert.Empty(t, reason)
 
@@ -1064,7 +1064,7 @@ func TestZombieCleanup_PreservesParkedVMs(t *testing.T) {
 						mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.azureCache.resourceGroup, vmssName).Return(
 							[]*armcompute.VirtualMachineScaleSetVM{vm}, nil,
 						)
-						assert.NoError(t, manager.cleanupZombieNodes())
+						assert.NoError(t, manager.cleanupStaleInstances())
 					})
 				}
 			}
@@ -1072,14 +1072,14 @@ func TestZombieCleanup_PreservesParkedVMs(t *testing.T) {
 	}
 }
 
-func TestZombieCleanup_IgnoresDeallocatedNodes(t *testing.T) {
+func TestStaleInstanceCleanup_IgnoresDeallocatedNodes(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
-	manager.config.EnableZombieCleanup = true
-	manager.config.ZombieCleanupDryRun = false
-	manager.config.ZombieMinAgeMinutes = 5
+	manager.config.EnableStaleInstanceCleanup = true
+	manager.config.StaleInstanceCleanupDryRun = false
+	manager.config.StaleInstanceMinAgeMinutes = 5
 
 	vmssName := "test-vmss"
 	manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
@@ -1133,53 +1133,53 @@ func TestZombieCleanup_IgnoresDeallocatedNodes(t *testing.T) {
 			nodeMap := map[string]*apiv1.Node{
 				normalizeProviderID(nodes[0].Spec.ProviderID): nodes[0],
 			}
-			isZombie, hasK8sNode, reason := manager.evaluateZombieStatus(vms[0], nodeMap, time.Now(), 5*time.Minute)
-			assert.False(t, isZombie)
+			isStaleInstance, hasK8sNode, reason := manager.evaluateStaleInstanceStatus(vms[0], nodeMap, time.Now(), 5*time.Minute)
+			assert.False(t, isStaleInstance)
 			assert.True(t, hasK8sNode)
 			assert.Empty(t, reason)
 
 			mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(vms, nil)
 
-			err := manager.cleanupZombieNodesWithContext(nodes, time.Now())
+			err := manager.cleanupStaleInstancesWithContext(nodes, time.Now())
 			assert.NoError(t, err)
 		})
 	}
 }
 
 // ============================================================================
-// SCENARIO DETECTION TESTS - Demonstrating Zombie States
+// SCENARIO DETECTION TESTS - Demonstrating Stale Instance States
 // ============================================================================
 
-func TestZombieScenario_ExtensionsFailedToInstall(t *testing.T) {
-	manager := newTestAzureManagerForZombieCleanup(t)
-	vm := newZombieVMWithFailedExtensions(0, 15*time.Minute)
-	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, time.Now(), 5*time.Minute)
-	assert.True(t, isZombie)
+func TestStaleInstanceScenario_ExtensionsFailedToInstall(t *testing.T) {
+	manager := newTestAzureManagerForStaleInstanceCleanup(t)
+	vm := newStaleVMWithFailedExtensions(0, 15*time.Minute)
+	isStaleInstance, registered, reason := manager.evaluateStaleInstanceStatus(vm, nil, time.Now(), 5*time.Minute)
+	assert.True(t, isStaleInstance)
 	assert.False(t, registered)
 	assert.Contains(t, reason, "Extensions FAILED")
 }
 
-func TestZombieScenario_ExtensionsNeverInstalled(t *testing.T) {
-	manager := newTestAzureManagerForZombieCleanup(t)
-	vm := newZombieVMNeverRegistered(0, 20*time.Minute)
-	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, time.Now(), 5*time.Minute)
-	assert.True(t, isZombie)
+func TestStaleInstanceScenario_ExtensionsNeverInstalled(t *testing.T) {
+	manager := newTestAzureManagerForStaleInstanceCleanup(t)
+	vm := newStaleVMNeverRegistered(0, 20*time.Minute)
+	isStaleInstance, registered, reason := manager.evaluateStaleInstanceStatus(vm, nil, time.Now(), 5*time.Minute)
+	assert.True(t, isStaleInstance)
 	assert.False(t, registered)
 	assert.Contains(t, reason, "Extensions NOT INSTALLED")
 }
 
-func TestZombieScenario_ProvisioningFailed(t *testing.T) {
-	manager := newTestAzureManagerForZombieCleanup(t)
-	vm := newZombieVMWithFailedProvisioning(0, 10*time.Minute)
-	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, time.Now(), 5*time.Minute)
-	assert.True(t, isZombie)
+func TestStaleInstanceScenario_ProvisioningFailed(t *testing.T) {
+	manager := newTestAzureManagerForStaleInstanceCleanup(t)
+	vm := newStaleVMWithFailedProvisioning(0, 10*time.Minute)
+	isStaleInstance, registered, reason := manager.evaluateStaleInstanceStatus(vm, nil, time.Now(), 5*time.Minute)
+	assert.True(t, isStaleInstance)
 	assert.False(t, registered)
 	assert.Equal(t, "Provisioning FAILED and VM is stopped", reason)
 }
 
-func TestZombieScenario_NeverRegisteredInKubernetes(t *testing.T) {
-	manager := newTestAzureManagerForZombieCleanup(t)
-	vm := newZombieVMNeverRegistered(0, 30*time.Minute)
+func TestStaleInstanceScenario_NeverRegisteredInKubernetes(t *testing.T) {
+	manager := newTestAzureManagerForStaleInstanceCleanup(t)
+	vm := newStaleVMNeverRegistered(0, 30*time.Minute)
 	vm.Properties.InstanceView.Extensions = []*armcompute.VirtualMachineExtensionInstanceView{
 		{
 			Name: ptr.To("vmssCSE"),
@@ -1188,13 +1188,13 @@ func TestZombieScenario_NeverRegisteredInKubernetes(t *testing.T) {
 			},
 		},
 	}
-	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, time.Now(), 5*time.Minute)
-	assert.True(t, isZombie)
+	isStaleInstance, registered, reason := manager.evaluateStaleInstanceStatus(vm, nil, time.Now(), 5*time.Minute)
+	assert.True(t, isStaleInstance)
 	assert.False(t, registered)
 	assert.Contains(t, reason, "Never registered in K8s")
 }
 
-func TestZombieScenario_NodeUnreachableTaint(t *testing.T) {
+func TestStaleInstanceScenario_NodeUnreachableTaint(t *testing.T) {
 	vm := newHealthyVM(0)
 	now := time.Now()
 
@@ -1216,15 +1216,15 @@ func TestZombieScenario_NodeUnreachableTaint(t *testing.T) {
 		},
 	}
 
-	manager := newTestAzureManagerForZombieCleanup(t)
+	manager := newTestAzureManagerForStaleInstanceCleanup(t)
 	nodeMap := map[string]*apiv1.Node{normalizeProviderID(node.Spec.ProviderID): node}
-	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nodeMap, now, 5*time.Minute)
-	assert.True(t, isZombie)
+	isStaleInstance, registered, reason := manager.evaluateStaleInstanceStatus(vm, nodeMap, now, 5*time.Minute)
+	assert.True(t, isStaleInstance)
 	assert.True(t, registered)
 	assert.Equal(t, "Node has unreachable taint for 15 minutes", reason)
 }
 
-func TestZombieScenario_NodeNotReady(t *testing.T) {
+func TestStaleInstanceScenario_NodeNotReady(t *testing.T) {
 	vm := newHealthyVM(0)
 
 	// Node is NotReady for 15 minutes
@@ -1248,68 +1248,68 @@ func TestZombieScenario_NodeNotReady(t *testing.T) {
 		},
 	}
 
-	manager := newTestAzureManagerForZombieCleanup(t)
+	manager := newTestAzureManagerForStaleInstanceCleanup(t)
 	nodeMap := map[string]*apiv1.Node{normalizeProviderID(node.Spec.ProviderID): node}
-	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nodeMap, time.Now(), 5*time.Minute)
-	assert.True(t, isZombie)
+	isStaleInstance, registered, reason := manager.evaluateStaleInstanceStatus(vm, nodeMap, time.Now(), 5*time.Minute)
+	assert.True(t, isStaleInstance)
 	assert.True(t, registered)
 	assert.Equal(t, "Running VM; Ready condition has been False for 15 minutes", reason)
 }
 
-func TestZombieScenario_DeallocatedNodesAreHealthy(t *testing.T) {
-	manager := newTestAzureManagerForZombieCleanup(t)
+func TestStaleInstanceScenario_DeallocatedNodesAreHealthy(t *testing.T) {
+	manager := newTestAzureManagerForStaleInstanceCleanup(t)
 	vm := newDeallocatedVM(0)
 	vm.Properties.TimeCreated = ptr.To(time.Now().Add(-24 * time.Hour))
-	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, time.Now(), 5*time.Minute)
-	assert.False(t, isZombie)
+	isStaleInstance, registered, reason := manager.evaluateStaleInstanceStatus(vm, nil, time.Now(), 5*time.Minute)
+	assert.False(t, isStaleInstance)
 	assert.False(t, registered)
 	assert.Empty(t, reason)
 }
 
-func TestZombieScenario_MultipleZombiesWasteQuota(t *testing.T) {
-	manager := newTestAzureManagerForZombieCleanup(t)
+func TestStaleInstanceScenario_MultipleStaleInstancesWasteQuota(t *testing.T) {
+	manager := newTestAzureManagerForStaleInstanceCleanup(t)
 	vms := []*armcompute.VirtualMachineScaleSetVM{
 		newHealthyVM(0), // 1 healthy
-		newZombieVMWithFailedProvisioning(1, 10*time.Minute), // Zombie
-		newZombieVMWithFailedProvisioning(2, 15*time.Minute), // Zombie
-		newZombieVMWithFailedExtensions(3, 20*time.Minute),   // Zombie
-		newZombieVMNeverRegistered(4, 25*time.Minute),        // Zombie
+		newStaleVMWithFailedProvisioning(1, 10*time.Minute), // Stale instance
+		newStaleVMWithFailedProvisioning(2, 15*time.Minute), // Stale instance
+		newStaleVMWithFailedExtensions(3, 20*time.Minute),   // Stale instance
+		newStaleVMNeverRegistered(4, 25*time.Minute),        // Stale instance
 	}
 
 	now := time.Now()
-	var zombieIDs []string
+	var staleInstanceIDs []string
 	for _, vm := range vms {
-		isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, now, 5*time.Minute)
+		isStaleInstance, registered, reason := manager.evaluateStaleInstanceStatus(vm, nil, now, 5*time.Minute)
 		assert.False(t, registered)
-		if isZombie {
+		if isStaleInstance {
 			assert.NotEmpty(t, reason)
-			zombieIDs = append(zombieIDs, *vm.InstanceID)
+			staleInstanceIDs = append(staleInstanceIDs, *vm.InstanceID)
 		} else {
 			assert.Empty(t, reason)
 		}
 	}
-	assert.ElementsMatch(t, []string{"1", "2", "3", "4"}, zombieIDs)
+	assert.ElementsMatch(t, []string{"1", "2", "3", "4"}, staleInstanceIDs)
 }
 
-// seedZombieObservations models a completed grace period for tests of deletion batching.
-func seedZombieObservations(manager *AzureManager, group string, vms []*armcompute.VirtualMachineScaleSetVM) {
-	if manager.zombieObservations == nil {
-		manager.zombieObservations = make(map[zombieObservationKey]time.Time)
+// seedStaleInstanceObservations models a completed grace period for tests of deletion batching.
+func seedStaleInstanceObservations(manager *AzureManager, group string, vms []*armcompute.VirtualMachineScaleSetVM) {
+	if manager.staleInstanceObservations == nil {
+		manager.staleInstanceObservations = make(map[staleInstanceObservationKey]time.Time)
 	}
 	for _, vm := range vms {
 		if vm.Properties.TimeCreated == nil {
 			continue
 		}
-		manager.zombieObservations[zombieObservationKey{
+		manager.staleInstanceObservations[staleInstanceObservationKey{
 			nodeGroupID: group,
 			providerID:  normalizeProviderID(*vm.ID),
 			createdAt:   vm.Properties.TimeCreated.UTC(),
-		}] = time.Now().Add(-time.Duration(manager.config.ZombieMinAgeMinutes+1) * time.Minute)
+		}] = time.Now().Add(-time.Duration(manager.config.StaleInstanceMinAgeMinutes+1) * time.Minute)
 	}
 }
 
 func setupMockManager(t *testing.T, ctrl *gomock.Controller) (*AzureManager, *mock_virtualmachinescalesetclient.MockInterface, *mock_virtualmachinescalesetvmclient.MockInterface, *MockVMSSDeleteClient) {
-	manager := newTestAzureManagerForZombieCleanup(t)
+	manager := newTestAzureManagerForStaleInstanceCleanup(t)
 
 	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
 	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
@@ -1324,7 +1324,7 @@ func setupMockManager(t *testing.T, ctrl *gomock.Controller) (*AzureManager, *mo
 	return manager, mockVMSSClient, mockVMSSVMClient, mockDeleteClient
 }
 
-func newTestAzureManagerForZombieCleanup(t *testing.T) *AzureManager {
+func newTestAzureManagerForStaleInstanceCleanup(t *testing.T) *AzureManager {
 	return &AzureManager{
 		kubeClient:           fake.NewSimpleClientset(),
 		azureCache:           &azureCache{resourceGroup: "test-rg"},
@@ -1334,9 +1334,9 @@ func newTestAzureManagerForZombieCleanup(t *testing.T) *AzureManager {
 				ResourceGroup: "test-rg",
 				VMType:        providerazureconsts.VMTypeVMSS,
 			},
-			EnableZombieCleanup: false,
-			ZombieCleanupDryRun: false,
-			ZombieMinAgeMinutes: 10,
+			EnableStaleInstanceCleanup: false,
+			StaleInstanceCleanupDryRun: false,
+			StaleInstanceMinAgeMinutes: 10,
 		},
 	}
 }
@@ -1363,8 +1363,8 @@ func newHealthyVM(instanceID int) *armcompute.VirtualMachineScaleSetVM {
 	}
 }
 
-// newZombieVMWithFailedProvisioning creates a stopped VMSS VM with failed provisioning state
-func newZombieVMWithFailedProvisioning(instanceID int, age time.Duration) *armcompute.VirtualMachineScaleSetVM {
+// newStaleVMWithFailedProvisioning creates a stopped VMSS VM with failed provisioning state
+func newStaleVMWithFailedProvisioning(instanceID int, age time.Duration) *armcompute.VirtualMachineScaleSetVM {
 	return &armcompute.VirtualMachineScaleSetVM{
 		ID:         ptr.To(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, instanceID)),
 		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),
@@ -1385,8 +1385,8 @@ func newZombieVMWithFailedProvisioning(instanceID int, age time.Duration) *armco
 	}
 }
 
-// newZombieVMWithFailedExtensions creates a VMSS VM with succeeded provisioning but failed extensions
-func newZombieVMWithFailedExtensions(instanceID int, age time.Duration) *armcompute.VirtualMachineScaleSetVM {
+// newStaleVMWithFailedExtensions creates a VMSS VM with succeeded provisioning but failed extensions
+func newStaleVMWithFailedExtensions(instanceID int, age time.Duration) *armcompute.VirtualMachineScaleSetVM {
 	return &armcompute.VirtualMachineScaleSetVM{
 		ID:         ptr.To(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, instanceID)),
 		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),
@@ -1418,8 +1418,8 @@ func newZombieVMWithFailedExtensions(instanceID int, age time.Duration) *armcomp
 	}
 }
 
-// newZombieVMNeverRegistered creates a VMSS VM that succeeded provisioning but never registered in K8s
-func newZombieVMNeverRegistered(instanceID int, age time.Duration) *armcompute.VirtualMachineScaleSetVM {
+// newStaleVMNeverRegistered creates a VMSS VM that succeeded provisioning but never registered in K8s
+func newStaleVMNeverRegistered(instanceID int, age time.Duration) *armcompute.VirtualMachineScaleSetVM {
 	return &armcompute.VirtualMachineScaleSetVM{
 		ID:         ptr.To(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, instanceID)),
 		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),
@@ -1440,8 +1440,8 @@ func newZombieVMNeverRegistered(instanceID int, age time.Duration) *armcompute.V
 	}
 }
 
-// newUnreachableZombieVM creates a VM with healthy provisioning that will be paired with unreachable K8s node
-func newUnreachableZombieVM(instanceID int, age time.Duration) *armcompute.VirtualMachineScaleSetVM {
+// newUnreachableVM creates a VM with healthy provisioning that will be paired with unreachable K8s node
+func newUnreachableVM(instanceID int, age time.Duration) *armcompute.VirtualMachineScaleSetVM {
 	return &armcompute.VirtualMachineScaleSetVM{
 		ID:         ptr.To(fmt.Sprintf(fakeVirtualMachineScaleSetVMID, instanceID)),
 		InstanceID: ptr.To(fmt.Sprintf("%d", instanceID)),

@@ -72,11 +72,11 @@ type AzureManager struct {
 	azClient *azClient
 	env      azure.Environment
 
-	// kubeClient is the Kubernetes client used for node lookups during zombie cleanup.
+	// kubeClient is the Kubernetes client used for node lookups during stale instance cleanup.
 	kubeClient clientset.Interface
-	// zombieObservations tracks uninterrupted age-eligible observations, not VM lifetime.
-	zombieCleanupMutex sync.Mutex
-	zombieObservations map[zombieObservationKey]time.Time
+	// staleInstanceObservations tracks uninterrupted age-eligible observations, not VM lifetime.
+	staleInstanceCleanupMutex sync.Mutex
+	staleInstanceObservations map[staleInstanceObservationKey]time.Time
 
 	// azureCache is used for caching Azure resources.
 	// It keeps track of nodegroups and instances
@@ -255,24 +255,24 @@ func (m *AzureManager) forceRefresh() error {
 	discoveryErr := m.fetchAutoNodeGroups()
 	if discoveryErr != nil {
 		klog.Errorf("Failed to fetch autodiscovered nodegroups: %v", discoveryErr)
-		m.resetZombieObservations()
+		m.resetStaleInstanceObservations()
 	}
 	if err := m.azureCache.regenerate(); err != nil {
 		klog.Errorf("Failed to regenerate Azure cache: %v", err)
-		m.resetZombieObservations()
+		m.resetStaleInstanceObservations()
 		return err
 	}
 	m.lastRefresh = time.Now()
 	klog.V(2).Infof("Refreshed Azure VM and VMSS list, next refresh after %v", m.lastRefresh.Add(m.azureCache.refreshInterval))
 
 	// Cleanup requires successful discovery to avoid using stale node group ownership.
-	if m.config.EnableZombieCleanup && discoveryErr == nil {
-		if err := m.cleanupZombieNodes(); err != nil {
-			klog.Errorf("Failed to cleanup zombie nodes: %v", err)
-			// Don't fail the refresh if zombie cleanup fails
+	if m.config.EnableStaleInstanceCleanup && discoveryErr == nil {
+		if err := m.cleanupStaleInstances(); err != nil {
+			klog.Errorf("Failed to clean up stale VMSS instances: %v", err)
+			// Don't fail the refresh if stale instance cleanup fails
 		}
-	} else if !m.config.EnableZombieCleanup {
-		m.resetZombieObservations()
+	} else if !m.config.EnableStaleInstanceCleanup {
+		m.resetStaleInstanceObservations()
 	}
 
 	return nil
