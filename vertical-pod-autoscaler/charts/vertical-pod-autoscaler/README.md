@@ -28,29 +28,38 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 ## Webhook Management
 The admission controller requires a `MutatingWebhookConfiguration` and TLS certificates. This chart supports three mutually exclusive modes:
 
-### Helm-managed (default)
+### Helm-generated certificate (default)
 ```yaml
 admissionController:
-  registerWebhook: false
-  certGen:
-    enabled: true
+  tls:
+    create: true
 ```
 In this mode:
-- Helm creates the MutatingWebhookConfiguration
-- The kube-webhook-certgen job generates TLS certificates and stores them in a Secret
-- The certificates are automatically injected into the webhook configuration
+- Helm generates a CA and a server certificate (valid for `tls.validityDays`, 100 years by default) and stores them in the Secret named by `tls.secretName`
+- Helm creates the MutatingWebhookConfiguration and sets its `caBundle` from the same CA, so the two always match
+- On `helm upgrade` the existing Secret is reused when Helm can look it up
+
+Helm cannot look up the Secret under `helm template`, Argo CD or Flux, so there a new certificate is generated on every render (the Secret and `caBundle` still match). This mode is meant for getting started and testing. For production, supply your own certificate by setting `tls.caCert`, `tls.cert` and `tls.key` (for example from an encrypted values file), or use one of the modes below.
+
+#### Rotating a supplied certificate
+The webhook `caBundle` is updated as soon as Helm applies a change, but running admission controller pods only pick up a new serving certificate when the kubelet refreshes the mounted Secret (up to about a minute). If the new certificate is signed by a different CA, requests in that window fail verification (with `failurePolicy: Ignore` pods are admitted without VPA mutation). To avoid the gap, rotate in two upgrades: first set `tls.caCert` to the old and new CA certificates concatenated, keeping the old `cert` and `key`; then switch `cert` and `key` to the new certificate while keeping both CAs in `tls.caCert`. Remove the old CA in a later upgrade.
 
 ### Application-managed
 ```yaml
 admissionController:
   registerWebhook: true
-  certGen:
-    enabled: false
+  tls:
+    create: false
 ```
 In this mode:
-- The VPA admission controller creates and manages the webhook itself
+- The VPA admission controller creates and manages the webhook itself and keeps its `caBundle` in sync with the CA file
+- You provide the TLS Secret named by `tls.secretName`, with the keys `ca`, `cert` and `key`
+
 Important: You are responsible for creating the TLS secret before or after installing the chart. The admission controller will only create the `MutatingWebhookConfiguration` once the secret exists.
 If the secret is created after the Helm install, you must restart the admission controller pod to trigger webhook registration.
+
+> [!NOTE]
+> The admission controller deletes and re-creates the webhook configuration named `vpa-webhook-config` on startup, so in this mode its ClusterRole can create and delete any `MutatingWebhookConfiguration`.
 
 ### cert-manager managed
 
@@ -58,8 +67,8 @@ Using an existing `Issuer` or `ClusterIssuer`:
 ```yaml
 admissionController:
   registerWebhook: false
-  certGen:
-    enabled: false
+  tls:
+    create: false
   certManager:
     enabled: true
     issuerRef:
@@ -71,8 +80,8 @@ Or letting the chart create a namespaced self-signed issuer:
 ```yaml
 admissionController:
   registerWebhook: false
-  certGen:
-    enabled: false
+  tls:
+    create: false
   certManager:
     enabled: true
     createSelfSignedIssuer:
@@ -158,13 +167,31 @@ summary: "{{`{{ $labels.pod }}`}} is restarting"
 ### Migrating from vpa-up.sh script
 TBD
 
+### Migrating from the certgen job to Helm-generated certificates
+Earlier chart versions generated the certificate with the `kube-webhook-certgen` job (`admissionController.certGen.*`). The job and the `certGen` values have been removed.
+
+The job created the `vpa-tls-certs` Secret outside of Helm. On Helm 3.17+, let Helm adopt it with `--take-ownership`. The chart reuses the existing certificate, so the Secret and the webhook `caBundle` stay the same and nothing is disrupted:
+```bash
+helm upgrade <release-name> <chart> --namespace <namespace> --take-ownership
+```
+On older Helm versions, Helm refuses to adopt the Secret ("invalid ownership metadata"). Delete it first; a new certificate and a matching `caBundle` are generated in the same release:
+```bash
+kubectl delete secret -n <namespace> vpa-tls-certs
+helm upgrade <release-name> <chart> --namespace <namespace>
+```
+If the upgrade fails with a field-ownership conflict on the webhook's `caBundle` (Helm 4, for a release that was installed with server-side apply), add `--force-conflicts`. That flag does not exist on Helm 3.
+
+The Secret is now owned by the release, so `helm uninstall` removes it (the certgen-created Secret survived an uninstall).
+
+If you set `admissionController.certGen.enabled: false` to use `registerWebhook` or cert-manager, also set `admissionController.tls.create: false`.
+
 ### Migrating from Application-managed to Helm-managed webhook
 If you previously deployed with registerWebhook: true and want to switch to Helm-managed:
 - Delete the existing webhook:
 ```bash
 kubectl delete mutatingwebhookconfiguration vpa-webhook-config
 ```
-- Delete the existing secret (to allow certgen to create new certificates):
+- Delete the existing secret (to allow Helm to generate new certificates):
 ```bash
 kubectl delete secret -n <namespace> vpa-tls-certs
 ```
@@ -172,7 +199,7 @@ kubectl delete secret -n <namespace> vpa-tls-certs
 ```bash
 helm upgrade <release-name> <chart> \
   --set admissionController.registerWebhook=false \
-  --set admissionController.certGen.enabled=true
+  --set admissionController.tls.create=true
 ```
 
 ## Testing
@@ -189,24 +216,12 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.topologyKey | string | `"kubernetes.io/hostname"` |  |
 | admissionController.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight | int | `100` |  |
 | admissionController.annotations | object | `{}` |  |
-| admissionController.certGen.affinity | object | `{}` |  |
-| admissionController.certGen.enabled | bool | `true` |  |
-| admissionController.certGen.env | object | `{}` | Additional environment variables to be added to the certgen container. Format is KEY: Value format |
-| admissionController.certGen.image.pullPolicy | string | `"IfNotPresent"` | The pull policy for the certgen image. Recommend not changing this |
-| admissionController.certGen.image.repository | string | `"registry.k8s.io/ingress-nginx/kube-webhook-certgen"` | An image that contains certgen for creating certificates. |
-| admissionController.certGen.image.tag | string | `"v20231011-8b53cabe0"` | An image tag for the admissionController.certGen.image.repository image. |
-| admissionController.certGen.nodeSelector | object | `{}` |  |
-| admissionController.certGen.podSecurityContext | object | `{"runAsNonRoot":true,"runAsUser":65534,"seccompProfile":{"type":"RuntimeDefault"}}` | The securityContext block for the certgen pod(s) |
-| admissionController.certGen.priorityClassName | string | `""` | Priority class name for the certgen job pods. These jobs gate the release as pre-install/pre-upgrade and post-install/post-upgrade hooks, so a priority class can help them schedule on a busy cluster. |
-| admissionController.certGen.resources | object | `{}` | The resources block for the certgen pod |
-| admissionController.certGen.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | The securityContext block for the certgen container(s) |
-| admissionController.certGen.tolerations | list | `[]` |  |
 | admissionController.certManager.annotations | object | `{}` | Annotations to add to all cert-manager resources created by Chart. |
 | admissionController.certManager.createSelfSignedIssuer | object | `{"duration":"8760h","enabled":false,"renewBefore":"720h"}` | Optionally create a SelfSigned Issuer for CA generation. When enabled, a namespaced SelfSigned Issuer is created in the VPA namespace to issue the intermediate CA certificate, which in turn signs the webhook TLS certificate. |
 | admissionController.certManager.createSelfSignedIssuer.duration | string | `"8760h"` | Lifetime of the intermediate CA certificate. |
 | admissionController.certManager.createSelfSignedIssuer.renewBefore | string | `"720h"` | Time before expiry to renew the CA certificate. |
 | admissionController.certManager.duration | string | `"168h"` | Lifetime of the webhook TLS certificate. |
-| admissionController.certManager.enabled | bool | `false` | If true, cert-manager manages the webhook certificate lifecycle. cert-manager must be installed in the cluster, see https://cert-manager.io/docs/installation. Mutually exclusive with certGen.enabled, registerWebhook, and tls.create. |
+| admissionController.certManager.enabled | bool | `false` | If true, cert-manager manages the webhook certificate lifecycle. cert-manager must be installed in the cluster, see https://cert-manager.io/docs/installation. Mutually exclusive with registerWebhook and tls.create. |
 | admissionController.certManager.issuerRef | object | `{"group":"cert-manager.io","kind":"ClusterIssuer","name":""}` | Reference to an existing issuer for signing the webhook TLS certificate. Required when createSelfSignedIssuer.enabled is false. |
 | admissionController.certManager.issuerRef.group | string | `"cert-manager.io"` | API group of the issuer. |
 | admissionController.certManager.issuerRef.kind | string | `"ClusterIssuer"` | Kind of the issuer (ClusterIssuer or Issuer). |
@@ -234,7 +249,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.podDisruptionBudget.minAvailable | int or string | `1` | Minimum number/percentage of pods that must be available after the eviction. IMPORTANT: You can specify either 'minAvailable' or 'maxUnavailable', but not both. |
 | admissionController.podLabels | object | `{}` |  |
 | admissionController.priorityClassName | string | `nil` |  |
-| admissionController.registerWebhook | bool | `false` | Whether to register webhook via the application itself or via Helm. Set to false when using Helm-managed webhook. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations. |
+| admissionController.registerWebhook | bool | `false` | Whether to register webhook via the application itself or via Helm. Set to false (default) when Helm renders the webhook (tls.create or certManager). When true you must set tls.create: false and provide the TLS Secret yourself. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations. |
 | admissionController.replicas | int | `2` |  |
 | admissionController.resources | object | `{}` |  |
 | admissionController.revisionHistoryLimit | int | `10` |  |
@@ -247,11 +262,12 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.serviceAccount.create | bool | `true` |  |
 | admissionController.serviceAccount.labels | object | `{}` |  |
 | admissionController.strategy | object | `{}` |  |
-| admissionController.tls.caCert | string | `""` |  |
-| admissionController.tls.cert | string | `""` |  |
-| admissionController.tls.create | bool | `false` |  |
-| admissionController.tls.key | string | `""` |  |
-| admissionController.tls.secretName | string | `"vpa-tls-certs"` |  |
+| admissionController.tls.caCert | string | `""` | Optional PEM CA certificate. If caCert, cert and key are all set, they are used instead of generating a certificate. |
+| admissionController.tls.cert | string | `""` | Optional PEM server certificate, see tls.caCert. |
+| admissionController.tls.create | bool | `true` | If true (default), Helm generates a CA and server certificate with genCA/genSignedCert, stores them in the Secret named by tls.secretName and sets the webhook caBundle from the same CA. The certificate changes on every render when lookup is unavailable (helm template, Argo CD, Flux); for production or GitOps set tls.caCert/cert/key, or set create to false and use registerWebhook or certManager. |
+| admissionController.tls.key | string | `""` | Optional PEM server private key, see tls.caCert. |
+| admissionController.tls.secretName | string | `"vpa-tls-certs"` | Name of the TLS Secret (keys: ca, cert, key). |
+| admissionController.tls.validityDays | int | `36500` | Validity in days of the generated CA and server certificate (36500 is about 100 years). |
 | admissionController.tolerations | list | `[]` |  |
 | admissionController.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Admission Controller, used to spread replicas across failure domains such as zones. |
 | admissionController.volumeMounts[0].mountPath | string | `"/etc/tls-certs"` |  |
