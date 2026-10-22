@@ -254,7 +254,7 @@ func TestZombieCleanup_FailedProvisioningSafety(t *testing.T) {
 				}
 
 				shouldDelete := !hasK8sNode && powerState == "stopped"
-				shouldLog := (registration == "unreachable" && powerState != "deallocated") || (registration == "not-ready" && powerState == "running")
+				shouldLog := (registration == "unreachable" && powerState != "deallocated" && powerState != "deallocating") || (registration == "not-ready" && powerState == "running")
 				isZombie, registered, _ := manager.evaluateZombieStatus(vm, nodeMap, time.Now(), 5*time.Minute)
 				assert.Equal(t, hasK8sNode, registered)
 				assert.Equal(t, shouldDelete || shouldLog, isZombie)
@@ -802,6 +802,75 @@ func TestZombieCleanup_RegisteredNodeUnhealthyDuration(t *testing.T) {
 			)
 			assert.NoError(t, manager.cleanupZombieNodesWithContext([]*apiv1.Node{node}))
 		})
+	}
+}
+
+func TestZombieCleanup_PreservesParkedVMs(t *testing.T) {
+	for _, powerState := range []string{"deallocated", "deallocating"} {
+		for _, provisioningState := range []string{"Succeeded", "Failed"} {
+			for _, extensions := range []string{"missing", "succeeded", "failed"} {
+				for _, registered := range []bool{false, true} {
+					t.Run(fmt.Sprintf("%s/%s/extensions-%s/registered-%t", powerState, provisioningState, extensions, registered), func(t *testing.T) {
+						ctrl := gomock.NewController(t)
+						defer ctrl.Finish()
+
+						manager, _, mockVMSSVMClient, _ := setupMockManager(t, ctrl)
+						manager.config.EnableZombieCleanup = true
+						manager.config.ZombieCleanupDryRun = false
+						manager.config.ZombieMinAgeMinutes = 5
+
+						now := time.Now()
+						vm := newDeallocatedVM(0)
+						vm.Properties.TimeCreated = ptr.To(now.Add(-24 * time.Hour))
+						vm.Properties.ProvisioningState = ptr.To(provisioningState)
+						vm.Properties.InstanceView.Statuses = []*armcompute.InstanceViewStatus{
+							{Code: ptr.To("PowerState/" + powerState)},
+						}
+						if extensions != "missing" {
+							vm.Properties.InstanceView.Extensions = []*armcompute.VirtualMachineExtensionInstanceView{
+								{
+									Name: ptr.To("vmssCSE"),
+									Statuses: []*armcompute.InstanceViewStatus{
+										{Code: ptr.To("ProvisioningState/" + extensions)},
+									},
+								},
+							}
+						}
+
+						nodeMap := make(map[string]*apiv1.Node)
+						if registered {
+							node := &apiv1.Node{
+								ObjectMeta: metav1.ObjectMeta{Name: "node-0"},
+								Spec: apiv1.NodeSpec{
+									ProviderID: azurePrefix + *vm.ID,
+									Taints: []apiv1.Taint{
+										{
+											Key:       "node.kubernetes.io/unreachable",
+											Effect:    apiv1.TaintEffectNoSchedule,
+											TimeAdded: ptr.To(metav1.NewTime(now.Add(-time.Hour))),
+										},
+									},
+								},
+							}
+							manager.kubeClient = fake.NewSimpleClientset(node)
+							nodeMap[normalizeProviderID(node.Spec.ProviderID)] = node
+						}
+
+						isZombie, hasK8sNode, reason := manager.evaluateZombieStatus(vm, nodeMap, now, 5*time.Minute)
+						assert.False(t, isZombie)
+						assert.Equal(t, registered, hasK8sNode)
+						assert.Empty(t, reason)
+
+						vmssName := "test-vmss"
+						manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
+						mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.azureCache.resourceGroup, vmssName).Return(
+							[]*armcompute.VirtualMachineScaleSetVM{vm}, nil,
+						)
+						assert.NoError(t, manager.cleanupZombieNodes())
+					})
+				}
+			}
+		}
 	}
 }
 

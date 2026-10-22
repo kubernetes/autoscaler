@@ -49,6 +49,7 @@ type zombieInstance struct {
 // If Kubernetes nodes cannot be listed, cleanup is skipped until the next refresh.
 // Registered-node checks skip missing or invalid timestamps rather than using node creation time.
 // Azure operations use the cache's effective resource group, including the hosted-resource-group override.
+// Deallocated and deallocating VMs are excluded, whether or not a Kubernetes node exists.
 func (m *AzureManager) cleanupZombieNodes() error {
 	if m.kubeClient == nil {
 		return fmt.Errorf("cannot clean up zombie nodes: Kubernetes client is unavailable")
@@ -306,6 +307,11 @@ func (m *AzureManager) evaluateZombieStatus(
 		k8sNode, hasK8sNode = k8sNodeMap[normalizedVMID]
 	}
 
+	// Parked VMs may be intentionally retained for reuse even without a K8s node.
+	if powerState == "deallocated" || powerState == "deallocating" {
+		return false, hasK8sNode, ""
+	}
+
 	// SCENARIO 1: Extensions failed or never installed
 	if !hasK8sNode && provisioningState == "Succeeded" && (!extensionsInstalled || extensionsFailed) {
 		if vmssAge == nil {
@@ -322,7 +328,6 @@ func (m *AzureManager) evaluateZombieStatus(
 	}
 
 	// SCENARIO 2: Provisioning failed on an unregistered, stopped VM.
-	// Deallocated VMs may be intentionally parked for reuse.
 	if !hasK8sNode && provisioningState == "Failed" && powerState == "stopped" {
 		return true, false, "Provisioning FAILED and VM is stopped"
 	}
@@ -341,11 +346,6 @@ func (m *AzureManager) evaluateZombieStatus(
 
 	// SCENARIO 4: Has K8s node but with critical issues
 	if hasK8sNode && k8sNode != nil {
-		// Deallocated nodes may be intentionally parked for reuse.
-		if powerState == "deallocated" {
-			return false, true, ""
-		}
-
 		var readyCondition *apiv1.NodeCondition
 		for i := range k8sNode.Status.Conditions {
 			if k8sNode.Status.Conditions[i].Type == apiv1.NodeReady {
