@@ -19,6 +19,7 @@
   - [VPASet Lifecycle Example](#vpaset-lifecycle-example)
     - [Example](#example)
   - [Design Decisions](#design-decisions)
+    - [Disruption budget for selector VPAs](#disruption-budget-for-selector-vpas)
     - [How the admission controller determines the target node](#how-the-admission-controller-determines-the-target-node)
   - [Test Plan](#test-plan)
   - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
@@ -303,6 +304,9 @@ When the `VPASelector` feature gate is enabled, the updater:
    pod is matched to the VPA whose selector matches its node.
 3. Applies that VPA's recommendation according to its `updateMode`. All existing update modes
    are supported unchanged.
+4. Scopes the disruption budget (`minReplicas` and the eviction tolerance) to the pods the VPA
+   selects rather than to the whole DaemonSet. See
+   [Disruption budget for selector VPAs](#disruption-budget-for-selector-vpas).
 
 #### Admission Controller
 
@@ -514,6 +518,31 @@ higher than the pod on `kind-worker2`. The recommendations reflect this: `323522
 
 ### Design Decisions
 
+#### Disruption budget for selector VPAs
+
+The updater's `GetCreatorMaps` builds per-controller group statistics and, for a DaemonSet, sets
+`configured` to `status.desiredNumberScheduled`. A pod is disruptable only if the group's running
+count stays above `configured - configured * evictionToleranceFraction`, and the group is skipped
+if it has fewer live pods than `minReplicas` (default 2).
+
+For a selector VPA the group holds only the selected pods, so a DaemonSet-wide `configured` is
+wrong: with the default tolerance of 0.5, a partition holding half or fewer of the DaemonSet's
+pods can never evict or resize, and a one-node partition (such as the hostname-partitioned
+[example](#example) above) is always skipped by `minReplicas`.
+
+For a VPA with `spec.selector`, `GetCreatorMaps` therefore sets `configured` to the number of live
+selected pods, as it already does for Jobs. Tolerance and `minReplicas` then apply per partition,
+which is the right unit: each DaemonSet pod serves its own node, so other partitions add no
+availability to this one. Counting live pods instead of a desired count slightly loosens the
+budget during rollouts; computing a per-partition desired count would mean re-running DaemonSet
+scheduling against the matching nodes, which is not worth it for alpha.
+
+`minReplicas` keeps its semantics and default. A VPASet whose partitions can be a single node must
+set `updatePolicy.minReplicas: 1` in its template for eviction-based modes to work, as a
+single-node DaemonSet with a plain VPA must today. The controller copies the template's
+`updatePolicy` to every generated VPA, so no special handling is needed.
+`--in-place-skip-disruption-budget` is unaffected.
+
 #### How the admission controller determines the target node
 
 When a new DaemonSet pod is admitted, `pod.spec.nodeName` is empty: the scheduler has not yet
@@ -549,6 +578,10 @@ workloads the node is not known at admission time.
     overlapping selectors.
   - Recommender cluster state: node-aware aggregate keys for DaemonSet pods, matching aggregates
     to VPAs by node labels, and re-matching when node labels change.
+  - Updater restriction: for a selector VPA, `configured`, the eviction tolerance, and the
+    `minReplicas` check are computed from the selected pods only, so a partition with a minority
+    of the DaemonSet's pods can still evict and resize, and a one-node partition with
+    `minReplicas: 1` is updated.
   - Admission controller: extracting the node name from DaemonSet node affinity `matchFields`,
     and falling back correctly when the node cannot be determined (absent `matchFields`, empty
     `values`, malformed node affinity, etc.).
@@ -565,7 +598,9 @@ workloads the node is not known at admission time.
   - Deleting the VPASet garbage collects the generated VPAs and, after that, their checkpoints.
   - In-place updates apply the correct VPA's recommendation to each pod.
   - Eviction-based updates (`Recreate`) evict pods, and the admission controller injects the
-    correct recommendation into the replacement pod.
+    correct recommendation into the replacement pod. The test uses at least three partitions,
+    so that each holds a minority of the DaemonSet's pods and a DaemonSet-wide budget would have
+    blocked eviction.
   - Pods on nodes without the partition label fall back to a VPA without a selector, if one
     exists, and are otherwise left untouched.
 
