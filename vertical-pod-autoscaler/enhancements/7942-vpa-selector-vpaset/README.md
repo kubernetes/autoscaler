@@ -605,10 +605,13 @@ workloads the node is not known at admission time.
     only receives aggregates from uncovered nodes; relinking when the winner changes.
   - Recommender cluster state: node-aware aggregate keys for DaemonSet pods, matching aggregates
     to VPAs by node labels, and re-matching when node labels change.
-  - Updater restriction: for a selector VPA, `configured`, the eviction tolerance, and the
-    `minReplicas` check are computed from the selected pods only, so a partition with a minority
-    of the DaemonSet's pods can still evict and resize, and a one-node partition with
-    `minReplicas: 1` is updated.
+  - Updater, with a DaemonSet split across several selector VPAs: each pod is matched to the
+    VPA whose `nodeSelector` matches its node's labels, a pod on an uncovered node goes to the fallback VPA or is skipped, and a pod is dropped from a
+    VPA's list when its controlling VPA is a different object (including an Off one). For the
+    disruption budget, `configured`, the eviction tolerance, and the `minReplicas` check are
+    computed from the selected pods only, so a partition with a minority of the DaemonSet's pods
+    can still evict and resize, a one-node partition with `minReplicas: 1` is updated, and
+    disruptions in one partition do not consume another partition's budget.
   - Admission controller: extracting the node name from DaemonSet node affinity `matchFields`,
     and falling back correctly when the node cannot be determined (absent `matchFields`, empty
     `values`, malformed node affinity, etc.).
