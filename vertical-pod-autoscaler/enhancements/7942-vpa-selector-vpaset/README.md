@@ -66,7 +66,7 @@ consumption of a DaemonSet pod varies significantly based on the node it runs on
 - **Log shippers** (e.g. Fluent Bit) that process more data on nodes running data-intensive
   applications.
 - **Monitoring exporters** (e.g. node-exporter with GPU metrics) that have higher overhead on
-  specialized hardware.
+  specialized hardware or on a bigger nodes with more traffic.
 - **CNI agents** that scale with the number of pods or network throughput on a node.
 
 Without per-node-group recommendations, cluster operators must choose between:
