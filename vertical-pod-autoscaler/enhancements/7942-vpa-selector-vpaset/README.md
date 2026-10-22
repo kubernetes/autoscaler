@@ -261,10 +261,21 @@ When the `VPASelector` feature gate is enabled:
    at most one aggregate per node per container.
 
 3. Matching aggregates to VPAs - When the recommender decides whether an aggregate belongs to
-   a VPA, it checks the pod label selector derived from `targetRef` (as today) and 
+   a VPA, it checks the pod label selector derived from `targetRef` (as today) and
    also checks `selector.nodeSelector` against the current labels of
    the aggregate's node. When a node's labels change, the aggregates on that node are matched
    again so that they move to the VPA that now selects them.
+
+4. One VPA per aggregate - Today `UseAggregationIfMatching` links an aggregate to every VPA
+   whose selector matches it. With a selector VPA and a fallback VPA on the same DaemonSet, both
+   would match the same node aggregate: the fallback would absorb usage from every node, and the
+   aggregate's `UpdateMode` and resource policy would be overwritten by whichever VPA linked
+   last. When the gate is enabled, the recommender instead resolves the controlling VPA for each
+   DaemonSet node aggregate with the rules in
+   [Choosing the controlling VPA for a pod](#choosing-the-controlling-vpa-for-a-pod) and links the
+   aggregate only to that VPA. A fallback VPA therefore sees only the nodes no selector VPA
+   covers. When the winner changes (a node is relabeled, a selector VPA is created or deleted),
+   the aggregate is unlinked from the old VPA and linked to the new one.
 
 Pods on nodes that no VPA selects - If a DaemonSet pod runs on a node that matches none of the
 selector VPAs targeting the DaemonSet (for example, the node lacks the label a VPASet partitions
@@ -346,6 +357,15 @@ expected setup, so the rule is extended:
 
 The recommender, updater, and admission controller all use this same function, so they always
 agree on which VPA controls a pod.
+
+`updateMode: Off` VPAs take part in the choice. Today the updater and the admission controller
+skip Off VPAs before matching pods. With selectors that would let a fallback VPA in `Recreate`
+mode hijack the pods of an Off partition, since the Off VPA is never considered and the fallback
+is the only match left. Both components therefore resolve the controlling VPA over all VPAs
+targeting the controller, including Off ones, and only then check its update mode: if the
+winner is Off (and has no startup boost), the pod is left alone, even if a weaker VPA would
+have acted on it. The updater, which today iterates per VPA, applies the same rule by dropping
+from a VPA's pod list any pod whose controlling VPA is a different object.
 
 ### VPASet Lifecycle Example
 
@@ -574,8 +594,11 @@ workloads the node is not known at admission time.
 
 - **Unit tests**:
   - VPA matching with `selector.nodeSelector`,
-    including precedence of selector VPAs over a VPA without a selector, and the tie-break for
-    overlapping selectors.
+    including precedence of selector VPAs over a VPA without a selector, the tie-break for
+    overlapping selectors, and that an Off selector VPA wins over an active fallback VPA so the
+    pod is not updated.
+  - Recommender cluster state: a node aggregate is linked to exactly one VPA and the fallback VPA
+    only receives aggregates from uncovered nodes; relinking when the winner changes.
   - Recommender cluster state: node-aware aggregate keys for DaemonSet pods, matching aggregates
     to VPAs by node labels, and re-matching when node labels change.
   - Updater restriction: for a selector VPA, `configured`, the eviction tolerance, and the
@@ -602,7 +625,10 @@ workloads the node is not known at admission time.
     so that each holds a minority of the DaemonSet's pods and a DaemonSet-wide budget would have
     blocked eviction.
   - Pods on nodes without the partition label fall back to a VPA without a selector, if one
-    exists, and are otherwise left untouched.
+    exists, and are otherwise left untouched. The fallback VPA's recommendation reflects only
+    those pods.
+  - A partition whose VPA is `Off` is not evicted or resized by a fallback VPA in `Recreate`
+    mode targeting the same DaemonSet.
 
 ### Feature Enablement and Rollback
 
