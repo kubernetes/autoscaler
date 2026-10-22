@@ -244,10 +244,10 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	curSize := *set.SKU.Capacity
 	vmssSizeMutex.Unlock()
 
-	// Spot capacity always needs a fresh GET. Also confirm a cached transition
-	// to zero: a stale List response must not override a positive target size,
-	// but a zero confirmed by GET is a valid capacity and must be accepted.
-	if isSpot(set) || (curSize == 0 && scaleSet.curSize > 0) {
+	// Spot capacity always needs a fresh GET. Also confirm a cached zero when
+	// the previous size is positive or uninitialized: List may return a stale
+	// zero even when instances exist. A zero confirmed by GET is valid.
+	if isSpot(set) || (curSize == 0 && scaleSet.curSize != 0) {
 		ctx, cancel := getContextWithCancel()
 		defer cancel()
 
