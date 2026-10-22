@@ -156,6 +156,11 @@ Validation (admission controller webhook and CRD validation):
 - `nodeSelector` keys and values must be valid label keys and values.
 - `nodeSelector` is only allowed when `targetRef.kind` is `DaemonSet`.
 - `selector` is only allowed when the `VPASelector` feature gate is enabled.
+- `selector` cannot be combined with CPU startup boost: `spec.startupBoost` and
+  `resourcePolicy.containerPolicies[].startupBoost` must be unset when `selector` is set. CPU
+  startup boost is a non-goal for selector VPAs (see [Non-Goals](#non-goals)), and without this
+  rule the updater's unboost path would list pods by the `targetRef` label selector alone and so
+  size its in-place restrictions over the whole DaemonSet rather than the selected pods.
 
 #### New CRD: VerticalPodAutoscalerSet
 
@@ -212,6 +217,8 @@ Validation:
 - Exactly one field of `partition` must be set.
 - `template.spec.selector` must be unset.
 - `template.spec.targetRef` must reference a DaemonSet in this iteration.
+- `template.spec.startupBoost` and `template.spec.resourcePolicy.containerPolicies[].startupBoost`
+  must be unset, since every generated VPA carries a selector and the rule above applies to it.
 - `VerticalPodAutoscalerSet` objects are rejected unless the `VPASet` feature gate is enabled.
 
 Generated VPAs carry:
@@ -535,7 +542,8 @@ workloads the node is not known at admission time.
     and falling back correctly when the node cannot be determined (absent `matchFields`, empty
     `values`, malformed node affinity, etc.).
   - Validation rules for `spec.selector` and `VerticalPodAutoscalerSet` (DaemonSet-only, unset
-    template selector, exactly one partition field, feature gates).
+    template selector, exactly one partition field, feature gates, rejection of startup boost
+    together with a selector at both the VPA and template level).
   - VPASet controller: creating VPAs for new values, deleting VPAs for vanished values,
     propagating template changes, overwriting manual edits to generated VPAs, name generation
     and collision avoidance, and refusing to adopt VPAs it does not own.
