@@ -50,6 +50,7 @@ type zombieInstance struct {
 // Registered-node checks skip missing or invalid timestamps rather than using node creation time.
 // Azure operations use the cache's effective resource group, including the hosted-resource-group override.
 // Deallocated and deallocating VMs are excluded, whether or not a Kubernetes node exists.
+// Direct deletion is skipped when the VM power state is missing or unrecognized.
 func (m *AzureManager) cleanupZombieNodes() error {
 	if m.kubeClient == nil {
 		return fmt.Errorf("cannot clean up zombie nodes: Kubernetes client is unavailable")
@@ -270,6 +271,9 @@ func (m *AzureManager) evaluateZombieStatus(
 
 	if vm.Properties != nil && vm.Properties.InstanceView != nil && vm.Properties.InstanceView.Statuses != nil {
 		for _, status := range vm.Properties.InstanceView.Statuses {
+			if status == nil {
+				continue
+			}
 			code := ptr.Deref(status.Code, "")
 
 			if strings.HasPrefix(code, "PowerState/") {
@@ -310,6 +314,16 @@ func (m *AzureManager) evaluateZombieStatus(
 	// Parked VMs may be intentionally retained for reuse even without a K8s node.
 	if powerState == "deallocated" || powerState == "deallocating" {
 		return false, hasK8sNode, ""
+	}
+
+	if !hasK8sNode {
+		switch powerState {
+		case "running", "starting", "stopping", "stopped":
+		default:
+			klog.V(4).Infof("Skipping unregistered instance %s: missing or unrecognized power state %q",
+				ptr.Deref(vm.InstanceID, ""), powerState)
+			return false, false, ""
+		}
 	}
 
 	// SCENARIO 1: Extensions failed or never installed

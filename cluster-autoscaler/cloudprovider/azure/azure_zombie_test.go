@@ -805,6 +805,74 @@ func TestZombieCleanup_RegisteredNodeUnhealthyDuration(t *testing.T) {
 	}
 }
 
+func TestZombieCleanup_RequiresKnownPowerState(t *testing.T) {
+	for _, powerState := range []string{"missing-instance-view", "missing-statuses", "nil-status", "missing-code", "no-power-state", "", "unknown", "unrecognized", "running", "stopped"} {
+		for _, extensions := range []string{"missing", "succeeded", "failed"} {
+			t.Run(powerState+"/extensions-"+extensions, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				defer ctrl.Finish()
+
+				manager, _, vmClient, deleteClient := setupMockManager(t, ctrl)
+				manager.config.EnableZombieCleanup = true
+				manager.config.ZombieCleanupDryRun = false
+				manager.config.ZombieMinAgeMinutes = 5
+				vmssName := "test-vmss"
+				manager.RegisterNodeGroup(newTestScaleSet(manager, vmssName))
+
+				now := time.Now()
+				vm := newZombieVMNeverRegistered(0, 24*time.Hour)
+				view := vm.Properties.InstanceView
+				if extensions != "missing" {
+					view.Extensions = []*armcompute.VirtualMachineExtensionInstanceView{
+						{
+							Name: ptr.To("vmssCSE"),
+							Statuses: []*armcompute.InstanceViewStatus{
+								{Code: ptr.To("ProvisioningState/" + extensions)},
+							},
+						},
+					}
+				}
+				switch powerState {
+				case "missing-instance-view":
+					vm.Properties.InstanceView = nil
+				case "missing-statuses":
+					view.Statuses = nil
+				case "nil-status":
+					view.Statuses = []*armcompute.InstanceViewStatus{nil}
+				case "missing-code":
+					view.Statuses = []*armcompute.InstanceViewStatus{{}}
+				case "no-power-state":
+					view.Statuses = []*armcompute.InstanceViewStatus{{Code: ptr.To("ProvisioningState/succeeded")}}
+				default:
+					view.Statuses = []*armcompute.InstanceViewStatus{{Code: ptr.To("PowerState/" + powerState)}}
+				}
+
+				shouldDelete := powerState == "running" || powerState == "stopped"
+				isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, now, 5*time.Minute)
+				assert.Equal(t, shouldDelete, isZombie)
+				assert.False(t, registered)
+				if shouldDelete {
+					assert.NotEmpty(t, reason)
+				} else {
+					assert.Empty(t, reason)
+				}
+
+				vmClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.azureCache.resourceGroup, vmssName).Return(
+					[]*armcompute.VirtualMachineScaleSetVM{vm}, nil,
+				)
+				if shouldDelete {
+					deleteClient.EXPECT().BeginDeleteInstances(
+						gomock.Any(), manager.azureCache.resourceGroup, vmssName,
+						armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIDs: []*string{ptr.To("0")}},
+						gomock.Any(),
+					).Return(nil, nil)
+				}
+				assert.NoError(t, manager.cleanupZombieNodes())
+			})
+		}
+	}
+}
+
 func TestZombieCleanup_PreservesParkedVMs(t *testing.T) {
 	for _, powerState := range []string{"deallocated", "deallocating"} {
 		for _, provisioningState := range []string{"Succeeded", "Failed"} {
