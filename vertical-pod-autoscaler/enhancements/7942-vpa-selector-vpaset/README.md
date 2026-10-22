@@ -307,7 +307,15 @@ For each VPASet it:
 
 If a VPA with the intended name already exists and is not owned by the VPASet, the controller does
 not adopt or modify it. It sets a `ConflictingVPA` condition on the VPASet and skips that value.
-//NEED TO CHECK HERE
+
+Open question: deletion grace period - Step 4 deletes a child VPA as soon as its label value no
+longer appears on any node. A transient change, such as a rolling node upgrade that briefly
+removes the last node carrying a value, would delete the VPA and its recommendation history, and
+the pods on that value would fall back to a VPA without a selector, or to no VPA at all, until
+the value returns. One option is to delay deletion by a grace period (for example, a configurable
+duration after the value was last seen), at the cost of keeping unused VPAs for longer. Whether to
+add the delay, its default, and whether it is configurable on the VPASet are not yet decided and
+must be resolved before graduating to Beta (see [Graduation Criteria](#graduation-criteria)).
 
 #### Updater
 
