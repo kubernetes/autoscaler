@@ -1151,61 +1151,47 @@ func TestZombieCleanup_IgnoresDeallocatedNodes(t *testing.T) {
 // ============================================================================
 
 func TestZombieScenario_ExtensionsFailedToInstall(t *testing.T) {
-	zombieVM := newZombieVMWithFailedExtensions(0, 15*time.Minute)
-
-	hasFailedExtension := false
-	if zombieVM.Properties != nil && zombieVM.Properties.InstanceView != nil && zombieVM.Properties.InstanceView.Extensions != nil {
-		for _, ext := range zombieVM.Properties.InstanceView.Extensions {
-			if ext.Statuses != nil {
-				for _, status := range ext.Statuses {
-					code := ptr.Deref(status.Code, "")
-					if (status.Level != nil && *status.Level == armcompute.StatusLevelTypesError) || code == "ProvisioningState/failed" {
-						hasFailedExtension = true
-						break
-					}
-				}
-			}
-		}
-	}
-
-	assert.True(t, hasFailedExtension,
-		"ZOMBIE DETECTED: VM has failed extensions (vmssCSE), preventing Kubernetes registration!")
+	manager := newTestAzureManagerForZombieCleanup(t)
+	vm := newZombieVMWithFailedExtensions(0, 15*time.Minute)
+	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, time.Now(), 5*time.Minute)
+	assert.True(t, isZombie)
+	assert.False(t, registered)
+	assert.Contains(t, reason, "Extensions FAILED")
 }
 
 func TestZombieScenario_ExtensionsNeverInstalled(t *testing.T) {
-	zombieVM := newZombieVMNeverRegistered(0, 20*time.Minute)
-
-	extensionsInstalled := false
-	if zombieVM.Properties != nil && zombieVM.Properties.InstanceView != nil && zombieVM.Properties.InstanceView.Extensions != nil {
-		extensionsInstalled = len(zombieVM.Properties.InstanceView.Extensions) > 0
-	}
-	vmProvisioned := ptr.Deref(zombieVM.Properties.ProvisioningState, "") == "Succeeded"
-	vmAge := 20 * time.Minute
-
-	assert.True(t, vmProvisioned && !extensionsInstalled && vmAge > 5*time.Minute,
-		"ZOMBIE DETECTED: VM provisioned successfully but extensions were NEVER INSTALLED (flapping zombie)!")
+	manager := newTestAzureManagerForZombieCleanup(t)
+	vm := newZombieVMNeverRegistered(0, 20*time.Minute)
+	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, time.Now(), 5*time.Minute)
+	assert.True(t, isZombie)
+	assert.False(t, registered)
+	assert.Contains(t, reason, "Extensions NOT INSTALLED")
 }
 
 func TestZombieScenario_ProvisioningFailed(t *testing.T) {
-	zombieVM := newZombieVMWithFailedProvisioning(0, 10*time.Minute)
-
-	provisioningState := ptr.Deref(zombieVM.Properties.ProvisioningState, "")
-
-	assert.Equal(t, "Failed", provisioningState,
-		"ZOMBIE DETECTED: VM has ProvisioningState='%s' (should be 'Failed'), wasting quota!",
-		provisioningState)
+	manager := newTestAzureManagerForZombieCleanup(t)
+	vm := newZombieVMWithFailedProvisioning(0, 10*time.Minute)
+	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, time.Now(), 5*time.Minute)
+	assert.True(t, isZombie)
+	assert.False(t, registered)
+	assert.Equal(t, "Provisioning FAILED and VM is stopped", reason)
 }
 
 func TestZombieScenario_NeverRegisteredInKubernetes(t *testing.T) {
-	zombieVM := newZombieVMNeverRegistered(0, 30*time.Minute)
-	vmProvisioned := ptr.Deref(zombieVM.Properties.ProvisioningState, "") == "Succeeded"
-	vmAge := 30 * time.Minute
-
-	// Simulated scenario: This VM never appears in `kubectl get nodes`
-	neverRegistered := true // This VM is not in K8s
-	assert.True(t, vmProvisioned && neverRegistered && vmAge > 5*time.Minute,
-		"ZOMBIE DETECTED: VM provisioned %v ago but never registered in Kubernetes (AllocationFailed)!",
-		vmAge)
+	manager := newTestAzureManagerForZombieCleanup(t)
+	vm := newZombieVMNeverRegistered(0, 30*time.Minute)
+	vm.Properties.InstanceView.Extensions = []*armcompute.VirtualMachineExtensionInstanceView{
+		{
+			Name: ptr.To("vmssCSE"),
+			Statuses: []*armcompute.InstanceViewStatus{
+				{Code: ptr.To("ProvisioningState/succeeded")},
+			},
+		},
+	}
+	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, time.Now(), 5*time.Minute)
+	assert.True(t, isZombie)
+	assert.False(t, registered)
+	assert.Contains(t, reason, "Never registered in K8s")
 }
 
 func TestZombieScenario_NodeUnreachableTaint(t *testing.T) {
@@ -1271,27 +1257,18 @@ func TestZombieScenario_NodeNotReady(t *testing.T) {
 }
 
 func TestZombieScenario_DeallocatedNodesAreHealthy(t *testing.T) {
-	deallocatedVM := newDeallocatedVM(0)
-
-	// Check power state
-	isDeallocated := false
-	if deallocatedVM.Properties != nil && deallocatedVM.Properties.InstanceView != nil && deallocatedVM.Properties.InstanceView.Statuses != nil {
-		for _, status := range deallocatedVM.Properties.InstanceView.Statuses {
-			code := ptr.Deref(status.Code, "")
-			if code == "PowerState/deallocated" {
-				isDeallocated = true
-				break
-			}
-		}
-	}
-
-	assert.True(t, isDeallocated,
-		"Deallocated VM should have PowerState/deallocated (healthy autoscaler scale-down, NOT a zombie)")
+	manager := newTestAzureManagerForZombieCleanup(t)
+	vm := newDeallocatedVM(0)
+	vm.Properties.TimeCreated = ptr.To(time.Now().Add(-24 * time.Hour))
+	isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, time.Now(), 5*time.Minute)
+	assert.False(t, isZombie)
+	assert.False(t, registered)
+	assert.Empty(t, reason)
 }
 
 func TestZombieScenario_MultipleZombiesWasteQuota(t *testing.T) {
-	// Scenario: 5 VMs in a scale set, demonstrating severe waste
-	vms := []interface{}{
+	manager := newTestAzureManagerForZombieCleanup(t)
+	vms := []*armcompute.VirtualMachineScaleSetVM{
 		newHealthyVM(0), // 1 healthy
 		newZombieVMWithFailedProvisioning(1, 10*time.Minute), // Zombie
 		newZombieVMWithFailedProvisioning(2, 15*time.Minute), // Zombie
@@ -1299,13 +1276,19 @@ func TestZombieScenario_MultipleZombiesWasteQuota(t *testing.T) {
 		newZombieVMNeverRegistered(4, 25*time.Minute),        // Zombie
 	}
 
-	totalVMs := len(vms)
-	zombieCount := 4
-
-	zombiePercentage := (zombieCount * 100) / totalVMs
-	assert.Equal(t, 80, zombiePercentage,
-		"ZOMBIE PROBLEM: %d out of %d VMs are zombies (%d%% waste rate) - demonstrating severe quota waste!",
-		zombieCount, totalVMs, zombiePercentage)
+	now := time.Now()
+	var zombieIDs []string
+	for _, vm := range vms {
+		isZombie, registered, reason := manager.evaluateZombieStatus(vm, nil, now, 5*time.Minute)
+		assert.False(t, registered)
+		if isZombie {
+			assert.NotEmpty(t, reason)
+			zombieIDs = append(zombieIDs, *vm.InstanceID)
+		} else {
+			assert.Empty(t, reason)
+		}
+	}
+	assert.ElementsMatch(t, []string{"1", "2", "3", "4"}, zombieIDs)
 }
 
 // seedZombieObservations models a completed grace period for tests of deletion batching.
