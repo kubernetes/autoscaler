@@ -165,6 +165,10 @@ Validation (admission controller webhook and CRD validation):
 
 #### New CRD: VerticalPodAutoscalerSet
 
+`VerticalPodAutoscalerSet` is served at `autoscaling.k8s.io/v1alpha1`. The `ownerReference` on
+every generated VPA uses this apiVersion, so the garbage collector can resolve the owner. The
+generated VPAs themselves remain `autoscaling.k8s.io/v1` objects.
+
 ```go
 type VerticalPodAutoscalerSet struct {
     metav1.TypeMeta   `json:",inline"`
@@ -449,7 +453,7 @@ metadata:
     autoscaling.k8s.io/vpaset-name: test-daemonset
     autoscaling.k8s.io/vpaset-partition-value: kind-worker
   ownerReferences:
-  - apiVersion: autoscaling.k8s.io/v1
+  - apiVersion: autoscaling.k8s.io/v1alpha1
     controller: true
     kind: VerticalPodAutoscalerSet
     name: test-daemonset
@@ -494,7 +498,7 @@ metadata:
     autoscaling.k8s.io/vpaset-name: test-daemonset
     autoscaling.k8s.io/vpaset-partition-value: kind-worker2
   ownerReferences:
-  - apiVersion: autoscaling.k8s.io/v1
+  - apiVersion: autoscaling.k8s.io/v1alpha1
     controller: true
     kind: VerticalPodAutoscalerSet
     name: test-daemonset
