@@ -44,9 +44,9 @@ import (
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 	framework_job "k8s.io/kubernetes/test/e2e/framework/job"
+	framework_pod "k8s.io/kubernetes/test/e2e/framework/pod"
 	framework_rc "k8s.io/kubernetes/test/e2e/framework/rc"
 	framework_rs "k8s.io/kubernetes/test/e2e/framework/replicaset"
-	framework_ss "k8s.io/kubernetes/test/e2e/framework/statefulset"
 	testutils "k8s.io/kubernetes/test/utils"
 	podsecurity "k8s.io/pod-security-admission/api"
 
@@ -1102,13 +1102,32 @@ func setupHamsterRS(f *framework.Framework, cpu, memory string, replicas int32) 
 }
 
 func setupHamsterStateful(f *framework.Framework, cpu, memory string, replicas int32) {
-	stateful := framework_ss.NewStatefulSet("hamster-stateful", f.Namespace.Name,
-		"hamster-service", replicas, nil, nil, utils.HamsterLabels)
-
-	stateful.Spec.Template.Spec.Containers[0] = SetupHamsterContainer(cpu, memory)
+	// The upstream StatefulSet helper imports and registers Kubernetes specs.
+	stateful := &appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "hamster-stateful",
+			Namespace: f.Namespace.Name,
+		},
+		Spec: appsv1.StatefulSetSpec{
+			Replicas:    ptr.To(replicas),
+			ServiceName: "hamster-service",
+			Selector:    &metav1.LabelSelector{MatchLabels: utils.HamsterLabels},
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{Labels: utils.HamsterLabels},
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{SetupHamsterContainer(cpu, memory)},
+				},
+			},
+			UpdateStrategy: appsv1.StatefulSetUpdateStrategy{Type: appsv1.RollingUpdateStatefulSetStrategyType},
+		},
+	}
 	err := createStatefulSetSetWithRetries(f.ClientSet, f.Namespace.Name, stateful)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	framework_ss.WaitForRunningAndReady(context.TODO(), f.ClientSet, *stateful.Spec.Replicas, stateful)
+	_, err = framework_pod.WaitForPods(context.TODO(), f.ClientSet, f.Namespace.Name,
+		metav1.ListOptions{LabelSelector: metav1.FormatLabelSelector(stateful.Spec.Selector)},
+		framework_pod.Range{MinMatching: int(replicas), MaxMatching: int(replicas), AllMatching: true},
+		10*time.Minute, "be running and ready", framework_pod.RunningReady)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
 func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1.PodDisruptionBudget {
