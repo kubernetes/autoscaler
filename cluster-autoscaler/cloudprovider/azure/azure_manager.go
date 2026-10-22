@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -73,6 +74,9 @@ type AzureManager struct {
 
 	// kubeClient is the Kubernetes client used for node lookups during zombie cleanup.
 	kubeClient clientset.Interface
+	// zombieObservations tracks uninterrupted age-eligible observations, not VM lifetime.
+	zombieCleanupMutex sync.Mutex
+	zombieObservations map[zombieObservationKey]time.Time
 
 	// azureCache is used for caching Azure resources.
 	// It keeps track of nodegroups and instances
@@ -251,9 +255,11 @@ func (m *AzureManager) forceRefresh() error {
 	discoveryErr := m.fetchAutoNodeGroups()
 	if discoveryErr != nil {
 		klog.Errorf("Failed to fetch autodiscovered nodegroups: %v", discoveryErr)
+		m.resetZombieObservations()
 	}
 	if err := m.azureCache.regenerate(); err != nil {
 		klog.Errorf("Failed to regenerate Azure cache: %v", err)
+		m.resetZombieObservations()
 		return err
 	}
 	m.lastRefresh = time.Now()
@@ -265,6 +271,8 @@ func (m *AzureManager) forceRefresh() error {
 			klog.Errorf("Failed to cleanup zombie nodes: %v", err)
 			// Don't fail the refresh if zombie cleanup fails
 		}
+	} else if !m.config.EnableZombieCleanup {
+		m.resetZombieObservations()
 	}
 
 	return nil

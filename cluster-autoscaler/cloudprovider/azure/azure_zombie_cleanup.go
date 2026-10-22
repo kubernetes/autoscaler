@@ -35,6 +35,18 @@ type zombieInstance struct {
 	reason     string
 }
 
+type zombieObservationKey struct {
+	nodeGroupID string
+	providerID  string
+	createdAt   time.Time
+}
+
+func (m *AzureManager) resetZombieObservations() {
+	m.zombieCleanupMutex.Lock()
+	defer m.zombieCleanupMutex.Unlock()
+	m.zombieObservations = nil
+}
+
 // cleanupZombieNodes detects and cleans up non-functional VMSS instances in autoscaler-managed node groups.
 // A zombie instance is one that meets any of the following conditions:
 // - Has failed provisioning state, is stopped, and has no K8s node
@@ -51,8 +63,12 @@ type zombieInstance struct {
 // Azure operations use the cache's effective resource group, including the hosted-resource-group override.
 // Deallocated and deallocating VMs are excluded, whether or not a Kubernetes node exists.
 // Direct deletion is skipped when the VM power state is missing or unrecognized.
+// Age-based deletion also requires a full threshold of consecutive eligible observations.
+// Registration, transitional states, missing instances, and observation errors reset that grace period.
+// Observation history is in memory, so restarting CA grants a fresh grace period.
 func (m *AzureManager) cleanupZombieNodes() error {
 	if m.kubeClient == nil {
+		m.resetZombieObservations()
 		return fmt.Errorf("cannot clean up zombie nodes: Kubernetes client is unavailable")
 	}
 
@@ -61,6 +77,7 @@ func (m *AzureManager) cleanupZombieNodes() error {
 
 	nodeList, err := m.kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
+		m.resetZombieObservations()
 		return fmt.Errorf("cannot clean up zombie nodes: failed to list Kubernetes nodes: %w", err)
 	}
 
@@ -69,12 +86,15 @@ func (m *AzureManager) cleanupZombieNodes() error {
 		nodes[i] = &nodeList.Items[i]
 	}
 
-	return m.cleanupZombieNodesWithContext(nodes)
+	return m.cleanupZombieNodesWithContext(nodes, time.Now())
 }
 
 // cleanupZombieNodesWithContext is similar to cleanupZombieNodes but accepts Kubernetes nodes
 // as context to help correlate VMSS instances with K8s nodes.
-func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error {
+func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node, currentTime time.Time) error {
+	m.zombieCleanupMutex.Lock()
+	defer m.zombieCleanupMutex.Unlock()
+
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 
@@ -93,8 +113,8 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 
 	// Process only VMSS node groups registered with the autoscaler.
 	zombiesByVMSS := make(map[string][]zombieInstance)
-	currentTime := time.Now()
 	minAgeDuration := time.Duration(m.config.ZombieMinAgeMinutes) * time.Minute
+	observations := make(map[zombieObservationKey]time.Time)
 
 	for _, nodeGroup := range m.getNodeGroups() {
 		scaleSet, ok := nodeGroup.(*ScaleSet)
@@ -132,6 +152,27 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 			// Evaluate zombie conditions
 			isZombie, hasK8sNode, reason := m.evaluateZombieStatus(vm, k8sNodeMap, currentTime, minAgeDuration)
 
+			if isZombie && !hasK8sNode && ptr.Deref(vm.Properties.ProvisioningState, "") == "Succeeded" {
+				key := zombieObservationKey{
+					nodeGroupID: vmssName,
+					providerID:  normalizeProviderID(ptr.Deref(vm.ID, "")),
+					createdAt:   vm.Properties.TimeCreated.UTC(),
+				}
+				if key.providerID == "" {
+					klog.V(4).Infof("Skipping instance %s: no VM identity for registration grace period", instanceID)
+					continue
+				}
+				firstSeen, found := m.zombieObservations[key]
+				if !found || firstSeen.After(currentTime) {
+					firstSeen = currentTime
+				}
+				observations[key] = firstSeen
+				if currentTime.Sub(firstSeen) <= minAgeDuration {
+					klog.V(4).Infof("Skipping instance %s: registration grace period has not elapsed", instanceID)
+					continue
+				}
+			}
+
 			if isZombie {
 				klog.V(2).Infof("ZOMBIE DETECTED: Instance %s (VMSS: %s) - %s", instanceID, vmssName, reason)
 				zombiesByVMSS[vmssName] = append(zombiesByVMSS[vmssName], zombieInstance{
@@ -143,6 +184,9 @@ func (m *AzureManager) cleanupZombieNodesWithContext(nodes []*apiv1.Node) error 
 			}
 		}
 	}
+	// Only observations from this scan survive. Failed VMSS lists, missing VMs,
+	// deregistered groups, and recovered instances lose their timers.
+	m.zombieObservations = observations
 
 	// Cleanup phase
 	totalZombies := 0
@@ -318,7 +362,11 @@ func (m *AzureManager) evaluateZombieStatus(
 
 	if !hasK8sNode {
 		switch powerState {
-		case "running", "starting", "stopping", "stopped":
+		case "running", "stopped":
+		case "starting", "stopping":
+			klog.V(4).Infof("Skipping unregistered instance %s: transitional power state %q",
+				ptr.Deref(vm.InstanceID, ""), powerState)
+			return false, false, ""
 		default:
 			klog.V(4).Infof("Skipping unregistered instance %s: missing or unrecognized power state %q",
 				ptr.Deref(vm.InstanceID, ""), powerState)
