@@ -174,9 +174,15 @@ The job created the `vpa-tls-certs` Secret outside of Helm. On Helm 3.17+, let H
 ```bash
 helm upgrade <release-name> <chart> --namespace <namespace> --take-ownership
 ```
-On older Helm versions, Helm refuses to adopt the Secret ("invalid ownership metadata"). Delete it first; a new certificate and a matching `caBundle` are generated in the same release:
+On older Helm versions, Helm refuses to adopt the Secret ("invalid ownership metadata"). Add Helm ownership metadata to the existing Secret before upgrading, preserving the serving certificate and avoiding a temporary mismatch with the webhook's `caBundle`:
 ```bash
-kubectl delete secret -n <namespace> vpa-tls-certs
+kubectl label secret -n <namespace> vpa-tls-certs \
+  app.kubernetes.io/managed-by=Helm --overwrite
+
+kubectl annotate secret -n <namespace> vpa-tls-certs \
+  meta.helm.sh/release-name=<release-name> \
+  meta.helm.sh/release-namespace=<namespace> --overwrite
+
 helm upgrade <release-name> <chart> --namespace <namespace>
 ```
 If the upgrade fails with a field-ownership conflict on the webhook's `caBundle` (Helm 4, for a release that was installed with server-side apply), add `--force-conflicts`. That flag does not exist on Helm 3.
@@ -281,7 +287,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.volumes[0].secret.items[1].path | string | `"serverCert.pem"` |  |
 | admissionController.volumes[0].secret.items[2].key | string | `"key"` |  |
 | admissionController.volumes[0].secret.items[2].path | string | `"serverKey.pem"` |  |
-| admissionController.volumes[0].secret.secretName | string | `"vpa-tls-certs"` |  |
+| admissionController.volumes[0].secret.secretName | string | `"{{ include \"vertical-pod-autoscaler.admissionController.tls.secretName\" . }}"` |  |
 | commonLabels | object | `{}` |  |
 | containerSecurityContext | object | `{}` |  |
 | crds.enabled | bool | `true` | Whether to install and manage the VPA CRDs. Disable if you manage CRDs separately. |
