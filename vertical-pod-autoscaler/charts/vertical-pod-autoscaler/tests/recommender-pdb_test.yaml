@@ -1,0 +1,24 @@
+suite: recommender pdb - unhealthyPodEvictionPolicy
+templates:
+  - recommender-pdb.yaml
+tests:
+  - it: sets unhealthyPodEvictionPolicy to AlwaysAllow by default
+    asserts:
+      - equal:
+          path: spec.unhealthyPodEvictionPolicy
+          value: AlwaysAllow
+
+  - it: sets unhealthyPodEvictionPolicy to IfHealthyBudget when configured
+    set:
+      recommender.podDisruptionBudget.unhealthyPodEvictionPolicy: IfHealthyBudget
+    asserts:
+      - equal:
+          path: spec.unhealthyPodEvictionPolicy
+          value: IfHealthyBudget
+
+  - it: omits unhealthyPodEvictionPolicy when set to null
+    set:
+      recommender.podDisruptionBudget.unhealthyPodEvictionPolicy: null
+    asserts:
+      - notExists:
+          path: spec.unhealthyPodEvictionPolicy

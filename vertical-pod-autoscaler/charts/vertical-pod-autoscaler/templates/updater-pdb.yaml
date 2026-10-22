@@ -19,4 +19,7 @@ spec:
   {{- if .Values.updater.podDisruptionBudget.maxUnavailable }}
   maxUnavailable: {{ .Values.updater.podDisruptionBudget.maxUnavailable }}
   {{- end }}
+  {{- with .Values.updater.podDisruptionBudget.unhealthyPodEvictionPolicy }}
+  unhealthyPodEvictionPolicy: {{ . }}
+  {{- end }}
 {{- end -}}
