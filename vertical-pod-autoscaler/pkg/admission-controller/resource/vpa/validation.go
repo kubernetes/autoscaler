@@ -105,8 +105,14 @@ func allowPerVPAConfig(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	}
 	if oldObj.Spec.ResourcePolicy != nil && oldObj.Spec.ResourcePolicy.ContainerPolicies != nil {
 		for _, policy := range oldObj.Spec.ResourcePolicy.ContainerPolicies {
-			if policy.OOMBumpUpRatio != nil || policy.OOMMinBumpUp != nil || policy.MemoryAggregationIntervalCount != nil || policy.MemoryAggregationIntervalSeconds != nil ||
-				policy.RecommendationPercentiles != nil {
+			if policy.OOMBumpUpRatio != nil ||
+				policy.OOMMinBumpUp != nil ||
+				policy.MemoryAggregationIntervalCount != nil ||
+				policy.MemoryAggregationIntervalSeconds != nil ||
+				policy.TargetCPUPercentile != nil ||
+				policy.TargetMemoryPercentile != nil {
+				return true
+			}
 				return true
 			}
 		}
