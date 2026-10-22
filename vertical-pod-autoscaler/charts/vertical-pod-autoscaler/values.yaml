@@ -183,7 +183,7 @@ admissionController:
     - name: tls-certs
       secret:
         defaultMode: 420
-        secretName: vpa-tls-certs
+        secretName: '{{ include "vertical-pod-autoscaler.admissionController.tls.secretName" . }}'
         items:
           - key: ca
             path: caCert.pem

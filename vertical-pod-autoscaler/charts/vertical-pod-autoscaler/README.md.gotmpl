@@ -171,9 +171,15 @@ The job created the `vpa-tls-certs` Secret outside of Helm. On Helm 3.17+, let H
 ```bash
 helm upgrade <release-name> <chart> --namespace <namespace> --take-ownership
 ```
-On older Helm versions, Helm refuses to adopt the Secret ("invalid ownership metadata"). Delete it first; a new certificate and a matching `caBundle` are generated in the same release:
+On older Helm versions, Helm refuses to adopt the Secret ("invalid ownership metadata"). Add Helm ownership metadata to the existing Secret before upgrading, preserving the serving certificate and avoiding a temporary mismatch with the webhook's `caBundle`:
 ```bash
-kubectl delete secret -n <namespace> vpa-tls-certs
+kubectl label secret -n <namespace> vpa-tls-certs \
+  app.kubernetes.io/managed-by=Helm --overwrite
+
+kubectl annotate secret -n <namespace> vpa-tls-certs \
+  meta.helm.sh/release-name=<release-name> \
+  meta.helm.sh/release-namespace=<namespace> --overwrite
+
 helm upgrade <release-name> <chart> --namespace <namespace>
 ```
 If the upgrade fails with a field-ownership conflict on the webhook's `caBundle` (Helm 4, for a release that was installed with server-side apply), add `--force-conflicts`. That flag does not exist on Helm 3.
