@@ -220,6 +220,11 @@ Validation:
 - `template.spec.startupBoost` and `template.spec.resourcePolicy.containerPolicies[].startupBoost`
   must be unset, since every generated VPA carries a selector and the rule above applies to it.
 - `VerticalPodAutoscalerSet` objects are rejected unless the `VPASet` feature gate is enabled.
+- `metadata.name` must be at most 63 characters. The name is copied unchanged into the
+  `autoscaling.k8s.io/vpaset-name` label on every generated VPA, and label values are limited to
+  63 characters. A name limit is preferred over truncating the label value, because the label is
+  the lookup key for a set's children and a truncated value would need its own hash to stay
+  unique.
 
 Generated VPAs carry:
 - An `ownerReference` to the VPASet.
@@ -227,9 +232,15 @@ Generated VPAs carry:
 - A label `autoscaling.k8s.io/vpaset-partition-value: <value>` to list the VPAs with a specific value.
 
 The name of a generated VPA is `{vpaset-name}-{sanitized-value}-{hash}`. The value is lowercased
-and non-DNS characters are replaced with hyphens, the result is truncated so the name fits the
-253-character limit, and `{hash}` is a short hash of the raw value. The hash keeps names unique
+and non-DNS characters are replaced with hyphens, the result is truncated so the whole name is at
+most 189 characters, and `{hash}` is a short hash of the raw value. The hash keeps names unique
 when two values sanitize to the same string (e.g. `m5.xlarge` and `m5-xlarge`).
+
+The 189-character cap, rather than the 253-character object name limit, comes from checkpoints.
+The recommender names each checkpoint `{vpa-name}-{container-name}` and container names can be up
+to 63 characters, so a VPA name longer than 253 - 1 - 63 = 189 characters would produce
+checkpoint names that the API server rejects. With a 63-character VPASet name and a short hash,
+this leaves well over 100 characters for the sanitized value.
 
 ### Component Changes
 
@@ -543,10 +554,11 @@ workloads the node is not known at admission time.
     `values`, malformed node affinity, etc.).
   - Validation rules for `spec.selector` and `VerticalPodAutoscalerSet` (DaemonSet-only, unset
     template selector, exactly one partition field, feature gates, rejection of startup boost
-    together with a selector at both the VPA and template level).
+    together with a selector at both the VPA and template level, 63-character VPASet name limit).
   - VPASet controller: creating VPAs for new values, deleting VPAs for vanished values,
     propagating template changes, overwriting manual edits to generated VPAs, name generation
-    and collision avoidance, and refusing to adopt VPAs it does not own.
+    and collision avoidance (including the 189-character cap and that the resulting checkpoint
+    names fit in 253 characters), and refusing to adopt VPAs it does not own.
 - **E2E tests**:
   - A VPASet on a heterogeneous cluster creates one VPA per label value, and each receives an
     independent recommendation.
