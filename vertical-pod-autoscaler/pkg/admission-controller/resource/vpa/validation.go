@@ -109,10 +109,7 @@ func allowPerVPAConfig(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 				policy.OOMMinBumpUp != nil ||
 				policy.MemoryAggregationIntervalCount != nil ||
 				policy.MemoryAggregationIntervalSeconds != nil ||
-				policy.TargetCPUPercentile != nil ||
-				policy.TargetMemoryPercentile != nil {
-				return true
-			}
+				policy.RecommendationPercentiles != nil {
 				return true
 			}
 		}
