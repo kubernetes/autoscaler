@@ -232,38 +232,59 @@ func (csm *cloudServiceManager) ListScalingInstances(groupID string) ([]huaweicl
 
 	var scalingGroupInstances []huaweicloudsdkasmodel.ScalingGroupInstance
 	var startNumber int32 = 0
-	for {
+	const maxPages = 100
+	const pageSize = int32(100)
+	for page := 0; page < maxPages; page++ {
 		opts := &huaweicloudsdkasmodel.ListScalingInstancesRequest{
 			ScalingGroupId: groupID,
 			StartNumber:    &startNumber,
+			Limit:          &pageSize,
 		}
 		response, err := asClient.ListScalingInstances(opts)
 		if err != nil {
-			klog.Errorf("failed to list scaling group instances. group: %s, error: %v", groupID, err)
+			klog.Errorf("failed to list scaling group instances. group: %s, page: %d, error: %v", groupID, page, err)
 			return nil, err
 		}
 		if response == nil {
-			klog.Errorf("Unexpected get nil response when listing instances.")
+			klog.Errorf("Unexpected get nil response when listing instances. group: %s, page: %d", groupID, page)
 			return nil, fmt.Errorf("unexpected get nil response when listing instances")
 		}
 		if response.ScalingGroupInstances == nil {
-			klog.Errorf("Unexpected get nil scaling group instances")
+			klog.Errorf("Unexpected get nil scaling group instances. group: %s, page: %d", groupID, page)
 			return nil, fmt.Errorf("unexpected get nil scaling group instances")
 		}
 
-		klog.Infof("Got %d instances from scaling group, total instances: %d", len(*response.ScalingGroupInstances), *response.TotalNumber)
-		scalingGroupInstances = append(scalingGroupInstances, *response.ScalingGroupInstances...)
-
-		// break once we get all instances
-		if response.TotalNumber != nil && len(scalingGroupInstances) == int(*response.TotalNumber) {
+		currentPage := *response.ScalingGroupInstances
+		if len(currentPage) == 0 {
+			klog.Infof("No more instances found in scaling group: %s, page: %d", groupID, page)
 			break
 		}
 
-		// get ready to request next page
-		startNumber += int32(len(*response.ScalingGroupInstances))
+		klog.v(4).Infof("list scaling instances. group: %s, page: %d, instances in current page: %d, total: %d", groupID, page, len(currentPage), ptrToInt32(response.TotalNumber))
+		scalingGroupInstances = append(scalingGroupInstances, currentPage...)
+
+		// terminate when current page is smaller than requested pageSize, which means no more instances to list.
+		// do NOT rely on TotalNumber which can drift due to instance scale up/down during the listing process.
+        if int32(len(currentPage)) < pageSize {
+			break
+		}
+
+		startNumber += int32(len(currentPage))
+	}
+
+	if len(scalingGroupInstances) >= int(pageSize)*maxPages {
+		klog.Warningf("pagination cap hit on scaling group %s, possible loop. collected: %d", groupID, len(scalingGroupInstances))
 	}
 
 	return scalingGroupInstances, nil
+}
+
+// ptrToInt32 safely dereferences an *int32 pointer, returning 0 if the pointer is nil.
+func ptrToInt32(p *int32) int32 {
+	if p == nil {
+		return 0
+	}
+	return *p
 }
 
 func (csm *cloudServiceManager) DeleteScalingInstances(groupID string, instanceIds []string) error {
@@ -500,6 +521,17 @@ func (csm *cloudServiceManager) getScalingGroupByID(groupID string) (*huaweiclou
 	}
 
 	return response.ScalingGroup, nil
+}
+
+func (csm *cloudServiceManager) GetScalingGroupDesired(groupID string) (int, error) {
+	sg, err := csm.getScalingGroupByID(groupID)
+	if err != nil {
+		return 0, err
+	}
+	if sg.DesiredInstanceNumber == nil {
+		return 0, fmt.Errorf("desired instance number is nil for group: %s", groupID)
+	}
+	return int(*sg.DesiredInstanceNumber), nil
 }
 
 func (csm *cloudServiceManager) listScalingTagsByID(groupID string) (map[string]string, error) {

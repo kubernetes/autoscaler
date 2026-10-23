@@ -72,7 +72,7 @@ func (asg *AutoScalingGroup) MinSize() int {
 // Target size is desire instance number of the auto scaling group, and not equal to current instance number if the
 // auto scaling group is in increasing or decreasing process.
 func (asg *AutoScalingGroup) TargetSize() (int, error) {
-	desireNumber, err := asg.cloudServiceManager.GetDesireInstanceNumber(asg.groupID)
+	desireNumber, err := asg.cloudServiceManager.GetScalingGroupDesired(asg.groupID)
 	if err != nil {
 		klog.Warningf("failed to get group target size. groupID: %s, error: %v", asg.groupID, err)
 		return 0, err
