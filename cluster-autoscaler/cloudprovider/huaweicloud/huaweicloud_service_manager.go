@@ -251,6 +251,9 @@ func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]h
 	var startNumber int32 = 0
 	const maxPages = 100  // defensive cap to prevent infinite loops if the API misbehaves
 	pageSize := int32(100)  // explicit page size instead of relying on the default, to avoid surprises if the default changes in the future
+    seen := make(map[string]struct{})  // track seen instance IDs to detect duplicates
+	dupCount := 0  // count of duplicate instance IDs encountered
+
 	for page := 0; page < maxPages; page++ {
 		opts := &huaweicloudsdkasmodel.ListScalingInstancesRequest{
 			ScalingGroupId: groupID,
@@ -278,15 +281,42 @@ func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]h
 		}
 
 		klog.v(4).Infof("list scaling instances. group: %s, page: %d, instances in current page: %d, total: %d", groupID, page, len(currentPage), ptrToInt32(response.TotalNumber))
-		scalingGroupInstances = append(scalingGroupInstances, currentPage...)
+
+		newInPage := 0
+		for _, inst := range currentPage {
+			instID, instName := "", ""
+			if inst.InstanceId != nil {
+				instID = *inst.InstanceId
+			}
+			if inst.InstanceName != nil {
+				instName = *inst.InstanceName
+			}
+			klog.V(2).Infof("  instance: id=%s, name=%s, health=%v, lifecycle=%v", instID, instName, inst.HealthStatus, inst.LifeCycleState)
+			// dedup skip instance already seen in previous pages (can happen if instances are added/removed during pagination,
+			// or if the API returns duplicates). We log a warning but continue processing.
+            if instID != "" {
+				if _, exists := seen[instID]; exists {
+					dupCount++
+					continue  // skip duplicate instance ID
+				}
+				seen[instID] = struct{}{}
+			}
+			scalingGroupInstances = append(scalingGroupInstances, inst)
+			newInPage++
+		}
 
 		// terminate when current page is smaller than requested pageSize, which means no more instances to list.
 		// do NOT rely on TotalNumber which can drift due to instance scale up/down during the listing process.
         if int32(len(currentPage)) < pageSize {
 			break
 		}
-
+        // advance startNumber by the original page size, not the number of new instances added, to avoid skipping pages if duplicates were removed.
+		// because the AS offset is based on total list position, not the number of unique instances returned.
 		startNumber += int32(len(currentPage))
+	}
+
+	if dupCount > 0 {
+		klog.V(2).Infof("pagination dedup: group %s, removed %d duplicate instance(s) during pagination, total unique instances: %d", groupID, dupCount, len(scalingGroupInstances))
 	}
 
 	if len(scalingGroupInstances) >= int(pageSize)*maxPages {
