@@ -21,7 +21,6 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -242,7 +241,12 @@ func (csm *cloudServiceManager) ListScalingInstances(groupID string) ([]huaweicl
 	if asClient == nil {
 		return nil, fmt.Errorf("failed to list scaling groups due to can not get as client")
 	}
+	return listScalingInstancesPaged(groupID, asClient.ListScalingInstances)
+}
 
+type listScalingInstancesFunc func(opts *huaweicloudsdkasmodel.ListScalingInstancesRequest) (*huaweicloudsdkasmodel.ListScalingInstancesResponse, error)
+
+func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]huaweicloudsdkasmodel.ScalingGroupInstance, error) {
 	var scalingGroupInstances []huaweicloudsdkasmodel.ScalingGroupInstance
 	var startNumber int32 = 0
 	const maxPages = 100  // defensive cap to prevent infinite loops if the API misbehaves
@@ -253,7 +257,7 @@ func (csm *cloudServiceManager) ListScalingInstances(groupID string) ([]huaweicl
 			StartNumber:    &startNumber,
 			Limit:          &pageSize,
 		}
-		response, err := asClient.ListScalingInstances(opts)
+		response, err := fn(opts)
 		if err != nil {
 			klog.Errorf("failed to list scaling group instances. group: %s, page: %d, error: %v", groupID, page, err)
 			return nil, err
@@ -324,49 +328,8 @@ func (csm *cloudServiceManager) DeleteScalingInstances(groupID string, instanceI
 	return nil
 }
 
-var (
-	perGroupLocks = make(map[string]*sync.Mutex)
-	perGroupLocksMu sync.Mutex
-)
-
-func getGroupLock(groupID string) *sync.Mutex {
-	perGroupLocksMu.Lock()
-	defer perGroupLocksMu.Unlock()
-	lock, ok := perGroupLocks[groupID]
-	if !ok {
-		lock = &sync.Mutex{}
-		perGroupLocks[groupID] = lock
-	}
-	return lock
-}
-
-// isASLockConflict checks if the error is a lock conflict error from Huawei Cloud AS service.
-// (another scaling activity is in progress for the same scaling group)
-// AS error codes are not exposed as constants in the SDK, so we check the error message for known lock conflict patterns.
-func isASLockConflict(err error) bool {
-	if err == nil {
-		return false
-	}
-	msg := err.Error()
-	// condidate AS lock conflict error codes, see https://support.huaweicloud.com/api-as/as_07_0102.html
-	lockConflictCodes := []string{"AS.2003", "AS.2009"}
-	for _, code := range lockConflictCodes {
-		if strings.Contains(msg, code) {
-			return true
-		}
-	}
-
-	// fallback: match error message for known lock conflict patterns
-	lower := strings.ToLower(msg)
-	return strings.Contains(lower, "scaling activity") || 
-	    strings.Contains(lower, "in progress") || 
-	    strings.Contains(lower, "conflict")
-}
-
 // IncreaseSizeInstance increases the desired instance number of a scaling group by delta.
 // It uses UpdateScalingGroup API(idempotent) instead of create+execute+delete scaling policy, to avoid the risk of creating too many scaling policies and hitting the limit.
-// On AS lock conflict (another scaling activity is in progress for the same scaling group), it will retry with exponential backoff.
-// A per-group mutex serializes concurrent IncreaseSizeInstance calls for the same group, to avoid hitting AS lock conflict too frequently.
 // This method returns immediately after the AS API accepts the request, it does not wait for instances to become ready. The CA core handles readiness by watching for Node Ready events.
 func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) error {
 	if delta <= 0 {
@@ -382,33 +345,24 @@ func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) 
 		return fmt.Errorf("failed to get current desired instance number for group %s: %v", groupID, err)
 	}
 	newDesired := int32(currentDesired + delta)
-	klog.V(2).Infof("Increasing group %s desired instance number from %d to %d (delta: %d)", groupID, currentDesired, newDesired, delta)
-	backoff := wait.Backoff{
-		Steps:    6,
-		Duration: 1 * time.Second,
-		Factor:   2.0,
-		Jitter:   0.1,
-		Cap:	  60 * time.Second,
+	klog.V(2).Infof("Increasing group %s desired instance number from %d to %d (delta: %d)",
+	    groupID, currentDesired, newDesired, delta)
+
+    asClient := csm.getASClientFunc()
+	if asClient == nil {
+		return fmt.Errorf("failed to get as client")
 	}
-	return wait.ExponentialBackoff(backoff, func() (bool, error) {
-		opts := &huaweicloudsdkasmodel.UpdateScalingGroupRequest{
-			ScalingGroupId: groupID,
-			Body: &huaweicloudsdkasmodel.UpdateScalingGroupOption{
-				DesiredInstanceNumber: &newDesired,
-			},
-		}
-		_, err := csm.getASClientFunc().UpdateScalingGroup(opts)
-		if err == nil {
-			klog.V(2).Infof("updated group %s desired instance number to %d successfully", groupID, newDesired)
-			return true, nil
-		}
-		if isASLockConflict(err) {
-			klog.Warningf("AS lock conflict on group %s, retrying with backoff. error: %v", groupID, err)
-			return false, nil // retry
-		}
-		klog.Errorf("failed to update group %s desired instance number to %d: %v", groupID, newDesired, err)
-		return false, err // do not retry on other errors
-	})
+	opts := &huaweicloudsdkasmodel.UpdateScalingGroupRequest{
+		ScalingGroupId: groupID,
+		Body: &huaweicloudsdkasmodel.UpdateScalingGroupOption{
+			DesiredInstanceNumber: &newDesired,
+		},
+	}
+	if _, err := asClient.UpdateScalingGroup(opts); err != nil {
+		return fmt.Errorf("failed to update group %s desired instance number to %d: %v", groupID, newDesired, err)
+	}
+	klog.V(2).Infof("updated scaling group desired succeeded. group: %s desired: %d", groupID, newDesired)
+	return nil
 }
 
 func (csm *cloudServiceManager) ListScalingGroups() ([]AutoScalingGroup, error) {
