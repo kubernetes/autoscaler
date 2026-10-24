@@ -16,6 +16,7 @@ require (
 	k8s.io/apiserver v0.38.0-alpha.2
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-00010101000000-000000000000
 	k8s.io/client-go v0.38.0-alpha.2
+	k8s.io/component-base v0.38.0-alpha.2
 	k8s.io/klog/v2 v2.140.0
 	k8s.io/ktesting v0.38.0-alpha.2
 	k8s.io/kubernetes v1.38.0-alpha.2
@@ -170,7 +171,6 @@ require (
 	k8s.io/cli-runtime v0.38.0-alpha.2 // indirect
 	k8s.io/cloud-provider v0.38.0-alpha.2 // indirect
 	k8s.io/cluster-bootstrap v0.38.0-alpha.2 // indirect
-	k8s.io/component-base v0.38.0-alpha.2 // indirect
 	k8s.io/component-helpers v0.38.0-alpha.2 // indirect
 	k8s.io/controller-manager v0.38.0-alpha.2 // indirect
 	k8s.io/cri-api v0.38.0-alpha.2 // indirect

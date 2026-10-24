@@ -20,15 +20,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
-	// Never, ever remove the line with "/ginkgo". Without it,
-	// the ginkgo test runner will not detect that this
-	// directory contains a Ginkgo test suite.
-	// See https://github.com/kubernetes/kubernetes/issues/74827
-	// "github.com/onsi/ginkgo"
-
-	"k8s.io/kubernetes/test/e2e"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/ginkgo/v2/types"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	"k8s.io/kubernetes/test/e2e/framework"
 	"k8s.io/kubernetes/test/e2e/framework/config"
 	"k8s.io/kubernetes/test/e2e/framework/testfiles"
@@ -68,6 +65,18 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func TestOnlyVPASpecs(t *testing.T) {
+	report := ginkgo.PreviewSpecs("VPA spec registration")
+	if len(report.SpecReports) == 0 {
+		t.Fatal("no VPA specs registered")
+	}
+	for _, spec := range report.SpecReports {
+		if spec.LeafNodeType == types.NodeTypeIt && !strings.Contains(spec.FullText(), "[VPA]") {
+			t.Errorf("non-VPA spec registered: %s", spec.FullText())
+		}
+	}
+}
+
 func TestE2E(t *testing.T) {
-	e2e.RunE2ETests(t)
+	utils.RunE2ETests(t)
 }
