@@ -423,7 +423,7 @@ func (csm *cloudServiceManager) transformInstanceState(lifeCycleState huaweiclou
 	healthStatusEnum := huaweicloudsdkasmodel.GetScalingGroupInstanceHealthStatusEnum()
 	switch healthStatus {
 	case healthStatusEnum.NORMAL:
-	case healthStatusEnum.INITAILIZING:
+	case healthStatusEnum.INITIALIZING:
 	case healthStatusEnum.ERROR:
 		instanceStatus.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 			ErrorClass:   cloudprovider.OtherErrorClass,
