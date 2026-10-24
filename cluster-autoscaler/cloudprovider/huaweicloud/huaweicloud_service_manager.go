@@ -53,6 +53,9 @@ type AutoScalingService interface {
 	// GetDesireInstanceNumber gets the desire instance number of specific auto scaling group.
 	GetDesireInstanceNumber(groupID string) (int, error)
 
+	// GetScalingGroupDesired returns the desired instance number directly from ShowScalingGroup API, instead of computing from instance list.
+	GetScalingGroupDesired(groupID string) (int, error)
+
 	// GetInstances gets the instances in an auto scaling group.
 	GetInstances(groupID string) ([]cloudprovider.Instance, error)
 
@@ -242,8 +245,8 @@ func (csm *cloudServiceManager) ListScalingInstances(groupID string) ([]huaweicl
 
 	var scalingGroupInstances []huaweicloudsdkasmodel.ScalingGroupInstance
 	var startNumber int32 = 0
-	const maxPages = 100
-	const pageSize = int32(100)
+	const maxPages = 100  // defensive cap to prevent infinite loops if the API misbehaves
+	pageSize := int32(100)  // explicit page size instead of relying on the default, to avoid surprises if the default changes in the future
 	for page := 0; page < maxPages; page++ {
 		opts := &huaweicloudsdkasmodel.ListScalingInstancesRequest{
 			ScalingGroupId: groupID,
