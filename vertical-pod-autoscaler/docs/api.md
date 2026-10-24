@@ -166,6 +166,7 @@ _Appears in:_
 | `minReplicas` _integer_ | Minimal number of replicas which need to be alive for Updater to attempt<br />pod eviction (pending other checks like PDB). Only positive values are<br />allowed. Overrides global '--min-replicas' flag. |  | Optional: \{\} <br /> |
 | `evictionRequirements` _[EvictionRequirement](#evictionrequirement) array_ | EvictionRequirements is a list of EvictionRequirements that need to<br />evaluate to true in order for a Pod to be evicted. If more than one<br />EvictionRequirement is specified, all of them need to be fulfilled to allow eviction. |  | Optional: \{\} <br /> |
 | `evictAfterOOMSeconds` _integer_ | evictAfterOOMSeconds specifies the time in seconds to wait after an OOM event before<br />considering the pod for eviction. Pods that have OOMed in less than this time<br />since start will be evicted. |  | Minimum: 1 <br />Optional: \{\} <br /> |
+| `initialDelaySeconds` _integer_ | initialDelaySeconds is the number of seconds after the VPA is created<br />during which the Updater and Admission Controller treat the VPA as if<br />UpdateMode were Off. The Recommender keeps publishing recommendations<br />to status.recommendation, and the configured UpdateMode applies once<br />the delay has passed.<br />Must be between 1 and 7776000 (90 days). Only honored when the<br />VPAInitialDelay feature gate is enabled. |  | Maximum: 7.776e+06 <br />Minimum: 1 <br />Optional: \{\} <br /> |
 
 
 #### RecommendedContainerResources

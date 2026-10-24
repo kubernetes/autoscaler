@@ -29,8 +29,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -143,6 +145,32 @@ func TestGetMatchingVpa(t *testing.T) {
 			expectedFound:   true,
 			expectedVpaName: "initial-vpa",
 		}, {
+			name: "vpa in initial delay window is not matched",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithName("delayed-vpa").WithCreationTimestamp(time.Now()).WithTargetRef(targetRef).Get(),
+			},
+			labelSelector: "app = test",
+			expectedFound: false,
+		}, {
+			name: "vpa after initial delay window is matched",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithName("delayed-vpa").WithCreationTimestamp(time.Now().Add(-2 * time.Hour)).WithTargetRef(targetRef).Get(),
+			},
+			labelSelector:   "app = test",
+			expectedFound:   true,
+			expectedVpaName: "delayed-vpa",
+		}, {
+			name: "vpa in initial delay window with startup boost is matched",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithName("delayed-with-boost-vpa").WithCreationTimestamp(time.Now()).WithTargetRef(targetRef).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 0).Get(),
+			},
+			labelSelector:   "app = test",
+			expectedFound:   true,
+			expectedVpaName: "delayed-with-boost-vpa",
+		}, {
 			name:          "no vpa objects",
 			pod:           podBuilder.Get(),
 			vpas:          []*vpa_types.VerticalPodAutoscaler{},
@@ -179,6 +207,7 @@ func TestGetMatchingVpa(t *testing.T) {
 		},
 	}
 
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, true)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
