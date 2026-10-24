@@ -34,6 +34,11 @@ func GetPlacement(balancer *v1alpha1.Balancer, summaries map[string]pods.Summary
 		if balancer.Spec.Policy.Priorities.TargetOrder == nil {
 			return nil, PlacementProblems{}, fmt.Errorf("incomplete policy definition: missing targetOrder")
 		}
+		for _, name := range balancer.Spec.Policy.Priorities.TargetOrder {
+			if _, found := targetMap[name]; !found {
+				return nil, PlacementProblems{}, fmt.Errorf("incomplete policy definition: targetOrder references unknown target %q", name)
+			}
+		}
 		infos := buildTargetInfoMapForPriority(targetMap, summaries)
 		placement, problems := distributeByPriority(balancer.Spec.Replicas, balancer.Spec.Policy.Priorities.TargetOrder, infos)
 		return placement, problems, nil
