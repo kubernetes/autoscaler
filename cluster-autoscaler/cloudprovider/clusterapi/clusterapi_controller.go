@@ -94,6 +94,9 @@ type machineController struct {
 	machineDeploymentsAvailable bool
 	accessLock                  sync.Mutex
 	autoDiscoverySpecs          []*clusterAPIAutoDiscoveryConfig
+	// enforceNodeGroupMinSize mirrors --enforce-node-group-min-size.
+	// IncreaseSize raises a target that is still below min only when this is set.
+	enforceNodeGroupMinSize bool
 	// stopChannel is used for running the shared informers, and for starting
 	// informers associated with infrastructure machine templates that are
 	// discovered during operation.

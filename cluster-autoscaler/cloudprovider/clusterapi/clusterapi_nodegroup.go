@@ -91,7 +91,19 @@ func (ng *nodegroup) IncreaseSize(ctx context.Context, delta int) error {
 		return err
 	}
 
-	return ng.scalableResource.SetSize(size + delta)
+	target := size + delta
+	// --enforce-node-group-min-size is what asks CA to bring a group up to
+	// its minimum. Without the flag, leave the target alone so SetSize still
+	// rejects a size the user did not ask to enforce.
+	if ng.machineController.enforceNodeGroupMinSize {
+		minSize := ng.MinSize(ctx)
+		if target < minSize {
+			klog.V(4).Infof("%s: IncreaseSize: scaling to %d instead of %d to satisfy min size", ng.scalableResource.Name(), minSize, target)
+			target = minSize
+		}
+	}
+
+	return ng.scalableResource.SetSize(target)
 }
 
 // AtomicIncreaseSize is not implemented.

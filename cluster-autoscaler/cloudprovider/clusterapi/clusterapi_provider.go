@@ -223,6 +223,7 @@ func BuildClusterAPI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeG
 	if err != nil {
 		klog.Fatal(err)
 	}
+	controller.enforceNodeGroupMinSize = opts.EnforceNodeGroupMinSize
 
 	scaleDownUpgradeProcessor := NewScaleDownNodeUpgradeProcessor(controller)
 	if err := scaledowncandidates.RegisterCombinedScaleDownCandidateProcessor(opts.Processors.ScaleDownNodeProcessor, scaleDownUpgradeProcessor); err != nil {
