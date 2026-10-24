@@ -173,7 +173,9 @@ func (csm *cloudServiceManager) DeleteServers(serverIDs []string) error {
 			return true, nil
 		}
 
-		return true, nil
+		// job is still running, return false to continue polling
+		// (was incorrectly returning true, nil here, causing DeleteServers to return early and not wait for the job to complete)
+		return false, nil
 	})
 
 	if err != nil {
