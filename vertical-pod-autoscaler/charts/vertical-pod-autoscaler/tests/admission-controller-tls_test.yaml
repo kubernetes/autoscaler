@@ -1,0 +1,111 @@
+suite: admission controller TLS modes
+templates:
+  - admission-controller-tls-secret.yaml
+  - admission-controller-webhook.yaml
+  - admission-controller-validations.yaml
+tests:
+  - it: generates the TLS Secret and sets the webhook caBundle by default
+    asserts:
+      - isKind:
+          of: Secret
+        template: admission-controller-tls-secret.yaml
+      - equal:
+          path: metadata.name
+          value: vpa-tls-certs
+        template: admission-controller-tls-secret.yaml
+      - isNotEmpty:
+          path: data.ca
+        template: admission-controller-tls-secret.yaml
+      - isNotEmpty:
+          path: data.cert
+        template: admission-controller-tls-secret.yaml
+      - isNotEmpty:
+          path: data.key
+        template: admission-controller-tls-secret.yaml
+      - isKind:
+          of: MutatingWebhookConfiguration
+        template: admission-controller-webhook.yaml
+      - isNotEmpty:
+          path: webhooks[0].clientConfig.caBundle
+        template: admission-controller-webhook.yaml
+
+  - it: uses user-supplied PEMs for both the Secret and the webhook caBundle
+    set:
+      admissionController.tls.caCert: test-ca
+      admissionController.tls.cert: test-cert
+      admissionController.tls.key: test-key
+    asserts:
+      - equal:
+          path: data.ca
+          value: dGVzdC1jYQ==
+        template: admission-controller-tls-secret.yaml
+      - equal:
+          path: data.cert
+          value: dGVzdC1jZXJ0
+        template: admission-controller-tls-secret.yaml
+      - equal:
+          path: data.key
+          value: dGVzdC1rZXk=
+        template: admission-controller-tls-secret.yaml
+      - equal:
+          path: webhooks[0].clientConfig.caBundle
+          value: dGVzdC1jYQ==
+        template: admission-controller-webhook.yaml
+
+  - it: renders no Secret or webhook in registerWebhook mode
+    set:
+      admissionController.tls.create: false
+      admissionController.registerWebhook: true
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: admission-controller-tls-secret.yaml
+      - hasDocuments:
+          count: 0
+        template: admission-controller-webhook.yaml
+
+  - it: renders the webhook without a caBundle in cert-manager mode
+    set:
+      admissionController.tls.create: false
+      admissionController.certManager.enabled: true
+      admissionController.certManager.issuerRef.name: my-issuer
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: admission-controller-tls-secret.yaml
+      - isNull:
+          path: webhooks[0].clientConfig.caBundle
+        template: admission-controller-webhook.yaml
+
+  - it: fails when no certificate source is configured
+    set:
+      admissionController.tls.create: false
+    asserts:
+      - failedTemplate:
+          errorPattern: No TLS certificate source configured
+        template: admission-controller-validations.yaml
+
+  - it: fails when tls.create and registerWebhook are both enabled
+    set:
+      admissionController.registerWebhook: true
+    asserts:
+      - failedTemplate:
+          errorPattern: cannot both be true
+        template: admission-controller-validations.yaml
+
+  - it: fails when tls.create and certManager are both enabled
+    set:
+      admissionController.certManager.enabled: true
+      admissionController.certManager.issuerRef.name: my-issuer
+    asserts:
+      - failedTemplate:
+          errorPattern: cannot both be true
+        template: admission-controller-validations.yaml
+
+  - it: fails when only some of caCert, cert and key are set
+    set:
+      admissionController.tls.caCert: test-ca
+    asserts:
+      - failedTemplate:
+          errorPattern: must either all be set or all be empty
+        template: admission-controller-validations.yaml

@@ -101,16 +101,36 @@ admissionController certManager
 {{- end }}
 
 {{/*
-admissionController certGen
+admissionController generated TLS data (tls.create). Computed once per render and cached on
+.Values so the Secret and the webhook caBundle always come from the same CA.
+Precedence: user-supplied tls.caCert/cert/key, then the existing Secret (lookup), then genCA/genSignedCert.
 */}}
-{{- define "vertical-pod-autoscaler.admissionController.certGen.fullname" -}}
-{{ include "vertical-pod-autoscaler.fullname" . }}-admission-certgen
-{{- end }}
-
-{{- define "vertical-pod-autoscaler.admissionController.certGen.labels" -}}
-{{ include "vertical-pod-autoscaler.labels" . }}
-app.kubernetes.io/component: admission-certgen
-{{- end }}
+{{- define "vertical-pod-autoscaler.admissionController.tls.data" -}}
+{{- $tls := .Values.admissionController.tls -}}
+{{- if not (hasKey $tls "_data") -}}
+  {{- $svc := .Values.admissionController.service.name -}}
+  {{- $ns := .Release.Namespace -}}
+  {{- $data := dict -}}
+  {{- if and $tls.caCert $tls.cert $tls.key -}}
+    {{- $data = dict "ca" ($tls.caCert | b64enc) "cert" ($tls.cert | b64enc) "key" ($tls.key | b64enc) -}}
+  {{- else -}}
+    {{- $existing := lookup "v1" "Secret" $ns (include "vertical-pod-autoscaler.admissionController.tls.secretName" .) -}}
+    {{- $oldCa := dig "data" "ca" "" $existing -}}
+    {{- $oldCert := dig "data" "cert" "" $existing -}}
+    {{- $oldKey := dig "data" "key" "" $existing -}}
+    {{- if and $oldCa $oldCert $oldKey -}}
+      {{- $data = dict "ca" $oldCa "cert" $oldCert "key" $oldKey -}}
+    {{- else -}}
+      {{- $days := int $tls.validityDays -}}
+      {{- $names := list $svc (printf "%s.%s" $svc $ns) (printf "%s.%s.svc" $svc $ns) (printf "%s.%s.svc.cluster.local" $svc $ns) -}}
+      {{- $ca := genCA (printf "%s-ca" $svc) $days -}}
+      {{- $cert := genSignedCert (printf "%s.%s.svc" $svc $ns) nil $names $days $ca -}}
+      {{- $data = dict "ca" ($ca.Cert | b64enc) "cert" ($cert.Cert | b64enc) "key" ($cert.Key | b64enc) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $_ := set $tls "_data" $data -}}
+{{- end -}}
+{{- end -}}
 
 
 {{/*

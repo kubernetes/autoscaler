@@ -25,29 +25,38 @@ helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler
 ## Webhook Management
 The admission controller requires a `MutatingWebhookConfiguration` and TLS certificates. This chart supports three mutually exclusive modes:
 
-### Helm-managed (default)
+### Helm-generated certificate (default)
 ```yaml
 admissionController:
-  registerWebhook: false
-  certGen:
-    enabled: true
+  tls:
+    create: true
 ```
 In this mode:
-- Helm creates the MutatingWebhookConfiguration
-- The kube-webhook-certgen job generates TLS certificates and stores them in a Secret
-- The certificates are automatically injected into the webhook configuration
+- Helm generates a CA and a server certificate (valid for `tls.validityDays`, 100 years by default) and stores them in the Secret named by `tls.secretName`
+- Helm creates the MutatingWebhookConfiguration and sets its `caBundle` from the same CA, so the two always match
+- On `helm upgrade` the existing Secret is reused when Helm can look it up
+
+Helm cannot look up the Secret under `helm template`, Argo CD or Flux, so there a new certificate is generated on every render (the Secret and `caBundle` still match). This mode is meant for getting started and testing. For production, supply your own certificate by setting `tls.caCert`, `tls.cert` and `tls.key` (for example from an encrypted values file), or use one of the modes below.
+
+#### Rotating a supplied certificate
+The webhook `caBundle` is updated as soon as Helm applies a change, but running admission controller pods only pick up a new serving certificate when the kubelet refreshes the mounted Secret (up to about a minute). If the new certificate is signed by a different CA, requests in that window fail verification (with `failurePolicy: Ignore` pods are admitted without VPA mutation). To avoid the gap, rotate in two upgrades: first set `tls.caCert` to the old and new CA certificates concatenated, keeping the old `cert` and `key`; then switch `cert` and `key` to the new certificate while keeping both CAs in `tls.caCert`. Remove the old CA in a later upgrade.
 
 ### Application-managed
 ```yaml
 admissionController:
   registerWebhook: true
-  certGen:
-    enabled: false
+  tls:
+    create: false
 ```
 In this mode:
-- The VPA admission controller creates and manages the webhook itself
+- The VPA admission controller creates and manages the webhook itself and keeps its `caBundle` in sync with the CA file
+- You provide the TLS Secret named by `tls.secretName`, with the keys `ca`, `cert` and `key`
+
 Important: You are responsible for creating the TLS secret before or after installing the chart. The admission controller will only create the `MutatingWebhookConfiguration` once the secret exists.
 If the secret is created after the Helm install, you must restart the admission controller pod to trigger webhook registration.
+
+> [!NOTE]
+> The admission controller deletes and re-creates the webhook configuration named `vpa-webhook-config` on startup, so in this mode its ClusterRole can create and delete any `MutatingWebhookConfiguration`.
 
 ### cert-manager managed
 
@@ -55,8 +64,8 @@ Using an existing `Issuer` or `ClusterIssuer`:
 ```yaml
 admissionController:
   registerWebhook: false
-  certGen:
-    enabled: false
+  tls:
+    create: false
   certManager:
     enabled: true
     issuerRef:
@@ -68,8 +77,8 @@ Or letting the chart create a namespaced self-signed issuer:
 ```yaml
 admissionController:
   registerWebhook: false
-  certGen:
-    enabled: false
+  tls:
+    create: false
   certManager:
     enabled: true
     createSelfSignedIssuer:
@@ -155,13 +164,37 @@ summary: "{{"{{"}}`{{"{{"}} $labels.pod {{"}}"}}`{{"}}"}} is restarting"
 ### Migrating from vpa-up.sh script
 TBD
 
+### Migrating from the certgen job to Helm-generated certificates
+Earlier chart versions generated the certificate with the `kube-webhook-certgen` job (`admissionController.certGen.*`). The job and the `certGen` values have been removed.
+
+The job created the `vpa-tls-certs` Secret outside of Helm. On Helm 3.17+, let Helm adopt it with `--take-ownership`. The chart reuses the existing certificate, so the Secret and the webhook `caBundle` stay the same and nothing is disrupted:
+```bash
+helm upgrade <release-name> <chart> --namespace <namespace> --take-ownership
+```
+On older Helm versions, Helm refuses to adopt the Secret ("invalid ownership metadata"). Add Helm ownership metadata to the existing Secret before upgrading, preserving the serving certificate and avoiding a temporary mismatch with the webhook's `caBundle`:
+```bash
+kubectl label secret -n <namespace> vpa-tls-certs \
+  app.kubernetes.io/managed-by=Helm --overwrite
+
+kubectl annotate secret -n <namespace> vpa-tls-certs \
+  meta.helm.sh/release-name=<release-name> \
+  meta.helm.sh/release-namespace=<namespace> --overwrite
+
+helm upgrade <release-name> <chart> --namespace <namespace>
+```
+If the upgrade fails with a field-ownership conflict on the webhook's `caBundle` (Helm 4, for a release that was installed with server-side apply), add `--force-conflicts`. That flag does not exist on Helm 3.
+
+The Secret is now owned by the release, so `helm uninstall` removes it (the certgen-created Secret survived an uninstall).
+
+If you set `admissionController.certGen.enabled: false` to use `registerWebhook` or cert-manager, also set `admissionController.tls.create: false`.
+
 ### Migrating from Application-managed to Helm-managed webhook
 If you previously deployed with registerWebhook: true and want to switch to Helm-managed:
 - Delete the existing webhook:
 ```bash
 kubectl delete mutatingwebhookconfiguration vpa-webhook-config
 ```
-- Delete the existing secret (to allow certgen to create new certificates):
+- Delete the existing secret (to allow Helm to generate new certificates):
 ```bash
 kubectl delete secret -n <namespace> vpa-tls-certs
 ```
@@ -169,7 +202,7 @@ kubectl delete secret -n <namespace> vpa-tls-certs
 ```bash
 helm upgrade <release-name> <chart> \
   --set admissionController.registerWebhook=false \
-  --set admissionController.certGen.enabled=true
+  --set admissionController.tls.create=true
 ```
 
 ## Testing
