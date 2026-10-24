@@ -210,6 +210,42 @@ func TestRecordOOMInNewWindow(t *testing.T) {
 	assert.NoError(t, test.container.RecordOOM(testTimestamp.Add(2*memoryAggregationInterval), ResourceAmount(1000*mb)))
 }
 
+// TestRecordOOMSkipsNonIncreasingSampleAcrossWindows covers #9521: when a
+// workload is stuck at a capped request, each OOM would otherwise re-insert the
+// same synthetic sample after every aggregation window shift and keep
+// uncappedTarget inflated. Equal/lower synthetic OOMs must not re-seed the histogram.
+func TestRecordOOMSkipsNonIncreasingSampleAcrossWindows(t *testing.T) {
+	test := newContainerTest()
+	// Match the issue scenario: high bump ratio, request already at the effective cap.
+	test.aggregateContainerState.OOMBumpUpRatio = 2.0
+	test.aggregateContainerState.OOMMinBumpUp = 0
+	interval := GetAggregationsConfig().MemoryAggregationIntervalDuration
+	windowEnd := testTimestamp.Add(interval)
+
+	const request = 1000 * mb
+	// First OOM: 1000*mb * 2.0 → 2000*mb sample.
+	test.mockMemoryHistogram.On("AddSample", 2000.0*mb, 1.0, windowEnd).Once()
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(request)))
+
+	// Later windows, same request → same synthetic value → no further AddSample.
+	// (If dedup were missing, each call would AddSample again after WindowEnd shifts.)
+	later := testTimestamp.Add(2 * interval)
+	assert.NoError(t, test.container.RecordOOM(later, ResourceAmount(request)))
+	assert.NoError(t, test.container.RecordOOM(later.Add(interval), ResourceAmount(request)))
+
+	// Higher request (policy raised / larger need) → new sample recorded.
+	// WindowEnd is still the first OOM's window (skipped OOMs do not advance it).
+	higherTS := later.Add(2 * interval)
+	// shift = (higherTS - windowEnd).Truncate(interval) + interval
+	// windowEnd = testTimestamp+interval; higherTS = testTimestamp+4*interval
+	// shift = 3*interval + interval = 4*interval → newWindowEnd = testTimestamp+5*interval
+	higherWindowEnd := testTimestamp.Add(5 * interval)
+	test.mockMemoryHistogram.On("AddSample", 3000.0*mb, 1.0, higherWindowEnd).Once()
+	assert.NoError(t, test.container.RecordOOM(higherTS, ResourceAmount(1500*mb)))
+
+	test.mockMemoryHistogram.AssertExpectations(t)
+}
+
 // TestRecordOOMFreshOOMNearWindowBoundaryIsNotDiscarded reproduces
 // https://github.com/kubernetes/autoscaler/issues/8548.
 //
