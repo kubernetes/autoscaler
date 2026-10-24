@@ -86,6 +86,8 @@ type machineController struct {
 	managementClient            dynamic.Interface
 	managementScaleClient       scale.ScalesGetter
 	managementDiscoveryClient   discovery.DiscoveryInterface
+	kindVersionCache            map[string]string
+	kindVersionMutex            sync.RWMutex
 	machineSetResource          schema.GroupVersionResource
 	machineResource             schema.GroupVersionResource
 	machinePoolResource         schema.GroupVersionResource
@@ -566,6 +568,7 @@ func newMachineController(
 		managementClient:            managementClient,
 		managementScaleClient:       managementScaleClient,
 		managementDiscoveryClient:   managementDiscoveryClient,
+		kindVersionCache:            map[string]string{},
 		machineSetResource:          gvrMachineSet,
 		machinePoolResource:         gvrMachinePool,
 		machinePoolsAvailable:       machinePoolsAvailable,
@@ -612,6 +615,34 @@ func getAPIGroupPreferredVersion(client discovery.DiscoveryInterface, APIGroup s
 	}
 
 	return "", fmt.Errorf("failed to find API group %q", APIGroup)
+}
+
+// kindPreferredVersion resolves the preferred version for kind in apiGroup,
+// caching successful results for the controller's lifetime. The autoscaler
+// main loop rebuilds scalable resource wrappers on every iteration, so an
+// uncached lookup issues live discovery calls per node group per loop,
+// which can exhaust the discovery client's rate limits on large clusters.
+// Failures are not cached: a lookup for a group that appears later, for
+// example a provider installed after startup, retries on the next loop.
+func (c *machineController) kindPreferredVersion(apiGroup, kind string) (string, error) {
+	key := apiGroup + "/" + kind
+
+	c.kindVersionMutex.RLock()
+	version, ok := c.kindVersionCache[key]
+	c.kindVersionMutex.RUnlock()
+	if ok {
+		return version, nil
+	}
+
+	version, err := getKindPreferredVersion(c.managementDiscoveryClient, apiGroup, kind)
+	if err != nil {
+		return "", err
+	}
+
+	c.kindVersionMutex.Lock()
+	c.kindVersionCache[key] = version
+	c.kindVersionMutex.Unlock()
+	return version, nil
 }
 
 // getKindPreferredVersion returns the first version in apiGroup that serves the given Kind.
