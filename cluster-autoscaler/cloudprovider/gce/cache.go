@@ -80,6 +80,10 @@ type GceCache struct {
 	instanceTemplateNameCache        map[GceRef]InstanceTemplateName
 	instanceTemplatesCache           map[GceRef]*gce.InstanceTemplate
 	kubeEnvCache                     map[GceRef]KubeEnv
+
+	// migInfoCacheWarm tracks whether listing all MIGs to populate the MIG info caches has been
+	// attempted since any of them was last invalidated as a whole, see IsMigInfoCacheWarm.
+	migInfoCacheWarm bool
 }
 
 // NewGceCache creates empty GceCache.
@@ -350,16 +354,30 @@ func (gc *GceCache) SetMigTargetSize(ref GceRef, size int64) {
 	gc.migTargetSizeCache[ref] = size
 }
 
-// IsMigTargetSizeCacheEmpty returns true if no migs have a cached target size
-// A note on race conditions:
-// This check is done under a mutex which is released the moment the value is returned.
-// GceManager has access to GceCache and can invalidate or set target size for a specific MIG.
-// Only cachingMigInfoProvider can populate the whole mig target size cache, and it does it under its own migInfoMutex.
-func (gc *GceCache) IsMigTargetSizeCacheEmpty() bool {
+// MarkMigInfoCacheWarm marks the MIG info cache as warm. It should be called after listing all MIGs
+// to populate the MIG info cache has been attempted, even if the listing failed.
+func (gc *GceCache) MarkMigInfoCacheWarm() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	return len(gc.migTargetSizeCache) == 0
+	gc.migInfoCacheWarm = true
+}
+
+// IsMigInfoCacheWarm returns true if listing all MIGs to populate the MIG info cache (target sizes,
+// isStable, basenames, listManagedInstancesResults and instance template names) has been attempted
+// since any of these caches was last invalidated as a whole. A MIG missing from a warm cache either
+// wasn't returned by that listing (e.g. because it was deleted, registered afterwards, or the listing
+// failed) or was invalidated individually, so it should be fetched on its own instead of listing all
+// MIGs again.
+// A note on race conditions:
+// This check is done under a mutex which is released the moment the value is returned, so the value
+// may be stale by the time it is used. This is benign: at worst, all MIGs are listed once more than
+// necessary, or a single MIG is fetched instead of listing all of them.
+func (gc *GceCache) IsMigInfoCacheWarm() bool {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	return gc.migInfoCacheWarm
 }
 
 // InvalidateMigTargetSize clears the target size cache
@@ -374,13 +392,15 @@ func (gc *GceCache) InvalidateMigTargetSize(ctx context.Context, ref GceRef) {
 	}
 }
 
-// InvalidateAllMigTargetSizes clears the target size cache
+// InvalidateAllMigTargetSizes clears the target size cache.
+// It also marks the MIG info cache as cold, see IsMigInfoCacheWarm.
 func (gc *GceCache) InvalidateAllMigTargetSizes(ctx context.Context) {
 	logger := klog.FromContext(ctx)
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	logger.V(5).Info("Target size cache invalidated")
 	gc.migTargetSizeCache = map[GceRef]int64{}
+	gc.migInfoCacheWarm = false
 }
 
 // GetMigIsStable returns the cached isStable for a GceRef
@@ -403,13 +423,15 @@ func (gc *GceCache) SetMigIsStable(ref GceRef, isStable bool) {
 	gc.migIsStableCache[ref] = isStable
 }
 
-// InvalidateAllMigIsStable clears the isStable cache
+// InvalidateAllMigIsStable clears the isStable cache.
+// It also marks the MIG info cache as cold, see IsMigInfoCacheWarm.
 func (gc *GceCache) InvalidateAllMigIsStable(ctx context.Context) {
 	logger := klog.FromContext(ctx)
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	logger.V(5).Info("IsStable cache invalidated")
 	gc.migIsStableCache = map[GceRef]bool{}
+	gc.migInfoCacheWarm = false
 }
 
 // GetMigInstanceTemplateName returns the cached instance template ref for a mig GceRef
@@ -444,13 +466,15 @@ func (gc *GceCache) InvalidateMigInstanceTemplateName(ref GceRef) {
 	}
 }
 
-// InvalidateAllMigInstanceTemplateNames clears the instance template ref cache
+// InvalidateAllMigInstanceTemplateNames clears the instance template ref cache.
+// It also marks the MIG info cache as cold, see IsMigInfoCacheWarm.
 func (gc *GceCache) InvalidateAllMigInstanceTemplateNames(ctx context.Context) {
 	logger := klog.FromContext(ctx)
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	logger.V(5).Info("Instance template names cache invalidated")
 	gc.instanceTemplateNameCache = map[GceRef]InstanceTemplateName{}
+	gc.migInfoCacheWarm = false
 }
 
 // GetMigInstanceTemplate returns the cached gce.InstanceTemplate for a mig GceRef
@@ -613,10 +637,12 @@ func (gc *GceCache) InvalidateMigBasename(migRef GceRef) {
 }
 
 // InvalidateAllMigBasenames invalidates all basename entries.
+// It also marks the MIG info cache as cold, see IsMigInfoCacheWarm.
 func (gc *GceCache) InvalidateAllMigBasenames() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	gc.migBaseNameCache = make(map[GceRef]string)
+	gc.migInfoCacheWarm = false
 }
 
 // SetListManagedInstancesResults sets listManagedInstancesResults for a given mig in cache
@@ -635,10 +661,12 @@ func (gc *GceCache) GetListManagedInstancesResults(migRef GceRef) (string, bool)
 }
 
 // InvalidateAllListManagedInstancesResults invalidates all listManagedInstancesResults entries.
+// It also marks the MIG info cache as cold, see IsMigInfoCacheWarm.
 func (gc *GceCache) InvalidateAllListManagedInstancesResults() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	gc.listManagedInstancesResultsCache = make(map[GceRef]string)
+	gc.migInfoCacheWarm = false
 }
 
 // GetMigInstancesStateCount returns counts of instances in different states for the given mig from cache.
