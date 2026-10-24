@@ -22,7 +22,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	huaweicloudsdkasmodel "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -97,36 +96,21 @@ func (asg *AutoScalingGroup) IncreaseSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
+// NOTE: We trust the AS service side group_id validation instead of doing a client-side pre-check.
+// The BatchRemoveInstances request carries the ScalingGroupId at the top level, and the AS service will validate that the instances belong to the group.
+// If any instance does not belong to the group, the request will fail with an error. The previous implementation called ListScalingInstances to pre-check,
+// but that is unnecessary and adds extra API calls. We can rely on the AS service to validate.
 func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
-	instances, err := asg.cloudServiceManager.GetInstances(asg.groupID)
-	if err != nil {
-		klog.Warningf("failed to get instances from group: %s, error: %v", asg.groupID, err)
-		return err
-	}
-
-	instanceSet := sets.NewString()
-	for _, instance := range instances {
-		instanceSet.Insert(instance.Id)
-	}
-
-	instanceIds := make([]string, 0, len(instances))
-	nodeNames := make([]string, 0, len(instances))
+	instanceIds := make([]string, 0, len(nodes))
+	nodeNames := make([]string, 0, len(nodes))
 	for _, node := range nodes {
 		providerID := node.Spec.ProviderID
-
-		// If one of the nodes not belongs to this auto scaling group, means there is something wrong happened,
-		// so, we should reject the whole deleting request.
-		if !instanceSet.Has(providerID) {
-			klog.Errorf("delete node not belongs this node group is not allowed. group: %s, node: %s", asg.groupID, providerID)
-			return fmt.Errorf("node does not belong to this node group")
-		}
-
 		klog.V(1).Infof("going to remove node from scaling group. group: %s, node: %s", asg.groupID, providerID)
 		instanceIds = append(instanceIds, providerID)
 		nodeNames = append(nodeNames, node.Name)
 	}
 
-	err = asg.cloudServiceManager.DeleteScalingInstances(asg.groupID, instanceIds)
+	err := asg.cloudServiceManager.DeleteScalingInstances(asg.groupID, instanceIds)
 	if err != nil {
 		klog.Warningf("failed to delete scaling instances. error: %v", err)
 		return err
