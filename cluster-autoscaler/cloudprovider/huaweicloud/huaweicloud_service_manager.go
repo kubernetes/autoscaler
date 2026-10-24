@@ -217,6 +217,13 @@ func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.In
 			klog.Infof("ignore instance without instance id, maybe instance is joining.")
 			continue
 		}
+		// guard against nil LifeCycleState or HealthStatus to avoid dereferencing nil pointers
+		// on dereference -- AS API documents these as required but production has seen them missing during instance transitions,
+		// so we log a warning and skip the instance instead of returning an error.
+		if sgi.LifeCycleState == nil || sgi.HealthStatus == nil {
+			klog.Warningf("instance %s has nil lifecycle state or health status, skipping. lifecycle: %v, health: %v", *sgi.InstanceId, sgi.LifeCycleState, sgi.HealthStatus)
+			continue
+		}
 		instance := cloudprovider.Instance{
 			Id:     *sgi.InstanceId,
 			Status: csm.transformInstanceState(*sgi.LifeCycleState, *sgi.HealthStatus),
