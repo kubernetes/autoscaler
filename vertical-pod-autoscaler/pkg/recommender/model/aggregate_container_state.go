@@ -91,6 +91,10 @@ type ContainerStateAggregator interface {
 	GetOOMMinBumpUp() float64
 	// GetMemoryAggregationIntervalDuration returns the memory aggregation interval for this container.
 	GetMemoryAggregationIntervalDuration() time.Duration
+	// GetTargetCPUPercentile returns the CPU target percentile override for this container (0 if unset).
+	GetTargetCPUPercentile() float64
+	// GetTargetMemoryPercentile returns the memory target percentile override for this container (0 if unset).
+	GetTargetMemoryPercentile() float64
 }
 
 // AggregateContainerState holds input signals aggregated from a set of containers.
@@ -123,7 +127,11 @@ type AggregateContainerState struct {
 	OOMMinBumpUp                      float64
 	MemoryAggregationIntervalDuration time.Duration
 	MemoryAggregationIntervalCount    int64
-	ControlledResources               *[]ResourceName
+	// Per-container target percentile overrides, as (0, 1] fractions.
+	// Zero means unset, in which case the global target flag is used.
+	TargetCPUPercentile    float64
+	TargetMemoryPercentile float64
+	ControlledResources    *[]ResourceName
 
 	mutex sync.RWMutex
 }
@@ -176,6 +184,16 @@ func (a *AggregateContainerState) GetOOMBumpUpRatio() float64 {
 // GetOOMMinBumpUp returns the minimum absolute increase in memory recommendation in case of OOM
 func (a *AggregateContainerState) GetOOMMinBumpUp() float64 {
 	return a.OOMMinBumpUp
+}
+
+// GetTargetCPUPercentile returns the per-container CPU target percentile override, or 0 if unset.
+func (a *AggregateContainerState) GetTargetCPUPercentile() float64 {
+	return a.TargetCPUPercentile
+}
+
+// GetTargetMemoryPercentile returns the per-container memory target percentile override, or 0 if unset.
+func (a *AggregateContainerState) GetTargetMemoryPercentile() float64 {
+	return a.TargetMemoryPercentile
 }
 
 // GetMemoryAggregationIntervalDuration returns the memory aggregation interval for this container state.
@@ -321,6 +339,18 @@ func (*AggregateContainerState) convertQuantityToFloat64(quantity *resource.Quan
 	return float64(quantity.MilliValue()) / 1000.0
 }
 
+// percentileToFraction converts an integer percentile [1, 100] to the (0, 1]
+// fraction the estimators use.
+func percentileToFraction(percentile int32) float64 {
+	return float64(percentile) / 100.0
+}
+
+// hasPercentileOverride reports whether the policy sets any per-VPA recommendation percentile.
+func hasPercentileOverride(p *vpa_types.ContainerResourcePolicy) bool {
+	return p.RecommendationPercentiles != nil &&
+		(p.RecommendationPercentiles.CPU != nil || p.RecommendationPercentiles.Memory != nil)
+}
+
 // getMemoryAggregationWindowLength returns the total length of the memory usage history aggregated by VPA.
 func (a *AggregateContainerState) getMemoryAggregationWindowLength() time.Duration {
 	return a.MemoryAggregationIntervalDuration * time.Duration(a.MemoryAggregationIntervalCount)
@@ -339,6 +369,11 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 	if resourcePolicy != nil && resourcePolicy.ControlledResources != nil {
 		a.ControlledResources = ResourceNamesApiToModel(*resourcePolicy.ControlledResources)
 	}
+
+	// Reset per-VPA target percentiles so that removing an override falls back
+	// to the global flag (0 means "unset" for these fields).
+	a.TargetCPUPercentile = 0
+	a.TargetMemoryPercentile = 0
 
 	// Per VPA components - feature flag "PerVPAConfig" must be enabled
 	if resourcePolicy != nil {
@@ -371,6 +406,22 @@ func (a *AggregateContainerState) UpdateFromPolicy(resourcePolicy *vpa_types.Con
 				a.MemoryAggregationIntervalCount = *resourcePolicy.MemoryAggregationIntervalCount
 			} else {
 				klog.InfoS("memoryAggregationIntervalCount is set but %s feature gate is disabled, falling back to default value", features.PerVPAConfig)
+			}
+		}
+
+		// Per-VPA target percentiles. Each is an integer [1, 100] on the API;
+		// convert to the (0, 1] fraction the estimators use. A resource is
+		// overridden only when its entry is set.
+		if hasPercentileOverride(resourcePolicy) {
+			if features.Enabled(features.PerVPAConfig) {
+				if cpu := resourcePolicy.RecommendationPercentiles.CPU; cpu != nil {
+					a.TargetCPUPercentile = percentileToFraction(cpu.Target)
+				}
+				if memory := resourcePolicy.RecommendationPercentiles.Memory; memory != nil {
+					a.TargetMemoryPercentile = percentileToFraction(memory.Target)
+				}
+			} else {
+				klog.InfoS("per-VPA target percentiles are set but PerVPAConfig feature gate is disabled, falling back to global flags")
 			}
 		}
 	}
@@ -455,6 +506,18 @@ func (p *ContainerStateAggregatorProxy) GetOOMMinBumpUp() float64 {
 func (p *ContainerStateAggregatorProxy) GetOOMBumpUpRatio() float64 {
 	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
 	return aggregator.GetOOMBumpUpRatio()
+}
+
+// GetTargetCPUPercentile returns the per-container CPU target percentile override.
+func (p *ContainerStateAggregatorProxy) GetTargetCPUPercentile() float64 {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	return aggregator.GetTargetCPUPercentile()
+}
+
+// GetTargetMemoryPercentile returns the per-container memory target percentile override.
+func (p *ContainerStateAggregatorProxy) GetTargetMemoryPercentile() float64 {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	return aggregator.GetTargetMemoryPercentile()
 }
 
 // GetMemoryAggregationIntervalDuration returns the memory aggregation interval from the underlying aggregate container state.
