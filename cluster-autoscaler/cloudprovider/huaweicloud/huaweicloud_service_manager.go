@@ -21,6 +21,7 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -311,73 +312,90 @@ func (csm *cloudServiceManager) DeleteScalingInstances(groupID string, instanceI
 	return nil
 }
 
-// IncreaseSizeInstance increases a scaling group's instance size.
-// The workflow works as follows:
-// 1. create scaling policy with scheduled type.
-// 2. execute the scaling policy immediately(not waiting the policy's launch time).
-// 3. wait for the instance number be increased and remove the scaling policy.
-func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) error {
-	originalInstanceSize, err := csm.GetDesireInstanceNumber(groupID)
-	if err != nil {
-		return err
-	}
+var (
+	perGroupLocks = make(map[string]*sync.Mutex)
+	perGroupLocksMu sync.Mutex
+)
 
-	// create a scaling policy
-	addOperation := huaweicloudsdkasmodel.GetScalingPolicyActionV1OperationEnum().ADD
-	instanceNum := int32(delta)
-	opts := &huaweicloudsdkasmodel.CreateScalingPolicyRequest{
-		Body: &huaweicloudsdkasmodel.CreateScalingPolicyOption{
-			// It's not mandatory for AS service to set a unique policy name.
-			ScalingPolicyName: "huaweicloudautoscaler",
-			ScalingGroupId:    groupID,
-			ScalingPolicyType: huaweicloudsdkasmodel.GetCreateScalingPolicyOptionScalingPolicyTypeEnum().SCHEDULED,
-			ScheduledPolicy: &huaweicloudsdkasmodel.ScheduledPolicy{
-				LaunchTime: time.Now().Add(time.Hour).UTC().Format("2006-01-02T15:04Z"),
-			},
-			ScalingPolicyAction: &huaweicloudsdkasmodel.ScalingPolicyActionV1{
-				Operation:      &addOperation,
-				InstanceNumber: &instanceNum,
-			},
-		},
+func getGroupLock(groupID string) *sync.Mutex {
+	perGroupLocksMu.Lock()
+	defer perGroupLocksMu.Unlock()
+	lock, ok := perGroupLocks[groupID]
+	if !ok {
+		lock = &sync.Mutex{}
+		perGroupLocks[groupID] = lock
 	}
+	return lock
+}
 
-	spID, err := csm.createScalingPolicy(opts)
-	if err != nil {
-		return err
+// isASLockConflict checks if the error is a lock conflict error from Huawei Cloud AS service.
+// (another scaling activity is in progress for the same scaling group)
+// AS error codes are not exposed as constants in the SDK, so we check the error message for known lock conflict patterns.
+func isASLockConflict(err error) bool {
+	if err == nil {
+		return false
 	}
-
-	// make sure scaling policy will be cleaned up.
-	deletePolicyOps := &huaweicloudsdkasmodel.DeleteScalingPolicyRequest{
-		ScalingPolicyId: spID,
-	}
-	defer csm.deleteScalingPolicy(deletePolicyOps)
-
-	// execute policy immediately
-	executeAction := huaweicloudsdkasmodel.GetExecuteScalingPolicyOptionActionEnum().EXECUTE
-	executeOpts := &huaweicloudsdkasmodel.ExecuteScalingPolicyRequest{
-		ScalingPolicyId: spID,
-		Body: &huaweicloudsdkasmodel.ExecuteScalingPolicyOption{
-			Action: executeAction,
-		},
-	}
-	err = csm.executeScalingPolicy(executeOpts)
-	if err != nil {
-		return err
-	}
-
-	// wait for instance number indeed be increased
-	return wait.Poll(5*time.Second, 30*time.Minute, func() (done bool, err error) {
-		currentInstanceSize, err := csm.GetDesireInstanceNumber(groupID)
-		if err != nil {
-			return false, err
+	msg := err.Error()
+	// condidate AS lock conflict error codes, see https://support.huaweicloud.com/api-as/as_07_0102.html
+	lockConflictCodes := []string{"AS.2003", "AS.2009"}
+	for _, code := range lockConflictCodes {
+		if strings.Contains(msg, code) {
+			return true
 		}
+	}
 
-		if currentInstanceSize == originalInstanceSize+delta {
+	// fallback: match error message for known lock conflict patterns
+	lower := strings.ToLower(msg)
+	return strings.Contains(lower, "scaling activity") || 
+	    strings.Contains(lower, "in progress") || 
+	    strings.Contains(lower, "conflict")
+}
+
+// IncreaseSizeInstance increases the desired instance number of a scaling group by delta.
+// It uses UpdateScalingGroup API(idempotent) instead of create+execute+delete scaling policy, to avoid the risk of creating too many scaling policies and hitting the limit.
+// On AS lock conflict (another scaling activity is in progress for the same scaling group), it will retry with exponential backoff.
+// A per-group mutex serializes concurrent IncreaseSizeInstance calls for the same group, to avoid hitting AS lock conflict too frequently.
+// This method returns immediately after the AS API accepts the request, it does not wait for instances to become ready. The CA core handles readiness by watching for Node Ready events.
+func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) error {
+	if delta <= 0 {
+		return fmt.Errorf("delta must be positive, got %d", delta)
+	}
+
+	lock := getGroupLock(groupID)
+	lock.Lock()
+	defer lock.Unlock()
+
+	currentDesired, err := csm.GetDesireInstanceNumber(groupID)
+	if err != nil {
+		return fmt.Errorf("failed to get current desired instance number for group %s: %v", groupID, err)
+	}
+	newDesired := int32(currentDesired + delta)
+	klog.V(2).Infof("Increasing group %s desired instance number from %d to %d (delta: %d)", groupID, currentDesired, newDesired, delta)
+	backoff := wait.Backoff{
+		Steps:    6,
+		Duration: 1 * time.Second,
+		Factor:   2.0,
+		Jitter:   0.1,
+		Cap:	  60 * time.Second,
+	}
+	return wait.ExponentialBackoff(backoff, func() (bool, error) {
+		opts := &huaweicloudsdkasmodel.UpdateScalingGroupRequest{
+			ScalingGroupId: groupID,
+			Body: &huaweicloudsdkasmodel.UpdateScalingGroupOption{
+				DesiredInstanceNumber: &newDesired,
+			},
+		}
+		_, err := csm.getASClientFunc().UpdateScalingGroup(opts)
+		if err == nil {
+			klog.V(2).Infof("updated group %s desired instance number to %d successfully", groupID, newDesired)
 			return true, nil
 		}
-		klog.V(1).Infof("waiting instance increase from %d to %d, now is: %d", originalInstanceSize, originalInstanceSize+delta, currentInstanceSize)
-
-		return false, nil
+		if isASLockConflict(err) {
+			klog.Warningf("AS lock conflict on group %s, retrying with backoff. error: %v", groupID, err)
+			return false, nil // retry
+		}
+		klog.Errorf("failed to update group %s desired instance number to %d: %v", groupID, newDesired, err)
+		return false, err // do not retry on other errors
 	})
 }
 
