@@ -224,7 +224,7 @@ func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, e
 			return &container.Resources, nil
 		}
 	}
-	return nil, fmt.Errorf("Container %s was not found in deployment %s in namespace %s.", k.container, k.deployment, k.namespace)
+	return nil, fmt.Errorf("container %s was not found in deployment %s in namespace %s", k.container, k.deployment, k.namespace)
 }
 
 func (k *kubernetesClient) UpdateDeployment(resources *corev1.ResourceRequirements) error {
@@ -241,13 +241,13 @@ func (k *kubernetesClient) UpdateDeployment(resources *corev1.ResourceRequiremen
 		}
 	}
 
-	return fmt.Errorf("Container %s was not found in the deployment %s in namespace %s.", k.container, k.deployment, k.namespace)
+	return fmt.Errorf("container %s was not found in the deployment %s in namespace %s", k.container, k.deployment, k.namespace)
 }
 
 func (k *kubernetesClient) patchDeployment(patch patchRecord) error {
 	bytes, err := json.Marshal([]patchRecord{patch})
 	if err != nil {
-		return fmt.Errorf("Cannot marshal deployment patch %+v. Reason: %+v", patch, err)
+		return fmt.Errorf("cannot marshal deployment patch %+v. Reason: %+v", patch, err)
 	}
 
 	_, err = k.clientset.AppsV1().Deployments(k.namespace).Patch(context.Background(), k.deployment, types.JSONPatchType, bytes, metav1.PatchOptions{})

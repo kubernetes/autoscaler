@@ -280,11 +280,12 @@ func TestUpdateResources(t *testing.T) {
 		est := newFakeResourceEstimator(tc.y, tc.x)
 		testutil.CollectAndCount(executionOutcome)
 		counterLabel := ""
-		if tc.want == noChange {
+		switch tc.want {
+		case noChange:
 			counterLabel = "resources_within_limits"
-		} else if tc.want == postpone {
+		case postpone:
 			counterLabel = "scale_up_down_delay"
-		} else if tc.want == overwrite {
+		case overwrite:
 			counterLabel = "updated_resources"
 		}
 		metric, err := executionOutcome.GetMetricWithLabelValues(counterLabel)
@@ -425,7 +426,6 @@ func (f *fakeKubernetesClient) UpdateDeployment(resources *corev1.ResourceRequir
 }
 
 type fakeResourceEstimator struct {
-	nodes     uint64
 	resources *corev1.ResourceRequirements
 }
 

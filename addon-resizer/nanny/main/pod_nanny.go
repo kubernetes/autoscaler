@@ -19,7 +19,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -146,17 +145,18 @@ func main() {
 	}
 
 	var est nanny.ResourceEstimator
-	if *estimator == "linear" {
+	switch *estimator {
+	case "linear":
 		est = nanny.LinearEstimator{
 			Resources: resources,
 		}
-	} else if *estimator == "exponential" {
+	case "exponential":
 		est = nanny.ExponentialEstimator{
 			Resources:      resources,
 			ScaleFactor:    1.5,
 			MinClusterSize: *minClusterSize,
 		}
-	} else {
+	default:
 		klog.Fatalf("Estimator %s not supported", *estimator)
 	}
 
@@ -209,7 +209,7 @@ func loadNannyConfiguration(configDir string, defaultConfig *nannyconfigalpha.Na
 	nannyconfigalpha.SetDefaults_NannyConfiguration(defaultConfig)
 	// retrieve config map parameters if present
 	configMapConfig := &nannyconfigalpha.NannyConfiguration{}
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		klog.V(0).Infof("Failed to read data from config file %q: %v, using default parameters", path, err)
 	} else if configMapConfig, err = decodeNannyConfiguration(data, codecs); err != nil {
