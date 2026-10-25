@@ -26,8 +26,6 @@
 - [Implementation History](#implementation-history)
 - [Alternatives](#alternatives)
   - [One DaemonSet and VPA per node pool](#one-daemonset-and-vpa-per-node-pool)
-  - [Embedding per-group recommendations in VPA status](#embedding-per-group-recommendations-in-vpa-status)
-  - [Introducing a VPASet resource in the same AEP](#introducing-a-vpaset-resource-in-the-same-aep)
 <!-- /toc -->
 
 ## Summary
