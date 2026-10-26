@@ -52,6 +52,9 @@ type AutoScalingService interface {
 	// GetDesireInstanceNumber gets the desire instance number of specific auto scaling group.
 	GetDesireInstanceNumber(groupID string) (int, error)
 
+	// GetScalingGroupDesired returns the desired instance number directly from ShowScalingGroup API, instead of computing from instance list.
+	GetScalingGroupDesired(groupID string) (int, error)
+
 	// GetInstances gets the instances in an auto scaling group.
 	GetInstances(groupID string) ([]cloudprovider.Instance, error)
 
@@ -172,7 +175,9 @@ func (csm *cloudServiceManager) DeleteServers(serverIDs []string) error {
 			return true, nil
 		}
 
-		return true, nil
+		// job is still running, return false to continue polling
+		// (was incorrectly returning true, nil here, causing DeleteServers to return early and not wait for the job to complete)
+		return false, nil
 	})
 
 	if err != nil {
@@ -214,6 +219,13 @@ func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.In
 			klog.Infof("ignore instance without instance id, maybe instance is joining.")
 			continue
 		}
+		// guard against nil LifeCycleState or HealthStatus to avoid dereferencing nil pointers
+		// on dereference -- AS API documents these as required but production has seen them missing during instance transitions,
+		// so we log a warning and skip the instance instead of returning an error.
+		if sgi.LifeCycleState == nil || sgi.HealthStatus == nil {
+			klog.Warningf("instance %s has nil lifecycle state or health status, skipping. lifecycle: %v, health: %v", *sgi.InstanceId, sgi.LifeCycleState, sgi.HealthStatus)
+			continue
+		}
 		instance := cloudprovider.Instance{
 			Id:     *sgi.InstanceId,
 			Status: csm.transformInstanceState(*sgi.LifeCycleState, *sgi.HealthStatus),
@@ -229,41 +241,97 @@ func (csm *cloudServiceManager) ListScalingInstances(groupID string) ([]huaweicl
 	if asClient == nil {
 		return nil, fmt.Errorf("failed to list scaling groups due to can not get as client")
 	}
+	return listScalingInstancesPaged(groupID, asClient.ListScalingInstances)
+}
 
+type listScalingInstancesFunc func(opts *huaweicloudsdkasmodel.ListScalingInstancesRequest) (*huaweicloudsdkasmodel.ListScalingInstancesResponse, error)
+
+func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]huaweicloudsdkasmodel.ScalingGroupInstance, error) {
 	var scalingGroupInstances []huaweicloudsdkasmodel.ScalingGroupInstance
 	var startNumber int32 = 0
-	for {
+	const maxPages = 100  // defensive cap to prevent infinite loops if the API misbehaves
+	pageSize := int32(100)  // explicit page size instead of relying on the default, to avoid surprises if the default changes in the future
+    seen := make(map[string]struct{})  // track seen instance IDs to detect duplicates
+	dupCount := 0  // count of duplicate instance IDs encountered
+
+	for page := 0; page < maxPages; page++ {
 		opts := &huaweicloudsdkasmodel.ListScalingInstancesRequest{
 			ScalingGroupId: groupID,
 			StartNumber:    &startNumber,
+			Limit:          &pageSize,
 		}
-		response, err := asClient.ListScalingInstances(opts)
+		response, err := fn(opts)
 		if err != nil {
-			klog.Errorf("failed to list scaling group instances. group: %s, error: %v", groupID, err)
+			klog.Errorf("failed to list scaling group instances. group: %s, page: %d, error: %v", groupID, page, err)
 			return nil, err
 		}
 		if response == nil {
-			klog.Errorf("Unexpected get nil response when listing instances.")
+			klog.Errorf("Unexpected get nil response when listing instances. group: %s, page: %d", groupID, page)
 			return nil, fmt.Errorf("unexpected get nil response when listing instances")
 		}
 		if response.ScalingGroupInstances == nil {
-			klog.Errorf("Unexpected get nil scaling group instances")
+			klog.Errorf("Unexpected get nil scaling group instances. group: %s, page: %d", groupID, page)
 			return nil, fmt.Errorf("unexpected get nil scaling group instances")
 		}
 
-		klog.Infof("Got %d instances from scaling group, total instances: %d", len(*response.ScalingGroupInstances), *response.TotalNumber)
-		scalingGroupInstances = append(scalingGroupInstances, *response.ScalingGroupInstances...)
-
-		// break once we get all instances
-		if response.TotalNumber != nil && len(scalingGroupInstances) == int(*response.TotalNumber) {
+		currentPage := *response.ScalingGroupInstances
+		if len(currentPage) == 0 {
+			klog.Infof("No more instances found in scaling group: %s, page: %d", groupID, page)
 			break
 		}
 
-		// get ready to request next page
-		startNumber += int32(len(*response.ScalingGroupInstances))
+		klog.V(4).Infof("list scaling instances. group: %s, page: %d, instances in current page: %d, total: %d", groupID, page, len(currentPage), ptrToInt32(response.TotalNumber))
+
+		newInPage := 0
+		for _, inst := range currentPage {
+			instID, instName := "", ""
+			if inst.InstanceId != nil {
+				instID = *inst.InstanceId
+			}
+			if inst.InstanceName != nil {
+				instName = *inst.InstanceName
+			}
+			klog.V(2).Infof("  instance: id=%s, name=%s, health=%v, lifecycle=%v", instID, instName, inst.HealthStatus, inst.LifeCycleState)
+			// dedup skip instance already seen in previous pages (can happen if instances are added/removed during pagination,
+			// or if the API returns duplicates). We log a warning but continue processing.
+            if instID != "" {
+				if _, exists := seen[instID]; exists {
+					dupCount++
+					continue  // skip duplicate instance ID
+				}
+				seen[instID] = struct{}{}
+			}
+			scalingGroupInstances = append(scalingGroupInstances, inst)
+			newInPage++
+		}
+
+		// terminate when current page is smaller than requested pageSize, which means no more instances to list.
+		// do NOT rely on TotalNumber which can drift due to instance scale up/down during the listing process.
+        if int32(len(currentPage)) < pageSize {
+			break
+		}
+        // advance startNumber by the original page size, not the number of new instances added, to avoid skipping pages if duplicates were removed.
+		// because the AS offset is based on total list position, not the number of unique instances returned.
+		startNumber += int32(len(currentPage))
+	}
+
+	if dupCount > 0 {
+		klog.V(2).Infof("pagination dedup: group %s, removed %d duplicate instance(s) during pagination, total unique instances: %d", groupID, dupCount, len(scalingGroupInstances))
+	}
+
+	if len(scalingGroupInstances) >= int(pageSize)*maxPages {
+		klog.Warningf("pagination cap hit on scaling group %s, possible loop. collected: %d", groupID, len(scalingGroupInstances))
 	}
 
 	return scalingGroupInstances, nil
+}
+
+// ptrToInt32 safely dereferences an *int32 pointer, returning 0 if the pointer is nil.
+func ptrToInt32(p *int32) int32 {
+	if p == nil {
+		return 0
+	}
+	return *p
 }
 
 func (csm *cloudServiceManager) DeleteScalingInstances(groupID string, instanceIds []string) error {
@@ -290,74 +358,37 @@ func (csm *cloudServiceManager) DeleteScalingInstances(groupID string, instanceI
 	return nil
 }
 
-// IncreaseSizeInstance increases a scaling group's instance size.
-// The workflow works as follows:
-// 1. create scaling policy with scheduled type.
-// 2. execute the scaling policy immediately(not waiting the policy's launch time).
-// 3. wait for the instance number be increased and remove the scaling policy.
+// IncreaseSizeInstance increases the desired instance number of a scaling group by delta.
+// It uses UpdateScalingGroup API(idempotent) instead of create+execute+delete scaling policy, to avoid the risk of creating too many scaling policies and hitting the limit.
+// This method returns immediately after the AS API accepts the request, it does not wait for instances to become ready. The CA core handles readiness by watching for Node Ready events.
 func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) error {
-	originalInstanceSize, err := csm.GetDesireInstanceNumber(groupID)
-	if err != nil {
-		return err
+	if delta <= 0 {
+		return fmt.Errorf("delta must be positive, got %d", delta)
 	}
 
-	// create a scaling policy
-	addOperation := huaweicloudsdkasmodel.GetScalingPolicyActionV1OperationEnum().ADD
-	instanceNum := int32(delta)
-	opts := &huaweicloudsdkasmodel.CreateScalingPolicyRequest{
-		Body: &huaweicloudsdkasmodel.CreateScalingPolicyOption{
-			// It's not mandatory for AS service to set a unique policy name.
-			ScalingPolicyName: "huaweicloudautoscaler",
-			ScalingGroupId:    groupID,
-			ScalingPolicyType: huaweicloudsdkasmodel.GetCreateScalingPolicyOptionScalingPolicyTypeEnum().SCHEDULED,
-			ScheduledPolicy: &huaweicloudsdkasmodel.ScheduledPolicy{
-				LaunchTime: time.Now().Add(time.Hour).UTC().Format("2006-01-02T15:04Z"),
-			},
-			ScalingPolicyAction: &huaweicloudsdkasmodel.ScalingPolicyActionV1{
-				Operation:      &addOperation,
-				InstanceNumber: &instanceNum,
-			},
+	currentDesired, err := csm.GetScalingGroupDesired(groupID)
+	if err != nil {
+		return fmt.Errorf("failed to get current desired instance number for group %s: %v", groupID, err)
+	}
+	newDesired := int32(currentDesired + delta)
+	klog.V(2).Infof("Increasing group %s desired instance number from %d to %d (delta: %d)",
+	    groupID, currentDesired, newDesired, delta)
+
+    asClient := csm.getASClientFunc()
+	if asClient == nil {
+		return fmt.Errorf("failed to get as client")
+	}
+	opts := &huaweicloudsdkasmodel.UpdateScalingGroupRequest{
+		ScalingGroupId: groupID,
+		Body: &huaweicloudsdkasmodel.UpdateScalingGroupOption{
+			DesireInstanceNumber: &newDesired,
 		},
 	}
-
-	spID, err := csm.createScalingPolicy(opts)
-	if err != nil {
-		return err
+	if _, err := asClient.UpdateScalingGroup(opts); err != nil {
+		return fmt.Errorf("failed to update group %s desired instance number to %d: %v", groupID, newDesired, err)
 	}
-
-	// make sure scaling policy will be cleaned up.
-	deletePolicyOps := &huaweicloudsdkasmodel.DeleteScalingPolicyRequest{
-		ScalingPolicyId: spID,
-	}
-	defer csm.deleteScalingPolicy(deletePolicyOps)
-
-	// execute policy immediately
-	executeAction := huaweicloudsdkasmodel.GetExecuteScalingPolicyOptionActionEnum().EXECUTE
-	executeOpts := &huaweicloudsdkasmodel.ExecuteScalingPolicyRequest{
-		ScalingPolicyId: spID,
-		Body: &huaweicloudsdkasmodel.ExecuteScalingPolicyOption{
-			Action: executeAction,
-		},
-	}
-	err = csm.executeScalingPolicy(executeOpts)
-	if err != nil {
-		return err
-	}
-
-	// wait for instance number indeed be increased
-	return wait.Poll(5*time.Second, 30*time.Minute, func() (done bool, err error) {
-		currentInstanceSize, err := csm.GetDesireInstanceNumber(groupID)
-		if err != nil {
-			return false, err
-		}
-
-		if currentInstanceSize == originalInstanceSize+delta {
-			return true, nil
-		}
-		klog.V(1).Infof("waiting instance increase from %d to %d, now is: %d", originalInstanceSize, originalInstanceSize+delta, currentInstanceSize)
-
-		return false, nil
-	})
+	klog.V(2).Infof("updated scaling group desired succeeded. group: %s desired: %d", groupID, newDesired)
+	return nil
 }
 
 func (csm *cloudServiceManager) ListScalingGroups() ([]AutoScalingGroup, error) {
@@ -418,7 +449,7 @@ func (csm *cloudServiceManager) transformInstanceState(lifeCycleState huaweiclou
 	healthStatusEnum := huaweicloudsdkasmodel.GetScalingGroupInstanceHealthStatusEnum()
 	switch healthStatus {
 	case healthStatusEnum.NORMAL:
-	case healthStatusEnum.INITAILIZING:
+	case healthStatusEnum.INITIALIZING:
 	case healthStatusEnum.ERROR:
 		instanceStatus.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 			ErrorClass:   cloudprovider.OtherErrorClass,
@@ -500,6 +531,17 @@ func (csm *cloudServiceManager) getScalingGroupByID(groupID string) (*huaweiclou
 	}
 
 	return response.ScalingGroup, nil
+}
+
+func (csm *cloudServiceManager) GetScalingGroupDesired(groupID string) (int, error) {
+	sg, err := csm.getScalingGroupByID(groupID)
+	if err != nil {
+		return 0, err
+	}
+	if sg.DesireInstanceNumber == nil {
+		return 0, fmt.Errorf("desired instance number is nil for group: %s", groupID)
+	}
+	return int(*sg.DesireInstanceNumber), nil
 }
 
 func (csm *cloudServiceManager) listScalingTagsByID(groupID string) (map[string]string, error) {
