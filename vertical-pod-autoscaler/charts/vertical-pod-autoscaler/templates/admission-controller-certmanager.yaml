@@ -6,7 +6,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certManager.issuerName" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
   {{- with .Values.admissionController.certManager.annotations }}
@@ -20,7 +20,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certManager.caName" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
   {{- with .Values.admissionController.certManager.annotations }}
@@ -47,7 +47,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certManager.caIssuerName" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
   {{- with .Values.admissionController.certManager.annotations }}
@@ -63,7 +63,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certManager.certName" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
   {{- with .Values.admissionController.certManager.annotations }}
@@ -74,9 +74,9 @@ spec:
   secretName: {{ include "vertical-pod-autoscaler.admissionController.tls.secretName" . }}
   dnsNames:
     - {{ .Values.admissionController.service.name }}
-    - {{ .Values.admissionController.service.name }}.{{ .Release.Namespace }}
-    - {{ .Values.admissionController.service.name }}.{{ .Release.Namespace }}.svc
-    - {{ .Values.admissionController.service.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    - {{ .Values.admissionController.service.name }}.{{ include "common.names.namespace" . }}
+    - {{ .Values.admissionController.service.name }}.{{ include "common.names.namespace" . }}.svc
+    - {{ .Values.admissionController.service.name }}.{{ include "common.names.namespace" . }}.svc.cluster.local
   privateKey:
     algorithm: {{ $algorithm }}
     {{- if ne $algorithm "Ed25519" }}

@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   labels:
     {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
   {{- with .Values.recommender.annotations }}
@@ -67,7 +67,7 @@ spec:
             {{- end }}
             {{- if $leaderElectionEnabled }}
             - --leader-elect=true
-            - --leader-elect-resource-namespace={{ .Values.recommender.leaderElection.resourceNamespace | default .Release.Namespace }}
+            - --leader-elect-resource-namespace={{ .Values.recommender.leaderElection.resourceNamespace | default (include "common.names.namespace" .) }}
             - --leader-elect-resource-name={{ .Values.recommender.leaderElection.resourceName }}
             - --leader-elect-lease-duration={{ .Values.recommender.leaderElection.leaseDuration }}
             - --leader-elect-renew-deadline={{ .Values.recommender.leaderElection.renewDeadline }}

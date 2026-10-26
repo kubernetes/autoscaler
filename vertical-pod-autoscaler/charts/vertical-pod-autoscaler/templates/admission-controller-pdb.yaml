@@ -6,7 +6,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
 spec:

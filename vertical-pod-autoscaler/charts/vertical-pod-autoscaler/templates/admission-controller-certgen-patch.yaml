@@ -3,7 +3,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certGen.fullname" . }}-patch
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
@@ -33,7 +33,7 @@ spec:
           args:
             - patch
             - --webhook-name={{ include "vertical-pod-autoscaler.admissionController.webhook.configName" . }}
-            - --namespace={{ .Release.Namespace }}
+            - --namespace={{ include "common.names.namespace" . }}
             - --secret-name={{ include "vertical-pod-autoscaler.admissionController.tls.secretName" . }}
             - --patch-validating=false
           {{- with .Values.admissionController.certGen.env }}

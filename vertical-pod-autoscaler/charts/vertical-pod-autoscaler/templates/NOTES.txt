@@ -10,7 +10,7 @@ Components deployed:
    ✓ {{ . }}
 {{- end }}
 
-Namespace: {{ .Release.Namespace }}
+Namespace: {{ include "common.names.namespace" . }}
 
 {{- if .Values.admissionController.enabled }}
 
@@ -24,7 +24,7 @@ Webhook Configuration:
    The admission controller will only register the webhook once this secret exists.
    If the secret is created after this install, restart the admission controller:
 
-   kubectl rollout restart deployment/{{ include "vertical-pod-autoscaler.admissionController.fullname" . }} -n {{ .Release.Namespace }}
+   kubectl rollout restart deployment/{{ include "vertical-pod-autoscaler.admissionController.fullname" . }} -n {{ include "common.names.namespace" . }}
 {{- else if .Values.admissionController.certGen.enabled }}
    Mode: Helm-managed (recommended)
    - Webhook registered by: Helm (MutatingWebhookConfiguration)
