@@ -86,6 +86,9 @@ type ScaleSet struct {
 	// sizeMutex protects curSize (the number of VMs in the ScaleSet) from concurrent access
 	sizeMutex sync.Mutex
 
+	activeDeletesMutex sync.Mutex
+	activeDeletes      map[string]struct{}
+
 	InstanceCache
 
 	// uses Azure Dedicated Host
@@ -119,6 +122,7 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 		enableLabelPredictionsOnTemplate: az.config.EnableLabelPredictionsOnTemplate,
 		dedicatedHost:                    dedicatedHost,
 	}
+	scaleSet.activeDeletes = make(map[string]struct{})
 
 	if az.config.VmssVirtualMachinesCacheTTLInSeconds != 0 {
 		scaleSet.instancesRefreshPeriod = time.Duration(az.config.VmssVirtualMachinesCacheTTLInSeconds) * time.Second
@@ -511,12 +515,6 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 		instancesToDelete = append(instancesToDelete, instance)
 	}
 
-	// nothing to delete
-	if len(instancesToDelete) == 0 {
-		klog.V(3).Infof("No new instances eligible for deletion, skipping")
-		return nil
-	}
-
 	instanceIDs := []string{}
 	for _, instance := range instancesToDelete {
 		instanceID, err := getLastSegment(instance.Name)
@@ -524,7 +522,14 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 			klog.Errorf("getLastSegment failed with error: %v", err)
 			return err
 		}
+
 		instanceIDs = append(instanceIDs, instanceID)
+	}
+
+	// nothing to delete
+	if len(instanceIDs) == 0 {
+		klog.V(3).Infof("No new instances eligible for deletion, skipping")
+		return nil
 	}
 
 	// Convert []string to []*string
@@ -542,6 +547,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 
 	poller, err := scaleSet.deleteInstances(ctx, requiredIds, commonAsg.Id())
 	if err != nil {
+		scaleSet.removeActiveDeletes(instanceIDPtrs)
 		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v for %s failed: %+v", requiredIds.InstanceIDs, scaleSet.Name, err)
 		return err
 	}
@@ -573,6 +579,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompute.VirtualMachineScaleSetsClientDeleteInstancesResponse], requiredIds *armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
 	ctx, cancel := getContextWithTimeout(asyncContextTimeout)
 	defer cancel()
+	defer scaleSet.removeActiveDeletes(requiredIds.InstanceIDs)
 
 	klog.V(3).Infof("Calling PollUntilDone for DeleteInstances(%v) for %s", requiredIds.InstanceIDs, scaleSet.Name)
 	_, err := poller.PollUntilDone(ctx, nil)
@@ -587,6 +594,7 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(poller *runtime.Poller[armcompu
 		return
 	}
 	if !scaleSet.manager.config.StrictCacheUpdates {
+		scaleSet.invalidateLastSizeRefreshWithLock()
 		scaleSet.invalidateInstanceCache()
 	}
 	klog.Errorf("PollUntilDone for DeleteInstances(%v) for %s failed with error: %v", requiredIds.InstanceIDs, scaleSet.Name, err)
@@ -929,6 +937,14 @@ func (scaleSet *ScaleSet) verifyNodeGroup(instance *azureRef, commonNgID string)
 			instance.Name, commonNgID)
 	}
 	return nil
+}
+
+func (scaleSet *ScaleSet) removeActiveDeletes(instanceIDs []*string) {
+	scaleSet.activeDeletesMutex.Lock()
+	for _, instanceID := range instanceIDs {
+		delete(scaleSet.activeDeletes, *instanceID)
+	}
+	scaleSet.activeDeletesMutex.Unlock()
 }
 
 // GetVMSSFailedError is used to differentiate between
