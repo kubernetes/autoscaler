@@ -10,6 +10,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
@@ -141,7 +142,8 @@ type mockManager struct {
 	invalidateAndRefreshCacheCalled bool
 
 	// used for GetNodePoolForInstance
-	nodePool NodePool
+	nodePool     NodePool
+	templateNode *apiv1.Node
 	NodePoolManager
 	err        error
 	timeOutErr error
@@ -167,6 +169,11 @@ func (m *mockManager) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance, e
 	return m.nodes, nil
 }
 
+func (m *mockManager) GetNodePoolNodePrivateIP(np NodePool) (string, error) {
+	m.called = append(m.called, "get-node-pool-node-private-ip")
+	return "10.0.0.10", m.err
+}
+
 func (m *mockManager) GetExistingNodePoolSizeViaCompute(np NodePool) (int, error) {
 	m.called = append(m.called, "get-existing-node-pool-size-via-compute")
 	return m.existingNodePoolSizeViaCompute, nil
@@ -179,6 +186,9 @@ func (m *mockManager) GetNodePoolForInstance(instance ocicommon.OciRef) (NodePoo
 
 func (m *mockManager) GetNodePoolTemplateNode(np NodePool) (*apiv1.Node, error) {
 	m.called = append(m.called, "get-node-pool-template-node")
+	if m.templateNode != nil {
+		return m.templateNode.DeepCopy(), m.err
+	}
 	panic("implement me")
 }
 
@@ -217,4 +227,134 @@ func (m *mockManager) InvalidateAndRefreshCache() error {
 func (m *mockManager) TaintToPreventFurtherSchedulingOnRestart(nodes []*apiv1.Node, client kubernetes.Interface) error {
 	m.called = append(m.called, "taint-to-prevent-further-scheduling-on-restart")
 	return nil
+}
+
+func TestSetEphemeralStorageFromRegisteredNodeCopiesResources(t *testing.T) {
+	ctx := context.Background()
+	registeredNode := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "registered-node",
+			Labels: map[string]string{
+				"internal_addr": "10.0.0.10",
+			},
+			Annotations: map[string]string{
+				"oci.oraclecloud.com/node-pool-id": "pool-1",
+			},
+		},
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: resource.MustParse("30Gi"),
+			},
+			Allocatable: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: resource.MustParse("25Gi"),
+			},
+		},
+	}
+	client := fake.NewSimpleClientset(registeredNode)
+	np := &nodePool{
+		id:         "pool-1",
+		manager:    &mockManager{},
+		kubeClient: client,
+	}
+	template := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: resource.MustParse("10Gi"),
+			},
+			Allocatable: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: resource.MustParse("8Gi"),
+			},
+		},
+	}
+
+	if err := np.setEphemeralStorageFromRegisteredNode(ctx, template); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if got := template.Status.Capacity[apiv1.ResourceEphemeralStorage]; got.Cmp(resource.MustParse("30Gi")) != 0 {
+		t.Errorf("capacity ephemeral-storage = %v, want 30Gi", got.String())
+	}
+	if got := template.Status.Allocatable[apiv1.ResourceEphemeralStorage]; got.Cmp(resource.MustParse("25Gi")) != 0 {
+		t.Errorf("allocatable ephemeral-storage = %v, want 25Gi", got.String())
+	}
+}
+
+func TestSetEphemeralStorageFromRegisteredNodeWrongPoolPreservesResources(t *testing.T) {
+	ctx := context.Background()
+	registeredNode := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "registered-node",
+			Labels: map[string]string{
+				"internal_addr": "10.0.0.10",
+			},
+			Annotations: map[string]string{
+				"oci.oraclecloud.com/node-pool-id": "different-pool",
+			},
+		},
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: resource.MustParse("30Gi"),
+			},
+			Allocatable: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: resource.MustParse("25Gi"),
+			},
+		},
+	}
+	client := fake.NewSimpleClientset(registeredNode)
+	np := &nodePool{
+		id:         "pool-1",
+		manager:    &mockManager{},
+		kubeClient: client,
+	}
+	template := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: resource.MustParse("10Gi"),
+			},
+			Allocatable: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: resource.MustParse("8Gi"),
+			},
+		},
+	}
+
+	if err := np.setEphemeralStorageFromRegisteredNode(ctx, template); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if got := template.Status.Capacity[apiv1.ResourceEphemeralStorage]; got.Cmp(resource.MustParse("10Gi")) != 0 {
+		t.Errorf("capacity ephemeral-storage = %v, want unchanged 10Gi", got.String())
+	}
+	if got := template.Status.Allocatable[apiv1.ResourceEphemeralStorage]; got.Cmp(resource.MustParse("8Gi")) != 0 {
+		t.Errorf("allocatable ephemeral-storage = %v, want unchanged 8Gi", got.String())
+	}
+}
+
+func TestSetEphemeralStorageFromRegisteredNodeLookupErrorPreservesResources(t *testing.T) {
+	ctx := context.Background()
+	np := &nodePool{
+		id:         "pool-1",
+		manager:    &mockManager{err: apierrors.NewBadRequest("test lookup failure")},
+		kubeClient: fake.NewSimpleClientset(),
+	}
+	template := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: resource.MustParse("10Gi"),
+			},
+			Allocatable: apiv1.ResourceList{
+				apiv1.ResourceEphemeralStorage: resource.MustParse("8Gi"),
+			},
+		},
+	}
+
+	if err := np.setEphemeralStorageFromRegisteredNode(ctx, template); err == nil {
+		t.Fatal("expected private IP lookup error")
+	}
+
+	if got := template.Status.Capacity[apiv1.ResourceEphemeralStorage]; got.Cmp(resource.MustParse("10Gi")) != 0 {
+		t.Errorf("capacity ephemeral-storage = %v, want unchanged 10Gi", got.String())
+	}
+	if got := template.Status.Allocatable[apiv1.ResourceEphemeralStorage]; got.Cmp(resource.MustParse("8Gi")) != 0 {
+		t.Errorf("allocatable ephemeral-storage = %v, want unchanged 8Gi", got.String())
+	}
 }
