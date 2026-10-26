@@ -280,7 +280,7 @@ func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]h
 			break
 		}
 
-		klog.v(4).Infof("list scaling instances. group: %s, page: %d, instances in current page: %d, total: %d", groupID, page, len(currentPage), ptrToInt32(response.TotalNumber))
+		klog.V(4).Infof("list scaling instances. group: %s, page: %d, instances in current page: %d, total: %d", groupID, page, len(currentPage), ptrToInt32(response.TotalNumber))
 
 		newInPage := 0
 		for _, inst := range currentPage {
@@ -366,11 +366,7 @@ func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) 
 		return fmt.Errorf("delta must be positive, got %d", delta)
 	}
 
-	lock := getGroupLock(groupID)
-	lock.Lock()
-	defer lock.Unlock()
-
-	currentDesired, err := csm.GetDesireInstanceNumber(groupID)
+	currentDesired, err := csm.GetScalingGroupDesired(groupID)
 	if err != nil {
 		return fmt.Errorf("failed to get current desired instance number for group %s: %v", groupID, err)
 	}
@@ -385,7 +381,7 @@ func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) 
 	opts := &huaweicloudsdkasmodel.UpdateScalingGroupRequest{
 		ScalingGroupId: groupID,
 		Body: &huaweicloudsdkasmodel.UpdateScalingGroupOption{
-			DesiredInstanceNumber: &newDesired,
+			DesireInstanceNumber: &newDesired,
 		},
 	}
 	if _, err := asClient.UpdateScalingGroup(opts); err != nil {
@@ -542,10 +538,10 @@ func (csm *cloudServiceManager) GetScalingGroupDesired(groupID string) (int, err
 	if err != nil {
 		return 0, err
 	}
-	if sg.DesiredInstanceNumber == nil {
+	if sg.DesireInstanceNumber == nil {
 		return 0, fmt.Errorf("desired instance number is nil for group: %s", groupID)
 	}
-	return int(*sg.DesiredInstanceNumber), nil
+	return int(*sg.DesireInstanceNumber), nil
 }
 
 func (csm *cloudServiceManager) listScalingTagsByID(groupID string) (map[string]string, error) {
