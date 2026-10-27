@@ -135,5 +135,3 @@ updates:
     - "ok-to-test"
     - "area/cluster-autoscaler"
     - "area/dependency"
-  cooldown:
-    default-days: 7
