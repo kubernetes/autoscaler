@@ -14,8 +14,6 @@ github.com/Microsoft/go-winio v0.6.4 h1:kJF2pamtYCWXf0xAT8sAkwKC0pMl2HYBrRPHAqyU
 github.com/Microsoft/go-winio v0.6.4/go.mod h1:1xl5JXG4ze/m74GH6Dc4Mwxfc3VL5siRVQjIAlHH07U=
 github.com/Microsoft/hnslib v0.1.3 h1:OCD8uA1IIqaaOV00qwbL8GwHEVCk8UPS8tiUb6pJzTQ=
 github.com/Microsoft/hnslib v0.1.3/go.mod h1:5vTyBey4N/VI2ZTNh2gdWhkPMefSbCFYjpvVwye+qtI=
-github.com/NYTimes/gziphandler v1.1.1 h1:ZUDjpQae29j0ryrS0u/B8HZfJBtBQHjqw2rQ2cqUQ3I=
-github.com/NYTimes/gziphandler v1.1.1/go.mod h1:n/CVRwUEOgIxrgPvAQhUUr9oeUtvrhMomdKFjzJNB0c=
 github.com/antlr4-go/antlr/v4 v4.13.1 h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
 github.com/antlr4-go/antlr/v4 v4.13.1/go.mod h1:GKmUxMtwp6ZgGwZSva4eWPC5mS6vUAmOABFgjdkM7Nw=
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=
@@ -429,8 +427,8 @@ k8s.io/kube-aggregator v0.38.0-alpha.2 h1:1HURRdVJpDRcum0HhXznrJfn88DHesetZGNBkC
 k8s.io/kube-aggregator v0.38.0-alpha.2/go.mod h1:XW9Zfv2H5QZJEzRsRZ0UoU0qtlc3QOZdI/iDdkBPldk=
 k8s.io/kube-controller-manager v0.38.0-alpha.2 h1:q+UCcJQ2toFG6n0efGPQS2NTzn3zPmKE58ZDOmVgy1A=
 k8s.io/kube-controller-manager v0.38.0-alpha.2/go.mod h1:VPDuM6lne7KzLU98oc0S7J06wYkRZ4Qd4BKBCUogogc=
-k8s.io/kube-openapi v0.0.0-20261001230523-97fa35140926 h1:Fe0G8t8FaMDn2lpat0IHu3X9lHrVyGzDxhhCwKXKp28=
-k8s.io/kube-openapi v0.0.0-20261001230523-97fa35140926/go.mod h1:3e2VxsK2svhjvkNik92kYU1a5kgau5tZeAuEWwoN4q0=
+k8s.io/kube-openapi v0.0.0-20261014044854-ca3452a79603 h1:9zl8YVFBvuURO1ZrSa1SFWyfbnzyll2ivV163KCkRs0=
+k8s.io/kube-openapi v0.0.0-20261014044854-ca3452a79603/go.mod h1:ijAJHxCK/9OftZdcKwI5BHyIeRUeoKe1ldIyM4JHMts=
 k8s.io/kube-proxy v0.38.0-alpha.2 h1:TeTE/ri4/blOWym6Gy3CQ3DdyDZZuDlsMZDcLL8pFv8=
 k8s.io/kube-proxy v0.38.0-alpha.2/go.mod h1:U7nbUsWgoJKFGDXehKQJAfJJyZrlY00xVv+xnEodw2U=
 k8s.io/kube-scheduler v0.38.0-alpha.2 h1:NJUTMiDYulEtaXi5ve8qTV2HnLhUWgywegAetkSgBmM=

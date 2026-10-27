@@ -40,7 +40,6 @@ require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/Microsoft/go-winio v0.6.4 // indirect
 	github.com/Microsoft/hnslib v0.1.3 // indirect
-	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
@@ -183,7 +182,7 @@ require (
 	k8s.io/kms v0.38.0-alpha.2 // indirect
 	k8s.io/kube-aggregator v0.38.0-alpha.2 // indirect
 	k8s.io/kube-controller-manager v0.38.0-alpha.2 // indirect
-	k8s.io/kube-openapi v0.0.0-20261001230523-97fa35140926 // indirect
+	k8s.io/kube-openapi v0.0.0-20261014044854-ca3452a79603 // indirect
 	k8s.io/kube-proxy v0.38.0-alpha.2 // indirect
 	k8s.io/kube-scheduler v0.38.0-alpha.2 // indirect
 	k8s.io/kubectl v0.38.0-alpha.2 // indirect
