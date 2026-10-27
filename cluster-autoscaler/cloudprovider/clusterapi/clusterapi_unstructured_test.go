@@ -1061,6 +1061,42 @@ func TestReadInfrastructureReferenceResourceCachesDiscovery(t *testing.T) {
 	if discoveryCalls != 2 {
 		t.Errorf("expected exactly one discovery round (2 actions) across wrapper rebuilds, got %d actions", discoveryCalls)
 	}
+
+	// Once the TTL expires, the next resolution must re-query discovery and
+	// refresh the cache entry.
+	controller.machineController.kindVersionCache.Range(func(key, value any) bool {
+		entry := value.(kindVersionCacheEntry)
+		entry.cachedAt = time.Now().Add(-2 * kindVersionCacheTTL)
+		controller.machineController.kindVersionCache.Store(key, entry)
+		return true
+	})
+
+	sr, err := newUnstructuredScalableResource(controller.machineController, mdTestConfig.machineDeployment)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := sr.readInfrastructureReferenceResource(); err != nil {
+		t.Fatal(err)
+	}
+
+	discoveryCalls = len(controller.discoveryClient.Actions()) - discoveryCallsBefore
+	if discoveryCalls != 4 {
+		t.Errorf("expected rediscovery after TTL expiration (4 actions total), got %d actions", discoveryCalls)
+	}
+
+	// Confirm the refreshed cache entry serves subsequent lookups within TTL.
+	sr, err = newUnstructuredScalableResource(controller.machineController, mdTestConfig.machineDeployment)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := sr.readInfrastructureReferenceResource(); err != nil {
+		t.Fatal(err)
+	}
+
+	discoveryCalls = len(controller.discoveryClient.Actions()) - discoveryCallsBefore
+	if discoveryCalls != 4 {
+		t.Errorf("expected refreshed cache entry to be reused within TTL (4 actions total), got %d actions", discoveryCalls)
+	}
 }
 
 // TestReadInfrastructureReferenceResourceScalesWithoutExtraDiscovery reproduces
