@@ -7,7 +7,7 @@ nameOverride:
 # Override the full name of the chart.
 fullnameOverride:
 
-# Override the namespace
+# -- Override the namespace
 namespaceOverride: ""
 
 # Labels to add to all chart resources.
