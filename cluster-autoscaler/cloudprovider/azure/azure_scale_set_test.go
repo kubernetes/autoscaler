@@ -46,6 +46,7 @@ func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
 		minSize:           1,
 		maxSize:           5,
 		enableForceDelete: manager.config.EnableForceDelete,
+		activeDeletes:     make(map[string]struct{}),
 	}
 }
 
