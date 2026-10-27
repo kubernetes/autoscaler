@@ -451,8 +451,8 @@ k8s.io/sample-apiserver v0.38.0-alpha.2 h1:PWO8oL5crcqXFycctO6dW2LqIn0GvjhJakxcm
 k8s.io/sample-apiserver v0.38.0-alpha.2/go.mod h1:P6AM3iyFg2IacERtxknlUQu/59XHXqgRLqEcLR0YSSs=
 k8s.io/streaming v0.38.0-alpha.2 h1:SF+LmDct/imiIrMDvpVyhvxTUkngNMWKVGjRFH6x8oM=
 k8s.io/streaming v0.38.0-alpha.2/go.mod h1:/BdUXd+cqjN5ou4J3e+8iGombgzDuZFTJNxhQ2g4zn0=
-k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3 h1:jVkFFVfXdXP74B/zbO3hM3hpSFD0xvhQ5U686DPurkE=
-k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3/go.mod h1:M2s5JB1lIYP3jzZdorPLHXIPJzt9vv2muW5a6L9DtNM=
+k8s.io/utils v0.0.0-20261023123148-ca04ba58ecab h1:pjQrNLaF//ytZtWwCAHtW+pqwSKjtWDqzA8+TCX37RI=
+k8s.io/utils v0.0.0-20261023123148-ca04ba58ecab/go.mod h1:DdQ0BJxlQtuMlKDqdg7X5IMMQCXIk2b3d1/4M9OhUYo=
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.37.0 h1:NWrO5vJ1Dw7gy2JS/iY98JEEvtmQ3lXqNwwCzzOC1gk=
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.37.0/go.mod h1:x/fWe7nc0XDKUqK5XZ5nqmWKdQxvouWB7OmEAsxltiI=
 sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 h1:IpInykpT6ceI+QxKBbEflcR5EXP7sU1kvOlxwZh5txg=

@@ -21,7 +21,7 @@ require (
 	k8s.io/ktesting v0.38.0-alpha.2
 	k8s.io/kubernetes v1.38.0-alpha.2
 	k8s.io/pod-security-admission v0.38.0-alpha.2
-	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
+	k8s.io/utils v0.0.0-20261023123148-ca04ba58ecab
 )
 
 exclude (
