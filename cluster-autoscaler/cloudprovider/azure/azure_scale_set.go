@@ -206,7 +206,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
 
-	set, err := scaleSet.getVMSSFromCache()
+	fresh, err := scaleSet.isSizeCacheFresh()
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
 		return -1, newGetVMSSFailedError(err, true)
@@ -221,20 +221,15 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	// 	return scaleSet.curSize, nil
 	// }
 
-	effectiveSizeRefreshPeriod := scaleSet.sizeRefreshPeriod
-
-	// If the scale set is Spot, we want to have a more fresh view of the Sku.Capacity field.
-	// This is because evictions can happen
-	// at any given point in time, even before VMs are materialized as
-	// nodes. We should be able to react to those and have the autoscaler
-	// readjust the goal again to force restoration.
-	if isSpot(set) {
-		effectiveSizeRefreshPeriod = scaleSet.getVmssSizeRefreshPeriod
-	}
-
-	if scaleSet.lastSizeRefresh.Add(effectiveSizeRefreshPeriod).After(time.Now()) {
+	if fresh {
 		klog.V(3).Infof("VMSS: %s, returning in-memory size: %d", scaleSet.Name, scaleSet.curSize)
 		return scaleSet.curSize, nil
+	}
+
+	set, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
+		return -1, newGetVMSSFailedError(err, true)
 	}
 
 	// If the scale set is on Spot, make a GET VMSS call to fetch more updated fresh info
@@ -264,6 +259,21 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	scaleSet.curSize = curSize
 	scaleSet.lastSizeRefresh = time.Now()
 	return scaleSet.curSize, nil
+}
+
+// isSizeCacheFresh reports whether the cached size is fresh. Caller must hold sizeMutex.
+func (scaleSet *ScaleSet) isSizeCacheFresh() (bool, error) {
+	set, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		return false, err
+	}
+
+	refreshPeriod := scaleSet.sizeRefreshPeriod
+	// Spot evictions require a shorter capacity refresh period.
+	if isSpot(set) {
+		refreshPeriod = scaleSet.getVmssSizeRefreshPeriod
+	}
+	return scaleSet.lastSizeRefresh.Add(refreshPeriod).After(time.Now()), nil
 }
 
 // getScaleSetSize gets Scale Set size.
@@ -501,9 +511,11 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 	}
 
 	instancesToDelete := []*azureRef{}
+	instanceIDPtrs := []*string{}
 	for _, instance := range instances {
 		err = scaleSet.verifyNodeGroup(instance, commonAsg.Id())
 		if err != nil {
+			scaleSet.removeActiveDeletes(instanceIDPtrs)
 			return err
 		}
 
@@ -512,30 +524,29 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 			klog.V(3).Infof("Skipping deleting instance %s as its current state is deleting", instance.Name)
 			continue
 		}
-		instancesToDelete = append(instancesToDelete, instance)
-	}
-
-	instanceIDs := []string{}
-	for _, instance := range instancesToDelete {
 		instanceID, err := getLastSegment(instance.Name)
 		if err != nil {
 			klog.Errorf("getLastSegment failed with error: %v", err)
+			scaleSet.removeActiveDeletes(instanceIDPtrs)
 			return err
 		}
 
-		instanceIDs = append(instanceIDs, instanceID)
+		scaleSet.activeDeletesMutex.Lock()
+		_, active := scaleSet.activeDeletes[instanceID]
+		if !active {
+			instanceIDPtrs = append(instanceIDPtrs, &instanceID)
+			instancesToDelete = append(instancesToDelete, instance)
+			scaleSet.activeDeletes[instanceID] = struct{}{}
+		} else {
+			klog.V(3).Infof("Instance %s is already being actively deleted, skipping", instanceID)
+		}
+		scaleSet.activeDeletesMutex.Unlock()
 	}
 
 	// nothing to delete
-	if len(instanceIDs) == 0 {
+	if len(instanceIDPtrs) == 0 {
 		klog.V(3).Infof("No new instances eligible for deletion, skipping")
 		return nil
-	}
-
-	// Convert []string to []*string
-	instanceIDPtrs := make([]*string, len(instanceIDs))
-	for i := range instanceIDs {
-		instanceIDPtrs[i] = &instanceIDs[i]
 	}
 
 	requiredIds := &armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{
@@ -547,8 +558,8 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 
 	poller, err := scaleSet.deleteInstances(ctx, requiredIds, commonAsg.Id())
 	if err != nil {
-		scaleSet.removeActiveDeletes(instanceIDPtrs)
 		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v for %s failed: %+v", requiredIds.InstanceIDs, scaleSet.Name, err)
+		scaleSet.removeActiveDeletes(instanceIDPtrs)
 		return err
 	}
 
@@ -559,8 +570,13 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 
 		if !hasUnregisteredNodes {
 			scaleSet.sizeMutex.Lock()
-			scaleSet.curSize -= int64(len(instanceIDs))
-			scaleSet.lastSizeRefresh = time.Now()
+			fresh, err := scaleSet.isSizeCacheFresh()
+			if err != nil {
+				klog.Errorf("Failed to check size cache freshness for %s: %v", scaleSet.Name, err)
+			} else if fresh {
+				scaleSet.curSize -= int64(len(instanceIDPtrs))
+				scaleSet.lastSizeRefresh = time.Now()
+			}
 			scaleSet.sizeMutex.Unlock()
 		}
 
@@ -572,6 +588,8 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 
 	if poller != nil {
 		go scaleSet.waitForDeleteInstances(poller, requiredIds)
+	} else {
+		scaleSet.removeActiveDeletes(instanceIDPtrs)
 	}
 	return nil
 }
