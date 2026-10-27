@@ -28,7 +28,11 @@ webhooks:
   failurePolicy: {{ .Values.admissionController.mutatingWebhookConfiguration.failurePolicy }}
   matchPolicy: Equivalent
   name: vpa.k8s.io
-  namespaceSelector: {{ .Values.admissionController.mutatingWebhookConfiguration.namespaceSelector | toYaml | nindent 4 }}
+  {{- $namespaceSelector := .Values.admissionController.mutatingWebhookConfiguration.namespaceSelector }}
+  {{- if and .Values.vpaObjectNamespace (not $namespaceSelector) }}
+  {{- $namespaceSelector = dict "matchLabels" (dict "kubernetes.io/metadata.name" .Values.vpaObjectNamespace) }}
+  {{- end }}
+  namespaceSelector: {{ $namespaceSelector | toYaml | nindent 4 }}
   objectSelector: {{ .Values.admissionController.mutatingWebhookConfiguration.objectSelector | toYaml | nindent 4 }}
   reinvocationPolicy: Never
   rules:

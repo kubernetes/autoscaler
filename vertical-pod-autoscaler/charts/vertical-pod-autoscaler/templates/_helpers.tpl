@@ -192,3 +192,11 @@ The context must be the root context ($) so that tpl can resolve .Release, .Valu
 {{- tpl (.value | toYaml) .context -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+Kind of the bindings for the component ClusterRoles. With vpaObjectNamespace set, the
+ClusterRoles are bound with RoleBindings in that namespace, so they only grant access there.
+*/}}
+{{- define "vertical-pod-autoscaler.rbac.bindingKind" -}}
+{{- if .Values.vpaObjectNamespace -}}RoleBinding{{- else -}}ClusterRoleBinding{{- end -}}
+{{- end -}}

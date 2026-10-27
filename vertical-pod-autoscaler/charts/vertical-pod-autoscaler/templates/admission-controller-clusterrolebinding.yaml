@@ -1,7 +1,10 @@
 {{- if and (.Values.admissionController.enabled) .Values.rbac.create -}}
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: {{ include "vertical-pod-autoscaler.rbac.bindingKind" . }}
 metadata:
+  {{- with .Values.vpaObjectNamespace }}
+  namespace: {{ . }}
+  {{- end }}
   name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}

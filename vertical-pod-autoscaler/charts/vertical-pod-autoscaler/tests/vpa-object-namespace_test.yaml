@@ -1,0 +1,108 @@
+suite: vpaObjectNamespace restricts the components to one namespace
+templates:
+  - admission-controller-clusterrolebinding.yaml
+  - admission-controller-deployment.yaml
+  - admission-controller-validations.yaml
+  - admission-controller-webhook.yaml
+  - recommender-clusterrolebindings.yaml
+  - recommender-deployment.yaml
+  - updater-clusterrolebinding.yaml
+  - updater-deployment.yaml
+tests:
+  - it: uses ClusterRoleBindings and no namespace flag by default
+    asserts:
+      - isKind:
+          of: ClusterRoleBinding
+        template: recommender-clusterrolebindings.yaml
+      - isKind:
+          of: ClusterRoleBinding
+        template: updater-clusterrolebinding.yaml
+      - isKind:
+          of: ClusterRoleBinding
+        template: admission-controller-clusterrolebinding.yaml
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: --vpa-object-namespace=team-a
+        template: recommender-deployment.yaml
+
+  - it: binds the ClusterRoles with RoleBindings in the VPA object namespace
+    set:
+      vpaObjectNamespace: team-a
+    asserts:
+      - isKind:
+          of: RoleBinding
+        template: recommender-clusterrolebindings.yaml
+      - equal:
+          path: metadata.namespace
+          value: team-a
+        template: recommender-clusterrolebindings.yaml
+      - equal:
+          path: roleRef.kind
+          value: ClusterRole
+        template: recommender-clusterrolebindings.yaml
+      - isKind:
+          of: RoleBinding
+        template: updater-clusterrolebinding.yaml
+      - equal:
+          path: metadata.namespace
+          value: team-a
+        template: updater-clusterrolebinding.yaml
+      - isKind:
+          of: RoleBinding
+        template: admission-controller-clusterrolebinding.yaml
+      - equal:
+          path: metadata.namespace
+          value: team-a
+        template: admission-controller-clusterrolebinding.yaml
+
+  - it: passes --vpa-object-namespace to every component
+    set:
+      vpaObjectNamespace: team-a
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --vpa-object-namespace=team-a
+        template: recommender-deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --vpa-object-namespace=team-a
+        template: updater-deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --vpa-object-namespace=team-a
+        template: admission-controller-deployment.yaml
+
+  - it: limits the webhook to the VPA object namespace
+    set:
+      vpaObjectNamespace: team-a
+    asserts:
+      - equal:
+          path: webhooks[0].namespaceSelector
+          value:
+            matchLabels:
+              kubernetes.io/metadata.name: team-a
+        template: admission-controller-webhook.yaml
+
+  - it: keeps a configured webhook namespaceSelector
+    set:
+      vpaObjectNamespace: team-a
+      admissionController.mutatingWebhookConfiguration.namespaceSelector:
+        matchLabels:
+          team: a
+    asserts:
+      - equal:
+          path: webhooks[0].namespaceSelector
+          value:
+            matchLabels:
+              team: a
+        template: admission-controller-webhook.yaml
+
+  - it: rejects registerWebhook, which needs cluster-wide access
+    set:
+      vpaObjectNamespace: team-a
+      admissionController.registerWebhook: true
+      admissionController.certGen.enabled: false
+    asserts:
+      - failedTemplate:
+          errorMessage: "vpaObjectNamespace cannot be used with admissionController.registerWebhook: true. Registering the webhook needs cluster-wide access to mutatingwebhookconfigurations; use a Helm-managed webhook (certGen or certManager) instead."
+        template: admission-controller-validations.yaml

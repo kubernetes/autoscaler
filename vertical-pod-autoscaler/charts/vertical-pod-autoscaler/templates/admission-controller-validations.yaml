@@ -1,3 +1,6 @@
+{{- if and .Values.vpaObjectNamespace .Values.admissionController.enabled .Values.admissionController.registerWebhook }}
+{{- fail "vpaObjectNamespace cannot be used with admissionController.registerWebhook: true. Registering the webhook needs cluster-wide access to mutatingwebhookconfigurations; use a Helm-managed webhook (certGen or certManager) instead." }}
+{{- end }}
 {{- if .Values.admissionController.enabled }}
 {{- if and .Values.admissionController.registerWebhook .Values.admissionController.certGen.enabled }}
 {{- fail "admissionController.registerWebhook and admissionController.certGen.enabled cannot both be true. Choose either application-managed webhook (registerWebhook: true) or Helm-managed webhook with certGen (certGen.enabled: true)." }}

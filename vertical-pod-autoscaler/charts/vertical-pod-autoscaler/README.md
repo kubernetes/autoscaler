@@ -350,3 +350,4 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | updater.serviceAccount.labels | object | `{}` |  |
 | updater.tolerations | list | `[]` |  |
 | updater.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Updater, used to spread replicas across failure domains such as zones. |
+| vpaObjectNamespace | string | `""` | Restrict all VPA components to VerticalPodAutoscaler objects and their workloads in this namespace. When set, every component gets `--vpa-object-namespace`, the component ClusterRoles are bound with RoleBindings in this namespace instead of ClusterRoleBindings, and the webhook only receives pods from this namespace unless `admissionController.mutatingWebhookConfiguration.namespaceSelector` is set. Requires `admissionController.registerWebhook: false`. |

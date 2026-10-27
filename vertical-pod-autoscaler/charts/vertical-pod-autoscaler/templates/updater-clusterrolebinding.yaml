@@ -1,8 +1,11 @@
 {{- if and (.Values.updater.enabled) .Values.rbac.create -}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: {{ include "vertical-pod-autoscaler.rbac.bindingKind" . }}
 metadata:
+  {{- with .Values.vpaObjectNamespace }}
+  namespace: {{ . }}
+  {{- end }}
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-in-place-binding
   labels:
     {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
@@ -16,8 +19,11 @@ subjects:
     namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: {{ include "vertical-pod-autoscaler.rbac.bindingKind" . }}
 metadata:
+  {{- with .Values.vpaObjectNamespace }}
+  namespace: {{ . }}
+  {{- end }}
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-actor-binding
   labels:
     {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
@@ -31,8 +37,11 @@ subjects:
     namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: {{ include "vertical-pod-autoscaler.rbac.bindingKind" . }}
 metadata:
+  {{- with .Values.vpaObjectNamespace }}
+  namespace: {{ . }}
+  {{- end }}
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-target-reader-binding
   labels:
     {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
@@ -46,8 +55,11 @@ subjects:
     namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: {{ include "vertical-pod-autoscaler.rbac.bindingKind" . }}
 metadata:
+  {{- with .Values.vpaObjectNamespace }}
+  namespace: {{ . }}
+  {{- end }}
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-evictioner-binding
   labels:
     {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
@@ -61,8 +73,11 @@ subjects:
     namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: {{ include "vertical-pod-autoscaler.rbac.bindingKind" . }}
 metadata:
+  {{- with .Values.vpaObjectNamespace }}
+  namespace: {{ . }}
+  {{- end }}
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-status-reader-binding
   labels:
     {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
