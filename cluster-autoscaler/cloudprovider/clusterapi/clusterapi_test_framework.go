@@ -641,6 +641,31 @@ type testMachineController struct {
 func NewTestMachineController(t testing.TB) *testMachineController {
 	t.Helper()
 
+	clients, dynamicClientset := newTestProviderClients(t)
+
+	stopCh := make(chan struct{})
+	controller, err := newMachineController(clients.management, clients.workload, clients.discovery, clients.scale, cloudprovider.NodeGroupDiscoveryOptions{}, stopCh)
+	if err != nil {
+		t.Fatal("failed to create test controller")
+	}
+
+	if err := controller.run(); err != nil {
+		t.Fatalf("failed to run controller: %v", err)
+	}
+
+	return &testMachineController{
+		machineController: controller,
+		stopCh:            stopCh,
+		testingTb:         t,
+		dynamicClientset:  dynamicClientset,
+	}
+}
+
+// newTestProviderClients returns fake management, workload, discovery and scale clients
+// along with the underlying fake dynamic client.
+func newTestProviderClients(t testing.TB) (providerClients, *fakedynamic.FakeDynamicClient) {
+	t.Helper()
+
 	kubeclientSet := fakekube.NewSimpleClientset()
 	dynamicClientset := fakedynamic.NewSimpleDynamicClientWithCustomListKinds(
 		runtime.NewScheme(),
@@ -830,22 +855,12 @@ func NewTestMachineController(t testing.TB) *testMachineController {
 	}
 	scaleClient.AddReactor("*", "*", scaleReactor)
 
-	stopCh := make(chan struct{})
-	controller, err := newMachineController(dynamicClientset, kubeclientSet, discoveryClient, scaleClient, cloudprovider.NodeGroupDiscoveryOptions{}, stopCh)
-	if err != nil {
-		t.Fatal("failed to create test controller")
-	}
-
-	if err := controller.run(); err != nil {
-		t.Fatalf("failed to run controller: %v", err)
-	}
-
-	return &testMachineController{
-		machineController: controller,
-		stopCh:            stopCh,
-		testingTb:         t,
-		dynamicClientset:  dynamicClientset,
-	}
+	return providerClients{
+		management: dynamicClientset,
+		workload:   kubeclientSet,
+		discovery:  discoveryClient,
+		scale:      scaleClient,
+	}, dynamicClientset
 }
 
 func (c *testMachineController) Stop() {
