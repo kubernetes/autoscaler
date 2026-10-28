@@ -448,7 +448,6 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureEnabled)
 			vpa := model.NewVpa(model.VpaID{Namespace: "default", VpaName: "vpa"}, labels.Everything(), created)
 			if tc.seedStale {
-				// A condition left over from an earlier loop must be replaced or removed.
 				vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, true, "DelayWindowActive", "stale")
 			}
 
