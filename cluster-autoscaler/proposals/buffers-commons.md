@@ -7,7 +7,7 @@
 This proposal adds two conditions to `CapacityBuffer`:
 
 *   `Ready` is the condition that cluster administrators and tools monitor ([#10080](https://github.com/kubernetes/autoscaler/issues/10080)). It is True when the buffer's configuration is valid and a node autoscaler can act on it. It replaces `ReadyForProvisioning`, which this proposal removes when the API graduates to v1. `Ready` does not depend on capacity, so it doesn't flap as the buffer's capacity is used and refilled.
-*   `Provisioned` is True when the buffer is `Ready` and all of its capacity exists on nodes that are ready to run pods ([#10127](https://github.com/kubernetes/autoscaler/issues/10127)). It is expected to change as the buffer's capacity is used and refilled.
+*   `Provisioned` is True when the buffer is `Ready` and all of the capacity its spec asks for exists on nodes that are ready to run pods ([#10127](https://github.com/kubernetes/autoscaler/issues/10127)). It is expected to change as the buffer's capacity is used and refilled. It replaces `Provisioning`, which this proposal also removes when the API graduates to v1.
 
 While making that change, this proposal also adds a shared `constants.go` file next to the CRD. It defines the condition types, the condition reasons that all implementations share, and the default provisioning strategy, so every node autoscaler implementation can import the same definitions.
 
@@ -31,12 +31,14 @@ The `CapacityBuffer` API is designed to be agnostic of both the cloud provider a
 *   Define `Ready` and `Provisioned` conditions with the same meaning across implementations
 *   Keep `Ready` stable by keeping capacity out of it
 *   Replace `ReadyForProvisioning` with `Ready`, and remove `ReadyForProvisioning` when the API graduates to v1
+*   Replace `Provisioning` with `Provisioned`, and remove `Provisioning` when the API graduates to v1
 *   Establish a common place for shared constants of the `CapacityBuffer` API
 
 ## Non-Goals
 
 *   Create a new shared place for the entire `CapacityBuffer` API
-*   Remove or rename any existing condition types other than `ReadyForProvisioning`
+*   Remove or rename any existing condition types other than `ReadyForProvisioning` and `Provisioning`
+*   Define a shared meaning for `Provisioning`
 *   Replace `status.readyReplicas`
 *   Define how future buffer types, such as ephemeral buffers, affect `Ready`
 *   Standardize condition reasons that are specific to a single implementation
@@ -59,14 +61,14 @@ Future proposals may add other cases that make `Ready` False, such as an `Expire
 
 ## Provisioned Condition
 
-`Provisioned` is set by the node autoscaler, because the node autoscaler is the component that knows whether the buffer's capacity exists.
+`Provisioned` is set by the node autoscaler, because the node autoscaler is the component that knows whether the buffer's capacity exists. The node autoscaler sets it as soon as it starts acting on a buffer, so the presence of `Provisioned` shows that a node autoscaler has picked the buffer up. This makes `Provisioning` redundant, so it is removed at v1 graduation along with `ReadyForProvisioning`. Until then, `Provisioning` is not part of the shared contract.
 
-*   **True:** the buffer is `Ready`, and every replica in `status.replicas` fits on existing nodes that are ready to run pods.
-*   **False:** the buffer is not `Ready`, or some of its replicas don't fit on nodes that are ready to run pods yet.
+*   **True:** the buffer is `Ready`, it is not `LimitedByQuotas`, and every replica in `status.replicas` fits on existing nodes that are ready to run pods.
+*   **False:** the buffer is not `Ready`, it is `LimitedByQuotas`, or some of its replicas don't fit on nodes that are ready to run pods yet.
 
 `Provisioned=True` always implies `Ready=True`. A buffer that isn't `Ready` has no valid configuration to be provisioned against, so `Provisioned` is False.
 
-`Provisioned` is a separate condition from `Ready` because it is expected to change often. `Provisioned` is the condition form of `status.readyReplicas`. Both are measured against `status.replicas`, which is the replica count after quotas are applied. A buffer limited by quotas can be `Provisioned`, because all of its allowed replicas exist. `LimitedByQuotas` reports the shortfall. See [Use `status.readyReplicas` instead of a `Provisioned` condition](#use-statusreadyreplicas-instead-of-a-provisioned-condition).
+`Provisioned` is a separate condition from `Ready` because it is expected to change often. Like `status.readyReplicas`, `Provisioned` is measured against `status.replicas`, which is the replica count after quotas are applied. Unlike `status.readyReplicas`, a buffer limited by quotas is not `Provisioned`, even if all of its allowed replicas exist, because it has less capacity than its spec asks for. A buffer that is empty by its own spec, with `status.replicas` of zero and not `LimitedByQuotas`, is `Provisioned`, because there is no capacity to wait for. See [Use `status.readyReplicas` instead of a `Provisioned` condition](#use-statusreadyreplicas-instead-of-a-provisioned-condition).
 
 ## Shared Constants
 
@@ -74,7 +76,7 @@ A new file `constants.go` is added to each versioned API package, starting with 
 
 Node autoscalers and other implementations or uses of the buffers API will refer to or import these definitions. The existing types are taken from the [Cluster Autoscaler](https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/capacitybuffer/constants.go) and [Karpenter](https://github.com/kubernetes-sigs/karpenter/blob/main/pkg/apis/autoscaling/v1beta1/constants.go) constants.
 
-The list of reasons is intentionally narrow: only the reasons for the new `Provisioned` condition are shared. `Ready`'s reasons describe validation errors, which differ by implementation, so they are not shared. `Provisioning` and its reasons are left out; see [Open Questions](#open-questions). Implementations remain free to use their own reasons for every other case.
+The list of reasons is intentionally narrow: only the reasons for the new `Provisioned` condition are shared. `Ready`'s reasons describe validation errors, which differ by implementation, so they are not shared. `Provisioning` is not part of the shared contract, so its reasons are left out too. Implementations remain free to use their own reasons for every other case.
 
 The proposed file is in the [Appendix](#appendix-proposed-v1beta1constantsgo).
 
@@ -84,23 +86,24 @@ The proposed file is in the [Appendix](#appendix-proposed-v1beta1constantsgo).
 
 The buffer controller sets `Ready` wherever it sets `ReadyForProvisioning` today, with the same status, reason, and message.
 
-Each condition type has exactly one writer. The buffer controller writes `Ready`, `ReadyForProvisioning`, and `LimitedByQuotas`. The node autoscaler writes `Provisioned`. The node autoscaler reads `Ready` but never writes it. `status.conditions` is a map keyed by condition type, so writers that use server-side apply, or that update with resource-version conflict checks, don't overwrite each other's conditions.
+Each condition type has exactly one writer. The buffer controller writes `Ready`, `ReadyForProvisioning`, and `LimitedByQuotas`. The node autoscaler writes `Provisioned`. The node autoscaler reads `Ready` and `LimitedByQuotas` but never writes them. `status.conditions` is a map keyed by condition type, so writers that use server-side apply, or that update with resource-version conflict checks, don't overwrite each other's conditions.
 
 ## Provisioned Condition
 
 | Status | Reason | When |
 |---|---|---|
-| True | `CapacityReady` | `Ready` is True, and every replica in `status.replicas` fits on existing, ready nodes. |
+| True | `CapacityReady` | `Ready` is True, `LimitedByQuotas` is not True, and every replica in `status.replicas` fits on existing, ready nodes. |
 | False | `BufferNotReady` | `Ready` is not True. |
-| False | `CapacityNotReady` | `Ready` is True, and some replicas don't fit on ready nodes yet. |
+| False | `ExceedsResourceQuotas` | `Ready` is True, and `LimitedByQuotas` is True. |
+| False | `CapacityNotReady` | `Ready` is True, `LimitedByQuotas` is not True, and some replicas don't fit on ready nodes yet. |
 
 Implementations that set `status.readyReplicas` must keep it consistent with `Provisioned`: when `Provisioned` is True, `status.readyReplicas` equals `status.replicas`.
 
-## Removing `ReadyForProvisioning` at v1 Graduation
+## Removing `ReadyForProvisioning` and `Provisioning` at v1 Graduation
 
-1.  While the API is v1beta1, the buffer controller sets both `Ready` and `ReadyForProvisioning`, with the same status, reason, and message.
-2.  Node autoscalers and other consumers switch from reading `ReadyForProvisioning` to reading `Ready`.
-3.  `ReadyForProvisioning` is removed when the `CapacityBuffer` API graduates to v1. The v1 API and its `constants.go` don't include it.
+1.  While the API is v1beta1, the buffer controller sets both `Ready` and `ReadyForProvisioning`, with the same status, reason, and message. Node autoscalers may keep setting `Provisioning` alongside `Provisioned`.
+2.  Node autoscalers and other consumers switch from reading `ReadyForProvisioning` to reading `Ready`, and from reading `Provisioning` to reading `Provisioned`.
+3.  `ReadyForProvisioning` and `Provisioning` are removed when the `CapacityBuffer` API graduates to v1. The v1 API and its `constants.go` don't include them.
 
 ## Compatibility with Existing Implementations
 
@@ -112,8 +115,9 @@ What each implementation writes today, compared with what this proposal defines:
 | `ReadyForProvisioning` (removed at v1 graduation) | Set by the buffer controller | Same meaning |
 | `Provisioned=True` / `CapacityReady` | Not set. Closest is `status.readyReplicas` equal to `status.replicas`. | Not set. Closest is `Provisioning=True` / `FitsExistingCapacity`, which also counts nodes that have launched and aren't initialized yet. |
 | `Provisioned=False` / `CapacityNotReady` | Not set. Closest is `status.readyReplicas` lower than `status.replicas`. | Not set. Closest is `Provisioning=False` / `RequiresNewCapacity`. |
+| `Provisioned=False` / `ExceedsResourceQuotas` | Not set. Closest is `LimitedByQuotas=True`. | Not set. `LimitedByQuotas` is never set. |
 | `Provisioned=False` / `BufferNotReady` | Not set. `status.readyReplicas` drops to 0. | Not set. Closest is `Provisioning=False` / `NotReadyForProvisioning`. |
-| `Provisioning` (open question) | The autoscaler is acting on the buffer | The buffer's replicas fit on existing nodes. This meaning moves to `Provisioned`. |
+| `Provisioning` (removed at v1 graduation) | The autoscaler is acting on the buffer | The buffer's replicas fit on existing nodes. This meaning moves to `Provisioned`. |
 | `LimitedByQuotas` | Set by the buffer controller | Defined, never set |
 | `ActiveProvisioningStrategy` | Default; only buffers with this strategy are processed | Defined, unused; all buffers are processed |
 
@@ -121,9 +125,6 @@ Implementations of the `CapacityBuffer` API, such as Cluster Autoscaler and Karp
 
 # Open Questions
 
-*   **Does `Provisioning` need a shared contract?** Its condition type and reasons are left out of `constants.go` until this is decided.
-*   **Should a buffer the node autoscaler can never help be not `Ready`?** For example, a buffer with no compatible node group. Only the node autoscaler knows this, and it doesn't write `Ready`, so this would need a separate condition.
-*   **Is an empty buffer `Provisioned`?** When `status.replicas` is zero, there is no capacity to wait for.
 *   **Should `Provisioned=False` distinguish why capacity isn't ready?** For example: nodes are still starting, new capacity is needed, or capacity can't be obtained. [#10127](https://github.com/kubernetes/autoscaler/issues/10127) mentions stockouts and insufficient capacity.
 
 # Alternatives
@@ -166,7 +167,15 @@ Consumers compare `status.readyReplicas` to `status.replicas` to decide whether 
 
 ### Why not?
 
-`status.readyReplicas` is a count, not a state. `kubectl wait --for=jsonpath` can only compare a field to a fixed value, so it can't wait for `status.readyReplicas` to reach `status.replicas`, while `kubectl wait --for=condition=Provisioned` can. A count also has no reason field, so it can't say why capacity is missing. `Provisioned` complements `status.readyReplicas` rather than replacing it.
+`status.readyReplicas` is a count, not a state. `kubectl wait --for=jsonpath` can only compare a field to a fixed value, so it can't wait for `status.readyReplicas` to reach `status.replicas`, while `kubectl wait --for=condition=Provisioned` waits until `Provisioned` is True. A count also has no reason field, so it can't say why capacity is missing. `Provisioned` complements `status.readyReplicas` rather than replacing it.
+
+## Keep `Provisioning` in v1
+
+`Provisioning` is kept as a condition that each implementation defines for itself.
+
+### Why not?
+
+`Provisioned` already shows that a node autoscaler has picked the buffer up, so `Provisioning` would be redundant. Keeping a condition with no shared meaning, under a name every implementation uses differently, would keep confusing consumers.
 
 ## Document the shared semantics in the original proposal only
 
@@ -196,11 +205,12 @@ const (
 	// ProvisionedCondition.
 	ReadyCondition = "Ready"
 
-	// ProvisionedCondition is set by the node autoscaler.
-	// True: the buffer is Ready, and every replica in status.replicas fits on
-	// existing nodes that are ready to run pods.
-	// False: the buffer is not Ready, or some of its replicas don't fit on nodes
-	// that are ready to run pods yet.
+	// ProvisionedCondition is set by the node autoscaler as soon as it starts
+	// acting on a buffer.
+	// True: the buffer is Ready, it is not LimitedByQuotas, and every replica in
+	// status.replicas fits on existing nodes that are ready to run pods.
+	// False: the buffer is not Ready, it is LimitedByQuotas, or some of its
+	// replicas don't fit on nodes that are ready to run pods yet.
 	ProvisionedCondition = "Provisioned"
 
 	// ReadyForProvisioningCondition has the same meaning as ReadyCondition.
@@ -217,11 +227,16 @@ const (
 	CapacityReadyReason = "CapacityReady"
 
 	// CapacityNotReadyReason is the reason for Provisioned=False when the buffer
-	// is Ready but some of its replicas don't fit on ready nodes yet.
+	// is Ready and not LimitedByQuotas, but some of its replicas don't fit on
+	// ready nodes yet.
 	CapacityNotReadyReason = "CapacityNotReady"
 
 	// BufferNotReadyReason is the reason for Provisioned=False when the buffer is
 	// not Ready.
 	BufferNotReadyReason = "BufferNotReady"
+
+	// ExceedsResourceQuotasReason is the reason for Provisioned=False when the
+	// buffer is Ready but LimitedByQuotas.
+	ExceedsResourceQuotasReason = "ExceedsResourceQuotas"
 )
 ```
