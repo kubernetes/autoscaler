@@ -43,6 +43,7 @@ ret=0
 
 verify_go_mod "${SCRIPT_ROOT}" || ret=$?
 verify_go_mod "${SCRIPT_ROOT}/test" || ret=$?
+verify_go_mod "${SCRIPT_ROOT}/hack/tools" || ret=$?
 
 if [[ $ret -eq 0 ]]
 then

@@ -28,11 +28,11 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-go install github.com/elastic/crd-ref-docs@v0.3.0
-export CONTROLLER_GEN=${GOBIN:-$(go env GOPATH)/bin}/crd-ref-docs
+source "${REPOSITORY_ROOT}/hack/lib/tools.sh"
+CRD_REF_DOCS=$(vpa::tool crd-ref-docs)
 
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
-$CONTROLLER_GEN \
+cd "${REPOSITORY_ROOT}"
+${CRD_REF_DOCS} \
     --source-path=pkg/apis/ \
     --config=./hack/api-docs/config.yaml \
     --renderer=markdown \

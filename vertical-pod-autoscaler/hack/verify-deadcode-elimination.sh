@@ -22,7 +22,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+SCRIPT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
 cd "${SCRIPT_ROOT}"
 COMPONENTS=("admission-controller" "recommender" "updater")
 FAILED=false
@@ -33,11 +33,8 @@ declare -a BINARY_SIZES=()
 declare -a BINARY_OUTPUTS=()
 declare -a BINARY_FAILED=()
 
-# Install whydeadcode
-go install github.com/aarzilli/whydeadcode@latest
-
-# Prefer full path for running zeitgeist
-WHYDEADCODE_BIN="$(which whydeadcode)"
+source "${SCRIPT_ROOT}/hack/lib/tools.sh"
+WHYDEADCODE_BIN=$(vpa::tool whydeadcode)
 
 for binary in "${COMPONENTS[@]}"; do
   echo "Processing ${binary} ..."
