@@ -1,0 +1,136 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Renovate covers vertical-pod-autoscaler only; the rest of the repository uses Dependabot. Restrictions are expressed via matchUpdateTypes rather than `enabled: false`, because dep-level disables are applied before version lookup and cannot be re-enabled per update type.",
+  "extends": [
+    "config:recommended",
+    "schedule:weekly"
+  ],
+  "timezone": "Etc/UTC",
+  "commitMessagePrefix": "[VPA]",
+  "commitMessageAction": "Bump",
+  "enabledManagers": [
+    "dockerfile",
+    "gomod"
+  ],
+  "includePaths": [
+    "vertical-pod-autoscaler/**"
+  ],
+  "ignorePaths": [
+    "**/vendor/**"
+  ],
+  "baseBranchPatterns": [
+    "$default",
+    "vpa-release-1.8",
+    "vpa-release-1.7"
+  ],
+  "labels": [
+    "area/vertical-pod-autoscaler",
+    "kind/dependency",
+    "triage/accepted",
+    "release-note-none",
+    "ok-to-test"
+  ],
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
+  "dockerfile": {
+    "includePaths": [
+      "vertical-pod-autoscaler/pkg/**"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Docker images: patch updates only, on every branch. Go minor bumps are done manually.",
+      "matchManagers": ["dockerfile"],
+      "matchUpdateTypes": ["major", "minor", "digest", "pin", "pinDigest"],
+      "enabled": false
+    },
+    {
+      "description": "Docker images: one PR per branch, checked daily.",
+      "matchManagers": ["dockerfile"],
+      "groupName": "docker images",
+      "extends": ["schedule:daily"]
+    },
+    {
+      "description": "Go modules: only propose versions whose go.mod `go` directive is satisfied by ours, so dependency bumps never force a Go minor bump.",
+      "matchManagers": ["gomod"],
+      "constraintsFiltering": "strict"
+    },
+    {
+      "description": "Go modules: also update indirect dependencies. Rules that restrict indirect updates must come after this one.",
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["indirect"],
+      "enabled": true
+    },
+    {
+      "description": "Go modules: indirect dependencies cannot be moved to a new major (module path) by us; the importing dependency has to do that.",
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["indirect"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Go modules: pre-modules +incompatible pseudo-versions cannot follow newer commits once upstream adds a go.mod with a /vN module path (e.g. github.com/mistifyio/go-zfs -> /v4); the importing dependency has to make that move.",
+      "matchManagers": ["gomod"],
+      "matchCurrentValue": "/\\+incompatible$/",
+      "matchUpdateTypes": ["digest"],
+      "enabled": false
+    },
+    {
+      "description": "Go modules: github.com/euank/go-kmsg-parser's v2.0.1 tag ships a go.mod without the /v2 module path, so Go rejects it; stay on v2.0.0+incompatible.",
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["github.com/euank/go-kmsg-parser"],
+      "enabled": false
+    },
+    {
+      "description": "Go modules: fsnotify is locked at 1.9.0 on every branch, matching the gomodguard restriction in vertical-pod-autoscaler/.golangci.yaml (see https://github.com/kubernetes/kubernetes/pull/138865).",
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["github.com/fsnotify/fsnotify"],
+      "allowedVersions": "<=1.9.0"
+    },
+    {
+      "description": "Kubernetes modules: patch updates only, on every branch. This also blocks the independent digest bumps of untagged k8s.io/kube-openapi and k8s.io/utils, which must track the apimachinery release.",
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["k8s.io/**"],
+      "matchUpdateTypes": ["major", "minor", "digest", "replacement"],
+      "enabled": false
+    },
+    {
+      "description": "Kubernetes modules: one PR per branch, checked daily. separateMinorPatch makes Renovate offer the highest patch even though the minor is blocked.",
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["k8s.io/**"],
+      "separateMinorPatch": true,
+      "groupName": "kubernetes go deps",
+      "extends": ["schedule:daily"]
+    },
+    {
+      "description": "Everything that is not a Kubernetes module goes into one PR per branch, checked weekly (the repository default). On master this means latest versions; the release-branch rules below narrow it down.",
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["!k8s.io/**"],
+      "groupName": "go deps"
+    },
+    {
+      "description": "Release branches: no major, digest or replacement updates for any Go module. Digests track untagged default-branch commits, which are never patch-level.",
+      "matchBaseBranches": ["/^vpa-release-/"],
+      "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["major", "digest", "replacement"],
+      "enabled": false
+    },
+    {
+      "description": "Release branches: no minor updates either, except golang.org/x/* which are permanently pre-1.0 and ship fixes as minor bumps.",
+      "matchBaseBranches": ["/^vpa-release-/"],
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["!golang.org/x/**"],
+      "matchUpdateTypes": ["minor"],
+      "enabled": false
+    },
+    {
+      "description": "Release branches: separateMinorPatch makes Renovate offer the highest patch even though the minor is blocked.",
+      "matchBaseBranches": ["/^vpa-release-/"],
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["!golang.org/x/**"],
+      "separateMinorPatch": true
+    }
+  ]
+}
+
