@@ -299,9 +299,14 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 			}
 		}
 
-		if policy.RecommendationPercentiles != nil && !opts.AllowPerVPAConfig {
-			allErrs = append(allErrs, field.Forbidden(policyPath.Child("recommendationPercentiles"),
-				fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+		if policy.RecommendationPercentiles != nil {
+			if opts.AllowPerVPAConfig {
+				percentilesPath := policyPath.Child("recommendationPercentiles")
+				allErrs = append(allErrs, validateTargetPercentile(policy.RecommendationPercentiles.CPU, percentilesPath.Child("cpu", "target"))...)
+				allErrs = append(allErrs, validateTargetPercentile(policy.RecommendationPercentiles.Memory, percentilesPath.Child("memory", "target"))...)
+			} else {
+				allErrs = append(allErrs, field.Forbidden(policyPath.Child("recommendationPercentiles"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+			}
 		}
 
 		if policy.StartupBoost != nil {
@@ -310,6 +315,19 @@ func validateVPASpecResourcePolicy(resourcePolicy *vpa_types.PodResourcePolicy, 
 	}
 
 	return warnings, allErrs
+}
+
+func validateTargetPercentile(percentiles *vpa_types.ResourcePercentiles, fldPath *field.Path) field.ErrorList {
+	if percentiles == nil {
+		return nil
+	}
+	if percentiles.Target < 1 {
+		return field.ErrorList{field.Invalid(fldPath, percentiles.Target, "must be greater than or equal to 1")}
+	}
+	if percentiles.Target > 100 {
+		return field.ErrorList{field.Invalid(fldPath, percentiles.Target, "must be less than or equal to 100")}
+	}
+	return nil
 }
 
 func validateVPASpecStartupBoost(startupBoost *vpa_types.StartupBoost, fldPath *field.Path, opts VPAValidationOptions) field.ErrorList {
