@@ -273,33 +273,78 @@ func TestRunOnce_Status(t *testing.T) {
 }
 
 func TestRunOnce_InitialDelay(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
 	tests := []struct {
 		name                  string
+		updateMode            vpa_types.UpdateMode
 		created               time.Time
 		featureEnabled        bool
 		expectFetchCalls      bool
 		expectedEvictionCount int
+		expectedInPlacedCount int
 	}{
 		{
 			name:                  "inside the window",
+			updateMode:            vpa_types.UpdateModeRecreate,
 			created:               time.Now(),
 			featureEnabled:        true,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
 		},
 		{
 			name:                  "after the window",
+			updateMode:            vpa_types.UpdateModeRecreate,
 			created:               time.Now().Add(-2 * time.Hour),
 			featureEnabled:        true,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
+			expectedInPlacedCount: 0,
 		},
 		{
 			name:                  "inside the window, feature disabled",
+			updateMode:            vpa_types.UpdateModeRecreate,
 			created:               time.Now(),
 			featureEnabled:        false,
 			expectFetchCalls:      true,
 			expectedEvictionCount: 5,
+			expectedInPlacedCount: 0,
+		},
+		{
+			name:                  "inside the window, InPlaceOrRecreate mode",
+			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			created:               time.Now(),
+			featureEnabled:        true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
+		},
+		{
+			name:                  "after the window, InPlaceOrRecreate mode",
+			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			created:               time.Now().Add(-2 * time.Hour),
+			featureEnabled:        true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 5,
+		},
+		{
+			name:                  "inside the window, InPlace mode",
+			updateMode:            vpa_types.UpdateModeInPlace,
+			created:               time.Now(),
+			featureEnabled:        true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
+		},
+		{
+			name:                  "after the window, InPlace mode",
+			updateMode:            vpa_types.UpdateModeInPlace,
+			created:               time.Now().Add(-2 * time.Hour),
+			featureEnabled:        true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 5,
 		},
 	}
 	for _, tc := range tests {
@@ -307,12 +352,12 @@ func TestRunOnce_InitialDelay(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureEnabled)
 			testRunOnceBase(
 				t,
-				vpa_types.UpdateModeRecreate,
+				tc.updateMode,
 				false,
 				newFakeValidator(true),
 				tc.expectFetchCalls,
 				tc.expectedEvictionCount,
-				0,
+				tc.expectedInPlacedCount,
 				utils.InPlaceApproved,
 				false,
 				func(vpa *vpa_types.VerticalPodAutoscaler) {
