@@ -224,18 +224,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	// 	return scaleSet.curSize, nil
 	// }
 
-	effectiveSizeRefreshPeriod := scaleSet.sizeRefreshPeriod
-
-	// If the scale set is Spot, we want to have a more fresh view of the Sku.Capacity field.
-	// This is because evictions can happen
-	// at any given point in time, even before VMs are materialized as
-	// nodes. We should be able to react to those and have the autoscaler
-	// readjust the goal again to force restoration.
-	if isSpot(set) {
-		effectiveSizeRefreshPeriod = scaleSet.getVmssSizeRefreshPeriod
-	}
-
-	if scaleSet.lastSizeRefresh.Add(effectiveSizeRefreshPeriod).After(time.Now()) {
+	if scaleSet.isSizeCacheFresh(set) {
 		klog.V(3).Infof("VMSS: %s, returning in-memory size: %d", scaleSet.Name, scaleSet.curSize)
 		return scaleSet.curSize, nil
 	}
@@ -270,6 +259,15 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	scaleSet.curSize = curSize
 	scaleSet.lastSizeRefresh = time.Now()
 	return scaleSet.curSize, nil
+}
+
+// isSizeCacheFresh requires the caller to hold sizeMutex.
+func (scaleSet *ScaleSet) isSizeCacheFresh(set *armcompute.VirtualMachineScaleSet) bool {
+	effectiveSizeRefreshPeriod := scaleSet.sizeRefreshPeriod
+	if isSpot(set) {
+		effectiveSizeRefreshPeriod = scaleSet.getVmssSizeRefreshPeriod
+	}
+	return scaleSet.lastSizeRefresh.Add(effectiveSizeRefreshPeriod).After(time.Now())
 }
 
 // getScaleSetSize gets Scale Set size.
@@ -810,7 +808,12 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 		if !hasUnregisteredNodes {
 			deleteCount := int64(len(instanceIDs))
 			scaleSet.sizeMutex.Lock()
-			if scaleSet.curSize < deleteCount {
+			set, cacheErr := scaleSet.getVMSSFromCache()
+			if cacheErr != nil {
+				klog.Errorf("Failed to check size cache freshness for VMSS %s: %v", scaleSet.Name, cacheErr)
+			} else if !scaleSet.isSizeCacheFresh(set) {
+				klog.Warningf("VMSS: %s, size cache is expired, skipping optimistic size update for %d instances", scaleSet.Name, deleteCount)
+			} else if scaleSet.curSize < deleteCount {
 				klog.Warningf("VMSS: %s, cached size %d is smaller than instances to delete %d, invalidating size cache instead of decrementing", scaleSet.Name, scaleSet.curSize, deleteCount)
 				scaleSet.lastSizeRefresh = time.Time{}
 			} else {

@@ -1331,6 +1331,64 @@ func TestScaleSetDeleteNodeUnregistered(t *testing.T) {
 	}
 }
 
+func TestScaleSetDeleteInstancesWithExpiredSizeCache(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	manager := newTestAzureManager(t)
+	manager.config.StrictCacheUpdates = false
+	vmssName := "test-asg"
+	expectedScaleSets := newTestVMSSList(8, vmssName, testLocation, armcompute.OrchestrationModeUniform)
+	expectedVMSSVMs := newTestVMSSVMList(8)
+
+	mockVMSSClient := mock_virtualmachinescalesetclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+	mockVMSSVMClient := mock_virtualmachinescalesetvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient.EXPECT().ListVMInstanceView(gomock.Any(), manager.config.ResourceGroup, vmssName).Return(expectedVMSSVMs, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(newTestVMList(0), nil).AnyTimes()
+	manager.azClient.virtualMachinesClient = mockVMClient
+
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), manager.config.ResourceGroup, vmssName,
+		armcompute.VirtualMachineScaleSetVMInstanceRequiredIDs{
+			InstanceIDs: []*string{ptr.To("0"), ptr.To("1"), ptr.To("2")},
+		}, gomock.Any()).Return(nil, nil)
+	manager.azClient.vmssClientForDelete = mockDeleteClient
+
+	scaleSet := newTestScaleSet(manager, vmssName)
+	scaleSet.sizeRefreshPeriod = time.Minute
+	scaleSet.instancesRefreshPeriod = defaultVmssInstancesRefreshPeriod
+	assert.True(t, manager.RegisterNodeGroup(scaleSet))
+	manager.explicitlyConfigured[vmssName] = true
+	assert.NoError(t, manager.forceRefresh())
+	size, getSizeErr := scaleSet.getCurSize()
+	assert.NoError(t, getSizeErr)
+	assert.Equal(t, int64(8), size)
+
+	scaleSet.invalidateLastSizeRefreshWithLock()
+	expiredSizeRefresh := scaleSet.lastSizeRefresh
+	scaleSet.sizeMutex.Lock()
+	assert.False(t, scaleSet.isSizeCacheFresh(expectedScaleSets[0]))
+	scaleSet.sizeMutex.Unlock()
+
+	err := scaleSet.DeleteInstances([]*azureRef{
+		{Name: newApiNode(armcompute.OrchestrationModeUniform, 0).Spec.ProviderID},
+		{Name: newApiNode(armcompute.OrchestrationModeUniform, 1).Spec.ProviderID},
+		{Name: newApiNode(armcompute.OrchestrationModeUniform, 2).Spec.ProviderID},
+	}, false)
+	assert.NoError(t, err)
+	scaleSet.sizeMutex.Lock()
+	assert.Equal(t, int64(8), scaleSet.curSize)
+	assert.Equal(t, expiredSizeRefresh, scaleSet.lastSizeRefresh)
+	assert.False(t, scaleSet.isSizeCacheFresh(expectedScaleSets[0]))
+	scaleSet.sizeMutex.Unlock()
+}
+
 func TestScaleSetDeleteInstancesWithForceDeleteEnabled(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
