@@ -250,16 +250,20 @@ func GetUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
 // enabled and the VPA is within its initial delay window. During the window
 // the Updater and Admission Controller treat the VPA as if UpdateMode were Off.
 func InInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler) bool {
-	// Fast path for VPAs that don't set the field. This runs on every pod admission.
+	if !features.Enabled(features.VPAInitialDelay) {
+		return false
+	}
+
 	if vpa.Spec.UpdatePolicy == nil || vpa.Spec.UpdatePolicy.InitialDelaySeconds == nil {
 		return false
 	}
-	return inInitialDelayWindow(vpa)
-}
 
-func inInitialDelayWindow(vpa *vpa_types.VerticalPodAutoscaler) bool {
 	expiry, ok := InitialDelayExpiry(vpa)
-	return ok && features.Enabled(features.VPAInitialDelay) && time.Now().Before(expiry)
+	if !ok {
+		return false
+	}
+
+	return time.Now().Before(expiry)
 }
 
 // InitialDelayExpiry returns the end of the VPA's initial delay window, and
