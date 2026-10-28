@@ -44,7 +44,7 @@ roleRef:
   name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-leader-locking
 subjects:
   - kind: ServiceAccount
-    name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+    name: {{ include "vertical-pod-autoscaler.recommender.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{- end -}}
 {{- end -}}
