@@ -1367,7 +1367,7 @@ func TestScaleSetDeleteInstancesWithExpiredSizeCache(t *testing.T) {
 	manager.explicitlyConfigured[vmssName] = true
 	assert.NoError(t, manager.forceRefresh())
 	size, getSizeErr := scaleSet.getCurSize()
-	assert.NoError(t, getSizeErr)
+	assert.Nil(t, getSizeErr)
 	assert.Equal(t, int64(8), size)
 
 	scaleSet.invalidateLastSizeRefreshWithLock()
