@@ -83,6 +83,12 @@
       "enabled": false
     },
     {
+      "description": "Go modules: github.com/mmarkdown/mmark gained a go.mod with a /v2 module path at v2.2.x, so tags beyond v2.0.40+incompatible are not valid on the old path; the importing dependency (crd-ref-docs) has to make that move.",
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["github.com/mmarkdown/mmark"],
+      "enabled": false
+    },
+    {
       "description": "Go modules: fsnotify is locked at 1.9.0 on every branch, matching the gomodguard restriction in vertical-pod-autoscaler/.golangci.yaml (see https://github.com/kubernetes/kubernetes/pull/138865).",
       "matchManagers": ["gomod"],
       "matchPackageNames": ["github.com/fsnotify/fsnotify"],
@@ -108,6 +114,12 @@
       "matchManagers": ["gomod"],
       "matchPackageNames": ["!k8s.io/**"],
       "groupName": "go deps"
+    },
+    {
+      "description": "Build tools (hack/tools/go.mod) are isolated from the product dependency graph, so their updates go into their own PR. Must come after the grouping rules above to override their groupName.",
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["vertical-pod-autoscaler/hack/tools/go.mod"],
+      "groupName": "go tools"
     },
     {
       "description": "Release branches: no major, digest or replacement updates for any Go module. Digests track untagged default-branch commits, which are never patch-level.",
