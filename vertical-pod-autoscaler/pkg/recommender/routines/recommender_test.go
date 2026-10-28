@@ -399,6 +399,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 		delay          *int32
 		now            time.Time
 		featureEnabled bool
+		seedStale      bool
 		expectFound    bool
 		expectStatus   bool
 		expectReason   string
@@ -409,6 +410,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 			delay:          new(int32(3600)),
 			now:            created.Add(time.Minute),
 			featureEnabled: true,
+			seedStale:      true,
 			expectFound:    true,
 			expectStatus:   true,
 			expectReason:   "DelayWindowActive",
@@ -419,6 +421,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 			delay:          new(int32(3600)),
 			now:            created.Add(2 * time.Hour),
 			featureEnabled: true,
+			seedStale:      true,
 			expectFound:    true,
 			expectStatus:   false,
 			expectReason:   "DelayWindowExpired",
@@ -436,6 +439,7 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 			delay:          new(int32(3600)),
 			now:            created.Add(time.Minute),
 			featureEnabled: false,
+			seedStale:      true,
 			expectFound:    false,
 		},
 	}
@@ -443,8 +447,10 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureEnabled)
 			vpa := model.NewVpa(model.VpaID{Namespace: "default", VpaName: "vpa"}, labels.Everything(), created)
-			// A condition left over from an earlier loop must be replaced or removed.
-			vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, true, "DelayWindowActive", "stale")
+			if tc.seedStale {
+				// A condition left over from an earlier loop must be replaced or removed.
+				vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, true, "DelayWindowActive", "stale")
+			}
 
 			updateInitialDelayCondition(vpa, newObserved(tc.delay), tc.now)
 
