@@ -127,11 +127,11 @@ type AggregateContainerState struct {
 	OOMMinBumpUp                      float64
 	MemoryAggregationIntervalDuration time.Duration
 	MemoryAggregationIntervalCount    int64
-	// TargetCPUPercentile overrides the global target CPU percentile, as a
-	// (0, 1] fraction. Zero means unset.
+	// Per-container target percentile override, as a (0, 1] fraction.
+	// Zero means unset, in which case the global target flag is used.
 	TargetCPUPercentile float64
-	// TargetMemoryPercentile overrides the global target memory percentile,
-	// as a (0, 1] fraction. Zero means unset.
+	// Per-container target percentile override, as a (0, 1] fraction.
+	// Zero means unset, in which case the global target flag is used.
 	TargetMemoryPercentile float64
 	ControlledResources    *[]ResourceName
 
