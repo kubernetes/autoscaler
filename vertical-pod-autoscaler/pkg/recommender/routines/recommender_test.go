@@ -428,11 +428,22 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 			expectMessage:  "Initial delay window ended at 2026-01-01T01:00:00Z",
 		},
 		{
-			name:           "field unset",
+			name:           "field never set",
 			delay:          nil,
 			now:            created,
 			featureEnabled: true,
 			expectFound:    false,
+		},
+		{
+			name:           "field removed during the window",
+			delay:          nil,
+			now:            created.Add(time.Minute),
+			featureEnabled: true,
+			seedStale:      true,
+			expectFound:    true,
+			expectStatus:   false,
+			expectReason:   "DelayWindowRemoved",
+			expectMessage:  "Initial delay is no longer set",
 		},
 		{
 			name:           "feature disabled",

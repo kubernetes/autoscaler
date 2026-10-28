@@ -80,9 +80,10 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 
 // updateInitialDelayCondition sets the InitialDelayActive condition for a VPA
 // that sets initialDelaySeconds: True while its initial delay window is
-// active, False once it has elapsed. The condition is removed when the
-// VPAInitialDelay feature gate is disabled. The window itself is enforced by
-// the Updater and Admission Controller; this only reports it.
+// active, False once it has elapsed or the field is removed. VPAs that never
+// set the field are left without the condition. The condition is removed when
+// the VPAInitialDelay feature gate is disabled. The window itself is enforced
+// by the Updater and Admission Controller; this only reports it.
 func updateInitialDelayCondition(vpa *model.Vpa, observedVpa *vpaautoscalingv1.VerticalPodAutoscaler, now time.Time) {
 	if !features.Enabled(features.VPAInitialDelay) || observedVpa == nil {
 		vpa.DeleteCondition(vpaautoscalingv1.InitialDelayActive)
@@ -90,6 +91,10 @@ func updateInitialDelayCondition(vpa *model.Vpa, observedVpa *vpaautoscalingv1.V
 	}
 	expiry, ok := vpa_utils.InitialDelayExpiry(observedVpa)
 	if !ok {
+		if _, found := vpa.GetConditionsMap()[vpaautoscalingv1.InitialDelayActive]; found {
+			vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, false, "DelayWindowRemoved",
+				"Initial delay is no longer set")
+		}
 		return
 	}
 	if now.Before(expiry) {
