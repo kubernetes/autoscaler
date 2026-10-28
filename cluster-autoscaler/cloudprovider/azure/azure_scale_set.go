@@ -209,7 +209,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
 
-	set, err := scaleSet.getVMSSFromCache()
+	fresh, err := scaleSet.isSizeCacheFresh()
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
 		return -1, newGetVMSSFailedError(err, true)
@@ -224,9 +224,15 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	// 	return scaleSet.curSize, nil
 	// }
 
-	if scaleSet.isSizeCacheFresh(set) {
+	if fresh {
 		klog.V(3).Infof("VMSS: %s, returning in-memory size: %d", scaleSet.Name, scaleSet.curSize)
 		return scaleSet.curSize, nil
+	}
+
+	set, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
+		return -1, newGetVMSSFailedError(err, true)
 	}
 
 	// If the scale set is on Spot, make a GET VMSS call to fetch more updated fresh info
@@ -262,12 +268,16 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 }
 
 // isSizeCacheFresh requires the caller to hold sizeMutex.
-func (scaleSet *ScaleSet) isSizeCacheFresh(set *armcompute.VirtualMachineScaleSet) bool {
+func (scaleSet *ScaleSet) isSizeCacheFresh() (bool, error) {
+	set, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		return false, err
+	}
 	effectiveSizeRefreshPeriod := scaleSet.sizeRefreshPeriod
 	if isSpot(set) {
 		effectiveSizeRefreshPeriod = scaleSet.getVmssSizeRefreshPeriod
 	}
-	return scaleSet.lastSizeRefresh.Add(effectiveSizeRefreshPeriod).After(time.Now())
+	return scaleSet.lastSizeRefresh.Add(effectiveSizeRefreshPeriod).After(time.Now()), nil
 }
 
 // getScaleSetSize gets Scale Set size.
@@ -808,10 +818,10 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 		if !hasUnregisteredNodes {
 			deleteCount := int64(len(instanceIDs))
 			scaleSet.sizeMutex.Lock()
-			set, cacheErr := scaleSet.getVMSSFromCache()
+			fresh, cacheErr := scaleSet.isSizeCacheFresh()
 			if cacheErr != nil {
 				klog.Errorf("Failed to check size cache freshness for VMSS %s: %v", scaleSet.Name, cacheErr)
-			} else if !scaleSet.isSizeCacheFresh(set) {
+			} else if !fresh {
 				klog.Warningf("VMSS: %s, size cache is expired, skipping optimistic size update for %d instances", scaleSet.Name, deleteCount)
 			} else if scaleSet.curSize < deleteCount {
 				klog.Warningf("VMSS: %s, cached size %d is smaller than instances to delete %d, invalidating size cache instead of decrementing", scaleSet.Name, scaleSet.curSize, deleteCount)

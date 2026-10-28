@@ -1373,7 +1373,9 @@ func TestScaleSetDeleteInstancesWithExpiredSizeCache(t *testing.T) {
 	scaleSet.invalidateLastSizeRefreshWithLock()
 	expiredSizeRefresh := scaleSet.lastSizeRefresh
 	scaleSet.sizeMutex.Lock()
-	assert.False(t, scaleSet.isSizeCacheFresh(expectedScaleSets[0]))
+	fresh, cacheErr := scaleSet.isSizeCacheFresh()
+	assert.NoError(t, cacheErr)
+	assert.False(t, fresh)
 	scaleSet.sizeMutex.Unlock()
 
 	err := scaleSet.DeleteInstances([]*azureRef{
@@ -1385,7 +1387,9 @@ func TestScaleSetDeleteInstancesWithExpiredSizeCache(t *testing.T) {
 	scaleSet.sizeMutex.Lock()
 	assert.Equal(t, int64(8), scaleSet.curSize)
 	assert.Equal(t, expiredSizeRefresh, scaleSet.lastSizeRefresh)
-	assert.False(t, scaleSet.isSizeCacheFresh(expectedScaleSets[0]))
+	fresh, cacheErr = scaleSet.isSizeCacheFresh()
+	assert.NoError(t, cacheErr)
+	assert.False(t, fresh)
 	scaleSet.sizeMutex.Unlock()
 }
 
