@@ -47,13 +47,69 @@ tests:
           path: metadata.namespace
           value: team-a
         template: updater-clusterrolebinding.yaml
+        documentIndex: 0
       - isKind:
           of: RoleBinding
         template: admission-controller-clusterrolebinding.yaml
+        documentIndex: 0
       - equal:
           path: metadata.namespace
           value: team-a
         template: admission-controller-clusterrolebinding.yaml
+        documentIndex: 0
+
+  - it: keeps access to the admission controller status Lease in the release namespace
+    set:
+      vpaObjectNamespace: team-a
+    release:
+      namespace: vpa-system
+    asserts:
+      - matchRegex:
+          path: metadata.name
+          pattern: -status-reader-binding$
+        template: updater-clusterrolebinding.yaml
+        documentIndex: 4
+      - equal:
+          path: metadata.namespace
+          value: vpa-system
+        template: updater-clusterrolebinding.yaml
+        documentIndex: 4
+      - hasDocuments:
+          count: 3
+        template: admission-controller-clusterrolebinding.yaml
+      - isKind:
+          of: Role
+        template: admission-controller-clusterrolebinding.yaml
+        documentIndex: 1
+      - equal:
+          path: metadata.namespace
+          value: vpa-system
+        template: admission-controller-clusterrolebinding.yaml
+        documentIndex: 1
+      - contains:
+          path: rules
+          content:
+            apiGroups:
+              - coordination.k8s.io
+            resources:
+              - leases
+            verbs:
+              - create
+              - update
+              - get
+              - list
+              - watch
+        template: admission-controller-clusterrolebinding.yaml
+        documentIndex: 1
+      - isKind:
+          of: RoleBinding
+        template: admission-controller-clusterrolebinding.yaml
+        documentIndex: 2
+      - equal:
+          path: metadata.namespace
+          value: vpa-system
+        template: admission-controller-clusterrolebinding.yaml
+        documentIndex: 2
 
   - it: passes --vpa-object-namespace to every component
     set:

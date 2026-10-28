@@ -16,4 +16,44 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
     namespace: {{ .Release.Namespace }}
+{{- if .Values.vpaObjectNamespace }}
+---
+# The ClusterRole above is only bound in the VPA object namespace, so the
+# admission controller gets access to its status Lease, which is in the release
+# namespace, through this Role.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}-status
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+      - update
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}-status
+  labels:
+    {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}-status
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vertical-pod-autoscaler.admissionController.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
 {{- end -}}
