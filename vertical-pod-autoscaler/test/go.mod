@@ -18,7 +18,7 @@ require (
 	k8s.io/client-go v0.38.0-alpha.2
 	k8s.io/component-base v0.38.0-alpha.2
 	k8s.io/klog/v2 v2.140.0
-	k8s.io/ktesting v0.38.0-alpha.2
+	k8s.io/ktesting v0.38.0-alpha.3
 	k8s.io/kubernetes v1.38.0-alpha.2
 	k8s.io/pod-security-admission v0.38.0-alpha.2
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
@@ -191,9 +191,9 @@ require (
 	k8s.io/kubectl v0.38.0-alpha.2 // indirect
 	k8s.io/kubelet v0.38.0-alpha.2 // indirect
 	k8s.io/metrics v0.38.0-alpha.2 // indirect
-	k8s.io/mount-utils v0.38.0-alpha.2 // indirect
+	k8s.io/mount-utils v0.38.0-alpha.3 // indirect
 	k8s.io/sample-apiserver v0.38.0-alpha.2 // indirect
-	k8s.io/streaming v0.38.0-alpha.2 // indirect
+	k8s.io/streaming v0.38.0-alpha.3 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.37.0 // indirect
 	sigs.k8s.io/json v0.0.0-20260909141634-11ed52e25bc5 // indirect
 	sigs.k8s.io/kustomize/api v0.21.3 // indirect
