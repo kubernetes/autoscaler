@@ -9,7 +9,7 @@ LDFLAGS?=-s
 ENVVAR=CGO_ENABLED=0
 GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
-REGISTRY?=gcr.io/k8s-staging-autoscaling
+REGISTRY?=us-central1-docker.pkg.dev/k8s-staging-images/autoscaling
 DOCKER_NETWORK?=default
 SUPPORTED_BUILD_TAGS=$(shell ls cloudprovider/router/ | grep -e '^router_.*\.go' | sed 's/router_\(.*\)\.go/\1/')
 
