@@ -184,7 +184,7 @@ When the `VPANodeSelector` feature gate is enabled:
 3. Matching aggregates to VPAs - When the recommender decides whether an aggregate belongs to
    a VPA (`matchesAggregation`), it checks the pod label selector derived from `targetRef` (as
    today) and also checks `selector.nodeSelector` against the current labels of the aggregate's
-   node. A VPA without a selector matches every aggregate of its target, as today. When a node's
+   node. A VPA without a selector matches every aggregate of its target, as today. If a node's
    labels change, the recommender re-checks the aggregates of that node, links them to the
    selector VPAs that now match the node and unlinks them from the selector VPAs that no longer
    do.
