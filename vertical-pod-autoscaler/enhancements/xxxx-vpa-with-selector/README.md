@@ -480,12 +480,23 @@ wrong: with the default tolerance of 0.5, a selector VPA holding half or fewer o
 pods can never evict or resize, and a one-node selector (such as the hostname-selected
 [example](#example) above) is always skipped by `minReplicas`.
 
-For a VPA with `spec.selector`, `GetCreatorMaps` therefore sets `configured` to the number of live
-selected pods, as it already does for Jobs. Tolerance and `minReplicas` then apply per selector
-VPA, which is the right unit: each DaemonSet pod serves its own node, so pods under other VPAs add
-no availability to this one. Counting live pods instead of a desired count slightly loosens the
-budget during rollouts; computing a per-selector desired count would mean re-running DaemonSet
-scheduling against the matching nodes, which is not worth it for alpha.
+The fallback VPA has the same problem. It controls only the pods on nodes that no selector VPA
+covers, but its `configured` is still the whole DaemonSet, so it can be blocked too.
+
+The fix: if at least one selector VPA targets a DaemonSet, every VPA on that DaemonSet (selector
+VPAs and the fallback) sets `configured` to the number of pods it controls. Terminating pods are
+counted too. Tolerance and `minReplicas` then apply per VPA. Each DaemonSet pod serves its own
+node, so pods under other VPAs do not help this one.
+
+Terminating pods must be counted because the DaemonSet controller creates the replacement pod only
+after the old pod is gone. If only live pods were counted, `configured` would get smaller after
+each round of evictions, and the updater could keep evicting more pods.
+
+Known limitation (for alpha): after a pod is fully deleted, there are a few seconds before its replacement is
+created. If an updater loop runs in that time, it can evict one more pod.
+
+If no selector VPA targets the DaemonSet, nothing changes: `configured` is still
+`status.desiredNumberScheduled`.
 
 `minReplicas` keeps its semantics and default. A selector VPA that can cover a single node must
 set `updatePolicy.minReplicas: 1` for eviction-based modes to work, as a single-node DaemonSet
@@ -548,11 +559,8 @@ selectors, and can be revisited once the selector plumbing is stable.
   - Updater, with a DaemonSet split across several selector VPAs: each pod is matched to the
     VPA whose `nodeSelector` matches its node's labels, a pod on an uncovered node goes to the
     fallback VPA or is skipped, and a pod is dropped from a VPA's list when its controlling VPA
-    is a different object (including an Off one). For the disruption budget, `configured`, the
-    eviction tolerance, and the `minReplicas` check are computed from the selected pods only, so
-    a selector VPA with a minority of the DaemonSet's pods can still evict and resize, a one-node
-    selector VPA with `minReplicas: 1` is updated, and disruptions under one VPA do not consume
-    another VPA's budget.
+    is a different object (including an Off one). The disruption budget is computed per VPA from
+    the pods it controls, including the fallback VPA and terminating pods.
   - Admission controller: extracting the node name from DaemonSet node affinity `matchFields`.
     When the node labels cannot be resolved (absent `matchFields`, empty `values`, malformed node
     affinity, or a node name missing from the node cache), the pod is admitted unmutated if a
@@ -596,7 +604,8 @@ Enabling of feature gate `VPASelector` will cause the following to happen:
     - Compute a selector VPA's recommendation only from the pods on nodes its selector matches
 - updater will:
     - Apply a selector VPA's recommendation only to the pods on nodes its selector matches
-    - Compute the disruption budget of a selector VPA from the selected pods only
+    - Compute the disruption budget of each VPA on a DaemonSet with selector VPAs (including the
+      fallback VPA) from the pods it controls only
 
 Disabling of feature gate `VPASelector` will cause the following to happen:
 - admission-controller will:
