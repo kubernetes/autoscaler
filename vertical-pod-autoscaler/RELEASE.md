@@ -86,7 +86,7 @@ Select either the Automatic and Manual process below.
 
 Images are continuously built as part of the PR release process and are listed
 in the following repository:
-[gcr.io/k8s-staging-autoscaling](http://gcr.io/k8s-staging-autoscaling). Also
+[us-central1-docker.pkg.dev/k8s-staging-images/autoscaling](https://us-central1-docker.pkg.dev/k8s-staging-images/autoscaling). Also
 see the
 [dashboard](https://testgrid.k8s.io/sig-autoscaling-vpa-images#post-autoscaler-push-vpa-images)
 for build status.
@@ -126,18 +126,18 @@ git switch vpa-release-1.${minor}
 Once in the freshly cloned repo, build and stage the images.
 
 > [!NOTE]
-> Ensure you have run the following before building the images: `gcloud auth login` and `gcloud auth configure-docker -q`.
+> Ensure you have run the following before building the images: `gcloud auth login` and `gcloud auth configure-docker us-central1-docker.pkg.dev -q`.
 
 ```sh
 cd vertical-pod-autoscaler/
-for component in recommender updater admission-controller ; do TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2` REGISTRY=gcr.io/k8s-staging-autoscaling make release --directory=pkg/${component}; done
+for component in recommender updater admission-controller ; do TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2` REGISTRY=us-central1-docker.pkg.dev/k8s-staging-images/autoscaling make release --directory=pkg/${component}; done
 ```
 
 ## Test the release
 
 You can test the release either locally using [kind](https://kind.sigs.k8s.io/) (Option 1) or on a
 GKE cluster (Option 2). In both cases the staged release images from
-`gcr.io/k8s-staging-autoscaling` are tested, not a local build.
+`us-central1-docker.pkg.dev/k8s-staging-images/autoscaling` are tested, not a local build.
 
 ### Option 1: Locally using kind
 
@@ -148,7 +148,7 @@ release images are pulled instead of building images from your local checkout.
 1.  [ ] Run all test suites against the staged images:
 
     ```shell
-    export REGISTRY=gcr.io/k8s-staging-autoscaling
+    export REGISTRY=us-central1-docker.pkg.dev/k8s-staging-images/autoscaling
     export TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2`
     export PULL_IMAGES=true
     ./hack/run-e2e-locally.sh full-vpa
@@ -176,7 +176,7 @@ release images are pulled instead of building images from your local checkout.
 
 1.  [ ] Deploy VPA:
     ```shell
-    REGISTRY=gcr.io/k8s-staging-autoscaling TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2` ./hack/vpa-up.sh
+    REGISTRY=us-central1-docker.pkg.dev/k8s-staging-images/autoscaling TAG=`grep 'const versionCore = ' common/version.go | cut -d '"' -f 2` ./hack/vpa-up.sh
     ```
 
 1.  [ ] [Run](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/run-e2e-tests.sh)
@@ -318,7 +318,7 @@ sure nothing we care about will break if we do.
 
 ## Permissions
 
-* Permissions to access `gcr.io/k8s-staging-autoscaling` are governed by list
+* Permissions to access `us-central1-docker.pkg.dev/k8s-staging-images/autoscaling` are governed by list
     of people in
     [groups.yaml](https://github.com/kubernetes/k8s.io/blob/master/groups/sig-autoscaling/groups.yaml)
     under k8s-infra-staging-autoscaling.
