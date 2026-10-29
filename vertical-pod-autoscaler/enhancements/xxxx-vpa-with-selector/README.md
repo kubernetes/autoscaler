@@ -166,7 +166,7 @@ Validation (admission controller webhook and CRD validation):
 
 #### Recommender
 
-When the `VPASelector` feature gate is enabled:
+When the `VPANodeSelector` feature gate is enabled:
 
 1. Load node labels - The recommender has no node lister or informer today, so one is added.
    It stores node labels in the cluster state model, so
