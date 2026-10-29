@@ -310,10 +310,10 @@ sure nothing we care about will break if we do.
 
 ## Post release steps
 
-1. [ ] In the **default branch** update `.github/dependabot.yml` to add the new release branch, keeping the latest 3 minor releases:
+1. [ ] In the **default branch** update `.github/renovate.json` to add the new release branch, keeping the latest 3 minor releases:
 
     ```sh
-    sed -i "s/vpa-release-1.${oldest-minor}/vpa-release-1.${next-minor}/g" ../.github/dependabot.yml
+    sed -i "s/vpa-release-1.${oldest-minor}/vpa-release-1.${next-minor}/g" ../.github/renovate.json
     ```
 
 2. [ ] For minor releases only: in the **default branch**, change the versionCore constant in
