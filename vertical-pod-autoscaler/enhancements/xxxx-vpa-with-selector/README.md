@@ -243,9 +243,18 @@ that VPA's recommendation into the pod's resource requests. This makes eviction-
 (`Recreate`, `InPlaceOrRecreate`) work as well, because the replacement pod is admitted with the
 correct resources from the start.
 
-If the admission controller cannot determine the target node (e.g. the node affinity field is
-absent or malformed), VPAs with a node selector are treated as not matching the pod. If no other
-VPA matches, the pod is admitted with its original resource requests, and a warning is logged.
+The admission controller may be unable to look up the target node's labels, either because the
+node affinity field is absent or malformed, or because the node is not yet in its node cache.
+
+If a VPA with a selector targets the pod's controller, the admission controller then leaves the
+pod unchanged and logs a warning. It does not fall back to a VPA without a selector, because that
+could apply the wrong recommendation, or update a pod that a selector VPA in `Off` mode should
+control. If no VPA with a selector targets the controller, node labels are not needed and the
+controlling VPA is chosen as today.
+
+The updater corrects the pod later. Once the node is in its cache, it finds the pod's controlling
+VPA and applies that VPA's `updateMode`, so a recreated pod is admitted with the right
+recommendation. Until then, the updater skips the pod in the same way.
 
 Validation - The admission controller enforces the validation rules listed under
 [API Changes](#api-changes). It needs the `VPASelector` feature gate to accept VPAs with
@@ -507,9 +516,13 @@ selectors, and can be revisited once the selector plumbing is stable.
     a selector VPA with a minority of the DaemonSet's pods can still evict and resize, a one-node
     selector VPA with `minReplicas: 1` is updated, and disruptions under one VPA do not consume
     another VPA's budget.
-  - Admission controller: extracting the node name from DaemonSet node affinity `matchFields`,
-    and falling back correctly when the node cannot be determined (absent `matchFields`, empty
-    `values`, malformed node affinity, etc.).
+  - Admission controller: extracting the node name from DaemonSet node affinity `matchFields`.
+    When the node labels cannot be resolved (absent `matchFields`, empty `values`, malformed node
+    affinity, or a node name missing from the node cache), the pod is admitted unmutated if a
+    selector VPA targets its controller, including when a VPA without a selector also targets it,
+    and the controlling VPA is chosen as today otherwise.
+  - Updater: a pod whose node is missing from the node cache is skipped while selector VPAs
+    target its controller, and is updated once the node appears.
   - Validation rules for `spec.selector` (DaemonSet-only, at least one non-empty selector field,
     rejection of `selector: {}` and `nodeSelector: {}`, valid label keys and values, feature gate,
     rejection of startup boost together with a selector).
