@@ -350,7 +350,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | updater.serviceAccount.annotations | object | `{}` |  |
 | updater.serviceAccount.create | bool | `true` |  |
 | updater.serviceAccount.labels | object | `{}` |  |
-| updater.strategy | object | `{}` |  |
 | updater.serviceAccount.name | string | `""` |  |
+| updater.strategy | object | `{}` |  |
 | updater.tolerations | list | `[]` |  |
 | updater.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Updater, used to spread replicas across failure domains such as zones. |
