@@ -235,7 +235,7 @@ func capStartupBoostToContainerLimit(recommendation corev1.ResourceList, contain
 
 	recommendedValue, found := recommendation[corev1.ResourceCPU]
 	if found && recommendedValue.MilliValue() > limit.MilliValue() {
-		newRecommended := limit.DeepCopy()
+		newRecommended := limit
 		if limit.Cmp(resource.MustParse("1m")) > 0 {
 			newRecommended.Sub(resource.MustParse("1m"))
 		}
