@@ -251,11 +251,12 @@ func (scaleSet *ScaleSet) instanceStatusFromVM(vm *armcompute.VirtualMachineScal
 					ErrorMessage: "Azure failed to provision a node for this node group",
 				}
 				if vm.Properties.InstanceView != nil {
-					if reason, message := failedProvisioningReason(vm.Properties.InstanceView.Statuses); reason != "" {
+					reason, message := failedProvisioningReason(vm.Properties.InstanceView.Statuses)
+					if reason != "" {
 						status.ErrorInfo.ErrorCode = reason
-						if message != "" {
-							status.ErrorInfo.ErrorMessage = message
-						}
+					}
+					if message != "" {
+						status.ErrorInfo.ErrorMessage = message
 					}
 				}
 			} else {

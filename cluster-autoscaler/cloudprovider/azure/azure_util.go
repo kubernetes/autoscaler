@@ -103,7 +103,7 @@ const (
 	vmPowerStateDeallocated  = "PowerState/deallocated"
 	vmPowerStateUnknown      = "PowerState/unknown"
 
-	vmProvisioningStateFailedPrefix = "ProvisioningState/failed/"
+	vmProvisioningStateFailed = "ProvisioningState/failed"
 )
 
 var (
@@ -661,7 +661,10 @@ func failedProvisioningReason(statuses []*armcompute.InstanceViewStatus) (string
 		if status == nil || status.Code == nil {
 			continue
 		}
-		if reason, ok := strings.CutPrefix(*status.Code, vmProvisioningStateFailedPrefix); ok && reason != "" {
+		if *status.Code == vmProvisioningStateFailed {
+			return "", ptr.Deref(status.Message, "")
+		}
+		if reason, ok := strings.CutPrefix(*status.Code, vmProvisioningStateFailed+"/"); ok {
 			return reason, ptr.Deref(status.Message, "")
 		}
 	}

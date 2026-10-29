@@ -142,6 +142,19 @@ func TestInstanceStatusFromVM(t *testing.T) {
 			assert.Equal(t, "Azure failed to provision a node for this node group", status.ErrorInfo.ErrorMessage)
 		})
 
+		t.Run("provisioning state = failed with a message but no reason", func(t *testing.T) {
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateUnknown)
+			vm.Properties.InstanceView.Statuses = []*armcompute.InstanceViewStatus{{
+				Code:    ptr.To("ProvisioningState/failed"),
+				Message: ptr.To("The VM could not be provisioned."),
+			}}
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.Equal(t, "provisioning-state-failed", status.ErrorInfo.ErrorCode)
+			assert.Equal(t, "The VM could not be provisioned.", status.ErrorInfo.ErrorMessage)
+		})
+
 		t.Run("provisioning state = failed, power state = starting", func(t *testing.T) {
 			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateStarting)
 
