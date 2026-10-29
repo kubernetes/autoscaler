@@ -13,6 +13,7 @@
     - [Updater](#updater)
     - [Admission Controller](#admission-controller)
   - [Choosing the controlling VPA for a pod](#choosing-the-controlling-vpa-for-a-pod)
+    - [Overlapping selectors](#overlapping-selectors)
   - [Example](#example)
   - [Design Decisions](#design-decisions)
     - [Disruption budget for selector VPAs](#disruption-budget-for-selector-vpas)
@@ -155,6 +156,19 @@ type VerticalPodAutoscalerSelector struct {
 (for example `podSelector *metav1.LabelSelector`) can be added later without changing the shape of
 the field.
 
+A new condition type is added, set by the recommender (see
+[Overlapping selectors](#overlapping-selectors)):
+
+```go
+var (
+    // ... existing condition types ...
+
+    // SelectorOverlap indicates that, on some nodes this VPA's selector matches,
+    // another VPA with a selector controls the pods instead.
+    SelectorOverlap VerticalPodAutoscalerConditionType = "SelectorOverlap"
+)
+```
+
 Validation (admission controller webhook and CRD validation):
 - At least one selector field must be set and non-empty when `selector` is present; an empty
   `selector: {}` is rejected.
@@ -271,11 +285,30 @@ expected setup, so the rule is extended:
 2. Among the matching VPAs, a VPA with a selector takes precedence over a VPA without one. This
    lets users keep a plain VPA as a fallback for pods on nodes that no selector VPA covers.
 3. If several VPAs remain, the existing tie-break applies (oldest first, then by name). This can
-   happen with hand-written selectors that overlap. The recommender reports this with a
-   condition on the VPAs that lose the tie-break.
+   happen with hand-written selectors that overlap. The recommender reports it with the
+   `SelectorOverlap` condition, see [Overlapping selectors](#overlapping-selectors).
 
 The recommender, updater, and admission controller all use this same function, so they always
 agree on which VPA controls a pod.
+
+#### Overlapping selectors
+
+Two selector VPAs overlap on a node when they target the same controller, both `nodeSelector`s
+match that node's labels, and the node runs a pod of the controller. This is checked against the
+nodes' current labels, so selectors with different keys (such as `pool=gpu` and `zone=a`) can
+overlap.
+
+For example, VPA `gpu` selects `pool=gpu` and
+matches nodes 1-3, and VPA `zone-a`, created later, selects `zone=a` and matches nodes 3-5. Node 3
+matches both, so the tie-break (oldest first) gives its pod to `gpu`, because it was created
+first. `zone-a` still controls the pods on nodes
+4 and 5.
+
+The recommender warns about this with the `SelectorOverlap` condition (reason `LostTieBreak`) on
+the losing VPA, here `zone-a`, with a message such as
+`1 of 3 nodes is controlled by VPA default/gpu: node-3`. The condition is removed once the
+overlap is gone. The winning VPA and VPAs without a selector never get it. The losing VPA keeps
+its recommendation, which is applied only to the pods it controls.
 
 `updateMode: Off` VPAs take part in the choice. Today the updater and the admission controller
 skip Off VPAs before matching pods. With selectors that would let a fallback VPA in `Recreate`
@@ -499,6 +532,10 @@ selectors, and can be revisited once the selector plumbing is stable.
   - VPA matching with `selector.nodeSelector`, including precedence of selector VPAs over a VPA
     without a selector, the tie-break for overlapping selectors, and that an Off selector VPA
     wins over an active fallback VPA so the pod is not updated.
+  - `SelectorOverlap` condition: set only on the losing selector VPA, for partial overlap (the
+    loser still controls its other nodes) and full overlap (the loser controls no pods), never
+    set on the winner or on a VPA without a selector, ignoring overlap on nodes that run no pod
+    of the target, and removed when node labels change or the winning VPA is deleted.
   - Recommender cluster state: a node aggregate is linked to every VPA that matches it, so a VPA
     without a selector still receives all aggregates of its target when selector VPAs exist;
     the aggregate's `UpdateMode`, `ScalingMode` and `ControlledResources` follow the controlling
