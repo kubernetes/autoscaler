@@ -139,11 +139,13 @@ type VerticalPodAutoscalerSpec struct {
 
 // VerticalPodAutoscalerSelector selects a subset of the pods controlled by
 // the VPA's TargetRef. Pods must match all of the specified selectors.
+// +kubebuilder:validation:MinProperties=1
 type VerticalPodAutoscalerSelector struct {
     // NodeSelector selects pods by the labels of the node they run on.
     // A pod is selected if its node has all of the given labels with the given
     // values (same semantics as pod.spec.nodeSelector).
     // In this iteration it is only allowed when TargetRef is a DaemonSet.
+    // +kubebuilder:validation:MinProperties=1
     // +optional
     NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
@@ -154,7 +156,12 @@ type VerticalPodAutoscalerSelector struct {
 the field.
 
 Validation (admission controller webhook and CRD validation):
-- At least one selector field must be set when `selector` is present.
+- At least one selector field must be set and non-empty when `selector` is present; an empty
+  `selector: {}` is rejected.
+- `nodeSelector`, when set, must contain at least one entry. An empty `nodeSelector` would match
+  every node while still taking precedence over a VPA without a selector (see
+  [Choosing the controlling VPA for a pod](#choosing-the-controlling-vpa-for-a-pod)), so it is
+  rejected.
 - `nodeSelector` keys and values must be valid label keys and values.
 - `nodeSelector` is only allowed when `targetRef.kind` is `DaemonSet`.
 - `selector` is only allowed when the `VPASelector` feature gate is enabled.
@@ -166,7 +173,7 @@ Validation (admission controller webhook and CRD validation):
 
 #### Recommender
 
-When the `VPANodeSelector` feature gate is enabled:
+When the `VPASelector` feature gate is enabled:
 
 1. Load node labels - The recommender has no node lister or informer today, so one is added.
    It stores node labels in the cluster state model, so
@@ -176,10 +183,12 @@ When the `VPANodeSelector` feature gate is enabled:
 
 2. Node-aware aggregation - Today pods with identical labels share one aggregate container
    state (`aggregateStateKey` is namespace, container name and pod label set), which for a
-   DaemonSet means all its pods share one aggregate. For DaemonSet pods, the aggregate state key
-   is extended with the pod's node name, so usage from different nodes is kept in separate
-   aggregates. Because a DaemonSet runs at most one pod per node, this yields at most one
-   aggregate per node per container.
+   DaemonSet means all its pods share one aggregate. For pods of a DaemonSet that is the target
+   of at least one VPA with `spec.selector`, the aggregate state key is extended with the pod's
+   node name, so usage from different nodes is kept in separate aggregates. Because a DaemonSet
+   runs at most one pod per node, this yields at most one aggregate per node per container. All
+   other pods, including pods of DaemonSets targeted only by VPAs without a selector, keep
+   today's key, so enabling the gate adds no aggregates for clusters that do not use selectors.
 
 3. Matching aggregates to VPAs - When the recommender decides whether an aggregate belongs to
    a VPA (`matchesAggregation`), it checks the pod label selector derived from `targetRef` (as
@@ -485,8 +494,11 @@ selectors, and can be revisited once the selector plumbing is stable.
     without a selector still receives all aggregates of its target when selector VPAs exist;
     the aggregate's `UpdateMode`, `ScalingMode` and `ControlledResources` follow the controlling
     VPA and are updated when the controlling VPA changes.
-  - Recommender cluster state: node-aware aggregate keys for DaemonSet pods, matching aggregates
-    to VPAs by node labels, and re-matching when node labels change.
+  - Recommender cluster state: node-aware aggregate keys only for pods of DaemonSets targeted by
+    a selector VPA (pods of other DaemonSets keep the shared key), re-keying when the first
+    selector VPA for a DaemonSet is created and when the last one is deleted, aggregates without
+    a node name never matching a selector VPA, matching aggregates to VPAs by node labels, and
+    re-matching when node labels change.
   - Updater, with a DaemonSet split across several selector VPAs: each pod is matched to the
     VPA whose `nodeSelector` matches its node's labels, a pod on an uncovered node goes to the
     fallback VPA or is skipped, and a pod is dropped from a VPA's list when its controlling VPA
@@ -498,8 +510,9 @@ selectors, and can be revisited once the selector plumbing is stable.
   - Admission controller: extracting the node name from DaemonSet node affinity `matchFields`,
     and falling back correctly when the node cannot be determined (absent `matchFields`, empty
     `values`, malformed node affinity, etc.).
-  - Validation rules for `spec.selector` (DaemonSet-only, at least one selector field, valid
-    label keys and values, feature gate, rejection of startup boost together with a selector).
+  - Validation rules for `spec.selector` (DaemonSet-only, at least one non-empty selector field,
+    rejection of `selector: {}` and `nodeSelector: {}`, valid label keys and values, feature gate,
+    rejection of startup boost together with a selector).
 - **E2E tests**:
   - Several selector VPAs on a heterogeneous cluster each receive an independent recommendation
     computed only from the pods on their nodes.
@@ -528,7 +541,8 @@ Enabling of feature gate `VPASelector` will cause the following to happen:
     - Resolve the controlling VPA for a new DaemonSet pod by the labels of its target node and
       inject that VPA's recommendation
 - recommender will:
-    - Keep per-node aggregates for DaemonSet pods and match them to VPAs by node labels
+    - Keep per-node aggregates for pods of DaemonSets targeted by at least one selector VPA, and
+      match them to VPAs by node labels. Pods of other workloads keep today's aggregate keys.
     - Compute a selector VPA's recommendation only from the pods on nodes its selector matches
 - updater will:
     - Apply a selector VPA's recommendation only to the pods on nodes its selector matches
