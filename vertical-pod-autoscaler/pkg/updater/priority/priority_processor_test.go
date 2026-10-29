@@ -22,8 +22,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -236,6 +238,61 @@ func TestGetUpdatePriority_NoRecommendationForContainer(t *testing.T) {
 	vpa := test.VerticalPodAutoscaler().WithName("test-vpa").WithContainer("test-container").Get()
 	result := p.GetUpdatePriority(pod, vpa, nil)
 	assert.NotNil(t, result)
+}
+
+// Verify that GetUpdatePriority only considers native sidecars (init containers with
+// restartPolicy: Always) when the NativeSidecar feature gate is enabled, and never
+// considers plain init containers regardless of the gate.
+func TestGetUpdatePriority_NativeSidecar(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
+	newPod := func(initContainers ...corev1.Container) *corev1.Pod {
+		pod := test.Pod().WithName("POD1").
+			AddContainer(test.Container().WithName("app").WithCPURequest(resource.MustParse("1")).Get()).
+			Get()
+		pod.Spec.InitContainers = initContainers
+		return pod
+	}
+	sidecar := corev1.Container{
+		Name:          "sidecar",
+		RestartPolicy: &always,
+		Resources: corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("4")},
+		},
+	}
+	plainInit := corev1.Container{
+		Name: "plain-init",
+		Resources: corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("8")},
+		},
+	}
+	// app scales 1 -> 2, sidecar scales 4 -> 2, plain init would scale 8 -> 1 if included.
+	vpa := test.VerticalPodAutoscaler().WithName("test-vpa").WithContainer("app").
+		AppendRecommendation(test.Recommendation().WithContainer("app").WithTarget("2", "").GetContainerResources()).
+		AppendRecommendation(test.Recommendation().WithContainer("sidecar").WithTarget("2", "").GetContainerResources()).
+		AppendRecommendation(test.Recommendation().WithContainer("plain-init").WithTarget("1", "").GetContainerResources()).
+		Get()
+	processor := NewProcessor()
+	// app only: totalRequest=1, totalRecommended=2, diff = |1-2|/1 = 1
+	appOnly := PodPriority{ScaleUp: true, ResourceDiff: 1.0}
+
+	t.Run("gate disabled ignores all init containers", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, false)
+		prio := processor.GetUpdatePriority(newPod(sidecar, plainInit), vpa, vpa.Status.Recommendation)
+		assert.Equal(t, appOnly, prio)
+	})
+
+	t.Run("gate enabled includes native sidecar", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+		prio := processor.GetUpdatePriority(newPod(sidecar), vpa, vpa.Status.Recommendation)
+		// totalRequest=1+4=5, totalRecommended=2+2=4, diff = |5-4|/5 = 0.2
+		assert.Equal(t, PodPriority{ScaleUp: true, ResourceDiff: 0.2}, prio)
+	})
+
+	t.Run("gate enabled excludes plain init container", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+		prio := processor.GetUpdatePriority(newPod(plainInit), vpa, vpa.Status.Recommendation)
+		assert.Equal(t, appOnly, prio)
+	})
 }
 
 func TestGetUpdatePriority_VpaObservedContainers(t *testing.T) {
