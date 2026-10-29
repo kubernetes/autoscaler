@@ -27,6 +27,7 @@
 - [Implementation History](#implementation-history)
 - [Alternatives](#alternatives)
   - [One DaemonSet and VPA per node pool](#one-daemonset-and-vpa-per-node-pool)
+  - [`nodeSelector` as a plain label map](#nodeselector-as-a-plain-label-map)
 <!-- /toc -->
 
 ## Summary
@@ -143,18 +144,16 @@ type VerticalPodAutoscalerSpec struct {
 // +kubebuilder:validation:MinProperties=1
 type VerticalPodAutoscalerSelector struct {
     // NodeSelector selects pods by the labels of the node they run on.
-    // A pod is selected if its node has all of the given labels with the given
-    // values (same semantics as pod.spec.nodeSelector).
+    // A pod is selected if its node's labels match the selector.
     // In this iteration it is only allowed when TargetRef is a DaemonSet.
     // +kubebuilder:validation:MinProperties=1
     // +optional
-    NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+    NodeSelector *metav1.LabelSelector `json:"nodeSelector,omitempty"`
 }
 ```
 
-`VerticalPodAutoscalerSelector` is a struct rather than a bare map so that a pod label selector
-(for example `podSelector *metav1.LabelSelector`) can be added later without changing the shape of
-the field.
+`VerticalPodAutoscalerSelector` is a struct so that a pod label selector (for example
+`podSelector *metav1.LabelSelector`) can be added later without changing the shape of the field.
 
 A new condition type is added, set by the recommender (see
 [Overlapping selectors](#overlapping-selectors)):
@@ -172,11 +171,12 @@ var (
 Validation (admission controller webhook and CRD validation):
 - At least one selector field must be set and non-empty when `selector` is present; an empty
   `selector: {}` is rejected.
-- `nodeSelector`, when set, must contain at least one entry. An empty `nodeSelector` would match
-  every node while still taking precedence over a VPA without a selector (see
+- `nodeSelector`, when set, must have at least one `matchLabels` entry or one `matchExpressions`
+  entry. An empty `nodeSelector` would match every node while still taking precedence over a VPA
+  without a selector (see
   [Choosing the controlling VPA for a pod](#choosing-the-controlling-vpa-for-a-pod)), so it is
   rejected.
-- `nodeSelector` keys and values must be valid label keys and values.
+- `nodeSelector` must be a valid label selector (checked with `ValidateLabelSelector`).
 - `nodeSelector` is only allowed when `targetRef.kind` is `DaemonSet`.
 - `selector` is only allowed when the `VPASelector` feature gate is enabled.
 - `selector` cannot be combined with CPU startup boost: `spec.startupBoost` and
@@ -366,7 +366,8 @@ spec:
     updateMode: "Off"
   selector:
     nodeSelector:
-      kubernetes.io/hostname: kind-worker
+      matchLabels:
+        kubernetes.io/hostname: kind-worker
 ---
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
@@ -381,7 +382,8 @@ spec:
     updateMode: "Off"
   selector:
     nodeSelector:
-      kubernetes.io/hostname: kind-worker2
+      matchLabels:
+        kubernetes.io/hostname: kind-worker2
 ```
 
 Each VPA is a regular VPA with a node selector, and its recommendation is computed from the usage
@@ -402,7 +404,8 @@ spec:
     updateMode: "Off"
   selector:
     nodeSelector:
-      kubernetes.io/hostname: kind-worker
+      matchLabels:
+        kubernetes.io/hostname: kind-worker
 status:
   conditions:
   - lastTransitionTime: "2026-09-01T06:31:38Z"
@@ -438,7 +441,8 @@ spec:
     updateMode: "Off"
   selector:
     nodeSelector:
-      kubernetes.io/hostname: kind-worker2
+      matchLabels:
+        kubernetes.io/hostname: kind-worker2
 status:
   conditions:
   - lastTransitionTime: "2026-09-01T06:31:38Z"
@@ -569,7 +573,7 @@ selectors, and can be revisited once the selector plumbing is stable.
   - Updater: a pod whose node is missing from the node cache is skipped while selector VPAs
     target its controller, and is updated once the node appears.
   - Validation rules for `spec.selector` (DaemonSet-only, at least one non-empty selector field,
-    rejection of `selector: {}` and `nodeSelector: {}`, valid label keys and values, feature gate,
+    rejection of `selector: {}` and `nodeSelector: {}`, invalid label selectors, feature gate,
     rejection of startup boost together with a selector).
 - **E2E tests**:
   - Several selector VPAs on a heterogeneous cluster each receive an independent recommendation
@@ -698,3 +702,10 @@ for each node pool. This works but is operationally heavy: it requires updating 
 manifests every time node pools are added or removed, risks configuration drift, and scales
 poorly in clusters with many node pools. It also multiplies the DaemonSet objects, whereas
 `spec.selector` leaves the workload untouched and only splits the autoscaling.
+
+### `nodeSelector` as a plain label map
+
+`nodeSelector` could be a `map[string]string`, like `pod.spec.nodeSelector`. It is simpler, but it
+cannot express "all nodes except X" or "any of these pools". Changing the field's type later would
+break the API, so `metav1.LabelSelector` is used from the start. The simple case is still simple
+with `matchLabels`.
