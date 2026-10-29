@@ -33,14 +33,14 @@ require (
 	github.com/jmespath-community/go-jmespath v1.1.1
 	github.com/json-iterator/go v1.1.12
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.24.1
+	github.com/prometheus/client_golang v1.25.0
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.12.1
 	github.com/vburenin/ifacemaker v1.3.0
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.58.0
 	golang.org/x/net v0.61.0
-	golang.org/x/oauth2 v0.36.0
+	golang.org/x/oauth2 v0.37.0
 	golang.org/x/sys v0.49.0
 	google.golang.org/api v0.278.0
 	google.golang.org/grpc v1.84.0
@@ -49,7 +49,7 @@ require (
 	k8s.io/api v0.37.1
 	k8s.io/apimachinery v0.37.1
 	k8s.io/apiserver v0.37.1
-	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20260717085528-eec9bc4dc1d2
+	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20260928111432-157f7565d9b6
 	k8s.io/client-go v0.37.1
 	k8s.io/cloud-provider-aws v1.35.1
 	k8s.io/cloud-provider-gcp/providers v0.28.2
@@ -61,8 +61,8 @@ require (
 	k8s.io/utils v0.0.0-20260626114624-be93311217bd
 	sigs.k8s.io/cloud-provider-azure v1.36.6
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.23.0
-	sigs.k8s.io/cluster-autoscaler v0.0.0-k8s.v1.37.0
-	sigs.k8s.io/controller-runtime v0.25.1
+	sigs.k8s.io/cluster-autoscaler v0.0.0-k8s.v1.37.1
+	sigs.k8s.io/controller-runtime v0.25.2
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -169,7 +169,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jessevdk/go-flags v1.6.1 // indirect
-	github.com/klauspost/compress v1.19.2 // indirect
+	github.com/klauspost/compress v1.20.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
@@ -180,8 +180,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
-	github.com/onsi/ginkgo/v2 v2.32.2 // indirect
-	github.com/onsi/gomega v1.43.0 // indirect
+	github.com/onsi/ginkgo/v2 v2.33.1 // indirect
+	github.com/onsi/gomega v1.44.0 // indirect
 	github.com/opencontainers/cgroups v0.0.7 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
@@ -190,10 +190,10 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.28 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.70.1 // indirect
+	github.com/prometheus/client_model v0.6.3 // indirect
+	github.com/prometheus/common v0.72.0 // indirect
 	github.com/prometheus/otlptranslator v1.0.0 // indirect
-	github.com/prometheus/procfs v0.21.1 // indirect
+	github.com/prometheus/procfs v0.22.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/samber/lo v1.53.0 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
